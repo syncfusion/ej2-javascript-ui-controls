@@ -14432,6 +14432,8 @@ describe('Drag and drop with different TreeView functionality testing with empty
                     expect(j).toEqual(0);
                     expect(afterEdit).toEqual(0);
                     expect(k).toEqual(1);
+                     let nli: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                     expect((nli[0].querySelector('.e-list-text') as HTMLElement).textContent).toBe('Music');
                     done();
                 }, 450);
             });

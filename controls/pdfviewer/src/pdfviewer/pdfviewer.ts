@@ -5,7 +5,7 @@ import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from 
 import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, StrikethroughSettingsModel, LineSettingsModel, ArrowSettingsModel, RectangleSettingsModel, CircleSettingsModel, PolygonSettingsModel, StampSettingsModel, StickyNotesSettingsModel, CustomStampSettingsModel, VolumeSettingsModel, RadiusSettingsModel, AreaSettingsModel, PerimeterSettingsModel, DistanceSettingsModel, MeasurementSettingsModel, FreeTextSettingsModel, AnnotationSelectorSettingsModel, TextSearchColorSettingsModel, DocumentTextCollectionSettingsModel, TextDataSettingsModel, RectangleBoundsModel } from './pdfviewer-model';
 import { ToolbarSettingsModel, AnnotationToolbarSettingsModel, ShapeLabelSettingsModel } from './pdfviewer-model';
 // tslint:disable-next-line:max-line-length
-import { ServerActionSettingsModel, AjaxRequestSettingsModel, CustomStampItemModel, HandWrittenSignatureSettingsModel, AnnotationSettingsModel, TileRenderingSettingsModel, StampItemSettingsModel, ScrollSettingsModel , FormFieldCollectionsModel } from './pdfviewer-model';
+import { ServerActionSettingsModel, AjaxRequestSettingsModel, CustomStampItemModel, HandWrittenSignatureSettingsModel, AnnotationSettingsModel, TileRenderingSettingsModel, StampItemSettingsModel, ScrollSettingsModel, FormFieldCollectionsModel, InkAnnotationSettingsModel } from './pdfviewer-model';
 import { PdfViewerBase } from './index';
 import { Navigation } from './index';
 import { Magnification } from './index';
@@ -235,8 +235,8 @@ export class StrikethroughSettings extends ChildProperty<StrikethroughSettings> 
     /**
      * specifies the annotation selector settings of the annotation.
      */
-   @Property('')
-   public annotationSelectorSettings: AnnotationSelectorSettingsModel;
+    @Property('')
+    public annotationSelectorSettings: AnnotationSelectorSettingsModel;
 
     /**
      * specifies the custom data of the annotation.
@@ -289,8 +289,8 @@ export class UnderlineSettings extends ChildProperty<UnderlineSettings> {
     /**
      * specifies the annotation selector settings of the annotation.
      */
-   @Property('')
-   public annotationSelectorSettings: AnnotationSelectorSettingsModel;
+    @Property('')
+    public annotationSelectorSettings: AnnotationSelectorSettingsModel;
 
     /**
      * specifies the custom data of the annotation.
@@ -343,8 +343,8 @@ export class HighlightSettings extends ChildProperty<HighlightSettings> {
     /**
      * specifies the annotation selector settings of the annotation.
      */
-   @Property('')
-   public annotationSelectorSettings: AnnotationSelectorSettingsModel;
+    @Property('')
+    public annotationSelectorSettings: AnnotationSelectorSettingsModel;
 
     /**
      * specifies the custom data of the annotation.
@@ -427,8 +427,8 @@ export class LineSettings extends ChildProperty<LineSettings> {
     /**
      * specifies the annotation selector settings of the annotation.
      */
-   @Property('')
-   public annotationSelectorSettings: AnnotationSelectorSettingsModel;
+    @Property('')
+    public annotationSelectorSettings: AnnotationSelectorSettingsModel;
 
     /**
      * specifies the minHeight of the annotation.
@@ -847,8 +847,8 @@ export class PolygonSettings extends ChildProperty<PolygonSettings> {
     /**
      * specifies the annotation selector settings of the annotation.
      */
-   @Property('')
-   public annotationSelectorSettings: AnnotationSelectorSettingsModel;
+    @Property('')
+    public annotationSelectorSettings: AnnotationSelectorSettingsModel;
 
     /**
      * specifies the minHeight of the annotation.
@@ -1251,8 +1251,8 @@ export class PerimeterSettings extends ChildProperty<PerimeterSettings> {
     /**
      * specifies the annotation selector settings of the annotation.
      */
-   @Property('')
-   public annotationSelectorSettings: AnnotationSelectorSettingsModel;
+    @Property('')
+    public annotationSelectorSettings: AnnotationSelectorSettingsModel;
 
 }
 
@@ -1335,8 +1335,8 @@ export class AreaSettings extends ChildProperty<AreaSettings> {
     /**
      * specifies the annotation selector settings of the annotation.
      */
-   @Property('')
-   public annotationSelectorSettings: AnnotationSelectorSettingsModel;
+    @Property('')
+    public annotationSelectorSettings: AnnotationSelectorSettingsModel;
 
 }
 
@@ -1508,11 +1508,57 @@ export class VolumeSettings extends ChildProperty<VolumeSettings> {
     /**
      * specifies the annotation selector settings of the annotation.
      */
-   @Property('')
-   public annotationSelectorSettings: AnnotationSelectorSettingsModel;
+    @Property('')
+    public annotationSelectorSettings: AnnotationSelectorSettingsModel;
 
 }
+/**
+ * The `Ink` module is used to provide the properties to Ink annotation.
+ */
+export class InkAnnotationSettings extends ChildProperty<InkAnnotationSettings> {
+    /**
+     * specifies the opacity of the annotation.
+     */
+    @Property(1)
+    public opacity: number;
 
+    /**
+     * specifies the stroke color of the annotation.
+     */
+    @Property('#000000')
+    public strokeColor: string;
+
+    /**
+     * specified the thickness of the annotation.
+     */
+    @Property(1)
+    public thickness: number;
+
+    /**
+     * specified the width of the annotation.
+     */
+    @Property(100)
+    public width: number;
+
+    /**
+     * specified the height of the annotation.
+     */
+    @Property(100)
+    public height: number;
+
+    /**
+     * specifies the annotation selector settings of the annotation.
+     */
+    @Property('')
+    public annotationSelectorSettings: AnnotationSelectorSettingsModel;
+
+    /**
+     * specifies the lock action of the annotation.
+     */
+    @Property(false)
+    public isLock: boolean;
+
+}
 /**
  * The `stickyNotesSettings` module is used to provide the properties to sticky notes annotation.
  */
@@ -1850,8 +1896,8 @@ export class HandWrittenSignatureSettings extends ChildProperty<HandWrittenSigna
     /**
      * specifies the annotation selector settings of the annotation.
      */
-   @Property('')
-   public annotationSelectorSettings: AnnotationSelectorSettingsModel;
+    @Property('')
+    public annotationSelectorSettings: AnnotationSelectorSettingsModel;
 
 }
 
@@ -2065,7 +2111,7 @@ export class FormFieldCollections extends ChildProperty<FormFieldCollections> {
 /**
  * The `StampItemSettings` module is used to provide the  stamp items in toolbar of PDF viewer.
  */
-export class StampItemSettings  extends ChildProperty<StampItemSettings> {
+export class StampItemSettings extends ChildProperty<StampItemSettings> {
     /**
      * Enable or disables the custom stamp of PdfViewer.
      */
@@ -2313,7 +2359,12 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     @Property(true)
     public enableHandwrittenSignature: boolean;
-
+    /**
+     * Enables or disables the ink annotation in PDF document.
+     * @default true
+     */
+    @Property(true)
+    public enableInkAnnotation: boolean;
     /**
      * restrict zoom request.
      * @default false
@@ -2355,6 +2406,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     @Property(true)
     public enableNavigation: boolean;
+
+    /**
+     * Enable or disables the auto complete option in form documents.
+     * @default true
+     */
+    @Property(true)
+    public enableAutoComplete: boolean;
 
     /**
      * Enable or disables the Magnification module of PdfViewer.
@@ -2528,7 +2586,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Defines the ajax Request settings of the PdfViewer.
      */
     // tslint:disable-next-line:max-line-length
-     @Property({ ajaxHeaders: [], withCredentials: false})
+    @Property({ ajaxHeaders: [], withCredentials: false })
     public ajaxRequestSettings: AjaxRequestSettingsModel;
 
     /**
@@ -2543,7 +2601,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Defines the settings of the PdfViewer annotation toolbar.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ showTooltip: true, annotationToolbarItem: ['HighlightTool', 'UnderlineTool', 'StrikethroughTool', 'ColorEditTool', 'OpacityEditTool', 'AnnotationDeleteTool', 'StampAnnotationTool', 'HandWrittenSignatureTool' , 'ShapeTool', 'CalibrateTool', 'StrokeColorEditTool', 'ThicknessEditTool', 'FreeTextAnnotationTool', 'FontFamilyAnnotationTool', 'FontSizeAnnotationTool', 'FontStylesAnnotationTool', 'FontAlignAnnotationTool', 'FontColorAnnotationTool', 'CommentPanelTool'] })
+    @Property({ showTooltip: true, annotationToolbarItem: ['HighlightTool', 'UnderlineTool', 'StrikethroughTool', 'ColorEditTool', 'OpacityEditTool', 'AnnotationDeleteTool', 'StampAnnotationTool', 'HandWrittenSignatureTool', 'InkAnnotationTool', 'ShapeTool', 'CalibrateTool', 'StrokeColorEditTool', 'ThicknessEditTool', 'FreeTextAnnotationTool', 'FontFamilyAnnotationTool', 'FontSizeAnnotationTool', 'FontStylesAnnotationTool', 'FontAlignAnnotationTool', 'FontColorAnnotationTool', 'CommentPanelTool'] })
     public annotationToolbarSettings: AnnotationToolbarSettingsModel;
 
     /**
@@ -2564,7 +2622,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Defines the settings of strikethrough annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, color: '#ff0000', author: 'Guest', subject: 'Strikethrough', modifiedDate: '', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, isLock : false })
+    @Property({ opacity: 1, color: '#ff0000', author: 'Guest', subject: 'Strikethrough', modifiedDate: '', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, isLock: false })
     public strikethroughSettings: StrikethroughSettingsModel;
 
     /**
@@ -2592,7 +2650,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Defines the settings of rectangle annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', subject: 'Rectangle', modifiedDate: '', thickness: 1 , annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false })
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', subject: 'Rectangle', modifiedDate: '', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false })
     public rectangleSettings: RectangleSettingsModel;
 
     /**
@@ -2669,7 +2727,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Defines the settings of stickyNotes annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ author: 'Guest', subject: 'Sticky Note', modifiedDate: '', opacity: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, isLock: false})
+    @Property({ author: 'Guest', subject: 'Sticky Note', modifiedDate: '', opacity: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, isLock: false })
     public stickyNotesSettings: StickyNotesSettingsModel;
     /**
      * Defines the settings of free text annotation.
@@ -2688,7 +2746,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Defines the settings of annotation selector.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges })
+    @Property({ selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges })
     public annotationSelectorSettings: AnnotationSelectorSettingsModel;
 
     /**
@@ -2701,8 +2759,15 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Defines the settings of handWrittenSignature.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, strokeColor: '#000000', width: 100, height: 100, thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }  })
+    @Property({ opacity: 1, strokeColor: '#000000', width: 100, height: 100, thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges } })
     public handWrittenSignatureSettings: HandWrittenSignatureSettingsModel;
+
+    /**
+     * Defines the settings of Ink annotation.
+     */
+    // tslint:disable-next-line:max-line-length
+    @Property({ opacity: 1, strokeColor: '#000000', width: 100, height: 100, thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, isLock: false })
+    public inkAnnotationSettings: InkAnnotationSettingsModel;
 
     /**
      * Defines the settings of the annotations.
@@ -2721,7 +2786,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Defines the settings of the PdfViewer toolbar.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ enableCustomStamp: true, dynamicStamps: [DynamicStampItem.Revised, DynamicStampItem.Reviewed, DynamicStampItem.Received, DynamicStampItem.Confidential, DynamicStampItem.Approved, DynamicStampItem.NotApproved], signStamps: [SignStampItem.Witness, SignStampItem.InitialHere, SignStampItem.SignHere, SignStampItem.Accepted, SignStampItem.Rejected], standardBusinessStamps: [StandardBusinessStampItem.Approved, StandardBusinessStampItem.NotApproved, StandardBusinessStampItem.Draft, StandardBusinessStampItem.Final, StandardBusinessStampItem.Completed, StandardBusinessStampItem.Confidential, StandardBusinessStampItem.ForPublicRelease, StandardBusinessStampItem.NotForPublicRelease, StandardBusinessStampItem.ForComment, StandardBusinessStampItem.Void, StandardBusinessStampItem.PreliminaryResults, StandardBusinessStampItem.InformationOnly]})
+    @Property({ enableCustomStamp: true, dynamicStamps: [DynamicStampItem.Revised, DynamicStampItem.Reviewed, DynamicStampItem.Received, DynamicStampItem.Confidential, DynamicStampItem.Approved, DynamicStampItem.NotApproved], signStamps: [SignStampItem.Witness, SignStampItem.InitialHere, SignStampItem.SignHere, SignStampItem.Accepted, SignStampItem.Rejected], standardBusinessStamps: [StandardBusinessStampItem.Approved, StandardBusinessStampItem.NotApproved, StandardBusinessStampItem.Draft, StandardBusinessStampItem.Final, StandardBusinessStampItem.Completed, StandardBusinessStampItem.Confidential, StandardBusinessStampItem.ForPublicRelease, StandardBusinessStampItem.NotForPublicRelease, StandardBusinessStampItem.ForComment, StandardBusinessStampItem.Void, StandardBusinessStampItem.PreliminaryResults, StandardBusinessStampItem.InformationOnly] })
     public stampItemSettings: StampItemSettingsModel;
 
     /**
@@ -3237,7 +3302,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @deprecated
      */
     @Event()
-    public ajaxRequestInitiate : EmitType<AjaxRequestInitiateEventArgs>;
+    public ajaxRequestInitiate: EmitType<AjaxRequestInitiateEventArgs>;
 
     /**
      * PDF document annotation collection.
@@ -3347,7 +3412,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     this.height = newProp.height;
                     this.viewerBase.updateHeight();
                     this.viewerBase.onWindowResize();
-                    if ( this.toolbar.annotationToolbarModule && this.toolbar.annotationToolbarModule.isToolbarHidden) {
+                    if (this.toolbar.annotationToolbarModule && this.toolbar.annotationToolbarModule.isToolbarHidden) {
                         this.toolbar.annotationToolbarModule.adjustViewer(false);
                     } else {
                         this.toolbar.annotationToolbarModule.adjustViewer(true);
@@ -3589,6 +3654,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Text Align': 'Text Align',
         'Text Properties': 'Font Style',
         'Draw Signature': 'Draw Signature',
+        'Draw Ink': 'Draw Ink',
         'Create': 'Create',
         'Font family': 'Font Family',
         'Font size': 'Font Size',
@@ -3939,7 +4005,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     // tslint:disable-next-line:max-line-length
     // tslint:disable-next-line
     public fireAnnotationPropertiesChange(pageNumber: number, index: string, type: AnnotationType, isColorChanged: boolean, isOpacityChanged: boolean, isTextChanged: boolean, isCommentsChanged: boolean, textMarkupContent?: string, tmStartIndex?: number, tmEndIndex?: number, multiPageCollection?: any): void {
-          // tslint:disable-next-line:max-line-length
+        // tslint:disable-next-line:max-line-length
         let eventArgs: AnnotationPropertiesChangeEventArgs = { name: 'annotationPropertiesChange', pageIndex: pageNumber, annotationId: index, annotationType: type, isColorChanged: isColorChanged, isOpacityChanged: isOpacityChanged, isTextChanged: isTextChanged, isCommentsChanged: isCommentsChanged };
         if (textMarkupContent) {
             eventArgs.textMarkupContent = textMarkupContent;
@@ -4091,7 +4157,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     // tslint:disable-next-line
-    public fireAnnotationMove(pageNumber: number, id: string, type: AnnotationType, annotationSettings: any ,previousPosition: object, currentPosition: object): void {
+    public fireAnnotationMove(pageNumber: number, id: string, type: AnnotationType, annotationSettings: any, previousPosition: object, currentPosition: object): void {
         let eventArgs: AnnotationMoveEventArgs = { name: 'annotationMove', pageIndex: pageNumber, annotationId: id, annotationType: type, annotationSettings: annotationSettings, previousPosition: previousPosition, currentPosition: currentPosition };
         this.trigger('annotationMove', eventArgs);
     }
@@ -4131,7 +4197,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public async firePrintStart(): Promise<void> {
         let eventArgs: PrintStartEventArgs = { fileName: this.downloadFileName, cancel: false };
         if (isBlazor) {
-           eventArgs = await this.triggerEvent('printStart', eventArgs) as PrintStartEventArgs || eventArgs;
+            eventArgs = await this.triggerEvent('printStart', eventArgs) as PrintStartEventArgs || eventArgs;
         } else {
             this.triggerEvent('printStart', eventArgs);
         }
@@ -4257,7 +4323,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * @private
      */
-    public renderSelector(index: number, currentSelector ?: AnnotationSelectorSettingsModel): void {
+    public renderSelector(index: number, currentSelector?: AnnotationSelectorSettingsModel): void {
         this.drawing.renderSelector(index, currentSelector);
     }
     /**
@@ -4288,7 +4354,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     // tslint:disable-next-line:max-line-length
-    public dragSelectedObjects(diffX: number, diffY: number, pageIndex: number, currentSelector ?: AnnotationSelectorSettingsModel, helper?: PdfAnnotationBaseModel): boolean {
+    public dragSelectedObjects(diffX: number, diffY: number, pageIndex: number, currentSelector?: AnnotationSelectorSettingsModel, helper?: PdfAnnotationBaseModel): boolean {
         return this.drawing.dragSelectedObjects(diffX, diffY, pageIndex, currentSelector, helper);
     }
     /**

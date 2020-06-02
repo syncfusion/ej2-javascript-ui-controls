@@ -229,7 +229,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @private
      */
     public searchModule: Search;
-
     /**
      * Default Paste Formatting Options
      * @default KeepSourceFormatting
@@ -867,8 +866,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                         }
                         this.viewer = new WebLayoutViewer(this);
                     }
-                    this.editor.layoutWholeDocument();
-                    this.fireViewChange();
+                    this.editor.layoutWholeDocument(true);
+                    setTimeout((): void => { this.fireViewChange(); }, 200);
                     break;
                 case 'locale':
                     this.localizeDialogs();
@@ -876,6 +875,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 case 'isReadOnly':
                     if (!isNullOrUndefined(this.optionsPaneModule) && this.optionsPaneModule.isOptionsPaneShow) {
                         this.optionsPaneModule.showHideOptionsPane(false);
+                    }
+                    if (this.showComments) {
+                        this.commentReviewPane.showHidePane(true);
                     }
                     break;
                 case 'currentUser':

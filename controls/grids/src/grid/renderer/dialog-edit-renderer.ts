@@ -100,7 +100,6 @@ export class DialogEditRender {
 
     private dialogClose(): void {
         this.parent.closeEdit();
-        this.destroy();
     }
 
     private destroy(args?: { requestType: string }): void {

@@ -1284,7 +1284,8 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                 yLabel: this.heatMapSeries.hoverYAxisLabel,
                 xValue: this.heatMapSeries.hoverXAxisValue,
                 yValue: this.heatMapSeries.hoverYAxisValue,
-                cellElement: this.enableCanvasRendering ? null : document.getElementById(currentRect.id)
+                cellElement: this.enableCanvasRendering ? null : document.getElementById(currentRect.id),
+                event: e
             });
         }
         this.notify('click', e);

@@ -1751,7 +1751,7 @@ var MenuBase = /** @class */ (function (_super) {
                         _this.top = parseInt(_this.popupWrapper.style.top, 10);
                         if (_this.enableRtl) {
                             _this.left =
-                                _this.isNestedOrVertical ? _this.left - _this.popupWrapper.offsetWidth - _this.lItem.parentElement.offsetWidth
+                                _this.isNestedOrVertical ? _this.left - _this.popupWrapper.offsetWidth - _this.lItem.parentElement.offsetWidth + 2
                                     : _this.left - _this.popupWrapper.offsetWidth + _this.lItem.offsetWidth;
                         }
                         collide = sf.popups.isCollide(_this.popupWrapper, null, _this.left, _this.top);
@@ -1761,7 +1761,7 @@ var MenuBase = /** @class */ (function (_super) {
                             var offWidth = sf.base.closest(_this.lItem, '.e-' + _this.getModuleName() + '-wrapper').offsetWidth;
                             _this.left =
                                 _this.enableRtl ? sf.popups.calculatePosition(_this.lItem, _this.isNestedOrVertical ? 'right' : 'left', 'top').left
-                                    : _this.left - _this.popupWrapper.offsetWidth - offWidth;
+                                    : _this.left - _this.popupWrapper.offsetWidth - offWidth + 2;
                         }
                         collide = sf.popups.isCollide(_this.popupWrapper, null, _this.left, _this.top);
                         if (collide.indexOf('left') > -1 || collide.indexOf('right') > -1) {
@@ -5751,6 +5751,9 @@ var Accordion = /** @class */ (function (_super) {
             return innerEle;
         }
         if (item.header && this.angularnativeCondiCheck(item, 'header')) {
+            if (this.enableHtmlSanitizer && typeof (item.header) === 'string') {
+                item.header = sf.base.SanitizeHtmlHelper.sanitize(item.header);
+            }
             var ctnEle = this.headerEleGenerate();
             var hdrEle = this.createElement('div', { className: CLS_HEADERCTN });
             ctnEle.appendChild(hdrEle);
@@ -5886,6 +5889,9 @@ var Accordion = /** @class */ (function (_super) {
             itemcnt.appendChild(ctn);
         }
         else {
+            if (this.enableHtmlSanitizer && typeof (this.items[index].content)) {
+                this.items[index].content = sf.base.SanitizeHtmlHelper.sanitize(this.items[index].content);
+            }
             itemcnt.appendChild(this.fetchElement(ctn, this.items[index].content, index, false));
         }
         return itemcnt;
@@ -6116,13 +6122,14 @@ var Accordion = /** @class */ (function (_super) {
     };
     /**
      * Adds new item to the Accordion with the specified index of the Accordion.
-     * @param  {AccordionItemModel | Object} item - Item array that is to be added to the Accordion.
+     * @param  {AccordionItemModel | AccordionItemModel[] | Object | Object[]} item - Item array that is to be added to the Accordion.
      * @param  {number} index - Number value that determines where the item should be added.
      * By default, item is added at the last index if the index is not specified.
      * @returns void
      * @deprecated
      */
     Accordion.prototype.addItem = function (item, index) {
+        var _this = this;
         var ele = this.element;
         var itemEle = this.getItemElements();
         var items = this.getItems();
@@ -6130,22 +6137,26 @@ var Accordion = /** @class */ (function (_super) {
             index = items.length;
         }
         if (ele.childElementCount >= index) {
-            items.splice(index, 0, item);
-            var innerItemEle = this.renderInnerItem(item, index);
-            if (ele.childElementCount === index) {
-                ele.appendChild(innerItemEle);
-            }
-            else {
-                ele.insertBefore(innerItemEle, itemEle[index]);
-            }
-            sf.base.EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'focus', this.focusIn, this);
-            sf.base.EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'blur', this.focusOut, this);
-            this.itemAttribUpdate();
-        }
-        this.expandedItems = [];
-        this.expandedItemRefresh(ele);
-        if (item && item.expanded) {
-            this.expandItem(true, index);
+            var addItems = (item instanceof Array) ? item : [item];
+            addItems.forEach(function (addItem, i) {
+                var itemIndex = index + i;
+                items.splice(itemIndex, 0, addItem);
+                var innerItemEle = _this.renderInnerItem(addItem, itemIndex);
+                if (ele.childElementCount === itemIndex) {
+                    ele.appendChild(innerItemEle);
+                }
+                else {
+                    ele.insertBefore(innerItemEle, itemEle[itemIndex]);
+                }
+                sf.base.EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'focus', _this.focusIn, _this);
+                sf.base.EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'blur', _this.focusOut, _this);
+                _this.itemAttribUpdate();
+                _this.expandedItems = [];
+                _this.expandedItemRefresh(ele);
+                if (addItem && addItem.expanded) {
+                    _this.expandItem(true, itemIndex);
+                }
+            });
         }
     };
     Accordion.prototype.expandedItemRefresh = function (ele) {
@@ -6476,6 +6487,9 @@ var Accordion = /** @class */ (function (_super) {
     __decorate$4([
         sf.base.Property('Multiple')
     ], Accordion.prototype, "expandMode", void 0);
+    __decorate$4([
+        sf.base.Property(false)
+    ], Accordion.prototype, "enableHtmlSanitizer", void 0);
     __decorate$4([
         sf.base.Complex({}, AccordionAnimationSettings)
     ], Accordion.prototype, "animation", void 0);
@@ -7678,6 +7692,9 @@ var Tab = /** @class */ (function (_super) {
     Tab.prototype.getContent = function (ele, cnt, callType, index) {
         var eleStr;
         if (typeof cnt === 'string' || sf.base.isNullOrUndefined(cnt.innerHTML)) {
+            if (typeof cnt === 'string' && this.enableHtmlSanitizer) {
+                cnt = sf.base.SanitizeHtmlHelper.sanitize(cnt);
+            }
             if (cnt[0] === '.' || cnt[0] === '#') {
                 if (document.querySelectorAll(cnt).length) {
                     var eleVal = document.querySelector(cnt);
@@ -8725,6 +8742,9 @@ var Tab = /** @class */ (function (_super) {
     __decorate$7([
         sf.base.Property(false)
     ], Tab.prototype, "enablePersistence", void 0);
+    __decorate$7([
+        sf.base.Property(false)
+    ], Tab.prototype, "enableHtmlSanitizer", void 0);
     __decorate$7([
         sf.base.Property(false)
     ], Tab.prototype, "showCloseButton", void 0);
@@ -11489,25 +11509,28 @@ var TreeView = /** @class */ (function (_super) {
         var eventArgs = this.getEditEvent(liEle, newText, null);
         this.trigger('nodeEdited', eventArgs, function (observedArgs) {
             newText = observedArgs.cancel ? observedArgs.oldText : observedArgs.newText;
-            var newData = sf.base.setValue(_this.editFields.text, newText, _this.editData);
-            if (!sf.base.isNullOrUndefined(_this.nodeTemplateFn)) {
-                txtEle.innerText = '';
-                var tempArr = _this.nodeTemplateFn(newData, undefined, undefined, _this.element.id + 'nodeTemplate', _this.isStringTemplate);
-                tempArr = Array.prototype.slice.call(tempArr);
-                sf.base.append(tempArr, txtEle);
-                _this.updateBlazorTemplate();
-            }
-            else {
-                txtEle.innerText = newText;
-            }
-            if (isInput) {
-                sf.base.removeClass([liEle], EDITING);
-                txtEle.focus();
-            }
+            _this.updateText(liEle, txtEle, newText, isInput);
             if (observedArgs.oldText !== newText) {
                 _this.triggerEvent();
             }
         });
+    };
+    TreeView.prototype.updateText = function (liEle, txtEle, newText, isInput) {
+        var newData = sf.base.setValue(this.editFields.text, newText, this.editData);
+        if (!sf.base.isNullOrUndefined(this.nodeTemplateFn)) {
+            txtEle.innerText = '';
+            var tempArr = this.nodeTemplateFn(newData, undefined, undefined, this.element.id + 'nodeTemplate', this.isStringTemplate);
+            tempArr = Array.prototype.slice.call(tempArr);
+            sf.base.append(tempArr, txtEle);
+            this.updateBlazorTemplate();
+        }
+        else {
+            txtEle.innerText = newText;
+        }
+        if (isInput) {
+            sf.base.removeClass([liEle], EDITING);
+            txtEle.focus();
+        }
     };
     TreeView.prototype.getElement = function (ele) {
         if (sf.base.isNullOrUndefined(ele)) {
@@ -13030,7 +13053,7 @@ var TreeView = /** @class */ (function (_super) {
                 matchedArr[0][this.fields.text] = newText;
                 crud = data.update(key, matchedArr[0], query.fromTable, query);
                 crud.then(function (e) { return _this.editSucess(target, newText, prevent); })
-                    .catch(function (e) { return _this.dmFailure(e); });
+                    .catch(function (e) { return _this.dmFailure(e, target, prevent); });
                 break;
             case 'insert':
                 if (newNode.length == 1) {
@@ -13087,8 +13110,16 @@ var TreeView = /** @class */ (function (_super) {
             this.triggerEvent();
         }
     };
-    TreeView.prototype.dmFailure = function (e) {
+    TreeView.prototype.dmFailure = function (e, target, prevent) {
+        if (target) {
+            this.updatePreviousText(target, prevent);
+        }
         this.trigger('actionFailure', { error: e });
+    };
+    TreeView.prototype.updatePreviousText = function (target, prevent) {
+        var liEle = this.getElement(target);
+        var txtEle = sf.base.select('.' + LISTTEXT, liEle);
+        this.updateText(liEle, txtEle, this.oldText, prevent);
     };
     /**
      * Called internally if any of the property value changed.
@@ -13848,6 +13879,7 @@ var Sidebar = /** @class */ (function (_super) {
             (sf.base.removeClass([this.element], RTL$2));
     };
     Sidebar.prototype.setTarget = function () {
+        var ele;
         this.sidebarEleCopy = this.element.cloneNode(true);
         if (typeof (this.target) === 'string') {
             this.setProperties({ target: document.querySelector(this.target) }, true);
@@ -13856,6 +13888,11 @@ var Sidebar = /** @class */ (function (_super) {
             this.target.insertBefore(this.element, this.target.children[0]);
             sf.base.addClass([this.element], SIDEBARABSOLUTE);
             sf.base.addClass([this.target], CONTEXT);
+            ele = this.target.querySelector('.' + MAINCONTENTANIMATION);
+        }
+        this.targetEle = this.element.nextElementSibling;
+        if (!sf.base.isNullOrUndefined(ele)) {
+            this.targetEle = ele;
         }
     };
     Sidebar.prototype.setCloseOnDocumentClick = function () {
@@ -13894,9 +13931,8 @@ var Sidebar = /** @class */ (function (_super) {
     };
     Sidebar.prototype.addClass = function () {
         var classELement = document.querySelector('.e-main-content');
-        if (!sf.base.isNullOrUndefined((classELement ||
-            this.element.nextElementSibling))) {
-            sf.base.addClass([classELement || this.element.nextElementSibling], [MAINCONTENTANIMATION]);
+        if (!sf.base.isNullOrUndefined(classELement || this.targetEle)) {
+            sf.base.addClass([classELement || this.targetEle], [MAINCONTENTANIMATION]);
         }
         this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
         if (!this.isBlazor) {
@@ -13936,8 +13972,7 @@ var Sidebar = /** @class */ (function (_super) {
         sf.base.EventHandler.remove(this.element, 'transitionend', this.transitionEnd);
     };
     Sidebar.prototype.destroyBackDrop = function () {
-        var sibling = document.querySelector('.e-main-content') ||
-            this.element.nextElementSibling;
+        var sibling = document.querySelector('.e-main-content') || this.targetEle;
         if (this.target && this.showBackdrop && sibling) {
             sf.base.removeClass([sibling], CONTEXTBACKDROP);
         }
@@ -13976,8 +14011,7 @@ var Sidebar = /** @class */ (function (_super) {
                 _this.enableDock ? sf.base.setStyleAttribute(_this.element, { 'width': sf.base.formatUnit(_this.dockSize) }) :
                     sf.base.setStyleAttribute(_this.element, { 'width': sf.base.formatUnit(_this.width) });
                 _this.setType(_this.type);
-                var sibling = document.querySelector('.e-main-content') ||
-                    _this.element.nextElementSibling;
+                var sibling = document.querySelector('.e-main-content') || _this.targetEle;
                 if (!_this.enableDock && sibling) {
                     sibling.style.transform = 'translateX(' + 0 + 'px)';
                     _this.position === 'Left' ? sibling.style.marginLeft = '0px' : sibling.style.marginRight = '0px';
@@ -13996,8 +14030,7 @@ var Sidebar = /** @class */ (function (_super) {
         });
     };
     Sidebar.prototype.setTimeOut = function () {
-        var sibling = document.querySelector('.e-main-content') ||
-            this.element.nextElementSibling;
+        var sibling = document.querySelector('.e-main-content') || this.targetEle;
         if (this.element.classList.contains(OPEN) && sibling) {
             if (this.position === 'Left') {
                 this.width === 'auto' ? sibling.style.marginLeft = this.setDimension(this.element.getBoundingClientRect().width)
@@ -14085,8 +14118,7 @@ var Sidebar = /** @class */ (function (_super) {
     };
     Sidebar.prototype.createBackDrop = function () {
         if (this.target && this.showBackdrop && this.getState()) {
-            var sibling = document.querySelector('.e-main-content') ||
-                this.element.nextElementSibling;
+            var sibling = document.querySelector('.e-main-content') || this.targetEle;
             sf.base.addClass([sibling], CONTEXTBACKDROP);
         }
         else if (this.showBackdrop && !this.modal && this.getState()) {
@@ -14201,8 +14233,7 @@ var Sidebar = /** @class */ (function (_super) {
      * @private
      */
     Sidebar.prototype.onPropertyChanged = function (newProp, oldProp) {
-        var sibling = document.querySelector('.e-main-content') ||
-            this.element.nextElementSibling;
+        var sibling = document.querySelector('.e-main-content') || this.targetEle;
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
             var prop = _a[_i];
             switch (prop) {
@@ -14263,12 +14294,10 @@ var Sidebar = /** @class */ (function (_super) {
                         sf.base.setStyleAttribute(sibling, { 'margin-left': 0, 'margin-right': 0 });
                         document.body.insertAdjacentElement('afterbegin', this.element);
                     }
-                    else {
-                        var isRendered = this.isServerRendered;
-                        this.isServerRendered = false;
-                        _super.prototype.refresh.call(this);
-                        this.isServerRendered = isRendered;
-                    }
+                    var isRendered = this.isServerRendered;
+                    this.isServerRendered = false;
+                    _super.prototype.refresh.call(this);
+                    this.isServerRendered = isRendered;
                     break;
                 case 'closeOnDocumentClick':
                     this.setCloseOnDocumentClick();
@@ -14296,8 +14325,7 @@ var Sidebar = /** @class */ (function (_super) {
     Sidebar.prototype.setType = function (type) {
         var elementWidth = this.element.getBoundingClientRect().width;
         this.setZindex();
-        var sibling = document.querySelector('.e-main-content') ||
-            this.element.nextElementSibling;
+        var sibling = document.querySelector('.e-main-content') || this.targetEle;
         if (sibling) {
             sibling.style.transform = 'translateX(' + 0 + 'px)';
             if (!sf.base.Browser.isDevice && this.type !== 'Auto') {
@@ -14366,8 +14394,7 @@ var Sidebar = /** @class */ (function (_super) {
         this.windowWidth = null;
         (!sf.base.isNullOrUndefined(this.sidebarEleCopy.getAttribute('tabindex'))) ?
             this.element.setAttribute('tabindex', this.tabIndex) : this.element.removeAttribute('tabindex');
-        var sibling = document.querySelector('.e-main-content')
-            || this.element.nextElementSibling;
+        var sibling = document.querySelector('.e-main-content') || this.targetEle;
         if (!sf.base.isNullOrUndefined(sibling)) {
             sibling.style.margin = '';
             sibling.style.transform = '';

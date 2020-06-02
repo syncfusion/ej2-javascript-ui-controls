@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.55 (2020-06-02)
+
+### Slider
+
+#### Bug Fixes
+
+- `#278460` Issue with slider refresh method has been resolved.
+
 ## 18.1.53 (2020-05-19)
 
 ### Slider

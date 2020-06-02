@@ -642,11 +642,13 @@ export class Dependency {
      */
     public getValidPredecessor(record: IGanttData): IPredecessor[] {
         let validPredecessor: IPredecessor[] = [];
-        let recPredecessor: IPredecessor[] = record.ganttProperties.predecessor;
-        if (recPredecessor && recPredecessor.length > 0) {
-            validPredecessor = recPredecessor.filter((value: IPredecessor) => {
-                return value.from !== record.ganttProperties.rowUniqueID.toString();
-            });
+        if (!isNullOrUndefined(record)) {
+            let recPredecessor: IPredecessor[] = record.ganttProperties.predecessor;
+            if (recPredecessor && recPredecessor.length > 0) {
+                validPredecessor = recPredecessor.filter((value: IPredecessor) => {
+                    return value.from !== record.ganttProperties.rowUniqueID.toString();
+                });
+            }
         }
         return validPredecessor;
     }

@@ -100,10 +100,11 @@ export class Selection implements IAction {
     private actionCompleteFunc: Function;
     private resizeEndFn: Function;
     private mUPTarget: Element;
-    private bdrLeft: HTMLElement;
-    private bdrRight: HTMLElement;
-    private bdrTop: HTMLElement;
-    private bdrBottom: HTMLElement;
+    private bdrElement: HTMLElement;
+    private selectDirection: string;
+    private mcBdrElement: HTMLElement;
+    private fhBdrElement: HTMLElement;
+    private mhBdrElement: HTMLElement;
     private bdrAFLeft: HTMLElement;
     private bdrAFRight: HTMLElement;
     private bdrAFTop: HTMLElement;
@@ -145,7 +146,7 @@ export class Selection implements IAction {
 
     private initializeSelection(): void {
         this.parent.log('selection_key_missing');
-        EventHandler.add(this.parent.getContent(), 'mousedown', this.mouseDownHandler, this);
+        this.render();
     }
 
     /**
@@ -196,6 +197,7 @@ export class Selection implements IAction {
         this.removeEventListener();
         this.unWireEvents();
         EventHandler.remove(this.parent.getContent(), 'mousedown', this.mouseDownHandler);
+        EventHandler.remove(this.parent.getHeaderContent(), 'mousedown', this.mouseDownHandler);
     }
 
     private isEditing(): boolean {
@@ -1399,8 +1401,8 @@ export class Selection implements IAction {
                 selectedCells[i].classList.remove('e-cellselectionbackground');
                 selectedCells[i].removeAttribute('aria-selected');
             }
-            if (this.bdrBottom) {
-                this.hideBorders();
+            if (this.bdrElement) {
+                this.showHideBorders('none');
             }
             this.selectedRowCellIndexes = [];
             this.isCellSelected = false;
@@ -1486,12 +1488,12 @@ export class Selection implements IAction {
 
     private drawBorders(): void {
         if (this.selectionSettings.cellSelectionMode === 'BoxWithBorder' && this.selectedRowCellIndexes.length && !this.parent.isEdit) {
-            if (!this.bdrBottom) {
+            if (!this.bdrElement) {
                 this.createBorders();
             }
             this.positionBorders();
         } else {
-            this.hideBorders();
+            this.showHideBorders('none');
         }
     }
 
@@ -1505,63 +1507,130 @@ export class Selection implements IAction {
         return cell.parentElement === rows[rows.length - 1];
     }
 
+    private isFirstRow(cell: Element): boolean {
+        let rows: Element[] = [].slice.call(closest(cell, 'tbody').querySelectorAll('.e-row:not(.e-hiddenrow)'));
+        return cell.parentElement === rows[0];
+    }
+
+    private isFirstCell(cell: Element): boolean {
+        let cells: Element[] = [].slice.call(cell.parentElement.querySelectorAll('.e-rowcell:not(.e-hide)'));
+        return cells[0] === cell;
+    }
+
+    private setBorders(parentEle: Element, border: HTMLElement, bdrStr: string): void {
+        let cells: HTMLElement[] = [].slice.call(parentEle.querySelectorAll('.e-cellselectionbackground')).
+            filter((ele: HTMLElement) => ele.style.display === '');
+        if (cells.length) {
+            let start: HTMLElement = cells[0];
+            let end: HTMLElement = cells[cells.length - 1];
+            let stOff: ClientRect = start.getBoundingClientRect();
+            let endOff: ClientRect = end.getBoundingClientRect();
+            let parentOff: ClientRect = start.offsetParent.getBoundingClientRect();
+
+            let rowHeight: number = this.isLastRow(end) && (bdrStr === '1' || bdrStr === '2') ? 2 : 0;
+            let topOffSet: number = this.parent.frozenRows && (bdrStr === '1' || bdrStr === '2') &&
+                this.isFirstRow(start) ? 1.5 : 0;
+            let leftOffset: number = this.parent.getFrozenColumns() && (bdrStr === '2' || bdrStr === '4') &&
+                this.isFirstCell(start) ? 1 : 0;
+
+            if (this.parent.enableRtl) {
+                border.style.right = parentOff.right - stOff.right - leftOffset + 'px';
+                border.style.width = stOff.right - endOff.left + leftOffset + 1 + 'px';
+            } else {
+                border.style.left = stOff.left - parentOff.left - leftOffset + 'px';
+                border.style.width = endOff.right - stOff.left + leftOffset + 1 + 'px';
+            }
+            border.style.top = stOff.top - parentOff.top - topOffSet + 'px';
+            border.style.height = endOff.top - stOff.top > 0 ?
+                (endOff.top - parentOff.top + endOff.height + 1) - (stOff.top - parentOff.top) - rowHeight + topOffSet + 'px' :
+                endOff.height + topOffSet - rowHeight + 1 + 'px';
+            this.selectDirection += bdrStr;
+        } else {
+            border.style.display = 'none';
+        }
+    }
+
     private positionBorders(): void {
         this.updateStartEndCells();
-        if (!this.startCell || !this.bdrLeft || !this.selectedRowCellIndexes.length) {
+        if (!this.startCell || !this.bdrElement || !this.selectedRowCellIndexes.length) {
             return;
         }
-        this.showBorders();
-        let stOff: ClientRect = this.startCell.getBoundingClientRect();
-        let endOff: ClientRect = this.endCell.getBoundingClientRect();
-        let colWidth: number = this.isLastCell(this.endCell) ? 2 : 0;
-        let rowHeight: number = this.isLastRow(this.endCell) ? 2 : 0;
-        let parentOff: ClientRect = (this.startCell as HTMLElement).offsetParent.getBoundingClientRect();
-        this.bdrLeft.style.left = stOff.left - parentOff.left + 'px';
-        this.bdrLeft.style.top = stOff.top - parentOff.top + 'px';
-        this.bdrLeft.style.height = endOff.top - stOff.top > 0 ?
-            (endOff.top - parentOff.top + endOff.height + 1) - (stOff.top - parentOff.top) - rowHeight + 'px' : endOff.height + 'px';
+        this.selectDirection = '';
+        this.showHideBorders('');
+        this.setBorders(this.parent.getContentTable(), this.bdrElement, '1');
+        if (this.parent.getFrozenColumns()) {
+            this.setBorders(this.parent.contentModule.getMovableContent(), this.mcBdrElement, '2');
+        }
+        if (this.parent.frozenRows) {
+            this.setBorders(this.parent.getHeaderTable(), this.fhBdrElement, '3');
 
-        this.bdrRight.style.left = endOff.left - parentOff.left + endOff.width - colWidth + 'px';
-        this.bdrRight.style.top = this.bdrLeft.style.top;
-        this.bdrRight.style.height = parseInt(this.bdrLeft.style.height, 10) - rowHeight + 'px';
+            if (this.parent.getFrozenColumns()) {
+                this.setBorders(this.parent.headerModule.getMovableHeader(), this.mhBdrElement, '4');
+            }
+        }
+        this.applyBorders(this.selectDirection);
+    }
 
-        this.bdrTop.style.left = this.bdrLeft.style.left;
-        this.bdrTop.style.top = this.bdrRight.style.top;
-        this.bdrTop.style.width = parseInt(this.bdrRight.style.left, 10) - parseInt(this.bdrLeft.style.left, 10) + 1 + 'px';
-
-        this.bdrBottom.style.left = this.bdrLeft.style.left;
-        this.bdrBottom.style.top = parseInt(this.bdrLeft.style.top, 10) + parseInt(this.bdrLeft.style.height, 10) - rowHeight + 'px';
-        this.bdrBottom.style.width = this.bdrTop.style.width;
+    private applyBorders(str: string): void {
+        let rtl: boolean = this.parent.enableRtl;
+        switch (str.length) {
+            case 4: {
+                this.bdrElement.style.borderWidth = rtl ? '0 2px 2px 0' : '0 0 2px 2px';
+                this.mcBdrElement.style.borderWidth = rtl ? '0 0 2px 2px' : '0 2px 2px 0';
+                this.fhBdrElement.style.borderWidth = rtl ? '2px 2px 0 0' : '2px 0 0 2px';
+                this.mhBdrElement.style.borderWidth = rtl ? '2px 0 0 2px' : '2px 2px 0 0';
+            }
+                break;
+            case 2: {
+                this.bdrElement.style.borderWidth = str.includes('2') ? rtl ? '2px 2px 2px 0' : '2px 0 2px 2px' : '0 2px 2px 2px';
+                this.mcBdrElement.style.borderWidth = str.includes('1') ? rtl ? '2px 0 2px 2px' : '2px 2px 2px 0' : '0 2px 2px 2px';
+                this.fhBdrElement.style.borderWidth = str.includes('1') ? '2px 2px 0 2px' : rtl ? '2px 2px 2px 0' : '2px 0 2px 2px';
+                this.mhBdrElement.style.borderWidth = str.includes('2') ? '2px 2px 0 2px' : rtl ? '2px 0 2px 2px' : '2px 2px 2px 0';
+            }
+                break;
+            default:
+                this.bdrElement.style.borderWidth = '2px';
+                this.mcBdrElement.style.borderWidth = '2px';
+                this.fhBdrElement.style.borderWidth = '2px';
+                this.mhBdrElement.style.borderWidth = '2px';
+                break;
+        }
     }
 
     private createBorders(): void {
-        if (!this.bdrLeft) {
-            this.bdrLeft = this.parent.getContentTable().parentElement.appendChild(
-                createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_bdrleft', styles: 'width: 2px;' }));
-            this.bdrRight = this.parent.getContentTable().parentElement.appendChild(
-                createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_bdrright', styles: 'width: 2px;' }));
-            this.bdrBottom = this.parent.getContentTable().parentElement.appendChild(
-                createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_bdrbottom', styles: 'height: 2px;' }));
-            this.bdrTop = this.parent.getContentTable().parentElement.appendChild(
-                createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_bdrtop', styles: 'height: 2px;' }));
+        if (!this.bdrElement) {
+            this.bdrElement = this.parent.getContentTable().parentElement.appendChild(
+                createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_bdr', styles: 'width: 2px;' }));
+            if (this.parent.getFrozenColumns()) {
+                this.mcBdrElement = this.parent.contentModule.getMovableContent().appendChild(
+                    createElement('div', {
+                        className: 'e-xlsel', id: this.parent.element.id + '_mcbdr',
+                        styles: 'height: 2px; border-width: 0;'
+                    }));
+            }
+            if (this.parent.frozenRows) {
+                this.fhBdrElement = this.parent.getHeaderTable().parentElement.appendChild(
+                    createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_fhbdr', styles: 'height: 2px;' }));
+            }
+            if (this.parent.frozenRows && this.parent.getFrozenColumns()) {
+                this.mhBdrElement = this.parent.headerModule.getMovableHeader().appendChild(
+                    createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_mhbdr', styles: 'height: 2px;' }));
+            }
         }
     }
 
-    private showBorders(): void {
-        if (this.bdrLeft) {
-            this.bdrLeft.style.display = '';
-            this.bdrRight.style.display = '';
-            this.bdrBottom.style.display = '';
-            this.bdrTop.style.display = '';
-        }
-    }
-
-    private hideBorders(): void {
-        if (this.bdrLeft) {
-            this.bdrLeft.style.display = 'none';
-            this.bdrRight.style.display = 'none';
-            this.bdrBottom.style.display = 'none';
-            this.bdrTop.style.display = 'none';
+    private showHideBorders(display: string): void {
+        if (this.bdrElement) {
+            this.bdrElement.style.display = display;
+            if (this.parent.getFrozenColumns()) {
+                this.mcBdrElement.style.display = display;
+            }
+            if (this.parent.frozenRows) {
+                this.fhBdrElement.style.display = display;
+            }
+            if (this.parent.frozenRows && this.parent.getFrozenColumns()) {
+                this.mhBdrElement.style.display = display;
+            }
         }
     }
 
@@ -1576,40 +1645,72 @@ export class Selection implements IAction {
         if (!this.startCell || !this.bdrAFLeft) {
             return;
         }
-        this.showBorders();
         let stOff: ClientRect = this.startAFCell.getBoundingClientRect();
         let endOff: ClientRect = this.endAFCell.getBoundingClientRect();
-        let colWidth: number = this.isLastCell(this.endAFCell) ? 2 : 0;
-        let rowHeight: number = this.isLastRow(this.endAFCell) ? 2 : 0;
+        let top: number = endOff.top - stOff.top > 0 ? 1 : 0;
+        let firstCellTop: number = endOff.top - stOff.top >= 0 && (parentsUntil(this.startAFCell, 'e-movablecontent') ||
+        parentsUntil(this.startAFCell, 'e-frozencontent')) && this.isFirstRow(this.startAFCell) ? 1.5 : 0;
+        let firstCellLeft: number = (parentsUntil(this.startAFCell, 'e-movablecontent') ||
+        parentsUntil(this.startAFCell, 'e-movableheader')) && this.isFirstCell(this.startAFCell) ? 1 : 0;
+        let rowHeight: number = this.isLastRow(this.endAFCell) && (parentsUntil(this.endAFCell, 'e-movablecontent') ||
+        parentsUntil(this.endAFCell, 'e-frozencontent')) ? 2 : 0;
         let parentOff: ClientRect = (this.startAFCell as HTMLElement).offsetParent.getBoundingClientRect();
-        this.bdrAFLeft.style.left = stOff.left - parentOff.left + 'px';
-        this.bdrAFLeft.style.top = stOff.top - parentOff.top + 'px';
+        let parentRect: ClientRect = this.parent.element.getBoundingClientRect();
+        let sTop: number = (this.startAFCell as HTMLElement).offsetParent.parentElement.scrollTop;
+        let sLeft: number = (this.startAFCell as HTMLElement).offsetParent.parentElement.scrollLeft;
+        let scrollTop: number = sTop - (this.startAFCell as HTMLElement).offsetTop;
+        let scrollLeft: number = sLeft - (this.startAFCell as HTMLElement).offsetLeft;
+        scrollTop = scrollTop > 0 ? Math.floor(scrollTop) - 1 : 0;
+        scrollLeft = scrollLeft > 0 ? scrollLeft : 0;
+        let left: number = stOff.left - parentRect.left;
+
+        if (!this.parent.enableRtl) {
+            this.bdrAFLeft.style.left = left - firstCellLeft + scrollLeft - 1 + 'px';
+
+            this.bdrAFRight.style.left = endOff.left - parentRect.left - 2 + endOff.width + 'px';
+
+            this.bdrAFTop.style.left = left + scrollLeft - 0.5 + 'px';
+            this.bdrAFTop.style.width = parseInt(this.bdrAFRight.style.left, 10) - parseInt(this.bdrAFLeft.style.left, 10)
+                - firstCellLeft + 1 + 'px';
+        } else {
+            let scrolloffSet: number = (parentsUntil(this.startAFCell, 'e-movablecontent') ||
+                parentsUntil(this.startAFCell, 'e-movableheader')) ? stOff.right -
+                (this.startAFCell as HTMLElement).offsetParent.parentElement.getBoundingClientRect().width -
+                parentRect.left : 0;
+            this.bdrAFLeft.style.right = parentRect.right - endOff.right - 2 + endOff.width + 'px';
+
+            this.bdrAFRight.style.right = parentRect.right - stOff.right - firstCellLeft + scrolloffSet - 1 + 'px';
+
+            this.bdrAFTop.style.left = endOff.left - parentRect.left - 0.5 + 'px';
+            this.bdrAFTop.style.width = parseInt(this.bdrAFLeft.style.right, 10) - parseInt(this.bdrAFRight.style.right, 10)
+                - firstCellLeft + 1 + 'px';
+        }
+
+        this.bdrAFLeft.style.top = stOff.top - parentRect.top - firstCellTop + scrollTop + 'px';
         this.bdrAFLeft.style.height = endOff.top - stOff.top > 0 ?
-            (endOff.top - parentOff.top + endOff.height + 1) - (stOff.top - parentOff.top) - rowHeight + 'px' : endOff.height + 'px';
+            (endOff.top - parentOff.top + endOff.height + 1) - (stOff.top - parentOff.top) + firstCellTop - rowHeight - scrollTop + 'px' :
+            endOff.height + firstCellTop - rowHeight - scrollTop + 'px';
 
-        this.bdrAFRight.style.left = endOff.left - parentOff.left + endOff.width - colWidth + 'px';
         this.bdrAFRight.style.top = this.bdrAFLeft.style.top;
-        this.bdrAFRight.style.height = parseInt(this.bdrAFLeft.style.height, 10) - rowHeight + 'px';
+        this.bdrAFRight.style.height = parseInt(this.bdrAFLeft.style.height, 10) + 'px';
 
-        this.bdrAFTop.style.left = this.bdrAFLeft.style.left;
         this.bdrAFTop.style.top = this.bdrAFRight.style.top;
-        this.bdrAFTop.style.width = parseInt(this.bdrAFRight.style.left, 10) - parseInt(this.bdrAFLeft.style.left, 10) + 1 + 'px';
 
-        this.bdrAFBottom.style.left = this.bdrAFLeft.style.left;
-        this.bdrAFBottom.style.top = parseInt(this.bdrAFLeft.style.top, 10) + parseInt(this.bdrAFLeft.style.height, 10) - rowHeight + 'px';
+        this.bdrAFBottom.style.left = this.bdrAFTop.style.left;
+        this.bdrAFBottom.style.top = parseFloat(this.bdrAFLeft.style.top) + parseFloat(this.bdrAFLeft.style.height) - top - 1 + 'px';
         this.bdrAFBottom.style.width = this.bdrAFTop.style.width;
     }
 
     private createAFBorders(): void {
         if (!this.bdrAFLeft) {
-            this.bdrAFLeft = this.parent.getContentTable().parentElement.appendChild(
-                createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_bdrafleft', styles: 'width: 2px;' }));
-            this.bdrAFRight = this.parent.getContentTable().parentElement.appendChild(
-                createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_bdrafright', styles: 'width: 2px;' }));
-            this.bdrAFBottom = this.parent.getContentTable().parentElement.appendChild(
-                createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_bdrafbottom', styles: 'height: 2px;' }));
-            this.bdrAFTop = this.parent.getContentTable().parentElement.appendChild(
-                createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_bdraftop', styles: 'height: 2px;' }));
+            this.bdrAFLeft = this.parent.element.appendChild(
+                createElement('div', { className: 'e-xlselaf', id: this.parent.element.id + '_bdrafleft', styles: 'width: 2px;' }));
+            this.bdrAFRight = this.parent.element.appendChild(
+                createElement('div', { className: 'e-xlselaf', id: this.parent.element.id + '_bdrafright', styles: 'width: 2px;' }));
+            this.bdrAFBottom = this.parent.element.appendChild(
+                createElement('div', { className: 'e-xlselaf', id: this.parent.element.id + '_bdrafbottom', styles: 'height: 2px;' }));
+            this.bdrAFTop = this.parent.element.appendChild(
+                createElement('div', { className: 'e-xlselaf', id: this.parent.element.id + '_bdraftop', styles: 'height: 2px;' }));
         }
     }
 
@@ -1655,6 +1756,14 @@ export class Selection implements IAction {
         return args;
     }
 
+    private getAutoFillCells(rowIndex: number, startCellIdx: number): HTMLElement[] {
+        let cells: HTMLElement[] = [].slice.call(this.parent.getDataRows()[rowIndex].querySelectorAll('.e-cellselectionbackground'));
+        if (this.parent.getFrozenColumns()) {
+           cells = cells.concat([].slice.call(this.parent.getMovableDataRows()[rowIndex].querySelectorAll('.e-cellselectionbackground')));
+        }
+        return cells;
+    }
+
     /* tslint:disable-next-line:max-func-body-length */
     private selectLikeAutoFill(e: MouseEvent, isApply?: boolean): void {
         let startrowIdx: number = parseInt(parentsUntil(this.startAFCell, 'e-row').getAttribute('aria-rowindex'), 10);
@@ -1683,8 +1792,7 @@ export class Selection implements IAction {
                 } else {
                     let cellIdx: number = parseInt(this.endCell.getAttribute('aria-colindex'), 10);
                     for (let i: number = startrowIdx; i <= endrowIdx; i++) {
-                        let cells: HTMLElement[] = [].slice.call(
-                            this.parent.getDataRows()[i].querySelectorAll('.e-cellselectionbackground'));
+                        let cells: HTMLElement[] = this.getAutoFillCells(i, startCellIdx);
                         let c: number = 0;
                         for (let j: number = cellIdx + 1; j <= endCellIdx; j++) {
                             if (c > colLen) {
@@ -1708,8 +1816,7 @@ export class Selection implements IAction {
                     this.drawAFBorders();
                 } else {
                     for (let i: number = startrowIdx; i <= startrowIdx + rowLen; i++) {
-                        let cells: HTMLElement[] = [].slice.call(
-                            this.parent.getDataRows()[i].querySelectorAll('.e-cellselectionbackground'));
+                        let cells: HTMLElement[] = this.getAutoFillCells(i, startCellIdx);
                         cells.reverse();
                         let c: number = 0;
                         for (let j: number = this.startCellIndex - 1; j >= endCellIdx; j--) {
@@ -1737,8 +1844,7 @@ export class Selection implements IAction {
                         if (r === this.startIndex - 1) {
                             r = trIdx;
                         }
-                        let cells: HTMLElement[] = [].slice.call(
-                            this.parent.getDataRows()[r].querySelectorAll('.e-cellselectionbackground'));
+                        let cells: HTMLElement[] = this.getAutoFillCells(r, startCellIdx);
                         let c: number = 0;
                         r--;
                         for (let j: number = this.startCellIndex; j <= this.startCellIndex + colLen; j++) {
@@ -1762,8 +1868,7 @@ export class Selection implements IAction {
                         if (r === trIdx + 1) {
                             r = this.startIndex;
                         }
-                        let cells: HTMLElement[] = [].slice.call(
-                            this.parent.getDataRows()[r].querySelectorAll('.e-cellselectionbackground'));
+                        let cells: HTMLElement[] = this.getAutoFillCells(r, startCellIdx);
                         r++;
                         let c: number = 0;
                         for (let m: number = this.startCellIndex; m <= this.startCellIndex + colLen; m++) {
@@ -1788,7 +1893,7 @@ export class Selection implements IAction {
         } else {
             this.mUPTarget = null;
         }
-        if (this.isDragged) {
+        if (this.isDragged && !this.isAutoFillSel) {
             let target: Element = e.target as Element;
             let rowIndex: number = parseInt(target.parentElement.getAttribute('aria-rowindex'), 10);
             let cellIndex: number =  parseInt(target.getAttribute('aria-colindex'), 10);
@@ -1801,9 +1906,9 @@ export class Selection implements IAction {
         this.isDragged = false;
         this.updateAutoFillPosition();
         if (this.isAutoFillSel) {
-            this.startAFCell = this.startCell;
             let lastCell: Element = parentsUntil(e.target as Element, 'e-rowcell');
-            this.endAFCell = lastCell ? lastCell : this.endAFCell;
+            this.endAFCell = lastCell ? lastCell : this.endCell === this.endAFCell ? this.startAFCell : this.endAFCell;
+            this.startAFCell = this.startCell;
             this.updateStartCellsIndex();
             this.selectLikeAutoFill(e, true);
             this.updateAutoFillPosition();
@@ -1812,6 +1917,9 @@ export class Selection implements IAction {
             this.isAutoFillSel = false;
         }
         EventHandler.remove(this.parent.getContent(), 'mousemove', this.mouseMoveHandler);
+        if (this.parent.frozenRows) {
+            EventHandler.remove(this.parent.getHeaderContent(), 'mousemove', this.mouseMoveHandler);
+        }
         EventHandler.remove(document.body, 'mouseup', this.mouseUpHandler);
     }
 
@@ -1827,23 +1935,43 @@ export class Selection implements IAction {
         if (this.parent.enableAutoFill && !this.parent.isEdit &&
             this.selectionSettings.cellSelectionMode.indexOf('Box') > -1 && !this.isRowType() && !this.isSingleSel()
             && this.selectedRowCellIndexes.length) {
-            let cells: Element[] = [].slice.call(this.parent.getDataRows()[
-                this.selectedRowCellIndexes[
-                    this.selectedRowCellIndexes.length - 1].rowIndex].querySelectorAll('.e-cellselectionbackground'));
-            if (!this.parent.element.querySelector('#' + this.parent.element.id + '_autofill')) {
+            let frzCols: number = this.parent.getFrozenColumns();
+            let index: number = parseInt(this.target.getAttribute('aria-colindex'), 10);
+            let rindex: number = parseInt(this.target.getAttribute('index'), 10);
+            let rowIndex: number = this.selectedRowCellIndexes[this.selectedRowCellIndexes.length - 1].rowIndex;
+            let cells: Element[] = this.getAutoFillCells(rowIndex, index).filter((ele: HTMLElement) => ele.style.display === '');
+            let isFrozenCol: Boolean;
+            let isFrozenRow: Boolean;
+            if (frzCols && index >= frzCols) {
+                isFrozenCol = true;
+            }
+            if (rindex < this.parent.frozenRows) {
+                isFrozenRow = true;
+            }
+            if (!parentsUntil(this.target, 'e-table').querySelector('#' + this.parent.element.id + '_autofill')) {
+                if (this.parent.element.querySelector('#' + this.parent.element.id + '_autofill')) {
+                    this.parent.element.querySelector('#' + this.parent.element.id + '_autofill').remove();
+                }
                 this.autofill = createElement(
                     'div', { className: 'e-autofill', id: this.parent.element.id + '_autofill' });
                 this.autofill.style.display = 'none';
-                this.parent.getContentTable().parentElement.appendChild(this.autofill);
+                !isFrozenRow ? !isFrozenCol ? this.parent.getContentTable().parentElement.appendChild(this.autofill) :
+                    this.parent.contentModule.getMovableContent().appendChild(this.autofill) :
+                    !isFrozenCol ? this.parent.getHeaderTable().parentElement.appendChild(this.autofill) :
+                        this.parent.headerModule.getMovableHeader().appendChild(this.autofill);
             }
             let cell: HTMLElement = cells[cells.length - 1] as HTMLElement;
             if (cell && cell.offsetParent) {
                 let clientRect: ClientRect = cell.getBoundingClientRect();
                 let parentOff: ClientRect = cell.offsetParent.getBoundingClientRect();
                 let colWidth: number = this.isLastCell(cell) ? 4 : 0;
-                let rowHeight: number = this.isLastRow(cell) ? 5 : 0;
-                this.autofill.style.left = clientRect.left - parentOff.left + clientRect.width - 4 - colWidth + 'px';
-                this.autofill.style.top = clientRect.top - parentOff.top + clientRect.height - 3 - rowHeight + 'px';
+                let rowHeight: number = this.isLastRow(cell) ? 3 : 0;
+                if (!this.parent.enableRtl) {
+                    this.autofill.style.left = clientRect.left - parentOff.left + clientRect.width - 4 - colWidth + 'px';
+                } else {
+                    this.autofill.style.right = parentOff.right - clientRect.right + clientRect.width - 4 - colWidth + 'px';
+                }
+                this.autofill.style.top = clientRect.top - parentOff.top + clientRect.height - 5 - rowHeight + 'px';
             }
             this.autofill.style.display = '';
         } else {
@@ -1856,7 +1984,7 @@ export class Selection implements IAction {
         let gObj: IGrid = this.parent;
         let isDrag: boolean;
         let gridElement: Element = parentsUntil(target, 'e-grid');
-        if (gridElement && gridElement.id !== gObj.element.id) {
+        if (gridElement && gridElement.id !== gObj.element.id || parentsUntil(target, 'e-headercontent') && !this.parent.frozenColumns) {
             return;
         }
         if (e.shiftKey || e.ctrlKey) {
@@ -1921,6 +2049,9 @@ export class Selection implements IAction {
         this.y = postion.y - gBRect.top;
 
         EventHandler.add(gObj.getContent(), 'mousemove', this.mouseMoveHandler, this);
+        if (this.parent.frozenRows) {
+            EventHandler.add(gObj.getHeaderContent(), 'mousemove', this.mouseMoveHandler, this);
+        }
         EventHandler.add(document.body, 'mouseup', this.mouseUpHandler, this);
     }
 
@@ -2019,12 +2150,13 @@ export class Selection implements IAction {
     private enableAfterRender(e: NotifyArgs): void {
         if (e.module === this.getModuleName() && e.enable) {
             this.render();
+            this.initPerisistSelection();
         }
     }
 
     private render(e?: NotifyArgs): void {
         EventHandler.add(this.parent.getContent(), 'mousedown', this.mouseDownHandler, this);
-        this.initPerisistSelection();
+        EventHandler.add(this.parent.getHeaderContent(), 'mousedown', this.mouseDownHandler, this);
     }
 
     private onPropertyChanged(e: { module: string, properties: SelectionSettings }): void {
@@ -2170,7 +2302,7 @@ export class Selection implements IAction {
 
     private refreshPersistSelection(): void {
         let rows: Element[] = this.parent.getRows();
-        if (rows.length > 0 && (this.parent.isPersistSelection || this.chkField)) {
+        if (rows !== null && rows.length > 0 && (this.parent.isPersistSelection || this.chkField)) {
             let indexes: number[] = [];
             for (let j: number = 0; j < rows.length; j++) {
                 let rowObj: Row<Column> = this.getRowObj(rows[j]);
@@ -2513,6 +2645,7 @@ export class Selection implements IAction {
             chkSelect = true;
         }
         this.drawBorders();
+        this.updateAutoFillPosition();
         target = parentsUntil(target, 'e-rowcell') as HTMLElement;
         if ((target && target.parentElement.classList.contains('e-row') && !this.parent.selectionSettings.checkboxOnly) || chkSelect) {
             if (this.parent.isCheckBoxSelection) {
@@ -2618,7 +2751,7 @@ export class Selection implements IAction {
                 this.parent[interopAdaptor][invokeMethodAsync]('MaintainSelection', true , 'normal', rowIndexes);
             }
             this.addCellsToSelection([{ rowIndex: rowIndex, cellIndex: cellIndex }]);
-            this.hideBorders();
+            this.showHideBorders('none');
         }
         this.isDragged = false;
     }

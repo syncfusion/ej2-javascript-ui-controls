@@ -120,15 +120,9 @@ describe('Chart Trackball', () => {
                 expect(Icons.childNodes.length == 4).toBe(true);
                 expect(text.textContent.replace(/\u200E/g, '') === 'FebJapan : -$1.00Japan1 : $3.50Japan2 : $8.00Japan3 : $10.00').toBe(true);
 
-
-                let trackSymbol: HTMLElement = document.getElementById('containerSymbolGroup0').lastChild as HTMLElement;
-                expect(trackSymbol.id.indexOf('Trackball') > 0).toBe(true);
-                trackSymbol = document.getElementById('containerSymbolGroup1').lastChild as HTMLElement;
-                expect(trackSymbol.id.indexOf('Trackball') > 0).toBe(true);
-                trackSymbol = document.getElementById('containerSymbolGroup2').lastChild as HTMLElement;
-                expect(trackSymbol.id.indexOf('Trackball') > 0).toBe(true);
-                trackSymbol = document.getElementById('containerSymbolGroup3').lastChild as HTMLElement;
-                expect(trackSymbol.id.indexOf('Trackball') > 0).toBe(true);
+                // Track ball elements are appended into svg instead of series group element.
+                let trackSymbol: NodeListOf<Element> = document.querySelectorAll('.EJ2-Trackball');
+                expect(trackSymbol.length === 8).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;

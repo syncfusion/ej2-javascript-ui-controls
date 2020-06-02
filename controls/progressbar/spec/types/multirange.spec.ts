@@ -228,4 +228,162 @@ describe('ProgressBar Control', () => {
             progress.refresh();
         });
     });
+    describe('ProgressBar rangeColor & gradient for linear', () => {
+        let progress: ProgressBar;
+        let element: HTMLElement;
+        let path: Element;
+        let strokeColor: string;
+        let loaded: EmitType<ILoadedEventArgs>;
+        beforeAll((): void => {
+            element = createElement('div', { id: 'container' });
+            document.body.appendChild(element);
+            progress = new ProgressBar({
+                type: 'Linear',
+                value: 100,
+                rangeColors: [{ color: "green", start: 0, end: 10 }, { color: "blue", start: 10, end: 40 }, 
+                { color: "red", start: 40, end: 60 }, { color: "yellow", start: 60, end: 100 },],
+            });
+            progress.appendTo('#container');
+        });
+        afterAll((): void => {
+            progress.destroy();
+            element.remove();
+        });
+        it('checking rangecolor for linear', () => {
+            loaded = (args: Object): void => {
+                path = document.getElementById('container_LinearRange_0');
+                strokeColor = path.getAttribute('stroke');
+                expect(strokeColor === 'green').toBe(true);
+            }
+            progress.loaded = loaded;
+            progress.refresh();
+        });
+        it('checking rangecolor for linear', () => {
+            loaded = (args: Object): void => {
+                path = document.getElementById('container_LinearRange_1');
+                strokeColor = path.getAttribute('stroke');
+                expect(strokeColor === 'blue').toBe(true);
+            }
+            progress.loaded = loaded;
+            progress.refresh();
+        });
+        it('checking rangecolor for linear', () => {
+            loaded = (args: Object): void => {
+                path = document.getElementById('container_LinearRange_2');
+                strokeColor = path.getAttribute('stroke');
+                expect(strokeColor === 'red').toBe(true);
+            }
+            progress.loaded = loaded;
+            progress.refresh();
+        });
+        it('checking rangecolor for linear', () => {
+            loaded = (args: Object): void => {
+                path = document.getElementById('container_LinearRange_3');
+                strokeColor = path.getAttribute('stroke');
+                expect(strokeColor === 'yellow').toBe(true);
+            }
+            progress.loaded = loaded;
+            progress.refresh();
+        });
+        it('checking gradient for linear', () => {
+            loaded = (args: Object): void => {
+                path = document.getElementById('container_LinearRange_3');
+                strokeColor = path.getAttribute('stroke');
+                expect(strokeColor === 'url(#lineRangeGrad_3)').toBe(true);
+            }
+            progress.isGradient = true;
+            progress.loaded = loaded;
+            progress.refresh();
+        });
+        it('checking rangecolor for linear in RTL', () => {
+            loaded = (args: Object): void => {
+                path = document.getElementById('container_LinearRange_3');
+                strokeColor = path.getAttribute('stroke');
+                expect(strokeColor === 'yellow').toBe(true);
+            }
+            progress.isGradient = false;
+            progress.enableRtl = true;
+            progress.loaded = loaded;
+            progress.refresh();
+        });
+    });
+    describe('ProgressBar rangeColor for circular', () => {
+        let progress: ProgressBar;
+        let element: HTMLElement;
+        let path: Element;
+        let strokeColor: string;
+        let loaded: EmitType<ILoadedEventArgs>;
+        beforeAll((): void => {
+            element = createElement('div', { id: 'container' });
+            document.body.appendChild(element);
+            progress = new ProgressBar({
+                type: 'Circular',
+                value: 100,
+                rangeColors: [{ color: "green", start: 0, end: 10 }, { color: "blue", start: 10, end: 40 }, 
+                { color: "red", start: 40, end: 60 }, { color: "yellow", start: 60, end: 100 },],
+            });
+            progress.appendTo('#container');
+        });
+        afterAll((): void => {
+            progress.destroy();
+            element.remove();
+        });
+        it('checking rangecolor for circular', () => {
+            loaded = (args: Object): void => {
+                path = document.getElementById('container_CircularRange_0');
+                strokeColor = path.getAttribute('stroke');
+                expect(strokeColor === 'green').toBe(true);
+            }
+            progress.loaded = loaded;
+            progress.refresh();
+        });
+        it('checking rangecolor for circular', () => {
+            loaded = (args: Object): void => {
+                path = document.getElementById('container_CircularRange_1');
+                strokeColor = path.getAttribute('stroke');
+                expect(strokeColor === 'blue').toBe(true);
+            }
+            progress.loaded = loaded;
+            progress.refresh();
+        });
+        it('checking rangecolor for linear', () => {
+            loaded = (args: Object): void => {
+                path = document.getElementById('container_CircularRange_2');
+                strokeColor = path.getAttribute('stroke');
+                expect(strokeColor === 'red').toBe(true);
+            }
+            progress.loaded = loaded;
+            progress.refresh();
+        });
+        it('checking rangecolor for circular', () => {
+            loaded = (args: Object): void => {
+                path = document.getElementById('container_CircularRange_3');
+                strokeColor = path.getAttribute('stroke');
+                expect(strokeColor === 'yellow').toBe(true);
+            }
+            progress.loaded = loaded;
+            progress.refresh();
+        });
+        it('checking gradient for circular', () => {
+            loaded = (args: Object): void => {
+                path = document.getElementById('container_CircularRange_3');
+                strokeColor = path.getAttribute('stroke');
+                expect(strokeColor === 'url(#circleRangeGrad_3)').toBe(true);
+            }
+            progress.isGradient = true;
+            progress.loaded = loaded;
+            progress.refresh();
+        });
+        it('checking rangecolor for circular in RTL', () => {
+            loaded = (args: Object): void => {
+                path = document.getElementById('container_CircularRange_3');
+                strokeColor = path.getAttribute('stroke');
+                expect(strokeColor === 'yellow').toBe(true);
+            }
+            progress.isGradient = false;
+            progress.enableRtl = true;
+            progress.loaded = loaded;
+            progress.refresh();
+        });
+    });
 });

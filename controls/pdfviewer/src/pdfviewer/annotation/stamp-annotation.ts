@@ -246,7 +246,7 @@ export class StampAnnotation {
         X = X / zoomFactor;
         Y = Y / zoomFactor;
         // tslint:disable-next-line:max-line-length
-        let author : string = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.stampSettings.author ? this.pdfViewer.stampSettings.author : 'Guest';
+        let author: string = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.stampSettings.author ? this.pdfViewer.stampSettings.author : 'Guest';
         if (this.pdfViewerBase.isDynamicStamp) {
             // tslint:disable-next-line
             let today: any = (new Date()).toString().split(' ').splice(1, 3).join(' ');
@@ -344,7 +344,6 @@ export class StampAnnotation {
             let positions: IRectCollection = { width: customStampWidth, height: customStampHeight, left: customStampleft, top: customStamptop };
             // tslint:disable-next-line
             let currentDate: any = new Date().toLocaleDateString();
-            // tslint:disable-next-line:max-line-length
             // tslint:disable-next-line
             let modifiedDate: any = this.pdfViewer.stampSettings.modifiedDate !== '' ? this.pdfViewer.stampSettings.modifiedDate : new Date().toLocaleString();
             let rotationAngle: number = 0;
@@ -446,7 +445,7 @@ export class StampAnnotation {
                 // tslint:disable-next-line:max-line-length
                 shapeAnnotationType: 'Stamp', strokeColor: annotation.strokeColor, fillColor: annotation.fillColor, opacity: annotation.Opacity, stampFillColor: annotation.stampFillColor, stampStrokeColor: annotation.stampStrokeColor, rotateAngle: annotation.RotateAngle, isDynamicStamp: this.pdfViewerBase.isDynamicStamp, dynamicText: this.dynamicText, annotName: annotation.AnnotName, notes: annotation.Note,
                 comments: annotation.Comments, review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author }, subject: annotation.iconName,
-                annotationSelectorSettings: annotation.AnnotationSelectorSettings,  annotationSettings: annotation.AnnotationSettings,
+                annotationSelectorSettings: annotation.AnnotationSelectorSettings, annotationSettings: annotation.AnnotationSettings,
                 annotationAddMode: existingAnnotation.annotationAddMode
             };
             annotationObject = {
@@ -486,7 +485,7 @@ export class StampAnnotation {
      * @private
      */
     // tslint:disable-next-line
-    public getSettings(annotation : any) : any {
+    public getSettings(annotation: any): any {
         let selector: AnnotationSelectorSettingsModel = this.pdfViewer.annotationSelectorSettings;
         if (annotation.AnnotationSelectorSettings) {
             selector = annotation.AnnotationSelectorSettings;
@@ -529,7 +528,7 @@ export class StampAnnotation {
             annotation.RotateAngle = 0;
         }
         // tslint:disable-next-line
-        let annotationSelectorSettings: any = this.pdfViewer.stampSettings.annotationSelectorSettings ? this.pdfViewer.stampSettings.annotationSelectorSettings: this.pdfViewer.annotationSelectorSettings;
+        let annotationSelectorSettings: any = this.pdfViewer.stampSettings.annotationSelectorSettings ? this.pdfViewer.stampSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
         if (annotation.shapeAnnotationType === 'Image') {
             // tslint:disable-next-line:max-line-length
             annotation.Author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.customStampSettings.author ? this.pdfViewer.customStampSettings.author : 'Guest';
@@ -638,7 +637,7 @@ export class StampAnnotation {
         };
         this.currentStampAnnotation = annot;
         // tslint:disable-next-line
-        let annotationSelectorSettings: any = this.pdfViewer.stampSettings.annotationSelectorSettings ? this.pdfViewer.stampSettings.annotationSelectorSettings: this.pdfViewer.annotationSelectorSettings;
+        let annotationSelectorSettings: any = this.pdfViewer.stampSettings.annotationSelectorSettings ? this.pdfViewer.stampSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
         if (isExistingStamp) {
             annotationObject = {
                 // tslint:disable-next-line:max-line-length
@@ -1252,25 +1251,25 @@ export class StampAnnotation {
     }
     // tslint:disable-next-line
     private getAnnotations(pageIndex: number, shapeAnnotations: any[]): any[] {
-            // tslint:disable-next-line
-            let annotationCollection: any[];
-            // tslint:disable-next-line
-            let storeObject: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_annotations_stamp');
-            if (this.pdfViewerBase.isStorageExceed) {
-                storeObject = this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_stamp'];
-            }
-            if (storeObject) {
-                let annotObject: IPageAnnotations[] = JSON.parse(storeObject);
-                let index: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, pageIndex);
-                if (annotObject[index]) {
-                    annotationCollection = annotObject[index].annotations;
-                } else {
-                    annotationCollection = shapeAnnotations;
-                }
+        // tslint:disable-next-line
+        let annotationCollection: any[];
+        // tslint:disable-next-line
+        let storeObject: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_annotations_stamp');
+        if (this.pdfViewerBase.isStorageExceed) {
+            storeObject = this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_stamp'];
+        }
+        if (storeObject) {
+            let annotObject: IPageAnnotations[] = JSON.parse(storeObject);
+            let index: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, pageIndex);
+            if (annotObject[index]) {
+                annotationCollection = annotObject[index].annotations;
             } else {
                 annotationCollection = shapeAnnotations;
             }
-            return annotationCollection;
+        } else {
+            annotationCollection = shapeAnnotations;
+        }
+        return annotationCollection;
     }
     /**
      * @private

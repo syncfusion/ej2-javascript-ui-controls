@@ -1712,6 +1712,13 @@ export class DropDownList extends DropDownBase implements IInput {
                 },
                 this.createElement
             );
+            if (!isNullOrUndefined(this.cssClass)) {
+                if (this.cssClass.split(' ').indexOf('e-outline') !== -1) {
+                    addClass([this.filterInputObj.container], 'e-outline');
+                } else if (this.cssClass.split(' ').indexOf('e-filled') !== -1) {
+                    addClass([this.filterInputObj.container], 'e-filled');
+                }
+            }
             append([this.filterInputObj.container], parentElement);
             prepend([parentElement], popupElement);
             attributes(this.filterInput, {
@@ -2756,7 +2763,8 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.renderHightSearch();
             }
             this.initRemoteRender = false;
-            this.serverBlazorUpdateSelection();
+            if (!this.isPopupOpen) { this.serverBlazorUpdateSelection(); }
+            this.unWireListEvents();
             this.wireListEvents();
             if (this.isServerIncrementalSearch && this.searchKeyEvent) {
                 this.isServerIncrementalSearch = false;

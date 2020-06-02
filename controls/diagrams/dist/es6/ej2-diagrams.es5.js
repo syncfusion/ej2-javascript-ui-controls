@@ -22873,6 +22873,7 @@ var ConnectTool = /** @__PURE__ @class */ (function (_super) {
                         if (!isBlazor()) return [3 /*break*/, 2];
                         trigger = DiagramEvent.connectionChange;
                         temparg = void 0;
+                        if (!this.tempArgs) return [3 /*break*/, 2];
                         this.tempArgs.state = 'Changed';
                         connector = args.source.connectors[0];
                         nodeEndId = this.endPoint === 'ConnectorSourceEnd' ? 'sourceID' : 'targetID';
@@ -28167,7 +28168,8 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
         }
     };
     /** @private */
-    CommandHandler.prototype.addLayer = function (layer, objects) {
+    CommandHandler.prototype.addLayer = function (layer, objects, isClone) {
+        if (isClone === void 0) { isClone = false; }
         layer.id = layer.id || randomId();
         layer.zIndex = this.diagram.layers.length;
         this.diagram.enableServerDataBinding(false);
@@ -28176,7 +28178,9 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
         layer.objectZIndex = -1;
         layer.zIndexTable = {};
         this.diagram.layers.push(layer);
-        this.UpdateBlazorDiagramModelLayers(layer);
+        if (isClone) {
+            this.UpdateBlazorDiagramModelLayers(layer);
+        }
         this.diagram.layerZIndexTable[layer.zIndex] = layer.id;
         this.diagram.activeLayer = layer;
         var layers = layer.objects;
@@ -28255,7 +28259,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             var newlayer = {
                 id: layerName + '_' + randomId(), objects: [], visible: true, lock: false
             };
-            this.addLayer(newlayer);
+            this.addLayer(newlayer, null, true);
             newlayer.zIndex = this.diagram.layers.length - 1;
             for (var _i = 0, _a = layer.objects; _i < _a.length; _i++) {
                 var obj = _a[_i];
@@ -31416,6 +31420,9 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                 element: cloneBlazorObject(cloneObject(node)), state: (node.isExpanded) ? true : false
             };
             this.triggerEvent(DiagramEvent.expandStateChange, arg);
+            if (this.diagram.lineRoutingModule && this.diagram.constraints & DiagramConstraints.LineRouting) {
+                this.diagram.resetSegments();
+            }
         }
         return objects;
     };
@@ -34340,6 +34347,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
      * @param {LayerModel} layer - defines the layer model which is to be added
      * @param {Object[]} layerObject - defines the object of the layer
      * @blazorArgsType layer|DiagramLayer
+     * @deprecated
      */
     Diagram.prototype.addLayer = function (layer, layerObject) {
         this.commandHandler.addLayer(layer, layerObject);
@@ -34347,6 +34355,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
     /**
      * remove the layer from diagram
      * @param {string} layerId - define the id of the layer
+     * @deprecated
      */
     Diagram.prototype.removeLayer = function (layerId) {
         this.commandHandler.removeLayer(layerId);
@@ -37276,7 +37285,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 id: 'default_layer', visible: true, lock: false, objects: [], zIndex: 0,
                 objectZIndex: -1, zIndexTable: {}
             };
-            this.commandHandler.addLayer(defaultLayer);
+            this.commandHandler.addLayer(defaultLayer, null, true);
         }
         this.setActiveLayer(this.layers[this.layers.length - 1].id);
     };
@@ -48246,6 +48255,9 @@ var LayoutAnimation = /** @__PURE__ @class */ (function () {
                 element: cloneBlazorObject(cloneObject(node)), state: (node.isExpanded) ? true : false
             };
             diagram.triggerEvent(DiagramEvent.expandStateChange, arg);
+            if (diagram.lineRoutingModule && diagram.constraints & DiagramConstraints.LineRouting) {
+                diagram.resetSegments();
+            }
         }
     };
     /**
@@ -48313,7 +48325,7 @@ var LineRouting = /** @__PURE__ @class */ (function () {
         if (length > 0) {
             for (var k = 0; k < length; k++) {
                 var connector = diagram.connectors[k];
-                if (connector.type === 'Orthogonal') {
+                if (connector.type === 'Orthogonal' && connector.visible) {
                     this.refreshConnectorSegments(diagram, connector, true);
                 }
             }
@@ -48370,7 +48382,7 @@ var LineRouting = /** @__PURE__ @class */ (function () {
         var node;
         for (var i = 0; i < nodes.length; i++) {
             node = nodes[i];
-            if (node.shape.type !== 'SwimLane' && !node.isLane && !node.isPhase && !node.isHeader) {
+            if (node.shape.type !== 'SwimLane' && !node.isLane && !node.isPhase && !node.isHeader && node.visible) {
                 objects.push(node);
             }
         }

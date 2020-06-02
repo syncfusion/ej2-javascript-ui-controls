@@ -392,6 +392,13 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     @Property(false)
     public enablePersistence: boolean;
     /**
+     * Defines whether to allow the cross-scripting site or not.
+     * @default false
+     * @deprecated
+     */
+    @Property(false)
+    public enableHtmlSanitizer: boolean;
+    /**
      * Specifies whether to show the close button for header items to remove the item from the Tab.
      * @default false
      */
@@ -1039,6 +1046,9 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     private getContent(ele: HTEle, cnt: Str | HTEle, callType: string, index: number): void {
         let eleStr: Str;
         if (typeof cnt === 'string' || isNOU((<HTEle>cnt).innerHTML)) {
+            if (typeof cnt === 'string' && this.enableHtmlSanitizer) {
+                cnt = SanitizeHtmlHelper.sanitize(<Str>cnt);
+            }
             if ((<Str>cnt)[0] === '.' || (<Str>cnt)[0] === '#') {
                 if (document.querySelectorAll(<string>cnt).length) {
                     let eleVal: HTEle = <HTEle>document.querySelector(<string>cnt);

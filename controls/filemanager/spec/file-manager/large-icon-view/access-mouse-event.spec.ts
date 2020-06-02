@@ -145,5 +145,41 @@ describe('FileManager control Grid view', () => {
                 }, 400);
             }, 500);
         });
+        it('Select the already selected tree nodes', (done: Function) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileAccessOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+                selectedItems: ['Downloads']
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(accessData1)
+            });
+            setTimeout(function () {
+                let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+                let treeLi: any = treeObj.element.querySelectorAll('li');
+                let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
+                expect(treeLi.length).toEqual(5);
+                expect(largeLi.length).toEqual(9);
+                expect(feObj.element.getElementsByClassName("e-toolbar-item")[0].classList.contains("e-hidden")).toBe(true);
+                mouseEventArgs.target = treeLi[0].querySelector('.e-fullrow');
+                treeObj.touchClickObj.tap(tapEvent);
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(accessData3)
+                });
+                setTimeout(function () {
+                    expect(feObj.element.getElementsByClassName("e-toolbar-item")[0].classList.contains("e-hidden")).toBe(false);
+                    done();
+                }, 400);
+            }, 500);
+        });
     });
 });

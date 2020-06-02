@@ -274,6 +274,13 @@ export class CheckBoxSelection {
                 },
                 this.parent.createElement
             );
+            if (!isNullOrUndefined(this.parent.cssClass)) {
+                if (this.parent.cssClass.split(' ').indexOf('e-outline') !== -1) {
+                    addClass([this.filterInputObj.container], 'e-outline');
+                } else if (this.parent.cssClass.split(' ').indexOf('e-filled') !== -1) {
+                    addClass([this.filterInputObj.container], 'e-filled');
+                }
+            }
             append([this.filterInputObj.container], this.parent.filterParent);
             prepend([this.parent.filterParent], args.popupElement);
             attributes(this.filterInput, {

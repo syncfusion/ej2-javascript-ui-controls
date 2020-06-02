@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.55 (2020-06-02)
+
+### TreeGrid
+
+#### Bug Fixes
+
+- `#278266` - Edit type `dropdownedit` is working properly in cell edit mode when enter key is pressed.
+
 ## 18.1.54 (2020-05-26)
 
 ### TreeGrid

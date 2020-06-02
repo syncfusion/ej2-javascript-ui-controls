@@ -120,9 +120,14 @@ export class FormFields {
             if (currentElement) {
                 if (formFields.isReadOnly) {
                     currentElement.disabled = true;
+                    currentElement.style.backgroundColor = '';
                     currentElement.style.cursor = 'default';
                 } else {
+                    if (currentElement.style.backgroundColor === '') {
+                        currentElement.style.backgroundColor = 'rgba(0, 20, 200, 0.2)';
+                    }
                     currentElement.disabled = false;
+                    currentElement.style.cursor = '';
                 }
             }
         }
@@ -506,6 +511,9 @@ export class FormFields {
             inputField.value = data.Text;
         } else {
             inputField.value = '';
+        }
+        if (!this.pdfViewer.enableAutoComplete) {
+            inputField.autocomplete = 'off';
         }
         inputField.name = data.FieldName;
         return inputField;

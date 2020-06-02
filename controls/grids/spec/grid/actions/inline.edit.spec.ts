@@ -2932,4 +2932,50 @@ describe('Inline Editing module', () => {
         });
     });
 
+    describe('EJ2-39811 - Need to maintain the edit form actionBegin Event', () => {
+        let gridObj: Grid;
+        let actionBegin: () => void;
+        let preventDefault: Function = new Function();
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: dataSource(),
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal',},
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    allowPaging: true,
+                    columns: [
+                        { field: 'OrderID', type: 'number', isPrimaryKey: true },
+                        { field: 'CustomerID', type: 'string' },
+                        { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit' },
+                        { field: 'ShipCountry', type: 'string', editType: 'dropdownedit' },
+                        { field: 'OrderDate', format: { skeleton: 'yMd', type: 'date' }, type: 'date', editType: 'datepickeredit' }
+                    ],
+                    actionBegin: actionBegin,
+                }, done);
+        });
+
+        it('Cancel botton check', (done: Function) => {
+            actionBegin = (args?: any): void => {               
+                if (args.requestType === 'cancel') {
+                    args.cancel = true;
+                    done();
+                }
+            };
+            let cell: HTMLElement= gridObj.element.querySelector('.e-content').querySelector('table').rows[0].childNodes[1] as any;
+            cell.click();
+            gridObj.keyboardModule.keyAction({ action: 'f2', preventDefault: preventDefault, target: cell } as any);
+            gridObj.element.querySelectorAll('.e-valid-input')[1].querySelector('input').innerText = 'JHON';
+            let cancel = gridObj.element.querySelector('#' + gridObj.element.id + '_cancel') as HTMLElement;
+            gridObj.actionBegin = actionBegin;
+            cancel.click();
+        });
+        it('check the edit form', () => {
+            expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(1);
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
 });

@@ -153,6 +153,20 @@ export class Toolbar {
         }
     }
     /**
+     * Shows /hides the annotation toolbar in the PdfViewer
+     * @param  {boolean} enableAnnotationToolbar - If set true , its show the annotation Toolbar
+     * @returns void
+     */
+    public showAnnotationToolbar(enableAnnotationToolbar: boolean): void {
+        if (enableAnnotationToolbar) {
+            this.annotationToolbarModule.isToolbarHidden = true;
+            this.annotationToolbarModule.showAnnotationToolbar();
+        } else {
+            this.annotationToolbarModule.isToolbarHidden = false;
+            this.annotationToolbarModule.showAnnotationToolbar();
+        }
+    }
+    /**
      * Shows /hides the the toolbar items in the PdfViewer
      * @param  {string[]} items - Defines the toolbar items in the toolbar
      * @param  {boolean} isVisible - If set true, then its show the toolbar Items

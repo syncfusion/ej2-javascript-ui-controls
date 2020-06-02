@@ -348,7 +348,7 @@ var DropDownBase = /** @class */ (function (_super) {
     };
     DropDownBase.prototype.l10nUpdate = function (actionFailure) {
         var ele = this.getModuleName() === 'listbox' ? this.ulElement : this.list;
-        if (this.noRecordsTemplate !== 'No Records Found' || this.actionFailureTemplate !== 'The Request Failed') {
+        if (this.noRecordsTemplate !== 'No records found' || this.actionFailureTemplate !== 'Request failed') {
             this.DropDownBaseresetBlazorTemplates(false, false, true, true);
             var template = actionFailure ? this.actionFailureTemplate : this.noRecordsTemplate;
             var compiledString = void 0;
@@ -368,7 +368,7 @@ var DropDownBase = /** @class */ (function (_super) {
             this.DropDownBaseupdateBlazorTemplates(false, false, !actionFailure, actionFailure, false, false, false, false);
         }
         else {
-            var l10nLocale = { noRecordsTemplate: 'No Records Found', actionFailureTemplate: 'The Request Failed' };
+            var l10nLocale = { noRecordsTemplate: 'No records found', actionFailureTemplate: 'Request failed' };
             var componentLocale = new sf.base.L10n(this.getLocaleName(), {}, this.locale);
             if (componentLocale.getConstant('actionFailureTemplate') !== '') {
                 this.l10n = componentLocale;
@@ -1262,10 +1262,10 @@ var DropDownBase = /** @class */ (function (_super) {
         sf.base.Property(null)
     ], DropDownBase.prototype, "groupTemplate", void 0);
     __decorate([
-        sf.base.Property('No Records Found')
+        sf.base.Property('No records found')
     ], DropDownBase.prototype, "noRecordsTemplate", void 0);
     __decorate([
-        sf.base.Property('The Request Failed')
+        sf.base.Property('Request failed')
     ], DropDownBase.prototype, "actionFailureTemplate", void 0);
     __decorate([
         sf.base.Property('None')
@@ -2745,6 +2745,14 @@ var DropDownList = /** @class */ (function (_super) {
                     [dropDownListClasses.backIcon, dropDownListClasses.filterBarClearIcon] : [dropDownListClasses.filterBarClearIcon],
                 properties: { placeholder: this.filterBarPlaceholder }
             }, this.createElement);
+            if (!sf.base.isNullOrUndefined(this.cssClass)) {
+                if (this.cssClass.split(' ').indexOf('e-outline') !== -1) {
+                    sf.base.addClass([this.filterInputObj.container], 'e-outline');
+                }
+                else if (this.cssClass.split(' ').indexOf('e-filled') !== -1) {
+                    sf.base.addClass([this.filterInputObj.container], 'e-filled');
+                }
+            }
             sf.base.append([this.filterInputObj.container], parentElement);
             sf.base.prepend([parentElement], popupElement);
             sf.base.attributes(this.filterInput, {
@@ -3862,7 +3870,10 @@ var DropDownList = /** @class */ (function (_super) {
                 this.renderHightSearch();
             }
             this.initRemoteRender = false;
-            this.serverBlazorUpdateSelection();
+            if (!this.isPopupOpen) {
+                this.serverBlazorUpdateSelection();
+            }
+            this.unWireListEvents();
             this.wireListEvents();
             if (this.isServerIncrementalSearch && this.searchKeyEvent) {
                 this.isServerIncrementalSearch = false;
@@ -4603,6 +4614,10 @@ var DropDownTree = /** @class */ (function (_super) {
         sf.base.EventHandler.add(this.inputWrapper, 'mouseout', this.onMouseLeave, this);
         sf.base.EventHandler.add(this.overAllClear, 'mousedown', this.clearAll, this);
         sf.base.EventHandler.add(window, 'resize', this.windowResize, this);
+        var formElement = sf.base.closest(this.inputWrapper, 'form');
+        if (formElement) {
+            sf.base.EventHandler.add(formElement, 'reset', this.resetValueHandler, this);
+        }
         this.keyboardModule = new sf.base.KeyboardEvents(this.inputWrapper, {
             keyAction: this.keyActionHandler.bind(this),
             keyConfigs: this.keyConfigs,
@@ -4632,6 +4647,10 @@ var DropDownTree = /** @class */ (function (_super) {
         sf.base.EventHandler.remove(this.inputWrapper, 'mouseout', this.onMouseLeave);
         sf.base.EventHandler.remove(this.overAllClear, 'mousedown', this.clearAll);
         sf.base.EventHandler.remove(window, 'resize', this.windowResize);
+        var formElement = sf.base.closest(this.inputWrapper, 'form');
+        if (formElement) {
+            sf.base.EventHandler.remove(formElement, 'reset', this.resetValueHandler);
+        }
     };
     /* Trigger when the dropdown is clicked */
     DropDownTree.prototype.dropDownClick = function (e) {
@@ -4876,6 +4895,12 @@ var DropDownTree = /** @class */ (function (_super) {
             this.popupObj.refreshPosition();
         }
     };
+    DropDownTree.prototype.resetValueHandler = function (e) {
+        var formElement = sf.base.closest(this.inputWrapper, 'form');
+        if (formElement && e.target === formElement) {
+            this.resetValue(true);
+        }
+    };
     DropDownTree.prototype.getAriaAttributes = function () {
         var disable = this.enabled ? 'false' : 'true';
         return {
@@ -4889,9 +4914,16 @@ var DropDownTree = /** @class */ (function (_super) {
         };
     };
     DropDownTree.prototype.createHiddenElement = function () {
-        this.hiddenElement = this.createElement('select', {
-            attrs: { 'aria-hidden': 'true', 'tabindex': '-1', 'class': HIDDENELEMENT }
-        });
+        if (this.allowMultiSelection || this.showCheckBox) {
+            this.hiddenElement = this.createElement('select', {
+                attrs: { 'aria-hidden': 'true', 'class': HIDDENELEMENT, 'tabindex': '-1', 'multiple': '' }
+            });
+        }
+        else {
+            this.hiddenElement = this.createElement('select', {
+                attrs: { 'aria-hidden': 'true', 'tabindex': '-1', 'class': HIDDENELEMENT }
+            });
+        }
         sf.base.prepend([this.hiddenElement], this.inputWrapper);
         this.validationAttribute();
     };
@@ -5331,10 +5363,10 @@ var DropDownTree = /** @class */ (function (_super) {
             }
             if (!isCancelled) {
                 sf.base.attributes(_this.inputWrapper, { 'aria-expanded': 'true' });
-                _this.popupObj.show();
-                _this.popupObj.refreshPosition();
+                _this.popupObj.show(null, (_this.zIndex === 1000) ? _this.inputEle : null);
                 _this.popupEle.style.display = 'block';
                 _this.updatePopupHeight();
+                _this.popupObj.refreshPosition();
                 if (!(_this.showCheckBox && _this.showSelectAll) && (!_this.popupDiv.classList.contains(NODATA)
                     && _this.treeItems.length > 0)) {
                     _this.treeObj.element.focus();
@@ -5382,6 +5414,7 @@ var DropDownTree = /** @class */ (function (_super) {
             this.popupObj = new sf.popups.Popup(element, {
                 width: this.setWidth(),
                 targetType: 'relative',
+                collision: { X: 'flip', Y: 'flip' },
                 relateTo: this.inputWrapper,
                 zIndex: this.zIndex,
                 enableRtl: this.enableRtl,
@@ -5393,6 +5426,11 @@ var DropDownTree = /** @class */ (function (_super) {
                     sf.base.EventHandler.add(document, 'mousedown', _this.onDocumentClick, _this);
                     _this.isPopupOpen = true;
                 },
+                targetExitViewport: function () {
+                    if (!sf.base.Browser.isDevice) {
+                        _this.hidePopup();
+                    }
+                }
             });
         }
     };
@@ -6269,6 +6307,7 @@ var DropDownTree = /** @class */ (function (_super) {
     DropDownTree.prototype.updateMultiSelection = function (state) {
         this.treeObj.allowMultiSelection = state;
         this.treeObj.dataBind();
+        this.updateOption();
         if (this.allowMultiSelection) {
             this.updateMode();
         }
@@ -6316,6 +6355,14 @@ var DropDownTree = /** @class */ (function (_super) {
         }
         this.updateMode();
         this.setMultiSelect();
+    };
+    DropDownTree.prototype.updateOption = function () {
+        if (!this.hiddenElement.hasAttribute('multiple') && (this.allowMultiSelection || this.showCheckBox)) {
+            this.hiddenElement.setAttribute('multiple', '');
+        }
+        else if (this.hiddenElement.hasAttribute('multiple') && (!this.allowMultiSelection && !this.showCheckBox)) {
+            this.hiddenElement.removeAttribute('multiple');
+        }
     };
     /**
      * Dynamically change the value of properties.
@@ -6403,6 +6450,7 @@ var DropDownTree = /** @class */ (function (_super) {
                 case 'showCheckBox':
                     this.updateCheckBoxState(newProp.showCheckBox);
                     this.updatePopupHeight();
+                    this.updateOption();
                     break;
                 case 'treeSettings':
                     this.updateTreeSettings(newProp);
@@ -10869,8 +10917,8 @@ var MultiSelect = /** @class */ (function (_super) {
             var overAllContainer = void 0;
             this.viewWrapper.innerHTML = '';
             var l10nLocale = {
-                noRecordsTemplate: 'No Records Found',
-                actionFailureTemplate: 'The Request Failed',
+                noRecordsTemplate: 'No records found',
+                actionFailureTemplate: 'Request failed',
                 overflowCountTemplate: '+${count} more..',
                 totalCountTemplate: '${count} selected'
             };
@@ -11694,10 +11742,10 @@ var MultiSelect = /** @class */ (function (_super) {
         sf.base.Property(null)
     ], MultiSelect.prototype, "groupTemplate", void 0);
     __decorate$5([
-        sf.base.Property('No Records Found')
+        sf.base.Property('No records found')
     ], MultiSelect.prototype, "noRecordsTemplate", void 0);
     __decorate$5([
-        sf.base.Property('The Request Failed')
+        sf.base.Property('Request failed')
     ], MultiSelect.prototype, "actionFailureTemplate", void 0);
     __decorate$5([
         sf.base.Property('None')
@@ -12125,6 +12173,14 @@ var CheckBoxSelection = /** @class */ (function () {
                 buttons: backIcon ? [searchBackIcon, filterBarClearIcon] : [filterBarClearIcon],
                 properties: { placeholder: this.parent.filterBarPlaceholder }
             }, this.parent.createElement);
+            if (!sf.base.isNullOrUndefined(this.parent.cssClass)) {
+                if (this.parent.cssClass.split(' ').indexOf('e-outline') !== -1) {
+                    sf.base.addClass([this.filterInputObj.container], 'e-outline');
+                }
+                else if (this.parent.cssClass.split(' ').indexOf('e-filled') !== -1) {
+                    sf.base.addClass([this.filterInputObj.container], 'e-filled');
+                }
+            }
             sf.base.append([this.filterInputObj.container], this.parent.filterParent);
             sf.base.prepend([this.parent.filterParent], args.popupElement);
             sf.base.attributes(this.filterInput, {
@@ -14448,10 +14504,10 @@ var ListBox = /** @class */ (function (_super) {
         sf.base.Property(null)
     ], ListBox.prototype, "groupTemplate", void 0);
     __decorate$6([
-        sf.base.Property('No Records Found')
+        sf.base.Property('No records found')
     ], ListBox.prototype, "noRecordsTemplate", void 0);
     __decorate$6([
-        sf.base.Property('The Request Failed')
+        sf.base.Property('Request failed')
     ], ListBox.prototype, "actionFailureTemplate", void 0);
     __decorate$6([
         sf.base.Property(1000)

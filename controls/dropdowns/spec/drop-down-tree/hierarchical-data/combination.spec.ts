@@ -876,6 +876,60 @@ describe('DropDown Tree control hierarchical datasource', () => {
         });
     });
     describe('combinational testing', () => {
+        let element: HTMLInputElement;
+        let ddtTreeObj: any;
+        beforeAll(() => {
+            element = <HTMLInputElement>createElement('form', { id: 'form1' });
+            element.innerHTML = `<input type="text" id="ddt">
+            <input type="reset" id="resetForm"/>`;
+            document.body.appendChild(element);
+            ddtTreeObj = new DropDownTree({ 
+                fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child" },
+                value: ['7']
+            });
+            ddtTreeObj.appendTo('#ddt');
+        });
+        afterAll(() => {
+            document.body.innerHTML = '';
+        });
+        it('reset the form with single selection', (done) => {
+            expect(ddtTreeObj.hiddenElement.querySelector('option').value).toBe('7');
+            document.getElementById('resetForm').click();
+            setTimeout(() => {
+                expect(ddtTreeObj.hiddenElement.querySelector('option')).toBe(null);
+                done();
+            });
+        });
+    });
+
+    describe('combinational testing', () => {
+        let element: HTMLInputElement;
+        let ddtTreeObj: any;
+        beforeAll(() => {
+            element = <HTMLInputElement>createElement('form', { id: 'form1' });
+            element.innerHTML = `<input type="text" id="ddt">
+            <input type="reset" id="resetForm"/>`;
+            document.body.appendChild(element);
+            ddtTreeObj = new DropDownTree({
+                fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child" },
+                value: ['7', '21'],
+                allowMultiSelection: true
+            });
+            ddtTreeObj.appendTo('#ddt');
+        });
+        afterAll(() => {
+            document.body.innerHTML = '';
+        });
+        it('reset the form with multiple selection', (done) => {
+            expect((ddtTreeObj.hiddenElement.querySelectorAll('option')[1]).value).toBe('21');
+            document.getElementById('resetForm').click();
+            setTimeout(() => {
+                expect(ddtTreeObj.hiddenElement.querySelector('option')).toBe(null);
+                done();
+            });
+        });
+    });
+    describe('combinational testing', () => {
         let ddTreeObj: any;
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdowntree' });
         element.setAttribute('name', 'ddtree');

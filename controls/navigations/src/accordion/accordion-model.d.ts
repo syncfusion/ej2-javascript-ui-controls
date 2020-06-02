@@ -193,6 +193,14 @@ export interface AccordionModel extends ComponentModel{
     expandMode?: ExpandMode;
 
     /**
+   * Defines whether to allow the cross-scripting site or not.
+   * @default false
+   * @deprecated
+   * 
+   */
+    enableHtmlSanitizer?: boolean;
+
+    /**
    * Specifies the animation configuration settings for expanding and collapsing the panel.
    * @default { expand: { effect: 'SlideDown', duration: 400, easing: 'linear' },
    * collapse: { effect: 'SlideUp', duration: 400, easing: 'linear' }}

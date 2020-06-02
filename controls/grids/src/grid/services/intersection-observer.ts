@@ -1,7 +1,7 @@
 import { EventHandler, Browser } from '@syncfusion/ej2-base';
 import { debounce } from '@syncfusion/ej2-base';
 import { SentinelInfo, SentinelType } from '../base/type';
-import { InterSection, IGrid } from '../base/interface';
+import { InterSection } from '../base/interface';
 export type ScrollDirection = 'up' | 'down' | 'right' | 'left';
 /**
  * InterSectionObserver - class watch whether it enters the viewport.
@@ -13,7 +13,6 @@ export class InterSectionObserver {
     private fromWheel: boolean = false;
     private touchMove: boolean = false;
     private options: InterSection = {};
-    private parent: IGrid;
     public sentinelInfo: SentinelInfo = {
         'up': {
             check: (rect: ClientRect, info: SentinelType) => {
@@ -46,8 +45,7 @@ export class InterSectionObserver {
             }, axis: 'X'
         }
     };
-    constructor(parent: IGrid, element: HTMLElement, options: InterSection) {
-        this.parent = parent;
+    constructor(element: HTMLElement, options: InterSection) {
         this.element = element;
         this.options = options;
     }

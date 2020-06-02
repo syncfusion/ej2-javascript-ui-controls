@@ -444,16 +444,18 @@ export class ConnectTool extends ToolBase {
         if (isBlazor()) {
             let trigger: DiagramEvent = DiagramEvent.connectionChange;
             let temparg: IBlazorConnectionChangeEventArgs;
-            this.tempArgs.state = 'Changed';
-            let connector: ConnectorModel = (args.source as SelectorModel).connectors[0];
-            let nodeEndId: string = this.endPoint === 'ConnectorSourceEnd' ? 'sourceID' : 'targetID';
-            let portEndId: string = this.endPoint === 'ConnectorSourceEnd' ? 'sourcePortID' : 'targetPortID';
-            this.tempArgs.oldValue = this.endPoint === 'ConnectorSourceEnd' ?
-                { connectorSourceValue: { nodeId: this.oldConnector[nodeEndId], portId: this.oldConnector[portEndId] } } :
-                { connectorTargetValue: { nodeId: this.oldConnector[nodeEndId], portId: this.oldConnector[portEndId] } };
-            temparg = await this.commandHandler.triggerEvent(trigger, this.tempArgs) as IBlazorConnectionChangeEventArgs;
-            if (temparg) {
-                this.commandHandler.updateConnectorValue(temparg);
+            if (this.tempArgs) {
+                this.tempArgs.state = 'Changed';
+                let connector: ConnectorModel = (args.source as SelectorModel).connectors[0];
+                let nodeEndId: string = this.endPoint === 'ConnectorSourceEnd' ? 'sourceID' : 'targetID';
+                let portEndId: string = this.endPoint === 'ConnectorSourceEnd' ? 'sourcePortID' : 'targetPortID';
+                this.tempArgs.oldValue = this.endPoint === 'ConnectorSourceEnd' ?
+                    { connectorSourceValue: { nodeId: this.oldConnector[nodeEndId], portId: this.oldConnector[portEndId] } } :
+                    { connectorTargetValue: { nodeId: this.oldConnector[nodeEndId], portId: this.oldConnector[portEndId] } };
+                temparg = await this.commandHandler.triggerEvent(trigger, this.tempArgs) as IBlazorConnectionChangeEventArgs;
+                if (temparg) {
+                    this.commandHandler.updateConnectorValue(temparg);
+                }
             }
         }
         if (!isBlazor() && this.isConnected && (args.source as SelectorModel).connectors) {

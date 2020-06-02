@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.55 (2020-06-02)
+
+### File Manager
+
+#### Bug Fixes
+
+- The issue with "The toolbar is not updated when selecting the root folder in the File Manager component" has been resolved.
+
 ## 18.1.53 (2020-05-19)
 
 ### File Manager

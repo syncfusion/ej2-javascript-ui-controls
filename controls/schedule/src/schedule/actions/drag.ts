@@ -1,5 +1,5 @@
 import { createElement, closest, Draggable, extend, formatUnit, isNullOrUndefined, BlazorDragEventArgs } from '@syncfusion/ej2-base';
-import { addClass, remove, removeClass, setStyleAttribute, isBlazor, getElement } from '@syncfusion/ej2-base';
+import { addClass, remove, removeClass, setStyleAttribute, isBlazor, getElement, Browser, EventHandler } from '@syncfusion/ej2-base';
 import { DragEventArgs, TdData, EJ2Instance } from '../base/interface';
 import { ActionBase } from '../actions/action-base';
 import * as events from '../base/constant';
@@ -30,7 +30,7 @@ export class DragAndDrop extends ActionBase {
     private isMorePopupOpened: boolean = false;
     private isAllDayDrag: boolean = false;
     public wireDragEvent(element: HTMLElement): void {
-        new Draggable(element, {
+        let dragObj: Draggable = new Draggable(element, {
             abort: '.' + cls.EVENT_RESIZE_CLASS,
             clone: true,
             isDragScroll: true,
@@ -47,6 +47,11 @@ export class DragAndDrop extends ActionBase {
             helper: this.dragHelper.bind(this),
             queryPositionInfo: this.dragPosition.bind(this)
         });
+        // tslint:disable-next-line:no-any
+        let handler: Function = (dragObj.enableTapHold && Browser.isDevice && Browser.isTouch) ? (dragObj as any).mobileInitialize :
+            // tslint:disable-next-line:no-any
+            (dragObj as any).initialize;
+        EventHandler.remove(element, 'touchstart', handler);
     }
 
     private dragHelper(e: { [key: string]: Object }): HTMLElement {

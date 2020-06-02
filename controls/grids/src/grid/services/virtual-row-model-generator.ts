@@ -195,7 +195,7 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
         let actions: string[] = ['paging', 'refresh', 'sorting', 'filtering', 'searching', 'grouping', 'ungrouping', 'reorder',
             'save', 'delete'];
         if (this.parent.getFrozenColumns() && this.parent.frozenRows && this.parent.enableColumnVirtualization && action === 'reorder') {
-            actions = ['paging', 'refresh', 'sorting', 'filtering', 'searching', 'grouping', 'ungrouping', 'save', 'delete'];
+            actions.splice(actions.indexOf(action), 1);
         }
         let clear: boolean = actions.some((value: string) => action === value);
         if (clear) {

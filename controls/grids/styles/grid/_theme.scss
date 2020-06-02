@@ -35,10 +35,27 @@
       border-right-color: $grid-header-border-color;
     }
 
+    .e-autofill {
+      background-color: $grid-autofill-color;
+    }
+
     .e-autofill,
     .e-xlsel {
+      border-color: $grid-autofill-color;
+      z-index: 1;
+    }
+
+    .e-xlsel {
+      background-color: transparent;
+      border-style: solid;
+      pointer-events: none;
+      position: absolute;
+    }
+
+    .e-xlselaf {
       background-color: $grid-autofill-color;
       border-color: $grid-autofill-color;
+      position: absolute;
     }
 
     .e-gridcontent tr.e-row:first-child .e-rowcell.e-dragborder,

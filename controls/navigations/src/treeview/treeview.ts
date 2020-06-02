@@ -3530,7 +3530,15 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         let eventArgs: NodeEditEventArgs = this.getEditEvent(liEle, newText, null);
         this.trigger('nodeEdited', eventArgs, (observedArgs: NodeEditEventArgs) => {
             newText = observedArgs.cancel ? observedArgs.oldText : observedArgs.newText;
-            let newData: { [key: string]: Object } = setValue(this.editFields.text, newText, this.editData);
+            this.updateText(liEle, txtEle, newText, isInput);
+            if (observedArgs.oldText !== newText) {
+                this.triggerEvent();
+            }
+        });
+    }
+
+    private updateText(liEle: Element, txtEle: HTMLElement, newText: string, isInput: boolean): void {
+        let newData: { [key: string]: Object } = setValue(this.editFields.text, newText, this.editData);
             if (!isNOU(this.nodeTemplateFn)) {
                 txtEle.innerText = '';
                 let tempArr: Element[] = this.nodeTemplateFn(newData, undefined, undefined, this.element.id + 'nodeTemplate',
@@ -3545,10 +3553,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 removeClass([liEle], EDITING);
                 (<HTMLElement>txtEle).focus();
             }
-            if (observedArgs.oldText !== newText) {
-                this.triggerEvent();
-            }
-        });
     }
 
     private getElement(ele: string | Element): Element {
@@ -5082,7 +5086,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 matchedArr[0][this.fields.text] = newText;
                 crud = data.update(key, matchedArr[0], query.fromTable, query) as Promise<Object>;
                 crud.then((e: any) => this.editSucess(target, newText,prevent))
-                    .catch((e: { result: Object[] }) => this.dmFailure(e as { result: Object[] }));
+                    .catch((e: { result: Object[] }) => this.dmFailure(e as { result: Object[] }, target, prevent));
                 break;
             case 'insert':
                 if (newNode.length == 1) {
@@ -5139,8 +5143,17 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
 
-    private dmFailure(e: { result: Object[] }): void {
+    private dmFailure(e: { result: Object[] }, target?: string | Element, prevent?: boolean ): void {
+        if (target) {
+            this.updatePreviousText(target, prevent);
+        }
         this.trigger('actionFailure', { error: e });
+    }
+
+    private updatePreviousText(target?: string | Element, prevent?: boolean) : void {
+        let liEle: Element = this.getElement(target);
+        let txtEle: HTMLElement = select('.' + LISTTEXT, liEle) as HTMLElement;
+        this.updateText(liEle, txtEle, this.oldText, prevent);
     }
 
     /**

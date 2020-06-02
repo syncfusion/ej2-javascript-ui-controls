@@ -687,7 +687,7 @@ export class Resize implements IAction {
         };
         let offset: OffsetPosition = elem.getBoundingClientRect();
         let doc: Document = elem.ownerDocument;
-        let offsetParent: Node = elem.offsetParent || doc.documentElement;
+        let offsetParent: Node = parentsUntil(elem, 'e-grid') || doc.documentElement;
         while (offsetParent &&
             (offsetParent === doc.body || offsetParent === doc.documentElement) &&
             (<HTMLElement>offsetParent).style.position === 'static') {

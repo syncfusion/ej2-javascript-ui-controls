@@ -41,7 +41,7 @@ export class LineRouting {
         if (length > 0) {
             for (let k: number = 0; k < length; k++) {
                 let connector: ConnectorModel = diagram.connectors[k];
-                if (connector.type === 'Orthogonal') {
+                if (connector.type === 'Orthogonal' && connector.visible) {
                     this.refreshConnectorSegments(diagram, connector as Connector, true);
                 }
             }
@@ -97,7 +97,7 @@ export class LineRouting {
         let objects: NodeModel[] = []; let node: Node;
         for (let i: number = 0; i < nodes.length; i++) {
             node = nodes[i] as Node;
-            if (node.shape.type !== 'SwimLane' && !node.isLane && !node.isPhase && !node.isHeader) {
+            if (node.shape.type !== 'SwimLane' && !node.isLane && !node.isPhase && !node.isHeader && node.visible) {
                 objects.push(node);
             }
         }

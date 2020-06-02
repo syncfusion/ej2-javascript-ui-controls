@@ -704,7 +704,7 @@ export class ConnectorLineEdit {
                     violationType = 'taskAfterPredecessor_SS';
                 }
             } else if (predecessor[i].type === 'FF') {
-                if (endDate < parentGanttRecord.ganttProperties.endDate) {
+                if (endDate <= parentGanttRecord.ganttProperties.endDate) {
                     this.validationPredecessor.push(predecessor[i]);
                     violationType = 'taskBeforePredecessor_FF';
                 } else if (endDate > parentGanttRecord.ganttProperties.endDate) {

@@ -7,7 +7,7 @@ import { Series, Points } from '../series/chart-series';
 import { LegendShape, ChartShape, ChartTheme } from '../utils/enum';
 import { AccPoints, AccumulationSeries } from '../../accumulation-chart/model/acc-base';
 import { ScrollbarSettingsRangeModel } from './chart-base-model';
-import { ChartLocation } from '../../common/utils/helper';
+import { ChartLocation, LabelLocation } from '../../common/utils/helper';
 import { ItemModel } from '@syncfusion/ej2-navigations';
 import { Size } from '@syncfusion/ej2-svg-base';
 import { AccumulationChart } from '../../accumulation-chart';
@@ -177,6 +177,8 @@ export interface ITextRenderEventArgs extends IChartEventArgs {
     template: string;
     /** Defines the current font */
     font: FontModel;
+    /** Defines the current data label position can change */
+    location: LabelLocation;
 }
 export interface IAnnotationRenderEventArgs extends IChartEventArgs {
     /** Defines the current annotation content */

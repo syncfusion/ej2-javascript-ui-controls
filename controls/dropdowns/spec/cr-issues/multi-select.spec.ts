@@ -2010,4 +2010,66 @@ describe('MultiSelect', () => {
             expect((<any>mulObj).list.querySelectorAll('li').length === 1).toBe(true);
         });
     });
+    describe('EJ2-39448', () => {
+        let mulInstance: MultiSelect;
+        let multiselectInstance: MultiSelect;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect' });
+        let sportsData: { [key: string]: Object }[] =  [
+            { Name: 'Australia', Code: 'AU' },
+            { Name: 'Bermuda', Code: 'BM' },
+            { Name: 'Canada', Code: 'CA' },
+            { Name: 'Cameroon', Code: 'CM' },
+            { Name: 'Denmark', Code: 'DK' },
+            { Name: 'France', Code: 'FR' },
+            { Name: 'Finland', Code: 'FI' },
+            { Name: 'Germany', Code: 'DE' },
+            { Name: 'Greenland', Code: 'GL' },
+            { Name: 'Hong Kong', Code: 'HK' },
+            { Name: 'India', Code: 'IN' },
+            { Name: 'Italy', Code: 'IT' },
+            { Name: 'Japan', Code: 'JP' },
+            { Name: 'Mexico', Code: 'MX' },
+            { Name: 'Norway', Code: 'NO' },
+            { Name: 'Poland', Code: 'PL' },
+            { Name: 'Switzerland', Code: 'CH' },
+            { Name: 'United Kingdom', Code: 'GB' },
+            { Name: 'United States', Code: 'US' }
+        ];
+        beforeAll(() => {
+            document.body.innerHTML = '';
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                element.remove();
+            }
+        });
+        it('Outline class for filter input', () => {
+            mulInstance = new MultiSelect({
+                dataSource: sportsData,
+                fields: { text: 'Game', value: 'Id' },
+                mode: 'CheckBox',
+                cssClass: 'e-outline',
+                headerTemplate: 'header1'
+            });
+            mulInstance.appendTo(element);
+            mulInstance.showPopup();
+            expect((<any>mulInstance).isPopupOpen()).toBe(true);
+            (<any>mulInstance).showSelectAll = true;
+            (<any>mulInstance).dataBind();
+            expect((<any>mulInstance).checkBoxSelectionModule.filterInputObj.container.classList.contains('e-outline')).toBe(true);
+        });
+        it('Outline class for filter input', () => {
+            multiselectInstance = new MultiSelect({
+                dataSource: sportsData,
+                fields: { text: 'Game', value: 'Id' },
+                mode: 'CheckBox',
+                cssClass: 'e-filled'
+            });
+            multiselectInstance.appendTo(element);
+            multiselectInstance.showPopup();
+            expect((<any>multiselectInstance).isPopupOpen()).toBe(true);
+            expect((<any>multiselectInstance).checkBoxSelectionModule.filterInputObj.container.classList.contains('e-filled')).toBe(true);
+        });
+    });
 });

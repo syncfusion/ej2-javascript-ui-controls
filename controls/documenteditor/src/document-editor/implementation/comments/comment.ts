@@ -66,6 +66,13 @@ export class CommentReviewPane {
             this.reviewPane.style.display = show ? 'block' : 'none';
         }
         if (show) {
+            let readOnly: boolean = this.owner.isReadOnly;
+            this.enableDisableToolbarItem();
+            if (readOnly) {
+                classList(this.commentPane.parent, ['e-de-cmt-protection'], []);
+            } else {
+                classList(this.commentPane.parent, [], ['e-de-cmt-protection']);
+            }
             this.commentPane.updateHeight();
         }
         if (this.owner) {
@@ -261,6 +268,9 @@ export class CommentReviewPane {
             let enable: boolean = true;
             if (this.commentPane.isEditMode) {
                 enable = !this.commentPane.isEditMode;
+            }
+            if (this.owner.isReadOnly) {
+                enable = false;
             }
             let elements: NodeListOf<Element> = this.toolbar.element.querySelectorAll('.' + 'e-de-cmt-tbr');
             this.toolbar.enableItems(elements[0].parentElement.parentElement, enable);
@@ -868,6 +878,9 @@ export class CommentView {
         if (this.comment.isReply) {
             if (!this.commentPane.isEditMode && (!isNullOrUndefined(this.comment) && !this.comment.isResolved)) {
                 this.menuBar.style.display = 'block';
+            }
+            if (this.owner.isReadOnly) {
+                this.menuBar.style.display = 'none';
             }
         }
 

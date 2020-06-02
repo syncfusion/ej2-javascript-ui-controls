@@ -272,6 +272,14 @@ export interface FilterSettingsModel {
      */
     enableCaseSensitivity?: boolean;
 
+    /**
+     * If 'showFilterBarOperator' is set to true, then it renders the dropdownlist component to select the operator
+     * in filterbar input
+     * 
+     * @default false
+     */
+    showFilterBarOperator?: boolean;
+
 }
 
 /**

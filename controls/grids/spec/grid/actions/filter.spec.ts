@@ -2310,3 +2310,106 @@ describe('Check for case sensitive ', ()=>{
         });
     });
 });
+
+describe('Filter Bar Operator feature render checking and behaviour checking', () => {
+    let gridObj: Grid;
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: normalData,
+                allowFiltering: true,
+                filterSettings: { showFilterBarOperator: true },
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', width: 120 },
+                    { field: 'CustomerID', headerText: 'Customer ID', width: 120 },
+                    { field: 'Freight', headerText: 'Freight', width: 120 },
+                    {
+                        field: 'OrderDate', headerText: 'Order Date', format: 'yMd',
+                        width: 170, allowEditing: false
+                    },
+                    {
+                        field: 'ShipCountry', headerText: 'Ship Country', width: 150,
+                        edit: { params: { popupHeight: '300px' } }
+                    },
+                    {
+                        field: 'Verified', headerText: 'boolean column'
+                    }
+                ],
+            }, done);
+    });
+    it('check for filterbar operator render', () => {
+        let inptLen: number;
+        let colLen: number;
+        inptLen = gridObj.getHeaderTable().querySelector('.e-filterbar').querySelectorAll('.e-filterbaroperator').length;
+        colLen = gridObj.columns.length;
+        expect(inptLen).toBe(colLen);
+    });
+    it('checking altdown key', () => {
+        let tar: any = (gridObj.getHeaderContent().querySelector('.e-filterbar').querySelector('.e-filtertext') as any);
+        gridObj.keyboardModule.keyAction({ action: 'altDownArrow', preventDefault: preventDefault, target: tar } as any);
+
+    });
+    it('checking altdown key', () => {
+        let popup: number = document.querySelectorAll('.e-popup').length;
+        //checking for previous interaction altdownarrow
+        expect(popup).toBe(1);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('checking for operator', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: normalData,
+                allowFiltering: true,
+                allowGrouping: true,
+                filterSettings: { showFilterBarOperator: true },
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', width: 120 },
+                    { field: 'CustomerID', headerText: 'Customer ID', width: 120 },
+                    { field: 'Freight', headerText: 'Freight', width: 120, filter: { operator: "greaterthan" } },
+                    {
+                        field: 'OrderDate', headerText: 'Order Date', format: 'yMd',
+                        width: 170, allowEditing: false
+                    },
+                    {
+                        field: 'ShipCountry', headerText: 'Ship Country', width: 150,
+                        edit: { params: { popupHeight: '300px' } }
+                    },
+                    {
+                        field: 'Verified', headerText: 'boolean column'
+                    }
+                ],
+            }, done);
+    });
+    it('initial operator checking', () => {
+        let ordeIdDrpdown: Element = gridObj.element.querySelectorAll('.e-filterbaroperator')[0];
+        let odrIdOprtorValue = (ordeIdDrpdown as any).ej2_instances[0].value;
+        expect(odrIdOprtorValue).toBe('equal');
+    });
+    it('checking for operator value  after changing in dropdown', () => {
+        let ordeIdDrpdown: Element = gridObj.element.querySelectorAll('.e-filterbaroperator')[0];
+        (ordeIdDrpdown as any).ej2_instances[0].value = 'contains';
+        let value = (gridObj.filterModule as any).getOperatorName('OrderID');
+        expect(value).toBe('contains');
+    })
+    it('checking for operator value after grouping', () => {
+        let freightDrpdown: Element = gridObj.element.querySelectorAll('.e-filterbaroperator')[2];
+        (freightDrpdown as any).ej2_instances[0].value = 'lessthanorequal';
+        gridObj.groupModule.groupColumn('Freight');
+        gridObj.groupModule.ungroupColumn('Freight');
+        expect((gridObj.filterModule as any).getOperatorName('Freight')).toBe('lessthanorequal');
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

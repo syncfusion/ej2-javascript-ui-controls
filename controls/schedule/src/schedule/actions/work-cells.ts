@@ -1,4 +1,4 @@
-import { extend, closest, isNullOrUndefined, getElement, isBlazor } from '@syncfusion/ej2-base';
+import { extend, closest, isNullOrUndefined, getElement, isBlazor, EventHandler } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
 import { CellClickEventArgs, HoverEventArgs } from '../base/interface';
 import { View } from '../base/type';
@@ -13,6 +13,7 @@ export class WorkCellInteraction {
 
     constructor(parent: Schedule) {
         this.parent = parent;
+        EventHandler.add(this.parent.element, 'mouseover', this.onHover, this);
     }
 
     public cellMouseDown(e: Event): void {
@@ -97,7 +98,7 @@ export class WorkCellInteraction {
         });
     }
 
-    public serializingData(clickArgs: CellClickEventArgs, e: Event): CellClickEventArgs {
+    private serializingData(clickArgs: CellClickEventArgs, e: Event): CellClickEventArgs {
         if (isBlazor()) {
             clickArgs.startTime = this.parent.getDateTime(clickArgs.startTime);
             clickArgs.endTime = this.parent.getDateTime(clickArgs.endTime);
@@ -111,7 +112,7 @@ export class WorkCellInteraction {
         return clickArgs;
     }
 
-    public onHover(e: MouseEvent): void {
+    private onHover(e: MouseEvent): void {
         let targetSelector: string = '.' + cls.WORK_CELLS_CLASS + ',.' + cls.TIME_SLOT_CLASS + ',.' + cls.ALLDAY_CELLS_CLASS + ',.' +
             cls.HEADER_CELLS_CLASS + ',.' + cls.RESOURCE_CELLS_CLASS + ',.' + cls.APPOINTMENT_CLASS + ',.' + cls.WEEK_NUMBER_CLASS +
             ',.' + cls.MONTH_HEADER_CLASS;
@@ -139,5 +140,9 @@ export class WorkCellInteraction {
             return true;
         }
         return false;
+    }
+
+    public destroy(): void {
+        EventHandler.remove(this.parent.element, 'mouseover', this.onHover);
     }
 }

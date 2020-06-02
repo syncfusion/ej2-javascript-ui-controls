@@ -7954,7 +7954,7 @@ class Layout {
         cell.width -= (!isLeftStyleNone) ? 0 : (cell.leftBorderWidth > 0) ? 0 : cell.leftBorderWidth;
         let lastCell = !cell.ownerTable.isBidiTable ? cell.cellIndex === cell.ownerRow.childWidgets.length - 1
             : cell.cellIndex === 0;
-        if (cellspace > 0 || cell.cellIndex === cell.ownerRow.childWidgets.length - 1) {
+        if (cellspace > 0 || cell.columnIndex === cell.ownerTable.tableHolder.columns.length - 1) {
             cell.rightBorderWidth = !cell.ownerTable.isBidiTable ? rightBorderWidth : leftBorderWidth;
             if (!cell.ownerTable.tableFormat.allowAutoFit) {
                 cell.width -= cell.rightBorderWidth;
@@ -36472,7 +36472,7 @@ class Selection {
                     if (offset <= count + inline.length) {
                         return offset - 1 === count ? validOffset : offset - 1;
                     }
-                    if (inline instanceof TextElementBox || inline instanceof ImageElementBox
+                    if (inline instanceof TextElementBox || inline instanceof ImageElementBox || inline instanceof BookmarkElementBox
                         || (inline instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter(inline))) {
                         validOffset = count + inline.length;
                     }
@@ -37364,7 +37364,8 @@ class Selection {
      * @private
      */
     validateTextPosition(inline, index) {
-        if (inline.length === index && (inline.nextNode instanceof FieldElementBox || inline.nextNode instanceof BookmarkElementBox)) {
+        if (inline.length === index && (inline.nextNode instanceof FieldElementBox
+            || (!(inline instanceof ImageElementBox) && inline.nextNode instanceof BookmarkElementBox))) {
             //If inline is last item within field, then set field end as text position.
             let nextInline = this.getNextValidElement(inline.nextNode);
             if (nextInline instanceof FieldElementBox && nextInline.fieldType === 1
@@ -38407,6 +38408,10 @@ class Selection {
                     top += element.margin.top + height - textMetrics.BaselineOffset;
                 }
                 inline = element;
+                if (inline instanceof FieldElementBox && inline.fieldType === 2 && !isNullOrUndefined(inline.fieldBegin)) {
+                    inline = inline.fieldBegin;
+                    index = 0;
+                }
                 let inlineObj = this.validateTextPosition(inline, index);
                 inline = inlineObj.element;
                 index = inlineObj.index;
@@ -46378,6 +46383,7 @@ class Editor {
         this.isListTextSelected();
         this.initHistory('Insert');
         let paragraphInfo = this.selection.getParagraphInfo(selection.start);
+        let paraFormat = paragraphInfo.paragraph.paragraphFormat;
         selection.editPosition = selection.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
         let bidi = selection.start.paragraph.paragraphFormat.bidi;
         if ((!selection.isEmpty && !selection.isImageSelected) ||
@@ -46392,6 +46398,7 @@ class Editor {
             this.documentHelper.isTextInput = true;
         }
         paragraphInfo = this.selection.getParagraphInfo(selection.start);
+        paragraphInfo.paragraph.paragraphFormat.copyFormat(paraFormat);
         let isSpecialChars = this.documentHelper.textHelper.containsSpecialCharAlone(text);
         if (isRemoved) {
             selection.owner.isShiftingEnabled = true;
@@ -49670,7 +49677,7 @@ class Editor {
      * @param isSelectionChanged
      * @private
      */
-    reLayout(selection, isSelectionChanged) {
+    reLayout(selection, isSelectionChanged, isLayoutChanged) {
         if (!this.documentHelper.isComposingIME && this.editorHistory && this.editorHistory.isHandledComplexHistory()) {
             if (this.editorHistory.currentHistoryInfo && this.editorHistory.currentHistoryInfo.action !== 'ClearFormat') {
                 if (this.editorHistory.currentHistoryInfo.action !== 'ApplyStyle') {
@@ -49717,6 +49724,9 @@ class Editor {
                 this.editorHistory.currentBaseHistoryInfo.updateSelection();
             }
             this.editorHistory.updateHistory();
+        }
+        if (isLayoutChanged) {
+            return;
         }
         this.fireContentChange();
     }
@@ -51975,7 +51985,7 @@ class Editor {
     /**
      * @private
      */
-    layoutWholeDocument() {
+    layoutWholeDocument(isLayoutChanged) {
         let startPosition = this.documentHelper.selection.start;
         let endPosition = this.documentHelper.selection.end;
         if (startPosition.isExistAfter(endPosition)) {
@@ -51998,7 +52008,7 @@ class Editor {
         this.setPositionForCurrentIndex(startPosition, startIndex);
         this.setPositionForCurrentIndex(endPosition, endIndex);
         this.documentHelper.selection.selectPosition(startPosition, endPosition);
-        this.reLayout(this.documentHelper.selection);
+        this.reLayout(this.documentHelper.selection, false, isLayoutChanged);
     }
     combineSection() {
         let sections = [];
@@ -61314,6 +61324,7 @@ class WordExport {
         this.wordMLCustomXmlPropsRelType = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXmlProps';
         this.wordMLControlRelType = 'http://schemas.microsoft.com/office/2006/relationships/activeXControlBinary';
         this.wordMLDiagramContentType = 'application/vnd.ms-office.drawingml.diagramDrawing+xml';
+        this.excelFiles = undefined;
         this.lastSection = false;
         this.mRelationShipID = 0;
         this.cRelationShipId = 0;
@@ -61384,43 +61395,72 @@ class WordExport {
     save(documentHelper, fileName) {
         this.fileName = fileName;
         this.serialize(documentHelper);
+        let excelFiles = this.serializeExcelFiles();
+        if (excelFiles && excelFiles.length > 0) {
+            Promise.all(excelFiles).then(() => {
+                this.saveInternal(fileName);
+            });
+        }
+        else {
+            this.saveInternal(fileName);
+        }
+        this.close();
+    }
+    saveInternal(fileName) {
         this.mArchive.save(fileName + '.docx').then((mArchive) => {
             mArchive.destroy();
         });
-        this.close();
     }
     /**
      * @private
      */
     saveAsBlob(documentHelper) {
         this.serialize(documentHelper);
+        let excelFiles = this.serializeExcelFiles();
         return new Promise((resolve, reject) => {
-            this.mArchive.saveAsBlob().then((blob) => {
-                this.mArchive.destroy();
-                blob = new Blob([blob], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-                resolve(blob);
-            });
+            if (excelFiles.length > 0) {
+                Promise.all(excelFiles).then(() => {
+                    this.mArchive.saveAsBlob().then((blob) => {
+                        this.mArchive.destroy();
+                        blob = new Blob([blob], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+                        resolve(blob);
+                    });
+                });
+            }
+            else {
+                this.mArchive.saveAsBlob().then((blob) => {
+                    this.mArchive.destroy();
+                    blob = new Blob([blob], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+                    resolve(blob);
+                });
+            }
         });
+    }
+    serializeExcelFiles() {
+        let excelFiles = this.excelFiles;
+        let files = [];
+        if (excelFiles && excelFiles.length > 0) {
+            for (let i = 0; i < excelFiles.length; i++) {
+                let fileName = excelFiles.keys[i];
+                let excelFile = excelFiles.get(fileName);
+                let excelPromise = excelFile.saveAsBlob();
+                files.push(excelPromise);
+                excelPromise.then((blob) => {
+                    let zipArchiveItem = new ZipArchiveItem(blob, fileName);
+                    this.mArchive.addItem(zipArchiveItem);
+                });
+            }
+            this.excelFiles.clear();
+        }
+        return files;
     }
     /**
      * @private
      */
     saveExcel() {
         let xlsxPath = this.defaultEmbeddingPath + 'Microsoft_Excel_Worksheet' + this.chartCount + '.xlsx';
-        let promise;
-        let blobData;
-        return promise = new Promise((resolve, reject) => {
-            this.mArchiveExcel.saveAsBlob().then((blob) => {
-                blobData = blob;
-                let zipArchiveItem = new ZipArchiveItem(blob, xlsxPath);
-                this.mArchive.addItem(zipArchiveItem);
-                this.mArchive.save(this.fileName + '.docx').then((mArchive) => {
-                    mArchive.destroy();
-                });
-            });
-            resolve(blobData);
-            this.mArchiveExcel = undefined;
-        });
+        this.excelFiles.add(xlsxPath, this.mArchiveExcel);
+        this.mArchiveExcel = undefined;
     }
     /**
      * @private
@@ -62424,6 +62464,9 @@ class WordExport {
     }
     // serialize chart Excel Data
     serializeChartExcelData() {
+        if (isNullOrUndefined(this.excelFiles)) {
+            this.excelFiles = new Dictionary();
+        }
         this.mArchiveExcel = new ZipArchive();
         this.mArchiveExcel.compressionLevel = 'Normal';
         let type = this.chart.chartType;
@@ -78392,6 +78435,14 @@ class CommentReviewPane {
             this.reviewPane.style.display = show ? 'block' : 'none';
         }
         if (show) {
+            let readOnly = this.owner.isReadOnly;
+            this.enableDisableToolbarItem();
+            if (readOnly) {
+                classList(this.commentPane.parent, ['e-de-cmt-protection'], []);
+            }
+            else {
+                classList(this.commentPane.parent, [], ['e-de-cmt-protection']);
+            }
             this.commentPane.updateHeight();
         }
         if (this.owner) {
@@ -78576,6 +78627,9 @@ class CommentReviewPane {
             let enable = true;
             if (this.commentPane.isEditMode) {
                 enable = !this.commentPane.isEditMode;
+            }
+            if (this.owner.isReadOnly) {
+                enable = false;
             }
             let elements = this.toolbar.element.querySelectorAll('.' + 'e-de-cmt-tbr');
             this.toolbar.enableItems(elements[0].parentElement.parentElement, enable);
@@ -79115,6 +79169,9 @@ class CommentView {
         if (this.comment.isReply) {
             if (!this.commentPane.isEditMode && (!isNullOrUndefined(this.comment) && !this.comment.isResolved)) {
                 this.menuBar.style.display = 'block';
+            }
+            if (this.owner.isReadOnly) {
+                this.menuBar.style.display = 'none';
             }
         }
         let commentStart = this.commentPane.getCommentStart(this.comment);
@@ -79980,8 +80037,8 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
                         }
                         this.viewer = new WebLayoutViewer(this);
                     }
-                    this.editor.layoutWholeDocument();
-                    this.fireViewChange();
+                    this.editor.layoutWholeDocument(true);
+                    setTimeout(() => { this.fireViewChange(); }, 200);
                     break;
                 case 'locale':
                     this.localizeDialogs();
@@ -79989,6 +80046,9 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
                 case 'isReadOnly':
                     if (!isNullOrUndefined(this.optionsPaneModule) && this.optionsPaneModule.isOptionsPaneShow) {
                         this.optionsPaneModule.showHideOptionsPane(false);
+                    }
+                    if (this.showComments) {
+                        this.commentReviewPane.showHidePane(true);
                     }
                     break;
                 case 'currentUser':
@@ -81895,6 +81955,10 @@ class Toolbar$1 {
             this.toolbar.removeItems(element.parentElement);
         }
         else if (element) {
+            if (!isNullOrUndefined(this.documentEditor) && (this.documentEditor.isReadOnly ||
+                this.documentEditor.documentHelper.isDocumentProtected)) {
+                enable = false;
+            }
             this.toolbar.enableItems(element.parentElement, enable);
         }
     }
@@ -85028,6 +85092,7 @@ class StatusBar {
                 this.startPage = args.startPage;
             }
             this.updatePageNumber();
+            this.updatePageCount();
         };
         this.wireEvents = () => {
             this.pageNumberInput.addEventListener('keydown', (e) => {

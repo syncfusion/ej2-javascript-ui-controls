@@ -918,6 +918,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
     }
     checkValidation(isValidate) {
         let args;
+        let fromSubmit = true;
         if (this.validationRules) {
             this.formValidate = new FormValidator(this.formEle, {
                 rules: this.validationRules,
@@ -934,7 +935,10 @@ let InPlaceEditor = class InPlaceEditor extends Component {
                         else {
                             this.toggleErrorClass(false);
                         }
-                        this.afterValidation(isValidate);
+                        if (!isNullOrUndefined(fromSubmit) && fromSubmit) {
+                            fromSubmit = false;
+                            this.afterValidation(isValidate);
+                        }
                     });
                 },
                 customPlacement: (inputElement, errorElement) => {
@@ -1251,7 +1255,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         errEle = select('.' + ERROR, this.editEle);
         let type = this.type;
         let calendarComp = type === 'Date' || type === 'DateTime' || type === 'DateRange' || type === 'Time';
-        if ((errEle && !isNullOrUndefined(this.validationRules)) || (errEle && calendarComp)) {
+        if (errEle && calendarComp) {
             return;
         }
         if (!this.isTemplate) {

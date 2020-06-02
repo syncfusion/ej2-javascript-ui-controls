@@ -828,6 +828,8 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
     __extends(NumericTextBox, _super);
     function NumericTextBox(options, element) {
         var _this = _super.call(this, options, element) || this;
+        _this.isVue = false;
+        _this.preventChange = false;
         _this.numericOptions = options;
         return _this;
     }
@@ -937,6 +939,7 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
                     this.hiddenInput.setAttribute('value', this.hiddenInput.value);
                 }
             }
+            this.elementPrevValue = this.element.value;
             this.renderComplete();
         }
     };
@@ -1314,6 +1317,8 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
             merge(eventArgs, this.changeEventArgs);
             this.prevValue = this.value;
             this.isInteract = false;
+            this.elementPrevValue = this.element.value;
+            this.preventChange = false;
             this.trigger('change', eventArgs);
         }
     };
@@ -1434,6 +1439,18 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
         if ((fireFox || iOS) && Browser.isDevice) {
             this.preventHandler();
         }
+        if (this.isVue) {
+            var current = this.instance.getNumberParser({ format: 'n' })(this.element.value);
+            var previous = this.instance.getNumberParser({ format: 'n' })(this.elementPrevValue);
+            var eventArgs = {
+                event: event,
+                value: (current === null || isNaN(current) ? null : current),
+                previousValue: (previous === null || isNaN(previous) ? null : previous)
+            };
+            this.preventChange = true;
+            this.elementPrevValue = this.element.value;
+            this.trigger('input', eventArgs);
+        }
     };
     
     NumericTextBox.prototype.keyDownHandler = function (event) {
@@ -1492,7 +1509,9 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
             }
         }
         this.changeValue(value === null || isNaN(value) ? null : this.strictMode ? this.trimValue(value) : value);
-        this.raiseChangeEvent(event);
+        if ((!this.isVue) || (this.isVue && !this.preventChange)) {
+            this.raiseChangeEvent(event);
+        }
     };
     NumericTextBox.prototype.updateCurrency = function (prop, propVal) {
         setValue(prop, propVal, this.cultureInfo);
@@ -1932,6 +1951,9 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'value':
                     this.updateValue(newProp.value);
+                    if (this.isVue && this.preventChange) {
+                        this.preventChange = false;
+                    }
                     break;
                 case 'min':
                 case 'max':
@@ -6297,13 +6319,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         _super.prototype.destroy.call(this);
         this.unwireEvents();
         window.removeEventListener('resize', this.onresize);
-        if (!isBlazor() && !this.isServerRendered) {
-            removeClass([this.sliderContainer], [classNames.sliderDisabled]);
-        }
-        else {
-            removeClass([this.sliderContainer], [classNames.sliderDisabled, classNames.sliderContainer, classNames.controlWrapper,
-                classNames.horizontalSlider, classNames.verticalSlider]);
-        }
+        removeClass([this.sliderContainer], [classNames.sliderDisabled]);
         this.firstHandle.removeAttribute('aria-orientation');
         if (this.type === 'Range') {
             this.secondHandle.removeAttribute('aria-orientation');

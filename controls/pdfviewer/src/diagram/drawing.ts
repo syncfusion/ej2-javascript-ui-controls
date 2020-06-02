@@ -196,6 +196,7 @@ export class Drawing {
                 canvas.children.push(content);
                 break;
             case 'HandWrittenSignature':
+            case 'Ink':
                 pathContent = new PathElement();
                 pathContent.data = obj.data;
                 pathContent.style.strokeColor = obj.strokeColor;
@@ -811,7 +812,7 @@ export class Drawing {
                             if (node.annotName !== '') {
                                 if (helper && (node === helper)) {
                                     // tslint:disable-next-line:max-line-length
-                                    if (!this.pdfViewer.viewerBase.isAnnotationSelect && !this.pdfViewer.viewerBase.isAnnotationMouseDown && !this.pdfViewer.viewerBase.isAnnotationMouseMove) {
+                                    if (!this.pdfViewer.viewerBase.isAnnotationSelect && !this.pdfViewer.viewerBase.isAnnotationMouseDown && !this.pdfViewer.viewerBase.isAnnotationMouseMove && !this.pdfViewer.viewerBase.isInkAdded) {
                                         this.pdfViewer.viewerBase.isAnnotationSelect = true;
                                         this.pdfViewer.annotationModule.annotationSelect(node.annotName, node.pageIndex, node);
                                     }

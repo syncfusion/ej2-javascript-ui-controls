@@ -4263,3 +4263,40 @@ describe('isInteracted property in rowSelecting and rowDeselected events indexes
         gridObj = rowDeselected = null;
     });
 });
+
+describe('AutoFill Feature', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                enableAutoFill: true,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'CustomerID' },
+                    { field: 'EmployeeID', headerText: 'Employee ID' },
+                    { field: 'ShipCity', headerText: 'Ship City' },
+                    { field: 'ShipCountry', headerText: 'Ship Country' }],
+                allowPaging: true,
+                selectionSettings: { type: 'Multiple', mode: 'Cell', cellSelectionMode: 'Box' },
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
+            }, done);
+    });
+
+    it('update cell', () => {
+        gridObj.selectionModule.selectCellsByRange({ rowIndex: 0, cellIndex: 1 },{ rowIndex: 0, cellIndex:4  });
+        (gridObj.selectionModule as any).startAFCell = gridObj.getRowByIndex(0).querySelectorAll('td')[1];
+        (gridObj.selectionModule as any).endAFCell = gridObj.getRowByIndex(2).querySelectorAll('td')[4];
+        (gridObj.selectionModule as any).updateStartEndCells();
+        (gridObj.selectionModule as any).selectLikeAutoFill(undefined,true);
+        gridObj.copy();
+        let value1: string = (document.querySelector('.e-clipboard') as HTMLInputElement).value.split(/\r?\n/)[0];
+        let value2: string = (document.querySelector('.e-clipboard') as HTMLInputElement).value.split(/\r?\n/)[1];
+        expect(value1 === value2).toBeTruthy();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

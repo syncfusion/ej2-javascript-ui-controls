@@ -1943,7 +1943,11 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         }
         if (this.isBlazorServerRender() && isNullOrUndefined(this.dlgContainer)) {
             this.dlgContainer = this.element.parentElement;
-            this.dlgOverlay = this.element.parentElement.getElementsByClassName('e-dlg-overlay')[0];
+            for (var i = 0, childNodes = this.dlgContainer.children; i < childNodes.length; i++) {
+                if (childNodes[i].classList.contains('e-dlg-overlay')) {
+                    this.dlgOverlay = childNodes[i];
+                }
+            }
         }
         if (this.element.classList.contains(DLG_UTIL_ALERT) !== true && this.element.classList.contains(DLG_UTIL_CONFIRM) !== true
             && !isNullOrUndefined(this.element.parentElement)) {

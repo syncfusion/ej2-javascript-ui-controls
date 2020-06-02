@@ -1664,28 +1664,30 @@ export class Edit {
             let childIndex: number;
             if (currentIndex !== -1) { currentData.splice(currentIndex, 1); }
             if (flatIndex !== -1) { flatData.splice(flatIndex, 1); }
-            deleteRecordIDs.push(deleteRecord.ganttProperties.rowUniqueID.toString());
-            if (flatIndex !== -1) {
-                this.parent.ids.splice(flatIndex, 1);
-                if (this.parent.viewType === 'ResourceView') {
-                    this.parent.getTaskIds().splice(flatIndex, 1);
-                }
-            }
-            if (deleteRecord.level === 0 && treeGridParentIndex !== -1) {
-                this.parent.treeGrid.parentData.splice(treeGridParentIndex, 1);
-            }
-            if (deleteRecord.parentItem) {
-                let parentItem: IGanttData = this.parent.getParentTask(deleteRecord.parentItem);
-                if (parentItem) {
-                    let childRecords: IGanttData[] = parentItem.childRecords;
-                    childIndex = childRecords.indexOf(deleteRecord);
-                    if (childIndex !== -1) { childRecords.splice(childIndex, 1); }
-                    if (!childRecords.length) {
-                        parentItem.hasChildRecords = false;
+            if (!isNullOrUndefined(deleteRecord)) {
+                deleteRecordIDs.push(deleteRecord.ganttProperties.rowUniqueID.toString());
+                if (flatIndex !== -1) {
+                    this.parent.ids.splice(flatIndex, 1);
+                    if (this.parent.viewType === 'ResourceView') {
+                        this.parent.getTaskIds().splice(flatIndex, 1);
                     }
                 }
+                if (deleteRecord.level === 0 && treeGridParentIndex !== -1) {
+                    this.parent.treeGrid.parentData.splice(treeGridParentIndex, 1);
+                }
+                if (deleteRecord.parentItem) {
+                    let parentItem: IGanttData = this.parent.getParentTask(deleteRecord.parentItem);
+                    if (parentItem) {
+                        let childRecords: IGanttData[] = parentItem.childRecords;
+                        childIndex = childRecords.indexOf(deleteRecord);
+                        if (childIndex !== -1) { childRecords.splice(childIndex, 1); }
+                        if (!childRecords.length) {
+                            parentItem.hasChildRecords = false;
+                        }
+                    }
+                }
+                this.updateTreeGridUniqueID(deleteRecord, 'delete');
             }
-            this.updateTreeGridUniqueID(deleteRecord, 'delete');
         }
         if (deleteRecordIDs.length > 0) {
             this.removeFromDataSource(deleteRecordIDs);

@@ -46,14 +46,14 @@ export interface MultiSelectModel extends DropDownBaseModel{
     /**
      * Accepts the template design and assigns it to popup list of MultiSelect component
      * when no data is available on the component.
-     * @default 'No Records Found'
+     * @default 'No records found'
      */
     noRecordsTemplate?: string;
 
     /**
      * Accepts the template and assigns it to the popup list content of the MultiSelect component
      * when the data fetch request from the remote server fails.
-     * @default 'The Request Failed'
+     * @default 'Request failed'
      */
     actionFailureTemplate?: string;
 

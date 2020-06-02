@@ -285,18 +285,18 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     /**
      * Accepts the template design and assigns it to popup list of component
      * when no data is available on the component.
-     * @default 'No Records Found'
+     * @default 'No records found'
      * @deprecated
      */
-    @Property('No Records Found')
+    @Property('No records found')
     public noRecordsTemplate: string;
     /**
      * Accepts the template and assigns it to the popup list content of the component
      * when the data fetch request from the remote server fails.
-     * @default 'The Request Failed'
+     * @default 'Request failed'
      * @deprecated
      */
-    @Property('The Request Failed')
+    @Property('Request failed')
     public actionFailureTemplate: string;
     /**
      * Specifies the `sortOrder` to sort the data source. The available type of sort orders are
@@ -581,7 +581,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     }
     protected l10nUpdate(actionFailure?: boolean): void {
         let ele: Element = this.getModuleName() === 'listbox' ? this.ulElement : this.list;
-        if (this.noRecordsTemplate !== 'No Records Found' || this.actionFailureTemplate !== 'The Request Failed') {
+        if (this.noRecordsTemplate !== 'No records found' || this.actionFailureTemplate !== 'Request failed') {
             this.DropDownBaseresetBlazorTemplates(false, false, true, true);
             let template: string = actionFailure ? this.actionFailureTemplate : this.noRecordsTemplate;
             let compiledString: Function;
@@ -598,7 +598,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             }
             this.DropDownBaseupdateBlazorTemplates(false, false, !actionFailure, actionFailure, false, false, false, false);
         } else {
-            let l10nLocale: Object = { noRecordsTemplate: 'No Records Found', actionFailureTemplate: 'The Request Failed'};
+            let l10nLocale: Object = { noRecordsTemplate: 'No records found', actionFailureTemplate: 'Request failed'};
             let componentLocale: L10n = new L10n(this.getLocaleName(), {}, this.locale);
             if (componentLocale.getConstant('actionFailureTemplate') !== '') {
                 this.l10n = componentLocale;

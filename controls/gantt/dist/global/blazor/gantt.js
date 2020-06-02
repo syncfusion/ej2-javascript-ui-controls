@@ -3012,7 +3012,10 @@ var GanttChart = /** @class */ (function () {
             setHeight(this.parent.ganttHeight - this.chartTimelineContainer.offsetHeight - toolbarHeight);
     };
     GanttChart.prototype.updateWidthAndHeight = function () {
-        this.chartBodyContent.style.height = sf.base.formatUnit(this.parent.contentHeight);
+        //empty row height
+        var emptydivHeight = sf.base.isBlazor() ? 39 : 36;
+        var emptyHeight = this.parent.contentHeight === 0 ? emptydivHeight : this.parent.contentHeight;
+        this.chartBodyContent.style.height = sf.base.formatUnit(emptyHeight);
         //let element: HTMLElement = this.chartTimelineContainer.querySelector('.' + cls.timelineHeaderTableContainer);
         this.chartBodyContent.style.width = sf.base.formatUnit(this.parent.timelineModule.totalTimelineWidth);
         this.parent.notify('updateHeight', {});
@@ -3986,6 +3989,7 @@ var Timeline = /** @class */ (function () {
             requestType: 'beforeZoomToProject',
             timeline: newTimeline
         };
+        this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomin', this.parent.controlId + '_zoomout'], true);
         this.parent.trigger('actionBegin', args);
     };
     Timeline.prototype.roundOffDateToZoom = function (date, isStartDate, perDayWidth, tierMode) {
@@ -5101,7 +5105,12 @@ var GanttTreeGrid = /** @class */ (function () {
         this.parent.treeGrid[isGantt] = true;
         this.parent.treeGrid.rowHeight = this.parent.rowHeight;
         this.parent.treeGrid.gridLines = this.parent.gridLines;
-        this.parent.treeGrid.searchSettings = this.parent.searchSettings;
+        if (!sf.base.isBlazor()) {
+            this.parent.treeGrid.searchSettings = this.parent.searchSettings;
+        }
+        else if (this.parent.searchSettings.fields.length !== 0 || this.parent.searchSettings.key !== '') {
+            this.parent.treeGrid.searchSettings = this.parent.searchSettings;
+        }
         var isJsComponent = 'isJsComponent';
         this.parent.treeGrid[isJsComponent] = true;
         var toolbarHeight = 0;
@@ -8230,11 +8239,13 @@ var Dependency = /** @class */ (function () {
      */
     Dependency.prototype.getValidPredecessor = function (record) {
         var validPredecessor = [];
-        var recPredecessor = record.ganttProperties.predecessor;
-        if (recPredecessor && recPredecessor.length > 0) {
-            validPredecessor = recPredecessor.filter(function (value) {
-                return value.from !== record.ganttProperties.rowUniqueID.toString();
-            });
+        if (!sf.base.isNullOrUndefined(record)) {
+            var recPredecessor = record.ganttProperties.predecessor;
+            if (recPredecessor && recPredecessor.length > 0) {
+                validPredecessor = recPredecessor.filter(function (value) {
+                    return value.from !== record.ganttProperties.rowUniqueID.toString();
+                });
+            }
         }
         return validPredecessor;
     };
@@ -11082,7 +11093,8 @@ var Gantt = /** @class */ (function (_super) {
      * Filters TreeGrid row by column name with the given options.
      * @param  {string} fieldName - Defines the field name of the column.
      * @param  {string} filterOperator - Defines the operator to filter records.
-     * @param  {string | number | Date | boolean} filterValue - Defines the value used to filter records.
+     * @param  {string | number | Date | boolean | number[] | string[] | Date[] | boolean[]} filterValue - Defines the value
+     *  used to filter records.
      * @param  {string} predicate - Defines the relationship between one filter query and another by using AND or OR predicate.
      * @param  {boolean} matchCase - If match case is set to true, TreeGrid filters the records with exact match.if false, it filters case
      * insensitive records (uppercase and lowercase letters treated the same).
@@ -11137,11 +11149,13 @@ var Gantt = /** @class */ (function (_super) {
             : null;
     };
     /**
-     * Clears all the filtered columns in Gantt.
+     * Clears the filtered columns in Gantt.
+     * Can also be used to clear filtering of a specific column in Gantt.
+     * @param {string[]} fields - Defines the specific column to remove filter.
      * @return {void}
      */
-    Gantt.prototype.clearFiltering = function () {
-        this.treeGrid.clearFiltering();
+    Gantt.prototype.clearFiltering = function (fields) {
+        this.treeGrid.grid.clearFiltering(fields);
     };
     /**
      * Removes filtered column by field name.
@@ -11356,15 +11370,27 @@ var Gantt = /** @class */ (function (_super) {
         this.splitterModule.triggerCustomResizedEvent();
     };
     /**
-     * Expand the record by index value.
-     * @param {number} index - Defines the index of row.
+     * Expand the records by index value.
+     * @param {number[] | number} index - Defines the index of rows to be expand.
      * @return {void}
      * @public
      */
     Gantt.prototype.expandByIndex = function (index) {
-        var args = this.contructExpandCollapseArgs(null, index);
-        this.ganttChartModule.isExpandCollapseFromChart = true;
-        this.ganttChartModule.expandGanttRow(args);
+        if (typeof index === 'number') {
+            var args = this.contructExpandCollapseArgs(null, index);
+            this.ganttChartModule.isExpandCollapseFromChart = true;
+            this.ganttChartModule.expandGanttRow(args);
+        }
+        else {
+            for (var i = 0; i < index.length; i++) {
+                if (typeof index[i] === 'number') {
+                    var ind = index[i];
+                    var args = this.contructExpandCollapseArgs(null, ind);
+                    this.ganttChartModule.isExpandCollapseFromChart = true;
+                    this.ganttChartModule.expandGanttRow(args);
+                }
+            }
+        }
     };
     /**
      * Expand the record by task id.
@@ -11428,6 +11454,15 @@ var Gantt = /** @class */ (function (_super) {
      */
     Gantt.prototype.updateTaskId = function (currentId, newId) {
         this.editModule.updateTaskId(currentId, newId);
+    };
+    /**
+     * Public method to expand particular level of rows.
+     * @return {void}
+     * @param level
+     * @private
+     */
+    Gantt.prototype.expandAtLevel = function (level) {
+        this.ganttChartModule.expandAtLevel(level);
     };
     /**
      * To indent the level of selected task to the hierarchical Gantt task.
@@ -13246,7 +13281,7 @@ var TaskbarEdit = /** @class */ (function () {
             this.editElement = element;
             this.taskBarEditElement = element;
             this.taskBarEditRecord = this.parent.ganttChartModule.getRecordByTaskBar(this.taskBarEditElement);
-            if (e.type === sf.base.Browser.touchStartEvent || e.type === sf.grids.click) {
+            if (e.type === 'mousedown' || e.type === 'touchstart' || e.type === 'click') {
                 this.roundOffDuration = true;
                 this.taskBarEditAction = this.getTaskBarAction(e);
                 if ((this.taskBarEditAction === 'ConnectorPointLeftDrag' || this.taskBarEditAction === 'ConnectorPointRightDrag') &&
@@ -14292,7 +14327,7 @@ var TaskbarEdit = /** @class */ (function () {
     // Get XY coordinates for touch and non-touch device
     TaskbarEdit.prototype.getCoordinate = function (event) {
         var coordinates = {};
-        if (sf.base.Browser.isTouch && event && event.type !== sf.grids.click) {
+        if (this.parent.isAdaptive && event && event.type !== 'click') {
             var e = event;
             if (e.type === 'touchmove' || e.type === 'touchstart' || e.type === 'touchend') {
                 coordinates.pageX = e.changedTouches[0].pageX;
@@ -16806,7 +16841,7 @@ var ConnectorLineEdit = /** @class */ (function () {
                 }
             }
             else if (predecessor[i].type === 'FF') {
-                if (endDate < parentGanttRecord.ganttProperties.endDate) {
+                if (endDate <= parentGanttRecord.ganttProperties.endDate) {
                     this.validationPredecessor.push(predecessor[i]);
                     violationType = 'taskBeforePredecessor_FF';
                 }
@@ -18557,30 +18592,32 @@ var Edit$2 = /** @class */ (function () {
             if (flatIndex !== -1) {
                 flatData.splice(flatIndex, 1);
             }
-            deleteRecordIDs.push(deleteRecord.ganttProperties.rowUniqueID.toString());
-            if (flatIndex !== -1) {
-                this.parent.ids.splice(flatIndex, 1);
-                if (this.parent.viewType === 'ResourceView') {
-                    this.parent.getTaskIds().splice(flatIndex, 1);
-                }
-            }
-            if (deleteRecord.level === 0 && treeGridParentIndex !== -1) {
-                this.parent.treeGrid.parentData.splice(treeGridParentIndex, 1);
-            }
-            if (deleteRecord.parentItem) {
-                var parentItem = this.parent.getParentTask(deleteRecord.parentItem);
-                if (parentItem) {
-                    var childRecords = parentItem.childRecords;
-                    childIndex = childRecords.indexOf(deleteRecord);
-                    if (childIndex !== -1) {
-                        childRecords.splice(childIndex, 1);
-                    }
-                    if (!childRecords.length) {
-                        parentItem.hasChildRecords = false;
+            if (!sf.base.isNullOrUndefined(deleteRecord)) {
+                deleteRecordIDs.push(deleteRecord.ganttProperties.rowUniqueID.toString());
+                if (flatIndex !== -1) {
+                    this.parent.ids.splice(flatIndex, 1);
+                    if (this.parent.viewType === 'ResourceView') {
+                        this.parent.getTaskIds().splice(flatIndex, 1);
                     }
                 }
+                if (deleteRecord.level === 0 && treeGridParentIndex !== -1) {
+                    this.parent.treeGrid.parentData.splice(treeGridParentIndex, 1);
+                }
+                if (deleteRecord.parentItem) {
+                    var parentItem = this.parent.getParentTask(deleteRecord.parentItem);
+                    if (parentItem) {
+                        var childRecords = parentItem.childRecords;
+                        childIndex = childRecords.indexOf(deleteRecord);
+                        if (childIndex !== -1) {
+                            childRecords.splice(childIndex, 1);
+                        }
+                        if (!childRecords.length) {
+                            parentItem.hasChildRecords = false;
+                        }
+                    }
+                }
+                this.updateTreeGridUniqueID(deleteRecord, 'delete');
             }
-            this.updateTreeGridUniqueID(deleteRecord, 'delete');
         }
         if (deleteRecordIDs.length > 0) {
             this.removeFromDataSource(deleteRecordIDs);

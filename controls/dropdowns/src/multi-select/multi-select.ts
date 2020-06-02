@@ -132,16 +132,16 @@ export class MultiSelect extends DropDownBase implements IInput {
     /**
      * Accepts the template design and assigns it to popup list of MultiSelect component
      * when no data is available on the component.
-     * @default 'No Records Found'
+     * @default 'No records found'
      */
-    @Property('No Records Found')
+    @Property('No records found')
     public noRecordsTemplate: string;
     /**
      * Accepts the template and assigns it to the popup list content of the MultiSelect component
      * when the data fetch request from the remote server fails.
-     * @default 'The Request Failed'
+     * @default 'Request failed'
      */
-    @Property('The Request Failed')
+    @Property('Request failed')
     public actionFailureTemplate: string;
     /**
      * Specifies the `sortOrder` to sort the data source. The available type of sort orders are
@@ -3264,8 +3264,8 @@ export class MultiSelect extends DropDownBase implements IInput {
             let overAllContainer: number;
             this.viewWrapper.innerHTML = '';
             let l10nLocale: Object = {
-                noRecordsTemplate: 'No Records Found',
-                actionFailureTemplate: 'The Request Failed',
+                noRecordsTemplate: 'No records found',
+                actionFailureTemplate: 'Request failed',
                 overflowCountTemplate: '+${count} more..',
                 totalCountTemplate: '${count} selected'
             };

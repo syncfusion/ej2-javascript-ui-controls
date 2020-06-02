@@ -1667,7 +1667,7 @@ let MenuBase = class MenuBase extends Component {
                         this.top = parseInt(this.popupWrapper.style.top, 10);
                         if (this.enableRtl) {
                             this.left =
-                                this.isNestedOrVertical ? this.left - this.popupWrapper.offsetWidth - this.lItem.parentElement.offsetWidth
+                                this.isNestedOrVertical ? this.left - this.popupWrapper.offsetWidth - this.lItem.parentElement.offsetWidth + 2
                                     : this.left - this.popupWrapper.offsetWidth + this.lItem.offsetWidth;
                         }
                         collide = isCollide(this.popupWrapper, null, this.left, this.top);
@@ -1677,7 +1677,7 @@ let MenuBase = class MenuBase extends Component {
                             let offWidth = closest(this.lItem, '.e-' + this.getModuleName() + '-wrapper').offsetWidth;
                             this.left =
                                 this.enableRtl ? calculatePosition(this.lItem, this.isNestedOrVertical ? 'right' : 'left', 'top').left
-                                    : this.left - this.popupWrapper.offsetWidth - offWidth;
+                                    : this.left - this.popupWrapper.offsetWidth - offWidth + 2;
                         }
                         collide = isCollide(this.popupWrapper, null, this.left, this.top);
                         if (collide.indexOf('left') > -1 || collide.indexOf('right') > -1) {
@@ -5566,6 +5566,9 @@ let Accordion = class Accordion extends Component {
             return innerEle;
         }
         if (item.header && this.angularnativeCondiCheck(item, 'header')) {
+            if (this.enableHtmlSanitizer && typeof (item.header) === 'string') {
+                item.header = SanitizeHtmlHelper.sanitize(item.header);
+            }
             let ctnEle = this.headerEleGenerate();
             let hdrEle = this.createElement('div', { className: CLS_HEADERCTN });
             ctnEle.appendChild(hdrEle);
@@ -5701,6 +5704,9 @@ let Accordion = class Accordion extends Component {
             itemcnt.appendChild(ctn);
         }
         else {
+            if (this.enableHtmlSanitizer && typeof (this.items[index].content)) {
+                this.items[index].content = SanitizeHtmlHelper.sanitize(this.items[index].content);
+            }
             itemcnt.appendChild(this.fetchElement(ctn, this.items[index].content, index, false));
         }
         return itemcnt;
@@ -5927,7 +5933,7 @@ let Accordion = class Accordion extends Component {
     }
     /**
      * Adds new item to the Accordion with the specified index of the Accordion.
-     * @param  {AccordionItemModel | Object} item - Item array that is to be added to the Accordion.
+     * @param  {AccordionItemModel | AccordionItemModel[] | Object | Object[]} item - Item array that is to be added to the Accordion.
      * @param  {number} index - Number value that determines where the item should be added.
      * By default, item is added at the last index if the index is not specified.
      * @returns void
@@ -5941,22 +5947,26 @@ let Accordion = class Accordion extends Component {
             index = items.length;
         }
         if (ele.childElementCount >= index) {
-            items.splice(index, 0, item);
-            let innerItemEle = this.renderInnerItem(item, index);
-            if (ele.childElementCount === index) {
-                ele.appendChild(innerItemEle);
-            }
-            else {
-                ele.insertBefore(innerItemEle, itemEle[index]);
-            }
-            EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'focus', this.focusIn, this);
-            EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'blur', this.focusOut, this);
-            this.itemAttribUpdate();
-        }
-        this.expandedItems = [];
-        this.expandedItemRefresh(ele);
-        if (item && item.expanded) {
-            this.expandItem(true, index);
+            let addItems = (item instanceof Array) ? item : [item];
+            addItems.forEach((addItem, i) => {
+                let itemIndex = index + i;
+                items.splice(itemIndex, 0, addItem);
+                let innerItemEle = this.renderInnerItem(addItem, itemIndex);
+                if (ele.childElementCount === itemIndex) {
+                    ele.appendChild(innerItemEle);
+                }
+                else {
+                    ele.insertBefore(innerItemEle, itemEle[itemIndex]);
+                }
+                EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'focus', this.focusIn, this);
+                EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'blur', this.focusOut, this);
+                this.itemAttribUpdate();
+                this.expandedItems = [];
+                this.expandedItemRefresh(ele);
+                if (addItem && addItem.expanded) {
+                    this.expandItem(true, itemIndex);
+                }
+            });
         }
     }
     expandedItemRefresh(ele) {
@@ -6284,6 +6294,9 @@ __decorate$4([
 __decorate$4([
     Property('Multiple')
 ], Accordion.prototype, "expandMode", void 0);
+__decorate$4([
+    Property(false)
+], Accordion.prototype, "enableHtmlSanitizer", void 0);
 __decorate$4([
     Complex({}, AccordionAnimationSettings)
 ], Accordion.prototype, "animation", void 0);
@@ -7410,6 +7423,9 @@ let Tab = class Tab extends Component {
     getContent(ele, cnt, callType, index) {
         let eleStr;
         if (typeof cnt === 'string' || isNullOrUndefined(cnt.innerHTML)) {
+            if (typeof cnt === 'string' && this.enableHtmlSanitizer) {
+                cnt = SanitizeHtmlHelper.sanitize(cnt);
+            }
             if (cnt[0] === '.' || cnt[0] === '#') {
                 if (document.querySelectorAll(cnt).length) {
                     let eleVal = document.querySelector(cnt);
@@ -8452,6 +8468,9 @@ __decorate$7([
 __decorate$7([
     Property(false)
 ], Tab.prototype, "enablePersistence", void 0);
+__decorate$7([
+    Property(false)
+], Tab.prototype, "enableHtmlSanitizer", void 0);
 __decorate$7([
     Property(false)
 ], Tab.prototype, "showCloseButton", void 0);
@@ -11166,25 +11185,28 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         let eventArgs = this.getEditEvent(liEle, newText, null);
         this.trigger('nodeEdited', eventArgs, (observedArgs) => {
             newText = observedArgs.cancel ? observedArgs.oldText : observedArgs.newText;
-            let newData = setValue(this.editFields.text, newText, this.editData);
-            if (!isNullOrUndefined(this.nodeTemplateFn)) {
-                txtEle.innerText = '';
-                let tempArr = this.nodeTemplateFn(newData, undefined, undefined, this.element.id + 'nodeTemplate', this.isStringTemplate);
-                tempArr = Array.prototype.slice.call(tempArr);
-                append(tempArr, txtEle);
-                this.updateBlazorTemplate();
-            }
-            else {
-                txtEle.innerText = newText;
-            }
-            if (isInput) {
-                removeClass([liEle], EDITING);
-                txtEle.focus();
-            }
+            this.updateText(liEle, txtEle, newText, isInput);
             if (observedArgs.oldText !== newText) {
                 this.triggerEvent();
             }
         });
+    }
+    updateText(liEle, txtEle, newText, isInput) {
+        let newData = setValue(this.editFields.text, newText, this.editData);
+        if (!isNullOrUndefined(this.nodeTemplateFn)) {
+            txtEle.innerText = '';
+            let tempArr = this.nodeTemplateFn(newData, undefined, undefined, this.element.id + 'nodeTemplate', this.isStringTemplate);
+            tempArr = Array.prototype.slice.call(tempArr);
+            append(tempArr, txtEle);
+            this.updateBlazorTemplate();
+        }
+        else {
+            txtEle.innerText = newText;
+        }
+        if (isInput) {
+            removeClass([liEle], EDITING);
+            txtEle.focus();
+        }
     }
     getElement(ele) {
         if (isNullOrUndefined(ele)) {
@@ -12701,7 +12723,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                 matchedArr[0][this.fields.text] = newText;
                 crud = data.update(key, matchedArr[0], query.fromTable, query);
                 crud.then((e) => this.editSucess(target, newText, prevent))
-                    .catch((e) => this.dmFailure(e));
+                    .catch((e) => this.dmFailure(e, target, prevent));
                 break;
             case 'insert':
                 if (newNode.length == 1) {
@@ -12758,8 +12780,16 @@ let TreeView = TreeView_1 = class TreeView extends Component {
             this.triggerEvent();
         }
     }
-    dmFailure(e) {
+    dmFailure(e, target, prevent) {
+        if (target) {
+            this.updatePreviousText(target, prevent);
+        }
         this.trigger('actionFailure', { error: e });
+    }
+    updatePreviousText(target, prevent) {
+        let liEle = this.getElement(target);
+        let txtEle = select('.' + LISTTEXT, liEle);
+        this.updateText(liEle, txtEle, this.oldText, prevent);
     }
     /**
      * Called internally if any of the property value changed.
@@ -13500,6 +13530,7 @@ let Sidebar = class Sidebar extends Component {
             (removeClass([this.element], RTL$2));
     }
     setTarget() {
+        let ele;
         this.sidebarEleCopy = this.element.cloneNode(true);
         if (typeof (this.target) === 'string') {
             this.setProperties({ target: document.querySelector(this.target) }, true);
@@ -13508,6 +13539,11 @@ let Sidebar = class Sidebar extends Component {
             this.target.insertBefore(this.element, this.target.children[0]);
             addClass([this.element], SIDEBARABSOLUTE);
             addClass([this.target], CONTEXT);
+            ele = this.target.querySelector('.' + MAINCONTENTANIMATION);
+        }
+        this.targetEle = this.element.nextElementSibling;
+        if (!isNullOrUndefined(ele)) {
+            this.targetEle = ele;
         }
     }
     setCloseOnDocumentClick() {
@@ -13546,9 +13582,8 @@ let Sidebar = class Sidebar extends Component {
     }
     addClass() {
         let classELement = document.querySelector('.e-main-content');
-        if (!isNullOrUndefined((classELement ||
-            this.element.nextElementSibling))) {
-            addClass([classELement || this.element.nextElementSibling], [MAINCONTENTANIMATION]);
+        if (!isNullOrUndefined(classELement || this.targetEle)) {
+            addClass([classELement || this.targetEle], [MAINCONTENTANIMATION]);
         }
         this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
         if (!this.isBlazor) {
@@ -13588,8 +13623,7 @@ let Sidebar = class Sidebar extends Component {
         EventHandler.remove(this.element, 'transitionend', this.transitionEnd);
     }
     destroyBackDrop() {
-        let sibling = document.querySelector('.e-main-content') ||
-            this.element.nextElementSibling;
+        let sibling = document.querySelector('.e-main-content') || this.targetEle;
         if (this.target && this.showBackdrop && sibling) {
             removeClass([sibling], CONTEXTBACKDROP);
         }
@@ -13627,8 +13661,7 @@ let Sidebar = class Sidebar extends Component {
                 this.enableDock ? setStyleAttribute(this.element, { 'width': formatUnit(this.dockSize) }) :
                     setStyleAttribute(this.element, { 'width': formatUnit(this.width) });
                 this.setType(this.type);
-                let sibling = document.querySelector('.e-main-content') ||
-                    this.element.nextElementSibling;
+                let sibling = document.querySelector('.e-main-content') || this.targetEle;
                 if (!this.enableDock && sibling) {
                     sibling.style.transform = 'translateX(' + 0 + 'px)';
                     this.position === 'Left' ? sibling.style.marginLeft = '0px' : sibling.style.marginRight = '0px';
@@ -13647,8 +13680,7 @@ let Sidebar = class Sidebar extends Component {
         });
     }
     setTimeOut() {
-        let sibling = document.querySelector('.e-main-content') ||
-            this.element.nextElementSibling;
+        let sibling = document.querySelector('.e-main-content') || this.targetEle;
         if (this.element.classList.contains(OPEN) && sibling) {
             if (this.position === 'Left') {
                 this.width === 'auto' ? sibling.style.marginLeft = this.setDimension(this.element.getBoundingClientRect().width)
@@ -13735,8 +13767,7 @@ let Sidebar = class Sidebar extends Component {
     }
     createBackDrop() {
         if (this.target && this.showBackdrop && this.getState()) {
-            let sibling = document.querySelector('.e-main-content') ||
-                this.element.nextElementSibling;
+            let sibling = document.querySelector('.e-main-content') || this.targetEle;
             addClass([sibling], CONTEXTBACKDROP);
         }
         else if (this.showBackdrop && !this.modal && this.getState()) {
@@ -13851,8 +13882,7 @@ let Sidebar = class Sidebar extends Component {
      * @private
      */
     onPropertyChanged(newProp, oldProp) {
-        let sibling = document.querySelector('.e-main-content') ||
-            this.element.nextElementSibling;
+        let sibling = document.querySelector('.e-main-content') || this.targetEle;
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'isOpen':
@@ -13912,12 +13942,10 @@ let Sidebar = class Sidebar extends Component {
                         setStyleAttribute(sibling, { 'margin-left': 0, 'margin-right': 0 });
                         document.body.insertAdjacentElement('afterbegin', this.element);
                     }
-                    else {
-                        let isRendered = this.isServerRendered;
-                        this.isServerRendered = false;
-                        super.refresh();
-                        this.isServerRendered = isRendered;
-                    }
+                    let isRendered = this.isServerRendered;
+                    this.isServerRendered = false;
+                    super.refresh();
+                    this.isServerRendered = isRendered;
                     break;
                 case 'closeOnDocumentClick':
                     this.setCloseOnDocumentClick();
@@ -13945,8 +13973,7 @@ let Sidebar = class Sidebar extends Component {
     setType(type) {
         let elementWidth = this.element.getBoundingClientRect().width;
         this.setZindex();
-        let sibling = document.querySelector('.e-main-content') ||
-            this.element.nextElementSibling;
+        let sibling = document.querySelector('.e-main-content') || this.targetEle;
         if (sibling) {
             sibling.style.transform = 'translateX(' + 0 + 'px)';
             if (!Browser.isDevice && this.type !== 'Auto') {
@@ -14015,8 +14042,7 @@ let Sidebar = class Sidebar extends Component {
         this.windowWidth = null;
         (!isNullOrUndefined(this.sidebarEleCopy.getAttribute('tabindex'))) ?
             this.element.setAttribute('tabindex', this.tabIndex) : this.element.removeAttribute('tabindex');
-        let sibling = document.querySelector('.e-main-content')
-            || this.element.nextElementSibling;
+        let sibling = document.querySelector('.e-main-content') || this.targetEle;
         if (!isNullOrUndefined(sibling)) {
             sibling.style.margin = '';
             sibling.style.transform = '';

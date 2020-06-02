@@ -2,13 +2,21 @@
 
 ## [Unreleased]
 
+## 18.1.55 (2020-06-02)
+
+### Kanban
+
+#### Bug Fixes
+
+- `#278225` - An issue with kanban styles not loaded properly when `refresh` method called issue has been fixed.
+
 ## 18.1.48 (2020-05-05)
 
 ### Kanban
 
 #### Bug Fixes
 
-- `#274830` - Rendered empty column when empty data passed to Kanban board.
+- `#274830` - An issue with Rendered empty column when empty data passed to Kanban board.
 
 ## 18.1.46 (2020-04-28)
 

@@ -233,6 +233,10 @@ export class NavigationPane {
         if ((args.event.which === 3) && (args.node.getAttribute('data-uid') !== this.treeObj.selectedNodes[0])) {
             this.isRightClick = true;
             this.treeObj.selectedNodes = [args.node.getAttribute('data-uid')];
+        } else if (args.node.getAttribute('data-uid') === this.treeObj.selectedNodes[0] && this.parent.selectedItems.length !== 0) {
+            this.parent.setProperties({ selectedItems: [] }, true);
+            let layout: string = (this.parent.view === 'LargeIcons') ? 'largeiconsview' : 'detailsview';
+            this.parent.notify(events.modelChanged, { module: layout, newProp: { selectedItems: [] } });
         }
     }
 

@@ -809,6 +809,8 @@ const wrapperAttributes = ['title', 'style', 'class'];
 let NumericTextBox = class NumericTextBox extends Component {
     constructor(options, element) {
         super(options, element);
+        this.isVue = false;
+        this.preventChange = false;
         this.numericOptions = options;
     }
     preRender() {
@@ -917,6 +919,7 @@ let NumericTextBox = class NumericTextBox extends Component {
                     this.hiddenInput.setAttribute('value', this.hiddenInput.value);
                 }
             }
+            this.elementPrevValue = this.element.value;
             this.renderComplete();
         }
     }
@@ -1290,6 +1293,8 @@ let NumericTextBox = class NumericTextBox extends Component {
             merge(eventArgs, this.changeEventArgs);
             this.prevValue = this.value;
             this.isInteract = false;
+            this.elementPrevValue = this.element.value;
+            this.preventChange = false;
             this.trigger('change', eventArgs);
         }
     }
@@ -1408,6 +1413,18 @@ let NumericTextBox = class NumericTextBox extends Component {
         if ((fireFox || iOS) && Browser.isDevice) {
             this.preventHandler();
         }
+        if (this.isVue) {
+            let current = this.instance.getNumberParser({ format: 'n' })(this.element.value);
+            let previous = this.instance.getNumberParser({ format: 'n' })(this.elementPrevValue);
+            let eventArgs = {
+                event: event,
+                value: (current === null || isNaN(current) ? null : current),
+                previousValue: (previous === null || isNaN(previous) ? null : previous)
+            };
+            this.preventChange = true;
+            this.elementPrevValue = this.element.value;
+            this.trigger('input', eventArgs);
+        }
     }
     ;
     keyDownHandler(event) {
@@ -1466,7 +1483,9 @@ let NumericTextBox = class NumericTextBox extends Component {
             }
         }
         this.changeValue(value === null || isNaN(value) ? null : this.strictMode ? this.trimValue(value) : value);
-        this.raiseChangeEvent(event);
+        if ((!this.isVue) || (this.isVue && !this.preventChange)) {
+            this.raiseChangeEvent(event);
+        }
     }
     updateCurrency(prop, propVal) {
         setValue(prop, propVal, this.cultureInfo);
@@ -1900,6 +1919,9 @@ let NumericTextBox = class NumericTextBox extends Component {
                     break;
                 case 'value':
                     this.updateValue(newProp.value);
+                    if (this.isVue && this.preventChange) {
+                        this.preventChange = false;
+                    }
                     break;
                 case 'min':
                 case 'max':
@@ -6191,13 +6213,7 @@ let Slider = class Slider extends Component {
         super.destroy();
         this.unwireEvents();
         window.removeEventListener('resize', this.onresize);
-        if (!isBlazor() && !this.isServerRendered) {
-            removeClass([this.sliderContainer], [classNames.sliderDisabled]);
-        }
-        else {
-            removeClass([this.sliderContainer], [classNames.sliderDisabled, classNames.sliderContainer, classNames.controlWrapper,
-                classNames.horizontalSlider, classNames.verticalSlider]);
-        }
+        removeClass([this.sliderContainer], [classNames.sliderDisabled]);
         this.firstHandle.removeAttribute('aria-orientation');
         if (this.type === 'Range') {
             this.secondHandle.removeAttribute('aria-orientation');

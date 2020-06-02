@@ -677,6 +677,64 @@ export class StampTool extends MoveTool {
     }
 }
 
+/**
+ * Draws a node that is defined by the user
+ * @hidden
+ */
+export class InkDrawingTool extends ToolBase {
+    /** @private */
+    public drawingObject: PdfAnnotationBaseModel;
+    /** @private */
+    public sourceObject: PdfAnnotationBaseModel;
+    /** @private */
+    public dragging: boolean;
+
+    constructor(commandHandler: PdfViewer, base: PdfViewerBase, sourceObject: PdfAnnotationBaseModel) {
+        super(commandHandler, base);
+        this.sourceObject = sourceObject;
+    }
+    /**   @private  */
+    public mouseDown(args: MouseEventArgs): void {
+        super.mouseDown(args);
+        this.inAction = true;
+        // tslint:disable-next-line
+        let node: any = { currentPosition: this.currentPosition, prevPosition: this.prevPosition };
+        this.commandHandler.annotation.inkAnnotationModule.drawInkInCanvas(node, this.pdfViewerBase.activeElements.activePageID);
+    }
+    /**   @private  */
+    public mouseMove(args: MouseEventArgs): boolean {
+        super.mouseMove(args);
+        if (this.inAction) {
+            // tslint:disable-next-line
+            let node: any = { currentPosition: this.currentPosition, prevPosition: this.pdfViewerBase.prevPosition };
+            this.commandHandler.annotation.inkAnnotationModule.drawInkInCanvas(node, this.pdfViewerBase.activeElements.activePageID);
+        }
+        return this.inAction;
+    }
+    /**   @private  */
+    public mouseUp(args: MouseEventArgs): boolean {
+
+        this.pdfViewerBase.isInkAdded = true;
+        this.commandHandler.annotation.inkAnnotationModule.mouseX = this.currentPosition.x;
+        this.commandHandler.annotation.inkAnnotationModule.mouseY = this.currentPosition.y;
+        let currentAnnot: PdfAnnotationBaseModel = this.commandHandler.annotation.inkAnnotationModule.addInk();
+        this.commandHandler.renderDrawing(undefined, this.pdfViewerBase.activeElements.activePageID);
+        this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
+        this.commandHandler.select([currentAnnot.id], currentAnnot.annotationSelectorSettings);
+        this.pdfViewerBase.isInkAdded = false;
+        super.mouseUp(args);
+        return true;
+    }
+    /**   @private  */
+    public mouseLeave(args: MouseEventArgs): void {
+        this.mouseUp(args);
+    }
+
+    /**   @private  */
+    public endAction(): void {
+        super.endAction();
+    }
+}
 
 /**
  * Helps to edit the selected connectors

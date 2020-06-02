@@ -1,12 +1,14 @@
-import { isNullOrUndefined, getValue } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, getValue, closest } from '@syncfusion/ej2-base';
 import { attributes } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { Cell } from '../models/cell';
-import { ICellRenderer } from '../base/interface';
+import { ICellRenderer, IGrid } from '../base/interface';
 import { CellRenderer } from './cell-renderer';
 import { Input } from '@syncfusion/ej2-inputs';
 import { appendChildren } from '../base/util';
 import { InputArgs }  from '@syncfusion/ej2-inputs';
+import { DropDownList } from '@syncfusion/ej2-dropdowns';
+import * as events from '../base/constant';
 
 /**
  * FilterCellRenderer class which responsible for building filter cell.
@@ -15,6 +17,7 @@ import { InputArgs }  from '@syncfusion/ej2-inputs';
 export class FilterCellRenderer extends CellRenderer implements ICellRenderer<Column> {
 
     public element: HTMLElement = this.parent.createElement('TH', { className: 'e-filterbarcell' });
+    private dropOptr: DropDownList;
     /**
      * Function to return the wrapper for the TH content.
      * @returns string 
@@ -108,6 +111,11 @@ export class FilterCellRenderer extends CellRenderer implements ICellRenderer<Co
                 }
 
                 this.appendHtml(node, innerDIV);
+                // render's the dropdownlist component if showFilterBarOperator sets to true
+                if (this.parent.filterSettings.showFilterBarOperator && this.parent.filterSettings.type === 'FilterBar'
+                    && !this.parent.isPrinting && isNullOrUndefined(column.filterTemplate)) {
+                    this.operatorIconRender(innerDIV, column, cell);
+                }
 
                 if ((isNullOrUndefined(column.allowFiltering) || column.allowFiltering) && !isNullOrUndefined(column.filterBarTemplate)) {
                     let templateWrite: Function = column.filterBarTemplate.write as Function;
@@ -131,5 +139,53 @@ export class FilterCellRenderer extends CellRenderer implements ICellRenderer<Co
     public appendHtml(node: Element, innerHtml: string | Element): Element {
         node.appendChild(<Element>innerHtml);
         return node;
+    }
+
+    private operatorIconRender(innerDIV: HTMLElement, column: Column, cell: Cell<Column>): void {
+        let gObj: IGrid = this.parent;
+        let fbicon: HTMLElement = this.parent.createElement('input', {
+            className: ' e-filterbaroperator e-icons e-icon-filter',
+            id: cell.column.uid
+        });
+        innerDIV.querySelector('span').appendChild(fbicon);
+        let operators: string = 'equal';
+        if (!isNullOrUndefined(gObj.filterModule.operators[column.field])) {
+            operators = gObj.filterModule.operators[column.field];
+        }
+        this.dropOptr = new DropDownList({
+            fields: { text: 'text', value: 'value' },
+            popupHeight: 'auto',
+            value: operators,
+            width: '0px',
+            enabled: column.allowFiltering,
+            popupWidth: 'auto',
+            change: this.internalEvent.bind(this),
+            beforeOpen: function (): void {
+                let operator: Object = gObj.filterModule.customOperators;
+                this.dataSource = operator[gObj.getColumnByUid(this.element.id).type + 'Operator'];
+                for (let i: number = 0; i < this.dataSource.length; i++) {
+                    if (column.filter && column.filter.operator && isNullOrUndefined(gObj.filterModule.operators[column.field]) &&
+                        this.dataSource[i].value === column.filter.operator) {
+                        this.value = column.filter.operator;
+                    }
+                }
+            },
+        });
+        this.dropOptr.appendTo(fbicon);
+        let spanElmt: Element = closest(this.dropOptr.element, 'span');
+        if (!gObj.enableRtl) {
+            (spanElmt as HTMLElement).style.marginRight = '15px';
+        } else {
+            (spanElmt as HTMLElement).style.marginLeft = '15px';
+        }
+        spanElmt.removeAttribute('tabindex');
+    }
+
+    private internalEvent(e: object): void {
+        let gObj: IGrid = this.parent;
+        let col: Column = gObj.getColumnByUid((<{ element?: HTMLElement }>e).element.getAttribute('id'));
+        (<{ column?: object }>e).column = col;
+        gObj.filterModule.operators[col.field] = (<{value ?: string }>e).value;
+        gObj.notify(events.getFilterBarOperator, e);
     }
 }

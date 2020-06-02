@@ -163,7 +163,7 @@ export class ExportUtils {
     /**
      * To get data url for charts.
      */
-    public getDataUrl(chart: Chart): { element: HTMLCanvasElement, dataUrl?: string, blobUrl?: string } {
+    public getDataUrl(chart: Chart | AccumulationChart): { element: HTMLCanvasElement, dataUrl?: string, blobUrl?: string } {
         let controlValue: IControlValue = this.getControlsValue([chart]);
         let element: HTMLCanvasElement = this.control.svgObject as HTMLCanvasElement;
         let isCanvas: boolean = (this.control as Chart).enableCanvas;

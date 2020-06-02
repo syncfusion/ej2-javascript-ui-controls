@@ -32,3 +32,34 @@ export type ProgressTheme =
     'Bootstrap4' |
     /** HighContrast */
     'HighContrast';
+
+/**
+ * Text alignment
+ */
+export type TextAlignmentType =
+    /** Near */
+    'Near' |
+    /** Center */
+    'Center' |
+    /** Far */
+    'Far';
+
+/** 
+ * Linear modes
+ */
+export type ModeType =
+    'Auto' |
+    'Success' |
+    'Info' |
+    'Danger' |
+    'Warning';
+
+/**
+ * Timing function
+ */
+export type TimingFunction =
+    'Linear' |
+    'EaseIn' |
+    'EaseOut' |
+    'EaseInOut'|
+    'Bounce';

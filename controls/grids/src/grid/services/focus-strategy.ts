@@ -8,6 +8,7 @@ import { Cell } from '../models/cell';
 import { Column } from '../models/column';
 import { NotifyArgs } from '../base/interface';
 import { RowModelGenerator } from './row-model-generator';
+import { parentsUntil } from '../base/util';
 
 /**
  * FocusStrategy class
@@ -77,6 +78,10 @@ export class FocusStrategy {
     }
 
     public onClick(e: Event | { target: Element }, force?: boolean): void {
+        if (parentsUntil(e.target as HTMLElement, 'e-filterbarcell') &&
+            (e.target as HTMLElement).classList.contains('e-input-group-icon')) {
+            return;
+        }
         let isContent: boolean = !isNullOrUndefined(closest(<HTMLElement>e.target, '.e-gridcontent'));
         let isHeader: boolean = !isNullOrUndefined(closest(<HTMLElement>e.target, '.e-gridheader'));
         isContent = isContent && isHeader ? !isContent : isContent;
@@ -127,6 +132,10 @@ export class FocusStrategy {
         if (this.currentInfo.skipAction) { this.clearIndicator(); return true; }
         if (['pageUp', 'pageDown', 'altDownArrow'].indexOf(e.action) > -1) { this.clearIndicator(); return true; }
         let th: boolean = closest(target, 'th') && !(closest(target, 'th') as HTMLElement).tabIndex;
+        if ((e.target as HTMLElement).classList.contains('e-dropdownlist') && (e.keyCode === 13 || e.keyCode === 27)) {
+            let inputTarget: Element = closest(e.target as HTMLElement, '.e-filterbarcell');
+            inputTarget.querySelector('input').focus();
+        }
         if (th && closest(document.activeElement, '.e-filterbarcell') !== null) {
             this.removeFocus();
         }
@@ -835,8 +844,10 @@ export class HeaderFocus extends ContentFocus implements IFocus {
     public getFocusInfo(): FocusInfo {
         let info: FocusInfo = {}; let [rowIndex = 0, cellIndex = 0]: number[] = this.matrix.current;
         info.element = this.getTable().rows[rowIndex].cells[cellIndex];
-        info.elementToFocus = this.getFocusable(info.element);
-        info.outline = !info.element.classList.contains('e-filterbarcell');
+        if (!isNullOrUndefined(info.element)) {
+            info.elementToFocus = this.getFocusable(info.element);
+            info.outline = !info.element.classList.contains('e-filterbarcell');
+        }
         return info;
     }
 

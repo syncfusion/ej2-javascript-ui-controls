@@ -1639,4 +1639,9 @@ describe('Form field API validation', () => {
         documentEditor.setFormFieldInfo('Dropdown1', dropdownInfo);
         expect((documentEditor.documentHelper.formFields[2].formFieldData as DropDownFormField).selectedIndex).toBe(0);
     })
+    it('prevent content change trigger', () => {
+        documentEditor.openBlank();
+        documentEditor.layoutType = 'Continuous';
+        expect(() => { documentEditor.editor.layoutWholeDocument(true)}).not.toThrowError();
+    })
 });

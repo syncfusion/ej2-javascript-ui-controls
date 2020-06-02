@@ -374,7 +374,7 @@ describe('DropDownBase', () => {
                 list.appendTo('#newlist');
                 setTimeout(() => {
                     expect(ele.nextElementSibling.querySelectorAll('li').length).toBe(0);
-                    expect(list.list.innerHTML).toBe('No Records Found');
+                    expect(list.list.innerHTML).toBe('No records found');
                     done();
                 }, 800);
             });

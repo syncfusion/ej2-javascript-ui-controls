@@ -3,7 +3,7 @@ import { getActualPropFromColl, isActionPrevent, getColumnByForeignKeyValue } fr
 import { remove, matches, isBlazor } from '@syncfusion/ej2-base';
 import { DataUtil, Predicate, Query, DataManager } from '@syncfusion/ej2-data';
 import { FilterSettings, Grid } from '../base/grid';
-import { IGrid, IAction, NotifyArgs, IFilterOperator, IValueFormatter, FilterUI } from '../base/interface';
+import { IGrid, IAction, NotifyArgs, IFilterOperator, IValueFormatter, FilterUI, EJ2Intance } from '../base/interface';
 import * as events from '../base/constant';
 import { CellType } from '../base/enum';
 import { PredicateModel } from '../base/grid-model';
@@ -42,6 +42,7 @@ export class Filter implements IAction {
     private initialLoad: boolean;
     private refresh: boolean = true;
     private values: Object = {};
+    public operators: Object = {};
     private cellText: Object = {};
     private nextFlMenuOpen: string = '';
     private type: Object = { 'Menu': FilterMenuRenderer, 'CheckBox': CheckBoxFilter, 'Excel': ExcelFilter };
@@ -54,7 +55,7 @@ export class Filter implements IAction {
     };
     private fltrDlgDetails: { field?: string, isOpen?: boolean } = { field: '', isOpen: false };
 
-    private customOperators: Object;
+    public customOperators: Object;
     /** @hidden */
     public skipNumberInput: string[] = ['=', ' ', '!'];
     public skipStringInput: string[] = ['>', '<', '='];
@@ -138,6 +139,12 @@ export class Filter implements IAction {
         this.updateFilterMsg();
         this.removeEventListener();
         this.unWireEvents();
+        if (this.filterSettings.type === 'FilterBar' && this.filterSettings.showFilterBarOperator) {
+            let dropdownlist: NodeListOf<Element> = this.element.querySelectorAll('.e-filterbaroperator');
+            for (let i: number = 0; i < dropdownlist.length; i++) {
+                (<EJ2Intance>dropdownlist[i]).ej2_instances[0].destroy();
+            }
+        }
         if (this.element) {
             remove(this.element);
             let filterBarElement: Element = this.parent.getHeaderContent().querySelector('.e-filterbar');
@@ -339,6 +346,9 @@ export class Filter implements IAction {
         let gObj: IGrid = this.parent;
         let filterCell: HTMLInputElement;
         this.column = gObj.grabColumnByFieldFromAllCols(fieldName);
+        if (this.filterSettings.type === 'FilterBar' && this.filterSettings.showFilterBarOperator) {
+            filterOperator = this.getOperatorName(fieldName);
+        }
         if (!this.column) {
             return;
         }
@@ -430,6 +440,7 @@ export class Filter implements IAction {
                         this.parent.updateExternalMessage('');
                     }
                     break;
+                case 'showFilterBarOperator':
                 case 'type':
                     this.parent.refreshHeader();
                     this.refreshFilterSettings();
@@ -677,7 +688,14 @@ export class Filter implements IAction {
             if (!this.column) {
                 return;
             }
-            if ((this.filterSettings.mode === 'Immediate' || e.keyCode === 13) && e.keyCode !== 9) {
+            if (e.action === 'altDownArrow' && this.parent.filterSettings.showFilterBarOperator) {
+                let dropDownListInput: Element = closest(target, 'span').querySelector('.e-filterbaroperator');
+                (<EJ2Intance>dropDownListInput).ej2_instances[0].showPopup();
+                (dropDownListInput as HTMLElement).focus();
+            }
+            if ((this.filterSettings.mode === 'Immediate' || (e.keyCode === 13 &&
+                !(e.target as HTMLElement).classList.contains('e-filterbaroperator')))
+                && e.keyCode !== 9 ) {
                 this.value = target.value.trim();
                 this.processFilter(e);
             }
@@ -991,6 +1009,16 @@ export class Filter implements IAction {
 
 
     private clickHandler(e: MouseEvent): void {
+        if (this.filterSettings.type === 'FilterBar' && this.filterSettings.showFilterBarOperator) {
+            if (parentsUntil(e.target as HTMLElement, 'e-filterbarcell') &&
+                (e.target as HTMLElement).classList.contains('e-input-group-icon')) {
+                (closest(e.target as HTMLElement, 'div').querySelector('.e-filterbaroperator') as HTMLElement).focus();
+            }
+            if ((e.target as HTMLElement).classList.contains('e-list-item')) {
+                let inputId: string = document.querySelector('.e-popup-open').getAttribute('id').replace('_popup', '');
+                (closest(document.getElementById(inputId), 'div').querySelector('.e-filtertext') as HTMLElement).focus();
+            }
+        }
         if (this.filterSettings.mode === 'Immediate' || this.parent.filterSettings.type === 'Menu' ||
             this.parent.filterSettings.type === 'CheckBox' || this.parent.filterSettings.type === 'Excel') {
             let gObj: IGrid = this.parent;
@@ -1114,6 +1142,13 @@ export class Filter implements IAction {
      */
     public getFilterUIInfo(): FilterUI {
         return this.filterModule ? this.filterModule.getFilterUIInfo() : {};
+    }
+
+    /**
+     * @hidden
+     */
+    private getOperatorName(field: string): string {
+        return (<EJ2Intance>document.getElementById(this.parent.getColumnByField(field).uid)).ej2_instances[0].value;
     }
 
 }

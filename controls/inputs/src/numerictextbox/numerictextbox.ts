@@ -69,6 +69,9 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     private numericOptions: NumericTextBoxModel;
     private isInteract: boolean;
     private serverDecimalSeparator: string;
+    private isVue: boolean = false;
+    private preventChange: boolean = false;
+    private elementPrevValue: string;
 
     /*NumericTextBox Options */
 
@@ -403,6 +406,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
                     this.hiddenInput.setAttribute('value', this.hiddenInput.value);
                 }
             }
+            this.elementPrevValue = this.element.value;
             this.renderComplete();
         }
     }
@@ -788,6 +792,8 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             merge(eventArgs, this.changeEventArgs);
             this.prevValue = this.value;
             this.isInteract = false;
+            this.elementPrevValue = this.element.value;
+            this.preventChange = false;
             this.trigger('change', eventArgs);
         }
     }
@@ -896,6 +902,18 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         if ((fireFox || iOS) && Browser.isDevice) {
             this.preventHandler();
         }
+        if (this.isVue) {
+            let current: number = this.instance.getNumberParser({ format: 'n' })(this.element.value);
+            let previous: number = this.instance.getNumberParser({ format: 'n' })(this.elementPrevValue);
+            let eventArgs: object = {
+                event: event,
+                value: (current === null || isNaN(current) ? null : current),
+                previousValue: (previous === null || isNaN(previous) ? null : previous)
+            };
+            this.preventChange = true;
+            this.elementPrevValue = this.element.value;
+            this.trigger('input', eventArgs);
+        }
     };
 
     private keyDownHandler(event: KeyboardEvent): void {
@@ -952,7 +970,9 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             }
         }
         this.changeValue(value === null || isNaN(value) ? null : this.strictMode ? this.trimValue(value) : value);
-        this.raiseChangeEvent(event);
+        if ((!this.isVue) || (this.isVue && !this.preventChange)) {
+            this.raiseChangeEvent(event);
+        }
     }
 
     private updateCurrency(prop: string, propVal: string): void {
@@ -1380,6 +1400,9 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
                     break;
                 case 'value':
                     this.updateValue(newProp.value);
+                    if (this.isVue && this.preventChange) {
+                        this.preventChange = false;
+                    }
                     break;
                 case 'min':
                 case 'max':

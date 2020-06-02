@@ -1,6 +1,6 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { LayoutViewer, PageLayoutViewer, TablePropertiesDialog, DocumentHelper, 
-FieldElementBox, TextElementBox, SfdtExport, BookmarkElementBox } from '../../src/index';
+FieldElementBox, TextElementBox, SfdtExport, BookmarkElementBox, ParagraphWidget, LineWidget } from '../../src/index';
 import { TestHelper } from '../test-helper.spec';
 import { createElement } from '@syncfusion/ej2-base';
 import { Editor } from '../../src/index';
@@ -601,6 +601,14 @@ describe('Hidden Bookmark API', () => {
         editor.selection.handleRightKey()
         expect(editor.selection.getBookmarks().length).toBe(0);
         expect(editor.selection.getBookmarks(true).length).toBe(1)
+    });
+    it('Insert text before merge field', () => {
+        editor.openBlank();
+        editor.editor.insertField('Merge', 'check');
+        editor.selection.handleHomeKey();
+        editor.editor.insertText('Hello');
+        let text : string = (((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text;
+        expect(text).toBe('Hello');
     });
     it('select comment word Control right shift key', () => {
         editor.openBlank();

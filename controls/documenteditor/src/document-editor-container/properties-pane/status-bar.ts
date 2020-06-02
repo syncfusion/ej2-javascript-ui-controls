@@ -241,6 +241,7 @@ export class StatusBar {
             this.startPage = args.startPage;
         }
         this.updatePageNumber();
+        this.updatePageCount();
     }
     private wireEvents = (): void => {
         this.pageNumberInput.addEventListener('keydown', (e: KeyboardEventArgs) => {

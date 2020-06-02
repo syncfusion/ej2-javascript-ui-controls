@@ -34,3 +34,15 @@ export const mouseMove: string = 'mouseMove';
  * mouseLeave event
  */
 export const mouseLeave: string = 'mouseLeave';
+/**
+ * svgLink
+ */
+export const svgLink: string = 'http://www.w3.org/2000/svg';
+/**
+ * gradient type
+ */
+export const gradientType: string = 'linearGradient';
+/**
+ * stop element
+ */
+export const stopElement: string = 'stop';

@@ -300,18 +300,18 @@ export class ListBox extends DropDownBase {
     /**
      * Accepts the template design and assigns it to list of component
      * when no data is available on the component.
-     * @default 'No Records Found'
+     * @default 'No records found'
      * @private
      */
-    @Property('No Records Found')
+    @Property('No records found')
     public noRecordsTemplate: string;
     /**
      * Accepts the template and assigns it to the list content of the ListBox component
      * when the data fetch request from the remote server fails.
-     * @default 'The Request Failed'
+     * @default 'Request failed'
      * @private
      */
-    @Property('The Request Failed')
+    @Property('Request failed')
     public actionFailureTemplate: string;
 
     /**

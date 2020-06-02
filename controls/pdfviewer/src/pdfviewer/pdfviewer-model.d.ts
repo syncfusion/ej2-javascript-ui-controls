@@ -1275,6 +1275,48 @@ export interface VolumeSettingsModel {
 }
 
 /**
+ * Interface for a class InkAnnotationSettings
+ */
+export interface InkAnnotationSettingsModel {
+
+    /**
+     * specifies the opacity of the annotation.
+     */
+    opacity?: number;
+
+    /**
+     * specifies the stroke color of the annotation.
+     */
+    strokeColor?: string;
+
+    /**
+     * specified the thickness of the annotation.
+     */
+    thickness?: number;
+
+    /**
+     * specified the width of the annotation.
+     */
+    width?: number;
+
+    /**
+     * specified the height of the annotation.
+     */
+    height?: number;
+
+    /**
+     * specifies the annotation selector settings of the annotation.
+     */
+    annotationSelectorSettings?: AnnotationSelectorSettingsModel;
+
+    /**
+     * specifies the lock action of the annotation.
+     */
+    isLock?: boolean;
+
+}
+
+/**
  * Interface for a class StickyNotesSettings
  */
 export interface StickyNotesSettingsModel {
@@ -1941,6 +1983,12 @@ export interface PdfViewerModel extends ComponentModel{
     enableHandwrittenSignature?: boolean;
 
     /**
+     * Enables or disables the ink annotation in PDF document.
+     * @default true
+     */
+    enableInkAnnotation?: boolean;
+
+    /**
      * restrict zoom request.
      * @default false
      */
@@ -1975,6 +2023,12 @@ export interface PdfViewerModel extends ComponentModel{
      * @default true
      */
     enableNavigation?: boolean;
+
+    /**
+     * Enable or disables the auto complete option in form documents.
+     * @default true
+     */
+    enableAutoComplete?: boolean;
 
     /**
      * Enable or disables the Magnification module of PdfViewer.
@@ -2274,6 +2328,12 @@ export interface PdfViewerModel extends ComponentModel{
      */
     // tslint:disable-next-line:max-line-length
     handWrittenSignatureSettings?: HandWrittenSignatureSettingsModel;
+
+    /**
+     * Defines the settings of Ink annotation.
+     */
+    // tslint:disable-next-line:max-line-length
+    inkAnnotationSettings?: InkAnnotationSettingsModel;
 
     /**
      * Defines the settings of the annotations.

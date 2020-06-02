@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.55 (2020-06-02)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#275092` - The line routing for the organizational chart works now
+
 ## 18.1.54 (2020-05-26)
 
 ### Diagram

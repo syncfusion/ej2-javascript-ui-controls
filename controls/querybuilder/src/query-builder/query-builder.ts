@@ -3396,9 +3396,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         };
         if (value.indexOf('%') === 0 && value[value.length - 1] === '%') {
             return (operator === 'not like') ? 'notcontains' : 'contains';
-        } else if (value.indexOf('%') === 0 && value.indexOf('%') !== value.length - 1) {
-            return (operator === 'not like') ? 'notstartswith' : 'startswith';
         } else if (value.indexOf('%') !== 0 && value.indexOf('%') === value.length - 1) {
+            return (operator === 'not like') ? 'notstartswith' : 'startswith';
+        } else if (value.indexOf('%') === 0 && value.indexOf('%') !== value.length - 1) {
             return (operator === 'not like') ? 'notendswith' : 'endswith';
         }
         return operators[operator];

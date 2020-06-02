@@ -21817,16 +21817,18 @@ class ConnectTool extends ToolBase {
             if (isBlazor()) {
                 let trigger = DiagramEvent.connectionChange;
                 let temparg;
-                this.tempArgs.state = 'Changed';
-                let connector = args.source.connectors[0];
-                let nodeEndId = this.endPoint === 'ConnectorSourceEnd' ? 'sourceID' : 'targetID';
-                let portEndId = this.endPoint === 'ConnectorSourceEnd' ? 'sourcePortID' : 'targetPortID';
-                this.tempArgs.oldValue = this.endPoint === 'ConnectorSourceEnd' ?
-                    { connectorSourceValue: { nodeId: this.oldConnector[nodeEndId], portId: this.oldConnector[portEndId] } } :
-                    { connectorTargetValue: { nodeId: this.oldConnector[nodeEndId], portId: this.oldConnector[portEndId] } };
-                temparg = (yield this.commandHandler.triggerEvent(trigger, this.tempArgs));
-                if (temparg) {
-                    this.commandHandler.updateConnectorValue(temparg);
+                if (this.tempArgs) {
+                    this.tempArgs.state = 'Changed';
+                    let connector = args.source.connectors[0];
+                    let nodeEndId = this.endPoint === 'ConnectorSourceEnd' ? 'sourceID' : 'targetID';
+                    let portEndId = this.endPoint === 'ConnectorSourceEnd' ? 'sourcePortID' : 'targetPortID';
+                    this.tempArgs.oldValue = this.endPoint === 'ConnectorSourceEnd' ?
+                        { connectorSourceValue: { nodeId: this.oldConnector[nodeEndId], portId: this.oldConnector[portEndId] } } :
+                        { connectorTargetValue: { nodeId: this.oldConnector[nodeEndId], portId: this.oldConnector[portEndId] } };
+                    temparg = (yield this.commandHandler.triggerEvent(trigger, this.tempArgs));
+                    if (temparg) {
+                        this.commandHandler.updateConnectorValue(temparg);
+                    }
                 }
             }
             if (!isBlazor() && this.isConnected && args.source.connectors) {
@@ -26946,7 +26948,7 @@ class CommandHandler {
         }
     }
     /** @private */
-    addLayer(layer, objects) {
+    addLayer(layer, objects, isClone = false) {
         layer.id = layer.id || randomId();
         layer.zIndex = this.diagram.layers.length;
         this.diagram.enableServerDataBinding(false);
@@ -26955,7 +26957,9 @@ class CommandHandler {
         layer.objectZIndex = -1;
         layer.zIndexTable = {};
         this.diagram.layers.push(layer);
-        this.UpdateBlazorDiagramModelLayers(layer);
+        if (isClone) {
+            this.UpdateBlazorDiagramModelLayers(layer);
+        }
         this.diagram.layerZIndexTable[layer.zIndex] = layer.id;
         this.diagram.activeLayer = layer;
         let layers = layer.objects;
@@ -27033,7 +27037,7 @@ class CommandHandler {
             let newlayer = {
                 id: layerName + '_' + randomId(), objects: [], visible: true, lock: false
             };
-            this.addLayer(newlayer);
+            this.addLayer(newlayer, null, true);
             newlayer.zIndex = this.diagram.layers.length - 1;
             for (let obj of layer.objects) {
                 cloneObject$$1.push(this.diagram.nameTable[obj]);
@@ -30158,6 +30162,9 @@ class CommandHandler {
                 element: cloneBlazorObject(cloneObject(node)), state: (node.isExpanded) ? true : false
             };
             this.triggerEvent(DiagramEvent.expandStateChange, arg);
+            if (this.diagram.lineRoutingModule && this.diagram.constraints & DiagramConstraints.LineRouting) {
+                this.diagram.resetSegments();
+            }
         }
         return objects;
     }
@@ -32962,6 +32969,7 @@ class Diagram extends Component {
      * @param {LayerModel} layer - defines the layer model which is to be added
      * @param {Object[]} layerObject - defines the object of the layer
      * @blazorArgsType layer|DiagramLayer
+     * @deprecated
      */
     addLayer(layer, layerObject) {
         this.commandHandler.addLayer(layer, layerObject);
@@ -32969,6 +32977,7 @@ class Diagram extends Component {
     /**
      * remove the layer from diagram
      * @param {string} layerId - define the id of the layer
+     * @deprecated
      */
     removeLayer(layerId) {
         this.commandHandler.removeLayer(layerId);
@@ -35859,7 +35868,7 @@ class Diagram extends Component {
                 id: 'default_layer', visible: true, lock: false, objects: [], zIndex: 0,
                 objectZIndex: -1, zIndexTable: {}
             };
-            this.commandHandler.addLayer(defaultLayer);
+            this.commandHandler.addLayer(defaultLayer, null, true);
         }
         this.setActiveLayer(this.layers[this.layers.length - 1].id);
     }
@@ -46692,6 +46701,9 @@ class LayoutAnimation {
                 element: cloneBlazorObject(cloneObject(node)), state: (node.isExpanded) ? true : false
             };
             diagram.triggerEvent(DiagramEvent.expandStateChange, arg);
+            if (diagram.lineRoutingModule && diagram.constraints & DiagramConstraints.LineRouting) {
+                diagram.resetSegments();
+            }
         }
     }
     /**
@@ -46758,7 +46770,7 @@ class LineRouting {
         if (length > 0) {
             for (let k = 0; k < length; k++) {
                 let connector = diagram.connectors[k];
-                if (connector.type === 'Orthogonal') {
+                if (connector.type === 'Orthogonal' && connector.visible) {
                     this.refreshConnectorSegments(diagram, connector, true);
                 }
             }
@@ -46815,7 +46827,7 @@ class LineRouting {
         let node;
         for (let i = 0; i < nodes.length; i++) {
             node = nodes[i];
-            if (node.shape.type !== 'SwimLane' && !node.isLane && !node.isPhase && !node.isHeader) {
+            if (node.shape.type !== 'SwimLane' && !node.isLane && !node.isPhase && !node.isHeader && node.visible) {
                 objects.push(node);
             }
         }

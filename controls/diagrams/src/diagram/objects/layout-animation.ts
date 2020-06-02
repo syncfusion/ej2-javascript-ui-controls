@@ -4,7 +4,7 @@ import { Layout, ILayout } from '../layout/layout-base';
 import { ConnectorModel } from '../objects/connector-model';
 import { NodeModel } from '../objects/node-model';
 import { Container } from '../core/containers/container';
-import { DiagramEvent, RealAction } from '../enum/enum';
+import { DiagramEvent, RealAction, DiagramConstraints } from '../enum/enum';
 import { IExpandStateChangeEventArgs } from '../objects/interface/IElement';
 import { cloneObject as clone } from '../utility/base-util';
 import { cloneBlazorObject } from '../utility/diagram-util';
@@ -78,6 +78,9 @@ export class LayoutAnimation {
                 element: cloneBlazorObject(clone(node)), state: (node.isExpanded) ? true : false
             };
             diagram.triggerEvent(DiagramEvent.expandStateChange, arg);
+            if (diagram.lineRoutingModule && diagram.constraints & DiagramConstraints.LineRouting) {
+                diagram.resetSegments();
+            }
         }
     }
 

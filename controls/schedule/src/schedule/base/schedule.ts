@@ -765,12 +765,16 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         this.renderModule = new Render(this);
         this.eventBase = new EventBase(this);
         this.workCellAction = new WorkCellInteraction(this);
+        if (this.allowKeyboardInteraction) {
+            this.keyboardInteractionModule = new KeyboardInteraction(this);
+        }
         this.initializeDataModule();
         this.on(events.dataReady, this.resetEventTemplates, this);
         this.on(events.eventsLoaded, this.updateEventTemplates, this);
         this.renderTableContainer();
         this.activeViewOptions = this.getActiveViewOptions();
         this.initializeResources();
+        this.wireEvents();
     }
 
     private renderTableContainer(): void {
@@ -967,22 +971,21 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         this.initializeView(this.currentView);
         this.destroyPopups();
         this.initializePopups();
-        this.unwireEvents();
-        this.wireEvents();
     }
     private validateDate(selectedDate: Date = this.selectedDate): void {
         // persist the selected date value
         let date: Date = selectedDate instanceof Date ? new Date(selectedDate.getTime()) : new Date(selectedDate);
-        this.minDate = this.minDate instanceof Date ? new Date(this.minDate.getTime()) : new Date(this.minDate);
-        this.maxDate = this.maxDate instanceof Date ? new Date(this.maxDate.getTime()) : new Date(this.maxDate);
-        if (this.minDate <= this.maxDate) {
-            if (date < this.minDate) {
-                date = this.minDate;
+        let minDate: Date = this.minDate instanceof Date ? new Date(this.minDate.getTime()) : new Date(this.minDate);
+        let maxDate: Date = this.maxDate instanceof Date ? new Date(this.maxDate.getTime()) : new Date(this.maxDate);
+        if (minDate <= maxDate) {
+            if (date < minDate) {
+                date = minDate;
             }
-            if (date > this.maxDate) {
-                date = this.maxDate;
+            if (date > maxDate) {
+                date = maxDate;
             }
-            this.setScheduleProperties({ selectedDate: new Date('' + date) });
+            this.setScheduleProperties(
+                { selectedDate: new Date('' + date), minDate: new Date('' + minDate), maxDate: new Date('' + maxDate) });
         } else {
             throw Error('minDate should be equal or less than maxDate');
         }
@@ -1462,10 +1465,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         EventHandler.add(<HTMLElement & Window>window, 'resize', this.onScheduleResize, this);
         EventHandler.add(<HTMLElement & Window>window, 'orientationchange', this.onScheduleResize, this);
         EventHandler.add(document, Browser.touchStartEvent, this.onDocumentClick, this);
-        EventHandler.add(this.element, 'mouseover', this.workCellAction.onHover, this.workCellAction);
-        if (this.allowKeyboardInteraction) {
-            this.keyboardInteractionModule = new KeyboardInteraction(this);
-        }
     }
 
     /** @hidden */
@@ -1729,10 +1728,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         EventHandler.remove(<HTMLElement & Window>window, 'resize', this.onScheduleResize);
         EventHandler.remove(<HTMLElement & Window>window, 'orientationchange', this.onScheduleResize);
         EventHandler.remove(document, Browser.touchStartEvent, this.onDocumentClick);
-        EventHandler.remove(this.element, 'mouseover', this.workCellAction.onHover);
-        if (this.keyboardInteractionModule) {
-            this.keyboardInteractionModule.destroy();
-        }
     }
     /**
      * Core method to return the component name.
@@ -2704,6 +2699,10 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         this.destroyPopups();
         this.unwireEvents();
         this.destroyHeaderModule();
+        this.workCellAction.destroy();
+        if (this.keyboardInteractionModule) {
+            this.keyboardInteractionModule.destroy();
+        }
         if (this.scrollModule) {
             this.scrollModule.destroy();
             this.scrollModule = null;

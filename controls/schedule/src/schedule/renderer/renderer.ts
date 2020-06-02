@@ -1,4 +1,4 @@
-import { isNullOrUndefined, extend, addClass, removeClass } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend, addClass, removeClass, isBlazor } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
 import { View, ReturnType } from '../base/type';
 import { EventTooltip } from '../popups/event-tooltip';
@@ -141,6 +141,9 @@ export class Render {
         if (this.parent.isDestroyed) { return; }
         this.parent.trigger(events.dataBinding, e, (args: ReturnType) => {
             let resultData: Object[] = <Object[]>extend([], args.result, null, true);
+            if (isBlazor()) {
+                resultData.forEach((data: { [key: string]: Object }) => delete data.BlazId);
+            }
             this.parent.eventsData = resultData.filter((data: { [key: string]: Object }) => !data[this.parent.eventFields.isBlock]);
             this.parent.blockData = resultData.filter((data: { [key: string]: Object }) => data[this.parent.eventFields.isBlock]);
             let processed: Object[] = this.parent.eventBase.processData(resultData as { [key: string]: Object }[]);

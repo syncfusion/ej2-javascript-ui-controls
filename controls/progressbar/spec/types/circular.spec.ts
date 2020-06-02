@@ -222,13 +222,14 @@ describe('ProgressBar Control', () => {
         let path: Element;
         let strokedasharray: string;
         let loaded: EmitType<ILoadedEventArgs>;
-        let value: number;
         beforeAll((): void => {
             element = createElement('div', { id: 'container' });
             document.body.appendChild(element);
             progress = new ProgressBar(
                 {
                     type: 'Circular',
+                    width: '300',
+                    height: '300'
                 }
             );
             progress.appendTo('#container');
@@ -250,7 +251,7 @@ describe('ProgressBar Control', () => {
             loaded = (args: Object): void => {
                 path = document.getElementById('container_Circulartrack');
                 strokedasharray = path.getAttribute('stroke-dasharray');
-                expect(strokedasharray == ' 136.38766479492188 5' || strokedasharray != null).toBe(true);
+                expect(strokedasharray == " 211.7943878173828 5").toBe(true);
             };
             progress.segmentCount = 4;
             progress.gapWidth = 5;
@@ -261,7 +262,7 @@ describe('ProgressBar Control', () => {
             loaded = (args: Object): void => {
                 path = document.getElementById('container_Circulartrack');
                 strokedasharray = path.getAttribute('stroke-dasharray');
-                //expect(strokedasharray != null).toBe(false);
+                expect(strokedasharray == " 104.65017700195312 5").toBe(true);
             };
             progress.startAngle = 270;
             progress.endAngle = 90;
@@ -272,7 +273,7 @@ describe('ProgressBar Control', () => {
         loaded = (args: Object): void => {
             path = document.getElementById('container_Circulartrack');
             strokedasharray = path.getAttribute('stroke-dasharray');
-            expect(strokedasharray == ' 127.38766479492188 14' || strokedasharray != null).toBe(true);
+            expect(strokedasharray == " 208.19438781738282 8.6").toBe(true);
         };
         progress.startAngle = 0;
         progress.endAngle = 360;
@@ -284,7 +285,7 @@ describe('ProgressBar Control', () => {
         loaded = (args: Object): void => {
             path = document.getElementById('container_Circularprogress');
             strokedasharray = path.getAttribute('stroke-dasharray');
-            expect(strokedasharray != null).toBe(true);
+            expect(strokedasharray == " 208.19438781738282 8.6").toBe(true);
         };
         progress.value = 50;
         progress.loaded = loaded;
@@ -294,7 +295,7 @@ describe('ProgressBar Control', () => {
         loaded = (args: Object): void => {
             path = document.getElementById('container_Circularbuffer');
             strokedasharray = path.getAttribute('stroke-dasharray');
-            expect(strokedasharray == ' 127.38766479492188 14' || strokedasharray  != null).toBe(true);
+            expect(strokedasharray == " 208.19438781738282 8.6").toBe(true);
         };
         progress.secondaryProgress = 70;
         progress.loaded = loaded;
@@ -304,10 +305,34 @@ describe('ProgressBar Control', () => {
             loaded = (args: Object): void => {
                 path = document.getElementById('container_Circulartrack');
                 strokedasharray = path.getAttribute('stroke-dasharray');
-                //expect(strokedasharray == ' 60.195770263671875 14' || strokedasharray === ' 60.195838928222656 14').toBe(false);
+                expect(strokedasharray == " 101.95017700195312 8.6").toBe(true);
             };
             progress.startAngle = 270;
             progress.endAngle = 90;
+            progress.loaded = loaded;
+            progress.refresh();
+        });
+        it('checking the trackSegment disable', () => {
+            loaded = (args: Object): void => {
+                path = document.getElementById('container_Circularprogress');
+                strokedasharray = path.getAttribute('stroke-dasharray');
+                expect(strokedasharray == " 41.36007385253906 2").toBe(true);
+            };
+            progress.startAngle = 0;
+            progress.endAngle = 360;
+            progress.cornerRadius = 'Square';
+            progress.segmentCount = 10;
+            progress.gapWidth = 2;
+            progress.trackSegmentDisable = true;
+            progress.loaded = loaded;
+            progress.refresh();
+        });
+        it('checking the trackSegment disable with buffer', () => {
+            loaded = (args: Object): void => {
+                path = document.getElementById('container_Circularbuffer');
+                strokedasharray = path.getAttribute('stroke-dasharray');
+                expect(strokedasharray == " 41.36007385253906 2").toBe(true);
+            };
             progress.loaded = loaded;
             progress.refresh();
         });
@@ -521,7 +546,6 @@ describe('ProgressBar Control', () => {
                 style = path.getAttribute('style');
                 expect(style ==='clip-path:url(#container_clippath)').toBe(true);
             };
-            progress.value = 30;
             progress.isIndeterminate = true;
             progress.loaded = loaded;
             progress.refresh();
@@ -545,13 +569,24 @@ describe('ProgressBar Control', () => {
             progress.loaded = loaded;
             progress.refresh();
         });
+        it('checking with Indeterminate of the Circular progress with segmented', () => {
+            loaded = (args: Object): void => {
+                path = document.getElementById('container_Circularprogress');
+                style = path.getAttribute('style');
+                expect(style ==='clip-path:url(#container_clippath)').toBe(true);
+            };
+            progress.segmentCount = 5;
+            progress.gapWidth = 2;
+            progress.trackSegmentDisable = true;
+            progress.loaded = loaded;
+            progress.refresh();
+        });
         it('checking with Indeterminate of the Circular progress bar with RTL', () => {
             loaded = (args: Object): void => {
                 path = document.getElementById('container_Circularprogress');
                 style = path.getAttribute('style');
                 expect(style ==='clip-path:url(#container_clippath)').toBe(true);
             };
-            progress.value = 30;
             progress.enableRtl = true;
             progress.isIndeterminate = true;
             progress.loaded = loaded;
@@ -737,6 +772,62 @@ describe('ProgressBar Control', () => {
                 expect((element as HTMLElement).style.left).toBe('178px');
                 expect((element as HTMLElement).style.top).toBe('89px');
             };
+        });
+    });
+    describe('circular progress bar databind', () => {
+        let progress: ProgressBar;
+        let element: HTMLElement;
+        let path: Element;
+        let pathWidth: number;
+        let loaded: EmitType<ILoadedEventArgs>;
+        beforeAll((): void => {
+            element = createElement('div', { id: 'container' });
+            document.body.appendChild(element);
+            progress = new ProgressBar(
+                {
+                    type: 'Circular',
+                    width: '400',
+                    height: '300',
+                    value: 20,
+                    animation: { enable: true }
+                }
+            );
+            progress.appendTo('#container');
+        });
+        afterAll((): void => {
+            progress.destroy();
+            element.remove();
+        });
+        it('checking the without changing the value', () => {
+            loaded = (args: Object): void => {
+                path = document.getElementById('container_Circularprogress');
+                pathWidth = (<SVGPathElement>path).getTotalLength();
+                expect(pathWidth === 173.41769409179688 ).toBe(true);
+            };
+            progress.loaded = loaded;
+            progress.refresh();
+        });
+        it('checking the changing the value using databind', () => {
+            loaded = (args: Object): void => {
+                path = document.getElementById('container_Circularprogress');
+                pathWidth = (<SVGPathElement>path).getTotalLength();
+                expect(pathWidth === 346.8353271484375 ).toBe(true);
+            };
+            progress.value += 20;
+            progress.dataBind();
+            progress.loaded = loaded;
+            progress.refresh();
+        });
+        it('checking the changing the value using databind with animation', () => {
+            loaded = (args: Object): void => {
+                path = document.getElementById('container_Circularprogress');
+                pathWidth = (<SVGPathElement>path).getTotalLength();
+                expect(pathWidth === 867.1773681640625 ).toBe(true);
+            };
+            progress.value += 60;
+            progress.dataBind();
+            progress.loaded = loaded;
+            progress.refresh();
         });
     });
 });

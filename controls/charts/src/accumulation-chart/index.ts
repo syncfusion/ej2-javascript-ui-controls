@@ -16,3 +16,4 @@ export * from './user-interaction/selection';
 export * from './model/enum';
 export * from './annotation/annotation';
 export * from '../common/utils/enum';
+export * from '../chart/print-export/export'

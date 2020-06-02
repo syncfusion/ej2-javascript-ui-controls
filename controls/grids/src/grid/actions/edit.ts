@@ -626,7 +626,7 @@ export class Edit implements IAction {
         } else {
             let restrictedRequestTypes: string[] = ['filterafteropen', 'filterbeforeopen', 'filterchoicerequest', 'save'];
             if (this.parent.editSettings.mode !== 'Batch' && this.formObj && !this.formObj.isDestroyed
-                && restrictedRequestTypes.indexOf(e.requestType) === -1) {
+                && restrictedRequestTypes.indexOf(e.requestType) === -1 && !e.cancel) {
                 this.destroyWidgets();
                 this.destroyForm();
             }

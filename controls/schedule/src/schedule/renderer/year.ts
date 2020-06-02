@@ -2,7 +2,6 @@ import { EventHandler, formatUnit, remove, createElement, addClass, closest, pre
 import { Schedule } from '../base/schedule';
 import { ViewBase } from './view-base';
 import { IRenderer, EventClickArgs, TdData, NotifyEventArgs } from '../base/interface';
-import { WorkCellInteraction } from '../actions/work-cells';
 import { YearEvent } from '../event-renderer/year';
 import * as util from '../base/util';
 import * as event from '../base/constant';
@@ -17,14 +16,12 @@ export class Year extends ViewBase implements IRenderer {
     public colLevels: TdData[][];
     public rowCount: number;
     public columnCount: number;
-    private workCellAction: WorkCellInteraction;
 
     /**
      * Constructor for year view
      */
     constructor(parent: Schedule) {
         super(parent);
-        this.workCellAction = new WorkCellInteraction(parent);
     }
 
     public renderLayout(className: string): void {
@@ -322,9 +319,9 @@ export class Year extends ViewBase implements IRenderer {
             if (this.parent.currentView !== 'TimelineYear') {
                 EventHandler.add(element, 'click', this.onCellClick, this);
             } else {
-                EventHandler.add(element, 'click', this.workCellAction.cellClick, this.workCellAction);
+                EventHandler.add(element, 'click', this.parent.workCellAction.cellClick, this.parent.workCellAction);
                 if (!this.parent.isAdaptive) {
-                    EventHandler.add(element, 'dblclick', this.workCellAction.cellDblClick, this.workCellAction);
+                    EventHandler.add(element, 'dblclick', this.parent.workCellAction.cellDblClick, this.parent.workCellAction);
                 }
             }
         } else {

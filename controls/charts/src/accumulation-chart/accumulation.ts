@@ -11,7 +11,8 @@ import { AccumulationType, AccumulationSelectionMode } from './model/enum';
 import { IAccSeriesRenderEventArgs, IAccTextRenderEventArgs } from './model/pie-interface';
 import { IAccAnimationCompleteEventArgs, IAccPointRenderEventArgs, IAccLoadedEventArgs } from './model/pie-interface';
 import { Theme, getThemeColor } from '../common/model/theme';
-import { ILegendRenderEventArgs, IMouseEventArgs, IPointEventArgs, ITooltipRenderEventArgs } from '../chart/model/chart-interface';
+// tslint:disable-next-line:max-line-length
+import { ILegendRenderEventArgs, IMouseEventArgs, IPointEventArgs, ITooltipRenderEventArgs, IAfterExportEventArgs } from '../chart/model/chart-interface';
 import {  IAnnotationRenderEventArgs } from '../chart/model/chart-interface';
 import { load, seriesRender, legendRender, textRender, tooltipRender, pointClick } from '../common/model/constants';
 import { pointMove, chartMouseClick, chartMouseDown } from '../common/model/constants';
@@ -544,6 +545,14 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     public resized: EmitType<IAccResizeEventArgs>;
 
     /**
+     * Triggers after the export completed.
+     * @event
+     * @blazorProperty 'AfterExport'
+     */
+    @Event()
+    public afterExport: EmitType<IAfterExportEventArgs>;
+
+    /**
      * Defines the currencyCode format of the accumulation chart
      * @private
      * @aspType string
@@ -896,8 +905,11 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     public export(type: ExportType, fileName: string): void {
         if (this.exportModule) {
             this.exportModule.export(type, fileName);
+            if (this.afterExport) {
+                this.exportModule.getDataUrl(this);
+            }
         }
-     }
+    }
 
     /**
      * Applying styles for accumulation chart element

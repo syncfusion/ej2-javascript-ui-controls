@@ -997,6 +997,20 @@
       height: $grid-rowcell-line-height + $grid-content-padding + $grid-content-padding;
     }
 
+    &.e-afenabled{
+        .e-movablecontent,
+        .e-frozencontent,
+        .e-movableheader,
+        .e-frozenheader,
+        .e-headercontent {
+      position: relative;
+      }
+    }
+
+    &.e-afenabled{
+      overflow: hidden;
+    }
+
     .e-rowcell:first-child,
     .e-summarycell:first-child {
       padding-left: $grid-first-last-rowcell-padding;

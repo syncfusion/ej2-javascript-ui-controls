@@ -5864,4 +5864,29 @@ describe('Change Event testing', () => {
             expect(numericTextBox.container.classList.contains('custom-class-two')).toBe(true);
         });   
     });
+    describe('EJ2-36175 - v-model is not updated properly on input and keyup event.', () => {
+        let numeric: any;
+        let changeCount: number = 0;
+        beforeEach((): void => {
+            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'Numeric' });
+            document.body.appendChild(ele);
+            numeric = new NumericTextBox({ value: 25, showClearButton:true, floatLabelType: "Auto", change: function (e:ChangeEventArgs) {changeCount++;}
+             });
+            numeric.appendTo('#Numeric');
+        });
+        afterEach((): void => {
+            if (numeric) {
+                numeric.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('change event testing ', () => {
+            numeric.isVue = true;
+            let keyEvent = document.createEvent('KeyboardEvent');
+            numeric.value = '245';
+            numeric.dataBind()
+            numeric.inputHandler(keyEvent);
+            expect(changeCount).toBe(1);
+       });
+    });
 });

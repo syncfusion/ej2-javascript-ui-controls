@@ -180,4 +180,12 @@ describe('Paste formatting with underline validation', () => {
         editor.selection.handleLeftKey();
         expect(editor.selection.characterFormat.underline).toBe('Single');
     });
+    it('Alignment after para delete', () => {
+        editor.openBlank();
+        editor.editor.insertText('hello');
+        editor.selection.selectAll();
+        editor.editor.onApplyParagraphFormat('textAlignment', 'Center', false, true);
+        editor.editor.insertText('check');
+        expect((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).paragraphFormat.textAlignment).toBe('Center');
+    });
 });

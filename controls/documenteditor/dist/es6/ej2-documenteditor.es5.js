@@ -8459,7 +8459,7 @@ var Layout = /** @__PURE__ @class */ (function () {
         cell.width -= (!isLeftStyleNone) ? 0 : (cell.leftBorderWidth > 0) ? 0 : cell.leftBorderWidth;
         var lastCell = !cell.ownerTable.isBidiTable ? cell.cellIndex === cell.ownerRow.childWidgets.length - 1
             : cell.cellIndex === 0;
-        if (cellspace > 0 || cell.cellIndex === cell.ownerRow.childWidgets.length - 1) {
+        if (cellspace > 0 || cell.columnIndex === cell.ownerTable.tableHolder.columns.length - 1) {
             cell.rightBorderWidth = !cell.ownerTable.isBidiTable ? rightBorderWidth : leftBorderWidth;
             if (!cell.ownerTable.tableFormat.allowAutoFit) {
                 cell.width -= cell.rightBorderWidth;
@@ -38279,7 +38279,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                     if (offset <= count + inline.length) {
                         return offset - 1 === count ? validOffset : offset - 1;
                     }
-                    if (inline instanceof TextElementBox || inline instanceof ImageElementBox
+                    if (inline instanceof TextElementBox || inline instanceof ImageElementBox || inline instanceof BookmarkElementBox
                         || (inline instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter(inline))) {
                         validOffset = count + inline.length;
                     }
@@ -39171,7 +39171,8 @@ var Selection = /** @__PURE__ @class */ (function () {
      * @private
      */
     Selection.prototype.validateTextPosition = function (inline, index) {
-        if (inline.length === index && (inline.nextNode instanceof FieldElementBox || inline.nextNode instanceof BookmarkElementBox)) {
+        if (inline.length === index && (inline.nextNode instanceof FieldElementBox
+            || (!(inline instanceof ImageElementBox) && inline.nextNode instanceof BookmarkElementBox))) {
             //If inline is last item within field, then set field end as text position.
             var nextInline = this.getNextValidElement(inline.nextNode);
             if (nextInline instanceof FieldElementBox && nextInline.fieldType === 1
@@ -40214,6 +40215,10 @@ var Selection = /** @__PURE__ @class */ (function () {
                     top += element.margin.top + height - textMetrics.BaselineOffset;
                 }
                 inline = element;
+                if (inline instanceof FieldElementBox && inline.fieldType === 2 && !isNullOrUndefined(inline.fieldBegin)) {
+                    inline = inline.fieldBegin;
+                    index = 0;
+                }
                 var inlineObj = this.validateTextPosition(inline, index);
                 inline = inlineObj.element;
                 index = inlineObj.index;
@@ -48279,6 +48284,7 @@ var Editor = /** @__PURE__ @class */ (function () {
         this.isListTextSelected();
         this.initHistory('Insert');
         var paragraphInfo = this.selection.getParagraphInfo(selection.start);
+        var paraFormat = paragraphInfo.paragraph.paragraphFormat;
         selection.editPosition = selection.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
         var bidi = selection.start.paragraph.paragraphFormat.bidi;
         if ((!selection.isEmpty && !selection.isImageSelected) ||
@@ -48293,6 +48299,7 @@ var Editor = /** @__PURE__ @class */ (function () {
             this.documentHelper.isTextInput = true;
         }
         paragraphInfo = this.selection.getParagraphInfo(selection.start);
+        paragraphInfo.paragraph.paragraphFormat.copyFormat(paraFormat);
         var isSpecialChars = this.documentHelper.textHelper.containsSpecialCharAlone(text);
         if (isRemoved) {
             selection.owner.isShiftingEnabled = true;
@@ -51578,7 +51585,7 @@ var Editor = /** @__PURE__ @class */ (function () {
      * @param isSelectionChanged
      * @private
      */
-    Editor.prototype.reLayout = function (selection, isSelectionChanged) {
+    Editor.prototype.reLayout = function (selection, isSelectionChanged, isLayoutChanged) {
         if (!this.documentHelper.isComposingIME && this.editorHistory && this.editorHistory.isHandledComplexHistory()) {
             if (this.editorHistory.currentHistoryInfo && this.editorHistory.currentHistoryInfo.action !== 'ClearFormat') {
                 if (this.editorHistory.currentHistoryInfo.action !== 'ApplyStyle') {
@@ -51625,6 +51632,9 @@ var Editor = /** @__PURE__ @class */ (function () {
                 this.editorHistory.currentBaseHistoryInfo.updateSelection();
             }
             this.editorHistory.updateHistory();
+        }
+        if (isLayoutChanged) {
+            return;
         }
         this.fireContentChange();
     };
@@ -53885,7 +53895,7 @@ var Editor = /** @__PURE__ @class */ (function () {
     /**
      * @private
      */
-    Editor.prototype.layoutWholeDocument = function () {
+    Editor.prototype.layoutWholeDocument = function (isLayoutChanged) {
         var startPosition = this.documentHelper.selection.start;
         var endPosition = this.documentHelper.selection.end;
         if (startPosition.isExistAfter(endPosition)) {
@@ -53908,7 +53918,7 @@ var Editor = /** @__PURE__ @class */ (function () {
         this.setPositionForCurrentIndex(startPosition, startIndex);
         this.setPositionForCurrentIndex(endPosition, endIndex);
         this.documentHelper.selection.selectPosition(startPosition, endPosition);
-        this.reLayout(this.documentHelper.selection);
+        this.reLayout(this.documentHelper.selection, false, isLayoutChanged);
     };
     Editor.prototype.combineSection = function () {
         var sections = [];
@@ -63365,6 +63375,7 @@ var WordExport = /** @__PURE__ @class */ (function () {
         this.wordMLCustomXmlPropsRelType = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXmlProps';
         this.wordMLControlRelType = 'http://schemas.microsoft.com/office/2006/relationships/activeXControlBinary';
         this.wordMLDiagramContentType = 'application/vnd.ms-office.drawingml.diagramDrawing+xml';
+        this.excelFiles = undefined;
         this.lastSection = false;
         this.mRelationShipID = 0;
         this.cRelationShipId = 0;
@@ -63457,12 +63468,24 @@ var WordExport = /** @__PURE__ @class */ (function () {
      * @private
      */
     WordExport.prototype.save = function (documentHelper, fileName) {
+        var _this = this;
         this.fileName = fileName;
         this.serialize(documentHelper);
+        var excelFiles = this.serializeExcelFiles();
+        if (excelFiles && excelFiles.length > 0) {
+            Promise.all(excelFiles).then(function () {
+                _this.saveInternal(fileName);
+            });
+        }
+        else {
+            this.saveInternal(fileName);
+        }
+        this.close();
+    };
+    WordExport.prototype.saveInternal = function (fileName) {
         this.mArchive.save(fileName + '.docx').then(function (mArchive) {
             mArchive.destroy();
         });
-        this.close();
     };
     /**
      * @private
@@ -63470,34 +63493,55 @@ var WordExport = /** @__PURE__ @class */ (function () {
     WordExport.prototype.saveAsBlob = function (documentHelper) {
         var _this = this;
         this.serialize(documentHelper);
+        var excelFiles = this.serializeExcelFiles();
         return new Promise(function (resolve, reject) {
-            _this.mArchive.saveAsBlob().then(function (blob) {
-                _this.mArchive.destroy();
-                blob = new Blob([blob], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-                resolve(blob);
-            });
+            if (excelFiles.length > 0) {
+                Promise.all(excelFiles).then(function () {
+                    _this.mArchive.saveAsBlob().then(function (blob) {
+                        _this.mArchive.destroy();
+                        blob = new Blob([blob], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+                        resolve(blob);
+                    });
+                });
+            }
+            else {
+                _this.mArchive.saveAsBlob().then(function (blob) {
+                    _this.mArchive.destroy();
+                    blob = new Blob([blob], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+                    resolve(blob);
+                });
+            }
         });
+    };
+    WordExport.prototype.serializeExcelFiles = function () {
+        var _this = this;
+        var excelFiles = this.excelFiles;
+        var files = [];
+        if (excelFiles && excelFiles.length > 0) {
+            var _loop_1 = function (i) {
+                var fileName = excelFiles.keys[i];
+                var excelFile = excelFiles.get(fileName);
+                var excelPromise = excelFile.saveAsBlob();
+                files.push(excelPromise);
+                excelPromise.then(function (blob) {
+                    var zipArchiveItem = new ZipArchiveItem(blob, fileName);
+                    _this.mArchive.addItem(zipArchiveItem);
+                });
+            };
+            for (var i = 0; i < excelFiles.length; i++) {
+                _loop_1(i);
+            }
+            this.excelFiles.clear();
+        }
+        return files;
     };
     /**
      * @private
      */
     WordExport.prototype.saveExcel = function () {
-        var _this = this;
         var xlsxPath = this.defaultEmbeddingPath + 'Microsoft_Excel_Worksheet' + this.chartCount + '.xlsx';
-        var promise;
-        var blobData;
-        return promise = new Promise(function (resolve, reject) {
-            _this.mArchiveExcel.saveAsBlob().then(function (blob) {
-                blobData = blob;
-                var zipArchiveItem = new ZipArchiveItem(blob, xlsxPath);
-                _this.mArchive.addItem(zipArchiveItem);
-                _this.mArchive.save(_this.fileName + '.docx').then(function (mArchive) {
-                    mArchive.destroy();
-                });
-            });
-            resolve(blobData);
-            _this.mArchiveExcel = undefined;
-        });
+        this.excelFiles.add(xlsxPath, this.mArchiveExcel);
+        this.mArchiveExcel = undefined;
     };
     /**
      * @private
@@ -64501,6 +64545,9 @@ var WordExport = /** @__PURE__ @class */ (function () {
     };
     // serialize chart Excel Data
     WordExport.prototype.serializeChartExcelData = function () {
+        if (isNullOrUndefined(this.excelFiles)) {
+            this.excelFiles = new Dictionary();
+        }
         this.mArchiveExcel = new ZipArchive();
         this.mArchiveExcel.compressionLevel = 'Normal';
         var type = this.chart.chartType;
@@ -80635,6 +80682,14 @@ var CommentReviewPane = /** @__PURE__ @class */ (function () {
             this.reviewPane.style.display = show ? 'block' : 'none';
         }
         if (show) {
+            var readOnly = this.owner.isReadOnly;
+            this.enableDisableToolbarItem();
+            if (readOnly) {
+                classList(this.commentPane.parent, ['e-de-cmt-protection'], []);
+            }
+            else {
+                classList(this.commentPane.parent, [], ['e-de-cmt-protection']);
+            }
             this.commentPane.updateHeight();
         }
         if (this.owner) {
@@ -80819,6 +80874,9 @@ var CommentReviewPane = /** @__PURE__ @class */ (function () {
             var enable = true;
             if (this.commentPane.isEditMode) {
                 enable = !this.commentPane.isEditMode;
+            }
+            if (this.owner.isReadOnly) {
+                enable = false;
             }
             var elements = this.toolbar.element.querySelectorAll('.' + 'e-de-cmt-tbr');
             this.toolbar.enableItems(elements[0].parentElement.parentElement, enable);
@@ -81367,6 +81425,9 @@ var CommentView = /** @__PURE__ @class */ (function () {
         if (this.comment.isReply) {
             if (!this.commentPane.isEditMode && (!isNullOrUndefined(this.comment) && !this.comment.isResolved)) {
                 this.menuBar.style.display = 'block';
+            }
+            if (this.owner.isReadOnly) {
+                this.menuBar.style.display = 'none';
             }
         }
         var commentStart = this.commentPane.getCommentStart(this.comment);
@@ -82301,6 +82362,7 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     DocumentEditor.prototype.onPropertyChanged = function (model, oldProp) {
+        var _this = this;
         for (var _i = 0, _a = Object.keys(model); _i < _a.length; _i++) {
             var prop = _a[_i];
             switch (prop) {
@@ -82323,8 +82385,8 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
                         }
                         this.viewer = new WebLayoutViewer(this);
                     }
-                    this.editor.layoutWholeDocument();
-                    this.fireViewChange();
+                    this.editor.layoutWholeDocument(true);
+                    setTimeout(function () { _this.fireViewChange(); }, 200);
                     break;
                 case 'locale':
                     this.localizeDialogs();
@@ -82332,6 +82394,9 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
                 case 'isReadOnly':
                     if (!isNullOrUndefined(this.optionsPaneModule) && this.optionsPaneModule.isOptionsPaneShow) {
                         this.optionsPaneModule.showHideOptionsPane(false);
+                    }
+                    if (this.showComments) {
+                        this.commentReviewPane.showHidePane(true);
                     }
                     break;
                 case 'currentUser':
@@ -84264,6 +84329,10 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
             this.toolbar.removeItems(element.parentElement);
         }
         else if (element) {
+            if (!isNullOrUndefined(this.documentEditor) && (this.documentEditor.isReadOnly ||
+                this.documentEditor.documentHelper.isDocumentProtected)) {
+                enable = false;
+            }
             this.toolbar.enableItems(element.parentElement, enable);
         }
     };
@@ -87471,6 +87540,7 @@ var StatusBar = /** @__PURE__ @class */ (function () {
                 _this.startPage = args.startPage;
             }
             _this.updatePageNumber();
+            _this.updatePageCount();
         };
         this.wireEvents = function () {
             _this.pageNumberInput.addEventListener('keydown', function (e) {

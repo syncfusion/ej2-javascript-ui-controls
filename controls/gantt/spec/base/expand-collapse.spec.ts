@@ -84,19 +84,22 @@ describe('Gantt expand collapse support', () => {
             done();
         });
         it('Expand at level', (done: Function) => {
-            ganttObj.ganttChartModule.expandAtLevel(1);
+            ganttObj.expandAtLevel(1);
             let rowElement: HTMLElement = (ganttObj.element.querySelectorAll('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table tr')[7]) as HTMLElement;
             expect(rowElement.style.display).toBe('table-row');
             done();
         });
         it('Collapse by index', (done: Function) => {
             ganttObj.collapseByIndex(1);
+            ganttObj.collapseByIndex(8);
             expect(ganttObj.element.querySelector('#GanttTaskTable' + ganttObj.element.id + ' tr:nth-child(2) > td div.e-gantt-parent-taskbar').classList.contains('e-row-collapse')).toBe(true);
+            expect(ganttObj.element.querySelector('#GanttTaskTable' + ganttObj.element.id + ' tr:nth-child(9) > td div.e-gantt-parent-taskbar').classList.contains('e-row-collapse')).toBe(true);
             done();
         });
         it('Expand by index', (done: Function) => {
-            ganttObj.expandByIndex(1);
+            ganttObj.expandByIndex([1,8]);
             expect(ganttObj.element.querySelector('#GanttTaskTable' + ganttObj.element.id + ' tr:nth-child(2) > td div.e-gantt-parent-taskbar').classList.contains('e-row-expand')).toBe(true);
+            expect(ganttObj.element.querySelector('#GanttTaskTable' + ganttObj.element.id + ' tr:nth-child(9) > td div.e-gantt-parent-taskbar').classList.contains('e-row-expand')).toBe(true);
             done();
         });
         it('Collapse by id', (done: Function) => {

@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 18.1.55 (2020-06-02)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#278176` - Zoom in or zoom out toolbar button disabled after zoom to fit action was fixed.
+- `#278238` - Action begin event not triggered on finish to finish predecessor was fixed.
+
+#### New Features
+
+- `#269776` - Provided support for `expandAtLevel` method and changed `expandByIndex` method parameter as array type.
+
 ## 18.1.54 (2020-05-26)
 
 ### Gantt

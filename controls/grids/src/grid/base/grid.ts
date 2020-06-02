@@ -373,6 +373,16 @@ export class FilterSettings extends ChildProperty<FilterSettings> {
      */
     @Property(false)
     public enableCaseSensitivity: boolean;
+
+    /**
+     * If 'showFilterBarOperator' is set to true, then it renders the dropdownlist component to select the operator
+     * in filterbar input
+     * 
+     * @default false
+     */
+    @Property(false)
+    public showFilterBarOperator: boolean;
+
 }
 
 
@@ -2635,6 +2645,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     private enableBoxSelection(): void {
         if (this.enableAutoFill) {
             this.selectionSettings.cellSelectionMode = 'BoxWithBorder';
+            this.element.classList.add('e-afenabled');
+        } else {
+            this.element.classList.remove('e-afenabled');
         }
     }
 
@@ -2793,6 +2806,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 if (this.showColumnMenu && this.columnMenuModule) {
                     (<EJ2Intance>this.columnMenuModule.getColumnMenu()).ej2_instances[0].enableRtl = newProp.enableRtl;
                     (<EJ2Intance>this.columnMenuModule.getColumnMenu()).ej2_instances[0].dataBind();
+                }
+                if (this.filterSettings.type === 'FilterBar' && this.filterSettings.showFilterBarOperator) {
+                    this.refreshHeader();
                 }
                 this.notify(events.rtlUpdated, {}); break;
             case 'enableAltRow':
@@ -3435,7 +3451,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @return {Element} 
      */
     public getCellFromIndex(rowIndex: number, columnIndex: number): Element {
-        return this.getDataRows()[rowIndex] && this.getDataRows()[rowIndex].querySelectorAll('.e-rowcell')[columnIndex];
+        let frzCols: number = this.getFrozenColumns();
+        return frzCols && columnIndex >= frzCols ?
+            this.getMovableDataRows()[rowIndex] && this.getMovableDataRows()[rowIndex].querySelectorAll('.e-rowcell')[columnIndex - frzCols] :
+            this.getDataRows()[rowIndex] && this.getDataRows()[rowIndex].querySelectorAll('.e-rowcell')[columnIndex];
     }
 
     /**

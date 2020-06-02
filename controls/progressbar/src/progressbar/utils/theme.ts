@@ -31,6 +31,10 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
                 linearProgressThickness: 4,
                 circularTrackThickness: 4,
                 circularProgressThickness: 4,
+                success: '#4D841E',
+                danger: '#D74113',
+                warning: '#C25700',
+                info: '#0279D6',
             };
             break;
         case 'Bootstrap':
@@ -56,7 +60,11 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
                 linearProgressThickness: 20,
                 circularTrackThickness: 6,
                 circularProgressThickness: 6,
-            };
+                success: '#4CB051',
+                danger: '#DC3244',
+                warning: '#AA6709',
+                info: '#1A819E',
+             };
             break;
         case 'Bootstrap4':
             style = {
@@ -81,7 +89,11 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
                 linearProgressThickness: 16,
                 circularTrackThickness: 6,
                 circularProgressThickness: 6,
-            };
+                success: '#29A745',
+                danger: '#DC3546',
+                warning: '#FFC106',
+                info: '#17A2B8',
+              };
             break;
         case 'HighContrast':
             style = {
@@ -106,7 +118,11 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
                 linearProgressThickness: 2,
                 circularTrackThickness: 4,
                 circularProgressThickness: 4,
-            };
+                success: '#176600',
+                danger: '#B30A00',
+                warning: '#944000',
+                info: '#0156B3',
+             };
             break;
         default:
             style = {
@@ -131,6 +147,10 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
                 linearProgressThickness: 2,
                 circularTrackThickness: 4,
                 circularProgressThickness: 4,
+                success: '#127C0F',
+                danger: '#C00000',
+                warning: '#D83B01',
+                info: '#0279D6',
             };
             break;
     }

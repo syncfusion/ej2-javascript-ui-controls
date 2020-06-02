@@ -317,6 +317,14 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
   @Property('Multiple')
   public expandMode: ExpandMode;
   /**
+   * Defines whether to allow the cross-scripting site or not.
+   * @default false
+   * @deprecated
+   * 
+   */
+  @Property(false)
+  public enableHtmlSanitizer: boolean;
+  /**
    * Specifies the animation configuration settings for expanding and collapsing the panel.
    * @default { expand: { effect: 'SlideDown', duration: 400, easing: 'linear' },
    * collapse: { effect: 'SlideUp', duration: 400, easing: 'linear' }}
@@ -784,6 +792,9 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
       return innerEle;
     }
     if (item.header && this.angularnativeCondiCheck(item, 'header')) {
+      if (this.enableHtmlSanitizer && typeof (item.header) === 'string') {
+        item.header = SanitizeHtmlHelper.sanitize(item.header);
+      }
       let ctnEle: HTEle = this.headerEleGenerate();
       let hdrEle: HTEle = this.createElement('div', { className: CLS_HEADERCTN });
       ctnEle.appendChild(hdrEle);
@@ -912,6 +923,9 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
       append(this.getItemTemplate()(this.dataSource[index], this, 'itemTemplate', this.element.id + '_itemTemplate', false), ctn);
       itemcnt.appendChild(ctn);
     } else {
+      if (this.enableHtmlSanitizer && typeof (this.items[index].content)) {
+        this.items[index].content = SanitizeHtmlHelper.sanitize(this.items[index].content);
+      }
       itemcnt.appendChild(this.fetchElement(ctn, this.items[index].content, index, false));
     }
     return itemcnt;
@@ -1129,13 +1143,13 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
   }
   /**
    * Adds new item to the Accordion with the specified index of the Accordion.
-   * @param  {AccordionItemModel | Object} item - Item array that is to be added to the Accordion.
+   * @param  {AccordionItemModel | AccordionItemModel[] | Object | Object[]} item - Item array that is to be added to the Accordion.
    * @param  {number} index - Number value that determines where the item should be added.
    * By default, item is added at the last index if the index is not specified.
    * @returns void
    * @deprecated
    */
-  public addItem(item: AccordionItemModel | Object, index?: number): void {
+  public addItem(item: AccordionItemModel | AccordionItemModel[] | Object | Object[], index?: number): void {
     let ele: HTEle = this.element;
     let itemEle: HTEle[] = this.getItemElements();
     let items: Object[] = this.getItems();
@@ -1143,21 +1157,25 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
       index = items.length;
     }
     if (ele.childElementCount >= index) {
-      items.splice(index, 0, item);
-      let innerItemEle: HTEle = this.renderInnerItem(item, index);
-      if (ele.childElementCount === index) {
-        ele.appendChild(innerItemEle);
-      } else {
-        ele.insertBefore(innerItemEle, itemEle[index]);
-      }
-      EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'focus', this.focusIn, this);
-      EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'blur', this.focusOut, this);
-      this.itemAttribUpdate();
-    }
-    this.expandedItems = [];
-    this.expandedItemRefresh(ele);
-    if (item && (item as AccordionItemModel).expanded) {
-      this.expandItem(true, index);
+      let addItems: AccordionItemModel[] = (item instanceof Array) ? item : [item];
+      addItems.forEach((addItem: AccordionItemModel, i: number) => {
+        let itemIndex: number = index + i;
+        items.splice(itemIndex, 0, addItem);
+        let innerItemEle: HTEle = this.renderInnerItem(addItem, itemIndex);
+        if (ele.childElementCount === itemIndex) {
+          ele.appendChild(innerItemEle);
+        } else {
+          ele.insertBefore(innerItemEle, itemEle[itemIndex]);
+        }
+        EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'focus', this.focusIn, this);
+        EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'blur', this.focusOut, this);
+        this.itemAttribUpdate();
+        this.expandedItems = [];
+        this.expandedItemRefresh(ele);
+        if (addItem && (addItem as AccordionItemModel).expanded) {
+          this.expandItem(true, itemIndex);
+        }
+      });
     }
   }
   private expandedItemRefresh(ele: HTEle): void {

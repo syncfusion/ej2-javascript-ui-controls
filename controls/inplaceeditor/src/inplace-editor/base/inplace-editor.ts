@@ -1101,23 +1101,27 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     }
     private checkValidation(isValidate?: boolean): void {
         let args: ValidateEventArgs;
+        let fromSubmit: boolean = true;
         if (this.validationRules) {
             this.formValidate = new FormValidator(this.formEle as HTMLFormElement, {
                 rules: this.validationRules,
                 validationComplete: (e: FormEventArgs) => {
-                    args = {
-                        errorMessage: e.message,
-                        data: { name: this.name, primaryKey: this.primaryKey, value: this.checkValue(this.getSendValue()) }
-                    };
-                    this.trigger('validating', args, (validateArgs: ValidateEventArgs) => {
-                        if (e.status === 'failure') {
-                            e.errorElement.innerText = validateArgs.errorMessage;
-                            this.toggleErrorClass(true);
-                        } else {
-                            this.toggleErrorClass(false);
-                        }
-                        this.afterValidation(isValidate);
-                    });
+                        args = {
+                            errorMessage: e.message,
+                            data: { name: this.name, primaryKey: this.primaryKey, value: this.checkValue(this.getSendValue()) }
+                        };
+                        this.trigger('validating', args, (validateArgs: ValidateEventArgs) => {
+                            if (e.status === 'failure') {
+                                e.errorElement.innerText = validateArgs.errorMessage;
+                                this.toggleErrorClass(true);
+                            } else {
+                                this.toggleErrorClass(false);
+                            }
+                            if (!isNOU(fromSubmit) && fromSubmit) {
+                                fromSubmit = false;
+                                this.afterValidation(isValidate);
+                            }
+                        });
                 },
                 customPlacement: (inputElement: HTMLElement, errorElement: HTMLElement) => {
                     select('.' + classes.EDITABLE_ERROR, this.formEle).appendChild(errorElement);
@@ -1408,7 +1412,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         errEle = <HTMLElement>select('.' + classes.ERROR, this.editEle);
         let type: string = this.type;
         let calendarComp: boolean = type === 'Date' || type === 'DateTime' || type === 'DateRange' || type === 'Time';
-        if ((errEle && !isNOU(this.validationRules)) || (errEle && calendarComp)) {
+        if (errEle && calendarComp) {
             return;
         }
         if (!this.isTemplate) {

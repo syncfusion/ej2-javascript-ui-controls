@@ -1,6 +1,6 @@
 import { ProgressBar } from '../../src/progressbar/progressbar';
 import { createElement, EmitType } from '@syncfusion/ej2-base';
-import { ILoadedEventArgs } from '../../src/progressbar/model/progress-interface';
+import { ILoadedEventArgs, IMouseEventArgs } from '../../src/progressbar/model/progress-interface';
 /**
  * spec of the progress bar control
  */
@@ -84,4 +84,4 @@ describe('ProgressBar Control', () => {
             progress.refresh();
         });
     });
-});
+});  

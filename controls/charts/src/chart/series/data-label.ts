@@ -1,4 +1,4 @@
-import { ChartLocation, ColorValue, RectOption, isCollide, isOverlap } from '../../common/utils/helper';
+import { ChartLocation, ColorValue, RectOption, isCollide, isOverlap, LabelLocation } from '../../common/utils/helper';
 import { markerAnimate, appendChildElement, getVisiblePoints } from '../../common/utils/helper';
 import { getLabelText, convertHexToColor, calculateRect, textElement, colorNameToHex } from '../../common/utils/helper';
 import { Chart } from '../chart';
@@ -130,6 +130,7 @@ export class DataLabel {
         // initialize the private variable
         this.initPrivateVariables(series, series.marker);
         let rect: Rect;
+        let labelLocation: LabelLocation = { x: 0, y: 0 };
         let rgbValue: ColorValue;
         let contrast: number;
         let argsData: ITextRenderEventArgs;
@@ -173,7 +174,7 @@ export class DataLabel {
                     argsData = {
                         cancel: false, name: textRender, series: series,
                         point: point, text: labelText[i], border: border,
-                        color: dataLabel.fill, template: dataLabel.template, font: argsFont
+                        color: dataLabel.fill, template: dataLabel.template, font: argsFont, location: labelLocation
                     };
                     chart.trigger(textRender, argsData);
                     if (!argsData.cancel) {
@@ -231,8 +232,9 @@ export class DataLabel {
                                 // Checking the font color
                                 rgbValue = convertHexToColor(colorNameToHex(this.fontBackground));
                                 contrast = Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000);
-                                xPos = rect.x + this.margin.left + textSize.width / 2;
-                                yPos = rect.y + this.margin.top + textSize.height * 3 / 4;
+                                xPos = (rect.x + this.margin.left + textSize.width / 2) + labelLocation.x;
+                                yPos = (rect.y + this.margin.top + textSize.height * 3 / 4) + labelLocation.y;
+                                labelLocation = { x: 0, y: 0};
                                 if (angle !== 0 && dataLabel.enableRotation) {
                                     xValue = xPos - (dataLabel.margin.left) / 2 + (dataLabel.margin.right / 2);
                                     yValue = yPos - (dataLabel.margin.top) / 2 - (textSize.height / dataLabel.margin.top) +

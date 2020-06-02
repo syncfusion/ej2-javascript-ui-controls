@@ -2593,13 +2593,14 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         let element: Element = <Element>e.target;
         this.trigger(chartMouseClick, { target: element.id, x: this.mouseX, y: this.mouseY });
         this.clickCount++;
+        let timeInterval: number = this.pointDoubleClick ? 400 : 0;
         if (this.clickCount === 1 && this.pointClick) {
             this.singleClickTimer = +setTimeout(
                 (): void => {
                     this.clickCount = 0;
                     this.triggerPointEvent(pointClick, e);
                 },
-                400);
+                timeInterval);
         } else if (this.clickCount === 2 && this.pointDoubleClick) {
             clearTimeout(this.singleClickTimer);
             this.clickCount = 0;
@@ -3141,12 +3142,13 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             this.svgObject.appendChild(this.zoomModule.pinchTarget);
             removeLength = 1;
         }
+        // Fix for blazor resize issue
         if (this.resizeTo && this.isBlazor && this.element.childElementCount) {
             let containerCollection: NodeListOf<Element> = document.querySelectorAll('.e-chart');
             for (let index: number = 0; index < containerCollection.length; index++) {
                 let container: Element = containerCollection[index];
                 while (container.firstChild) {
-                    remove(this.svgObject);
+                    remove(container.firstChild);
                 }
             }
         }

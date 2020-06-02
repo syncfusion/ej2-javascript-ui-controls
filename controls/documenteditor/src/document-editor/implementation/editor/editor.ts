@@ -1436,6 +1436,7 @@ export class Editor {
         this.isListTextSelected();
         this.initHistory('Insert');
         let paragraphInfo: ParagraphInfo = this.selection.getParagraphInfo(selection.start);
+        let paraFormat: WParagraphFormat = paragraphInfo.paragraph.paragraphFormat;
         selection.editPosition = selection.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
         let bidi: boolean = selection.start.paragraph.paragraphFormat.bidi;
         if ((!selection.isEmpty && !selection.isImageSelected) ||
@@ -1449,6 +1450,7 @@ export class Editor {
             this.documentHelper.isTextInput = true;
         }
         paragraphInfo = this.selection.getParagraphInfo(selection.start);
+        paragraphInfo.paragraph.paragraphFormat.copyFormat(paraFormat);
         let isSpecialChars: boolean = this.documentHelper.textHelper.containsSpecialCharAlone(text);
         if (isRemoved) {
             selection.owner.isShiftingEnabled = true;
@@ -4654,7 +4656,7 @@ export class Editor {
      * @param isSelectionChanged 
      * @private
      */
-    public reLayout(selection: Selection, isSelectionChanged?: boolean): void {
+    public reLayout(selection: Selection, isSelectionChanged?: boolean, isLayoutChanged?: boolean): void {
         if (!this.documentHelper.isComposingIME && this.editorHistory && this.editorHistory.isHandledComplexHistory()) {
             if (this.editorHistory.currentHistoryInfo && this.editorHistory.currentHistoryInfo.action !== 'ClearFormat') {
                 if (this.editorHistory.currentHistoryInfo.action !== 'ApplyStyle') {
@@ -4701,6 +4703,9 @@ export class Editor {
                 this.editorHistory.currentBaseHistoryInfo.updateSelection();
             }
             this.editorHistory.updateHistory();
+        }
+        if (isLayoutChanged) {
+            return;
         }
         this.fireContentChange();
     }
@@ -6883,7 +6888,7 @@ export class Editor {
     /**
      * @private
      */
-    public layoutWholeDocument(): void {
+    public layoutWholeDocument(isLayoutChanged?: boolean): void {
         let startPosition: TextPosition = this.documentHelper.selection.start;
         let endPosition: TextPosition = this.documentHelper.selection.end;
         if (startPosition.isExistAfter(endPosition)) {
@@ -6906,7 +6911,7 @@ export class Editor {
         this.setPositionForCurrentIndex(startPosition, startIndex);
         this.setPositionForCurrentIndex(endPosition, endIndex);
         this.documentHelper.selection.selectPosition(startPosition, endPosition);
-        this.reLayout(this.documentHelper.selection);
+        this.reLayout(this.documentHelper.selection, false, isLayoutChanged);
     }
     private combineSection(): BodyWidget[] {
         let sections: BodyWidget[] = [];

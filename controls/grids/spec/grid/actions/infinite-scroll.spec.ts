@@ -7,6 +7,7 @@ import { Edit } from '../../../src/grid/actions/edit';
 import { Group } from '../../../src/grid/actions/group';
 import { Sort } from '../../../src/grid/actions/sort';
 import { Reorder } from '../../../src/grid/actions/reorder';
+import { Freeze } from '../../../src/grid/actions/freeze';
 import { Page } from '../../../src/grid/actions/page';
 import { Selection } from '../../../src/grid/actions/selection';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
@@ -16,7 +17,7 @@ import { createGrid, destroy, getKeyUpObj, getClickObj } from '../base/specutil.
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { InfiniteScroll } from '../../../src/grid/actions/infinite-scroll';
 
-Grid.Inject(Filter, Page, Selection, Group, Edit, Sort, Reorder, InfiniteScroll, Toolbar);
+Grid.Inject(Filter, Page, Selection, Group, Edit, Sort, Reorder, InfiniteScroll, Toolbar, Freeze);
 
 let virtualData: Object[] = [];
 function virtualdataSource() {
@@ -515,4 +516,291 @@ describe('Infinite scroll cache mode scroll settings property check => ', () => 
             destroy(gridObj);
             gridObj = null;
         });
+});
+
+describe('Infinite scroll with frozen columns => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: virtualData,
+                enableInfiniteScrolling: true,
+                frozenColumns: 2,
+                pageSettings: { pageSize: 50 },
+                height: 400,
+                columns: [
+                    { field: 'FIELD2', headerText: 'FIELD2', width: 120 },
+                    { field: 'FIELD1', headerText: 'FIELD1', width: 100 },
+                    { field: 'FIELD3', headerText: 'FIELD3', width: 120 },
+                    { field: 'FIELD4', headerText: 'FIELD4', width: 120 },
+                    { field: 'FIELD5', headerText: 'FIELD5', width: 120 }
+                ]
+            }, () => {
+                setTimeout(done, 200);
+            });
+    });
+
+    it('ensure intinial rendering rows count', () => {
+        let visibleRowsCount: number = gridObj.infiniteScrollSettings.initialBlocks * gridObj.pageSettings.pageSize;
+        let frozenRows: Element[] = [].slice.call(gridObj.getFrozenVirtualContent().querySelectorAll('.e-row'));
+        let movableRows: Element[] = [].slice.call(gridObj.getMovableVirtualContent().querySelectorAll('.e-row'));
+        expect(frozenRows.length).toBe(visibleRowsCount);
+        expect(movableRows.length).toBe(visibleRowsCount);
+        expect(gridObj.getRows().length).toBe(visibleRowsCount);
+        expect((gridObj as any).contentModule.rowElements.length).toBe(visibleRowsCount);
+    });
+
+    it('scroll to bottom', function (done) {
+        gridObj.getMovableVirtualContent().scrollTop = 15000;
+        setTimeout(done, 400);
+    });
+
+    it('ensure rows count after scroll', () => {
+        let visibleRowsCount: number = gridObj.pageSettings.currentPage * gridObj.pageSettings.pageSize;
+        let frozenRows: Element[] = [].slice.call(gridObj.getFrozenVirtualContent().querySelectorAll('.e-row'));
+        let movableRows: Element[] = [].slice.call(gridObj.getMovableVirtualContent().querySelectorAll('.e-row'));
+        expect(frozenRows.length).toBe(visibleRowsCount);
+        expect(movableRows.length).toBe(visibleRowsCount);
+        expect(gridObj.getRows().length).toBe(visibleRowsCount);
+        expect((gridObj as any).contentModule.rowElements.length).toBe(visibleRowsCount);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('Infinite scroll with frozen rows => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: virtualData,
+                enableInfiniteScrolling: true,
+                frozenRows: 2,
+                pageSettings: { pageSize: 50 },
+                height: 400,
+                columns: [
+                    { field: 'FIELD2', headerText: 'FIELD2', width: 120 },
+                    { field: 'FIELD1', headerText: 'FIELD1', width: 100 },
+                    { field: 'FIELD3', headerText: 'FIELD3', width: 120 },
+                    { field: 'FIELD4', headerText: 'FIELD4', width: 120 },
+                    { field: 'FIELD5', headerText: 'FIELD5', width: 120 }
+                ]
+            }, () => {
+                setTimeout(done, 200);
+            });
+    });
+
+    it('ensure intinial rendering rows count', () => {
+        let visibleRowsCount: number = gridObj.infiniteScrollSettings.initialBlocks * gridObj.pageSettings.pageSize;
+        let rows: Element[] = [].slice.call(gridObj.getContent().querySelectorAll('.e-row'));
+        let frozenRows: Element[] = [].slice.call(gridObj.getHeaderContent().querySelectorAll('.e-row'));
+        expect(rows.length).toBe(visibleRowsCount - gridObj.frozenRows);
+        expect(frozenRows.length).toBe(gridObj.frozenRows);
+        expect(gridObj.getRows().length).toBe(visibleRowsCount);
+    });
+
+    it('scroll to bottom', function (done) {
+        gridObj.getContent().firstElementChild.scrollTop = 15000;
+        setTimeout(done, 200);
+    });
+
+    it('ensure rows count after scroll', () => {
+        let visibleRowsCount: number = gridObj.pageSettings.currentPage * gridObj.pageSettings.pageSize;
+        let rows: Element[] = [].slice.call(gridObj.getContent().querySelectorAll('.e-row'));
+        let frozenRows: Element[] = [].slice.call(gridObj.getHeaderContent().querySelectorAll('.e-row'));
+        expect(rows.length).toBe(visibleRowsCount - gridObj.frozenRows);
+        expect(frozenRows.length).toBe(gridObj.frozenRows);
+        expect(gridObj.getRows().length).toBe(visibleRowsCount);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('Infinite scroll cache mode with frozen columns => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: virtualData,
+                enableInfiniteScrolling: true,
+                infiniteScrollSettings: { enableCache: true },
+                frozenColumns: 2,
+                pageSettings: { pageSize: 50 },
+                height: 400,
+                columns: [
+                    { field: 'FIELD2', headerText: 'FIELD2', width: 120 },
+                    { field: 'FIELD1', headerText: 'FIELD1', width: 100 },
+                    { field: 'FIELD3', headerText: 'FIELD3', width: 120 },
+                    { field: 'FIELD4', headerText: 'FIELD4', width: 120 },
+                    { field: 'FIELD5', headerText: 'FIELD5', width: 120 }
+                ]
+            }, () => {
+                setTimeout(done, 200);
+            });
+    });
+
+    it('ensure intinial rendering rows count', () => {
+        let visibleRowsCount: number = gridObj.infiniteScrollSettings.initialBlocks * gridObj.pageSettings.pageSize;
+        let frozenRows: Element[] = [].slice.call(gridObj.getFrozenVirtualContent().querySelectorAll('.e-row'));
+        let movableRows: Element[] = [].slice.call(gridObj.getMovableVirtualContent().querySelectorAll('.e-row'));
+        expect(frozenRows.length).toBe(visibleRowsCount);
+        expect(movableRows.length).toBe(visibleRowsCount);
+        expect((gridObj as any).contentModule.rowElements.length).toBe(visibleRowsCount);
+        expect(gridObj.getRows().length).toBe(visibleRowsCount);
+    });
+
+    it('scroll to bottom', function (done) {
+        gridObj.getMovableVirtualContent().scrollTop = 15000;
+        setTimeout(done, 200);
+    });
+
+    it('ensure rows count after scroll', () => {
+        let visibleRowsCount: number = gridObj.infiniteScrollSettings.initialBlocks * gridObj.pageSettings.pageSize;
+        let frozenRows: Element[] = [].slice.call(gridObj.getFrozenVirtualContent().querySelectorAll('.e-row'));
+        let movableRows: Element[] = [].slice.call(gridObj.getMovableVirtualContent().querySelectorAll('.e-row'));
+        expect(frozenRows.length).toBe(visibleRowsCount);
+        expect(movableRows.length).toBe(visibleRowsCount);
+        expect(gridObj.getRows().length).toBe(visibleRowsCount);
+        expect((gridObj as any).contentModule.rowElements.length).toBe(visibleRowsCount);
+        expect(gridObj.getRows()[0].getAttribute('aria-rowindex')).toBe(gridObj.pageSettings.pageSize.toString());
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+
+describe('Infinite scroll cache mode with frozen rows => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: virtualData,
+                enableInfiniteScrolling: true,
+                frozenRows: 2,
+                infiniteScrollSettings: { enableCache: true },
+                pageSettings: { pageSize: 50 },
+                height: 400,
+                columns: [
+                    { field: 'FIELD2', headerText: 'FIELD2', width: 120 },
+                    { field: 'FIELD1', headerText: 'FIELD1', width: 100 },
+                    { field: 'FIELD3', headerText: 'FIELD3', width: 120 },
+                    { field: 'FIELD4', headerText: 'FIELD4', width: 120 },
+                    { field: 'FIELD5', headerText: 'FIELD5', width: 120 }
+                ]
+            }, done);
+    });
+
+    it('ensure intinial rendering rows count', () => {
+        let visibleRowsCount: number = gridObj.infiniteScrollSettings.initialBlocks * gridObj.pageSettings.pageSize;
+        let rows: Element[] = [].slice.call(gridObj.getContent().querySelectorAll('.e-row'));
+        let frozenRows: Element[] = [].slice.call(gridObj.getHeaderContent().querySelectorAll('.e-row'));
+        expect(rows.length).toBe(visibleRowsCount - gridObj.frozenRows);
+        expect(frozenRows.length).toBe(gridObj.frozenRows);
+        expect(gridObj.getRows().length).toBe(visibleRowsCount);
+    });
+
+    it('scroll to bottom', function (done) {
+        gridObj.getContent().firstElementChild.scrollTop = 15000;
+        setTimeout(done, 200);
+    });
+
+    it('ensure rows count after scroll', () => {
+        let visibleRowsCount: number = gridObj.infiniteScrollSettings.initialBlocks * gridObj.pageSettings.pageSize;
+        let rows: Element[] = [].slice.call(gridObj.getContent().querySelectorAll('.e-row'));
+        let frozenRows: Element[] = [].slice.call(gridObj.getHeaderContent().querySelectorAll('.e-row'));
+        expect(rows.length).toBe(visibleRowsCount);
+        expect(frozenRows.length).toBe(gridObj.frozenRows);
+        expect(gridObj.getRows().length).toBe(visibleRowsCount + gridObj.frozenRows);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('Infinite scroll cache mode with frozen rows => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: virtualData,
+                enableInfiniteScrolling: true,
+                frozenColumns: 2,
+                frozenRows: 2,
+                infiniteScrollSettings: { enableCache: true },
+                pageSettings: { pageSize: 50 },
+                height: 400,
+                columns: [
+                    { field: 'FIELD2', headerText: 'FIELD2', width: 120 },
+                    { field: 'FIELD1', headerText: 'FIELD1', width: 100 },
+                    { field: 'FIELD3', headerText: 'FIELD3', width: 120 },
+                    { field: 'FIELD4', headerText: 'FIELD4', width: 120 },
+                    { field: 'FIELD5', headerText: 'FIELD5', width: 120 }
+                ]
+            }, () => {
+                setTimeout(done, 200);
+            });
+    });
+
+    it('ensure intinial rendering rows count', () => {
+        let visibleRowsCount: number = gridObj.infiniteScrollSettings.initialBlocks * gridObj.pageSettings.pageSize;
+        let frozenCntRows: Element[] = [].slice.call(gridObj.getFrozenVirtualContent().querySelectorAll('.e-row'));
+        let movableCntRows: Element[] = [].slice.call(gridObj.getMovableVirtualContent().querySelectorAll('.e-row'));
+        let frozenHdrRows: Element[] = [].slice.call(gridObj.getFrozenVirtualHeader().querySelectorAll('.e-row'));
+        let movableHdrRows: Element[] = [].slice.call(gridObj.getMovableVirtualHeader().querySelectorAll('.e-row'));
+        expect(frozenCntRows.length).toBe(visibleRowsCount - gridObj.frozenRows);
+        expect(movableCntRows.length).toBe(visibleRowsCount - gridObj.frozenRows);
+        expect(frozenHdrRows.length).toBe(gridObj.frozenRows);
+        expect(movableHdrRows.length).toBe(gridObj.frozenRows);
+        expect(gridObj.getRows().length).toBe(visibleRowsCount);
+        expect((gridObj as any).contentModule.rowElements.length).toBe(visibleRowsCount);
+        expect((gridObj as any).infiniteScrollModule.infiniteFrozenCache[1][0].length).toBe(gridObj.pageSettings.pageSize);
+        expect((gridObj as any).infiniteScrollModule.infiniteFrozenCache[1][1].length).toBe(gridObj.pageSettings.pageSize);
+        expect(frozenCntRows[0].getAttribute('aria-rowindex')).toBe(gridObj.frozenRows.toString());
+        expect(movableCntRows[0].getAttribute('aria-rowindex')).toBe(gridObj.frozenRows.toString());
+        expect(frozenCntRows[frozenCntRows.length - 1].getAttribute('aria-rowindex')).toBe((visibleRowsCount - 1).toString());
+        expect(movableCntRows[movableCntRows.length - 1].getAttribute('aria-rowindex')).toBe((visibleRowsCount - 1).toString());
+        expect(frozenHdrRows[0].getAttribute('aria-rowindex')).toBe('0');
+        expect(movableHdrRows[0].getAttribute('aria-rowindex')).toBe('0');
+    });
+
+    it('scroll to bottom', function (done) {
+        gridObj.getMovableVirtualContent().scrollTop = 15000;
+        setTimeout(done, 200);
+    });
+
+    it('ensure rows count after scroll', () => {
+        let visibleRowsCount: number = gridObj.infiniteScrollSettings.initialBlocks * gridObj.pageSettings.pageSize;
+        let frozenCntRows: Element[] = [].slice.call(gridObj.getFrozenVirtualContent().querySelectorAll('.e-row'));
+        let movableCntRows: Element[] = [].slice.call(gridObj.getMovableVirtualContent().querySelectorAll('.e-row'));
+        let frozenHdrRows: Element[] = [].slice.call(gridObj.getFrozenVirtualHeader().querySelectorAll('.e-row'));
+        let movableHdrRows: Element[] = [].slice.call(gridObj.getMovableVirtualHeader().querySelectorAll('.e-row'));
+        expect(frozenCntRows.length).toBe(visibleRowsCount);
+        expect(movableCntRows.length).toBe(visibleRowsCount);
+        expect(frozenHdrRows.length).toBe(gridObj.frozenRows);
+        expect(movableHdrRows.length).toBe(gridObj.frozenRows);
+        expect(gridObj.getRows().length).toBe(visibleRowsCount + gridObj.frozenRows);
+        expect((gridObj as any).contentModule.rowElements.length).toBe(visibleRowsCount + gridObj.frozenRows);
+        expect(movableCntRows[0].getAttribute('aria-rowindex')).toBe(gridObj.pageSettings.pageSize.toString());
+        expect(frozenCntRows[0].getAttribute('aria-rowindex')).toBe(gridObj.pageSettings.pageSize.toString());
+        expect((gridObj as any).infiniteScrollModule.infiniteFrozenCache[4][0].length).toBe(gridObj.pageSettings.pageSize);
+        expect((gridObj as any).infiniteScrollModule.infiniteFrozenCache[4][1].length).toBe(gridObj.pageSettings.pageSize);
+        expect(frozenCntRows[frozenCntRows.length - 1].getAttribute('aria-rowindex')).toBe(((visibleRowsCount + gridObj.pageSettings.pageSize) - 1).toString());
+        expect(movableCntRows[movableCntRows.length - 1].getAttribute('aria-rowindex')).toBe(((visibleRowsCount + gridObj.pageSettings.pageSize) - 1).toString());
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
 });

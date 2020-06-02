@@ -414,7 +414,7 @@ export class EventWindow {
             firstDayOfWeek: this.parent.activeViewOptions.firstDayOfWeek,
             calendarMode: this.parent.calendarMode,
             min: this.parent.minDate,
-            max: this.parent.maxDate,
+            max: new Date(new Date(+this.parent.maxDate).setHours(23, 59, 59)),
             cssClass: this.parent.cssClass,
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,

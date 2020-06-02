@@ -1088,6 +1088,10 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         EventHandler.add(this.inputWrapper, 'mouseout', this.onMouseLeave, this);
         EventHandler.add(this.overAllClear, 'mousedown', this.clearAll, this);
         EventHandler.add(<HTMLElement & Window>window, 'resize', this.windowResize, this);
+        let formElement: HTMLFormElement = closest(this.inputWrapper, 'form') as HTMLFormElement;
+        if (formElement) {
+            EventHandler.add(formElement, 'reset', this.resetValueHandler, this);
+        }
         this.keyboardModule = new KeyboardEvents(
             this.inputWrapper,
             {
@@ -1129,6 +1133,10 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         EventHandler.remove(this.inputWrapper, 'mouseout', this.onMouseLeave);
         EventHandler.remove(this.overAllClear, 'mousedown', this.clearAll);
         EventHandler.remove(<HTMLElement & Window>window, 'resize', this.windowResize);
+        let formElement: HTMLFormElement = closest(this.inputWrapper, 'form') as HTMLFormElement;
+        if (formElement) {
+            EventHandler.remove(formElement, 'reset', this.resetValueHandler);
+        }
     }
 
     /* Trigger when the dropdown is clicked */
@@ -1381,6 +1389,13 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         }
     }
 
+    private resetValueHandler(e: Event): void {
+        let formElement: HTMLFormElement = closest(this.inputWrapper, 'form') as HTMLFormElement;
+        if (formElement && e.target === formElement) {
+            this.resetValue(true);
+        }
+    }
+
     protected getAriaAttributes(): { [key: string]: string } {
         let disable: string = this.enabled ? 'false' : 'true';
         return {
@@ -1395,9 +1410,15 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     }
 
     private createHiddenElement(): void {
-        this.hiddenElement = this.createElement('select', {
-            attrs: { 'aria-hidden': 'true', 'tabindex': '-1', 'class': HIDDENELEMENT }
-        }) as HTMLSelectElement;
+        if (this.allowMultiSelection || this.showCheckBox) {
+            this.hiddenElement = this.createElement('select', {
+                attrs: { 'aria-hidden': 'true', 'class': HIDDENELEMENT, 'tabindex': '-1', 'multiple': '' }
+            }) as HTMLSelectElement;
+        } else {
+            this.hiddenElement = this.createElement('select', {
+                attrs: { 'aria-hidden': 'true', 'tabindex': '-1', 'class': HIDDENELEMENT }
+            }) as HTMLSelectElement;
+        }
         prepend([this.hiddenElement], this.inputWrapper);
         this.validationAttribute();
     }
@@ -1823,10 +1844,10 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             }
             if (!isCancelled) {
                 attributes(this.inputWrapper, { 'aria-expanded': 'true' });
-                this.popupObj.show();
-                this.popupObj.refreshPosition();
+                this.popupObj.show(null, (this.zIndex === 1000) ? this.inputEle : null);
                 this.popupEle.style.display = 'block';
                 this.updatePopupHeight();
+                this.popupObj.refreshPosition();
                 if (!(this.showCheckBox && this.showSelectAll) && (!this.popupDiv.classList.contains(NODATA)
                                                                             && this.treeItems.length > 0)) {
                     this.treeObj.element.focus();
@@ -1873,6 +1894,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             this.popupObj = new Popup(element, {
                 width: this.setWidth(),
                 targetType: 'relative',
+                collision: { X: 'flip', Y: 'flip' },
                 relateTo: this.inputWrapper,
                 zIndex: this.zIndex,
                 enableRtl: this.enableRtl,
@@ -1884,6 +1906,9 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                     EventHandler.add(document, 'mousedown', this.onDocumentClick, this);
                     this.isPopupOpen = true;
                 },
+                targetExitViewport: () => {
+                    if (!Browser.isDevice) { this.hidePopup(); }
+                }
             });
         }
     }
@@ -2757,6 +2782,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     private updateMultiSelection(state: boolean): void {
         this.treeObj.allowMultiSelection = state;
         this.treeObj.dataBind();
+        this.updateOption();
         if (this.allowMultiSelection) {
             this.updateMode();
         }
@@ -2804,6 +2830,14 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         if (!validMode) { return; }
         this.updateMode();
         this.setMultiSelect();
+    }
+
+    private updateOption(): void {
+        if (!this.hiddenElement.hasAttribute('multiple') && (this.allowMultiSelection || this.showCheckBox)) {
+            this.hiddenElement.setAttribute('multiple', '');
+        } else if (this.hiddenElement.hasAttribute('multiple') && (!this.allowMultiSelection && !this.showCheckBox)) {
+            this.hiddenElement.removeAttribute('multiple');
+        }
     }
 
     /**
@@ -2862,6 +2896,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 case 'showCheckBox':
                     this.updateCheckBoxState(newProp.showCheckBox);
                     this.updatePopupHeight();
+                    this.updateOption();
                     break;
                 case 'treeSettings':
                     this.updateTreeSettings(newProp);

@@ -10,3 +10,5 @@ export * from './stamp-annotation';
 export * from './sticky-notes-annotation';
 export * from './free-text-annotation';
 export * from './input-element';
+export * from './ink-annotation';
+

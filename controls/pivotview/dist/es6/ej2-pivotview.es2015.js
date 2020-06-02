@@ -13654,7 +13654,8 @@ class PivotChart {
         }
     }
     getChartHeight() {
-        let height = this.parent.height.toString();
+        let height = isNullOrUndefined(this.parent.getHeightAsNumber()) ? 'auto' :
+            this.parent.getHeightAsNumber().toString();
         if (!isNullOrUndefined(this.parent.getHeightAsNumber())) {
             if (this.parent.showToolbar && this.parent.showGroupingBar) {
                 height = (this.parent.getHeightAsNumber() - (this.parent.element.querySelector('.e-pivot-toolbar') ?
@@ -20181,12 +20182,14 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         else {
             pivotData = JSON.parse(persistData);
         }
+        this.allowServerDataBinding = false;
         this.setProperties({
             gridSettings: pivotData.gridSettings,
             pivotValues: pivotData.pivotValues,
             chartSettings: pivotData.chartSettings,
             displayOption: pivotData.displayOption
         }, true);
+        this.allowServerDataBinding = true;
         /* tslint:enable */
         this.dataSourceSettings = pivotData.dataSourceSettings;
     }
@@ -20490,7 +20493,6 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         else if (this.grid) {
             remove(this.grid.element);
         }
-        this.trigger(dataBound);
         if (this.allowConditionalFormatting) {
             this.applyFormatting(this.pivotValues);
         }
@@ -22089,7 +22091,6 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                     this$.pivotValues = this$.engineModule.pivotValues;
                 }
                 this$.notify(dataReady, {});
-                this$.isEmptyGrid = false;
             });
         }
         else {

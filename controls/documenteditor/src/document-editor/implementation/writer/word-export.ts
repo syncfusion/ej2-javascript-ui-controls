@@ -261,7 +261,7 @@ export class WordExport {
     private wordMLCustomXmlPropsRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXmlProps';
     private wordMLControlRelType: string = 'http://schemas.microsoft.com/office/2006/relationships/activeXControlBinary';
     private wordMLDiagramContentType: string = 'application/vnd.ms-office.drawingml.diagramDrawing+xml';
-
+    private excelFiles: Dictionary<string, ZipArchive> = undefined;
     /* tslint:disable:no-any */
     // Owner Nodes
     private section: any;
@@ -362,43 +362,72 @@ export class WordExport {
     public save(documentHelper: DocumentHelper, fileName: string): void {
         this.fileName = fileName;
         this.serialize(documentHelper);
+        let excelFiles: Promise<Blob>[] = this.serializeExcelFiles();
+        if (excelFiles && excelFiles.length > 0) {
+            Promise.all(excelFiles).then(() => {
+                this.saveInternal(fileName);
+            });
+        } else {
+            this.saveInternal(fileName);
+        }
+        this.close();
+    }
+
+    private saveInternal(fileName: string): void {
         this.mArchive.save(fileName + '.docx').then((mArchive: ZipArchive): void => {
             mArchive.destroy();
         });
-        this.close();
     }
     /**
      * @private
      */
     public saveAsBlob(documentHelper: DocumentHelper): Promise<Blob> {
         this.serialize(documentHelper);
+        let excelFiles: Promise<Blob>[] = this.serializeExcelFiles();
         return new Promise((resolve: Function, reject: Function) => {
-            this.mArchive.saveAsBlob().then((blob: Blob) => {
-                this.mArchive.destroy();
-                blob = new Blob([blob], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-                resolve(blob);
-            });
+            if (excelFiles.length > 0) {
+                Promise.all(excelFiles).then(() => {
+                    this.mArchive.saveAsBlob().then((blob: Blob) => {
+                        this.mArchive.destroy();
+                        blob = new Blob([blob], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+                        resolve(blob);
+                    });
+                });
+            } else {
+                this.mArchive.saveAsBlob().then((blob: Blob) => {
+                    this.mArchive.destroy();
+                    blob = new Blob([blob], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+                    resolve(blob);
+                });
+            }
         });
+
+    }
+    private serializeExcelFiles(): Promise<Blob>[] {
+        let excelFiles: Dictionary<string, ZipArchive> = this.excelFiles;
+        let files: Promise<Blob>[] = [];
+        if (excelFiles && excelFiles.length > 0) {
+            for (let i: number = 0; i < excelFiles.length; i++) {
+                let fileName: string = excelFiles.keys[i];
+                let excelFile: ZipArchive = excelFiles.get(fileName);
+                let excelPromise: Promise<Blob> = excelFile.saveAsBlob();
+                files.push(excelPromise);
+                excelPromise.then((blob: Blob) => {
+                    let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(blob, fileName);
+                    this.mArchive.addItem(zipArchiveItem);
+                });
+            }
+            this.excelFiles.clear();
+        }
+        return files;
     }
     /**
      * @private
      */
-    public saveExcel(): Promise<Blob> {
+    public saveExcel(): void {
         let xlsxPath: string = this.defaultEmbeddingPath + 'Microsoft_Excel_Worksheet' + this.chartCount + '.xlsx';
-        let promise: Promise<Blob>;
-        let blobData: Blob;
-        return promise = new Promise((resolve: Function, reject: Function) => {
-            this.mArchiveExcel.saveAsBlob().then((blob: Blob) => {
-                blobData = blob;
-                let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(blob, xlsxPath);
-                this.mArchive.addItem(zipArchiveItem);
-                this.mArchive.save(this.fileName + '.docx').then((mArchive: ZipArchive): void => {
-                    mArchive.destroy();
-                });
-            });
-            resolve(blobData);
-            this.mArchiveExcel = undefined;
-        });
+        this.excelFiles.add(xlsxPath, this.mArchiveExcel);
+        this.mArchiveExcel = undefined;
     }
     /**
      * @private
@@ -1437,6 +1466,9 @@ export class WordExport {
     }
     // serialize chart Excel Data
     private serializeChartExcelData(): void {
+        if (isNullOrUndefined(this.excelFiles)) {
+            this.excelFiles = new Dictionary<string, ZipArchive>();
+        }
         this.mArchiveExcel = new ZipArchive();
         this.mArchiveExcel.compressionLevel = 'Normal';
         let type: string = this.chart.chartType;

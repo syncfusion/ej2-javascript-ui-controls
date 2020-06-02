@@ -3483,3 +3483,43 @@ describe('EJ2-39455- Cell editing is not working properly in last batch added ro
         gridObj = null;
     });
 });
+
+describe('EJ2-40007- cell did not save the empty value for complex field', () => {
+    let gridObj: Grid;
+    let preventDefault: Function = new Function();
+    let localdata: Object[] = [
+        {
+          "OrderID":10248,
+          "ShipCity":"VINET",
+          "Ship": {
+            "Freight": "32.38",
+          }
+        }
+      ];
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: localdata,
+                allowPaging: true,
+                editSettings : { allowEditing: true, allowAdding: true, allowDeleting: true , newRowPosition: 'Top', mode: "Batch" },
+                toolbar : ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                    { field: 'ShipCity', headerText: 'Ship City', width: 150 },
+                    { field: 'Ship.Freight', headerText: 'Freight', width: 120, textAlign: 'Right' },
+                ]
+            }, done);
+    });
+    it('Check cell value', () => {
+        let cell: HTMLElement = gridObj.element.querySelector('.e-content').querySelector('table').rows[0].childNodes[2] as any;
+        cell.click();
+        gridObj.keyboardModule.keyAction({ action: 'f2', preventDefault: preventDefault, target: cell } as any);
+        (gridObj.element.querySelectorAll('.e-valid-input')[0].querySelector('.e-input') as any).value = '';
+        gridObj.keyboardModule.keyAction({ action: 'enter', preventDefault: preventDefault, target: cell } as any);
+        expect(cell.innerText).toBe('');
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = localdata = null ;
+    });
+});

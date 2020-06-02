@@ -3885,6 +3885,16 @@ var ChartLocation = /** @class */ (function () {
     return ChartLocation;
 }());
 /** @private */
+var LabelLocation = /** @class */ (function () {
+    function LabelLocation(x, y) {
+        this.x = 0;
+        this.y = 0;
+        this.x = x;
+        this.y = y;
+    }
+    return LabelLocation;
+}());
+/** @private */
 var Thickness = /** @class */ (function () {
     function Thickness(left, right, top, bottom) {
         this.left = left;
@@ -5812,7 +5822,8 @@ var SeriesBase = /** @class */ (function (_super) {
                         point.xValue = Date.parse(point.x.toString());
                     }
                     else {
-                        this.pushCategoryData(point, i, Date.parse(dateParser(dateFormatter(point.x))).toString());
+                        this.chart.isBlazor ? this.pushCategoryData(point, i, Date.parse(point.x.toString()).toString()) :
+                            this.pushCategoryData(point, i, Date.parse(dateParser(dateFormatter(point.x))).toString());
                     }
                     this.pushData(point, i);
                     this.setEmptyPoint(point, i);
@@ -6875,7 +6886,9 @@ var MarkerExplode = /** @class */ (function (_super) {
                 seletionElem.hasAttribute('class') && (className === seletionElem.getAttribute('class'))) {
                 symbol.classList.add(className);
             }
-            element.appendChild(symbol);
+            symbol.setAttribute('clip-path', element.getAttribute('clip-path'));
+            symbol.setAttribute('transform', element.getAttribute('transform'));
+            this.chart.svgObject.appendChild(symbol);
         }
     };
     /**
@@ -9378,11 +9391,12 @@ var Chart = /** @class */ (function (_super) {
         var element = e.target;
         this.trigger(chartMouseClick, { target: element.id, x: this.mouseX, y: this.mouseY });
         this.clickCount++;
+        var timeInterval = this.pointDoubleClick ? 400 : 0;
         if (this.clickCount === 1 && this.pointClick) {
             this.singleClickTimer = +setTimeout(function () {
                 _this.clickCount = 0;
                 _this.triggerPointEvent(pointClick, e);
-            }, 400);
+            }, timeInterval);
         }
         else if (this.clickCount === 2 && this.pointDoubleClick) {
             clearTimeout(this.singleClickTimer);
@@ -9909,12 +9923,13 @@ var Chart = /** @class */ (function (_super) {
             this.svgObject.appendChild(this.zoomModule.pinchTarget);
             removeLength = 1;
         }
+        // Fix for blazor resize issue
         if (this.resizeTo && this.isBlazor && this.element.childElementCount) {
             var containerCollection = document.querySelectorAll('.e-chart');
             for (var index = 0; index < containerCollection.length; index++) {
                 var container = containerCollection[index];
                 while (container.firstChild) {
-                    sf.base.remove(this.svgObject);
+                    sf.base.remove(container.firstChild);
                 }
             }
         }
@@ -10634,6 +10649,9 @@ var NiceInterval = /** @class */ (function (_super) {
      */
     NiceInterval.prototype.findCustomFormats = function (axis, currentValue, previousValue) {
         var labelFormat = axis.labelFormat ? axis.labelFormat : '';
+        if (labelFormat === 'YYYY-MM-DD') {
+            labelFormat = 'yyyy-MM-dd';
+        }
         if (axis.isChart && !axis.skeleton && axis.actualIntervalType === 'Months' && !labelFormat) {
             labelFormat = axis.valueType === 'DateTime' ? this.getMonthFormat(axis, currentValue, previousValue) : 'yMMM';
         }
@@ -22754,6 +22772,7 @@ var DataLabel = /** @class */ (function () {
         // initialize the private variable
         this.initPrivateVariables(series, series.marker);
         var rect;
+        var labelLocation = { x: 0, y: 0 };
         var rgbValue;
         var contrast;
         var argsData;
@@ -22795,7 +22814,7 @@ var DataLabel = /** @class */ (function () {
                     argsData = {
                         cancel: false, name: textRender, series: series,
                         point: point, text: labelText[i_1], border: border,
-                        color: dataLabel.fill, template: dataLabel.template, font: argsFont
+                        color: dataLabel.fill, template: dataLabel.template, font: argsFont, location: labelLocation
                     };
                     chart.trigger(textRender, argsData);
                     if (!argsData.cancel) {
@@ -22850,8 +22869,9 @@ var DataLabel = /** @class */ (function () {
                                 // Checking the font color
                                 rgbValue = convertHexToColor(colorNameToHex(this.fontBackground));
                                 contrast = Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000);
-                                xPos = rect.x + this.margin.left + textSize.width / 2;
-                                yPos = rect.y + this.margin.top + textSize.height * 3 / 4;
+                                xPos = (rect.x + this.margin.left + textSize.width / 2) + labelLocation.x;
+                                yPos = (rect.y + this.margin.top + textSize.height * 3 / 4) + labelLocation.y;
+                                labelLocation = { x: 0, y: 0 };
                                 if (angle !== 0 && dataLabel.enableRotation) {
                                     xValue = xPos - (dataLabel.margin.left) / 2 + (dataLabel.margin.right / 2);
                                     yValue = yPos - (dataLabel.margin.top) / 2 - (textSize.height / dataLabel.margin.top) +
@@ -23923,6 +23943,7 @@ var Legend = /** @class */ (function (_super) {
             chart.refreshAxis();
             series.refreshAxisLabel();
             this.refreshSeries(chart.visibleSeries);
+            chart.markerRender.removeHighlightedMarker();
             chart.refreshBound();
             chart.trigger('loaded', { chart: chart });
             if (selectedDataIndexes.length > 0) {
@@ -28037,6 +28058,9 @@ var AccumulationChart = /** @class */ (function (_super) {
     AccumulationChart.prototype.export = function (type, fileName) {
         if (this.exportModule) {
             this.exportModule.export(type, fileName);
+            if (this.afterExport) {
+                this.exportModule.getDataUrl(this);
+            }
         }
     };
     /**
@@ -28832,6 +28856,9 @@ var AccumulationChart = /** @class */ (function (_super) {
     __decorate$7([
         sf.base.Event()
     ], AccumulationChart.prototype, "resized", void 0);
+    __decorate$7([
+        sf.base.Event()
+    ], AccumulationChart.prototype, "afterExport", void 0);
     __decorate$7([
         sf.base.Property('USD')
     ], AccumulationChart.prototype, "currencyCode", void 0);
@@ -45693,6 +45720,7 @@ exports.ImageOption = ImageOption;
 exports.CircleOption = CircleOption;
 exports.PolygonOption = PolygonOption;
 exports.ChartLocation = ChartLocation;
+exports.LabelLocation = LabelLocation;
 exports.Thickness = Thickness;
 exports.ColorValue = ColorValue;
 exports.PointData = PointData;

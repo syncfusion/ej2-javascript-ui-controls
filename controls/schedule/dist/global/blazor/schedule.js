@@ -1620,12 +1620,10 @@ var KeyboardInteraction = /** @class */ (function () {
             var xInBounds = parent_1.offsetWidth <= parent_1.scrollWidth && parent_1.scrollLeft >= 0 &&
                 parent_1.scrollLeft + parent_1.offsetWidth <= parent_1.scrollWidth;
             if (yInBounds && (selectionEdges.top || selectionEdges.bottom)) {
-                parent_1.scrollTop += selectionEdges.top ?
-                    -e.target.offsetHeight : e.target.offsetHeight;
+                parent_1.scrollTop += selectionEdges.top ? -e.target.offsetHeight : e.target.offsetHeight;
             }
             if (xInBounds && (selectionEdges.left || selectionEdges.right)) {
-                parent_1.scrollLeft += selectionEdges.left ?
-                    -e.target.offsetWidth : e.target.offsetWidth;
+                parent_1.scrollLeft += selectionEdges.left ? -e.target.offsetWidth : e.target.offsetWidth;
             }
         }
         var target = this.getClosestCell(e);
@@ -1779,12 +1777,11 @@ var KeyboardInteraction = /** @class */ (function () {
         var target = (targetCell instanceof Array) ? targetCell.slice(-1)[0] : targetCell;
         if (isMultiple) {
             var initialId_1;
-            var viewsOptions_1 = ['Day', 'Week', 'WorkWeek', 'Month',
-                'TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth'];
+            var views_1 = ['Day', 'Week', 'WorkWeek', 'Month', 'TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth'];
             var args = { element: targetCell, requestType: 'mousemove', allowMultipleRow: true };
             this.parent.trigger(select, args, function (selectArgs) {
                 var allowMultipleRow = (!selectArgs.allowMultipleRow) || (!_this.parent.allowMultiRowSelection);
-                if (allowMultipleRow && (viewsOptions_1.indexOf(_this.parent.currentView) > -1)) {
+                if (allowMultipleRow && (views_1.indexOf(_this.parent.currentView) > -1)) {
                     target = target.parentElement.children[_this.initialTarget.cellIndex];
                 }
                 var selectedCells = _this.getCells(_this.isInverseTableSelect(), _this.initialTarget, target);
@@ -1900,9 +1897,7 @@ var KeyboardInteraction = /** @class */ (function () {
     KeyboardInteraction.prototype.getUniqueAppointmentElements = function () {
         var appointments = this.getAppointmentElements();
         var appointmentElements = [];
-        appointments.map(function (value) {
-            return value.getAttribute('data-guid');
-        }).filter(function (value, index, self) {
+        appointments.map(function (value) { return value.getAttribute('data-guid'); }).filter(function (value, index, self) {
             if (self.indexOf(value) === index) {
                 appointmentElements.push(appointments[index]);
             }
@@ -1956,7 +1951,7 @@ var KeyboardInteraction = /** @class */ (function () {
         }
     };
     KeyboardInteraction.prototype.processDown = function (e, isMultiple) {
-        if ((isMultiple && (this.parent.activeView.isTimelineView() || this.parent.currentView === 'MonthAgenda'))) {
+        if (isMultiple && (this.parent.activeView.isTimelineView() || this.parent.currentView === 'MonthAgenda')) {
             return;
         }
         var target = (e.target);
@@ -2005,7 +2000,7 @@ var KeyboardInteraction = /** @class */ (function () {
         if (this.parent.currentView === 'Agenda' || (isMultiple && this.parent.currentView === 'MonthAgenda')) {
             return true;
         }
-        if ((this.isPreventAction(e) && isMultiple)) {
+        if (this.isPreventAction(e) && isMultiple) {
             return true;
         }
         var moreEventWrapper = this.parent.element.querySelector('.' + MORE_POPUP_WRAPPER_CLASS);
@@ -2219,7 +2214,7 @@ var KeyboardInteraction = /** @class */ (function () {
         if (activeEle && activeEle.classList.contains(APPOINTMENT_CLASS)) {
             sf.base.addClass([activeEle], APPOINTMENT_BORDER);
             this.parent.activeEventData = this.parent.eventBase.getSelectedEvents();
-            if (this.parent.activeViewOptions.readonly || activeEle.classList.contains('e-read-only')) {
+            if (this.parent.activeViewOptions.readonly || activeEle.classList.contains(READ_ONLY)) {
                 return;
             }
             this.parent.quickPopup.deleteClick();
@@ -4477,6 +4472,9 @@ var EventBase = /** @class */ (function () {
         return [].slice.call(this.parent.element.querySelectorAll('.' + APPOINTMENT_BORDER + ',.' + APPOINTMENT_CLASS + ':focus'));
     };
     EventBase.prototype.focusElement = function () {
+        if (this.parent.eventWindow.dialogObject && this.parent.eventWindow.dialogObject.visible) {
+            return;
+        }
         var selectedCell = this.parent.getSelectedElements();
         if (selectedCell.length > 0) {
             if (this.parent.keyboardInteractionModule) {
@@ -4566,11 +4564,9 @@ var EventBase = /** @class */ (function () {
     EventBase.prototype.wireAppointmentEvents = function (element, event, isPreventCrud) {
         if (isPreventCrud === void 0) { isPreventCrud = false; }
         var isReadOnly = (!sf.base.isNullOrUndefined(event)) ? event[this.parent.eventFields.isReadonly] : false;
-        if (sf.base.Browser.isTouch && !this.parent.isAdaptive) {
-            sf.base.EventHandler.add(element, 'touchstart', this.eventTouch, this);
-        }
-        else {
-            sf.base.EventHandler.add(element, 'click', this.eventClick, this);
+        sf.base.EventHandler.add(element, 'click', this.eventClick, this);
+        if (!this.parent.isAdaptive) {
+            sf.base.EventHandler.add(element, 'touchstart', this.eventTouchClick, this);
         }
         if (!this.parent.isAdaptive && !this.parent.activeViewOptions.readonly && !isReadOnly) {
             sf.base.EventHandler.add(element, 'dblclick', this.eventDoubleClick, this);
@@ -4584,16 +4580,16 @@ var EventBase = /** @class */ (function () {
             }
         }
     };
-    EventBase.prototype.eventTouch = function (eventData) {
+    EventBase.prototype.eventTouchClick = function (e) {
         var _this = this;
         setTimeout(function () { return _this.isDoubleTapped = false; }, 250);
+        e.preventDefault();
         if (this.isDoubleTapped) {
-            eventData.preventDefault();
-            this.eventDoubleClick(eventData);
+            this.eventDoubleClick(e);
         }
-        else {
+        else if (!this.isDoubleTapped) {
             this.isDoubleTapped = true;
-            this.eventClick(eventData);
+            this.eventClick(e);
         }
     };
     EventBase.prototype.renderResizeHandler = function (element, spanEvent, isReadOnly) {
@@ -8217,7 +8213,7 @@ var EventWindow = /** @class */ (function () {
             firstDayOfWeek: this.parent.activeViewOptions.firstDayOfWeek,
             calendarMode: this.parent.calendarMode,
             min: this.parent.minDate,
-            max: this.parent.maxDate,
+            max: new Date(new Date(+this.parent.maxDate).setHours(23, 59, 59)),
             cssClass: this.parent.cssClass,
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
@@ -9888,6 +9884,9 @@ var Render = /** @class */ (function () {
         }
         this.parent.trigger(dataBinding, e, function (args) {
             var resultData = sf.base.extend([], args.result, null, true);
+            if (sf.base.isBlazor()) {
+                resultData.forEach(function (data) { return delete data.BlazId; });
+            }
             _this.parent.eventsData = resultData.filter(function (data) { return !data[_this.parent.eventFields.isBlock]; });
             _this.parent.blockData = resultData.filter(function (data) { return data[_this.parent.eventFields.isBlock]; });
             var processed = _this.parent.eventBase.processData(resultData);
@@ -10674,6 +10673,7 @@ var Crud = /** @class */ (function () {
 var WorkCellInteraction = /** @class */ (function () {
     function WorkCellInteraction(parent) {
         this.parent = parent;
+        sf.base.EventHandler.add(this.parent.element, 'mouseover', this.onHover, this);
     }
     WorkCellInteraction.prototype.cellMouseDown = function (e) {
         if (this.isPreventAction(e)) {
@@ -10796,6 +10796,9 @@ var WorkCellInteraction = /** @class */ (function () {
             return true;
         }
         return false;
+    };
+    WorkCellInteraction.prototype.destroy = function () {
+        sf.base.EventHandler.remove(this.parent.element, 'mouseover', this.onHover);
     };
     return WorkCellInteraction;
 }());
@@ -12166,12 +12169,16 @@ var Schedule = /** @class */ (function (_super) {
         this.renderModule = new Render(this);
         this.eventBase = new EventBase(this);
         this.workCellAction = new WorkCellInteraction(this);
+        if (this.allowKeyboardInteraction) {
+            this.keyboardInteractionModule = new KeyboardInteraction(this);
+        }
         this.initializeDataModule();
         this.on(dataReady, this.resetEventTemplates, this);
         this.on(eventsLoaded, this.updateEventTemplates, this);
         this.renderTableContainer();
         this.activeViewOptions = this.getActiveViewOptions();
         this.initializeResources();
+        this.wireEvents();
     };
     Schedule.prototype.renderTableContainer = function () {
         if (!this.element.querySelector('.' + TABLE_CONTAINER_CLASS)) {
@@ -12360,23 +12367,21 @@ var Schedule = /** @class */ (function (_super) {
         this.initializeView(this.currentView);
         this.destroyPopups();
         this.initializePopups();
-        this.unwireEvents();
-        this.wireEvents();
     };
     Schedule.prototype.validateDate = function (selectedDate) {
         if (selectedDate === void 0) { selectedDate = this.selectedDate; }
         // persist the selected date value
         var date = selectedDate instanceof Date ? new Date(selectedDate.getTime()) : new Date(selectedDate);
-        this.minDate = this.minDate instanceof Date ? new Date(this.minDate.getTime()) : new Date(this.minDate);
-        this.maxDate = this.maxDate instanceof Date ? new Date(this.maxDate.getTime()) : new Date(this.maxDate);
-        if (this.minDate <= this.maxDate) {
-            if (date < this.minDate) {
-                date = this.minDate;
+        var minDate = this.minDate instanceof Date ? new Date(this.minDate.getTime()) : new Date(this.minDate);
+        var maxDate = this.maxDate instanceof Date ? new Date(this.maxDate.getTime()) : new Date(this.maxDate);
+        if (minDate <= maxDate) {
+            if (date < minDate) {
+                date = minDate;
             }
-            if (date > this.maxDate) {
-                date = this.maxDate;
+            if (date > maxDate) {
+                date = maxDate;
             }
-            this.setScheduleProperties({ selectedDate: new Date('' + date) });
+            this.setScheduleProperties({ selectedDate: new Date('' + date), minDate: new Date('' + minDate), maxDate: new Date('' + maxDate) });
         }
         else {
             throw Error('minDate should be equal or less than maxDate');
@@ -12853,10 +12858,6 @@ var Schedule = /** @class */ (function (_super) {
         sf.base.EventHandler.add(window, 'resize', this.onScheduleResize, this);
         sf.base.EventHandler.add(window, 'orientationchange', this.onScheduleResize, this);
         sf.base.EventHandler.add(document, sf.base.Browser.touchStartEvent, this.onDocumentClick, this);
-        sf.base.EventHandler.add(this.element, 'mouseover', this.workCellAction.onHover, this.workCellAction);
-        if (this.allowKeyboardInteraction) {
-            this.keyboardInteractionModule = new KeyboardInteraction(this);
-        }
     };
     /** @hidden */
     Schedule.prototype.removeSelectedClass = function () {
@@ -13092,10 +13093,6 @@ var Schedule = /** @class */ (function (_super) {
         sf.base.EventHandler.remove(window, 'resize', this.onScheduleResize);
         sf.base.EventHandler.remove(window, 'orientationchange', this.onScheduleResize);
         sf.base.EventHandler.remove(document, sf.base.Browser.touchStartEvent, this.onDocumentClick);
-        sf.base.EventHandler.remove(this.element, 'mouseover', this.workCellAction.onHover);
-        if (this.keyboardInteractionModule) {
-            this.keyboardInteractionModule.destroy();
-        }
     };
     /**
      * Core method to return the component name.
@@ -14064,6 +14061,10 @@ var Schedule = /** @class */ (function (_super) {
         this.destroyPopups();
         this.unwireEvents();
         this.destroyHeaderModule();
+        this.workCellAction.destroy();
+        if (this.keyboardInteractionModule) {
+            this.keyboardInteractionModule.destroy();
+        }
         if (this.scrollModule) {
             this.scrollModule.destroy();
             this.scrollModule = null;
@@ -16805,7 +16806,7 @@ var DragAndDrop = /** @class */ (function (_super) {
         return _this;
     }
     DragAndDrop.prototype.wireDragEvent = function (element) {
-        new sf.base.Draggable(element, {
+        var dragObj = new sf.base.Draggable(element, {
             abort: '.' + EVENT_RESIZE_CLASS,
             clone: true,
             isDragScroll: true,
@@ -16822,6 +16823,11 @@ var DragAndDrop = /** @class */ (function (_super) {
             helper: this.dragHelper.bind(this),
             queryPositionInfo: this.dragPosition.bind(this)
         });
+        // tslint:disable-next-line:no-any
+        var handler = (dragObj.enableTapHold && sf.base.Browser.isDevice && sf.base.Browser.isTouch) ? dragObj.mobileInitialize :
+            // tslint:disable-next-line:no-any
+            dragObj.initialize;
+        sf.base.EventHandler.remove(element, 'touchstart', handler);
     };
     DragAndDrop.prototype.dragHelper = function (e) {
         this.setDragActionDefaultValues();
@@ -21594,7 +21600,6 @@ var Year = /** @class */ (function (_super) {
         var _this = _super.call(this, parent) || this;
         _this.viewClass = 'e-year-view';
         _this.isInverseTableSelect = false;
-        _this.workCellAction = new WorkCellInteraction(parent);
         return _this;
     }
     Year.prototype.renderLayout = function (className) {
@@ -21875,9 +21880,9 @@ var Year = /** @class */ (function (_super) {
                 sf.base.EventHandler.add(element, 'click', this.onCellClick, this);
             }
             else {
-                sf.base.EventHandler.add(element, 'click', this.workCellAction.cellClick, this.workCellAction);
+                sf.base.EventHandler.add(element, 'click', this.parent.workCellAction.cellClick, this.parent.workCellAction);
                 if (!this.parent.isAdaptive) {
-                    sf.base.EventHandler.add(element, 'dblclick', this.workCellAction.cellDblClick, this.workCellAction);
+                    sf.base.EventHandler.add(element, 'dblclick', this.parent.workCellAction.cellDblClick, this.parent.workCellAction);
                 }
             }
         }

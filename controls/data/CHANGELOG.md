@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.55 (2020-06-02)
+
+### DataManager
+
+#### Bug Fixes
+
+- `278074` - `WebApiAdaptor` CRUD issue without query has been fixed.
+
 ## 18.1.52 (2020-05-13)
 
 ### DataManager

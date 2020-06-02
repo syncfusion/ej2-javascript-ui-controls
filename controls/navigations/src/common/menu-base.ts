@@ -1030,7 +1030,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                         this.left = parseInt(this.popupWrapper.style.left, 10); this.top = parseInt(this.popupWrapper.style.top, 10);
                         if (this.enableRtl) {
                             this.left =
-                            this.isNestedOrVertical ? this.left - this.popupWrapper.offsetWidth - this.lItem.parentElement.offsetWidth
+                            this.isNestedOrVertical ? this.left - this.popupWrapper.offsetWidth - this.lItem.parentElement.offsetWidth + 2
                                 : this.left - this.popupWrapper.offsetWidth + (this.lItem as HTMLElement).offsetWidth;
                         }
                         collide = isCollide(this.popupWrapper, null, this.left, this.top);
@@ -1041,7 +1041,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                             (closest(this.lItem, '.e-' + this.getModuleName() + '-wrapper') as HTMLElement).offsetWidth;
                             this.left =
                             this.enableRtl ? calculatePosition(this.lItem, this.isNestedOrVertical ? 'right' : 'left', 'top').left
-                            : this.left - this.popupWrapper.offsetWidth - offWidth;
+                            : this.left - this.popupWrapper.offsetWidth - offWidth + 2;
                         }
                         collide = isCollide(this.popupWrapper, null, this.left, this.top);
                         if (collide.indexOf('left') > -1 || collide.indexOf('right') > -1) {

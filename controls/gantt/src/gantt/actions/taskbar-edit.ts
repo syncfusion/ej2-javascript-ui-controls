@@ -1,10 +1,9 @@
-import { isNullOrUndefined, createElement, extend, addClass, remove, removeClass, closest, Browser, merge } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, createElement, extend, addClass, remove, removeClass, closest, merge } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
 import { parentsUntil } from '../base/utils';
 import { IGanttData, ITaskData, ITaskbarEditedEventArgs, IDependencyEventArgs, MousePoint, IPredecessor } from '../base/interface';
 import * as cls from '../base/css-constants';
 import { EditTooltip } from '../renderer/edit-tooltip';
-import { click } from '@syncfusion/ej2-grids';
 
 /**
  * File for handling taskbar editing operation in Gantt.
@@ -247,7 +246,7 @@ export class TaskbarEdit {
             this.editElement = element;
             this.taskBarEditElement = element;
             this.taskBarEditRecord = this.parent.ganttChartModule.getRecordByTaskBar(this.taskBarEditElement);
-            if (e.type === Browser.touchStartEvent || e.type === click) {
+            if (e.type === 'mousedown' || e.type === 'touchstart' || e.type === 'click') {
                 this.roundOffDuration = true;
                 this.taskBarEditAction = this.getTaskBarAction(e);
                 if ((this.taskBarEditAction === 'ConnectorPointLeftDrag' || this.taskBarEditAction === 'ConnectorPointRightDrag') &&
@@ -1308,7 +1307,7 @@ export class TaskbarEdit {
     // Get XY coordinates for touch and non-touch device
     private getCoordinate(event: TouchEvent | PointerEvent): MousePoint {
         let coordinates: MousePoint = {};
-        if (Browser.isTouch && event && event.type !== click) {
+        if (this.parent.isAdaptive && event && event.type !== 'click') {
             let e: TouchEvent = event as TouchEvent;
             if (e.type === 'touchmove' || e.type === 'touchstart' || e.type === 'touchend') {
                 coordinates.pageX = e.changedTouches[0].pageX;

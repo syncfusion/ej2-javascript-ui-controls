@@ -71,6 +71,10 @@ export interface IProgressStyle {
     linearProgressThickness: number;
     circularTrackThickness: number;
     circularProgressThickness: number;
+    success: string;
+    info: string;
+    warning: string;
+    danger: string;
 }
 
 export interface IProgressEventArgs {
@@ -79,11 +83,41 @@ export interface IProgressEventArgs {
     /** Defines the event cancel status */
     cancel: boolean;
 }
+
 export interface IAnnotationRenderEventArgs extends IProgressEventArgs {
     /** Defines the current annotation content */
     content: HTMLElement;
     /** Defines the current annotation location */
     location: ProgressLocation;
+}
+
+/** Interface for LinearGradient attributes */
+export interface LinearGradient {
+    /** id for gradient */
+    id?: string;
+    /** x1 value */
+    x1?: string;
+    /** x2 value */
+    x2?: string;
+    /** y1 value */
+    y1?: string;
+    /** y2 value */
+    y2?: string;
+    /** gradientUnit for gradient */
+    gradientUnits?: string;
+    /** spreadMethod for gradient */
+    spreadMethod?: string;
+    /** gradientTransform for gradient */
+    gradientTransform?: string;
+}
+
+export interface StopElement {
+    /** offset value */
+    offset?: string;
+    /** stop-color */
+    ['stop-color']?: string;
+    /** stop-opacity */
+    ['stop-opacity']?: string;
 }
 
 export interface IMouseEventArgs {

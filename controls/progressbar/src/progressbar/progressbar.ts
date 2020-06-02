@@ -1,13 +1,13 @@
 import { Component, Property, NotifyPropertyChanges, Browser, Complex, Event, Collection, EventHandler } from '@syncfusion/ej2-base';
-import { EmitType, INotifyPropertyChanged, createElement, remove, ModuleDeclaration } from '@syncfusion/ej2-base';
+import { EmitType, INotifyPropertyChanged, createElement, remove, ModuleDeclaration,  } from '@syncfusion/ej2-base';
 import { ProgressBarModel } from './progressbar-model';
 import { Rect, Size, RectOption, stringToNumber } from './utils/helper';
-import { MarginModel, AnimationModel, FontModel } from './model/progress-base-model';
-import { Margin, Animation, Font } from './model/progress-base';
+import { MarginModel, AnimationModel, FontModel, RangeColorModel } from './model/progress-base-model';
+import { Margin, Animation, Font, RangeColor } from './model/progress-base';
 import { ILoadedEventArgs, IProgressStyle, IProgressValueEventArgs } from './model/progress-interface';
 import { ITextRenderEventArgs, IProgressResizeEventArgs, IMouseEventArgs } from './model/progress-interface';
 import { SvgRenderer, PathOption, getElement } from '@syncfusion/ej2-svg-base';
-import { ProgressType, CornerType, ProgressTheme } from './utils/enum';
+import { ProgressType, CornerType, ProgressTheme, ModeType } from './utils/enum';
 import { getProgressThemeColor } from './utils/theme';
 import { lineCapRadius, completeAngle, valueChanged, progressCompleted } from './model/constant';
 import { mouseClick, mouseDown, mouseLeave, mouseMove, mouseUp } from './model/constant';
@@ -123,6 +123,30 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     @Property(false)
     public isIndeterminate: boolean;
     /**
+     * Active state
+     * @default false
+     */
+    @Property(false)
+    public isActive: boolean;
+    /**
+     * gradient
+     * @default false
+     */
+    @Property(false)
+    public isGradient: boolean;
+    /**
+     * striped
+     * @default false
+     */
+    @Property(false)
+    public isStriped: boolean;
+    /**
+     * modes of linear progress
+     * @default null
+     */
+    @Property('Auto')
+    public role: ModeType;
+    /**
      * right to left
      * @default false
      */
@@ -171,19 +195,16 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     @Property(false)
     public showProgressValue: boolean;
     /**
+     * disable the trackSegment
+     * @default false
+     */
+    @Property(false)
+    public trackSegmentDisable: boolean;
+    /**
      * Option for customizing the  label text.
      */
-
     @Complex<FontModel>({ size: null, color: null, fontStyle: null, fontWeight: 'Normal', fontFamily: null }, Font)
     public labelStyle: FontModel;
-
-    /**
-     * Option for the  label text.
-     * @default null
-     */
-    @Property('')
-    public label: string;
-
     /**
      * margin size
      */
@@ -265,7 +286,11 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
      */
     @Collection<ProgressAnnotationSettingsModel>([{}], ProgressAnnotationSettings)
     public annotations: ProgressAnnotationSettingsModel[];
-
+    /**
+     * RangeColor in Progressbar.
+     */
+    @Collection<RangeColorModel>([{}], RangeColor)
+    public rangeColors: RangeColorModel[];
     /** @private */
     public progressRect: Rect;
     /** @private */
@@ -277,7 +302,9 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     /** @Private */
     public totalAngle: number;
     /** @private */
-    public trackwidth: number;
+    public trackWidth: number;
+    /** @private */
+    public progressWidth: number;
     /** @private */
     public segmentSize: string;
     /** @private */
@@ -294,11 +321,15 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     /** @private */
     private resizeTo: number;
     /** @private */
-    public progressStartAngle: number;
+    public previousWidth: number;
     /** @private */
-    public progressPreviousWidth: number;
+    public previousEndAngle: number;
     /** @private */
-    public progressEndAngle: number;
+    public previousTotalEnd: number;
+    /** @private */
+    public annotateEnd: number;
+    /** @private */
+    public annotateTotal: number;
     /** @private */
     public redraw: boolean;
     /** @private */
@@ -385,8 +416,8 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     private renderElements(): void {
         this.renderTrack();
         this.renderProgress();
-        this.renderAnnotations();
         this.renderLabel();
+        this.renderAnnotations();
     }
 
     private createSecElement(): void {
@@ -456,7 +487,6 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
         } else if (this.type === 'Circular') {
             this.circular.renderCircularProgress();
         }
-        this.element.appendChild(this.svgObject);
     }
 
     private renderLabel(): void {
@@ -465,6 +495,7 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
         } else if (this.type === 'Circular' && this.showProgressValue && !this.isIndeterminate) {
             this.circular.renderCircularLabel();
         }
+        this.element.appendChild(this.svgObject);
     }
 
 
@@ -479,19 +510,14 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
             'L' + lineTo + ' ' + (this.progressRect.y + (this.progressRect.height / 2));
     }
 
-    public calculateProgressRange(min: number, max: number, value: number): number {
+    public calculateProgressRange(value: number, minimum?: number, maximum?: number): number {
         let result: number;
         let endValue: number;
-        if (this.type === 'Linear') {
-            endValue = (value - min) / (max - min);
-            result = (value < min || value > max) ? 0 : endValue;
-            return result;
-        } else {
-            endValue = ((value - min) / (max - min)) * this.totalAngle;
-            endValue = (this.startAngle + ((this.enableRtl) ? -endValue : +endValue)) % 360;
-            result = (value < min || value > max) ? this.startAngle : endValue;
-            return result;
-        }
+        let min: number = minimum || this.minimum;
+        let max: number = maximum || this.maximum;
+        endValue = (value - min) / (max - min) * ((this.type === 'Linear') ? 1 : this.totalAngle);
+        result = (value < min || value > max) ? 0 : endValue;
+        return result;
     }
 
     public calculateSegmentSize(width: number, thickness: number): string {
@@ -504,21 +530,25 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
         return ' ' + size + ' ' + gap;
     }
 
-    public createClipPath(clipPath?: Element, width?: number, d?: string, x?: number, refresh?: boolean, thickness?: number): Element {
+    public createClipPath(
+        clipPath?: Element, range?: number, d?: string, refresh?: boolean, thickness?: number, isLabel?: boolean
+    ): Element {
         let path: Element;
         let rect: RectOption;
         let option: PathOption;
         let posx: number;
         let posy: number;
         let pathWidth: number;
+        let x: number = this.progressRect.x;
+        let totalWidth: number = this.progressRect.width;
         if (this.type === 'Linear') {
+            posx = (this.enableRtl && !isLabel) ? (x + totalWidth) : x;
+            posx += (this.cornerRadius === 'Round') ?
+                ((this.enableRtl && !isLabel) ? (lineCapRadius / 2) * thickness : -(lineCapRadius / 2) * thickness) : 0;
+            posy = (this.progressRect.y + (this.progressRect.height / 2)) - (thickness / 2);
+            pathWidth = totalWidth * range;
+            pathWidth += (this.cornerRadius === 'Round') ? (lineCapRadius * thickness) : 0;
             if (!refresh) {
-                posx = (this.enableRtl) ? (x + this.progressRect.width) : x;
-                posx += (this.cornerRadius === 'Round') ?
-                    ((this.enableRtl) ? (lineCapRadius / 2) * thickness : -(lineCapRadius / 2) * thickness) : 0;
-                posy = (this.progressRect.y + (this.progressRect.height / 2)) - (thickness / 2);
-                pathWidth = this.progressRect.width * width;
-                pathWidth += (this.cornerRadius === 'Round') ? (lineCapRadius * thickness) : 0;
                 rect = new RectOption(
                     this.element.id + '_clippathrect', 'transparent', 1, 'transparent', 1,
                     new Rect(posx, posy, thickness, pathWidth)
@@ -527,6 +557,10 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
                 clipPath.appendChild(path);
             } else {
                 path = getElement(this.element.id + '_clippathrect');
+                path.setAttribute('width', (pathWidth).toString());
+                if (this.isActive) {
+                    path.setAttribute('x', (posx).toString());
+                }
             }
         } else {
             if (!refresh) {
@@ -683,16 +717,12 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     }
 
     public onPropertyChanged(newProp: ProgressBarModel, oldProp: ProgressBarModel): void {
-
+        let annotationElement: Element;
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'annotations':
                     this.secElement.innerHTML = '';
                     this.renderAnnotation();
-                    if (this.animation.enable && !this.isIndeterminate) {
-                        let annotationElement: Element = document.getElementById(this.element.id + 'Annotation0').children[0];
-                        this.annotateAnimation.doAnnotationAnimation(annotationElement, this);
-                    }
                     break;
                 case 'value':
                     this.argsData = {
@@ -706,9 +736,13 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
                         this.trigger(valueChanged, this.argsData);
                     }
                     if (this.type === 'Circular') {
-                        this.circular.renderCircularProgress(this.progressStartAngle, this.progressEndAngle, true);
+                        this.circular.renderCircularProgress(this.previousEndAngle, this.previousTotalEnd, true);
+                        if (this.progressAnnotationModule && this.animation.enable && !this.isIndeterminate) {
+                            annotationElement = document.getElementById(this.element.id + 'Annotation0').children[0];
+                            this.annotateAnimation.doAnnotationAnimation(annotationElement, this, this.annotateEnd, this.annotateTotal);
+                        }
                     } else {
-                        this.linear.renderLinearProgress(true, this.progressPreviousWidth);
+                        this.linear.renderLinearProgress(true, this.previousWidth);
                     }
                     break;
             }

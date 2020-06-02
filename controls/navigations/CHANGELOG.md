@@ -2,13 +2,27 @@
 
 ## [Unreleased]
 
-## 18.1.54 (2020-05-26)
+## 18.1.55 (2020-06-02)
+
+### Menu
+
+#### Bug Fixes
+
+- Issue with Menu closing when collision occurred.
 
 ### Accordion
 
 #### Bug Fixes
 
 - `#275090` - An issue with Ripple effect when destroy and rendered nested accordions has been fixed.
+- `#273054` - An issue with cross side scripting validation has been fixed.
+- `#275509` - An issue with `addItem` public method when passing multiple items has been fixed.
+
+### Tab
+
+#### Bug Fixes
+
+- `#273054` - An issue with cross side scripting validation has been fixed.
 
 ### Toolbar
 

@@ -2485,6 +2485,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @param {LayerModel} layer - defines the layer model which is to be added
      * @param {Object[]} layerObject - defines the object of the layer
      * @blazorArgsType layer|DiagramLayer
+     * @deprecated
      */
     public addLayer(layer: LayerModel, layerObject?: Object[]): void {
         this.commandHandler.addLayer(layer, layerObject);
@@ -2493,6 +2494,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * remove the layer from diagram
      * @param {string} layerId - define the id of the layer
+     * @deprecated
      */
     public removeLayer(layerId: string): void {
         this.commandHandler.removeLayer(layerId);
@@ -5472,7 +5474,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 id: 'default_layer', visible: true, lock: false, objects: [], zIndex: 0,
                 objectZIndex: -1, zIndexTable: {}
             } as Layer;
-            this.commandHandler.addLayer(defaultLayer);
+            this.commandHandler.addLayer(defaultLayer, null, true);
         }
         this.setActiveLayer(this.layers[this.layers.length - 1].id);
     }

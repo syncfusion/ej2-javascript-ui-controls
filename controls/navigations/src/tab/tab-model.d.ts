@@ -228,6 +228,13 @@ export interface TabModel extends ComponentModel{
     enablePersistence?: boolean;
 
     /**
+     * Defines whether to allow the cross-scripting site or not.
+     * @default false
+     * @deprecated
+     */
+    enableHtmlSanitizer?: boolean;
+
+    /**
      * Specifies whether to show the close button for header items to remove the item from the Tab.
      * @default false
      */

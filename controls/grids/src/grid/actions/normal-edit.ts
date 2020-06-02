@@ -454,7 +454,10 @@ export class NormalEdit {
         }
         gObj.trigger(
             events.actionBegin, args,
-            (closeEditArgs: { data: Object, requestType: string, selectedRow: Number, type: string }) => {
+            (closeEditArgs: { cancel: Boolean, data: Object, requestType: string, selectedRow: Number, type: string }) => {
+                if (closeEditArgs.cancel) {
+                    return;
+                }
                 if (this.parent.editSettings.mode === 'Dialog') {
                     this.parent.notify(events.dialogDestroy, {});
                 }

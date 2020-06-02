@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 18.1.55 (2020-06-02)
+
+### PDF Viewer
+
+#### New Features
+
+- `#F154248` - Provided the Support to show/hide the annotation toolbar in code behind.
+- `#F153946` - Provided the Options to disable AutoComplete options in form filling documents.
+- `#273237` - Provided the Support to lock the text markup annotations.
+- `#277143` - Provided the support for ink annotation.
+
 ## 18.1.54 (2020-05-26)
 
 ### PDF Viewer

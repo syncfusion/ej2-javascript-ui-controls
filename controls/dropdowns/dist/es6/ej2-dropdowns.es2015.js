@@ -331,7 +331,7 @@ let DropDownBase = class DropDownBase extends Component {
     }
     l10nUpdate(actionFailure) {
         let ele = this.getModuleName() === 'listbox' ? this.ulElement : this.list;
-        if (this.noRecordsTemplate !== 'No Records Found' || this.actionFailureTemplate !== 'The Request Failed') {
+        if (this.noRecordsTemplate !== 'No records found' || this.actionFailureTemplate !== 'Request failed') {
             this.DropDownBaseresetBlazorTemplates(false, false, true, true);
             let template = actionFailure ? this.actionFailureTemplate : this.noRecordsTemplate;
             let compiledString;
@@ -350,7 +350,7 @@ let DropDownBase = class DropDownBase extends Component {
             this.DropDownBaseupdateBlazorTemplates(false, false, !actionFailure, actionFailure, false, false, false, false);
         }
         else {
-            let l10nLocale = { noRecordsTemplate: 'No Records Found', actionFailureTemplate: 'The Request Failed' };
+            let l10nLocale = { noRecordsTemplate: 'No records found', actionFailureTemplate: 'Request failed' };
             let componentLocale = new L10n(this.getLocaleName(), {}, this.locale);
             if (componentLocale.getConstant('actionFailureTemplate') !== '') {
                 this.l10n = componentLocale;
@@ -1239,10 +1239,10 @@ __decorate([
     Property(null)
 ], DropDownBase.prototype, "groupTemplate", void 0);
 __decorate([
-    Property('No Records Found')
+    Property('No records found')
 ], DropDownBase.prototype, "noRecordsTemplate", void 0);
 __decorate([
-    Property('The Request Failed')
+    Property('Request failed')
 ], DropDownBase.prototype, "actionFailureTemplate", void 0);
 __decorate([
     Property('None')
@@ -2700,6 +2700,14 @@ let DropDownList = class DropDownList extends DropDownBase {
                     [dropDownListClasses.backIcon, dropDownListClasses.filterBarClearIcon] : [dropDownListClasses.filterBarClearIcon],
                 properties: { placeholder: this.filterBarPlaceholder }
             }, this.createElement);
+            if (!isNullOrUndefined(this.cssClass)) {
+                if (this.cssClass.split(' ').indexOf('e-outline') !== -1) {
+                    addClass([this.filterInputObj.container], 'e-outline');
+                }
+                else if (this.cssClass.split(' ').indexOf('e-filled') !== -1) {
+                    addClass([this.filterInputObj.container], 'e-filled');
+                }
+            }
             append([this.filterInputObj.container], parentElement);
             prepend([parentElement], popupElement);
             attributes(this.filterInput, {
@@ -3805,7 +3813,10 @@ let DropDownList = class DropDownList extends DropDownBase {
                 this.renderHightSearch();
             }
             this.initRemoteRender = false;
-            this.serverBlazorUpdateSelection();
+            if (!this.isPopupOpen) {
+                this.serverBlazorUpdateSelection();
+            }
+            this.unWireListEvents();
             this.wireListEvents();
             if (this.isServerIncrementalSearch && this.searchKeyEvent) {
                 this.isServerIncrementalSearch = false;
@@ -4518,6 +4529,10 @@ let DropDownTree = class DropDownTree extends Component {
         EventHandler.add(this.inputWrapper, 'mouseout', this.onMouseLeave, this);
         EventHandler.add(this.overAllClear, 'mousedown', this.clearAll, this);
         EventHandler.add(window, 'resize', this.windowResize, this);
+        let formElement = closest(this.inputWrapper, 'form');
+        if (formElement) {
+            EventHandler.add(formElement, 'reset', this.resetValueHandler, this);
+        }
         this.keyboardModule = new KeyboardEvents(this.inputWrapper, {
             keyAction: this.keyActionHandler.bind(this),
             keyConfigs: this.keyConfigs,
@@ -4547,6 +4562,10 @@ let DropDownTree = class DropDownTree extends Component {
         EventHandler.remove(this.inputWrapper, 'mouseout', this.onMouseLeave);
         EventHandler.remove(this.overAllClear, 'mousedown', this.clearAll);
         EventHandler.remove(window, 'resize', this.windowResize);
+        let formElement = closest(this.inputWrapper, 'form');
+        if (formElement) {
+            EventHandler.remove(formElement, 'reset', this.resetValueHandler);
+        }
     }
     /* Trigger when the dropdown is clicked */
     dropDownClick(e) {
@@ -4788,6 +4807,12 @@ let DropDownTree = class DropDownTree extends Component {
             this.popupObj.refreshPosition();
         }
     }
+    resetValueHandler(e) {
+        let formElement = closest(this.inputWrapper, 'form');
+        if (formElement && e.target === formElement) {
+            this.resetValue(true);
+        }
+    }
     getAriaAttributes() {
         let disable = this.enabled ? 'false' : 'true';
         return {
@@ -4801,9 +4826,16 @@ let DropDownTree = class DropDownTree extends Component {
         };
     }
     createHiddenElement() {
-        this.hiddenElement = this.createElement('select', {
-            attrs: { 'aria-hidden': 'true', 'tabindex': '-1', 'class': HIDDENELEMENT }
-        });
+        if (this.allowMultiSelection || this.showCheckBox) {
+            this.hiddenElement = this.createElement('select', {
+                attrs: { 'aria-hidden': 'true', 'class': HIDDENELEMENT, 'tabindex': '-1', 'multiple': '' }
+            });
+        }
+        else {
+            this.hiddenElement = this.createElement('select', {
+                attrs: { 'aria-hidden': 'true', 'tabindex': '-1', 'class': HIDDENELEMENT }
+            });
+        }
         prepend([this.hiddenElement], this.inputWrapper);
         this.validationAttribute();
     }
@@ -5240,10 +5272,10 @@ let DropDownTree = class DropDownTree extends Component {
             }
             if (!isCancelled) {
                 attributes(this.inputWrapper, { 'aria-expanded': 'true' });
-                this.popupObj.show();
-                this.popupObj.refreshPosition();
+                this.popupObj.show(null, (this.zIndex === 1000) ? this.inputEle : null);
                 this.popupEle.style.display = 'block';
                 this.updatePopupHeight();
+                this.popupObj.refreshPosition();
                 if (!(this.showCheckBox && this.showSelectAll) && (!this.popupDiv.classList.contains(NODATA)
                     && this.treeItems.length > 0)) {
                     this.treeObj.element.focus();
@@ -5290,6 +5322,7 @@ let DropDownTree = class DropDownTree extends Component {
             this.popupObj = new Popup(element, {
                 width: this.setWidth(),
                 targetType: 'relative',
+                collision: { X: 'flip', Y: 'flip' },
                 relateTo: this.inputWrapper,
                 zIndex: this.zIndex,
                 enableRtl: this.enableRtl,
@@ -5301,6 +5334,11 @@ let DropDownTree = class DropDownTree extends Component {
                     EventHandler.add(document, 'mousedown', this.onDocumentClick, this);
                     this.isPopupOpen = true;
                 },
+                targetExitViewport: () => {
+                    if (!Browser.isDevice) {
+                        this.hidePopup();
+                    }
+                }
             });
         }
     }
@@ -6174,6 +6212,7 @@ let DropDownTree = class DropDownTree extends Component {
     updateMultiSelection(state) {
         this.treeObj.allowMultiSelection = state;
         this.treeObj.dataBind();
+        this.updateOption();
         if (this.allowMultiSelection) {
             this.updateMode();
         }
@@ -6221,6 +6260,14 @@ let DropDownTree = class DropDownTree extends Component {
         }
         this.updateMode();
         this.setMultiSelect();
+    }
+    updateOption() {
+        if (!this.hiddenElement.hasAttribute('multiple') && (this.allowMultiSelection || this.showCheckBox)) {
+            this.hiddenElement.setAttribute('multiple', '');
+        }
+        else if (this.hiddenElement.hasAttribute('multiple') && (!this.allowMultiSelection && !this.showCheckBox)) {
+            this.hiddenElement.removeAttribute('multiple');
+        }
     }
     /**
      * Dynamically change the value of properties.
@@ -6307,6 +6354,7 @@ let DropDownTree = class DropDownTree extends Component {
                 case 'showCheckBox':
                     this.updateCheckBoxState(newProp.showCheckBox);
                     this.updatePopupHeight();
+                    this.updateOption();
                     break;
                 case 'treeSettings':
                     this.updateTreeSettings(newProp);
@@ -10711,8 +10759,8 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             let overAllContainer;
             this.viewWrapper.innerHTML = '';
             let l10nLocale = {
-                noRecordsTemplate: 'No Records Found',
-                actionFailureTemplate: 'The Request Failed',
+                noRecordsTemplate: 'No records found',
+                actionFailureTemplate: 'Request failed',
                 overflowCountTemplate: '+${count} more..',
                 totalCountTemplate: '${count} selected'
             };
@@ -11532,10 +11580,10 @@ __decorate$5([
     Property(null)
 ], MultiSelect.prototype, "groupTemplate", void 0);
 __decorate$5([
-    Property('No Records Found')
+    Property('No records found')
 ], MultiSelect.prototype, "noRecordsTemplate", void 0);
 __decorate$5([
-    Property('The Request Failed')
+    Property('Request failed')
 ], MultiSelect.prototype, "actionFailureTemplate", void 0);
 __decorate$5([
     Property('None')
@@ -11960,6 +12008,14 @@ class CheckBoxSelection {
                 buttons: backIcon ? [searchBackIcon, filterBarClearIcon] : [filterBarClearIcon],
                 properties: { placeholder: this.parent.filterBarPlaceholder }
             }, this.parent.createElement);
+            if (!isNullOrUndefined(this.parent.cssClass)) {
+                if (this.parent.cssClass.split(' ').indexOf('e-outline') !== -1) {
+                    addClass([this.filterInputObj.container], 'e-outline');
+                }
+                else if (this.parent.cssClass.split(' ').indexOf('e-filled') !== -1) {
+                    addClass([this.filterInputObj.container], 'e-filled');
+                }
+            }
             append([this.filterInputObj.container], this.parent.filterParent);
             prepend([this.parent.filterParent], args.popupElement);
             attributes(this.filterInput, {
@@ -14223,10 +14279,10 @@ __decorate$6([
     Property(null)
 ], ListBox.prototype, "groupTemplate", void 0);
 __decorate$6([
-    Property('No Records Found')
+    Property('No records found')
 ], ListBox.prototype, "noRecordsTemplate", void 0);
 __decorate$6([
-    Property('The Request Failed')
+    Property('Request failed')
 ], ListBox.prototype, "actionFailureTemplate", void 0);
 __decorate$6([
     Property(1000)

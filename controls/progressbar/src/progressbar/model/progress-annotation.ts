@@ -30,6 +30,7 @@ export class ProgressAnnotation extends AnnotationBase {
     public renderAnnotations(element: Element): void {
         this.annotations = this.progress.annotations;
         let parentElement: HTMLElement = document.getElementById(this.progress.element.id + 'Annotation_collections');
+        let annotationElement: Element;
         this.parentElement = parentElement ? parentElement : createElement('div', {
             id: this.progress.element.id + 'Annotation_collections',
             styles: 'position:absolute'
@@ -41,7 +42,7 @@ export class ProgressAnnotation extends AnnotationBase {
             element.appendChild(this.parentElement);
         }
         if (this.progress.animation.enable && !this.progress.isIndeterminate) {
-            let annotationElement: Element = document.getElementById(this.progress.element.id + 'Annotation0').children[0];
+            annotationElement = document.getElementById(this.progress.element.id + 'Annotation0').children[0];
             this.animation.doAnnotationAnimation(annotationElement, this.progress);
         }
     }

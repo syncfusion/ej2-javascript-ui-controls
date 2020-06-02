@@ -2703,7 +2703,8 @@ export class Gantt extends Component<HTMLElement>
      * Filters TreeGrid row by column name with the given options. 
      * @param  {string} fieldName - Defines the field name of the column.
      * @param  {string} filterOperator - Defines the operator to filter records.
-     * @param  {string | number | Date | boolean} filterValue - Defines the value used to filter records.
+     * @param  {string | number | Date | boolean | number[] | string[] | Date[] | boolean[]} filterValue - Defines the value
+     *  used to filter records.
      * @param  {string} predicate - Defines the relationship between one filter query and another by using AND or OR predicate.   
      * @param  {boolean} matchCase - If match case is set to true, TreeGrid filters the records with exact match.if false, it filters case 
      * insensitive records (uppercase and lowercase letters treated the same).  
@@ -2714,8 +2715,8 @@ export class Gantt extends Component<HTMLElement>
      * @return {void} 
      */
     public filterByColumn(
-        fieldName: string, filterOperator: string, filterValue: string | number | Date | boolean, predicate?: string, matchCase?: boolean,
-        ignoreAccent?: boolean): void {
+        fieldName: string, filterOperator: string, filterValue: string | number | Date | boolean | number[] | string[] | Date[] | boolean[],
+        predicate?: string, matchCase?: boolean, ignoreAccent?: boolean): void {
         this.treeGrid.filterByColumn(
             fieldName, filterOperator, filterValue, predicate, matchCase, ignoreAccent
         );
@@ -2766,11 +2767,13 @@ export class Gantt extends Component<HTMLElement>
             : null;
     }
     /**
-     * Clears all the filtered columns in Gantt.
+     * Clears the filtered columns in Gantt.
+     * Can also be used to clear filtering of a specific column in Gantt.
+     * @param {string[]} fields - Defines the specific column to remove filter.
      * @return {void} 
      */
-    public clearFiltering(): void {
-        this.treeGrid.clearFiltering();
+    public clearFiltering(fields?: string[]): void {
+        this.treeGrid.grid.clearFiltering(fields);
     }
     /** 
      * Removes filtered column by field name. 
@@ -2985,15 +2988,26 @@ export class Gantt extends Component<HTMLElement>
         this.splitterModule.triggerCustomResizedEvent();
     }
     /**
-     * Expand the record by index value.
-     * @param {number} index - Defines the index of row.
+     * Expand the records by index value.
+     * @param {number[] | number} index - Defines the index of rows to be expand.
      * @return {void}
      * @public
      */
-    public expandByIndex(index: number): void {
-        let args: object = this.contructExpandCollapseArgs(null, index);
-        this.ganttChartModule.isExpandCollapseFromChart = true;
-        this.ganttChartModule.expandGanttRow(args);
+    public expandByIndex(index: number[] | number): void {
+        if (typeof index === 'number') {
+            let args: object = this.contructExpandCollapseArgs(null, index);
+            this.ganttChartModule.isExpandCollapseFromChart = true;
+            this.ganttChartModule.expandGanttRow(args);
+        } else {
+            for (let i: number = 0; i < index.length; i++) {
+                if (typeof index[i] === 'number') {
+                    let ind: number = index[i];
+                    let args: object = this.contructExpandCollapseArgs(null, ind);
+                    this.ganttChartModule.isExpandCollapseFromChart = true;
+                    this.ganttChartModule.expandGanttRow(args);
+                }
+            }
+        }
     }
     /**
      * Expand the record by task id.
@@ -3059,6 +3073,15 @@ export class Gantt extends Component<HTMLElement>
      */
     public updateTaskId(currentId: number | string, newId: number | string): void {
         this.editModule.updateTaskId(currentId, newId);
+    }
+    /**
+     * Public method to expand particular level of rows.
+     * @return {void}
+     * @param level
+     * @private
+     */
+    public expandAtLevel(level: number): void {
+        this.ganttChartModule.expandAtLevel(level);
     }
     /**
      * To indent the level of selected task to the hierarchical Gantt task.

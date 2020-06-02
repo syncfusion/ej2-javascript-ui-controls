@@ -83,6 +83,15 @@ describe('ProgressBar Control', () => {
             progress.loaded = loaded;
             progress.refresh();
         });
+        it('Checking the animation of buffer mode with secondary progressvalue ', () => {
+            loaded = (args: Object): void => {
+                path = document.getElementById('container_Linearbuffer');
+                expect((<SVGPathElement>path).getTotalLength() != 0).toBe(true);
+            };
+            progress.animation.enable = true;
+            progress.loaded = loaded;
+            progress.refresh();
+        });
         it('checking with default track color', () => {
             loaded = (args: Object): void => {
                 path = document.getElementById('container_Lineartrack');
@@ -145,6 +154,7 @@ describe('ProgressBar Control', () => {
             progress = new ProgressBar(
                 {
                     type: 'Linear',
+                    width: '400'
                 }
             );
             progress.appendTo('#container');
@@ -166,9 +176,9 @@ describe('ProgressBar Control', () => {
             loaded = (args: Object): void => {
                 path = document.getElementById('container_Lineartrack');
                 strokedasharray = path.getAttribute('stroke-dasharray');
-                //expect(strokedasharray === ' 31.428571428571427 10' || strokedasharray === ' 169.14285714285714 10').toBe(false);
+                expect(strokedasharray === " 87.5 10").toBe(true);
             };
-            progress.segmentCount = 7;
+            progress.segmentCount = 4;
             progress.gapWidth = 10;
             progress.loaded = loaded;
             progress.refresh();
@@ -177,7 +187,7 @@ describe('ProgressBar Control', () => {
             loaded = (args: Object): void => {
                 path = document.getElementById('container_Linearprogress');
                 strokedasharray = path.getAttribute('stroke-dasharray');
-               // expect(strokedasharray != null).toBe(true);
+                expect(strokedasharray === " 87.5 10").toBe(true);
             };
             progress.value = 50;
             progress.loaded = loaded;
@@ -187,69 +197,7 @@ describe('ProgressBar Control', () => {
             loaded = (args: Object): void => {
                 path = document.getElementById('container_Linearbuffer');
                 strokedasharray = path.getAttribute('stroke-dasharray');
-                //expect(strokedasharray === ' 31.428571428571427 10' ||  strokedasharray != null).toBe(true);
-            };
-           
-            progress.secondaryProgress = 70;
-            progress.loaded = loaded;
-            progress.refresh();
-        });
-    });
-     describe('linear progress bar segment', () => {
-        let progress: ProgressBar;
-        let element: HTMLElement;
-        let path: Element;
-        let strokedasharray: string;
-        let loaded: EmitType<ILoadedEventArgs>;
-        beforeAll((): void => {
-            element = createElement('div', { id: 'container' });
-            document.body.appendChild(element);
-            progress = new ProgressBar(
-                {
-                    type: 'Linear',
-                }
-            );
-            progress.appendTo('#container');
-        });
-        afterAll((): void => {
-            progress.destroy();
-            element.remove();
-        });
-        it('checking without segment of the linear progress bar', () => {
-            loaded = (args: Object): void => {
-                path = document.getElementById('container_Lineartrack');
-                strokedasharray = path.getAttribute('stroke-dasharray');
-                expect(strokedasharray === '0').toBe(true);
-            };
-            progress.loaded = loaded;
-            progress.refresh();
-        });
-       it('checking with custom segmentcount and gapwidth of the linear progress bar', () => {
-            loaded = (args: Object): void => {
-                path = document.getElementById('container_Lineartrack');
-                strokedasharray = path.getAttribute('stroke-dasharray');
-                //expect(strokedasharray === ' 31.428571428571427 10' || strokedasharray != null).toBe(false);
-            };
-            progress.segmentCount = 7;
-            progress.gapWidth = 10;
-            progress.loaded = loaded;
-            progress.refresh();
-        });
-        it('checking with custom segmentcount and gapwidth of the  progress ', () => {
-            loaded = (args: Object): void => {
-                path = document.getElementById('container_Linearprogress');
-                strokedasharray = path.getAttribute('stroke-dasharray');
-                //expect(strokedasharray === ' 31.428571428571427 10' || strokedasharray === ' 169.14285714285714 10').toBe(true);
-            };
-            progress.value = 50;
-            progress.loaded = loaded;
-            progress.refresh();
-        });
-        it('checking with custom segmentcount and gapwidth of the  buffer ', () => {
-            loaded = (args: Object): void => {
-                path = document.getElementById('container_Linearbuffer');
-                strokedasharray = path.getAttribute('stroke-dasharray');
-               // expect(strokedasharray === ' 31.428571428571427 10' || strokedasharray === ' 169.14285714285714 10').toBe(true);
+                expect(strokedasharray === " 87.5 10").toBe(true);
             };
            
             progress.secondaryProgress = 70;
@@ -260,10 +208,8 @@ describe('ProgressBar Control', () => {
             loaded = (args: Object): void => {
                 path = document.getElementById('container_Lineartrack');
                 strokedasharray = path.getAttribute('stroke-dasharray');
-                expect(strokedasharray != null).toBe(true);
+                expect(strokedasharray === " 85.25000305175782 11.8").toBe(true);
             };
-            progress.segmentCount = 4;
-            progress.gapWidth = 5;
             progress.cornerRadius = 'Round';
             progress.loaded = loaded;
             progress.refresh();
@@ -272,7 +218,7 @@ describe('ProgressBar Control', () => {
             loaded = (args: Object): void => {
                 path = document.getElementById('container_Linearprogress');
                 strokedasharray = path.getAttribute('stroke-dasharray');
-                //expect(strokedasharray === ' 57.25 14' || strokedasharray === ' 298.25 14').toBe(true);
+                expect(strokedasharray === " 85.25000305175782 11.8").toBe(true);
             };
             progress.loaded = loaded;
             progress.refresh();
@@ -281,7 +227,29 @@ describe('ProgressBar Control', () => {
             loaded = (args: Object): void => {
                 path = document.getElementById('container_Linearbuffer');
                 strokedasharray = path.getAttribute('stroke-dasharray');
-                //expect(strokedasharray === ' 57.25 14' || strokedasharray === ' 298.25 14').toBe(true);
+                expect(strokedasharray === " 85.25000305175782 11.8").toBe(true);
+            };
+            progress.loaded = loaded;
+            progress.refresh();
+        });
+        it('Checking the track segment disable',()=>{
+            loaded = (args: Object): void => {
+                path = document.getElementById('container_Linearprogress');
+                strokedasharray = path.getAttribute('stroke-dasharray');
+                expect(strokedasharray === " 17.2 2").toBe(true);
+            };
+            progress.cornerRadius = 'Square';
+            progress.segmentCount = 10;
+            progress.gapWidth = 2;
+            progress.trackSegmentDisable = true,
+            progress.loaded = loaded;
+            progress.refresh();
+        });
+        it('Checking the track segment disable with buffer',()=>{
+            loaded = (args: Object): void => {
+                path = document.getElementById('container_Linearbuffer');
+                strokedasharray = path.getAttribute('stroke-dasharray');
+                expect(strokedasharray === " 17.2 2").toBe(true);
             };
             progress.loaded = loaded;
             progress.refresh();
@@ -324,6 +292,18 @@ describe('ProgressBar Control', () => {
                 expect(style ==='clip-path:url(#container_clippath)').toBe(true);
             };
             progress.isIndeterminate = true;
+            progress.loaded = loaded;
+            progress.refresh();
+        });
+        it('checking with Indeterminate of the Linear progress with segmented', () => {
+            loaded = (args: Object): void => {
+                path = document.getElementById('container_Linearprogress');
+                style = path.getAttribute('style');
+                expect(style ==='clip-path:url(#container_clippath)').toBe(true);
+            };
+            progress.segmentCount = 5;
+            progress.gapWidth = 2;
+            progress.trackSegmentDisable = true;
             progress.loaded = loaded;
             progress.refresh();
         });
@@ -426,6 +406,7 @@ describe('linear progress bar themestyle', () => {
         progress = new ProgressBar(
             {
                 type: 'Linear',
+                width: '400'
             }
         );
         progress.appendTo('#container');
@@ -494,7 +475,7 @@ describe('linear progress bar themestyle', () => {
         loaded = (args: Object): void => {
             path = document.getElementById('container_Linearprogress');
             strokedasharray = path.getAttribute('stroke-dasharray');
-          //  expect(strokedasharray ===  ' 67 4' || strokedasharray === ' 308 4' ).toBe(true);
+            expect(strokedasharray ===  " 93.5 2").toBe(true);
         };
         progress.segmentCount = 4;
         progress.loaded = loaded;
@@ -532,7 +513,7 @@ describe('linear progress bar themestyle', () => {
         loaded = (args: Object): void => {
             path = document.getElementById('container_Linearprogress');
             strokedasharray = path.getAttribute('stroke-dasharray');
-            //expect(strokedasharray ===  ' 68.5 2' || strokedasharray === ' 309.5 2' ).toBe(true);
+            expect(strokedasharray ===  " 93.5 2").toBe(true);
         };
         progress.theme = 'HighContrast';
         progress.loaded = loaded;
@@ -555,6 +536,61 @@ describe('linear progress bar themestyle', () => {
             expect(stroke === '#007bff' ).toBe(true);
         };
         progress.theme = 'Bootstrap4';
+        progress.loaded = loaded;
+        progress.refresh();
+    });
+});
+describe('linear progress bar databind', () => {
+    let progress: ProgressBar;
+    let element: HTMLElement;
+    let path: Element;
+    let pathWidth: number;
+    let loaded: EmitType<ILoadedEventArgs>;
+    beforeAll((): void => {
+        element = createElement('div', { id: 'container' });
+        document.body.appendChild(element);
+        progress = new ProgressBar(
+            {
+                type: 'Linear',
+                width: '400',
+                value: 20,
+                animation: { enable: true }
+            }
+        );
+        progress.appendTo('#container');
+    });
+    afterAll((): void => {
+        progress.destroy();
+        element.remove();
+    });
+    it('checking the without changing the value', () => {
+        loaded = (args: Object): void => {
+            path = document.getElementById('container_Linearprogress');
+            pathWidth = (<SVGPathElement>path).getTotalLength();
+            expect(pathWidth === 76 ).toBe(true);
+        };
+        progress.loaded = loaded;
+        progress.refresh();
+    });
+    it('checking the changing the value using databind', () => {
+        loaded = (args: Object): void => {
+            path = document.getElementById('container_Linearprogress');
+            pathWidth = (<SVGPathElement>path).getTotalLength();
+            expect(pathWidth === 152 ).toBe(true);
+        };
+        progress.value += 20;
+        progress.dataBind();
+        progress.loaded = loaded;
+        progress.refresh();
+    });
+    it('checking the changing the value using databind with animation', () => {
+        loaded = (args: Object): void => {
+            path = document.getElementById('container_Linearprogress');
+            pathWidth = (<SVGPathElement>path).getTotalLength();
+            expect(pathWidth === 380 ).toBe(true);
+        };
+        progress.value += 60;
+        progress.dataBind();
         progress.loaded = loaded;
         progress.refresh();
     });

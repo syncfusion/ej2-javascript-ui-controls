@@ -705,7 +705,7 @@ export class CommandHandler {
         }
     }
     /** @private */
-    public addLayer(layer: LayerModel, objects?: Object[]): void {
+    public addLayer(layer: LayerModel, objects?: Object[], isClone: boolean = false): void {
         layer.id = layer.id || randomId();
         layer.zIndex = this.diagram.layers.length;
         this.diagram.enableServerDataBinding(false);
@@ -714,7 +714,9 @@ export class CommandHandler {
         (layer as Layer).objectZIndex = -1;
         (layer as Layer).zIndexTable = {};
         this.diagram.layers.push(layer);
-        this.UpdateBlazorDiagramModelLayers(layer as Layer);
+        if (isClone) {
+            this.UpdateBlazorDiagramModelLayers(layer as Layer);
+        }
         this.diagram.layerZIndexTable[layer.zIndex] = layer.id;
         this.diagram.activeLayer = layer;
         let layers: string[] = layer.objects;
@@ -792,7 +794,7 @@ export class CommandHandler {
             let newlayer: LayerModel = {
                 id: layerName + '_' + randomId(), objects: [], visible: true, lock: false
             };
-            this.addLayer(newlayer);
+            this.addLayer(newlayer, null, true);
             (newlayer as Layer).zIndex = this.diagram.layers.length - 1;
             let multiSelect: boolean = cloneObject.length !== 1;
             for (let obj of layer.objects) {
@@ -3941,7 +3943,10 @@ export class CommandHandler {
                 element: cloneBlazorObject(clone(node)), state: (node.isExpanded) ? true : false
             };
             this.triggerEvent(DiagramEvent.expandStateChange, arg);
-        }
+            if (this.diagram.lineRoutingModule && this.diagram.constraints & DiagramConstraints.LineRouting) {
+                this.diagram.resetSegments();
+            }
+        }        
         return objects;
     }
 

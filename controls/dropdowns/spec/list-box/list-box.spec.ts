@@ -398,7 +398,7 @@ describe('ListBox', () => {
             // Move All To
             toolChild[4].click();
             expect(listObj1.ulElement.childElementCount).toEqual(1);
-            expect(listObj1.ulElement.innerText).toEqual('No Records Found');
+            expect(listObj1.ulElement.innerText).toEqual('No records found');
             expect(listObj2.ulElement.childElementCount).toEqual(16);
             expect(toolChild[4].disabled).toBeTruthy();
             expect(listObj2.listData[11].text).toEqual('JAVA');
@@ -407,7 +407,7 @@ describe('ListBox', () => {
             // Move All From
             toolChild[5].click();
             expect(listObj2.ulElement.childElementCount).toEqual(1);
-            expect(listObj2.ulElement.innerText).toEqual('No Records Found');
+            expect(listObj2.ulElement.innerText).toEqual('No records found');
             expect(listObj1.ulElement.childElementCount).toEqual(16);
             expect(toolChild[5].disabled).toBeTruthy();
             expect(listObj1.listData[0].text).toEqual('Cabbage');
@@ -505,7 +505,7 @@ describe('ListBox', () => {
             // Move All To
             listObj1.keyDownHandler({ keyCode: 39, shiftKey: true, ctrlKey: true, preventDefault: () => { } });
             expect(listObj1.ulElement.childElementCount).toEqual(1);
-            expect(listObj1.ulElement.innerText).toEqual('No Records Found');
+            expect(listObj1.ulElement.innerText).toEqual('No records found');
             expect(listObj2.ulElement.childElementCount).toEqual(16);
             expect(toolChild[4].disabled).toBeTruthy();
             expect(listObj2.listData[11].text).toEqual('JAVA');
@@ -514,7 +514,7 @@ describe('ListBox', () => {
             // Move All From
             listObj1.keyDownHandler({ keyCode: 37, shiftKey: true, ctrlKey: true, preventDefault: () => { } });
             expect(listObj2.ulElement.childElementCount).toEqual(1);
-            expect(listObj2.ulElement.innerText).toEqual('No Records Found');
+            expect(listObj2.ulElement.innerText).toEqual('No records found');
             expect(listObj1.ulElement.childElementCount).toEqual(16);
             expect(toolChild[5].disabled).toBeTruthy();
             expect(listObj1.listData[0].text).toEqual('Cabbage');

@@ -43,6 +43,7 @@ import { Page } from '../actions/page';
 import { Scroll } from '../actions/scroll';
 import { Aggregate } from '../actions/aggregate';
 import { InfiniteScroll } from '../actions/infinite-scroll';
+import { Filter } from '../actions/filter';
 
 /**
  * Specifies grid interfaces.
@@ -468,6 +469,8 @@ export interface IGrid extends Component<HTMLElement> {
 
     printModule?: Print;
 
+    filterModule?: Filter;
+
     requestTypeAction?: string;
 
     expandedRows?: { [index: number]: IExpandedRow };
@@ -815,6 +818,7 @@ export interface InfiniteScrollArgs {
     prevPage?: number;
     startIndex?: number;
     direction?: string;
+    isFrozen?: boolean;
 }
 
 /**

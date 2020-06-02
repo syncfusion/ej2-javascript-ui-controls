@@ -203,5 +203,79 @@ describe('DropDownTree control', () => {
             ddtreeObj.dataBind();
             expect((ddtreeObj as any).popupObj.element.style.zIndex === '1333').toBe(true);
         });
+        it('when crosses view port', () => {
+            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' }}, '#ddtree');
+            ddtreeObj.showPopup();
+            scrollBy({top: 500, behavior: 'smooth'});
+            (ddtreeObj as any).popupObj.trigger('targetExitViewport');
+            expect(document.querySelector('.e-popup').classList.contains('e-popup-close')).toBe(true);
+        });
+    });
+
+    describe('multiple attribute testing', () => {
+        let ddtreeObj: DropDownTree;
+        let mouseEventArgs: any;
+        let tapEvent: any;
+
+        beforeEach((): void => {
+            mouseEventArgs = {
+                preventDefault: (): void => { },
+                stopImmediatePropagation: (): void => { },
+                target: null,
+                type: null,
+                shiftKey: false,
+                ctrlKey: false,
+                originalEvent: { target: null }
+            };
+            tapEvent = {
+                originalEvent: mouseEventArgs,
+                tapCount: 1
+            };
+            ddtreeObj = undefined;
+            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'ddtree' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (ddtreeObj)
+                ddtreeObj.destroy();
+            document.body.innerHTML = '';
+        });
+        
+        it('While enabling allowMultiselection', () => {
+            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded', }, allowMultiSelection: true}, '#ddtree');
+            expect((ddtreeObj as any).hiddenElement.getAttribute('multiple')).toBe("");
+        });
+        it('While enabling showCheckBox', () => {
+            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded', }, showCheckBox: true}, '#ddtree');
+            expect((ddtreeObj as any).hiddenElement.getAttribute('multiple')).toBe("");
+        });
+        it('While enabling allowMultiselection dynamically', () => {
+            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded', }}, '#ddtree');
+            expect((ddtreeObj as any).hiddenElement.getAttribute('multiple')).toBe(null);
+            ddtreeObj.allowMultiSelection = true;
+            ddtreeObj.dataBind();
+            expect((ddtreeObj as any).hiddenElement.getAttribute('multiple')).toBe("");
+        });
+        it('While enabling showCheckBox dynamically', () => {
+            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded', }}, '#ddtree');
+            expect((ddtreeObj as any).hiddenElement.getAttribute('multiple')).toBe(null);
+            ddtreeObj.showCheckBox = true;
+            ddtreeObj.dataBind();
+            expect((ddtreeObj as any).hiddenElement.getAttribute('multiple')).toBe("");
+        });
+        it('While disabling allowMultiselection dynamically', () => {
+            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded', }, allowMultiSelection: true}, '#ddtree');
+            expect((ddtreeObj as any).hiddenElement.getAttribute('multiple')).toBe("");
+            ddtreeObj.allowMultiSelection = false;
+            ddtreeObj.dataBind();
+            expect((ddtreeObj as any).hiddenElement.getAttribute('multiple')).toBe(null);
+        });
+        it('While disabling showCheckBox dynamically', () => {
+            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded', }, showCheckBox: true}, '#ddtree');
+            expect((ddtreeObj as any).hiddenElement.getAttribute('multiple')).toBe("");
+            ddtreeObj.showCheckBox = false;
+            ddtreeObj.dataBind();
+            expect((ddtreeObj as any).hiddenElement.getAttribute('multiple')).toBe(null);
+        });
     });
 });

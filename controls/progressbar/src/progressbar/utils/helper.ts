@@ -1,5 +1,5 @@
 import { PathOption } from '@syncfusion/ej2-svg-base';
-import { remove } from '@syncfusion/ej2-base';
+import { remove, createElement } from '@syncfusion/ej2-base';
 /**
  * helper for progress bar
  */
@@ -27,6 +27,15 @@ export class Size {
     }
 }
 /** @private */
+export class Pos {
+    public x: number;
+    public y: number;
+    constructor(x: number, y: number) {
+        this.x = x;
+        this.y = y;
+    }
+}
+/** @private */
 export class RectOption extends PathOption {
     public x: number;
     public y: number;
@@ -49,6 +58,53 @@ export class RectOption extends PathOption {
         this.transform = transform ? transform : '';
         this.stroke = (width !== 0 && this.stroke !== '') ? color : 'transparent';
     }
+}
+
+/** @private */
+export class ColorValue {
+    public r: number;
+    public g: number;
+    public b: number;
+
+    constructor(r?: number, g?: number, b?: number) {
+        this.r = r;
+        this.g = g;
+        this.b = b;
+    }
+}
+
+/** @private */
+export function convertToHexCode(value: ColorValue): string {
+    return '#' + componentToHex(value.r) + componentToHex(value.g) + componentToHex(value.b);
+}
+
+/** @private */
+export function componentToHex(value: number): string {
+    let hex: string = value.toString(16);
+    return hex.length === 1 ? '0' + hex : hex;
+}
+
+/** @private */
+export function convertHexToColor(hex: string): ColorValue {
+    let result: RegExpExecArray = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? new ColorValue(parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)) :
+        new ColorValue(255, 255, 255);
+}
+
+/** @private */
+export function colorNameToHex(color: string): string {
+    let element: HTMLElement;
+    color = color === 'transparent' ? 'white' : color;
+    document.body.appendChild(createElement('text', { id: 'chartmeasuretext' }));
+    element = document.getElementById('chartmeasuretext');
+    element.style.color = color;
+    color = window.getComputedStyle(element).color;
+    remove(element);
+    let exp: RegExp = /^(rgb|hsl)(a?)[(]\s*([\d.]+\s*%?)\s*,\s*([\d.]+\s*%?)\s*,\s*([\d.]+\s*%?)\s*(?:,\s*([\d.]+)\s*)?[)]$/;
+    let isRGBValue: RegExpExecArray = exp.exec(color);
+    return convertToHexCode(
+        new ColorValue(parseInt(isRGBValue[3], 10), parseInt(isRGBValue[4], 10), parseInt(isRGBValue[5], 10))
+    );
 }
 
 /** @private */
@@ -82,7 +138,7 @@ export class TextOption {
     }
 }
 /** calculate the start and end point of circle */
-export function degreeToLocation(centerX: number, centerY: number, radius: number, angleInDegrees: number): object {
+export function degreeToLocation(centerX: number, centerY: number, radius: number, angleInDegrees: number): Pos {
     let angleInRadians: number = (angleInDegrees - 90) * (Math.PI / 180);
 
     return {
@@ -95,10 +151,8 @@ export function getPathArc(
     x: number, y: number, radius: number, startAngle: number, endAngle: number,
     enableRtl: boolean, pieView?: boolean
 ): string {
-    // tslint:disable-next-line
-    let start: any = degreeToLocation(x, y, radius, startAngle);
-    // tslint:disable-next-line
-    let end: any = degreeToLocation(x, y, radius, endAngle);
+    let start: Pos = degreeToLocation(x, y, radius, startAngle);
+    let end: Pos = degreeToLocation(x, y, radius, endAngle);
     let largeArcFlag: string = '0';
     let sweepFlag: string = (enableRtl) ? '0' : '1';
     if (!enableRtl) {
@@ -123,8 +177,17 @@ export function stringToNumber(value: string, containerSize: number): number {
     }
     return null;
 }
+/** @private */
+// tslint:disable-next-line
+export function setAttributes(options: any, element: Element): Element {
+    let keys: string[] = Object.keys(options);
+    for (let i: number = 0; i < keys.length; i++) {
+        element.setAttribute(keys[i], options[keys[i]]);
+    }
+    return element;
+}
 /**
- * Animation Effect Calculation 
+ * Animation Effect Calculation
  * @private
  */
 export function effect(currentTime: number, startValue: number, endValue: number, duration: number, enableRtl: boolean): number {
@@ -132,18 +195,18 @@ export function effect(currentTime: number, startValue: number, endValue: number
     let end: number = startValue + ((enableRtl) ? -endValue : endValue);
     return start * Math.cos(currentTime / duration * (Math.PI / 2)) + end;
 }
-/** 
- * @private 
+/**
+ * @private
  */
 export const annotationRender: string = 'annotationRender';
 /**
- * @private 
+ * @private
  */
 export function getElement(id: string): Element {
     return document.getElementById(id);
 }
 /**
- * @private 
+ * @private
  */
 export function removeElement(id: string | Element): void {
     if (!id) {
@@ -155,7 +218,7 @@ export function removeElement(id: string | Element): void {
     }
 }
 /**
- * @private 
+ * @private
  */
 export class ProgressLocation {
     public x: number;
@@ -165,7 +228,6 @@ export class ProgressLocation {
         this.y = y;
     }
 }
-
 
 
 

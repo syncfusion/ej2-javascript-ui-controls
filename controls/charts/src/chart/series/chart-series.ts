@@ -946,6 +946,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
                     if (this.xAxis.valueType === 'DateTime') {
                         point.xValue = Date.parse(point.x.toString());
                     } else {
+                        this.chart.isBlazor ? this.pushCategoryData(point, i, Date.parse(point.x.toString()).toString()) :
                         this.pushCategoryData(point, i, Date.parse(dateParser(dateFormatter(point.x))).toString());
                     }
                     this.pushData(point, i);

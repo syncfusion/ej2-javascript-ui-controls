@@ -614,6 +614,10 @@ export class Toolbar {
         if (!this.container.enableComment && element) {
             this.toolbar.removeItems(element.parentElement);
         } else if (element) {
+            if (!isNullOrUndefined(this.documentEditor) && (this.documentEditor.isReadOnly ||
+                this.documentEditor.documentHelper.isDocumentProtected)) {
+                enable = false;
+            }
             this.toolbar.enableItems(element.parentElement, enable);
         }
     }
@@ -634,7 +638,7 @@ export class Toolbar {
                     itemId !== id + INSERT_LINK_ID && itemId !== id + BOOKMARK_ID && itemId !== id + COMMENT_ID &&
                     itemId !== id + HEADER_ID && itemId !== id + TABLE_OF_CONTENT_ID && itemId !== id + FOOTER_ID &&
                     itemId !== id + PAGE_SET_UP_ID && itemId !== id + PAGE_NUMBER_ID && itemId !== id + INSERT_IMAGE_ID
-                    && itemId !== id + FORM_FIELDS_ID  && itemId !== BREAK_ID) {
+                    && itemId !== id + FORM_FIELDS_ID && itemId !== BREAK_ID) {
                     continue;
                 }
                 let element: HTMLElement = document.getElementById(item.id);

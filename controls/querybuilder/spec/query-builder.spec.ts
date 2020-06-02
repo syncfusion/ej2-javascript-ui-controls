@@ -1219,13 +1219,13 @@ describe('QueryBuilder', () => {
             itemsCln[6].click();
             expect(operatorElem[0].value).toEqual('notin');
             queryBuilder.getFilteredRecords(queryBuilder.rule);
-            expect(queryBuilder.getSqlFromRules(queryBuilder.rule)).toEqual("EmployeeID NOT BETWEEN 0 AND 0 AND Title NOT IN ('Sales Manager') AND City LIKE ('%u')");
+            expect(queryBuilder.getSqlFromRules(queryBuilder.rule)).toEqual("EmployeeID NOT BETWEEN 0 AND 0 AND Title NOT IN ('Sales Manager') AND City LIKE ('u%')");
             queryBuilder.reset();
             expect(selectAll('.e-group-container', queryBuilder.element).length).toBe(1);
             expect(selectAll('.e-rule-container', queryBuilder.element).length).toBe(0);
             queryBuilder.setRulesFromSql("EmployeeID BETWEEN 0 AND 0 and Title IN ('Sales Manager') and City LIKE ('u%')");
             queryBuilder.getRulesFromSql("Category = 'Clothing' and (Description LIKE ('%s') or PaymentMode = 'Debit Card') and Amount > 84");
-            expect(JSON.stringify(queryBuilder.getRulesFromSql("Category = 'Clothing' and (Description LIKE ('%s') or PaymentMode = 'Debit Card') and Amount > 84").rules)).toEqual('[{"label":"Category","field":"Category","operator":"equal","type":"string","value":"Clothing"},{"condition":"or","rules":[{"label":"Description","field":"Description","operator":"startswith","type":"string","value":"s"},{"label":"PaymentMode","field":"PaymentMode","operator":"equal","type":"string","value":"Debit Card"}]},{"label":"Amount","field":"Amount","operator":"greaterthan","type":"number","value":84}]');
+            expect(JSON.stringify(queryBuilder.getRulesFromSql("Category = 'Clothing' and (Description LIKE ('%s') or PaymentMode = 'Debit Card') and Amount > 84").rules)).toEqual('[{"label":"Category","field":"Category","operator":"equal","type":"string","value":"Clothing"},{"condition":"or","rules":[{"label":"Description","field":"Description","operator":"endswith","type":"string","value":"s"},{"label":"PaymentMode","field":"PaymentMode","operator":"equal","type":"string","value":"Debit Card"}]},{"label":"Amount","field":"Amount","operator":"greaterthan","type":"number","value":84}]');
         });
         it(' Multiple value in textbox  Checking', () => {
             let valRule: RuleModel = {'condition': 'and',

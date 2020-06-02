@@ -1,7 +1,8 @@
 import { ProgressBar } from '../progressbar';
 import { lineCapRadius, completeAngle } from '../model/constant';
-import { getPathArc } from '../utils/helper';
-import { PathOption } from '@syncfusion/ej2-svg-base';
+import { getPathArc, Pos, degreeToLocation } from '../utils/helper';
+import { PathOption, LinearGradient, GradientColor } from '@syncfusion/ej2-svg-base';
+import { RangeColorModel } from '../model';
 
 /** 
  * Progressbar Segment 
@@ -9,15 +10,17 @@ import { PathOption } from '@syncfusion/ej2-svg-base';
 export class Segment {
 
     /** To render the linear segment */
-    public createLinearSegment(progress: ProgressBar, id: string, width: number, opacity: number, thickness: number): Element {
+    public createLinearSegment(
+        progress: ProgressBar, id: string, width: number, opacity: number, thickness: number, progressWidth: number
+    ): Element {
         let locX: number = (progress.enableRtl) ? ((progress.cornerRadius === 'Round') ?
             (progress.progressRect.x + progress.progressRect.width) - ((lineCapRadius / 2) * thickness) :
             (progress.progressRect.x + progress.progressRect.width)) :
             ((progress.cornerRadius === 'Round') ? (progress.progressRect.x + (lineCapRadius / 2) * thickness) : progress.progressRect.x);
         let locY: number = (progress.progressRect.y + (progress.progressRect.height / 2));
         let gapWidth: number = (progress.gapWidth || progress.themeStyle.linearGapWidth);
-        let avlWidth: number = progress.progressRect.width / progress.segmentCount;
-        let avlSegWidth: number = (progress.progressRect.width - ((progress.segmentCount - 1) * gapWidth));
+        let avlWidth: number = progressWidth / progress.segmentCount;
+        let avlSegWidth: number = (progressWidth - ((progress.segmentCount - 1) * gapWidth));
         avlSegWidth = (avlSegWidth -
             ((progress.cornerRadius === 'Round') ? progress.segmentCount * (lineCapRadius * thickness) : 0)) / progress.segmentCount;
         let gap: number = (progress.cornerRadius === 'Round') ? (gapWidth + (lineCapRadius * thickness)) : gapWidth;
@@ -63,14 +66,13 @@ export class Segment {
     /** To render the circular segment */
     public createCircularSegment(
         progress: ProgressBar, id: string, x: number, y: number, r: number,
-        value: number, opacity: number, thickness: number
+        value: number, opacity: number, thickness: number, totalAngle: number, progressWidth: number
     ): Element {
         let start: number = progress.startAngle;
-        let totalAngle: number = progress.totalAngle;
-        let end: number = this.widthToAngle(progress.minimum, progress.maximum, value, totalAngle);
+        let end: number = this.widthToAngle(progress.minimum, progress.maximum, value, progress.totalAngle);
         end -= (progress.cornerRadius === 'Round' && progress.totalAngle === completeAngle) ?
-            this.widthToAngle(0, progress.trackwidth, ((lineCapRadius / 2) * thickness), totalAngle) : 0;
-        let size: number = (progress.trackwidth - (
+            this.widthToAngle(0, progressWidth, ((lineCapRadius / 2) * thickness), totalAngle) : 0;
+        let size: number = (progressWidth - (
             (progress.totalAngle === completeAngle) ? progress.segmentCount :
                 progress.segmentCount - 1) * (progress.gapWidth || progress.themeStyle.circularGapWidth)
         );
@@ -78,14 +80,14 @@ export class Segment {
             ((progress.cornerRadius === 'Round') ?
                 (((progress.totalAngle === completeAngle) ?
                     progress.segmentCount : progress.segmentCount - 1) * lineCapRadius * thickness) : 0)) / progress.segmentCount;
-        let avlTolEnd: number = this.widthToAngle(0, progress.trackwidth, (progress.trackwidth / progress.segmentCount), totalAngle);
+        let avlTolEnd: number = this.widthToAngle(0, progressWidth, (progressWidth / progress.segmentCount), totalAngle);
         avlTolEnd -= (progress.cornerRadius === 'Round' && progress.totalAngle === completeAngle) ?
-            this.widthToAngle(0, progress.trackwidth, ((lineCapRadius / 2) * thickness), totalAngle) : 0;
-        let avlEnd: number = this.widthToAngle(0, progress.trackwidth, size, totalAngle);
+            this.widthToAngle(0, progressWidth, ((lineCapRadius / 2) * thickness), totalAngle) : 0;
+        let avlEnd: number = this.widthToAngle(0, progressWidth, size, totalAngle);
         let gap: number = this.widthToAngle(
-            0, progress.trackwidth, (progress.gapWidth || progress.themeStyle.circularGapWidth), totalAngle
+            0, progressWidth, (progress.gapWidth || progress.themeStyle.circularGapWidth), totalAngle
         );
-        gap += (progress.cornerRadius === 'Round') ? this.widthToAngle(0, progress.trackwidth, (lineCapRadius * thickness), totalAngle) : 0;
+        gap += (progress.cornerRadius === 'Round') ? this.widthToAngle(0, progressWidth, (lineCapRadius * thickness), totalAngle) : 0;
         let segmentGroup: Element = progress.renderer.createGroup({ 'id': progress.element.id + id });
         let gapCount: number = Math.floor(end / avlTolEnd);
         let count: number = Math.ceil((end - gap * gapCount) / avlEnd);
@@ -128,5 +130,134 @@ export class Segment {
     private widthToAngle(min: number, max: number, value: number, totalAngle: number): number {
         let angle: number = ((value - min) / (max - min)) * totalAngle;
         return angle;
+    }
+
+    public createLinearRange(totalWidth: number, progress: ProgressBar): Element {
+        let posX: number = progress.progressRect.x + ((progress.enableRtl) ? progress.progressRect.width : 0);
+        let startY: number = (progress.progressRect.y + (progress.progressRect.height / 2));
+        let rangeGroup: Element = progress.renderer.createGroup({ 'id': progress.element.id + '_LinearRangeGroup' });
+        let range: RangeColorModel[] = progress.rangeColors;
+        let thickness: number = progress.progressThickness || progress.themeStyle.linearProgressThickness;
+        let opacity: number = progress.themeStyle.progressOpacity;
+        let rangeMin: number = progress.minimum;
+        let rangeMax: number = progress.value;
+        let gradX: number = (progress.enableRtl) ? 0.1 : -0.1;
+        let gradient: Element;
+        let validRange: boolean;
+        let rangePath: Element;
+        let option: PathOption;
+        let startPos: number;
+        let endPos: number;
+        let startX: number;
+        let endX: number;
+        let color: string;
+        let endColor: string;
+        for (let i: number = 0; i < range.length; i++) {
+            validRange = (range[i].start >= rangeMin && range[i].start <= rangeMax &&
+                range[i].end >= rangeMin && range[i].end <= rangeMax);
+            startPos = totalWidth * progress.calculateProgressRange(range[i].start, rangeMin, rangeMax);
+            endPos = totalWidth * progress.calculateProgressRange(range[i].end, rangeMin, rangeMax);
+            startX = posX + ((progress.enableRtl) ? -startPos : startPos);
+            endX = posX + ((progress.enableRtl) ? -endPos : endPos);
+            startX = (validRange) ? ((progress.isGradient && i > 0) ? startX + gradX : startX) : posX;
+            endX = (validRange) ? endX : posX;
+            color = (progress.isGradient) ? 'url(#lineRangeGrad_' + i + ')' : range[i].color;
+            option = new PathOption(
+                progress.element.id + '_LinearRange_' + i, 'none', thickness, color, opacity,
+                '0', 'M' + ' ' + startX + ' ' + startY + ' ' + 'L' + endX + ' ' + startY
+            );
+            rangePath = progress.renderer.drawPath(option);
+            rangeGroup.appendChild(rangePath);
+            if (progress.isGradient) {
+                if (range.length - 1 === i) {
+                    endColor = range[i].color;
+                } else {
+                    endColor = range[i + 1].color;
+                }
+                gradient = this.setLinearGradientColor(i, range[i].color, endColor, startX, endX, progress);
+                rangeGroup.appendChild(gradient);
+            }
+        }
+        return rangeGroup;
+    }
+
+    public createCircularRange(centerX: number, centerY: number, radius: number, progress: ProgressBar): Element {
+        let rangeGroup: Element = progress.renderer.createGroup({ 'id': progress.element.id + '_CircularRangeGroup' });
+        let range: RangeColorModel[] = progress.rangeColors;
+        let thickness: number = progress.progressThickness || progress.themeStyle.linearProgressThickness;
+        let opacity: number = progress.themeStyle.progressOpacity;
+        let rangeMin: number = progress.minimum;
+        let rangeMax: number = progress.value;
+        let start: number = progress.startAngle;
+        let tolAngle: number = this.widthToAngle(progress.minimum, progress.maximum, progress.value, progress.totalAngle);
+        let gradient: Element;
+        let startAngle: number;
+        let endAngle: number;
+        let rangePath: Element;
+        let isValidRange: boolean;
+        let option: PathOption;
+        let color: string;
+        let endColor: string;
+        for (let i: number = 0; i < range.length; i++) {
+            isValidRange = (range[i].start >= rangeMin && range[i].start <= rangeMax &&
+                range[i].end >= rangeMin && range[i].end <= rangeMax);
+            startAngle = this.widthToAngle(rangeMin, rangeMax, range[i].start, tolAngle);
+            endAngle = this.widthToAngle(rangeMin, rangeMax, range[i].end, tolAngle);
+            startAngle = (isValidRange) ? (start + ((progress.enableRtl) ? -startAngle : startAngle)) % 360 : start;
+            endAngle = (isValidRange) ? (start + ((progress.enableRtl) ? -endAngle : endAngle)) % 360 : start;
+            color = (progress.isGradient) ? 'url(#circleRangeGrad_' + i + ')' : range[i].color;
+            option = new PathOption(
+                progress.element.id + '_CircularRange_' + i, 'none', thickness, color, opacity,
+                '0', getPathArc(centerX, centerY, radius, startAngle, endAngle, progress.enableRtl)
+            );
+            rangePath = progress.renderer.drawPath(option);
+            rangeGroup.appendChild(rangePath);
+            if (progress.isGradient) {
+                if (range.length - 1 === i) {
+                    endColor = range[i].color;
+                } else {
+                    endColor = range[i + 1].color;
+                }
+                gradient = this.setCircularGradientColor(
+                    i, range[i].color, endColor, startAngle, endAngle, radius, centerX, centerY, progress
+                );
+                rangeGroup.appendChild(gradient);
+            }
+        }
+        return rangeGroup;
+    }
+
+    private setLinearGradientColor(
+        id: number, startColor: string, endColor: string, start: number, end: number, progress: ProgressBar
+    ): Element {
+        let linearGradient: Element;
+        let option: LinearGradient;
+        let stopColor: GradientColor[] = [];
+        option = { id: 'lineRangeGrad_' + id + '', x1: start.toString(), x2: end.toString() };
+        stopColor[0] = { color: startColor, colorStop: '50%' };
+        stopColor[1] = { color: endColor, colorStop: '100%' };
+        linearGradient = progress.renderer.drawGradient('linearGradient', option, stopColor);
+        linearGradient.firstElementChild.setAttribute('gradientUnits', 'userSpaceOnUse');
+        return linearGradient;
+    }
+
+    private setCircularGradientColor(
+        id: number, startColor: string, endColor: string,
+        start: number, end: number, rad: number, x: number, y: number, progress: ProgressBar
+    ): Element {
+        let linearGradient: Element;
+        let option: LinearGradient;
+        let stopColor: GradientColor[] = [];
+        let pos1: Pos = degreeToLocation(x, y, rad, start);
+        let pos2: Pos = degreeToLocation(x, y, rad, end);
+        option = {
+            id: 'circleRangeGrad_' + id + '', x1: pos1.x.toString(), x2: pos2.x.toString(),
+            y1: pos1.y.toString(), y2: pos2.y.toString()
+        };
+        stopColor[0] = { color: startColor, colorStop: '50%' };
+        stopColor[1] = { color: endColor, colorStop: '100%' };
+        linearGradient = progress.renderer.drawGradient('linearGradient', option, stopColor);
+        linearGradient.firstElementChild.setAttribute('gradientUnits', 'userSpaceOnUse');
+        return linearGradient;
     }
 }

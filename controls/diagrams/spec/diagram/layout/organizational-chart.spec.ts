@@ -4,12 +4,12 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import {
-    ConnectorModel, Node, TextModel, Connector, IExpandStateChangeEventArgs,
-    DataBinding, HierarchicalTree, NodeModel, Rect, TextElement, LayoutAnimation, Container, StackPanel, ImageElement, TreeInfo, SnapConstraints
+    ConnectorModel, Node, TextModel, Connector, IExpandStateChangeEventArgs, LineRouting,
+    DataBinding, HierarchicalTree, NodeModel, Rect, TextElement, LayoutAnimation, Container, StackPanel, ImageElement, TreeInfo, SnapConstraints, DiagramConstraints
 } from '../../../src/diagram/index';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 Diagram.Inject(DataBinding, HierarchicalTree);
-Diagram.Inject(LayoutAnimation);
+Diagram.Inject(LayoutAnimation, LineRouting);
 import { MouseEvents } from '../../../spec/diagram/interaction/mouseevents.spec';
 import { Animation } from '../../../src/diagram/objects/interface/IElement'
 
@@ -134,6 +134,20 @@ let completeVerticalTree: object[] = [
     { 'Name': 'f', 'Category': 'c' },
     { 'Name': 'g', 'Category': 'c' },
 ];
+
+let expandRoutingData: object[] =    [
+    { 'Id': 'parent', 'Role': 'Board', 'color': '#71AF17' },
+    { 'Id': '1', 'Role': 'General Manager', 'Manager': 'parent', 'ChartType': 'right', 'color': '#71AF17' },
+    { 'Id': '11', 'Role': 'Assistant Manager', 'Manager': '1', 'color': '#71AF17' },
+    { 'Id': '2', 'Role': 'Human Resource Manager', 'Manager': '1', 'ChartType': 'right', 'color': '#1859B7' },
+    { 'Id': '3', 'Role': 'Trainers', 'Manager': '2', 'color': '#2E95D8' },
+    { 'Id': '4', 'Role': 'Recruiting Team', 'Manager': '2', 'color': '#2E95D8' },
+    { 'Id': '5', 'Role': 'Finance Asst. Manager', 'Manager': '2', 'color': '#2E95D8' },
+    { 'Id': '6', 'Role': 'Design Manager', 'Manager': '1', 'ChartType': 'right', 'color': '#1859B7' },
+    { 'Id': '7', 'Role': 'Design Supervisor', 'Manager': '6', 'color': '#2E95D8' },
+    { 'Id': '8', 'Role': 'Development Supervisor', 'Manager': '6', 'color': '#2E95D8' },
+    { 'Id': '9', 'Role': 'Drafting Supervisor', 'Manager': '6', 'color': '#2E95D8' },
+]
 
 describe('Diagram Control', () => {
     describe('Tree Layout', () => {
@@ -463,7 +477,7 @@ describe('Diagram Control', () => {
             done();
         });
         it('Checking fixed node - right to left orientation', (done: Function) => {
-            debugger
+            
             diagram.layout.orientation = 'RightToLeft';
 
             diagram.dataBind();
@@ -1017,6 +1031,7 @@ describe('Tree Layout', () => {
     });
 
     it('Checking icons on proper layer', (done: Function) => {
+        
         let svgElement: SVGSVGElement = document.getElementsByClassName('e-ports-expand-layer')[0] as SVGSVGElement;
         let gElement: SVGElement = svgElement.getElementById(diagram.nodes[0].id + '_icon_content_groupElement') as SVGElement;
         expect(gElement != null).toBe(true);
@@ -1070,6 +1085,7 @@ describe('Tree Layout', () => {
     it('Checking icons on proper layer if removed', (done: Function) => {
         let id = diagram.nodes[0].id;
         diagram.remove(diagram.nodes[0]);
+        
         let svgElement: SVGSVGElement = document.getElementsByClassName('e-ports-expand-layer')[0] as SVGSVGElement;
         let gElement: SVGElement = svgElement.getElementById(id + '_icon_content_groupElement') as SVGElement;
         expect(gElement == null).toBe(true);
@@ -2067,7 +2083,7 @@ describe('OrgChart-Layout Expand collapse issue exception raise issue', () => {
         ele.remove();
     });
     it('OrgChart-Layout Expand collapse issue exception raise issue', (done: Function) => {
-        debugger
+        
         let mouseEvents: MouseEvents = new MouseEvents();
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         var element = document.getElementById('General Manager_icon_content_rect');

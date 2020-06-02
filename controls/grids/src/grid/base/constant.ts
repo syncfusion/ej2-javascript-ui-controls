@@ -409,6 +409,8 @@ export const infiniteScrollHandler: string = 'infinite-scroll-handler';
 /** @hidden */
 export const infinitePageQuery: string = 'infinite-page-query';
 /** @hidden */
+export const infiniteShowHide: string = 'infinite-show-hide';
+/** @hidden */
 export const appendInfiniteContent: string = 'append-infinite-content';
 /** @hidden */
 export const removeInfiniteRows: string = 'remove-infinite-rows';
@@ -422,3 +424,5 @@ export const getAggregateQuery: string = 'get-aggregate-query';
 export const closeFilterDialog: string = 'close-filter-dialog';
 /** @hidden */
 export const columnChooserCancelBtnClick: string = 'columnChooserCancelBtnClick';
+/** @hidden */
+export const getFilterBarOperator: string = 'get-filterbar-operator';

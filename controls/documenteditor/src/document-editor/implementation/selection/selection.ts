@@ -3806,7 +3806,7 @@ export class Selection {
                     if (offset <= count + inline.length) {
                         return offset - 1 === count ? validOffset : offset - 1;
                     }
-                    if (inline instanceof TextElementBox || inline instanceof ImageElementBox
+                    if (inline instanceof TextElementBox || inline instanceof ImageElementBox || inline instanceof BookmarkElementBox
                         || (inline instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter((inline as FieldElementBox)))) {
                         validOffset = count + inline.length;
                     }
@@ -4668,7 +4668,8 @@ export class Selection {
      * @private
      */
     public validateTextPosition(inline: ElementBox, index: number): ElementInfo {
-        if (inline.length === index && (inline.nextNode instanceof FieldElementBox || inline.nextNode instanceof BookmarkElementBox)) {
+        if (inline.length === index && (inline.nextNode instanceof FieldElementBox
+            || (!(inline instanceof ImageElementBox) && inline.nextNode instanceof BookmarkElementBox))) {
             //If inline is last item within field, then set field end as text position.
             let nextInline: ElementBox = this.getNextValidElement((inline.nextNode as FieldElementBox)) as ElementBox;
             if (nextInline instanceof FieldElementBox && nextInline.fieldType === 1
@@ -5662,6 +5663,10 @@ export class Selection {
                     top += element.margin.top + height - textMetrics.BaselineOffset;
                 }
                 inline = element;
+                if (inline instanceof FieldElementBox && inline.fieldType === 2 && !isNullOrUndefined(inline.fieldBegin)) {
+                    inline = inline.fieldBegin;
+                    index = 0;
+                }
                 let inlineObj: ElementInfo = this.validateTextPosition(inline, index);
                 inline = inlineObj.element;
                 index = inlineObj.index;

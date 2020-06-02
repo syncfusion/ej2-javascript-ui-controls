@@ -2267,12 +2267,14 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         } else {
             pivotData = JSON.parse(persistData);
         }
+        this.allowServerDataBinding = false;
         this.setProperties({
             gridSettings: pivotData.gridSettings,
             pivotValues: pivotData.pivotValues,
             chartSettings: pivotData.chartSettings,
             displayOption: pivotData.displayOption
         }, true);
+        this.allowServerDataBinding = true;
         /* tslint:enable */
         this.dataSourceSettings = pivotData.dataSourceSettings;
     }
@@ -2581,7 +2583,6 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         } else if (this.grid) {
             remove(this.grid.element);
         }
-        this.trigger(events.dataBound);
         if (this.allowConditionalFormatting) {
             this.applyFormatting(this.pivotValues);
         }
@@ -4166,7 +4167,6 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     this$.pivotValues = this$.engineModule.pivotValues;
                 }
                 this$.notify(events.dataReady, {});
-                this$.isEmptyGrid = false;
             });
         } else {
             let pivot: PivotView = control ? control : this;

@@ -8,6 +8,10 @@
 
 #### Bug Fixes
 
+- `#277767` - Issue with get the exact position of mouse in cell click event has been fixed.
+
+#### Bug Fixes
+
 - `#270398` -issue with tooltip while using scale has been fixed.
 
 #### Bug Fixes

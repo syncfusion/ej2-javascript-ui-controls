@@ -191,6 +191,14 @@
               top: $remove-icon-top;
             }
 
+            & .e-file-remove-btn.e-icons.e-disabled,
+            & .e-file-delete-btn.e-icons.e-disabled {
+              color: $disabled-state;
+              cursor: not-allowed;
+              opacity: .4;
+              pointer-events: none;
+            }
+
             & .e-file-remove-btn.e-msie.e-icons,
             & .e-file-delete-btn.e-msie.e-icons,
             & .e-file-abort-btn.e-msie.e-icons,
@@ -267,6 +275,14 @@
         & .e-file-pause-btn.e-icons {
           box-sizing: border-box;
           top: $form-upload-bigger-remove-icon-top;
+        }
+
+        & .e-file-remove-btn.e-icons.e-disabled,
+        & .e-file-delete-btn.e-icons.e-disabled {
+          color: $disabled-state;
+          cursor: not-allowed;
+          opacity: .4;
+          pointer-events: none;
         }
       }
     }
@@ -369,6 +385,14 @@
       & .e-file-pause-btn.e-icons {
         box-sizing: border-box;
         top: $form-upload-remove-icon-top;
+      }
+
+      & .e-file-remove-btn.e-icons.e-disabled,
+      & .e-file-delete-btn.e-icons.e-disabled {
+        color: $disabled-state;
+        cursor: not-allowed;
+        opacity: .4;
+        pointer-events: none;
       }
     }
 
@@ -501,6 +525,14 @@
         &.e-upload-progress {
           cursor: default;
         }
+      }
+
+      & .e-file-remove-btn.e-icons.e-disabled,
+      & .e-file-delete-btn.e-icons.e-disabled {
+        color: $disabled-state;
+        cursor: not-allowed;
+        opacity: .4;
+        pointer-events: none;
       }
 
       & .e-file-remove-btn.e-msie.e-icons,
@@ -760,6 +792,14 @@
           padding: $delete-small-icon-padding;
           width: $remove-small-icon-width;
         }
+
+        & .e-file-remove-btn.e-icons.e-disabled,
+        & .e-file-delete-btn.e-icons.e-disabled {
+          color: $disabled-state;
+          cursor: not-allowed;
+          opacity: .4;
+          pointer-events: none;
+        }
       }
 
       &.e-rtl {
@@ -824,6 +864,14 @@
         & .e-file-pause-btn.e-icons {
           box-sizing: border-box;
           top: $form-upload-small-remove-icon-top;
+        }
+
+        & .e-file-remove-btn.e-icons.e-disabled,
+        & .e-file-delete-btn.e-icons.e-disabled {
+          color: $disabled-state;
+          cursor: not-allowed;
+          opacity: .4;
+          pointer-events: none;
         }
       }
     }

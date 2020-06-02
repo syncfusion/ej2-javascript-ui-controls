@@ -180,6 +180,9 @@ export class NiceInterval extends Double {
     */
     public findCustomFormats(axis: Axis, currentValue: number, previousValue: number): string {
         let labelFormat: string = axis.labelFormat ? axis.labelFormat : '';
+        if (labelFormat === 'YYYY-MM-DD') {
+            labelFormat = 'yyyy-MM-dd';
+        }
         if (axis.isChart && !axis.skeleton && axis.actualIntervalType === 'Months' && !labelFormat) {
                 labelFormat = axis.valueType === 'DateTime' ? this.getMonthFormat(axis, currentValue, previousValue) : 'yMMM';
         }

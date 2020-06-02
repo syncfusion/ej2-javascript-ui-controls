@@ -197,7 +197,9 @@ export class MarkerExplode extends ChartData {
                 seletionElem.hasAttribute('class') && (className === seletionElem.getAttribute('class'))) {
                 symbol.classList.add(className);
             }
-            element.appendChild(symbol);
+            symbol.setAttribute('clip-path', element.getAttribute('clip-path'));
+            symbol.setAttribute('transform', element.getAttribute('transform'));
+            this.chart.svgObject.appendChild(symbol);
         }
     }
 

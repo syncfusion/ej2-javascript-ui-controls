@@ -940,18 +940,18 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         }
         if (this.isBlazorServerRender()) {
             if (!isNullOrUndefined(this.buttons[0].buttonModel) && this.footerTemplate === '') { this.setButton(); } }
-        if (this.allowDragging && (!isNullOrUndefined(this.headerContent))) {
-            this.setAllowDragging();
-        }
+        if (this.allowDragging && (!isNullOrUndefined(this.headerContent))) { this.setAllowDragging(); }
         if (!this.isBlazorServerRender()) {
             attributes(this.element, { 'aria-modal': (this.isModal ? 'true' : 'false') });
-            if (this.isModal) {
-                this.setIsModal();
-            }
+            if (this.isModal) { this.setIsModal(); }
         }
         if (this.isBlazorServerRender() && isNullOrUndefined(this.dlgContainer)) {
             this.dlgContainer = this.element.parentElement;
-            this.dlgOverlay = this.element.parentElement.getElementsByClassName('e-dlg-overlay')[0] as HTMLElement;
+            for (let i: number = 0, childNodes: HTMLCollection = this.dlgContainer.children; i < childNodes.length; i++) {
+                if (childNodes[i].classList.contains('e-dlg-overlay')) {
+                    this.dlgOverlay = childNodes[i] as HTMLElement;
+                }
+            }
         }
         if (this.element.classList.contains(DLG_UTIL_ALERT) !== true && this.element.classList.contains(DLG_UTIL_CONFIRM) !== true
             && !isNullOrUndefined(this.element.parentElement)) {

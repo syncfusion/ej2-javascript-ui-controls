@@ -56,6 +56,8 @@ export interface ICellClickEventArgs extends IHeatMapEventArgs {
     xValue: string | number | Date;
     /** Defines y-axis value for current clicked cell */
     yValue: string | number | Date;
+    /** Defines mouse event */
+    event: PointerEvent;
 }
 
 export interface ITooltipEventArgs extends IHeatMapEventArgs {

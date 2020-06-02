@@ -69,7 +69,11 @@ export class GanttTreeGrid {
         this.parent.treeGrid[isGantt] = true;
         this.parent.treeGrid.rowHeight = this.parent.rowHeight;
         this.parent.treeGrid.gridLines = this.parent.gridLines;
-        this.parent.treeGrid.searchSettings = this.parent.searchSettings;
+        if (!isBlazor()) {
+            this.parent.treeGrid.searchSettings = this.parent.searchSettings;
+        } else if (this.parent.searchSettings.fields.length !== 0 || this.parent.searchSettings.key !== '') {
+            this.parent.treeGrid.searchSettings = this.parent.searchSettings;
+        }
         let isJsComponent: string = 'isJsComponent';
         this.parent.treeGrid[isJsComponent] = true;
         let toolbarHeight: number = 0;

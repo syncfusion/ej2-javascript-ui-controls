@@ -1,4 +1,4 @@
-import { isNullOrUndefined, closest, Browser, extend, EventHandler, isBlazor } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, closest, extend, EventHandler, isBlazor } from '@syncfusion/ej2-base';
 import { createElement, prepend, append, addClass, removeClass, getElement } from '@syncfusion/ej2-base';
 import { DataManager, Query, Predicate } from '@syncfusion/ej2-data';
 import { EventFieldsMapping, EventClickArgs, CellClickEventArgs, TdData, SelectEventArgs } from '../base/interface';
@@ -467,6 +467,9 @@ export class EventBase {
     }
 
     public focusElement(): void {
+        if (this.parent.eventWindow.dialogObject && this.parent.eventWindow.dialogObject.visible) {
+            return;
+        }
         let selectedCell: Element[] = this.parent.getSelectedElements();
         if (selectedCell.length > 0) {
             if (this.parent.keyboardInteractionModule) {
@@ -559,10 +562,9 @@ export class EventBase {
 
     public wireAppointmentEvents(element: HTMLElement, event?: { [key: string]: Object }, isPreventCrud: Boolean = false): void {
         let isReadOnly: boolean = (!isNullOrUndefined(event)) ? event[this.parent.eventFields.isReadonly] as boolean : false;
-        if (Browser.isTouch && !this.parent.isAdaptive) {
-            EventHandler.add(element, 'touchstart', this.eventTouch, this);
-        } else {
-            EventHandler.add(element, 'click', this.eventClick, this);
+        EventHandler.add(element, 'click', this.eventClick, this);
+        if (!this.parent.isAdaptive) {
+            EventHandler.add(element, 'touchstart', this.eventTouchClick, this);
         }
         if (!this.parent.isAdaptive && !this.parent.activeViewOptions.readonly && !isReadOnly) {
             EventHandler.add(element, 'dblclick', this.eventDoubleClick, this);
@@ -577,14 +579,14 @@ export class EventBase {
         }
     }
 
-    private eventTouch(eventData: Event): void {
+    private eventTouchClick(e: Event): void {
         setTimeout(() => this.isDoubleTapped = false, 250);
+        e.preventDefault();
         if (this.isDoubleTapped) {
-            eventData.preventDefault();
-            this.eventDoubleClick(eventData);
-        } else {
+            this.eventDoubleClick(e);
+        } else if (!this.isDoubleTapped) {
             this.isDoubleTapped = true;
-            this.eventClick(eventData as Event & MouseEvent);
+            this.eventClick(e as Event & MouseEvent);
         }
     }
 

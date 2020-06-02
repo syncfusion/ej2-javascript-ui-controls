@@ -8,6 +8,11 @@ import { LineRouting } from '../../../src/diagram/interaction/line-routing';
 import { PointModel } from '../../../src/diagram/primitives/point-model';
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
 import { MouseEvents } from '../interaction/mouseevents.spec';
+import {
+    Node, DataBinding, HierarchicalTree, TreeInfo
+} from '../../../src/diagram/index';
+import { DataManager, Query } from '@syncfusion/ej2-data';
+Diagram.Inject(DataBinding, HierarchicalTree);
 Diagram.Inject(LineRouting, UndoRedo);
 
 /**
@@ -7160,6 +7165,98 @@ describe('Diagram Control', () => {
             expect((diagram.connectors[2] as Connector).intermediatePoints[0].x == 150 && (diagram.connectors[2] as Connector).intermediatePoints[0].y == 250 && (diagram.connectors[2] as Connector).intermediatePoints[1].x == 300 && (diagram.connectors[2] as Connector).intermediatePoints[1].y == 250 && (diagram.connectors[2] as Connector).intermediatePoints[2].x == 300 && (diagram.connectors[2] as Connector).intermediatePoints[2].y == 150).toBe(true);
             expect((diagram.connectors[3] as Connector).intermediatePoints[0].x ==100&&(diagram.connectors[3] as Connector).intermediatePoints[0].y ==300&&(diagram.connectors[3] as Connector).intermediatePoints[1].x ==100&&(diagram.connectors[3] as Connector).intermediatePoints[1].y ==400&&(diagram.connectors[3] as Connector).intermediatePoints[2].x ==250&&(diagram.connectors[3] as Connector).intermediatePoints[2].y ==400).toBe(true);
             done();
+        });
+    });
+    let expandRoutingData: object[] =    [
+        { 'Id': 'parent', 'Role': 'Board', 'color': '#71AF17' },
+        { 'Id': '1', 'Role': 'General Manager', 'Manager': 'parent', 'ChartType': 'right', 'color': '#71AF17' },
+        { 'Id': '11', 'Role': 'Assistant Manager', 'Manager': '1', 'color': '#71AF17' },
+        { 'Id': '2', 'Role': 'Human Resource Manager', 'Manager': '1', 'ChartType': 'right', 'color': '#1859B7' },
+        { 'Id': '3', 'Role': 'Trainers', 'Manager': '2', 'color': '#2E95D8' },
+        { 'Id': '4', 'Role': 'Recruiting Team', 'Manager': '2', 'color': '#2E95D8' },
+        { 'Id': '5', 'Role': 'Finance Asst. Manager', 'Manager': '2', 'color': '#2E95D8' },
+        { 'Id': '6', 'Role': 'Design Manager', 'Manager': '1', 'ChartType': 'right', 'color': '#1859B7' },
+        { 'Id': '7', 'Role': 'Design Supervisor', 'Manager': '6', 'color': '#2E95D8' },
+        { 'Id': '8', 'Role': 'Development Supervisor', 'Manager': '6', 'color': '#2E95D8' },
+        { 'Id': '9', 'Role': 'Drafting Supervisor', 'Manager': '6', 'color': '#2E95D8' },
+    ]
+    describe('Org Chart', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll(() => {
+            ele = createElement('div', { id: 'expandRoutingLayout' });
+            document.body.appendChild(ele);
+            let items = new DataManager(expandRoutingData, new Query().take(7));
+            diagram = new Diagram({
+                width: '1300px', height: '900px',
+                snapSettings: { constraints: 0 },
+                constraints: DiagramConstraints.Default | DiagramConstraints.LineRouting,
+                layout: {
+                    type: 'OrganizationalChart',
+                    // enableAnimation: true,
+                    getLayoutInfo: (node: Node, options: TreeInfo) => {
+                        if (node.data['Role'] === 'General Manager') {
+                            options.assistants.push(options.children[0]);
+                            options.children.splice(0, 1);
+                        }
+                        if (!options.hasSubTree) {
+                            options.type = 'Balanced';
+                            options.orientation = 'Horizontal';
+                        }
+                    }
+                },
+                dataSourceSettings: {
+                    id: 'Id', parentId: 'Manager', dataSource: items
+                },
+
+                getNodeDefaults: (obj: Node, diagram: Diagram) => {
+                    obj.width = 150;
+                    obj.height = 50;
+                    obj.style.fill = obj.data['color'];
+                    obj.annotations = [{ content: obj.data['Role'], style: { color: 'white' } }];
+                    obj.expandIcon = { height: 15, width: 15, shape: "Plus", fill: 'lightgray', offset: { x: .5, y: .85 } };
+                    obj.collapseIcon.offset = { x: .5, y: .85 };
+                    obj.collapseIcon.height = 15;
+                    obj.collapseIcon.width = 15;
+                    obj.collapseIcon.shape = "Minus";
+                    obj.collapseIcon.fill = 'lightgray';        
+                    return obj;
+                }, getConnectorDefaults: (connector: ConnectorModel, diagram: Diagram) => {
+                    connector.targetDecorator.shape = 'None';
+                    connector.type = 'Orthogonal';
+                    return connector;
+                }
+            });
+            diagram.appendTo('#expandRoutingLayout');
+        });
+        afterAll(() => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Routing - expand and collapse', (done: Function) => {
+            debugger
+            diagram.nodes[3].isExpanded = false;
+            diagram.dataBind();
+            diagram.nodes[3].isExpanded = true;
+            diagram.dataBind();
+            setTimeout(function () {
+                // let connector = diagram.nameTable[(diagram.nodes[3] as Node).inEdges[0]];
+                // expect((connector as Connector).intermediatePoints.length === 3).toBe(true);
+                done();
+            }, 500);
+        });
+        it('Routing - expand and collapse - test', (done: Function) => {
+            setTimeout(function () {
+                let connector = diagram.nameTable[(diagram.nodes[3] as Node).inEdges[0]];
+                console.log("connector.intermediatePoints.length:"+connector.intermediatePoints.length);
+                expect(connector.intermediatePoints.length == 4).toBe(false);
+                done();
+            }, 500);
+        });
+        it('Routing - expand and collapse - test', (done: Function) => {
+            setTimeout(function () {
+                done();
+            }, 500);
         });
     });
 });

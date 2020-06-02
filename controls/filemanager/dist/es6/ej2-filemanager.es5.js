@@ -7233,6 +7233,11 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
             this.isRightClick = true;
             this.treeObj.selectedNodes = [args.node.getAttribute('data-uid')];
         }
+        else if (args.node.getAttribute('data-uid') === this.treeObj.selectedNodes[0] && this.parent.selectedItems.length !== 0) {
+            this.parent.setProperties({ selectedItems: [] }, true);
+            var layout = (this.parent.view === 'LargeIcons') ? 'largeiconsview' : 'detailsview';
+            this.parent.notify(modelChanged, { module: layout, newProp: { selectedItems: [] } });
+        }
     };
     /* istanbul ignore next */
     NavigationPane.prototype.onNodeEditing = function (args) {

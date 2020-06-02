@@ -1704,5 +1704,4 @@ describe('Symbol Palette', () => {
             done();
         });
     })
-
 });

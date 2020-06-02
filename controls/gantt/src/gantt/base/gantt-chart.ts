@@ -110,7 +110,10 @@ export class GanttChart {
     }
 
     private updateWidthAndHeight(): void {
-        this.chartBodyContent.style.height = formatUnit(this.parent.contentHeight);
+        //empty row height
+        let emptydivHeight: number = isBlazor() ? 39 : 36;
+        let emptyHeight: number = this.parent.contentHeight === 0 ? emptydivHeight : this.parent.contentHeight;
+        this.chartBodyContent.style.height = formatUnit(emptyHeight);
         //let element: HTMLElement = this.chartTimelineContainer.querySelector('.' + cls.timelineHeaderTableContainer);
         this.chartBodyContent.style.width = formatUnit(this.parent.timelineModule.totalTimelineWidth);
         this.parent.notify('updateHeight', {});

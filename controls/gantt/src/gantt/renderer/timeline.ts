@@ -226,6 +226,7 @@ export class Timeline {
             requestType: 'beforeZoomToProject',
             timeline: newTimeline
         };
+        this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomin', this.parent.controlId + '_zoomout'], true);
         this.parent.trigger('actionBegin', args);
     }
 

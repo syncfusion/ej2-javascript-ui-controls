@@ -211,6 +211,14 @@ describe('TextBox Control', () => {
         let ele: HTMLElement;
         let valueEle: HTMLElement;
         let valueWrapper: HTMLElement;
+        let beginArgs: any = {};
+        let successArgs: any = {};
+        function begin(e: any): void {
+            beginArgs = e;
+        }
+        function success(e: any): void {
+            successArgs = e;
+        }
         afterEach((): void => {
             destroy(editorObj);
         });
@@ -269,6 +277,38 @@ describe('TextBox Control', () => {
             editorObj.save();
             expect(editorObj.value).toEqual('Test3');
             expect(valueEle.innerHTML).toEqual('Test3');
+        });
+        it('action success with textBox Mode', (done: Function) => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                actionBegin: begin,
+                actionSuccess: success,
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Empty');
+            editorObj.emptyText = 'Enter some text';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-textbox', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(null);
+            expect((<HTMLInputElement>select('.e-textbox', document.body)).value).toEqual('');
+            (<HTMLInputElement>select('.e-textbox', document.body)).value = 'Test1';
+            expect((<HTMLInputElement>select('.e-textbox', document.body)).value).toEqual('Test1');
+            let changeEvent = document.createEvent('Events');
+            editorObj.componentObj.changeHandler(changeEvent);
+            editorObj.save();
+            setTimeout(() => {
+                expect(successArgs['name']).toEqual('actionSuccess');
+                expect(successArgs['value']).toEqual('Test1');
+                done();
+            }, 500);
+            
         });
         it('Value as "null" with initial render testing', () => {
             editorObj = renderEditor({

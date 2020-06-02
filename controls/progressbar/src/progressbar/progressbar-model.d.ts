@@ -1,4 +1,4 @@
-import { Component, Property, NotifyPropertyChanges, Browser, Complex, Event, Collection, EventHandler } from '@syncfusion/ej2-base';import { EmitType, INotifyPropertyChanged, createElement, remove, ModuleDeclaration } from '@syncfusion/ej2-base';import { Rect, Size, RectOption, stringToNumber } from './utils/helper';import { MarginModel, AnimationModel, FontModel } from './model/progress-base-model';import { Margin, Animation, Font } from './model/progress-base';import { ILoadedEventArgs, IProgressStyle, IProgressValueEventArgs } from './model/progress-interface';import { ITextRenderEventArgs, IProgressResizeEventArgs, IMouseEventArgs } from './model/progress-interface';import { SvgRenderer, PathOption, getElement } from '@syncfusion/ej2-svg-base';import { ProgressType, CornerType, ProgressTheme } from './utils/enum';import { getProgressThemeColor } from './utils/theme';import { lineCapRadius, completeAngle, valueChanged, progressCompleted } from './model/constant';import { mouseClick, mouseDown, mouseLeave, mouseMove, mouseUp } from './model/constant';import { ProgressAnnotation } from './model/index';import { ProgressAnnotationSettingsModel } from './model/index';import { ProgressAnnotationSettings } from './model/index';import { Linear } from './types/linear-progress';import { Circular } from './types/circular-progress';import { ProgressAnimation } from './utils/progress-animation';
+import { Component, Property, NotifyPropertyChanges, Browser, Complex, Event, Collection, EventHandler } from '@syncfusion/ej2-base';import { EmitType, INotifyPropertyChanged, createElement, remove, ModuleDeclaration,  } from '@syncfusion/ej2-base';import { Rect, Size, RectOption, stringToNumber } from './utils/helper';import { MarginModel, AnimationModel, FontModel, RangeColorModel } from './model/progress-base-model';import { Margin, Animation, Font, RangeColor } from './model/progress-base';import { ILoadedEventArgs, IProgressStyle, IProgressValueEventArgs } from './model/progress-interface';import { ITextRenderEventArgs, IProgressResizeEventArgs, IMouseEventArgs } from './model/progress-interface';import { SvgRenderer, PathOption, getElement } from '@syncfusion/ej2-svg-base';import { ProgressType, CornerType, ProgressTheme, ModeType } from './utils/enum';import { getProgressThemeColor } from './utils/theme';import { lineCapRadius, completeAngle, valueChanged, progressCompleted } from './model/constant';import { mouseClick, mouseDown, mouseLeave, mouseMove, mouseUp } from './model/constant';import { ProgressAnnotation } from './model/index';import { ProgressAnnotationSettingsModel } from './model/index';import { ProgressAnnotationSettings } from './model/index';import { Linear } from './types/linear-progress';import { Circular } from './types/circular-progress';import { ProgressAnimation } from './utils/progress-animation';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -103,6 +103,30 @@ export interface ProgressBarModel extends ComponentModel{
     isIndeterminate?: boolean;
 
     /**
+     * Active state
+     * @default false
+     */
+    isActive?: boolean;
+
+    /**
+     * gradient
+     * @default false
+     */
+    isGradient?: boolean;
+
+    /**
+     * striped
+     * @default false
+     */
+    isStriped?: boolean;
+
+    /**
+     * modes of linear progress
+     * @default null
+     */
+    role?: ModeType;
+
+    /**
      * right to left
      * @default false
      */
@@ -151,16 +175,15 @@ export interface ProgressBarModel extends ComponentModel{
     showProgressValue?: boolean;
 
     /**
-     * Option for customizing the  label text.
+     * disable the trackSegment
+     * @default false
      */
-
-    labelStyle?: FontModel;
+    trackSegmentDisable?: boolean;
 
     /**
-     * Option for the  label text.
-     * @default null
+     * Option for customizing the  label text.
      */
-    label?: string;
+    labelStyle?: FontModel;
 
     /**
      * margin size
@@ -242,5 +265,10 @@ export interface ProgressBarModel extends ComponentModel{
      * The configuration for annotation in Progressbar.
      */
     annotations?: ProgressAnnotationSettingsModel[];
+
+    /**
+     * RangeColor in Progressbar.
+     */
+    rangeColors?: RangeColorModel[];
 
 }

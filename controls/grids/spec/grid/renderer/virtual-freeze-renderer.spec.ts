@@ -427,4 +427,117 @@ describe('Virtual-freeze-renderer --- row virtualization', () => {
             destroy(gridObj);
         });
     });
+
+    describe('Ensure Filter', () => {
+        let gridObj: Grid;
+        let firstCol: Column;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data2,
+                    columns: count5000,
+                    frozenColumns: 2,
+                    frozenRows: 2,
+                    enableColumnVirtualization: true,
+                    enableVirtualization: true,
+                    allowFiltering: true,
+                    width: 800,
+                    height: 400
+                },done);
+        });
+
+        it('ensure filterbar id', () => {
+            let cols: Column[] = gridObj.getColumns();
+            firstCol = cols[0];
+            let filterbars: HTMLElement[] = [].slice.call(gridObj.getHeaderContent().querySelectorAll('input'));
+            expect(filterbars[0].id).toBe(firstCol.headerText + '_filterBarcell');
+            expect(filterbars[gridObj.getFrozenColumns()].id).toBe(cols[gridObj.getFrozenColumns()].headerText + '_filterBarcell');
+        });
+
+        it('scroll left', (done: Function) => {
+            gridObj.getMovableVirtualContent().scrollLeft = 1000;
+            setTimeout(done, 400);
+        });
+
+        it('ensure filterbar id', () => {
+            let cols: Column[] = gridObj.getColumns();
+            expect((gridObj as any).contentModule.virtualRenderer.currentInfo.columnIndexes.length).toBe(cols.length - gridObj.getFrozenColumns());
+            expect(cols[0].field).toBe(firstCol.field);
+            let filterbars: HTMLElement[] = [].slice.call(gridObj.getHeaderContent().querySelectorAll('input'));
+            expect(filterbars[0].id).toBe(cols[0].headerText + '_filterBarcell');
+            expect(filterbars[gridObj.getFrozenColumns()].id).toBe(cols[gridObj.getFrozenColumns()].headerText + '_filterBarcell');
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
+    describe('Ensure reorder', () => {
+        let gridObj: Grid;
+        let fCol: Column;
+        let fromCol: string;
+        let toCol: string;
+        let fromColCellValue: string;
+        let toColCellValue: string;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data2,
+                    columns: count5000,
+                    frozenColumns: 2,
+                    frozenRows: 2,
+                    enableColumnVirtualization: true,
+                    enableVirtualization: true,
+                    allowFiltering: true,
+                    allowReordering: true,
+                    width: 800,
+                    height: 400
+                },done);
+        });
+
+        it('store row object before reorder the column', (done: Function) => {
+            let cols: Column[] = gridObj.getColumns();
+            fCol = cols[1];
+            let rowObjects: Row<Column>[] = gridObj.getRowsObject();
+            fromCol = cols[0].field;
+            toCol = cols[gridObj.getFrozenColumns()].field;
+            fromColCellValue = rowObjects[0].data[cols[0].field];
+            toColCellValue = rowObjects[0].data[cols[gridObj.getFrozenColumns()].field];
+            setTimeout(done(), 100);
+        });
+
+        it('reorder column', (done: Function) => {
+            let actionComplete = (args: NotifyArgs) => {
+                if (args.requestType === 'reorder') {
+                    let cols: Column[] = gridObj.getColumns();
+                    let rowObjects: Row<Column>[] = gridObj.getRowsObject();
+                    let fhdrTable: Element | null = gridObj.getFrozenVirtualHeader().querySelector('.e-virtualtable').firstElementChild;
+                    let mhdrTable: Element | null = gridObj.getMovableVirtualContent().querySelector('.e-virtualtable').firstElementChild;
+                    expect(fhdrTable).not.toBeNull();
+                    expect(mhdrTable).not.toBeNull();
+                    expect(cols[gridObj.getFrozenColumns()].field).toBe(fromCol);
+                    expect(rowObjects[0].data[cols[gridObj.getFrozenColumns()].field]).toBe(fromColCellValue);
+                    expect(rowObjects[0].data[cols[gridObj.getFrozenColumns() - 1].field]).toBe(toColCellValue);
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.reorderColumns(fromCol, toCol);
+        });
+
+        it('ensure filterbar id', () => {
+            let cols: Column[] = gridObj.getColumns();
+            let firstCol: Column = cols[0];
+            let filterbars: HTMLElement[] = [].slice.call(gridObj.getHeaderContent().querySelectorAll('input'));
+            expect(fCol.field).toBe(cols[0].field);
+            expect(filterbars[0].id).toBe(firstCol.headerText + '_filterBarcell');
+            expect(filterbars[gridObj.getFrozenColumns()].id).toBe(cols[gridObj.getFrozenColumns()].headerText + '_filterBarcell');
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
 });

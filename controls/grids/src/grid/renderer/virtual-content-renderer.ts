@@ -100,7 +100,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             container: content, pageHeight: this.getBlockHeight() * 2, debounceEvent: debounceEvent,
             axes: this.parent.enableColumnVirtualization ? ['X', 'Y'] : ['Y']
         };
-        this.observer = new InterSectionObserver(this.parent, this.virtualEle.wrapper, opt);
+        this.observer = new InterSectionObserver(this.virtualEle.wrapper, opt);
     }
 
     public renderEmpty(tbody: HTMLElement): void {
@@ -218,7 +218,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             startIndex: this.preStartIndex, endIndex: this.preEndIndex };
         let vHeight: string | number = this.parent.height.toString().indexOf('%') < 0 ? this.content.getBoundingClientRect().height :
             this.parent.element.getBoundingClientRect().height;
-        infoType.page = this.getPageFromTop(e.top + vHeight, infoType);
+        infoType.page = this.getPageFromTop(e.top, infoType);
         infoType.blockIndexes = tempBlocks = this.vgenerator.getBlockIndexes(infoType.page);
         infoType.loadSelf = !this.vgenerator.isBlockAvailable(tempBlocks[infoType.block]);
         let blocks: number[] = this.ensureBlocks(infoType);
@@ -587,6 +587,10 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             let iOffset: number = Number(offset);
             let border: boolean = sTop <= this.offsets[offset] || (iOffset === total && sTop > this.offsets[offset]);
             if (border) {
+                if (this.offsetKeys.length % 2 !== 0 && iOffset.toString() === this.offsetKeys[this.offsetKeys.length - 2]
+                    && sTop <= this.offsets[this.offsetKeys.length - 1]) {
+                    iOffset = iOffset + 1;
+                }
                 info.block = iOffset % 2 === 0 ? 1 : 0;
                 page = Math.max(1, Math.min(this.vgenerator.getPage(iOffset), this.maxPage));
             }
@@ -597,7 +601,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
 
     protected getTranslateY(sTop: number, cHeight: number, info?: VirtualInfo, isOnenter?: boolean): number {
         if (info === undefined) {
-            info = { page: this.getPageFromTop(sTop + cHeight, {}) };
+            info = { page: this.getPageFromTop(sTop, {}) };
             info.blockIndexes = this.vgenerator.getBlockIndexes(info.page);
         }
         let block: number = (info.blockIndexes[0] || 1) - 1;
@@ -1081,8 +1085,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             if (!selectedRow || this.isRowInView(args.selectedIndex, selectedRow, ele, eleOffsHeight, rowHeight)) {
                 this.isSelection = true;
                 this.selectedRowIndex = args.selectedIndex;
-                let viewPortCount: number = Math.floor(eleOffsHeight / rowHeight);
-                let scrollTop: number = (args.selectedIndex - viewPortCount) * rowHeight;
+                let scrollTop: number = (args.selectedIndex + 1) * rowHeight;
                 if (!isNullOrUndefined(scrollTop)) {
                     ele.scrollTop = scrollTop;
                 }
@@ -1097,6 +1100,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             let exactEndIndex: number = exactTopIndex + (eleOffsHeight / rowHeight);
             return (index < exactTopIndex || index > exactEndIndex);
         } else {
+            if (this.parent.frozenRows && index < this.parent.frozenRows) {
+                return false;
+            }
             let rectTop: number = selectedRow ? selectedRow.getBoundingClientRect().top : 0;
             return (rectTop < rowHeight || rectTop > eleOffsHeight);
         }

@@ -952,6 +952,7 @@ var InPlaceEditor = /** @class */ (function (_super) {
     InPlaceEditor.prototype.checkValidation = function (isValidate) {
         var _this = this;
         var args;
+        var fromSubmit = true;
         if (this.validationRules) {
             this.formValidate = new sf.inputs.FormValidator(this.formEle, {
                 rules: this.validationRules,
@@ -968,7 +969,10 @@ var InPlaceEditor = /** @class */ (function (_super) {
                         else {
                             _this.toggleErrorClass(false);
                         }
-                        _this.afterValidation(isValidate);
+                        if (!sf.base.isNullOrUndefined(fromSubmit) && fromSubmit) {
+                            fromSubmit = false;
+                            _this.afterValidation(isValidate);
+                        }
                     });
                 },
                 customPlacement: function (inputElement, errorElement) {
@@ -1287,7 +1291,7 @@ var InPlaceEditor = /** @class */ (function (_super) {
         errEle = sf.base.select('.' + ERROR, this.editEle);
         var type = this.type;
         var calendarComp = type === 'Date' || type === 'DateTime' || type === 'DateRange' || type === 'Time';
-        if ((errEle && !sf.base.isNullOrUndefined(this.validationRules)) || (errEle && calendarComp)) {
+        if (errEle && calendarComp) {
             return;
         }
         if (!this.isTemplate) {

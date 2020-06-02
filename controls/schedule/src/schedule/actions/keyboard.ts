@@ -149,12 +149,10 @@ export class KeyboardInteraction {
             let xInBounds: boolean = parent.offsetWidth <= parent.scrollWidth && parent.scrollLeft >= 0 &&
                 parent.scrollLeft + parent.offsetWidth <= parent.scrollWidth;
             if (yInBounds && (selectionEdges.top || selectionEdges.bottom)) {
-                parent.scrollTop += selectionEdges.top ?
-                    -(e.target as HTMLElement).offsetHeight : (e.target as HTMLElement).offsetHeight;
+                parent.scrollTop += selectionEdges.top ? -(e.target as HTMLElement).offsetHeight : (e.target as HTMLElement).offsetHeight;
             }
             if (xInBounds && (selectionEdges.left || selectionEdges.right)) {
-                parent.scrollLeft += selectionEdges.left ?
-                    -(e.target as HTMLElement).offsetWidth : (e.target as HTMLElement).offsetWidth;
+                parent.scrollLeft += selectionEdges.left ? -(e.target as HTMLElement).offsetWidth : (e.target as HTMLElement).offsetWidth;
             }
         }
         let target: HTMLTableCellElement = this.getClosestCell(e);
@@ -305,12 +303,11 @@ export class KeyboardInteraction {
         let target: HTMLTableCellElement = (targetCell instanceof Array) ? targetCell.slice(-1)[0] : targetCell;
         if (isMultiple) {
             let initialId: string;
-            let viewsOptions: string[] = ['Day', 'Week', 'WorkWeek', 'Month',
-                'TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth'];
+            let views: string[] = ['Day', 'Week', 'WorkWeek', 'Month', 'TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth'];
             let args: SelectEventArgs = { element: targetCell, requestType: 'mousemove', allowMultipleRow: true };
             this.parent.trigger(event.select, args, (selectArgs: SelectEventArgs) => {
                 let allowMultipleRow: boolean = (!selectArgs.allowMultipleRow) || (!this.parent.allowMultiRowSelection);
-                if (allowMultipleRow && (viewsOptions.indexOf(this.parent.currentView) > -1)) {
+                if (allowMultipleRow && (views.indexOf(this.parent.currentView) > -1)) {
                     target = target.parentElement.children[this.initialTarget.cellIndex] as HTMLTableCellElement;
                 }
                 let selectedCells: HTMLTableCellElement[] = this.getCells(this.isInverseTableSelect(), this.initialTarget, target);
@@ -419,9 +416,7 @@ export class KeyboardInteraction {
     private getUniqueAppointmentElements(): HTMLElement[] {
         let appointments: HTMLElement[] = this.getAppointmentElements();
         let appointmentElements: HTMLElement[] = [];
-        appointments.map((value: HTMLElement) => {
-            return value.getAttribute('data-guid');
-        }).filter((value: string, index: number, self: string[]) => {
+        appointments.map((value: HTMLElement) => value.getAttribute('data-guid')).filter((value: string, index: number, self: string[]) => {
             if (self.indexOf(value) === index) {
                 appointmentElements.push(appointments[index]);
             }
@@ -472,7 +467,7 @@ export class KeyboardInteraction {
         }
     }
     private processDown(e: KeyboardEventArgs, isMultiple: boolean): void {
-        if ((isMultiple && (this.parent.activeView.isTimelineView() || this.parent.currentView === 'MonthAgenda'))) {
+        if (isMultiple && (this.parent.activeView.isTimelineView() || this.parent.currentView === 'MonthAgenda')) {
             return;
         }
         let target: HTMLTableCellElement = (e.target) as HTMLTableCellElement;
@@ -518,7 +513,7 @@ export class KeyboardInteraction {
         if (this.parent.currentView === 'Agenda' || (isMultiple && this.parent.currentView === 'MonthAgenda')) {
             return true;
         }
-        if ((this.isPreventAction(e) && isMultiple)) {
+        if (this.isPreventAction(e) && isMultiple) {
             return true;
         }
         let moreEventWrapper: HTMLElement = <HTMLElement>this.parent.element.querySelector('.' + cls.MORE_POPUP_WRAPPER_CLASS);
@@ -721,7 +716,7 @@ export class KeyboardInteraction {
         if (activeEle && activeEle.classList.contains(cls.APPOINTMENT_CLASS)) {
             addClass([activeEle], cls.APPOINTMENT_BORDER);
             this.parent.activeEventData = this.parent.eventBase.getSelectedEvents();
-            if (this.parent.activeViewOptions.readonly || activeEle.classList.contains('e-read-only')) {
+            if (this.parent.activeViewOptions.readonly || activeEle.classList.contains(cls.READ_ONLY)) {
                 return;
             }
             this.parent.quickPopup.deleteClick();

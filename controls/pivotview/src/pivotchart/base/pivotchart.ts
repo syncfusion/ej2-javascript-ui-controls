@@ -231,8 +231,8 @@ export class PivotChart {
                         tupInfo.measureName : cell.actualText;
                     if (!totColIndex[cell.colIndex] && cell.axis === 'value' && firstRowCell.type !== 'header' &&
                         actualText !== '' && (chartSettings.enableMultiAxis ? true : actualText === this.currentMeasure)) {
-                        if (isNullOrUndefined(firstRowCell.members)) { 
-                            firstRowCell.members = []; 
+                        if (isNullOrUndefined(firstRowCell.members)) {
+                            firstRowCell.members = [];
                         }
                         if (this.parent.dataType === 'olap' ? (lastHierarchy === firstRowCell.hierarchy ?
                             ((firstRowCell.memberType === 3 && prevMemberCell) ?
@@ -912,7 +912,8 @@ export class PivotChart {
     }
 
     private getChartHeight(): string {
-        let height: string = this.parent.height.toString();
+        let height: string = isNullOrUndefined(this.parent.getHeightAsNumber()) ? 'auto' :
+            this.parent.getHeightAsNumber().toString();
         if (!isNullOrUndefined(this.parent.getHeightAsNumber())) {
             if (this.parent.showToolbar && this.parent.showGroupingBar) {
                 height = (this.parent.getHeightAsNumber() - (this.parent.element.querySelector('.e-pivot-toolbar') ?

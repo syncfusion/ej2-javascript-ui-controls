@@ -1056,7 +1056,7 @@ export class BatchEdit {
         this.parent.element.classList.remove('e-editing');
         let column: Column = this.cellDetails.column;
         let obj: Object = {};
-        obj[column.field] = this.cellDetails.rowData[column.field];
+        obj[column.field] = getObject(column.field, this.cellDetails.rowData);
         let editedData: Object = gObj.editModule.getCurrentEditedData(this.form, obj);
         let cloneEditedData: Object = extend({}, editedData);
         editedData = extend({}, editedData, this.cellDetails.rowData);
@@ -1144,16 +1144,16 @@ export class BatchEdit {
                 cellSaveArgs.cell.classList.remove('e-updatedtd');
                 if (isBlazor() && gObj.isServerRendered && (!isNullOrUndefined(cellSaveArgs.value) ? cellSaveArgs.value : '').toString() ===
                 (!isNullOrUndefined(this.cellDetails.value) ? this.cellDetails.value : '').toString()) {
-                    if (this.cloneCell[`${this.cellDetails.rowIndex}${cellSaveArgs.columnObject.index}`].
+                    if (this.cloneCell[`${parseInt(tr.getAttribute('aria-rowindex'), 10)}${cellSaveArgs.columnObject.index}`].
                         classList.contains('e-selectionbackground')) {
-                        this.originalCell[`${this.cellDetails.rowIndex}${cellSaveArgs.columnObject.index}`].
+                        this.originalCell[`${parseInt(tr.getAttribute('aria-rowindex'), 10)}${cellSaveArgs.columnObject.index}`].
                             classList.add('e-selectionbackground', 'e-active');
                     } else {
-                        this.originalCell[`${this.cellDetails.rowIndex}${cellSaveArgs.columnObject.index}`].
+                        this.originalCell[`${parseInt(tr.getAttribute('aria-rowindex'), 10)}${cellSaveArgs.columnObject.index}`].
                             classList.remove('e-selectionbackground', 'e-active');
                     }
-                    this.cloneCell[`${this.cellDetails.rowIndex}${cellSaveArgs.columnObject.index}`]
-                                .replaceWith(this.originalCell[`${this.cellDetails.rowIndex}${cellSaveArgs.columnObject.index}`]);
+                    this.cloneCell[`${parseInt(tr.getAttribute('aria-rowindex'), 10)}${cellSaveArgs.columnObject.index}`]
+                    .replaceWith(this.originalCell[`${parseInt(tr.getAttribute('aria-rowindex'), 10)}${cellSaveArgs.columnObject.index}`]);
                 }
             }
             if (isNullOrUndefined(isEscapeCellEdit)) {

@@ -1,4 +1,5 @@
 import { ChildProperty, Property } from '@syncfusion/ej2-base';
+import { TextAlignmentType, TimingFunction } from '../utils/enum';
 /**
  * progress bar complex interface
  */
@@ -36,12 +37,11 @@ export class Margin extends ChildProperty<Margin> {
     public right: number;
 
 }
+
 /**
- * Configures the fonts in charts.
+ * Configures the fonts in progressbar
  */
-
 export class Font extends ChildProperty<Font> {
-
     /**
      * FontStyle for the text.
      * @default 'Normal'
@@ -82,7 +82,22 @@ export class Font extends ChildProperty<Font> {
      */
     @Property(1)
     public opacity: number;
+
+    /**
+     * text alignment for label
+     * @default Far
+     */
+    @Property('Far')
+    public textAlignment: TextAlignmentType;
+
+    /**
+     * label text
+     * @default ''
+     */
+    @Property('')
+    public text: string;
 }
+
 /**
  * Animation
  */
@@ -105,6 +120,12 @@ export class Animation extends ChildProperty<Animation> {
      */
     @Property(0)
     public delay: number;
+    /** 
+     * timing-function
+     * @default 'Linear'
+     */
+    @Property('Linear')
+    public timing: TimingFunction;
 }
 /**
  * Annotation
@@ -129,4 +150,26 @@ export class ProgressAnnotationSettings extends ChildProperty<ProgressAnnotation
     @Property('0%')
     public annotationRadius: string;
 }
-
+/**
+ * RangeColor
+ */
+export class RangeColor extends ChildProperty<RangeColor> {
+    /**
+     * color
+     * @default null
+     */
+    @Property('')
+    public color: string;
+    /**
+     * start
+     * @default null
+     */
+    @Property(null)
+    public start: number;
+    /**
+     * end
+     * @default null
+     */
+    @Property(null)
+    public end: number;
+}

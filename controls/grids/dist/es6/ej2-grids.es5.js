@@ -755,6 +755,8 @@ var infiniteScrollHandler = 'infinite-scroll-handler';
 /** @hidden */
 var infinitePageQuery = 'infinite-page-query';
 /** @hidden */
+var infiniteShowHide = 'infinite-show-hide';
+/** @hidden */
 var appendInfiniteContent = 'append-infinite-content';
 /** @hidden */
 var removeInfiniteRows = 'remove-infinite-rows';
@@ -768,6 +770,8 @@ var getAggregateQuery = 'get-aggregate-query';
 var closeFilterDialog = 'close-filter-dialog';
 /** @hidden */
 var columnChooserCancelBtnClick = 'columnChooserCancelBtnClick';
+/** @hidden */
+var getFilterBarOperator = 'get-filterbar-operator';
 
 /**
  * Defines types of Cell
@@ -2323,7 +2327,9 @@ var ContentRender = /** @__PURE__ @class */ (function () {
         this.infiniteCache = {};
         this.isRemove = false;
         this.visibleRows = [];
+        this.visibleFrozenRows = [];
         this.isAddRows = false;
+        this.isInfiniteFreeze = false;
         this.rafCallback = function (args) {
             var arg = args;
             return function () {
@@ -2492,10 +2498,8 @@ var ContentRender = /** @__PURE__ @class */ (function () {
         var row = new RowRenderer(this.serviceLocator, null, this.parent);
         var isInfiniteScroll = this.parent.enableInfiniteScrolling
             && args.requestType === 'infiniteScroll';
-        if (!isInfiniteScroll) {
-            this.rowElements = [];
-            this.rows = [];
-        }
+        this.rowElements = [];
+        this.rows = [];
         var fCont = this.getPanel().querySelector('.e-frozencontent');
         var mCont = this.getPanel().querySelector('.e-movablecontent');
         var cont = this.getPanel().querySelector('.e-content');
@@ -2606,16 +2610,12 @@ var ContentRender = /** @__PURE__ @class */ (function () {
             modelData = this.parent.contentModule.generateRows(dataSource, args);
         }
         else {
-            this.isAddRows = isInfiniteScroll && !isNullOrUndefined(this.infiniteCache[this.parent.pageSettings.currentPage]);
-            if (this.isAddRows && this.parent.infiniteScrollSettings.enableCache) {
-                modelData = this.infiniteCache[this.parent.pageSettings.currentPage];
-            }
-            else {
-                this.isAddRows = false;
+            modelData = this.checkInInfiniteCache(modelData, args);
+            if (!this.isAddRows) {
                 modelData = this.generator.generateRows(dataSource, args);
             }
         }
-        this.parent.notify(setInfiniteCache, { isInfiniteScroll: isInfiniteScroll, modelData: modelData });
+        this.parent.notify(setInfiniteCache, { isInfiniteScroll: isInfiniteScroll, modelData: modelData, args: args });
         if (isNullOrUndefined(modelData[0].cells[0])) {
             mCont.querySelector('tbody').innerHTML = '';
         }
@@ -2703,12 +2703,8 @@ var ContentRender = /** @__PURE__ @class */ (function () {
         }
         this.virtualFrozenHdrRefresh(hdrfrag, modelData, row, args, dataSource, columns);
         for (var i = startIndex, len = modelData.length; i < len; i++) {
-            if (!this.isAddRows) {
-                this.rows.push(modelData[i]);
-            }
-            if (!isNullOrUndefined(this.parent.infiniteScrollModule) && !this.isRemove) {
-                this.visibleRows.push(modelData[i]);
-            }
+            this.rows.push(modelData[i]);
+            this.setInfiniteVisibleRows(args, modelData[i]);
             if (isGroupAdaptive(gObj) && this.rows.length >= (gObj.pageSettings.pageSize) && blockLoad) {
                 break;
             }
@@ -2716,7 +2712,7 @@ var ContentRender = /** @__PURE__ @class */ (function () {
                 tr = row.render(modelData[i], columns);
                 var isVFreorder = gObj.enableVirtualization
                     && (args.requestType === 'reorder' || args.requestType === 'refresh');
-                if (gObj.frozenRows && i < gObj.frozenRows && args.requestType !== 'virtualscroll' && !isVFreorder) {
+                if (gObj.frozenRows && i < gObj.frozenRows && !isInfiniteScroll && args.requestType !== 'virtualscroll' && !isVFreorder) {
                     hdrfrag.appendChild(tr);
                 }
                 else {
@@ -2762,8 +2758,8 @@ var ContentRender = /** @__PURE__ @class */ (function () {
             this.ariaService.setOptions(this.getTable(), { colcount: gObj.getColumns().length.toString() });
         }
         this.splitRows(idx);
-        if ((gObj.frozenRows && args.requestType !== 'virtualscroll') || (args.requestType === 'virtualscroll'
-            && args.virtualInfo.sentinelInfo && args.virtualInfo.sentinelInfo.axis === 'X')) {
+        if ((gObj.frozenRows && args.requestType !== 'virtualscroll' && !isInfiniteScroll)
+            || (args.requestType === 'virtualscroll' && args.virtualInfo.sentinelInfo && args.virtualInfo.sentinelInfo.axis === 'X')) {
             hdrTbody = frzCols ? gObj.getHeaderContent().querySelector(idx === 0 ? '.e-frozenheader'
                 : '.e-movableheader').querySelector('tbody') : gObj.getHeaderTable().querySelector('tbody');
             hdrTbody.innerHTML = '';
@@ -2787,7 +2783,7 @@ var ContentRender = /** @__PURE__ @class */ (function () {
                 remove(_this.tbody);
                 _this.tbody = _this.parent.createElement('tbody');
             }
-            if (frzCols && !isVFTable) {
+            if (frzCols && !isVFTable && !_this.parent.enableInfiniteScrolling) {
                 _this.tbody.appendChild(frag);
                 if (_this.index === 0) {
                     _this.isLoaded = false;
@@ -2830,11 +2826,17 @@ var ContentRender = /** @__PURE__ @class */ (function () {
                 }
                 else {
                     if (!isNullOrUndefined(_this.parent.infiniteScrollModule) && _this.parent.enableInfiniteScrolling) {
+                        _this.isAddRows = false;
                         _this.parent.notify(removeInfiniteRows, { args: args });
                         _this.parent.notify(appendInfiniteContent, {
                             tbody: _this.tbody, frag: frag, args: args, rows: _this.rows,
                             rowElements: _this.rowElements, visibleRows: _this.visibleRows
                         });
+                        if (frzCols && idx !== 0) {
+                            fCont.style.height = ((mCont.offsetHeight) - getScrollBarWidth()) + 'px';
+                            mCont.style.overflowY = _this.parent.height !== 'auto' ? 'scroll' : 'auto';
+                            fCont.style.borderRightWidth = '1px';
+                        }
                     }
                     else {
                         _this.appendContent(_this.tbody, frag, args);
@@ -2853,6 +2855,64 @@ var ContentRender = /** @__PURE__ @class */ (function () {
     ContentRender.prototype.appendContent = function (tbody, frag, args) {
         tbody.appendChild(frag);
         this.getTable().appendChild(tbody);
+    };
+    ContentRender.prototype.checkInInfiniteCache = function (modelData, args) {
+        if (this.parent.infiniteScrollSettings.enableCache && args.requestType === 'infiniteScroll') {
+            var index = args.isFrozen ? 1 : 0;
+            var frozenCols = this.parent.getFrozenColumns();
+            this.isAddRows = !isNullOrUndefined(this.infiniteCache[this.parent.pageSettings.currentPage]);
+            if (frozenCols && !isNullOrUndefined(this.infiniteCache[this.parent.pageSettings.currentPage])) {
+                this.isAddRows = this.infiniteCache[this.parent.pageSettings.currentPage][index].length !== 0;
+            }
+            if (this.isAddRows) {
+                var data = !frozenCols ? this.infiniteCache[this.parent.pageSettings.currentPage]
+                    : this.infiniteCache[this.parent.pageSettings.currentPage][index];
+                modelData = this.parent.pageSettings.currentPage === 1 ? data.slice(this.parent.frozenRows) : data;
+            }
+            return modelData;
+        }
+        return null;
+    };
+    ContentRender.prototype.setInfiniteVisibleRows = function (args, data) {
+        var frozenCols = this.parent.getFrozenColumns();
+        if (this.parent.enableInfiniteScrolling && !this.isAddRows) {
+            if (frozenCols) {
+                !args.isFrozen ? this.visibleFrozenRows.push(data) : this.visibleRows.push(data);
+            }
+            else if (!this.parent.infiniteScrollSettings.enableCache) {
+                this.visibleRows.push(data);
+            }
+        }
+    };
+    ContentRender.prototype.getCurrentBlockInfiniteRecords = function (isFreeze) {
+        var data = [];
+        if (this.parent.infiniteScrollSettings.enableCache) {
+            var frozenCols = this.parent.getFrozenColumns();
+            var rows = this.parent.getRows();
+            var index = parseInt(rows[this.parent.frozenRows].getAttribute('aria-rowindex'), 10);
+            var first = Math.ceil((index + 1) / this.parent.pageSettings.pageSize);
+            index = parseInt(rows[rows.length - 1].getAttribute('aria-rowindex'), 10);
+            var last = Math.ceil(index / this.parent.pageSettings.pageSize);
+            if (frozenCols) {
+                var idx = isFreeze ? 0 : 1;
+                for (var i = first; i <= last; i++) {
+                    data = !data.length ? this.infiniteCache[i][idx]
+                        : data.concat(this.infiniteCache[i][idx]);
+                }
+                if (this.parent.frozenRows && this.parent.pageSettings.currentPage > 1) {
+                    data = this.infiniteCache[1][idx].slice(0, this.parent.frozenRows).concat(data);
+                }
+            }
+            else {
+                for (var i = first; i <= last; i++) {
+                    data = !data.length ? this.infiniteCache[i] : data.concat(this.infiniteCache[i]);
+                }
+                if (this.parent.frozenRows && this.parent.pageSettings.currentPage > 1) {
+                    data = this.infiniteCache[1].slice(0, this.parent.frozenRows).concat(data);
+                }
+            }
+        }
+        return data;
     };
     ContentRender.prototype.getReorderedVFRows = function (args) {
         return this.parent.contentModule.getReorderedFrozenRows(args);
@@ -2875,6 +2935,22 @@ var ContentRender = /** @__PURE__ @class */ (function () {
                 this.currentMovableRows = null;
             }
         }
+    };
+    ContentRender.prototype.getInfiniteRows = function () {
+        var rows = [];
+        var frozenCols = this.parent.getFrozenColumns();
+        if (this.parent.enableInfiniteScrolling) {
+            if (this.parent.infiniteScrollSettings.enableCache) {
+                var keys = Object.keys(this.infiniteCache);
+                for (var i = 0; i < keys.length; i++) {
+                    rows = !frozenCols ? rows.concat(this.infiniteCache[keys[i]]) : rows.concat(this.infiniteCache[keys[i]][0]);
+                }
+            }
+            else {
+                rows = frozenCols ? this.visibleFrozenRows : this.visibleRows;
+            }
+        }
+        return rows;
     };
     /**
      * Get the content div element of grid
@@ -2909,7 +2985,8 @@ var ContentRender = /** @__PURE__ @class */ (function () {
      * @returns {Row[] | HTMLCollectionOf<HTMLTableRowElement>}
      */
     ContentRender.prototype.getRows = function () {
-        return this.parent.getFrozenColumns() ? this.freezeRows : this.rows;
+        var infiniteRows = this.getInfiniteRows();
+        return infiniteRows.length ? infiniteRows : this.parent.getFrozenColumns() ? this.freezeRows : this.rows;
     };
     /**
      * Get the Movable Row collection in the Freeze pane Grid.
@@ -2995,7 +3072,9 @@ var ContentRender = /** @__PURE__ @class */ (function () {
         }
         var tr = gObj.getDataRows();
         var args = {};
-        var contentrows = this.rows.filter(function (row) { return !row.isDetailRow; });
+        var infiniteData = this.infiniteRowVisibility();
+        var contentrows = infiniteData ? infiniteData
+            : this.rows.filter(function (row) { return !row.isDetailRow; });
         for (var c = 0, clen = columns.length; c < clen; c++) {
             var column = columns[c];
             var idx = this.parent.getNormalizedColumnIndex(column.uid);
@@ -3005,14 +3084,17 @@ var ContentRender = /** @__PURE__ @class */ (function () {
                 if (frzCols) {
                     if (idx < frzCols) {
                         setStyleAttribute(this.getColGroup().childNodes[idx], { 'display': displayVal });
-                        contentrows = this.freezeRows;
+                        var infiniteFreezeData = this.infiniteRowVisibility(true);
+                        contentrows = infiniteFreezeData ? infiniteFreezeData : this.freezeRows;
+                        tr = gObj.getDataRows();
                     }
                     else {
                         var mTable = gObj.getContent().querySelector('.e-movablecontent').querySelector('colgroup');
                         colIdx = idx = idx - frzCols;
                         setStyleAttribute(mTable.childNodes[idx], { 'display': displayVal });
                         tr = gObj.getMovableDataRows();
-                        contentrows = this.movableRows;
+                        var infiniteMovableData = this.infiniteRowVisibility();
+                        contentrows = infiniteMovableData ? infiniteMovableData : this.movableRows;
                     }
                 }
                 else {
@@ -3054,6 +3136,20 @@ var ContentRender = /** @__PURE__ @class */ (function () {
                 rows[trs[i]].cells[idx].visible = displayVal === '' ? true : false;
             }
         }
+        this.parent.notify(infiniteShowHide, { visible: displayVal, index: idx, isFreeze: this.isInfiniteFreeze });
+    };
+    ContentRender.prototype.infiniteRowVisibility = function (isFreeze) {
+        var infiniteData;
+        if (this.parent.enableInfiniteScrolling) {
+            this.isInfiniteFreeze = isFreeze;
+            if (this.parent.infiniteScrollSettings.enableCache) {
+                infiniteData = isFreeze ? this.getCurrentBlockInfiniteRecords(true) : this.getCurrentBlockInfiniteRecords();
+            }
+            else {
+                infiniteData = isFreeze ? this.visibleFrozenRows : this.visibleRows;
+            }
+        }
+        return infiniteData;
     };
     ContentRender.prototype.colGroupRefresh = function () {
         if (this.getColGroup()) {
@@ -3117,19 +3213,23 @@ var ContentRender = /** @__PURE__ @class */ (function () {
         }
     };
     ContentRender.prototype.getRowByIndex = function (index) {
-        if (this.pressedKey !== 'upArrow' && this.pressedKey !== 'downArrow' && this.isRemove) {
-            index = this.getInfiniteRowIndex(index);
-        }
+        index = this.getInfiniteRowIndex(index);
         return this.parent.getDataRows()[index];
     };
     ContentRender.prototype.getInfiniteRowIndex = function (index) {
-        var firstRowIndex = parseInt(this.parent.getRows()[0].getAttribute('aria-rowindex'), 10);
-        return index - firstRowIndex;
+        if (this.parent.infiniteScrollSettings.enableCache) {
+            var fRows = this.parent.frozenRows;
+            var idx = fRows > index ? 0 : fRows;
+            var firstRowIndex = parseInt(this.parent.getRows()[idx].getAttribute('aria-rowindex'), 10);
+            index = fRows > index ? index : (index - firstRowIndex) + fRows;
+        }
+        return index;
     };
     ContentRender.prototype.getVirtualRowIndex = function (index) {
         return index;
     };
     ContentRender.prototype.getMovableRowByIndex = function (index) {
+        index = this.getInfiniteRowIndex(index);
         return this.parent.getMovableDataRows()[index];
     };
     ContentRender.prototype.enableAfterRender = function (e) {
@@ -5847,6 +5947,10 @@ var FocusStrategy = /** @__PURE__ @class */ (function () {
         }
     };
     FocusStrategy.prototype.onClick = function (e, force) {
+        if (parentsUntil(e.target, 'e-filterbarcell') &&
+            e.target.classList.contains('e-input-group-icon')) {
+            return;
+        }
         var isContent = !isNullOrUndefined(closest(e.target, '.e-gridcontent'));
         var isHeader = !isNullOrUndefined(closest(e.target, '.e-gridheader'));
         isContent = isContent && isHeader ? !isContent : isContent;
@@ -5918,6 +6022,10 @@ var FocusStrategy = /** @__PURE__ @class */ (function () {
             return true;
         }
         var th = closest(target, 'th') && !closest(target, 'th').tabIndex;
+        if (e.target.classList.contains('e-dropdownlist') && (e.keyCode === 13 || e.keyCode === 27)) {
+            var inputTarget = closest(e.target, '.e-filterbarcell');
+            inputTarget.querySelector('input').focus();
+        }
         if (th && closest(document.activeElement, '.e-filterbarcell') !== null) {
             this.removeFocus();
         }
@@ -6638,8 +6746,10 @@ var HeaderFocus = /** @__PURE__ @class */ (function (_super) {
         var info = {};
         var _a = this.matrix.current, _b = _a[0], rowIndex = _b === void 0 ? 0 : _b, _c = _a[1], cellIndex = _c === void 0 ? 0 : _c;
         info.element = this.getTable().rows[rowIndex].cells[cellIndex];
-        info.elementToFocus = this.getFocusable(info.element);
-        info.outline = !info.element.classList.contains('e-filterbarcell');
+        if (!isNullOrUndefined(info.element)) {
+            info.elementToFocus = this.getFocusable(info.element);
+            info.outline = !info.element.classList.contains('e-filterbarcell');
+        }
         return info;
     };
     HeaderFocus.prototype.selector = function (row, cell) {
@@ -6968,7 +7078,7 @@ var Selection = /** @__PURE__ @class */ (function () {
     }
     Selection.prototype.initializeSelection = function () {
         this.parent.log('selection_key_missing');
-        EventHandler.add(this.parent.getContent(), 'mousedown', this.mouseDownHandler, this);
+        this.render();
     };
     /**
      * The function used to trigger onActionBegin
@@ -7016,6 +7126,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.removeEventListener();
         this.unWireEvents();
         EventHandler.remove(this.parent.getContent(), 'mousedown', this.mouseDownHandler);
+        EventHandler.remove(this.parent.getHeaderContent(), 'mousedown', this.mouseDownHandler);
     };
     Selection.prototype.isEditing = function () {
         return (this.parent.editSettings.mode === 'Normal' || (this.parent.editSettings.mode === 'Batch' && this.parent.editModule &&
@@ -8233,8 +8344,8 @@ var Selection = /** @__PURE__ @class */ (function () {
                 selectedCells[i].classList.remove('e-cellselectionbackground');
                 selectedCells[i].removeAttribute('aria-selected');
             }
-            if (this.bdrBottom) {
-                this.hideBorders();
+            if (this.bdrElement) {
+                this.showHideBorders('none');
             }
             this.selectedRowCellIndexes = [];
             this.isCellSelected = false;
@@ -8316,13 +8427,13 @@ var Selection = /** @__PURE__ @class */ (function () {
     };
     Selection.prototype.drawBorders = function () {
         if (this.selectionSettings.cellSelectionMode === 'BoxWithBorder' && this.selectedRowCellIndexes.length && !this.parent.isEdit) {
-            if (!this.bdrBottom) {
+            if (!this.bdrElement) {
                 this.createBorders();
             }
             this.positionBorders();
         }
         else {
-            this.hideBorders();
+            this.showHideBorders('none');
         }
     };
     Selection.prototype.isLastCell = function (cell) {
@@ -8333,53 +8444,121 @@ var Selection = /** @__PURE__ @class */ (function () {
         var rows = [].slice.call(closest(cell, 'tbody').querySelectorAll('.e-row:not(.e-hiddenrow)'));
         return cell.parentElement === rows[rows.length - 1];
     };
+    Selection.prototype.isFirstRow = function (cell) {
+        var rows = [].slice.call(closest(cell, 'tbody').querySelectorAll('.e-row:not(.e-hiddenrow)'));
+        return cell.parentElement === rows[0];
+    };
+    Selection.prototype.isFirstCell = function (cell) {
+        var cells = [].slice.call(cell.parentElement.querySelectorAll('.e-rowcell:not(.e-hide)'));
+        return cells[0] === cell;
+    };
+    Selection.prototype.setBorders = function (parentEle, border, bdrStr) {
+        var cells = [].slice.call(parentEle.querySelectorAll('.e-cellselectionbackground')).
+            filter(function (ele) { return ele.style.display === ''; });
+        if (cells.length) {
+            var start = cells[0];
+            var end = cells[cells.length - 1];
+            var stOff = start.getBoundingClientRect();
+            var endOff = end.getBoundingClientRect();
+            var parentOff = start.offsetParent.getBoundingClientRect();
+            var rowHeight = this.isLastRow(end) && (bdrStr === '1' || bdrStr === '2') ? 2 : 0;
+            var topOffSet = this.parent.frozenRows && (bdrStr === '1' || bdrStr === '2') &&
+                this.isFirstRow(start) ? 1.5 : 0;
+            var leftOffset = this.parent.getFrozenColumns() && (bdrStr === '2' || bdrStr === '4') &&
+                this.isFirstCell(start) ? 1 : 0;
+            if (this.parent.enableRtl) {
+                border.style.right = parentOff.right - stOff.right - leftOffset + 'px';
+                border.style.width = stOff.right - endOff.left + leftOffset + 1 + 'px';
+            }
+            else {
+                border.style.left = stOff.left - parentOff.left - leftOffset + 'px';
+                border.style.width = endOff.right - stOff.left + leftOffset + 1 + 'px';
+            }
+            border.style.top = stOff.top - parentOff.top - topOffSet + 'px';
+            border.style.height = endOff.top - stOff.top > 0 ?
+                (endOff.top - parentOff.top + endOff.height + 1) - (stOff.top - parentOff.top) - rowHeight + topOffSet + 'px' :
+                endOff.height + topOffSet - rowHeight + 1 + 'px';
+            this.selectDirection += bdrStr;
+        }
+        else {
+            border.style.display = 'none';
+        }
+    };
     Selection.prototype.positionBorders = function () {
         this.updateStartEndCells();
-        if (!this.startCell || !this.bdrLeft || !this.selectedRowCellIndexes.length) {
+        if (!this.startCell || !this.bdrElement || !this.selectedRowCellIndexes.length) {
             return;
         }
-        this.showBorders();
-        var stOff = this.startCell.getBoundingClientRect();
-        var endOff = this.endCell.getBoundingClientRect();
-        var colWidth = this.isLastCell(this.endCell) ? 2 : 0;
-        var rowHeight = this.isLastRow(this.endCell) ? 2 : 0;
-        var parentOff = this.startCell.offsetParent.getBoundingClientRect();
-        this.bdrLeft.style.left = stOff.left - parentOff.left + 'px';
-        this.bdrLeft.style.top = stOff.top - parentOff.top + 'px';
-        this.bdrLeft.style.height = endOff.top - stOff.top > 0 ?
-            (endOff.top - parentOff.top + endOff.height + 1) - (stOff.top - parentOff.top) - rowHeight + 'px' : endOff.height + 'px';
-        this.bdrRight.style.left = endOff.left - parentOff.left + endOff.width - colWidth + 'px';
-        this.bdrRight.style.top = this.bdrLeft.style.top;
-        this.bdrRight.style.height = parseInt(this.bdrLeft.style.height, 10) - rowHeight + 'px';
-        this.bdrTop.style.left = this.bdrLeft.style.left;
-        this.bdrTop.style.top = this.bdrRight.style.top;
-        this.bdrTop.style.width = parseInt(this.bdrRight.style.left, 10) - parseInt(this.bdrLeft.style.left, 10) + 1 + 'px';
-        this.bdrBottom.style.left = this.bdrLeft.style.left;
-        this.bdrBottom.style.top = parseInt(this.bdrLeft.style.top, 10) + parseInt(this.bdrLeft.style.height, 10) - rowHeight + 'px';
-        this.bdrBottom.style.width = this.bdrTop.style.width;
+        this.selectDirection = '';
+        this.showHideBorders('');
+        this.setBorders(this.parent.getContentTable(), this.bdrElement, '1');
+        if (this.parent.getFrozenColumns()) {
+            this.setBorders(this.parent.contentModule.getMovableContent(), this.mcBdrElement, '2');
+        }
+        if (this.parent.frozenRows) {
+            this.setBorders(this.parent.getHeaderTable(), this.fhBdrElement, '3');
+            if (this.parent.getFrozenColumns()) {
+                this.setBorders(this.parent.headerModule.getMovableHeader(), this.mhBdrElement, '4');
+            }
+        }
+        this.applyBorders(this.selectDirection);
+    };
+    Selection.prototype.applyBorders = function (str) {
+        var rtl = this.parent.enableRtl;
+        switch (str.length) {
+            case 4:
+                {
+                    this.bdrElement.style.borderWidth = rtl ? '0 2px 2px 0' : '0 0 2px 2px';
+                    this.mcBdrElement.style.borderWidth = rtl ? '0 0 2px 2px' : '0 2px 2px 0';
+                    this.fhBdrElement.style.borderWidth = rtl ? '2px 2px 0 0' : '2px 0 0 2px';
+                    this.mhBdrElement.style.borderWidth = rtl ? '2px 0 0 2px' : '2px 2px 0 0';
+                }
+                break;
+            case 2:
+                {
+                    this.bdrElement.style.borderWidth = str.includes('2') ? rtl ? '2px 2px 2px 0' : '2px 0 2px 2px' : '0 2px 2px 2px';
+                    this.mcBdrElement.style.borderWidth = str.includes('1') ? rtl ? '2px 0 2px 2px' : '2px 2px 2px 0' : '0 2px 2px 2px';
+                    this.fhBdrElement.style.borderWidth = str.includes('1') ? '2px 2px 0 2px' : rtl ? '2px 2px 2px 0' : '2px 0 2px 2px';
+                    this.mhBdrElement.style.borderWidth = str.includes('2') ? '2px 2px 0 2px' : rtl ? '2px 0 2px 2px' : '2px 2px 2px 0';
+                }
+                break;
+            default:
+                this.bdrElement.style.borderWidth = '2px';
+                this.mcBdrElement.style.borderWidth = '2px';
+                this.fhBdrElement.style.borderWidth = '2px';
+                this.mhBdrElement.style.borderWidth = '2px';
+                break;
+        }
     };
     Selection.prototype.createBorders = function () {
-        if (!this.bdrLeft) {
-            this.bdrLeft = this.parent.getContentTable().parentElement.appendChild(createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_bdrleft', styles: 'width: 2px;' }));
-            this.bdrRight = this.parent.getContentTable().parentElement.appendChild(createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_bdrright', styles: 'width: 2px;' }));
-            this.bdrBottom = this.parent.getContentTable().parentElement.appendChild(createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_bdrbottom', styles: 'height: 2px;' }));
-            this.bdrTop = this.parent.getContentTable().parentElement.appendChild(createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_bdrtop', styles: 'height: 2px;' }));
+        if (!this.bdrElement) {
+            this.bdrElement = this.parent.getContentTable().parentElement.appendChild(createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_bdr', styles: 'width: 2px;' }));
+            if (this.parent.getFrozenColumns()) {
+                this.mcBdrElement = this.parent.contentModule.getMovableContent().appendChild(createElement('div', {
+                    className: 'e-xlsel', id: this.parent.element.id + '_mcbdr',
+                    styles: 'height: 2px; border-width: 0;'
+                }));
+            }
+            if (this.parent.frozenRows) {
+                this.fhBdrElement = this.parent.getHeaderTable().parentElement.appendChild(createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_fhbdr', styles: 'height: 2px;' }));
+            }
+            if (this.parent.frozenRows && this.parent.getFrozenColumns()) {
+                this.mhBdrElement = this.parent.headerModule.getMovableHeader().appendChild(createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_mhbdr', styles: 'height: 2px;' }));
+            }
         }
     };
-    Selection.prototype.showBorders = function () {
-        if (this.bdrLeft) {
-            this.bdrLeft.style.display = '';
-            this.bdrRight.style.display = '';
-            this.bdrBottom.style.display = '';
-            this.bdrTop.style.display = '';
-        }
-    };
-    Selection.prototype.hideBorders = function () {
-        if (this.bdrLeft) {
-            this.bdrLeft.style.display = 'none';
-            this.bdrRight.style.display = 'none';
-            this.bdrBottom.style.display = 'none';
-            this.bdrTop.style.display = 'none';
+    Selection.prototype.showHideBorders = function (display) {
+        if (this.bdrElement) {
+            this.bdrElement.style.display = display;
+            if (this.parent.getFrozenColumns()) {
+                this.mcBdrElement.style.display = display;
+            }
+            if (this.parent.frozenRows) {
+                this.fhBdrElement.style.display = display;
+            }
+            if (this.parent.frozenRows && this.parent.getFrozenColumns()) {
+                this.mhBdrElement.style.display = display;
+            }
         }
     };
     Selection.prototype.drawAFBorders = function () {
@@ -8392,32 +8571,59 @@ var Selection = /** @__PURE__ @class */ (function () {
         if (!this.startCell || !this.bdrAFLeft) {
             return;
         }
-        this.showBorders();
         var stOff = this.startAFCell.getBoundingClientRect();
         var endOff = this.endAFCell.getBoundingClientRect();
-        var colWidth = this.isLastCell(this.endAFCell) ? 2 : 0;
-        var rowHeight = this.isLastRow(this.endAFCell) ? 2 : 0;
+        var top = endOff.top - stOff.top > 0 ? 1 : 0;
+        var firstCellTop = endOff.top - stOff.top >= 0 && (parentsUntil(this.startAFCell, 'e-movablecontent') ||
+            parentsUntil(this.startAFCell, 'e-frozencontent')) && this.isFirstRow(this.startAFCell) ? 1.5 : 0;
+        var firstCellLeft = (parentsUntil(this.startAFCell, 'e-movablecontent') ||
+            parentsUntil(this.startAFCell, 'e-movableheader')) && this.isFirstCell(this.startAFCell) ? 1 : 0;
+        var rowHeight = this.isLastRow(this.endAFCell) && (parentsUntil(this.endAFCell, 'e-movablecontent') ||
+            parentsUntil(this.endAFCell, 'e-frozencontent')) ? 2 : 0;
         var parentOff = this.startAFCell.offsetParent.getBoundingClientRect();
-        this.bdrAFLeft.style.left = stOff.left - parentOff.left + 'px';
-        this.bdrAFLeft.style.top = stOff.top - parentOff.top + 'px';
+        var parentRect = this.parent.element.getBoundingClientRect();
+        var sTop = this.startAFCell.offsetParent.parentElement.scrollTop;
+        var sLeft = this.startAFCell.offsetParent.parentElement.scrollLeft;
+        var scrollTop = sTop - this.startAFCell.offsetTop;
+        var scrollLeft = sLeft - this.startAFCell.offsetLeft;
+        scrollTop = scrollTop > 0 ? Math.floor(scrollTop) - 1 : 0;
+        scrollLeft = scrollLeft > 0 ? scrollLeft : 0;
+        var left = stOff.left - parentRect.left;
+        if (!this.parent.enableRtl) {
+            this.bdrAFLeft.style.left = left - firstCellLeft + scrollLeft - 1 + 'px';
+            this.bdrAFRight.style.left = endOff.left - parentRect.left - 2 + endOff.width + 'px';
+            this.bdrAFTop.style.left = left + scrollLeft - 0.5 + 'px';
+            this.bdrAFTop.style.width = parseInt(this.bdrAFRight.style.left, 10) - parseInt(this.bdrAFLeft.style.left, 10)
+                - firstCellLeft + 1 + 'px';
+        }
+        else {
+            var scrolloffSet = (parentsUntil(this.startAFCell, 'e-movablecontent') ||
+                parentsUntil(this.startAFCell, 'e-movableheader')) ? stOff.right -
+                this.startAFCell.offsetParent.parentElement.getBoundingClientRect().width -
+                parentRect.left : 0;
+            this.bdrAFLeft.style.right = parentRect.right - endOff.right - 2 + endOff.width + 'px';
+            this.bdrAFRight.style.right = parentRect.right - stOff.right - firstCellLeft + scrolloffSet - 1 + 'px';
+            this.bdrAFTop.style.left = endOff.left - parentRect.left - 0.5 + 'px';
+            this.bdrAFTop.style.width = parseInt(this.bdrAFLeft.style.right, 10) - parseInt(this.bdrAFRight.style.right, 10)
+                - firstCellLeft + 1 + 'px';
+        }
+        this.bdrAFLeft.style.top = stOff.top - parentRect.top - firstCellTop + scrollTop + 'px';
         this.bdrAFLeft.style.height = endOff.top - stOff.top > 0 ?
-            (endOff.top - parentOff.top + endOff.height + 1) - (stOff.top - parentOff.top) - rowHeight + 'px' : endOff.height + 'px';
-        this.bdrAFRight.style.left = endOff.left - parentOff.left + endOff.width - colWidth + 'px';
+            (endOff.top - parentOff.top + endOff.height + 1) - (stOff.top - parentOff.top) + firstCellTop - rowHeight - scrollTop + 'px' :
+            endOff.height + firstCellTop - rowHeight - scrollTop + 'px';
         this.bdrAFRight.style.top = this.bdrAFLeft.style.top;
-        this.bdrAFRight.style.height = parseInt(this.bdrAFLeft.style.height, 10) - rowHeight + 'px';
-        this.bdrAFTop.style.left = this.bdrAFLeft.style.left;
+        this.bdrAFRight.style.height = parseInt(this.bdrAFLeft.style.height, 10) + 'px';
         this.bdrAFTop.style.top = this.bdrAFRight.style.top;
-        this.bdrAFTop.style.width = parseInt(this.bdrAFRight.style.left, 10) - parseInt(this.bdrAFLeft.style.left, 10) + 1 + 'px';
-        this.bdrAFBottom.style.left = this.bdrAFLeft.style.left;
-        this.bdrAFBottom.style.top = parseInt(this.bdrAFLeft.style.top, 10) + parseInt(this.bdrAFLeft.style.height, 10) - rowHeight + 'px';
+        this.bdrAFBottom.style.left = this.bdrAFTop.style.left;
+        this.bdrAFBottom.style.top = parseFloat(this.bdrAFLeft.style.top) + parseFloat(this.bdrAFLeft.style.height) - top - 1 + 'px';
         this.bdrAFBottom.style.width = this.bdrAFTop.style.width;
     };
     Selection.prototype.createAFBorders = function () {
         if (!this.bdrAFLeft) {
-            this.bdrAFLeft = this.parent.getContentTable().parentElement.appendChild(createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_bdrafleft', styles: 'width: 2px;' }));
-            this.bdrAFRight = this.parent.getContentTable().parentElement.appendChild(createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_bdrafright', styles: 'width: 2px;' }));
-            this.bdrAFBottom = this.parent.getContentTable().parentElement.appendChild(createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_bdrafbottom', styles: 'height: 2px;' }));
-            this.bdrAFTop = this.parent.getContentTable().parentElement.appendChild(createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_bdraftop', styles: 'height: 2px;' }));
+            this.bdrAFLeft = this.parent.element.appendChild(createElement('div', { className: 'e-xlselaf', id: this.parent.element.id + '_bdrafleft', styles: 'width: 2px;' }));
+            this.bdrAFRight = this.parent.element.appendChild(createElement('div', { className: 'e-xlselaf', id: this.parent.element.id + '_bdrafright', styles: 'width: 2px;' }));
+            this.bdrAFBottom = this.parent.element.appendChild(createElement('div', { className: 'e-xlselaf', id: this.parent.element.id + '_bdrafbottom', styles: 'height: 2px;' }));
+            this.bdrAFTop = this.parent.element.appendChild(createElement('div', { className: 'e-xlselaf', id: this.parent.element.id + '_bdraftop', styles: 'height: 2px;' }));
         }
     };
     Selection.prototype.showAFBorders = function () {
@@ -8459,6 +8665,13 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.parent.trigger(beforeAutoFill, args);
         return args;
     };
+    Selection.prototype.getAutoFillCells = function (rowIndex, startCellIdx) {
+        var cells = [].slice.call(this.parent.getDataRows()[rowIndex].querySelectorAll('.e-cellselectionbackground'));
+        if (this.parent.getFrozenColumns()) {
+            cells = cells.concat([].slice.call(this.parent.getMovableDataRows()[rowIndex].querySelectorAll('.e-cellselectionbackground')));
+        }
+        return cells;
+    };
     /* tslint:disable-next-line:max-func-body-length */
     Selection.prototype.selectLikeAutoFill = function (e, isApply) {
         var startrowIdx = parseInt(parentsUntil(this.startAFCell, 'e-row').getAttribute('aria-rowindex'), 10);
@@ -8486,7 +8699,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                 else {
                     var cellIdx = parseInt(this.endCell.getAttribute('aria-colindex'), 10);
                     for (var i = startrowIdx; i <= endrowIdx; i++) {
-                        var cells = [].slice.call(this.parent.getDataRows()[i].querySelectorAll('.e-cellselectionbackground'));
+                        var cells = this.getAutoFillCells(i, startCellIdx);
                         var c = 0;
                         for (var j = cellIdx + 1; j <= endCellIdx; j++) {
                             if (c > colLen) {
@@ -8509,7 +8722,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                 }
                 else {
                     for (var i = startrowIdx; i <= startrowIdx + rowLen; i++) {
-                        var cells = [].slice.call(this.parent.getDataRows()[i].querySelectorAll('.e-cellselectionbackground'));
+                        var cells = this.getAutoFillCells(i, startCellIdx);
                         cells.reverse();
                         var c = 0;
                         for (var j = this.startCellIndex - 1; j >= endCellIdx; j--) {
@@ -8536,7 +8749,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                         if (r === this.startIndex - 1) {
                             r = trIdx;
                         }
-                        var cells = [].slice.call(this.parent.getDataRows()[r].querySelectorAll('.e-cellselectionbackground'));
+                        var cells = this.getAutoFillCells(r, startCellIdx);
                         var c = 0;
                         r--;
                         for (var j = this.startCellIndex; j <= this.startCellIndex + colLen; j++) {
@@ -8559,7 +8772,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                         if (r === trIdx + 1) {
                             r = this.startIndex;
                         }
-                        var cells = [].slice.call(this.parent.getDataRows()[r].querySelectorAll('.e-cellselectionbackground'));
+                        var cells = this.getAutoFillCells(r, startCellIdx);
                         r++;
                         var c = 0;
                         for (var m = this.startCellIndex; m <= this.startCellIndex + colLen; m++) {
@@ -8583,7 +8796,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         else {
             this.mUPTarget = null;
         }
-        if (this.isDragged) {
+        if (this.isDragged && !this.isAutoFillSel) {
             var target = e.target;
             var rowIndex = parseInt(target.parentElement.getAttribute('aria-rowindex'), 10);
             var cellIndex = parseInt(target.getAttribute('aria-colindex'), 10);
@@ -8594,9 +8807,9 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.isDragged = false;
         this.updateAutoFillPosition();
         if (this.isAutoFillSel) {
-            this.startAFCell = this.startCell;
             var lastCell = parentsUntil(e.target, 'e-rowcell');
-            this.endAFCell = lastCell ? lastCell : this.endAFCell;
+            this.endAFCell = lastCell ? lastCell : this.endCell === this.endAFCell ? this.startAFCell : this.endAFCell;
+            this.startAFCell = this.startCell;
             this.updateStartCellsIndex();
             this.selectLikeAutoFill(e, true);
             this.updateAutoFillPosition();
@@ -8605,6 +8818,9 @@ var Selection = /** @__PURE__ @class */ (function () {
             this.isAutoFillSel = false;
         }
         EventHandler.remove(this.parent.getContent(), 'mousemove', this.mouseMoveHandler);
+        if (this.parent.frozenRows) {
+            EventHandler.remove(this.parent.getHeaderContent(), 'mousemove', this.mouseMoveHandler);
+        }
         EventHandler.remove(document.body, 'mouseup', this.mouseUpHandler);
     };
     Selection.prototype.hideAutoFill = function () {
@@ -8619,20 +8835,43 @@ var Selection = /** @__PURE__ @class */ (function () {
         if (this.parent.enableAutoFill && !this.parent.isEdit &&
             this.selectionSettings.cellSelectionMode.indexOf('Box') > -1 && !this.isRowType() && !this.isSingleSel()
             && this.selectedRowCellIndexes.length) {
-            var cells = [].slice.call(this.parent.getDataRows()[this.selectedRowCellIndexes[this.selectedRowCellIndexes.length - 1].rowIndex].querySelectorAll('.e-cellselectionbackground'));
-            if (!this.parent.element.querySelector('#' + this.parent.element.id + '_autofill')) {
+            var frzCols = this.parent.getFrozenColumns();
+            var index = parseInt(this.target.getAttribute('aria-colindex'), 10);
+            var rindex = parseInt(this.target.getAttribute('index'), 10);
+            var rowIndex = this.selectedRowCellIndexes[this.selectedRowCellIndexes.length - 1].rowIndex;
+            var cells = this.getAutoFillCells(rowIndex, index).filter(function (ele) { return ele.style.display === ''; });
+            var isFrozenCol = void 0;
+            var isFrozenRow = void 0;
+            if (frzCols && index >= frzCols) {
+                isFrozenCol = true;
+            }
+            if (rindex < this.parent.frozenRows) {
+                isFrozenRow = true;
+            }
+            if (!parentsUntil(this.target, 'e-table').querySelector('#' + this.parent.element.id + '_autofill')) {
+                if (this.parent.element.querySelector('#' + this.parent.element.id + '_autofill')) {
+                    this.parent.element.querySelector('#' + this.parent.element.id + '_autofill').remove();
+                }
                 this.autofill = createElement('div', { className: 'e-autofill', id: this.parent.element.id + '_autofill' });
                 this.autofill.style.display = 'none';
-                this.parent.getContentTable().parentElement.appendChild(this.autofill);
+                !isFrozenRow ? !isFrozenCol ? this.parent.getContentTable().parentElement.appendChild(this.autofill) :
+                    this.parent.contentModule.getMovableContent().appendChild(this.autofill) :
+                    !isFrozenCol ? this.parent.getHeaderTable().parentElement.appendChild(this.autofill) :
+                        this.parent.headerModule.getMovableHeader().appendChild(this.autofill);
             }
             var cell = cells[cells.length - 1];
             if (cell && cell.offsetParent) {
                 var clientRect = cell.getBoundingClientRect();
                 var parentOff = cell.offsetParent.getBoundingClientRect();
                 var colWidth = this.isLastCell(cell) ? 4 : 0;
-                var rowHeight = this.isLastRow(cell) ? 5 : 0;
-                this.autofill.style.left = clientRect.left - parentOff.left + clientRect.width - 4 - colWidth + 'px';
-                this.autofill.style.top = clientRect.top - parentOff.top + clientRect.height - 3 - rowHeight + 'px';
+                var rowHeight = this.isLastRow(cell) ? 3 : 0;
+                if (!this.parent.enableRtl) {
+                    this.autofill.style.left = clientRect.left - parentOff.left + clientRect.width - 4 - colWidth + 'px';
+                }
+                else {
+                    this.autofill.style.right = parentOff.right - clientRect.right + clientRect.width - 4 - colWidth + 'px';
+                }
+                this.autofill.style.top = clientRect.top - parentOff.top + clientRect.height - 5 - rowHeight + 'px';
             }
             this.autofill.style.display = '';
         }
@@ -8645,7 +8884,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         var gObj = this.parent;
         var isDrag;
         var gridElement = parentsUntil(target, 'e-grid');
-        if (gridElement && gridElement.id !== gObj.element.id) {
+        if (gridElement && gridElement.id !== gObj.element.id || parentsUntil(target, 'e-headercontent') && !this.parent.frozenColumns) {
             return;
         }
         if (e.shiftKey || e.ctrlKey) {
@@ -8704,6 +8943,9 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.x = postion.x - gBRect.left;
         this.y = postion.y - gBRect.top;
         EventHandler.add(gObj.getContent(), 'mousemove', this.mouseMoveHandler, this);
+        if (this.parent.frozenRows) {
+            EventHandler.add(gObj.getHeaderContent(), 'mousemove', this.mouseMoveHandler, this);
+        }
         EventHandler.add(document.body, 'mouseup', this.mouseUpHandler, this);
     };
     Selection.prototype.clearSelAfterRefresh = function (e) {
@@ -8798,11 +9040,12 @@ var Selection = /** @__PURE__ @class */ (function () {
     Selection.prototype.enableAfterRender = function (e) {
         if (e.module === this.getModuleName() && e.enable) {
             this.render();
+            this.initPerisistSelection();
         }
     };
     Selection.prototype.render = function (e) {
         EventHandler.add(this.parent.getContent(), 'mousedown', this.mouseDownHandler, this);
-        this.initPerisistSelection();
+        EventHandler.add(this.parent.getHeaderContent(), 'mousedown', this.mouseDownHandler, this);
     };
     Selection.prototype.onPropertyChanged = function (e) {
         if (e.module !== this.getModuleName()) {
@@ -8943,7 +9186,7 @@ var Selection = /** @__PURE__ @class */ (function () {
     };
     Selection.prototype.refreshPersistSelection = function () {
         var rows = this.parent.getRows();
-        if (rows.length > 0 && (this.parent.isPersistSelection || this.chkField)) {
+        if (rows !== null && rows.length > 0 && (this.parent.isPersistSelection || this.chkField)) {
             var indexes = [];
             for (var j = 0; j < rows.length; j++) {
                 var rowObj = this.getRowObj(rows[j]);
@@ -9292,6 +9535,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             chkSelect = true;
         }
         this.drawBorders();
+        this.updateAutoFillPosition();
         target = parentsUntil(target, 'e-rowcell');
         if ((target && target.parentElement.classList.contains('e-row') && !this.parent.selectionSettings.checkboxOnly) || chkSelect) {
             if (this.parent.isCheckBoxSelection) {
@@ -9399,7 +9643,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                 this.parent[interopAdaptor][invokeMethodAsync]('MaintainSelection', true, 'normal', rowIndexes);
             }
             this.addCellsToSelection([{ rowIndex: rowIndex, cellIndex: cellIndex }]);
-            this.hideBorders();
+            this.showHideBorders('none');
         }
         this.isDragged = false;
     };
@@ -11335,6 +11579,9 @@ var FilterSettings = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Property(false)
     ], FilterSettings.prototype, "enableCaseSensitivity", void 0);
+    __decorate$1([
+        Property(false)
+    ], FilterSettings.prototype, "showFilterBarOperator", void 0);
     return FilterSettings;
 }(ChildProperty));
 /**
@@ -12095,6 +12342,10 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     Grid.prototype.enableBoxSelection = function () {
         if (this.enableAutoFill) {
             this.selectionSettings.cellSelectionMode = 'BoxWithBorder';
+            this.element.classList.add('e-afenabled');
+        }
+        else {
+            this.element.classList.remove('e-afenabled');
         }
     };
     /**
@@ -12271,6 +12522,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
                 if (this.showColumnMenu && this.columnMenuModule) {
                     this.columnMenuModule.getColumnMenu().ej2_instances[0].enableRtl = newProp.enableRtl;
                     this.columnMenuModule.getColumnMenu().ej2_instances[0].dataBind();
+                }
+                if (this.filterSettings.type === 'FilterBar' && this.filterSettings.showFilterBarOperator) {
+                    this.refreshHeader();
                 }
                 this.notify(rtlUpdated, {});
                 break;
@@ -12896,7 +13150,10 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * @return {Element}
      */
     Grid.prototype.getCellFromIndex = function (rowIndex, columnIndex) {
-        return this.getDataRows()[rowIndex] && this.getDataRows()[rowIndex].querySelectorAll('.e-rowcell')[columnIndex];
+        var frzCols = this.getFrozenColumns();
+        return frzCols && columnIndex >= frzCols ?
+            this.getMovableDataRows()[rowIndex] && this.getMovableDataRows()[rowIndex].querySelectorAll('.e-rowcell')[columnIndex - frzCols] :
+            this.getDataRows()[rowIndex] && this.getDataRows()[rowIndex].querySelectorAll('.e-rowcell')[columnIndex];
     };
     /**
      * Gets a movable table cell by row and column index.
@@ -20147,6 +20404,11 @@ var FilterCellRenderer = /** @__PURE__ @class */ (function (_super) {
                     node.classList.add('e-hide');
                 }
                 this.appendHtml(node, innerDIV);
+                // render's the dropdownlist component if showFilterBarOperator sets to true
+                if (this.parent.filterSettings.showFilterBarOperator && this.parent.filterSettings.type === 'FilterBar'
+                    && !this.parent.isPrinting && isNullOrUndefined(column.filterTemplate)) {
+                    this.operatorIconRender(innerDIV, column, cell);
+                }
                 if ((isNullOrUndefined(column.allowFiltering) || column.allowFiltering) && !isNullOrUndefined(column.filterBarTemplate)) {
                     var templateWrite = column.filterBarTemplate.write;
                     var args = { element: input, column: column };
@@ -20168,6 +20430,53 @@ var FilterCellRenderer = /** @__PURE__ @class */ (function (_super) {
     FilterCellRenderer.prototype.appendHtml = function (node, innerHtml) {
         node.appendChild(innerHtml);
         return node;
+    };
+    FilterCellRenderer.prototype.operatorIconRender = function (innerDIV, column, cell) {
+        var gObj = this.parent;
+        var fbicon = this.parent.createElement('input', {
+            className: ' e-filterbaroperator e-icons e-icon-filter',
+            id: cell.column.uid
+        });
+        innerDIV.querySelector('span').appendChild(fbicon);
+        var operators = 'equal';
+        if (!isNullOrUndefined(gObj.filterModule.operators[column.field])) {
+            operators = gObj.filterModule.operators[column.field];
+        }
+        this.dropOptr = new DropDownList({
+            fields: { text: 'text', value: 'value' },
+            popupHeight: 'auto',
+            value: operators,
+            width: '0px',
+            enabled: column.allowFiltering,
+            popupWidth: 'auto',
+            change: this.internalEvent.bind(this),
+            beforeOpen: function () {
+                var operator = gObj.filterModule.customOperators;
+                this.dataSource = operator[gObj.getColumnByUid(this.element.id).type + 'Operator'];
+                for (var i = 0; i < this.dataSource.length; i++) {
+                    if (column.filter && column.filter.operator && isNullOrUndefined(gObj.filterModule.operators[column.field]) &&
+                        this.dataSource[i].value === column.filter.operator) {
+                        this.value = column.filter.operator;
+                    }
+                }
+            },
+        });
+        this.dropOptr.appendTo(fbicon);
+        var spanElmt = closest(this.dropOptr.element, 'span');
+        if (!gObj.enableRtl) {
+            spanElmt.style.marginRight = '15px';
+        }
+        else {
+            spanElmt.style.marginLeft = '15px';
+        }
+        spanElmt.removeAttribute('tabindex');
+    };
+    FilterCellRenderer.prototype.internalEvent = function (e) {
+        var gObj = this.parent;
+        var col = gObj.getColumnByUid(e.element.getAttribute('id'));
+        e.column = col;
+        gObj.filterModule.operators[col.field] = e.value;
+        gObj.notify(getFilterBarOperator, e);
     };
     return FilterCellRenderer;
 }(CellRenderer));
@@ -20865,6 +21174,7 @@ var Filter = /** @__PURE__ @class */ (function () {
         this.contentRefresh = true;
         this.refresh = true;
         this.values = {};
+        this.operators = {};
         this.cellText = {};
         this.nextFlMenuOpen = '';
         this.type = { 'Menu': FilterMenuRenderer, 'CheckBox': CheckBoxFilter, 'Excel': ExcelFilter };
@@ -20948,6 +21258,12 @@ var Filter = /** @__PURE__ @class */ (function () {
         this.updateFilterMsg();
         this.removeEventListener();
         this.unWireEvents();
+        if (this.filterSettings.type === 'FilterBar' && this.filterSettings.showFilterBarOperator) {
+            var dropdownlist = this.element.querySelectorAll('.e-filterbaroperator');
+            for (var i = 0; i < dropdownlist.length; i++) {
+                dropdownlist[i].ej2_instances[0].destroy();
+            }
+        }
         if (this.element) {
             remove(this.element);
             var filterBarElement = this.parent.getHeaderContent().querySelector('.e-filterbar');
@@ -21136,6 +21452,9 @@ var Filter = /** @__PURE__ @class */ (function () {
         var gObj = this.parent;
         var filterCell;
         this.column = gObj.grabColumnByFieldFromAllCols(fieldName);
+        if (this.filterSettings.type === 'FilterBar' && this.filterSettings.showFilterBarOperator) {
+            filterOperator = this.getOperatorName(fieldName);
+        }
         if (!this.column) {
             return;
         }
@@ -21228,6 +21547,7 @@ var Filter = /** @__PURE__ @class */ (function () {
                         this.parent.updateExternalMessage('');
                     }
                     break;
+                case 'showFilterBarOperator':
                 case 'type':
                     this.parent.refreshHeader();
                     this.refreshFilterSettings();
@@ -21473,7 +21793,14 @@ var Filter = /** @__PURE__ @class */ (function () {
             if (!this.column) {
                 return;
             }
-            if ((this.filterSettings.mode === 'Immediate' || e.keyCode === 13) && e.keyCode !== 9) {
+            if (e.action === 'altDownArrow' && this.parent.filterSettings.showFilterBarOperator) {
+                var dropDownListInput = closest(target, 'span').querySelector('.e-filterbaroperator');
+                dropDownListInput.ej2_instances[0].showPopup();
+                dropDownListInput.focus();
+            }
+            if ((this.filterSettings.mode === 'Immediate' || (e.keyCode === 13 &&
+                !e.target.classList.contains('e-filterbaroperator')))
+                && e.keyCode !== 9) {
                 this.value = target.value.trim();
                 this.processFilter(e);
             }
@@ -21768,6 +22095,16 @@ var Filter = /** @__PURE__ @class */ (function () {
         }
     };
     Filter.prototype.clickHandler = function (e) {
+        if (this.filterSettings.type === 'FilterBar' && this.filterSettings.showFilterBarOperator) {
+            if (parentsUntil(e.target, 'e-filterbarcell') &&
+                e.target.classList.contains('e-input-group-icon')) {
+                closest(e.target, 'div').querySelector('.e-filterbaroperator').focus();
+            }
+            if (e.target.classList.contains('e-list-item')) {
+                var inputId = document.querySelector('.e-popup-open').getAttribute('id').replace('_popup', '');
+                closest(document.getElementById(inputId), 'div').querySelector('.e-filtertext').focus();
+            }
+        }
         if (this.filterSettings.mode === 'Immediate' || this.parent.filterSettings.type === 'Menu' ||
             this.parent.filterSettings.type === 'CheckBox' || this.parent.filterSettings.type === 'Excel') {
             var gObj = this.parent;
@@ -21885,6 +22222,12 @@ var Filter = /** @__PURE__ @class */ (function () {
      */
     Filter.prototype.getFilterUIInfo = function () {
         return this.filterModule ? this.filterModule.getFilterUIInfo() : {};
+    };
+    /**
+     * @hidden
+     */
+    Filter.prototype.getOperatorName = function (field) {
+        return document.getElementById(this.parent.getColumnByField(field).uid).ej2_instances[0].value;
     };
     return Filter;
 }());
@@ -22542,7 +22885,7 @@ var Resize = /** @__PURE__ @class */ (function () {
         };
         var offset = elem.getBoundingClientRect();
         var doc = elem.ownerDocument;
-        var offsetParent = elem.offsetParent || doc.documentElement;
+        var offsetParent = parentsUntil(elem, 'e-grid') || doc.documentElement;
         while (offsetParent &&
             (offsetParent === doc.body || offsetParent === doc.documentElement) &&
             offsetParent.style.position === 'static') {
@@ -25923,7 +26266,7 @@ function summaryIterator(aggregates, callback) {
  * @hidden
  */
 var InterSectionObserver = /** @__PURE__ @class */ (function () {
-    function InterSectionObserver(parent, element, options) {
+    function InterSectionObserver(element, options) {
         var _this = this;
         this.fromWheel = false;
         this.touchMove = false;
@@ -25960,7 +26303,6 @@ var InterSectionObserver = /** @__PURE__ @class */ (function () {
                 }, axis: 'X'
             }
         };
-        this.parent = parent;
         this.element = element;
         this.options = options;
     }
@@ -26203,7 +26545,7 @@ var VirtualRowModelGenerator = /** @__PURE__ @class */ (function () {
         var actions = ['paging', 'refresh', 'sorting', 'filtering', 'searching', 'grouping', 'ungrouping', 'reorder',
             'save', 'delete'];
         if (this.parent.getFrozenColumns() && this.parent.frozenRows && this.parent.enableColumnVirtualization && action === 'reorder') {
-            actions = ['paging', 'refresh', 'sorting', 'filtering', 'searching', 'grouping', 'ungrouping', 'save', 'delete'];
+            actions.splice(actions.indexOf(action), 1);
         }
         var clear = actions.some(function (value) { return action === value; });
         if (clear) {
@@ -26345,7 +26687,7 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
             container: content, pageHeight: this.getBlockHeight() * 2, debounceEvent: debounceEvent,
             axes: this.parent.enableColumnVirtualization ? ['X', 'Y'] : ['Y']
         };
-        this.observer = new InterSectionObserver(this.parent, this.virtualEle.wrapper, opt);
+        this.observer = new InterSectionObserver(this.virtualEle.wrapper, opt);
     };
     VirtualContentRenderer.prototype.renderEmpty = function (tbody) {
         this.getTable().appendChild(tbody);
@@ -26463,7 +26805,7 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
             startIndex: this.preStartIndex, endIndex: this.preEndIndex };
         var vHeight = this.parent.height.toString().indexOf('%') < 0 ? this.content.getBoundingClientRect().height :
             this.parent.element.getBoundingClientRect().height;
-        infoType.page = this.getPageFromTop(e.top + vHeight, infoType);
+        infoType.page = this.getPageFromTop(e.top, infoType);
         infoType.blockIndexes = tempBlocks = this.vgenerator.getBlockIndexes(infoType.page);
         infoType.loadSelf = !this.vgenerator.isBlockAvailable(tempBlocks[infoType.block]);
         var blocks = this.ensureBlocks(infoType);
@@ -26832,6 +27174,10 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
             var iOffset = Number(offset);
             var border = sTop <= _this.offsets[offset] || (iOffset === total && sTop > _this.offsets[offset]);
             if (border) {
+                if (_this.offsetKeys.length % 2 !== 0 && iOffset.toString() === _this.offsetKeys[_this.offsetKeys.length - 2]
+                    && sTop <= _this.offsets[_this.offsetKeys.length - 1]) {
+                    iOffset = iOffset + 1;
+                }
                 info.block = iOffset % 2 === 0 ? 1 : 0;
                 page = Math.max(1, Math.min(_this.vgenerator.getPage(iOffset), _this.maxPage));
             }
@@ -26841,7 +27187,7 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
     };
     VirtualContentRenderer.prototype.getTranslateY = function (sTop, cHeight, info, isOnenter) {
         if (info === undefined) {
-            info = { page: this.getPageFromTop(sTop + cHeight, {}) };
+            info = { page: this.getPageFromTop(sTop, {}) };
             info.blockIndexes = this.vgenerator.getBlockIndexes(info.page);
         }
         var block = (info.blockIndexes[0] || 1) - 1;
@@ -27301,8 +27647,7 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
             if (!selectedRow || this.isRowInView(args.selectedIndex, selectedRow, ele, eleOffsHeight, rowHeight)) {
                 this.isSelection = true;
                 this.selectedRowIndex = args.selectedIndex;
-                var viewPortCount = Math.floor(eleOffsHeight / rowHeight);
-                var scrollTop = (args.selectedIndex - viewPortCount) * rowHeight;
+                var scrollTop = (args.selectedIndex + 1) * rowHeight;
                 if (!isNullOrUndefined(scrollTop)) {
                     ele.scrollTop = scrollTop;
                 }
@@ -27317,6 +27662,9 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
             return (index < exactTopIndex || index > exactEndIndex);
         }
         else {
+            if (this.parent.frozenRows && index < this.parent.frozenRows) {
+                return false;
+            }
             var rectTop = selectedRow ? selectedRow.getBoundingClientRect().top : 0;
             return (rectTop < rowHeight || rectTop > eleOffsHeight);
         }
@@ -27959,7 +28307,6 @@ var DialogEditRender = /** @__PURE__ @class */ (function () {
     };
     DialogEditRender.prototype.dialogClose = function () {
         this.parent.closeEdit();
-        this.destroy();
     };
     DialogEditRender.prototype.destroy = function (args) {
         var dialogEditTemplates = ['template', 'headerTemplate', 'footerTemplate'];
@@ -28934,6 +29281,9 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
             args[form] = null;
         }
         gObj.trigger(actionBegin, args, function (closeEditArgs) {
+            if (closeEditArgs.cancel) {
+                return;
+            }
             if (_this.parent.editSettings.mode === 'Dialog') {
                 _this.parent.notify(dialogDestroy, {});
             }
@@ -30168,7 +30518,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         this.parent.element.classList.remove('e-editing');
         var column = this.cellDetails.column;
         var obj = {};
-        obj[column.field] = this.cellDetails.rowData[column.field];
+        obj[column.field] = getObject(column.field, this.cellDetails.rowData);
         var editedData = gObj.editModule.getCurrentEditedData(this.form, obj);
         var cloneEditedData = extend({}, editedData);
         editedData = extend({}, editedData, this.cellDetails.rowData);
@@ -30257,17 +30607,17 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
                 cellSaveArgs.cell.classList.remove('e-updatedtd');
                 if (isBlazor() && gObj.isServerRendered && (!isNullOrUndefined(cellSaveArgs.value) ? cellSaveArgs.value : '').toString() ===
                     (!isNullOrUndefined(_this.cellDetails.value) ? _this.cellDetails.value : '').toString()) {
-                    if (_this.cloneCell["" + _this.cellDetails.rowIndex + cellSaveArgs.columnObject.index].
+                    if (_this.cloneCell["" + parseInt(tr.getAttribute('aria-rowindex'), 10) + cellSaveArgs.columnObject.index].
                         classList.contains('e-selectionbackground')) {
-                        _this.originalCell["" + _this.cellDetails.rowIndex + cellSaveArgs.columnObject.index].
+                        _this.originalCell["" + parseInt(tr.getAttribute('aria-rowindex'), 10) + cellSaveArgs.columnObject.index].
                             classList.add('e-selectionbackground', 'e-active');
                     }
                     else {
-                        _this.originalCell["" + _this.cellDetails.rowIndex + cellSaveArgs.columnObject.index].
+                        _this.originalCell["" + parseInt(tr.getAttribute('aria-rowindex'), 10) + cellSaveArgs.columnObject.index].
                             classList.remove('e-selectionbackground', 'e-active');
                     }
-                    _this.cloneCell["" + _this.cellDetails.rowIndex + cellSaveArgs.columnObject.index]
-                        .replaceWith(_this.originalCell["" + _this.cellDetails.rowIndex + cellSaveArgs.columnObject.index]);
+                    _this.cloneCell["" + parseInt(tr.getAttribute('aria-rowindex'), 10) + cellSaveArgs.columnObject.index]
+                        .replaceWith(_this.originalCell["" + parseInt(tr.getAttribute('aria-rowindex'), 10) + cellSaveArgs.columnObject.index]);
                 }
             }
             if (isNullOrUndefined(isEscapeCellEdit)) {
@@ -31010,7 +31360,7 @@ var Edit = /** @__PURE__ @class */ (function () {
         else {
             var restrictedRequestTypes = ['filterafteropen', 'filterbeforeopen', 'filterchoicerequest', 'save'];
             if (this.parent.editSettings.mode !== 'Batch' && this.formObj && !this.formObj.isDestroyed
-                && restrictedRequestTypes.indexOf(e.requestType) === -1) {
+                && restrictedRequestTypes.indexOf(e.requestType) === -1 && !e.cancel) {
                 this.destroyWidgets();
                 this.destroyForm();
             }
@@ -37344,6 +37694,7 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
      */
     function InfiniteScroll(parent) {
         this.infiniteCache = {};
+        this.infiniteFrozenCache = {};
         this.isDownScroll = false;
         this.isUpScroll = false;
         this.isScroll = true;
@@ -37355,6 +37706,7 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
         this.actions = ['filtering', 'searching', 'grouping', 'ungrouping', 'reorder', 'sorting'];
         this.keys = ['downArrow', 'upArrow', 'PageUp', 'PageDown'];
         this.rowTop = 0;
+        this.isInitialMovableRender = true;
         this.parent = parent;
         this.addEventListener();
     }
@@ -37376,6 +37728,7 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
         this.parent.on(setInfiniteCache, this.setCache, this);
         this.parent.on(initialCollapse, this.ensureIntialCollapse, this);
         this.parent.on(keyPressed, this.infiniteCellFocus, this);
+        this.parent.on(infiniteShowHide, this.setDisplayNone, this);
     };
     /**
      * @hidden
@@ -37395,6 +37748,21 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
         this.parent.off(setInfiniteCache, this.setCache);
         this.parent.off(initialCollapse, this.ensureIntialCollapse);
         this.parent.off(keyPressed, this.infiniteCellFocus);
+        this.parent.off(infiniteShowHide, this.setDisplayNone);
+    };
+    InfiniteScroll.prototype.setDisplayNone = function (args) {
+        if (this.parent.infiniteScrollSettings.enableCache) {
+            var frozenCols = this.parent.getFrozenColumns();
+            var keys = frozenCols ? Object.keys(this.infiniteFrozenCache) : Object.keys(this.infiniteCache);
+            for (var i = 1; i <= keys.length; i++) {
+                var cache = frozenCols ? args.isFreeze ? this.infiniteFrozenCache[i][0]
+                    : this.infiniteFrozenCache[i][1] : this.infiniteCache[i];
+                cache.filter(function (e) {
+                    e.cells[args.index].visible = args.visible === '';
+                });
+            }
+            this.resetContentModuleCache(frozenCols ? this.infiniteFrozenCache : this.infiniteCache);
+        }
     };
     InfiniteScroll.prototype.dataSourceModified = function () {
         this.resetInfiniteBlocks({ requestType: this.empty }, true);
@@ -37409,16 +37777,21 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
     };
     InfiniteScroll.prototype.infiniteScrollHandler = function (e) {
         var _this = this;
-        if (e.target.classList.contains('e-content') && this.parent.enableInfiniteScrolling) {
-            var scrollEle = this.parent.getContent().firstElementChild;
+        var targetEle = e.target;
+        var isInfinite = targetEle.classList.contains('e-content')
+            || targetEle.classList.contains('e-movablecontent');
+        if (isInfinite && this.parent.enableInfiniteScrolling) {
+            var scrollEle = this.parent.getFrozenColumns() ? this.parent.getMovableVirtualContent()
+                : this.parent.getContent().firstElementChild;
             this.prevScrollTop = scrollEle.scrollTop;
             var rows = this.parent.getRows();
             var index = parseInt(rows[rows.length - 1].getAttribute('aria-rowindex'), 10) + 1;
             var prevPage = this.parent.pageSettings.currentPage;
             var args = void 0;
-            var floor = Math.floor(e.target.scrollHeight - e.target.scrollTop);
-            var round = Math.round(e.target.scrollHeight - e.target.scrollTop);
-            var isBottom = (floor === e.target.clientHeight || round === e.target.clientHeight);
+            var offset = targetEle.scrollHeight - targetEle.scrollTop;
+            var round = Math.round(targetEle.scrollHeight - targetEle.scrollTop);
+            var floor = offset < targetEle.clientHeight ? Math.ceil(offset) : Math.floor(offset);
+            var isBottom = (floor === targetEle.clientHeight || round === targetEle.clientHeight);
             if (this.isScroll && isBottom && (this.parent.pageSettings.currentPage <= this.maxPage - 1 || this.enableContinuousScroll)) {
                 if (this.parent.infiniteScrollSettings.enableCache) {
                     this.isUpScroll = false;
@@ -37427,8 +37800,7 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
                         _this.isScroll = true;
                     }, 600);
                 }
-                var rows_1 = [].slice.call(this.parent.getContent()
-                    .querySelectorAll('.e-row'));
+                var rows_1 = [].slice.call(scrollEle.querySelectorAll('.e-row'));
                 var row = rows_1[rows_1.length - 1];
                 var rowIndex = parseInt(row.getAttribute('aria-rowindex'), 10);
                 this.parent.pageSettings.currentPage = Math.ceil(rowIndex / this.parent.pageSettings.pageSize) + 1;
@@ -37441,7 +37813,7 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
                 };
                 this.makeRequest(args);
             }
-            if (this.isScroll && this.parent.infiniteScrollSettings.enableCache && e.target.scrollTop === 0
+            if (this.isScroll && this.parent.infiniteScrollSettings.enableCache && targetEle.scrollTop === 0
                 && this.parent.pageSettings.currentPage !== 1) {
                 if (this.parent.infiniteScrollSettings.enableCache) {
                     this.isDownScroll = false;
@@ -37450,8 +37822,7 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
                         _this.isScroll = true;
                     }, 600);
                 }
-                var row = [].slice.call(this.parent.getContent()
-                    .querySelectorAll('.e-row'))[this.parent.pageSettings.pageSize - 1];
+                var row = [].slice.call(scrollEle.querySelectorAll('.e-row'))[this.parent.pageSettings.pageSize - 1];
                 var rowIndex = parseInt(row.getAttribute('aria-rowindex'), 10);
                 this.parent.pageSettings.currentPage = Math.ceil(rowIndex / this.parent.pageSettings.pageSize) - 1;
                 if (this.parent.pageSettings.currentPage) {
@@ -37466,7 +37837,7 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
             }
             if (this.parent.infiniteScrollSettings.enableCache && !this.isScroll && isNullOrUndefined(args)) {
                 if (this.isDownScroll || this.isUpScroll) {
-                    this.parent.getContent().firstElementChild.scrollTop = this.top;
+                    scrollEle.scrollTop = this.top;
                 }
             }
         }
@@ -37536,36 +37907,64 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
     };
     InfiniteScroll.prototype.appendInfiniteRows = function (e) {
         var target = document.activeElement;
+        var frozenCols = this.parent.getFrozenColumns();
+        var scrollEle = frozenCols ? this.parent.getMovableVirtualContent()
+            : this.parent.getContent().firstElementChild;
         var isInfiniteScroll = this.parent.enableInfiniteScrolling && e.args.requestType === 'infiniteScroll';
-        if (isInfiniteScroll && e.args.direction === 'up') {
-            e.tbody.insertBefore(e.frag, e.tbody.firstElementChild);
+        if ((isInfiniteScroll && !e.args.isFrozen) || !isInfiniteScroll) {
+            if (isInfiniteScroll && e.args.direction === 'up') {
+                e.tbody.insertBefore(e.frag, e.tbody.firstElementChild);
+            }
+            else {
+                e.tbody.appendChild(e.frag);
+            }
+        }
+        if (!frozenCols) {
+            this.parent.contentModule.getTable().appendChild(e.tbody);
         }
         else {
-            e.tbody.appendChild(e.frag);
-        }
-        this.parent.contentModule.getTable().appendChild(e.tbody);
-        this.rowTop = !this.rowTop ? this.parent.getRows()[0].getBoundingClientRect().top : this.rowTop;
-        if (isInfiniteScroll) {
-            if (this.parent.infiniteScrollSettings.enableCache && this.isRemove) {
-                if (e.args.direction === 'down') {
-                    var startIndex = (this.parent.pageSettings.currentPage -
-                        this.parent.infiniteScrollSettings.maxBlocks) * this.parent.pageSettings.pageSize;
-                    this.parent.contentModule.visibleRows =
-                        e.rows.slice(startIndex, e.rows.length);
+            if (isInfiniteScroll) {
+                if (e.args.isFrozen) {
+                    this.frozenFrag = e.frag;
                 }
-                if (e.args.direction === 'up') {
-                    var startIndex = (this.parent.pageSettings.currentPage - 1) * this.parent.pageSettings.pageSize;
-                    var endIndex = ((this.parent.pageSettings.currentPage
-                        + this.parent.infiniteScrollSettings.maxBlocks) - 1) * this.parent.pageSettings.pageSize;
-                    this.parent.contentModule.visibleRows =
-                        e.rows.slice(startIndex, endIndex);
+                else {
+                    var tbody = this.parent.getFrozenVirtualContent().querySelector('tbody');
+                    e.args.direction === 'up' ? tbody.insertBefore(this.frozenFrag, tbody.firstElementChild)
+                        : tbody.appendChild(this.frozenFrag);
+                    this.parent.getMovableVirtualContent().querySelector('.e-table').appendChild(e.tbody);
                 }
-                this.parent.contentModule.rowElements =
-                    [].slice.call(this.parent.getContent().querySelectorAll('.e-row'));
-                this.parent.getContent().firstElementChild.scrollTop = this.top;
             }
-            this.selectNewRow(e.tbody, e.args.startIndex);
-            this.pressedKey = undefined;
+            else {
+                var table = e.args.isFrozen ? this.parent.getFrozenVirtualContent().querySelector('.e-table')
+                    : this.parent.getMovableVirtualContent().querySelector('.e-table');
+                table.appendChild(e.tbody);
+            }
+        }
+        if (!e.args.isFrozen) {
+            this.rowTop = !this.rowTop ? this.parent.getRows()[0].getBoundingClientRect().top : this.rowTop;
+            if (isInfiniteScroll) {
+                if (this.parent.infiniteScrollSettings.enableCache && this.isRemove) {
+                    scrollEle.scrollTop = this.top;
+                    if (frozenCols) {
+                        this.parent.getFrozenVirtualContent().scrollTop = this.top;
+                    }
+                }
+                this.setRowElements();
+                this.selectNewRow(e.tbody, e.args.startIndex);
+                this.pressedKey = undefined;
+            }
+        }
+    };
+    InfiniteScroll.prototype.setRowElements = function () {
+        if (this.parent.getFrozenColumns()) {
+            this.parent.contentModule.rowElements =
+                [].slice.call(this.parent.element.querySelectorAll('.e-movableheader .e-row, .e-movablecontent .e-row'));
+            this.parent.contentModule.freezeRowElements =
+                [].slice.call(this.parent.element.querySelectorAll('.e-frozenheader .e-row, .e-frozencontent .e-row'));
+        }
+        else {
+            this.parent.contentModule.rowElements =
+                [].slice.call(this.parent.element.querySelectorAll('.e-row'));
         }
     };
     InfiniteScroll.prototype.selectNewRow = function (tbody, startIndex) {
@@ -37594,7 +37993,7 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
     };
     InfiniteScroll.prototype.removeInfiniteCacheRows = function (e) {
         var isInfiniteScroll = this.parent.enableInfiniteScrolling && e.args.requestType === 'infiniteScroll';
-        if (isInfiniteScroll && this.parent.infiniteScrollSettings.enableCache && this.isRemove) {
+        if (!e.args.isFrozen && isInfiniteScroll && this.parent.infiniteScrollSettings.enableCache && this.isRemove) {
             var rows = [].slice.call(this.parent.getContentTable().querySelectorAll('.e-row'));
             if (e.args.direction === 'down') {
                 if (this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
@@ -37618,7 +38017,8 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
     };
     InfiniteScroll.prototype.calculateScrollTop = function (args) {
         var top = 0;
-        var scrollCnt = this.parent.getContent().firstElementChild;
+        var scrollCnt = this.parent.getFrozenColumns() ? this.parent.getMovableVirtualContent()
+            : this.parent.getContent().firstElementChild;
         if (args.direction === 'down') {
             if (this.parent.allowGrouping && this.parent.groupSettings.columns.length && !this.isInitialCollapse) {
                 top = this.captionRowHeight();
@@ -37664,18 +38064,38 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
         return rows.length * this.parent.getRowHeight();
     };
     InfiniteScroll.prototype.removeTopRows = function (rows, maxIndx) {
+        var frozeCols = this.parent.getFrozenColumns();
+        var movableRows = frozeCols ?
+            [].slice.call(this.parent.getMovableVirtualContent().querySelectorAll('.e-row')) : null;
         for (var i = 0; i <= maxIndx; i++) {
+            if (this.parent.frozenRows && this.parent.pageSettings.currentPage === this.parent.infiniteScrollSettings.maxBlocks + 1
+                && i > (maxIndx - this.parent.frozenRows)) {
+                continue;
+            }
             remove(rows[i]);
+            if (movableRows) {
+                remove(movableRows[i]);
+            }
         }
     };
     InfiniteScroll.prototype.removeBottomRows = function (rows, maxIndx, args) {
         var cnt = 0;
-        if (this.infiniteCache[args.prevPage].length < this.parent.pageSettings.pageSize) {
+        var frozeCols = this.parent.getFrozenColumns();
+        var movableRows = frozeCols ?
+            [].slice.call(this.parent.getMovableVirtualContent().querySelectorAll('.e-row')) : null;
+        var pageSize = this.parent.pageSettings.pageSize;
+        if (!frozeCols && this.infiniteCache[args.prevPage].length < pageSize) {
             cnt = this.parent.pageSettings.pageSize - this.infiniteCache[args.prevPage].length;
         }
-        for (var i = maxIndx; cnt < this.parent.pageSettings.pageSize; i--) {
+        if (frozeCols && this.infiniteFrozenCache[args.prevPage][1].length < pageSize) {
+            cnt = this.parent.pageSettings.pageSize - this.infiniteFrozenCache[args.prevPage][1].length;
+        }
+        for (var i = maxIndx; cnt < pageSize; i--) {
             cnt++;
             remove(rows[i]);
+            if (movableRows) {
+                remove(movableRows[i]);
+            }
         }
     };
     InfiniteScroll.prototype.removeCaptionRows = function (rows, args) {
@@ -37709,34 +38129,54 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
         var isInfiniteScroll = this.parent.enableInfiniteScrolling && args.requestType !== 'infiniteScroll';
         if (!this.initialRender && !isNullOrUndefined(this.parent.infiniteScrollModule) && isInfiniteScroll) {
             if (this.actions.some(function (value) { return value === args.requestType; }) || isDataModified) {
+                var scrollEle = this.parent.getFrozenColumns() ? this.parent.getMovableVirtualContent()
+                    : this.parent.getContent().firstElementChild;
                 this.initialRender = true;
-                this.parent.getContent().firstElementChild.scrollTop = 0;
+                scrollEle.scrollTop = 0;
                 this.parent.pageSettings.currentPage = 1;
-                this.infiniteCache = {};
+                this.infiniteCache = this.infiniteFrozenCache = {};
                 this.resetContentModuleCache({});
                 this.isRemove = false;
                 this.top = 0;
+                this.isInitialMovableRender = true;
                 this.isInitialCollapse = false;
                 this.parent.contentModule.isRemove = this.isRemove;
+                this.parent.contentModule.isAddRows = this.isRemove;
             }
         }
     };
     InfiniteScroll.prototype.setCache = function (e) {
         if (this.parent.enableInfiniteScrolling && this.parent.infiniteScrollSettings.enableCache) {
-            if (!Object.keys(this.infiniteCache).length) {
-                this.setInitialCache(e.modelData);
+            var frozeCols = this.parent.getFrozenColumns();
+            var idx = e.args.isFrozen ? 1 : 0;
+            var currentPage = this.parent.pageSettings.currentPage;
+            if ((frozeCols && this.isInitialMovableRender) || (!frozeCols && !Object.keys(this.infiniteCache).length)) {
+                this.isInitialMovableRender = !e.args.isFrozen;
+                this.setInitialCache(e.modelData, e.args);
             }
-            if (isNullOrUndefined(this.infiniteCache[this.parent.pageSettings.currentPage])) {
+            if (!frozeCols && isNullOrUndefined(this.infiniteCache[this.parent.pageSettings.currentPage])) {
                 this.infiniteCache[this.parent.pageSettings.currentPage] = e.modelData;
                 this.resetContentModuleCache(this.infiniteCache);
             }
+            if (frozeCols) {
+                if ((idx === 0 && isNullOrUndefined(this.infiniteFrozenCache[currentPage]))
+                    || !this.infiniteFrozenCache[currentPage][idx].length) {
+                    this.createFrozenCache(currentPage);
+                    this.infiniteFrozenCache[currentPage][idx] = e.modelData;
+                    if (idx === 1) {
+                        this.resetContentModuleCache(this.infiniteFrozenCache);
+                    }
+                }
+            }
             if (e.isInfiniteScroll && !this.isRemove) {
-                this.isRemove = (this.parent.pageSettings.currentPage - 1) % this.parent.infiniteScrollSettings.maxBlocks === 0;
+                this.isRemove = (currentPage - 1) % this.parent.infiniteScrollSettings.maxBlocks === 0;
                 this.parent.contentModule.isRemove = this.isRemove;
             }
         }
     };
-    InfiniteScroll.prototype.setInitialCache = function (data) {
+    InfiniteScroll.prototype.setInitialCache = function (data, args) {
+        var frozenCols = this.parent.getFrozenColumns();
+        var idx = args.isFrozen ? 1 : 0;
         for (var i = 1; i <= this.parent.infiniteScrollSettings.initialBlocks; i++) {
             var startIndex = (i - 1) * this.parent.pageSettings.pageSize;
             var endIndex = i * this.parent.pageSettings.pageSize;
@@ -37744,9 +38184,21 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
                 this.setInitialGroupCache(data, i, startIndex, endIndex);
             }
             else {
-                this.infiniteCache[i] = data.slice(startIndex, endIndex);
-                this.resetContentModuleCache(this.infiniteCache);
+                if (frozenCols) {
+                    this.createFrozenCache(i);
+                    this.infiniteFrozenCache[i][idx] = data.slice(startIndex, endIndex);
+                    this.resetContentModuleCache(this.infiniteFrozenCache);
+                }
+                else {
+                    this.infiniteCache[i] = data.slice(startIndex, endIndex);
+                    this.resetContentModuleCache(this.infiniteCache);
+                }
             }
+        }
+    };
+    InfiniteScroll.prototype.createFrozenCache = function (index) {
+        if (!this.infiniteFrozenCache[index]) {
+            this.infiniteFrozenCache[index] = [[], []];
         }
     };
     InfiniteScroll.prototype.setInitialGroupCache = function (data, index, sIndex, eIndex) {
@@ -37769,7 +38221,8 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
         this.resetContentModuleCache(this.infiniteCache);
     };
     InfiniteScroll.prototype.resetContentModuleCache = function (data) {
-        this.parent.contentModule.infiniteCache = data;
+        this.parent.contentModule
+            .infiniteCache = data;
     };
     /**
      * @hidden
@@ -38119,5 +38572,5 @@ var MaskedTextBoxCellEdit = /** @__PURE__ @class */ (function () {
  * Export Grid components
  */
 
-export { CheckBoxFilterBase, ExcelFilterBase, SortDescriptor, SortSettings, Predicate$1 as Predicate, InfiniteScrollSettings, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, headerValueAccessor, getUpdateUsingRaf, isExportColumns, updateColumnTypeForExportColumns, updatecloneRow, getCollapsedRowsCount, recursive, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, setColumnIndex, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, isGroupAdaptive, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, refreshFilteredColsUid, Global, getTransformValues, applyBiggerTheme, alignFrozenEditForm, ensureLastRow, ensureFirstRow, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, beforePaste, beforeAutoFill, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, commandClick, exportGroupCaption, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, columnDataStateChange, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, textWrapRefresh, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, rowPositionChanged, columnChooserOpened, batchForm, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, partialRefresh, beforeCustomFilterOpen, selectVirtualRow, columnsPrepared, cBoxFltrBegin, cBoxFltrComplete, fltrPrevent, beforeFltrcMenuOpen, valCustomPlacement, filterCboxValue, componentRendered, restoreFocus, detailStateChange, detailIndentCellInfo, virtaulKeyHandler, virtaulCellFocus, virtualScrollEditActionBegin, virtualScrollEditSuccess, virtualScrollEditCancel, virtualScrollEdit, refreshVirtualCache, editReset, virtualScrollAddActionBegin, getVirtualData, refreshInfiniteModeBlocks, resetInfiniteBlocks, infiniteScrollHandler, infinitePageQuery, appendInfiniteContent, removeInfiniteRows, setInfiniteCache, initialCollapse, getAggregateQuery, closeFilterDialog, columnChooserCancelBtnClick, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Logger, detailLists, gridObserver, BlazorAction, InfiniteScroll, Column, CommandColumnModel, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, AutoCompleteEditCell, ComboboxEditCell, MultiSelectEditCell, TimePickerEditCell, ToggleEditCell, MaskedTextBoxCellEdit, VirtualContentRenderer, VirtualHeaderRenderer, VirtualElementHandler, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, VirtualRowModelGenerator, InterSectionObserver, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
+export { CheckBoxFilterBase, ExcelFilterBase, SortDescriptor, SortSettings, Predicate$1 as Predicate, InfiniteScrollSettings, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, headerValueAccessor, getUpdateUsingRaf, isExportColumns, updateColumnTypeForExportColumns, updatecloneRow, getCollapsedRowsCount, recursive, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, setColumnIndex, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, isGroupAdaptive, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, refreshFilteredColsUid, Global, getTransformValues, applyBiggerTheme, alignFrozenEditForm, ensureLastRow, ensureFirstRow, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, beforePaste, beforeAutoFill, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, commandClick, exportGroupCaption, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, columnDataStateChange, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, textWrapRefresh, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, rowPositionChanged, columnChooserOpened, batchForm, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, partialRefresh, beforeCustomFilterOpen, selectVirtualRow, columnsPrepared, cBoxFltrBegin, cBoxFltrComplete, fltrPrevent, beforeFltrcMenuOpen, valCustomPlacement, filterCboxValue, componentRendered, restoreFocus, detailStateChange, detailIndentCellInfo, virtaulKeyHandler, virtaulCellFocus, virtualScrollEditActionBegin, virtualScrollEditSuccess, virtualScrollEditCancel, virtualScrollEdit, refreshVirtualCache, editReset, virtualScrollAddActionBegin, getVirtualData, refreshInfiniteModeBlocks, resetInfiniteBlocks, infiniteScrollHandler, infinitePageQuery, infiniteShowHide, appendInfiniteContent, removeInfiniteRows, setInfiniteCache, initialCollapse, getAggregateQuery, closeFilterDialog, columnChooserCancelBtnClick, getFilterBarOperator, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Logger, detailLists, gridObserver, BlazorAction, InfiniteScroll, Column, CommandColumnModel, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, AutoCompleteEditCell, ComboboxEditCell, MultiSelectEditCell, TimePickerEditCell, ToggleEditCell, MaskedTextBoxCellEdit, VirtualContentRenderer, VirtualHeaderRenderer, VirtualElementHandler, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, VirtualRowModelGenerator, InterSectionObserver, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
 //# sourceMappingURL=ej2-grids.es5.js.map

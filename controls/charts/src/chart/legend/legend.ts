@@ -217,6 +217,7 @@ export class Legend extends BaseLegend {
             chart.refreshAxis();
             series.refreshAxisLabel();
             this.refreshSeries(chart.visibleSeries);
+            chart.markerRender.removeHighlightedMarker();
             chart.refreshBound();
             chart.trigger('loaded', { chart: chart });
             if (selectedDataIndexes.length > 0) {

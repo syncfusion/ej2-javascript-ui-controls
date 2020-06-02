@@ -13967,7 +13967,8 @@ var PivotChart = /** @__PURE__ @class */ (function () {
         }
     };
     PivotChart.prototype.getChartHeight = function () {
-        var height = this.parent.height.toString();
+        var height = isNullOrUndefined(this.parent.getHeightAsNumber()) ? 'auto' :
+            this.parent.getHeightAsNumber().toString();
         if (!isNullOrUndefined(this.parent.getHeightAsNumber())) {
             if (this.parent.showToolbar && this.parent.showGroupingBar) {
                 height = (this.parent.getHeightAsNumber() - (this.parent.element.querySelector('.e-pivot-toolbar') ?
@@ -20825,12 +20826,14 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         else {
             pivotData = JSON.parse(persistData);
         }
+        this.allowServerDataBinding = false;
         this.setProperties({
             gridSettings: pivotData.gridSettings,
             pivotValues: pivotData.pivotValues,
             chartSettings: pivotData.chartSettings,
             displayOption: pivotData.displayOption
         }, true);
+        this.allowServerDataBinding = true;
         /* tslint:enable */
         this.dataSourceSettings = pivotData.dataSourceSettings;
     };
@@ -21135,7 +21138,6 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         else if (this.grid) {
             remove(this.grid.element);
         }
-        this.trigger(dataBound);
         if (this.allowConditionalFormatting) {
             this.applyFormatting(this.pivotValues);
         }
@@ -22757,7 +22759,6 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
                     this$_1.pivotValues = this$_1.engineModule.pivotValues;
                 }
                 this$_1.notify(dataReady, {});
-                this$_1.isEmptyGrid = false;
             });
         }
         else {

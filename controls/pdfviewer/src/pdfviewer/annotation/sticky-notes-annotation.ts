@@ -418,6 +418,13 @@ export class StickyNotesAnnotation {
                         this.updateDocumentAnnotationCollections(excistingAnnotation[i].signatureAnnotation[j], newAnnotation[i].signatureAnnotation);
                     }
                 }
+                // tslint:disable-next-line:max-line-length
+                if (excistingAnnotation[i].signatureInkAnnotation && excistingAnnotation[i].signatureInkAnnotation.length !== 0 && newAnnotation[i].signatureInkAnnotation) {
+                    for (let j: number = 0; j < excistingAnnotation[i].signatureInkAnnotation.length; j++) {
+                        // tslint:disable-next-line:max-line-length
+                        this.updateDocumentAnnotationCollections(excistingAnnotation[i].signatureInkAnnotation[j], newAnnotation[i].signatureInkAnnotation);
+                    }
+                }
             }
         }
         return newAnnotation;
@@ -492,6 +499,13 @@ export class StickyNotesAnnotation {
             for (let i: number = 0; i < pageAnnotations.signatureAnnotation.length; i++) {
                 // tslint:disable-next-line:max-line-length
                 this.updateCollections(this.pdfViewerBase.signatureModule.updateSignatureCollections(pageAnnotations.signatureAnnotation[i], pageNumber), true);
+            }
+        }
+        if (pageAnnotations.signatureInkAnnotation && pageAnnotations.signatureInkAnnotation.length !== 0) {
+            for (let i: number = 0; i < pageAnnotations.signatureInkAnnotation.length; i++) {
+                pageCollections.push(pageAnnotations.signatureInkAnnotation[i]);
+                // tslint:disable-next-line:max-line-length
+                this.updateCollections(this.pdfViewer.annotationModule.inkAnnotationModule.updateInkCollections(pageAnnotations.signatureInkAnnotation[i], pageNumber));
             }
         }
         if (this.pdfViewer.toolbarModule) {
@@ -1243,6 +1257,8 @@ export class StickyNotesAnnotation {
             annotationType = 'sticky';
         } else if (type === 'measure' || type === 'shape_measure') {
             annotationType = 'measure';
+        } else if (type === 'ink') {
+            annotationType = 'ink';
         }
         // tslint:disable-next-line:max-line-length
         let commentTitleContainer: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commentTitleConatiner', className: 'e-pv-comment-title-container' });
@@ -1366,6 +1382,8 @@ export class StickyNotesAnnotation {
             }
         } else if (annotationType === 'freeText') {
             commentSpan.className = 'e-pv-freetext-icon e-pv-icon';
+        } else if (annotationType === 'ink' || annotationSubType === 'Ink') {
+            commentSpan.className = 'e-pv-inkannotation-icon e-pv-icon';
         }
     }
 
@@ -1783,89 +1801,111 @@ export class StickyNotesAnnotation {
     // tslint:disable-next-line
     private commentsAnnotationSelect(event: any): void {
         let element: HTMLElement = event.currentTarget;
-        if (element.classList.contains('e-pv-comments-border')) {
-            // tslint:disable-next-line
-            let commentsDiv: any = document.querySelectorAll('.e-pv-comments-div');
-            for (let j: number = 0; j < commentsDiv.length; j++) {
-                commentsDiv[j].style.minHeight = 60 + 'px';
-            }
-            if (event.currentTarget.childElementCount === 1) {
-                if (event.currentTarget.childNodes[0].querySelector('.e-editable-inline')) {
-                    event.currentTarget.childNodes[0].style.minHeight = event.currentTarget.childNodes[0].clientHeight;
-                }
-            }
-        }
-        if (event.target.className === 'e-pv-more-icon e-pv-icon' || event.target.className === 'e-pv-more-options-button e-btn') {
-            event.preventDefault();
-            return null;
-        }
-        // tslint:disable-next-line
-        let pageNumber: any = parseInt(element.accessKey);
-        if (!element.classList.contains('e-pv-comments-border')) {
-            // tslint:disable-next-line
-            let commentsContainer: any = document.querySelectorAll('.e-pv-comments-border');
-            if (commentsContainer) {
-                for (let j: number = 0; j < commentsContainer.length; j++) {
-                    commentsContainer[j].classList.remove('e-pv-comments-border');
-                }
-            }
-            let commentsDiv: HTMLElement = document.getElementById(element.id);
-            if (commentsDiv) {
-                commentsDiv.classList.add('e-pv-comments-border');
-            }
-            // tslint:disable-next-line
-            let commentTextBox: any = document.querySelectorAll('.e-pv-new-comments-div');
-            for (let j: number = 0; j < commentTextBox.length; j++) {
-                commentTextBox[j].style.display = 'none';
-            }
-            if (commentsDiv) {
+        let isLocked : boolean = this.checkAnnotationSettings(element.id);
+        if (!isLocked) {
+            if (element.classList.contains('e-pv-comments-border')) {
                 // tslint:disable-next-line
-                let currentTextBox: any = commentsDiv.querySelector('.e-pv-new-comments-div');
-                if (currentTextBox) {
-                    currentTextBox.style.display = 'block';
+                let commentsDiv: any = document.querySelectorAll('.e-pv-comments-div');
+                for (let j: number = 0; j < commentsDiv.length; j++) {
+                    commentsDiv[j].style.minHeight = 60 + 'px';
+                }
+                if (event.currentTarget.childElementCount === 1) {
+                    if (event.currentTarget.childNodes[0].querySelector('.e-editable-inline')) {
+                        event.currentTarget.childNodes[0].style.minHeight = event.currentTarget.childNodes[0].clientHeight;
+                    }
                 }
             }
+            if (event.target.className === 'e-pv-more-icon e-pv-icon' || event.target.className === 'e-pv-more-options-button e-btn') {
+                event.preventDefault();
+                return null;
+            }
             // tslint:disable-next-line
-            let textDiv: any = element.lastChild;
-            this.isEditableElement = false;
-            if (textDiv.querySelector('.e-editable-inline')) {
-                textDiv.style.display = 'block';
-                textDiv.querySelector('.e-editable-inline').style.display = 'block';
-                for (let i: number = 0; i < element.childElementCount; i++) {
+            let pageNumber: any = parseInt(element.accessKey);
+            if (!element.classList.contains('e-pv-comments-border')) {
+                // tslint:disable-next-line
+                let commentsContainer: any = document.querySelectorAll('.e-pv-comments-border');
+                if (commentsContainer) {
+                    for (let j: number = 0; j < commentsContainer.length; j++) {
+                        commentsContainer[j].classList.remove('e-pv-comments-border');
+                    }
+                }
+                let commentsDiv: HTMLElement = document.getElementById(element.id);
+                if (commentsDiv) {
+                    commentsDiv.classList.add('e-pv-comments-border');
+                }
+                // tslint:disable-next-line
+                let commentTextBox: any = document.querySelectorAll('.e-pv-new-comments-div');
+                for (let j: number = 0; j < commentTextBox.length; j++) {
+                    commentTextBox[j].style.display = 'none';
+                }
+                if (commentsDiv) {
                     // tslint:disable-next-line
-                    let activeElement: any = element.childNodes[i];
-                    // tslint:disable-next-line
-                    let textElement: any = activeElement.querySelector('.e-editable-inline');
-                    if (textElement) {
-                        if (textElement.style.display === '') {
-                            if (textDiv.classList.contains('e-pv-new-comments-div')) {
-                                this.isEditableElement = true;
-                                textDiv.style.display = 'none';
-                                textDiv.querySelector('.e-editable-inline').style.display = 'none';
+                    let currentTextBox: any = commentsDiv.querySelector('.e-pv-new-comments-div');
+                    if (currentTextBox) {
+                        currentTextBox.style.display = 'block';
+                    }
+                }
+                // tslint:disable-next-line
+                let textDiv: any = element.lastChild;
+                this.isEditableElement = false;
+                if (textDiv.querySelector('.e-editable-inline')) {
+                    textDiv.style.display = 'block';
+                    textDiv.querySelector('.e-editable-inline').style.display = 'block';
+                    for (let i: number = 0; i < element.childElementCount; i++) {
+                        // tslint:disable-next-line
+                        let activeElement: any = element.childNodes[i];
+                        // tslint:disable-next-line
+                        let textElement: any = activeElement.querySelector('.e-editable-inline');
+                        if (textElement) {
+                            if (textElement.style.display === '') {
+                                if (textDiv.classList.contains('e-pv-new-comments-div')) {
+                                    this.isEditableElement = true;
+                                    textDiv.style.display = 'none';
+                                    textDiv.querySelector('.e-editable-inline').style.display = 'none';
+                                }
                             }
                         }
                     }
                 }
+                this.isSetAnnotationType = false;
+                if (event.currentTarget.childElementCount === 1) {
+                    event.currentTarget.childNodes[0].childNodes[1].ej2_instances[0].enableEditMode = true;
+                }
+            } else {
+                this.isSetAnnotationType = true;
+            }
+            if (!this.isSetAnnotationType) {
+                if (this.pdfViewer.navigation) {
+                    this.pdfViewer.navigationModule.goToPage(pageNumber);
+                }
+                let annotType: string = element.getAttribute('name');
+                this.isCommentsSelected = false;
+                this.setAnnotationType(element.id, annotType, pageNumber);
+                if (!this.isCommentsSelected) {
+                    this.selectAnnotationObj = { id: element.id, annotType: annotType, pageNumber: pageNumber };
+                }
             }
             this.isSetAnnotationType = false;
-            if (event.currentTarget.childElementCount === 1) {
-                event.currentTarget.childNodes[0].childNodes[1].ej2_instances[0].enableEditMode = true;
+        }
+    }
+
+    private checkAnnotationSettings(id: string): boolean {
+        // tslint:disable-next-line
+        let annotationCollection: any = this.pdfViewer.annotationCollection;
+        if (annotationCollection) {
+            for (let i: number = 0; i < annotationCollection.length; i++) {
+                if (annotationCollection[i].annotationId && (annotationCollection[i].annotationId === id)) {
+                    if (annotationCollection[i].annotationSettings && annotationCollection[i].annotationSettings.isLock) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
             }
+            return false;
         } else {
-            this.isSetAnnotationType = true;
+            return false;
         }
-        if (!this.isSetAnnotationType) {
-            if (this.pdfViewer.navigation) {
-                this.pdfViewer.navigationModule.goToPage(pageNumber);
-            }
-            let annotType: string = element.getAttribute('name');
-            this.isCommentsSelected = false;
-            this.setAnnotationType(element.id, annotType, pageNumber);
-            if (!this.isCommentsSelected) {
-                this.selectAnnotationObj = { id: element.id, annotType: annotType, pageNumber: pageNumber };
-            }
-        }
-        this.isSetAnnotationType = false;
     }
 
     private updateCommentsContainerWidth(): void {
@@ -1930,6 +1970,9 @@ export class StickyNotesAnnotation {
                         } else if (type === 'sticky') {
                             this.pdfViewer.select([pageCollections[i].annotName], currentSelector);
                             this.pdfViewer.annotation.onAnnotationMouseDown();
+                        } else if (type === 'ink') {
+                            this.pdfViewer.select([pageCollections[i].id], currentSelector);
+                            this.pdfViewer.annotation.onAnnotationMouseDown();
                         } else {
                             this.pdfViewer.select([pageCollections[i].id], currentSelector);
                             this.pdfViewer.annotation.onAnnotationMouseDown();
@@ -1943,8 +1986,13 @@ export class StickyNotesAnnotation {
                                 this.pdfViewerBase.viewerContainer.scrollTop = parseInt(scroll);
                             }
                         } else {
+                            let top: number = pageCollections[i].bounds.top;
+                            if (type === 'ink') {
+                                top = pageCollections[i].bounds.y;
+                            }
                             // tslint:disable-next-line:max-line-length
-                            let scrollValue: number = this.pdfViewerBase.pageSize[pageNumber - 1].top * this.pdfViewerBase.getZoomFactor() + ((pageCollections[i].bounds.top) * this.pdfViewerBase.getZoomFactor());
+                            let scrollValue: number = this.pdfViewerBase.pageSize[pageNumber - 1].top * this.pdfViewerBase.getZoomFactor() + ((top) * this.pdfViewerBase.getZoomFactor());
+
                             let scroll: string = (scrollValue - 20).toString();
                             // tslint:disable-next-line:radix
                             this.pdfViewerBase.viewerContainer.scrollTop = parseInt(scroll);
@@ -2548,6 +2596,8 @@ export class StickyNotesAnnotation {
             type = 'shape';
         } else if (type === 'FreeText' || type === 'freetext' || type === 'freeText') {
             type = 'freetext';
+        } else if (type === 'ink' || type === 'Ink') {
+            type = 'ink';
         } else {
             type = 'shape_measure';
         }
@@ -2583,6 +2633,8 @@ export class StickyNotesAnnotation {
             type = 'shape';
         } else if (type === 'FreeText') {
             type = 'freetext';
+        } else if (type === 'ink' || type === 'Ink') {
+            type = 'ink';
         } else {
             type = 'shape_measure';
         }

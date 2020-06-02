@@ -1621,12 +1621,10 @@ class KeyboardInteraction {
             let xInBounds = parent.offsetWidth <= parent.scrollWidth && parent.scrollLeft >= 0 &&
                 parent.scrollLeft + parent.offsetWidth <= parent.scrollWidth;
             if (yInBounds && (selectionEdges.top || selectionEdges.bottom)) {
-                parent.scrollTop += selectionEdges.top ?
-                    -e.target.offsetHeight : e.target.offsetHeight;
+                parent.scrollTop += selectionEdges.top ? -e.target.offsetHeight : e.target.offsetHeight;
             }
             if (xInBounds && (selectionEdges.left || selectionEdges.right)) {
-                parent.scrollLeft += selectionEdges.left ?
-                    -e.target.offsetWidth : e.target.offsetWidth;
+                parent.scrollLeft += selectionEdges.left ? -e.target.offsetWidth : e.target.offsetWidth;
             }
         }
         let target = this.getClosestCell(e);
@@ -1778,12 +1776,11 @@ class KeyboardInteraction {
         let target = (targetCell instanceof Array) ? targetCell.slice(-1)[0] : targetCell;
         if (isMultiple) {
             let initialId;
-            let viewsOptions = ['Day', 'Week', 'WorkWeek', 'Month',
-                'TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth'];
+            let views = ['Day', 'Week', 'WorkWeek', 'Month', 'TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth'];
             let args = { element: targetCell, requestType: 'mousemove', allowMultipleRow: true };
             this.parent.trigger(select, args, (selectArgs) => {
                 let allowMultipleRow = (!selectArgs.allowMultipleRow) || (!this.parent.allowMultiRowSelection);
-                if (allowMultipleRow && (viewsOptions.indexOf(this.parent.currentView) > -1)) {
+                if (allowMultipleRow && (views.indexOf(this.parent.currentView) > -1)) {
                     target = target.parentElement.children[this.initialTarget.cellIndex];
                 }
                 let selectedCells = this.getCells(this.isInverseTableSelect(), this.initialTarget, target);
@@ -1896,9 +1893,7 @@ class KeyboardInteraction {
     getUniqueAppointmentElements() {
         let appointments = this.getAppointmentElements();
         let appointmentElements = [];
-        appointments.map((value) => {
-            return value.getAttribute('data-guid');
-        }).filter((value, index, self) => {
+        appointments.map((value) => value.getAttribute('data-guid')).filter((value, index, self) => {
             if (self.indexOf(value) === index) {
                 appointmentElements.push(appointments[index]);
             }
@@ -1952,7 +1947,7 @@ class KeyboardInteraction {
         }
     }
     processDown(e, isMultiple) {
-        if ((isMultiple && (this.parent.activeView.isTimelineView() || this.parent.currentView === 'MonthAgenda'))) {
+        if (isMultiple && (this.parent.activeView.isTimelineView() || this.parent.currentView === 'MonthAgenda')) {
             return;
         }
         let target = (e.target);
@@ -2001,7 +1996,7 @@ class KeyboardInteraction {
         if (this.parent.currentView === 'Agenda' || (isMultiple && this.parent.currentView === 'MonthAgenda')) {
             return true;
         }
-        if ((this.isPreventAction(e) && isMultiple)) {
+        if (this.isPreventAction(e) && isMultiple) {
             return true;
         }
         let moreEventWrapper = this.parent.element.querySelector('.' + MORE_POPUP_WRAPPER_CLASS);
@@ -2214,7 +2209,7 @@ class KeyboardInteraction {
         if (activeEle && activeEle.classList.contains(APPOINTMENT_CLASS)) {
             addClass([activeEle], APPOINTMENT_BORDER);
             this.parent.activeEventData = this.parent.eventBase.getSelectedEvents();
-            if (this.parent.activeViewOptions.readonly || activeEle.classList.contains('e-read-only')) {
+            if (this.parent.activeViewOptions.readonly || activeEle.classList.contains(READ_ONLY)) {
                 return;
             }
             this.parent.quickPopup.deleteClick();
@@ -4435,6 +4430,9 @@ class EventBase {
         return [].slice.call(this.parent.element.querySelectorAll('.' + APPOINTMENT_BORDER + ',.' + APPOINTMENT_CLASS + ':focus'));
     }
     focusElement() {
+        if (this.parent.eventWindow.dialogObject && this.parent.eventWindow.dialogObject.visible) {
+            return;
+        }
         let selectedCell = this.parent.getSelectedElements();
         if (selectedCell.length > 0) {
             if (this.parent.keyboardInteractionModule) {
@@ -4523,11 +4521,9 @@ class EventBase {
     }
     wireAppointmentEvents(element, event, isPreventCrud = false) {
         let isReadOnly = (!isNullOrUndefined(event)) ? event[this.parent.eventFields.isReadonly] : false;
-        if (Browser.isTouch && !this.parent.isAdaptive) {
-            EventHandler.add(element, 'touchstart', this.eventTouch, this);
-        }
-        else {
-            EventHandler.add(element, 'click', this.eventClick, this);
+        EventHandler.add(element, 'click', this.eventClick, this);
+        if (!this.parent.isAdaptive) {
+            EventHandler.add(element, 'touchstart', this.eventTouchClick, this);
         }
         if (!this.parent.isAdaptive && !this.parent.activeViewOptions.readonly && !isReadOnly) {
             EventHandler.add(element, 'dblclick', this.eventDoubleClick, this);
@@ -4541,15 +4537,15 @@ class EventBase {
             }
         }
     }
-    eventTouch(eventData) {
+    eventTouchClick(e) {
         setTimeout(() => this.isDoubleTapped = false, 250);
+        e.preventDefault();
         if (this.isDoubleTapped) {
-            eventData.preventDefault();
-            this.eventDoubleClick(eventData);
+            this.eventDoubleClick(e);
         }
-        else {
+        else if (!this.isDoubleTapped) {
             this.isDoubleTapped = true;
-            this.eventClick(eventData);
+            this.eventClick(e);
         }
     }
     renderResizeHandler(element, spanEvent, isReadOnly) {
@@ -8088,7 +8084,7 @@ class EventWindow {
             firstDayOfWeek: this.parent.activeViewOptions.firstDayOfWeek,
             calendarMode: this.parent.calendarMode,
             min: this.parent.minDate,
-            max: this.parent.maxDate,
+            max: new Date(new Date(+this.parent.maxDate).setHours(23, 59, 59)),
             cssClass: this.parent.cssClass,
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
@@ -9725,6 +9721,9 @@ class Render {
         }
         this.parent.trigger(dataBinding, e, (args) => {
             let resultData = extend([], args.result, null, true);
+            if (isBlazor()) {
+                resultData.forEach((data) => delete data.BlazId);
+            }
             this.parent.eventsData = resultData.filter((data) => !data[this.parent.eventFields.isBlock]);
             this.parent.blockData = resultData.filter((data) => data[this.parent.eventFields.isBlock]);
             let processed = this.parent.eventBase.processData(resultData);
@@ -10397,6 +10396,7 @@ class Crud {
 class WorkCellInteraction {
     constructor(parent) {
         this.parent = parent;
+        EventHandler.add(this.parent.element, 'mouseover', this.onHover, this);
     }
     cellMouseDown(e) {
         if (this.isPreventAction(e)) {
@@ -10517,6 +10517,9 @@ class WorkCellInteraction {
             return true;
         }
         return false;
+    }
+    destroy() {
+        EventHandler.remove(this.parent.element, 'mouseover', this.onHover);
     }
 }
 
@@ -11736,12 +11739,16 @@ let Schedule = class Schedule extends Component {
         this.renderModule = new Render(this);
         this.eventBase = new EventBase(this);
         this.workCellAction = new WorkCellInteraction(this);
+        if (this.allowKeyboardInteraction) {
+            this.keyboardInteractionModule = new KeyboardInteraction(this);
+        }
         this.initializeDataModule();
         this.on(dataReady, this.resetEventTemplates, this);
         this.on(eventsLoaded, this.updateEventTemplates, this);
         this.renderTableContainer();
         this.activeViewOptions = this.getActiveViewOptions();
         this.initializeResources();
+        this.wireEvents();
     }
     renderTableContainer() {
         if (!this.element.querySelector('.' + TABLE_CONTAINER_CLASS)) {
@@ -11928,22 +11935,20 @@ let Schedule = class Schedule extends Component {
         this.initializeView(this.currentView);
         this.destroyPopups();
         this.initializePopups();
-        this.unwireEvents();
-        this.wireEvents();
     }
     validateDate(selectedDate = this.selectedDate) {
         // persist the selected date value
         let date = selectedDate instanceof Date ? new Date(selectedDate.getTime()) : new Date(selectedDate);
-        this.minDate = this.minDate instanceof Date ? new Date(this.minDate.getTime()) : new Date(this.minDate);
-        this.maxDate = this.maxDate instanceof Date ? new Date(this.maxDate.getTime()) : new Date(this.maxDate);
-        if (this.minDate <= this.maxDate) {
-            if (date < this.minDate) {
-                date = this.minDate;
+        let minDate = this.minDate instanceof Date ? new Date(this.minDate.getTime()) : new Date(this.minDate);
+        let maxDate = this.maxDate instanceof Date ? new Date(this.maxDate.getTime()) : new Date(this.maxDate);
+        if (minDate <= maxDate) {
+            if (date < minDate) {
+                date = minDate;
             }
-            if (date > this.maxDate) {
-                date = this.maxDate;
+            if (date > maxDate) {
+                date = maxDate;
             }
-            this.setScheduleProperties({ selectedDate: new Date('' + date) });
+            this.setScheduleProperties({ selectedDate: new Date('' + date), minDate: new Date('' + minDate), maxDate: new Date('' + maxDate) });
         }
         else {
             throw Error('minDate should be equal or less than maxDate');
@@ -12413,10 +12418,6 @@ let Schedule = class Schedule extends Component {
         EventHandler.add(window, 'resize', this.onScheduleResize, this);
         EventHandler.add(window, 'orientationchange', this.onScheduleResize, this);
         EventHandler.add(document, Browser.touchStartEvent, this.onDocumentClick, this);
-        EventHandler.add(this.element, 'mouseover', this.workCellAction.onHover, this.workCellAction);
-        if (this.allowKeyboardInteraction) {
-            this.keyboardInteractionModule = new KeyboardInteraction(this);
-        }
     }
     /** @hidden */
     removeSelectedClass() {
@@ -12650,10 +12651,6 @@ let Schedule = class Schedule extends Component {
         EventHandler.remove(window, 'resize', this.onScheduleResize);
         EventHandler.remove(window, 'orientationchange', this.onScheduleResize);
         EventHandler.remove(document, Browser.touchStartEvent, this.onDocumentClick);
-        EventHandler.remove(this.element, 'mouseover', this.workCellAction.onHover);
-        if (this.keyboardInteractionModule) {
-            this.keyboardInteractionModule.destroy();
-        }
     }
     /**
      * Core method to return the component name.
@@ -13614,6 +13611,10 @@ let Schedule = class Schedule extends Component {
         this.destroyPopups();
         this.unwireEvents();
         this.destroyHeaderModule();
+        this.workCellAction.destroy();
+        if (this.keyboardInteractionModule) {
+            this.keyboardInteractionModule.destroy();
+        }
         if (this.scrollModule) {
             this.scrollModule.destroy();
             this.scrollModule = null;
@@ -16217,7 +16218,7 @@ class DragAndDrop extends ActionBase {
         this.isAllDayDrag = false;
     }
     wireDragEvent(element) {
-        new Draggable(element, {
+        let dragObj = new Draggable(element, {
             abort: '.' + EVENT_RESIZE_CLASS,
             clone: true,
             isDragScroll: true,
@@ -16234,6 +16235,11 @@ class DragAndDrop extends ActionBase {
             helper: this.dragHelper.bind(this),
             queryPositionInfo: this.dragPosition.bind(this)
         });
+        // tslint:disable-next-line:no-any
+        let handler = (dragObj.enableTapHold && Browser.isDevice && Browser.isTouch) ? dragObj.mobileInitialize :
+            // tslint:disable-next-line:no-any
+            dragObj.initialize;
+        EventHandler.remove(element, 'touchstart', handler);
     }
     dragHelper(e) {
         this.setDragActionDefaultValues();
@@ -20762,7 +20768,6 @@ class Year extends ViewBase {
         super(parent);
         this.viewClass = 'e-year-view';
         this.isInverseTableSelect = false;
-        this.workCellAction = new WorkCellInteraction(parent);
     }
     renderLayout(className) {
         if (this.parent.resourceBase) {
@@ -21038,9 +21043,9 @@ class Year extends ViewBase {
                 EventHandler.add(element, 'click', this.onCellClick, this);
             }
             else {
-                EventHandler.add(element, 'click', this.workCellAction.cellClick, this.workCellAction);
+                EventHandler.add(element, 'click', this.parent.workCellAction.cellClick, this.parent.workCellAction);
                 if (!this.parent.isAdaptive) {
-                    EventHandler.add(element, 'dblclick', this.workCellAction.cellDblClick, this.workCellAction);
+                    EventHandler.add(element, 'dblclick', this.parent.workCellAction.cellDblClick, this.parent.workCellAction);
                 }
             }
         }

@@ -5,6 +5,7 @@ import { ITextRenderEventArgs } from '../model/progress-interface';
 import { stringToNumber, getPathArc } from '../utils/helper';
 import { Segment } from './segment-progress';
 import { TextOption } from '../utils/helper';
+import { ModeType } from '../utils';
 
 
 /**
@@ -15,54 +16,57 @@ export class Circular {
     private delay: number;
     private segment: Segment = new Segment();
     private animation: ProgressAnimation = new ProgressAnimation();
+    private isRange: boolean;
+    private centerX: number;
+    private centerY: number;
+    private maxThickness: number;
+    private availableSize: number;
+    private trackEndAngle: number;
     constructor(progress: ProgressBar) {
         this.progress = progress;
     }
-
     /** To render the circular track */
     public renderCircularTrack(): void {
         let progress: ProgressBar = this.progress;
-        let centerX: number;
-        let centerY: number;
-        let size: number;
+        let circularTrackGroup: Element = progress.renderer.createGroup({ 'id': progress.element.id + '_CircularTrackGroup' });
         let radius: number;
         let startAngle: number;
         let endAngle: number;
         let circularTrack: Element;
         let circularPath: string;
-        let trackThickness: number;
         let option: PathOption;
         let fill: string;
         let strokeWidth: number;
-        let circularTrackGroup: Element = progress.renderer.createGroup({ 'id': progress.element.id + '_CircularTrackGroup' });
+        let stroke: string;
         startAngle = progress.startAngle;
         progress.totalAngle = (progress.endAngle - progress.startAngle) % 360;
         progress.totalAngle = (progress.totalAngle <= 0 ? (360 + progress.totalAngle) : progress.totalAngle);
         progress.totalAngle -= (progress.totalAngle === 360) ? 0.01 : 0;
-        endAngle = (progress.startAngle + ((progress.enableRtl) ? -progress.totalAngle : +progress.totalAngle)) % 360;
-        centerX = progress.progressRect.x + (progress.progressRect.width / 2);
-        centerY = progress.progressRect.y + (progress.progressRect.height / 2);
-        trackThickness = Math.max(progress.trackThickness, progress.progressThickness) ||
+        this.trackEndAngle = endAngle = (progress.startAngle + (
+            (progress.enableRtl) ? -progress.totalAngle : +progress.totalAngle)) % 360;
+        this.centerX = progress.progressRect.x + (progress.progressRect.width / 2);
+        this.centerY = progress.progressRect.y + (progress.progressRect.height / 2);
+        this.maxThickness = Math.max(progress.trackThickness, progress.progressThickness) ||
             Math.max(progress.themeStyle.circularProgressThickness, progress.themeStyle.circularTrackThickness);
-        size = (Math.min(progress.progressRect.height, progress.progressRect.width) / 2) - trackThickness / 2;
-        radius = stringToNumber(progress.radius, size);
+        this.availableSize = (Math.min(progress.progressRect.height, progress.progressRect.width) / 2) - this.maxThickness / 2;
+        radius = stringToNumber(progress.radius, this.availableSize);
         radius = (radius === null) ? 0 : radius;
+        stroke = (progress.argsData.trackColor || progress.themeStyle.circularTrackColor);
         fill = (progress.enablePieProgress) ? (progress.argsData.trackColor || progress.themeStyle.circularTrackColor) : 'none';
         strokeWidth = (progress.enablePieProgress) ? 0 : (progress.trackThickness || progress.themeStyle.circularTrackThickness);
-        circularPath = getPathArc(centerX, centerY, radius, startAngle, endAngle, progress.enableRtl, progress.enablePieProgress);
+        circularPath = getPathArc(this.centerX, this.centerY, radius, startAngle, endAngle, progress.enableRtl, progress.enablePieProgress);
+        this.isRange = (this.progress.rangeColors[0].color !== '' || this.progress.rangeColors[0].start !== null ||
+            this.progress.rangeColors[0].end !== null);
         option = new PathOption(
-            progress.element.id + '_Circulartrack', fill, strokeWidth,
-            (progress.argsData.trackColor || progress.themeStyle.circularTrackColor), progress.themeStyle.trackOpacity, '0', circularPath
+            progress.element.id + '_Circulartrack', fill, strokeWidth, stroke, progress.themeStyle.trackOpacity, '0', circularPath
         );
         circularTrack = progress.renderer.drawPath(option);
-        progress.trackwidth = (<SVGPathElement>circularTrack).getTotalLength();
-        if (progress.segmentCount > 1 && !progress.enablePieProgress) {
-            progress.segmentSize = progress.calculateSegmentSize(
-                progress.trackwidth, (progress.trackThickness || progress.themeStyle.linearTrackThickness)
-            );
+        progress.trackWidth = (<SVGPathElement>circularTrack).getTotalLength();
+        if (progress.segmentCount > 1 && !progress.trackSegmentDisable && !progress.enablePieProgress && !this.isRange) {
+            progress.segmentSize = progress.calculateSegmentSize(progress.trackWidth, strokeWidth);
             circularTrack.setAttribute('stroke-dasharray', progress.segmentSize);
         }
-        if (progress.cornerRadius === 'Round' && !progress.enablePieProgress) {
+        if (progress.cornerRadius === 'Round' && !progress.enablePieProgress && !this.isRange) {
             circularTrack.setAttribute('stroke-linecap', 'round');
         }
         circularTrackGroup.appendChild(circularTrack);
@@ -70,162 +74,157 @@ export class Circular {
     }
 
     /** To render the circular progress */
-    public renderCircularProgress(previousStart?: number, previousEnd?: number, refresh?: boolean): void {
+    public renderCircularProgress(previousEnd?: number, previousTotalEnd?: number, refresh?: boolean): void {
         let progress: ProgressBar = this.progress;
-        let centerX: number; let centerY: number;
-        let size: number; let endAngle: number;
-        let radius: number;
         let startAngle: number = progress.startAngle;
-        let previousPath: string; progress.progressStartAngle = startAngle;
-        let circularPath: string; let progressEnd: number;
-        let circularProgress: Element; let option: PathOption;
-        let progressThickness: number; let linearClipPath: Element;
-        let rDiff: number; let progressSegment: number;
-        let circularProgressGroup: Element;
+        let endAngle: number; let totalAngle: number;
+        let radius: number; let previousPath: string;
+        let progressTotalAngle: number; let circularPath: string;
+        let progressEnd: number; let circularProgress: Element;
+        let option: PathOption; let linearClipPath: Element;
+        let stroke: string; let circularProgressGroup: Element;
         let fill: string; let strokeWidth: number;
-        centerX = progress.progressRect.x + (progress.progressRect.width / 2);
-        centerY = progress.progressRect.y + (progress.progressRect.height / 2);
-        progressThickness = Math.max(progress.trackThickness, progress.progressThickness) ||
-            Math.max(progress.themeStyle.circularProgressThickness, progress.themeStyle.circularTrackThickness);
-        size = (Math.min(progress.progressRect.height, progress.progressRect.width) / 2) - progressThickness / 2;
-        radius = stringToNumber(progress.innerRadius, size);
+        let segmentWidth: number; let progressEndAngle: number; let thickness: number;
+        if (!refresh) {
+            circularProgressGroup = progress.renderer.createGroup({ 'id': progress.element.id + '_CircularProgressGroup' });
+        } else {
+            circularProgressGroup = getElement(progress.element.id + '_CircularProgressGroup');
+        }
+        radius = stringToNumber(progress.innerRadius, this.availableSize);
         radius = (radius === null) ? 0 : radius;
+        progress.previousTotalEnd = progressEnd = progress.calculateProgressRange(progress.argsData.value);
+        progressEndAngle = (progress.startAngle + ((progress.enableRtl) ? -progressEnd : progressEnd)) % 360;
+        progress.previousEndAngle = endAngle = ((progress.isIndeterminate && !progress.trackSegmentDisable) ? (progress.startAngle + (
+            (progress.enableRtl) ? -progress.totalAngle : progress.totalAngle)) % 360 : progressEndAngle
+        );
+        progressTotalAngle = (progressEnd - progress.startAngle) % 360;
+        progressTotalAngle = (progressTotalAngle <= 0 ? (360 + progressTotalAngle) : progressTotalAngle);
+        progressTotalAngle -= (progressTotalAngle === 360) ? 0.01 : 0;
+        circularPath = getPathArc(this.centerX, this.centerY, radius, startAngle, endAngle, progress.enableRtl, progress.enablePieProgress);
+        stroke = this.checkingCircularProgressColor();
+        fill = (progress.enablePieProgress) ? stroke : 'none';
+        thickness = (progress.progressThickness || progress.themeStyle.circularProgressThickness);
+        strokeWidth = (progress.enablePieProgress) ? 0 : thickness;
+        option = new PathOption(
+            progress.element.id + '_Circularprogress', fill, strokeWidth, stroke, progress.themeStyle.progressOpacity, '0', circularPath
+        );
+        progress.progressWidth = (<SVGPathElement>progress.renderer.drawPath(option)).getTotalLength();
+        progress.segmentSize = this.validateSegmentSize(progress, thickness);
         if (progress.secondaryProgress !== null && !progress.isIndeterminate) {
-            this.renderCircularBuffer(progress, centerX, centerY, radius, startAngle);
+            this.renderCircularBuffer(progress, radius, progressTotalAngle);
         }
         if (progress.argsData.value !== null) {
-            circularProgressGroup = progress.renderer.createGroup({ 'id': progress.element.id + '_CircularProgressGroup' });
-            progressEnd = progress.calculateProgressRange(progress.minimum, progress.maximum, progress.argsData.value);
             if (progress.segmentColor.length !== 0 && !progress.isIndeterminate && !progress.enablePieProgress) {
+                totalAngle = (!progress.trackSegmentDisable) ? progress.totalAngle : progressTotalAngle;
+                segmentWidth = (!progress.trackSegmentDisable) ? progress.trackWidth : progress.progressWidth;
                 circularProgress = this.segment.createCircularSegment(
-                    progress, '_CircularProgressSegment', centerX, centerY, radius,
-                    progress.argsData.value, progress.themeStyle.progressOpacity,
-                    (progress.progressThickness || progress.themeStyle.circularProgressThickness)
+                    progress, '_CircularProgressSegment', this.centerX, this.centerY, radius, progress.argsData.value,
+                    progress.themeStyle.progressOpacity, thickness, totalAngle, segmentWidth
                 );
+            } else if (this.isRange && !progress.isIndeterminate) {
+                circularProgress = this.segment.createCircularRange(this.centerX, this.centerY, radius, progress);
             } else {
-                endAngle = ((progress.isIndeterminate) ? (progress.startAngle + (
-                    (progress.enableRtl) ? -progress.totalAngle : +progress.totalAngle)) % 360 : progressEnd
-                );
-                circularPath = getPathArc(centerX, centerY, radius, startAngle, endAngle, progress.enableRtl, progress.enablePieProgress);
-                fill = (progress.enablePieProgress) ?
-                    (progress.argsData.progressColor || progress.themeStyle.circularProgressColor) : 'none';
-                strokeWidth = (progress.enablePieProgress) ? 0 :
-                    (progress.progressThickness || progress.themeStyle.circularProgressThickness);
-                option = new PathOption(
-                    progress.element.id + '_Circularprogress', fill, strokeWidth,
-                    (progress.argsData.progressColor || progress.themeStyle.circularProgressColor),
-                    progress.themeStyle.progressOpacity, '0', circularPath
-                );
                 if (!refresh) {
                     circularProgress = progress.renderer.drawPath(option);
                 } else {
                     circularProgress = getElement(progress.element.id + '_Circularprogress');
                     previousPath = circularProgress.getAttribute('d');
+                    circularProgress.setAttribute('stroke', stroke);
                     circularProgress.setAttribute('d', circularPath);
-                    circularProgress.setAttribute('stroke', progress.argsData.progressColor || progress.themeStyle.circularProgressColor);
                 }
                 if (progress.segmentCount > 1 && !progress.enablePieProgress) {
-                    rDiff = parseInt(progress.radius, 10) - parseInt(progress.innerRadius, 10);
-                    if (rDiff !== 0) {
-                        progressSegment = progress.trackwidth + (
-                            (rDiff < 0) ? (progress.trackwidth * Math.abs(rDiff)) / parseInt(progress.radius, 10) :
-                                -(progress.trackwidth * Math.abs(rDiff)) / parseInt(progress.radius, 10)
-                        );
-                        progress.segmentSize = progress.calculateSegmentSize(
-                            progressSegment, (progress.progressThickness || progress.themeStyle.circularProgressThickness)
-                        );
-                    }
                     circularProgress.setAttribute('stroke-dasharray', progress.segmentSize);
                 }
                 if (progress.cornerRadius === 'Round' && startAngle !== endAngle) {
                     circularProgress.setAttribute('stroke-linecap', 'round');
                 }
             }
-            progress.progressEndAngle = endAngle;
-            if (!refresh) {
-                circularProgressGroup.appendChild(circularProgress);
-                progress.svgObject.appendChild(circularProgressGroup);
-            }
-            if (progress.animation.enable && !progress.isIndeterminate) {
-                let circulardelay: number = (progress.secondaryProgress !== null) ? 300 : progress.animation.delay;
-                this.delay = circulardelay;
-                linearClipPath = progress.createClipPath(progress.clipPath, null, refresh ? previousPath : '', null, refresh);
-                circularProgressGroup.appendChild(progress.clipPath);
-                circularProgress.setAttribute('style', 'clip-path:url(#' + progress.element.id + '_clippath)');
-                this.animation.doCircularAnimation(
-                    centerX, centerY, radius, startAngle, progressEnd, progress.value, linearClipPath, progress,
-                    (progress.progressThickness || progress.themeStyle.circularProgressThickness),
-                    circulardelay, refresh ? previousEnd : null
+            circularProgressGroup.appendChild(circularProgress);
+            if (progress.isActive && !progress.isIndeterminate && !progress.enablePieProgress) {
+                this.renderActiveState(
+                    circularProgressGroup, radius, strokeWidth, circularPath, progressEndAngle, progressEnd, refresh,
                 );
             }
-            if (progress.isIndeterminate) {
-                linearClipPath = progress.createClipPath(progress.clipPath, null, refresh ? previousPath : '', null, refresh);
+            if (progress.animation.enable || progress.isIndeterminate) {
+                this.delay = (progress.secondaryProgress !== null) ? 300 : progress.animation.delay;
+                linearClipPath = progress.createClipPath(progress.clipPath, null, refresh ? previousPath : '', refresh);
                 circularProgressGroup.appendChild(progress.clipPath);
-                circularProgress.setAttribute('style', 'clip-path:url(#' + progress.element.id + '_clippath)');
-                this.animation.doCircularIndeterminate(
-                    <HTMLElement>linearClipPath, progress, startAngle, progressEnd,
-                    centerX, centerY, radius, (progress.progressThickness || progress.themeStyle.circularProgressThickness)
-                );
+                if (progress.animation.enable && !progress.isIndeterminate && !progress.isActive) {
+                    circularProgress.setAttribute('style', 'clip-path:url(#' + progress.element.id + '_clippath)');
+                    this.animation.doCircularAnimation(
+                        this.centerX, this.centerY, radius, progressEndAngle, progressEnd, linearClipPath, progress,
+                        thickness, this.delay, refresh ? previousEnd : null, refresh ? previousTotalEnd : null
+                    );
+                }
+                if (progress.isIndeterminate) {
+                    if (progress.trackSegmentDisable) {
+                        linearClipPath.setAttribute('d', getPathArc(
+                            this.centerX, this.centerY, radius + (thickness / 2), progress.startAngle,
+                            this.trackEndAngle, progress.enableRtl, true)
+                        );
+                    }
+                    circularProgress.setAttribute('style', 'clip-path:url(#' + progress.element.id + '_clippath)');
+                    this.animation.doCircularIndeterminate(
+                        (!progress.trackSegmentDisable) ? linearClipPath : circularProgress, progress, startAngle,
+                        progressEndAngle, this.centerX, this.centerY, radius, thickness
+                    );
+                }
             }
             progress.svgObject.appendChild(circularProgressGroup);
         }
     }
 
     /** To render the circular buffer */
-    private renderCircularBuffer(progress: ProgressBar, centerX: number, centerY: number, radius: number, startAngle: number): void {
+    private renderCircularBuffer(progress: ProgressBar, radius: number, progressTotalAngle: number): void {
         let bufferClipPath: Element;
         let bufferEnd: number;
         let circularBuffer: Element;
-        let radiusDiff: number;
         let circularBufferGroup: Element;
         let circularPath: string;
         let option: PathOption;
-        let progressSegment: number;
         let fill: string;
         let strokeWidth: number;
+        let segmentWidth: number;
+        let totalAngle: number;
+        let endAngle: number;
+        let stroke: string;
         circularBufferGroup = progress.renderer.createGroup({ 'id': progress.element.id + '_ CircularBufferGroup' });
-        bufferEnd = progress.calculateProgressRange(progress.minimum, progress.maximum, progress.secondaryProgress);
-        if (progress.segmentColor.length !== 0 && !progress.isIndeterminate && !progress.enablePieProgress) {
+        bufferEnd = progress.calculateProgressRange(progress.secondaryProgress);
+        endAngle = (progress.startAngle + ((progress.enableRtl) ? -bufferEnd : bufferEnd)) % 360;
+        circularPath = getPathArc(
+            this.centerX, this.centerY, radius, progress.startAngle, endAngle, progress.enableRtl, progress.enablePieProgress
+        );
+        stroke = this.checkingCircularProgressColor();
+        fill = (progress.enablePieProgress) ? stroke : 'none';
+        strokeWidth = (progress.enablePieProgress) ? 0 : (progress.progressThickness || progress.themeStyle.circularProgressThickness);
+        option = new PathOption(
+            progress.element.id + '_Circularbuffer', fill, strokeWidth, stroke,
+            progress.themeStyle.bufferOpacity, '0', circularPath
+        );
+        if (progress.segmentColor.length !== 0 && !progress.isIndeterminate && !progress.enablePieProgress && !this.isRange) {
+            totalAngle = (!progress.trackSegmentDisable) ? progress.totalAngle : progressTotalAngle;
+            segmentWidth = (!progress.trackSegmentDisable) ? progress.trackWidth : progress.progressWidth;
             circularBuffer = this.segment.createCircularSegment(
-                progress, '_CircularBufferSegment', centerX, centerY, radius,
-                progress.secondaryProgress, progress.themeStyle.bufferOpacity,
-                (progress.progressThickness || progress.themeStyle.circularProgressThickness)
+                progress, '_CircularBufferSegment', this.centerX, this.centerY, radius,
+                progress.secondaryProgress, progress.themeStyle.bufferOpacity, strokeWidth, totalAngle, segmentWidth
             );
         } else {
-            circularPath = getPathArc(centerX, centerY, radius, startAngle, bufferEnd, progress.enableRtl, progress.enablePieProgress);
-            fill = (progress.enablePieProgress) ? (progress.argsData.progressColor || progress.themeStyle.circularProgressColor) : 'none';
-            strokeWidth = (progress.enablePieProgress) ? 0 : (progress.progressThickness || progress.themeStyle.circularProgressThickness);
-            option = new PathOption(
-                progress.element.id + '_Circularbuffer', fill, strokeWidth,
-                (progress.argsData.progressColor || progress.themeStyle.circularProgressColor),
-                progress.themeStyle.bufferOpacity, '0', circularPath
-            );
             circularBuffer = progress.renderer.drawPath(option);
-            if (progress.segmentCount > 1 && !progress.enablePieProgress) {
-                radiusDiff = parseInt(progress.radius, 10) - parseInt(progress.innerRadius, 10);
-                if (radiusDiff !== 0) {
-                    progressSegment = progress.trackwidth + (
-                        (radiusDiff < 0) ? (progress.trackwidth * Math.abs(radiusDiff)) / parseInt(progress.radius, 10) :
-                            -(progress.trackwidth * Math.abs(radiusDiff)) / parseInt(progress.radius, 10)
-                    );
-                    progress.segmentSize = progress.calculateSegmentSize(
-                        progressSegment, (progress.progressThickness || progress.themeStyle.circularProgressThickness)
-                    );
-                }
+            if (progress.segmentCount > 1 && !progress.enablePieProgress && !this.isRange) {
                 circularBuffer.setAttribute('stroke-dasharray', progress.segmentSize);
             }
-            if (progress.cornerRadius === 'Round') {
+            if (progress.cornerRadius === 'Round' && !this.isRange) {
                 circularBuffer.setAttribute('stroke-linecap', 'round');
             }
         }
         circularBufferGroup.appendChild(circularBuffer);
-        if (progress.animation.enable) {
-            bufferClipPath = progress.createClipPath(progress.bufferClipPath, null, '', null, false);
+        if (progress.animation.enable && !progress.isActive) {
+            bufferClipPath = progress.createClipPath(progress.bufferClipPath, null, '', false);
             circularBufferGroup.appendChild(progress.bufferClipPath);
             circularBuffer.setAttribute('style', 'clip-path:url(#' + progress.element.id + '_clippathBuffer)');
             this.animation.doCircularAnimation(
-                centerX, centerY, radius, startAngle, bufferEnd, progress.secondaryProgress, bufferClipPath, progress,
-                (progress.progressThickness || progress.themeStyle.circularProgressThickness), progress.animation.delay, null
+                this.centerX, this.centerY, radius, endAngle, bufferEnd, bufferClipPath, progress,
+                (progress.progressThickness || progress.themeStyle.circularProgressThickness), progress.animation.delay
             );
         }
         progress.svgObject.appendChild(circularBufferGroup);
@@ -236,38 +235,120 @@ export class Circular {
         let end: number;
         let circularLabel: Element;
         let circularValue: number;
-        let centerX: number;
         let centerY: number;
         let argsData: ITextRenderEventArgs;
         let textSize: Size;
-        let progress: ProgressBar = this.progress;
         let labelValue: number;
-        let percentage: number = 100;
         let option: TextOption;
+        let circularLabelGroup: Element;
+        let percentage: number = 100;
+        let progress: ProgressBar = this.progress;
+        let labelText: string = progress.labelStyle.text;
+        circularLabelGroup = progress.renderer.createGroup({ 'id': progress.element.id + '_CircularLabelGroup' });
         labelValue = ((progress.value - progress.minimum) / (progress.maximum - progress.minimum)) * percentage;
         circularValue = (progress.value < progress.minimum || progress.value > progress.maximum) ? 0 : Math.round(labelValue);
         argsData = {
-            cancel: false, text: progress.label ? progress.label : String(circularValue) + '%', color: progress.labelStyle.color
+            cancel: false, text: labelText ? labelText : String(circularValue) + '%', color: progress.labelStyle.color
         };
         progress.trigger('textRender', argsData);
         if (!argsData.cancel) {
             textSize = measureText(argsData.text, progress.labelStyle);
-            centerX = progress.progressRect.x + (progress.progressRect.width / 2);
-            centerY = progress.progressRect.y + (progress.progressRect.height / 2) + (textSize.height / 2);
+            centerY = this.centerY + (textSize.height / 2);
             option = new TextOption(
                 progress.element.id + '_circularLabel', progress.labelStyle.size || progress.themeStyle.circularFontSize,
                 progress.labelStyle.fontStyle || progress.themeStyle.circularFontStyle,
                 progress.labelStyle.fontFamily || progress.themeStyle.circularFontFamily, progress.labelStyle.fontWeight,
-                'middle', argsData.color || progress.themeStyle.fontColor, centerX, centerY, progress.progressRect.width,
+                'middle', argsData.color || progress.themeStyle.fontColor, this.centerX, centerY, progress.progressRect.width,
                 progress.progressRect.height
             );
             circularLabel = progress.renderer.createText(option, argsData.text);
-            progress.svgObject.appendChild(circularLabel);
+            circularLabelGroup.appendChild(circularLabel);
             if (progress.animation.enable && !progress.isIndeterminate) {
                 end = ((progress.value - progress.minimum) / (progress.maximum - progress.minimum)) * progress.totalAngle;
                 end = (progress.value < progress.minimum || progress.value > progress.maximum) ? 0 : end;
                 this.animation.doLabelAnimation(circularLabel, progress.startAngle, end, progress, this.delay);
             }
+            progress.svgObject.appendChild(circularLabelGroup);
         }
     }
+
+    /** To render a progressbar active state */
+    private renderActiveState(
+        progressGroup: Element, radius: number, strokeWidth: number, circularPath: string,
+        endAngle: number, totalEnd: number, refresh: boolean
+    ): void {
+        let circularActive: Element;
+        let activeClip: Element;
+        let option: PathOption;
+        let progress: ProgressBar = this.progress;
+        if (!refresh) {
+            option = new PathOption(
+                progress.element.id + '_CircularActiveProgress', 'none', strokeWidth, '#ffffff', 0.5, '0', circularPath
+            );
+            circularActive = progress.renderer.drawPath(option);
+        } else {
+            circularActive = getElement(progress.element.id + '_CircularActiveProgress');
+            circularActive.setAttribute('d', circularPath);
+        }
+        if (progress.segmentCount > 1) {
+            circularActive.setAttribute('stroke-dasharray', progress.segmentSize);
+        }
+        if (progress.cornerRadius === 'Round') {
+            circularActive.setAttribute('stroke-linecap', 'round');
+        }
+        activeClip = progress.createClipPath(progress.clipPath, null, '', refresh);
+        circularActive.setAttribute('style', 'clip-path:url(#' + progress.element.id + '_clippath)');
+        progressGroup.appendChild(circularActive);
+        progressGroup.appendChild(progress.clipPath);
+        this.animation.doCircularAnimation(
+            this.centerX, this.centerY, radius, endAngle, totalEnd, activeClip, progress,
+            (progress.progressThickness || progress.themeStyle.circularProgressThickness),
+            0, null, null, circularActive
+        );
+    }
+
+    /** Checking the segment size */
+    private validateSegmentSize(progress: ProgressBar, thickness: number): string {
+        let validSegment: string;
+        let rDiff: number;
+        let progressSegment: number;
+        rDiff = parseInt(progress.radius, 10) - parseInt(progress.innerRadius, 10);
+        if (rDiff !== 0 && !progress.trackSegmentDisable) {
+            progressSegment = progress.trackWidth + (
+                (rDiff < 0) ? (progress.trackWidth * Math.abs(rDiff)) / parseInt(progress.radius, 10) :
+                    -(progress.trackWidth * Math.abs(rDiff)) / parseInt(progress.radius, 10)
+            );
+            validSegment = progress.calculateSegmentSize(progressSegment, thickness);
+        } else if (progress.trackSegmentDisable) {
+            validSegment = progress.calculateSegmentSize(progress.progressWidth, thickness);
+        } else {
+            validSegment = progress.segmentSize;
+        }
+        return validSegment;
+    }
+
+    /** checking progress color */
+    private checkingCircularProgressColor(): string {
+        let circularColor: string;
+        let progress: ProgressBar = this.progress;
+        let role: ModeType = progress.role;
+        switch (role) {
+            case 'Success':
+            circularColor = progress.themeStyle.success;
+                break;
+            case 'Info':
+            circularColor = progress.themeStyle.info;
+                break;
+            case 'Warning':
+            circularColor = progress.themeStyle.warning;
+                break;
+            case 'Danger':
+            circularColor = progress.themeStyle.danger;
+                break;
+            default:
+            circularColor = (progress.argsData.progressColor || progress.themeStyle.circularProgressColor);
+        }
+        return circularColor;
+    }
+
 }

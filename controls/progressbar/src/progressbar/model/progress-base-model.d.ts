@@ -1,4 +1,4 @@
-import { ChildProperty, Property } from '@syncfusion/ej2-base';
+import { ChildProperty, Property } from '@syncfusion/ej2-base';import { TextAlignmentType, TimingFunction } from '../utils/enum';
 
 /**
  * Interface for a class Margin
@@ -75,6 +75,18 @@ export interface FontModel {
      */
     opacity?: number;
 
+    /**
+     * text alignment for label
+     * @default Far
+     */
+    textAlignment?: TextAlignmentType;
+
+    /**
+     * label text
+     * @default ''
+     */
+    text?: string;
+
 }
 
 /**
@@ -100,6 +112,12 @@ export interface AnimationModel {
      */
     delay?: number;
 
+    /**
+     * timing-function
+     * @default 'Linear'
+     */
+    timing?: TimingFunction;
+
 }
 
 /**
@@ -124,5 +142,30 @@ export interface ProgressAnnotationSettingsModel {
      * @default '0%'
      */
     annotationRadius?: string;
+
+}
+
+/**
+ * Interface for a class RangeColor
+ */
+export interface RangeColorModel {
+
+    /**
+     * color
+     * @default null
+     */
+    color?: string;
+
+    /**
+     * start
+     * @default null
+     */
+    start?: number;
+
+    /**
+     * end
+     * @default null
+     */
+    end?: number;
 
 }

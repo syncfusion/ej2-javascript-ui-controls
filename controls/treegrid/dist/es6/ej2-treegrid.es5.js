@@ -9018,6 +9018,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
                 if (this.parent.grid.aggregateModule) {
                     this.parent.grid.aggregateModule.refresh(args.rowData);
                 }
+                this.parent.grid.editModule.destroyWidgets([this.parent.grid.getColumnByField(args.columnName)]);
                 this.parent.grid.editModule.formObj.destroy();
                 if (this.keyPress !== 'tab' && this.keyPress !== 'shiftTab') {
                     this.updateGridEditMode('Normal');
