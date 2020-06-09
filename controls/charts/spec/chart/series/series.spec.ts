@@ -398,9 +398,9 @@ describe('Chart Control', () => {
         it('checking single point with negative data', (done: Function) => {
             loaded = (args: Object): void => {
                 marker = document.getElementById('container1_AxisLabel_0');
-                expect(marker.textContent == '-63.2').toBe(true);
-                marker = document.getElementById('container1_AxisLabel_35');
-                expect(marker.textContent == '-56.200').toBe(true);
+                expect(marker.textContent == '-70').toBe(true);
+                marker = document.getElementById('container1_AxisLabel_6');
+                expect(marker.textContent == '-10').toBe(true);
                 done();
             };
             chartObj.animationComplete = null;

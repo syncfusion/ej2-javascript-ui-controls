@@ -62,6 +62,7 @@ export class KanbanDialog {
         if (action !== 'Delete') {
             this.applyFormValidation();
         }
+        (this.dialogObj.element.querySelector('.e-dlg-closeicon-btn') as HTMLElement).title = this.parent.localeObj.getConstant('close');
     }
 
     private getDialogContent(args: { [key: string]: Object }, action: CurrentAction): HTMLElement | string {

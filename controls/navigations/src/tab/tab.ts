@@ -506,8 +506,14 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     public refresh(): void {
         if (!this.isServerRendered) {
             super.refresh();
-        } else if (this.isServerRendered && this.loadOn !== 'Dynamic') {
-            this.setActiveBorder();
+        } else if (this.isServerRendered) {
+            if (this.tbObj) {
+                this.tbObj.refreshOverflow();
+                this.refreshActiveBorder();
+            }
+            if (this.loadOn !== 'Dynamic') {
+                this.setActiveBorder();
+            }
         }
     }
 

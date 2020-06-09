@@ -588,7 +588,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         this.valueWrap.classList.remove(classes.LOAD);
     }
     private renderValue(val: string): void {
-        this.valueEle.innerHTML = val;
+        this.enableHtmlSanitizer && this.type !== 'RTE' ? this.valueEle.innerText = val : this.valueEle.innerHTML = val;
         if (this.type === 'Color') { setStyleAttribute(this.valueEle, { 'color': val }); }
         if (this.mode === 'Inline') {
             removeClass([this.valueWrap], [classes.HIDE]);
@@ -837,7 +837,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         return select('.' + classes.ELEMENTS, this.formEle);
     }
     private getLocale(prop: Object, val: string): string {
-        return new L10n(this.getModuleName(), prop, this.locale).getConstant(val);
+        return new L10n('inplace-editor', prop, this.locale).getConstant(val);
     }
     private checkValue(val: string): string {
         return (!this.isEmpty(val)) ? val : this.emptyText;

@@ -1104,7 +1104,7 @@ export class DetailsView {
     private onDeSelection(args: RowDeselectEventArgs): void {
         /* istanbul ignore next */
         if (!this.parent.allowMultiSelection && isNOU(args.data)) {
-            this.gridObj.getRowByIndex(args.rowIndex).removeAttribute('tabindex');
+            this.gridObj.getRowByIndex(<number>args.rowIndex).removeAttribute('tabindex');
         } else if (this.gridObj.getSelectedRowIndexes().length > 1) {
             let lastItemIndex: number = this.gridObj.getSelectedRowIndexes()[this.gridObj.getSelectedRowIndexes().length - 2];
             this.gridObj.getRowByIndex(lastItemIndex).querySelector('.e-checkselect').removeAttribute('tabindex');

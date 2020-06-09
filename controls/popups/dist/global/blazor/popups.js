@@ -2109,9 +2109,12 @@ var Dialog = /** @class */ (function (_super) {
             }
             this.setFooterTemplate();
         }
-        var footerEle = this.element.querySelector('.' + DLG_FOOTER_CONTENT);
-        var footerBtn = !sf.base.isNullOrUndefined(footerEle) &&
-            footerEle.querySelectorAll('button');
+        var footerBtn;
+        for (var i = 0, childNodes = this.element.children; i < childNodes.length; i++) {
+            if (childNodes[i].classList.contains(DLG_FOOTER_CONTENT)) {
+                footerBtn = childNodes[i].querySelectorAll('button');
+            }
+        }
         for (var i = 0; i < this.buttons.length; i++) {
             if (!this.isBlazorServerRender()) {
                 this.btnObj[i] = new sf.buttons.Button(this.buttons[i].buttonModel);
@@ -3972,14 +3975,14 @@ var Tooltip = /** @class */ (function (_super) {
                 this.unwireMouseEvents(e.target);
             }
             else {
-                this.hideTooltip(this.animation.close, e);
+                this.hideTooltip(this.animation.close, e, this.findTarget());
                 if (this.closeDelay === 0) {
                     this.clear();
                 }
             }
         }
         else {
-            this.hideTooltip(this.animation.close, e);
+            this.hideTooltip(this.animation.close, e, this.findTarget());
             this.clear();
         }
     };

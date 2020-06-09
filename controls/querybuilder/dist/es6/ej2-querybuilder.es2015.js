@@ -111,6 +111,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         super(options, element);
         this.isReadonly = true;
         this.fields = { text: 'label', value: 'field' };
+        this.updatedRule = { not: false, condition: 'and' };
     }
     getPersistData() {
         return this.addOnPersist(['rule']);
@@ -715,7 +716,11 @@ let QueryBuilder = class QueryBuilder extends Component {
                 let tglBtn = new Button({ content: this.l10n.getConstant('NOT'), cssClass: 'e-btn e-small' });
                 tglBtn.appendTo(notElem);
                 groupElem.querySelector('.e-btngroup-and-lbl').classList.add('e-not');
+                if (this.updatedRule && this.updatedRule.not) {
+                    addClass([notElem], 'e-active-toggle');
+                }
             }
+            this.updatedRule = null;
             let groupBtn = groupElem.querySelector('.e-add-btn');
             let btnObj = new DropDownButton({
                 items: this.items,
@@ -927,14 +932,14 @@ let QueryBuilder = class QueryBuilder extends Component {
             let operatorElem = closest(ddlArgs.element, '.e-rule-operator');
             let valElem = operatorElem.nextElementSibling;
             let dropDownObj = getComponent(ddlArgs.element, 'dropdownlist');
-            let prevOper = rule.operator ? rule.operator.toLowerCase() : '';
-            tempRule.operator = dropDownObj.value;
+            let prevOper = rule.operator ? rule.operator.toString().toLowerCase() : '';
+            tempRule.operator = dropDownObj.value.toString();
             let currOper = tempRule.operator.toLowerCase();
             if (tempRule.operator.toLowerCase().indexOf('between') > -1 || (tempRule.operator.toLowerCase().indexOf('in') > -1
                 && tempRule.operator.toLowerCase().indexOf('contains') < 0)) {
                 filterElem = operatorElem.previousElementSibling;
                 tempRule.type = rule.type;
-                if (tempRule.operator.toLowerCase().indexOf('in') < 0 || rule.operator.toLowerCase().indexOf('in') < 0) {
+                if (tempRule.operator.toLowerCase().indexOf('in') < 0 || prevOper.indexOf('in') < 0) {
                     rule.value = [];
                 }
             }
@@ -942,7 +947,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                 rule.value = rule.value.length > 0 ? rule.value[0] : '';
             }
             if (ddlArgs.previousItemData) {
-                let prevValue = ddlArgs.previousItemData.value.toLowerCase();
+                let prevValue = ddlArgs.previousItemData.value.toString().toLowerCase();
                 if ((prevValue.indexOf('between') > -1 || (prevValue.indexOf('in') > -1 || (prevValue.indexOf('null') > -1)
                     || (prevValue.indexOf('empty') > -1)) && prevValue.indexOf('contains') < 0)) {
                     filterElem = operatorElem.previousElementSibling;
@@ -1362,17 +1367,19 @@ let QueryBuilder = class QueryBuilder extends Component {
                 length = this.selectedColumn.values ? this.selectedColumn.values.length : 2;
             }
             else {
-                length = tempRule.operator && tempRule.operator.toLowerCase().indexOf('between') > -1 ? 2 : 1;
+                length = tempRule.operator && tempRule.operator.toString().toLowerCase().indexOf('between') > -1 ? 2 : 1;
             }
             let parentId = closest(target, '.e-rule-container').id;
             let ruleValElem;
+            let operator;
+            operator = tempRule.operator.toString();
             if (target.className.indexOf('e-rule-operator') > -1 || target.className.indexOf('e-rule-filter') > -1) {
                 ruleValElem = target.parentElement.querySelector('.e-rule-value');
                 if (this.element.className.indexOf('e-device') > -1 || this.displayMode === 'Vertical') {
                     ruleValElem.style.width = '100%';
                 }
                 else {
-                    if (tempRule.operator !== 'in' && tempRule.operator !== 'notin') {
+                    if (operator !== 'in' && operator !== 'notin') {
                         ruleValElem.style.width = '200px';
                     }
                 }
@@ -1380,12 +1387,12 @@ let QueryBuilder = class QueryBuilder extends Component {
                     switch (tempRule.type) {
                         case 'string':
                             {
-                                this.renderStringValue(parentId, rule, tempRule.operator, i, ruleValElem);
+                                this.renderStringValue(parentId, rule, operator, i, ruleValElem);
                             }
                             break;
                         case 'number':
                             {
-                                this.renderNumberValue(parentId, rule, tempRule.operator, i, ruleValElem, itemData, length);
+                                this.renderNumberValue(parentId, rule, operator, i, ruleValElem, itemData, length);
                             }
                             break;
                         case 'boolean':
@@ -1511,7 +1518,8 @@ let QueryBuilder = class QueryBuilder extends Component {
                 ddlObj.dataBind();
             }
         }
-        if (!(tempRule.operator.indexOf('null') > -1 || tempRule.operator.indexOf('empty') > -1)) {
+        let operator = tempRule.operator.toString();
+        if (!(operator.indexOf('null') > -1 || operator.indexOf('empty') > -1)) {
             let parentId = closest(target, '.e-rule-container').id;
             if (prevItemData && prevItemData.template) {
                 this.templateDestroy(prevItemData, parentId + '_valuekey0');
@@ -1547,10 +1555,10 @@ let QueryBuilder = class QueryBuilder extends Component {
                 itemData.template = this.columns[filtObj.index].template;
                 let valElem;
                 if (itemData.template && typeof itemData.template.create === 'string') {
-                    valElem = getValue(itemData.template.create, window)({ operator: itemData.value || tempRule.operator });
+                    valElem = getValue(itemData.template.create, window)({ operator: itemData.value || operator });
                 }
                 else if (itemData.template && itemData.template.create) {
-                    valElem = itemData.template.create({ operator: itemData.value || tempRule.operator });
+                    valElem = itemData.template.create({ operator: itemData.value || operator });
                 }
                 if (valElem instanceof Element) {
                     valElem.id = parentId + '_valuekey0';
@@ -1580,7 +1588,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                     inputLen = this.selectedColumn.values ? this.selectedColumn.values.length : 2;
                 }
                 else {
-                    inputLen = (tempRule.operator && tempRule.operator.toLowerCase().indexOf('between') > -1) ? 2 : 1;
+                    inputLen = (operator && operator.toLowerCase().indexOf('between') > -1) ? 2 : 1;
                 }
                 for (let i = 0; i < inputLen; i++) {
                     let valElem;
@@ -1672,13 +1680,14 @@ let QueryBuilder = class QueryBuilder extends Component {
             ruleElem = ruleElem.previousElementSibling;
             index++;
         }
+        let operator = rule.rules[index].operator.toString();
         ruleElem = closest(target, '.e-rule-container');
         ruleID = ruleElem.id.replace(this.element.id + '_', '');
         if (closest(target, '.e-rule-filter')) {
             dropDownObj = getComponent(target, 'dropdownlist');
             if (!this.isImportRules && rule.rules[index].field.toLowerCase() !== this.columns[dropDownObj.index].field.toLowerCase()) {
-                if (!(ruleElem.querySelectorAll('.e-template')) && !(rule.rules[index].operator.indexOf('null') > -1)
-                    || (rule.rules[index].operator.indexOf('empty') > -1)) {
+                if (!(ruleElem.querySelectorAll('.e-template')) && !(operator.indexOf('null') > -1)
+                    || (operator.indexOf('empty') > -1)) {
                     rule.rules[index].value = '';
                 }
             }
@@ -1688,7 +1697,7 @@ let QueryBuilder = class QueryBuilder extends Component {
             rule.rules[index].label = this.selectedColumn.label;
             let ruleElement = closest(target, '.e-rule-filter');
             let element = ruleElement.nextElementSibling.querySelector('input.e-control');
-            let operator = getComponent(element, 'dropdownlist').value;
+            operator = getComponent(element, 'dropdownlist').value.toString();
             rule.rules[index].operator = operator;
             // Value Fields
             let valueContainer = ruleElement.nextElementSibling.nextElementSibling;
@@ -1704,7 +1713,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                     elementCln[i] = ruleElement.nextElementSibling.nextElementSibling.querySelector('.e-template');
                 }
                 eventsArgs = { groupID: groupID, ruleID: ruleID, value: rule.rules[index].field, type: 'field' };
-                if (rule.rules[index].operator.indexOf('null') > -1 || rule.rules[index].operator.indexOf('empty') > -1) {
+                if (operator.indexOf('null') > -1 || operator.indexOf('empty') > -1) {
                     rule.rules[index].value = null;
                     continue;
                 }
@@ -1720,7 +1729,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         }
         else if (closest(target, '.e-rule-operator')) {
             dropDownObj = getComponent(target, 'dropdownlist');
-            rule.rules[index].operator = dropDownObj.value;
+            rule.rules[index].operator = dropDownObj.value.toString();
             let inputElem;
             let parentElem = target.parentElement;
             inputElem = ruleElem.querySelectorAll('.e-rule-value input.e-control');
@@ -1766,7 +1775,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         let arrOperator = ['in', 'between', 'notin', 'notbetween'];
         if (selectedValue !== null) {
             if (rule.rules[index].operator) {
-                oper = rule.rules[index].operator.toLowerCase();
+                oper = rule.rules[index].operator.toString().toLowerCase();
             }
             if (target.className.indexOf('e-multiselect') > -1 && rule.rules[index].type === 'number' &&
                 !(target.className.indexOf('e-template') > -1)) {
@@ -1953,16 +1962,25 @@ let QueryBuilder = class QueryBuilder extends Component {
         let rule = this.getParentGroup(groupElem);
         let grouplen = groups.length;
         if (grouplen) {
+            this.isPublic = true;
             for (let i = 0, len = groups.length; i < len; i++) {
+                this.updatedRule = { condition: groups[i].condition, not: groups[i].not };
                 this.importRules(groups[i], groupElem);
             }
+            this.isPublic = false;
         }
         else {
+            let condition = 'and';
+            let not = false;
+            if (this.updatedRule) {
+                condition = this.updatedRule.condition;
+                not = this.updatedRule.not;
+            }
             if (this.enableNotCondition) {
-                rule.rules.push({ 'condition': 'and', 'not': false, rules: [] });
+                rule.rules.push({ 'condition': condition, 'not': not, rules: [] });
             }
             else {
-                rule.rules.push({ 'condition': 'and', rules: [] });
+                rule.rules.push({ 'condition': condition, rules: [] });
             }
         }
         let andElem = groupElem.querySelector('.e-btngroup-and');
@@ -2595,7 +2613,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         }
         if (!rule.condition && rule.condition !== '') {
             if (rule.operator) {
-                if (rule.operator.indexOf('null') > -1 || rule.operator.indexOf('empty') > -1) {
+                if (rule.operator.toString().indexOf('null') > -1 || rule.operator.toString().indexOf('empty') > -1) {
                     rule.value = null;
                 }
             }
@@ -2795,7 +2813,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                         isDateFilter = true;
                     }
                 }
-                else if (ruleColl[i].operator.indexOf('null') > -1 || ruleColl[i].operator.indexOf('empty') > -1) {
+                else if (oper.indexOf('null') > -1 || oper.indexOf('empty') > -1) {
                     ruleColl[i].value = null;
                 }
                 else {
@@ -2905,13 +2923,14 @@ let QueryBuilder = class QueryBuilder extends Component {
     }
     arrayPredicate(ruleColl, predicate, condition) {
         let value = ruleColl.value;
+        let operator = ruleColl.operator.toString();
         let nullValue = ruleColl.value;
         let format;
         let pred;
         let column = this.getColumn(ruleColl.field);
         format = this.getFormat(column.format);
-        if (ruleColl.operator.indexOf('null') > -1 || ruleColl.operator.indexOf('empty') > -1) {
-            switch (ruleColl.operator) {
+        if (operator.indexOf('null') > -1 || operator.indexOf('empty') > -1) {
+            switch (operator) {
                 case 'isnull':
                     pred = new Predicate(ruleColl.field, 'isnull', nullValue);
                     break;
@@ -2926,11 +2945,11 @@ let QueryBuilder = class QueryBuilder extends Component {
                     break;
             }
         }
-        if (!(ruleColl.operator.indexOf('null') > -1 || ruleColl.operator.indexOf('empty') > -1)) {
+        if (!(operator.indexOf('null') > -1 || operator.indexOf('empty') > -1)) {
             for (let j = 0, jLen = value.length; j < jLen; j++) {
                 if (value[j] !== '') {
                     if (j === 0) {
-                        switch (ruleColl.operator) {
+                        switch (operator) {
                             case 'between':
                                 if (column.type === 'date') {
                                     pred = new Predicate(ruleColl.field, 'greaterthanorequal', this.getDate(value[j], format));
@@ -3209,7 +3228,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                 let rule = rules.rules[j];
                 let valueStr = '';
                 if (rule.value instanceof Array) {
-                    if (rule.operator.indexOf('between') > -1) {
+                    if (rule.operator.toString().indexOf('between') > -1) {
                         if (rule.type === 'date') {
                             valueStr += '"' + rule.value[0] + '" AND "' + rule.value[1] + '"';
                         }
@@ -3231,13 +3250,13 @@ let QueryBuilder = class QueryBuilder extends Component {
                     }
                 }
                 else {
-                    if (rule.operator.indexOf('startswith') > -1) {
+                    if (rule.operator.toString().indexOf('startswith') > -1) {
                         valueStr += '("' + rule.value + '%")';
                     }
-                    else if (rule.operator.indexOf('endswith') > -1) {
+                    else if (rule.operator.toString().indexOf('endswith') > -1) {
                         valueStr += '("%' + rule.value + '")';
                     }
-                    else if (rule.operator.indexOf('contains') > -1) {
+                    else if (rule.operator.toString().indexOf('contains') > -1) {
                         valueStr += '("%' + rule.value + '%")';
                     }
                     else {
@@ -3249,7 +3268,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                         }
                     }
                 }
-                if (rule.operator.indexOf('null') > -1 || (rule.operator.indexOf('empty') > -1)) {
+                if (rule.operator.toString().indexOf('null') > -1 || (rule.operator.toString().indexOf('empty') > -1)) {
                     if (enableEscape) {
                         rule.field = '`' + rule.field + '`';
                     }

@@ -22,7 +22,8 @@ export class HiloOpenCloseSeries extends ColumnBase {
         let highLowRect: Rect;
         let open: ChartLocation;
         let close: ChartLocation;
-
+        let index1: number;
+        let index2: number;
         let sideBySideInfo: DoubleRange = this.getSideBySideInfo(series);
         let argsData: IPointRenderEventArgs;
         let borderWidth: number = Math.max(series.border.width, 2);
@@ -57,8 +58,10 @@ export class HiloOpenCloseSeries extends ColumnBase {
                 argsData = this.triggerPointRenderEvent(series, point);
                 if (!argsData.cancel) {
                     this.updateSymbolLocation(point, point.regions[0], series);
-                    let open: ChartLocation = { x: point.regions[1].x, y: point.regions[1].y };
-                    let close: ChartLocation = { x: point.regions[2].x, y: point.regions[2].y };
+                    index1 = point.open > point.close ? 1 : 2;
+                    index2 = point.open > point.close ? 2 : 1;
+                    let open: ChartLocation = { x: point.regions[index1].x, y: point.regions[index1].y };
+                    let close: ChartLocation = { x: point.regions[index2].x, y: point.regions[index2].y };
                     this.drawHiloOpenClosePath(series, point, open, close, highLowRect, argsData);
                 }
 

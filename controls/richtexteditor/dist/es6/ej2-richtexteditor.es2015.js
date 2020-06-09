@@ -16435,23 +16435,29 @@ class Image {
         let selectNodeEle;
         let selectParentEle;
         this.deletedImg = [];
+        let isCursor;
+        let keyCodeValues = [27, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123,
+            44, 45, 9, 16, 17, 18, 19, 20, 33, 34, 35, 36, 37, 38, 39, 40, 91, 92, 93, 144, 145, 182, 183];
+        if (this.parent.editorMode === 'HTML') {
+            range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
+            isCursor = range.startContainer === range.endContainer && range.startOffset === range.endOffset;
+        }
+        if (!isCursor && this.parent.editorMode === 'HTML' && keyCodeValues.indexOf(originalEvent.which) < 0) {
+            let nodes = this.parent.formatter.editorManager.nodeSelection.getNodeCollection(range);
+            for (let i = 0; i < nodes.length; i++) {
+                if (nodes[i].nodeName === 'IMG') {
+                    this.deletedImg.push(nodes[i]);
+                }
+            }
+        }
         if (this.parent.editorMode === 'HTML' && ((originalEvent.which === 8 && originalEvent.code === 'Backspace') ||
             (originalEvent.which === 46 && originalEvent.code === 'Delete'))) {
-            let range = this.parent.getRange();
             let isCursor = range.startContainer === range.endContainer && range.startOffset === range.endOffset;
             if ((originalEvent.which === 8 && originalEvent.code === 'Backspace' && isCursor)) {
                 this.checkImageBack(range);
             }
             else if ((originalEvent.which === 46 && originalEvent.code === 'Delete' && isCursor)) {
                 this.checkImageDel(range);
-            }
-            else if (!isCursor) {
-                let nodes = this.parent.formatter.editorManager.nodeSelection.getNodeCollection(range);
-                for (let i = 0; i < nodes.length; i++) {
-                    if (nodes[i].nodeName === 'IMG') {
-                        this.deletedImg.push(nodes[i]);
-                    }
-                }
             }
         }
         if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection) &&
@@ -16484,7 +16490,7 @@ class Image {
                         originalEvent: originalEvent
                     }
                 };
-                this.deleteImg(event);
+                this.deleteImg(event, originalEvent.keyCode);
             }
             if (this.parent.contentModule.getEditPanel().querySelector('.e-img-resize')) {
                 this.remvoeResizEle();
@@ -16864,11 +16870,11 @@ class Image {
         let regexp = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/gi;
         return regexp.test(url);
     }
-    deleteImg(e) {
+    deleteImg(e, keyCode) {
         if (e.selectNode[0].nodeName !== 'IMG') {
             return;
         }
-        let args = { img: e.selectNode[0] };
+        let args = { img: e.selectNode[0], src: e.selectNode[0].getAttribute('src') };
         if (this.parent.formatter.getUndoRedoStack().length === 0) {
             this.parent.formatter.saveData();
         }
@@ -16885,7 +16891,9 @@ class Image {
             this.quickToolObj.imageQTBar.hidePopup();
         }
         this.cancelResizeAction();
-        this.parent.trigger(afterImageDelete, args);
+        if (isNullOrUndefined(keyCode)) {
+            this.parent.trigger(afterImageDelete, args);
+        }
     }
     caption(e) {
         let selectNode = e.selectNode[0];
@@ -17296,11 +17304,16 @@ class Image {
         });
         uploadParentEle.appendChild(uploadEle);
         let altText;
+        let rawFile;
         this.uploadObj = new Uploader({
             asyncSettings: { saveUrl: this.parent.insertImageSettings.saveUrl, },
             dropArea: span, multiple: false, enableRtl: this.parent.enableRtl,
             allowedExtensions: this.parent.insertImageSettings.allowedTypes.toString(),
             selected: (e) => {
+                if (isBlazor()) {
+                    e.cancel = true;
+                    rawFile = e.filesData;
+                }
                 proxy.isImgUploaded = true;
                 this.parent.trigger(imageSelected, e, (e) => {
                     this.checkExtension(e.filesData[0]);
@@ -17324,6 +17337,12 @@ class Image {
                             proxy.inputUrl.setAttribute('disabled', 'true');
                         });
                         reader.readAsDataURL(e.filesData[0].rawFile);
+                    }
+                    if (isBlazor()) {
+                        e.cancel = false;
+                        /* tslint:disable */
+                        this.uploadObj._internalRenderSelect(e, rawFile);
+                        /* tslint:enable */
                     }
                 });
             },

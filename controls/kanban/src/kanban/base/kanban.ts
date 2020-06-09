@@ -331,7 +331,8 @@ export class Kanban extends Component<HTMLElement> {
                 delete: 'Delete',
                 cancel: 'Cancel',
                 yes: 'Yes',
-                no: 'No'
+                no: 'No',
+                close: 'Close'
             };
             this.localeObj = new L10n(this.getModuleName(), defaultLocale, this.locale);
         }

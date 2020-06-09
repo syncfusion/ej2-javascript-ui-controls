@@ -777,7 +777,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Event triggers when the selected image is cleared from the Rich Text Editor Content.
      * @event
-     * @blazorProperty 'ImageDelete'
+     * @blazorProperty 'OnImageDelete'
      */
     @Event()
     public afterImageDelete: EmitType<Object>;

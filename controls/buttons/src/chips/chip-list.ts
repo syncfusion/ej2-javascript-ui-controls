@@ -356,6 +356,16 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
+     * To find the chips length.
+     * @returns boolean
+     * @private
+     */
+
+    protected chipType(): boolean {
+        return (this.chips && this.chips.length && this.chips.length > 0);
+    }
+
+    /**
      * To Initialize the control rendering.
      * @returns void
      * @private
@@ -422,7 +432,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
             let className: string[] = (classNames.chip + ' ' + (fieldsData.enabled ? ' ' : classNames.disabled) + ' ' +
                 (fieldsData.avatarIconCss || fieldsData.avatarText ? classNames.chipWrapper : (fieldsData.leadingIconCss ?
                     classNames.iconWrapper : ' ')) + ' ' + fieldsData.cssClass).split(' ').filter((css: string) => css);
-            if (this.type === 'chip') {
+            if (!this.chipType()) {
                 chipListArray = chipArray;
                 addClass([this.element], className);
                 this.element.setAttribute('aria-label', fieldsData.text);
@@ -450,7 +460,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
         let chipEnabled: boolean = !(this.enabled.toString() === 'false');
         let fields: ChipFields = {
             text: typeof data === 'object' ? (data.text ? data.text.toString() : this.text.toString()) :
-                (this.type === 'chip' ? (this.innerText ? this.innerText : this.text.toString()) : data.toString()),
+                (!this.chipType() ? (this.innerText ? this.innerText : this.text.toString()) : data.toString()),
             cssClass: typeof data === 'object' ? (data.cssClass ? data.cssClass.toString() : this.cssClass.toString()) :
                 (this.cssClass.toString()),
             leadingIconCss: typeof data === 'object' ? (data.leadingIconCss ? data.leadingIconCss.toString() :
@@ -492,7 +502,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
         let chipTextElement: HTMLElement = this.createElement('span', { className: classNames.text });
         chipTextElement.innerText = fields.text;
         chipArray.push(chipTextElement);
-        if (fields.trailingIconCss || (this.type !== 'chip' && this.enableDelete)) {
+        if (fields.trailingIconCss || (this.chipType() && this.enableDelete)) {
             let className: string = (classNames.delete + ' ' +
                 (fields.trailingIconCss ? fields.trailingIconCss : classNames.deleteIcon)).trim();
             let chipdeleteElement: HTMLElement = this.createElement('span', { className: className });
@@ -514,7 +524,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
         let chipData: ChipDataArgs;
         let chipElement: HTMLElement = fields instanceof HTMLElement ?
             fields as HTMLElement : this.element.querySelectorAll('.' + classNames.chip)[fields as number] as HTMLElement;
-        if (chipElement && this.type !== 'chip') {
+        if (chipElement && this.chipType()) {
             chipData = { text: undefined, index: undefined, element: undefined, data: undefined };
             chipData.index = Array.prototype.slice.call(this.element.querySelectorAll('.' + classNames.chip)).indexOf(chipElement);
             chipData.text = typeof this.chips[chipData.index] === 'object' ?
@@ -570,7 +580,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private onSelect(fields: number | number[] | HTMLElement | HTMLElement[] | string[], callFromProperty: boolean): void {
-        if (this.type !== 'chip' && this.selection !== 'None') {
+        if (this.chipType() && this.selection !== 'None') {
             if (callFromProperty) {
                 let chipElements: NodeListOf<Element> = this.element.querySelectorAll('.' + classNames.chip);
                 for (let i: number = 0; i < chipElements.length; i++) {
@@ -595,7 +605,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
      *  or chip element or array of chip element.
      */
     public remove(fields: number | number[] | HTMLElement | HTMLElement[]): void {
-        if (this.type !== 'chip') {
+        if (this.chipType()) {
             let fieldData: number[] | HTMLElement[] = fields instanceof Array ? fields : <number[] | HTMLElement[]>[fields];
             let chipElements: HTMLElement[] = [];
             let chipCollection: NodeListOf<HTMLElement> = this.element.querySelectorAll('.' + classNames.chip);
@@ -619,7 +629,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
      */
     public getSelectedChips(): SelectedItem | SelectedItems {
         let selectedChips: SelectedItem | SelectedItems;
-        if (this.type !== 'chip' && this.selection !== 'None') {
+        if (this.chipType() && this.selection !== 'None') {
             let selectedItems: SelectedItems = { texts: [], Indexes: [], data: [], elements: [] };
             const items: NodeListOf<Element> = this.element.querySelectorAll('.' + classNames.active);
             for (let i: number = 0; i < items.length; i++) {
@@ -678,7 +688,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
 
     private focusOutHandler(e: MouseEventArgs): void {
         let chipWrapper: HTMLElement = <HTMLElement>closest((e.target as HTMLElement), '.' + classNames.chip);
-        let focusedElement: HTMLElement = this.type === 'chip' ? (this.element.classList.contains(classNames.focused) ?
+        let focusedElement: HTMLElement = !this.chipType() ? (this.element.classList.contains(classNames.focused) ?
             this.element : null) : this.element.querySelector('.' + classNames.focused);
         if (chipWrapper && focusedElement) {
             focusedElement.classList.remove(classNames.focused);
@@ -689,7 +699,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
         let chipWrapper: HTMLElement = <HTMLElement>closest((e.target as HTMLElement), '.' + classNames.chip);
         if (chipWrapper) {
             let chipDataArgs: object;
-            if (this.type !== 'chip') {
+            if (this.chipType()) {
                 chipDataArgs = this.find(chipWrapper);
             } else {
                 let index: number = Array.prototype.slice.call(this.element.querySelectorAll('.' + classNames.chip)).indexOf(chipWrapper);
@@ -710,7 +720,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private clickEventHandler(chipWrapper: HTMLElement, e: MouseEventArgs | KeyboardEventArgs, del: boolean): void {
-        if (this.type !== 'chip') {
+        if (this.chipType()) {
             let chipData: ChipDataArgs = this.find(chipWrapper);
             (chipData as ClickEventArgs).event = e;
             let deleteElement: HTMLElement = (e.target as HTMLElement).classList.contains(classNames.deleteIcon) ?
@@ -808,7 +818,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
         this.wireEvent(true);
         this.rippleFunction();
         if (isBlazor()) {
-            let chipChildElement: NodeListOf<Element> = this.type === 'chip' ? this.element.querySelectorAll('.e-chip-text') :
+            let chipChildElement: NodeListOf<Element> = !this.chipType() ? this.element.querySelectorAll('.e-chip-text') :
                 this.element.querySelectorAll('.e-chip');
             for (let i: number = 0; i < chipChildElement.length; i++) {
                 if (chipChildElement[i] != null) {
@@ -861,7 +871,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
                     break;
                 case 'cssClass':
                     if (!(isBlazor() && this.isServerRendered)) {
-                        if (this.type === 'chip') {
+                        if (!this.chipType()) {
                             removeClass([this.element], oldProp.cssClass.toString().split(' ').filter((css: string) => css));
                             addClass([this.element], newProp.cssClass.toString().split(' ').filter((css: string) => css));
                         } else {

@@ -3173,7 +3173,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
             return callBackPromise;
         };
         this.grid.actionComplete = (args) => {
-            if (isBlazor() && this.isServerRendered) {
+            if (isBlazor() && this.isServerRendered && args.requestType !== 'filterAfterOpen') {
                 let rows = this.getRows();
                 for (let i = 0; i < rows.length; i++) {
                     if (rows[i].classList.contains('e-treerowcollapsed') || rows[i].classList.contains('e-treerowexpanded')) {
@@ -9362,7 +9362,7 @@ class VirtualTreeContentRenderer extends VirtualContentRenderer {
         if (!(this.parent.dataSource instanceof DataManager && this.parent.dataSource.dataSource.url !== undefined
             && this.parent.dataSource.dataSource.url !== '')) {
             getValue('observer', this).options.debounceEvent = false;
-            this.observers = new TreeInterSectionObserver(this.parent, getValue('observer', this).element, getValue('observer', this).options);
+            this.observers = new TreeInterSectionObserver(getValue('observer', this).element, getValue('observer', this).options);
             this.contents = this.getPanel().firstChild;
         }
     }
@@ -9436,7 +9436,12 @@ class VirtualTreeContentRenderer extends VirtualContentRenderer {
         if ((downScroll && (scrollArgs.offset.top < (this.parent.getRowHeight() * this.totalRecords)))
             || (upScroll)) {
             let viewInfo = getValue('getInfoFromView', this).apply(this, [scrollArgs.direction, info, scrollArgs.offset]);
-            this.parent.notify(viewInfo.event, { requestType: 'virtualscroll', focusElement: scrollArgs.focusElement });
+            if (viewInfo.event === 'refresh-virtual-block') {
+                this.parent.refresh();
+            }
+            else {
+                this.parent.notify(viewInfo.event, { requestType: 'virtualscroll', focusElement: scrollArgs.focusElement });
+            }
         }
     }
     appendContent(target, newChild, e) {

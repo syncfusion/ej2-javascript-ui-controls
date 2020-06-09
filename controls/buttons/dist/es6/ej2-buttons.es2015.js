@@ -1759,6 +1759,14 @@ let ChipList = class ChipList extends Component {
         //prerender
     }
     /**
+     * To find the chips length.
+     * @returns boolean
+     * @private
+     */
+    chipType() {
+        return (this.chips && this.chips.length && this.chips.length > 0);
+    }
+    /**
      * To Initialize the control rendering.
      * @returns void
      * @private
@@ -1824,7 +1832,7 @@ let ChipList = class ChipList extends Component {
             let className = (classNames.chip + ' ' + (fieldsData.enabled ? ' ' : classNames.disabled) + ' ' +
                 (fieldsData.avatarIconCss || fieldsData.avatarText ? classNames.chipWrapper : (fieldsData.leadingIconCss ?
                     classNames.iconWrapper : ' ')) + ' ' + fieldsData.cssClass).split(' ').filter((css) => css);
-            if (this.type === 'chip') {
+            if (!this.chipType()) {
                 chipListArray = chipArray;
                 addClass([this.element], className);
                 this.element.setAttribute('aria-label', fieldsData.text);
@@ -1852,7 +1860,7 @@ let ChipList = class ChipList extends Component {
         let chipEnabled = !(this.enabled.toString() === 'false');
         let fields = {
             text: typeof data === 'object' ? (data.text ? data.text.toString() : this.text.toString()) :
-                (this.type === 'chip' ? (this.innerText ? this.innerText : this.text.toString()) : data.toString()),
+                (!this.chipType() ? (this.innerText ? this.innerText : this.text.toString()) : data.toString()),
             cssClass: typeof data === 'object' ? (data.cssClass ? data.cssClass.toString() : this.cssClass.toString()) :
                 (this.cssClass.toString()),
             leadingIconCss: typeof data === 'object' ? (data.leadingIconCss ? data.leadingIconCss.toString() :
@@ -1895,7 +1903,7 @@ let ChipList = class ChipList extends Component {
         let chipTextElement = this.createElement('span', { className: classNames.text });
         chipTextElement.innerText = fields.text;
         chipArray.push(chipTextElement);
-        if (fields.trailingIconCss || (this.type !== 'chip' && this.enableDelete)) {
+        if (fields.trailingIconCss || (this.chipType() && this.enableDelete)) {
             let className = (classNames.delete + ' ' +
                 (fields.trailingIconCss ? fields.trailingIconCss : classNames.deleteIcon)).trim();
             let chipdeleteElement = this.createElement('span', { className: className });
@@ -1917,7 +1925,7 @@ let ChipList = class ChipList extends Component {
         let chipData;
         let chipElement = fields instanceof HTMLElement ?
             fields : this.element.querySelectorAll('.' + classNames.chip)[fields];
-        if (chipElement && this.type !== 'chip') {
+        if (chipElement && this.chipType()) {
             chipData = { text: undefined, index: undefined, element: undefined, data: undefined };
             chipData.index = Array.prototype.slice.call(this.element.querySelectorAll('.' + classNames.chip)).indexOf(chipElement);
             chipData.text = typeof this.chips[chipData.index] === 'object' ?
@@ -1970,7 +1978,7 @@ let ChipList = class ChipList extends Component {
         }
     }
     onSelect(fields, callFromProperty) {
-        if (this.type !== 'chip' && this.selection !== 'None') {
+        if (this.chipType() && this.selection !== 'None') {
             if (callFromProperty) {
                 let chipElements = this.element.querySelectorAll('.' + classNames.chip);
                 for (let i = 0; i < chipElements.length; i++) {
@@ -1994,7 +2002,7 @@ let ChipList = class ChipList extends Component {
      *  or chip element or array of chip element.
      */
     remove(fields) {
-        if (this.type !== 'chip') {
+        if (this.chipType()) {
             let fieldData = fields instanceof Array ? fields : [fields];
             let chipElements = [];
             let chipCollection = this.element.querySelectorAll('.' + classNames.chip);
@@ -2017,7 +2025,7 @@ let ChipList = class ChipList extends Component {
      */
     getSelectedChips() {
         let selectedChips;
-        if (this.type !== 'chip' && this.selection !== 'None') {
+        if (this.chipType() && this.selection !== 'None') {
             let selectedItems = { texts: [], Indexes: [], data: [], elements: [] };
             const items = this.element.querySelectorAll('.' + classNames.active);
             for (let i = 0; i < items.length; i++) {
@@ -2076,7 +2084,7 @@ let ChipList = class ChipList extends Component {
     }
     focusOutHandler(e) {
         let chipWrapper = closest(e.target, '.' + classNames.chip);
-        let focusedElement = this.type === 'chip' ? (this.element.classList.contains(classNames.focused) ?
+        let focusedElement = !this.chipType() ? (this.element.classList.contains(classNames.focused) ?
             this.element : null) : this.element.querySelector('.' + classNames.focused);
         if (chipWrapper && focusedElement) {
             focusedElement.classList.remove(classNames.focused);
@@ -2086,7 +2094,7 @@ let ChipList = class ChipList extends Component {
         let chipWrapper = closest(e.target, '.' + classNames.chip);
         if (chipWrapper) {
             let chipDataArgs;
-            if (this.type !== 'chip') {
+            if (this.chipType()) {
                 chipDataArgs = this.find(chipWrapper);
             }
             else {
@@ -2107,7 +2115,7 @@ let ChipList = class ChipList extends Component {
         }
     }
     clickEventHandler(chipWrapper, e, del) {
-        if (this.type !== 'chip') {
+        if (this.chipType()) {
             let chipData = this.find(chipWrapper);
             chipData.event = e;
             let deleteElement = e.target.classList.contains(classNames.deleteIcon) ?
@@ -2207,7 +2215,7 @@ let ChipList = class ChipList extends Component {
         this.wireEvent(true);
         this.rippleFunction();
         if (isBlazor()) {
-            let chipChildElement = this.type === 'chip' ? this.element.querySelectorAll('.e-chip-text') :
+            let chipChildElement = !this.chipType() ? this.element.querySelectorAll('.e-chip-text') :
                 this.element.querySelectorAll('.e-chip');
             for (let i = 0; i < chipChildElement.length; i++) {
                 if (chipChildElement[i] != null) {
@@ -2257,7 +2265,7 @@ let ChipList = class ChipList extends Component {
                     break;
                 case 'cssClass':
                     if (!(isBlazor() && this.isServerRendered)) {
-                        if (this.type === 'chip') {
+                        if (!this.chipType()) {
                             removeClass([this.element], oldProp.cssClass.toString().split(' ').filter((css) => css));
                             addClass([this.element], newProp.cssClass.toString().split(' ').filter((css) => css));
                         }

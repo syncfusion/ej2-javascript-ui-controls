@@ -1,4 +1,4 @@
-import { compile } from '@syncfusion/ej2-base';import { getEnumValue } from '@syncfusion/ej2-base';import { CustomSummaryType } from '../base/type';import { AggregateType, CellType } from '../base/enum';import { Property, Collection, ChildProperty, NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';import { ValueFormatter } from '../services/value-formatter';
+import { compile } from '@syncfusion/ej2-base';import { getEnumValue } from '@syncfusion/ej2-base';import { CustomSummaryType } from '../base/type';import { AggregateType, CellType } from '../base/enum';import { Property, Collection, ChildProperty, NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';
 
 /**
  * Interface for a class AggregateColumn

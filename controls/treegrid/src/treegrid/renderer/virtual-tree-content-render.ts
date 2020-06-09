@@ -84,7 +84,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
       if (!(this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
             && (this.parent.dataSource as DataManager).dataSource.url !== '')) {
               getValue('observer', this).options.debounceEvent = false;
-              this.observers = new TreeInterSectionObserver(this.parent, getValue('observer', this).element,
+              this.observers = new TreeInterSectionObserver(getValue('observer', this).element,
                                                             getValue('observer', this).options);
               this.contents = this.getPanel().firstChild as HTMLElement;
           }
@@ -156,7 +156,11 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
       if ((downScroll && (scrollArgs.offset.top < (this.parent.getRowHeight() * this.totalRecords)))
           || (upScroll)) {
         let viewInfo: VirtualInfo = getValue('getInfoFromView', this).apply(this, [scrollArgs.direction, info, scrollArgs.offset]);
-        this.parent.notify(viewInfo.event, { requestType: 'virtualscroll', focusElement: scrollArgs.focusElement });
+        if (viewInfo.event === 'refresh-virtual-block') {
+          this.parent.refresh();
+        } else {
+          this.parent.notify(viewInfo.event, { requestType: 'virtualscroll', focusElement: scrollArgs.focusElement });
+        }
       }
     }
     public appendContent(target: HTMLElement, newChild: DocumentFragment, e: NotifyArgs) : void {

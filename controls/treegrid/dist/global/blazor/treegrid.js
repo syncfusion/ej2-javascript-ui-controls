@@ -3388,7 +3388,7 @@ var TreeGrid = /** @class */ (function (_super) {
             return callBackPromise;
         };
         this.grid.actionComplete = function (args) {
-            if (sf.base.isBlazor() && _this.isServerRendered) {
+            if (sf.base.isBlazor() && _this.isServerRendered && args.requestType !== 'filterAfterOpen') {
                 var rows = _this.getRows();
                 for (var i = 0; i < rows.length; i++) {
                     if (rows[i].classList.contains('e-treerowcollapsed') || rows[i].classList.contains('e-treerowexpanded')) {
@@ -9686,7 +9686,7 @@ var VirtualTreeContentRenderer = /** @class */ (function (_super) {
         if (!(this.parent.dataSource instanceof sf.data.DataManager && this.parent.dataSource.dataSource.url !== undefined
             && this.parent.dataSource.dataSource.url !== '')) {
             sf.base.getValue('observer', this).options.debounceEvent = false;
-            this.observers = new TreeInterSectionObserver(this.parent, sf.base.getValue('observer', this).element, sf.base.getValue('observer', this).options);
+            this.observers = new TreeInterSectionObserver(sf.base.getValue('observer', this).element, sf.base.getValue('observer', this).options);
             this.contents = this.getPanel().firstChild;
         }
     };
@@ -9760,7 +9760,12 @@ var VirtualTreeContentRenderer = /** @class */ (function (_super) {
         if ((downScroll && (scrollArgs.offset.top < (this.parent.getRowHeight() * this.totalRecords)))
             || (upScroll)) {
             var viewInfo = sf.base.getValue('getInfoFromView', this).apply(this, [scrollArgs.direction, info, scrollArgs.offset]);
-            this.parent.notify(viewInfo.event, { requestType: 'virtualscroll', focusElement: scrollArgs.focusElement });
+            if (viewInfo.event === 'refresh-virtual-block') {
+                this.parent.refresh();
+            }
+            else {
+                this.parent.notify(viewInfo.event, { requestType: 'virtualscroll', focusElement: scrollArgs.focusElement });
+            }
         }
     };
     VirtualTreeContentRenderer.prototype.appendContent = function (target, newChild, e) {

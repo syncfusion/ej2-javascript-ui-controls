@@ -4,7 +4,7 @@ import { IntlBase as base } from './intl-base';
 import { isUndefined, throwError, getValue, isBlazor } from '../util';
 import { HijriParser } from '../hijri-parser';
 import { isNullOrUndefined, extend } from '../util';
-const abbreviateRegexGlobal: RegExp = /\/MMMMM|MMMM|MMM|a|LLL|EEEEE|EEEE|E|K|cccc|ccc|G+|z+/gi;
+const abbreviateRegexGlobal: RegExp = /\/MMMMM|MMMM|MMM|a|LLL|EEEEE|EEEE|E|K|cccc|ccc|WW|W|G+|z+/gi;
 const standalone: string = 'stand-alone';
 const weekdayKey: string[] = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 export const basicPatterns: string[] = ['short', 'medium', 'long', 'full'];
@@ -23,6 +23,7 @@ export interface FormatOptions {
     numMapper?: NumberMapper;
     dateSeperator?: string;
     isIslamic?: boolean;
+    weekOfYear?: string;
 }
 const timeSetter: Object = {
     m: 'getMinutes',
@@ -117,7 +118,7 @@ export class DateFormat {
                         break;
                     case 'a':
                         formatOptions.designator = isBlazor() ?
-                         getValue('dayPeriods', dateObject) : getValue('dayPeriods.format.wide', dateObject);
+                            getValue('dayPeriods', dateObject) : getValue('dayPeriods.format.wide', dateObject);
                         break;
                     case 'G':
                         let eText: string = (len <= 3) ? 'eraAbbr' : (len === 4) ? 'eraNames' : 'eraNarrow';
@@ -243,6 +244,10 @@ export class DateFormat {
                     break;
                 case '/':
                     ret += options.dateSeperator;
+                    break;
+                case 'W':
+                    isNumber = true;
+                    curval = base.getWeekOfYear(value);
                     break;
                 default:
                     ret += match;

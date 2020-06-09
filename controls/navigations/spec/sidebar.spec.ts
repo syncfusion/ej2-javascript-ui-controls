@@ -1655,7 +1655,7 @@ describe("Sidebar DOM class Testing ", () => {
         beforeEach((): void => {
             let ele: HTMLElement = document.createElement("div");
             let sibin: HTMLElement = document.createElement("div");
-            ele.innerHTML = "<h3>Testing of Sidebar</h3>";
+            ele.innerHTML = "<h3>Testing of Sidebar</h3>"
             sibin.innerHTML = "Side bar";
             sibin.className = 'e-content-section';
             ele.id = "sidebar";
@@ -1979,57 +1979,7 @@ describe("Sidebar DOM class Testing ", () => {
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     })
 });
-describe("Sidebar testing ", () => {
-    let sidebar: any;
-    let sidebar1: any;
-    beforeEach((): void => {
-        let ele: HTMLElement = document.createElement("div");
-        let ele1: HTMLElement = document.createElement("div");
-        let target: HTMLElement = document.createElement("div");
-        let sibin: HTMLElement = document.createElement("div");
-        ele.innerHTML = "<h3>Testing of Sidebar</h3>";
-        ele1.innerHTML = "<h3>Testing of Sidebar1</h3>";
-        sibin.innerHTML = "Side bar";
-        sibin.className = "sibling";
-        target.className = 'maincontent';
-        ele.style.height = "300px";
-        ele.id = "sidebar";
-        ele1.id = "sidebar1";
-        document.body.style.margin = "0px";
-        target.appendChild(sibin);
-        document.body.appendChild(ele);
-        document.body.appendChild(ele1);
-        document.body.appendChild(target);
-    });
-    afterEach((): void => {
-        disableBlazorMode();
-        if (sidebar) {
-            sidebar.destroy();
-        }
-        if (sidebar1) {
-            sidebar1.destroy();
-        }
-        document.body.innerHTML = "";
-    });
-    it("two Sidebar with same target test case", () => {
-        let ele: HTMLElement = document.getElementById("sidebar");
-        sidebar = new Sidebar({ type: 'Push', target: '.maincontent', width: '250px' }, ele);
-        let ele1: HTMLElement = document.getElementById("sidebar1");
-        sidebar1 = new Sidebar({ type: 'Push', position: 'Right', target: '.maincontent', width: '300px' }, ele1);
-        let aniEle: any = document.getElementsByClassName('e-content-animation');
-        expect(aniEle.length).toBe(1);
-        expect(aniEle[0].classList.contains('sibling')).toBe(true);
-        expect(aniEle[0].style.marginLeft).toBe('0px');
-        expect(aniEle[0].style.marginRight).toBe('0px');
-        sidebar.show();
-        sidebar1.show();
-        let aniEle1: any = document.getElementsByClassName('e-content-animation');
-        expect(aniEle1.length).toBe(1);
-        expect(aniEle1[0].classList.contains('sibling')).toBe(true);
-        expect(aniEle1[0].style.marginLeft).toBe('250px');
-        expect(aniEle1[0].style.marginRight).toBe('300px');
-    });
-});
+
 describe("Blazor Sidebar testing ", () => {
     let sidebar: any;
     beforeEach((): void => {

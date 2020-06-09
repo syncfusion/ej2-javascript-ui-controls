@@ -1355,6 +1355,13 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         if (!this.list || (this.list.textContent === this.noRecordsTemplate && this.getModuleName() !== 'listbox')) {
             this.renderList();
         }
+        if (this.sortOrder !== 'None' && isNullOrUndefined(itemIndex)) {
+            let newList: { [key: string]: Object }[] = [].slice.call(this.listData as { [key: string]: Object }[]);
+            newList.push(items as { [key: string]: Object });
+            newList = this.getSortedDataSource(newList);
+            let newIndex: number = newList.indexOf(items as { [key: string]: Object });
+            itemIndex = newIndex;
+        }
         this.DropDownBaseresetBlazorTemplates(true, false, false, false);
         let itemsCount: number = this.getItems().length;
         let selectedItemValue: Element = this.list.querySelector('.' + dropDownBaseClasses.selected);

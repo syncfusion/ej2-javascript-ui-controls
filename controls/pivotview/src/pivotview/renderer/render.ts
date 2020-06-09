@@ -1381,7 +1381,8 @@ export class Render {
         let args: HyperCellClickEventArgs = {
             currentCell: cell,
             data: this.engine.pivotValues[Number(cell.getAttribute('index'))][Number(cell.getAttribute('aria-colindex'))],
-            cancel: true
+            cancel: true,
+            nativeEvent: e
         };
         this.parent.trigger(events.hyperlinkCellClick, args, (observedArgs: HyperCellClickEventArgs) => {
             if (!observedArgs.cancel) {

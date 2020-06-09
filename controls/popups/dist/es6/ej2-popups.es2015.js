@@ -2048,9 +2048,12 @@ let Dialog = class Dialog extends Component {
             }
             this.setFooterTemplate();
         }
-        let footerEle = this.element.querySelector('.' + DLG_FOOTER_CONTENT);
-        let footerBtn = !isNullOrUndefined(footerEle) &&
-            footerEle.querySelectorAll('button');
+        let footerBtn;
+        for (let i = 0, childNodes = this.element.children; i < childNodes.length; i++) {
+            if (childNodes[i].classList.contains(DLG_FOOTER_CONTENT)) {
+                footerBtn = childNodes[i].querySelectorAll('button');
+            }
+        }
         for (let i = 0; i < this.buttons.length; i++) {
             if (!this.isBlazorServerRender()) {
                 this.btnObj[i] = new Button(this.buttons[i].buttonModel);
@@ -3878,14 +3881,14 @@ let Tooltip = class Tooltip extends Component {
                 this.unwireMouseEvents(e.target);
             }
             else {
-                this.hideTooltip(this.animation.close, e);
+                this.hideTooltip(this.animation.close, e, this.findTarget());
                 if (this.closeDelay === 0) {
                     this.clear();
                 }
             }
         }
         else {
-            this.hideTooltip(this.animation.close, e);
+            this.hideTooltip(this.animation.close, e, this.findTarget());
             this.clear();
         }
     }

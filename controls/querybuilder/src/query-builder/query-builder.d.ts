@@ -188,6 +188,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private fields;
     private columnTemplateFn;
     private target;
+    private updatedRule;
     /**
      * Triggers when the component is created.
      * @event

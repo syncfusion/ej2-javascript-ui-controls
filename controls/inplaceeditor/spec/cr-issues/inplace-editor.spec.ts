@@ -748,15 +748,29 @@ describe('CR ISSUE InPlace-Editor Control', () => {
         afterEach((): void => {
             destroy(editorObj);
         });
-        it('enableHtmlSanitizer', () => {
+        it('Text', () => {
+            editorObj = renderEditor({
+            type: 'Text',
+            enableHtmlSanitizer: true,
+            value: "<img src='fail' onerror='alert();' /> test",
+            });
+            ele = editorObj.element;
+            expect(editorObj.value).toBe('<img src="fail"> test');
+            expect((editorObj as any).valueEle.innerText).toBe('<img src="fail"> test');
+            expect((editorObj as any).valueEle.innerHTML).toBe('&lt;img src="fail"&gt; test');
+        });
+        it('RTE', () => {
             editorObj = renderEditor({
             type: 'RTE',
             enableHtmlSanitizer: true,
             value: "<img src='fail' onerror='alert();' /> test",
             });
             ele = editorObj.element;
-            expect(ele.querySelector('.e-editable-value').innerHTML).toBe('<img src="fail"> test');
             expect(editorObj.value).toBe('<img src="fail"> test');
+            expect((editorObj as any).valueEle.innerText).toBe(' test');
+            expect((editorObj as any).valueEle.innerHTML).toBe('<img src="fail"> test');
         });
     });
+    
+    
 });

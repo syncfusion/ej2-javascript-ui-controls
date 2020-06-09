@@ -7132,8 +7132,14 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         if (!this.isServerRendered) {
             _super.prototype.refresh.call(this);
         }
-        else if (this.isServerRendered && this.loadOn !== 'Dynamic') {
-            this.setActiveBorder();
+        else if (this.isServerRendered) {
+            if (this.tbObj) {
+                this.tbObj.refreshOverflow();
+                this.refreshActiveBorder();
+            }
+            if (this.loadOn !== 'Dynamic') {
+                this.setActiveBorder();
+            }
         }
     };
     /**
@@ -13882,7 +13888,6 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
             (removeClass([this.element], RTL$2));
     };
     Sidebar.prototype.setTarget = function () {
-        var ele;
         this.sidebarEleCopy = this.element.cloneNode(true);
         if (typeof (this.target) === 'string') {
             this.setProperties({ target: document.querySelector(this.target) }, true);
@@ -13891,11 +13896,6 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
             this.target.insertBefore(this.element, this.target.children[0]);
             addClass([this.element], SIDEBARABSOLUTE);
             addClass([this.target], CONTEXT);
-            ele = this.target.querySelector('.' + MAINCONTENTANIMATION);
-        }
-        this.targetEle = this.element.nextElementSibling;
-        if (!isNullOrUndefined(ele)) {
-            this.targetEle = ele;
         }
     };
     Sidebar.prototype.setCloseOnDocumentClick = function () {
@@ -13934,8 +13934,9 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
     };
     Sidebar.prototype.addClass = function () {
         var classELement = document.querySelector('.e-main-content');
-        if (!isNullOrUndefined(classELement || this.targetEle)) {
-            addClass([classELement || this.targetEle], [MAINCONTENTANIMATION]);
+        if (!isNullOrUndefined((classELement ||
+            this.element.nextElementSibling))) {
+            addClass([classELement || this.element.nextElementSibling], [MAINCONTENTANIMATION]);
         }
         this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
         if (!this.isBlazor) {
@@ -13975,7 +13976,8 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
         EventHandler.remove(this.element, 'transitionend', this.transitionEnd);
     };
     Sidebar.prototype.destroyBackDrop = function () {
-        var sibling = document.querySelector('.e-main-content') || this.targetEle;
+        var sibling = document.querySelector('.e-main-content') ||
+            this.element.nextElementSibling;
         if (this.target && this.showBackdrop && sibling) {
             removeClass([sibling], CONTEXTBACKDROP);
         }
@@ -14014,7 +14016,8 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
                 _this.enableDock ? setStyleAttribute(_this.element, { 'width': formatUnit(_this.dockSize) }) :
                     setStyleAttribute(_this.element, { 'width': formatUnit(_this.width) });
                 _this.setType(_this.type);
-                var sibling = document.querySelector('.e-main-content') || _this.targetEle;
+                var sibling = document.querySelector('.e-main-content') ||
+                    _this.element.nextElementSibling;
                 if (!_this.enableDock && sibling) {
                     sibling.style.transform = 'translateX(' + 0 + 'px)';
                     _this.position === 'Left' ? sibling.style.marginLeft = '0px' : sibling.style.marginRight = '0px';
@@ -14033,7 +14036,8 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
         });
     };
     Sidebar.prototype.setTimeOut = function () {
-        var sibling = document.querySelector('.e-main-content') || this.targetEle;
+        var sibling = document.querySelector('.e-main-content') ||
+            this.element.nextElementSibling;
         if (this.element.classList.contains(OPEN) && sibling) {
             if (this.position === 'Left') {
                 this.width === 'auto' ? sibling.style.marginLeft = this.setDimension(this.element.getBoundingClientRect().width)
@@ -14121,7 +14125,8 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
     };
     Sidebar.prototype.createBackDrop = function () {
         if (this.target && this.showBackdrop && this.getState()) {
-            var sibling = document.querySelector('.e-main-content') || this.targetEle;
+            var sibling = document.querySelector('.e-main-content') ||
+                this.element.nextElementSibling;
             addClass([sibling], CONTEXTBACKDROP);
         }
         else if (this.showBackdrop && !this.modal && this.getState()) {
@@ -14236,7 +14241,8 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     Sidebar.prototype.onPropertyChanged = function (newProp, oldProp) {
-        var sibling = document.querySelector('.e-main-content') || this.targetEle;
+        var sibling = document.querySelector('.e-main-content') ||
+            this.element.nextElementSibling;
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
             var prop = _a[_i];
             switch (prop) {
@@ -14297,10 +14303,12 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
                         setStyleAttribute(sibling, { 'margin-left': 0, 'margin-right': 0 });
                         document.body.insertAdjacentElement('afterbegin', this.element);
                     }
-                    var isRendered = this.isServerRendered;
-                    this.isServerRendered = false;
-                    _super.prototype.refresh.call(this);
-                    this.isServerRendered = isRendered;
+                    else {
+                        var isRendered = this.isServerRendered;
+                        this.isServerRendered = false;
+                        _super.prototype.refresh.call(this);
+                        this.isServerRendered = isRendered;
+                    }
                     break;
                 case 'closeOnDocumentClick':
                     this.setCloseOnDocumentClick();
@@ -14328,7 +14336,8 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
     Sidebar.prototype.setType = function (type) {
         var elementWidth = this.element.getBoundingClientRect().width;
         this.setZindex();
-        var sibling = document.querySelector('.e-main-content') || this.targetEle;
+        var sibling = document.querySelector('.e-main-content') ||
+            this.element.nextElementSibling;
         if (sibling) {
             sibling.style.transform = 'translateX(' + 0 + 'px)';
             if (!Browser.isDevice && this.type !== 'Auto') {
@@ -14397,7 +14406,8 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
         this.windowWidth = null;
         (!isNullOrUndefined(this.sidebarEleCopy.getAttribute('tabindex'))) ?
             this.element.setAttribute('tabindex', this.tabIndex) : this.element.removeAttribute('tabindex');
-        var sibling = document.querySelector('.e-main-content') || this.targetEle;
+        var sibling = document.querySelector('.e-main-content')
+            || this.element.nextElementSibling;
         if (!isNullOrUndefined(sibling)) {
             sibling.style.margin = '';
             sibling.style.transform = '';

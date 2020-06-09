@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.56 (2020-06-09)
+
+### ComboBox
+
+#### Bug Fixes
+
+- Issue with "select event is not triggered while doing first selection with autofill" has been resolved.
+
 ## 18.1.55 (2020-06-02)
 
 ### MultiSelect

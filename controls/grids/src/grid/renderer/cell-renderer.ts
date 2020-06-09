@@ -43,6 +43,10 @@ export class CellRenderer implements ICellRenderer<Column> {
      */
     public format(column: Column, value: Object, data?: Object): string {
         if (!isNullOrUndefined(column.format)) {
+
+            if (column.type === 'number' && isNaN(parseInt(value as string, 10))) {
+                value = null;
+            }
             value = this.formatter.toView(value as number | Date, column.getFormatter());
         }
 
@@ -146,7 +150,6 @@ export class CellRenderer implements ICellRenderer<Column> {
         if ((column.type === 'date' || column.type === 'datetime') && !isNullOrUndefined(value)) {
             value = new Date(value as string);
         }
-
         value = this.format(column, value, data);
 
         innerHtml = value.toString();

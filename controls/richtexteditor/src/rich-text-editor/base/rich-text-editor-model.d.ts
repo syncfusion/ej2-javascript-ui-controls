@@ -608,7 +608,7 @@ export interface RichTextEditorModel extends ComponentModel{
     /**
      * Event triggers when the selected image is cleared from the Rich Text Editor Content.
      * @event
-     * @blazorProperty 'ImageDelete'
+     * @blazorProperty 'OnImageDelete'
      */
     afterImageDelete?: EmitType<Object>;
 

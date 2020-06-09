@@ -8,8 +8,8 @@ import { Series, Points } from '../series/chart-series';
 import { BaseTooltip } from '../../common/user-interaction/tooltip';
 import { ChartShape } from '../utils/enum';
 import { StockChart } from '../../stock-chart/stock-chart';
-import { ITooltipRenderEventArgs } from '../model/chart-interface';
-import { tooltipRender } from '../../common/model/constants';
+import { ITooltipRenderEventArgs, ISharedTooltipRenderEventArgs } from '../model/chart-interface';
+import { tooltipRender, sharedTooltipRender } from '../../common/model/constants';
 
 /**
  * `Tooltip` module is used to render the tooltip for chart series.
@@ -314,6 +314,9 @@ export class Tooltip extends BaseTooltip {
             }
         }
         this.removeText();
+        let argument: ISharedTooltipRenderEventArgs = {
+            text: [], cancel: false, name: sharedTooltipRender, data: [], headerText: '', textStyle: this.textStyle
+        };
         for (let series of chart.visibleSeries) {
             if (!series.enableTooltip || !series.visible) {
                 continue;
@@ -327,7 +330,14 @@ export class Tooltip extends BaseTooltip {
                 headerContent = this.findHeader(data);
             }
             if (data) {
-                this.triggerSharedTooltip(data, isFirst, this.getTooltipText(data), this.findHeader(data), extraPoints);
+                if (!chart.isBlazor) {
+                    this.triggerSharedTooltip(data, isFirst, this.getTooltipText(data), this.findHeader(data), extraPoints);
+                } else {
+                    argument.data.push({ pointX: data.point.x , pointY: data.point.y, seriesIndex: data.series.index,
+                        seriesName: data.series.name, pointIndex: data.point.index, pointText: data.point.text  });
+                    argument.headerText = this.findHeader(data);
+                    argument.text.push(this.getTooltipText(data));
+                }
             }
             // if (data && this.triggerEvent(data, isFirst, this.getTooltipText(data)), this.findHeader(data)) {
             //     this.findMouseValue(data, chart);
@@ -336,6 +346,9 @@ export class Tooltip extends BaseTooltip {
             // } else if (data) {
             //     extraPoints.push(data);
             // }
+        }
+        if (chart.isBlazor) {
+            this.triggerBlazorSharedTooltip(argument, data, extraPoints);
         }
         if (this.currentPoints.length > 0) {
             this.createTooltip(chart, isFirst, this.findSharedLocation(),
@@ -346,7 +359,22 @@ export class Tooltip extends BaseTooltip {
             this.getElement(this.element.id + '_tooltip_path').setAttribute('d', '');
         }
     }
-
+    private triggerBlazorSharedTooltip(argument: ISharedTooltipRenderEventArgs, point: PointData, extraPoints: PointData[]): void {
+        let blazorSharedTooltip: Function = (argument: ISharedTooltipRenderEventArgs) => {
+            if (!argument.cancel) {
+                this.formattedText = this.formattedText.concat(argument.text);
+                this.text = this.formattedText;
+                this.headerText = argument.headerText;
+                this.findMouseValue(point, this.chart);
+                (<PointData[]>this.currentPoints).push(point);
+                point = null;
+            } else {
+                extraPoints.push(point);
+            }
+        };
+        blazorSharedTooltip.bind(this, point, extraPoints);
+        this.chart.trigger(sharedTooltipRender, argument, blazorSharedTooltip);
+    }
     private triggerSharedTooltip(point: PointData, isFirst: boolean, textCollection: string, headerText: string,
                                  extraPoints: PointData[]): void {
         let argsData: ITooltipRenderEventArgs = {

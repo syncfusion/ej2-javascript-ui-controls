@@ -1002,13 +1002,15 @@ export interface RowDeselectEventArgs {
     /** Defines the current selected/deselected row data. 
      * @isGenericType true
      */
-    data?: Object;
+    data?: Object | Object[];
     /** Defines the selected/deselected row index. */
     rowIndex?: number;
+    /** Defines the selected/deselected row indexes. */
+    rowIndexes?: number[];
     /** Defines the selected/deselected row. */
-    row?: Element;
+    row?: Element | Element[];
     /** Define the foreignKey row data associated with this column */
-    foreignKeyData?: Object;
+    foreignKeyData?: Object | Object[];
     /** Defines the cancel option value. */
     cancel?: boolean;
     /** Defines the target element for row deselect. */
@@ -1026,8 +1028,6 @@ export interface RowSelectEventArgs extends RowDeselectEventArgs {
     previousRow?: Element;
     /** Defines the target element for selection. */
     target?: Element;
-    /** Define the foreignKey row data associated with this column */
-    foreignKeyData?: Object;
 }
 
 export interface RecordDoubleClickEventArgs {

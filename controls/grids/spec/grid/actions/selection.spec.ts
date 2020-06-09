@@ -15,9 +15,11 @@ import { Edit } from '../../../src/grid/actions/edit';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
 import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
 import '../../../node_modules/es6-promise/dist/es6-promise';
-import { QueryCellInfoEventArgs } from '../../../src/grid/base/interface';
+import { QueryCellInfoEventArgs, RowSelectingEventArgs, RowSelectEventArgs, RowDeselectEventArgs } from '../../../src/grid/base/interface';
 import { createGrid, destroy } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
+import { Column } from '../../../src/grid/models/column';
+import { Row } from '../../../src/grid/models/row';
 
 Grid.Inject(Selection, Page, Sort, Group, Edit, Toolbar, Freeze, VirtualScroll);
 
@@ -2363,13 +2365,13 @@ describe('Grid Touch Selection', () => {
             gridObj.rowSelecting = undefined;
             let rowDeSelecting: EmitType<Object> = (args: Object) => {
                 expect(args['data']).not.toEqual(undefined);
-                expect(args['rowIndex'][0]).toEqual(0);
-                expect(args['row'][0]).toEqual(gridObj.getRows()[0]);
+                expect(args['rowIndex']).toEqual(0);
+                expect(args['row']).toEqual(gridObj.getRows()[0]);
             };
             let rowDeSelected: EmitType<Object> = (args: Object) => {
                 expect(args['data']).not.toEqual(undefined);
-                expect(args['rowIndex'][0]).toEqual(0);
-                expect(args['row'][0]).toEqual(gridObj.getRows()[0]);
+                expect(args['rowIndex']).toEqual(0);
+                expect(args['row']).toEqual(gridObj.getRows()[0]);
                 gridObj.rowSelected = undefined;
                 gridObj.rowSelecting = undefined;
                 done();
@@ -4211,6 +4213,7 @@ describe('isInteracted checking after cancel the rowselecting event', () => {
         rowSelecting = (args: any) => {
             expect(args.target).toBeNull();
             expect(args.isInteracted).toBeFalsy();
+            expect(args.isInteracted).toBeDefined();
         };
         gridObj.rowSelecting = rowSelecting;
         gridObj.selectRowsByRange(2,5);
@@ -4252,6 +4255,7 @@ describe('isInteracted property in rowSelecting and rowDeselected events indexes
         rowDeselected = (args: any) => {
             expect(args.isInteracted).toBeTruthy();
             expect(args.rowIndexes).toBeDefined();
+            expect(args.cancel).toBeUndefined();
         };
         gridObj.rowDeselected = rowDeselected;
         (<HTMLElement>gridObj.element.querySelector('.e-checkselectall')).click();
@@ -4298,5 +4302,227 @@ describe('AutoFill Feature', () => {
     afterAll(() => {
         destroy(gridObj);
         gridObj = null;
+    });
+});
+
+describe('rowdeselect checking with persist selection and ResetOnRowClick', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                enableAutoFill: true,
+                columns: [
+                    { type: 'checkbox', width: 50 },
+                    { field: 'OrderID', headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'CustomerID' },
+                    { field: 'EmployeeID', headerText: 'Employee ID' },
+                    { field: 'ShipCity', headerText: 'Ship City' },
+                    { field: 'ShipCountry', headerText: 'Ship Country' }],
+                allowPaging: true,
+                selectionSettings: { persistSelection: true, checkboxMode: 'ResetOnRowClick' },
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true },
+            }, done);
+    });
+
+    it('selecting more than one row in checkbox and clicking in row element', () => {
+        (gridObj.element.querySelectorAll('.e-frame.e-icons')[1] as HTMLElement).click();
+        (gridObj.element.querySelectorAll('.e-frame.e-icons')[2] as HTMLElement).click();
+        let rowDeSelecting = (e: any) => {
+            expect(e.data.length).toBe(2);
+        };
+        let rowDeSelected = (e: any) => {
+            expect(e.data.length).toBe(2);
+        }
+        gridObj.rowDeselecting = rowDeSelecting;
+        gridObj.rowDeselected = rowDeSelected;
+        (gridObj.element.querySelectorAll('.e-rowcell.e-gridchkbox')[0] as HTMLElement).click();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+        gridObj.rowDeselected = null;
+        gridObj.rowDeselecting = null;
+    });
+});
+
+describe('rowdeselect checking with persist selection and ResetOnRowClick', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                columns: [
+                    { type: 'checkbox', width: 50 },
+                    { field: 'OrderID', headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'CustomerID' },
+                    { field: 'EmployeeID', headerText: 'Employee ID' },
+                    { field: 'ShipCity', headerText: 'Ship City' },
+                    { field: 'ShipCountry', headerText: 'Ship Country' }],
+                allowPaging: true,
+                selectionSettings: { persistSelection: true, checkboxMode: 'ResetOnRowClick' },
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true },
+            }, done);
+    });
+
+    it('selecting checkselectall ', () => {
+        (gridObj.element.querySelectorAll('.e-frame.e-icons')[0] as HTMLElement).click(); //selecting all row
+        let rowDeSelecting = (e: any) => {
+            expect(e.data.length).toBe(12);
+        };
+        let rowDeSelected = (e: any) => {
+            expect(e.data.length).toBe(12);
+        }
+        gridObj.rowDeselecting = rowDeSelecting;
+        gridObj.rowDeselected = rowDeSelected;
+        (gridObj.element.querySelectorAll('.e-rowcell.e-gridchkbox')[0] as HTMLElement).click();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+        gridObj.rowDeselected = null;
+        gridObj.rowDeselecting = null;
+    });
+    describe('Ensure selection event arguments', () => {
+        let gridObj: Grid;
+        let start: number = 0;
+        let end: number = 3;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    columns: [
+                        { type: 'checkbox', width: 50 },
+                        { field: 'OrderID', headerText: 'Order ID' },
+                        { field: 'CustomerID', headerText: 'CustomerID' },
+                        { field: 'EmployeeID', headerText: 'Employee ID' },
+                        { field: 'ShipCity', headerText: 'Ship City' },
+                        { field: 'ShipCountry', headerText: 'Ship Country' }],
+                    allowPaging: true
+                }, done);
+        });
+        it('single row selecting', (done: Function) => {
+            let rowSelecting = (args: RowSelectingEventArgs) => {
+                let rows: Row<Column>[] = gridObj.getRowsObject();
+                expect(args.rowIndex).toBe(1);
+                expect(args.rowIndexes).toBeUndefined();
+                expect(args.data).toBe(rows[args.rowIndex].data);
+                expect(args.row).toBe(gridObj.getRowByIndex(args.rowIndex));
+                expect(args.foreignKeyData).toBe(rows[args.rowIndex].foreignKeyData);
+                gridObj.rowSelecting = null;
+            };
+            let rowSelected = (args: RowSelectEventArgs) => {
+                let rows: Row<Column>[] = gridObj.getRowsObject();
+                expect(args.rowIndex).toBe(1);
+                expect(args.rowIndexes).toBeUndefined();
+                expect(args.data).toBe(rows[args.rowIndex].data);
+                expect(args.row).toBe(gridObj.getRowByIndex(args.rowIndex));
+                expect(args.foreignKeyData).toBe(rows[args.rowIndex].foreignKeyData);
+                gridObj.rowSelected = null;
+                done();
+            };
+            gridObj.rowSelecting = rowSelecting;
+            gridObj.rowSelected = rowSelected;
+            gridObj.selectRow(1);
+        });
+        it('single row de-selecting', (done: Function) => {
+            let rowDeselecting = (args: RowDeselectEventArgs) => {
+                let rows: Row<Column>[] = gridObj.getRowsObject();
+                expect(args.rowIndex).toBe(1);
+                expect(args.rowIndexes).toBeUndefined();
+                expect(args.data).toBe(rows[args.rowIndex].data);
+                expect(args.row).toBe(gridObj.getRowByIndex(args.rowIndex));
+                expect(args.foreignKeyData).toBe(rows[args.rowIndex].foreignKeyData);
+                gridObj.rowDeselecting = null;
+            };
+            let rowDeselected = (args: RowDeselectEventArgs) => {
+                let rows: Row<Column>[] = gridObj.getRowsObject();
+                expect(args.rowIndex).toBe(1);
+                expect(args.rowIndexes).toBeUndefined();
+                expect(args.data).toBe(rows[args.rowIndex].data);
+                expect(args.row).toBe(gridObj.getRowByIndex(args.rowIndex));
+                expect(args.foreignKeyData).toBe(rows[args.rowIndex].foreignKeyData);
+                gridObj.rowDeselected = null;
+                done();
+            };
+            gridObj.rowDeselecting = rowDeselecting;
+            gridObj.rowDeselected = rowDeselected;
+            gridObj.selectRow(1, true);
+        });
+        it('header checkbox selection', (done: Function) => {
+            let rowSelecting = (args: RowSelectingEventArgs) => {
+                expect(args.rowIndex).toBe(0);
+                expect(args.rowIndexes.length).toBe(gridObj.currentViewData.length);
+                expect((args.data as Object[]).length).toBe(gridObj.currentViewData.length);
+                expect((args.row as Element[]).length).toBe(gridObj.currentViewData.length);
+                expect((args.foreignKeyData as Object[]).length).toBe(gridObj.currentViewData.length);
+                gridObj.rowSelecting = null;
+            };
+            let rowSelected = (args: RowSelectEventArgs) => {
+                expect(args.rowIndex).toBe(0);
+                expect(args.rowIndexes.length).toBe(gridObj.currentViewData.length);
+                expect((args.data as Object[]).length).toBe(gridObj.currentViewData.length);
+                expect((args.row as Element[]).length).toBe(gridObj.currentViewData.length);
+                expect((args.foreignKeyData as Object[]).length).toBe(gridObj.currentViewData.length);
+                gridObj.rowSelected = null;
+                done();
+            };
+            gridObj.rowSelecting = rowSelecting;
+            gridObj.rowSelected = rowSelected;
+            (<HTMLElement>gridObj.element.querySelector('.e-checkselectall')).click();
+        });
+        it('header checkbox de-selection', (done: Function) => {
+            let rowDeselecting = (args: RowDeselectEventArgs) => {
+                expect(args.rowIndex).toBe(0);
+                expect(args.rowIndexes.length).toBe(gridObj.currentViewData.length);
+                expect((args.data as Object[]).length).toBe(gridObj.currentViewData.length);
+                expect((args.row as Element[]).length).toBe(gridObj.currentViewData.length);
+                expect((args.foreignKeyData as Object[]).length).toBe(gridObj.currentViewData.length);
+                gridObj.rowDeselecting = null;
+            };
+            let rowDeselected = (args: RowDeselectEventArgs) => {
+                expect(args.rowIndex).toBe(0);
+                expect(args.rowIndexes.length).toBe(gridObj.currentViewData.length);
+                expect((args.data as Object[]).length).toBe(gridObj.currentViewData.length);
+                expect((args.row as Element[]).length).toBe(gridObj.currentViewData.length);
+                expect((args.foreignKeyData as Object[]).length).toBe(gridObj.currentViewData.length);
+                gridObj.rowDeselected = null;
+                done();
+            };
+            gridObj.rowDeselecting = rowDeselecting;
+            gridObj.rowDeselected = rowDeselected;
+            (<HTMLElement>gridObj.element.querySelector('.e-checkselectall')).click();
+        });
+        it('select multiple rows by selectRowsByRange method', (done: Function) => {
+            let rowSelecting = (args: RowSelectingEventArgs) => {
+                expect(args.rowIndex).toBe(0);
+                expect(args.rowIndexes.length).toBe(end + 1);
+                expect((args.data as Object[]).length).toBe(end + 1);
+                expect((args.row as Element[]).length).toBe(end + 1);
+                expect((args.foreignKeyData as Object[]).length).toBe(end + 1);
+                gridObj.rowSelecting = null;
+            };
+            let rowSelected = (args: RowSelectEventArgs) => {
+                expect(args.rowIndex).toBe(0);
+                expect(args.rowIndexes.length).toBe(end + 1);
+                expect((args.data as Object[]).length).toBe(end + 1);
+                expect((args.row as Element[]).length).toBe(end + 1);
+                expect((args.foreignKeyData as Object[]).length).toBe(end + 1);
+                gridObj.rowSelected = null;
+                done();
+            };
+            gridObj.rowSelecting = rowSelecting;
+            gridObj.rowSelected = rowSelected;
+            gridObj.selectRowsByRange(start, end);
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+            gridObj.rowDeselected = null;
+            gridObj.rowDeselecting = null;
+            gridObj.rowSelecting = null;
+            gridObj.rowSelected = null;
+        });
     });
 });

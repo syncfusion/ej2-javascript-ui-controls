@@ -7469,7 +7469,8 @@ var Render = /** @__PURE__ @class */ (function () {
         var args = {
             currentCell: cell,
             data: this.engine.pivotValues[Number(cell.getAttribute('index'))][Number(cell.getAttribute('aria-colindex'))],
-            cancel: true
+            cancel: true,
+            nativeEvent: e
         };
         this.parent.trigger(hyperlinkCellClick, args, function (observedArgs) {
             if (!observedArgs.cancel) {
@@ -13198,121 +13199,123 @@ var PivotChart = /** @__PURE__ @class */ (function () {
         for (var _b = 0, rKeys_1 = rKeys; _b < rKeys_1.length; _b++) {
             var rKey = rKeys_1[_b];
             var rowIndex = Number(rKey);
-            if (pivotValues[rowIndex][0] && pivotValues[rowIndex][0].axis === 'row' &&
-                (this.dataSourceSettings.rows.length === 0 ? true : pivotValues[rowIndex][0].type !== 'grand sum')) {
-                var firstRowCell = pivotValues[rowIndex][0];
-                var tupInfo = this.parent.dataType === 'olap' ?
-                    this.engineModule.tupRowInfo[firstRowCell.ordinal] : undefined;
-                var fieldPos = -1;
-                var currrentLevel = firstRowCell.level;
-                if (this.parent.dataType === 'olap') {
-                    fieldPos = tupInfo.uNameCollection.split('::[').length - 1;
-                    if (firstRowCell.memberType !== 3 && (tupInfo.measureName ?
-                        tupInfo.measureName === this.dataSourceSettings.values[0].name : true)) {
-                        firstLevelUName = firstLevelUName === undefined ? firstRowCell.levelUniqueName : firstLevelUName;
-                        integratedLevel = firstLevelUName === firstRowCell.levelUniqueName ? 0 : integratedLevel;
-                        levelCollection = integratedLevel === 0 ? {} : levelCollection;
-                        integratedLevel = (prevCell && firstLevelUName !== firstRowCell.levelUniqueName) ?
-                            (prevCell.hierarchy === firstRowCell.hierarchy ?
-                                (integratedLevel + (firstRowCell.level - prevCell.level)) :
-                                (isNullOrUndefined(levelCollection[firstRowCell.levelUniqueName]) ?
-                                    (levelPos[firstRowCell.hierarchy].start) :
-                                    levelCollection[firstRowCell.levelUniqueName])) : integratedLevel;
-                        levelCollection[firstRowCell.levelUniqueName] = integratedLevel;
-                        currrentLevel = integratedLevel;
-                        indexCount += (prevCell && lastDimension === prevCell.hierarchy && !prevCell.isDrilled) ? 1 : 0;
-                        prevLevel = integratedLevel;
-                        prevCell = firstRowCell;
-                    }
-                }
-                else if (firstRowCell.type !== 'value') {
-                    if (!(prevLevel === undefined || prevLevel < currrentLevel)) {
-                        indexCount++;
-                    }
-                    prevLevel = currrentLevel;
-                }
-                this.maxLevel = currrentLevel > this.maxLevel ? currrentLevel : this.maxLevel;
-                var name_1 = this.parent.dataType === 'olap' ? firstRowCell.formattedText :
-                    (firstRowCell.actualText ? firstRowCell.actualText.toString() : firstRowCell.formattedText.toString());
-                var text = firstRowCell.formattedText ? firstRowCell.formattedText.toString() : name_1;
-                var caption = (firstRowCell.hasChild && !firstRowCell.isNamedSet) ?
-                    ((firstRowCell.isDrilled ? ' - ' : ' + ') + text) : text;
-                var levelName = tupInfo ? tupInfo.uNameCollection : firstRowCell.valueSort.levelName.toString();
-                var cellInfo = {
-                    name: name_1,
-                    text: caption,
-                    hasChild: firstRowCell.hasChild,
-                    isDrilled: firstRowCell.isDrilled,
-                    levelName: levelName,
-                    level: currrentLevel,
-                    fieldName: firstRowCell.valueSort.axis ? firstRowCell.valueSort.axis.toString() : '',
-                    rowIndex: rowIndex,
-                    colIndex: 0,
-                    cell: firstRowCell
-                };
-                if (this.parent.dataType === 'olap' ? firstRowCell.memberType !== 3 : firstRowCell.type !== 'value') {
-                    if (this.headerColl[indexCount]) {
-                        this.headerColl[indexCount][currrentLevel] = cellInfo;
-                    }
-                    else {
-                        this.headerColl[indexCount] = {};
-                        this.headerColl[indexCount][currrentLevel] = cellInfo;
-                    }
-                }
-                var rows = pivotValues[rowIndex];
-                var cKeys = Object.keys(rows);
-                var prevMemberCell = void 0;
-                if (this.parent.dataType === 'olap') {
-                    memberCell = firstRowCell.memberType !== 3 ? firstRowCell : memberCell;
-                }
-                else {
-                    memberCell = firstRowCell.type !== 'value' ? firstRowCell : memberCell;
-                }
-                for (var _c = 0, cKeys_1 = cKeys; _c < cKeys_1.length; _c++) {
-                    var cKey = cKeys_1[_c];
-                    var cellIndex = Number(cKey);
-                    var cell = pivotValues[rowIndex][cellIndex];
-                    var measureAllow = cell.rowHeaders === '' ? this.dataSourceSettings.rows.length === 0 : true;
-                    var actualText = (this.parent.dataType === 'olap' && tupInfo && tupInfo.measureName) ?
-                        tupInfo.measureName : cell.actualText;
-                    if (!totColIndex[cell.colIndex] && cell.axis === 'value' && firstRowCell.type !== 'header' &&
-                        actualText !== '' && (chartSettings.enableMultiAxis ? true : actualText === this.currentMeasure)) {
-                        if (isNullOrUndefined(firstRowCell.members)) {
-                            firstRowCell.members = [];
+            if (!isNullOrUndefined(pivotValues[rowIndex])) {
+                if (pivotValues[rowIndex][0] && pivotValues[rowIndex][0].axis === 'row' &&
+                    (this.dataSourceSettings.rows.length === 0 ? true : pivotValues[rowIndex][0].type !== 'grand sum')) {
+                    var firstRowCell = pivotValues[rowIndex][0];
+                    var tupInfo = this.parent.dataType === 'olap' ?
+                        this.engineModule.tupRowInfo[firstRowCell.ordinal] : undefined;
+                    var fieldPos = -1;
+                    var currrentLevel = firstRowCell.level;
+                    if (this.parent.dataType === 'olap') {
+                        fieldPos = tupInfo.uNameCollection.split('::[').length - 1;
+                        if (firstRowCell.memberType !== 3 && (tupInfo.measureName ?
+                            tupInfo.measureName === this.dataSourceSettings.values[0].name : true)) {
+                            firstLevelUName = firstLevelUName === undefined ? firstRowCell.levelUniqueName : firstLevelUName;
+                            integratedLevel = firstLevelUName === firstRowCell.levelUniqueName ? 0 : integratedLevel;
+                            levelCollection = integratedLevel === 0 ? {} : levelCollection;
+                            integratedLevel = (prevCell && firstLevelUName !== firstRowCell.levelUniqueName) ?
+                                (prevCell.hierarchy === firstRowCell.hierarchy ?
+                                    (integratedLevel + (firstRowCell.level - prevCell.level)) :
+                                    (isNullOrUndefined(levelCollection[firstRowCell.levelUniqueName]) ?
+                                        (levelPos[firstRowCell.hierarchy].start) :
+                                        levelCollection[firstRowCell.levelUniqueName])) : integratedLevel;
+                            levelCollection[firstRowCell.levelUniqueName] = integratedLevel;
+                            currrentLevel = integratedLevel;
+                            indexCount += (prevCell && lastDimension === prevCell.hierarchy && !prevCell.isDrilled) ? 1 : 0;
+                            prevLevel = integratedLevel;
+                            prevCell = firstRowCell;
                         }
-                        if (this.parent.dataType === 'olap' ? (lastHierarchy === firstRowCell.hierarchy ?
-                            ((firstRowCell.memberType === 3 && prevMemberCell) ?
-                                (fieldPos === this.measurePos ? prevMemberCell.isDrilled : true) : firstRowCell.isDrilled) : true)
-                            : (((firstRowCell.type === 'value' && prevMemberCell) ?
-                                prevMemberCell.members.length > 0 : firstRowCell.members.length > 0) || !measureAllow)) {
-                            break;
+                    }
+                    else if (firstRowCell.type !== 'value') {
+                        if (!(prevLevel === undefined || prevLevel < currrentLevel)) {
+                            indexCount++;
                         }
-                        var colHeaders = this.parent.dataType === 'olap' ? cell.columnHeaders.toString().split(/~~|::/).join(' - ')
-                            : cell.columnHeaders.toString().split('.').join(' - ');
-                        var rowHeaders = this.parent.dataType === 'olap' ? cell.rowHeaders.toString().split(/~~|::/).join(' - ')
-                            : cell.rowHeaders.toString().split('.').join(' - ');
-                        var columnSeries = colHeaders + ' | ' + actualText;
-                        var yValue = (this.parent.dataType === 'pivot' ? (this.engineModule.aggregatedValueMatrix[rowIndex] &&
-                            !isNullOrUndefined(this.engineModule.aggregatedValueMatrix[rowIndex][cellIndex])) ?
-                            Number(this.engineModule.aggregatedValueMatrix[rowIndex][cellIndex]) : Number(cell.value) : Number(cell.value));
-                        if (this.columnGroupObject[columnSeries]) {
-                            this.columnGroupObject[columnSeries].push({
-                                x: this.dataSourceSettings.rows.length === 0 ? firstRowCell.formattedText : rowHeaders,
-                                y: yValue,
-                                rIndex: rowIndex,
-                                cIndex: cellIndex
-                            });
+                        prevLevel = currrentLevel;
+                    }
+                    this.maxLevel = currrentLevel > this.maxLevel ? currrentLevel : this.maxLevel;
+                    var name_1 = this.parent.dataType === 'olap' ? firstRowCell.formattedText :
+                        (firstRowCell.actualText ? firstRowCell.actualText.toString() : firstRowCell.formattedText.toString());
+                    var text = firstRowCell.formattedText ? firstRowCell.formattedText.toString() : name_1;
+                    var caption = (firstRowCell.hasChild && !firstRowCell.isNamedSet) ?
+                        ((firstRowCell.isDrilled ? ' - ' : ' + ') + text) : text;
+                    var levelName = tupInfo ? tupInfo.uNameCollection : firstRowCell.valueSort.levelName.toString();
+                    var cellInfo = {
+                        name: name_1,
+                        text: caption,
+                        hasChild: firstRowCell.hasChild,
+                        isDrilled: firstRowCell.isDrilled,
+                        levelName: levelName,
+                        level: currrentLevel,
+                        fieldName: firstRowCell.valueSort.axis ? firstRowCell.valueSort.axis.toString() : '',
+                        rowIndex: rowIndex,
+                        colIndex: 0,
+                        cell: firstRowCell
+                    };
+                    if (this.parent.dataType === 'olap' ? firstRowCell.memberType !== 3 : firstRowCell.type !== 'value') {
+                        if (this.headerColl[indexCount]) {
+                            this.headerColl[indexCount][currrentLevel] = cellInfo;
                         }
                         else {
-                            this.columnGroupObject[columnSeries] = [{
+                            this.headerColl[indexCount] = {};
+                            this.headerColl[indexCount][currrentLevel] = cellInfo;
+                        }
+                    }
+                    var rows = pivotValues[rowIndex];
+                    var cKeys = Object.keys(rows);
+                    var prevMemberCell = void 0;
+                    if (this.parent.dataType === 'olap') {
+                        memberCell = firstRowCell.memberType !== 3 ? firstRowCell : memberCell;
+                    }
+                    else {
+                        memberCell = firstRowCell.type !== 'value' ? firstRowCell : memberCell;
+                    }
+                    for (var _c = 0, cKeys_1 = cKeys; _c < cKeys_1.length; _c++) {
+                        var cKey = cKeys_1[_c];
+                        var cellIndex = Number(cKey);
+                        var cell = pivotValues[rowIndex][cellIndex];
+                        var measureAllow = cell.rowHeaders === '' ? this.dataSourceSettings.rows.length === 0 : true;
+                        var actualText = (this.parent.dataType === 'olap' && tupInfo && tupInfo.measureName) ?
+                            tupInfo.measureName : cell.actualText;
+                        if (!totColIndex[cell.colIndex] && cell.axis === 'value' && firstRowCell.type !== 'header' &&
+                            actualText !== '' && (chartSettings.enableMultiAxis ? true : actualText === this.currentMeasure)) {
+                            if (isNullOrUndefined(firstRowCell.members)) {
+                                firstRowCell.members = [];
+                            }
+                            if (this.parent.dataType === 'olap' ? (lastHierarchy === firstRowCell.hierarchy ?
+                                ((firstRowCell.memberType === 3 && prevMemberCell) ?
+                                    (fieldPos === this.measurePos ? prevMemberCell.isDrilled : true) : firstRowCell.isDrilled) : true)
+                                : (((firstRowCell.type === 'value' && prevMemberCell) ?
+                                    prevMemberCell.members.length > 0 : firstRowCell.members.length > 0) || !measureAllow)) {
+                                break;
+                            }
+                            var colHeaders = this.parent.dataType === 'olap' ? cell.columnHeaders.toString().split(/~~|::/).join(' - ')
+                                : cell.columnHeaders.toString().split('.').join(' - ');
+                            var rowHeaders = this.parent.dataType === 'olap' ? cell.rowHeaders.toString().split(/~~|::/).join(' - ')
+                                : cell.rowHeaders.toString().split('.').join(' - ');
+                            var columnSeries = colHeaders + ' | ' + actualText;
+                            var yValue = (this.parent.dataType === 'pivot' ? (this.engineModule.aggregatedValueMatrix[rowIndex] &&
+                                !isNullOrUndefined(this.engineModule.aggregatedValueMatrix[rowIndex][cellIndex])) ?
+                                Number(this.engineModule.aggregatedValueMatrix[rowIndex][cellIndex]) : Number(cell.value) : Number(cell.value));
+                            if (this.columnGroupObject[columnSeries]) {
+                                this.columnGroupObject[columnSeries].push({
                                     x: this.dataSourceSettings.rows.length === 0 ? firstRowCell.formattedText : rowHeaders,
                                     y: yValue,
                                     rIndex: rowIndex,
                                     cIndex: cellIndex
-                                }];
+                                });
+                            }
+                            else {
+                                this.columnGroupObject[columnSeries] = [{
+                                        x: this.dataSourceSettings.rows.length === 0 ? firstRowCell.formattedText : rowHeaders,
+                                        y: yValue,
+                                        rIndex: rowIndex,
+                                        cIndex: cellIndex
+                                    }];
+                            }
                         }
+                        prevMemberCell = memberCell;
                     }
-                    prevMemberCell = memberCell;
                 }
             }
         }
@@ -13635,7 +13638,10 @@ var PivotChart = /** @__PURE__ @class */ (function () {
         for (var _i = 0, rKeys_2 = rKeys; _i < rKeys_2.length; _i++) {
             var rowIndex = rKeys_2[_i];
             var rows = pivotValues[Number(rowIndex)];
-            var cKeys = Object.keys(rows);
+            var cKeys = void 0;
+            if (!isNullOrUndefined(rows)) {
+                cKeys = Object.keys(rows);
+            }
             for (var _a = 0, cKeys_2 = cKeys; _a < cKeys_2.length; _a++) {
                 var cellIndex = cKeys_2[_a];
                 var cell = rows[Number(cellIndex)];
@@ -14078,13 +14084,33 @@ var PivotChart = /** @__PURE__ @class */ (function () {
             action: labelInfo.isDrilled ? 'up' : 'down',
             currentCell: currentCell
         };
-        pivot.parent.trigger(drill, {
+        var drillArgs = {
             drillInfo: drilledItem,
-            pivotview: isBlazor() ? undefined : pivot
-        });
+            pivotview: isBlazor() ? undefined : pivot.parent
+        };
+        pivot.parent.trigger(drill, drillArgs);
         if (pivot.parent.enableVirtualization) {
-            pivot.engineModule.drilledMembers = pivot.dataSourceSettings.drilledMembers;
-            pivot.engineModule.onDrill(drilledItem);
+            if (isBlazor()) {
+                /* tslint:disable */
+                var sfBlazor = 'sfBlazor';
+                var dataSourceSettings = window[sfBlazor].copyWithoutCircularReferences([pivot.dataSourceSettings], pivot.dataSourceSettings);
+                var drillItem = window[sfBlazor].copyWithoutCircularReferences([drilledItem], drilledItem);
+                var args_1 = window[sfBlazor].copyWithoutCircularReferences([drillArgs], drillArgs);
+                pivot.parent.interopAdaptor.invokeMethodAsync('PivotInteropMethod', 'onDrill', { 'dataSourceSettings': dataSourceSettings, 'drilledItem': drillItem }).then(function (data) {
+                    pivot.parent.updateBlazorData(data, pivot.parent);
+                    pivot.parent.engineModule.drilledMembers = pivot.dataSourceSettings.drilledMembers;
+                    pivot.parent.allowServerDataBinding = false;
+                    pivot.parent.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
+                    delete pivot.parent.bulkChanges.pivotValues;
+                    pivot.parent.allowServerDataBinding = true;
+                    pivot.parent.renderPivotGrid();
+                });
+                /* tslint:enable */
+            }
+            else {
+                pivot.engineModule.drilledMembers = pivot.dataSourceSettings.drilledMembers;
+                pivot.engineModule.onDrill(drilledItem);
+            }
         }
         else {
             pivot.engineModule.generateGridData(pivot.dataSourceSettings);
@@ -20833,6 +20859,7 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
             chartSettings: pivotData.chartSettings,
             displayOption: pivotData.displayOption
         }, true);
+        delete this.bulkChanges.pivotValues;
         this.allowServerDataBinding = true;
         /* tslint:enable */
         this.dataSourceSettings = pivotData.dataSourceSettings;
@@ -22436,7 +22463,8 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
                 if (_this_1.cellClick && observedArgs.isCellClick) {
                     _this_1.trigger(cellClick, {
                         currentCell: ele,
-                        data: _this_1.pivotValues[rowIndex_1][colIndex_1]
+                        data: _this_1.pivotValues[rowIndex_1][colIndex_1],
+                        nativeEvent: e
                     });
                 }
                 _this_1.getSelectedCellsPos();

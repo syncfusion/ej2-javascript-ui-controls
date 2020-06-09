@@ -1200,7 +1200,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.showPopup();
             }
             let proxy: this = this;
-            let duration: number = (isBlazor()) ? 1000 : 100;
+            let duration: number = (isBlazor()) ? 1000 : (this.element.tagName === this.getNgDirective() && this.itemTemplate) ? 500 : 100;
             if (!this.isSecondClick) {
                 setTimeout(() => { proxy.cloneElements(); proxy.isSecondClick = true; }, duration);
             }
@@ -1321,7 +1321,8 @@ export class DropDownList extends DropDownBase implements IInput {
     }
 
     protected setSelection(li: Element, e: MouseEvent | KeyboardEventArgs | TouchEvent): void {
-        if (this.isValidLI(li) && !li.classList.contains(dropDownBaseClasses.selected)) {
+        if (this.isValidLI(li) && (!li.classList.contains(dropDownBaseClasses.selected) || (this.isPopupOpen && this.isSelected
+            && li.classList.contains(dropDownBaseClasses.selected)))) {
             this.updateSelectedItem(li, e, false, true);
         } else {
             this.setSelectOptions(li, e);

@@ -2274,6 +2274,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             chartSettings: pivotData.chartSettings,
             displayOption: pivotData.displayOption
         }, true);
+        delete (this as any).bulkChanges.pivotValues;
         this.allowServerDataBinding = true;
         /* tslint:enable */
         this.dataSourceSettings = pivotData.dataSourceSettings;
@@ -3866,7 +3867,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 if (this.cellClick && observedArgs.isCellClick) {
                     this.trigger(events.cellClick, {
                         currentCell: ele,
-                        data: this.pivotValues[rowIndex][colIndex]
+                        data: this.pivotValues[rowIndex][colIndex],
+                        nativeEvent: e
                     });
                 }
                 this.getSelectedCellsPos();

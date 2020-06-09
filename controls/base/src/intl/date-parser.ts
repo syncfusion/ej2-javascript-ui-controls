@@ -96,7 +96,7 @@ export class DateParser {
             let zCorrectTemp: number = 0;
             let isgmtTraversed: boolean = false;
             let nRegx: string = numOptions.numericRegex;
-             // tslint:disable-next-line
+            // tslint:disable-next-line
             let numMapper: NumberMapper = isBlazor() ? (dependable.parserObject as any).numbers :
                 parser.getNumberMapper(dependable.parserObject, parser.getNumberingSystem(cldr));
             for (let i: number = 0; i < length; i++) {
@@ -105,7 +105,7 @@ export class DateParser {
                 let char: string = (str[0] === 'K') ? 'h' : str[0];
                 let isNumber: boolean;
                 let canUpdate: boolean;
-                 // tslint:disable-next-line
+                // tslint:disable-next-line
                 let charKey: any = datePartMatcher[char];
                 let optional: string = (len === 2) ? '' : '?';
                 if (isgmtTraversed) {
@@ -162,6 +162,10 @@ export class DateParser {
                             parseOptions.hour12 = true;
                         }
                         break;
+                    case 'W':
+                        let opt: string = len === 1 ? '?' : '';
+                        regexString += '(' + nRegx + opt + nRegx + ')';
+                        break;
                     case 'y':
                         canUpdate = isNumber = true;
                         if (len === 2) {
@@ -182,7 +186,7 @@ export class DateParser {
                         canUpdate = true;
                         let eText: string = (len <= 3) ? 'eraAbbr' : (len === 4) ? 'eraNames' : 'eraNarrow';
                         (<any>parseOptions)[charKey] = parser.reverseObject(isBlazor() ?
-                         getValue('eras', dependable.dateObject) : getValue('eras.' + eText, dependable.dateObject));
+                            getValue('eras', dependable.dateObject) : getValue('eras.' + eText, dependable.dateObject));
                         regexString += '(' + Object.keys((<any>parseOptions)[charKey]).join('|') + '?)';
                         break;
                     case 'z':

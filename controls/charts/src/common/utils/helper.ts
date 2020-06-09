@@ -1629,7 +1629,7 @@ export function calculateSize(chart: Chart | AccumulationChart | RangeNavigator 
     }
     chart.availableSize = new Size(
         stringToNumber(chart.width, containerWidth) || containerWidth || 600,
-        stringToNumber(chart.height, containerHeight) || containerHeight || height
+        stringToNumber(chart.height, containerHeight || height) || containerHeight || height
     );
 }
 export function createSvg(chart: Chart | AccumulationChart | RangeNavigator): void {

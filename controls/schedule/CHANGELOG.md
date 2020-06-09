@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.56 (2020-06-09)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#278019` - An issue with drag and drop of vertical view events doesn't work properly when we disable `timeScale` property has been fixed.
+
 ## 18.1.55 (2020-06-02)
 
 ### Schedule

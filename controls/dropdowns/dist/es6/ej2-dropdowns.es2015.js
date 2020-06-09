@@ -106,7 +106,7 @@ function highlightSearch(element, query, ignoreCase, type, isBlazor$$1) {
 }
 function findTextNode(element, pattern, isBlazor$$1) {
     for (let index = 0; element.childNodes && (index < element.childNodes.length); index++) {
-        if (element.childNodes[index].nodeType === 3) {
+        if (element.childNodes[index].nodeType === 3 && element.childNodes[index].textContent.trim() !== '') {
             element = (isBlazor$$1 && element.classList.contains('e-highlight')) ? element.parentElement : element;
             if (isBlazor$$1 && element.getAttribute('data-value')) {
                 element.innerHTML = element.getAttribute('data-value').replace(pattern, '<span class="e-highlight">$1</span>');
@@ -1072,6 +1072,13 @@ let DropDownBase = class DropDownBase extends Component {
     addItem(items, itemIndex) {
         if (!this.list || (this.list.textContent === this.noRecordsTemplate && this.getModuleName() !== 'listbox')) {
             this.renderList();
+        }
+        if (this.sortOrder !== 'None' && isNullOrUndefined(itemIndex)) {
+            let newList = [].slice.call(this.listData);
+            newList.push(items);
+            newList = this.getSortedDataSource(newList);
+            let newIndex = newList.indexOf(items);
+            itemIndex = newIndex;
         }
         this.DropDownBaseresetBlazorTemplates(true, false, false, false);
         let itemsCount = this.getItems().length;
@@ -2193,7 +2200,7 @@ let DropDownList = class DropDownList extends DropDownBase {
                 this.showPopup();
             }
             let proxy = this;
-            let duration = (isBlazor()) ? 1000 : 100;
+            let duration = (isBlazor()) ? 1000 : (this.element.tagName === this.getNgDirective() && this.itemTemplate) ? 500 : 100;
             if (!this.isSecondClick) {
                 setTimeout(() => { proxy.cloneElements(); proxy.isSecondClick = true; }, duration);
             }
@@ -2312,7 +2319,8 @@ let DropDownList = class DropDownList extends DropDownBase {
         }
     }
     setSelection(li, e) {
-        if (this.isValidLI(li) && !li.classList.contains(dropDownBaseClasses.selected)) {
+        if (this.isValidLI(li) && (!li.classList.contains(dropDownBaseClasses.selected) || (this.isPopupOpen && this.isSelected
+            && li.classList.contains(dropDownBaseClasses.selected)))) {
             this.updateSelectedItem(li, e, false, true);
         }
         else {
@@ -6922,7 +6930,7 @@ let ComboBox = class ComboBox extends DropDownList {
         this.itemData = this.getDataByValue(this.value);
         let dataItem = this.getItemData();
         if (!(this.allowCustom && isNullOrUndefined(dataItem.value) && isNullOrUndefined(dataItem.text))) {
-            this.setProperties({ 'value': dataItem.value, 'text': dataItem.text });
+            this.setProperties({ 'value': dataItem.value, 'text': dataItem.text }, true);
         }
     }
     /**
@@ -7093,7 +7101,12 @@ let ComboBox = class ComboBox extends DropDownList {
     selectCurrentItem(e) {
         let li;
         if (this.isPopupOpen) {
-            li = this.list.querySelector('.' + dropDownListClasses.focus);
+            if (this.isSelected) {
+                li = this.list.querySelector('.' + dropDownListClasses.selected);
+            }
+            else {
+                li = this.list.querySelector('.' + dropDownListClasses.focus);
+            }
             if (li) {
                 this.setSelection(li, e);
                 this.isTyped = false;
@@ -7770,6 +7783,7 @@ let AutoComplete = class AutoComplete extends ComboBox {
             for (let i = 0; i < this.liCollections.length; i++) {
                 let isHighlight = this.ulElement.querySelector('.e-active');
                 if (!isHighlight) {
+                    revertHighlightSearch(this.liCollections[i]);
                     highlightSearch(this.liCollections[i], this.queryString, this.ignoreCase, this.filterType, this.isServerBlazor);
                 }
             }

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.56 (2020-06-09)
+
+### File Manager
+
+#### Bug Fixes
+
+- The issue with "File name is not displayed in the access control error message" has been fixed.
+
 ## 18.1.55 (2020-06-02)
 
 ### File Manager

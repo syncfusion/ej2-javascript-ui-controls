@@ -2192,7 +2192,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       return callBackPromise;
     };
     this.grid.actionComplete = (args: ActionEventArgs) => {
-      if (isBlazor() && this.isServerRendered) {
+      if (isBlazor() && this.isServerRendered && args.requestType !== 'filterAfterOpen') {
         let rows: HTMLTableRowElement[] = this.getRows();
         for (let i: number = 0; i < rows.length; i++) {
           if (rows[i].classList.contains('e-treerowcollapsed') || rows[i].classList.contains('e-treerowexpanded')) {

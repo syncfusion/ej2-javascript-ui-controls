@@ -78,7 +78,7 @@ export class ActionEvents {
 
     private actionCompleteHandler(args: { eventArgs: SortEventArgs | CellSaveEventArgs | SaveCompleteEventArgs, action: string }): void {
         this.parent.trigger('actionComplete', args);
-        if (args.action !== 'undoRedo') {
+        if (args.action !== 'undoRedo' && args.action !== 'gotoSheet') {
             this.parent.notify(updateUndoRedoCollection, { args: args });
         }
     }

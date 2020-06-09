@@ -570,7 +570,9 @@ var Action = /** @__PURE__ @class */ (function () {
             return;
         }
         if (target.classList.contains(CARD_CLASS)) {
-            this.parent.keyboardModule.cardTabIndexRemove();
+            if (this.parent.allowKeyboard) {
+                this.parent.keyboardModule.cardTabIndexRemove();
+            }
             this.cardClick(e);
         }
         else if (target.classList.contains(HEADER_ICON_CLASS)) {
@@ -596,7 +598,7 @@ var Action = /** @__PURE__ @class */ (function () {
         if (this.parent.cardSettings.priority) {
             newData[this.parent.cardSettings.priority] = 1;
             if (closest(target, '.' + CONTENT_CELLS_CLASS).querySelector('.' + CARD_CLASS)) {
-                var data = this.parent.getCardDetails(target.previousElementSibling.lastElementChild);
+                var data = this.parent.getCardDetails(target.nextElementSibling.firstElementChild);
                 newData[this.parent.cardSettings.priority] = data[this.parent.cardSettings.priority] + 1;
             }
         }
@@ -636,11 +638,13 @@ var Action = /** @__PURE__ @class */ (function () {
                     _this.parent.touchModule.updatePopupContent();
                 }
                 var cell = closest(target, '.' + CONTENT_CELLS_CLASS);
-                var element = [].slice.call(cell.querySelectorAll('.' + CARD_CLASS));
-                element.forEach(function (e) {
-                    e.setAttribute('tabindex', '0');
-                });
-                _this.parent.keyboardModule.addRemoveTabIndex('Remove');
+                if (_this.parent.allowKeyboard) {
+                    var element = [].slice.call(cell.querySelectorAll('.' + CARD_CLASS));
+                    element.forEach(function (e) {
+                        e.setAttribute('tabindex', '0');
+                    });
+                    _this.parent.keyboardModule.addRemoveTabIndex('Remove');
+                }
             }
         });
     };
@@ -1650,6 +1654,7 @@ var KanbanDialog = /** @__PURE__ @class */ (function () {
         if (action !== 'Delete') {
             this.applyFormValidation();
         }
+        this.dialogObj.element.querySelector('.e-dlg-closeicon-btn').title = this.parent.localeObj.getConstant('close');
     };
     KanbanDialog.prototype.getDialogContent = function (args, action) {
         if (action === 'Delete') {
@@ -3337,7 +3342,8 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
                 delete: 'Delete',
                 cancel: 'Cancel',
                 yes: 'Yes',
-                no: 'No'
+                no: 'No',
+                close: 'Close'
             };
             this.localeObj = new L10n(this.getModuleName(), defaultLocale, this.locale);
         }

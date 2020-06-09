@@ -1847,6 +1847,14 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
         //prerender
     };
     /**
+     * To find the chips length.
+     * @returns boolean
+     * @private
+     */
+    ChipList.prototype.chipType = function () {
+        return (this.chips && this.chips.length && this.chips.length > 0);
+    };
+    /**
      * To Initialize the control rendering.
      * @returns void
      * @private
@@ -1912,7 +1920,7 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
             var className = (classNames.chip + ' ' + (fieldsData.enabled ? ' ' : classNames.disabled) + ' ' +
                 (fieldsData.avatarIconCss || fieldsData.avatarText ? classNames.chipWrapper : (fieldsData.leadingIconCss ?
                     classNames.iconWrapper : ' ')) + ' ' + fieldsData.cssClass).split(' ').filter(function (css) { return css; });
-            if (this.type === 'chip') {
+            if (!this.chipType()) {
                 chipListArray = chipArray;
                 addClass([this.element], className);
                 this.element.setAttribute('aria-label', fieldsData.text);
@@ -1940,7 +1948,7 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
         var chipEnabled = !(this.enabled.toString() === 'false');
         var fields = {
             text: typeof data === 'object' ? (data.text ? data.text.toString() : this.text.toString()) :
-                (this.type === 'chip' ? (this.innerText ? this.innerText : this.text.toString()) : data.toString()),
+                (!this.chipType() ? (this.innerText ? this.innerText : this.text.toString()) : data.toString()),
             cssClass: typeof data === 'object' ? (data.cssClass ? data.cssClass.toString() : this.cssClass.toString()) :
                 (this.cssClass.toString()),
             leadingIconCss: typeof data === 'object' ? (data.leadingIconCss ? data.leadingIconCss.toString() :
@@ -1983,7 +1991,7 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
         var chipTextElement = this.createElement('span', { className: classNames.text });
         chipTextElement.innerText = fields.text;
         chipArray.push(chipTextElement);
-        if (fields.trailingIconCss || (this.type !== 'chip' && this.enableDelete)) {
+        if (fields.trailingIconCss || (this.chipType() && this.enableDelete)) {
             var className = (classNames.delete + ' ' +
                 (fields.trailingIconCss ? fields.trailingIconCss : classNames.deleteIcon)).trim();
             var chipdeleteElement = this.createElement('span', { className: className });
@@ -2005,7 +2013,7 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
         var chipData;
         var chipElement = fields instanceof HTMLElement ?
             fields : this.element.querySelectorAll('.' + classNames.chip)[fields];
-        if (chipElement && this.type !== 'chip') {
+        if (chipElement && this.chipType()) {
             chipData = { text: undefined, index: undefined, element: undefined, data: undefined };
             chipData.index = Array.prototype.slice.call(this.element.querySelectorAll('.' + classNames.chip)).indexOf(chipElement);
             chipData.text = typeof this.chips[chipData.index] === 'object' ?
@@ -2059,7 +2067,7 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
         }
     };
     ChipList.prototype.onSelect = function (fields, callFromProperty) {
-        if (this.type !== 'chip' && this.selection !== 'None') {
+        if (this.chipType() && this.selection !== 'None') {
             if (callFromProperty) {
                 var chipElements = this.element.querySelectorAll('.' + classNames.chip);
                 for (var i = 0; i < chipElements.length; i++) {
@@ -2084,7 +2092,7 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
      */
     ChipList.prototype.remove = function (fields) {
         var _this = this;
-        if (this.type !== 'chip') {
+        if (this.chipType()) {
             var fieldData = fields instanceof Array ? fields : [fields];
             var chipElements_1 = [];
             var chipCollection_1 = this.element.querySelectorAll('.' + classNames.chip);
@@ -2107,7 +2115,7 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
      */
     ChipList.prototype.getSelectedChips = function () {
         var selectedChips;
-        if (this.type !== 'chip' && this.selection !== 'None') {
+        if (this.chipType() && this.selection !== 'None') {
             var selectedItems = { texts: [], Indexes: [], data: [], elements: [] };
             var items = this.element.querySelectorAll('.' + classNames.active);
             for (var i = 0; i < items.length; i++) {
@@ -2166,7 +2174,7 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
     };
     ChipList.prototype.focusOutHandler = function (e) {
         var chipWrapper = closest(e.target, '.' + classNames.chip);
-        var focusedElement = this.type === 'chip' ? (this.element.classList.contains(classNames.focused) ?
+        var focusedElement = !this.chipType() ? (this.element.classList.contains(classNames.focused) ?
             this.element : null) : this.element.querySelector('.' + classNames.focused);
         if (chipWrapper && focusedElement) {
             focusedElement.classList.remove(classNames.focused);
@@ -2178,7 +2186,7 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
         var chipWrapper = closest(e.target, '.' + classNames.chip);
         if (chipWrapper) {
             var chipDataArgs = void 0;
-            if (this.type !== 'chip') {
+            if (this.chipType()) {
                 chipDataArgs = this.find(chipWrapper);
             }
             else {
@@ -2200,7 +2208,7 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
     };
     ChipList.prototype.clickEventHandler = function (chipWrapper, e, del) {
         var _this = this;
-        if (this.type !== 'chip') {
+        if (this.chipType()) {
             var chipData = this.find(chipWrapper);
             chipData.event = e;
             var deleteElement = e.target.classList.contains(classNames.deleteIcon) ?
@@ -2300,7 +2308,7 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
         this.wireEvent(true);
         this.rippleFunction();
         if (isBlazor()) {
-            var chipChildElement = this.type === 'chip' ? this.element.querySelectorAll('.e-chip-text') :
+            var chipChildElement = !this.chipType() ? this.element.querySelectorAll('.e-chip-text') :
                 this.element.querySelectorAll('.e-chip');
             for (var i = 0; i < chipChildElement.length; i++) {
                 if (chipChildElement[i] != null) {
@@ -2351,7 +2359,7 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'cssClass':
                     if (!(isBlazor() && this.isServerRendered)) {
-                        if (this.type === 'chip') {
+                        if (!this.chipType()) {
                             removeClass([this.element], oldProp.cssClass.toString().split(' ').filter(function (css) { return css; }));
                             addClass([this.element], newProp.cssClass.toString().split(' ').filter(function (css) { return css; }));
                         }

@@ -348,6 +348,7 @@ export class ExcelExport {
         } else {
             excelRows = this.processRecordContent(gObj, r, headerRow, exportProperties, undefined, excelRows, helper);
         }
+        gObj.notify(events.exportDataBound, { excelRows: excelRows, type: 'excel' });
         return excelRows;
     }
 

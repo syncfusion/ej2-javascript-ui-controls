@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.56 (2020-06-09)
+
+### Kanban
+
+#### Bug Fixes
+
+- `#279543` - An issue with script error thrown when click the `showAddButton` icon and specify the `priority` property has been fixed.
+
 ## 18.1.55 (2020-06-02)
 
 ### Kanban

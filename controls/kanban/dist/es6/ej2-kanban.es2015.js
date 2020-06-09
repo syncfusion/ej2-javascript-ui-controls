@@ -476,7 +476,9 @@ class Action {
             return;
         }
         if (target.classList.contains(CARD_CLASS)) {
-            this.parent.keyboardModule.cardTabIndexRemove();
+            if (this.parent.allowKeyboard) {
+                this.parent.keyboardModule.cardTabIndexRemove();
+            }
             this.cardClick(e);
         }
         else if (target.classList.contains(HEADER_ICON_CLASS)) {
@@ -501,7 +503,7 @@ class Action {
         if (this.parent.cardSettings.priority) {
             newData[this.parent.cardSettings.priority] = 1;
             if (closest(target, '.' + CONTENT_CELLS_CLASS).querySelector('.' + CARD_CLASS)) {
-                let data = this.parent.getCardDetails(target.previousElementSibling.lastElementChild);
+                let data = this.parent.getCardDetails(target.nextElementSibling.firstElementChild);
                 newData[this.parent.cardSettings.priority] = data[this.parent.cardSettings.priority] + 1;
             }
         }
@@ -540,11 +542,13 @@ class Action {
                     this.parent.touchModule.updatePopupContent();
                 }
                 let cell = closest(target, '.' + CONTENT_CELLS_CLASS);
-                let element = [].slice.call(cell.querySelectorAll('.' + CARD_CLASS));
-                element.forEach((e) => {
-                    e.setAttribute('tabindex', '0');
-                });
-                this.parent.keyboardModule.addRemoveTabIndex('Remove');
+                if (this.parent.allowKeyboard) {
+                    let element = [].slice.call(cell.querySelectorAll('.' + CARD_CLASS));
+                    element.forEach((e) => {
+                        e.setAttribute('tabindex', '0');
+                    });
+                    this.parent.keyboardModule.addRemoveTabIndex('Remove');
+                }
             }
         });
     }
@@ -1524,6 +1528,7 @@ class KanbanDialog {
         if (action !== 'Delete') {
             this.applyFormValidation();
         }
+        this.dialogObj.element.querySelector('.e-dlg-closeicon-btn').title = this.parent.localeObj.getConstant('close');
     }
     getDialogContent(args, action) {
         if (action === 'Delete') {
@@ -3122,7 +3127,8 @@ let Kanban = class Kanban extends Component {
                 delete: 'Delete',
                 cancel: 'Cancel',
                 yes: 'Yes',
-                no: 'No'
+                no: 'No',
+                close: 'Close'
             };
             this.localeObj = new L10n(this.getModuleName(), defaultLocale, this.locale);
         }

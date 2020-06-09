@@ -7969,7 +7969,7 @@ let Uploader = class Uploader extends Component {
                     if (!dropTextArea) {
                         this.createDropTextHint();
                     }
-                    else {
+                    else if (!this.isServerBlazor) {
                         dropTextArea.innerHTML = this.localizedTexts('dropFilesHint');
                     }
                 }
@@ -7998,9 +7998,11 @@ let Uploader = class Uploader extends Component {
         }
     }
     createDropTextHint() {
-        let fileDropArea = this.createElement('span', { className: DROP_AREA });
-        fileDropArea.innerHTML = this.localizedTexts('dropFilesHint');
-        this.dropAreaWrapper.appendChild(fileDropArea);
+        if (!this.isServerBlazor) {
+            let fileDropArea = this.createElement('span', { className: DROP_AREA });
+            fileDropArea.innerHTML = this.localizedTexts('dropFilesHint');
+            this.dropAreaWrapper.appendChild(fileDropArea);
+        }
     }
     updateHTMLAttrToElement() {
         if (!isNullOrUndefined(this.htmlAttributes)) {
@@ -8346,7 +8348,7 @@ let Uploader = class Uploader extends Component {
         let formData = new FormData();
         ajax.beforeSend = (e) => {
             eventArgs.currentRequest = ajax.httpRequest;
-            if (this.isServerBlazor) {
+            if (isBlazor()) {
                 if (this.currentRequestHeader) {
                     this.updateCustomheader(ajax.httpRequest, this.currentRequestHeader);
                 }
@@ -8659,7 +8661,7 @@ let Uploader = class Uploader extends Component {
     _internalRenderSelect(eventArgs, fileData) {
         if (!eventArgs.cancel) {
             /* istanbul ignore next */
-            if (this.isServerBlazor) {
+            if (isBlazor()) {
                 this.currentRequestHeader = eventArgs.currentRequest;
                 this.customFormDatas = eventArgs.customFormData;
             }
@@ -9666,6 +9668,7 @@ let Uploader = class Uploader extends Component {
         let formData = new FormData();
         let blob = file.rawFile.slice(metaData.start, metaData.end);
         formData.append('chunkFile', blob, file.name);
+        formData.append(this.uploaderName, blob, file.name);
         formData.append('chunk-index', metaData.chunkIndex.toString());
         formData.append('chunkIndex', metaData.chunkIndex.toString());
         let totalChunk = Math.max(Math.ceil(file.size / this.asyncSettings.chunkSize), 1);
@@ -9688,7 +9691,7 @@ let Uploader = class Uploader extends Component {
             eventArgs.currentRequest = ajax.httpRequest;
             eventArgs.currentChunkIndex = metaData.chunkIndex;
             /* istanbul ignore next */
-            if (this.isServerBlazor) {
+            if (isBlazor()) {
                 if (this.currentRequestHeader) {
                     this.updateCustomheader(ajax.httpRequest, this.currentRequestHeader);
                 }
@@ -10202,7 +10205,7 @@ let Uploader = class Uploader extends Component {
             currentRequest: null
         };
         this.trigger('beforeUpload', eventArgs, (eventArgs) => {
-            if (this.isServerBlazor) {
+            if (isBlazor()) {
                 this.currentRequestHeader = eventArgs.currentRequest ? eventArgs.currentRequest : this.currentRequestHeader;
                 this.customFormDatas = (eventArgs.customFormData && eventArgs.customFormData.length > 0) ?
                     eventArgs.customFormData : this.customFormDatas;
@@ -10337,7 +10340,7 @@ let Uploader = class Uploader extends Component {
         ajax.beforeSend = (e) => {
             eventArgs.currentRequest = ajax.httpRequest;
             /* istanbul ignore next */
-            if (this.isServerBlazor) {
+            if (isBlazor()) {
                 eventArgs.fileData.rawFile = !chunkEnabled ? this.base64String[i] : eventArgs.fileData.rawFile;
                 if (this.currentRequestHeader) {
                     this.updateCustomheader(ajax.httpRequest, this.currentRequestHeader);
@@ -10430,7 +10433,7 @@ let Uploader = class Uploader extends Component {
         };
         this.trigger('beforeRemove', beforeEventArgs, (beforeEventArgs) => {
             if (!beforeEventArgs.cancel) {
-                if (this.isServerBlazor) {
+                if (isBlazor()) {
                     this.currentRequestHeader = beforeEventArgs.currentRequest;
                     this.customFormDatas = beforeEventArgs.customFormData;
                 }

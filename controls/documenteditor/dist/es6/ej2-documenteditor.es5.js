@@ -56089,9 +56089,11 @@ var Editor = /** @__PURE__ @class */ (function () {
                 return;
             }
             if (inline instanceof EditRangeEndElementBox) {
-                inline = inline.previousNode;
-                paragraph = inline.line.paragraph;
-                offset = inline.line.getOffset(inline, inline.length);
+                if (!isNullOrUndefined(inline.previousNode)) {
+                    inline = inline.previousNode;
+                    paragraph = inline.line.paragraph;
+                    offset = inline.line.getOffset(inline, inline.length);
+                }
             }
             if (inline.length === 1 && inline.nextNode instanceof EditRangeEndElementBox
                 && inline.previousNode instanceof EditRangeStartElementBox) {

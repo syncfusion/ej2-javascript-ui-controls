@@ -102,7 +102,7 @@ function highlightSearch(element, query, ignoreCase, type, isBlazor$$1) {
 }
 function findTextNode(element, pattern, isBlazor$$1) {
     for (var index = 0; element.childNodes && (index < element.childNodes.length); index++) {
-        if (element.childNodes[index].nodeType === 3) {
+        if (element.childNodes[index].nodeType === 3 && element.childNodes[index].textContent.trim() !== '') {
             element = (isBlazor$$1 && element.classList.contains('e-highlight')) ? element.parentElement : element;
             if (isBlazor$$1 && element.getAttribute('data-value')) {
                 element.innerHTML = element.getAttribute('data-value').replace(pattern, '<span class="e-highlight">$1</span>');
@@ -1094,6 +1094,13 @@ var DropDownBase = /** @class */ (function (_super) {
     DropDownBase.prototype.addItem = function (items, itemIndex) {
         if (!this.list || (this.list.textContent === this.noRecordsTemplate && this.getModuleName() !== 'listbox')) {
             this.renderList();
+        }
+        if (this.sortOrder !== 'None' && sf.base.isNullOrUndefined(itemIndex)) {
+            var newList = [].slice.call(this.listData);
+            newList.push(items);
+            newList = this.getSortedDataSource(newList);
+            var newIndex = newList.indexOf(items);
+            itemIndex = newIndex;
         }
         this.DropDownBaseresetBlazorTemplates(true, false, false, false);
         var itemsCount = this.getItems().length;
@@ -2235,7 +2242,7 @@ var DropDownList = /** @class */ (function (_super) {
                 this.showPopup();
             }
             var proxy_1 = this;
-            var duration = (sf.base.isBlazor()) ? 1000 : 100;
+            var duration = (sf.base.isBlazor()) ? 1000 : (this.element.tagName === this.getNgDirective() && this.itemTemplate) ? 500 : 100;
             if (!this.isSecondClick) {
                 setTimeout(function () { proxy_1.cloneElements(); proxy_1.isSecondClick = true; }, duration);
             }
@@ -2355,7 +2362,8 @@ var DropDownList = /** @class */ (function (_super) {
         }
     };
     DropDownList.prototype.setSelection = function (li, e) {
-        if (this.isValidLI(li) && !li.classList.contains(dropDownBaseClasses.selected)) {
+        if (this.isValidLI(li) && (!li.classList.contains(dropDownBaseClasses.selected) || (this.isPopupOpen && this.isSelected
+            && li.classList.contains(dropDownBaseClasses.selected)))) {
             this.updateSelectedItem(li, e, false, true);
         }
         else {
@@ -7033,7 +7041,7 @@ var ComboBox = /** @class */ (function (_super) {
         this.itemData = this.getDataByValue(this.value);
         var dataItem = this.getItemData();
         if (!(this.allowCustom && sf.base.isNullOrUndefined(dataItem.value) && sf.base.isNullOrUndefined(dataItem.text))) {
-            this.setProperties({ 'value': dataItem.value, 'text': dataItem.text });
+            this.setProperties({ 'value': dataItem.value, 'text': dataItem.text }, true);
         }
     };
     /**
@@ -7204,7 +7212,12 @@ var ComboBox = /** @class */ (function (_super) {
     ComboBox.prototype.selectCurrentItem = function (e) {
         var li;
         if (this.isPopupOpen) {
-            li = this.list.querySelector('.' + dropDownListClasses.focus);
+            if (this.isSelected) {
+                li = this.list.querySelector('.' + dropDownListClasses.selected);
+            }
+            else {
+                li = this.list.querySelector('.' + dropDownListClasses.focus);
+            }
             if (li) {
                 this.setSelection(li, e);
                 this.isTyped = false;
@@ -7902,6 +7915,7 @@ var AutoComplete = /** @class */ (function (_super) {
             for (var i = 0; i < this.liCollections.length; i++) {
                 var isHighlight = this.ulElement.querySelector('.e-active');
                 if (!isHighlight) {
+                    revertHighlightSearch(this.liCollections[i]);
                     highlightSearch(this.liCollections[i], this.queryString, this.ignoreCase, this.filterType, this.isServerBlazor);
                 }
             }

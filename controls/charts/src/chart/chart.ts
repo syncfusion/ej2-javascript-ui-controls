@@ -85,7 +85,7 @@ import { IAnnotationRenderEventArgs, IAxisMultiLabelRenderEventArgs, IThemeStyle
 import { IPointRenderEventArgs, ISeriesRenderEventArgs, ISelectionCompleteEventArgs } from '../chart/model/chart-interface';
 import { IDragCompleteEventArgs, ITooltipRenderEventArgs, IExportEventArgs, IAfterExportEventArgs } from '../chart/model/chart-interface';
 import { IZoomCompleteEventArgs, ILoadedEventArgs, IZoomingEventArgs } from '../chart/model/chart-interface';
-import { IMultiLevelLabelClickEventArgs, ILegendClickEventArgs } from '../chart/model/chart-interface';
+import { IMultiLevelLabelClickEventArgs, ILegendClickEventArgs, ISharedTooltipRenderEventArgs } from '../chart/model/chart-interface';
 import { IAnimationCompleteEventArgs, IMouseEventArgs, IPointEventArgs } from '../chart/model/chart-interface';
 import { chartMouseClick, pointClick, pointDoubleClick,  } from '../common/model/constants';
 import { chartMouseDown, chartMouseMove, chartMouseUp, load, pointMove, chartMouseLeave, resized } from '../common/model/constants';
@@ -1017,6 +1017,14 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     @Event()
     public tooltipRender: EmitType<ITooltipRenderEventArgs>;
+    /**
+     * Triggers before the shared tooltip for series is rendered.
+     * This applicable for blazor only.
+     * @event
+     */
+
+    @Event()
+    public sharedTooltipRender: EmitType<ISharedTooltipRenderEventArgs>;
 
     /**
      * Triggers on hovering the chart.

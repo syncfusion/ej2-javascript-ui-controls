@@ -1,9 +1,10 @@
-import { remove, isBlazor } from '@syncfusion/ej2-base';
+import { remove, isBlazor, extend } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, addClass } from '@syncfusion/ej2-base';
 import { NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';
-import { IAction, IGrid, NotifyArgs, ICellRenderer } from '../base/interface';
+import { IAction, IGrid, NotifyArgs, ICellRenderer, IValueFormatter } from '../base/interface';
 import { CellType } from '../base/enum';
 import { ServiceLocator } from '../services/service-locator';
+import { ValueFormatter } from '../services/value-formatter';
 import { CellRendererFactory } from '../services/cell-render-factory';
 import { uiUpdate, initialEnd, dataReady, modelChanged, refreshAggregates, refreshFooterRenderer, groupAggregates } from '../base/constant';
 import { FooterRenderer } from '../renderer/footer-renderer';
@@ -66,8 +67,13 @@ export class Aggregate implements IAction {
             if (!isNullOrUndefined(column[cFormat])) {
                 column.setPropertiesSilent({format: column[cFormat]});
             }
-            column.setPropertiesSilent({ format: this.getFormatFromType(column.format, type)});
-            column.setFormatter(this.parent.locale);
+            if (typeof (column.format) === 'object') {
+                let valueFormatter: ValueFormatter = new ValueFormatter();
+                column.setFormatter(valueFormatter.getFormatFunction(extend({}, column.format as DateFormatOptions)));
+            } else if (typeof (column.format) === 'string') {
+                let fmtr: IValueFormatter = this.locator.getService<IValueFormatter>('valueFormatter');
+                column.setFormatter(fmtr.getFormatFunction({ format: column.format } as NumberFormatOptions));
+            }
             column.setPropertiesSilent({columnName: column.columnName || column.field });
         });
         if (isBlazor() && this.parent.isServerRendered) {
@@ -80,27 +86,6 @@ export class Aggregate implements IAction {
                 }
             }
         }
-    }
-
-    private getFormatFromType(format: string | NumberFormatOptions | DateFormatOptions, type: string):
-        string | NumberFormatOptions | DateFormatOptions {
-        if (isNullOrUndefined(type) || typeof format !== 'string') {
-            return format;
-        }
-        let obj: string | NumberFormatOptions | DateFormatOptions;
-        switch (type) {
-            case 'number':
-                obj = { format: format };
-                break;
-            case 'date':
-                obj = { type: type, skeleton: format };
-                break;
-            case 'datetime':
-                obj = { type: 'dateTime', skeleton: format };
-                break;
-        }
-
-        return obj;
     }
 
     public onPropertyChanged(e: NotifyArgs): void {

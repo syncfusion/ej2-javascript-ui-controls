@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 18.1.56 (2020-06-09)
+
+### TreeGrid
+
+#### Bug Fixes
+
+- `#F15641` - Content is rendered properly for random scrolling when Virtualization is enabled.
+- `#279755` - Virtual Scrolling works fine.
+
 ## 18.1.55 (2020-06-02)
 
 ### TreeGrid

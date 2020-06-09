@@ -286,10 +286,14 @@ function intToDate(val) {
  */
 /* tslint:disable no-any */
 function dateToInt(val, isTime) {
-    var startDate = new Date('01/01/1900');
+    var timeZoneOffset = new Date().getTimezoneOffset();
+    var startDateUTC = new Date('01/01/1900').toUTCString().replace(' GMT', '');
+    var startDate = new Date(startDateUTC);
     var date = isDateTime(val) ? val : new Date(val);
-    var timeDiff = (date.getTime() - startDate.getTime());
-    var diffDays = (timeDiff / (1000 * 3600 * 24)) + 1;
+    var timeDiff;
+    var dateDiff = (new Date(date.toUTCString().replace(' GMT', '')).getTime() - startDate.getTime());
+    timeDiff = (timeZoneOffset > 0) ? dateDiff + (timeZoneOffset * 60 * 1000) : (dateDiff - (timeZoneOffset * 60 * 1000));
+    var diffDays = (timeDiff / (1000 * 3600 * 24));
     return isTime ? diffDays : parseInt(diffDays.toString(), 10) + 2;
 }
 /**
@@ -9985,7 +9989,8 @@ var WorkbookDataValidation = /** @__PURE__ @class */ (function () {
                     cell.validation = {
                         type: rules.type,
                         operator: rules.operator,
-                        value1: rules.value1,
+                        value1: (rules.type === 'List' && rules.value1.length > 256) ?
+                            rules.value1.substring(0, 255) : rules.value1,
                         value2: rules.value2,
                         ignoreBlank: rules.ignoreBlank,
                         inCellDropDown: rules.inCellDropDown,
@@ -21064,6 +21069,10 @@ var DataValidation = /** @__PURE__ @class */ (function () {
                     }
                 }
             }
+            else if (value1.length > 256) {
+                isValidList = false;
+                errorMsg = l10n.getConstant('ListLengthError');
+            }
         }
         if (type !== 'List' || isValidList) {
             var sheet = this.parent.getActiveSheet();
@@ -25833,6 +25842,7 @@ var Formula = /** @__PURE__ @class */ (function () {
 var SheetTabs = /** @__PURE__ @class */ (function () {
     function SheetTabs(parent) {
         this.aggregateContent = '';
+        this.isSelectCancel = false;
         this.parent = parent;
         this.addEventListener();
     }
@@ -25891,16 +25901,33 @@ var SheetTabs = /** @__PURE__ @class */ (function () {
             items: items.tabItems,
             scrollStep: 250,
             selecting: function (args) {
-                /** */
+                var beginEventArgs = {
+                    currentSheetIndex: args.selectingIndex, previousSheetIndex: args.selectedIndex, cancel: false
+                };
+                if (!_this.isSelectCancel) {
+                    _this.parent.notify(beginAction, { eventArgs: beginEventArgs, action: 'gotoSheet' });
+                }
+                _this.isSelectCancel = beginEventArgs.cancel;
             },
             selected: function (args) {
                 if (args.selectedIndex === args.previousIndex) {
                     return;
                 }
-                _this.parent.activeSheetIndex = args.selectedIndex;
-                _this.parent.dataBind();
-                _this.updateDropDownItems(args.selectedIndex, args.previousIndex);
-                _this.parent.element.focus();
+                if (_this.isSelectCancel) {
+                    _this.tabInstance.selectedItem = args.previousIndex;
+                    _this.tabInstance.dataBind();
+                    _this.parent.element.focus();
+                }
+                else {
+                    _this.parent.activeSheetIndex = args.selectedIndex;
+                    _this.parent.dataBind();
+                    _this.updateDropDownItems(args.selectedIndex, args.previousIndex);
+                    _this.parent.element.focus();
+                    var completeEventArgs = {
+                        previousSheetIndex: args.previousIndex, currentSheetIndex: args.selectedIndex
+                    };
+                    _this.parent.notify(completeAction, { eventArgs: completeEventArgs, action: 'gotoSheet' });
+                }
             },
             created: function () {
                 var tBarItems = _this.tabInstance.element.querySelector('.e-toolbar-items');
@@ -28567,6 +28594,7 @@ var defaultLocale = {
     Retry: 'Retry',
     EnterValue: 'Enter value',
     DialogError: 'The list source must be a reference to single row or column.',
+    ListLengthError: 'The list values allows only upto 256 charcters',
     ValidationError: 'This value doesn' + '\'' + 't match the data validation restrictions defined for the cell.',
     EmptyError: 'You must enter a value',
     ClearHighlight: 'Clear Highlight',
@@ -29956,7 +29984,7 @@ var ActionEvents = /** @__PURE__ @class */ (function () {
     };
     ActionEvents.prototype.actionCompleteHandler = function (args) {
         this.parent.trigger('actionComplete', args);
-        if (args.action !== 'undoRedo') {
+        if (args.action !== 'undoRedo' && args.action !== 'gotoSheet') {
             this.parent.notify(updateUndoRedoCollection, { args: args });
         }
     };

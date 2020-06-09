@@ -537,6 +537,9 @@ export class DataValidation {
                         errorMsg = l10n.getConstant('DialogError');
                     }
                 }
+            } else if (value1.length > 256) {
+                isValidList = false;
+                errorMsg = l10n.getConstant('ListLengthError');
             }
         }
         if (type !== 'List' || isValidList) {

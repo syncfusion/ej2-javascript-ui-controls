@@ -6,7 +6,7 @@ import { monthDayMatch } from './intl/date-parser.spec';
 import { getTimeZoneString } from './intl/date-formatter.spec';
 import { IntlBase as base, blazorCultureFormats  } from '../src/intl/intl-base';
 import { disableBlazorMode, enableBlazorMode, extend } from '../src/util';
-import { Base } from '../src';
+
 describe('Internationalization', () => {
     beforeAll(() => {
         setCulture('en-US');
@@ -28,6 +28,7 @@ describe('Internationalization', () => {
             expect(result).toBe('2016 AD');
         });
         it('datefromatting using the formatDate with no options', () => {
+            dateIntl.formatDate(new Date(), {format:'WW'})
             let result: string = dateIntl.formatDate(date);
             expect(result).toBe('11/17/16');
         });
@@ -633,6 +634,7 @@ describe('Internationalization', () => {
     describe('Cr-EJ2-10356 - Date parser returns invalid output instead of null value', () => {
         it('Without special characters', () => {
             let intl: Internationalization = new Internationalization();
+            intl.parseDate('12', { format:'WW' });
             let res: Date = intl.parseDate('12122015', { skeleton: 'yMd' });
             expect(res).toBe(null);
         });

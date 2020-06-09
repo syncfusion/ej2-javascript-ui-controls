@@ -1074,4 +1074,37 @@ describe('DropDownList', () => {
             },)
         });
     });
+    describe('EJ2-39852', () => {
+        let ddlObj: any;
+        let ddlEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'ddl' });
+        let empList: any = [ 
+            { id: 'level1', sports: 'American Football' }, { id: 'level2', sports: 'Badminton' },
+            { id: 'level3', sports: 'Basketball' }, { id: 'level4', sports: 'Cricket' },
+            { id: 'level5', sports: 'Football' }
+        ];
+        beforeAll(() => {
+            document.body.appendChild(ddlEle);
+            ddlObj = new DropDownList({
+                dataSource: empList,
+                fields: { text: 'sports' },
+                showClearButton: true,
+                sortOrder: "Ascending"
+            });
+            ddlObj.appendTo(ddlEle);
+        });
+        afterAll(() => {
+            ddlObj.destroy();
+            ddlEle.remove();
+        });
+        it('SortOrder is not working after adding new item using addItem method', () => {
+            ddlObj.addItem({id: 'level6', sports: 'Chess' });
+            ddlObj.dataBind();
+            expect(ddlObj.list.querySelectorAll('li')[3].textContent).toBe('Chess');
+            expect(ddlObj.list.querySelectorAll('li').length === 6).toBe(true);
+            ddlObj.addItem({id: 'level7', sports: 'Kabadi' });
+            ddlObj.dataBind();
+            expect(ddlObj.list.querySelectorAll('li')[6].textContent).toBe('Kabadi');
+            expect(ddlObj.list.querySelectorAll('li').length === 7).toBe(true);
+        });
+    });
 });

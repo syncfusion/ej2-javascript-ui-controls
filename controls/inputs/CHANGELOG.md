@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.56 (2020-06-09)
+
+### Uploader
+
+#### Bug Fixes
+
+- Issue with "form name is not updated based on name attribute in chunk upload" has been resolved.
+
 ## 18.1.55 (2020-06-02)
 
 ### Slider

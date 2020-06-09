@@ -280,6 +280,8 @@ export interface CellClickEventArgs {
     currentCell: Element;
     /** Defines the cell item that is clicked. */
     data: Object;
+    /** Defines the native event properties. */
+    nativeEvent: MouseEvent;
 }
 
 /**
@@ -292,6 +294,8 @@ export interface HyperCellClickEventArgs {
     data: Object;
     /** Defines an option to restrict the hyperlink cell click operation. By default, the value is in 'true' state. */
     cancel: boolean;
+    /** Defines the native event properties. */
+    nativeEvent: MouseEvent;
 }
 
 /**

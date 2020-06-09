@@ -162,6 +162,7 @@ var QueryBuilder = /** @class */ (function (_super) {
         var _this = _super.call(this, options, element) || this;
         _this.isReadonly = true;
         _this.fields = { text: 'label', value: 'field' };
+        _this.updatedRule = { not: false, condition: 'and' };
         return _this;
     }
     QueryBuilder.prototype.getPersistData = function () {
@@ -774,7 +775,11 @@ var QueryBuilder = /** @class */ (function (_super) {
                 var tglBtn = new sf.buttons.Button({ content: this.l10n.getConstant('NOT'), cssClass: 'e-btn e-small' });
                 tglBtn.appendTo(notElem);
                 groupElem.querySelector('.e-btngroup-and-lbl').classList.add('e-not');
+                if (this.updatedRule && this.updatedRule.not) {
+                    sf.base.addClass([notElem], 'e-active-toggle');
+                }
             }
+            this.updatedRule = null;
             var groupBtn = groupElem.querySelector('.e-add-btn');
             var btnObj = new sf.splitbuttons.DropDownButton({
                 items: this.items,
@@ -990,14 +995,14 @@ var QueryBuilder = /** @class */ (function (_super) {
             var operatorElem = sf.base.closest(ddlArgs.element, '.e-rule-operator');
             var valElem = operatorElem.nextElementSibling;
             var dropDownObj = sf.base.getComponent(ddlArgs.element, 'dropdownlist');
-            var prevOper = rule.operator ? rule.operator.toLowerCase() : '';
-            tempRule.operator = dropDownObj.value;
+            var prevOper = rule.operator ? rule.operator.toString().toLowerCase() : '';
+            tempRule.operator = dropDownObj.value.toString();
             var currOper = tempRule.operator.toLowerCase();
             if (tempRule.operator.toLowerCase().indexOf('between') > -1 || (tempRule.operator.toLowerCase().indexOf('in') > -1
                 && tempRule.operator.toLowerCase().indexOf('contains') < 0)) {
                 filterElem = operatorElem.previousElementSibling;
                 tempRule.type = rule.type;
-                if (tempRule.operator.toLowerCase().indexOf('in') < 0 || rule.operator.toLowerCase().indexOf('in') < 0) {
+                if (tempRule.operator.toLowerCase().indexOf('in') < 0 || prevOper.indexOf('in') < 0) {
                     rule.value = [];
                 }
             }
@@ -1005,7 +1010,7 @@ var QueryBuilder = /** @class */ (function (_super) {
                 rule.value = rule.value.length > 0 ? rule.value[0] : '';
             }
             if (ddlArgs.previousItemData) {
-                var prevValue = ddlArgs.previousItemData.value.toLowerCase();
+                var prevValue = ddlArgs.previousItemData.value.toString().toLowerCase();
                 if ((prevValue.indexOf('between') > -1 || (prevValue.indexOf('in') > -1 || (prevValue.indexOf('null') > -1)
                     || (prevValue.indexOf('empty') > -1)) && prevValue.indexOf('contains') < 0)) {
                     filterElem = operatorElem.previousElementSibling;
@@ -1432,17 +1437,19 @@ var QueryBuilder = /** @class */ (function (_super) {
                 length_1 = this.selectedColumn.values ? this.selectedColumn.values.length : 2;
             }
             else {
-                length_1 = tempRule.operator && tempRule.operator.toLowerCase().indexOf('between') > -1 ? 2 : 1;
+                length_1 = tempRule.operator && tempRule.operator.toString().toLowerCase().indexOf('between') > -1 ? 2 : 1;
             }
             var parentId = sf.base.closest(target, '.e-rule-container').id;
             var ruleValElem = void 0;
+            var operator = void 0;
+            operator = tempRule.operator.toString();
             if (target.className.indexOf('e-rule-operator') > -1 || target.className.indexOf('e-rule-filter') > -1) {
                 ruleValElem = target.parentElement.querySelector('.e-rule-value');
                 if (this.element.className.indexOf('e-device') > -1 || this.displayMode === 'Vertical') {
                     ruleValElem.style.width = '100%';
                 }
                 else {
-                    if (tempRule.operator !== 'in' && tempRule.operator !== 'notin') {
+                    if (operator !== 'in' && operator !== 'notin') {
                         ruleValElem.style.width = '200px';
                     }
                 }
@@ -1450,12 +1457,12 @@ var QueryBuilder = /** @class */ (function (_super) {
                     switch (tempRule.type) {
                         case 'string':
                             {
-                                this.renderStringValue(parentId, rule, tempRule.operator, i, ruleValElem);
+                                this.renderStringValue(parentId, rule, operator, i, ruleValElem);
                             }
                             break;
                         case 'number':
                             {
-                                this.renderNumberValue(parentId, rule, tempRule.operator, i, ruleValElem, itemData, length_1);
+                                this.renderNumberValue(parentId, rule, operator, i, ruleValElem, itemData, length_1);
                             }
                             break;
                         case 'boolean':
@@ -1581,7 +1588,8 @@ var QueryBuilder = /** @class */ (function (_super) {
                 ddlObj.dataBind();
             }
         }
-        if (!(tempRule.operator.indexOf('null') > -1 || tempRule.operator.indexOf('empty') > -1)) {
+        var operator = tempRule.operator.toString();
+        if (!(operator.indexOf('null') > -1 || operator.indexOf('empty') > -1)) {
             var parentId = sf.base.closest(target, '.e-rule-container').id;
             if (prevItemData && prevItemData.template) {
                 this.templateDestroy(prevItemData, parentId + '_valuekey0');
@@ -1617,10 +1625,10 @@ var QueryBuilder = /** @class */ (function (_super) {
                 itemData.template = this.columns[filtObj.index].template;
                 var valElem = void 0;
                 if (itemData.template && typeof itemData.template.create === 'string') {
-                    valElem = sf.base.getValue(itemData.template.create, window)({ operator: itemData.value || tempRule.operator });
+                    valElem = sf.base.getValue(itemData.template.create, window)({ operator: itemData.value || operator });
                 }
                 else if (itemData.template && itemData.template.create) {
-                    valElem = itemData.template.create({ operator: itemData.value || tempRule.operator });
+                    valElem = itemData.template.create({ operator: itemData.value || operator });
                 }
                 if (valElem instanceof Element) {
                     valElem.id = parentId + '_valuekey0';
@@ -1650,7 +1658,7 @@ var QueryBuilder = /** @class */ (function (_super) {
                     inputLen = this.selectedColumn.values ? this.selectedColumn.values.length : 2;
                 }
                 else {
-                    inputLen = (tempRule.operator && tempRule.operator.toLowerCase().indexOf('between') > -1) ? 2 : 1;
+                    inputLen = (operator && operator.toLowerCase().indexOf('between') > -1) ? 2 : 1;
                 }
                 for (var i = 0; i < inputLen; i++) {
                     var valElem = void 0;
@@ -1742,13 +1750,14 @@ var QueryBuilder = /** @class */ (function (_super) {
             ruleElem = ruleElem.previousElementSibling;
             index++;
         }
+        var operator = rule.rules[index].operator.toString();
         ruleElem = sf.base.closest(target, '.e-rule-container');
         ruleID = ruleElem.id.replace(this.element.id + '_', '');
         if (sf.base.closest(target, '.e-rule-filter')) {
             dropDownObj = sf.base.getComponent(target, 'dropdownlist');
             if (!this.isImportRules && rule.rules[index].field.toLowerCase() !== this.columns[dropDownObj.index].field.toLowerCase()) {
-                if (!(ruleElem.querySelectorAll('.e-template')) && !(rule.rules[index].operator.indexOf('null') > -1)
-                    || (rule.rules[index].operator.indexOf('empty') > -1)) {
+                if (!(ruleElem.querySelectorAll('.e-template')) && !(operator.indexOf('null') > -1)
+                    || (operator.indexOf('empty') > -1)) {
                     rule.rules[index].value = '';
                 }
             }
@@ -1758,7 +1767,7 @@ var QueryBuilder = /** @class */ (function (_super) {
             rule.rules[index].label = this.selectedColumn.label;
             var ruleElement = sf.base.closest(target, '.e-rule-filter');
             var element = ruleElement.nextElementSibling.querySelector('input.e-control');
-            var operator = sf.base.getComponent(element, 'dropdownlist').value;
+            operator = sf.base.getComponent(element, 'dropdownlist').value.toString();
             rule.rules[index].operator = operator;
             // Value Fields
             var valueContainer = ruleElement.nextElementSibling.nextElementSibling;
@@ -1774,7 +1783,7 @@ var QueryBuilder = /** @class */ (function (_super) {
                     elementCln[i_1] = ruleElement.nextElementSibling.nextElementSibling.querySelector('.e-template');
                 }
                 eventsArgs = { groupID: groupID, ruleID: ruleID, value: rule.rules[index].field, type: 'field' };
-                if (rule.rules[index].operator.indexOf('null') > -1 || rule.rules[index].operator.indexOf('empty') > -1) {
+                if (operator.indexOf('null') > -1 || operator.indexOf('empty') > -1) {
                     rule.rules[index].value = null;
                     continue;
                 }
@@ -1790,7 +1799,7 @@ var QueryBuilder = /** @class */ (function (_super) {
         }
         else if (sf.base.closest(target, '.e-rule-operator')) {
             dropDownObj = sf.base.getComponent(target, 'dropdownlist');
-            rule.rules[index].operator = dropDownObj.value;
+            rule.rules[index].operator = dropDownObj.value.toString();
             var inputElem = void 0;
             var parentElem = target.parentElement;
             inputElem = ruleElem.querySelectorAll('.e-rule-value input.e-control');
@@ -1836,7 +1845,7 @@ var QueryBuilder = /** @class */ (function (_super) {
         var arrOperator = ['in', 'between', 'notin', 'notbetween'];
         if (selectedValue !== null) {
             if (rule.rules[index].operator) {
-                oper = rule.rules[index].operator.toLowerCase();
+                oper = rule.rules[index].operator.toString().toLowerCase();
             }
             if (target.className.indexOf('e-multiselect') > -1 && rule.rules[index].type === 'number' &&
                 !(target.className.indexOf('e-template') > -1)) {
@@ -2023,16 +2032,25 @@ var QueryBuilder = /** @class */ (function (_super) {
         var rule = this.getParentGroup(groupElem);
         var grouplen = groups.length;
         if (grouplen) {
+            this.isPublic = true;
             for (var i = 0, len = groups.length; i < len; i++) {
+                this.updatedRule = { condition: groups[i].condition, not: groups[i].not };
                 this.importRules(groups[i], groupElem);
             }
+            this.isPublic = false;
         }
         else {
+            var condition = 'and';
+            var not = false;
+            if (this.updatedRule) {
+                condition = this.updatedRule.condition;
+                not = this.updatedRule.not;
+            }
             if (this.enableNotCondition) {
-                rule.rules.push({ 'condition': 'and', 'not': false, rules: [] });
+                rule.rules.push({ 'condition': condition, 'not': not, rules: [] });
             }
             else {
-                rule.rules.push({ 'condition': 'and', rules: [] });
+                rule.rules.push({ 'condition': condition, rules: [] });
             }
         }
         var andElem = groupElem.querySelector('.e-btngroup-and');
@@ -2669,7 +2687,7 @@ var QueryBuilder = /** @class */ (function (_super) {
         }
         if (!rule.condition && rule.condition !== '') {
             if (rule.operator) {
-                if (rule.operator.indexOf('null') > -1 || rule.operator.indexOf('empty') > -1) {
+                if (rule.operator.toString().indexOf('null') > -1 || rule.operator.toString().indexOf('empty') > -1) {
                     rule.value = null;
                 }
             }
@@ -2869,7 +2887,7 @@ var QueryBuilder = /** @class */ (function (_super) {
                         isDateFilter = true;
                     }
                 }
-                else if (ruleColl[i].operator.indexOf('null') > -1 || ruleColl[i].operator.indexOf('empty') > -1) {
+                else if (oper.indexOf('null') > -1 || oper.indexOf('empty') > -1) {
                     ruleColl[i].value = null;
                 }
                 else {
@@ -2979,13 +2997,14 @@ var QueryBuilder = /** @class */ (function (_super) {
     };
     QueryBuilder.prototype.arrayPredicate = function (ruleColl, predicate, condition) {
         var value = ruleColl.value;
+        var operator = ruleColl.operator.toString();
         var nullValue = ruleColl.value;
         var format;
         var pred;
         var column = this.getColumn(ruleColl.field);
         format = this.getFormat(column.format);
-        if (ruleColl.operator.indexOf('null') > -1 || ruleColl.operator.indexOf('empty') > -1) {
-            switch (ruleColl.operator) {
+        if (operator.indexOf('null') > -1 || operator.indexOf('empty') > -1) {
+            switch (operator) {
                 case 'isnull':
                     pred = new sf.data.Predicate(ruleColl.field, 'isnull', nullValue);
                     break;
@@ -3000,11 +3019,11 @@ var QueryBuilder = /** @class */ (function (_super) {
                     break;
             }
         }
-        if (!(ruleColl.operator.indexOf('null') > -1 || ruleColl.operator.indexOf('empty') > -1)) {
+        if (!(operator.indexOf('null') > -1 || operator.indexOf('empty') > -1)) {
             for (var j = 0, jLen = value.length; j < jLen; j++) {
                 if (value[j] !== '') {
                     if (j === 0) {
-                        switch (ruleColl.operator) {
+                        switch (operator) {
                             case 'between':
                                 if (column.type === 'date') {
                                     pred = new sf.data.Predicate(ruleColl.field, 'greaterthanorequal', this.getDate(value[j], format));
@@ -3284,7 +3303,7 @@ var QueryBuilder = /** @class */ (function (_super) {
                 var rule = rules.rules[j];
                 var valueStr = '';
                 if (rule.value instanceof Array) {
-                    if (rule.operator.indexOf('between') > -1) {
+                    if (rule.operator.toString().indexOf('between') > -1) {
                         if (rule.type === 'date') {
                             valueStr += '"' + rule.value[0] + '" AND "' + rule.value[1] + '"';
                         }
@@ -3306,13 +3325,13 @@ var QueryBuilder = /** @class */ (function (_super) {
                     }
                 }
                 else {
-                    if (rule.operator.indexOf('startswith') > -1) {
+                    if (rule.operator.toString().indexOf('startswith') > -1) {
                         valueStr += '("' + rule.value + '%")';
                     }
-                    else if (rule.operator.indexOf('endswith') > -1) {
+                    else if (rule.operator.toString().indexOf('endswith') > -1) {
                         valueStr += '("%' + rule.value + '")';
                     }
-                    else if (rule.operator.indexOf('contains') > -1) {
+                    else if (rule.operator.toString().indexOf('contains') > -1) {
                         valueStr += '("%' + rule.value + '%")';
                     }
                     else {
@@ -3324,7 +3343,7 @@ var QueryBuilder = /** @class */ (function (_super) {
                         }
                     }
                 }
-                if (rule.operator.indexOf('null') > -1 || (rule.operator.indexOf('empty') > -1)) {
+                if (rule.operator.toString().indexOf('null') > -1 || (rule.operator.toString().indexOf('empty') > -1)) {
                     if (enableEscape) {
                         rule.field = '`' + rule.field + '`';
                     }

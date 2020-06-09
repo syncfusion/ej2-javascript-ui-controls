@@ -4989,7 +4989,8 @@ class EventBase {
         for (let event of deleteFutureEditEventList) {
             let delEventQuery = new Predicate(fields.recurrenceID, 'equal', event[fields.id]).
                 or(new Predicate(fields.recurrenceID, 'equal', event[fields.followingID]).
-                and(new Predicate(fields.recurrenceID, 'notequal', undefined)));
+                and(new Predicate(fields.recurrenceID, 'notequal', undefined)).
+                and(new Predicate(fields.recurrenceID, 'notequal', null)));
             if (this.parent.currentAction === 'EditFollowingEvents' || this.parent.currentAction === 'DeleteFollowingEvents') {
                 delEventQuery = delEventQuery.and(new Predicate(fields.startTime, 'greaterthanorequal', startTime));
             }
@@ -16051,7 +16052,7 @@ class VerticalEvent extends EventBase {
         let startEndHours = getStartEndHours(resetTime(this.dateRender[resource][day]), this.startHour, this.endHour);
         let startHour = startEndHours.startHour;
         let diffInMinutes = ((date.getHours() - startHour.getHours()) * 60) + (date.getMinutes() - startHour.getMinutes());
-        return (diffInMinutes * this.cellHeight * this.slotCount) / this.interval;
+        return (this.parent.activeViewOptions.timeScale.enable) ? ((diffInMinutes * this.cellHeight * this.slotCount) / this.interval) : 0;
     }
     getOverlapIndex(record, day, isAllDay, resource) {
         let fieldMapping = this.parent.eventFields;
@@ -16662,7 +16663,7 @@ class DragAndDrop extends ActionBase {
             offsetTop = Math.round(offsetTop / this.actionObj.cellHeight) * this.actionObj.cellHeight;
             this.actionObj.clone.style.top = formatUnit(offsetTop);
         }
-        let rowIndex = offsetTop / this.actionObj.cellHeight;
+        let rowIndex = (this.parent.activeViewOptions.timeScale.enable) ? (offsetTop / this.actionObj.cellHeight) : 0;
         let heightPerMinute = this.actionObj.cellHeight / this.actionObj.slotInterval;
         let diffInMinutes = parseInt(this.actionObj.clone.style.top, 10) - offsetTop;
         let tr;

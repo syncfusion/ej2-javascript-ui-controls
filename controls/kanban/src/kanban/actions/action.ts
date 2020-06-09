@@ -44,7 +44,9 @@ export class Action {
         let target: Element = closest(e.target as Element, elementSelector);
         if (!target) { return; }
         if (target.classList.contains(cls.CARD_CLASS)) {
-            this.parent.keyboardModule.cardTabIndexRemove();
+            if (this.parent.allowKeyboard) {
+                this.parent.keyboardModule.cardTabIndexRemove();
+            }
             this.cardClick(e);
         } else if (target.classList.contains(cls.HEADER_ICON_CLASS)) {
             this.columnExpandCollapse(e);
@@ -67,7 +69,7 @@ export class Action {
         if (this.parent.cardSettings.priority) {
             newData[this.parent.cardSettings.priority] = 1;
             if (closest(target, '.' + cls.CONTENT_CELLS_CLASS).querySelector('.' + cls.CARD_CLASS)) {
-                let data: { [key: string]: Object } = this.parent.getCardDetails(target.previousElementSibling.lastElementChild);
+                let data: { [key: string]: Object } = this.parent.getCardDetails(target.nextElementSibling.firstElementChild);
                 newData[this.parent.cardSettings.priority] = data[this.parent.cardSettings.priority] as number + 1;
             }
         }
@@ -107,11 +109,13 @@ export class Action {
                     this.parent.touchModule.updatePopupContent();
                 }
                 let cell: Element = closest(target, '.' + cls.CONTENT_CELLS_CLASS);
-                let element: HTMLElement[] = [].slice.call(cell.querySelectorAll('.' + cls.CARD_CLASS));
-                element.forEach((e: HTMLElement): void => {
-                    e.setAttribute('tabindex', '0');
-                });
-                this.parent.keyboardModule.addRemoveTabIndex('Remove');
+                if (this.parent.allowKeyboard) {
+                    let element: HTMLElement[] = [].slice.call(cell.querySelectorAll('.' + cls.CARD_CLASS));
+                    element.forEach((e: HTMLElement): void => {
+                        e.setAttribute('tabindex', '0');
+                    });
+                    this.parent.keyboardModule.addRemoveTabIndex('Remove');
+                }
             }
         });
     }

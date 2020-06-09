@@ -416,7 +416,7 @@ export class Render {
             }
             let valueFormatter: ValueFormatter = new ValueFormatter();
             if (columns[i].format && ((<DateFormatOptions>columns[i].format).skeleton || (<DateFormatOptions>columns[i].format).format)) {
-                columns[i].setFormatter(valueFormatter.getFormatFunction(columns[i].format as DateFormatOptions));
+                columns[i].setFormatter(valueFormatter.getFormatFunction(extend({}, columns[i].format as DateFormatOptions)));
                 columns[i].setParser(valueFormatter.getParserFunction(columns[i].format as DateFormatOptions));
             }
             if (typeof (columns[i].format) === 'string') {

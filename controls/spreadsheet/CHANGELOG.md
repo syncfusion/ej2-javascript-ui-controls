@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 18.1.56 (2020-06-09)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+`#I279666`- Provided the actionBegin and actionComplete event for page switching action.
+`#I276608`- Provided the validation to prevent the long text exception for list data validation.
+
 ## 18.1.53 (2020-05-19)
 
 ### Spreadsheet

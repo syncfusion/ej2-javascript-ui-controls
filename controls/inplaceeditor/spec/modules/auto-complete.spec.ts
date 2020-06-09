@@ -1112,7 +1112,7 @@ describe('AutoComplete module', () => {
         it('With Fields - String - Remote Data with loadingText locale value testing', (done: Function) => {
             L10n.load({
                 'fr-BE': {
-                    'inplaceeditor': {
+                    'inplace-editor': {
                         'loadingText': 'chargement'
                     }
                 }

@@ -75,7 +75,8 @@ export class WorkbookDataValidation {
                     cell.validation = {
                         type: rules.type as ValidationType,
                         operator: rules.operator as ValidationOperator,
-                        value1: rules.value1 as string,
+                        value1: (rules.type === 'List' && rules.value1.length > 256) ?
+                            (rules.value1 as string).substring(0, 255) : rules.value1 as string,
                         value2: rules.value2 as string,
                         ignoreBlank: rules.ignoreBlank,
                         inCellDropDown: rules.inCellDropDown,

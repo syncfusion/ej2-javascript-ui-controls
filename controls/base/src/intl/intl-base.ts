@@ -1034,7 +1034,7 @@ export namespace IntlBase {
         let minFrac: number;
         let curObj: GenericFormatOptions & { hasNegativePattern?: boolean } = {};
         let curMatch: string[] = (options.format || '').match(currencyFormatRegex);
-        let type: NumericSkeleton = formatRegex.test(options.format)  ? getProperNumericSkeleton(options.format || 'N') : {};
+        let type: NumericSkeleton = formatRegex.test(options.format) ? getProperNumericSkeleton(options.format || 'N') : {};
         let dOptions: CommonOptions = {};
         if (curMatch) {
             dOptions.numberMapper = isBlazor() ?
@@ -1094,7 +1094,7 @@ export namespace IntlBase {
             actualPattern = options.format.replace(/\'/g, '"');
         }
         if (Object.keys(dOptions).length > 0) {
-            actualPattern =   processSymbol(actualPattern, dOptions);
+            actualPattern = processSymbol(actualPattern, dOptions);
         }
         return actualPattern;
     }
@@ -1144,5 +1144,28 @@ export namespace IntlBase {
             firstDay = mapper[iCulture] || defaultFirstDay;
         }
         return firstDayMapper[firstDay];
+    }
+    /**
+     * @private
+     */
+    export function getWeekOfYear(date: Date): number {
+        let newYear: Date = new Date(date.getFullYear(), 0, 1);
+        let day: number = newYear.getDay();
+        let weeknum: number;
+        day = (day >= 0 ? day : day + 7);
+        let daynum: number = Math.floor((date.getTime() - newYear.getTime() -
+            (date.getTimezoneOffset() - newYear.getTimezoneOffset()) * 60000) / 86400000) + 1;
+        if (day < 4) {
+            weeknum = Math.floor((daynum + day - 1) / 7) + 1;
+            if (weeknum > 52) {
+                let nYear: Date = new Date(this.getFullYear() + 1, 0, 1);
+                let nday: number = nYear.getDay();
+                nday = nday >= 0 ? nday : nday + 7;
+                weeknum = nday < 4 ? 1 : 53;
+            }
+        } else {
+            weeknum = Math.floor((daynum + day - 1) / 7);
+        }
+        return weeknum;
     }
 }

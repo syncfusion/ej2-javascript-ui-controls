@@ -333,6 +333,7 @@ export let defaultLocale: object = {
     Retry: 'Retry',
     EnterValue: 'Enter value',
     DialogError: 'The list source must be a reference to single row or column.',
+    ListLengthError: 'The list values allows only upto 256 charcters',
     ValidationError: 'This value doesn' + '\'' + 't match the data validation restrictions defined for the cell.',
     EmptyError: 'You must enter a value',
     ClearHighlight: 'Clear Highlight',

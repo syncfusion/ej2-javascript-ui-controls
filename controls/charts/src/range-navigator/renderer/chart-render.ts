@@ -99,7 +99,7 @@ export class RangeSeries extends NiceInterval {
                 let dateParser: Function = control.intl.getDateParser({ skeleton: 'full', type: 'dateTime' });
                 let dateFormatter: Function = control.intl.getDateFormat({ skeleton: 'full', type: 'dateTime' });
                 point.x = new Date( DataUtil.parse.parseJson({ val: point.x }).val );
-                point.xValue = Date.parse(dateParser(dateFormatter(point.x)));
+                point.xValue = control.isBlazor ? Date.parse(point.x.toString()) : Date.parse(dateParser(dateFormatter(point.x)));
             } else {
                 point.xValue = +point.x;
             }

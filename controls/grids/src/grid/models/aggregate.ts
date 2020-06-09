@@ -4,7 +4,6 @@ import { CustomSummaryType } from '../base/type';
 import { AggregateType, CellType } from '../base/enum';
 import { Property, Collection, ChildProperty, NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';
 import { AggregateColumnModel } from './aggregate-model';
-import { ValueFormatter } from '../services/value-formatter';
 
 
 /**
@@ -110,11 +109,8 @@ export class AggregateColumn extends ChildProperty<AggregateColumn> {
     /**
      * @hidden
      */
-    public setFormatter(cultureName: string): void {
-        let valueFormatter: ValueFormatter = new ValueFormatter(cultureName);
-        if (this.format && ((<DateFormatOptions>this.format).skeleton || (<DateFormatOptions>this.format).format)) {
-            this.formatFn = valueFormatter.getFormatFunction(this.format as DateFormatOptions);
-        }
+    public setFormatter(value: Function): void {
+        this.formatFn = value;
     }
     /**
      * @hidden

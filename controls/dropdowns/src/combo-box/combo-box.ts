@@ -473,7 +473,7 @@ export class ComboBox extends DropDownList {
         this.itemData = this.getDataByValue(this.value);
         let dataItem: { [key: string]: string } = this.getItemData();
         if (!(this.allowCustom && isNullOrUndefined(dataItem.value) && isNullOrUndefined(dataItem.text))) {
-            this.setProperties({ 'value': dataItem.value, 'text': dataItem.text });
+            this.setProperties({ 'value': dataItem.value, 'text': dataItem.text }, true);
         }
     }
     /**
@@ -647,7 +647,11 @@ export class ComboBox extends DropDownList {
     protected selectCurrentItem(e: KeyboardEventArgs): void {
         let li: Element;
         if (this.isPopupOpen) {
-            li = this.list.querySelector('.' + dropDownListClasses.focus);
+            if (this.isSelected) {
+                li = this.list.querySelector('.' + dropDownListClasses.selected);
+            } else {
+                li = this.list.querySelector('.' + dropDownListClasses.focus);
+            }
             if (li) {
                 this.setSelection(li, e);
                 this.isTyped = false;

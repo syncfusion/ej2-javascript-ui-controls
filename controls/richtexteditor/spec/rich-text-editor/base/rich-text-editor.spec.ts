@@ -773,7 +773,7 @@ describe('RTE base module', () => {
             editNode.focus();
             let selectNode: Element = editNode.querySelector('.actiondiv');
             let curDocument: Document = rteObj.contentModule.getDocument();
-            setCursorPoint(curDocument, (selectNode.childNodes[0].childNodes[0] as Element), 4)
+            setCursorPoint(curDocument, (selectNode.childNodes[0].childNodes[0] as Element), 4);
             keyBoardEvent.which = 46;
             keyBoardEvent.action = 'delete';
             keyBoardEvent.code = 'Delete';
@@ -792,7 +792,7 @@ describe('RTE base module', () => {
             editNode.focus();
             let selectNode: Element = editNode.querySelector('.actiondiv');
             let curDocument: Document = rteObj.contentModule.getDocument();
-            setCursorPoint(curDocument, (selectNode.childNodes[0].childNodes[2] as Element), 0)
+            setCursorPoint(curDocument, (selectNode.childNodes[0].childNodes[2] as Element), 0);
             keyBoardEvent.which = 8;
             keyBoardEvent.code = 'Backspace';
             keyBoardEvent.type = 'keydown';
@@ -800,6 +800,44 @@ describe('RTE base module', () => {
             keyBoardEvent.type = 'keyup';
             (rteObj as any).keyUp(keyBoardEvent);
             expect(afterImageDeleteTiggered).toBe(true);
+        });
+
+        it('pressing some other key when image element is selected', () => {
+            afterImageDeleteTiggered = false;
+            let keyBoardEvent: any = { preventDefault: () => { }, key: 'KeyA', stopPropagation: () => { }, shiftKey: false, which: 65 };
+            rteObj.contentModule.getEditPanel().innerHTML = `<div class='actiondiv'><p>test<img id='img1' src="https://www.google.co.in/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png" width="250" height="250">test</p><p>test2</p></div>`;
+            let editNode: HTMLElement = rteObj.contentModule.getEditPanel() as HTMLElement;
+            editNode.focus();
+            let selectNode: Element = editNode.querySelector('.actiondiv');
+            let curDocument: Document = rteObj.contentModule.getDocument();
+            setCursorPoint(curDocument, selectNode, 0);
+            rteObj.selectAll();
+            keyBoardEvent.which = 65;
+            keyBoardEvent.code = 'KeyA';
+            keyBoardEvent.type = 'keydown';
+            (rteObj as any).keyDown(keyBoardEvent);
+            keyBoardEvent.type = 'keyup';
+            (rteObj as any).keyUp(keyBoardEvent);
+            expect(afterImageDeleteTiggered).toBe(true);
+        });
+
+        it('pressing F12 key when image element is selected and shouldnt trigger event', () => {
+            afterImageDeleteTiggered = false;
+            let keyBoardEvent: any = { preventDefault: () => { }, key: 'F12', stopPropagation: () => { }, shiftKey: false, which: 123 };
+            rteObj.contentModule.getEditPanel().innerHTML = `<div class='actiondiv'><p>test<img id='img1' src="https://www.google.co.in/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png" width="250" height="250">test</p><p>test2</p></div>`;
+            let editNode: HTMLElement = rteObj.contentModule.getEditPanel() as HTMLElement;
+            editNode.focus();
+            let selectNode: Element = editNode.querySelector('.actiondiv');
+            let curDocument: Document = rteObj.contentModule.getDocument();
+            setCursorPoint(curDocument, selectNode, 0);
+            rteObj.selectAll();
+            keyBoardEvent.which = 123;
+            keyBoardEvent.code = 'F12';
+            keyBoardEvent.type = 'keydown';
+            (rteObj as any).keyDown(keyBoardEvent);
+            keyBoardEvent.type = 'keyup';
+            (rteObj as any).keyUp(keyBoardEvent);
+            expect(afterImageDeleteTiggered).toBe(false);
         });
 
         afterAll(() => {

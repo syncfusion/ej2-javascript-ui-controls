@@ -1053,6 +1053,11 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         this.setMouseXY(e);
         this.trigger(chartMouseLeave, { target: (<Element>e.target).id, x: this.mouseX, y: this.mouseY });
         this.notify(Browser.isPointer ? 'pointerleave' : 'mouseleave', e);
+        let borderElement: Element = document.getElementById(this.element.id + 'PointHover_Border');
+        if (borderElement) {
+            this.pieSeriesModule.removeBorder(borderElement, 1000);
+            borderElement = null;
+        }
         return false;
     }
 

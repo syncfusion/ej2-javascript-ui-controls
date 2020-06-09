@@ -8139,7 +8139,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                     if (!dropTextArea) {
                         this.createDropTextHint();
                     }
-                    else {
+                    else if (!this.isServerBlazor) {
                         dropTextArea.innerHTML = this.localizedTexts('dropFilesHint');
                     }
                 }
@@ -8168,9 +8168,11 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Uploader.prototype.createDropTextHint = function () {
-        var fileDropArea = this.createElement('span', { className: DROP_AREA });
-        fileDropArea.innerHTML = this.localizedTexts('dropFilesHint');
-        this.dropAreaWrapper.appendChild(fileDropArea);
+        if (!this.isServerBlazor) {
+            var fileDropArea = this.createElement('span', { className: DROP_AREA });
+            fileDropArea.innerHTML = this.localizedTexts('dropFilesHint');
+            this.dropAreaWrapper.appendChild(fileDropArea);
+        }
     };
     Uploader.prototype.updateHTMLAttrToElement = function () {
         if (!isNullOrUndefined(this.htmlAttributes)) {
@@ -8519,7 +8521,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         var formData = new FormData();
         ajax.beforeSend = function (e) {
             eventArgs.currentRequest = ajax.httpRequest;
-            if (_this.isServerBlazor) {
+            if (isBlazor()) {
                 if (_this.currentRequestHeader) {
                     _this.updateCustomheader(ajax.httpRequest, _this.currentRequestHeader);
                 }
@@ -8849,7 +8851,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
     Uploader.prototype._internalRenderSelect = function (eventArgs, fileData) {
         if (!eventArgs.cancel) {
             /* istanbul ignore next */
-            if (this.isServerBlazor) {
+            if (isBlazor()) {
                 this.currentRequestHeader = eventArgs.currentRequest;
                 this.customFormDatas = eventArgs.customFormData;
             }
@@ -9874,6 +9876,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         var formData = new FormData();
         var blob = file.rawFile.slice(metaData.start, metaData.end);
         formData.append('chunkFile', blob, file.name);
+        formData.append(this.uploaderName, blob, file.name);
         formData.append('chunk-index', metaData.chunkIndex.toString());
         formData.append('chunkIndex', metaData.chunkIndex.toString());
         var totalChunk = Math.max(Math.ceil(file.size / this.asyncSettings.chunkSize), 1);
@@ -9896,7 +9899,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             eventArgs.currentRequest = ajax.httpRequest;
             eventArgs.currentChunkIndex = metaData.chunkIndex;
             /* istanbul ignore next */
-            if (_this.isServerBlazor) {
+            if (isBlazor()) {
                 if (_this.currentRequestHeader) {
                     _this.updateCustomheader(ajax.httpRequest, _this.currentRequestHeader);
                 }
@@ -10417,7 +10420,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             currentRequest: null
         };
         this.trigger('beforeUpload', eventArgs, function (eventArgs) {
-            if (_this.isServerBlazor) {
+            if (isBlazor()) {
                 _this.currentRequestHeader = eventArgs.currentRequest ? eventArgs.currentRequest : _this.currentRequestHeader;
                 _this.customFormDatas = (eventArgs.customFormData && eventArgs.customFormData.length > 0) ?
                     eventArgs.customFormData : _this.customFormDatas;
@@ -10559,7 +10562,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         ajax.beforeSend = function (e) {
             eventArgs.currentRequest = ajax.httpRequest;
             /* istanbul ignore next */
-            if (_this.isServerBlazor) {
+            if (isBlazor()) {
                 eventArgs.fileData.rawFile = !chunkEnabled ? _this.base64String[i] : eventArgs.fileData.rawFile;
                 if (_this.currentRequestHeader) {
                     _this.updateCustomheader(ajax.httpRequest, _this.currentRequestHeader);
@@ -10653,7 +10656,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         };
         this.trigger('beforeRemove', beforeEventArgs, function (beforeEventArgs) {
             if (!beforeEventArgs.cancel) {
-                if (_this.isServerBlazor) {
+                if (isBlazor()) {
                     _this.currentRequestHeader = beforeEventArgs.currentRequest;
                     _this.customFormDatas = beforeEventArgs.customFormData;
                 }

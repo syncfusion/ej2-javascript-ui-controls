@@ -16540,23 +16540,29 @@ var Image = /** @class */ (function () {
         var selectNodeEle;
         var selectParentEle;
         this.deletedImg = [];
+        var isCursor;
+        var keyCodeValues = [27, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123,
+            44, 45, 9, 16, 17, 18, 19, 20, 33, 34, 35, 36, 37, 38, 39, 40, 91, 92, 93, 144, 145, 182, 183];
+        if (this.parent.editorMode === 'HTML') {
+            range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
+            isCursor = range.startContainer === range.endContainer && range.startOffset === range.endOffset;
+        }
+        if (!isCursor && this.parent.editorMode === 'HTML' && keyCodeValues.indexOf(originalEvent.which) < 0) {
+            var nodes = this.parent.formatter.editorManager.nodeSelection.getNodeCollection(range);
+            for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].nodeName === 'IMG') {
+                    this.deletedImg.push(nodes[i]);
+                }
+            }
+        }
         if (this.parent.editorMode === 'HTML' && ((originalEvent.which === 8 && originalEvent.code === 'Backspace') ||
             (originalEvent.which === 46 && originalEvent.code === 'Delete'))) {
-            var range_1 = this.parent.getRange();
-            var isCursor = range_1.startContainer === range_1.endContainer && range_1.startOffset === range_1.endOffset;
-            if ((originalEvent.which === 8 && originalEvent.code === 'Backspace' && isCursor)) {
-                this.checkImageBack(range_1);
+            var isCursor_1 = range.startContainer === range.endContainer && range.startOffset === range.endOffset;
+            if ((originalEvent.which === 8 && originalEvent.code === 'Backspace' && isCursor_1)) {
+                this.checkImageBack(range);
             }
-            else if ((originalEvent.which === 46 && originalEvent.code === 'Delete' && isCursor)) {
-                this.checkImageDel(range_1);
-            }
-            else if (!isCursor) {
-                var nodes = this.parent.formatter.editorManager.nodeSelection.getNodeCollection(range_1);
-                for (var i = 0; i < nodes.length; i++) {
-                    if (nodes[i].nodeName === 'IMG') {
-                        this.deletedImg.push(nodes[i]);
-                    }
-                }
+            else if ((originalEvent.which === 46 && originalEvent.code === 'Delete' && isCursor_1)) {
+                this.checkImageDel(range);
             }
         }
         if (!sf.base.isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection) &&
@@ -16589,7 +16595,7 @@ var Image = /** @class */ (function () {
                         originalEvent: originalEvent
                     }
                 };
-                this.deleteImg(event_1);
+                this.deleteImg(event_1, originalEvent.keyCode);
             }
             if (this.parent.contentModule.getEditPanel().querySelector('.e-img-resize')) {
                 this.remvoeResizEle();
@@ -16972,11 +16978,11 @@ var Image = /** @class */ (function () {
         var regexp = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/gi;
         return regexp.test(url);
     };
-    Image.prototype.deleteImg = function (e) {
+    Image.prototype.deleteImg = function (e, keyCode) {
         if (e.selectNode[0].nodeName !== 'IMG') {
             return;
         }
-        var args = { img: e.selectNode[0] };
+        var args = { img: e.selectNode[0], src: e.selectNode[0].getAttribute('src') };
         if (this.parent.formatter.getUndoRedoStack().length === 0) {
             this.parent.formatter.saveData();
         }
@@ -16993,7 +16999,9 @@ var Image = /** @class */ (function () {
             this.quickToolObj.imageQTBar.hidePopup();
         }
         this.cancelResizeAction();
-        this.parent.trigger(afterImageDelete, args);
+        if (sf.base.isNullOrUndefined(keyCode)) {
+            this.parent.trigger(afterImageDelete, args);
+        }
     };
     Image.prototype.caption = function (e) {
         var selectNode = e.selectNode[0];
@@ -17407,11 +17415,16 @@ var Image = /** @class */ (function () {
         });
         uploadParentEle.appendChild(uploadEle);
         var altText;
+        var rawFile;
         this.uploadObj = new sf.inputs.Uploader({
             asyncSettings: { saveUrl: this.parent.insertImageSettings.saveUrl, },
             dropArea: span, multiple: false, enableRtl: this.parent.enableRtl,
             allowedExtensions: this.parent.insertImageSettings.allowedTypes.toString(),
             selected: function (e) {
+                if (sf.base.isBlazor()) {
+                    e.cancel = true;
+                    rawFile = e.filesData;
+                }
                 proxy.isImgUploaded = true;
                 _this.parent.trigger(imageSelected, e, function (e) {
                     _this.checkExtension(e.filesData[0]);
@@ -17435,6 +17448,12 @@ var Image = /** @class */ (function () {
                             proxy.inputUrl.setAttribute('disabled', 'true');
                         });
                         reader_1.readAsDataURL(e.filesData[0].rawFile);
+                    }
+                    if (sf.base.isBlazor()) {
+                        e.cancel = false;
+                        /* tslint:disable */
+                        _this.uploadObj._internalRenderSelect(e, rawFile);
+                        /* tslint:enable */
                     }
                 });
             },

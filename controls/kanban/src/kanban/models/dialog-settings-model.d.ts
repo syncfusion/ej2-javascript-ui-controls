@@ -1,4 +1,4 @@
-import { Property, ChildProperty } from '@syncfusion/ej2-base';import { DialogFieldsModel } from './dialog-fields-model';import { DialogModel } from '@syncfusion/ej2-popups';
+import { Property, ChildProperty } from '@syncfusion/ej2-base';import { DialogFieldsModel } from './dialog-fields-model';import { KanbanDialogModel } from './kanban-dialog-model';
 
 /**
  * Interface for a class DialogSettings
@@ -21,9 +21,8 @@ export interface DialogSettingsModel {
 
     /**
      * Customize the model object configuration for the edit or add Dialog component.
-     * @deprecated
      * @default null
      */
-    model?: DialogModel;
+    model?: KanbanDialogModel;
 
 }

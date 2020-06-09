@@ -788,7 +788,7 @@ var HijriParser;
     HijriParser.toGregorian = toGregorian;
 })(HijriParser || (HijriParser = {}));
 
-const abbreviateRegexGlobal = /\/MMMMM|MMMM|MMM|a|LLL|EEEEE|EEEE|E|K|cccc|ccc|G+|z+/gi;
+const abbreviateRegexGlobal = /\/MMMMM|MMMM|MMM|a|LLL|EEEEE|EEEE|E|K|cccc|ccc|WW|W|G+|z+/gi;
 const standalone = 'stand-alone';
 const weekdayKey = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 
@@ -1012,6 +1012,10 @@ class DateFormat {
                     break;
                 case '/':
                     ret += options.dateSeperator;
+                    break;
+                case 'W':
+                    isNumber = true;
+                    curval = IntlBase.getWeekOfYear(value);
                     break;
                 default:
                     ret += match;
@@ -1495,6 +1499,10 @@ class DateParser {
                         if (char === 'h') {
                             parseOptions.hour12 = true;
                         }
+                        break;
+                    case 'W':
+                        let opt = len === 1 ? '?' : '';
+                        regexString += '(' + nRegx + opt + nRegx + ')';
                         break;
                     case 'y':
                         canUpdate = isNumber = true;
@@ -3385,6 +3393,31 @@ var IntlBase;
         return firstDayMapper[firstDay];
     }
     IntlBase.getWeekData = getWeekData;
+    /**
+     * @private
+     */
+    function getWeekOfYear(date) {
+        let newYear = new Date(date.getFullYear(), 0, 1);
+        let day = newYear.getDay();
+        let weeknum;
+        day = (day >= 0 ? day : day + 7);
+        let daynum = Math.floor((date.getTime() - newYear.getTime() -
+            (date.getTimezoneOffset() - newYear.getTimezoneOffset()) * 60000) / 86400000) + 1;
+        if (day < 4) {
+            weeknum = Math.floor((daynum + day - 1) / 7) + 1;
+            if (weeknum > 52) {
+                let nYear = new Date(this.getFullYear() + 1, 0, 1);
+                let nday = nYear.getDay();
+                nday = nday >= 0 ? nday : nday + 7;
+                weeknum = nday < 4 ? 1 : 53;
+            }
+        }
+        else {
+            weeknum = Math.floor((daynum + day - 1) / 7);
+        }
+        return weeknum;
+    }
+    IntlBase.getWeekOfYear = getWeekOfYear;
 })(IntlBase || (IntlBase = {}));
 
 const headerRegex = /^(.*?):[ \t]*([^\r\n]*)$/gm;

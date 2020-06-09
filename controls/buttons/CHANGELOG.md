@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.56 (2020-06-09)
+
+### Chips
+
+#### Bug Fixes
+
+- `#278394` - Issue with delete event has been fixed.
+
 ## 18.1.48 (2020-05-05)
 
 ### Chips

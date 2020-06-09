@@ -1103,9 +1103,12 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             }
             this.setFooterTemplate();
         }
-        let footerEle: HTMLElement = this.element.querySelector('.' + DLG_FOOTER_CONTENT);
-        let footerBtn: NodeListOf<Element> = !isNullOrUndefined(footerEle) &&
-            <NodeListOf<Element>>footerEle.querySelectorAll('button');
+        let footerBtn: NodeListOf<Element>;
+        for (let i: number = 0, childNodes: HTMLCollection = this.element.children; i < childNodes.length; i++) {
+            if (childNodes[i].classList.contains(DLG_FOOTER_CONTENT)) {
+               footerBtn = <NodeListOf<Element>>(childNodes[i] as HTMLElement).querySelectorAll('button');
+            }
+        }
         for (let i: number = 0; i < this.buttons.length; i++) {
             if (!this.isBlazorServerRender()) { this.btnObj[i] = new Button(this.buttons[i].buttonModel); }
             if (this.isBlazorServerRender()) { this.ftrTemplateContent = this.element.querySelector('.' + DLG_FOOTER_CONTENT); }

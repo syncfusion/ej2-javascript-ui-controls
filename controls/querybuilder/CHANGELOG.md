@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.56 (2020-06-09)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- Issue with 'addGroups' method is fixed.
+
 ## 18.1.55 (2020-06-02)
 
 ### QueryBuilder

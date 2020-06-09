@@ -285,10 +285,14 @@ function intToDate(val) {
  */
 /* tslint:disable no-any */
 function dateToInt(val, isTime) {
-    let startDate = new Date('01/01/1900');
+    let timeZoneOffset = new Date().getTimezoneOffset();
+    let startDateUTC = new Date('01/01/1900').toUTCString().replace(' GMT', '');
+    let startDate = new Date(startDateUTC);
     let date = isDateTime(val) ? val : new Date(val);
-    let timeDiff = (date.getTime() - startDate.getTime());
-    let diffDays = (timeDiff / (1000 * 3600 * 24)) + 1;
+    let timeDiff;
+    let dateDiff = (new Date(date.toUTCString().replace(' GMT', '')).getTime() - startDate.getTime());
+    timeDiff = (timeZoneOffset > 0) ? dateDiff + (timeZoneOffset * 60 * 1000) : (dateDiff - (timeZoneOffset * 60 * 1000));
+    let diffDays = (timeDiff / (1000 * 3600 * 24));
     return isTime ? diffDays : parseInt(diffDays.toString(), 10) + 2;
 }
 /**
@@ -9690,7 +9694,8 @@ class WorkbookDataValidation {
                     cell.validation = {
                         type: rules.type,
                         operator: rules.operator,
-                        value1: rules.value1,
+                        value1: (rules.type === 'List' && rules.value1.length > 256) ?
+                            rules.value1.substring(0, 255) : rules.value1,
                         value2: rules.value2,
                         ignoreBlank: rules.ignoreBlank,
                         inCellDropDown: rules.inCellDropDown,
@@ -20534,6 +20539,10 @@ class DataValidation {
                     }
                 }
             }
+            else if (value1.length > 256) {
+                isValidList = false;
+                errorMsg = l10n.getConstant('ListLengthError');
+            }
         }
         if (type !== 'List' || isValidList) {
             let sheet = this.parent.getActiveSheet();
@@ -25206,6 +25215,7 @@ class Formula {
 class SheetTabs {
     constructor(parent) {
         this.aggregateContent = '';
+        this.isSelectCancel = false;
         this.parent = parent;
         this.addEventListener();
     }
@@ -25263,16 +25273,33 @@ class SheetTabs {
             items: items.tabItems,
             scrollStep: 250,
             selecting: (args) => {
-                /** */
+                let beginEventArgs = {
+                    currentSheetIndex: args.selectingIndex, previousSheetIndex: args.selectedIndex, cancel: false
+                };
+                if (!this.isSelectCancel) {
+                    this.parent.notify(beginAction, { eventArgs: beginEventArgs, action: 'gotoSheet' });
+                }
+                this.isSelectCancel = beginEventArgs.cancel;
             },
             selected: (args) => {
                 if (args.selectedIndex === args.previousIndex) {
                     return;
                 }
-                this.parent.activeSheetIndex = args.selectedIndex;
-                this.parent.dataBind();
-                this.updateDropDownItems(args.selectedIndex, args.previousIndex);
-                this.parent.element.focus();
+                if (this.isSelectCancel) {
+                    this.tabInstance.selectedItem = args.previousIndex;
+                    this.tabInstance.dataBind();
+                    this.parent.element.focus();
+                }
+                else {
+                    this.parent.activeSheetIndex = args.selectedIndex;
+                    this.parent.dataBind();
+                    this.updateDropDownItems(args.selectedIndex, args.previousIndex);
+                    this.parent.element.focus();
+                    let completeEventArgs = {
+                        previousSheetIndex: args.previousIndex, currentSheetIndex: args.selectedIndex
+                    };
+                    this.parent.notify(completeAction, { eventArgs: completeEventArgs, action: 'gotoSheet' });
+                }
             },
             created: () => {
                 let tBarItems = this.tabInstance.element.querySelector('.e-toolbar-items');
@@ -27890,6 +27917,7 @@ let defaultLocale = {
     Retry: 'Retry',
     EnterValue: 'Enter value',
     DialogError: 'The list source must be a reference to single row or column.',
+    ListLengthError: 'The list values allows only upto 256 charcters',
     ValidationError: 'This value doesn' + '\'' + 't match the data validation restrictions defined for the cell.',
     EmptyError: 'You must enter a value',
     ClearHighlight: 'Clear Highlight',
@@ -29262,7 +29290,7 @@ class ActionEvents {
     }
     actionCompleteHandler(args) {
         this.parent.trigger('actionComplete', args);
-        if (args.action !== 'undoRedo') {
+        if (args.action !== 'undoRedo' && args.action !== 'gotoSheet') {
             this.parent.notify(updateUndoRedoCollection, { args: args });
         }
     }

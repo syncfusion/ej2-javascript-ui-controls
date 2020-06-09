@@ -49,7 +49,8 @@ export class Toolbar {
         }
         (this.predefinedItems as { Search: ItemModel }).Search = {
             id: this.gridID + '_search',
-            tooltipText: this.l10n.getConstant('Search'), align: 'Right', cssClass: 'e-search-wrapper'
+            tooltipText: this.l10n.getConstant('Search'), align: 'Right', cssClass: 'e-search-wrapper',
+            type: 'Input'
         };
         (this.predefinedItems as { ColumnChooser: ItemModel }).ColumnChooser = {
             id: this.gridID + '_' + 'columnchooser', cssClass: 'e-cc e-ccdiv e-cc-toolbar', suffixIcon: 'e-' + 'columnchooser-btn',

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.56 (2020-06-09)
+
+### Common
+
+#### New Features
+
+- Provided week of year date formatting support.
+
 ## 18.1.53 (2020-05-19)
 
 ### Common

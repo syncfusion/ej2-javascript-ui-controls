@@ -378,6 +378,35 @@ describe('excel Export =>', () => {
             gridObj = null;
         });
     });
+    describe('EJ2-40200 internal exportDataBound event in excel export =>', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: employeeData,
+                    allowExcelExport: true,
+                    columns: [
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
+                        { field: 'FirstName', headerText: 'Name', width: 125 },
+                        { field: 'Title', headerText: 'Title', width: 180 },
+                        { field: 'City', headerText: 'city', width: 110 },
+                        { field: 'Country', headerText: 'Country', width: 110 }
+                    ],
+                }, done);
+        });
+        it('grid excel exportGroupCaption check', (done) => {
+            gridObj.on('export-DataBound', function(args: {excelRows: ExcelRow[]}){
+                expect(args.excelRows.length).toBe((gridObj.dataSource as any).length+1);
+                done();
+            });  
+            gridObj.excelExport();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });
 
 

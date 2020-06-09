@@ -5,7 +5,7 @@ import { removeClass, attributes, NotifyPropertyChanges } from '@syncfusion/ej2-
 import { dropDownListClasses } from '../drop-down-list/drop-down-list';
 import { ComboBox } from '../combo-box/combo-box';
 import { AutoCompleteModel } from '../auto-complete/auto-complete-model';
-import { highlightSearch } from '../common/highlight-search';
+import { highlightSearch, revertHighlightSearch } from '../common/highlight-search';
 import { Search } from '../common/incremental-search';
 import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';
 import { FieldSettings, FilteringEventArgs, FilterType } from '../drop-down-base/drop-down-base';
@@ -504,6 +504,7 @@ export class AutoComplete extends ComboBox {
             for (let i: number = 0; i < this.liCollections.length; i++) {
                 let isHighlight: HTMLElement = this.ulElement.querySelector('.e-active');
                 if (!isHighlight) {
+                    revertHighlightSearch(this.liCollections[i]);
                     highlightSearch(this.liCollections[i], this.queryString, this.ignoreCase, this.filterType, this.isServerBlazor);
                 }
             }

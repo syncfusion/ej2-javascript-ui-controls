@@ -443,7 +443,7 @@ export class Column {
         }
         let valueFormatter: ValueFormatter = new ValueFormatter();
         if (options.format && ((<DateFormatOptions>options.format).skeleton || (<DateFormatOptions>options.format).format)) {
-            this.setFormatter(valueFormatter.getFormatFunction(options.format as DateFormatOptions));
+            this.setFormatter(valueFormatter.getFormatFunction(extend({}, options.format as DateFormatOptions)));
             this.setParser(valueFormatter.getParserFunction(options.format as DateFormatOptions));
         }
         this.toJSON = () => {

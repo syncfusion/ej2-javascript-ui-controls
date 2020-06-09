@@ -1014,8 +1014,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
      */
     public setEmptyPoint(point: Points, i: number): void {
         if (!this.findVisibility(point)) {
-            point.visible = ((this.xAxis.valueType === 'Logarithmic' || this.yAxis.valueType === 'Logarithmic') && point.yValue === 0)
-            ? false : true;
+            point.visible = true;
             return null;
         }
         point.isEmpty = true;

@@ -1458,9 +1458,7 @@ function doDownloadFiles(parent, data, newIds) {
 function createDeniedDialog(parent, data, action) {
     let message = getValue('message', getValue('permission', data));
     if (message === '') {
-        message = getLocaleText(parent, 'Access-Message');
-        message.replace('{0}', getValue('name', data));
-        message.replace('{1}', action);
+        message = getLocaleText(parent, 'Access-Message').replace('{0}', getValue('name', data)).replace('{1}', action);
     }
     let response = {
         error: {

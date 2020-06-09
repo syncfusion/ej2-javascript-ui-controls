@@ -480,24 +480,28 @@ export class Image {
         let originalEvent: KeyboardEventArgs = event.args as KeyboardEventArgs;
         let range: Range;
         let save: NodeSelection;
-        let selectNodeEle: Node[];
-        let selectParentEle: Node[];
-        this.deletedImg = [];
+        let selectNodeEle: Node[]; let selectParentEle: Node[]; this.deletedImg = []; let isCursor: boolean;
+        let keyCodeValues: number[] = [27, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123,
+        44, 45, 9, 16, 17, 18, 19, 20, 33, 34, 35, 36, 37, 38, 39, 40, 91, 92, 93, 144, 145, 182, 183];
+        if (this.parent.editorMode === 'HTML') {
+            range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
+            isCursor = range.startContainer === range.endContainer && range.startOffset === range.endOffset;
+        }
+        if (!isCursor && this.parent.editorMode === 'HTML' && keyCodeValues.indexOf(originalEvent.which) < 0) {
+            let nodes: Node[] = this.parent.formatter.editorManager.nodeSelection.getNodeCollection(range);
+            for (let i: number = 0; i < nodes.length; i++) {
+                if (nodes[i].nodeName === 'IMG') {
+                    this.deletedImg.push(nodes[i]);
+                }
+            }
+        }
         if (this.parent.editorMode === 'HTML' && ((originalEvent.which === 8 && originalEvent.code === 'Backspace') ||
         (originalEvent.which === 46 && originalEvent.code === 'Delete'))) {
-            let range: Range = this.parent.getRange();
             let isCursor: boolean = range.startContainer === range.endContainer && range.startOffset === range.endOffset;
             if ((originalEvent.which === 8 && originalEvent.code === 'Backspace' && isCursor)) {
                 this.checkImageBack(range);
             } else if ((originalEvent.which === 46 && originalEvent.code === 'Delete' && isCursor)) {
                 this.checkImageDel(range);
-            } else if (!isCursor) {
-                let nodes: Node[] = this.parent.formatter.editorManager.nodeSelection.getNodeCollection(range);
-                for (let i: number = 0; i < nodes.length; i++) {
-                    if (nodes[i].nodeName === 'IMG') {
-                        this.deletedImg.push(nodes[i]);
-                    }
-                }
             }
         }
         if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection) &&
@@ -532,7 +536,7 @@ export class Image {
                         originalEvent: originalEvent
                     }
                 };
-                this.deleteImg(event);
+                this.deleteImg(event, originalEvent.keyCode);
             }
             if (this.parent.contentModule.getEditPanel().querySelector('.e-img-resize')) {
                 this.remvoeResizEle();
@@ -906,11 +910,11 @@ export class Image {
         let regexp: RegExp = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/gi;
         return regexp.test(url);
     }
-    private deleteImg(e: IImageNotifyArgs): void {
+    private deleteImg(e: IImageNotifyArgs, keyCode?: number): void {
         if (e.selectNode[0].nodeName !== 'IMG') {
             return;
         }
-        let args: object = { img: e.selectNode[0] };
+        let args: object = { img: e.selectNode[0], src: (e.selectNode[0] as HTMLElement).getAttribute('src') };
         if (this.parent.formatter.getUndoRedoStack().length === 0) {
             this.parent.formatter.saveData();
         }
@@ -929,7 +933,9 @@ export class Image {
             this.quickToolObj.imageQTBar.hidePopup();
         }
         this.cancelResizeAction();
-        this.parent.trigger(events.afterImageDelete, args);
+        if (isNullOrUndefined(keyCode)) {
+            this.parent.trigger(events.afterImageDelete, args);
+        }
     }
     private caption(e: IImageNotifyArgs): void {
         let selectNode: HTMLElement = e.selectNode[0] as HTMLElement;
@@ -1344,12 +1350,16 @@ export class Image {
         let uploadEle: HTMLInputElement | HTMLElement = this.parent.createElement('input', {
             id: this.rteID + '_upload', attrs: { type: 'File', name: 'UploadFiles' }
         });
-        uploadParentEle.appendChild(uploadEle); let altText: string;
+        uploadParentEle.appendChild(uploadEle); let altText: string; let rawFile: FileInfo[];
         this.uploadObj = new Uploader({
             asyncSettings: { saveUrl: this.parent.insertImageSettings.saveUrl, },
             dropArea: span, multiple: false, enableRtl: this.parent.enableRtl,
             allowedExtensions: this.parent.insertImageSettings.allowedTypes.toString(),
             selected: (e: SelectedEventArgs) => {
+                if (isBlazor()) {
+                    e.cancel = true;
+                    rawFile = e.filesData;
+                }
                 proxy.isImgUploaded = true;
                 this.parent.trigger(events.imageSelected, e, (e: SelectedEventArgs) => {
                     this.checkExtension(e.filesData[0]); altText = e.filesData[0].name;
@@ -1372,6 +1382,12 @@ export class Image {
                             proxy.inputUrl.setAttribute('disabled', 'true');
                         });
                         reader.readAsDataURL(e.filesData[0].rawFile as Blob);
+                    }
+                    if (isBlazor()) {
+                        e.cancel = false;
+                        /* tslint:disable */
+                        (this.uploadObj as any)._internalRenderSelect(e, rawFile);
+                        /* tslint:enable */
                     }
                 });
             },

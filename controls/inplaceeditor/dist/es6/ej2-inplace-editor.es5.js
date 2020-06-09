@@ -397,7 +397,7 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         this.valueWrap.classList.remove(LOAD);
     };
     InPlaceEditor.prototype.renderValue = function (val) {
-        this.valueEle.innerHTML = val;
+        this.enableHtmlSanitizer && this.type !== 'RTE' ? this.valueEle.innerText = val : this.valueEle.innerHTML = val;
         if (this.type === 'Color') {
             setStyleAttribute(this.valueEle, { 'color': val });
         }
@@ -671,7 +671,7 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         return select('.' + ELEMENTS, this.formEle);
     };
     InPlaceEditor.prototype.getLocale = function (prop, val) {
-        return new L10n(this.getModuleName(), prop, this.locale).getConstant(val);
+        return new L10n('inplace-editor', prop, this.locale).getConstant(val);
     };
     InPlaceEditor.prototype.checkValue = function (val) {
         return (!this.isEmpty(val)) ? val : this.emptyText;

@@ -361,7 +361,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         this.valueWrap.classList.remove(LOAD);
     }
     renderValue(val) {
-        this.valueEle.innerHTML = val;
+        this.enableHtmlSanitizer && this.type !== 'RTE' ? this.valueEle.innerText = val : this.valueEle.innerHTML = val;
         if (this.type === 'Color') {
             setStyleAttribute(this.valueEle, { 'color': val });
         }
@@ -634,7 +634,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         return select('.' + ELEMENTS, this.formEle);
     }
     getLocale(prop, val) {
-        return new L10n(this.getModuleName(), prop, this.locale).getConstant(val);
+        return new L10n('inplace-editor', prop, this.locale).getConstant(val);
     }
     checkValue(val) {
         return (!this.isEmpty(val)) ? val : this.emptyText;

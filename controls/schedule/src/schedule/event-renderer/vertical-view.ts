@@ -511,7 +511,7 @@ export class VerticalEvent extends EventBase {
             util.getStartEndHours(util.resetTime(this.dateRender[resource][day]), this.startHour, this.endHour);
         let startHour: Date = startEndHours.startHour;
         let diffInMinutes: number = ((date.getHours() - startHour.getHours()) * 60) + (date.getMinutes() - startHour.getMinutes());
-        return (diffInMinutes * this.cellHeight * this.slotCount) / this.interval;
+        return (this.parent.activeViewOptions.timeScale.enable) ? ((diffInMinutes * this.cellHeight * this.slotCount) / this.interval) : 0;
     }
 
     private getOverlapIndex(record: { [key: string]: Object }, day: number, isAllDay: boolean, resource: number): number {

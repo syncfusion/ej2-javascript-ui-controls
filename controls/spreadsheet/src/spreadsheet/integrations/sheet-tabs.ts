@@ -1,9 +1,9 @@
 import { Tab, SelectingEventArgs, TabItemModel, SelectEventArgs } from '@syncfusion/ej2-navigations';
 import { Spreadsheet } from '../base/index';
-import { refreshSheetTabs, locale, insertSheetTab, cMenuBeforeOpen, dialog, renameSheet, hideSheet, completeAction } from '../common/index';
-import { sheetNameUpdate, clearUndoRedoCollection } from '../common/index';
+import { refreshSheetTabs, locale, insertSheetTab, cMenuBeforeOpen, dialog, renameSheet, hideSheet } from '../common/index';
+import { sheetNameUpdate, clearUndoRedoCollection, completeAction, beginAction } from '../common/index';
 import { sheetTabs, renameSheetTab, removeSheetTab, activeSheetChanged, onVerticalScroll, onHorizontalScroll } from '../common/index';
-import { getUpdateUsingRaf,  protectSheet } from '../common/index';
+import { getUpdateUsingRaf, protectSheet } from '../common/index';
 import { SheetModel, getSheetName, aggregateComputation, AggregateArgs } from '../../workbook/index';
 import { isSingleCell, getRangeIndexes, getSheet, getSheetIndex } from '../../workbook/index';
 import { DropDownButton, MenuEventArgs, BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
@@ -24,6 +24,7 @@ export class SheetTabs {
     private addBtnRipple: Function;
     private aggregateDropDown: DropDownButton;
     private aggregateContent: string = '';
+    private isSelectCancel: boolean = false;
     constructor(parent: Spreadsheet) {
         this.parent = parent;
         this.addEventListener();
@@ -80,14 +81,29 @@ export class SheetTabs {
             items: items.tabItems,
             scrollStep: 250,
             selecting: (args: SelectingEventArgs): void => {
-                /** */
+                let beginEventArgs: { previousSheetIndex: number, currentSheetIndex: number, cancel: boolean } = {
+                    currentSheetIndex: args.selectingIndex, previousSheetIndex: args.selectedIndex, cancel: false
+                };
+                if (!this.isSelectCancel) {
+                    this.parent.notify(beginAction, { eventArgs: beginEventArgs, action: 'gotoSheet' });
+                }
+                this.isSelectCancel = beginEventArgs.cancel;
             },
             selected: (args: SelectEventArgs): void => {
                 if (args.selectedIndex === args.previousIndex) { return; }
-                this.parent.activeSheetIndex = args.selectedIndex;
-                this.parent.dataBind();
-                this.updateDropDownItems(args.selectedIndex, args.previousIndex);
-                this.parent.element.focus();
+                if (this.isSelectCancel) {
+                    this.tabInstance.selectedItem = args.previousIndex; this.tabInstance.dataBind();
+                    this.parent.element.focus();
+                } else {
+                    this.parent.activeSheetIndex = args.selectedIndex;
+                    this.parent.dataBind();
+                    this.updateDropDownItems(args.selectedIndex, args.previousIndex);
+                    this.parent.element.focus();
+                    let completeEventArgs: { previousSheetIndex: number, currentSheetIndex: number } = {
+                        previousSheetIndex: args.previousIndex, currentSheetIndex: args.selectedIndex
+                    };
+                    this.parent.notify(completeAction, { eventArgs: completeEventArgs, action: 'gotoSheet' });
+                }
             },
             created: (): void => {
                 let tBarItems: HTMLElement = this.tabInstance.element.querySelector('.e-toolbar-items');

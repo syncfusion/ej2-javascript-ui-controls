@@ -1504,7 +1504,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                     enableDropText = true;
                     if (!dropTextArea) {
                         this.createDropTextHint();
-                    } else {
+                    } else if (!this.isServerBlazor) {
                         dropTextArea.innerHTML = this.localizedTexts('dropFilesHint');
                     }
                 }
@@ -1533,9 +1533,11 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     }
 
     private createDropTextHint () : void {
-        let fileDropArea: HTMLElement = this.createElement('span', { className: DROP_AREA});
-        fileDropArea.innerHTML = this.localizedTexts('dropFilesHint');
-        this.dropAreaWrapper.appendChild(fileDropArea);
+        if (!this.isServerBlazor) {
+            let fileDropArea: HTMLElement = this.createElement('span', { className: DROP_AREA});
+            fileDropArea.innerHTML = this.localizedTexts('dropFilesHint');
+            this.dropAreaWrapper.appendChild(fileDropArea);
+        }
     }
 
         private updateHTMLAttrToElement(): void {
@@ -1877,7 +1879,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         let formData: FormData = new FormData();
         ajax.beforeSend = (e: BeforeSendEventArgs) => {
             eventArgs.currentRequest = ajax.httpRequest;
-            if (this.isServerBlazor) {
+            if (isBlazor()) {
                 if (this.currentRequestHeader) {
                     this.updateCustomheader(ajax.httpRequest, this.currentRequestHeader);
                 }
@@ -2182,7 +2184,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     private _internalRenderSelect(eventArgs: SelectedEventArgs, fileData: FileInfo[]): void {
         if (!eventArgs.cancel) {
             /* istanbul ignore next */
-            if (this.isServerBlazor) {
+            if (isBlazor()) {
                 this.currentRequestHeader = eventArgs.currentRequest;
                 this.customFormDatas = eventArgs.customFormData;
             }
@@ -3199,6 +3201,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         let cloneFile: string | Blob;
         let blob: string | Blob = file.rawFile.slice(metaData.start, metaData.end);
         formData.append('chunkFile', blob, file.name);
+        formData.append(this.uploaderName, blob, file.name);
         formData.append('chunk-index', metaData.chunkIndex.toString());
         formData.append('chunkIndex', metaData.chunkIndex.toString());
         let totalChunk: number = Math.max(Math.ceil(file.size / this.asyncSettings.chunkSize), 1);
@@ -3221,7 +3224,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             eventArgs.currentRequest = ajax.httpRequest;
             eventArgs.currentChunkIndex = metaData.chunkIndex;
             /* istanbul ignore next */
-            if (this.isServerBlazor) {
+            if (isBlazor()) {
                 if (this.currentRequestHeader) {
                     this.updateCustomheader(ajax.httpRequest, this.currentRequestHeader);
                 }
@@ -3731,7 +3734,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             currentRequest: null
         };
         this.trigger('beforeUpload', eventArgs, (eventArgs: BeforeUploadEventArgs) => {
-            if (this.isServerBlazor) {
+            if (isBlazor()) {
                 this.currentRequestHeader = eventArgs.currentRequest ? eventArgs.currentRequest : this.currentRequestHeader;
                 this.customFormDatas = (eventArgs.customFormData && eventArgs.customFormData.length > 0) ?
                     eventArgs.customFormData : this.customFormDatas;
@@ -3866,7 +3869,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         ajax.beforeSend = (e: BeforeSendEventArgs) => {
             eventArgs.currentRequest = ajax.httpRequest;
             /* istanbul ignore next */
-            if (this.isServerBlazor) {
+            if (isBlazor()) {
                 eventArgs.fileData.rawFile = !chunkEnabled ? this.base64String[i] : eventArgs.fileData.rawFile;
                 if (this.currentRequestHeader) {
                     this.updateCustomheader(ajax.httpRequest, this.currentRequestHeader);
@@ -3958,7 +3961,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         };
         this.trigger('beforeRemove', beforeEventArgs, (beforeEventArgs: BeforeRemoveEventArgs) => {
             if (!beforeEventArgs.cancel) {
-                if (this.isServerBlazor) {
+                if (isBlazor()) {
                     this.currentRequestHeader = beforeEventArgs.currentRequest;
                     this.customFormDatas = beforeEventArgs.customFormData;
                 }

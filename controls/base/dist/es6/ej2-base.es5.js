@@ -802,7 +802,7 @@ var HijriParser;
     HijriParser.toGregorian = toGregorian;
 })(HijriParser || (HijriParser = {}));
 
-var abbreviateRegexGlobal = /\/MMMMM|MMMM|MMM|a|LLL|EEEEE|EEEE|E|K|cccc|ccc|G+|z+/gi;
+var abbreviateRegexGlobal = /\/MMMMM|MMMM|MMM|a|LLL|EEEEE|EEEE|E|K|cccc|ccc|WW|W|G+|z+/gi;
 var standalone = 'stand-alone';
 var weekdayKey = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 
@@ -1031,6 +1031,10 @@ var DateFormat = /** @__PURE__ @class */ (function () {
                     break;
                 case '/':
                     ret += options.dateSeperator;
+                    break;
+                case 'W':
+                    isNumber = true;
+                    curval = IntlBase.getWeekOfYear(value);
                     break;
                 default:
                     ret += match;
@@ -1523,6 +1527,10 @@ var DateParser = /** @__PURE__ @class */ (function () {
                         if (char === 'h') {
                             parseOptions.hour12 = true;
                         }
+                        break;
+                    case 'W':
+                        var opt = len === 1 ? '?' : '';
+                        regexString += '(' + nRegx + opt + nRegx + ')';
                         break;
                     case 'y':
                         canUpdate = isNumber = true;
@@ -3432,6 +3440,31 @@ var IntlBase;
         return firstDayMapper[firstDay];
     }
     IntlBase.getWeekData = getWeekData;
+    /**
+     * @private
+     */
+    function getWeekOfYear(date) {
+        var newYear = new Date(date.getFullYear(), 0, 1);
+        var day = newYear.getDay();
+        var weeknum;
+        day = (day >= 0 ? day : day + 7);
+        var daynum = Math.floor((date.getTime() - newYear.getTime() -
+            (date.getTimezoneOffset() - newYear.getTimezoneOffset()) * 60000) / 86400000) + 1;
+        if (day < 4) {
+            weeknum = Math.floor((daynum + day - 1) / 7) + 1;
+            if (weeknum > 52) {
+                var nYear = new Date(this.getFullYear() + 1, 0, 1);
+                var nday = nYear.getDay();
+                nday = nday >= 0 ? nday : nday + 7;
+                weeknum = nday < 4 ? 1 : 53;
+            }
+        }
+        else {
+            weeknum = Math.floor((daynum + day - 1) / 7);
+        }
+        return weeknum;
+    }
+    IntlBase.getWeekOfYear = getWeekOfYear;
 })(IntlBase || (IntlBase = {}));
 
 var headerRegex = /^(.*?):[ \t]*([^\r\n]*)$/gm;

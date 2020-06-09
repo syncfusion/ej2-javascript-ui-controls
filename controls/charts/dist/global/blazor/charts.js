@@ -849,6 +849,9 @@ var Double = /** @class */ (function () {
         if (this.max === null || this.max < max) {
             this.max = max;
         }
+        if ((this.max === this.min) && this.max < 0 && this.min < 0) { // max == min
+            this.max = 0;
+        }
     };
     /**
      * Apply padding for the range.
@@ -1047,6 +1050,8 @@ var axisRangeCalculated = 'axisRangeCalculated';
 var axisMultiLabelRender = 'axisMultiLabelRender';
 /** @private */
 var tooltipRender = 'tooltipRender';
+/** @private */
+var sharedTooltipRender = 'sharedTooltipRender';
 /** @private */
 var chartMouseMove = 'chartMouseMove';
 /** @private */
@@ -3671,7 +3676,7 @@ function calculateSize(chart) {
             height = periodHeight;
         }
     }
-    chart.availableSize = new sf.svgbase.Size(stringToNumber(chart.width, containerWidth) || containerWidth || 600, stringToNumber(chart.height, containerHeight) || containerHeight || height);
+    chart.availableSize = new sf.svgbase.Size(stringToNumber(chart.width, containerWidth) || containerWidth || 600, stringToNumber(chart.height, containerHeight || height) || containerHeight || height);
 }
 function createSvg(chart) {
     chart.canvasRender = new sf.svgbase.CanvasRenderer(chart.element.id);
@@ -5889,8 +5894,7 @@ var SeriesBase = /** @class */ (function (_super) {
      */
     SeriesBase.prototype.setEmptyPoint = function (point, i) {
         if (!this.findVisibility(point)) {
-            point.visible = ((this.xAxis.valueType === 'Logarithmic' || this.yAxis.valueType === 'Logarithmic') && point.yValue === 0)
-                ? false : true;
+            point.visible = true;
             return null;
         }
         point.isEmpty = true;
@@ -10388,6 +10392,9 @@ var Chart = /** @class */ (function (_super) {
     __decorate([
         sf.base.Event()
     ], Chart.prototype, "tooltipRender", void 0);
+    __decorate([
+        sf.base.Event()
+    ], Chart.prototype, "sharedTooltipRender", void 0);
     __decorate([
         sf.base.Event()
     ], Chart.prototype, "chartMouseMove", void 0);
@@ -15339,6 +15346,8 @@ var HiloOpenCloseSeries = /** @class */ (function (_super) {
      */
     HiloOpenCloseSeries.prototype.render = function (series) {
         var highLowRect;
+        var index1;
+        var index2;
         var sideBySideInfo = this.getSideBySideInfo(series);
         var argsData;
         var borderWidth = Math.max(series.border.width, 2);
@@ -15359,8 +15368,10 @@ var HiloOpenCloseSeries = /** @class */ (function (_super) {
                 argsData = this.triggerPointRenderEvent(series, point);
                 if (!argsData.cancel) {
                     this.updateSymbolLocation(point, point.regions[0], series);
-                    var open_1 = { x: point.regions[1].x, y: point.regions[1].y };
-                    var close_1 = { x: point.regions[2].x, y: point.regions[2].y };
+                    index1 = point.open > point.close ? 1 : 2;
+                    index2 = point.open > point.close ? 2 : 1;
+                    var open_1 = { x: point.regions[index1].x, y: point.regions[index1].y };
+                    var close_1 = { x: point.regions[index2].x, y: point.regions[index2].y };
                     this.drawHiloOpenClosePath(series, point, open_1, close_1, highLowRect, argsData);
                 }
                 this.updateTickRegion(series.chart.requireInvertedAxis, point.regions[1], borderWidth);
@@ -19289,6 +19300,9 @@ var Tooltip$1 = /** @class */ (function (_super) {
             }
         }
         this.removeText();
+        var argument = {
+            text: [], cancel: false, name: sharedTooltipRender, data: [], headerText: '', textStyle: this.textStyle
+        };
         for (var _i = 0, _a = chart.visibleSeries; _i < _a.length; _i++) {
             var series = _a[_i];
             if (!series.enableTooltip || !series.visible) {
@@ -19304,7 +19318,15 @@ var Tooltip$1 = /** @class */ (function (_super) {
                 headerContent = this.findHeader(data);
             }
             if (data) {
-                this.triggerSharedTooltip(data, isFirst, this.getTooltipText(data), this.findHeader(data), extraPoints);
+                if (!chart.isBlazor) {
+                    this.triggerSharedTooltip(data, isFirst, this.getTooltipText(data), this.findHeader(data), extraPoints);
+                }
+                else {
+                    argument.data.push({ pointX: data.point.x, pointY: data.point.y, seriesIndex: data.series.index,
+                        seriesName: data.series.name, pointIndex: data.point.index, pointText: data.point.text });
+                    argument.headerText = this.findHeader(data);
+                    argument.text.push(this.getTooltipText(data));
+                }
             }
             // if (data && this.triggerEvent(data, isFirst, this.getTooltipText(data)), this.findHeader(data)) {
             //     this.findMouseValue(data, chart);
@@ -19314,12 +19336,33 @@ var Tooltip$1 = /** @class */ (function (_super) {
             //     extraPoints.push(data);
             // }
         }
+        if (chart.isBlazor) {
+            this.triggerBlazorSharedTooltip(argument, data, extraPoints);
+        }
         if (this.currentPoints.length > 0) {
             this.createTooltip(chart, isFirst, this.findSharedLocation(), this.currentPoints.length === 1 ? this.currentPoints[0].series.clipRect : null, null, this.findShapes(), this.findMarkerHeight(this.currentPoints[0]), chart.chartAxisLayoutPanel.seriesClipRect, extraPoints);
         }
         else if (this.getElement(this.element.id + '_tooltip_path')) {
             this.getElement(this.element.id + '_tooltip_path').setAttribute('d', '');
         }
+    };
+    Tooltip$$1.prototype.triggerBlazorSharedTooltip = function (argument, point, extraPoints) {
+        var _this = this;
+        var blazorSharedTooltip = function (argument) {
+            if (!argument.cancel) {
+                _this.formattedText = _this.formattedText.concat(argument.text);
+                _this.text = _this.formattedText;
+                _this.headerText = argument.headerText;
+                _this.findMouseValue(point, _this.chart);
+                _this.currentPoints.push(point);
+                point = null;
+            }
+            else {
+                extraPoints.push(point);
+            }
+        };
+        blazorSharedTooltip.bind(this, point, extraPoints);
+        this.chart.trigger(sharedTooltipRender, argument, blazorSharedTooltip);
     };
     Tooltip$$1.prototype.triggerSharedTooltip = function (point, isFirst, textCollection, headerText, extraPoints) {
         var _this = this;
@@ -28192,6 +28235,11 @@ var AccumulationChart = /** @class */ (function (_super) {
         this.setMouseXY(e);
         this.trigger(chartMouseLeave, { target: e.target.id, x: this.mouseX, y: this.mouseY });
         this.notify(sf.base.Browser.isPointer ? 'pointerleave' : 'mouseleave', e);
+        var borderElement = document.getElementById(this.element.id + 'PointHover_Border');
+        if (borderElement) {
+            this.pieSeriesModule.removeBorder(borderElement, 1000);
+            borderElement = null;
+        }
         return false;
     };
     /**
@@ -31060,7 +31108,7 @@ var RangeSeries = /** @class */ (function (_super) {
                 var dateParser = control.intl.getDateParser({ skeleton: 'full', type: 'dateTime' });
                 var dateFormatter = control.intl.getDateFormat({ skeleton: 'full', type: 'dateTime' });
                 point.x = new Date(sf.data.DataUtil.parse.parseJson({ val: point.x }).val);
-                point.xValue = Date.parse(dateParser(dateFormatter(point.x)));
+                point.xValue = control.isBlazor ? Date.parse(point.x.toString()) : Date.parse(dateParser(dateFormatter(point.x)));
             }
             else {
                 point.xValue = +point.x;
@@ -45804,6 +45852,7 @@ exports.axisLabelRender = axisLabelRender;
 exports.axisRangeCalculated = axisRangeCalculated;
 exports.axisMultiLabelRender = axisMultiLabelRender;
 exports.tooltipRender = tooltipRender;
+exports.sharedTooltipRender = sharedTooltipRender;
 exports.chartMouseMove = chartMouseMove;
 exports.chartMouseClick = chartMouseClick;
 exports.pointClick = pointClick;

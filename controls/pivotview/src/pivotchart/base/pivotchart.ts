@@ -14,7 +14,7 @@ import { createElement, remove, isNullOrUndefined, isBlazor } from '@syncfusion/
 import { ChartSettingsModel } from '../../pivotview/model/chartsettings-model';
 import { PivotView } from '../../pivotview';
 import {
-    RowHeaderPositionGrouping, ChartSeriesType, ChartSeriesCreatedEventArgs, RowHeaderLevelGrouping, ChartLabelInfo
+    RowHeaderPositionGrouping, ChartSeriesType, ChartSeriesCreatedEventArgs, RowHeaderLevelGrouping, ChartLabelInfo, DrillArgs
 } from '../../common';
 import { DrillOptionsModel } from '../../pivotview/model/datasourcesettings-model';
 import { PivotUtil } from '../../base/util';
@@ -156,116 +156,118 @@ export class PivotChart {
         }
         for (let rKey of rKeys) {
             let rowIndex: number = Number(rKey);
-            if (pivotValues[rowIndex][0] && (pivotValues[rowIndex][0] as IAxisSet).axis === 'row' &&
-                (this.dataSourceSettings.rows.length === 0 ? true : (pivotValues[rowIndex][0] as IAxisSet).type !== 'grand sum')) {
-                let firstRowCell: IAxisSet = pivotValues[rowIndex][0] as IAxisSet;
-                let tupInfo: ITupInfo = this.parent.dataType === 'olap' ?
-                    (this.engineModule as OlapEngine).tupRowInfo[firstRowCell.ordinal] : undefined;
-                let fieldPos: number = -1;
-                let currrentLevel: number = firstRowCell.level;
-                if (this.parent.dataType === 'olap') {
-                    fieldPos = tupInfo.uNameCollection.split('::[').length - 1;
-                    if (firstRowCell.memberType !== 3 && (tupInfo.measureName ?
-                        tupInfo.measureName === this.dataSourceSettings.values[0].name : true)) {
-                        firstLevelUName = firstLevelUName === undefined ? firstRowCell.levelUniqueName : firstLevelUName;
-                        integratedLevel = firstLevelUName === firstRowCell.levelUniqueName ? 0 : integratedLevel;
-                        levelCollection = integratedLevel === 0 ? {} : levelCollection;
-                        integratedLevel = (prevCell && firstLevelUName !== firstRowCell.levelUniqueName) ?
-                            (prevCell.hierarchy === firstRowCell.hierarchy ?
-                                (integratedLevel + (firstRowCell.level - prevCell.level)) :
-                                (isNullOrUndefined(levelCollection[firstRowCell.levelUniqueName]) ?
-                                    (levelPos[firstRowCell.hierarchy].start) :
-                                    levelCollection[firstRowCell.levelUniqueName])) : integratedLevel;
-                        levelCollection[firstRowCell.levelUniqueName] = integratedLevel;
-                        currrentLevel = integratedLevel;
-                        indexCount += (prevCell && lastDimension === prevCell.hierarchy && !prevCell.isDrilled) ? 1 : 0;
-                        prevLevel = integratedLevel;
-                        prevCell = firstRowCell;
-                    }
-                } else if (firstRowCell.type !== 'value') {
-                    if (!(prevLevel === undefined || prevLevel < currrentLevel)) {
-                        indexCount++;
-                    }
-                    prevLevel = currrentLevel;
-                }
-                this.maxLevel = currrentLevel > this.maxLevel ? currrentLevel : this.maxLevel;
-                let name: string = this.parent.dataType === 'olap' ? firstRowCell.formattedText :
-                    (firstRowCell.actualText ? firstRowCell.actualText.toString() : firstRowCell.formattedText.toString());
-                let text: string = firstRowCell.formattedText ? firstRowCell.formattedText.toString() : name;
-                let caption: string = (firstRowCell.hasChild && !firstRowCell.isNamedSet) ?
-                    ((firstRowCell.isDrilled ? ' - ' : ' + ') + text) : text;
-                let levelName: string = tupInfo ? tupInfo.uNameCollection : firstRowCell.valueSort.levelName.toString();
-                let cellInfo: ChartLabelInfo = {
-                    name: name,
-                    text: caption,
-                    hasChild: firstRowCell.hasChild,
-                    isDrilled: firstRowCell.isDrilled,
-                    levelName: levelName,
-                    level: currrentLevel,
-                    fieldName: firstRowCell.valueSort.axis ? firstRowCell.valueSort.axis.toString() : '',
-                    rowIndex: rowIndex,
-                    colIndex: 0,
-                    cell: firstRowCell
-                };
-                if (this.parent.dataType === 'olap' ? firstRowCell.memberType !== 3 : firstRowCell.type !== 'value') {
-                    if (this.headerColl[indexCount]) {
-                        this.headerColl[indexCount][currrentLevel] = cellInfo;
-                    } else {
-                        this.headerColl[indexCount] = {};
-                        this.headerColl[indexCount][currrentLevel] = cellInfo;
-                    }
-                }
-                let rows: IPivotRows = pivotValues[rowIndex];
-                let cKeys: string[] = Object.keys(rows);
-                let prevMemberCell: IAxisSet;
-                if (this.parent.dataType === 'olap') {
-                    memberCell = firstRowCell.memberType !== 3 ? firstRowCell : memberCell;
-                } else {
-                    memberCell = firstRowCell.type !== 'value' ? firstRowCell : memberCell;
-                }
-                for (let cKey of cKeys) {
-                    let cellIndex: number = Number(cKey);
-                    let cell: IAxisSet = pivotValues[rowIndex][cellIndex] as IAxisSet;
-                    let measureAllow: boolean = cell.rowHeaders === '' ? this.dataSourceSettings.rows.length === 0 : true;
-                    let actualText: any = (this.parent.dataType === 'olap' && tupInfo && tupInfo.measureName) ?
-                        tupInfo.measureName : cell.actualText;
-                    if (!totColIndex[cell.colIndex] && cell.axis === 'value' && firstRowCell.type !== 'header' &&
-                        actualText !== '' && (chartSettings.enableMultiAxis ? true : actualText === this.currentMeasure)) {
-                        if (isNullOrUndefined(firstRowCell.members)) {
-                            firstRowCell.members = [];
+            if (!isNullOrUndefined(pivotValues[rowIndex])) {
+                if (pivotValues[rowIndex][0] && (pivotValues[rowIndex][0] as IAxisSet).axis === 'row' &&
+                    (this.dataSourceSettings.rows.length === 0 ? true : (pivotValues[rowIndex][0] as IAxisSet).type !== 'grand sum')) {
+                    let firstRowCell: IAxisSet = pivotValues[rowIndex][0] as IAxisSet;
+                    let tupInfo: ITupInfo = this.parent.dataType === 'olap' ?
+                        (this.engineModule as OlapEngine).tupRowInfo[firstRowCell.ordinal] : undefined;
+                    let fieldPos: number = -1;
+                    let currrentLevel: number = firstRowCell.level;
+                    if (this.parent.dataType === 'olap') {
+                        fieldPos = tupInfo.uNameCollection.split('::[').length - 1;
+                        if (firstRowCell.memberType !== 3 && (tupInfo.measureName ?
+                            tupInfo.measureName === this.dataSourceSettings.values[0].name : true)) {
+                            firstLevelUName = firstLevelUName === undefined ? firstRowCell.levelUniqueName : firstLevelUName;
+                            integratedLevel = firstLevelUName === firstRowCell.levelUniqueName ? 0 : integratedLevel;
+                            levelCollection = integratedLevel === 0 ? {} : levelCollection;
+                            integratedLevel = (prevCell && firstLevelUName !== firstRowCell.levelUniqueName) ?
+                                (prevCell.hierarchy === firstRowCell.hierarchy ?
+                                    (integratedLevel + (firstRowCell.level - prevCell.level)) :
+                                    (isNullOrUndefined(levelCollection[firstRowCell.levelUniqueName]) ?
+                                        (levelPos[firstRowCell.hierarchy].start) :
+                                        levelCollection[firstRowCell.levelUniqueName])) : integratedLevel;
+                            levelCollection[firstRowCell.levelUniqueName] = integratedLevel;
+                            currrentLevel = integratedLevel;
+                            indexCount += (prevCell && lastDimension === prevCell.hierarchy && !prevCell.isDrilled) ? 1 : 0;
+                            prevLevel = integratedLevel;
+                            prevCell = firstRowCell;
                         }
-                        if (this.parent.dataType === 'olap' ? (lastHierarchy === firstRowCell.hierarchy ?
-                            ((firstRowCell.memberType === 3 && prevMemberCell) ?
-                                (fieldPos === this.measurePos ? prevMemberCell.isDrilled : true) : firstRowCell.isDrilled) : true)
-                            : (((firstRowCell.type === 'value' && prevMemberCell) ?
-                                prevMemberCell.members.length > 0 : firstRowCell.members.length > 0) || !measureAllow)) {
-                            break;
+                    } else if (firstRowCell.type !== 'value') {
+                        if (!(prevLevel === undefined || prevLevel < currrentLevel)) {
+                            indexCount++;
                         }
-                        let colHeaders: string = this.parent.dataType === 'olap' ? cell.columnHeaders.toString().split(/~~|::/).join(' - ')
-                            : cell.columnHeaders.toString().split('.').join(' - ');
-                        let rowHeaders: string = this.parent.dataType === 'olap' ? cell.rowHeaders.toString().split(/~~|::/).join(' - ')
-                            : cell.rowHeaders.toString().split('.').join(' - ');
-                        let columnSeries: string = colHeaders + ' | ' + actualText;
-                        let yValue: number = (this.parent.dataType === 'pivot' ? (this.engineModule.aggregatedValueMatrix[rowIndex] &&
-                            !isNullOrUndefined(this.engineModule.aggregatedValueMatrix[rowIndex][cellIndex])) ?
-                            Number(this.engineModule.aggregatedValueMatrix[rowIndex][cellIndex]) : Number(cell.value) : Number(cell.value));
-                        if (this.columnGroupObject[columnSeries]) {
-                            this.columnGroupObject[columnSeries].push({
-                                x: this.dataSourceSettings.rows.length === 0 ? firstRowCell.formattedText : rowHeaders,
-                                y: yValue,
-                                rIndex: rowIndex,
-                                cIndex: cellIndex
-                            });
+                        prevLevel = currrentLevel;
+                    }
+                    this.maxLevel = currrentLevel > this.maxLevel ? currrentLevel : this.maxLevel;
+                    let name: string = this.parent.dataType === 'olap' ? firstRowCell.formattedText :
+                        (firstRowCell.actualText ? firstRowCell.actualText.toString() : firstRowCell.formattedText.toString());
+                    let text: string = firstRowCell.formattedText ? firstRowCell.formattedText.toString() : name;
+                    let caption: string = (firstRowCell.hasChild && !firstRowCell.isNamedSet) ?
+                        ((firstRowCell.isDrilled ? ' - ' : ' + ') + text) : text;
+                    let levelName: string = tupInfo ? tupInfo.uNameCollection : firstRowCell.valueSort.levelName.toString();
+                    let cellInfo: ChartLabelInfo = {
+                        name: name,
+                        text: caption,
+                        hasChild: firstRowCell.hasChild,
+                        isDrilled: firstRowCell.isDrilled,
+                        levelName: levelName,
+                        level: currrentLevel,
+                        fieldName: firstRowCell.valueSort.axis ? firstRowCell.valueSort.axis.toString() : '',
+                        rowIndex: rowIndex,
+                        colIndex: 0,
+                        cell: firstRowCell
+                    };
+                    if (this.parent.dataType === 'olap' ? firstRowCell.memberType !== 3 : firstRowCell.type !== 'value') {
+                        if (this.headerColl[indexCount]) {
+                            this.headerColl[indexCount][currrentLevel] = cellInfo;
                         } else {
-                            this.columnGroupObject[columnSeries] = [{
-                                x: this.dataSourceSettings.rows.length === 0 ? firstRowCell.formattedText : rowHeaders,
-                                y: yValue,
-                                rIndex: rowIndex,
-                                cIndex: cellIndex
-                            }];
+                            this.headerColl[indexCount] = {};
+                            this.headerColl[indexCount][currrentLevel] = cellInfo;
                         }
                     }
-                    prevMemberCell = memberCell;
+                    let rows: IPivotRows = pivotValues[rowIndex];
+                    let cKeys: string[] = Object.keys(rows);
+                    let prevMemberCell: IAxisSet;
+                    if (this.parent.dataType === 'olap') {
+                        memberCell = firstRowCell.memberType !== 3 ? firstRowCell : memberCell;
+                    } else {
+                        memberCell = firstRowCell.type !== 'value' ? firstRowCell : memberCell;
+                    }
+                    for (let cKey of cKeys) {
+                        let cellIndex: number = Number(cKey);
+                        let cell: IAxisSet = pivotValues[rowIndex][cellIndex] as IAxisSet;
+                        let measureAllow: boolean = cell.rowHeaders === '' ? this.dataSourceSettings.rows.length === 0 : true;
+                        let actualText: any = (this.parent.dataType === 'olap' && tupInfo && tupInfo.measureName) ?
+                            tupInfo.measureName : cell.actualText;
+                        if (!totColIndex[cell.colIndex] && cell.axis === 'value' && firstRowCell.type !== 'header' &&
+                            actualText !== '' && (chartSettings.enableMultiAxis ? true : actualText === this.currentMeasure)) {
+                            if (isNullOrUndefined(firstRowCell.members)) {
+                                firstRowCell.members = [];
+                            }
+                            if (this.parent.dataType === 'olap' ? (lastHierarchy === firstRowCell.hierarchy ?
+                                ((firstRowCell.memberType === 3 && prevMemberCell) ?
+                                    (fieldPos === this.measurePos ? prevMemberCell.isDrilled : true) : firstRowCell.isDrilled) : true)
+                                : (((firstRowCell.type === 'value' && prevMemberCell) ?
+                                    prevMemberCell.members.length > 0 : firstRowCell.members.length > 0) || !measureAllow)) {
+                                break;
+                            }
+                            let colHeaders: string = this.parent.dataType === 'olap' ? cell.columnHeaders.toString().split(/~~|::/).join(' - ')
+                                : cell.columnHeaders.toString().split('.').join(' - ');
+                            let rowHeaders: string = this.parent.dataType === 'olap' ? cell.rowHeaders.toString().split(/~~|::/).join(' - ')
+                                : cell.rowHeaders.toString().split('.').join(' - ');
+                            let columnSeries: string = colHeaders + ' | ' + actualText;
+                            let yValue: number = (this.parent.dataType === 'pivot' ? (this.engineModule.aggregatedValueMatrix[rowIndex] &&
+                                !isNullOrUndefined(this.engineModule.aggregatedValueMatrix[rowIndex][cellIndex])) ?
+                                Number(this.engineModule.aggregatedValueMatrix[rowIndex][cellIndex]) : Number(cell.value) : Number(cell.value));
+                            if (this.columnGroupObject[columnSeries]) {
+                                this.columnGroupObject[columnSeries].push({
+                                    x: this.dataSourceSettings.rows.length === 0 ? firstRowCell.formattedText : rowHeaders,
+                                    y: yValue,
+                                    rIndex: rowIndex,
+                                    cIndex: cellIndex
+                                });
+                            } else {
+                                this.columnGroupObject[columnSeries] = [{
+                                    x: this.dataSourceSettings.rows.length === 0 ? firstRowCell.formattedText : rowHeaders,
+                                    y: yValue,
+                                    rIndex: rowIndex,
+                                    cIndex: cellIndex
+                                }];
+                            }
+                        }
+                        prevMemberCell = memberCell;
+                    }
                 }
             }
         }
@@ -589,7 +591,10 @@ export class PivotChart {
         let rKeys: string[] = Object.keys(pivotValues);
         for (let rowIndex of rKeys) {
             let rows: IPivotRows = pivotValues[Number(rowIndex)];
-            let cKeys: string[] = Object.keys(rows);
+            let cKeys: string[];
+            if (!isNullOrUndefined(rows)) { 
+                cKeys = Object.keys(rows);
+            }
             for (let cellIndex of cKeys) {
                 let cell: IAxisSet = rows[Number(cellIndex)] as IAxisSet;
                 if (!isNullOrUndefined(cell)) {
@@ -1019,13 +1024,34 @@ export class PivotChart {
             action: labelInfo.isDrilled ? 'up' : 'down',
             currentCell: currentCell
         };
-        pivot.parent.trigger(events.drill, {
+        let drillArgs: DrillArgs = {
             drillInfo: drilledItem,
-            pivotview: isBlazor() ? undefined : pivot
-        });
+            pivotview: isBlazor() ? undefined : pivot.parent
+        };
+        pivot.parent.trigger(events.drill, drillArgs);
         if (pivot.parent.enableVirtualization) {
-            pivot.engineModule.drilledMembers = pivot.dataSourceSettings.drilledMembers;
-            (pivot.engineModule as PivotEngine).onDrill(drilledItem);
+            if (isBlazor()) {
+                /* tslint:disable */
+                let sfBlazor: string = 'sfBlazor';
+                let dataSourceSettings: any = (window as any)[sfBlazor].copyWithoutCircularReferences([pivot.dataSourceSettings], pivot.dataSourceSettings);
+                let drillItem: any = (window as any)[sfBlazor].copyWithoutCircularReferences([drilledItem], drilledItem);
+                let args: any = (window as any)[sfBlazor].copyWithoutCircularReferences([drillArgs], drillArgs);
+                (pivot.parent as any).interopAdaptor.invokeMethodAsync('PivotInteropMethod', 'onDrill',
+                    { 'dataSourceSettings': dataSourceSettings, 'drilledItem': drillItem }).then((data: any) => {
+                        pivot.parent.updateBlazorData(data, pivot.parent);
+                        pivot.parent.engineModule.drilledMembers = pivot.dataSourceSettings.drilledMembers;
+                        pivot.parent.allowServerDataBinding = false;
+                        pivot.parent.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
+                        delete (pivot.parent as any).bulkChanges.pivotValues;
+                        pivot.parent.allowServerDataBinding = true;
+                        pivot.parent.renderPivotGrid();
+                    });
+                /* tslint:enable */
+            } else {
+                pivot.engineModule.drilledMembers = pivot.dataSourceSettings.drilledMembers;
+                (pivot.engineModule as PivotEngine).onDrill(drilledItem);
+            }
+            
         } else {
             (pivot.engineModule as PivotEngine).generateGridData(pivot.dataSourceSettings);
         }

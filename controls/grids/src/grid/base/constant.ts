@@ -341,6 +341,8 @@ export const printGridInit: string = 'printGrid-Init';
 /** @hidden */
 export const exportRowDataBound: string = 'export-RowDataBound';
 /** @hidden */
+export const exportDataBound: string = 'export-DataBound';
+/** @hidden */
 export const rowPositionChanged: string = 'row-position-changed';
 /** @hidden */
 export const columnChooserOpened: string = 'columnChooserOpened';

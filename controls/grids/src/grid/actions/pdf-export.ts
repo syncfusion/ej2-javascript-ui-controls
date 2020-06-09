@@ -770,7 +770,9 @@ export class PdfExport {
                                 value.push('');
                                 value.push(captionRow.cells.getCell(i).value);
                                 isEmpty = false;
-                                i += 1;
+                                if (!isCaption) {
+                                    i += 1;
+                                }
                             } else {
                                 value.push('');
                             }
@@ -813,6 +815,11 @@ export class PdfExport {
                 }
                 index += 1;
             }
+            if (isCaption) {
+                for (let i: number = (this.parent.groupSettings.columns.length) + 1; i < value.length - 1; i++) {
+                    value[i] = value[i + 1];
+                }
+            }
             if (!isEmpty) {
                 if (!isCaption) {
                     let gridRow: PdfGridRow = pdfGrid.rows.addRow();
@@ -826,7 +833,7 @@ export class PdfExport {
                 } else {
                     for (let i: number = 0; i < pdfGrid.columns.count; i++) {
                         captionRow.cells.getCell(i).value = value[i].toString();
-                        if (i === (groupIndex + 1) && leastCaptionSummaryIndex !== -1) {
+                        if (i === (groupIndex + 1) && leastCaptionSummaryIndex !== -1 && leastCaptionSummaryIndex !== 1) {
                             captionRow.cells.getCell(i).columnSpan = leastCaptionSummaryIndex - (groupIndex + 1);
                         } else if (i === (groupIndex + 1) && leastCaptionSummaryIndex === -1) {
                             captionRow.cells.getCell(i).columnSpan = pdfGrid.columns.count - (groupIndex + 1);

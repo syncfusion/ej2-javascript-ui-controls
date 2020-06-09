@@ -1053,7 +1053,8 @@ export class EventBase {
         for (let event of deleteFutureEditEventList) {
             let delEventQuery: Predicate = new Predicate(fields.recurrenceID, 'equal', event[fields.id] as string).
                 or(new Predicate(fields.recurrenceID, 'equal', event[fields.followingID] as string).
-                    and(new Predicate(fields.recurrenceID, 'notequal', undefined)));
+                    and(new Predicate(fields.recurrenceID, 'notequal', undefined)).
+                    and(new Predicate(fields.recurrenceID, 'notequal', null)));
             if (this.parent.currentAction === 'EditFollowingEvents' || this.parent.currentAction === 'DeleteFollowingEvents') {
                 delEventQuery = delEventQuery.and(new Predicate(fields.startTime, 'greaterthanorequal', startTime));
             }
