@@ -1,5 +1,5 @@
 import { isNullOrUndefined, NumberFormatOptions, DateFormatOptions, extend, isBlazor } from '@syncfusion/ej2-base';
-import { Query, DataManager, Predicate, Deferred, UrlAdaptor } from '@syncfusion/ej2-data';
+import { Query, DataManager, Predicate, Deferred, UrlAdaptor, AdaptorOptions } from '@syncfusion/ej2-data';
 import { IDataProcessor, IGrid, DataStateChangeEventArgs, DataSourceChangedEventArgs, PendingState } from '../base/interface';
 import { ReturnType } from '../base/type';
 import { SearchSettingsModel, PredicateModel, SortDescriptorModel } from '../base/grid-model';
@@ -216,26 +216,28 @@ export class Data implements IDataProcessor {
         return query;
     }
 
-    protected searchQuery(query: Query): Query {
+    protected searchQuery(query: Query, fcolumn?: Column, isForeignKey?: boolean): Query {
         let sSettings: SearchSettingsModel = this.parent.searchSettings;
         let fields: string[] = sSettings.fields.length ? sSettings.fields : this.getSearchColumnFieldNames();
         let predicateList: Predicate[] = [];
-        let needForeignKeySearch: boolean = false;
         if (this.parent.searchSettings.key.length) {
-            needForeignKeySearch = this.parent.getForeignKeyColumns().some((col: Column) => fields.indexOf(col.field) > -1);
-            if (needForeignKeySearch && ((<{ getModuleName?: Function }>this.dataManager.adaptor).getModuleName &&
-                (<{ getModuleName?: Function }>this.dataManager.adaptor).getModuleName() === 'ODataV4Adaptor')) {
+            let adaptor: AdaptorOptions = !isForeignKey ? this.dataManager.adaptor : (fcolumn.dataSource as DataManager).adaptor;
+            if (((<{ getModuleName?: Function }>adaptor).getModuleName &&
+                (<{ getModuleName?: Function }>adaptor).getModuleName() === 'ODataV4Adaptor')) {
+                fields = isForeignKey ? [fcolumn.foreignKeyValue] : fields;
                 for (let i: number = 0; i < fields.length; i++) {
-                    let column: Column = this.getColumnByField(fields[i]);
-                    if (column.isForeignColumn()) {
+                    let column: Column = isForeignKey ? fcolumn : this.getColumnByField(fields[i]);
+                    if (column.isForeignColumn() && !isForeignKey) {
                         predicateList = this.fGeneratePredicate(column, predicateList);
                     } else {
                         predicateList.push(new Predicate(
-                            column.field, sSettings.operator, sSettings.key, sSettings.ignoreCase, sSettings.ignoreAccent
+                            fields[i], sSettings.operator, sSettings.key, sSettings.ignoreCase, sSettings.ignoreAccent
                         ));
                     }
                 }
-                query.where(Predicate.or(predicateList));
+                let predList: Predicate = Predicate.or(predicateList);
+                predList.key = sSettings.key;
+                query.where(predList);
             } else {
                 query.search(sSettings.key, fields, sSettings.operator, sSettings.ignoreCase, sSettings.ignoreAccent);
             }
@@ -257,6 +259,10 @@ export class Data implements IDataProcessor {
             let foreignCols: PredicateModel[] = [];
             let defaultFltrCols: PredicateModel[] = [];
             for (let col of columns) {
+                let gridColumn: Column = gObj.getColumnByField(col.field);
+                if (isNullOrUndefined(col.type) && gridColumn && (gridColumn.type === 'date' || gridColumn.type === 'datetime')) {
+                    col.type = gObj.getColumnByField(col.field).type;
+                }
                 if (col.isForeignKey) {
                     foreignCols.push(col);
                 } else {

@@ -17,6 +17,7 @@ export interface DiagramModel extends ComponentModel{
      * diagram.appendTo('#diagram');
      * ```
      * @default '100%'
+     * @blazorType string
      */
     width?: string | number;
 
@@ -31,6 +32,7 @@ export interface DiagramModel extends ComponentModel{
     /**
      * Defines the height of the diagram model.
      * @default '100%'
+     * @blazorType string
      */
     height?: string | number;
 
@@ -960,6 +962,7 @@ export interface DiagramModel extends ComponentModel{
      * Triggers when a command executed.
      * @event
      * @blazorProperty 'OnCommandExecuted'
+     * @blazorType Syncfusion.Blazor.Diagrams.ICommandExecuteEventArgs
      */
     commandExecute?: EmitType<ICommandExecuteEventArgs>;
 

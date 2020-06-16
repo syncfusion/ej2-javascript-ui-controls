@@ -758,6 +758,8 @@ var removeInfiniteRows = 'remove-infinite-rows';
 /** @hidden */
 var setInfiniteCache = 'set-infinite-cache';
 /** @hidden */
+var infiniteEditHandler = 'infinite-edit-handler';
+/** @hidden */
 var initialCollapse = 'initial-collapse';
 /** @hidden */
 var getAggregateQuery = 'get-aggregate-query';
@@ -1028,25 +1030,27 @@ var Data = /** @class */ (function () {
         }
         return query;
     };
-    Data.prototype.searchQuery = function (query) {
+    Data.prototype.searchQuery = function (query, fcolumn, isForeignKey) {
         var sSettings = this.parent.searchSettings;
         var fields = sSettings.fields.length ? sSettings.fields : this.getSearchColumnFieldNames();
         var predicateList = [];
-        var needForeignKeySearch = false;
         if (this.parent.searchSettings.key.length) {
-            needForeignKeySearch = this.parent.getForeignKeyColumns().some(function (col) { return fields.indexOf(col.field) > -1; });
-            if (needForeignKeySearch && (this.dataManager.adaptor.getModuleName &&
-                this.dataManager.adaptor.getModuleName() === 'ODataV4Adaptor')) {
+            var adaptor = !isForeignKey ? this.dataManager.adaptor : fcolumn.dataSource.adaptor;
+            if ((adaptor.getModuleName &&
+                adaptor.getModuleName() === 'ODataV4Adaptor')) {
+                fields = isForeignKey ? [fcolumn.foreignKeyValue] : fields;
                 for (var i = 0; i < fields.length; i++) {
-                    var column = this.getColumnByField(fields[i]);
-                    if (column.isForeignColumn()) {
+                    var column = isForeignKey ? fcolumn : this.getColumnByField(fields[i]);
+                    if (column.isForeignColumn() && !isForeignKey) {
                         predicateList = this.fGeneratePredicate(column, predicateList);
                     }
                     else {
-                        predicateList.push(new sf.data.Predicate(column.field, sSettings.operator, sSettings.key, sSettings.ignoreCase, sSettings.ignoreAccent));
+                        predicateList.push(new sf.data.Predicate(fields[i], sSettings.operator, sSettings.key, sSettings.ignoreCase, sSettings.ignoreAccent));
                     }
                 }
-                query.where(sf.data.Predicate.or(predicateList));
+                var predList = sf.data.Predicate.or(predicateList);
+                predList.key = sSettings.key;
+                query.where(predList);
             }
             else {
                 query.search(sSettings.key, fields, sSettings.operator, sSettings.ignoreCase, sSettings.ignoreAccent);
@@ -1070,6 +1074,10 @@ var Data = /** @class */ (function () {
             var defaultFltrCols = [];
             for (var _b = 0, columns_1 = columns; _b < columns_1.length; _b++) {
                 var col = columns_1[_b];
+                var gridColumn = gObj.getColumnByField(col.field);
+                if (sf.base.isNullOrUndefined(col.type) && gridColumn && (gridColumn.type === 'date' || gridColumn.type === 'datetime')) {
+                    col.type = gObj.getColumnByField(col.field).type;
+                }
                 if (col.isForeignKey) {
                     foreignCols.push(col);
                 }
@@ -1772,8 +1780,8 @@ var RowModelGenerator = /** @class */ (function () {
     }
     RowModelGenerator.prototype.generateRows = function (data, args) {
         var rows = [];
-        var isInifiniteScroll = this.parent.enableInfiniteScrolling && args.requestType === 'infiniteScroll';
-        var startIndex = this.parent.enableVirtualization || isInifiniteScroll ? args.startIndex : 0;
+        var startIndex = this.parent.enableVirtualization ? args.startIndex : 0;
+        startIndex = this.parent.enableInfiniteScrolling ? this.getInfiniteIndex(args) : startIndex;
         for (var i = 0, len = Object.keys(data).length; i < len; i++, startIndex++) {
             rows[i] = this.generateRow(data[i], startIndex);
         }
@@ -1868,6 +1876,10 @@ var RowModelGenerator = /** @class */ (function () {
             input[i].cells = this.generateCells(input[i]);
         }
         return input;
+    };
+    RowModelGenerator.prototype.getInfiniteIndex = function (args) {
+        return args.requestType === 'infiniteScroll' || args.requestType === 'delete' || args.action === 'add'
+            ? args.startIndex : 0;
     };
     return RowModelGenerator;
 }());
@@ -2605,7 +2617,7 @@ var ContentRender = /** @class */ (function () {
             modelData = this.parent.contentModule.generateRows(dataSource, args);
         }
         else {
-            modelData = this.checkInInfiniteCache(modelData, args);
+            modelData = this.checkInfiniteCache(modelData, args);
             if (!this.isAddRows) {
                 modelData = this.generator.generateRows(dataSource, args);
             }
@@ -2705,9 +2717,8 @@ var ContentRender = /** @class */ (function () {
             }
             if (!gObj.rowTemplate) {
                 tr = row.render(modelData[i], columns);
-                var isVFreorder = gObj.enableVirtualization
-                    && (args.requestType === 'reorder' || args.requestType === 'refresh');
-                if (gObj.frozenRows && i < gObj.frozenRows && !isInfiniteScroll && args.requestType !== 'virtualscroll' && !isVFreorder) {
+                var isVFreorder = this.ensureFrozenHeaderRender(args);
+                if (gObj.frozenRows && i < gObj.frozenRows && !isInfiniteScroll && args.requestType !== 'virtualscroll' && isVFreorder) {
                     hdrfrag.appendChild(tr);
                 }
                 else {
@@ -2851,7 +2862,13 @@ var ContentRender = /** @class */ (function () {
         tbody.appendChild(frag);
         this.getTable().appendChild(tbody);
     };
-    ContentRender.prototype.checkInInfiniteCache = function (modelData, args) {
+    ContentRender.prototype.ensureFrozenHeaderRender = function (args) {
+        return !((this.parent.enableVirtualization
+            && (args.requestType === 'reorder' || args.requestType === 'refresh')) || (this.parent.infiniteScrollSettings.enableCache
+            && this.parent.frozenRows && this.parent.infiniteScrollModule.requestType === 'delete'
+            && this.parent.pageSettings.currentPage !== 1));
+    };
+    ContentRender.prototype.checkInfiniteCache = function (modelData, args) {
         if (this.parent.infiniteScrollSettings.enableCache && args.requestType === 'infiniteScroll') {
             var index = args.isFrozen ? 1 : 0;
             var frozenCols = this.parent.getFrozenColumns();
@@ -2870,7 +2887,7 @@ var ContentRender = /** @class */ (function () {
     };
     ContentRender.prototype.setInfiniteVisibleRows = function (args, data) {
         var frozenCols = this.parent.getFrozenColumns();
-        if (this.parent.enableInfiniteScrolling && !this.isAddRows) {
+        if (this.parent.enableInfiniteScrolling && !this.parent.infiniteScrollSettings.enableCache) {
             if (frozenCols) {
                 !args.isFrozen ? this.visibleFrozenRows.push(data) : this.visibleRows.push(data);
             }
@@ -2882,6 +2899,9 @@ var ContentRender = /** @class */ (function () {
     ContentRender.prototype.getCurrentBlockInfiniteRecords = function (isFreeze) {
         var data = [];
         if (this.parent.infiniteScrollSettings.enableCache) {
+            if (!Object.keys(this.infiniteCache).length) {
+                return [];
+            }
             var frozenCols = this.parent.getFrozenColumns();
             var rows = this.parent.getRows();
             var index = parseInt(rows[this.parent.frozenRows].getAttribute('aria-rowindex'), 10);
@@ -2947,6 +2967,12 @@ var ContentRender = /** @class */ (function () {
         }
         return rows;
     };
+    ContentRender.prototype.getInfiniteMovableRows = function () {
+        var infiniteCacheRows = this.getCurrentBlockInfiniteRecords();
+        var infiniteRows = this.parent.enableInfiniteScrolling ? infiniteCacheRows.length ? infiniteCacheRows
+            : this.visibleRows : [];
+        return infiniteRows;
+    };
     /**
      * Get the content div element of grid
      * @return {Element}
@@ -2988,7 +3014,8 @@ var ContentRender = /** @class */ (function () {
      * @returns {Row[] | HTMLCollectionOf<HTMLTableRowElement>}
      */
     ContentRender.prototype.getMovableRows = function () {
-        return this.movableRows;
+        var infiniteRows = this.getInfiniteMovableRows();
+        return infiniteRows.length ? infiniteRows : this.movableRows;
     };
     /**
      * Get the content table data row elements
@@ -3123,7 +3150,8 @@ var ContentRender = /** @class */ (function () {
     ContentRender.prototype.setDisplayNone = function (tr, idx, displayVal, rows) {
         var trs = Object.keys(tr);
         for (var i = 0; i < trs.length; i++) {
-            if (tr[trs[i]].querySelectorAll('td.e-rowcell').length) {
+            var td = tr[trs[i]].querySelectorAll('td.e-rowcell')[idx];
+            if (tr[trs[i]].querySelectorAll('td.e-rowcell').length && td) {
                 sf.base.setStyleAttribute(tr[trs[i]].querySelectorAll('td.e-rowcell')[idx], { 'display': displayVal });
                 if (tr[trs[i]].querySelectorAll('td.e-rowcell')[idx].classList.contains('e-hide')) {
                     sf.base.removeClass([tr[trs[i]].querySelectorAll('td.e-rowcell')[idx]], ['e-hide']);
@@ -4960,7 +4988,7 @@ var Render = /** @class */ (function () {
                 gObj.notify(cancelBegin, args);
                 return;
             }
-            if (gObj.editSettings.mode === 'Normal' && gObj.isEdit) {
+            if (gObj.editSettings.mode === 'Normal' && gObj.isEdit && e.requestType !== 'infiniteScroll') {
                 gObj.notify('closeinline', {});
             }
             if (args.requestType === 'delete' && gObj.allowPaging) {
@@ -5246,12 +5274,15 @@ var Render = /** @class */ (function () {
         }
     };
     /** @hidden */
+    // tslint:disable-next-line:max-func-body-length
     Render.prototype.dataManagerSuccess = function (e, args) {
         var _this = this;
         var gObj = this.parent;
         this.contentRenderer = this.renderer.getRenderer(exports.RenderType.Content);
         this.headerRenderer = this.renderer.getRenderer(exports.RenderType.Header);
         e.actionArgs = args;
+        var isInfiniteDelete = this.parent.enableInfiniteScrolling && !this.parent.infiniteScrollSettings.enableCache
+            && (args.requestType === 'delete' || (args.requestType === 'save' && this.parent.infiniteScrollModule.requestType === 'add'));
         gObj.trigger(beforeDataBound, e, function (dataArgs) {
             if (dataArgs.cancel) {
                 return;
@@ -5317,7 +5348,12 @@ var Render = /** @class */ (function () {
                     var content = 'content';
                     args.scrollTop = { top: _this.contentRenderer[content].scrollTop };
                 }
-                _this.contentRenderer.refreshContentRows(args);
+                if (!isInfiniteDelete) {
+                    _this.contentRenderer.refreshContentRows(args);
+                }
+                else {
+                    _this.parent.notify(infiniteEditHandler, { e: args, result: e.result, count: e.count, agg: e.aggregates });
+                }
             }
             else {
                 if (!gObj.getColumns().length) {
@@ -16887,6 +16923,17 @@ function ensureLastRow(row, gridObj) {
 function ensureFirstRow(row, rowTop) {
     return row && row.getBoundingClientRect().top < rowTop;
 }
+/** @hidden */
+function getEditedDataIndex(gObj, data) {
+    var keyField = gObj.getPrimaryKeyFieldNames()[0];
+    var dataIndex;
+    gObj.getCurrentViewRecords().filter(function (e, index) {
+        if (e[keyField] === data[keyField]) {
+            dataIndex = index;
+        }
+    });
+    return dataIndex;
+}
 
 /* tslint:disable-next-line:max-line-length */
 /**
@@ -22778,7 +22825,7 @@ var Resize = /** @class */ (function () {
         }
         var content = this.parent.getContent().querySelector('.e-content');
         var cTable = content.querySelector('.e-movablecontent') ? content.querySelector('.e-movablecontent') : content;
-        if (cTable.scrollHeight >= cTable.clientHeight) {
+        if (cTable.scrollHeight > cTable.clientHeight) {
             this.parent.scrollModule.setPadding();
             cTable.style.overflowY = 'scroll';
         }
@@ -25223,6 +25270,8 @@ var DetailRow = /** @class */ (function () {
     // tslint:disable-next-line:max-func-body-length
     DetailRow.prototype.toogleExpandcollapse = function (target) {
         var gObj = this.parent;
+        var table = this.parent.getContentTable();
+        var lastrowIdx = this.parent.getCurrentViewRecords().length - 1;
         var parent = 'parentDetails';
         var isServerRendered = 'isServerRendered';
         var childGrid;
@@ -25320,6 +25369,12 @@ var DetailRow = /** @class */ (function () {
             sf.base.classList(target, ['e-detailrowexpand'], ['e-detailrowcollapse']);
             sf.base.classList(target.firstElementChild, ['e-dtdiagonaldown', 'e-icon-gdownarrow'], ['e-dtdiagonalright', 'e-icon-grightarrow']);
             rowObj.isExpand = true;
+            if (target.classList.contains('e-lastrowcell') && this.parent.getContent().clientHeight > table.scrollHeight) {
+                sf.base.removeClass(target.parentElement.querySelectorAll('td'), 'e-lastrowcell');
+                var detailrowIdx = table.querySelector('tbody').querySelectorAll('.e-detailrow').length - 1;
+                sf.base.addClass(table.querySelector('tbody').querySelectorAll('.e-detailrow')[detailrowIdx].childNodes, ['e-lastrowcell']);
+                this.lastrowcell = true;
+            }
             this.aria.setExpand(target, true);
         }
         else {
@@ -25330,6 +25385,10 @@ var DetailRow = /** @class */ (function () {
             }
             sf.base.classList(target, ['e-detailrowcollapse'], ['e-detailrowexpand']);
             sf.base.classList(target.firstElementChild, ['e-dtdiagonalright', 'e-icon-grightarrow'], ['e-dtdiagonaldown', 'e-icon-gdownarrow']);
+            if (parseInt(tr.getAttribute('aria-rowindex'), 10) === lastrowIdx && this.lastrowcell) {
+                sf.base.addClass(target.parentElement.querySelectorAll('td'), 'e-lastrowcell');
+                this.lastrowcell = false;
+            }
             rowObj.isExpand = false;
             this.aria.setExpand(target, false);
         }
@@ -27330,7 +27389,7 @@ var VirtualContentRenderer = /** @class */ (function (_super) {
         data.isCancel = this.isCancel;
     };
     VirtualContentRenderer.prototype.editCancel = function (args) {
-        var dataIndex = this.getEditedDataIndex(args.data);
+        var dataIndex = getEditedDataIndex(this.parent, args.data);
         if (!sf.base.isNullOrUndefined(dataIndex)) {
             args.data = this.parent.getCurrentViewRecords()[dataIndex];
         }
@@ -27344,20 +27403,10 @@ var VirtualContentRenderer = /** @class */ (function (_super) {
         }
     };
     VirtualContentRenderer.prototype.updateCurrentViewData = function (data) {
-        var dataIndex = this.getEditedDataIndex(data);
+        var dataIndex = getEditedDataIndex(this.parent, data);
         if (!sf.base.isNullOrUndefined(dataIndex)) {
             this.parent.getCurrentViewRecords()[dataIndex] = data;
         }
-    };
-    VirtualContentRenderer.prototype.getEditedDataIndex = function (data) {
-        var keyField = this.parent.getPrimaryKeyFieldNames()[0];
-        var dataIndex;
-        this.parent.getCurrentViewRecords().filter(function (e, index) {
-            if (e[keyField] === data[keyField]) {
-                dataIndex = index;
-            }
-        });
-        return dataIndex;
     };
     VirtualContentRenderer.prototype.actionBegin = function (args) {
         if (args.requestType !== 'virtualscroll') {
@@ -28013,9 +28062,15 @@ var InlineEditRender = /** @class */ (function () {
                 idx -= this.parent.frozenRows;
             }
             if (fCont.contains(row)) {
+                if (this.parent.infiniteScrollSettings.enableCache) {
+                    return this.parent.getMovableRowByIndex(idx);
+                }
                 return mCont.children[idx];
             }
             else if (mCont.contains(row)) {
+                if (this.parent.infiniteScrollSettings.enableCache) {
+                    return this.parent.getRowByIndex(idx);
+                }
                 return fCont.children[idx];
             }
             else if (fHdr.contains(row)) {
@@ -28963,9 +29018,9 @@ var NormalEdit = /** @class */ (function () {
         var primaryKeys = gObj.getPrimaryKeyFieldNames();
         var primaryKeyValues = [];
         this.rowIndex = this.editRowIndex = parseInt(tr.getAttribute('aria-rowindex'), 10);
-        if (gObj.enableVirtualization) {
+        if (gObj.enableVirtualization || gObj.enableInfiniteScrolling) {
             var selector = '.e-row[aria-rowindex="' + this.rowIndex + '"]';
-            var virtualRow = this.parent.getContent().querySelector(selector);
+            var virtualRow = this.parent.element.querySelector(selector);
             if (!virtualRow) {
                 return;
             }
@@ -28983,7 +29038,7 @@ var NormalEdit = /** @class */ (function () {
             var rObj = gObj.getRowObjectFromUID(tr.getAttribute('data-uid'));
             this.previousData = rObj.data;
         }
-        else if (this.parent.enableVirtualization) {
+        else if (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling) {
             var e = { data: this.previousData, index: this.rowIndex };
             this.parent.notify(virtualScrollEditActionBegin, e);
             this.previousData = e.data;
@@ -29089,7 +29144,8 @@ var NormalEdit = /** @class */ (function () {
         var dlgForm = isDlg ? dlgWrapper.querySelector('.e-gridform') : gObj.element.querySelector('.e-gridform');
         var data = { virtualData: {}, isAdd: false };
         this.parent.notify(getVirtualData, data);
-        if (this.parent.enableVirtualization && this.parent.editSettings.mode === 'Normal' && !dlgForm) {
+        if ((this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)
+            && this.parent.editSettings.mode === 'Normal' && !dlgForm) {
             if (this.parent.isEdit) {
                 this.currentVirtualData = editedData = args.data = data.virtualData;
             }
@@ -29103,7 +29159,10 @@ var NormalEdit = /** @class */ (function () {
                 editedData = gObj.editModule.getCurrentEditedData(mForm, editedData);
             }
             else {
-                editedData = gObj.editModule.getCurrentEditedData(gObj.element.querySelector('.e-movablecontent').querySelector('.e-gridform'), editedData);
+                var form = gObj.element.querySelector('.e-movablecontent').querySelector('.e-gridform');
+                if (form) {
+                    editedData = gObj.editModule.getCurrentEditedData(form, editedData);
+                }
             }
         }
         if (sf.base.isBlazor()) {
@@ -29168,7 +29227,7 @@ var NormalEdit = /** @class */ (function () {
         this.editFailure(e);
     };
     NormalEdit.prototype.updateCurrentViewData = function (data) {
-        if (!this.parent.enableVirtualization) {
+        if (!this.parent.enableVirtualization && !this.parent.enableInfiniteScrolling) {
             this.parent.getCurrentViewRecords()[this.editRowIndex] = data;
         }
     };
@@ -29266,7 +29325,8 @@ var NormalEdit = /** @class */ (function () {
     NormalEdit.prototype.needRefresh = function () {
         var refresh = true;
         var editedRow = this.parent.element.querySelector('.e-gridform');
-        if (this.parent.enableVirtualization && this.parent.editSettings.mode === 'Normal' && !editedRow) {
+        if ((this.parent.enableVirtualization || this.parent.infiniteScrollSettings.enableCache)
+            && this.parent.editSettings.mode === 'Normal' && !editedRow) {
             refresh = false;
         }
         return refresh;
@@ -29286,10 +29346,20 @@ var NormalEdit = /** @class */ (function () {
                 var uid = void 0;
                 var tr = this.parent.element.querySelector('[data-uid=' + rowObj.uid + ']');
                 if ((parentsUntil(tr, 'e-frozencontent')) || (parentsUntil(tr, 'e-frozenheader'))) {
-                    uid = this.parent.getMovableRows()[rowObj.index].getAttribute('data-uid');
+                    if (this.parent.infiniteScrollSettings.enableCache) {
+                        uid = this.parent.getMovableRowByIndex(rowObj.index).getAttribute('data-uid');
+                    }
+                    else {
+                        uid = this.parent.getMovableRows()[rowObj.index].getAttribute('data-uid');
+                    }
                 }
                 else {
-                    uid = this.parent.getRows()[rowObj.index].getAttribute('data-uid');
+                    if (this.parent.infiniteScrollSettings.enableCache) {
+                        uid = this.parent.getRowByIndex(rowObj.index).getAttribute('data-uid');
+                    }
+                    else {
+                        uid = this.parent.getRows()[rowObj.index].getAttribute('data-uid');
+                    }
                 }
                 rowObj = this.parent.getRowObjectFromUID(uid);
                 rowObj.changes = data;
@@ -29373,7 +29443,8 @@ var NormalEdit = /** @class */ (function () {
         };
         var rowData = { virtualData: {} };
         this.parent.notify(getVirtualData, rowData);
-        if (this.parent.enableVirtualization && Object.keys(rowData.virtualData).length) {
+        if ((this.parent.enableVirtualization || this.parent.infiniteScrollSettings.enableCache)
+            && Object.keys(rowData.virtualData).length) {
             args.data = args.rowData = rowData.virtualData;
         }
         if (sf.base.isBlazor()) {
@@ -31391,7 +31462,7 @@ var Edit = /** @class */ (function () {
             this.closeEdit();
         }
         else {
-            var restrictedRequestTypes = ['filterafteropen', 'filterbeforeopen', 'filterchoicerequest', 'save'];
+            var restrictedRequestTypes = ['filterafteropen', 'filterbeforeopen', 'filterchoicerequest', 'save', 'infiniteScroll'];
             if (this.parent.editSettings.mode !== 'Batch' && this.formObj && !this.formObj.isDestroyed
                 && restrictedRequestTypes.indexOf(e.requestType) === -1 && !e.cancel) {
                 this.destroyWidgets();
@@ -32378,7 +32449,8 @@ var ColumnChooser = /** @class */ (function () {
                 columnUID = parentsUntil(element, 'e-ccheck').getAttribute('uid');
             }
             var column = gridObject.getColumnByUid(columnUID);
-            if (column.visible) {
+            var uncheck = element.parentElement.querySelectorAll('.e-uncheck');
+            if (column.visible && !uncheck.length) {
                 element.checked = true;
                 this.checkState(element.parentElement.querySelector('.e-icons'), true);
             }
@@ -32918,8 +32990,12 @@ var ExcelExport = /** @class */ (function () {
             if (!(exportProperties.dataSource instanceof sf.data.DataManager)) {
                 exportProperties.dataSource = new sf.data.DataManager(exportProperties.dataSource);
             }
+            var query_1 = exportProperties.query ? exportProperties.query : new sf.data.Query();
+            if (sf.base.isNullOrUndefined(query_1.isCountRequired) || gObj.aggregates) {
+                query_1.isCountRequired = true;
+            }
             return new Promise(function (resolve, reject) {
-                var dataManager = exportProperties.dataSource.executeQuery(new sf.data.Query());
+                var dataManager = exportProperties.dataSource.executeQuery(query_1);
                 dataManager.then(function (r) {
                     _this.init(gObj);
                     _this.processInnerRecords(gObj, exportProperties, isMultipleExport, workbook, r).then(function () {
@@ -37133,7 +37209,7 @@ var ColumnMenu = /** @class */ (function () {
         return filterPopup && filterPopup.style.display !== 'none';
     };
     ColumnMenu.prototype.getFilterPop = function () {
-        if (sf.base.Browser.isDevice && this.targetColumn !== null) {
+        if (sf.base.Browser.isDevice && this.targetColumn !== null && this.parent.filterSettings.type === 'Menu') {
             return document.getElementById(this.targetColumn.uid + '-flmdlg');
         }
         return this.parent.element.querySelector('.' + this.POP);
@@ -37295,7 +37371,13 @@ var ForeignKey = /** @class */ (function (_super) {
         }
         if (gObj.searchSettings.key.length) {
             var sSettings = gObj.searchSettings;
-            query.search(sSettings.key, column.foreignKeyValue, sSettings.operator, sSettings.ignoreCase);
+            if (column.dataSource instanceof sf.data.DataManager && (column.dataSource.adaptor.getModuleName &&
+                column.dataSource.adaptor.getModuleName() === 'ODataV4Adaptor')) {
+                query = this.searchQuery(query, column, true);
+            }
+            else {
+                query.search(sSettings.key, column.foreignKeyValue, sSettings.operator, sSettings.ignoreCase);
+            }
         }
         return query;
     };
@@ -37733,7 +37815,7 @@ var InfiniteScroll = /** @class */ (function () {
      * Constructor for the Grid infinite scrolling.
      * @hidden
      */
-    function InfiniteScroll(parent) {
+    function InfiniteScroll(parent, serviceLocator) {
         this.infiniteCache = {};
         this.infiniteFrozenCache = {};
         this.isDownScroll = false;
@@ -37748,8 +37830,18 @@ var InfiniteScroll = /** @class */ (function () {
         this.keys = ['downArrow', 'upArrow', 'PageUp', 'PageDown'];
         this.rowTop = 0;
         this.isInitialMovableRender = true;
+        this.virtualInfiniteData = {};
+        this.isCancel = false;
+        this.emptyRowData = {};
+        this.isNormaledit = false;
+        this.isInfiniteScroll = false;
+        this.isLastPage = false;
         this.parent = parent;
+        this.serviceLocator = serviceLocator;
+        this.isNormaledit = this.parent.editSettings.mode === 'Normal';
         this.addEventListener();
+        this.rowModelGenerator = this.parent.getFrozenColumns() ? new FreezeRowModelGenerator(this.parent)
+            : new RowModelGenerator(this.parent);
     }
     InfiniteScroll.prototype.getModuleName = function () {
         return 'infiniteScroll';
@@ -37770,6 +37862,16 @@ var InfiniteScroll = /** @class */ (function () {
         this.parent.on(initialCollapse, this.ensureIntialCollapse, this);
         this.parent.on(keyPressed, this.infiniteCellFocus, this);
         this.parent.on(infiniteShowHide, this.setDisplayNone, this);
+        this.parent.on(virtualScrollEditActionBegin, this.editActionBegin, this);
+        this.parent.on(getVirtualData, this.getVirtualInfiniteData, this);
+        this.parent.on(editReset, this.resetInfiniteEdit, this);
+        this.parent.on(virtualScrollEditSuccess, this.infiniteEditSuccess, this);
+        this.parent.on(refreshVirtualCache, this.refreshInfiniteCache, this);
+        this.parent.on(infiniteEditHandler, this.infiniteEditHandler, this);
+        this.parent.on(virtualScrollAddActionBegin, this.infiniteAddActionBegin, this);
+        this.parent.on(modelChanged, this.modelChanged, this);
+        this.parent.addEventListener(actionBegin, this.actionBegin.bind(this));
+        this.parent.addEventListener(actionComplete, this.actionComplete.bind(this));
     };
     /**
      * @hidden
@@ -37790,6 +37892,172 @@ var InfiniteScroll = /** @class */ (function () {
         this.parent.off(initialCollapse, this.ensureIntialCollapse);
         this.parent.off(keyPressed, this.infiniteCellFocus);
         this.parent.off(infiniteShowHide, this.setDisplayNone);
+        this.parent.off(virtualScrollEditActionBegin, this.editActionBegin);
+        this.parent.off(getVirtualData, this.getVirtualInfiniteData);
+        this.parent.off(editReset, this.resetInfiniteEdit);
+        this.parent.off(virtualScrollEditSuccess, this.infiniteEditSuccess);
+        this.parent.off(refreshVirtualCache, this.refreshInfiniteCache);
+        this.parent.off(infiniteEditHandler, this.infiniteEditHandler);
+        this.parent.off(virtualScrollAddActionBegin, this.infiniteAddActionBegin);
+        this.parent.off(modelChanged, this.modelChanged);
+        this.parent.removeEventListener(actionBegin, this.actionBegin.bind(this));
+        this.parent.removeEventListener(actionComplete, this.actionComplete.bind(this));
+    };
+    InfiniteScroll.prototype.modelChanged = function (args) {
+        if (args.requestType !== 'infiniteScroll' && (args.requestType === 'delete' || this.requestType === 'add')) {
+            var rows = this.parent.getRows();
+            this.firstIndex = parseInt(rows[0].getAttribute('aria-rowindex'), 10);
+            this.firstBlock = Math.ceil((this.firstIndex + 1) / this.parent.pageSettings.pageSize);
+            this.lastIndex = parseInt(rows[rows.length - 1].getAttribute('aria-rowindex'), 10);
+            if (args.requestType === 'delete') {
+                var rowObj = this.parent.getRowsObject();
+                args.startIndex = this.parent.infiniteScrollSettings.enableCache
+                    ? (this.firstBlock - 1) * this.parent.pageSettings.pageSize : rowObj[rowObj.length - 1].index;
+            }
+            else {
+                args.startIndex = this.firstIndex;
+            }
+            if (!this.parent.infiniteScrollSettings.enableCache
+                && this.parent.pageSettings.currentPage === this.maxPage && args.requestType === 'delete') {
+                this.isLastPage = true;
+                this.lastIndex = this.lastIndex - 1;
+            }
+        }
+    };
+    InfiniteScroll.prototype.infiniteAddActionBegin = function (args) {
+        if (this.isNormaledit) {
+            this.isAdd = true;
+            if (this.parent.infiniteScrollSettings.enableCache) {
+                if (!Object.keys(this.emptyRowData).length) {
+                    this.createEmptyRowdata();
+                }
+                if (this.parent.pageSettings.currentPage > 1) {
+                    args.startEdit = false;
+                    this.resetInfiniteBlocks({}, true);
+                    this.makeRequest({ currentPage: 1 });
+                }
+            }
+        }
+    };
+    InfiniteScroll.prototype.infiniteEditHandler = function (args) {
+        if (!this.parent.infiniteScrollSettings.enableCache && (args.e.requestType === 'delete'
+            || (args.e.requestType === 'save' && this.requestType === 'add'))) {
+            var frozenCols = this.parent.getFrozenColumns();
+            var rowElms = this.parent.getRows();
+            var rows = this.parent.getRowsObject();
+            if (this.ensureRowAvailability(rows, args.result[0])) {
+                this.resetRowIndex(rows, args.e, rowElms, this.requestType === 'add');
+                if (frozenCols) {
+                    var rows_1 = this.parent.getMovableRowsObject();
+                    this.resetRowIndex(rows_1, args.e, this.parent.getMovableDataRows(), this.requestType === 'add');
+                }
+                if (!this.isLastPage) {
+                    this.createRow(rows, args);
+                }
+                else {
+                    this.isLastPage = false;
+                    this.parent.pageSettings.currentPage = this.maxPage;
+                    if (this.parent.selectionModule.index < this.parent.frozenRows) {
+                        sf.base.remove(rowElms[this.parent.frozenRows - 1]);
+                        this.createRow([rows[this.parent.frozenRows - 1]], args, false, true);
+                        if (frozenCols) {
+                            var movableRows = this.parent.getMovableDataRows();
+                            sf.base.remove(movableRows[this.parent.frozenRows]);
+                            this.createRow([this.parent.getMovableRowsObject()[this.parent.frozenRows - 1]], args, true, true);
+                        }
+                        this.setRowElements();
+                    }
+                }
+            }
+            this.parent.hideSpinner();
+            this.requestType === 'delete' ? this.parent.notify(deleteComplete, args.e)
+                : this.parent.notify(saveComplete, args.e);
+        }
+    };
+    InfiniteScroll.prototype.createRow = function (rows, args, isMovable, isFrozenRows) {
+        var row = !isFrozenRows ? this.generateRows(args.result, args.e) : rows;
+        var rowRenderer = new RowRenderer(this.serviceLocator, null, this.parent);
+        var tbody = !this.parent.getFrozenColumns() ? this.parent.getContent().querySelector('tbody') : isMovable
+            ? this.parent.getMovableVirtualContent().querySelector('tbody') : this.parent.getFrozenVirtualContent().querySelector('tbody');
+        if (this.parent.frozenRows) {
+            tbody = isFrozenRows && this.requestType !== 'add' || !isFrozenRows && this.requestType === 'add'
+                ? !this.parent.getFrozenColumns() ? this.parent.getHeaderContent().querySelector('tbody')
+                    : isMovable ? this.parent.getMovableVirtualHeader().querySelector('tbody')
+                        : this.parent.getFrozenVirtualHeader().querySelector('tbody') : tbody;
+        }
+        for (var i = row.length - 1; i >= 0; i--) {
+            if (this.requestType === 'delete') {
+                tbody.appendChild(rowRenderer.render(row[i], this.parent.getColumns()));
+            }
+            else {
+                tbody.insertBefore(rowRenderer.render(row[i], this.parent.getColumns()), tbody.firstElementChild);
+            }
+        }
+        if (!isFrozenRows && this.parent.frozenRows
+            && (this.parent.selectionModule.index < this.parent.frozenRows || this.requestType === 'add')) {
+            var rowElems = isMovable ? this.parent.getMovableDataRows() : this.parent.getRows();
+            var index = isMovable && this.requestType === 'add' ? this.parent.frozenRows : this.parent.frozenRows - 1;
+            sf.base.remove(rowElems[index]);
+            this.createRow([rows[this.parent.frozenRows - 1]], args, isMovable, true);
+        }
+        if (!this.parent.infiniteScrollSettings.enableCache && !isFrozenRows) {
+            if (!this.parent.getFrozenColumns() || isMovable) {
+                this.setRowElements();
+                this.parent.contentModule.visibleRows = this.requestType === 'add'
+                    ? row.concat(rows) : rows.concat(row);
+            }
+            else {
+                this.parent.contentModule.visibleFrozenRows = this.requestType === 'add'
+                    ? row.concat(rows) : rows.concat(row);
+                this.createRow(this.parent.getMovableRowsObject(), args, true);
+            }
+        }
+    };
+    InfiniteScroll.prototype.ensureRowAvailability = function (rows, data) {
+        var resume = true;
+        if (this.parent.frozenRows && !this.parent.infiniteScrollSettings.enableCache
+            && this.parent.sortSettings.columns && this.requestType === 'add') {
+            var key = this.parent.getPrimaryKeyFieldNames()[0];
+            for (var i = 0; i < rows.length; i++) {
+                if (rows[i].data[key] === data[key]) {
+                    resume = false;
+                    break;
+                }
+            }
+        }
+        return resume;
+    };
+    InfiniteScroll.prototype.generateRows = function (data, args) {
+        return this.rowModelGenerator.generateRows(data, args);
+    };
+    InfiniteScroll.prototype.resetRowIndex = function (rows, args, rowElms, isAdd) {
+        var keyField = this.parent.getPrimaryKeyFieldNames()[0];
+        if (isAdd) {
+            sf.base.remove(rowElms[rows.length - 1]);
+            rowElms.splice(rows.length - 1, 1);
+            rows.splice(rows.length - 1, 1);
+        }
+        else {
+            rows.filter(function (e, index) {
+                if (e.data[keyField] === args.data[0][keyField]) {
+                    rows.splice(index, 1);
+                    sf.base.remove(rowElms[index]);
+                    rowElms.splice(index, 1);
+                }
+            });
+        }
+        var startIndex = isAdd ? 1 : 0;
+        for (var i = 0; i < rows.length; i++) {
+            rows[i].index = startIndex;
+            rowElms[i].setAttribute('aria-rowindex', startIndex.toString());
+            this.resetCellIndex(rowElms[i].cells, startIndex);
+            startIndex++;
+        }
+    };
+    InfiniteScroll.prototype.resetCellIndex = function (cells, index) {
+        for (var i = 0; i < cells.length; i++) {
+            cells[i].setAttribute('index', index.toString());
+        }
     };
     InfiniteScroll.prototype.setDisplayNone = function (args) {
         if (this.parent.infiniteScrollSettings.enableCache) {
@@ -37805,6 +38073,68 @@ var InfiniteScroll = /** @class */ (function () {
             this.resetContentModuleCache(frozenCols ? this.infiniteFrozenCache : this.infiniteCache);
         }
     };
+    InfiniteScroll.prototype.refreshInfiniteCache = function (data) {
+        this.getEditedRowObject().data = data;
+    };
+    InfiniteScroll.prototype.getEditedRowObject = function () {
+        var rowObjects = this.parent.getRowsObject();
+        var editedrow;
+        for (var i = 0; i < rowObjects.length; i++) {
+            if (rowObjects[i].index === this.editRowIndex) {
+                editedrow = rowObjects[i];
+            }
+        }
+        return editedrow;
+    };
+    InfiniteScroll.prototype.infiniteEditSuccess = function (args) {
+        if (this.isNormaledit) {
+            if (!this.isAdd && args.data) {
+                this.updateCurrentViewRecords(args.data);
+            }
+            this.isAdd = false;
+        }
+    };
+    InfiniteScroll.prototype.updateCurrentViewRecords = function (data) {
+        var index = getEditedDataIndex(this.parent, data);
+        if (!sf.base.isNullOrUndefined(index)) {
+            this.parent.getCurrentViewRecords()[index] = data;
+        }
+    };
+    InfiniteScroll.prototype.actionBegin = function (args) {
+        if (args.requestType === 'add' || args.requestType === 'delete') {
+            this.requestType = args.requestType;
+        }
+    };
+    InfiniteScroll.prototype.actionComplete = function (args) {
+        if (args.requestType === 'delete' || args.requestType === 'save' || args.requestType === 'cancel') {
+            this.requestType = this.empty;
+            this.isCancel = args.requestType === 'cancel' || args.requestType === 'save';
+            this.isAdd = this.isEdit = false;
+            if (this.isNormaledit) {
+                this.editRowIndex = this.empty;
+                this.virtualInfiniteData = {};
+                this.parent.editModule.previousVirtualData = {};
+            }
+        }
+    };
+    InfiniteScroll.prototype.resetInfiniteEdit = function () {
+        if (this.parent.enableInfiniteScrolling && this.isNormaledit) {
+            if ((this.parent.editSettings.allowEditing && this.isEdit) || (this.parent.editSettings.allowAdding && this.isAdd)) {
+                this.parent.isEdit = true;
+            }
+        }
+    };
+    InfiniteScroll.prototype.getVirtualInfiniteData = function (data) {
+        data.virtualData = this.virtualInfiniteData;
+        data.isAdd = this.isAdd;
+        data.isCancel = this.isCancel;
+    };
+    InfiniteScroll.prototype.editActionBegin = function (e) {
+        this.isEdit = true;
+        this.editRowIndex = e.index;
+        var rowObject = sf.base.extend({}, this.getEditedRowObject().data);
+        e.data = Object.keys(this.virtualInfiniteData).length ? this.virtualInfiniteData : rowObject;
+    };
     InfiniteScroll.prototype.dataSourceModified = function () {
         this.resetInfiniteBlocks({ requestType: this.empty }, true);
     };
@@ -37818,6 +38148,8 @@ var InfiniteScroll = /** @class */ (function () {
     };
     InfiniteScroll.prototype.infiniteScrollHandler = function (e) {
         var _this = this;
+        this.restoreInfiniteEdit();
+        this.restoreInfiniteAdd();
         var targetEle = e.target;
         var isInfinite = targetEle.classList.contains('e-content')
             || targetEle.classList.contains('e-movablecontent');
@@ -37841,8 +38173,8 @@ var InfiniteScroll = /** @class */ (function () {
                         _this.isScroll = true;
                     }, 600);
                 }
-                var rows_1 = [].slice.call(scrollEle.querySelectorAll('.e-row'));
-                var row = rows_1[rows_1.length - 1];
+                var rows_2 = [].slice.call(scrollEle.querySelectorAll('.e-row:not(.e-addedrow)'));
+                var row = rows_2[rows_2.length - 1];
                 var rowIndex = parseInt(row.getAttribute('aria-rowindex'), 10);
                 this.parent.pageSettings.currentPage = Math.ceil(rowIndex / this.parent.pageSettings.pageSize) + 1;
                 args = {
@@ -37863,14 +38195,16 @@ var InfiniteScroll = /** @class */ (function () {
                         _this.isScroll = true;
                     }, 600);
                 }
-                var row = [].slice.call(scrollEle.querySelectorAll('.e-row'))[this.parent.pageSettings.pageSize - 1];
-                var rowIndex = parseInt(row.getAttribute('aria-rowindex'), 10);
+                var row = [].slice.call(scrollEle.querySelectorAll('.e-row'));
+                var rowIndex = parseInt(row[this.parent.pageSettings.pageSize - 1].getAttribute('aria-rowindex'), 10);
+                var startIndex = parseInt(row[0].getAttribute('aria-rowindex'), 10) - this.parent.pageSettings.pageSize;
                 this.parent.pageSettings.currentPage = Math.ceil(rowIndex / this.parent.pageSettings.pageSize) - 1;
                 if (this.parent.pageSettings.currentPage) {
                     args = {
                         requestType: 'infiniteScroll',
                         currentPage: this.parent.pageSettings.currentPage,
                         prevPage: prevPage,
+                        startIndex: startIndex,
                         direction: 'up'
                     };
                     this.makeRequest(args);
@@ -37886,13 +38220,16 @@ var InfiniteScroll = /** @class */ (function () {
     InfiniteScroll.prototype.makeRequest = function (args) {
         var _this = this;
         if (this.parent.pageSettings.currentPage !== args.prevPage) {
-            if (sf.base.isNullOrUndefined(this.infiniteCache[args.currentPage]) && args.direction !== 'up') {
+            this.isInfiniteScroll = true;
+            if (sf.base.isNullOrUndefined(this.infiniteCache[args.currentPage])) {
                 setTimeout(function () {
+                    _this.getVirtualInfiniteEditedData();
                     _this.parent.notify('model-changed', args);
                 }, 100);
             }
             else {
                 setTimeout(function () {
+                    _this.getVirtualInfiniteEditedData();
                     _this.parent.notify(refreshInfiniteModeBlocks, args);
                 }, 100);
             }
@@ -37904,7 +38241,30 @@ var InfiniteScroll = /** @class */ (function () {
             this.intialPageQuery(query);
         }
         else {
-            query.page(this.parent.pageSettings.currentPage, this.parent.pageSettings.pageSize);
+            if (!this.isInfiniteScroll && (this.requestType === 'delete' || this.requestType === 'add')) {
+                this.editPageQuery(query);
+            }
+            else {
+                query.page(this.parent.pageSettings.currentPage, this.parent.pageSettings.pageSize);
+            }
+        }
+    };
+    InfiniteScroll.prototype.editPageQuery = function (query) {
+        var initialBlocks = this.parent.infiniteScrollSettings.initialBlocks;
+        var isCache = this.parent.infiniteScrollSettings.enableCache;
+        if (isCache) {
+            this.infiniteCache = {};
+            this.infiniteFrozenCache = {};
+            query.skip(this.firstIndex);
+            query.take(initialBlocks * this.parent.pageSettings.pageSize);
+        }
+        else {
+            if (this.parent.editSettings.mode === 'Dialog') {
+                this.parent.clearSelection();
+            }
+            var index = this.requestType === 'delete' ? this.lastIndex : this.firstIndex;
+            query.skip(index);
+            query.take(1);
         }
     };
     InfiniteScroll.prototype.intialPageQuery = function (query) {
@@ -37944,6 +38304,55 @@ var InfiniteScroll = /** @class */ (function () {
         }
         else if (e.key === 'PageDown' || e.key === 'PageUp') {
             this.pressedKey = e.key;
+        }
+    };
+    InfiniteScroll.prototype.createEmptyRowdata = function () {
+        var _this = this;
+        this.parent.getColumns().filter(function (e) {
+            _this.emptyRowData[e.field] = _this.empty;
+        });
+    };
+    InfiniteScroll.prototype.getVirtualInfiniteEditedData = function () {
+        var editForm = this.parent.element.querySelector('.e-editedrow');
+        var addForm = this.parent.element.querySelector('.e-addedrow');
+        var gridForm = this.parent.element.querySelector('.e-gridform');
+        if (this.parent.infiniteScrollSettings.enableCache && (editForm || addForm)) {
+            var rowData = editForm ? sf.base.extend({}, this.getEditedRowObject().data)
+                : sf.base.extend({}, this.emptyRowData);
+            this.virtualInfiniteData = this.parent.editModule.getCurrentEditedData(gridForm, rowData);
+            if (this.parent.getFrozenColumns()) {
+                this.virtualInfiniteData = this.parent.editModule
+                    .getCurrentEditedData(this.parent.getMovableVirtualContent().querySelector('.e-gridform'), rowData);
+            }
+        }
+    };
+    InfiniteScroll.prototype.restoreInfiniteEdit = function () {
+        var content = this.parent.getFrozenColumns() ? this.parent.getMovableVirtualContent()
+            : this.parent.getContent().firstElementChild;
+        var frozenEdit = this.parent.frozenRows ? this.editRowIndex >= this.parent.frozenRows : true;
+        if (this.isNormaledit && this.parent.infiniteScrollSettings.enableCache && frozenEdit) {
+            if (this.parent.editSettings.allowEditing && !sf.base.isNullOrUndefined(this.editRowIndex)) {
+                var row = this.parent.getRowByIndex(this.editRowIndex);
+                if (Object.keys(this.virtualInfiniteData).length && row && !this.parent.getContent().querySelector('.e-editedrow')) {
+                    var top_1 = row.getBoundingClientRect().top;
+                    if (top_1 < content.offsetHeight && top_1 > this.parent.getRowHeight()) {
+                        this.parent.isEdit = false;
+                        this.parent.editModule.startEdit(row);
+                    }
+                }
+            }
+        }
+    };
+    InfiniteScroll.prototype.restoreInfiniteAdd = function () {
+        var content = this.parent.getFrozenColumns() ? this.parent.getMovableVirtualContent()
+            : this.parent.getContent().firstElementChild;
+        if (this.parent.getRowByIndex(0) && this.isNormaledit && this.parent.infiniteScrollSettings.enableCache
+            && this.isAdd && !content.querySelector('.e-addedrow')) {
+            var isTop = content.scrollTop < this.parent.getRowHeight();
+            if (isTop) {
+                this.parent.isEdit = false;
+                this.parent.addRecord();
+            }
         }
     };
     InfiniteScroll.prototype.appendInfiniteRows = function (e) {
@@ -37994,7 +38403,9 @@ var InfiniteScroll = /** @class */ (function () {
                 this.selectNewRow(e.tbody, e.args.startIndex);
                 this.pressedKey = undefined;
             }
+            this.restoreInfiniteAdd();
         }
+        this.isInfiniteScroll = false;
     };
     InfiniteScroll.prototype.setRowElements = function () {
         if (this.parent.getFrozenColumns()) {
@@ -38005,7 +38416,7 @@ var InfiniteScroll = /** @class */ (function () {
         }
         else {
             this.parent.contentModule.rowElements =
-                [].slice.call(this.parent.element.querySelectorAll('.e-row'));
+                [].slice.call(this.parent.element.querySelectorAll('.e-row:not(.e-addedrow)'));
         }
     };
     InfiniteScroll.prototype.selectNewRow = function (tbody, startIndex) {
@@ -38041,7 +38452,8 @@ var InfiniteScroll = /** @class */ (function () {
                     var captionRows = [].slice.call(this.parent.getContentTable().querySelectorAll('tr'));
                     this.removeCaptionRows(captionRows, e.args);
                 }
-                this.removeTopRows(rows, this.parent.pageSettings.pageSize - 1);
+                var addRowCount = this.parent.element.querySelector('.e-addedrow') ? 0 : 1;
+                this.removeTopRows(rows, this.parent.pageSettings.pageSize - addRowCount);
             }
             if (e.args.direction === 'up') {
                 if (this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
@@ -38183,6 +38595,8 @@ var InfiniteScroll = /** @class */ (function () {
                 this.isInitialCollapse = false;
                 this.parent.contentModule.isRemove = this.isRemove;
                 this.parent.contentModule.isAddRows = this.isRemove;
+                this.parent.contentModule.visibleRows = [];
+                this.parent.contentModule.visibleFrozenRows = [];
             }
         }
     };
@@ -38190,10 +38604,12 @@ var InfiniteScroll = /** @class */ (function () {
         if (this.parent.enableInfiniteScrolling && this.parent.infiniteScrollSettings.enableCache) {
             var frozeCols = this.parent.getFrozenColumns();
             var idx = e.args.isFrozen ? 1 : 0;
+            var isEdit = e.args.requestType !== 'infiniteScroll'
+                && (this.requestType === 'delete' || this.requestType === 'add');
             var currentPage = this.parent.pageSettings.currentPage;
-            if ((frozeCols && this.isInitialMovableRender) || (!frozeCols && !Object.keys(this.infiniteCache).length)) {
+            if ((frozeCols && this.isInitialMovableRender) || (!frozeCols && !Object.keys(this.infiniteCache).length) || isEdit) {
                 this.isInitialMovableRender = !e.args.isFrozen;
-                this.setInitialCache(e.modelData, e.args);
+                this.setInitialCache(e.modelData, e.args, isEdit);
             }
             if (!frozeCols && sf.base.isNullOrUndefined(this.infiniteCache[this.parent.pageSettings.currentPage])) {
                 this.infiniteCache[this.parent.pageSettings.currentPage] = e.modelData;
@@ -38215,26 +38631,28 @@ var InfiniteScroll = /** @class */ (function () {
             }
         }
     };
-    InfiniteScroll.prototype.setInitialCache = function (data, args) {
+    InfiniteScroll.prototype.setInitialCache = function (data, args, isEdit) {
         var frozenCols = this.parent.getFrozenColumns();
         var idx = args.isFrozen ? 1 : 0;
+        var k = !isEdit ? 1 : this.firstBlock;
         for (var i = 1; i <= this.parent.infiniteScrollSettings.initialBlocks; i++) {
             var startIndex = (i - 1) * this.parent.pageSettings.pageSize;
             var endIndex = i * this.parent.pageSettings.pageSize;
             if (this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
-                this.setInitialGroupCache(data, i, startIndex, endIndex);
+                this.setInitialGroupCache(data, k, startIndex, endIndex);
             }
             else {
                 if (frozenCols) {
-                    this.createFrozenCache(i);
-                    this.infiniteFrozenCache[i][idx] = data.slice(startIndex, endIndex);
+                    this.createFrozenCache(k);
+                    this.infiniteFrozenCache[k][idx] = data.slice(startIndex, endIndex);
                     this.resetContentModuleCache(this.infiniteFrozenCache);
                 }
                 else {
-                    this.infiniteCache[i] = data.slice(startIndex, endIndex);
+                    this.infiniteCache[k] = data.slice(startIndex, endIndex);
                     this.resetContentModuleCache(this.infiniteCache);
                 }
             }
+            k++;
         }
     };
     InfiniteScroll.prototype.createFrozenCache = function (index) {
@@ -38692,6 +39110,7 @@ exports.applyBiggerTheme = applyBiggerTheme;
 exports.alignFrozenEditForm = alignFrozenEditForm;
 exports.ensureLastRow = ensureLastRow;
 exports.ensureFirstRow = ensureFirstRow;
+exports.getEditedDataIndex = getEditedDataIndex;
 exports.created = created;
 exports.destroyed = destroyed;
 exports.load = load;
@@ -38900,6 +39319,7 @@ exports.infiniteShowHide = infiniteShowHide;
 exports.appendInfiniteContent = appendInfiniteContent;
 exports.removeInfiniteRows = removeInfiniteRows;
 exports.setInfiniteCache = setInfiniteCache;
+exports.infiniteEditHandler = infiniteEditHandler;
 exports.initialCollapse = initialCollapse;
 exports.getAggregateQuery = getAggregateQuery;
 exports.closeFilterDialog = closeFilterDialog;

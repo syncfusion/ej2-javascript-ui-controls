@@ -225,6 +225,7 @@ export class BookmarkView {
      * @private
      */
     public setBookmarkContentHeight(): void {
+        if (this.treeObj) {
         // tslint:disable-next-line
         let element: any = this.treeObj.element;
         if (this.treeObj.fullRowSelect) {
@@ -234,6 +235,7 @@ export class BookmarkView {
             if (element.nextElementSibling) {
                 element.style.height = element.nextElementSibling.offsetHeight + 'px';
             }
+        }
         }
     }
 

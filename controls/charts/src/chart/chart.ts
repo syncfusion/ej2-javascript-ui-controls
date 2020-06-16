@@ -1313,7 +1313,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /** @private */
     public chartAreaType: string = 'Cartesian';
     /** @private */
-    public isRtlEnabled: boolean = document.body.getAttribute('dir') === 'rtl';
+    public isRtlEnabled: boolean = (window.getComputedStyle(document.querySelector('body')).direction === 'rtl');
     /**
      * `markerModule` is used to manipulate and add marker to the series.
      * @private
@@ -3248,6 +3248,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         removeElement(this.element.id + '_ej2_chart_selection');
         removeElement(this.element.id + '_ej2_chart_highlight');
     }
+
     /**
      * Called internally if any of the property value changed.
      * @private

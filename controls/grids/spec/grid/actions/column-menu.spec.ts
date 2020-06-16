@@ -690,4 +690,46 @@ describe('column menu module', () => {
         });
     });
 
+    describe('EJ2-40327 - Scripts error issue while show/hide columns through column menu', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid({
+                dataSource: data,
+                showColumnMenu: true,
+                enableHover: false,
+                enableAutoFill: true,
+                allowReordering: true,
+                height: 'auto',
+                width: 'auto',
+                gridLines: 'Both',
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', width: 200, textAlign: 'Right' },
+                    { field: 'CustomerID', headerText: 'Customer ID' },
+                    { field: 'Freight', format: 'C2', textAlign: 'Right', editType: 'numericedit' },
+                    { field: 'ShipName', headerText: 'Ship Name', width: 300 },
+                    { field: 'ShipCity', headerText: 'Ship City', width: 200 }
+                ],
+                queryCellInfo: function (args?: any) {
+                    if (args.column.field === 'CustomerID') {
+                        if (args.data.CustomerID === "VINET") {
+                            args.colSpan = 5;
+                        }
+                        else {
+                            args.colSpan = 1;
+                        }
+                    }
+                },
+            }, done);
+        });
+        it('Check with script error', () => {
+            gridObj.hideColumns('Freight');
+            let cell: HTMLElement = ((gridObj.getContentTable() as any).tBodies[0] as HTMLTableElement).rows[1].cells[2] as any;
+            expect(cell.style.display).toBe('none');
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
 });

@@ -157,7 +157,9 @@ export class Selection {
       let checkWrap: Element = this.renderColumnCheckbox(container);
       let containerELe: Element = container.cell.querySelector('.e-treecolumn-container');
       if (!isNullOrUndefined(containerELe)) {
-        containerELe.insertBefore(checkWrap, containerELe.querySelectorAll('.e-treecell')[0]);
+        if (!container.cell.querySelector('.e-hierarchycheckbox')) {
+          containerELe.insertBefore(checkWrap, containerELe.querySelectorAll('.e-treecell')[0]);
+        }
       } else {
         let spanEle: HTMLElement = this.parent.createElement('span', { className: 'e-treecheckbox' });
         let data: string = container.cell.innerHTML;

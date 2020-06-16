@@ -2454,11 +2454,11 @@ export class MultiSelect extends DropDownBase implements IInput {
                             if (!Browser.isDevice) { this.hidePopup(); }
                         }
                     });
-                    this.popupObj.close();
-                    this.popupWrapper.style.visibility = '';
                     if (this.mode === 'CheckBox' && Browser.isDevice && this.allowFiltering) {
                         this.notify('deviceSearchBox', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox' });
                     }
+                    this.popupObj.close();
+                    this.popupWrapper.style.visibility = '';
                 }
             });
         }
@@ -3791,8 +3791,15 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (!this.ulElement) {
             this.beforePopupOpen = true;
             super.render();
+            if (this.mode === 'CheckBox' && Browser.isDevice && this.allowFiltering) {
+                this.notify('popupFullScreen', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox' });
+            }
             return;
         }
+        if (this.mode === 'CheckBox' && Browser.isDevice && this.allowFiltering) {
+            this.notify('popupFullScreen', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox' });
+        }
+
         let mainLiLength: number = this.ulElement.querySelectorAll('li.' + 'e-list-item').length;
         let liLength: number = this.ulElement.querySelectorAll('li.'
             + dropDownBaseClasses.li + '.' + HIDE_LIST).length;

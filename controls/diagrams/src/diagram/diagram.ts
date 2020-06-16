@@ -246,6 +246,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * diagram.appendTo('#diagram');
      * ```
      * @default '100%'
+     * @blazorType string
      */
     @Property('100%')
     public width: string | number;
@@ -262,6 +263,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Defines the height of the diagram model.
      * @default '100%'
+     * @blazorType string
      */
     @Property('100%')
     public height: string | number;
@@ -1281,6 +1283,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when a command executed.
      * @event
      * @blazorProperty 'OnCommandExecuted'
+     * @blazorType Syncfusion.Blazor.Diagrams.ICommandExecuteEventArgs
      */
     @Event()
     public commandExecute: EmitType<ICommandExecuteEventArgs>;
@@ -2503,6 +2506,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * move objects from the layer to another layer from diagram
      * @param {string[]} objects - define the objects id of string array
+     * @blazorArgsType objects|List<string>
      */
     public moveObjects(objects: string[], targetLayer?: string): void {
         let oldValues: object = cloneObject(this.layers);
@@ -2591,6 +2595,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * gets the node or connector having the given name
+     * @deprecated
      */
     public getObject(name: string): {} {
         return this.nameTable[name];
@@ -2880,6 +2885,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @param {NodeModel[] | ConnectorModel[]}objects - Defines the collection of objects, from which the object has to be found.
      * @param {Actions} action - Defines the action, using which the relevant object has to be found.
      * @param {boolean} inAction - Defines the active state of the action.
+     * @deprecated
      */
     public findObjectUnderMouse(
         objects: (NodeModel | ConnectorModel)[], action: Actions, inAction: boolean): IElement {
@@ -2891,6 +2897,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @param {NodeModel[] | ConnectorModel[]} objects - Defines the collection of objects, from which the object has to be found.
      * @param {Actions} action - Defines the action, using which the relevant object has to be found.
      * @param {boolean} inAction - Defines the active state of the action.
+     * @deprecated
      */
     public findTargetObjectUnderMouse(
         objects: (NodeModel | ConnectorModel)[], action: Actions, inAction: boolean, position: PointModel, source?: IElement): IElement {
@@ -2902,6 +2909,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @param {IElement} obj - Defines the object, the child element of which has to be found
      * @param {PointModel} position - Defines the position, the child element under which has to be found
      * @param {number} padding - Defines the padding, the child element under which has to be found
+     * @deprecated
      */
     public findElementUnderMouse(obj: IElement, position: PointModel, padding?: number): DiagramElement {
         return this.eventHandler.findElementUnderMouse(obj, position, padding);
@@ -2923,6 +2931,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Returns the tool that handles the given action
      * @param {string} action - Defines the action that is going to be performed
+     * @deprecated
      */
     public getTool(action: string): ToolBase {
         let tool: ToolBase;
@@ -3428,7 +3437,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Adds the given diagram object to the group.
      * @param {NodeModel} Group - defines where the diagram object to be added.
      * @param {string | NodeModel | ConnectorModel} Child - defines the diagram object to be added to the group
-     * @blazorArgsType obj|DiagramNode
+     * @blazorArgsType group|DiagramNode
      */
     public addChildToGroup(group: NodeModel, child: string | NodeModel | ConnectorModel): void {
         this.addChild(group, child);
@@ -3478,6 +3487,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Adds the given connector to diagram control
      * @param {ConnectorModel} obj - Defines the connector that has to be added to diagram
      * @blazorArgsType obj|DiagramConnector
+     * @blazorType DiagramConnector
      */
     public addConnector(obj: ConnectorModel): Connector {
         return this.add(obj) as Connector;
@@ -4626,7 +4636,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Add ports at the run time
-     * @blazorArgsType obj|DiagramNode
+     * @blazorArgsType obj|DiagramNode, ports|ObservableCollection<DiagramPort>
      */
     public addPorts(obj: NodeModel, ports: PointPortModel[]): void {
         this.protectPropertyChange(true);
@@ -4678,6 +4688,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Add labels in node at the run time in the blazor platform
+     * @blazorArgsType obj|DiagramNode,labels|ObservableCollection<DiagramNodeAnnotation>
      */
     public addNodeLabels(obj: NodeModel, labels: ShapeAnnotationModel[]): void {
         this.addLabels(obj, labels);
@@ -4685,6 +4696,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Add labels in connector at the run time in the blazor platform
+     * @blazorArgsType obj|DiagramConnector , labels|ObservableCollection<DiagramConnectorAnnotation>
      */
     public addConnectorLabels(obj: ConnectorModel, labels: PathAnnotationModel[]): void {
         this.addLabels(obj, labels);
@@ -4760,6 +4772,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Add dynamic Lanes to swimLane at runtime
+     * @deprecated
      */
 
     public addLanes(node: NodeModel, lane: LaneModel[], index?: number): void {
@@ -4775,6 +4788,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Add a phase to a swimLane at runtime
+     * @deprecated
      */
 
     public addPhases(node: NodeModel, phases: PhaseModel[]): void {
@@ -4787,6 +4801,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Remove dynamic Lanes to swimLane at runtime
+     * @deprecated
      */
 
     public removeLane(node: NodeModel, lane: LaneModel): void {
@@ -4796,6 +4811,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Remove a phase to a swimLane at runtime
+     * @deprecated
      */
 
     public removePhase(node: NodeModel, phase: PhaseModel): void {
@@ -4905,6 +4921,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Remove Ports at the run time
+     * @blazorArgsType obj|DiagramNode,ports|ObservableCollection<DiagramPort>
      */
     public removePorts(obj: Node, ports: PointPortModel[]): void {
         obj = this.nameTable[obj.id] || obj;
@@ -9050,6 +9067,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * moves the node or connector forward within given layer
+     * @deprecated
      */
     public moveObjectsUp(node: NodeModel | ConnectorModel, currentLayer: LayerModel): void {
         let targetLayer: LayerModel;
@@ -9068,6 +9086,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Inserts newly added element into the database
+     * @deprecated
      */
     public insertData(node?: Node | Connector): object {
         return this.crudOperation(node, 'create', this.getNewUpdateNodes('New'));
@@ -9075,6 +9094,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * updates the user defined element properties into the existing database
+     * @deprecated
      */
     public updateData(node?: Node | Connector): object {
         return this.crudOperation(node, 'update', this.getNewUpdateNodes('Update'));
@@ -9082,6 +9102,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Removes the user deleted element from the existing database
+     * @deprecated
      */
     public removeData(node?: Node | Connector): object {
         return this.crudOperation(node, 'destroy', this.getDeletedNodes());

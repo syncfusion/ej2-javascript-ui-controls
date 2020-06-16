@@ -31,9 +31,12 @@ export class StackingAreaSeries extends LineBase {
         let border: BorderModel = series.border;
         let options: PathOption;
         let startPoint: number = 0;
-        let point1: ChartLocation = getCoordinate(visiblePoints[0].xValue, origin, xAxis, yAxis, isInverted, series);
+        let point1: ChartLocation;
         let point2: ChartLocation;
-        lineDirection = lineDirection.concat('M' + ' ' + (point1.x) + ' ' + (point1.y) + ' ');
+        if (pointsLength > 0) {
+            point1 = getCoordinate(visiblePoints[0].xValue, origin, xAxis, yAxis, isInverted, series);
+            lineDirection = lineDirection.concat('M' + ' ' + (point1.x) + ' ' + (point1.y) + ' ');
+        }
         let isPolar: boolean = (series.chart && series.chart.chartAreaType === 'PolarRadar');
         for (let i: number = 0; i < pointsLength; i++) {
             visiblePoints[i].symbolLocations = []; visiblePoints[i].regions = [];

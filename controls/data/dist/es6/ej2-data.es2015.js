@@ -3861,6 +3861,14 @@ class ODataV4Adaptor extends ODataAdaptor {
         let returnValue = '';
         let val = predicate.value;
         let isDate = val instanceof Date;
+        if (query instanceof Query) {
+            let queries = this.getQueryRequest(query);
+            for (let i = 0; i < queries.filters.length; i++) {
+                if (queries.filters[i].e.key === predicate.value) {
+                    requiresCast = true;
+                }
+            }
+        }
         returnValue = super.onPredicate.call(this, predicate, query, requiresCast);
         if (isDate) {
             returnValue = returnValue.replace(/datetime'(.*)'$/, '$1');

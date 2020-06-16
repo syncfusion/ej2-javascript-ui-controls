@@ -40,6 +40,7 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Defines the width of the overview
      * @default '100%'
+     * @blazorType string
      */
     @Property('100%')
     public width: string | number;
@@ -47,6 +48,7 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Defines the height of the overview
      * @default '100%'
+     * @blazorType string
      */
     @Property('100%')
     public height: string | number;

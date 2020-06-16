@@ -1002,3 +1002,15 @@ export function ensureLastRow(row: Element, gridObj: IGrid): boolean {
 export function ensureFirstRow(row: Element, rowTop: number): boolean {
     return row && row.getBoundingClientRect().top < rowTop;
 }
+
+/** @hidden */
+export function getEditedDataIndex(gObj: IGrid, data: Object): number {
+    let keyField: string = gObj.getPrimaryKeyFieldNames()[0];
+    let dataIndex: number;
+    gObj.getCurrentViewRecords().filter((e: Object, index: number) => {
+        if (e[keyField] === data[keyField]) {
+            dataIndex = index;
+        }
+    });
+    return dataIndex;
+}

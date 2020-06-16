@@ -7826,7 +7826,7 @@ let Chart = class Chart extends Component {
         /** @private */
         this.chartAreaType = 'Cartesian';
         /** @private */
-        this.isRtlEnabled = document.body.getAttribute('dir') === 'rtl';
+        this.isRtlEnabled = (window.getComputedStyle(document.querySelector('body')).direction === 'rtl');
         this.chartid = 57723;
         setValue('mergePersistData', this.mergePersistChartData, this);
     }
@@ -13724,9 +13724,12 @@ class StackingAreaSeries extends LineBase {
         let border = series.border;
         let options;
         let startPoint = 0;
-        let point1 = getCoordinate(visiblePoints[0].xValue, origin, xAxis, yAxis, isInverted, series);
+        let point1;
         let point2;
-        lineDirection = lineDirection.concat('M' + ' ' + (point1.x) + ' ' + (point1.y) + ' ');
+        if (pointsLength > 0) {
+            point1 = getCoordinate(visiblePoints[0].xValue, origin, xAxis, yAxis, isInverted, series);
+            lineDirection = lineDirection.concat('M' + ' ' + (point1.x) + ' ' + (point1.y) + ' ');
+        }
         let isPolar = (series.chart && series.chart.chartAreaType === 'PolarRadar');
         for (let i = 0; i < pointsLength; i++) {
             visiblePoints[i].symbolLocations = [];
@@ -21589,8 +21592,8 @@ class DataLabel {
             ((Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000)) >= 128 ? 'black' : 'white');
         if (childElement.childElementCount && (!isCollide(rect, this.chart.dataLabelCollections, clip) ||
             dataLabel.labelIntersectAction === 'None') && (series.seriesType !== 'XY' || point.yValue === undefined ||
-            withIn(point.yValue, series.yAxis.visibleRange) || (series.type.indexOf('100') > -1 &&
-            withIn(series.stackedValues.endValues[point.index], series.yAxis.visibleRange))) &&
+            withIn(point.yValue, series.yAxis.visibleRange) || (series.type.indexOf('Stacking') > -1) ||
+            (series.type.indexOf('100') > -1 && withIn(series.stackedValues.endValues[point.index], series.yAxis.visibleRange))) &&
             withIn(point.xValue, series.xAxis.visibleRange) && parseFloat(childElement.style.top) >= vAxis.rect.y &&
             parseFloat(childElement.style.left) >= hAxis.rect.x &&
             parseFloat(childElement.style.top) <= vAxis.rect.y + vAxis.rect.height &&
@@ -22795,7 +22798,7 @@ class AnnotationBase {
                     }
                     else if (xAxis.valueType === 'DateTime') {
                         let option = { skeleton: 'full', type: 'dateTime' };
-                        xValue = (typeof this.annotation.x === 'object') ?
+                        xValue = (typeof this.annotation.x === 'object' || typeof new Date(this.annotation.x) === 'object') ?
                             Date.parse(chart.intl.getDateParser(option)(chart.intl.getDateFormat(option)(new Date(DataUtil.parse.parseJson({ val: annotation.x }).val)))) : 0;
                     }
                     else {
@@ -29053,7 +29056,8 @@ class AccumulationSelection extends BaseSelection {
                     legendShape = document.getElementById(this.control.element.id + '_chart_legend_shape_' + index.point);
                     this.removeSvgClass(legendShape, this.getSelectionClass(legendShape.id));
                 }
-                let opacity = accumulationTooltip && (accumulationTooltip.previousPoints[0].point.index === index.point) ?
+                let opacity = accumulationTooltip && (accumulationTooltip.previousPoints.length > 0 &&
+                    accumulationTooltip.previousPoints[0].point.index === index.point) ?
                     accumulationTooltip.svgTooltip.opacity : this.series[index.series].opacity;
                 element.setAttribute('opacity', opacity.toString());
                 this.removeSvgClass(element, this.getSelectionClass(element.id));

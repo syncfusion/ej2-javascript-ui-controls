@@ -8,6 +8,7 @@ export interface DiagramTooltipModel {
     /**
      * Defines the content of the Tooltip
      * @default ''
+     * @blazorType string
      */
     content?: string | HTMLElement;
 
@@ -38,12 +39,14 @@ export interface DiagramTooltipModel {
     /**
      * Sets the width of the Tooltip
      * @default 'auto'
+     * @blazorType string
      */
     width?: number | string;
 
     /**
      * Sets the height of the Tooltip
      * @default 'auto'
+     * @blazorType string
      */
     height?: number | string;
 

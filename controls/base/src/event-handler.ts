@@ -1,4 +1,5 @@
 import { debounce, extend } from './util';
+import { Browser } from './browser';
 
 /**
  * EventHandler class provides option to add, remove, clear and trigger events to a HTML DOM element
@@ -64,7 +65,12 @@ export class EventHandler {
                 listener: listener,
                 debounce: debounceListener
             });
-            element.addEventListener(event[i], <EventListener>debounceListener, { passive: false });
+            if (Browser.isIE) {
+                element.addEventListener(event[i], <EventListener>debounceListener);
+            } else {
+                element.addEventListener(event[i], <EventListener>debounceListener, { passive: false });
+            }
+
         }
         return debounceListener;
     }

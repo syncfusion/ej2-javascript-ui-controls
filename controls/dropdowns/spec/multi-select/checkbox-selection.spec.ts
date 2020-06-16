@@ -3204,5 +3204,109 @@ describe('MultiSelect', () => {
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     })
 });
-
-
+describe('EJ2-39990 MultiSelect component in mobile mode with initial value page not scrolled', () => {
+    let listObj: MultiSelect;
+    let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
+    let datasource: { [key: string]: Object }[] = [
+        { Name: 'Australia', Code: 'AU' },
+        { Name: 'Bermuda', Code: 'BM' },
+        { Name: 'Canada', Code: 'CA' },
+        { Name: 'Cameroon', Code: 'CM' },
+        { Name: 'Denmark', Code: 'DK' },
+        { Name: 'France', Code: 'FR' },
+        { Name: 'Finland', Code: 'FI' },
+    ];
+    let originalTimeout: number;
+    beforeAll(() => {
+        let androidPhoneUa: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+        'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
+        Browser.userAgent = androidPhoneUa;
+        document.body.appendChild(element);
+    });
+    afterAll(() => {
+        if (element) {
+            listObj.destroy();
+            element.remove();
+        }
+        Browser.userAgent = navigator.userAgent;
+    });
+    it('check with checkbox', () => {
+        listObj = new MultiSelect({
+            dataSource: datasource,
+            fields: { text: 'Name', value: 'Code' },
+            popupHeight: 50,
+            mode: 'CheckBox',
+            value: ['AU']
+        });
+        listObj.appendTo(element);
+        expect(document.body.classList.contains('e-popup-full-page')).toBe(false);
+        (<any>listObj).renderPopup();
+        listObj.showPopup();
+        expect((<any>listObj).isPopupOpen()).toBe(true);
+        expect(document.body.classList.contains('e-popup-full-page')).toBe(true);
+        listObj.hidePopup();
+        listObj.destroy();
+    });
+});
+describe('EJ2-39868 Some items in the dropdown hides when using the header template in the mobile mode', () => {
+    let listObj: MultiSelect;
+    let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
+    let datasource: { [key: string]: Object }[] = [
+        { Name: 'Australia', Code: 'AU' },
+        { Name: 'Bermuda', Code: 'BM' },
+        { Name: 'Canada', Code: 'CA' },
+        { Name: 'Cameroon', Code: 'CM' },
+        { Name: 'Denmark', Code: 'DK' },
+        { Name: 'France', Code: 'FR' },
+        { Name: 'Finland', Code: 'FI' },
+    ];
+    let originalTimeout: number;
+    beforeAll(() => {
+        let androidPhoneUa: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+        'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
+        Browser.userAgent = androidPhoneUa;
+        document.body.appendChild(element);
+    });
+    afterAll(() => {
+        if (element) {
+            listObj.destroy();
+            element.remove();
+        }
+        Browser.userAgent = navigator.userAgent;
+    });
+    it('check without showselectAll', () => {
+        listObj = new MultiSelect({
+            dataSource: datasource,
+            fields: { text: 'Name', value: 'Code' },
+            popupHeight: 50,
+            mode: 'CheckBox',
+            value: ['AU'],
+        });
+        listObj.appendTo(element);
+        (<any>listObj).renderPopup();
+        listObj.showPopup();
+        expect((<any>listObj).isPopupOpen()).toBe(true);
+        expect((<any>listObj).checkBoxSelectionModule.checkAllParent).toBeUndefined;
+        expect(document.getElementsByClassName('e-selectall-parent')[0]).toBeUndefined;
+        listObj.hidePopup();
+        listObj.destroy();
+    });
+    it('check with showSelectAll', () => {
+        listObj = new MultiSelect({
+            dataSource: datasource,
+            fields: { text: 'Name', value: 'Code' },
+            popupHeight: 50,
+            mode: 'CheckBox',
+            value: ['AU'],
+            showSelectAll: true,
+        });
+        listObj.appendTo(element);
+        (<any>listObj).renderPopup();
+        listObj.showPopup();
+        expect((<any>listObj).isPopupOpen()).toBe(true);
+        expect(isNullOrUndefined((<any>listObj).checkBoxSelectionModule.checkAllParent)).toBe(false);
+        expect(isNullOrUndefined(document.getElementsByClassName('e-selectall-parent')[0])).toBe(false);
+        listObj.hidePopup();
+        listObj.destroy();
+    });
+});

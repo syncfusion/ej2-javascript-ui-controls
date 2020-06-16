@@ -70,6 +70,8 @@ export interface IRichTextEditor extends Component<HTMLElement> {
 
     width?: string | number;
 
+    height?: string | number;
+
     fontFamily?: IFontProperties;
 
     fontSize?: IFontProperties;
@@ -635,6 +637,16 @@ export interface BeforeQuickToolbarOpenArgs {
     cancel: boolean;
     /** Defines the target element of the quick toolbar */
     targetElement: Element;
+}
+
+/**
+ * Provides information about a AfterImageDeleteEvent event.
+ */
+export interface AfterImageDeleteEventArgs {
+    /** Defined the image element deleted */
+    element: Node;
+    /** Defines the src attribute of the image element deleted */
+    src: String;
 }
 
 /**

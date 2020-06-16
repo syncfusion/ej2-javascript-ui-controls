@@ -3925,6 +3925,14 @@ var ODataV4Adaptor = /** @__PURE__ @class */ (function (_super) {
         var returnValue = '';
         var val = predicate.value;
         var isDate = val instanceof Date;
+        if (query instanceof Query) {
+            var queries = this.getQueryRequest(query);
+            for (var i = 0; i < queries.filters.length; i++) {
+                if (queries.filters[i].e.key === predicate.value) {
+                    requiresCast = true;
+                }
+            }
+        }
         returnValue = _super.prototype.onPredicate.call(this, predicate, query, requiresCast);
         if (isDate) {
             returnValue = returnValue.replace(/datetime'(.*)'$/, '$1');

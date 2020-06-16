@@ -3577,6 +3577,264 @@ class Ajax {
     }
 }
 
+const REGX_MOBILE = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile/i;
+const REGX_IE = /msie|trident/i;
+const REGX_IE11 = /Trident\/7\./;
+const REGX_IOS = /(ipad|iphone|ipod touch)/i;
+const REGX_IOS7 = /(ipad|iphone|ipod touch);.*os 7_\d|(ipad|iphone|ipod touch);.*os 8_\d/i;
+const REGX_ANDROID = /android/i;
+const REGX_WINDOWS = /trident|windows phone|edge/i;
+const REGX_VERSION = /(version)[ \/]([\w.]+)/i;
+const REGX_BROWSER = {
+    OPERA: /(opera|opr)(?:.*version|)[ \/]([\w.]+)/i,
+    EDGE: /(edge)(?:.*version|)[ \/]([\w.]+)/i,
+    CHROME: /(chrome|crios)[ \/]([\w.]+)/i,
+    PANTHOMEJS: /(phantomjs)[ \/]([\w.]+)/i,
+    SAFARI: /(safari)[ \/]([\w.]+)/i,
+    WEBKIT: /(webkit)[ \/]([\w.]+)/i,
+    MSIE: /(msie|trident) ([\w.]+)/i,
+    MOZILLA: /(mozilla)(?:.*? rv:([\w.]+)|)/i
+};
+/* istanbul ignore else  */
+if (typeof window !== 'undefined') {
+    window.browserDetails = window.browserDetails || {};
+}
+/**
+ * Get configuration details for Browser
+ * @private
+ */
+class Browser {
+    static extractBrowserDetail() {
+        let browserInfo = { culture: {} };
+        let keys = Object.keys(REGX_BROWSER);
+        let clientInfo = [];
+        for (let key of keys) {
+            clientInfo = Browser.userAgent.match(REGX_BROWSER[key]);
+            if (clientInfo) {
+                browserInfo.name = (clientInfo[1].toLowerCase() === 'opr' ? 'opera' : clientInfo[1].toLowerCase());
+                browserInfo.name = (clientInfo[1].toLowerCase() === 'crios' ? 'chrome' : browserInfo.name);
+                browserInfo.version = clientInfo[2];
+                browserInfo.culture.name = browserInfo.culture.language = navigator.language;
+                if (!!Browser.userAgent.match(REGX_IE11)) {
+                    browserInfo.name = 'msie';
+                    break;
+                }
+                let version = Browser.userAgent.match(REGX_VERSION);
+                if (browserInfo.name === 'safari' && version) {
+                    browserInfo.version = version[2];
+                }
+                break;
+            }
+        }
+        return browserInfo;
+    }
+    /**
+     * To get events from the browser
+     * @param {string} event - type of event triggered.
+     * @returns {Boolean}
+     */
+    static getEvent(event) {
+        // tslint:disable-next-line:no-any
+        let events = {
+            start: {
+                isPointer: 'pointerdown', isTouch: 'touchstart', isDevice: 'mousedown'
+            },
+            move: {
+                isPointer: 'pointermove', isTouch: 'touchmove', isDevice: 'mousemove'
+            },
+            end: {
+                isPointer: 'pointerup', isTouch: 'touchend', isDevice: 'mouseup'
+            },
+            cancel: {
+                isPointer: 'pointercancel', isTouch: 'touchcancel', isDevice: 'mouseleave'
+            }
+        };
+        return (Browser.isPointer ? events[event].isPointer :
+            (Browser.isTouch ? events[event].isTouch + (!Browser.isDevice ? ' ' + events[event].isDevice : '')
+                : events[event].isDevice));
+    }
+    /**
+     * To get the Touch start event from browser
+     * @returns {string}
+     */
+    static getTouchStartEvent() {
+        return Browser.getEvent('start');
+    }
+    /**
+     * To get the Touch end event from browser
+     * @returns {string}
+     */
+    static getTouchEndEvent() {
+        return Browser.getEvent('end');
+    }
+    /**
+     * To get the Touch move event from browser
+     * @returns {string}
+     */
+    static getTouchMoveEvent() {
+        return Browser.getEvent('move');
+    }
+    /**
+     * To cancel the touch event from browser
+     * @returns {string}
+     */
+    static getTouchCancelEvent() {
+        return Browser.getEvent('cancel');
+    }
+    /**
+     * To get the value based on provided key and regX
+     * @param {string} key
+     * @param {RegExp} regX
+     * @returns {Object}
+     */
+    static getValue(key, regX) {
+        let browserDetails = window.browserDetails;
+        if ('undefined' === typeof browserDetails[key]) {
+            return browserDetails[key] = regX.test(Browser.userAgent);
+        }
+        return browserDetails[key];
+    }
+    //Properties 
+    /**
+     * Property specifies the userAgent of the browser. Default userAgent value is based on the browser.
+     * Also we can set our own userAgent.
+     */
+    static set userAgent(uA) {
+        Browser.uA = uA;
+        window.browserDetails = {};
+    }
+    static get userAgent() {
+        return Browser.uA;
+    }
+    //Read Only Properties
+    /**
+     * Property is to get the browser information like Name, Version and Language
+     * @returns BrowserInfo
+     */
+    static get info() {
+        if (isUndefined(window.browserDetails.info)) {
+            return window.browserDetails.info = Browser.extractBrowserDetail();
+        }
+        return window.browserDetails.info;
+    }
+    /**
+     * Property is to get whether the userAgent is based IE.
+     */
+    static get isIE() {
+        return Browser.getValue('isIE', REGX_IE);
+    }
+    /**
+     * Property is to get whether the browser has touch support.
+     */
+    static get isTouch() {
+        if (isUndefined(window.browserDetails.isTouch)) {
+            return (window.browserDetails.isTouch =
+                ('ontouchstart' in window.navigator) ||
+                    (window &&
+                        window.navigator &&
+                        (window.navigator.maxTouchPoints > 0)) || ('ontouchstart' in window));
+        }
+        return window.browserDetails.isTouch;
+    }
+    /**
+     * Property is to get whether the browser has Pointer support.
+     */
+    static get isPointer() {
+        if (isUndefined(window.browserDetails.isPointer)) {
+            return window.browserDetails.isPointer = ('pointerEnabled' in window.navigator);
+        }
+        return window.browserDetails.isPointer;
+    }
+    /**
+     * Property is to get whether the browser has MSPointer support.
+     */
+    static get isMSPointer() {
+        if (isUndefined(window.browserDetails.isMSPointer)) {
+            return window.browserDetails.isMSPointer = ('msPointerEnabled' in window.navigator);
+        }
+        return window.browserDetails.isMSPointer;
+    }
+    /**
+     * Property is to get whether the userAgent is device based.
+     */
+    static get isDevice() {
+        return Browser.getValue('isDevice', REGX_MOBILE);
+    }
+    /**
+     * Property is to get whether the userAgent is IOS.
+     */
+    static get isIos() {
+        return Browser.getValue('isIos', REGX_IOS);
+    }
+    /**
+     * Property is to get whether the userAgent is Ios7.
+     */
+    static get isIos7() {
+        return Browser.getValue('isIos7', REGX_IOS7);
+    }
+    /**
+     * Property is to get whether the userAgent is Android.
+     */
+    static get isAndroid() {
+        return Browser.getValue('isAndroid', REGX_ANDROID);
+    }
+    /**
+     * Property is to identify whether application ran in web view.
+     */
+    static get isWebView() {
+        if (isUndefined(window.browserDetails.isWebView)) {
+            window.browserDetails.isWebView = !(isUndefined(window.cordova) && isUndefined(window.PhoneGap)
+                && isUndefined(window.phonegap) && window.forge !== 'object');
+            return window.browserDetails.isWebView;
+        }
+        return window.browserDetails.isWebView;
+    }
+    /**
+     * Property is to get whether the userAgent is Windows.
+     */
+    static get isWindows() {
+        return Browser.getValue('isWindows', REGX_WINDOWS);
+    }
+    /**
+     * Property is to get the touch start event. It returns event name based on browser.
+     */
+    static get touchStartEvent() {
+        if (isUndefined(window.browserDetails.touchStartEvent)) {
+            return window.browserDetails.touchStartEvent = Browser.getTouchStartEvent();
+        }
+        return window.browserDetails.touchStartEvent;
+    }
+    /**
+     * Property is to get the touch move event. It returns event name based on browser.
+     */
+    static get touchMoveEvent() {
+        if (isUndefined(window.browserDetails.touchMoveEvent)) {
+            return window.browserDetails.touchMoveEvent = Browser.getTouchMoveEvent();
+        }
+        return window.browserDetails.touchMoveEvent;
+    }
+    /**
+     * Property is to get the touch end event. It returns event name based on browser.
+     */
+    static get touchEndEvent() {
+        if (isUndefined(window.browserDetails.touchEndEvent)) {
+            return window.browserDetails.touchEndEvent = Browser.getTouchEndEvent();
+        }
+        return window.browserDetails.touchEndEvent;
+    }
+    /**
+     * Property is to cancel the touch end event.
+     */
+    static get touchCancelEvent() {
+        if (isUndefined(window.browserDetails.touchCancelEvent)) {
+            return window.browserDetails.touchCancelEvent = Browser.getTouchCancelEvent();
+        }
+        return window.browserDetails.touchCancelEvent;
+    }
+}
+/* istanbul ignore next */
+Browser.uA = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+
 /**
  * EventHandler class provides option to add, remove, clear and trigger events to a HTML DOM element
  * @private
@@ -3636,7 +3894,12 @@ class EventHandler {
                 listener: listener,
                 debounce: debounceListener
             });
-            element.addEventListener(event[i], debounceListener, { passive: false });
+            if (Browser.isIE) {
+                element.addEventListener(event[i], debounceListener);
+            }
+            else {
+                element.addEventListener(event[i], debounceListener, { passive: false });
+            }
         }
         return debounceListener;
     }
@@ -5179,264 +5442,6 @@ function removeChildInstance(element) {
         }
     }
 }
-
-const REGX_MOBILE = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile/i;
-const REGX_IE = /msie|trident/i;
-const REGX_IE11 = /Trident\/7\./;
-const REGX_IOS = /(ipad|iphone|ipod touch)/i;
-const REGX_IOS7 = /(ipad|iphone|ipod touch);.*os 7_\d|(ipad|iphone|ipod touch);.*os 8_\d/i;
-const REGX_ANDROID = /android/i;
-const REGX_WINDOWS = /trident|windows phone|edge/i;
-const REGX_VERSION = /(version)[ \/]([\w.]+)/i;
-const REGX_BROWSER = {
-    OPERA: /(opera|opr)(?:.*version|)[ \/]([\w.]+)/i,
-    EDGE: /(edge)(?:.*version|)[ \/]([\w.]+)/i,
-    CHROME: /(chrome|crios)[ \/]([\w.]+)/i,
-    PANTHOMEJS: /(phantomjs)[ \/]([\w.]+)/i,
-    SAFARI: /(safari)[ \/]([\w.]+)/i,
-    WEBKIT: /(webkit)[ \/]([\w.]+)/i,
-    MSIE: /(msie|trident) ([\w.]+)/i,
-    MOZILLA: /(mozilla)(?:.*? rv:([\w.]+)|)/i
-};
-/* istanbul ignore else  */
-if (typeof window !== 'undefined') {
-    window.browserDetails = window.browserDetails || {};
-}
-/**
- * Get configuration details for Browser
- * @private
- */
-class Browser {
-    static extractBrowserDetail() {
-        let browserInfo = { culture: {} };
-        let keys = Object.keys(REGX_BROWSER);
-        let clientInfo = [];
-        for (let key of keys) {
-            clientInfo = Browser.userAgent.match(REGX_BROWSER[key]);
-            if (clientInfo) {
-                browserInfo.name = (clientInfo[1].toLowerCase() === 'opr' ? 'opera' : clientInfo[1].toLowerCase());
-                browserInfo.name = (clientInfo[1].toLowerCase() === 'crios' ? 'chrome' : browserInfo.name);
-                browserInfo.version = clientInfo[2];
-                browserInfo.culture.name = browserInfo.culture.language = navigator.language;
-                if (!!Browser.userAgent.match(REGX_IE11)) {
-                    browserInfo.name = 'msie';
-                    break;
-                }
-                let version = Browser.userAgent.match(REGX_VERSION);
-                if (browserInfo.name === 'safari' && version) {
-                    browserInfo.version = version[2];
-                }
-                break;
-            }
-        }
-        return browserInfo;
-    }
-    /**
-     * To get events from the browser
-     * @param {string} event - type of event triggered.
-     * @returns {Boolean}
-     */
-    static getEvent(event) {
-        // tslint:disable-next-line:no-any
-        let events = {
-            start: {
-                isPointer: 'pointerdown', isTouch: 'touchstart', isDevice: 'mousedown'
-            },
-            move: {
-                isPointer: 'pointermove', isTouch: 'touchmove', isDevice: 'mousemove'
-            },
-            end: {
-                isPointer: 'pointerup', isTouch: 'touchend', isDevice: 'mouseup'
-            },
-            cancel: {
-                isPointer: 'pointercancel', isTouch: 'touchcancel', isDevice: 'mouseleave'
-            }
-        };
-        return (Browser.isPointer ? events[event].isPointer :
-            (Browser.isTouch ? events[event].isTouch + (!Browser.isDevice ? ' ' + events[event].isDevice : '')
-                : events[event].isDevice));
-    }
-    /**
-     * To get the Touch start event from browser
-     * @returns {string}
-     */
-    static getTouchStartEvent() {
-        return Browser.getEvent('start');
-    }
-    /**
-     * To get the Touch end event from browser
-     * @returns {string}
-     */
-    static getTouchEndEvent() {
-        return Browser.getEvent('end');
-    }
-    /**
-     * To get the Touch move event from browser
-     * @returns {string}
-     */
-    static getTouchMoveEvent() {
-        return Browser.getEvent('move');
-    }
-    /**
-     * To cancel the touch event from browser
-     * @returns {string}
-     */
-    static getTouchCancelEvent() {
-        return Browser.getEvent('cancel');
-    }
-    /**
-     * To get the value based on provided key and regX
-     * @param {string} key
-     * @param {RegExp} regX
-     * @returns {Object}
-     */
-    static getValue(key, regX) {
-        let browserDetails = window.browserDetails;
-        if ('undefined' === typeof browserDetails[key]) {
-            return browserDetails[key] = regX.test(Browser.userAgent);
-        }
-        return browserDetails[key];
-    }
-    //Properties 
-    /**
-     * Property specifies the userAgent of the browser. Default userAgent value is based on the browser.
-     * Also we can set our own userAgent.
-     */
-    static set userAgent(uA) {
-        Browser.uA = uA;
-        window.browserDetails = {};
-    }
-    static get userAgent() {
-        return Browser.uA;
-    }
-    //Read Only Properties
-    /**
-     * Property is to get the browser information like Name, Version and Language
-     * @returns BrowserInfo
-     */
-    static get info() {
-        if (isUndefined(window.browserDetails.info)) {
-            return window.browserDetails.info = Browser.extractBrowserDetail();
-        }
-        return window.browserDetails.info;
-    }
-    /**
-     * Property is to get whether the userAgent is based IE.
-     */
-    static get isIE() {
-        return Browser.getValue('isIE', REGX_IE);
-    }
-    /**
-     * Property is to get whether the browser has touch support.
-     */
-    static get isTouch() {
-        if (isUndefined(window.browserDetails.isTouch)) {
-            return (window.browserDetails.isTouch =
-                ('ontouchstart' in window.navigator) ||
-                    (window &&
-                        window.navigator &&
-                        (window.navigator.maxTouchPoints > 0)) || ('ontouchstart' in window));
-        }
-        return window.browserDetails.isTouch;
-    }
-    /**
-     * Property is to get whether the browser has Pointer support.
-     */
-    static get isPointer() {
-        if (isUndefined(window.browserDetails.isPointer)) {
-            return window.browserDetails.isPointer = ('pointerEnabled' in window.navigator);
-        }
-        return window.browserDetails.isPointer;
-    }
-    /**
-     * Property is to get whether the browser has MSPointer support.
-     */
-    static get isMSPointer() {
-        if (isUndefined(window.browserDetails.isMSPointer)) {
-            return window.browserDetails.isMSPointer = ('msPointerEnabled' in window.navigator);
-        }
-        return window.browserDetails.isMSPointer;
-    }
-    /**
-     * Property is to get whether the userAgent is device based.
-     */
-    static get isDevice() {
-        return Browser.getValue('isDevice', REGX_MOBILE);
-    }
-    /**
-     * Property is to get whether the userAgent is IOS.
-     */
-    static get isIos() {
-        return Browser.getValue('isIos', REGX_IOS);
-    }
-    /**
-     * Property is to get whether the userAgent is Ios7.
-     */
-    static get isIos7() {
-        return Browser.getValue('isIos7', REGX_IOS7);
-    }
-    /**
-     * Property is to get whether the userAgent is Android.
-     */
-    static get isAndroid() {
-        return Browser.getValue('isAndroid', REGX_ANDROID);
-    }
-    /**
-     * Property is to identify whether application ran in web view.
-     */
-    static get isWebView() {
-        if (isUndefined(window.browserDetails.isWebView)) {
-            window.browserDetails.isWebView = !(isUndefined(window.cordova) && isUndefined(window.PhoneGap)
-                && isUndefined(window.phonegap) && window.forge !== 'object');
-            return window.browserDetails.isWebView;
-        }
-        return window.browserDetails.isWebView;
-    }
-    /**
-     * Property is to get whether the userAgent is Windows.
-     */
-    static get isWindows() {
-        return Browser.getValue('isWindows', REGX_WINDOWS);
-    }
-    /**
-     * Property is to get the touch start event. It returns event name based on browser.
-     */
-    static get touchStartEvent() {
-        if (isUndefined(window.browserDetails.touchStartEvent)) {
-            return window.browserDetails.touchStartEvent = Browser.getTouchStartEvent();
-        }
-        return window.browserDetails.touchStartEvent;
-    }
-    /**
-     * Property is to get the touch move event. It returns event name based on browser.
-     */
-    static get touchMoveEvent() {
-        if (isUndefined(window.browserDetails.touchMoveEvent)) {
-            return window.browserDetails.touchMoveEvent = Browser.getTouchMoveEvent();
-        }
-        return window.browserDetails.touchMoveEvent;
-    }
-    /**
-     * Property is to get the touch end event. It returns event name based on browser.
-     */
-    static get touchEndEvent() {
-        if (isUndefined(window.browserDetails.touchEndEvent)) {
-            return window.browserDetails.touchEndEvent = Browser.getTouchEndEvent();
-        }
-        return window.browserDetails.touchEndEvent;
-    }
-    /**
-     * Property is to cancel the touch end event.
-     */
-    static get touchCancelEvent() {
-        if (isUndefined(window.browserDetails.touchCancelEvent)) {
-            return window.browserDetails.touchCancelEvent = Browser.getTouchCancelEvent();
-        }
-        return window.browserDetails.touchCancelEvent;
-    }
-}
-/* istanbul ignore next */
-Browser.uA = typeof navigator !== 'undefined' ? navigator.userAgent : '';
 
 /**
  * Returns the Class Object

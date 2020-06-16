@@ -240,7 +240,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * The `cssClass` property is used to add a user-preferred class name in the root element of the ListView, 
      *  using which we can customize the component (both CSS and functionality customization)
-     *      
+     *   
+     * {% codeBlock src='listview/cssClass/index.md' %}{% endcodeBlock %}   
      * 
      * @default ''
      */
@@ -250,6 +251,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * If `enableVirtualization` set to true, which will increase the ListView performance, while loading a large amount of data.
      *
+     * {% codeBlock src='listview/enableVirtualization/index.md' %}{% endcodeBlock %}
+     * 
      * @default false
      */
     @Property(false)
@@ -259,6 +262,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      * The `htmlAttributes` allows additional attributes such as id, class, etc., and 
      *  accepts n number of attributes in a key-value pair format.
      *      
+     * {% codeBlock src='listview/htmlAttributes/index.md' %}{% endcodeBlock %}
+     * 
      * @default {}
      */
     @Property({})
@@ -268,6 +273,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      * If `enable` set to true, the list items are enabled. 
      * And, we can disable the component using this property by setting its value as false.
      *      
+     * {% codeBlock src='listview/enable/index.md' %}{% endcodeBlock %}
+     * 
      * @default true
      */
     @Property(true)
@@ -275,7 +282,10 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * The `dataSource` provides the data to render the ListView component which is mapped with the fields of ListView.
-     * @isGenericType true     
+     * @isGenericType true
+     * 
+     * {% codeBlock src='listview/dataSource/index.md' %}{% endcodeBlock %}
+     *      
      * @default []
      */
     @Property([])
@@ -284,6 +294,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * The `query` is used to fetch the specific data from dataSource by using where and select keywords.
      *     
+     * {% codeBlock src='listview/query/index.md' %}{% endcodeBlock %}
+     * 
      * @default null
      * @blazorType Data.Query
      */
@@ -294,6 +306,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      * The `fields` is used to map keys from the dataSource which extracts the appropriate data from the dataSource
      *  with specified mapped with the column fields to render the ListView.
      *     
+     * {% codeBlock src='listview/fields/index.md' %}{% endcodeBlock %}
+     * 
      * @default ListBase.defaultMappedFields
      */
     @Complex<FieldSettingsModel>(ListBase.defaultMappedFields, FieldSettings)
@@ -302,6 +316,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * The `animation` property provides an option to apply the different 
      *  animations on the ListView component.
+     * 
+     * {% codeBlock src='listview/animation/index.md' %}{% endcodeBlock %}
      *      
      * @default { effect: 'SlideLeft', duration: 400, easing: 'ease' }
      */
@@ -314,6 +330,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      * * `Ascending` - The data source is sorting with ascending order.
      * * `Descending` - The data source is sorting with descending order.
      *     
+     * {% codeBlock src='listview/sortOrder/index.md' %}{% endcodeBlock %}
+     * 
      * @default 'None'
      */
     @Property<SortOrder>('None')
@@ -322,6 +340,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * If `showIcon` set to true, which will show or hide the icon of the list item.
      *     
+     * {% codeBlock src='listview/showIcon/index.md' %}{% endcodeBlock %}
+     * 
      * @default false
      */
     @Property<boolean>(false)
@@ -329,6 +349,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * If `showCheckBox` set to true, which will show or hide the checkbox.
+     * 
+     * {% codeBlock src='listview/showCheckBox/index.md' %}{% endcodeBlock %}
      *     
      * @default false
      */
@@ -339,6 +361,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      * The `checkBoxPosition` is used to set the position of check box in a list item.
      * By default, the `checkBoxPosition` is Left, which will appear before the text content in a list item.
      *      
+     * {% codeBlock src='listview/checkBoxPosition/index.md' %}{% endcodeBlock %}
+     * 
      * @default 'Left'
      */
     @Property<string>('Left')
@@ -346,7 +370,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * The `headerTitle` is used to set the title of the ListView component.
-     *     
+     *  
+     * {% codeBlock src='listview/headerTitle/index.md' %}{% endcodeBlock %}
+     *    
      * @default ""
      */
     @Property<string>('')
@@ -355,6 +381,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * If `showHeader` set to true, which will show or hide the header of the ListView component.
      *     
+     * {% codeBlock src='listview/showHeader/index.md' %}{% endcodeBlock %}
+     * 
      * @default false
      */
     @Property<boolean>(false)
@@ -363,6 +391,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * If `enableHtmlSanitizer` set to true, allows the cross-scripting site.
      *      
+     * {% codeBlock src='listview/enableHtmlSanitizer/index.md' %}{% endcodeBlock %}
+     * 
      * @default false
      */
     @Property(false)
@@ -371,6 +401,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Defines the height of the ListView component which accepts both string and number values.
      *      
+     * {% codeBlock src='listview/height/index.md' %}{% endcodeBlock %}
+     * 
      * @default ''
      */
     @Property('')
@@ -379,6 +411,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Defines the width of the ListView component which accepts both string and number values.
      *      
+     * {% codeBlock src='listview/width/index.md' %}{% endcodeBlock %}
+     * 
      * @default ''
      */
     @Property('')
@@ -387,6 +421,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * The ListView component supports to customize the content of each list items with the help of `template` property.
      *     
+     * {% codeBlock src='listview/template/index.md' %}{% endcodeBlock %}
+     * 
      * @default null
      * @deprecated
      */
@@ -396,6 +432,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * The ListView has an option to custom design the ListView header title with the help of `headerTemplate` property.
      *     
+     * {% codeBlock src="listview/headerTemplate/index.md" %}{% endcodeBlock %}
+     * 
      * @default null
      * @deprecated
      */
@@ -405,6 +443,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * The ListView has an option to custom design the group header title with the help of `groupTemplate` property.
      *     
+     * {% codeBlock src="listview/groupTemplate/index.md" %}{% endcodeBlock %}
+     * 
      * @default null
      * @deprecated
      */

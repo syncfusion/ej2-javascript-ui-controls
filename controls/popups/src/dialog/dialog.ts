@@ -852,6 +852,11 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                 if (!isNullOrUndefined(this.btnObj)) {
                     buttonObj = this.btnObj[this.btnObj.length - 1];
                 }
+                if ((isNullOrUndefined(this.btnObj)) && (!isNullOrUndefined(this.ftrTemplateContent))) {
+                    let value: string = 'input,select,textarea,button,a,[contenteditable="true"],[tabindex]';
+                    let items: NodeListOf<HTMLElement> = this.ftrTemplateContent.querySelectorAll(value);
+                    buttonObj = { element: items[items.length - 1] as HTMLElement } as Button;
+               }
                 if (!isNullOrUndefined(buttonObj) && document.activeElement === buttonObj.element && !event.shiftKey) {
                     event.preventDefault();
                     this.focusableElements(this.element).focus();

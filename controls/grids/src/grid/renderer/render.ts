@@ -136,7 +136,7 @@ export class Render {
                 gObj.notify(events.cancelBegin, args);
                 return;
             }
-            if (gObj.editSettings.mode === 'Normal' && gObj.isEdit) {
+            if (gObj.editSettings.mode === 'Normal' && gObj.isEdit && e.requestType !== 'infiniteScroll') {
                 gObj.notify('closeinline', {});
             }
             if (args.requestType === 'delete' as Action && gObj.allowPaging) {
@@ -431,11 +431,14 @@ export class Render {
     }
 
     /** @hidden */
+    // tslint:disable-next-line:max-func-body-length
     public dataManagerSuccess(e: ReturnType, args?: NotifyArgs): void {
         let gObj: IGrid = this.parent;
         this.contentRenderer = <ContentRender>this.renderer.getRenderer(RenderType.Content);
         this.headerRenderer = <HeaderRender>this.renderer.getRenderer(RenderType.Header);
         (<{ actionArgs?: NotifyArgs }>e).actionArgs = args;
+        let isInfiniteDelete: boolean = this.parent.enableInfiniteScrolling && !this.parent.infiniteScrollSettings.enableCache
+            && (args.requestType === 'delete' || (args.requestType === 'save' && this.parent.infiniteScrollModule.requestType === 'add'));
         gObj.trigger(events.beforeDataBound, e, (dataArgs: ReturnType) => {
             if ((<{ cancel?: boolean }>dataArgs).cancel) {
                 return;
@@ -501,7 +504,11 @@ export class Render {
                     let content: string = 'content';
                     args.scrollTop = { top: this.contentRenderer[content].scrollTop };
                 }
-                this.contentRenderer.refreshContentRows(args);
+                if (!isInfiniteDelete) {
+                    this.contentRenderer.refreshContentRows(args);
+                } else {
+                    this.parent.notify(events.infiniteEditHandler, { e: args, result: e.result, count: e.count, agg: e.aggregates });
+                }
             } else {
                 if (!gObj.getColumns().length) {
                     gObj.element.innerHTML = '';

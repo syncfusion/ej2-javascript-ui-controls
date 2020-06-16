@@ -1008,7 +1008,7 @@ export class Drawing {
         options.stroke = borderColor;
         // tslint:disable-next-line:max-line-length
         options.strokeWidth = annotationSelector.selectionBorderThickness === 1 ? 1 : annotationSelector.selectionBorderThickness;
-        let lineDash: number[] = annotationSelector.selectorLineDashArray.length === 0 ? [6, 3] : annotationSelector.selectorLineDashArray;
+        let lineDash: number[] = isNullOrUndefined(annotationSelector.selectorLineDashArray) || annotationSelector.selectorLineDashArray.length === 0 ? [6, 3] : annotationSelector.selectorLineDashArray;
         if (lineDash.length > 2) {
             lineDash = [lineDash[0], lineDash[1]];
         }

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.57 (2020-06-16)
+
+### Sidebar
+
+#### Bug Fixes
+
+- `#272991` - The issue with "Unable to use the same target for more than one Sidebar component" has been resolved.
+
 ## 18.1.55 (2020-06-02)
 
 ### Menu
@@ -35,12 +43,6 @@
 #### Bug Fixes
 
 - `#276986` - Now, the previous state will be restored in the TreeView when the CRUD operation is failed at the server side.
-
-### Sidebar
-
-#### Bug Fixes
-
-- `#272991` - The issue with "Unable to use the same target for more than one Sidebar component" has been resolved.
 
 ## 18.1.54 (2020-05-26)
 

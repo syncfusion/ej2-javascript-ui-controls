@@ -13536,6 +13536,7 @@ let Sidebar = class Sidebar extends Component {
             (removeClass([this.element], RTL$2));
     }
     setTarget() {
+        this.targetEle = this.element.nextElementSibling;
         this.sidebarEleCopy = this.element.cloneNode(true);
         if (typeof (this.target) === 'string') {
             this.setProperties({ target: document.querySelector(this.target) }, true);
@@ -13544,7 +13545,18 @@ let Sidebar = class Sidebar extends Component {
             this.target.insertBefore(this.element, this.target.children[0]);
             addClass([this.element], SIDEBARABSOLUTE);
             addClass([this.target], CONTEXT);
+            this.targetEle = this.getTargetElement();
         }
+    }
+    getTargetElement() {
+        let siblingElement = this.element.nextElementSibling;
+        while (!isNullOrUndefined(siblingElement)) {
+            if (!siblingElement.classList.contains(ROOT$1)) {
+                break;
+            }
+            siblingElement = siblingElement.nextElementSibling;
+        }
+        return siblingElement;
     }
     setCloseOnDocumentClick() {
         if (this.closeOnDocumentClick) {
@@ -13582,9 +13594,8 @@ let Sidebar = class Sidebar extends Component {
     }
     addClass() {
         let classELement = document.querySelector('.e-main-content');
-        if (!isNullOrUndefined((classELement ||
-            this.element.nextElementSibling))) {
-            addClass([classELement || this.element.nextElementSibling], [MAINCONTENTANIMATION]);
+        if (!isNullOrUndefined(classELement || this.targetEle)) {
+            addClass([classELement || this.targetEle], [MAINCONTENTANIMATION]);
         }
         this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
         if (!this.isBlazor) {
@@ -13624,8 +13635,7 @@ let Sidebar = class Sidebar extends Component {
         EventHandler.remove(this.element, 'transitionend', this.transitionEnd);
     }
     destroyBackDrop() {
-        let sibling = document.querySelector('.e-main-content') ||
-            this.element.nextElementSibling;
+        let sibling = document.querySelector('.e-main-content') || this.targetEle;
         if (this.target && this.showBackdrop && sibling) {
             removeClass([sibling], CONTEXTBACKDROP);
         }
@@ -13663,8 +13673,7 @@ let Sidebar = class Sidebar extends Component {
                 this.enableDock ? setStyleAttribute(this.element, { 'width': formatUnit(this.dockSize) }) :
                     setStyleAttribute(this.element, { 'width': formatUnit(this.width) });
                 this.setType(this.type);
-                let sibling = document.querySelector('.e-main-content') ||
-                    this.element.nextElementSibling;
+                let sibling = document.querySelector('.e-main-content') || this.targetEle;
                 if (!this.enableDock && sibling) {
                     sibling.style.transform = 'translateX(' + 0 + 'px)';
                     this.position === 'Left' ? sibling.style.marginLeft = '0px' : sibling.style.marginRight = '0px';
@@ -13683,8 +13692,7 @@ let Sidebar = class Sidebar extends Component {
         });
     }
     setTimeOut() {
-        let sibling = document.querySelector('.e-main-content') ||
-            this.element.nextElementSibling;
+        let sibling = document.querySelector('.e-main-content') || this.targetEle;
         if (this.element.classList.contains(OPEN) && sibling) {
             if (this.position === 'Left') {
                 this.width === 'auto' ? sibling.style.marginLeft = this.setDimension(this.element.getBoundingClientRect().width)
@@ -13771,8 +13779,7 @@ let Sidebar = class Sidebar extends Component {
     }
     createBackDrop() {
         if (this.target && this.showBackdrop && this.getState()) {
-            let sibling = document.querySelector('.e-main-content') ||
-                this.element.nextElementSibling;
+            let sibling = document.querySelector('.e-main-content') || this.targetEle;
             addClass([sibling], CONTEXTBACKDROP);
         }
         else if (this.showBackdrop && !this.modal && this.getState()) {
@@ -13887,8 +13894,7 @@ let Sidebar = class Sidebar extends Component {
      * @private
      */
     onPropertyChanged(newProp, oldProp) {
-        let sibling = document.querySelector('.e-main-content') ||
-            this.element.nextElementSibling;
+        let sibling = document.querySelector('.e-main-content') || this.targetEle;
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'isOpen':
@@ -13948,12 +13954,10 @@ let Sidebar = class Sidebar extends Component {
                         setStyleAttribute(sibling, { 'margin-left': 0, 'margin-right': 0 });
                         document.body.insertAdjacentElement('afterbegin', this.element);
                     }
-                    else {
-                        let isRendered = this.isServerRendered;
-                        this.isServerRendered = false;
-                        super.refresh();
-                        this.isServerRendered = isRendered;
-                    }
+                    let isRendered = this.isServerRendered;
+                    this.isServerRendered = false;
+                    super.refresh();
+                    this.isServerRendered = isRendered;
                     break;
                 case 'closeOnDocumentClick':
                     this.setCloseOnDocumentClick();
@@ -13981,8 +13985,7 @@ let Sidebar = class Sidebar extends Component {
     setType(type) {
         let elementWidth = this.element.getBoundingClientRect().width;
         this.setZindex();
-        let sibling = document.querySelector('.e-main-content') ||
-            this.element.nextElementSibling;
+        let sibling = document.querySelector('.e-main-content') || this.targetEle;
         if (sibling) {
             sibling.style.transform = 'translateX(' + 0 + 'px)';
             if (!Browser.isDevice && this.type !== 'Auto') {
@@ -14051,8 +14054,7 @@ let Sidebar = class Sidebar extends Component {
         this.windowWidth = null;
         (!isNullOrUndefined(this.sidebarEleCopy.getAttribute('tabindex'))) ?
             this.element.setAttribute('tabindex', this.tabIndex) : this.element.removeAttribute('tabindex');
-        let sibling = document.querySelector('.e-main-content')
-            || this.element.nextElementSibling;
+        let sibling = document.querySelector('.e-main-content') || this.targetEle;
         if (!isNullOrUndefined(sibling)) {
             sibling.style.margin = '';
             sibling.style.transform = '';

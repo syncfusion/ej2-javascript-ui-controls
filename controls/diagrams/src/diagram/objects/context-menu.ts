@@ -296,7 +296,7 @@ export class DiagramContextMenu {
             this.hiddenItems = [];
         }
         /* tslint:disable */
-        if (this.parent.selectedItems && (this.parent.selectedItems.nodes[0] as any).isPhase) {
+        if (this.parent.selectedItems.nodes.length && (this.parent.selectedItems.nodes[0] as any).isPhase) {
             args.cancel = true;
         }
         /* tslint:enable */

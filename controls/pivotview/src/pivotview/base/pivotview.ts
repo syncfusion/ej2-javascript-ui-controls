@@ -488,6 +488,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     public numberFormattingModule: NumberFormatting;
     /** @hidden */
     public groupingModule: Grouping;
+    /** @hidden */
+    public notEmpty: boolean;
 
     private defaultLocale: Object;
     /* tslint:disable-next-line:no-any */
@@ -2623,7 +2625,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             if (isBlazor() && !this.isInitialRendering) {
                 this.isModified = false;
                 this.isInitialRendering = !this.isInitialRendering;
-                
+
             }
             this.toolbarModule.action = '';
         }
@@ -3163,6 +3165,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             this.trigger(events.dataBound);
         } else {
             this.isEmptyGrid = false;
+            this.notEmpty = true;
         }
         if (this.grid) {
             let engine: PivotEngine | OlapEngine = this.dataType === 'pivot' ? this.engineModule : this.olapEngineModule;
@@ -4061,9 +4064,11 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
 
     private renderEmptyGrid(): void {
         this.isEmptyGrid = true;
+        this.notEmpty = false;
         this.renderModule = new Render(this);
         if (this.grid && this.grid.element && this.element.querySelector('.e-grid')) {
             /* tslint:disable */
+            this.notEmpty = true;
             this.grid.setProperties({
                 columns: this.renderModule.frameEmptyColumns(),
                 dataSource: this.renderModule.frameEmptyData()
@@ -4169,6 +4174,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     this$.pivotValues = this$.engineModule.pivotValues;
                 }
                 this$.notify(events.dataReady, {});
+                this$.notEmpty = true;
             });
         } else {
             let pivot: PivotView = control ? control : this;

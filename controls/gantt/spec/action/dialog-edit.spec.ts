@@ -460,7 +460,7 @@ describe('Gantt dialog module', () => {
         it('Dependency tab editing', () => {
             ganttObj.actionComplete = (args: any): void => {
                 if (args.requestType === 'save') {
-                    expect(ganttObj.currentViewData[3].ganttProperties.predecessorsName).toBe("2FS");
+                    expect(ganttObj.currentViewData[3].ganttProperties.predecessorsName).toBe("3FS");
                 }
             };
             let row: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'DependencyTabContainer_content_table > tbody > tr > td:nth-child(2)') as HTMLElement;

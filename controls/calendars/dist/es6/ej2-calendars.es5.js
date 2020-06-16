@@ -726,6 +726,8 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
             var argument = this.renderDayCellArgs;
             this.renderDayCellEvent(argument);
             if (argument.isDisabled) {
+                var selectDate = new Date(this.checkValue(value));
+                var argsDate = new Date(this.checkValue(argument.date));
                 if (multiSelection) {
                     if (!isNullOrUndefined(values) && values.length > 0) {
                         for (var index = 0; index < values.length; index++) {
@@ -738,7 +740,7 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
                         }
                     }
                 }
-                else if (value && +value === +argument.date) {
+                else if (selectDate && +selectDate === +argsDate) {
                     this.setProperties({ value: null }, true);
                 }
             }

@@ -117,7 +117,7 @@ describe('InPlace-Editor Control', () => {
             expect(editorObj.enableEditMode).toEqual(true);
             expect(editorObj.submitOnEnter).toEqual(false);
             expect(editorObj.popupSettings.title).toEqual('Test');
-            expect(editorObj.model).toEqual({ cssClass: "e-editable-elements", enableRtl: true, value: 'MyText', showClearButton: true });
+            expect(editorObj.model).toEqual({ cssClass: "e-editable-elements", enableRtl: true, locale: "en-US", value: 'MyText', showClearButton: true });
             expect(editorObj.saveButton).toEqual({ iconCss: 'e-icons e-save-icon' });
             expect(editorObj.cancelButton).toEqual({ iconCss: 'e-icons e-reset-icon' });
             expect(editorObj.validationRules).toEqual({ Game: { required: true } });       

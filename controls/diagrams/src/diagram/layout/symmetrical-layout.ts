@@ -738,7 +738,9 @@ interface SizeF {
 
 
 
-
+ /**
+  * @deprecated
+  */
 export interface ITreeInfo extends INode, IConnector {
     graphType?: GraphObjectType;
     parents?: IGraphObject[];
@@ -755,7 +757,9 @@ export interface ITreeInfo extends INode, IConnector {
     Bounds?: Rect;
 }
 
-
+/**
+ * @deprecated
+ */
 export interface IGraphObject extends INode, IConnector {
     treeInfo?: ITreeInfo;
 }

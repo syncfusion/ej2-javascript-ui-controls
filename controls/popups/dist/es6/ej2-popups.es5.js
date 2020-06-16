@@ -652,10 +652,10 @@ var Popup = /** @__PURE__ @class */ (function (_super) {
         else {
             var win = window;
             var windowView = {
-                top: win.scrollY,
-                left: win.scrollX,
-                right: win.scrollX + win.outerWidth,
-                bottom: win.scrollY + win.outerHeight
+                top: win.pageYOffset,
+                left: win.pageXOffset,
+                right: win.pageXOffset + win.outerWidth,
+                bottom: win.pageYOffset + win.outerHeight
             };
             var off = calculatePosition(relateToElement);
             var ele = {
@@ -1829,6 +1829,11 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
                 var buttonObj = void 0;
                 if (!isNullOrUndefined(this.btnObj)) {
                     buttonObj = this.btnObj[this.btnObj.length - 1];
+                }
+                if ((isNullOrUndefined(this.btnObj)) && (!isNullOrUndefined(this.ftrTemplateContent))) {
+                    var value = 'input,select,textarea,button,a,[contenteditable="true"],[tabindex]';
+                    var items = this.ftrTemplateContent.querySelectorAll(value);
+                    buttonObj = { element: items[items.length - 1] };
                 }
                 if (!isNullOrUndefined(buttonObj) && document.activeElement === buttonObj.element && !event.shiftKey) {
                     event.preventDefault();

@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 18.1.56 (2020-06-09)
+## 18.1.57 (2020-06-16)
+
+### ProgressBar
+
+#### Bug Fixes
+
+- Dynamic value update in circular progressValue and annotation not render has been fixed.
+
+## 18.1.55 (2020-06-02)
 
 ### ProgressBar
 

@@ -1715,7 +1715,7 @@ export class Gantt extends Component<HTMLElement>
         this.treeGridModule.renderTreeGrid();
     }
     private updateCurrentViewData(): void {
-        if (isBlazor()) {
+        if (isBlazor() && this.flatData.length !== 0) {
             let records: IGanttData[] = this.treeGrid.getCurrentViewRecords().slice();
             this.currentViewData = [];
             for (let i: number = 0; i < records.length; i++) {

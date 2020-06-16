@@ -1,4 +1,4 @@
-import { OneDimension } from '../one-dimension';
+    import { OneDimension } from '../one-dimension';
 
 /**
  * EAN13 class is  used to calculate the barcode of type EAN13 barcode
@@ -10,8 +10,9 @@ export class Ean13 extends OneDimension {
      * Validate the given input to check whether the input is valid one or not
      */
     /** @private */
-     public validateInput(value: string): string {
-        if (value.search(/^[0-9]{13}$/) !== -1 && Number(value[12]) === this.checkSumData(value)) {
+    public validateInput(value: string): string {
+        let checkSumValue: number = this.checksumValue(value);
+        if (value.search(/^[0-9]{13}$/) !== -1 && (Number(value[12]) === this.checkSumData(value) || Number(value[12]) === checkSumValue)) {
             return undefined;
         } else if (value.search(/^[0-9]{12}$/) !== -1) {
             value += this.checkSumData(value);
@@ -21,7 +22,14 @@ export class Ean13 extends OneDimension {
             return 'Accepts 12 numeric characters.';
         }
     }
-
+    private checksumValue(number: string): number {
+        let res: number = number
+            .substr(0, 12)
+            .split('')
+            .map((n: string) => +n)
+            .reduce((sum: number, a: number, idx: number) => (idx % 2 ? sum + a * 3 : sum + a), 0);
+        return (10 - (res % 10)) % 10;
+    }
 
     private checkSumData(value: string): number {
         let sum1: number = 3 * (Number(value[11]) + Number(value[9]) + Number(value[7])
@@ -32,6 +40,7 @@ export class Ean13 extends OneDimension {
         let roundOffValue: number = Math.round(checkSumValue / 10) * 10;
         return roundOffValue - checkSumValue;
     }
+
 
     private getStructure(): object {
         return {

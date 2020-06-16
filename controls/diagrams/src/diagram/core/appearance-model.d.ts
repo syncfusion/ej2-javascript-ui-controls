@@ -449,6 +449,7 @@ export interface DiagramShapeStyleModel {
      * Defines the gradient of a shape/path
      * @default null
      * @aspType object
+     * @blazorType DiagramGradient
      */
     gradient?: GradientModel | LinearGradientModel | RadialGradientModel;
 

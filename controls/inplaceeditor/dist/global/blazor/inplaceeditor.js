@@ -576,7 +576,7 @@ var InPlaceEditor = /** @class */ (function (_super) {
         else {
             classProp = ELEMENTS;
         }
-        sf.base.extend(this.model, this.model, { cssClass: classProp, enableRtl: this.enableRtl });
+        sf.base.extend(this.model, this.model, { cssClass: classProp, enableRtl: this.enableRtl, locale: this.locale });
         if (!sf.base.isNullOrUndefined(this.value)) {
             this.updateModelValue();
         }
@@ -584,7 +584,7 @@ var InPlaceEditor = /** @class */ (function (_super) {
             this.notify(render, { module: modulesList[this.type], target: ele, type: this.type });
         }
         else {
-            if (sf.base.isNullOrUndefined(this.model.showClearButton)) {
+            if (sf.base.isNullOrUndefined(this.model.showClearButton) && !sf.base.isBlazor()) {
                 this.model.showClearButton = true;
             }
             switch (this.type) {

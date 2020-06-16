@@ -3590,7 +3590,7 @@ var DropDownList = /** @class */ (function (_super) {
             this.clearAll(null, props);
         }
         if (!(!sf.base.isNullOrUndefined(props) && (sf.base.isNullOrUndefined(props.dataSource)
-            || (!(props.dataSource instanceof sf.data.DataManager) && props.dataSource.length === 0)))) {
+            || (!(props.dataSource instanceof sf.data.DataManager) && props.dataSource.length === 0))) || !(props.dataSource === [])) {
             this.resetList(this.dataSource);
         }
         if (!this.isCustomFilter && !this.isFilterFocus && document.activeElement !== this.filterInput) {
@@ -10082,11 +10082,11 @@ var MultiSelect = /** @class */ (function (_super) {
                             }
                         }
                     });
-                    _this.popupObj.close();
-                    _this.popupWrapper.style.visibility = '';
                     if (_this.mode === 'CheckBox' && sf.base.Browser.isDevice && _this.allowFiltering) {
                         _this.notify('deviceSearchBox', { module: 'CheckBoxSelection', enable: _this.mode === 'CheckBox' });
                     }
+                    _this.popupObj.close();
+                    _this.popupWrapper.style.visibility = '';
                 }
             });
         }
@@ -11472,7 +11472,13 @@ var MultiSelect = /** @class */ (function (_super) {
         if (!this.ulElement) {
             this.beforePopupOpen = true;
             _super.prototype.render.call(this);
+            if (this.mode === 'CheckBox' && sf.base.Browser.isDevice && this.allowFiltering) {
+                this.notify('popupFullScreen', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox' });
+            }
             return;
+        }
+        if (this.mode === 'CheckBox' && sf.base.Browser.isDevice && this.allowFiltering) {
+            this.notify('popupFullScreen', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox' });
         }
         var mainLiLength = this.ulElement.querySelectorAll('li.' + 'e-list-item').length;
         var liLength = this.ulElement.querySelectorAll('li.'
@@ -11973,6 +11979,7 @@ var CheckBoxSelection = /** @class */ (function () {
         this.parent.on('filterBarPlaceholder', this.setPlaceholder, this);
         sf.base.EventHandler.add(document, 'mousedown', this.onDocumentClick, this);
         this.parent.on('addItem', this.checboxCreate, this);
+        this.parent.on('popupFullScreen', this.setPopupFullScreen, this);
     };
     CheckBoxSelection.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -11993,6 +12000,7 @@ var CheckBoxSelection = /** @class */ (function () {
         this.parent.off('filterBarPlaceholder', this.setPlaceholder);
         this.parent.off('addItem', this.checboxCreate);
         sf.base.EventHandler.remove(document, 'mousedown', this.onDocumentClick);
+        this.parent.off('popupFullScreen', this.setPopupFullScreen);
     };
     CheckBoxSelection.prototype.listOption = function (args) {
         var _this = this;
@@ -12241,8 +12249,6 @@ var CheckBoxSelection = /** @class */ (function () {
         this.parent.popupObj.element.classList.add(mobileFilter);
         this.parent.popupObj.position = { X: 0, Y: 0 };
         this.parent.popupObj.dataBind();
-        sf.base.attributes(this.parent.popupObj.element, { style: 'left:0px;right:0px;top:0px;bottom:0px;' });
-        sf.base.addClass([document.body, this.parent.popupObj.element], popupFullScreen);
         this.setSearchBoxPosition();
         this.backIconElement = this.filterInputObj.container.querySelector('.e-back-icon');
         this.clearIconElement = this.filterInputObj.container.querySelector('.' + clearIcon);
@@ -12252,13 +12258,23 @@ var CheckBoxSelection = /** @class */ (function () {
     };
     CheckBoxSelection.prototype.setSearchBoxPosition = function () {
         var searchBoxHeight = this.filterInput.parentElement.getBoundingClientRect().height;
+        var selectAllHeight = 0;
+        if (this.checkAllParent) {
+            selectAllHeight = this.checkAllParent.getBoundingClientRect().height;
+        }
         this.parent.popupObj.element.style.maxHeight = '100%';
         this.parent.popupObj.element.style.width = '100%';
-        this.parent.list.style.maxHeight = (window.innerHeight - searchBoxHeight) + 'px';
-        this.parent.list.style.height = (window.innerHeight - searchBoxHeight) + 'px';
+        this.parent.list.style.maxHeight = (window.innerHeight - searchBoxHeight - selectAllHeight) + 'px';
+        this.parent.list.style.height = (window.innerHeight - searchBoxHeight - selectAllHeight) + 'px';
         var clearElement = this.filterInput.parentElement.querySelector('.' + clearIcon);
         sf.base.detach(this.filterInput);
         clearElement.parentElement.insertBefore(this.filterInput, clearElement);
+    };
+    CheckBoxSelection.prototype.setPopupFullScreen = function () {
+        sf.base.attributes(this.parent.popupObj.element, { style: 'left:0px;right:0px;top:0px;bottom:0px;' });
+        sf.base.addClass([document.body, this.parent.popupObj.element], popupFullScreen);
+        this.parent.popupObj.element.style.maxHeight = '100%';
+        this.parent.popupObj.element.style.width = '100%';
     };
     CheckBoxSelection.prototype.targetElement = function () {
         if (!sf.base.isNullOrUndefined(this.clearIconElement)) {

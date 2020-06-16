@@ -150,8 +150,12 @@ export class ExcelExport {
             if (!(exportProperties.dataSource instanceof DataManager)) {
                 exportProperties.dataSource = new DataManager(exportProperties.dataSource);
             }
+            let query: Query = exportProperties.query ? exportProperties.query : new Query();
+            if (isNullOrUndefined(query.isCountRequired) || gObj.aggregates) {
+                query.isCountRequired = true;
+            }
             return new Promise((resolve: Function, reject: Function) => {
-                let dataManager: Promise<Object> = (exportProperties.dataSource as DataManager).executeQuery(new Query());
+                let dataManager: Promise<Object> = (exportProperties.dataSource as DataManager).executeQuery(query);
                 dataManager.then((r: ReturnType) => {
                     this.init(gObj);
                     this.processInnerRecords(gObj, exportProperties, isMultipleExport, workbook, r).then(() => {

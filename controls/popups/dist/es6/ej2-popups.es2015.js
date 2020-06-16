@@ -625,10 +625,10 @@ let Popup = class Popup extends Component {
         else {
             let win = window;
             let windowView = {
-                top: win.scrollY,
-                left: win.scrollX,
-                right: win.scrollX + win.outerWidth,
-                bottom: win.scrollY + win.outerHeight
+                top: win.pageYOffset,
+                left: win.pageXOffset,
+                right: win.pageXOffset + win.outerWidth,
+                bottom: win.pageYOffset + win.outerHeight
             };
             let off = calculatePosition(relateToElement);
             let ele = {
@@ -1771,6 +1771,11 @@ let Dialog = class Dialog extends Component {
                 let buttonObj;
                 if (!isNullOrUndefined(this.btnObj)) {
                     buttonObj = this.btnObj[this.btnObj.length - 1];
+                }
+                if ((isNullOrUndefined(this.btnObj)) && (!isNullOrUndefined(this.ftrTemplateContent))) {
+                    let value = 'input,select,textarea,button,a,[contenteditable="true"],[tabindex]';
+                    let items = this.ftrTemplateContent.querySelectorAll(value);
+                    buttonObj = { element: items[items.length - 1] };
                 }
                 if (!isNullOrUndefined(buttonObj) && document.activeElement === buttonObj.element && !event.shiftKey) {
                     event.preventDefault();

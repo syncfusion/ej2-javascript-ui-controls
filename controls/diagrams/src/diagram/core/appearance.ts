@@ -619,6 +619,7 @@ export class DiagramShapeStyle extends ChildProperty<DiagramShapeStyle> {
      * Defines the gradient of a shape/path
      * @default null
      * @aspType object
+     * @blazorType DiagramGradient
      */
     @ComplexFactory(getGradientType)
     public gradient: GradientModel | LinearGradientModel | RadialGradientModel;

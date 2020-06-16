@@ -1,4 +1,4 @@
-import { KeyboardEventArgs, isBlazor } from '@syncfusion/ej2-base';
+import { KeyboardEventArgs, isBlazor, removeClass, addClass } from '@syncfusion/ej2-base';
 import { closest, classList, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { IGrid } from '../base/interface';
 import { Grid } from '../base/grid';
@@ -23,6 +23,7 @@ export class DetailRow {
     //Module declarations
     private parent: IGrid;
     private focus: FocusStrategy;
+    private lastrowcell: Boolean;
     /**
      * Constructor for the Grid detail template module
      * @hidden
@@ -45,6 +46,8 @@ export class DetailRow {
     // tslint:disable-next-line:max-func-body-length
     private toogleExpandcollapse(target: Element): void {
         let gObj: IGrid = this.parent;
+        let table: Element = this.parent.getContentTable();
+        let lastrowIdx: number = this.parent.getCurrentViewRecords().length - 1;
         let parent: string = 'parentDetails';
         let isServerRendered: string = 'isServerRendered';
         let childGrid: Grid;
@@ -140,6 +143,12 @@ export class DetailRow {
             classList(target, ['e-detailrowexpand'], ['e-detailrowcollapse']);
             classList(target.firstElementChild, ['e-dtdiagonaldown', 'e-icon-gdownarrow'], ['e-dtdiagonalright', 'e-icon-grightarrow']);
             rowObj.isExpand = true;
+            if (target.classList.contains('e-lastrowcell') && this.parent.getContent().clientHeight > table.scrollHeight) {
+                removeClass(target.parentElement.querySelectorAll('td'), 'e-lastrowcell');
+                let detailrowIdx: number = table.querySelector('tbody').querySelectorAll('.e-detailrow').length - 1;
+                addClass(table.querySelector('tbody').querySelectorAll('.e-detailrow')[detailrowIdx].childNodes, ['e-lastrowcell']);
+                this.lastrowcell = true;
+            }
             this.aria.setExpand(target as HTMLElement, true);
         } else {
             if (this.isDetailRow(nextRow)) {
@@ -149,6 +158,10 @@ export class DetailRow {
             }
             classList(target, ['e-detailrowcollapse'], ['e-detailrowexpand']);
             classList(target.firstElementChild, ['e-dtdiagonalright', 'e-icon-grightarrow'], ['e-dtdiagonaldown', 'e-icon-gdownarrow']);
+            if (parseInt(tr.getAttribute('aria-rowindex'), 10) === lastrowIdx && this.lastrowcell) {
+                addClass(target.parentElement.querySelectorAll('td'), 'e-lastrowcell');
+                this.lastrowcell = false;
+            }
             rowObj.isExpand = false;
             this.aria.setExpand(target as HTMLElement, false);
         }

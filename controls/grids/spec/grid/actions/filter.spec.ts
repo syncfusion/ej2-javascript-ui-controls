@@ -2413,3 +2413,37 @@ describe('checking for operator', () => {
         gridObj = null;
     });
 });
+
+describe('Check for OdataV4 date filter', () => {
+    let gridObj: Grid;
+    let remoteData: DataManager = new DataManager({
+        url: 'https://services.odata.org/V4/Northwind/Northwind.svc/Employees',
+        adaptor: new ODataV4Adaptor
+    });
+    let actionComplete: (args: any) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: remoteData,
+                allowPaging: true,
+                pageSettings:{pageSize:6},
+                allowFiltering: true,
+                columns: [
+                    { field: 'BirthDate', type: 'date' },
+                    { field: 'FirstName' }
+                ],
+            }, done);
+    });
+    it('filterbyColumn Method checking OdataV4 records records', (done: Function) => {
+        actionComplete = () => {
+            expect(gridObj.element.querySelectorAll('.e-row').length).toBe(1);
+            done();
+        };
+        gridObj.filterModule.filterByColumn('BirthDate', 'equal', '1937/09/19')
+        gridObj.actionComplete = actionComplete;
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = actionComplete = null;
+    });
+});  

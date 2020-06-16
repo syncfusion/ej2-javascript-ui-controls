@@ -1,4 +1,4 @@
-import { Component, formatUnit, EventHandler, Event, isNullOrUndefined, closest, isBlazor } from '@syncfusion/ej2-base';import { Property, EmitType, NotifyPropertyChanges, INotifyPropertyChanged, Browser } from '@syncfusion/ej2-base';import { setStyleAttribute as setStyle, addClass, removeClass, createElement, Touch, SwipeEventArgs } from '@syncfusion/ej2-base';
+import { Component, formatUnit, EventHandler, Event, isNullOrUndefined, closest, isBlazor, Browser } from '@syncfusion/ej2-base';import { Property, EmitType, NotifyPropertyChanges, INotifyPropertyChanged, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';import { setStyleAttribute as setStyle, addClass, removeClass, createElement, Touch, SwipeEventArgs } from '@syncfusion/ej2-base';
 import {SidebarPosition,SidebarType,EventArgs,ChangeEventArgs} from "./sidebar";
 import {ComponentModel} from '@syncfusion/ej2-base';
 

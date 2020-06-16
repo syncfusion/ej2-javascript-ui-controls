@@ -709,6 +709,8 @@ let CalendarBase = class CalendarBase extends Component {
             let argument = this.renderDayCellArgs;
             this.renderDayCellEvent(argument);
             if (argument.isDisabled) {
+                let selectDate = new Date(this.checkValue(value));
+                let argsDate = new Date(this.checkValue(argument.date));
                 if (multiSelection) {
                     if (!isNullOrUndefined(values) && values.length > 0) {
                         for (let index = 0; index < values.length; index++) {
@@ -721,7 +723,7 @@ let CalendarBase = class CalendarBase extends Component {
                         }
                     }
                 }
-                else if (value && +value === +argument.date) {
+                else if (selectDate && +selectDate === +argsDate) {
                     this.setProperties({ value: null }, true);
                 }
             }

@@ -108,7 +108,11 @@ export class Selection {
         if (!isNullOrUndefined(args.foreignKeyData) && Object.keys(args.foreignKeyData).length === 0) {
             delete args.foreignKeyData;
         }
-        this.prevRowIndex = args.rowIndex;
+        if (typeof (args.rowIndex) === 'number') {
+            this.prevRowIndex = args.rowIndex;
+        } else {
+            this.prevRowIndex = args.rowIndex[0];
+        }
         if (!isNullOrUndefined(this.parent.toolbarModule)) {
             this.parent.toolbarModule.refreshToolbarItems(args);
         }

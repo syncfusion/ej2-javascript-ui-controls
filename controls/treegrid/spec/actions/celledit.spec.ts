@@ -6,12 +6,13 @@ import { Toolbar } from '../../src/treegrid/actions/toolbar';
 import { SaveEventArgs, CellEditArgs } from '@syncfusion/ej2-grids';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { Sort } from '../../src/treegrid/actions/sort';
+import { RowDD } from '../../src/treegrid/actions/rowdragdrop';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * Grid Cell Edit spec 
  */
-TreeGrid.Inject(Edit, Toolbar, Sort);
+TreeGrid.Inject(Edit, Toolbar, Sort, RowDD);
 describe('Cell Edit module', () => {
   beforeAll(() => {
     const isDef = (o: any) => o !== undefined && o !== null;
@@ -740,7 +741,81 @@ describe('EJ2-36694 - Cell Update with aggregates', () => {
     });
   });
 
+describe('checkbox retained after cell edit and cancel', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          autoCheckHierarchy:true,
+          toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+          editSettings: { allowEditing: true, mode: 'Cell', allowDeleting: true, allowAdding: true, showDeleteConfirmDialog: true, newRowPosition: 'Below' },
+          columns: [
+            { field: 'taskID', headerText: 'Task ID', width: 90, isPrimaryKey: true, textAlign: 'Right' },
+            { field: 'taskName', headerText: 'Task Name', width: 150, showCheckbox: true },
+            { field: 'duration', headerText: 'Duration', width: 80, textAlign: 'Right' },
+            { field: 'progress', headerText: 'progress', width: 80, textAlign: 'Right' }
+        ],
+        },
+        done
+      );
+    });
+    it('CheckBox rendering', () => {
+      let click: MouseEvent = new MouseEvent('dblclick', {
+        'view': window,
+        'bubbles': true,
+        'cancelable': true
+      });
+      gridObj.getCellFromIndex(2, 1).dispatchEvent(click);
+      gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = 'test2';
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_cancel' } });
+      expect(gridObj.getRows()[2].getElementsByClassName('e-treecolumn-container')[0].children[4].className).toBe('e-treecell');
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
 
+describe('checkbox not rendered  after cell edit and cancel with drag and drop', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          allowRowDragAndDrop: true,
+          autoCheckHierarchy:true,
+          toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+          editSettings: { allowEditing: true, mode: 'Cell', allowDeleting: true, allowAdding: true, showDeleteConfirmDialog: true, newRowPosition: 'Below' },
+          columns: [
+            { field: 'taskID', headerText: 'Task ID', width: 90, isPrimaryKey: true, textAlign: 'Right' },
+            { field: 'taskName', headerText: 'Task Name', width: 150, showCheckbox: true },
+            { field: 'duration', headerText: 'Duration', width: 80, textAlign: 'Right' },
+            { field: 'progress', headerText: 'progress', width: 80, textAlign: 'Right' }
+        ],
+        },
+        done
+      );
+    });
+    it('CheckBox renders', () => {
+      let click: MouseEvent = new MouseEvent('dblclick', {
+        'view': window,
+        'bubbles': true,
+        'cancelable': true
+      });
+      debugger
+      gridObj.getCellFromIndex(2, 1).dispatchEvent(click);
+      gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = 'test2';
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_cancel' } });
+      expect(gridObj.getCellFromIndex(2,0).classList.contains('e-treegridcheckbox')).toBe(false);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
   it('memory leak', () => {
     profile.sample();
     let average: any = inMB(profile.averageChange)

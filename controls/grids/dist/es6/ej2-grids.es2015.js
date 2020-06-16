@@ -759,6 +759,8 @@ const removeInfiniteRows = 'remove-infinite-rows';
 /** @hidden */
 const setInfiniteCache = 'set-infinite-cache';
 /** @hidden */
+const infiniteEditHandler = 'infinite-edit-handler';
+/** @hidden */
 const initialCollapse = 'initial-collapse';
 /** @hidden */
 const getAggregateQuery = 'get-aggregate-query';
@@ -1029,25 +1031,27 @@ class Data {
         }
         return query;
     }
-    searchQuery(query) {
+    searchQuery(query, fcolumn, isForeignKey) {
         let sSettings = this.parent.searchSettings;
         let fields = sSettings.fields.length ? sSettings.fields : this.getSearchColumnFieldNames();
         let predicateList = [];
-        let needForeignKeySearch = false;
         if (this.parent.searchSettings.key.length) {
-            needForeignKeySearch = this.parent.getForeignKeyColumns().some((col) => fields.indexOf(col.field) > -1);
-            if (needForeignKeySearch && (this.dataManager.adaptor.getModuleName &&
-                this.dataManager.adaptor.getModuleName() === 'ODataV4Adaptor')) {
+            let adaptor = !isForeignKey ? this.dataManager.adaptor : fcolumn.dataSource.adaptor;
+            if ((adaptor.getModuleName &&
+                adaptor.getModuleName() === 'ODataV4Adaptor')) {
+                fields = isForeignKey ? [fcolumn.foreignKeyValue] : fields;
                 for (let i = 0; i < fields.length; i++) {
-                    let column = this.getColumnByField(fields[i]);
-                    if (column.isForeignColumn()) {
+                    let column = isForeignKey ? fcolumn : this.getColumnByField(fields[i]);
+                    if (column.isForeignColumn() && !isForeignKey) {
                         predicateList = this.fGeneratePredicate(column, predicateList);
                     }
                     else {
-                        predicateList.push(new Predicate(column.field, sSettings.operator, sSettings.key, sSettings.ignoreCase, sSettings.ignoreAccent));
+                        predicateList.push(new Predicate(fields[i], sSettings.operator, sSettings.key, sSettings.ignoreCase, sSettings.ignoreAccent));
                     }
                 }
-                query.where(Predicate.or(predicateList));
+                let predList = Predicate.or(predicateList);
+                predList.key = sSettings.key;
+                query.where(predList);
             }
             else {
                 query.search(sSettings.key, fields, sSettings.operator, sSettings.ignoreCase, sSettings.ignoreAccent);
@@ -1069,6 +1073,10 @@ class Data {
             let foreignCols = [];
             let defaultFltrCols = [];
             for (let col of columns) {
+                let gridColumn = gObj.getColumnByField(col.field);
+                if (isNullOrUndefined(col.type) && gridColumn && (gridColumn.type === 'date' || gridColumn.type === 'datetime')) {
+                    col.type = gObj.getColumnByField(col.field).type;
+                }
                 if (col.isForeignKey) {
                     foreignCols.push(col);
                 }
@@ -1747,8 +1755,8 @@ class RowModelGenerator {
     }
     generateRows(data, args) {
         let rows = [];
-        let isInifiniteScroll = this.parent.enableInfiniteScrolling && args.requestType === 'infiniteScroll';
-        let startIndex = this.parent.enableVirtualization || isInifiniteScroll ? args.startIndex : 0;
+        let startIndex = this.parent.enableVirtualization ? args.startIndex : 0;
+        startIndex = this.parent.enableInfiniteScrolling ? this.getInfiniteIndex(args) : startIndex;
         for (let i = 0, len = Object.keys(data).length; i < len; i++, startIndex++) {
             rows[i] = this.generateRow(data[i], startIndex);
         }
@@ -1843,6 +1851,10 @@ class RowModelGenerator {
             input[i].cells = this.generateCells(input[i]);
         }
         return input;
+    }
+    getInfiniteIndex(args) {
+        return args.requestType === 'infiniteScroll' || args.requestType === 'delete' || args.action === 'add'
+            ? args.startIndex : 0;
     }
 }
 
@@ -2533,7 +2545,7 @@ class ContentRender {
             modelData = this.parent.contentModule.generateRows(dataSource, args);
         }
         else {
-            modelData = this.checkInInfiniteCache(modelData, args);
+            modelData = this.checkInfiniteCache(modelData, args);
             if (!this.isAddRows) {
                 modelData = this.generator.generateRows(dataSource, args);
             }
@@ -2633,9 +2645,8 @@ class ContentRender {
             }
             if (!gObj.rowTemplate) {
                 tr = row.render(modelData[i], columns);
-                let isVFreorder = gObj.enableVirtualization
-                    && (args.requestType === 'reorder' || args.requestType === 'refresh');
-                if (gObj.frozenRows && i < gObj.frozenRows && !isInfiniteScroll && args.requestType !== 'virtualscroll' && !isVFreorder) {
+                let isVFreorder = this.ensureFrozenHeaderRender(args);
+                if (gObj.frozenRows && i < gObj.frozenRows && !isInfiniteScroll && args.requestType !== 'virtualscroll' && isVFreorder) {
                     hdrfrag.appendChild(tr);
                 }
                 else {
@@ -2779,7 +2790,13 @@ class ContentRender {
         tbody.appendChild(frag);
         this.getTable().appendChild(tbody);
     }
-    checkInInfiniteCache(modelData, args) {
+    ensureFrozenHeaderRender(args) {
+        return !((this.parent.enableVirtualization
+            && (args.requestType === 'reorder' || args.requestType === 'refresh')) || (this.parent.infiniteScrollSettings.enableCache
+            && this.parent.frozenRows && this.parent.infiniteScrollModule.requestType === 'delete'
+            && this.parent.pageSettings.currentPage !== 1));
+    }
+    checkInfiniteCache(modelData, args) {
         if (this.parent.infiniteScrollSettings.enableCache && args.requestType === 'infiniteScroll') {
             let index = args.isFrozen ? 1 : 0;
             let frozenCols = this.parent.getFrozenColumns();
@@ -2798,7 +2815,7 @@ class ContentRender {
     }
     setInfiniteVisibleRows(args, data) {
         let frozenCols = this.parent.getFrozenColumns();
-        if (this.parent.enableInfiniteScrolling && !this.isAddRows) {
+        if (this.parent.enableInfiniteScrolling && !this.parent.infiniteScrollSettings.enableCache) {
             if (frozenCols) {
                 !args.isFrozen ? this.visibleFrozenRows.push(data) : this.visibleRows.push(data);
             }
@@ -2810,6 +2827,9 @@ class ContentRender {
     getCurrentBlockInfiniteRecords(isFreeze) {
         let data = [];
         if (this.parent.infiniteScrollSettings.enableCache) {
+            if (!Object.keys(this.infiniteCache).length) {
+                return [];
+            }
             let frozenCols = this.parent.getFrozenColumns();
             let rows = this.parent.getRows();
             let index = parseInt(rows[this.parent.frozenRows].getAttribute('aria-rowindex'), 10);
@@ -2875,6 +2895,12 @@ class ContentRender {
         }
         return rows;
     }
+    getInfiniteMovableRows() {
+        let infiniteCacheRows = this.getCurrentBlockInfiniteRecords();
+        let infiniteRows = this.parent.enableInfiniteScrolling ? infiniteCacheRows.length ? infiniteCacheRows
+            : this.visibleRows : [];
+        return infiniteRows;
+    }
     /**
      * Get the content div element of grid
      * @return {Element}
@@ -2916,7 +2942,8 @@ class ContentRender {
      * @returns {Row[] | HTMLCollectionOf<HTMLTableRowElement>}
      */
     getMovableRows() {
-        return this.movableRows;
+        let infiniteRows = this.getInfiniteMovableRows();
+        return infiniteRows.length ? infiniteRows : this.movableRows;
     }
     /**
      * Get the content table data row elements
@@ -3051,7 +3078,8 @@ class ContentRender {
     setDisplayNone(tr, idx, displayVal, rows) {
         let trs = Object.keys(tr);
         for (let i = 0; i < trs.length; i++) {
-            if (tr[trs[i]].querySelectorAll('td.e-rowcell').length) {
+            let td = tr[trs[i]].querySelectorAll('td.e-rowcell')[idx];
+            if (tr[trs[i]].querySelectorAll('td.e-rowcell').length && td) {
                 setStyleAttribute(tr[trs[i]].querySelectorAll('td.e-rowcell')[idx], { 'display': displayVal });
                 if (tr[trs[i]].querySelectorAll('td.e-rowcell')[idx].classList.contains('e-hide')) {
                     removeClass([tr[trs[i]].querySelectorAll('td.e-rowcell')[idx]], ['e-hide']);
@@ -4707,7 +4735,7 @@ class Render {
                 gObj.notify(cancelBegin, args);
                 return;
             }
-            if (gObj.editSettings.mode === 'Normal' && gObj.isEdit) {
+            if (gObj.editSettings.mode === 'Normal' && gObj.isEdit && e.requestType !== 'infiniteScroll') {
                 gObj.notify('closeinline', {});
             }
             if (args.requestType === 'delete' && gObj.allowPaging) {
@@ -4989,11 +5017,14 @@ class Render {
         }
     }
     /** @hidden */
+    // tslint:disable-next-line:max-func-body-length
     dataManagerSuccess(e, args) {
         let gObj = this.parent;
         this.contentRenderer = this.renderer.getRenderer(RenderType.Content);
         this.headerRenderer = this.renderer.getRenderer(RenderType.Header);
         e.actionArgs = args;
+        let isInfiniteDelete = this.parent.enableInfiniteScrolling && !this.parent.infiniteScrollSettings.enableCache
+            && (args.requestType === 'delete' || (args.requestType === 'save' && this.parent.infiniteScrollModule.requestType === 'add'));
         gObj.trigger(beforeDataBound, e, (dataArgs) => {
             if (dataArgs.cancel) {
                 return;
@@ -5059,7 +5090,12 @@ class Render {
                     let content = 'content';
                     args.scrollTop = { top: this.contentRenderer[content].scrollTop };
                 }
-                this.contentRenderer.refreshContentRows(args);
+                if (!isInfiniteDelete) {
+                    this.contentRenderer.refreshContentRows(args);
+                }
+                else {
+                    this.parent.notify(infiniteEditHandler, { e: args, result: e.result, count: e.count, agg: e.aggregates });
+                }
             }
             else {
                 if (!gObj.getColumns().length) {
@@ -16345,6 +16381,17 @@ function ensureLastRow(row, gridObj) {
 function ensureFirstRow(row, rowTop) {
     return row && row.getBoundingClientRect().top < rowTop;
 }
+/** @hidden */
+function getEditedDataIndex(gObj, data) {
+    let keyField = gObj.getPrimaryKeyFieldNames()[0];
+    let dataIndex;
+    gObj.getCurrentViewRecords().filter((e, index) => {
+        if (e[keyField] === data[keyField]) {
+            dataIndex = index;
+        }
+    });
+    return dataIndex;
+}
 
 /* tslint:disable-next-line:max-line-length */
 /**
@@ -22119,7 +22166,7 @@ class Resize {
         }
         let content = this.parent.getContent().querySelector('.e-content');
         let cTable = content.querySelector('.e-movablecontent') ? content.querySelector('.e-movablecontent') : content;
-        if (cTable.scrollHeight >= cTable.clientHeight) {
+        if (cTable.scrollHeight > cTable.clientHeight) {
             this.parent.scrollModule.setPadding();
             cTable.style.overflowY = 'scroll';
         }
@@ -24541,6 +24588,8 @@ class DetailRow {
     // tslint:disable-next-line:max-func-body-length
     toogleExpandcollapse(target) {
         let gObj = this.parent;
+        let table = this.parent.getContentTable();
+        let lastrowIdx = this.parent.getCurrentViewRecords().length - 1;
         let parent = 'parentDetails';
         let isServerRendered = 'isServerRendered';
         let childGrid;
@@ -24638,6 +24687,12 @@ class DetailRow {
             classList(target, ['e-detailrowexpand'], ['e-detailrowcollapse']);
             classList(target.firstElementChild, ['e-dtdiagonaldown', 'e-icon-gdownarrow'], ['e-dtdiagonalright', 'e-icon-grightarrow']);
             rowObj.isExpand = true;
+            if (target.classList.contains('e-lastrowcell') && this.parent.getContent().clientHeight > table.scrollHeight) {
+                removeClass(target.parentElement.querySelectorAll('td'), 'e-lastrowcell');
+                let detailrowIdx = table.querySelector('tbody').querySelectorAll('.e-detailrow').length - 1;
+                addClass(table.querySelector('tbody').querySelectorAll('.e-detailrow')[detailrowIdx].childNodes, ['e-lastrowcell']);
+                this.lastrowcell = true;
+            }
             this.aria.setExpand(target, true);
         }
         else {
@@ -24648,6 +24703,10 @@ class DetailRow {
             }
             classList(target, ['e-detailrowcollapse'], ['e-detailrowexpand']);
             classList(target.firstElementChild, ['e-dtdiagonalright', 'e-icon-grightarrow'], ['e-dtdiagonaldown', 'e-icon-gdownarrow']);
+            if (parseInt(tr.getAttribute('aria-rowindex'), 10) === lastrowIdx && this.lastrowcell) {
+                addClass(target.parentElement.querySelectorAll('td'), 'e-lastrowcell');
+                this.lastrowcell = false;
+            }
             rowObj.isExpand = false;
             this.aria.setExpand(target, false);
         }
@@ -26573,7 +26632,7 @@ class VirtualContentRenderer extends ContentRender {
         data.isCancel = this.isCancel;
     }
     editCancel(args) {
-        let dataIndex = this.getEditedDataIndex(args.data);
+        let dataIndex = getEditedDataIndex(this.parent, args.data);
         if (!isNullOrUndefined(dataIndex)) {
             args.data = this.parent.getCurrentViewRecords()[dataIndex];
         }
@@ -26587,20 +26646,10 @@ class VirtualContentRenderer extends ContentRender {
         }
     }
     updateCurrentViewData(data) {
-        let dataIndex = this.getEditedDataIndex(data);
+        let dataIndex = getEditedDataIndex(this.parent, data);
         if (!isNullOrUndefined(dataIndex)) {
             this.parent.getCurrentViewRecords()[dataIndex] = data;
         }
-    }
-    getEditedDataIndex(data) {
-        let keyField = this.parent.getPrimaryKeyFieldNames()[0];
-        let dataIndex;
-        this.parent.getCurrentViewRecords().filter((e, index) => {
-            if (e[keyField] === data[keyField]) {
-                dataIndex = index;
-            }
-        });
-        return dataIndex;
     }
     actionBegin(args) {
         if (args.requestType !== 'virtualscroll') {
@@ -27244,9 +27293,15 @@ class InlineEditRender {
                 idx -= this.parent.frozenRows;
             }
             if (fCont.contains(row)) {
+                if (this.parent.infiniteScrollSettings.enableCache) {
+                    return this.parent.getMovableRowByIndex(idx);
+                }
                 return mCont.children[idx];
             }
             else if (mCont.contains(row)) {
+                if (this.parent.infiniteScrollSettings.enableCache) {
+                    return this.parent.getRowByIndex(idx);
+                }
                 return fCont.children[idx];
             }
             else if (fHdr.contains(row)) {
@@ -28177,9 +28232,9 @@ class NormalEdit {
         let primaryKeys = gObj.getPrimaryKeyFieldNames();
         let primaryKeyValues = [];
         this.rowIndex = this.editRowIndex = parseInt(tr.getAttribute('aria-rowindex'), 10);
-        if (gObj.enableVirtualization) {
+        if (gObj.enableVirtualization || gObj.enableInfiniteScrolling) {
             let selector = '.e-row[aria-rowindex="' + this.rowIndex + '"]';
-            let virtualRow = this.parent.getContent().querySelector(selector);
+            let virtualRow = this.parent.element.querySelector(selector);
             if (!virtualRow) {
                 return;
             }
@@ -28197,7 +28252,7 @@ class NormalEdit {
             let rObj = gObj.getRowObjectFromUID(tr.getAttribute('data-uid'));
             this.previousData = rObj.data;
         }
-        else if (this.parent.enableVirtualization) {
+        else if (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling) {
             let e = { data: this.previousData, index: this.rowIndex };
             this.parent.notify(virtualScrollEditActionBegin, e);
             this.previousData = e.data;
@@ -28302,7 +28357,8 @@ class NormalEdit {
         let dlgForm = isDlg ? dlgWrapper.querySelector('.e-gridform') : gObj.element.querySelector('.e-gridform');
         let data = { virtualData: {}, isAdd: false };
         this.parent.notify(getVirtualData, data);
-        if (this.parent.enableVirtualization && this.parent.editSettings.mode === 'Normal' && !dlgForm) {
+        if ((this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)
+            && this.parent.editSettings.mode === 'Normal' && !dlgForm) {
             if (this.parent.isEdit) {
                 this.currentVirtualData = editedData = args.data = data.virtualData;
             }
@@ -28316,7 +28372,10 @@ class NormalEdit {
                 editedData = gObj.editModule.getCurrentEditedData(mForm, editedData);
             }
             else {
-                editedData = gObj.editModule.getCurrentEditedData(gObj.element.querySelector('.e-movablecontent').querySelector('.e-gridform'), editedData);
+                let form = gObj.element.querySelector('.e-movablecontent').querySelector('.e-gridform');
+                if (form) {
+                    editedData = gObj.editModule.getCurrentEditedData(form, editedData);
+                }
             }
         }
         if (isBlazor()) {
@@ -28380,7 +28439,7 @@ class NormalEdit {
         this.editFailure(e);
     }
     updateCurrentViewData(data) {
-        if (!this.parent.enableVirtualization) {
+        if (!this.parent.enableVirtualization && !this.parent.enableInfiniteScrolling) {
             this.parent.getCurrentViewRecords()[this.editRowIndex] = data;
         }
     }
@@ -28478,7 +28537,8 @@ class NormalEdit {
     needRefresh() {
         let refresh = true;
         let editedRow = this.parent.element.querySelector('.e-gridform');
-        if (this.parent.enableVirtualization && this.parent.editSettings.mode === 'Normal' && !editedRow) {
+        if ((this.parent.enableVirtualization || this.parent.infiniteScrollSettings.enableCache)
+            && this.parent.editSettings.mode === 'Normal' && !editedRow) {
             refresh = false;
         }
         return refresh;
@@ -28498,10 +28558,20 @@ class NormalEdit {
                 let uid;
                 let tr = this.parent.element.querySelector('[data-uid=' + rowObj.uid + ']');
                 if ((parentsUntil(tr, 'e-frozencontent')) || (parentsUntil(tr, 'e-frozenheader'))) {
-                    uid = this.parent.getMovableRows()[rowObj.index].getAttribute('data-uid');
+                    if (this.parent.infiniteScrollSettings.enableCache) {
+                        uid = this.parent.getMovableRowByIndex(rowObj.index).getAttribute('data-uid');
+                    }
+                    else {
+                        uid = this.parent.getMovableRows()[rowObj.index].getAttribute('data-uid');
+                    }
                 }
                 else {
-                    uid = this.parent.getRows()[rowObj.index].getAttribute('data-uid');
+                    if (this.parent.infiniteScrollSettings.enableCache) {
+                        uid = this.parent.getRowByIndex(rowObj.index).getAttribute('data-uid');
+                    }
+                    else {
+                        uid = this.parent.getRows()[rowObj.index].getAttribute('data-uid');
+                    }
                 }
                 rowObj = this.parent.getRowObjectFromUID(uid);
                 rowObj.changes = data;
@@ -28583,7 +28653,8 @@ class NormalEdit {
         };
         let rowData = { virtualData: {} };
         this.parent.notify(getVirtualData, rowData);
-        if (this.parent.enableVirtualization && Object.keys(rowData.virtualData).length) {
+        if ((this.parent.enableVirtualization || this.parent.infiniteScrollSettings.enableCache)
+            && Object.keys(rowData.virtualData).length) {
             args.data = args.rowData = rowData.virtualData;
         }
         if (isBlazor()) {
@@ -30548,7 +30619,7 @@ class Edit {
             this.closeEdit();
         }
         else {
-            let restrictedRequestTypes = ['filterafteropen', 'filterbeforeopen', 'filterchoicerequest', 'save'];
+            let restrictedRequestTypes = ['filterafteropen', 'filterbeforeopen', 'filterchoicerequest', 'save', 'infiniteScroll'];
             if (this.parent.editSettings.mode !== 'Batch' && this.formObj && !this.formObj.isDestroyed
                 && restrictedRequestTypes.indexOf(e.requestType) === -1 && !e.cancel) {
                 this.destroyWidgets();
@@ -31529,7 +31600,8 @@ class ColumnChooser {
                 columnUID = parentsUntil(element, 'e-ccheck').getAttribute('uid');
             }
             let column = gridObject.getColumnByUid(columnUID);
-            if (column.visible) {
+            let uncheck = element.parentElement.querySelectorAll('.e-uncheck');
+            if (column.visible && !uncheck.length) {
                 element.checked = true;
                 this.checkState(element.parentElement.querySelector('.e-icons'), true);
             }
@@ -32057,8 +32129,12 @@ class ExcelExport {
             if (!(exportProperties.dataSource instanceof DataManager)) {
                 exportProperties.dataSource = new DataManager(exportProperties.dataSource);
             }
+            let query = exportProperties.query ? exportProperties.query : new Query();
+            if (isNullOrUndefined(query.isCountRequired) || gObj.aggregates) {
+                query.isCountRequired = true;
+            }
             return new Promise((resolve, reject) => {
-                let dataManager = exportProperties.dataSource.executeQuery(new Query());
+                let dataManager = exportProperties.dataSource.executeQuery(query);
                 dataManager.then((r) => {
                     this.init(gObj);
                     this.processInnerRecords(gObj, exportProperties, isMultipleExport, workbook, r).then(() => {
@@ -36179,7 +36255,7 @@ class ColumnMenu {
         return filterPopup && filterPopup.style.display !== 'none';
     }
     getFilterPop() {
-        if (Browser.isDevice && this.targetColumn !== null) {
+        if (Browser.isDevice && this.targetColumn !== null && this.parent.filterSettings.type === 'Menu') {
             return document.getElementById(this.targetColumn.uid + '-flmdlg');
         }
         return this.parent.element.querySelector('.' + this.POP);
@@ -36320,7 +36396,13 @@ class ForeignKey extends Data {
         }
         if (gObj.searchSettings.key.length) {
             let sSettings = gObj.searchSettings;
-            query.search(sSettings.key, column.foreignKeyValue, sSettings.operator, sSettings.ignoreCase);
+            if (column.dataSource instanceof DataManager && (column.dataSource.adaptor.getModuleName &&
+                column.dataSource.adaptor.getModuleName() === 'ODataV4Adaptor')) {
+                query = this.searchQuery(query, column, true);
+            }
+            else {
+                query.search(sSettings.key, column.foreignKeyValue, sSettings.operator, sSettings.ignoreCase);
+            }
         }
         return query;
     }
@@ -36757,7 +36839,7 @@ class InfiniteScroll {
      * Constructor for the Grid infinite scrolling.
      * @hidden
      */
-    constructor(parent) {
+    constructor(parent, serviceLocator) {
         this.infiniteCache = {};
         this.infiniteFrozenCache = {};
         this.isDownScroll = false;
@@ -36772,8 +36854,18 @@ class InfiniteScroll {
         this.keys = ['downArrow', 'upArrow', 'PageUp', 'PageDown'];
         this.rowTop = 0;
         this.isInitialMovableRender = true;
+        this.virtualInfiniteData = {};
+        this.isCancel = false;
+        this.emptyRowData = {};
+        this.isNormaledit = false;
+        this.isInfiniteScroll = false;
+        this.isLastPage = false;
         this.parent = parent;
+        this.serviceLocator = serviceLocator;
+        this.isNormaledit = this.parent.editSettings.mode === 'Normal';
         this.addEventListener();
+        this.rowModelGenerator = this.parent.getFrozenColumns() ? new FreezeRowModelGenerator(this.parent)
+            : new RowModelGenerator(this.parent);
     }
     getModuleName() {
         return 'infiniteScroll';
@@ -36794,6 +36886,16 @@ class InfiniteScroll {
         this.parent.on(initialCollapse, this.ensureIntialCollapse, this);
         this.parent.on(keyPressed, this.infiniteCellFocus, this);
         this.parent.on(infiniteShowHide, this.setDisplayNone, this);
+        this.parent.on(virtualScrollEditActionBegin, this.editActionBegin, this);
+        this.parent.on(getVirtualData, this.getVirtualInfiniteData, this);
+        this.parent.on(editReset, this.resetInfiniteEdit, this);
+        this.parent.on(virtualScrollEditSuccess, this.infiniteEditSuccess, this);
+        this.parent.on(refreshVirtualCache, this.refreshInfiniteCache, this);
+        this.parent.on(infiniteEditHandler, this.infiniteEditHandler, this);
+        this.parent.on(virtualScrollAddActionBegin, this.infiniteAddActionBegin, this);
+        this.parent.on(modelChanged, this.modelChanged, this);
+        this.parent.addEventListener(actionBegin, this.actionBegin.bind(this));
+        this.parent.addEventListener(actionComplete, this.actionComplete.bind(this));
     }
     /**
      * @hidden
@@ -36814,6 +36916,172 @@ class InfiniteScroll {
         this.parent.off(initialCollapse, this.ensureIntialCollapse);
         this.parent.off(keyPressed, this.infiniteCellFocus);
         this.parent.off(infiniteShowHide, this.setDisplayNone);
+        this.parent.off(virtualScrollEditActionBegin, this.editActionBegin);
+        this.parent.off(getVirtualData, this.getVirtualInfiniteData);
+        this.parent.off(editReset, this.resetInfiniteEdit);
+        this.parent.off(virtualScrollEditSuccess, this.infiniteEditSuccess);
+        this.parent.off(refreshVirtualCache, this.refreshInfiniteCache);
+        this.parent.off(infiniteEditHandler, this.infiniteEditHandler);
+        this.parent.off(virtualScrollAddActionBegin, this.infiniteAddActionBegin);
+        this.parent.off(modelChanged, this.modelChanged);
+        this.parent.removeEventListener(actionBegin, this.actionBegin.bind(this));
+        this.parent.removeEventListener(actionComplete, this.actionComplete.bind(this));
+    }
+    modelChanged(args) {
+        if (args.requestType !== 'infiniteScroll' && (args.requestType === 'delete' || this.requestType === 'add')) {
+            let rows = this.parent.getRows();
+            this.firstIndex = parseInt(rows[0].getAttribute('aria-rowindex'), 10);
+            this.firstBlock = Math.ceil((this.firstIndex + 1) / this.parent.pageSettings.pageSize);
+            this.lastIndex = parseInt(rows[rows.length - 1].getAttribute('aria-rowindex'), 10);
+            if (args.requestType === 'delete') {
+                let rowObj = this.parent.getRowsObject();
+                args.startIndex = this.parent.infiniteScrollSettings.enableCache
+                    ? (this.firstBlock - 1) * this.parent.pageSettings.pageSize : rowObj[rowObj.length - 1].index;
+            }
+            else {
+                args.startIndex = this.firstIndex;
+            }
+            if (!this.parent.infiniteScrollSettings.enableCache
+                && this.parent.pageSettings.currentPage === this.maxPage && args.requestType === 'delete') {
+                this.isLastPage = true;
+                this.lastIndex = this.lastIndex - 1;
+            }
+        }
+    }
+    infiniteAddActionBegin(args) {
+        if (this.isNormaledit) {
+            this.isAdd = true;
+            if (this.parent.infiniteScrollSettings.enableCache) {
+                if (!Object.keys(this.emptyRowData).length) {
+                    this.createEmptyRowdata();
+                }
+                if (this.parent.pageSettings.currentPage > 1) {
+                    args.startEdit = false;
+                    this.resetInfiniteBlocks({}, true);
+                    this.makeRequest({ currentPage: 1 });
+                }
+            }
+        }
+    }
+    infiniteEditHandler(args) {
+        if (!this.parent.infiniteScrollSettings.enableCache && (args.e.requestType === 'delete'
+            || (args.e.requestType === 'save' && this.requestType === 'add'))) {
+            let frozenCols = this.parent.getFrozenColumns();
+            let rowElms = this.parent.getRows();
+            let rows = this.parent.getRowsObject();
+            if (this.ensureRowAvailability(rows, args.result[0])) {
+                this.resetRowIndex(rows, args.e, rowElms, this.requestType === 'add');
+                if (frozenCols) {
+                    let rows = this.parent.getMovableRowsObject();
+                    this.resetRowIndex(rows, args.e, this.parent.getMovableDataRows(), this.requestType === 'add');
+                }
+                if (!this.isLastPage) {
+                    this.createRow(rows, args);
+                }
+                else {
+                    this.isLastPage = false;
+                    this.parent.pageSettings.currentPage = this.maxPage;
+                    if (this.parent.selectionModule.index < this.parent.frozenRows) {
+                        remove(rowElms[this.parent.frozenRows - 1]);
+                        this.createRow([rows[this.parent.frozenRows - 1]], args, false, true);
+                        if (frozenCols) {
+                            let movableRows = this.parent.getMovableDataRows();
+                            remove(movableRows[this.parent.frozenRows]);
+                            this.createRow([this.parent.getMovableRowsObject()[this.parent.frozenRows - 1]], args, true, true);
+                        }
+                        this.setRowElements();
+                    }
+                }
+            }
+            this.parent.hideSpinner();
+            this.requestType === 'delete' ? this.parent.notify(deleteComplete, args.e)
+                : this.parent.notify(saveComplete, args.e);
+        }
+    }
+    createRow(rows, args, isMovable, isFrozenRows) {
+        let row = !isFrozenRows ? this.generateRows(args.result, args.e) : rows;
+        let rowRenderer = new RowRenderer(this.serviceLocator, null, this.parent);
+        let tbody = !this.parent.getFrozenColumns() ? this.parent.getContent().querySelector('tbody') : isMovable
+            ? this.parent.getMovableVirtualContent().querySelector('tbody') : this.parent.getFrozenVirtualContent().querySelector('tbody');
+        if (this.parent.frozenRows) {
+            tbody = isFrozenRows && this.requestType !== 'add' || !isFrozenRows && this.requestType === 'add'
+                ? !this.parent.getFrozenColumns() ? this.parent.getHeaderContent().querySelector('tbody')
+                    : isMovable ? this.parent.getMovableVirtualHeader().querySelector('tbody')
+                        : this.parent.getFrozenVirtualHeader().querySelector('tbody') : tbody;
+        }
+        for (let i = row.length - 1; i >= 0; i--) {
+            if (this.requestType === 'delete') {
+                tbody.appendChild(rowRenderer.render(row[i], this.parent.getColumns()));
+            }
+            else {
+                tbody.insertBefore(rowRenderer.render(row[i], this.parent.getColumns()), tbody.firstElementChild);
+            }
+        }
+        if (!isFrozenRows && this.parent.frozenRows
+            && (this.parent.selectionModule.index < this.parent.frozenRows || this.requestType === 'add')) {
+            let rowElems = isMovable ? this.parent.getMovableDataRows() : this.parent.getRows();
+            let index = isMovable && this.requestType === 'add' ? this.parent.frozenRows : this.parent.frozenRows - 1;
+            remove(rowElems[index]);
+            this.createRow([rows[this.parent.frozenRows - 1]], args, isMovable, true);
+        }
+        if (!this.parent.infiniteScrollSettings.enableCache && !isFrozenRows) {
+            if (!this.parent.getFrozenColumns() || isMovable) {
+                this.setRowElements();
+                this.parent.contentModule.visibleRows = this.requestType === 'add'
+                    ? row.concat(rows) : rows.concat(row);
+            }
+            else {
+                this.parent.contentModule.visibleFrozenRows = this.requestType === 'add'
+                    ? row.concat(rows) : rows.concat(row);
+                this.createRow(this.parent.getMovableRowsObject(), args, true);
+            }
+        }
+    }
+    ensureRowAvailability(rows, data) {
+        let resume = true;
+        if (this.parent.frozenRows && !this.parent.infiniteScrollSettings.enableCache
+            && this.parent.sortSettings.columns && this.requestType === 'add') {
+            let key = this.parent.getPrimaryKeyFieldNames()[0];
+            for (let i = 0; i < rows.length; i++) {
+                if (rows[i].data[key] === data[key]) {
+                    resume = false;
+                    break;
+                }
+            }
+        }
+        return resume;
+    }
+    generateRows(data, args) {
+        return this.rowModelGenerator.generateRows(data, args);
+    }
+    resetRowIndex(rows, args, rowElms, isAdd) {
+        let keyField = this.parent.getPrimaryKeyFieldNames()[0];
+        if (isAdd) {
+            remove(rowElms[rows.length - 1]);
+            rowElms.splice(rows.length - 1, 1);
+            rows.splice(rows.length - 1, 1);
+        }
+        else {
+            rows.filter((e, index) => {
+                if (e.data[keyField] === args.data[0][keyField]) {
+                    rows.splice(index, 1);
+                    remove(rowElms[index]);
+                    rowElms.splice(index, 1);
+                }
+            });
+        }
+        let startIndex = isAdd ? 1 : 0;
+        for (let i = 0; i < rows.length; i++) {
+            rows[i].index = startIndex;
+            rowElms[i].setAttribute('aria-rowindex', startIndex.toString());
+            this.resetCellIndex(rowElms[i].cells, startIndex);
+            startIndex++;
+        }
+    }
+    resetCellIndex(cells, index) {
+        for (let i = 0; i < cells.length; i++) {
+            cells[i].setAttribute('index', index.toString());
+        }
     }
     setDisplayNone(args) {
         if (this.parent.infiniteScrollSettings.enableCache) {
@@ -36829,6 +37097,68 @@ class InfiniteScroll {
             this.resetContentModuleCache(frozenCols ? this.infiniteFrozenCache : this.infiniteCache);
         }
     }
+    refreshInfiniteCache(data) {
+        this.getEditedRowObject().data = data;
+    }
+    getEditedRowObject() {
+        let rowObjects = this.parent.getRowsObject();
+        let editedrow;
+        for (let i = 0; i < rowObjects.length; i++) {
+            if (rowObjects[i].index === this.editRowIndex) {
+                editedrow = rowObjects[i];
+            }
+        }
+        return editedrow;
+    }
+    infiniteEditSuccess(args) {
+        if (this.isNormaledit) {
+            if (!this.isAdd && args.data) {
+                this.updateCurrentViewRecords(args.data);
+            }
+            this.isAdd = false;
+        }
+    }
+    updateCurrentViewRecords(data) {
+        let index = getEditedDataIndex(this.parent, data);
+        if (!isNullOrUndefined(index)) {
+            this.parent.getCurrentViewRecords()[index] = data;
+        }
+    }
+    actionBegin(args) {
+        if (args.requestType === 'add' || args.requestType === 'delete') {
+            this.requestType = args.requestType;
+        }
+    }
+    actionComplete(args) {
+        if (args.requestType === 'delete' || args.requestType === 'save' || args.requestType === 'cancel') {
+            this.requestType = this.empty;
+            this.isCancel = args.requestType === 'cancel' || args.requestType === 'save';
+            this.isAdd = this.isEdit = false;
+            if (this.isNormaledit) {
+                this.editRowIndex = this.empty;
+                this.virtualInfiniteData = {};
+                this.parent.editModule.previousVirtualData = {};
+            }
+        }
+    }
+    resetInfiniteEdit() {
+        if (this.parent.enableInfiniteScrolling && this.isNormaledit) {
+            if ((this.parent.editSettings.allowEditing && this.isEdit) || (this.parent.editSettings.allowAdding && this.isAdd)) {
+                this.parent.isEdit = true;
+            }
+        }
+    }
+    getVirtualInfiniteData(data) {
+        data.virtualData = this.virtualInfiniteData;
+        data.isAdd = this.isAdd;
+        data.isCancel = this.isCancel;
+    }
+    editActionBegin(e) {
+        this.isEdit = true;
+        this.editRowIndex = e.index;
+        let rowObject = extend({}, this.getEditedRowObject().data);
+        e.data = Object.keys(this.virtualInfiniteData).length ? this.virtualInfiniteData : rowObject;
+    }
     dataSourceModified() {
         this.resetInfiniteBlocks({ requestType: this.empty }, true);
     }
@@ -36841,6 +37171,8 @@ class InfiniteScroll {
         this.isInitialCollapse = !isExpand;
     }
     infiniteScrollHandler(e) {
+        this.restoreInfiniteEdit();
+        this.restoreInfiniteAdd();
         let targetEle = e.target;
         let isInfinite = targetEle.classList.contains('e-content')
             || targetEle.classList.contains('e-movablecontent');
@@ -36864,7 +37196,7 @@ class InfiniteScroll {
                         this.isScroll = true;
                     }, 600);
                 }
-                let rows = [].slice.call(scrollEle.querySelectorAll('.e-row'));
+                let rows = [].slice.call(scrollEle.querySelectorAll('.e-row:not(.e-addedrow)'));
                 let row = rows[rows.length - 1];
                 let rowIndex = parseInt(row.getAttribute('aria-rowindex'), 10);
                 this.parent.pageSettings.currentPage = Math.ceil(rowIndex / this.parent.pageSettings.pageSize) + 1;
@@ -36886,14 +37218,16 @@ class InfiniteScroll {
                         this.isScroll = true;
                     }, 600);
                 }
-                let row = [].slice.call(scrollEle.querySelectorAll('.e-row'))[this.parent.pageSettings.pageSize - 1];
-                let rowIndex = parseInt(row.getAttribute('aria-rowindex'), 10);
+                let row = [].slice.call(scrollEle.querySelectorAll('.e-row'));
+                let rowIndex = parseInt(row[this.parent.pageSettings.pageSize - 1].getAttribute('aria-rowindex'), 10);
+                let startIndex = parseInt(row[0].getAttribute('aria-rowindex'), 10) - this.parent.pageSettings.pageSize;
                 this.parent.pageSettings.currentPage = Math.ceil(rowIndex / this.parent.pageSettings.pageSize) - 1;
                 if (this.parent.pageSettings.currentPage) {
                     args = {
                         requestType: 'infiniteScroll',
                         currentPage: this.parent.pageSettings.currentPage,
                         prevPage: prevPage,
+                        startIndex: startIndex,
                         direction: 'up'
                     };
                     this.makeRequest(args);
@@ -36908,13 +37242,16 @@ class InfiniteScroll {
     }
     makeRequest(args) {
         if (this.parent.pageSettings.currentPage !== args.prevPage) {
-            if (isNullOrUndefined(this.infiniteCache[args.currentPage]) && args.direction !== 'up') {
+            this.isInfiniteScroll = true;
+            if (isNullOrUndefined(this.infiniteCache[args.currentPage])) {
                 setTimeout(() => {
+                    this.getVirtualInfiniteEditedData();
                     this.parent.notify('model-changed', args);
                 }, 100);
             }
             else {
                 setTimeout(() => {
+                    this.getVirtualInfiniteEditedData();
                     this.parent.notify(refreshInfiniteModeBlocks, args);
                 }, 100);
             }
@@ -36926,7 +37263,30 @@ class InfiniteScroll {
             this.intialPageQuery(query);
         }
         else {
-            query.page(this.parent.pageSettings.currentPage, this.parent.pageSettings.pageSize);
+            if (!this.isInfiniteScroll && (this.requestType === 'delete' || this.requestType === 'add')) {
+                this.editPageQuery(query);
+            }
+            else {
+                query.page(this.parent.pageSettings.currentPage, this.parent.pageSettings.pageSize);
+            }
+        }
+    }
+    editPageQuery(query) {
+        let initialBlocks = this.parent.infiniteScrollSettings.initialBlocks;
+        let isCache = this.parent.infiniteScrollSettings.enableCache;
+        if (isCache) {
+            this.infiniteCache = {};
+            this.infiniteFrozenCache = {};
+            query.skip(this.firstIndex);
+            query.take(initialBlocks * this.parent.pageSettings.pageSize);
+        }
+        else {
+            if (this.parent.editSettings.mode === 'Dialog') {
+                this.parent.clearSelection();
+            }
+            let index = this.requestType === 'delete' ? this.lastIndex : this.firstIndex;
+            query.skip(index);
+            query.take(1);
         }
     }
     intialPageQuery(query) {
@@ -36966,6 +37326,54 @@ class InfiniteScroll {
         }
         else if (e.key === 'PageDown' || e.key === 'PageUp') {
             this.pressedKey = e.key;
+        }
+    }
+    createEmptyRowdata() {
+        this.parent.getColumns().filter((e) => {
+            this.emptyRowData[e.field] = this.empty;
+        });
+    }
+    getVirtualInfiniteEditedData() {
+        let editForm = this.parent.element.querySelector('.e-editedrow');
+        let addForm = this.parent.element.querySelector('.e-addedrow');
+        let gridForm = this.parent.element.querySelector('.e-gridform');
+        if (this.parent.infiniteScrollSettings.enableCache && (editForm || addForm)) {
+            let rowData = editForm ? extend({}, this.getEditedRowObject().data)
+                : extend({}, this.emptyRowData);
+            this.virtualInfiniteData = this.parent.editModule.getCurrentEditedData(gridForm, rowData);
+            if (this.parent.getFrozenColumns()) {
+                this.virtualInfiniteData = this.parent.editModule
+                    .getCurrentEditedData(this.parent.getMovableVirtualContent().querySelector('.e-gridform'), rowData);
+            }
+        }
+    }
+    restoreInfiniteEdit() {
+        let content = this.parent.getFrozenColumns() ? this.parent.getMovableVirtualContent()
+            : this.parent.getContent().firstElementChild;
+        let frozenEdit = this.parent.frozenRows ? this.editRowIndex >= this.parent.frozenRows : true;
+        if (this.isNormaledit && this.parent.infiniteScrollSettings.enableCache && frozenEdit) {
+            if (this.parent.editSettings.allowEditing && !isNullOrUndefined(this.editRowIndex)) {
+                let row = this.parent.getRowByIndex(this.editRowIndex);
+                if (Object.keys(this.virtualInfiniteData).length && row && !this.parent.getContent().querySelector('.e-editedrow')) {
+                    let top = row.getBoundingClientRect().top;
+                    if (top < content.offsetHeight && top > this.parent.getRowHeight()) {
+                        this.parent.isEdit = false;
+                        this.parent.editModule.startEdit(row);
+                    }
+                }
+            }
+        }
+    }
+    restoreInfiniteAdd() {
+        let content = this.parent.getFrozenColumns() ? this.parent.getMovableVirtualContent()
+            : this.parent.getContent().firstElementChild;
+        if (this.parent.getRowByIndex(0) && this.isNormaledit && this.parent.infiniteScrollSettings.enableCache
+            && this.isAdd && !content.querySelector('.e-addedrow')) {
+            let isTop = content.scrollTop < this.parent.getRowHeight();
+            if (isTop) {
+                this.parent.isEdit = false;
+                this.parent.addRecord();
+            }
         }
     }
     appendInfiniteRows(e) {
@@ -37016,7 +37424,9 @@ class InfiniteScroll {
                 this.selectNewRow(e.tbody, e.args.startIndex);
                 this.pressedKey = undefined;
             }
+            this.restoreInfiniteAdd();
         }
+        this.isInfiniteScroll = false;
     }
     setRowElements() {
         if (this.parent.getFrozenColumns()) {
@@ -37027,7 +37437,7 @@ class InfiniteScroll {
         }
         else {
             this.parent.contentModule.rowElements =
-                [].slice.call(this.parent.element.querySelectorAll('.e-row'));
+                [].slice.call(this.parent.element.querySelectorAll('.e-row:not(.e-addedrow)'));
         }
     }
     selectNewRow(tbody, startIndex) {
@@ -37062,7 +37472,8 @@ class InfiniteScroll {
                     let captionRows = [].slice.call(this.parent.getContentTable().querySelectorAll('tr'));
                     this.removeCaptionRows(captionRows, e.args);
                 }
-                this.removeTopRows(rows, this.parent.pageSettings.pageSize - 1);
+                let addRowCount = this.parent.element.querySelector('.e-addedrow') ? 0 : 1;
+                this.removeTopRows(rows, this.parent.pageSettings.pageSize - addRowCount);
             }
             if (e.args.direction === 'up') {
                 if (this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
@@ -37204,6 +37615,8 @@ class InfiniteScroll {
                 this.isInitialCollapse = false;
                 this.parent.contentModule.isRemove = this.isRemove;
                 this.parent.contentModule.isAddRows = this.isRemove;
+                this.parent.contentModule.visibleRows = [];
+                this.parent.contentModule.visibleFrozenRows = [];
             }
         }
     }
@@ -37211,10 +37624,12 @@ class InfiniteScroll {
         if (this.parent.enableInfiniteScrolling && this.parent.infiniteScrollSettings.enableCache) {
             let frozeCols = this.parent.getFrozenColumns();
             let idx = e.args.isFrozen ? 1 : 0;
+            let isEdit = e.args.requestType !== 'infiniteScroll'
+                && (this.requestType === 'delete' || this.requestType === 'add');
             let currentPage = this.parent.pageSettings.currentPage;
-            if ((frozeCols && this.isInitialMovableRender) || (!frozeCols && !Object.keys(this.infiniteCache).length)) {
+            if ((frozeCols && this.isInitialMovableRender) || (!frozeCols && !Object.keys(this.infiniteCache).length) || isEdit) {
                 this.isInitialMovableRender = !e.args.isFrozen;
-                this.setInitialCache(e.modelData, e.args);
+                this.setInitialCache(e.modelData, e.args, isEdit);
             }
             if (!frozeCols && isNullOrUndefined(this.infiniteCache[this.parent.pageSettings.currentPage])) {
                 this.infiniteCache[this.parent.pageSettings.currentPage] = e.modelData;
@@ -37236,26 +37651,28 @@ class InfiniteScroll {
             }
         }
     }
-    setInitialCache(data, args) {
+    setInitialCache(data, args, isEdit) {
         let frozenCols = this.parent.getFrozenColumns();
         let idx = args.isFrozen ? 1 : 0;
+        let k = !isEdit ? 1 : this.firstBlock;
         for (let i = 1; i <= this.parent.infiniteScrollSettings.initialBlocks; i++) {
             let startIndex = (i - 1) * this.parent.pageSettings.pageSize;
             let endIndex = i * this.parent.pageSettings.pageSize;
             if (this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
-                this.setInitialGroupCache(data, i, startIndex, endIndex);
+                this.setInitialGroupCache(data, k, startIndex, endIndex);
             }
             else {
                 if (frozenCols) {
-                    this.createFrozenCache(i);
-                    this.infiniteFrozenCache[i][idx] = data.slice(startIndex, endIndex);
+                    this.createFrozenCache(k);
+                    this.infiniteFrozenCache[k][idx] = data.slice(startIndex, endIndex);
                     this.resetContentModuleCache(this.infiniteFrozenCache);
                 }
                 else {
-                    this.infiniteCache[i] = data.slice(startIndex, endIndex);
+                    this.infiniteCache[k] = data.slice(startIndex, endIndex);
                     this.resetContentModuleCache(this.infiniteCache);
                 }
             }
+            k++;
         }
     }
     createFrozenCache(index) {
@@ -37627,5 +38044,5 @@ class MaskedTextBoxCellEdit {
  * Export Grid components
  */
 
-export { CheckBoxFilterBase, ExcelFilterBase, SortDescriptor, SortSettings, Predicate$1 as Predicate, InfiniteScrollSettings, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, headerValueAccessor, getUpdateUsingRaf, isExportColumns, updateColumnTypeForExportColumns, updatecloneRow, getCollapsedRowsCount, recursive, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, setColumnIndex, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, isGroupAdaptive, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, refreshFilteredColsUid, Global, getTransformValues, applyBiggerTheme, alignFrozenEditForm, ensureLastRow, ensureFirstRow, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, beforePaste, beforeAutoFill, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, commandClick, exportGroupCaption, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, columnDataStateChange, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, textWrapRefresh, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, exportDataBound, rowPositionChanged, columnChooserOpened, batchForm, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, partialRefresh, beforeCustomFilterOpen, selectVirtualRow, columnsPrepared, cBoxFltrBegin, cBoxFltrComplete, fltrPrevent, beforeFltrcMenuOpen, valCustomPlacement, filterCboxValue, componentRendered, restoreFocus, detailStateChange, detailIndentCellInfo, virtaulKeyHandler, virtaulCellFocus, virtualScrollEditActionBegin, virtualScrollEditSuccess, virtualScrollEditCancel, virtualScrollEdit, refreshVirtualCache, editReset, virtualScrollAddActionBegin, getVirtualData, refreshInfiniteModeBlocks, resetInfiniteBlocks, infiniteScrollHandler, infinitePageQuery, infiniteShowHide, appendInfiniteContent, removeInfiniteRows, setInfiniteCache, initialCollapse, getAggregateQuery, closeFilterDialog, columnChooserCancelBtnClick, getFilterBarOperator, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Logger, detailLists, gridObserver, BlazorAction, InfiniteScroll, Column, CommandColumnModel, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, AutoCompleteEditCell, ComboboxEditCell, MultiSelectEditCell, TimePickerEditCell, ToggleEditCell, MaskedTextBoxCellEdit, VirtualContentRenderer, VirtualHeaderRenderer, VirtualElementHandler, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, VirtualRowModelGenerator, InterSectionObserver, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
+export { CheckBoxFilterBase, ExcelFilterBase, SortDescriptor, SortSettings, Predicate$1 as Predicate, InfiniteScrollSettings, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, headerValueAccessor, getUpdateUsingRaf, isExportColumns, updateColumnTypeForExportColumns, updatecloneRow, getCollapsedRowsCount, recursive, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, setColumnIndex, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, isGroupAdaptive, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, refreshFilteredColsUid, Global, getTransformValues, applyBiggerTheme, alignFrozenEditForm, ensureLastRow, ensureFirstRow, getEditedDataIndex, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, beforePaste, beforeAutoFill, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, commandClick, exportGroupCaption, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, columnDataStateChange, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, textWrapRefresh, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, exportDataBound, rowPositionChanged, columnChooserOpened, batchForm, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, partialRefresh, beforeCustomFilterOpen, selectVirtualRow, columnsPrepared, cBoxFltrBegin, cBoxFltrComplete, fltrPrevent, beforeFltrcMenuOpen, valCustomPlacement, filterCboxValue, componentRendered, restoreFocus, detailStateChange, detailIndentCellInfo, virtaulKeyHandler, virtaulCellFocus, virtualScrollEditActionBegin, virtualScrollEditSuccess, virtualScrollEditCancel, virtualScrollEdit, refreshVirtualCache, editReset, virtualScrollAddActionBegin, getVirtualData, refreshInfiniteModeBlocks, resetInfiniteBlocks, infiniteScrollHandler, infinitePageQuery, infiniteShowHide, appendInfiniteContent, removeInfiniteRows, setInfiniteCache, infiniteEditHandler, initialCollapse, getAggregateQuery, closeFilterDialog, columnChooserCancelBtnClick, getFilterBarOperator, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Logger, detailLists, gridObserver, BlazorAction, InfiniteScroll, Column, CommandColumnModel, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, AutoCompleteEditCell, ComboboxEditCell, MultiSelectEditCell, TimePickerEditCell, ToggleEditCell, MaskedTextBoxCellEdit, VirtualContentRenderer, VirtualHeaderRenderer, VirtualElementHandler, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, VirtualRowModelGenerator, InterSectionObserver, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
 //# sourceMappingURL=ej2-grids.es2015.js.map

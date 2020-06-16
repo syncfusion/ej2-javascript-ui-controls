@@ -648,7 +648,8 @@ export class ColumnChooser implements IAction {
                                          'e-ccheck').getAttribute('uid');
             } else { columnUID = parentsUntil(element, 'e-ccheck').getAttribute('uid'); }
             let column: Column = gridObject.getColumnByUid(columnUID);
-            if (column.visible) {
+            let uncheck: NodeListOf<Element> = element.parentElement.querySelectorAll('.e-uncheck');
+            if (column.visible && !uncheck.length) {
                 element.checked = true;
                 this.checkState(element.parentElement.querySelector('.e-icons'), true);
             } else {

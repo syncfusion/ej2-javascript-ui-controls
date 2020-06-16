@@ -342,10 +342,10 @@ describe('Chart Control', () => {
         it('Checking annotaiton unit as point with date time value as string', (done: Function) => {
             chartObj.loaded = (args: Object): void => {
                 element = getElement('container_Annotation_0');
-                expect(element).toBe(null);
+                expect(element != null).toBe(true);
                 done();
             };
-            chartObj.annotations[0].x = 'new Date(2006, 3, 30)';
+            chartObj.annotations[0].x = new Date(2006, 3, 30).toDateString();
             chartObj.refresh();
         });
 

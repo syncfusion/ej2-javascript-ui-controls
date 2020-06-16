@@ -3535,7 +3535,7 @@ let DropDownList = class DropDownList extends DropDownBase {
             this.clearAll(null, props);
         }
         if (!(!isNullOrUndefined(props) && (isNullOrUndefined(props.dataSource)
-            || (!(props.dataSource instanceof DataManager) && props.dataSource.length === 0)))) {
+            || (!(props.dataSource instanceof DataManager) && props.dataSource.length === 0))) || !(props.dataSource === [])) {
             this.resetList(this.dataSource);
         }
         if (!this.isCustomFilter && !this.isFilterFocus && document.activeElement !== this.filterInput) {
@@ -9927,11 +9927,11 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                             }
                         }
                     });
-                    this.popupObj.close();
-                    this.popupWrapper.style.visibility = '';
                     if (this.mode === 'CheckBox' && Browser.isDevice && this.allowFiltering) {
                         this.notify('deviceSearchBox', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox' });
                     }
+                    this.popupObj.close();
+                    this.popupWrapper.style.visibility = '';
                 }
             });
         }
@@ -11310,7 +11310,13 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         if (!this.ulElement) {
             this.beforePopupOpen = true;
             super.render();
+            if (this.mode === 'CheckBox' && Browser.isDevice && this.allowFiltering) {
+                this.notify('popupFullScreen', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox' });
+            }
             return;
+        }
+        if (this.mode === 'CheckBox' && Browser.isDevice && this.allowFiltering) {
+            this.notify('popupFullScreen', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox' });
         }
         let mainLiLength = this.ulElement.querySelectorAll('li.' + 'e-list-item').length;
         let liLength = this.ulElement.querySelectorAll('li.'
@@ -11809,6 +11815,7 @@ class CheckBoxSelection {
         this.parent.on('filterBarPlaceholder', this.setPlaceholder, this);
         EventHandler.add(document, 'mousedown', this.onDocumentClick, this);
         this.parent.on('addItem', this.checboxCreate, this);
+        this.parent.on('popupFullScreen', this.setPopupFullScreen, this);
     }
     removeEventListener() {
         if (this.parent.isDestroyed) {
@@ -11829,6 +11836,7 @@ class CheckBoxSelection {
         this.parent.off('filterBarPlaceholder', this.setPlaceholder);
         this.parent.off('addItem', this.checboxCreate);
         EventHandler.remove(document, 'mousedown', this.onDocumentClick);
+        this.parent.off('popupFullScreen', this.setPopupFullScreen);
     }
     listOption(args) {
         if (isNullOrUndefined(this.parent.listCurrentOptions.itemCreated)) {
@@ -12076,8 +12084,6 @@ class CheckBoxSelection {
         this.parent.popupObj.element.classList.add(mobileFilter);
         this.parent.popupObj.position = { X: 0, Y: 0 };
         this.parent.popupObj.dataBind();
-        attributes(this.parent.popupObj.element, { style: 'left:0px;right:0px;top:0px;bottom:0px;' });
-        addClass([document.body, this.parent.popupObj.element], popupFullScreen);
         this.setSearchBoxPosition();
         this.backIconElement = this.filterInputObj.container.querySelector('.e-back-icon');
         this.clearIconElement = this.filterInputObj.container.querySelector('.' + clearIcon);
@@ -12087,13 +12093,23 @@ class CheckBoxSelection {
     }
     setSearchBoxPosition() {
         let searchBoxHeight = this.filterInput.parentElement.getBoundingClientRect().height;
+        let selectAllHeight = 0;
+        if (this.checkAllParent) {
+            selectAllHeight = this.checkAllParent.getBoundingClientRect().height;
+        }
         this.parent.popupObj.element.style.maxHeight = '100%';
         this.parent.popupObj.element.style.width = '100%';
-        this.parent.list.style.maxHeight = (window.innerHeight - searchBoxHeight) + 'px';
-        this.parent.list.style.height = (window.innerHeight - searchBoxHeight) + 'px';
+        this.parent.list.style.maxHeight = (window.innerHeight - searchBoxHeight - selectAllHeight) + 'px';
+        this.parent.list.style.height = (window.innerHeight - searchBoxHeight - selectAllHeight) + 'px';
         let clearElement = this.filterInput.parentElement.querySelector('.' + clearIcon);
         detach(this.filterInput);
         clearElement.parentElement.insertBefore(this.filterInput, clearElement);
+    }
+    setPopupFullScreen() {
+        attributes(this.parent.popupObj.element, { style: 'left:0px;right:0px;top:0px;bottom:0px;' });
+        addClass([document.body, this.parent.popupObj.element], popupFullScreen);
+        this.parent.popupObj.element.style.maxHeight = '100%';
+        this.parent.popupObj.element.style.width = '100%';
     }
     targetElement() {
         if (!isNullOrUndefined(this.clearIconElement)) {

@@ -997,6 +997,8 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             let argument: RenderDayCellEventArgs = this.renderDayCellArgs;
             this.renderDayCellEvent(argument);
             if (argument.isDisabled) {
+                let selectDate: Date = new Date(this.checkValue(value));
+                let argsDate: Date = new Date(this.checkValue(argument.date));
                 if (multiSelection) {
                     if (!isNullOrUndefined(values) && values.length > 0) {
                         for (let index: number = 0; index < values.length; index++) {
@@ -1010,8 +1012,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                             }
                         }
                     }
-
-                } else if (value && +value === +argument.date) {
+                } else if (selectDate && +selectDate === +argsDate) {
                     this.setProperties({ value: null }, true);
                 }
             }

@@ -34,7 +34,7 @@ export interface IDataLoadedEventArgs {
 }
 /**
  * ISelectionChangeEventArgs notifies when the node/connector are select
- * 
+ * @deprecated
  */
 export interface ISelectionChangeEventArgs {
     /** returns the collection of nodes and connectors that have to be removed from selection list */
@@ -166,7 +166,7 @@ export interface DiagramEventObject {
 
 /**
  * ICollectionChangeEventArgs notifies while the node/connector are added or removed
- * 
+ * @deprecated
  */
 export interface ICollectionChangeEventArgs {
     /** returns the selected element  */
@@ -220,13 +220,15 @@ export interface IBlazorSegmentCollectionChangeEventArgs {
 }
 
 export interface UserHandleEventsArgs {
-    /** returns the user handle object */
+    /** returns the user handle object
+     * @blazorType DiagramUserHandle
+     */
     element: UserHandleModel;
 }
 
 /**
- * ICollectionChangeEventArgs notifies while the node/connector are added or removed
- * 
+ * ISegmentCollectionChangeEventArgs notifies while the node/connector are added or removed
+ * @deprecated
  */
 export interface ISegmentCollectionChangeEventArgs {
     /** returns the selected element 
@@ -245,7 +247,7 @@ export interface ISegmentCollectionChangeEventArgs {
 
 /**
  * IPropertyChangeEventArgs notifies when the node/connector property changed
- * 
+ * @deprecated
  */
 export interface IPropertyChangeEventArgs {
     /** returns the selected element */
@@ -291,7 +293,7 @@ export interface IBlazorPropertyChangeEventArgs {
 
 /**
  * IDraggingEventArgs notifies when the node/connector are dragged
- * 
+ * @deprecated
  */
 export interface IDraggingEventArgs {
     /** returns the node or connector that is being dragged */
@@ -391,7 +393,7 @@ export interface IBlazorDraggingEventArgs {
 
 /**
  * IConnectionChangeEventArgs notifies when the connector are connect or disconnect
- * 
+ * @deprecated
  */
 export interface IConnectionChangeEventArgs {
     /** returns the new source node or target node of the connector */
@@ -410,7 +412,7 @@ export interface IConnectionChangeEventArgs {
 
 /**
  * IEndChangeEventArgs notifies when the connector end point are resized
- * 
+ * @deprecated
  */
 export interface IEndChangeEventArgs {
     /** returns the connector, the target point of which is being dragged
@@ -442,7 +444,7 @@ export interface Animation {
 
 /**
  * IClickEventArgs notifies while click on the objects or diagram
- * 
+ * @deprecated
  */
 export interface IClickEventArgs {
     /** returns the object that is clicked or id of the diagram */
@@ -472,7 +474,7 @@ export interface IBlazorClickEventArgs {
 
 /**
  * IDoubleClickEventArgs notifies while double click on the diagram or its objects 
- * 
+ * @deprecated
  */
 export interface IDoubleClickEventArgs {
     /** returns the object that is clicked or id of the diagram */
@@ -496,7 +498,7 @@ export interface DiagramClickEventObject {
 }
 
 /**
- * IDoubleClickEventArgs notifies while double click on the diagram or its objects 
+ * IBlazorDoubleClickEventArgs notifies while double click on the diagram or its objects 
  * 
  */
 export interface IBlazorDoubleClickEventArgs {
@@ -507,6 +509,10 @@ export interface IBlazorDoubleClickEventArgs {
     /** returns the number of times clicked */
     count: number;
 }
+
+/**
+ * @deprecated
+ */
 
 export interface IMouseEventArgs {
     /** returns a parent node of the target node or connector */
@@ -576,7 +582,7 @@ export interface ScrollValues {
 
 /**
  * IBlazorScrollChangeEventArgs notifies when the scroller has changed
- * 
+ * @deprecated
  */
 export interface IBlazorScrollChangeEventArgs {
     /** returns the object that is clicked or id of the diagram */
@@ -588,7 +594,7 @@ export interface IBlazorScrollChangeEventArgs {
 }
 /**
  * IScrollChangeEventArgs notifies when the scroller has changed
- * 
+ * @deprecated
  */
 export interface IScrollChangeEventArgs {
     /** returns the object that is clicked or id of the diagram */
@@ -612,7 +618,7 @@ export interface IPaletteSelectionChangeArgs {
 
 /**
  * IDragEnterEventArgs notifies when the element enter into the diagram from symbol palette
- * 
+ * @deprecated
  */
 export interface IDragEnterEventArgs {
     /** returns the node or connector that is to be dragged into diagram */
@@ -674,6 +680,7 @@ export interface IDragOverEventArgs {
 
 /**
  * ITextEditEventArgs notifies when the label of an element under goes editing
+ * @deprecated
  */
 export interface ITextEditEventArgs {
     /** Returns the old text value of the element */
@@ -740,7 +747,7 @@ export interface IBlazorHistoryChangeArgs {
 }
 /**
  * IHistoryChangeArgs notifies when the label of an element under goes editing
- * 
+ * @deprecated
  */
 export interface IHistoryChangeArgs {
     /** returns a collection of objects that are changed in the last undo/redo */
@@ -782,7 +789,7 @@ export interface ChangedValues {
 
 /**
  * ICustomHistoryChangeArgs notifies when the label of an element under goes editing
- *
+ * @deprecated
  */
 export interface ICustomHistoryChangeArgs {
     /** returns the type of the entry that means undo or redo */
@@ -794,7 +801,7 @@ export interface ICustomHistoryChangeArgs {
 }
 
 /**
- * ICustomHistoryChangeArgs notifies when the label of an element under goes editing
+ * IBlazorCustomHistoryChangeArgs notifies when the label of an element under goes editing
  * 
  */
 export interface IBlazorCustomHistoryChangeArgs {
@@ -871,7 +878,7 @@ export interface IBlazorDropEventArgs {
 
 /**
  * IDropEventArgs notifies when the element is dropped in the diagram
- * 
+ * @deprecated
  */
 export interface IDropEventArgs {
     /** returns node or connector that is being dropped */
@@ -902,6 +909,7 @@ export interface StackEntryObject {
 }
 /**
  * IExpandStateChangeEventArgs notifies when the icon is changed
+ * @deprecated
  */
 export interface IExpandStateChangeEventArgs {
     /** returns node that is being changed the icon
@@ -914,7 +922,7 @@ export interface IExpandStateChangeEventArgs {
 
 /**
  * IImageLoadEventArgs notifies while the image node is loaded.
- * 
+ * @deprecated
  */
 export interface IImageLoadEventArgs {
     /** returns the selected element 

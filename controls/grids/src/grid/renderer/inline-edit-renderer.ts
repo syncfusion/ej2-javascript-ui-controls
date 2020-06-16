@@ -88,8 +88,14 @@ export class InlineEditRender {
                 idx -= this.parent.frozenRows;
             }
             if (fCont.contains(row)) {
+                if (this.parent.infiniteScrollSettings.enableCache) {
+                    return this.parent.getMovableRowByIndex(idx);
+                }
                 return mCont.children[idx];
             } else if (mCont.contains(row)) {
+                if (this.parent.infiniteScrollSettings.enableCache) {
+                    return this.parent.getRowByIndex(idx);
+                }
                 return fCont.children[idx];
             } else if (fHdr.contains(row)) {
                 return mHdr.children[idx];

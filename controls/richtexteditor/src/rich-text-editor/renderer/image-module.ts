@@ -1,7 +1,7 @@
 import { addClass, detach, EventHandler, L10n, isNullOrUndefined, KeyboardEventArgs, select, isBlazor } from '@syncfusion/ej2-base';
 import { Browser, closest, removeClass, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import { IImageCommandsArgs, IRenderer, IDropDownItemModel, IToolbarItemModel, OffsetPosition,
-    ImageDragEvent, ActionBeginEventArgs } from '../base/interface';
+    ImageDragEvent, ActionBeginEventArgs, AfterImageDeleteEventArgs } from '../base/interface';
 import { IRichTextEditor, IImageNotifyArgs, NotifyArgs, IShowPopupArgs, ResizeArgs } from '../base/interface';
 import * as events from '../base/constant';
 import * as classes from '../base/classes';
@@ -579,8 +579,8 @@ export class Image {
     private onKeyUp(event: NotifyArgs): void {
         if (!isNOU(this.deletedImg) && this.deletedImg.length > 0) {
             for (let i: number = 0; i < this.deletedImg.length; i++) {
-                let args: object = {
-                    img: this.deletedImg[i],
+                let args: AfterImageDeleteEventArgs = {
+                    element: this.deletedImg[i],
                     src: (this.deletedImg[i] as HTMLElement).getAttribute('src')
                 };
                 this.parent.trigger(events.afterImageDelete, args);
@@ -914,7 +914,10 @@ export class Image {
         if (e.selectNode[0].nodeName !== 'IMG') {
             return;
         }
-        let args: object = { img: e.selectNode[0], src: (e.selectNode[0] as HTMLElement).getAttribute('src') };
+        let args: AfterImageDeleteEventArgs = {
+            element: e.selectNode[0],
+            src: (e.selectNode[0] as HTMLElement).getAttribute('src')
+        };
         if (this.parent.formatter.getUndoRedoStack().length === 0) {
             this.parent.formatter.saveData();
         }

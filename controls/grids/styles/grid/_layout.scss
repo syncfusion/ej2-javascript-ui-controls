@@ -1096,6 +1096,15 @@
       border-bottom-width: 1px;
     }
 
+    &.e-default .e-detailrowcollapse.e-lastrowcell {
+        border-bottom-width: 1px;
+    }
+
+    &.e-default .e-detailrow .e-lastrowcell {
+        border-bottom: 1px solid;
+        border-bottom-color: $grid-header-border-color;
+    }
+
     &.e-bothlines .e-rowcell.e-lastrowcell {
       border-bottom-width: 1px;
     }

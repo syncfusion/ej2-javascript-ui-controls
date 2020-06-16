@@ -6368,7 +6368,7 @@ var Render = /** @__PURE__ @class */ (function () {
             this.parent.grid.widthService.setWidthToTable();
         }
         /* tslint:disable-next-line */
-        if (!this.parent.isEmptyGrid) {
+        if (this.parent.notEmpty) {
             this.calculateGridHeight(true);
         }
         if (this.parent.currentView !== 'Chart') {
@@ -7037,7 +7037,7 @@ var Render = /** @__PURE__ @class */ (function () {
     Render.prototype.rowCellBoundEvent = function (args) {
         var tCell = args.cell;
         /* tslint:disable-next-line */
-        if (tCell && !this.parent.isEmptyGrid) {
+        if (tCell && (this.parent.notEmpty)) {
             var customClass = this.parent.hyperlinkSettings.cssClass;
             tCell.setAttribute('index', (Number(tCell.getAttribute('index')) + this.engine.headerContent.length).toString());
             var cell = args.data[0];
@@ -21754,6 +21754,7 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             this.isEmptyGrid = false;
+            this.notEmpty = true;
         }
         if (this.grid) {
             var engine = this.dataType === 'pivot' ? this.engineModule : this.olapEngineModule;
@@ -22676,9 +22677,11 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
     PivotView.prototype.renderEmptyGrid = function () {
         var _this_1 = this;
         this.isEmptyGrid = true;
+        this.notEmpty = false;
         this.renderModule = new Render(this);
         if (this.grid && this.grid.element && this.element.querySelector('.e-grid')) {
             /* tslint:disable */
+            this.notEmpty = true;
             this.grid.setProperties({
                 columns: this.renderModule.frameEmptyColumns(),
                 dataSource: this.renderModule.frameEmptyData()
@@ -22787,6 +22790,7 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
                     this$_1.pivotValues = this$_1.engineModule.pivotValues;
                 }
                 this$_1.notify(dataReady, {});
+                this$_1.notEmpty = true;
             });
         }
         else {

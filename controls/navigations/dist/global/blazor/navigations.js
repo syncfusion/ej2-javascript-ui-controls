@@ -13885,6 +13885,7 @@ var Sidebar = /** @class */ (function (_super) {
             (sf.base.removeClass([this.element], RTL$2));
     };
     Sidebar.prototype.setTarget = function () {
+        this.targetEle = this.element.nextElementSibling;
         this.sidebarEleCopy = this.element.cloneNode(true);
         if (typeof (this.target) === 'string') {
             this.setProperties({ target: document.querySelector(this.target) }, true);
@@ -13893,7 +13894,18 @@ var Sidebar = /** @class */ (function (_super) {
             this.target.insertBefore(this.element, this.target.children[0]);
             sf.base.addClass([this.element], SIDEBARABSOLUTE);
             sf.base.addClass([this.target], CONTEXT);
+            this.targetEle = this.getTargetElement();
         }
+    };
+    Sidebar.prototype.getTargetElement = function () {
+        var siblingElement = this.element.nextElementSibling;
+        while (!sf.base.isNullOrUndefined(siblingElement)) {
+            if (!siblingElement.classList.contains(ROOT$1)) {
+                break;
+            }
+            siblingElement = siblingElement.nextElementSibling;
+        }
+        return siblingElement;
     };
     Sidebar.prototype.setCloseOnDocumentClick = function () {
         if (this.closeOnDocumentClick) {
@@ -13931,9 +13943,8 @@ var Sidebar = /** @class */ (function (_super) {
     };
     Sidebar.prototype.addClass = function () {
         var classELement = document.querySelector('.e-main-content');
-        if (!sf.base.isNullOrUndefined((classELement ||
-            this.element.nextElementSibling))) {
-            sf.base.addClass([classELement || this.element.nextElementSibling], [MAINCONTENTANIMATION]);
+        if (!sf.base.isNullOrUndefined(classELement || this.targetEle)) {
+            sf.base.addClass([classELement || this.targetEle], [MAINCONTENTANIMATION]);
         }
         this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
         if (!this.isBlazor) {
@@ -13973,8 +13984,7 @@ var Sidebar = /** @class */ (function (_super) {
         sf.base.EventHandler.remove(this.element, 'transitionend', this.transitionEnd);
     };
     Sidebar.prototype.destroyBackDrop = function () {
-        var sibling = document.querySelector('.e-main-content') ||
-            this.element.nextElementSibling;
+        var sibling = document.querySelector('.e-main-content') || this.targetEle;
         if (this.target && this.showBackdrop && sibling) {
             sf.base.removeClass([sibling], CONTEXTBACKDROP);
         }
@@ -14013,8 +14023,7 @@ var Sidebar = /** @class */ (function (_super) {
                 _this.enableDock ? sf.base.setStyleAttribute(_this.element, { 'width': sf.base.formatUnit(_this.dockSize) }) :
                     sf.base.setStyleAttribute(_this.element, { 'width': sf.base.formatUnit(_this.width) });
                 _this.setType(_this.type);
-                var sibling = document.querySelector('.e-main-content') ||
-                    _this.element.nextElementSibling;
+                var sibling = document.querySelector('.e-main-content') || _this.targetEle;
                 if (!_this.enableDock && sibling) {
                     sibling.style.transform = 'translateX(' + 0 + 'px)';
                     _this.position === 'Left' ? sibling.style.marginLeft = '0px' : sibling.style.marginRight = '0px';
@@ -14033,8 +14042,7 @@ var Sidebar = /** @class */ (function (_super) {
         });
     };
     Sidebar.prototype.setTimeOut = function () {
-        var sibling = document.querySelector('.e-main-content') ||
-            this.element.nextElementSibling;
+        var sibling = document.querySelector('.e-main-content') || this.targetEle;
         if (this.element.classList.contains(OPEN) && sibling) {
             if (this.position === 'Left') {
                 this.width === 'auto' ? sibling.style.marginLeft = this.setDimension(this.element.getBoundingClientRect().width)
@@ -14122,8 +14130,7 @@ var Sidebar = /** @class */ (function (_super) {
     };
     Sidebar.prototype.createBackDrop = function () {
         if (this.target && this.showBackdrop && this.getState()) {
-            var sibling = document.querySelector('.e-main-content') ||
-                this.element.nextElementSibling;
+            var sibling = document.querySelector('.e-main-content') || this.targetEle;
             sf.base.addClass([sibling], CONTEXTBACKDROP);
         }
         else if (this.showBackdrop && !this.modal && this.getState()) {
@@ -14238,8 +14245,7 @@ var Sidebar = /** @class */ (function (_super) {
      * @private
      */
     Sidebar.prototype.onPropertyChanged = function (newProp, oldProp) {
-        var sibling = document.querySelector('.e-main-content') ||
-            this.element.nextElementSibling;
+        var sibling = document.querySelector('.e-main-content') || this.targetEle;
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
             var prop = _a[_i];
             switch (prop) {
@@ -14300,12 +14306,10 @@ var Sidebar = /** @class */ (function (_super) {
                         sf.base.setStyleAttribute(sibling, { 'margin-left': 0, 'margin-right': 0 });
                         document.body.insertAdjacentElement('afterbegin', this.element);
                     }
-                    else {
-                        var isRendered = this.isServerRendered;
-                        this.isServerRendered = false;
-                        _super.prototype.refresh.call(this);
-                        this.isServerRendered = isRendered;
-                    }
+                    var isRendered = this.isServerRendered;
+                    this.isServerRendered = false;
+                    _super.prototype.refresh.call(this);
+                    this.isServerRendered = isRendered;
                     break;
                 case 'closeOnDocumentClick':
                     this.setCloseOnDocumentClick();
@@ -14333,8 +14337,7 @@ var Sidebar = /** @class */ (function (_super) {
     Sidebar.prototype.setType = function (type) {
         var elementWidth = this.element.getBoundingClientRect().width;
         this.setZindex();
-        var sibling = document.querySelector('.e-main-content') ||
-            this.element.nextElementSibling;
+        var sibling = document.querySelector('.e-main-content') || this.targetEle;
         if (sibling) {
             sibling.style.transform = 'translateX(' + 0 + 'px)';
             if (!sf.base.Browser.isDevice && this.type !== 'Auto') {
@@ -14403,8 +14406,7 @@ var Sidebar = /** @class */ (function (_super) {
         this.windowWidth = null;
         (!sf.base.isNullOrUndefined(this.sidebarEleCopy.getAttribute('tabindex'))) ?
             this.element.setAttribute('tabindex', this.tabIndex) : this.element.removeAttribute('tabindex');
-        var sibling = document.querySelector('.e-main-content')
-            || this.element.nextElementSibling;
+        var sibling = document.querySelector('.e-main-content') || this.targetEle;
         if (!sf.base.isNullOrUndefined(sibling)) {
             sibling.style.margin = '';
             sibling.style.transform = '';

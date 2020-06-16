@@ -207,6 +207,33 @@ describe('Barcode Control ', () => {
             done();
         });
     });
+    describe('EAN13 bar testing CR issue test case', () => {
+
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'barcode' });
+            document.body.appendChild(ele);
+            barcode = new BarcodeGenerator({
+                width: '200px', height: '150px',
+                type: 'Ean13',
+                margin: { left: 20 },
+                displayText: { alignment: 'Right', position: 'Top' },
+                value: '8020834736939',
+                mode: 'SVG',
+            });
+            barcode.appendTo('#barcode');
+        });
+
+        afterAll((): void => {
+            barcode.destroy();
+            ele.remove();
+        });
+
+        it('EAN13 bar testing CR issue test case', (done: Function) => {
+            var barocodeDiv = document.getElementById("barcodecontent")
+            expect(barocodeDiv.childElementCount === 33).toBe(true);
+            done();
+        });
+    });
     describe('EAN13 bar testing for all lines check  EAN13 barcode invalid character', () => {
         //let barcode: BarcodeGenerator;
         //let ele: HTMLElement;

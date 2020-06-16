@@ -759,12 +759,12 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         } else {
             classProp = classes.ELEMENTS;
         }
-        extend(this.model, this.model, { cssClass: classProp, enableRtl: this.enableRtl });
+        extend(this.model, this.model, { cssClass: classProp, enableRtl: this.enableRtl, locale: this.locale });
         if (!isNOU(this.value)) { this.updateModelValue(); }
         if (this.isExtModule) {
             this.notify(events.render, { module: modulesList[this.type], target: ele, type: this.type });
         } else {
-            if (isNOU((this.model as DropDownListModel).showClearButton)) {
+            if (isNOU((this.model as DropDownListModel).showClearButton) && !isBlazor()) {
                 (this.model as DropDownListModel).showClearButton = true;
             }
             switch (this.type) {

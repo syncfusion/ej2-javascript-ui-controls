@@ -14,7 +14,7 @@ import { ServiceLocator } from '../services/service-locator';
 import { InterSectionObserver } from '../services/intersection-observer';
 import { RendererFactory } from '../services/renderer-factory';
 import { VirtualRowModelGenerator } from '../services/virtual-row-model-generator';
-import { isGroupAdaptive, getTransformValues, ensureLastRow, ensureFirstRow } from '../base/util';
+import { isGroupAdaptive, getTransformValues, ensureLastRow, ensureFirstRow, getEditedDataIndex } from '../base/util';
 import { isBlazor, setStyleAttribute } from '@syncfusion/ej2-base';
 import { Grid } from '../base/grid';
 /**
@@ -713,7 +713,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     }
 
     private editCancel(args: { data: Object }): void {
-        let dataIndex: number = this.getEditedDataIndex(args.data);
+        let dataIndex: number = getEditedDataIndex(this.parent, args.data);
         if (!isNullOrUndefined(dataIndex)) {
             args.data = this.parent.getCurrentViewRecords()[dataIndex];
         }
@@ -729,21 +729,10 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     }
 
     private updateCurrentViewData(data: Object): void {
-        let dataIndex: number = this.getEditedDataIndex(data);
+        let dataIndex: number = getEditedDataIndex(this.parent, data);
         if (!isNullOrUndefined(dataIndex)) {
             this.parent.getCurrentViewRecords()[dataIndex] = data;
         }
-    }
-
-    private getEditedDataIndex(data: Object): number {
-        let keyField: string = this.parent.getPrimaryKeyFieldNames()[0];
-        let dataIndex: number;
-        this.parent.getCurrentViewRecords().filter((e: Object, index: number) => {
-            if (e[keyField] === data[keyField]) {
-                dataIndex = index;
-            }
-        });
-        return dataIndex;
     }
 
     private actionBegin(args: NotifyArgs): void {

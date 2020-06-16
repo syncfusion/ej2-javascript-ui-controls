@@ -408,6 +408,8 @@ export class PasteCleanup {
     }
   }
   private pasteDialog(value: string, args: Object): void {
+    let isHeight: boolean = false;
+    let preRTEHeight: string | number = this.parent.height;
     let dialogModel: DialogModel = {
       buttons: [
         {
@@ -416,6 +418,8 @@ export class PasteCleanup {
               let keepChecked: boolean = (this.parent.element.querySelector('#keepFormating') as HTMLInputElement).checked;
               let cleanChecked: boolean = (this.parent.element.querySelector('#cleanFormat') as HTMLInputElement).checked;
               dialog.hide();
+              this.parent.height = isHeight ? preRTEHeight : this.parent.height;
+              isHeight = false;
               let argument: Dialog = isBlazor() ? null : dialog;
               this.dialogRenderObj.close(argument);
               dialog.destroy();
@@ -432,6 +436,8 @@ export class PasteCleanup {
           click: () => {
             if (!dialog.isDestroyed) {
               dialog.hide();
+              this.parent.height = isHeight ? preRTEHeight : this.parent.height;
+              isHeight = false;
               let args: Dialog = isBlazor() ? null : dialog;
               this.dialogRenderObj.close(args);
               dialog.destroy();
@@ -468,6 +474,10 @@ export class PasteCleanup {
     }
     dialog.appendTo(rteDialogWrapper);
     this.radioRender();
+    if (this.parent.element.offsetHeight < parseInt((dialog.height as string).split('px')[0], null)) {
+      this.parent.height = parseInt((dialog.height as string).split('px')[0], null) + 40;
+      isHeight = true;
+    }
     dialog.show();
   }
 

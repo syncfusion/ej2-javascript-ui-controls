@@ -1,5 +1,5 @@
-import { Component, formatUnit, EventHandler, Event, isNullOrUndefined, closest, isBlazor } from '@syncfusion/ej2-base';
-import { Property, EmitType, NotifyPropertyChanges, INotifyPropertyChanged, Browser } from '@syncfusion/ej2-base';
+import { Component, formatUnit, EventHandler, Event, isNullOrUndefined, closest, isBlazor, Browser } from '@syncfusion/ej2-base';
+import { Property, EmitType, NotifyPropertyChanges, INotifyPropertyChanged, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import { setStyleAttribute as setStyle, addClass, removeClass, createElement, Touch, SwipeEventArgs } from '@syncfusion/ej2-base';
 import { SidebarModel } from './sidebar-model';
 
@@ -56,6 +56,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     protected tabIndex: string;
     private windowWidth: number;
     private isBlazor: boolean = false;
+    private targetEle: HTMLElement;
 
     /**
      * Specifies the size of the Sidebar in dock state.
@@ -279,6 +280,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private setTarget(): void {
+        this.targetEle = <HTMLElement>this.element.nextElementSibling;
         this.sidebarEleCopy = <HTMLElement>this.element.cloneNode(true);
         if (typeof (this.target) === 'string') {
             this.setProperties({ target: <HTMLElement>document.querySelector(this.target) }, true);
@@ -287,7 +289,19 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
             (<HTMLElement>this.target).insertBefore(this.element, (<HTMLElement>this.target).children[0]);
             addClass([this.element], SIDEBARABSOLUTE);
             addClass([(<HTMLElement>this.target)], CONTEXT);
+            this.targetEle = this.getTargetElement();
         }
+    }
+
+    private getTargetElement(): HTMLElement {
+        let siblingElement: HTMLElement = <HTMLElement>this.element.nextElementSibling;
+        while (!isNOU(siblingElement)) {
+            if (!siblingElement.classList.contains(ROOT)) {
+                break;
+            }
+            siblingElement = <HTMLElement>siblingElement.nextElementSibling;
+        }
+        return siblingElement;
     }
 
     private setCloseOnDocumentClick(): void {
@@ -325,9 +339,8 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
 
     private addClass(): void {
         let classELement: HTMLElement = <HTMLElement>document.querySelector('.e-main-content');
-        if (!isNullOrUndefined((classELement ||
-            (<HTMLElement>this.element.nextElementSibling)))) {
-            addClass([classELement || this.element.nextElementSibling], [MAINCONTENTANIMATION]);
+        if (!isNullOrUndefined(classELement || this.targetEle)) {
+            addClass([classELement || this.targetEle], [MAINCONTENTANIMATION]);
         }
         this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
         if (!this.isBlazor) {
@@ -365,8 +378,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
         EventHandler.remove(this.element, 'transitionend', this.transitionEnd);
     }
     private destroyBackDrop(): void {
-        let sibling: HTMLElement = (<HTMLElement>document.querySelector('.e-main-content')) ||
-            (<HTMLElement>this.element.nextElementSibling);
+        let sibling: HTMLElement = (<HTMLElement>document.querySelector('.e-main-content')) || this.targetEle;
         if (this.target && this.showBackdrop && sibling) {
             removeClass([sibling], CONTEXTBACKDROP);
         } else if (this.showBackdrop && this.modal) {
@@ -403,8 +415,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
                 this.enableDock ? setStyle(this.element, { 'width': formatUnit(this.dockSize) }) :
                     setStyle(this.element, { 'width': formatUnit(this.width) });
                 this.setType(this.type);
-                let sibling: HTMLElement = <HTMLElement>document.querySelector('.e-main-content') ||
-                    (<HTMLElement>this.element.nextElementSibling);
+                let sibling: HTMLElement = <HTMLElement>document.querySelector('.e-main-content') || this.targetEle;
                 if (!this.enableDock && sibling) {
                     sibling.style.transform = 'translateX(' + 0 + 'px)';
                     this.position === 'Left' ? sibling.style.marginLeft = '0px' : sibling.style.marginRight = '0px';
@@ -424,8 +435,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private setTimeOut(): void {
-        let sibling: HTMLElement = <HTMLElement>document.querySelector('.e-main-content') ||
-            (<HTMLElement>this.element.nextElementSibling);
+        let sibling: HTMLElement = <HTMLElement>document.querySelector('.e-main-content') || this.targetEle;
         if (this.element.classList.contains(OPEN) && sibling) {
             if (this.position === 'Left') {
                 this.width === 'auto' ? sibling.style.marginLeft = this.setDimension(this.element.getBoundingClientRect().width)
@@ -509,8 +519,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private createBackDrop(): void {
         if (this.target && this.showBackdrop && this.getState()) {
-            let sibling: HTMLElement = <HTMLElement>document.querySelector('.e-main-content') ||
-                (<HTMLElement>this.element.nextElementSibling);
+            let sibling: HTMLElement = <HTMLElement>document.querySelector('.e-main-content') || this.targetEle;
             addClass([sibling], CONTEXTBACKDROP);
         } else if (this.showBackdrop && !this.modal && this.getState()) {
             this.modal = this.createElement('div');
@@ -619,8 +628,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
      * @private
      */
     public onPropertyChanged(newProp: SidebarModel, oldProp: SidebarModel): void {
-        let sibling: HTMLElement = <HTMLElement>document.querySelector('.e-main-content') ||
-            (<HTMLElement>this.element.nextElementSibling);
+        let sibling: HTMLElement = <HTMLElement>document.querySelector('.e-main-content') || this.targetEle;
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'isOpen':
@@ -675,12 +683,11 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
                         removeClass([<HTMLElement>oldProp.target], CONTEXT);
                         setStyle(sibling, { 'margin-left': 0, 'margin-right': 0 });
                         document.body.insertAdjacentElement('afterbegin', this.element);
-                    } else {
-                        let isRendered: boolean = this.isServerRendered;
-                        this.isServerRendered = false;
-                        super.refresh();
-                        this.isServerRendered = isRendered;
                     }
+                    let isRendered: boolean = this.isServerRendered;
+                    this.isServerRendered = false;
+                    super.refresh();
+                    this.isServerRendered = isRendered;
                     break;
                 case 'closeOnDocumentClick':
                     this.setCloseOnDocumentClick();
@@ -709,8 +716,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     protected setType(type?: string): void {
         let elementWidth: number = this.element.getBoundingClientRect().width;
         this.setZindex();
-        let sibling: HTMLElement = <HTMLElement>document.querySelector('.e-main-content') ||
-            (<HTMLElement>this.element.nextElementSibling);
+        let sibling: HTMLElement = <HTMLElement>document.querySelector('.e-main-content') || this.targetEle;
         if (sibling) {
             sibling.style.transform = 'translateX(' + 0 + 'px)';
             if (!Browser.isDevice && this.type !== 'Auto') {
@@ -777,8 +783,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
         this.windowWidth = null;
         (!isNullOrUndefined(this.sidebarEleCopy.getAttribute('tabindex'))) ?
             this.element.setAttribute('tabindex', this.tabIndex) : this.element.removeAttribute('tabindex');
-        let sibling: HTMLElement = <HTMLElement>document.querySelector('.e-main-content')
-            || (<HTMLElement>this.element.nextElementSibling);
+        let sibling: HTMLElement = <HTMLElement>document.querySelector('.e-main-content') || this.targetEle;
         if (!isNullOrUndefined(sibling)) {
             sibling.style.margin = '';
             sibling.style.transform = '';

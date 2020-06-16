@@ -532,7 +532,7 @@ export class Resize implements IAction {
         }
         let content: HTMLElement = this.parent.getContent().querySelector('.e-content');
         let cTable: HTMLElement = content.querySelector('.e-movablecontent') ? content.querySelector('.e-movablecontent') : content;
-        if (cTable.scrollHeight >= cTable.clientHeight) {
+        if (cTable.scrollHeight > cTable.clientHeight) {
             this.parent.scrollModule.setPadding();
             cTable.style.overflowY = 'scroll';
         }

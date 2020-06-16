@@ -100,9 +100,9 @@ export class NormalEdit {
         let primaryKeys: string[] = gObj.getPrimaryKeyFieldNames();
         let primaryKeyValues: string[] = [];
         this.rowIndex = this.editRowIndex = parseInt(tr.getAttribute('aria-rowindex'), 10);
-        if (gObj.enableVirtualization) {
+        if (gObj.enableVirtualization || gObj.enableInfiniteScrolling) {
             let selector: string = '.e-row[aria-rowindex="' + this.rowIndex + '"]';
-            let virtualRow: Element = this.parent.getContent().querySelector(selector);
+            let virtualRow: Element = this.parent.element.querySelector(selector);
             if (!virtualRow) {
                 return;
             }
@@ -119,7 +119,7 @@ export class NormalEdit {
         if (isGroupAdaptive(gObj)) {
             let rObj: Row<Column> = gObj.getRowObjectFromUID(tr.getAttribute('data-uid'));
             this.previousData = rObj.data;
-        } else if (this.parent.enableVirtualization) {
+        } else if (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling) {
             let e: { data: Object, index: number } = { data: this.previousData, index: this.rowIndex };
             this.parent.notify(events.virtualScrollEditActionBegin, e);
             this.previousData = e.data;
@@ -225,7 +225,8 @@ export class NormalEdit {
         let dlgForm: Element = isDlg ? dlgWrapper.querySelector('.e-gridform') : gObj.element.querySelector('.e-gridform');
         let data: { virtualData: Object, isAdd: boolean } = { virtualData: {}, isAdd: false };
         this.parent.notify(events.getVirtualData, data);
-        if (this.parent.enableVirtualization && this.parent.editSettings.mode === 'Normal' && !dlgForm) {
+        if ((this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)
+            && this.parent.editSettings.mode === 'Normal' && !dlgForm) {
             if (this.parent.isEdit) {
                 this.currentVirtualData = editedData = args.data = data.virtualData;
             }
@@ -237,8 +238,10 @@ export class NormalEdit {
             if (gObj.frozenRows && mForm) {
                 editedData = gObj.editModule.getCurrentEditedData(mForm, editedData);
             } else {
-                editedData = gObj.editModule.getCurrentEditedData(
-                    gObj.element.querySelector('.e-movablecontent').querySelector('.e-gridform'), editedData);
+                let form: Element = gObj.element.querySelector('.e-movablecontent').querySelector('.e-gridform');
+                if (form) {
+                    editedData = gObj.editModule.getCurrentEditedData(form, editedData);
+                }
             }
         }
         if (isBlazor()) {
@@ -305,7 +308,7 @@ export class NormalEdit {
     }
 
     private updateCurrentViewData(data: Object): void {
-        if (!this.parent.enableVirtualization) {
+        if (!this.parent.enableVirtualization && !this.parent.enableInfiniteScrolling) {
             this.parent.getCurrentViewRecords()[this.editRowIndex] = data;
         }
     }
@@ -407,7 +410,8 @@ export class NormalEdit {
     private needRefresh(): boolean {
         let refresh: boolean = true;
         let editedRow: Element = this.parent.element.querySelector('.e-gridform');
-        if (this.parent.enableVirtualization && this.parent.editSettings.mode === 'Normal' && !editedRow) {
+        if ((this.parent.enableVirtualization || this.parent.infiniteScrollSettings.enableCache)
+            && this.parent.editSettings.mode === 'Normal' && !editedRow) {
             refresh = false;
         }
         return refresh;
@@ -428,9 +432,17 @@ export class NormalEdit {
                 let uid: string;
                 let tr: Element = this.parent.element.querySelector('[data-uid=' + rowObj.uid + ']');
                 if ((parentsUntil(tr, 'e-frozencontent')) || (parentsUntil(tr, 'e-frozenheader'))) {
-                    uid = this.parent.getMovableRows()[rowObj.index].getAttribute('data-uid');
+                    if (this.parent.infiniteScrollSettings.enableCache) {
+                        uid = this.parent.getMovableRowByIndex(rowObj.index).getAttribute('data-uid');
+                    } else {
+                        uid = this.parent.getMovableRows()[rowObj.index].getAttribute('data-uid');
+                    }
                 } else {
-                    uid = this.parent.getRows()[rowObj.index].getAttribute('data-uid');
+                    if (this.parent.infiniteScrollSettings.enableCache) {
+                        uid = this.parent.getRowByIndex(rowObj.index).getAttribute('data-uid');
+                    } else {
+                        uid = this.parent.getRows()[rowObj.index].getAttribute('data-uid');
+                    }
                 }
                 rowObj = this.parent.getRowObjectFromUID(uid);
                 rowObj.changes = data;
@@ -513,7 +525,8 @@ export class NormalEdit {
         };
         let rowData: { virtualData: Object } = { virtualData: {} };
         this.parent.notify(events.getVirtualData, rowData);
-        if (this.parent.enableVirtualization && Object.keys(rowData.virtualData).length) {
+        if ((this.parent.enableVirtualization || this.parent.infiniteScrollSettings.enableCache)
+            && Object.keys(rowData.virtualData).length) {
             args.data = args.rowData = rowData.virtualData;
         }
         if (isBlazor()) {

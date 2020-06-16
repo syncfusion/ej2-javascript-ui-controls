@@ -581,7 +581,7 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         else {
             classProp = ELEMENTS;
         }
-        extend(this.model, this.model, { cssClass: classProp, enableRtl: this.enableRtl });
+        extend(this.model, this.model, { cssClass: classProp, enableRtl: this.enableRtl, locale: this.locale });
         if (!isNullOrUndefined(this.value)) {
             this.updateModelValue();
         }
@@ -589,7 +589,7 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
             this.notify(render, { module: modulesList[this.type], target: ele, type: this.type });
         }
         else {
-            if (isNullOrUndefined(this.model.showClearButton)) {
+            if (isNullOrUndefined(this.model.showClearButton) && !isBlazor()) {
                 this.model.showClearButton = true;
             }
             switch (this.type) {

@@ -141,7 +141,7 @@ export class AccumulationSelection extends BaseSelection {
         }
     }
     /**
-     * To perform the selection for legend elements. 
+     * To perform the selection for legend elements.
      * @private
      */
     public legendSelection(accumulation: AccumulationChart, series: number, pointIndex: number): void {
@@ -259,7 +259,8 @@ export class AccumulationSelection extends BaseSelection {
                     legendShape = document.getElementById(this.control.element.id + '_chart_legend_shape_' + index.point);
                     this.removeSvgClass(legendShape, this.getSelectionClass(legendShape.id));
                 }
-                let opacity: number = accumulationTooltip && (accumulationTooltip.previousPoints[0].point.index === index.point) ?
+                let opacity: number = accumulationTooltip && (accumulationTooltip.previousPoints.length > 0 &&
+                    accumulationTooltip.previousPoints[0].point.index === index.point) ?
                     accumulationTooltip.svgTooltip.opacity : this.series[index.series].opacity;
                 element.setAttribute('opacity', opacity.toString());
                 this.removeSvgClass(element, this.getSelectionClass(element.id));
@@ -304,7 +305,7 @@ export class AccumulationSelection extends BaseSelection {
         return 'AccumulationSelection';
     }
     /**
-     * To destroy the selection. 
+     * To destroy the selection.
      * @return {void}
      * @private
      */

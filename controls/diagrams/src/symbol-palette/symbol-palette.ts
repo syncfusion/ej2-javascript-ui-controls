@@ -171,6 +171,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     /**
      * Defines the width of the symbol palette
      * @default '100%'
+     * @blazorType string
      */
     @Property('100%')
     public width: string | number;
@@ -178,6 +179,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     /**
      * Defines the height of the symbol palette
      * @default '100%'
+     * @blazorType string
      */
     @Property('100%')
     public height: string | number;

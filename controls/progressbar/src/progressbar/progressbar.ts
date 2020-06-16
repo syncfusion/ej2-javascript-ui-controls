@@ -1,5 +1,5 @@
 import { Component, Property, NotifyPropertyChanges, Browser, Complex, Event, Collection, EventHandler } from '@syncfusion/ej2-base';
-import { EmitType, INotifyPropertyChanged, createElement, remove, ModuleDeclaration,  } from '@syncfusion/ej2-base';
+import { EmitType, INotifyPropertyChanged, createElement, remove, ModuleDeclaration, } from '@syncfusion/ej2-base';
 import { ProgressBarModel } from './progressbar-model';
 import { Rect, Size, RectOption, stringToNumber } from './utils/helper';
 import { MarginModel, AnimationModel, FontModel, RangeColorModel } from './model/progress-base-model';
@@ -632,10 +632,12 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
                 }
                 arg.currentSize = this.progressSize;
                 this.trigger('resized', arg);
-                this.secElement.innerHTML = '';
-                this.calculateProgressBarSize();
-                this.createSVG();
-                this.renderElements();
+                if ((this.width === null || this.height === null)) {
+                    this.secElement.innerHTML = '';
+                    this.calculateProgressBarSize();
+                    this.createSVG();
+                    this.renderElements();
+                }
             },
             500);
         return false;
@@ -717,7 +719,6 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     }
 
     public onPropertyChanged(newProp: ProgressBarModel, oldProp: ProgressBarModel): void {
-        let annotationElement: Element;
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'annotations':
@@ -735,11 +736,13 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
                     } else {
                         this.trigger(valueChanged, this.argsData);
                     }
+                    if (this.argsData.value < oldProp.value) {
+                        this.argsData.value = oldProp.value;
+                    }
                     if (this.type === 'Circular') {
                         this.circular.renderCircularProgress(this.previousEndAngle, this.previousTotalEnd, true);
                         if (this.progressAnnotationModule && this.animation.enable && !this.isIndeterminate) {
-                            annotationElement = document.getElementById(this.element.id + 'Annotation0').children[0];
-                            this.annotateAnimation.doAnnotationAnimation(annotationElement, this, this.annotateEnd, this.annotateTotal);
+                            this.annotateAnimation.doAnnotationAnimation(this.clipPath, this, this.annotateEnd, this.annotateTotal);
                         }
                     } else {
                         this.linear.renderLinearProgress(true, this.previousWidth);

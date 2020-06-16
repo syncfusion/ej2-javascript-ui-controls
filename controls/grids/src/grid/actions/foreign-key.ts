@@ -150,7 +150,12 @@ export class ForeignKey extends Data {
 
         if (gObj.searchSettings.key.length) {
             let sSettings: SearchSettingsModel = gObj.searchSettings;
-            query.search(sSettings.key, column.foreignKeyValue, sSettings.operator, sSettings.ignoreCase);
+            if (column.dataSource instanceof DataManager && ((<{ getModuleName?: Function }>column.dataSource.adaptor).getModuleName &&
+                (<{ getModuleName?: Function }>column.dataSource.adaptor).getModuleName() === 'ODataV4Adaptor')) {
+                query = this.searchQuery(query, column, true);
+            } else {
+                query.search(sSettings.key, column.foreignKeyValue, sSettings.operator, sSettings.ignoreCase);
+            }
         }
 
         return query;

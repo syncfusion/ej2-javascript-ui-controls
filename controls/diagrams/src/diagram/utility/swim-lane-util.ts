@@ -17,7 +17,7 @@ import { StackEntryObject, ICollectionChangeEventArgs } from '../objects/interfa
 import { Connector } from '../objects/connector';
 import { ConnectorModel } from '../objects/connector-model';
 import { SelectorModel } from '../objects/node-model';
-import { checkParentAsContainer, findBounds } from '../interaction/container-interaction';
+import { checkParentAsContainer, findBounds, removeChildInContainer } from '../interaction/container-interaction';
 import { IElement } from '../objects/interface/IElement';
 import { ClipBoardObject } from '../interaction/command-manager';
 import { canSelect } from './constraints-util';
@@ -1371,7 +1371,11 @@ export function removeSwimLane(diagram: Diagram, obj: NodeModel): void {
                             } else {
                                 diagram.removeDependentConnector(removeNode);
                                 diagram.diagramActions |= DiagramAction.PreventHistory;
-                                diagram.remove(removeNode);
+                                if ((removeNode.constraints & NodeConstraints.Delete)) {
+                                    diagram.remove(removeNode);
+                                } else {
+                                    removeChildInContainer(diagram, removeNode, {}, false);
+                                }
                                 diagram.diagramActions &= ~DiagramAction.PreventHistory;
                                 k--;
                             }
@@ -1459,6 +1463,9 @@ export function removeLane(diagram: Diagram, lane: NodeModel, swimLane: NodeMode
                 swimLane.width = swimLane.wrapper.width = grid.width;
                 swimLane.height = swimLane.wrapper.height = grid.height;
                 swimLaneMeasureAndArrange(swimLane);
+                if ((swimLane.shape as SwimLaneModel).orientation === 'Vertical') {
+                    index = 0;
+                }
                 ChangeLaneIndex(diagram, swimLane, index);
                 diagram.drag(swimLane, x - swimLane.wrapper.bounds.x, y - swimLane.wrapper.bounds.y);
                 diagram.updateDiagramObject(swimLane);

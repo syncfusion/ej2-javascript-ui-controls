@@ -112,7 +112,10 @@ export class Selection implements IAction {
     private isInteracted: boolean;
     private isHeaderCheckboxClicked: boolean;
     private checkSelectAllClicked: boolean;
-    private index: number;
+    /**
+     * @hidden
+     */
+    public index: number;
     private toggle: boolean;
     private data: Object;
     private removed: boolean;

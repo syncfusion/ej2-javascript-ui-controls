@@ -337,7 +337,7 @@ export class ContentRender implements IRenderer {
             }
             modelData = (<{ generateRows?: Function }>(<Grid>this.parent).contentModule).generateRows(dataSource as Object[], args);
         } else {
-            modelData = this.checkInInfiniteCache(modelData, args);
+            modelData = this.checkInfiniteCache(modelData, args);
             if (!this.isAddRows) {
                 modelData = this.generator.generateRows(dataSource, args);
             }
@@ -435,9 +435,8 @@ export class ContentRender implements IRenderer {
             }
             if (!gObj.rowTemplate) {
                 tr = row.render(modelData[i], columns);
-                let isVFreorder: boolean = gObj.enableVirtualization
-                    && (args.requestType === 'reorder' || args.requestType === 'refresh');
-                if (gObj.frozenRows && i < gObj.frozenRows && !isInfiniteScroll && args.requestType !== 'virtualscroll' && !isVFreorder) {
+                let isVFreorder: boolean = this.ensureFrozenHeaderRender(args);
+                if (gObj.frozenRows && i < gObj.frozenRows && !isInfiniteScroll && args.requestType !== 'virtualscroll' && isVFreorder) {
                     hdrfrag.appendChild(tr);
                 } else {
                     frag.appendChild(tr);
@@ -575,7 +574,14 @@ export class ContentRender implements IRenderer {
         this.getTable().appendChild(tbody);
     }
 
-    private checkInInfiniteCache(modelData: Row<Column>[], args: InfiniteScrollArgs): Row<Column>[] {
+    private ensureFrozenHeaderRender(args: NotifyArgs): boolean {
+        return !((this.parent.enableVirtualization
+            && (args.requestType === 'reorder' || args.requestType === 'refresh')) || (this.parent.infiniteScrollSettings.enableCache
+                && this.parent.frozenRows && this.parent.infiniteScrollModule.requestType === 'delete'
+                && this.parent.pageSettings.currentPage !== 1));
+    }
+
+    private checkInfiniteCache(modelData: Row<Column>[], args: InfiniteScrollArgs): Row<Column>[] {
         if (this.parent.infiniteScrollSettings.enableCache && args.requestType === 'infiniteScroll') {
             let index: number = args.isFrozen ? 1 : 0;
             let frozenCols: number = this.parent.getFrozenColumns();
@@ -595,7 +601,7 @@ export class ContentRender implements IRenderer {
 
     private setInfiniteVisibleRows(args: InfiniteScrollArgs, data: Row<Column>): void {
         let frozenCols: number = this.parent.getFrozenColumns();
-        if (this.parent.enableInfiniteScrolling && !this.isAddRows) {
+        if (this.parent.enableInfiniteScrolling && !this.parent.infiniteScrollSettings.enableCache) {
             if (frozenCols) {
                 !args.isFrozen ? this.visibleFrozenRows.push(data) : this.visibleRows.push(data);
             } else if (!this.parent.infiniteScrollSettings.enableCache) {
@@ -607,6 +613,9 @@ export class ContentRender implements IRenderer {
     private getCurrentBlockInfiniteRecords(isFreeze?: boolean): Row<Column>[] {
         let data: Row<Column>[] = [];
         if (this.parent.infiniteScrollSettings.enableCache) {
+            if (!Object.keys(this.infiniteCache).length) {
+                return [];
+            }
             let frozenCols: number = this.parent.getFrozenColumns();
             let rows: Element[] = this.parent.getRows();
             let index: number = parseInt(rows[this.parent.frozenRows].getAttribute('aria-rowindex'), 10);
@@ -677,6 +686,13 @@ export class ContentRender implements IRenderer {
         return rows;
     }
 
+    private getInfiniteMovableRows(): Row<Column>[] {
+        let infiniteCacheRows: Row<Column>[] = this.getCurrentBlockInfiniteRecords();
+        let infiniteRows: Row<Column>[] = this.parent.enableInfiniteScrolling ? infiniteCacheRows.length ? infiniteCacheRows
+            : this.visibleRows : [];
+        return infiniteRows;
+    }
+
     /**
      * Get the content div element of grid
      * @return {Element} 
@@ -723,7 +739,8 @@ export class ContentRender implements IRenderer {
      * @returns {Row[] | HTMLCollectionOf<HTMLTableRowElement>}
      */
     public getMovableRows(): Row<Column>[] | HTMLCollectionOf<HTMLTableRowElement> {
-        return this.movableRows;
+        let infiniteRows: Row<Column>[] = this.getInfiniteMovableRows();
+        return infiniteRows.length ? infiniteRows : this.movableRows;
     }
 
     /**
@@ -860,7 +877,8 @@ export class ContentRender implements IRenderer {
     public setDisplayNone(tr: Object, idx: number, displayVal: string, rows: Row<Column>[]): void {
         let trs: string[] = Object.keys(tr);
         for (let i: number = 0; i < trs.length; i++) {
-            if (tr[trs[i]].querySelectorAll('td.e-rowcell').length) {
+            let td: HTMLElement = tr[trs[i]].querySelectorAll('td.e-rowcell')[idx];
+            if (tr[trs[i]].querySelectorAll('td.e-rowcell').length && td) {
                 setStyleAttribute(<HTMLElement>tr[trs[i]].querySelectorAll('td.e-rowcell')[idx], { 'display': displayVal });
                 if (tr[trs[i]].querySelectorAll('td.e-rowcell')[idx].classList.contains('e-hide')) {
                     removeClass([tr[trs[i]].querySelectorAll('td.e-rowcell')[idx]], ['e-hide']);

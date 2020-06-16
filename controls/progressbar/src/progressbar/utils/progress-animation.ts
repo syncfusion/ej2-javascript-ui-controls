@@ -1,4 +1,4 @@
-import { Animation, AnimationOptions, enableRtl } from '@syncfusion/ej2-base';
+import { Animation, AnimationOptions, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { effect, getPathArc } from '../utils/helper';
 import { ProgressBar } from '../progressbar';
 import { lineCapRadius, completeAngle } from '../model/constant';
@@ -141,14 +141,16 @@ export class ProgressAnimation {
         let pathRadius: number = radius + (thickness / 2);
         let end: number = 0;
         let opacityValue: number = 0;
-        let endValue: number;
+        let startPos: number;
+        let endPos: number;
         start += (progress.cornerRadius === 'Round' && totalEnd !== completeAngle && totalEnd !== 0) ?
             ((progress.enableRtl) ? (lineCapRadius / 2) * thickness : -(lineCapRadius / 2) * thickness) : 0;
         totalEnd += (progress.cornerRadius === 'Round' && totalEnd !== completeAngle && totalEnd !== 0) ?
             (lineCapRadius / 2) * thickness : 0;
         progressEnd += (progress.cornerRadius === 'Round' && totalEnd !== completeAngle && totalEnd !== 0) ?
             ((progress.enableRtl) ? -(lineCapRadius / 2) * thickness : (lineCapRadius / 2) * thickness) : 0;
-        endValue = (startValue) ? totalEnd - previousTotal : 0;
+        startPos = (!isNullOrUndefined(startValue)) ? startValue : start;
+        endPos = (!isNullOrUndefined(startValue)) ? totalEnd - previousTotal : totalEnd;
         circularPath.setAttribute('visibility', 'Hidden');
         animation.animate(circularPath, {
             duration: progress.animation.duration,
@@ -156,7 +158,7 @@ export class ProgressAnimation {
             progress: (args: AnimationOptions): void => {
                 if (args.timeStamp >= args.delay) {
                     circularPath.setAttribute('visibility', 'visible');
-                    end = effect(args.timeStamp, startValue || start, endValue || totalEnd, args.duration, progress.enableRtl);
+                    end = effect(args.timeStamp, startPos, endPos, args.duration, progress.enableRtl);
                     circularPath.setAttribute('d', getPathArc(x, y, pathRadius, start, end % 360, progress.enableRtl, true));
                     if (progress.isActive) {
                         opacityValue = effect(args.timeStamp, 0.5, 0.5, args.duration, true);
@@ -165,6 +167,7 @@ export class ProgressAnimation {
                 }
             },
             end: (model: AnimationOptions) => {
+                circularPath.setAttribute('visibility', '');
                 circularPath.setAttribute('d', getPathArc(x, y, pathRadius, start, progressEnd, progress.enableRtl, true));
                 if (progress.isActive) {
                     this.doCircularAnimation(
@@ -282,6 +285,7 @@ export class ProgressAnimation {
         let totalEnd: number;
         let annotateValueChanged: number;
         let annotateValue: number;
+        let startValue: number;
         let endValue: number;
         if (isAnnotation && progress.progressAnnotationModule) {
             firstAnnotatElement = document.getElementById(progress.element.id + 'Annotation0').children[0];
@@ -291,21 +295,24 @@ export class ProgressAnimation {
                 }
             }
         }
-        totalEnd = ((progress.value - progress.minimum) / (progress.maximum - progress.minimum)) * progress.totalAngle;
-        progress.annotateTotal = totalEnd = (progress.value < progress.minimum || progress.value > progress.maximum) ? 0 : totalEnd;
+        totalEnd = ((progress.argsData.value - progress.minimum) / (progress.maximum - progress.minimum)) * progress.totalAngle;
+        progress.annotateTotal = totalEnd =
+            (progress.argsData.value < progress.minimum || progress.argsData.value > progress.maximum) ? 0 : totalEnd;
         progress.annotateEnd = start + totalEnd;
-        annotateValue = ((progress.value - progress.minimum) / (progress.maximum - progress.minimum)) * percentage;
-        annotateValue = (progress.value < progress.minimum || progress.value > progress.maximum) ? 0 : Math.round(annotateValue);
-        endValue = (previousEnd) ? totalEnd - previousTotal : 0;
-        if (progress.value <= progress.minimum || progress.value > progress.maximum) {
+        annotateValue = ((progress.argsData.value - progress.minimum) / (progress.maximum - progress.minimum)) * percentage;
+        annotateValue = (progress.argsData.value < progress.minimum || progress.argsData.value > progress.maximum) ? 0 :
+            Math.round(annotateValue);
+        startValue = (!isNullOrUndefined(previousEnd)) ? previousEnd : start;
+        endValue = (!isNullOrUndefined(previousEnd)) ? totalEnd - previousTotal : totalEnd;
+        if (progress.argsData.value <= progress.minimum || progress.argsData.value > progress.maximum) {
             annotatElementChanged.innerHTML = annotateValue + '%';
         } else {
-            animation.animate(<HTMLElement>circularPath, {
+            animation.animate((<HTMLElement>circularPath), {
                 duration: progress.animation.duration,
                 delay: progress.animation.delay,
                 progress: (args: AnimationOptions): void => {
                     if (isAnnotation && annotatElementChanged) {
-                        value = effect(args.timeStamp, previousEnd || start, endValue || totalEnd, args.duration, false);
+                        value = effect(args.timeStamp, startValue, endValue, args.duration, false);
                         annotateValueChanged = parseInt((((Math.round(value) - start) / totalAngle) * percentage).toString(), 10);
                         annotatElementChanged.innerHTML = annotateValueChanged ? annotateValueChanged.toString() + '%' : '0%';
                     }

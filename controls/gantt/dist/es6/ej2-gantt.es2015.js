@@ -9726,7 +9726,7 @@ let Gantt = class Gantt extends Component {
         this.treeGridModule.renderTreeGrid();
     }
     updateCurrentViewData() {
-        if (isBlazor()) {
+        if (isBlazor() && this.flatData.length !== 0) {
             let records = this.treeGrid.getCurrentViewRecords().slice();
             this.currentViewData = [];
             for (let i = 0; i < records.length; i++) {
@@ -15226,11 +15226,13 @@ class DialogEdit {
                     change: (args) => {
                         let tr = closest(args.element, 'tr');
                         let idInput = tr.querySelector('#' + this.parent.element.id + 'DependencyTabContainerid');
-                        if (!isNullOrUndefined(args.itemData) && !isNullOrUndefined(args.item)) {
-                            idInput.value = args.itemData.id;
-                        }
-                        else {
-                            idInput.value = '';
+                        if (idInput) {
+                            if (!isNullOrUndefined(args.itemData) && !isNullOrUndefined(args.item)) {
+                                idInput.value = args.itemData.id;
+                            }
+                            else {
+                                idInput.value = '';
+                            }
                         }
                     },
                     autofill: true,
@@ -15639,6 +15641,10 @@ class DialogEdit {
         let ids = [];
         for (let i = 0; i < dataSource.length; i++) {
             let preData = dataSource[i];
+            let newId = preData.name.split('-')[0];
+            if (preData.id !== newId) {
+                preData.id = newId;
+            }
             if (ids.indexOf(preData.id) === -1) {
                 let name = preData.id + preData.type;
                 if (preData.offset && preData.offset.indexOf('-') !== -1) {
@@ -19741,7 +19747,12 @@ class Selection$1 {
         if (!isNullOrUndefined(args.foreignKeyData) && Object.keys(args.foreignKeyData).length === 0) {
             delete args.foreignKeyData;
         }
-        this.prevRowIndex = args.rowIndex;
+        if (typeof (args.rowIndex) === 'number') {
+            this.prevRowIndex = args.rowIndex;
+        }
+        else {
+            this.prevRowIndex = args.rowIndex[0];
+        }
         if (!isNullOrUndefined(this.parent.toolbarModule)) {
             this.parent.toolbarModule.refreshToolbarItems(args);
         }

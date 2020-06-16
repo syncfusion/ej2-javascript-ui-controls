@@ -234,9 +234,15 @@ export class Edit {
     if (this.parent.editSettings.mode === 'Cell') {
       let cellDetails: RowInfo = getValue('editModule.cellDetails', this.parent.grid.editModule);
       let selectRowIndex: number = cellDetails.rowIndex;
+      let treeCell : HTMLElement;
+      if (this.parent.allowRowDragAndDrop === true && !(this.parent.rowDropSettings.targetID)) {
+        treeCell = this.parent.getRows()[selectRowIndex].cells[this.parent.treeColumnIndex + 1];
+      } else {
+        treeCell = this.parent.getRows()[selectRowIndex].cells[this.parent.treeColumnIndex];
+      }
       this.parent.renderModule.cellRender({
         data: cellDetails.rowData,
-        cell: this.parent.getRows()[selectRowIndex].cells[this.parent.treeColumnIndex],
+        cell: treeCell,
         column: this.parent.grid.getColumns()[this.parent.treeColumnIndex]
       });
       this.updateGridEditMode('Normal');

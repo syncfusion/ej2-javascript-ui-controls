@@ -42,7 +42,7 @@ export class InsertHtml {
         let isCursor: boolean = range.startOffset === range.endOffset && range.startOffset === 0 &&
         range.startContainer === range.endContainer;
         let isCollapsed: boolean = range.collapsed;
-        let nodes: Node[] = nodeSelection.getInsertNodeCollection(range);
+        let nodes: Node[] = this.getNodeCollection(range, nodeSelection);
         let closestParentNode: Node = (node.nodeName.toLowerCase() === 'table') ? this.closestEle(nodes[0].parentNode, editNode) : nodes[0];
         if (isExternal || (!isNOU(node) && !isNOU((node as HTMLElement).classList) &&
         (node as HTMLElement).classList.contains('pasteContent'))) {
@@ -183,11 +183,7 @@ export class InsertHtml {
                 tempSpan.parentNode.replaceChild(fragment, tempSpan);
             }
         } else {
-            let blockNode: Node = this.getImmediateBlockNode(nodes[nodes.length - 1], editNode);
-            let splitedElm: Node = nodeCutter.GetSpliceNode(range, blockNode as HTMLElement);
-            if (splitedElm.nodeName === 'TD' || splitedElm.nodeName === 'TH') { splitedElm.appendChild(node);
-            } else { splitedElm.parentNode.replaceChild(node, splitedElm);
-            }
+            this.insertTempNode(range, node, nodes, nodeCutter, editNode);
             let isFirstTextNode: boolean = true;
             let isPreviousInlineElem: boolean; let paraElm: HTMLElement; let previousParent: HTMLElement;
             range.deleteContents();
@@ -243,6 +239,39 @@ export class InsertHtml {
         this.removeEmptyElements(editNode as HTMLElement);
     }
 
+    private static getNodeCollection (range: Range, nodeSelection: NodeSelection): Node[] {
+        let nodes: Node[] = [];
+        if (range.startOffset === range.endOffset && range.startContainer === range.endContainer &&
+            range.startContainer.nodeName === 'TD') {
+                nodes.push(range.startContainer.childNodes[range.endOffset]);
+        } else {
+            nodes = nodeSelection.getInsertNodeCollection(range);
+        }
+        return nodes;
+    }
+    private static insertTempNode(range: Range, node: Node, nodes: Node[], nodeCutter: NodeCutter, editNode?: Element): void {
+        if (range.startContainer === editNode && !isNOU(range.startContainer.childNodes[range.endOffset - 1]) &&
+            range.startContainer.childNodes[range.endOffset - 1].nodeName === 'TABLE') {
+                if (isNOU(range.startContainer.childNodes[range.endOffset - 1].nextSibling)) {
+                    range.startContainer.appendChild(node);
+                } else {
+                    range.startContainer.insertBefore(node, range.startContainer.childNodes[range.endOffset - 1].nextSibling);
+                }
+        } else if (range.startContainer === editNode && !isNOU(range.startContainer.childNodes[range.endOffset]) &&
+        range.startContainer.childNodes[range.endOffset].nodeName === 'TABLE') {
+            range.startContainer.insertBefore(node, range.startContainer.childNodes[range.endOffset]);
+        } else {
+            let blockNode: Node = this.getImmediateBlockNode(nodes[nodes.length - 1], editNode);
+            if (blockNode.nodeName === 'TD' || blockNode.nodeName === 'TH') {
+                let tempSpan: HTMLElement = createElement('span', { className: 'tempSpan' });
+                range.insertNode(tempSpan);
+                tempSpan.parentNode.replaceChild(node, tempSpan);
+            } else {
+                let splitedElm: Node = nodeCutter.GetSpliceNode(range, blockNode as HTMLElement);
+                splitedElm.parentNode.replaceChild(node, splitedElm);
+            }
+        }
+    }
     private static cursorPos(
         lastSelectionNode: Node, node: Node, nodeSelection: NodeSelection, docElement: Document, editNode?: Element): void {
         (lastSelectionNode as HTMLElement).classList.add('lastNode');

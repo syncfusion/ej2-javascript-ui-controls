@@ -9962,6 +9962,7 @@ function removeChildInContainer(diagram, obj, position, isBoundsUpdate) {
                         diagram.commandHandler.isContainer = false;
                         diagram.endGroupAction();
                     }
+                    moveSwinLaneChild(obj, diagram);
                 }
             }
         }
@@ -10156,6 +10157,7 @@ function addChildToContainer(diagram, parent, node, isUndo, historyAction) {
                 }
             }
             diagram.updateDiagramObject(node);
+            moveSwinLaneChild(node, diagram);
             if (!container.parentId) {
                 diagram.updateDiagramObject(container);
             }
@@ -10171,6 +10173,14 @@ function addChildToContainer(diagram, parent, node, isUndo, historyAction) {
             }
         }
         diagram.protectPropertyChange(false);
+    }
+}
+function moveSwinLaneChild(node, diagram) {
+    let sourceNode = getDiagramElement(node.id + '_groupElement', diagram.element.id);
+    let targetId = (node.parentId) ? node.parentId + '_groupElement' : diagram.element.id + '_diagramLayer';
+    let targetNode = getDiagramElement(targetId, diagram.element.id);
+    if (sourceNode && targetNode) {
+        targetNode.appendChild(sourceNode);
     }
 }
 function updateLaneBoundsAfterAddChild(container, swimLane, node, diagram, isBoundsUpdate) {
@@ -11729,7 +11739,12 @@ function removeSwimLane(diagram, obj) {
                             else {
                                 diagram.removeDependentConnector(removeNode);
                                 diagram.diagramActions |= DiagramAction.PreventHistory;
-                                diagram.remove(removeNode);
+                                if ((removeNode.constraints & NodeConstraints.Delete)) {
+                                    diagram.remove(removeNode);
+                                }
+                                else {
+                                    removeChildInContainer(diagram, removeNode, {}, false);
+                                }
                                 diagram.diagramActions &= ~DiagramAction.PreventHistory;
                                 k--;
                             }
@@ -11822,6 +11837,9 @@ function removeLane(diagram, lane, swimLane, lanes) {
                 swimLane.width = swimLane.wrapper.width = grid.width;
                 swimLane.height = swimLane.wrapper.height = grid.height;
                 swimLaneMeasureAndArrange(swimLane);
+                if (swimLane.shape.orientation === 'Vertical') {
+                    index = 0;
+                }
                 ChangeLaneIndex(diagram, swimLane, index);
                 diagram.drag(swimLane, x - swimLane.wrapper.bounds.x, y - swimLane.wrapper.bounds.y);
                 diagram.updateDiagramObject(swimLane);
@@ -32985,6 +33003,7 @@ class Diagram extends Component {
     /**
      * move objects from the layer to another layer from diagram
      * @param {string[]} objects - define the objects id of string array
+     * @blazorArgsType objects|List<string>
      */
     moveObjects(objects, targetLayer) {
         let oldValues = cloneObject(this.layers);
@@ -33065,6 +33084,7 @@ class Diagram extends Component {
     }
     /**
      * gets the node or connector having the given name
+     * @deprecated
      */
     getObject(name) {
         return this.nameTable[name];
@@ -33348,6 +33368,7 @@ class Diagram extends Component {
      * @param {NodeModel[] | ConnectorModel[]}objects - Defines the collection of objects, from which the object has to be found.
      * @param {Actions} action - Defines the action, using which the relevant object has to be found.
      * @param {boolean} inAction - Defines the active state of the action.
+     * @deprecated
      */
     findObjectUnderMouse(objects, action, inAction) {
         return this.eventHandler.findObjectUnderMouse(objects, action, inAction);
@@ -33357,6 +33378,7 @@ class Diagram extends Component {
      * @param {NodeModel[] | ConnectorModel[]} objects - Defines the collection of objects, from which the object has to be found.
      * @param {Actions} action - Defines the action, using which the relevant object has to be found.
      * @param {boolean} inAction - Defines the active state of the action.
+     * @deprecated
      */
     findTargetObjectUnderMouse(objects, action, inAction, position, source) {
         return this.eventHandler.findTargetUnderMouse(objects, action, inAction, position, source);
@@ -33366,6 +33388,7 @@ class Diagram extends Component {
      * @param {IElement} obj - Defines the object, the child element of which has to be found
      * @param {PointModel} position - Defines the position, the child element under which has to be found
      * @param {number} padding - Defines the padding, the child element under which has to be found
+     * @deprecated
      */
     findElementUnderMouse(obj, position, padding) {
         return this.eventHandler.findElementUnderMouse(obj, position, padding);
@@ -33383,6 +33406,7 @@ class Diagram extends Component {
     /**
      * Returns the tool that handles the given action
      * @param {string} action - Defines the action that is going to be performed
+     * @deprecated
      */
     getTool(action) {
         let tool;
@@ -33861,7 +33885,7 @@ class Diagram extends Component {
      * Adds the given diagram object to the group.
      * @param {NodeModel} Group - defines where the diagram object to be added.
      * @param {string | NodeModel | ConnectorModel} Child - defines the diagram object to be added to the group
-     * @blazorArgsType obj|DiagramNode
+     * @blazorArgsType group|DiagramNode
      */
     addChildToGroup(group, child) {
         this.addChild(group, child);
@@ -33909,6 +33933,7 @@ class Diagram extends Component {
      * Adds the given connector to diagram control
      * @param {ConnectorModel} obj - Defines the connector that has to be added to diagram
      * @blazorArgsType obj|DiagramConnector
+     * @blazorType DiagramConnector
      */
     addConnector(obj) {
         return this.add(obj);
@@ -35061,7 +35086,7 @@ class Diagram extends Component {
     }
     /**
      * Add ports at the run time
-     * @blazorArgsType obj|DiagramNode
+     * @blazorArgsType obj|DiagramNode, ports|ObservableCollection<DiagramPort>
      */
     addPorts(obj, ports) {
         this.protectPropertyChange(true);
@@ -35111,12 +35136,14 @@ class Diagram extends Component {
     }
     /**
      * Add labels in node at the run time in the blazor platform
+     * @blazorArgsType obj|DiagramNode,labels|ObservableCollection<DiagramNodeAnnotation>
      */
     addNodeLabels(obj, labels) {
         this.addLabels(obj, labels);
     }
     /**
      * Add labels in connector at the run time in the blazor platform
+     * @blazorArgsType obj|DiagramConnector , labels|ObservableCollection<DiagramConnectorAnnotation>
      */
     addConnectorLabels(obj, labels) {
         this.addLabels(obj, labels);
@@ -35184,6 +35211,7 @@ class Diagram extends Component {
     }
     /**
      * Add dynamic Lanes to swimLane at runtime
+     * @deprecated
      */
     addLanes(node, lane, index) {
         node = this.nameTable[node.id] || node;
@@ -35197,6 +35225,7 @@ class Diagram extends Component {
     }
     /**
      * Add a phase to a swimLane at runtime
+     * @deprecated
      */
     addPhases(node, phases) {
         node = this.nameTable[node.id] || node;
@@ -35207,6 +35236,7 @@ class Diagram extends Component {
     }
     /**
      * Remove dynamic Lanes to swimLane at runtime
+     * @deprecated
      */
     removeLane(node, lane) {
         removeLane(this, undefined, node, lane);
@@ -35214,6 +35244,7 @@ class Diagram extends Component {
     }
     /**
      * Remove a phase to a swimLane at runtime
+     * @deprecated
      */
     removePhase(node, phase) {
         removePhase(this, undefined, node, phase);
@@ -35313,6 +35344,7 @@ class Diagram extends Component {
     }
     /**
      * Remove Ports at the run time
+     * @blazorArgsType obj|DiagramNode,ports|ObservableCollection<DiagramPort>
      */
     removePorts(obj, ports) {
         obj = this.nameTable[obj.id] || obj;
@@ -39485,6 +39517,7 @@ class Diagram extends Component {
     }
     /**
      * moves the node or connector forward within given layer
+     * @deprecated
      */
     moveObjectsUp(node, currentLayer) {
         let targetLayer;
@@ -39502,18 +39535,21 @@ class Diagram extends Component {
     }
     /**
      * Inserts newly added element into the database
+     * @deprecated
      */
     insertData(node) {
         return this.crudOperation(node, 'create', this.getNewUpdateNodes('New'));
     }
     /**
      * updates the user defined element properties into the existing database
+     * @deprecated
      */
     updateData(node) {
         return this.crudOperation(node, 'update', this.getNewUpdateNodes('Update'));
     }
     /**
      * Removes the user deleted element from the existing database
+     * @deprecated
      */
     removeData(node) {
         return this.crudOperation(node, 'destroy', this.getDeletedNodes());
@@ -41174,7 +41210,7 @@ class DiagramContextMenu {
                 this.hiddenItems = [];
             }
             /* tslint:disable */
-            if (this.parent.selectedItems && this.parent.selectedItems.nodes[0].isPhase) {
+            if (this.parent.selectedItems.nodes.length && this.parent.selectedItems.nodes[0].isPhase) {
                 args.cancel = true;
             }
             /* tslint:enable */

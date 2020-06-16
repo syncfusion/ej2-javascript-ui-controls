@@ -10132,7 +10132,7 @@ class InsertHtml {
         let isCursor = range.startOffset === range.endOffset && range.startOffset === 0 &&
             range.startContainer === range.endContainer;
         let isCollapsed = range.collapsed;
-        let nodes = nodeSelection.getInsertNodeCollection(range);
+        let nodes = this.getNodeCollection(range, nodeSelection);
         let closestParentNode = (node.nodeName.toLowerCase() === 'table') ? this.closestEle(nodes[0].parentNode, editNode) : nodes[0];
         if (isExternal || (!isNullOrUndefined(node) && !isNullOrUndefined(node.classList) &&
             node.classList.contains('pasteContent'))) {
@@ -10304,14 +10304,7 @@ class InsertHtml {
             }
         }
         else {
-            let blockNode = this.getImmediateBlockNode(nodes[nodes.length - 1], editNode);
-            let splitedElm = nodeCutter.GetSpliceNode(range, blockNode);
-            if (splitedElm.nodeName === 'TD' || splitedElm.nodeName === 'TH') {
-                splitedElm.appendChild(node);
-            }
-            else {
-                splitedElm.parentNode.replaceChild(node, splitedElm);
-            }
+            this.insertTempNode(range, node, nodes, nodeCutter, editNode);
             let isFirstTextNode = true;
             let isPreviousInlineElem;
             let paraElm;
@@ -10377,6 +10370,44 @@ class InsertHtml {
             nodeSelection.setSelectionText(docElement, lastSelectionNode, lastSelectionNode, lastSelectionNode.textContent.length, lastSelectionNode.textContent.length);
         }
         this.removeEmptyElements(editNode);
+    }
+    static getNodeCollection(range, nodeSelection) {
+        let nodes = [];
+        if (range.startOffset === range.endOffset && range.startContainer === range.endContainer &&
+            range.startContainer.nodeName === 'TD') {
+            nodes.push(range.startContainer.childNodes[range.endOffset]);
+        }
+        else {
+            nodes = nodeSelection.getInsertNodeCollection(range);
+        }
+        return nodes;
+    }
+    static insertTempNode(range, node, nodes, nodeCutter, editNode) {
+        if (range.startContainer === editNode && !isNullOrUndefined(range.startContainer.childNodes[range.endOffset - 1]) &&
+            range.startContainer.childNodes[range.endOffset - 1].nodeName === 'TABLE') {
+            if (isNullOrUndefined(range.startContainer.childNodes[range.endOffset - 1].nextSibling)) {
+                range.startContainer.appendChild(node);
+            }
+            else {
+                range.startContainer.insertBefore(node, range.startContainer.childNodes[range.endOffset - 1].nextSibling);
+            }
+        }
+        else if (range.startContainer === editNode && !isNullOrUndefined(range.startContainer.childNodes[range.endOffset]) &&
+            range.startContainer.childNodes[range.endOffset].nodeName === 'TABLE') {
+            range.startContainer.insertBefore(node, range.startContainer.childNodes[range.endOffset]);
+        }
+        else {
+            let blockNode = this.getImmediateBlockNode(nodes[nodes.length - 1], editNode);
+            if (blockNode.nodeName === 'TD' || blockNode.nodeName === 'TH') {
+                let tempSpan = createElement('span', { className: 'tempSpan' });
+                range.insertNode(tempSpan);
+                tempSpan.parentNode.replaceChild(node, tempSpan);
+            }
+            else {
+                let splitedElm = nodeCutter.GetSpliceNode(range, blockNode);
+                splitedElm.parentNode.replaceChild(node, splitedElm);
+            }
+        }
     }
     static cursorPos(lastSelectionNode, node, nodeSelection, docElement, editNode) {
         lastSelectionNode.classList.add('lastNode');
@@ -14788,6 +14819,8 @@ class PasteCleanup {
         }
     }
     pasteDialog(value, args) {
+        let isHeight = false;
+        let preRTEHeight = this.parent.height;
         let dialogModel = {
             buttons: [
                 {
@@ -14796,6 +14829,8 @@ class PasteCleanup {
                             let keepChecked = this.parent.element.querySelector('#keepFormating').checked;
                             let cleanChecked = this.parent.element.querySelector('#cleanFormat').checked;
                             dialog.hide();
+                            this.parent.height = isHeight ? preRTEHeight : this.parent.height;
+                            isHeight = false;
                             let argument = isBlazor() ? null : dialog;
                             this.dialogRenderObj.close(argument);
                             dialog.destroy();
@@ -14812,6 +14847,8 @@ class PasteCleanup {
                     click: () => {
                         if (!dialog.isDestroyed) {
                             dialog.hide();
+                            this.parent.height = isHeight ? preRTEHeight : this.parent.height;
+                            isHeight = false;
                             let args = isBlazor() ? null : dialog;
                             this.dialogRenderObj.close(args);
                             dialog.destroy();
@@ -14848,6 +14885,10 @@ class PasteCleanup {
         }
         dialog.appendTo(rteDialogWrapper);
         this.radioRender();
+        if (this.parent.element.offsetHeight < parseInt(dialog.height.split('px')[0], null)) {
+            this.parent.height = parseInt(dialog.height.split('px')[0], null) + 40;
+            isHeight = true;
+        }
         dialog.show();
     }
     destroyDialog(rteDialogWrapper) {
@@ -16534,7 +16575,7 @@ class Image {
         if (!isNullOrUndefined(this.deletedImg) && this.deletedImg.length > 0) {
             for (let i = 0; i < this.deletedImg.length; i++) {
                 let args = {
-                    img: this.deletedImg[i],
+                    element: this.deletedImg[i],
                     src: this.deletedImg[i].getAttribute('src')
                 };
                 this.parent.trigger(afterImageDelete, args);
@@ -16874,7 +16915,10 @@ class Image {
         if (e.selectNode[0].nodeName !== 'IMG') {
             return;
         }
-        let args = { img: e.selectNode[0], src: e.selectNode[0].getAttribute('src') };
+        let args = {
+            element: e.selectNode[0],
+            src: e.selectNode[0].getAttribute('src')
+        };
         if (this.parent.formatter.getUndoRedoStack().length === 0) {
             this.parent.formatter.saveData();
         }

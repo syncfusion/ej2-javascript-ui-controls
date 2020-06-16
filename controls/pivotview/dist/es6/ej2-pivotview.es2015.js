@@ -6254,7 +6254,7 @@ class Render {
             this.parent.grid.widthService.setWidthToTable();
         }
         /* tslint:disable-next-line */
-        if (!this.parent.isEmptyGrid) {
+        if (this.parent.notEmpty) {
             this.calculateGridHeight(true);
         }
         if (this.parent.currentView !== 'Chart') {
@@ -6913,7 +6913,7 @@ class Render {
     rowCellBoundEvent(args) {
         let tCell = args.cell;
         /* tslint:disable-next-line */
-        if (tCell && !this.parent.isEmptyGrid) {
+        if (tCell && (this.parent.notEmpty)) {
             let customClass = this.parent.hyperlinkSettings.cssClass;
             tCell.setAttribute('index', (Number(tCell.getAttribute('index')) + this.engine.headerContent.length).toString());
             let cell = args.data[0];
@@ -21104,6 +21104,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         }
         else {
             this.isEmptyGrid = false;
+            this.notEmpty = true;
         }
         if (this.grid) {
             let engine = this.dataType === 'pivot' ? this.engineModule : this.olapEngineModule;
@@ -22010,9 +22011,11 @@ let PivotView = PivotView_1 = class PivotView extends Component {
     /* tslint:enable */
     renderEmptyGrid() {
         this.isEmptyGrid = true;
+        this.notEmpty = false;
         this.renderModule = new Render(this);
         if (this.grid && this.grid.element && this.element.querySelector('.e-grid')) {
             /* tslint:disable */
+            this.notEmpty = true;
             this.grid.setProperties({
                 columns: this.renderModule.frameEmptyColumns(),
                 dataSource: this.renderModule.frameEmptyData()
@@ -22119,6 +22122,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                     this$.pivotValues = this$.engineModule.pivotValues;
                 }
                 this$.notify(dataReady, {});
+                this$.notEmpty = true;
             });
         }
         else {

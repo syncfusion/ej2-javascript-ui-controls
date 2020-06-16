@@ -10539,6 +10539,7 @@ function removeChildInContainer(diagram, obj, position, isBoundsUpdate) {
                         diagram.commandHandler.isContainer = false;
                         diagram.endGroupAction();
                     }
+                    moveSwinLaneChild(obj, diagram);
                 }
             }
         }
@@ -10734,6 +10735,7 @@ function addChildToContainer(diagram, parent, node, isUndo, historyAction) {
                 }
             }
             diagram.updateDiagramObject(node);
+            moveSwinLaneChild(node, diagram);
             if (!container.parentId) {
                 diagram.updateDiagramObject(container);
             }
@@ -10749,6 +10751,14 @@ function addChildToContainer(diagram, parent, node, isUndo, historyAction) {
             }
         }
         diagram.protectPropertyChange(false);
+    }
+}
+function moveSwinLaneChild(node, diagram) {
+    var sourceNode = getDiagramElement(node.id + '_groupElement', diagram.element.id);
+    var targetId = (node.parentId) ? node.parentId + '_groupElement' : diagram.element.id + '_diagramLayer';
+    var targetNode = getDiagramElement(targetId, diagram.element.id);
+    if (sourceNode && targetNode) {
+        targetNode.appendChild(sourceNode);
     }
 }
 function updateLaneBoundsAfterAddChild(container, swimLane, node, diagram, isBoundsUpdate) {
@@ -12308,7 +12318,12 @@ function removeSwimLane(diagram, obj) {
                             else {
                                 diagram.removeDependentConnector(removeNode);
                                 diagram.diagramActions |= exports.DiagramAction.PreventHistory;
-                                diagram.remove(removeNode);
+                                if ((removeNode.constraints & exports.NodeConstraints.Delete)) {
+                                    diagram.remove(removeNode);
+                                }
+                                else {
+                                    removeChildInContainer(diagram, removeNode, {}, false);
+                                }
                                 diagram.diagramActions &= ~exports.DiagramAction.PreventHistory;
                                 k--;
                             }
@@ -12401,6 +12416,9 @@ function removeLane(diagram, lane, swimLane, lanes) {
                 swimLane.width = swimLane.wrapper.width = grid.width;
                 swimLane.height = swimLane.wrapper.height = grid.height;
                 swimLaneMeasureAndArrange(swimLane);
+                if (swimLane.shape.orientation === 'Vertical') {
+                    index = 0;
+                }
                 ChangeLaneIndex(diagram, swimLane, index);
                 diagram.drag(swimLane, x - swimLane.wrapper.bounds.x, y - swimLane.wrapper.bounds.y);
                 diagram.updateDiagramObject(swimLane);
@@ -34362,6 +34380,7 @@ var Diagram = /** @class */ (function (_super) {
     /**
      * move objects from the layer to another layer from diagram
      * @param {string[]} objects - define the objects id of string array
+     * @blazorArgsType objects|List<string>
      */
     Diagram.prototype.moveObjects = function (objects, targetLayer) {
         var oldValues = cloneObject(this.layers);
@@ -34442,6 +34461,7 @@ var Diagram = /** @class */ (function (_super) {
     };
     /**
      * gets the node or connector having the given name
+     * @deprecated
      */
     Diagram.prototype.getObject = function (name) {
         return this.nameTable[name];
@@ -34730,6 +34750,7 @@ var Diagram = /** @class */ (function (_super) {
      * @param {NodeModel[] | ConnectorModel[]}objects - Defines the collection of objects, from which the object has to be found.
      * @param {Actions} action - Defines the action, using which the relevant object has to be found.
      * @param {boolean} inAction - Defines the active state of the action.
+     * @deprecated
      */
     Diagram.prototype.findObjectUnderMouse = function (objects, action, inAction) {
         return this.eventHandler.findObjectUnderMouse(objects, action, inAction);
@@ -34739,6 +34760,7 @@ var Diagram = /** @class */ (function (_super) {
      * @param {NodeModel[] | ConnectorModel[]} objects - Defines the collection of objects, from which the object has to be found.
      * @param {Actions} action - Defines the action, using which the relevant object has to be found.
      * @param {boolean} inAction - Defines the active state of the action.
+     * @deprecated
      */
     Diagram.prototype.findTargetObjectUnderMouse = function (objects, action, inAction, position, source) {
         return this.eventHandler.findTargetUnderMouse(objects, action, inAction, position, source);
@@ -34748,6 +34770,7 @@ var Diagram = /** @class */ (function (_super) {
      * @param {IElement} obj - Defines the object, the child element of which has to be found
      * @param {PointModel} position - Defines the position, the child element under which has to be found
      * @param {number} padding - Defines the padding, the child element under which has to be found
+     * @deprecated
      */
     Diagram.prototype.findElementUnderMouse = function (obj, position, padding) {
         return this.eventHandler.findElementUnderMouse(obj, position, padding);
@@ -34765,6 +34788,7 @@ var Diagram = /** @class */ (function (_super) {
     /**
      * Returns the tool that handles the given action
      * @param {string} action - Defines the action that is going to be performed
+     * @deprecated
      */
     Diagram.prototype.getTool = function (action) {
         var tool;
@@ -35253,7 +35277,7 @@ var Diagram = /** @class */ (function (_super) {
      * Adds the given diagram object to the group.
      * @param {NodeModel} Group - defines where the diagram object to be added.
      * @param {string | NodeModel | ConnectorModel} Child - defines the diagram object to be added to the group
-     * @blazorArgsType obj|DiagramNode
+     * @blazorArgsType group|DiagramNode
      */
     Diagram.prototype.addChildToGroup = function (group, child) {
         this.addChild(group, child);
@@ -35301,6 +35325,7 @@ var Diagram = /** @class */ (function (_super) {
      * Adds the given connector to diagram control
      * @param {ConnectorModel} obj - Defines the connector that has to be added to diagram
      * @blazorArgsType obj|DiagramConnector
+     * @blazorType DiagramConnector
      */
     Diagram.prototype.addConnector = function (obj) {
         return this.add(obj);
@@ -36464,7 +36489,7 @@ var Diagram = /** @class */ (function (_super) {
     };
     /**
      * Add ports at the run time
-     * @blazorArgsType obj|DiagramNode
+     * @blazorArgsType obj|DiagramNode, ports|ObservableCollection<DiagramPort>
      */
     Diagram.prototype.addPorts = function (obj, ports) {
         this.protectPropertyChange(true);
@@ -36514,12 +36539,14 @@ var Diagram = /** @class */ (function (_super) {
     };
     /**
      * Add labels in node at the run time in the blazor platform
+     * @blazorArgsType obj|DiagramNode,labels|ObservableCollection<DiagramNodeAnnotation>
      */
     Diagram.prototype.addNodeLabels = function (obj, labels) {
         this.addLabels(obj, labels);
     };
     /**
      * Add labels in connector at the run time in the blazor platform
+     * @blazorArgsType obj|DiagramConnector , labels|ObservableCollection<DiagramConnectorAnnotation>
      */
     Diagram.prototype.addConnectorLabels = function (obj, labels) {
         this.addLabels(obj, labels);
@@ -36587,6 +36614,7 @@ var Diagram = /** @class */ (function (_super) {
     };
     /**
      * Add dynamic Lanes to swimLane at runtime
+     * @deprecated
      */
     Diagram.prototype.addLanes = function (node, lane, index) {
         node = this.nameTable[node.id] || node;
@@ -36600,6 +36628,7 @@ var Diagram = /** @class */ (function (_super) {
     };
     /**
      * Add a phase to a swimLane at runtime
+     * @deprecated
      */
     Diagram.prototype.addPhases = function (node, phases) {
         node = this.nameTable[node.id] || node;
@@ -36610,6 +36639,7 @@ var Diagram = /** @class */ (function (_super) {
     };
     /**
      * Remove dynamic Lanes to swimLane at runtime
+     * @deprecated
      */
     Diagram.prototype.removeLane = function (node, lane) {
         removeLane(this, undefined, node, lane);
@@ -36617,6 +36647,7 @@ var Diagram = /** @class */ (function (_super) {
     };
     /**
      * Remove a phase to a swimLane at runtime
+     * @deprecated
      */
     Diagram.prototype.removePhase = function (node, phase) {
         removePhase(this, undefined, node, phase);
@@ -36716,6 +36747,7 @@ var Diagram = /** @class */ (function (_super) {
     };
     /**
      * Remove Ports at the run time
+     * @blazorArgsType obj|DiagramNode,ports|ObservableCollection<DiagramPort>
      */
     Diagram.prototype.removePorts = function (obj, ports) {
         obj = this.nameTable[obj.id] || obj;
@@ -40962,6 +40994,7 @@ var Diagram = /** @class */ (function (_super) {
     };
     /**
      * moves the node or connector forward within given layer
+     * @deprecated
      */
     Diagram.prototype.moveObjectsUp = function (node, currentLayer) {
         var targetLayer;
@@ -40979,18 +41012,21 @@ var Diagram = /** @class */ (function (_super) {
     };
     /**
      * Inserts newly added element into the database
+     * @deprecated
      */
     Diagram.prototype.insertData = function (node) {
         return this.crudOperation(node, 'create', this.getNewUpdateNodes('New'));
     };
     /**
      * updates the user defined element properties into the existing database
+     * @deprecated
      */
     Diagram.prototype.updateData = function (node) {
         return this.crudOperation(node, 'update', this.getNewUpdateNodes('Update'));
     };
     /**
      * Removes the user deleted element from the existing database
+     * @deprecated
      */
     Diagram.prototype.removeData = function (node) {
         return this.crudOperation(node, 'destroy', this.getDeletedNodes());
@@ -42702,7 +42738,7 @@ var DiagramContextMenu = /** @class */ (function () {
                             this.hiddenItems = [];
                         }
                         /* tslint:disable */
-                        if (this.parent.selectedItems && this.parent.selectedItems.nodes[0].isPhase) {
+                        if (this.parent.selectedItems.nodes.length && this.parent.selectedItems.nodes[0].isPhase) {
                             args.cancel = true;
                         }
                         return [2 /*return*/];

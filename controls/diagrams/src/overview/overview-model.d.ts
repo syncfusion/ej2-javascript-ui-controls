@@ -9,12 +9,14 @@ export interface OverviewModel extends ComponentModel{
     /**
      * Defines the width of the overview
      * @default '100%'
+     * @blazorType string
      */
     width?: string | number;
 
     /**
      * Defines the height of the overview
      * @default '100%'
+     * @blazorType string
      */
     height?: string | number;
 

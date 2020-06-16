@@ -99,7 +99,7 @@ export class AnnotationBase {
                         }
                     } else if (xAxis.valueType === 'DateTime') {
                         let option: DateFormatOptions = { skeleton: 'full', type: 'dateTime' };
-                        xValue = (typeof this.annotation.x === 'object') ?
+                        xValue = (typeof this.annotation.x === 'object' || typeof new Date(this.annotation.x) === 'object') ?
                             Date.parse(chart.intl.getDateParser(option)(
                                 chart.intl.getDateFormat(option)(new Date(
                                     DataUtil.parse.parseJson({ val: annotation.x }).val

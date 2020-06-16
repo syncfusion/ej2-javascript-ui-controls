@@ -10101,7 +10101,7 @@ var Gantt = /** @class */ (function (_super) {
         this.treeGridModule.renderTreeGrid();
     };
     Gantt.prototype.updateCurrentViewData = function () {
-        if (sf.base.isBlazor()) {
+        if (sf.base.isBlazor() && this.flatData.length !== 0) {
             var records = this.treeGrid.getCurrentViewRecords().slice();
             this.currentViewData = [];
             for (var i = 0; i < records.length; i++) {
@@ -15632,11 +15632,13 @@ var DialogEdit = /** @class */ (function () {
                     change: function (args) {
                         var tr = sf.base.closest(args.element, 'tr');
                         var idInput = tr.querySelector('#' + _this.parent.element.id + 'DependencyTabContainerid');
-                        if (!sf.base.isNullOrUndefined(args.itemData) && !sf.base.isNullOrUndefined(args.item)) {
-                            idInput.value = args.itemData.id;
-                        }
-                        else {
-                            idInput.value = '';
+                        if (idInput) {
+                            if (!sf.base.isNullOrUndefined(args.itemData) && !sf.base.isNullOrUndefined(args.item)) {
+                                idInput.value = args.itemData.id;
+                            }
+                            else {
+                                idInput.value = '';
+                            }
                         }
                     },
                     autofill: true,
@@ -16048,6 +16050,10 @@ var DialogEdit = /** @class */ (function () {
         var ids = [];
         for (var i = 0; i < dataSource.length; i++) {
             var preData = dataSource[i];
+            var newId = preData.name.split('-')[0];
+            if (preData.id !== newId) {
+                preData.id = newId;
+            }
             if (ids.indexOf(preData.id) === -1) {
                 var name_1 = preData.id + preData.type;
                 if (preData.offset && preData.offset.indexOf('-') !== -1) {
@@ -20205,7 +20211,12 @@ var Selection$1 = /** @class */ (function () {
         if (!sf.base.isNullOrUndefined(args.foreignKeyData) && Object.keys(args.foreignKeyData).length === 0) {
             delete args.foreignKeyData;
         }
-        this.prevRowIndex = args.rowIndex;
+        if (typeof (args.rowIndex) === 'number') {
+            this.prevRowIndex = args.rowIndex;
+        }
+        else {
+            this.prevRowIndex = args.rowIndex[0];
+        }
         if (!sf.base.isNullOrUndefined(this.parent.toolbarModule)) {
             this.parent.toolbarModule.refreshToolbarItems(args);
         }

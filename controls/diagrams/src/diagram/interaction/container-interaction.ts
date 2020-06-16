@@ -24,6 +24,8 @@ import { swimLaneMeasureAndArrange, checkLaneSize, checkPhaseOffset, canLaneInte
 import { updatePhaseMaxWidth, updateHeaderMaxWidth, updateConnectorsProperties } from '../utility/swim-lane-util';
 import { considerSwimLanePadding } from '../utility/swim-lane-util';
 import { DiagramAction, DiagramConstraints, NodeConstraints } from '../enum/enum';
+import { getDiagramElement } from '../utility/dom-util';
+
 /**
  * Interaction for Container
  */
@@ -115,6 +117,7 @@ export function removeChildInContainer(
                         diagram.commandHandler.isContainer = false;
                         diagram.endGroupAction();
                     }
+                    moveSwinLaneChild(obj, diagram);
                 }
             }
         }
@@ -307,6 +310,7 @@ export function addChildToContainer(diagram: Diagram, parent: NodeModel, node: N
                 }
             }
             diagram.updateDiagramObject(node);
+            moveSwinLaneChild(node, diagram);
             if (!(container as Node).parentId) {
                 diagram.updateDiagramObject(container);
             } else if (!isUndo) {
@@ -324,6 +328,14 @@ export function addChildToContainer(diagram: Diagram, parent: NodeModel, node: N
     }
 }
 
+function moveSwinLaneChild(node: NodeModel | ConnectorModel, diagram: Diagram): void {
+    let sourceNode: HTMLElement = getDiagramElement(node.id + '_groupElement', diagram.element.id);
+    let targetId: string = ((node as Node).parentId ) ? (node as Node).parentId + '_groupElement' : diagram.element.id + '_diagramLayer';
+    let targetNode: HTMLElement = getDiagramElement(targetId , diagram.element.id);
+    if (sourceNode && targetNode) {
+        targetNode.appendChild(sourceNode);
+    }
+}
 export function updateLaneBoundsAfterAddChild(
     container: NodeModel, swimLane: NodeModel, node: NodeModel, diagram: Diagram, isBoundsUpdate?: boolean): boolean {
     let undoObject: NodeModel = cloneObject(container);

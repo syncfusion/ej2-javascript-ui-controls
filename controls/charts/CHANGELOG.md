@@ -2,12 +2,24 @@
 
 ## [Unreleased]
 
+## 18.1.57 (2020-06-16)
+
+### Chart
+
+#### Bug Fixes
+
+- `#155030` - Chart annotation is not working in datetime axis issue fixed.
+- `#280301` - Radar and polar chart tooltip cropping issue fixed.
+- `#280448` - After changing page layout from LTR to RTL label overlapping issue fixed.
+- `#280364` - Stacking area while assigning empty data source console error issue fixed.
+
 ## 18.1.56 (2020-06-09)
 
 ### Chart
 
 #### Bug Fixes
 
+- `#279348` - Data label template hides when using scrollbar in stacking column issue fixed.
 - `#278688` - Shared Tooltip not visible while using tooltip render event issue fixed.
 - `#278311` - Y axis labels get overlapped when using single negative point issue fixed.
 - `#154576` - Range Selector doesn't match chart data range for one day issue fixed.

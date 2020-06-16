@@ -180,11 +180,11 @@ describe('Selection module', () => {
     let rowDeselecting: () => void;
     beforeAll((done: Function) => {
       rowDeselected = (args?: RowDeselectEventArgs): void => {
-            expect(args.rowIndex[0] === 0).toBe(true);
+            expect(args.rowIndex === 0).toBe(true);
             done();
       }
       rowDeselecting = (args?: RowDeselectEventArgs): void => {
-            expect(args.rowIndex[0] === 0).toBe(true);
+            expect(args.rowIndex === 0).toBe(true);
             done();
       }
       gridObj = createGrid(
@@ -574,7 +574,7 @@ describe('Selection module', () => {
       };
       rowDeselecting = (args?: RowDeselectEventArgs): void => {
         if (args.rowIndex === 9) {
-          expect(args.rowIndex[0]).toBe(9);
+          expect(args.rowIndex).toBe(9);
           gridObj.rowDeselecting = null;
         }
         done();
@@ -756,7 +756,7 @@ describe('Expand collapse not to select rows', () => {
       done();
     };
     rowDeselected = (args?: RowDeselectEventArgs): void => {
-      expect(args.rowIndex[0] === 0).toBe(true);
+      expect(args.rowIndex === 0).toBe(true);
       expect(gridObj.getSelectedRowIndexes().length).toBe(0);
       done();
     };

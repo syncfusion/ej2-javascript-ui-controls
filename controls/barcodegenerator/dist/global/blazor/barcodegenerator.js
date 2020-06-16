@@ -1821,7 +1821,8 @@ var Ean13 = /** @class */ (function (_super) {
      */
     /** @private */
     Ean13.prototype.validateInput = function (value) {
-        if (value.search(/^[0-9]{13}$/) !== -1 && Number(value[12]) === this.checkSumData(value)) {
+        var checkSumValue = this.checksumValue(value);
+        if (value.search(/^[0-9]{13}$/) !== -1 && (Number(value[12]) === this.checkSumData(value) || Number(value[12]) === checkSumValue)) {
             return undefined;
         }
         else if (value.search(/^[0-9]{12}$/) !== -1) {
@@ -1832,6 +1833,14 @@ var Ean13 = /** @class */ (function (_super) {
         else {
             return 'Accepts 12 numeric characters.';
         }
+    };
+    Ean13.prototype.checksumValue = function (number) {
+        var res = number
+            .substr(0, 12)
+            .split('')
+            .map(function (n) { return +n; })
+            .reduce(function (sum, a, idx) { return (idx % 2 ? sum + a * 3 : sum + a); }, 0);
+        return (10 - (res % 10)) % 10;
     };
     Ean13.prototype.checkSumData = function (value) {
         var sum1 = 3 * (Number(value[11]) + Number(value[9]) + Number(value[7])

@@ -10236,7 +10236,7 @@ var InsertHtml = /** @__PURE__ @class */ (function () {
         var isCursor = range.startOffset === range.endOffset && range.startOffset === 0 &&
             range.startContainer === range.endContainer;
         var isCollapsed = range.collapsed;
-        var nodes = nodeSelection.getInsertNodeCollection(range);
+        var nodes = this.getNodeCollection(range, nodeSelection);
         var closestParentNode = (node.nodeName.toLowerCase() === 'table') ? this.closestEle(nodes[0].parentNode, editNode) : nodes[0];
         if (isExternal || (!isNullOrUndefined(node) && !isNullOrUndefined(node.classList) &&
             node.classList.contains('pasteContent'))) {
@@ -10408,14 +10408,7 @@ var InsertHtml = /** @__PURE__ @class */ (function () {
             }
         }
         else {
-            var blockNode = this.getImmediateBlockNode(nodes[nodes.length - 1], editNode);
-            var splitedElm = nodeCutter.GetSpliceNode(range, blockNode);
-            if (splitedElm.nodeName === 'TD' || splitedElm.nodeName === 'TH') {
-                splitedElm.appendChild(node);
-            }
-            else {
-                splitedElm.parentNode.replaceChild(node, splitedElm);
-            }
+            this.insertTempNode(range, node, nodes, nodeCutter, editNode);
             var isFirstTextNode = true;
             var isPreviousInlineElem = void 0;
             var paraElm = void 0;
@@ -10481,6 +10474,44 @@ var InsertHtml = /** @__PURE__ @class */ (function () {
             nodeSelection.setSelectionText(docElement, lastSelectionNode, lastSelectionNode, lastSelectionNode.textContent.length, lastSelectionNode.textContent.length);
         }
         this.removeEmptyElements(editNode);
+    };
+    InsertHtml.getNodeCollection = function (range, nodeSelection) {
+        var nodes = [];
+        if (range.startOffset === range.endOffset && range.startContainer === range.endContainer &&
+            range.startContainer.nodeName === 'TD') {
+            nodes.push(range.startContainer.childNodes[range.endOffset]);
+        }
+        else {
+            nodes = nodeSelection.getInsertNodeCollection(range);
+        }
+        return nodes;
+    };
+    InsertHtml.insertTempNode = function (range, node, nodes, nodeCutter, editNode) {
+        if (range.startContainer === editNode && !isNullOrUndefined(range.startContainer.childNodes[range.endOffset - 1]) &&
+            range.startContainer.childNodes[range.endOffset - 1].nodeName === 'TABLE') {
+            if (isNullOrUndefined(range.startContainer.childNodes[range.endOffset - 1].nextSibling)) {
+                range.startContainer.appendChild(node);
+            }
+            else {
+                range.startContainer.insertBefore(node, range.startContainer.childNodes[range.endOffset - 1].nextSibling);
+            }
+        }
+        else if (range.startContainer === editNode && !isNullOrUndefined(range.startContainer.childNodes[range.endOffset]) &&
+            range.startContainer.childNodes[range.endOffset].nodeName === 'TABLE') {
+            range.startContainer.insertBefore(node, range.startContainer.childNodes[range.endOffset]);
+        }
+        else {
+            var blockNode = this.getImmediateBlockNode(nodes[nodes.length - 1], editNode);
+            if (blockNode.nodeName === 'TD' || blockNode.nodeName === 'TH') {
+                var tempSpan = createElement('span', { className: 'tempSpan' });
+                range.insertNode(tempSpan);
+                tempSpan.parentNode.replaceChild(node, tempSpan);
+            }
+            else {
+                var splitedElm = nodeCutter.GetSpliceNode(range, blockNode);
+                splitedElm.parentNode.replaceChild(node, splitedElm);
+            }
+        }
     };
     InsertHtml.cursorPos = function (lastSelectionNode, node, nodeSelection, docElement, editNode) {
         lastSelectionNode.classList.add('lastNode');
@@ -14885,6 +14916,8 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
     };
     PasteCleanup.prototype.pasteDialog = function (value, args) {
         var _this = this;
+        var isHeight = false;
+        var preRTEHeight = this.parent.height;
         var dialogModel = {
             buttons: [
                 {
@@ -14893,6 +14926,8 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
                             var keepChecked = _this.parent.element.querySelector('#keepFormating').checked;
                             var cleanChecked = _this.parent.element.querySelector('#cleanFormat').checked;
                             dialog.hide();
+                            _this.parent.height = isHeight ? preRTEHeight : _this.parent.height;
+                            isHeight = false;
                             var argument = isBlazor() ? null : dialog;
                             _this.dialogRenderObj.close(argument);
                             dialog.destroy();
@@ -14909,6 +14944,8 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
                     click: function () {
                         if (!dialog.isDestroyed) {
                             dialog.hide();
+                            _this.parent.height = isHeight ? preRTEHeight : _this.parent.height;
+                            isHeight = false;
                             var args_1 = isBlazor() ? null : dialog;
                             _this.dialogRenderObj.close(args_1);
                             dialog.destroy();
@@ -14945,6 +14982,10 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
         }
         dialog.appendTo(rteDialogWrapper);
         this.radioRender();
+        if (this.parent.element.offsetHeight < parseInt(dialog.height.split('px')[0], null)) {
+            this.parent.height = parseInt(dialog.height.split('px')[0], null) + 40;
+            isHeight = true;
+        }
         dialog.show();
     };
     PasteCleanup.prototype.destroyDialog = function (rteDialogWrapper) {
@@ -16642,7 +16683,7 @@ var Image = /** @__PURE__ @class */ (function () {
         if (!isNullOrUndefined(this.deletedImg) && this.deletedImg.length > 0) {
             for (var i = 0; i < this.deletedImg.length; i++) {
                 var args = {
-                    img: this.deletedImg[i],
+                    element: this.deletedImg[i],
                     src: this.deletedImg[i].getAttribute('src')
                 };
                 this.parent.trigger(afterImageDelete, args);
@@ -16985,7 +17026,10 @@ var Image = /** @__PURE__ @class */ (function () {
         if (e.selectNode[0].nodeName !== 'IMG') {
             return;
         }
-        var args = { img: e.selectNode[0], src: e.selectNode[0].getAttribute('src') };
+        var args = {
+            element: e.selectNode[0],
+            src: e.selectNode[0].getAttribute('src')
+        };
         if (this.parent.formatter.getUndoRedoStack().length === 0) {
             this.parent.formatter.saveData();
         }

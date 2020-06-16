@@ -1406,6 +1406,8 @@ export interface ExcelFooter {
 export interface ExcelExportProperties {
     /** Defines the data source dynamically before exporting */
     dataSource?: Object | DataManager;
+    /** Defined the query dynamically before exporting */
+    query?: Query;
     /** Exports multiple grid into the excel document */
     multipleExport?: MultipleExport;
     /** Defines the header content for exported document  */

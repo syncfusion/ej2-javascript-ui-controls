@@ -1242,10 +1242,12 @@ export class DialogEdit {
                     change: (args: ChangeEventArgs) => {
                         let tr: HTMLElement = closest(args.element, 'tr') as HTMLElement;
                         let idInput: HTMLInputElement = tr.querySelector('#' + this.parent.element.id + 'DependencyTabContainerid');
-                        if (!isNullOrUndefined(args.itemData) && !isNullOrUndefined(args.item)) {
-                            idInput.value = (args.itemData as IPreData).id;
-                        } else {
-                            idInput.value = '';
+                        if (idInput) {
+                            if (!isNullOrUndefined(args.itemData) && !isNullOrUndefined(args.item)) {
+                                idInput.value = (args.itemData as IPreData).id;
+                            } else {
+                                idInput.value = '';
+                            }
                         }
                     },
                     autofill: true,
@@ -1645,6 +1647,10 @@ export class DialogEdit {
         let ids: string[] = [];
         for (let i: number = 0; i < dataSource.length; i++) {
             let preData: IPreData = dataSource[i];
+            let newId: string = preData.name.split('-')[0];
+            if (preData.id !== newId) {
+                preData.id = newId;
+            }
             if (ids.indexOf(preData.id) === -1) {
                 let name: string = preData.id + preData.type;
                 if (preData.offset && preData.offset.indexOf('-') !== -1) {

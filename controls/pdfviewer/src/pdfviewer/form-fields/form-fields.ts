@@ -707,7 +707,7 @@ export class FormFields {
             // tslint:disable-next-line
             let option: any = document.createElement('option');
             option.className = 'e-dropdownSelect';
-            if (data.SelectedValue === childItems[j]) {
+            if (data.SelectedValue === childItems[j] || data.selectedIndex === j) {
                 option.selected = true;
             } else {
                 option.selected = false;

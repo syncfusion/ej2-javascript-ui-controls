@@ -42,8 +42,7 @@ export class ProgressAnnotation extends AnnotationBase {
             element.appendChild(this.parentElement);
         }
         if (this.progress.animation.enable && !this.progress.isIndeterminate) {
-            annotationElement = document.getElementById(this.progress.element.id + 'Annotation0').children[0];
-            this.animation.doAnnotationAnimation(annotationElement, this.progress);
+            this.animation.doAnnotationAnimation(this.progress.clipPath, this.progress);
         }
     }
     /**

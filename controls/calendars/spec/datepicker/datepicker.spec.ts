@@ -4084,4 +4084,33 @@ describe('Datepicker', () => {
             expect(datePicker.inputWrapper.container.classList.contains('custom-class-two')).toBe(true);
         });
     });
+    describe('EJ2-39692', function () {
+        let datePicker: any;
+        beforeAll(function () {
+            let inputElement: HTMLElement = createElement('input', { id: 'datepicker' });
+            document.body.appendChild(inputElement);
+        });
+        afterAll(function () {
+            if (datePicker) {
+                datePicker.destroy();
+                document.body.innerHTML = '';
+            }
+        });
+        it('Disabled date are allowed to type in input when strict mode is enabled', function () {
+            datePicker = new DatePicker({
+                value: new Date(),
+                strictMode: true,
+                renderDayCell: function (args: any): void {
+                    if (args.date.getDay() === 0 || args.date.getDay() === 6) {
+                        args.isDisabled = true;
+                    }
+                }
+            });
+            datePicker.appendTo('#datepicker');
+            datePicker.focusIn();
+            datePicker.element.value = '5/17/2020';
+            datePicker.inputBlurHandler();
+            expect(datePicker.value).toBe(null);
+        });
+    });
 });

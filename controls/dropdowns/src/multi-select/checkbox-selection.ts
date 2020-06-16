@@ -65,6 +65,7 @@ export class CheckBoxSelection {
         this.parent.on('filterBarPlaceholder', this.setPlaceholder, this);
         EventHandler.add(document, 'mousedown', this.onDocumentClick, this);
         this.parent.on('addItem', this.checboxCreate, this);
+        this.parent.on('popupFullScreen', this.setPopupFullScreen, this);
     }
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -83,6 +84,7 @@ export class CheckBoxSelection {
         this.parent.off('filterBarPlaceholder', this.setPlaceholder);
         this.parent.off('addItem', this.checboxCreate);
         EventHandler.remove(document, 'mousedown', this.onDocumentClick);
+        this.parent.off('popupFullScreen', this.setPopupFullScreen);
     }
 
     public listOption(args: { [key: string]: Object }): void {
@@ -328,8 +330,6 @@ export class CheckBoxSelection {
         this.parent.popupObj.element.classList.add(mobileFilter);
         this.parent.popupObj.position = { X: 0, Y: 0 };
         this.parent.popupObj.dataBind();
-        attributes(this.parent.popupObj.element, { style: 'left:0px;right:0px;top:0px;bottom:0px;' });
-        addClass([document.body, this.parent.popupObj.element], popupFullScreen);
         this.setSearchBoxPosition();
         this.backIconElement = this.filterInputObj.container.querySelector('.e-back-icon');
         this.clearIconElement = this.filterInputObj.container.querySelector('.' + clearIcon);
@@ -340,13 +340,24 @@ export class CheckBoxSelection {
 
     private setSearchBoxPosition(): void {
         let searchBoxHeight: number = this.filterInput.parentElement.getBoundingClientRect().height;
+        let selectAllHeight: number = 0;
+        if (this.checkAllParent) {
+            selectAllHeight = this.checkAllParent.getBoundingClientRect().height;
+        }
         this.parent.popupObj.element.style.maxHeight = '100%';
         this.parent.popupObj.element.style.width = '100%';
-        this.parent.list.style.maxHeight = (window.innerHeight - searchBoxHeight) + 'px';
-        this.parent.list.style.height = (window.innerHeight - searchBoxHeight) + 'px';
+        this.parent.list.style.maxHeight = (window.innerHeight - searchBoxHeight - selectAllHeight) + 'px';
+        this.parent.list.style.height = (window.innerHeight - searchBoxHeight - selectAllHeight) + 'px';
         let clearElement: Element = this.filterInput.parentElement.querySelector('.' + clearIcon);
         detach(this.filterInput);
         clearElement.parentElement.insertBefore(this.filterInput, clearElement);
+    }
+
+    protected setPopupFullScreen(): void {
+        attributes(this.parent.popupObj.element, { style: 'left:0px;right:0px;top:0px;bottom:0px;' });
+        addClass([document.body, this.parent.popupObj.element], popupFullScreen);
+        this.parent.popupObj.element.style.maxHeight = '100%';
+        this.parent.popupObj.element.style.width = '100%';
     }
 
     protected targetElement(): string {

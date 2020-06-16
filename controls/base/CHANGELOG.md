@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.57 (2020-06-16)
+
+### Common
+
+#### Bug Fixes
+
+- `I275883`, `I276699` - Resolved `Drag and drop` not working properly in IE11.
+
 ## 18.1.56 (2020-06-09)
 
 ### Common

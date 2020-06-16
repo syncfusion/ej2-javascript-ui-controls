@@ -6775,4 +6775,198 @@ describe('MultiSelect', () => {
             expect(listObj.popupWrapper.classList.contains('custom-class-two')).toBe(true);
         });   
     });
+    describe('EJ2-39990 MultiSelect component in mobile mode with initial value page not scrolled', () => {
+        let listObj: MultiSelect;
+        let popupObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { 'type': 'text' } });
+        let empList: { [key: string]: Object }[] = [
+            { "Name": "Australia", "Code": "AU", "Start": "A" },
+            { "Name": "Bermuda", "Code": "BM", "Start": "B" },
+            { "Name": "Canada", "Code": "CA", "Start": "C" },
+            { "Name": "Cameroon", "Code": "CM", "Start": "C" },
+            { "Name": "Denmark", "Code": "DK", "Start": "D" },
+            { "Name": "France", "Code": "FR", "Start": "F" },
+            { "Name": "Finland", "Code": "FI", "Start": "F" },
+            { "Name": "Germany", "Code": "DE", "Start": "G" },
+            { "Name": "Greenland", "Code": "GL", "Start": "G" },
+            { "Name": "Hong Kong", "Code": "HK", "Start": "H" },
+            { "Name": "India", "Code": "IN", "Start": "I" },
+            { "Name": "Italy", "Code": "IT", "Start": "I" },
+            { "Name": "Japan", "Code": "JP", "Start": "J" },
+            { "Name": "Mexico", "Code": "MX", "Start": "M" },
+            { "Name": "Norway", "Code": "NO", "Start": "N" },
+            { "Name": "Poland", "Code": "PL", "Start": "P" },
+            { "Name": "Switzerland", "Code": "CH", "Start": "S" },
+            { "Name": "United Kingdom", "Code": "GB", "Start": "U" },
+            { "Name": "United States", "Code": "US", "Start": "U" }
+        ];
+        beforeAll(() => {
+            let androidPhoneUa: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+            'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
+            Browser.userAgent = androidPhoneUa;
+            document.body.innerHTML = '';
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+            Browser.userAgent = navigator.userAgent;
+        });
+        it('Checkbox with allowFiltering', () => {
+            let listObj: MultiSelect = new MultiSelect({
+                dataSource: empList,
+                fields: { text: 'Name', value: 'Name' },
+                mode : 'CheckBox',
+                placeholder: 'Select an employee',
+                popupHeight: '300px',
+                value: ['Australia'],
+            });
+            listObj.appendTo(element);
+            expect(document.body.classList.contains('e-popup-full-page')).toBe(false);
+            (<any>listObj).renderPopup();
+            listObj.showPopup();
+            expect((<any>listObj).isPopupOpen()).toBe(true);
+            expect(document.body.classList.contains('e-popup-full-page')).toBe(true);
+            listObj.hidePopup();
+            listObj.destroy();
+        });
+        it('Checkbox without allowFiltering', () => {
+            let listObj: MultiSelect = new MultiSelect({
+                dataSource: empList,
+                fields: { text: 'Name', value: 'Name' },
+                mode : 'CheckBox',
+                placeholder: 'Select an employee',
+                popupHeight: '300px',
+                value: ['Australia'],
+                allowFiltering : false,
+            });
+            listObj.appendTo(element);
+            expect(document.body.classList.contains('e-popup-full-page')).toBe(false);
+            (<any>listObj).renderPopup();
+            listObj.showPopup();
+            expect((<any>listObj).isPopupOpen()).toBe(true);
+            expect(document.body.classList.contains('e-popup-full-page')).toBe(false);
+            listObj.hidePopup();
+            listObj.destroy();
+        });
+        it('With grouping', () => {
+            let listObj: MultiSelect = new MultiSelect({
+                dataSource: empList,
+                fields: { text: 'Name', value: 'Name', groupBy: 'Start' },
+                mode : 'CheckBox',
+                placeholder: 'Select an employee',
+                value: ['Australia'],
+                popupHeight: '300px',
+            });
+            listObj.appendTo(element);
+            expect(document.body.classList.contains('e-popup-full-page')).toBe(false);
+            (<any>listObj).renderPopup();
+            listObj.showPopup();
+            expect((<any>listObj).isPopupOpen()).toBe(true);
+            expect(document.body.classList.contains('e-popup-full-page')).toBe(true);
+            listObj.hidePopup();
+            listObj.destroy();
+        });
+        it('With grouping without allowFiltering', () => {
+            let listObj: MultiSelect = new MultiSelect({
+                dataSource: empList,
+                fields: { text: 'Name', value: 'Name', groupBy: 'Start' },
+                mode : 'CheckBox',
+                placeholder: 'Select an employee',
+                popupHeight: '300px',
+                value: ['Australia'],
+                allowFiltering: false,
+            });
+            listObj.appendTo(element);
+            expect(document.body.classList.contains('e-popup-full-page')).toBe(false);
+            (<any>listObj).renderPopup();
+            listObj.showPopup();
+            expect((<any>listObj).isPopupOpen()).toBe(true);
+            expect(document.body.classList.contains('e-popup-full-page')).toBe(false);
+            listObj.hidePopup();
+            listObj.destroy();
+        });
+        it('Grouping with checkbox', () => {
+            let listObj: MultiSelect = new MultiSelect({
+                dataSource: empList,
+                fields: { text: 'Name', value: 'Name', groupBy: 'Start' },
+                enableGroupCheckBox: true,
+                mode : 'CheckBox',
+                placeholder: 'Select an employee',
+                value: ['Australia'],
+                popupHeight: '300px',
+            });
+            listObj.appendTo(element);
+            expect(document.body.classList.contains('e-popup-full-page')).toBe(false);
+            (<any>listObj).renderPopup();
+            listObj.showPopup();
+            expect((<any>listObj).isPopupOpen()).toBe(true);
+            expect(document.body.classList.contains('e-popup-full-page')).toBe(true);
+            listObj.hidePopup();
+            listObj.destroy();
+        });
+        it('Grouping with checkbox without allowFiltering', () => {
+            let listObj: MultiSelect = new MultiSelect({
+                dataSource: empList,
+                fields: { text: 'Name', value: 'Name', groupBy: 'Start' },
+                enableGroupCheckBox: true,
+                mode : 'CheckBox',
+                placeholder: 'Select an employee',
+                popupHeight: '300px',
+                value: ['Australia'],
+                allowFiltering: false,
+            });
+            listObj.appendTo(element);
+            expect(document.body.classList.contains('e-popup-full-page')).toBe(false);
+            (<any>listObj).renderPopup();
+            listObj.showPopup();
+            expect((<any>listObj).isPopupOpen()).toBe(true);
+            expect(document.body.classList.contains('e-popup-full-page')).toBe(false);
+            listObj.hidePopup();
+            listObj.destroy();
+        });
+        it('Grouping with checkbox with selectAll', () => {
+            let listObj: MultiSelect = new MultiSelect({
+                dataSource: empList,
+                fields: { text: 'Name', value: 'Name', groupBy: 'Start' },
+                enableGroupCheckBox: true,
+                showSelectAll: true,
+                mode : 'CheckBox',
+                placeholder: 'Select an employee',
+                value: ['Australia'],
+                popupHeight: '300px',
+            });
+            listObj.appendTo(element);
+            expect(document.body.classList.contains('e-popup-full-page')).toBe(false);
+            (<any>listObj).renderPopup();
+            listObj.showPopup();
+            expect((<any>listObj).isPopupOpen()).toBe(true);
+            expect(document.body.classList.contains('e-popup-full-page')).toBe(true);
+            listObj.hidePopup();
+            listObj.destroy();
+        });
+        it('Grouping with checkbox with selectAll without allowFiltering', () => {
+            let listObj: MultiSelect = new MultiSelect({
+                dataSource: empList,
+                fields: { text: 'Name', value: 'Name', groupBy: 'Start' },
+                enableGroupCheckBox: true,
+                mode : 'CheckBox',
+                placeholder: 'Select an employee',
+                popupHeight: '300px',
+                value: ['Australia'],
+                allowFiltering: false,
+                showSelectAll: true,
+            });
+            listObj.appendTo(element);
+            expect(document.body.classList.contains('e-popup-full-page')).toBe(false);
+            (<any>listObj).renderPopup();
+            listObj.showPopup();
+            expect((<any>listObj).isPopupOpen()).toBe(true);
+            expect(document.body.classList.contains('e-popup-full-page')).toBe(false);
+            listObj.hidePopup();
+            listObj.destroy();
+        });
+    });
 });

@@ -14,6 +14,7 @@ export abstract class DiagramTooltip extends ChildProperty<DiagramTooltip> {
     /**
      * Defines the content of the Tooltip
      * @default ''
+     * @blazorType string
      */
     @Property('')
     public content: string | HTMLElement;
@@ -48,6 +49,7 @@ export abstract class DiagramTooltip extends ChildProperty<DiagramTooltip> {
     /**
      * Sets the width of the Tooltip
      * @default 'auto'
+     * @blazorType string
      */
     @Property('auto')
     public width: number | string;
@@ -55,6 +57,7 @@ export abstract class DiagramTooltip extends ChildProperty<DiagramTooltip> {
     /**
      * Sets the height of the Tooltip
      * @default 'auto'
+     * @blazorType string
      */
     @Property('auto')
     public height: number | string;

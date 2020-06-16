@@ -1452,6 +1452,15 @@ export class ODataV4Adaptor extends ODataAdaptor {
         let val: string | number | Date | boolean | Predicate | Predicate[] = predicate.value;
         let isDate: boolean = val instanceof Date;
 
+        if (query instanceof Query) {
+        let queries: Requests = this.getQueryRequest((query as Query));
+        for (let i: number = 0; i < queries.filters.length; i++) {
+            if (queries.filters[i].e.key === predicate.value) {
+                requiresCast = true;
+            }
+        }
+    }
+
         returnValue = super.onPredicate.call(this, predicate, query, requiresCast);
 
         if (isDate) {

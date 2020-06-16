@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, NotifyPropertyChanges, Property, createElement, remove } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, NotifyPropertyChanges, Property, createElement, isNullOrUndefined, remove } from '@syncfusion/ej2-base';
 import { PathOption, SvgRenderer, getElement, measureText } from '@syncfusion/ej2-svg-base';
 
 /**
@@ -692,14 +692,16 @@ class ProgressAnimation {
         let pathRadius = radius + (thickness / 2);
         let end = 0;
         let opacityValue = 0;
-        let endValue;
+        let startPos;
+        let endPos;
         start += (progress.cornerRadius === 'Round' && totalEnd !== completeAngle && totalEnd !== 0) ?
             ((progress.enableRtl) ? (lineCapRadius / 2) * thickness : -(lineCapRadius / 2) * thickness) : 0;
         totalEnd += (progress.cornerRadius === 'Round' && totalEnd !== completeAngle && totalEnd !== 0) ?
             (lineCapRadius / 2) * thickness : 0;
         progressEnd += (progress.cornerRadius === 'Round' && totalEnd !== completeAngle && totalEnd !== 0) ?
             ((progress.enableRtl) ? -(lineCapRadius / 2) * thickness : (lineCapRadius / 2) * thickness) : 0;
-        endValue = (startValue) ? totalEnd - previousTotal : 0;
+        startPos = (!isNullOrUndefined(startValue)) ? startValue : start;
+        endPos = (!isNullOrUndefined(startValue)) ? totalEnd - previousTotal : totalEnd;
         circularPath.setAttribute('visibility', 'Hidden');
         animation.animate(circularPath, {
             duration: progress.animation.duration,
@@ -707,7 +709,7 @@ class ProgressAnimation {
             progress: (args) => {
                 if (args.timeStamp >= args.delay) {
                     circularPath.setAttribute('visibility', 'visible');
-                    end = effect(args.timeStamp, startValue || start, endValue || totalEnd, args.duration, progress.enableRtl);
+                    end = effect(args.timeStamp, startPos, endPos, args.duration, progress.enableRtl);
                     circularPath.setAttribute('d', getPathArc(x, y, pathRadius, start, end % 360, progress.enableRtl, true));
                     if (progress.isActive) {
                         opacityValue = effect(args.timeStamp, 0.5, 0.5, args.duration, true);
@@ -716,6 +718,7 @@ class ProgressAnimation {
                 }
             },
             end: (model) => {
+                circularPath.setAttribute('visibility', '');
                 circularPath.setAttribute('d', getPathArc(x, y, pathRadius, start, progressEnd, progress.enableRtl, true));
                 if (progress.isActive) {
                     this.doCircularAnimation(x, y, radius, progressEnd, totalEnd, element, progress, thickness, delay, startValue, previousTotal, active);
@@ -824,6 +827,7 @@ class ProgressAnimation {
         let totalEnd;
         let annotateValueChanged;
         let annotateValue;
+        let startValue;
         let endValue;
         if (isAnnotation && progress.progressAnnotationModule) {
             firstAnnotatElement = document.getElementById(progress.element.id + 'Annotation0').children[0];
@@ -833,13 +837,16 @@ class ProgressAnimation {
                 }
             }
         }
-        totalEnd = ((progress.value - progress.minimum) / (progress.maximum - progress.minimum)) * progress.totalAngle;
-        progress.annotateTotal = totalEnd = (progress.value < progress.minimum || progress.value > progress.maximum) ? 0 : totalEnd;
+        totalEnd = ((progress.argsData.value - progress.minimum) / (progress.maximum - progress.minimum)) * progress.totalAngle;
+        progress.annotateTotal = totalEnd =
+            (progress.argsData.value < progress.minimum || progress.argsData.value > progress.maximum) ? 0 : totalEnd;
         progress.annotateEnd = start + totalEnd;
-        annotateValue = ((progress.value - progress.minimum) / (progress.maximum - progress.minimum)) * percentage;
-        annotateValue = (progress.value < progress.minimum || progress.value > progress.maximum) ? 0 : Math.round(annotateValue);
-        endValue = (previousEnd) ? totalEnd - previousTotal : 0;
-        if (progress.value <= progress.minimum || progress.value > progress.maximum) {
+        annotateValue = ((progress.argsData.value - progress.minimum) / (progress.maximum - progress.minimum)) * percentage;
+        annotateValue = (progress.argsData.value < progress.minimum || progress.argsData.value > progress.maximum) ? 0 :
+            Math.round(annotateValue);
+        startValue = (!isNullOrUndefined(previousEnd)) ? previousEnd : start;
+        endValue = (!isNullOrUndefined(previousEnd)) ? totalEnd - previousTotal : totalEnd;
+        if (progress.argsData.value <= progress.minimum || progress.argsData.value > progress.maximum) {
             annotatElementChanged.innerHTML = annotateValue + '%';
         }
         else {
@@ -848,7 +855,7 @@ class ProgressAnimation {
                 delay: progress.animation.delay,
                 progress: (args) => {
                     if (isAnnotation && annotatElementChanged) {
-                        value = effect(args.timeStamp, previousEnd || start, endValue || totalEnd, args.duration, false);
+                        value = effect(args.timeStamp, startValue, endValue, args.duration, false);
                         annotateValueChanged = parseInt((((Math.round(value) - start) / totalAngle) * percentage).toString(), 10);
                         annotatElementChanged.innerHTML = annotateValueChanged ? annotateValueChanged.toString() + '%' : '0%';
                     }
@@ -883,7 +890,6 @@ class ProgressAnnotation extends AnnotationBase {
     renderAnnotations(element) {
         this.annotations = this.progress.annotations;
         let parentElement = document.getElementById(this.progress.element.id + 'Annotation_collections');
-        let annotationElement;
         this.parentElement = parentElement ? parentElement : createElement('div', {
             id: this.progress.element.id + 'Annotation_collections',
             styles: 'position:absolute'
@@ -895,8 +901,7 @@ class ProgressAnnotation extends AnnotationBase {
             element.appendChild(this.parentElement);
         }
         if (this.progress.animation.enable && !this.progress.isIndeterminate) {
-            annotationElement = document.getElementById(this.progress.element.id + 'Annotation0').children[0];
-            this.animation.doAnnotationAnimation(annotationElement, this.progress);
+            this.animation.doAnnotationAnimation(this.progress.clipPath, this.progress);
         }
     }
     /**
@@ -2027,10 +2032,12 @@ let ProgressBar = class ProgressBar extends Component {
             }
             arg.currentSize = this.progressSize;
             this.trigger('resized', arg);
-            this.secElement.innerHTML = '';
-            this.calculateProgressBarSize();
-            this.createSVG();
-            this.renderElements();
+            if ((this.width === null || this.height === null)) {
+                this.secElement.innerHTML = '';
+                this.calculateProgressBarSize();
+                this.createSVG();
+                this.renderElements();
+            }
         }, 500);
         return false;
     }
@@ -2095,7 +2102,6 @@ let ProgressBar = class ProgressBar extends Component {
         }
     }
     onPropertyChanged(newProp, oldProp) {
-        let annotationElement;
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'annotations':
@@ -2114,11 +2120,13 @@ let ProgressBar = class ProgressBar extends Component {
                     else {
                         this.trigger(valueChanged, this.argsData);
                     }
+                    if (this.argsData.value < oldProp.value) {
+                        this.argsData.value = oldProp.value;
+                    }
                     if (this.type === 'Circular') {
                         this.circular.renderCircularProgress(this.previousEndAngle, this.previousTotalEnd, true);
                         if (this.progressAnnotationModule && this.animation.enable && !this.isIndeterminate) {
-                            annotationElement = document.getElementById(this.element.id + 'Annotation0').children[0];
-                            this.annotateAnimation.doAnnotationAnimation(annotationElement, this, this.annotateEnd, this.annotateTotal);
+                            this.annotateAnimation.doAnnotationAnimation(this.clipPath, this, this.annotateEnd, this.annotateTotal);
                         }
                     }
                     else {

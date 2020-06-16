@@ -419,6 +419,8 @@ export const removeInfiniteRows: string = 'remove-infinite-rows';
 /** @hidden */
 export const setInfiniteCache: string = 'set-infinite-cache';
 /** @hidden */
+export const infiniteEditHandler: string = 'infinite-edit-handler';
+/** @hidden */
 export const initialCollapse: string = 'initial-collapse';
 /** @hidden */
 export const getAggregateQuery: string = 'get-aggregate-query';

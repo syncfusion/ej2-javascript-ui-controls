@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.57 (2020-06-16)
+
+### TreeGrid
+
+#### Bug Fixes
+
+- `#277364`, `#279732` - Checkbox with `allowRowDragAndDrop` property rendered properly after editing and cancelling in cell edit mode.
+
 ## 18.1.56 (2020-06-09)
 
 ### TreeGrid
@@ -17,6 +25,7 @@
 
 #### Bug Fixes
 
+- `#277364` - Checkbox with `autoCheckHierarchy` property rendered properly after editing and cancelling in cell edit mode.
 - `#278266` - Edit type `dropdownedit` is working properly in cell edit mode when enter key is pressed.
 
 ## 18.1.54 (2020-05-26)

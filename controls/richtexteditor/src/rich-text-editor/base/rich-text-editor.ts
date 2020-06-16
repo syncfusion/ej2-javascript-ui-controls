@@ -10,7 +10,7 @@ import * as classes from '../base/classes';
 import { Render } from '../renderer/render';
 import { ViewSource } from '../renderer/view-source';
 import { IRenderer, IFormatter, PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs } from './interface';
-import { BeforeQuickToolbarOpenArgs, ChangeEventArgs } from './interface';
+import { BeforeQuickToolbarOpenArgs, ChangeEventArgs, AfterImageDeleteEventArgs } from './interface';
 import { IExecutionGroup, executeGroup, CommandName, ResizeArgs } from './interface';
 import { ILinkCommandsArgs, IImageCommandsArgs, BeforeSanitizeHtmlArgs, ITableCommandsArgs, ExecuteCommandOption } from './interface';
 import { ServiceLocator } from '../services/service-locator';
@@ -780,7 +780,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @blazorProperty 'OnImageDelete'
      */
     @Event()
-    public afterImageDelete: EmitType<Object>;
+    public afterImageDelete: EmitType<AfterImageDeleteEventArgs>;
     /** 
      * Triggers when the Rich Text Editor is rendered.
      * @event 

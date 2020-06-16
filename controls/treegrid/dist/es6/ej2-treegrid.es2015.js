@@ -737,7 +737,9 @@ class Selection {
         let checkWrap = this.renderColumnCheckbox(container);
         let containerELe = container.cell.querySelector('.e-treecolumn-container');
         if (!isNullOrUndefined(containerELe)) {
-            containerELe.insertBefore(checkWrap, containerELe.querySelectorAll('.e-treecell')[0]);
+            if (!container.cell.querySelector('.e-hierarchycheckbox')) {
+                containerELe.insertBefore(checkWrap, containerELe.querySelectorAll('.e-treecell')[0]);
+            }
         }
         else {
             let spanEle = this.parent.createElement('span', { className: 'e-treecheckbox' });
@@ -8658,9 +8660,16 @@ class Edit$1 {
         if (this.parent.editSettings.mode === 'Cell') {
             let cellDetails = getValue('editModule.cellDetails', this.parent.grid.editModule);
             let selectRowIndex = cellDetails.rowIndex;
+            let treeCell;
+            if (this.parent.allowRowDragAndDrop === true && !(this.parent.rowDropSettings.targetID)) {
+                treeCell = this.parent.getRows()[selectRowIndex].cells[this.parent.treeColumnIndex + 1];
+            }
+            else {
+                treeCell = this.parent.getRows()[selectRowIndex].cells[this.parent.treeColumnIndex];
+            }
             this.parent.renderModule.cellRender({
                 data: cellDetails.rowData,
-                cell: this.parent.getRows()[selectRowIndex].cells[this.parent.treeColumnIndex],
+                cell: treeCell,
                 column: this.parent.grid.getColumns()[this.parent.treeColumnIndex]
             });
             this.updateGridEditMode('Normal');

@@ -355,6 +355,7 @@ export interface TreeInfo {
 
 /**
  * Contains the properties of the diagram layout
+ * @deprecated
  */
 export interface ILayout {
     anchorX?: number;
