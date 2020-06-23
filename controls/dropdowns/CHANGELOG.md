@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### MultiSelect
+
+#### Bug Fixes
+
+-`#F154635` - Issue with "floating label is not floated properly while rendering with filter and outline theme appearance" has been resolved.
+
 ## 18.1.57 (2020-06-16)
 
 ### ComboBox

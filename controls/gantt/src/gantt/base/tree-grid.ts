@@ -478,7 +478,7 @@ export class GanttTreeGrid {
             }
         } else if (taskSettings.baselineStartDate === column.field ||
             taskSettings.baselineEndDate === column.field) {
-            let colName: string = taskSettings.baselineEndDate ? 'baselineEndDate' :
+            let colName: string = (taskSettings.baselineEndDate === column.field) ? 'baselineEndDate' :
                 'baselineStartDate';
             column.width = column.width ? column.width : 150;
             column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant(colName);

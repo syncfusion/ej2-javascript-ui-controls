@@ -235,12 +235,20 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
             this.toastCollection.push(collectionObj);
         }
     };
+    /**
+     * @hidden
+     * @deprecated
+     * This method applicable for blazor alone.
+     */
+    Toast.prototype.showToast = function (id, toastObj) {
+        this.toastEle = this.element.querySelector('#' + id);
+        this.show(toastObj);
+    };
     Toast.prototype.isToastModel = function (toastObj) {
         this.toastContainer = this.element;
         this.setPositioning(this.position);
         var proxy = this;
         if (!isNullOrUndefined(proxy.element.lastElementChild)) {
-            this.toastEle = proxy.element.lastElementChild;
             this.setProgress();
         }
         this.setAria();
@@ -496,9 +504,17 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
         if (this.isBlazorServer()) {
             return;
         }
-        if (!isNaN(parseFloat(pos.X)) || !isNaN(parseFloat(pos.Y))) {
+        if (!isNaN(parseFloat(pos.X)) && !isNaN(parseFloat(pos.Y))) {
             this.customPosition = true;
             setStyleAttribute(this.toastContainer, { 'left': formatUnit(pos.X), 'top': formatUnit(pos.Y) });
+        }
+        else if ((!isNaN(parseFloat(pos.X)) && isNaN(parseFloat(pos.Y)))) {
+            setStyleAttribute(this.toastContainer, { 'left': formatUnit(pos.X) });
+            this.toastContainer.classList.add(ROOT + '-' + pos.Y.toString().toLowerCase());
+        }
+        else if ((isNaN(parseFloat(pos.X)) && !isNaN(parseFloat(pos.Y)))) {
+            setStyleAttribute(this.toastContainer, { 'top': formatUnit(pos.Y) });
+            this.toastContainer.classList.add(ROOT + '-' + pos.X.toString().toLowerCase());
         }
         else {
             this.toastContainer.classList.add(ROOT + '-' + pos.Y.toString().toLowerCase() + '-' + pos.X.toString().toLowerCase());

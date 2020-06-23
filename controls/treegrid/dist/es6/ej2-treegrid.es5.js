@@ -1739,6 +1739,7 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
                 result[r].parentItem = parentData;
                 result[r].parentUniqueID = rowDetails.record.uniqueID;
                 result[r].uniqueID = getUid(_this.parent.element.id + '_data_');
+                result[r].checkboxState = 'uncheck';
                 setValue('uniqueIDCollection.' + result[r].uniqueID, result[r], _this.parent);
                 // delete result[r].parentItem.childRecords;
                 if ((result[r][_this.parent.hasChildMapping] || _this.parentItems.indexOf(result[r][_this.parent.idMapping]) !== -1)
@@ -3086,12 +3087,6 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         };
         this.grid.rowDeselected = function (args) {
             _this.updateSelectionProperty();
-            if (isBlazor()) {
-                var length_1 = 'length';
-                args.data = args.data[args.data[length_1] - 1];
-                args.rowIndex = args.rowIndex[args.rowIndex[length_1] - 1];
-                args.row = args.row[args.row[length_1] - 1];
-            }
             _this.trigger(rowDeselected, args);
         };
         this.grid.rowDeselecting = function (args) {
@@ -4773,9 +4768,9 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                 }
                 var data_1 = getValue('result', _this.dataSource);
                 var childData = extendArray(expandingArgs.childData);
-                var length_2 = record[_this.childMapping] ?
+                var length_1 = record[_this.childMapping] ?
                     record[_this.childMapping].length > childData.length ? record[_this.childMapping].length : childData.length : childData.length;
-                for (var i = 0; i < length_2; i++) {
+                for (var i = 0; i < length_1; i++) {
                     if (record[_this.childMapping]) {
                         data_1.filter(function (e, i) {
                             if (e[_this.parentIdMapping] === record[_this.idMapping]) {

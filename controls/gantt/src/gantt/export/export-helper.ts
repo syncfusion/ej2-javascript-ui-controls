@@ -187,7 +187,7 @@ export class ExportHelper {
         let taskFields: TaskFieldsModel = this.parent.taskFields;
         let ganttProps: ITaskData = data.ganttProperties;
         if (column.editType === 'datepickeredit' || column.editType === 'datetimepickeredit') {
-            cell.value = this.parent.getFormatedDate(data[column.field]);
+            cell.value = this.parent.getFormatedDate(data[column.field], this.parent.getDateFormat());
         } else if (column.field === taskFields.duration) {
             cell.value = this.parent.getDurationString(ganttProps.duration, ganttProps.durationUnit);
         } else if (column.field === taskFields.resourceInfo) {

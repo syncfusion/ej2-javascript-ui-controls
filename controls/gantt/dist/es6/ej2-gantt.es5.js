@@ -3578,35 +3578,41 @@ var GanttChart = /** @__PURE__ @class */ (function () {
         var $target = isInEditedState ? e.target.closest('.e-rowcell') : e.target;
         var isTab = (e.action === 'tab') ? true : false;
         var nextElement = this.getNextElement($target, isTab);
-        if ($target.classList.contains('e-rowcell') || $target.closest('.e-chart-row-cell') ||
-            $target.classList.contains('e-headercell')) {
-            e.preventDefault();
+        if (nextElement === 'noNextRow') {
+            this.manageFocus($target, 'remove', true);
+            return;
         }
-        if ($target.classList.contains('e-rowcell') && (nextElement && nextElement.classList.contains('e-rowcell')) ||
-            $target.classList.contains('e-headercell')) {
-            this.parent.treeGrid.grid.notify('key-pressed', e);
-        }
-        if (!isInEditedState) {
-            if (nextElement) {
-                if ($target.classList.contains('e-rowcell')) {
-                    this.manageFocus($target, 'remove', false);
-                }
-                else {
-                    this.manageFocus($target, 'remove', true);
-                }
-                if (nextElement.classList.contains('e-rowcell')) {
-                    if (!$target.classList.contains('e-rowcell')) {
-                        this.parent.treeGrid.grid.notify('key-pressed', e);
-                        var fmodule = getValue('focusModule', this.parent.treeGrid.grid);
-                        fmodule.currentInfo.element = nextElement;
-                        fmodule.currentInfo.elementToFocus = nextElement;
-                        /* tslint:disable-next-line:no-any */
-                        fmodule.content.matrix.current = [nextElement.parentElement.rowIndex, nextElement.cellIndex];
+        if (typeof nextElement !== 'string') {
+            if ($target.classList.contains('e-rowcell') || $target.closest('.e-chart-row-cell') ||
+                $target.classList.contains('e-headercell')) {
+                e.preventDefault();
+            }
+            if ($target.classList.contains('e-rowcell') && (nextElement && nextElement.classList.contains('e-rowcell')) ||
+                $target.classList.contains('e-headercell')) {
+                this.parent.treeGrid.grid.notify('key-pressed', e);
+            }
+            if (!isInEditedState) {
+                if (nextElement) {
+                    if ($target.classList.contains('e-rowcell')) {
+                        this.manageFocus($target, 'remove', false);
                     }
-                    this.manageFocus(nextElement, 'add', false);
-                }
-                else {
-                    this.manageFocus(nextElement, 'add', true);
+                    else {
+                        this.manageFocus($target, 'remove', true);
+                    }
+                    if (nextElement.classList.contains('e-rowcell')) {
+                        if (!$target.classList.contains('e-rowcell')) {
+                            this.parent.treeGrid.grid.notify('key-pressed', e);
+                            var fmodule = getValue('focusModule', this.parent.treeGrid.grid);
+                            fmodule.currentInfo.element = nextElement;
+                            fmodule.currentInfo.elementToFocus = nextElement;
+                            /* tslint:disable-next-line:no-any */
+                            fmodule.content.matrix.current = [nextElement.parentElement.rowIndex, nextElement.cellIndex];
+                        }
+                        this.manageFocus(nextElement, 'add', false);
+                    }
+                    else {
+                        this.manageFocus(nextElement, 'add', true);
+                    }
                 }
             }
         }
@@ -3678,7 +3684,7 @@ var GanttChart = /** @__PURE__ @class */ (function () {
                     }
                 }
                 else {
-                    return null;
+                    return 'noNextRow';
                 }
             }
         }
@@ -5526,7 +5532,7 @@ var GanttTreeGrid = /** @__PURE__ @class */ (function () {
         }
         else if (taskSettings.baselineStartDate === column.field ||
             taskSettings.baselineEndDate === column.field) {
-            var colName = taskSettings.baselineEndDate ? 'baselineEndDate' :
+            var colName = (taskSettings.baselineEndDate === column.field) ? 'baselineEndDate' :
                 'baselineStartDate';
             column.width = column.width ? column.width : 150;
             column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant(colName);
@@ -15081,8 +15087,8 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
                 dateTimePickerObj.format = this.parent.getDateFormat();
                 dateTimePickerObj.strictMode = true;
                 dateTimePickerObj.firstDayOfWeek = ganttObj.timelineModule.customTimelineSettings.weekStartDay;
-                if (column.field === ganttObj.columnMapping[taskSettings.startDate] ||
-                    column.field === ganttObj.columnMapping[taskSettings.endDate]) {
+                if (column.field === ganttObj.columnMapping.startDate ||
+                    column.field === ganttObj.columnMapping.endDate) {
                     dateTimePickerObj.renderDayCell = this.parent.renderWorkingDayCell.bind(this.parent);
                     dateTimePickerObj.change = function (args) {
                         _this.validateScheduleFields(args, column, ganttObj);
@@ -15782,7 +15788,17 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
             inputModel.value = this.parent.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
         }
         else {
-            inputModel.value = ganttData[column.field];
+            if (column.editType === 'booleanedit') {
+                if (ganttData[column.field] === true) {
+                    inputModel.checked = true;
+                }
+                else {
+                    inputModel.checked = false;
+                }
+            }
+            else {
+                inputModel.value = ganttData[column.field];
+            }
         }
         if (!isNullOrUndefined(column.edit) && isNullOrUndefined(column.edit.params)) {
             var write = column.edit.write;
@@ -16007,6 +16023,14 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
                     var read = column.edit.read;
                     if (typeof read !== 'string') {
                         tasksData[fieldName] = column.edit.read(inputElement, controlObj.value);
+                    }
+                }
+                else if (isCustom && column.editType === 'booleanedit') {
+                    if (inputElement.checked === true) {
+                        tasksData[fieldName] = true;
+                    }
+                    else {
+                        tasksData[fieldName] = false;
                     }
                 }
                 else {
@@ -18734,6 +18758,8 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
             if (!isNullOrUndefined(this.parent.taskFields.id) &&
                 !isNullOrUndefined(this.parent.taskFields.parentID) && cAddedRecord.parentItem) {
                 this.parent.setRecordValue(this.parent.taskFields.parentID, cAddedRecord.parentItem.taskId, cAddedRecord.taskData, true);
+                this.parent.setRecordValue('parentId', cAddedRecord.parentItem.taskId, cAddedRecord.ganttProperties, true);
+                this.parent.setRecordValue(this.parent.taskFields.parentID, cAddedRecord.parentItem.taskId, cAddedRecord, true);
             }
         }
         this.backUpAndPushNewlyAddedRecord(cAddedRecord, rowPosition, parentItem);
@@ -18931,9 +18957,6 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                     this.addRowSelectedItem.ganttProperties.isMilestone = false;
                     recordIndex = currentItemIndex + 1;
                     updatedCollectionIndex = currentViewData.indexOf(this.addRowSelectedItem) + 1;
-                    if (this.addRowSelectedItem.ganttProperties.predecessor) {
-                        this.updatePredecessorOnIndentOutdent(this.addRowSelectedItem);
-                    }
                 }
                 this.recordCollectionUpdate(childIndex + 1, recordIndex, updatedCollectionIndex, record, parentItem);
                 break;
@@ -19130,6 +19153,10 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
             }
             this.parent.trigger('actionBegin', args, function (args) {
                 if (!args.cancel) {
+                    if (rowPosition === 'Child' && _this.addRowSelectedItem && _this.addRowSelectedItem.ganttProperties.predecessor
+                        && _this.addRowSelectedItem.ganttProperties.predecessor.length > 0) {
+                        _this.updatePredecessorOnIndentOutdent(_this.addRowSelectedItem);
+                    }
                     if (isBlazor()) {
                         blazorArgs_1.data = blazorArgs_1.data[0];
                         args = blazorArgs_1;
@@ -19141,15 +19168,21 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                             addedRecords: [args.newTaskData],
                             changedRecords: args.modifiedTaskData
                         };
+                        var prevID_1 = args.data.ganttProperties.taskId.toString();
                         /* tslint:disable-next-line */
                         var query = _this.parent.query instanceof Query ? _this.parent.query : new Query();
                         var crud = data_1.saveChanges(updatedData, _this.parent.taskFields.id, null, query);
                         crud.then(function (e) {
                             if (_this.parent.taskFields.id && !isNullOrUndefined(e.addedRecords[0][_this.parent.taskFields.id]) &&
-                                e.addedRecords[0][_this.parent.taskFields.id] !== args.data.ganttProperties.rowUniqueID) {
+                                e.addedRecords[0][_this.parent.taskFields.id].toString() !== prevID_1) {
                                 _this.parent.setRecordValue('taskId', e.addedRecords[0][_this.parent.taskFields.id], args.data.ganttProperties, true);
                                 _this.parent.setRecordValue('taskData.' + _this.parent.taskFields.id, e.addedRecords[0][_this.parent.taskFields.id], args.data);
                                 _this.parent.setRecordValue(_this.parent.taskFields.id, e.addedRecords[0][_this.parent.taskFields.id], args.data);
+                                _this.parent.setRecordValue('rowUniqueID', e.addedRecords[0][_this.parent.taskFields.id].toString(), args.data.ganttProperties, true);
+                                var idsIndex = _this.parent.ids.indexOf(prevID_1);
+                                if (idsIndex !== -1) {
+                                    _this.parent.ids[idsIndex] = e.addedRecords[0][_this.parent.taskFields.id].toString();
+                                }
                             }
                             if (cAddedRecord_1.level === 0) {
                                 _this.parent.treeGrid.parentData.splice(0, 0, cAddedRecord_1);
@@ -19253,6 +19286,9 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
             var parentItem = this.parent.getParentTask(this.newlyAddedRecordBackup.parentItem);
             var parentIndex = parentItem.childRecords.indexOf(this.newlyAddedRecordBackup);
             parentItem.childRecords.splice(parentIndex, 1);
+            if (parentItem.childRecords.length === 0) {
+                parentItem.hasChildRecords = false;
+            }
         }
         flatRecords.splice(flatRecordsIndex, 1);
         currentViewData.splice(currentViewDataIndex, 1);
@@ -19284,7 +19320,6 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                 dropIndex = this.parent.selectionModule.getSelectedRowIndexes()[0] - 1;
             }
             this.indentOutdentRow([this.parent.selectionModule.getSelectedRowIndexes()[0]], dropIndex, 'child');
-            //this.parent.treeGrid.refresh();
         }
     };
     /**
@@ -19310,6 +19345,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
         }
     };
     Edit$$1.prototype.indentOutdentRow = function (fromIndexes, toIndex, pos) {
+        var _this = this;
         if (fromIndexes[0] !== toIndex && pos === 'above' || 'below' || 'child') {
             if (pos === 'above') {
                 this.dropPosition = 'topSegment';
@@ -19320,17 +19356,36 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
             if (pos === 'child') {
                 this.dropPosition = 'middleSegment';
             }
+            var action = void 0;
             var record = [];
             for (var i = 0; i < fromIndexes.length; i++) {
                 record[i] = this.parent.currentViewData[fromIndexes[i]];
             }
-            var isByMethod = true;
-            var args = {
+            var isByMethod_1 = true;
+            var args_1 = {
                 data: record,
                 dropIndex: toIndex,
                 dropPosition: this.dropPosition
             };
-            this.reArrangeRows(args, isByMethod);
+            if (this.dropPosition === 'middleSegment') {
+                action = 'indenting';
+            }
+            else if (this.dropPosition === 'bottomSegment') {
+                action = 'outdenting';
+            }
+            var actionArgs = {
+                action: action,
+                data: record[0],
+                cancel: false
+            };
+            this.parent.trigger('actionBegin', actionArgs, function (actionArgs) {
+                if (!actionArgs.cancel) {
+                    _this.reArrangeRows(args_1, isByMethod_1);
+                }
+                else {
+                    return;
+                }
+            });
         }
         else {
             return;
@@ -19424,7 +19479,6 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                     }
                 }
             }
-            // method to update the edited parent records
             for (var k = 0; k < this.updateParentRecords.length; k++) {
                 this.parent.dataOperation.updateParentItems(this.updateParentRecords[k]);
             }
@@ -19432,7 +19486,12 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
             this.parent.isOnEdit = false;
         }
         this.parent.treeGrid.refresh();
-        args.requestType = 'rowDropped';
+        if (this.dropPosition === 'middleSegment') {
+            args.requestType = 'indented';
+        }
+        else if (this.dropPosition === 'bottomSegment') {
+            args.requestType = 'outdented';
+        }
         args.modifiedRecords = this.parent.editedRecords;
         this.parent.trigger('actionComplete', args);
         this.parent.editedRecords = [];
@@ -20221,12 +20280,7 @@ var Selection$1 = /** @__PURE__ @class */ (function () {
         if (!isNullOrUndefined(args.foreignKeyData) && Object.keys(args.foreignKeyData).length === 0) {
             delete args.foreignKeyData;
         }
-        if (typeof (args.rowIndex) === 'number') {
-            this.prevRowIndex = args.rowIndex;
-        }
-        else {
-            this.prevRowIndex = args.rowIndex[0];
-        }
+        this.prevRowIndex = args.rowIndex;
         if (!isNullOrUndefined(this.parent.toolbarModule)) {
             this.parent.toolbarModule.refreshToolbarItems(args);
         }
@@ -20461,7 +20515,7 @@ var Selection$1 = /** @__PURE__ @class */ (function () {
         if (!this.parent.selectionSettings.persistSelection) {
             var ganttRow = document.getElementById(this.parent.element.id + 'GanttTaskTableBody').children;
             /* tslint:disable-next-line:no-any */
-            var rowIndex = isBlazor() && isNullOrUndefined(records.length) ? [records] : records;
+            var rowIndex = isNullOrUndefined(records.length) ? [records] : records;
             for (var i = 0; i < rowIndex.length; i++) {
                 removeClass([ganttRow[rowIndex[i]]], 'e-active');
                 ganttRow[rowIndex[i]].removeAttribute('aria-selected');
@@ -20531,7 +20585,7 @@ var Selection$1 = /** @__PURE__ @class */ (function () {
      */
     Selection$$1.prototype.mouseUpHandler = function (e) {
         var isTaskbarEdited = false;
-        if (this.parent.editModule && this.parent.editSettings.allowTaskbarEditing) {
+        if (this.parent.editModule && this.parent.editSettings.allowTaskbarEditing && this.parent.editModule.taskbarEditModule) {
             var taskbarEdit = this.parent.editModule.taskbarEditModule;
             if (taskbarEdit.isMouseDragged || taskbarEdit.tapPointOnFocus) {
                 isTaskbarEdited = true;
@@ -24990,7 +25044,7 @@ var ExportHelper = /** @__PURE__ @class */ (function () {
         var taskFields = this.parent.taskFields;
         var ganttProps = data.ganttProperties;
         if (column.editType === 'datepickeredit' || column.editType === 'datetimepickeredit') {
-            cell.value = this.parent.getFormatedDate(data[column.field]);
+            cell.value = this.parent.getFormatedDate(data[column.field], this.parent.getDateFormat());
         }
         else if (column.field === taskFields.duration) {
             cell.value = this.parent.getDurationString(ganttProps.duration, ganttProps.durationUnit);

@@ -196,27 +196,27 @@ export class Canvas extends Container {
         switch (child.horizontalAlignment) {
             case 'Auto':
             case 'Left':
-                x = x;
+                x = child.inversedAlignment ? x : (x - child.desiredSize.width);
                 break;
             case 'Stretch':
             case 'Center':
                 x -= child.desiredSize.width * child.pivot.x;
                 break;
             case 'Right':
-                x -= child.desiredSize.width;
+                x = child.inversedAlignment ? (x - child.desiredSize.width) : x;
                 break;
         }
         switch (child.verticalAlignment) {
             case 'Auto':
             case 'Top':
-                y = y;
+                y = child.inversedAlignment ? y : (y - child.desiredSize.height);
                 break;
             case 'Stretch':
             case 'Center':
                 y -= child.desiredSize.height * child.pivot.y;
                 break;
             case 'Bottom':
-                y -= child.desiredSize.height;
+                y = child.inversedAlignment ? (y - child.desiredSize.height) : y;
                 break;
         }
         return { x: x, y: y };

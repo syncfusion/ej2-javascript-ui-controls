@@ -1790,6 +1790,8 @@ export class Edit {
             if (!isNullOrUndefined(this.parent.taskFields.id) &&
                 !isNullOrUndefined(this.parent.taskFields.parentID) && cAddedRecord.parentItem) {
                 this.parent.setRecordValue(this.parent.taskFields.parentID, cAddedRecord.parentItem.taskId, cAddedRecord.taskData, true);
+                this.parent.setRecordValue('parentId', cAddedRecord.parentItem.taskId, cAddedRecord.ganttProperties, true);
+                this.parent.setRecordValue(this.parent.taskFields.parentID, cAddedRecord.parentItem.taskId, cAddedRecord, true);
             }
         }
         this.backUpAndPushNewlyAddedRecord(cAddedRecord, rowPosition, parentItem);
@@ -1988,9 +1990,6 @@ export class Edit {
                     this.addRowSelectedItem.ganttProperties.isMilestone = false;
                     recordIndex = currentItemIndex + 1;
                     updatedCollectionIndex = currentViewData.indexOf(this.addRowSelectedItem) + 1;
-                    if (this.addRowSelectedItem.ganttProperties.predecessor) {
-                        this.updatePredecessorOnIndentOutdent(this.addRowSelectedItem);
-                    }
                 }
                 this.recordCollectionUpdate(childIndex + 1, recordIndex, updatedCollectionIndex, record, parentItem);
                 break;
@@ -2188,6 +2187,10 @@ export class Edit {
         }
         this.parent.trigger('actionBegin', args, (args: ITaskAddedEventArgs) => {
             if (!args.cancel) {
+                if (rowPosition === 'Child' && this.addRowSelectedItem && this.addRowSelectedItem.ganttProperties.predecessor
+                    && this.addRowSelectedItem.ganttProperties.predecessor.length > 0) {
+                    this.updatePredecessorOnIndentOutdent(this.addRowSelectedItem);
+                }
                 if (isBlazor()) {
                     blazorArgs.data = blazorArgs.data[0];
                     args = blazorArgs;
@@ -2199,18 +2202,25 @@ export class Edit {
                         addedRecords: [args.newTaskData], // to check
                         changedRecords: args.modifiedTaskData
                     };
+                    let prevID: string = args.data.ganttProperties.taskId.toString();
                     /* tslint:disable-next-line */
                     let query: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
                     let crud: Promise<Object> = data.saveChanges(updatedData, this.parent.taskFields.id, null, query) as Promise<Object>;
                     crud.then((e: { addedRecords: Object[], changedRecords: Object[] }) => {
                         if (this.parent.taskFields.id && !isNullOrUndefined(e.addedRecords[0][this.parent.taskFields.id]) &&
-                            e.addedRecords[0][this.parent.taskFields.id] !== args.data.ganttProperties.rowUniqueID) {
+                            e.addedRecords[0][this.parent.taskFields.id].toString() !== prevID) {
                             this.parent.setRecordValue(
                                 'taskId', e.addedRecords[0][this.parent.taskFields.id], args.data.ganttProperties, true);
                             this.parent.setRecordValue(
                                 'taskData.' + this.parent.taskFields.id, e.addedRecords[0][this.parent.taskFields.id], args.data);
                             this.parent.setRecordValue(
                                 this.parent.taskFields.id, e.addedRecords[0][this.parent.taskFields.id], args.data);
+                            this.parent.setRecordValue(
+                                'rowUniqueID', e.addedRecords[0][this.parent.taskFields.id].toString(), args.data.ganttProperties, true);
+                            let idsIndex: number = this.parent.ids.indexOf(prevID);
+                            if (idsIndex !== -1) {
+                            this.parent.ids[idsIndex] = e.addedRecords[0][this.parent.taskFields.id].toString();
+                            }
                         }
                         if (cAddedRecord.level === 0) {
                             this.parent.treeGrid.parentData.splice(0, 0, cAddedRecord);
@@ -2314,6 +2324,9 @@ export class Edit {
             let parentItem: IGanttData = this.parent.getParentTask(this.newlyAddedRecordBackup.parentItem);
             let parentIndex: number = parentItem.childRecords.indexOf(this.newlyAddedRecordBackup);
             parentItem.childRecords.splice(parentIndex, 1);
+            if (parentItem.childRecords.length === 0) {
+                parentItem.hasChildRecords = false;
+            }
         }
         flatRecords.splice(flatRecordsIndex, 1);
         currentViewData.splice(currentViewDataIndex, 1);
@@ -2343,7 +2356,6 @@ export class Edit {
                 dropIndex = this.parent.selectionModule.getSelectedRowIndexes()[0] - 1;
             }
             this.indentOutdentRow([this.parent.selectionModule.getSelectedRowIndexes()[0]], dropIndex, 'child');
-            //this.parent.treeGrid.refresh();
         }
     }
 
@@ -2380,6 +2392,7 @@ export class Edit {
             if (pos === 'child') {
                 this.dropPosition = 'middleSegment';
             }
+            let action: string;
             let record: IGanttData[] = [];
             for (let i: number = 0; i < fromIndexes.length; i++) {
                 record[i] = this.parent.currentViewData[fromIndexes[i]];
@@ -2390,7 +2403,23 @@ export class Edit {
                 dropIndex: toIndex,
                 dropPosition: this.dropPosition
             };
-            this.reArrangeRows(args, isByMethod);
+            if (this.dropPosition === 'middleSegment') {
+                action =  'indenting';
+            } else if (this.dropPosition === 'bottomSegment') {
+                action =  'outdenting';
+            }
+            let actionArgs: IActionBeginEventArgs = {
+                action : action,
+                data: record[0],
+                cancel: false
+            };
+            this.parent.trigger('actionBegin', actionArgs, (actionArgs: IActionBeginEventArgs) => {
+                if (!actionArgs.cancel) {
+                    this.reArrangeRows(args, isByMethod);
+                } else {
+                    return;
+                }
+            });
         } else {
             return;
         }
@@ -2398,9 +2427,7 @@ export class Edit {
     private reArrangeRows(args: RowDropEventArgs, isByMethod?: boolean): void {
         this.dropPosition = args.dropPosition;
         if (args.dropPosition !== 'Invalid' && this.parent.editModule) {
-            let obj: Gantt = this.parent;
-            let draggedRec: IGanttData;
-            let droppedRec: IGanttData;
+            let obj: Gantt = this.parent; let draggedRec: IGanttData; let droppedRec: IGanttData;
             this.droppedRecord = obj.currentViewData[args.dropIndex];
             let dragRecords: IGanttData[] = [];
             droppedRec = this.droppedRecord;
@@ -2482,7 +2509,6 @@ export class Edit {
                     }
                 }
         }
-        // method to update the edited parent records
             for (let k: number = 0; k < this.updateParentRecords.length; k++) {
                 this.parent.dataOperation.updateParentItems(this.updateParentRecords[k]);
             }
@@ -2490,7 +2516,11 @@ export class Edit {
             this.parent.isOnEdit = false;
         }
         this.parent.treeGrid.refresh();
-        args.requestType = 'rowDropped';
+        if (this.dropPosition === 'middleSegment') {
+            args.requestType = 'indented';
+        } else if (this.dropPosition === 'bottomSegment') {
+            args.requestType = 'outdented';
+        }
         args.modifiedRecords = this.parent.editedRecords;
         this.parent.trigger('actionComplete', args);
         this.parent.editedRecords = [];

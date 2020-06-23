@@ -4,6 +4,22 @@
   .e-bigger .e-toast-container,
   .e-toast-container.e-bigger {
 
+    &.e-toast-top {
+      top: $toast-position-bgr-distance;
+    }
+
+    &.e-toast-bottom {
+      bottom: $toast-position-bgr-distance;
+    }
+
+    &.e-toast-left {
+      left: $toast-position-bgr-distance;
+    }
+
+    &.e-toast-right {
+      right: $toast-position-bgr-distance;
+    }
+
     &.e-toast-top-left {
       left: $toast-position-bgr-distance;
       top: $toast-position-bgr-distance;
@@ -35,6 +51,12 @@
     &.e-toast-top-center {
       top: $toast-position-bgr-distance;
 
+      .e-toast {
+        margin: 0 auto $multitoast-bgr-gap-distance;
+      }
+    }
+
+    &.e-toast-center {
       .e-toast {
         margin: 0 auto $multitoast-bgr-gap-distance;
       }
@@ -139,6 +161,22 @@
     flex-direction: column;
     position: relative;
 
+    &.e-toast-top {
+      top: $toast-position-nrml-distance;
+    }
+
+    &.e-toast-bottom {
+      bottom: $toast-position-nrml-distance;
+    }
+
+    &.e-toast-right {
+      right: $toast-position-nrml-distance;
+    }
+
+    &.e-toast-left {
+      left: $toast-position-nrml-distance;
+    }
+
     &.e-toast-top-left {
       left: $toast-position-nrml-distance;
       top: $toast-position-nrml-distance;
@@ -157,6 +195,17 @@
     &.e-toast-bottom-right {
       bottom: $toast-position-nrml-distance;
       right: $toast-position-nrml-distance;
+    }
+
+    &.e-toast-center {
+      pointer-events: none;
+      right: 0;
+      width: 100%;
+
+      .e-toast {
+        margin: 0 auto $multitoast-nrml-gap-distance;
+        pointer-events: auto;
+      }
     }
 
     &.e-toast-bottom-center {

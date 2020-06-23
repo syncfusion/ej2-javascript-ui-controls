@@ -6056,7 +6056,7 @@ var FocusStrategy = /** @class */ (function () {
             return true;
         }
         var th = sf.base.closest(target, 'th') && !sf.base.closest(target, 'th').tabIndex;
-        if (e.target.classList.contains('e-dropdownlist') && (e.keyCode === 13 || e.keyCode === 27)) {
+        if (e.target.classList.contains('e-filterbaroperator') && (e.keyCode === 13 || e.keyCode === 27)) {
             var inputTarget = sf.base.closest(e.target, '.e-filterbarcell');
             inputTarget.querySelector('input').focus();
         }
@@ -6597,7 +6597,8 @@ var ContentFocus = /** @class */ (function () {
         var _a = [target.parentElement.rowIndex, target.cellIndex], rowIndex = _a[0], cellIndex = _a[1];
         var _b = this.matrix.current, oRowIndex = _b[0], oCellIndex = _b[1];
         var val = sf.base.getValue(rowIndex + "." + cellIndex, this.matrix.matrix);
-        if (this.matrix.inValid(val) || (!force && oRowIndex === rowIndex && oCellIndex === cellIndex)) {
+        if (this.matrix.inValid(val) || (!force && oRowIndex === rowIndex && oCellIndex === cellIndex) ||
+            parentsUntil(e.target, 'e-summarycell')) {
             return false;
         }
         this.matrix.select(rowIndex, cellIndex);

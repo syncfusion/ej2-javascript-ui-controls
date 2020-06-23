@@ -3545,35 +3545,41 @@ class GanttChart {
         let $target = isInEditedState ? e.target.closest('.e-rowcell') : e.target;
         let isTab = (e.action === 'tab') ? true : false;
         let nextElement = this.getNextElement($target, isTab);
-        if ($target.classList.contains('e-rowcell') || $target.closest('.e-chart-row-cell') ||
-            $target.classList.contains('e-headercell')) {
-            e.preventDefault();
+        if (nextElement === 'noNextRow') {
+            this.manageFocus($target, 'remove', true);
+            return;
         }
-        if ($target.classList.contains('e-rowcell') && (nextElement && nextElement.classList.contains('e-rowcell')) ||
-            $target.classList.contains('e-headercell')) {
-            this.parent.treeGrid.grid.notify('key-pressed', e);
-        }
-        if (!isInEditedState) {
-            if (nextElement) {
-                if ($target.classList.contains('e-rowcell')) {
-                    this.manageFocus($target, 'remove', false);
-                }
-                else {
-                    this.manageFocus($target, 'remove', true);
-                }
-                if (nextElement.classList.contains('e-rowcell')) {
-                    if (!$target.classList.contains('e-rowcell')) {
-                        this.parent.treeGrid.grid.notify('key-pressed', e);
-                        let fmodule = getValue('focusModule', this.parent.treeGrid.grid);
-                        fmodule.currentInfo.element = nextElement;
-                        fmodule.currentInfo.elementToFocus = nextElement;
-                        /* tslint:disable-next-line:no-any */
-                        fmodule.content.matrix.current = [nextElement.parentElement.rowIndex, nextElement.cellIndex];
+        if (typeof nextElement !== 'string') {
+            if ($target.classList.contains('e-rowcell') || $target.closest('.e-chart-row-cell') ||
+                $target.classList.contains('e-headercell')) {
+                e.preventDefault();
+            }
+            if ($target.classList.contains('e-rowcell') && (nextElement && nextElement.classList.contains('e-rowcell')) ||
+                $target.classList.contains('e-headercell')) {
+                this.parent.treeGrid.grid.notify('key-pressed', e);
+            }
+            if (!isInEditedState) {
+                if (nextElement) {
+                    if ($target.classList.contains('e-rowcell')) {
+                        this.manageFocus($target, 'remove', false);
                     }
-                    this.manageFocus(nextElement, 'add', false);
-                }
-                else {
-                    this.manageFocus(nextElement, 'add', true);
+                    else {
+                        this.manageFocus($target, 'remove', true);
+                    }
+                    if (nextElement.classList.contains('e-rowcell')) {
+                        if (!$target.classList.contains('e-rowcell')) {
+                            this.parent.treeGrid.grid.notify('key-pressed', e);
+                            let fmodule = getValue('focusModule', this.parent.treeGrid.grid);
+                            fmodule.currentInfo.element = nextElement;
+                            fmodule.currentInfo.elementToFocus = nextElement;
+                            /* tslint:disable-next-line:no-any */
+                            fmodule.content.matrix.current = [nextElement.parentElement.rowIndex, nextElement.cellIndex];
+                        }
+                        this.manageFocus(nextElement, 'add', false);
+                    }
+                    else {
+                        this.manageFocus(nextElement, 'add', true);
+                    }
                 }
             }
         }
@@ -3645,7 +3651,7 @@ class GanttChart {
                     }
                 }
                 else {
-                    return null;
+                    return 'noNextRow';
                 }
             }
         }
@@ -5464,7 +5470,7 @@ class GanttTreeGrid {
         }
         else if (taskSettings.baselineStartDate === column.field ||
             taskSettings.baselineEndDate === column.field) {
-            let colName = taskSettings.baselineEndDate ? 'baselineEndDate' :
+            let colName = (taskSettings.baselineEndDate === column.field) ? 'baselineEndDate' :
                 'baselineStartDate';
             column.width = column.width ? column.width : 150;
             column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant(colName);
@@ -14667,8 +14673,8 @@ class DialogEdit {
                 dateTimePickerObj.format = this.parent.getDateFormat();
                 dateTimePickerObj.strictMode = true;
                 dateTimePickerObj.firstDayOfWeek = ganttObj.timelineModule.customTimelineSettings.weekStartDay;
-                if (column.field === ganttObj.columnMapping[taskSettings.startDate] ||
-                    column.field === ganttObj.columnMapping[taskSettings.endDate]) {
+                if (column.field === ganttObj.columnMapping.startDate ||
+                    column.field === ganttObj.columnMapping.endDate) {
                     dateTimePickerObj.renderDayCell = this.parent.renderWorkingDayCell.bind(this.parent);
                     dateTimePickerObj.change = (args) => {
                         this.validateScheduleFields(args, column, ganttObj);
@@ -15365,7 +15371,17 @@ class DialogEdit {
             inputModel.value = this.parent.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
         }
         else {
-            inputModel.value = ganttData[column.field];
+            if (column.editType === 'booleanedit') {
+                if (ganttData[column.field] === true) {
+                    inputModel.checked = true;
+                }
+                else {
+                    inputModel.checked = false;
+                }
+            }
+            else {
+                inputModel.value = ganttData[column.field];
+            }
         }
         if (!isNullOrUndefined(column.edit) && isNullOrUndefined(column.edit.params)) {
             let write = column.edit.write;
@@ -15588,6 +15604,14 @@ class DialogEdit {
                     let read = column.edit.read;
                     if (typeof read !== 'string') {
                         tasksData[fieldName] = column.edit.read(inputElement, controlObj.value);
+                    }
+                }
+                else if (isCustom && column.editType === 'booleanedit') {
+                    if (inputElement.checked === true) {
+                        tasksData[fieldName] = true;
+                    }
+                    else {
+                        tasksData[fieldName] = false;
                     }
                 }
                 else {
@@ -18271,6 +18295,8 @@ class Edit$2 {
             if (!isNullOrUndefined(this.parent.taskFields.id) &&
                 !isNullOrUndefined(this.parent.taskFields.parentID) && cAddedRecord.parentItem) {
                 this.parent.setRecordValue(this.parent.taskFields.parentID, cAddedRecord.parentItem.taskId, cAddedRecord.taskData, true);
+                this.parent.setRecordValue('parentId', cAddedRecord.parentItem.taskId, cAddedRecord.ganttProperties, true);
+                this.parent.setRecordValue(this.parent.taskFields.parentID, cAddedRecord.parentItem.taskId, cAddedRecord, true);
             }
         }
         this.backUpAndPushNewlyAddedRecord(cAddedRecord, rowPosition, parentItem);
@@ -18468,9 +18494,6 @@ class Edit$2 {
                     this.addRowSelectedItem.ganttProperties.isMilestone = false;
                     recordIndex = currentItemIndex + 1;
                     updatedCollectionIndex = currentViewData.indexOf(this.addRowSelectedItem) + 1;
-                    if (this.addRowSelectedItem.ganttProperties.predecessor) {
-                        this.updatePredecessorOnIndentOutdent(this.addRowSelectedItem);
-                    }
                 }
                 this.recordCollectionUpdate(childIndex + 1, recordIndex, updatedCollectionIndex, record, parentItem);
                 break;
@@ -18666,6 +18689,10 @@ class Edit$2 {
             }
             this.parent.trigger('actionBegin', args, (args) => {
                 if (!args.cancel) {
+                    if (rowPosition === 'Child' && this.addRowSelectedItem && this.addRowSelectedItem.ganttProperties.predecessor
+                        && this.addRowSelectedItem.ganttProperties.predecessor.length > 0) {
+                        this.updatePredecessorOnIndentOutdent(this.addRowSelectedItem);
+                    }
                     if (isBlazor()) {
                         blazorArgs.data = blazorArgs.data[0];
                         args = blazorArgs;
@@ -18677,15 +18704,21 @@ class Edit$2 {
                             addedRecords: [args.newTaskData],
                             changedRecords: args.modifiedTaskData
                         };
+                        let prevID = args.data.ganttProperties.taskId.toString();
                         /* tslint:disable-next-line */
                         let query = this.parent.query instanceof Query ? this.parent.query : new Query();
                         let crud = data.saveChanges(updatedData, this.parent.taskFields.id, null, query);
                         crud.then((e) => {
                             if (this.parent.taskFields.id && !isNullOrUndefined(e.addedRecords[0][this.parent.taskFields.id]) &&
-                                e.addedRecords[0][this.parent.taskFields.id] !== args.data.ganttProperties.rowUniqueID) {
+                                e.addedRecords[0][this.parent.taskFields.id].toString() !== prevID) {
                                 this.parent.setRecordValue('taskId', e.addedRecords[0][this.parent.taskFields.id], args.data.ganttProperties, true);
                                 this.parent.setRecordValue('taskData.' + this.parent.taskFields.id, e.addedRecords[0][this.parent.taskFields.id], args.data);
                                 this.parent.setRecordValue(this.parent.taskFields.id, e.addedRecords[0][this.parent.taskFields.id], args.data);
+                                this.parent.setRecordValue('rowUniqueID', e.addedRecords[0][this.parent.taskFields.id].toString(), args.data.ganttProperties, true);
+                                let idsIndex = this.parent.ids.indexOf(prevID);
+                                if (idsIndex !== -1) {
+                                    this.parent.ids[idsIndex] = e.addedRecords[0][this.parent.taskFields.id].toString();
+                                }
                             }
                             if (cAddedRecord.level === 0) {
                                 this.parent.treeGrid.parentData.splice(0, 0, cAddedRecord);
@@ -18789,6 +18822,9 @@ class Edit$2 {
             let parentItem = this.parent.getParentTask(this.newlyAddedRecordBackup.parentItem);
             let parentIndex = parentItem.childRecords.indexOf(this.newlyAddedRecordBackup);
             parentItem.childRecords.splice(parentIndex, 1);
+            if (parentItem.childRecords.length === 0) {
+                parentItem.hasChildRecords = false;
+            }
         }
         flatRecords.splice(flatRecordsIndex, 1);
         currentViewData.splice(currentViewDataIndex, 1);
@@ -18820,7 +18856,6 @@ class Edit$2 {
                 dropIndex = this.parent.selectionModule.getSelectedRowIndexes()[0] - 1;
             }
             this.indentOutdentRow([this.parent.selectionModule.getSelectedRowIndexes()[0]], dropIndex, 'child');
-            //this.parent.treeGrid.refresh();
         }
     }
     /**
@@ -18856,6 +18891,7 @@ class Edit$2 {
             if (pos === 'child') {
                 this.dropPosition = 'middleSegment';
             }
+            let action;
             let record = [];
             for (let i = 0; i < fromIndexes.length; i++) {
                 record[i] = this.parent.currentViewData[fromIndexes[i]];
@@ -18866,7 +18902,25 @@ class Edit$2 {
                 dropIndex: toIndex,
                 dropPosition: this.dropPosition
             };
-            this.reArrangeRows(args, isByMethod);
+            if (this.dropPosition === 'middleSegment') {
+                action = 'indenting';
+            }
+            else if (this.dropPosition === 'bottomSegment') {
+                action = 'outdenting';
+            }
+            let actionArgs = {
+                action: action,
+                data: record[0],
+                cancel: false
+            };
+            this.parent.trigger('actionBegin', actionArgs, (actionArgs) => {
+                if (!actionArgs.cancel) {
+                    this.reArrangeRows(args, isByMethod);
+                }
+                else {
+                    return;
+                }
+            });
         }
         else {
             return;
@@ -18960,7 +19014,6 @@ class Edit$2 {
                     }
                 }
             }
-            // method to update the edited parent records
             for (let k = 0; k < this.updateParentRecords.length; k++) {
                 this.parent.dataOperation.updateParentItems(this.updateParentRecords[k]);
             }
@@ -18968,7 +19021,12 @@ class Edit$2 {
             this.parent.isOnEdit = false;
         }
         this.parent.treeGrid.refresh();
-        args.requestType = 'rowDropped';
+        if (this.dropPosition === 'middleSegment') {
+            args.requestType = 'indented';
+        }
+        else if (this.dropPosition === 'bottomSegment') {
+            args.requestType = 'outdented';
+        }
         args.modifiedRecords = this.parent.editedRecords;
         this.parent.trigger('actionComplete', args);
         this.parent.editedRecords = [];
@@ -19747,12 +19805,7 @@ class Selection$1 {
         if (!isNullOrUndefined(args.foreignKeyData) && Object.keys(args.foreignKeyData).length === 0) {
             delete args.foreignKeyData;
         }
-        if (typeof (args.rowIndex) === 'number') {
-            this.prevRowIndex = args.rowIndex;
-        }
-        else {
-            this.prevRowIndex = args.rowIndex[0];
-        }
+        this.prevRowIndex = args.rowIndex;
         if (!isNullOrUndefined(this.parent.toolbarModule)) {
             this.parent.toolbarModule.refreshToolbarItems(args);
         }
@@ -19987,7 +20040,7 @@ class Selection$1 {
         if (!this.parent.selectionSettings.persistSelection) {
             let ganttRow = document.getElementById(this.parent.element.id + 'GanttTaskTableBody').children;
             /* tslint:disable-next-line:no-any */
-            let rowIndex = isBlazor() && isNullOrUndefined(records.length) ? [records] : records;
+            let rowIndex = isNullOrUndefined(records.length) ? [records] : records;
             for (let i = 0; i < rowIndex.length; i++) {
                 removeClass([ganttRow[rowIndex[i]]], 'e-active');
                 ganttRow[rowIndex[i]].removeAttribute('aria-selected');
@@ -20057,7 +20110,7 @@ class Selection$1 {
      */
     mouseUpHandler(e) {
         let isTaskbarEdited = false;
-        if (this.parent.editModule && this.parent.editSettings.allowTaskbarEditing) {
+        if (this.parent.editModule && this.parent.editSettings.allowTaskbarEditing && this.parent.editModule.taskbarEditModule) {
             let taskbarEdit = this.parent.editModule.taskbarEditModule;
             if (taskbarEdit.isMouseDragged || taskbarEdit.tapPointOnFocus) {
                 isTaskbarEdited = true;
@@ -24286,7 +24339,7 @@ class ExportHelper {
         let taskFields = this.parent.taskFields;
         let ganttProps = data.ganttProperties;
         if (column.editType === 'datepickeredit' || column.editType === 'datetimepickeredit') {
-            cell.value = this.parent.getFormatedDate(data[column.field]);
+            cell.value = this.parent.getFormatedDate(data[column.field], this.parent.getDateFormat());
         }
         else if (column.field === taskFields.duration) {
             cell.value = this.parent.getDurationString(ganttProps.duration, ganttProps.durationUnit);

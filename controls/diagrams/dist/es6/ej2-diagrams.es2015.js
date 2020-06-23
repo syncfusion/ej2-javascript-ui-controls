@@ -2694,6 +2694,8 @@ class DiagramElement {
          */
         /** @private */
         this.elementActions = ElementAction.None;
+        /** @private */
+        this.inversedAlignment = true;
         //private variables
         this.position = undefined;
         this.unitMode = undefined;
@@ -3308,27 +3310,27 @@ class Canvas extends Container {
         switch (child.horizontalAlignment) {
             case 'Auto':
             case 'Left':
-                x = x;
+                x = child.inversedAlignment ? x : (x - child.desiredSize.width);
                 break;
             case 'Stretch':
             case 'Center':
                 x -= child.desiredSize.width * child.pivot.x;
                 break;
             case 'Right':
-                x -= child.desiredSize.width;
+                x = child.inversedAlignment ? (x - child.desiredSize.width) : x;
                 break;
         }
         switch (child.verticalAlignment) {
             case 'Auto':
             case 'Top':
-                y = y;
+                y = child.inversedAlignment ? y : (y - child.desiredSize.height);
                 break;
             case 'Stretch':
             case 'Center':
                 y -= child.desiredSize.height * child.pivot.y;
                 break;
             case 'Bottom':
-                y -= child.desiredSize.height;
+                y = child.inversedAlignment ? (y - child.desiredSize.height) : y;
                 break;
         }
         return { x: x, y: y };
@@ -12991,7 +12993,7 @@ function preventDefaults(clonedObject, model, defaultObject, isNodeShape) {
         if (clonedObject[property] instanceof Array) {
             preventArrayDefaults(clonedObject, defaultObject, model, property);
         }
-        else if (clonedObject[property] instanceof Object) {
+        else if ((clonedObject[property] instanceof Object) && defaultObject && defaultObject[property]) {
             if (property !== 'wrapper') {
                 clonedObject[property] = preventDefaults(clonedObject[property], model[property], defaultObject[property], isNodeShape);
             }
@@ -13251,7 +13253,7 @@ function deserialize(model, diagram) {
     diagram.getNodeDefaults = nodeDefaults;
     diagram.getCustomProperty = getCustomProperty;
     diagram.mode = dataObj.mode || 'SVG';
-    if (dataObj.nodes.length) {
+    if (dataObj.nodes) {
         for (let i = 0; i < dataObj.nodes.length; i++) {
             if (dataObj.nodes[i].shape && dataObj.nodes[i].shape.type === 'SwimLane') {
                 pasteSwimLane(dataObj.nodes[i], undefined, undefined, undefined, undefined, true);
@@ -13286,7 +13288,7 @@ function deserialize(model, diagram) {
 }
 /** @private */
 function upgrade(dataObj) {
-    if (dataObj && (dataObj.version === undefined || (dataObj.version < 17.1))) {
+    if (dataObj && (dataObj.version === undefined || (dataObj.version < 17.1)) && dataObj.nodes) {
         let nodes = dataObj.nodes;
         for (let node of nodes) {
             if (node && node.ports && node.ports.length > 0) {
@@ -15799,6 +15801,7 @@ class Node extends NodeBase {
                 wrapperContent = contentAccessibility(port, this);
             }
             port.description = wrapperContent ? wrapperContent : port.id;
+            port.inversedAlignment = canvas.inversedAlignment;
             container.children.push(port);
         }
     }
@@ -15852,6 +15855,7 @@ class Node extends NodeBase {
                 wrapperContent = contentAccessibility(icon, this);
             }
             iconContainer.description = wrapperContent ? wrapperContent : iconContainer.id;
+            iconContainer.inversedAlignment = canvas.inversedAlignment;
             container.children.push(iconContainer);
         }
     }
@@ -15867,6 +15871,7 @@ class Node extends NodeBase {
                 wrapperContent = contentAccessibility(annotation, this);
             }
             annotation.description = wrapperContent ? wrapperContent : annotation.id;
+            annotation.inversedAlignment = container.inversedAlignment;
             container.children.push(annotation);
         }
     }
@@ -31895,6 +31900,33 @@ __decorate$23([
     Property('')
 ], CustomCursorAction.prototype, "cursor", void 0);
 
+var __decorate$24 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Represents the diagram settings
+ * ```html
+ * <div id='diagram'></div>
+ * ```
+ * ```typescript
+ * let diagram: Diagram = new Diagram({
+ * ...
+ * diagramSettings: { inversedAlignment: true },
+ * ...
+ * });
+ * diagram.appendTo('#diagram');
+ * ```
+ * @default {}
+ */
+class DiagramSettings extends ChildProperty {
+}
+__decorate$24([
+    Property(true)
+], DiagramSettings.prototype, "inversedAlignment", void 0);
+
 var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -35689,7 +35721,8 @@ class Diagram extends Component {
             this.initObject(tempTabel[obj]);
             this.bpmnModule.updateDocks(tempTabel[obj], this);
         }
-        for (let obj of groups) {
+        let alignedGroups = this.alignGroup(groups, tempTabel);
+        for (let obj of alignedGroups) {
             let layer = this.commandHandler.getObjectLayer(obj);
             this.initNodes(tempTabel[obj], layer);
         }
@@ -35714,6 +35747,33 @@ class Diagram extends Component {
             };
             window[blazorInterop].updateBlazorProperties(obj, this);
         }
+    }
+    alignGroup(parents, tempTabel) {
+        let newList = [];
+        let parentist = [];
+        let child;
+        let childNode;
+        let i;
+        let j;
+        for (i = 0; i < parents.length; i++) {
+            child = parents[i];
+            childNode = tempTabel[child];
+            let node;
+            if (childNode && childNode.children.length) {
+                for (j = 0; j < childNode.children.length; j++) {
+                    node = childNode.children[j];
+                    if (parents.indexOf(node) > -1 && (newList.indexOf(node) === -1) &&
+                        (parentist.indexOf(node) === -1)) {
+                        newList.splice(0, 0, node);
+                    }
+                }
+            }
+            if (newList.indexOf(child) === -1) {
+                parentist.push(child);
+            }
+        }
+        newList = newList.concat(parentist);
+        return newList;
     }
     addToLayer(obj, hasLayers) {
         let layer;
@@ -36176,6 +36236,9 @@ class Diagram extends Component {
         let canvas = obj.initContainer();
         let portContainer = new Canvas();
         let content;
+        if (!this.diagramSettings.inversedAlignment) {
+            canvas.inversedAlignment = false;
+        }
         if (!canvas.children) {
             canvas.children = [];
         }
@@ -36274,7 +36337,9 @@ class Diagram extends Component {
     /** @private */
     updateDiagramElementQuad() {
         for (let i = 0; i < this.nodes.length; i++) {
-            this.updateQuad(this.nodes[i]);
+            if (this.nodes[i].wrapper && (this.nodes[i].wrapper instanceof Container)) {
+                this.updateQuad(this.nodes[i]);
+            }
         }
     }
     onLoadImageSize(id, size) {
@@ -39754,6 +39819,9 @@ __decorate([
     Property()
 ], Diagram.prototype, "updateSelection", void 0);
 __decorate([
+    Complex({}, DiagramSettings)
+], Diagram.prototype, "diagramSettings", void 0);
+__decorate([
     Complex({}, Selector)
 ], Diagram.prototype, "selectedItems", void 0);
 __decorate([
@@ -41794,7 +41862,7 @@ class BpmnDiagrams {
                 innerEvtNode.style.fill = event !== 'End' ? 'white' : 'black';
                 innerEvtNode.style.gradient = null;
                 triggerNode.style.fill = 'black';
-                triggerNode.style.strokeColor = node.style.strokeColor;
+                triggerNode.style.strokeColor = 'white';
                 break;
         }
         //append child and set style
@@ -51943,7 +52011,7 @@ class CrossReduction {
  * Diagram component exported items
  */
 
-var __decorate$24 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$25 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -51969,22 +52037,22 @@ class Palette extends ChildProperty {
         super(parent, propName, defaultValue, isArray);
     }
 }
-__decorate$24([
+__decorate$25([
     Property('')
 ], Palette.prototype, "id", void 0);
-__decorate$24([
+__decorate$25([
     Property()
 ], Palette.prototype, "height", void 0);
-__decorate$24([
+__decorate$25([
     Property(true)
 ], Palette.prototype, "expanded", void 0);
-__decorate$24([
+__decorate$25([
     Property('')
 ], Palette.prototype, "iconCss", void 0);
-__decorate$24([
+__decorate$25([
     Property('')
 ], Palette.prototype, "title", void 0);
-__decorate$24([
+__decorate$25([
     CollectionFactory(getObjectType$1)
 ], Palette.prototype, "symbols", void 0);
 /**
@@ -51992,10 +52060,10 @@ __decorate$24([
  */
 class SymbolDragSize extends ChildProperty {
 }
-__decorate$24([
+__decorate$25([
     Property()
 ], SymbolDragSize.prototype, "width", void 0);
-__decorate$24([
+__decorate$25([
     Property()
 ], SymbolDragSize.prototype, "height", void 0);
 /**
@@ -52003,13 +52071,13 @@ __decorate$24([
  */
 class SymbolPreview extends ChildProperty {
 }
-__decorate$24([
+__decorate$25([
     Property()
 ], SymbolPreview.prototype, "width", void 0);
-__decorate$24([
+__decorate$25([
     Property()
 ], SymbolPreview.prototype, "height", void 0);
-__decorate$24([
+__decorate$25([
     Complex({}, Point)
 ], SymbolPreview.prototype, "offset", void 0);
 /**
@@ -53356,73 +53424,73 @@ class SymbolPalette extends Component {
         EventHandler.remove(document, keyDownEvent, this.keyDown);
     }
 }
-__decorate$24([
+__decorate$25([
     Property('S')
 ], SymbolPalette.prototype, "accessKey", void 0);
-__decorate$24([
+__decorate$25([
     Property('100%')
 ], SymbolPalette.prototype, "width", void 0);
-__decorate$24([
+__decorate$25([
     Property('100%')
 ], SymbolPalette.prototype, "height", void 0);
-__decorate$24([
+__decorate$25([
     Collection([], Palette)
 ], SymbolPalette.prototype, "palettes", void 0);
-__decorate$24([
+__decorate$25([
     Property()
 ], SymbolPalette.prototype, "getSymbolInfo", void 0);
-__decorate$24([
+__decorate$25([
     Property()
 ], SymbolPalette.prototype, "symbolInfo", void 0);
-__decorate$24([
+__decorate$25([
     Property()
 ], SymbolPalette.prototype, "filterSymbols", void 0);
-__decorate$24([
+__decorate$25([
     Property()
 ], SymbolPalette.prototype, "ignoreSymbolsOnSearch", void 0);
-__decorate$24([
+__decorate$25([
     Property()
 ], SymbolPalette.prototype, "getSymbolTemplate", void 0);
-__decorate$24([
+__decorate$25([
     Property()
 ], SymbolPalette.prototype, "symbolWidth", void 0);
-__decorate$24([
+__decorate$25([
     Property()
 ], SymbolPalette.prototype, "symbolHeight", void 0);
-__decorate$24([
+__decorate$25([
     Complex({ left: 10, right: 10, top: 10, bottom: 10 }, Margin)
 ], SymbolPalette.prototype, "symbolMargin", void 0);
-__decorate$24([
+__decorate$25([
     Property(true)
 ], SymbolPalette.prototype, "allowDrag", void 0);
-__decorate$24([
+__decorate$25([
     Complex({}, SymbolPreview)
 ], SymbolPalette.prototype, "symbolPreview", void 0);
-__decorate$24([
+__decorate$25([
     Complex({}, SymbolDragSize)
 ], SymbolPalette.prototype, "symbolDragSize", void 0);
-__decorate$24([
+__decorate$25([
     Property(false)
 ], SymbolPalette.prototype, "enableSearch", void 0);
-__decorate$24([
+__decorate$25([
     Property(true)
 ], SymbolPalette.prototype, "enableAnimation", void 0);
-__decorate$24([
+__decorate$25([
     Property('Multiple')
 ], SymbolPalette.prototype, "expandMode", void 0);
-__decorate$24([
+__decorate$25([
     Event()
 ], SymbolPalette.prototype, "paletteSelectionChange", void 0);
-__decorate$24([
+__decorate$25([
     Property()
 ], SymbolPalette.prototype, "getNodeDefaults", void 0);
-__decorate$24([
+__decorate$25([
     Property()
 ], SymbolPalette.prototype, "nodeDefaults", void 0);
-__decorate$24([
+__decorate$25([
     Property()
 ], SymbolPalette.prototype, "getConnectorDefaults", void 0);
-__decorate$24([
+__decorate$25([
     Property()
 ], SymbolPalette.prototype, "connectorDefaults", void 0);
 
@@ -53430,7 +53498,7 @@ __decorate$24([
  * Exported symbol palette files
  */
 
-var __decorate$25 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$26 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -54328,16 +54396,16 @@ class Overview extends Component {
         return 'Overview';
     }
 }
-__decorate$25([
+__decorate$26([
     Property('100%')
 ], Overview.prototype, "width", void 0);
-__decorate$25([
+__decorate$26([
     Property('100%')
 ], Overview.prototype, "height", void 0);
-__decorate$25([
+__decorate$26([
     Property('')
 ], Overview.prototype, "sourceID", void 0);
-__decorate$25([
+__decorate$26([
     Event()
 ], Overview.prototype, "created", void 0);
 

@@ -108,11 +108,7 @@ export class Selection {
         if (!isNullOrUndefined(args.foreignKeyData) && Object.keys(args.foreignKeyData).length === 0) {
             delete args.foreignKeyData;
         }
-        if (typeof (args.rowIndex) === 'number') {
-            this.prevRowIndex = args.rowIndex;
-        } else {
-            this.prevRowIndex = args.rowIndex[0];
-        }
+        this.prevRowIndex = args.rowIndex;
         if (!isNullOrUndefined(this.parent.toolbarModule)) {
             this.parent.toolbarModule.refreshToolbarItems(args);
         }
@@ -355,7 +351,7 @@ export class Selection {
         if (!this.parent.selectionSettings.persistSelection) {
             let ganttRow: HTMLCollection = document.getElementById(this.parent.element.id + 'GanttTaskTableBody').children;
             /* tslint:disable-next-line:no-any */
-            let rowIndex: any | number | number[] = isBlazor() && isNullOrUndefined((records as number[]).length) ? [records] : records;
+            let rowIndex: any | number | number[] = isNullOrUndefined((records as number[]).length) ? [records] : records;
             for (let i: number = 0; i < (rowIndex as number[]).length; i++) {
                 removeClass([ganttRow[rowIndex[i]]], 'e-active');
                 ganttRow[rowIndex[i]].removeAttribute('aria-selected');
@@ -425,7 +421,7 @@ export class Selection {
      */
     private mouseUpHandler(e: PointerEvent): void {
         let isTaskbarEdited: boolean = false;
-        if (this.parent.editModule && this.parent.editSettings.allowTaskbarEditing) {
+        if (this.parent.editModule && this.parent.editSettings.allowTaskbarEditing && this.parent.editModule.taskbarEditModule) {
             let taskbarEdit: TaskbarEdit = this.parent.editModule.taskbarEditModule;
             if (taskbarEdit.isMouseDragged || taskbarEdit.tapPointOnFocus) {
                 isTaskbarEdited = true;

@@ -719,8 +719,8 @@ export class DialogEdit {
                 dateTimePickerObj.format = this.parent.getDateFormat();
                 dateTimePickerObj.strictMode = true;
                 dateTimePickerObj.firstDayOfWeek = ganttObj.timelineModule.customTimelineSettings.weekStartDay;
-                if (column.field === ganttObj.columnMapping[taskSettings.startDate] ||
-                    column.field === ganttObj.columnMapping[taskSettings.endDate]) {
+                if (column.field === ganttObj.columnMapping.startDate ||
+                    column.field === ganttObj.columnMapping.endDate) {
                     dateTimePickerObj.renderDayCell = this.parent.renderWorkingDayCell.bind(this.parent);
                     dateTimePickerObj.change = (args: CObject): void => {
                         this.validateScheduleFields(args, column, ganttObj);
@@ -1382,7 +1382,15 @@ export class DialogEdit {
             let ganttProp: ITaskData = ganttData.ganttProperties;
             inputModel.value = this.parent.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
         } else {
-            inputModel.value = ganttData[column.field];
+            if (column.editType === 'booleanedit') {
+                if (ganttData[column.field] === true) {
+                    inputModel.checked = true;
+                } else {
+                    inputModel.checked = false;
+                }
+            } else {
+                inputModel.value = ganttData[column.field];
+            }
         }
         if (!isNullOrUndefined(column.edit) && isNullOrUndefined(column.edit.params)) {
             let write: Function = column.edit.write as Function;
@@ -1596,6 +1604,12 @@ export class DialogEdit {
                     let read: Function = column.edit.read as Function;
                     if (typeof read !== 'string') {
                         tasksData[fieldName] = (column.edit.read as Function)(inputElement, controlObj.value);
+                    }
+                } else if (isCustom && column.editType === 'booleanedit') {
+                    if (inputElement.checked === true) {
+                        tasksData[fieldName] = true;
+                    } else {
+                        tasksData[fieldName] = false;
                     }
                 } else {
                     tasksData[fieldName] = controlObj.value;

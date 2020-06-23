@@ -9165,7 +9165,7 @@ var FilterDialog = /** @class */ (function () {
         });
         var levelWrapper = sf.base.createElement('button', {
             id: this.parent.parentID + '_LevelDiv',
-            className: 'e-level-wrapper-class'
+            className: 'e-level-wrapper-class', attrs: { 'type': 'button' }
         });
         var searchWrapper = sf.base.createElement('div', {
             id: this.parent.parentID + '_SearchDiv', attrs: { 'tabindex': '-1' },
@@ -9286,11 +9286,11 @@ var FilterDialog = /** @class */ (function () {
             this.parent.element.appendChild(sortWrapper);
             var sortAscendElement = sf.base.createElement('button', {
                 className: (sortOrder === 'Ascending' ? SORT_SELECTED_CLASS + ' ' : '') + MEMBER_SORT_CLASS,
-                id: this.parent.element.id + '_Sort_Ascend'
+                id: this.parent.element.id + '_Sort_Ascend', attrs: { 'type': 'button' }
             });
             var sortDescendElement = sf.base.createElement('button', {
                 className: (sortOrder === 'Descending' ? SORT_SELECTED_CLASS + ' ' : '') + MEMBER_SORT_CLASS,
-                id: this.parent.element.id + '_Sort_Descend'
+                id: this.parent.element.id + '_Sort_Descend', attrs: { 'type': 'button' }
             });
             var sortBtnElement = new sf.buttons.Button({
                 iconCss: ICON + ' ' + SORT_ASCEND_ICON_CLASS, enableRtl: this.parent.enableRtl
@@ -23817,12 +23817,12 @@ var DialogRenderer = /** @class */ (function () {
         });
         if (this.parent.allowDeferLayoutUpdate) {
             var deferUpdateButton1 = sf.base.createElement('button', {
-                id: this.parent.element.id + '_DeferUpdateButton1'
+                id: this.parent.element.id + '_DeferUpdateButton1', attrs: { 'type': 'button' }
             });
             buttonLayout.appendChild(deferUpdateButton1);
         }
         var deferUpdateButton2 = sf.base.createElement('button', {
-            id: this.parent.element.id + '_DeferUpdateButton2'
+            id: this.parent.element.id + '_DeferUpdateButton2', attrs: { 'type': 'button' }
         });
         buttonLayout.appendChild(deferUpdateButton2);
         layoutFooter.appendChild(buttonLayout);
@@ -28705,11 +28705,11 @@ var CalculatedField = /** @class */ (function () {
             var buttonDiv = sf.base.createElement('div', { id: this.parentID + 'buttonDiv', className: CALCBUTTONDIV });
             var addBtn = sf.base.createElement('button', {
                 id: this.parentID + 'addBtn', innerHTML: this.parent.localeObj.getConstant('add'),
-                className: CALCADDBTN
+                className: CALCADDBTN, attrs: { 'type': 'button' }
             });
             var cancelBtn = sf.base.createElement('button', {
                 id: this.parentID + 'cancelBtn', innerHTML: this.parent.localeObj.getConstant('cancel'),
-                className: CALCCANCELBTN
+                className: CALCCANCELBTN, attrs: { 'type': 'button' }
             });
             buttonDiv.appendChild(cancelBtn);
             buttonDiv.appendChild(addBtn);
@@ -28790,7 +28790,7 @@ var CalculatedField = /** @class */ (function () {
                 var buttonDiv = sf.base.createElement('div', { id: this.parentID + 'buttonDiv', className: CALCBUTTONDIV });
                 var okBtn = sf.base.createElement('button', {
                     id: this.parentID + 'okBtn', innerHTML: this.parent.localeObj.getConstant('apply'),
-                    className: CALCOKBTN
+                    className: CALCOKBTN, attrs: { 'type': 'button' }
                 });
                 buttonDiv.appendChild(okBtn);
                 outerDiv.appendChild(buttonDiv);

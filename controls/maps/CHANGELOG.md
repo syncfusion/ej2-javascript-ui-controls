@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 18.1.56 (2020-06-09)
+
+### Maps
+
+#### Bug Fixes
+
+- `I278468` - The script errors will not be thrown when rendering the GeoJSON file with line string geometry in Maps control.
+
 ## 18.1.48 (2020-05-05)
 
 ### Maps

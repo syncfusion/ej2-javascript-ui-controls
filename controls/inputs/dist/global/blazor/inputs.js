@@ -8109,6 +8109,9 @@ var Uploader = /** @class */ (function (_super) {
                 this.renderActionButtons();
             }
             this.checkActionButtonStatus();
+            if (this.sequentialUpload) {
+                this.count = this.filesData.length - 1;
+            }
         }
     };
     Uploader.prototype.checkActionButtonStatus = function () {
@@ -8470,7 +8473,7 @@ var Uploader = /** @class */ (function (_super) {
                 this.checkActionComplete(true);
             }
         }
-        else {
+        else if (!sf.base.closest(args.target, '.' + SPINNER_PANE)) {
             this.remove(fileData, false, false, true, args);
         }
         this.element.value = '';

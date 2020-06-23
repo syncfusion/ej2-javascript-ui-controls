@@ -4748,7 +4748,9 @@ class LayerPanel {
                     geometryData['coordinates'];
                 let data = geometryData['geometry'];
                 let properties = geometryData['properties'];
-                this.generatePoints(type, coords, data, properties);
+                if (type !== 'LineString') {
+                    this.generatePoints(type, coords, data, properties);
+                }
             }
         });
         this.currentLayer.rectBounds = this.rectBounds;

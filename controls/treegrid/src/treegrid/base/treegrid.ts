@@ -1895,12 +1895,6 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     };
     this.grid.rowDeselected = (args: RowDeselectEventArgs): void => {
       this.updateSelectionProperty();
-      if (isBlazor()) {
-        let length: string = 'length';
-        args.data = args.data[args.data[length] - 1];
-        args.rowIndex = args.rowIndex[args.rowIndex[length] - 1];
-        args.row = args.row[args.row[length] - 1];
-      }
       this.trigger(events.rowDeselected, args);
     };
     this.grid.rowDeselecting = (args: RowDeselectEventArgs): void => {

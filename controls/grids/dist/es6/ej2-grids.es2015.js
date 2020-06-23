@@ -5776,7 +5776,7 @@ class FocusStrategy {
             return true;
         }
         let th = closest(target, 'th') && !closest(target, 'th').tabIndex;
-        if (e.target.classList.contains('e-dropdownlist') && (e.keyCode === 13 || e.keyCode === 27)) {
+        if (e.target.classList.contains('e-filterbaroperator') && (e.keyCode === 13 || e.keyCode === 27)) {
             let inputTarget = closest(e.target, '.e-filterbarcell');
             inputTarget.querySelector('input').focus();
         }
@@ -6308,7 +6308,8 @@ class ContentFocus {
         let [rowIndex, cellIndex] = [target.parentElement.rowIndex, target.cellIndex];
         let [oRowIndex, oCellIndex] = this.matrix.current;
         let val = getValue(`${rowIndex}.${cellIndex}`, this.matrix.matrix);
-        if (this.matrix.inValid(val) || (!force && oRowIndex === rowIndex && oCellIndex === cellIndex)) {
+        if (this.matrix.inValid(val) || (!force && oRowIndex === rowIndex && oCellIndex === cellIndex) ||
+            parentsUntil(e.target, 'e-summarycell')) {
             return false;
         }
         this.matrix.select(rowIndex, cellIndex);

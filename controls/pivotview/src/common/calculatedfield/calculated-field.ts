@@ -1020,11 +1020,11 @@ export class CalculatedField implements IAction {
             let buttonDiv: HTMLElement = createElement('div', { id: this.parentID + 'buttonDiv', className: cls.CALCBUTTONDIV });
             let addBtn: HTMLElement = createElement('button', {
                 id: this.parentID + 'addBtn', innerHTML: this.parent.localeObj.getConstant('add'),
-                className: cls.CALCADDBTN
+                className: cls.CALCADDBTN, attrs: { 'type': 'button' }
             });
             let cancelBtn: HTMLElement = createElement('button', {
                 id: this.parentID + 'cancelBtn', innerHTML: this.parent.localeObj.getConstant('cancel'),
-                className: cls.CALCCANCELBTN
+                className: cls.CALCCANCELBTN, attrs: { 'type': 'button' }
             });
             buttonDiv.appendChild(cancelBtn);
             buttonDiv.appendChild(addBtn);
@@ -1103,7 +1103,7 @@ export class CalculatedField implements IAction {
                 let buttonDiv: HTMLElement = createElement('div', { id: this.parentID + 'buttonDiv', className: cls.CALCBUTTONDIV });
                 let okBtn: HTMLElement = createElement('button', {
                     id: this.parentID + 'okBtn', innerHTML: this.parent.localeObj.getConstant('apply'),
-                    className: cls.CALCOKBTN
+                    className: cls.CALCOKBTN, attrs: { 'type': 'button' }
                 });
                 buttonDiv.appendChild(okBtn);
                 outerDiv.appendChild(buttonDiv);

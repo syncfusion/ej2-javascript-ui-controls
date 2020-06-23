@@ -7939,6 +7939,9 @@ let Uploader = class Uploader extends Component {
                 this.renderActionButtons();
             }
             this.checkActionButtonStatus();
+            if (this.sequentialUpload) {
+                this.count = this.filesData.length - 1;
+            }
         }
     }
     checkActionButtonStatus() {
@@ -8298,7 +8301,7 @@ let Uploader = class Uploader extends Component {
                 this.checkActionComplete(true);
             }
         }
-        else {
+        else if (!closest(args.target, '.' + SPINNER_PANE)) {
             this.remove(fileData, false, false, true, args);
         }
         this.element.value = '';

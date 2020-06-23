@@ -1893,6 +1893,9 @@ var ProgressBar = /** @class */ (function (_super) {
         return 'progressbar';
     };
     ProgressBar.prototype.preRender = function () {
+        var blazor = 'Blazor';
+        // tslint:disable-next-line
+        this.isBlazor = window[blazor];
         this.unWireEvents();
         this.initPrivateVariable();
         this.wireEvents();
@@ -1902,14 +1905,24 @@ var ProgressBar = /** @class */ (function (_super) {
         this.progressSize = new Size(0, 0);
     };
     ProgressBar.prototype.render = function () {
-        this.trigger('load', { progressBar: this });
+        var _this = this;
+        this.trigger('load', { progressBar: this.isBlazor ? {} : this });
         this.element.style.display = 'block';
         this.element.style.position = 'relative';
         this.calculateProgressBarSize();
         this.setTheme();
         this.createSVG();
+        this.argsData = { value: this.value, progressColor: this.progressColor, trackColor: this.trackColor };
+        if (this.argsData.value === this.maximum) {
+            this.trigger(progressCompleted, this.argsData, function () { _this.controlRendering(); });
+        }
+        else {
+            this.trigger(valueChanged, this.argsData, function () { _this.controlRendering(); });
+        }
+    };
+    ProgressBar.prototype.controlRendering = function () {
         this.renderElements();
-        this.trigger('loaded', { progressBar: this });
+        this.trigger('loaded', { progressBar: this.isBlazor ? {} : this });
         this.renderComplete();
         this.controlRenderedTimeStamp = new Date().getTime();
     };
@@ -1986,17 +1999,6 @@ var ProgressBar = /** @class */ (function (_super) {
         this.bufferClipPath = this.renderer.createClipPath({ 'id': this.element.id + '_clippathBuffer' });
     };
     ProgressBar.prototype.renderTrack = function () {
-        this.argsData = {
-            value: this.value,
-            progressColor: this.progressColor,
-            trackColor: this.trackColor
-        };
-        if (this.argsData.value === this.maximum) {
-            this.trigger(progressCompleted, this.argsData);
-        }
-        else {
-            this.trigger(valueChanged, this.argsData);
-        }
         if (this.type === 'Linear') {
             this.linear.renderLinearTrack();
         }
@@ -2221,17 +2223,17 @@ var ProgressBar = /** @class */ (function (_super) {
                 case 'value':
                     this.argsData = {
                         value: this.value,
-                        progressColor: this.progressColor,
-                        trackColor: this.trackColor
+                        progressColor: this.argsData.progressColor,
+                        trackColor: this.argsData.trackColor
                     };
+                    if (this.argsData.value < oldProp.value && this.animation.enable) {
+                        this.argsData.value = oldProp.value;
+                    }
                     if (this.argsData.value === this.maximum) {
                         this.trigger(progressCompleted, this.argsData);
                     }
                     else {
                         this.trigger(valueChanged, this.argsData);
-                    }
-                    if (this.argsData.value < oldProp.value) {
-                        this.argsData.value = oldProp.value;
                     }
                     if (this.type === 'Circular') {
                         this.circular.renderCircularProgress(this.previousEndAngle, this.previousTotalEnd, true);

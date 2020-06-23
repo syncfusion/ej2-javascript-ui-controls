@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Grid
+
+#### Bug Fixes
+
+- `#279922, #280077` -  Scrollbar when clicking `childgrid` summary row, issue has been fixed.
+
 ## 18.1.57 (2020-06-16)
 
 ### Grid

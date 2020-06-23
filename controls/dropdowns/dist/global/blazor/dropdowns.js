@@ -9,6 +9,7 @@ var queryString = '';
 var prevString = '';
 var matches$1 = [];
 var activeClass = 'e-active';
+var prevElementId = '';
 /**
  * Search and focus the list item based on key code matches with list text content
  * @param  { number } keyCode - Specifies the key code which pressed on keyboard events.
@@ -17,12 +18,12 @@ var activeClass = 'e-active';
  * after selected item otherwise it will do from initial.
  * @param  { boolean } ignoreCase - Specifies the case consideration when search has done.
  */
-function incrementalSearch(keyCode, items, selectedIndex, ignoreCase, isBlazor$$1) {
+function incrementalSearch(keyCode, items, selectedIndex, ignoreCase, elementId, isBlazor$$1) {
     queryString += String.fromCharCode(keyCode);
     setTimeout(function () { queryString = ''; }, 1000);
     var index;
     queryString = ignoreCase ? queryString.toLowerCase() : queryString;
-    if (prevString === queryString) {
+    if (prevElementId === elementId && prevString === queryString) {
         for (var i = 0; i < matches$1.length; i++) {
             if (matches$1[i].classList.contains(activeClass)) {
                 index = i;
@@ -58,6 +59,7 @@ function incrementalSearch(keyCode, items, selectedIndex, ignoreCase, isBlazor$$
             i++;
         } while (i !== selectedIndex);
         prevString = queryString;
+        prevElementId = elementId;
         return matches$1[0];
     }
 }
@@ -1924,7 +1926,7 @@ var DropDownList = /** @class */ (function (_super) {
     
     DropDownList.prototype.incrementalSearch = function (e) {
         if (this.liCollections.length > 0) {
-            var li = incrementalSearch(e.charCode, this.liCollections, this.activeIndex, true, this.isServerBlazor);
+            var li = incrementalSearch(e.charCode, this.liCollections, this.activeIndex, true, this.element.id, this.isServerBlazor);
             if (!sf.base.isNullOrUndefined(li)) {
                 this.setSelection(li, e);
                 this.setScrollPosition();
@@ -8889,7 +8891,15 @@ var MultiSelect = /** @class */ (function (_super) {
             if (this.mode !== 'CheckBox') {
                 this.inputElement.focus();
             }
+            else if ((this.floatLabelType === 'Auto' &&
+                ((this.overAllWrapper.classList.contains('e-outline')) || (this.overAllWrapper.classList.contains('e-filled'))))) {
+                sf.base.addClass([this.overAllWrapper], 'e-valid-input');
+            }
             return;
+        }
+        if (this.floatLabelType === 'Auto' && (this.overAllWrapper.classList.contains('e-outline')) && this.mode === 'CheckBox' &&
+            ((sf.base.isNullOrUndefined(this.value)) || this.value.length === 0)) {
+            sf.base.removeClass([this.overAllWrapper], 'e-valid-input');
         }
         if (this.mode === 'CheckBox' && sf.base.Browser.isIE && !sf.base.isNullOrUndefined(eve) && !isDocClickFromCheck) {
             this.inputFocus = false;
@@ -8940,6 +8950,11 @@ var MultiSelect = /** @class */ (function (_super) {
             var downIconWidth = this.dropIcon.offsetWidth +
                 parseInt(window.getComputedStyle(this.dropIcon).marginRight, 10);
             this.setPlaceholderSize(downIconWidth);
+        }
+        else {
+            if (!sf.base.isNullOrUndefined(this.dropIcon)) {
+                this.setPlaceholderSize(this.showDropDownIcon ? this.dropIcon.offsetWidth : 0);
+            }
         }
     };
     MultiSelect.prototype.setPlaceholderSize = function (downIconWidth) {
@@ -10979,7 +10994,9 @@ var MultiSelect = /** @class */ (function (_super) {
                             var textArr = this.viewWrapper.innerHTML.split(this.delimiterChar);
                             textArr.pop();
                             this.viewWrapper.innerHTML = textArr.join(this.delimiterChar);
-                            remaining++;
+                            if (this.viewWrapper.innerHTML === '') {
+                                remaining++;
+                            }
                             wrapperleng = this.viewWrapper.offsetWidth;
                         }
                         break;
@@ -11095,7 +11112,7 @@ var MultiSelect = /** @class */ (function (_super) {
             'li.e-list-item:not([aria-selected="true"]):not(.e-reorder-hide)' :
             'li.e-list-item[aria-selected="true"]:not(.e-reorder-hide)');
         if (this.value && this.value.length && this.isPopupOpen() && event && event.target
-            && sf.base.closest(event.target, '.e-close-hooker')) {
+            && sf.base.closest(event.target, '.e-close-hooker') && this.allowFiltering) {
             li = this.mainList.querySelectorAll(state ?
                 'li.e-list-item:not([aria-selected="true"]):not(.e-reorder-hide)' :
                 'li.e-list-item[aria-selected="true"]:not(.e-reorder-hide)');

@@ -132,6 +132,8 @@ import { CustomCursorAction } from './diagram/custom-cursor';
 import { CustomCursorActionModel } from './diagram/custom-cursor-model';
 import { SymbolSizeModel } from './../diagram/objects/preview-model';
 import { LineRouting } from './interaction/line-routing';
+import { DiagramSettingsModel } from '../diagram/diagram-settings-model';
+import { DiagramSettings } from '../diagram/diagram-settings';
 /**
  * Represents the Diagram control
  * ```html
@@ -927,6 +929,24 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     @Property()
     public updateSelection: Function | string;
 
+    /**
+     * Represents the diagram settings
+     * ```html
+     * <div id='diagram'></div>
+     * ```
+     * ```typescript
+     * let diagram: Diagram = new Diagram({
+     * ...
+     * diagramSettings: { inversedAlignment: true  }
+     * ...
+     * });
+     * diagram.appendTo('#diagram');
+     * ```
+     * @default {}
+     */
+    @Complex<DiagramSettingsModel>({}, DiagramSettings)
+    public diagramSettings: DiagramSettingsModel;
+
     /** @private */
     public version: number = 17.1;
 
@@ -1696,7 +1716,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     case 'scrollSettings':
                         this.updateScrollSettings(newProp); break;
                     case 'locale':
-                        if(newProp.locale !== oldProp.locale) {
+                        if (newProp.locale !== oldProp.locale) {
                             this.realActions |= RealAction.PreventDataInit;
                             super.refresh();
                             this.realActions &= ~RealAction.PreventDataInit;
@@ -1931,7 +1951,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             isLayout = true;
         }
         this.doLayout();
-        if(isLayout) { this.commandHandler.getBlazorOldValues();}
+        if (isLayout) { this.commandHandler.getBlazorOldValues(); }
         if (this.lineRoutingModule) {
             let previousConnectorObject: Object[] = [];
             let updateConnectorObject: Object[] = [];
@@ -3903,13 +3923,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         }
                         element = getDiagramElement(children[i].id + '_rect_groupElement', this.element.id);
                         if (element) {
-                        element.parentNode.removeChild(element);
+                            element.parentNode.removeChild(element);
                         }
                     }
                     for (let elementId of this.views) {
                         removeElement(children[i].id + '_groupElement', elementId);
-                        let nodeIndex  : number = this.scroller.removeCollection.indexOf(currentObj.id);
-                        this.scroller.removeCollection.splice(nodeIndex , 1 );
+                        let nodeIndex: number = this.scroller.removeCollection.indexOf(currentObj.id);
+                        this.scroller.removeCollection.splice(nodeIndex, 1);
                     }
                 } else if (children[i] instanceof DiagramHtmlElement) {
                     for (let elementId of this.views) {
@@ -5272,7 +5292,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             this.initObject(tempTabel[obj]);
             this.bpmnModule.updateDocks(tempTabel[obj], this);
         }
-        for (let obj of groups) {
+        let alignedGroups: string[] = this.alignGroup(groups, tempTabel);
+        for (let obj of alignedGroups) {
             let layer: LayerModel = this.commandHandler.getObjectLayer(obj);
             this.initNodes(tempTabel[obj], layer);
         }
@@ -5298,6 +5319,31 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             };
             window[blazorInterop].updateBlazorProperties(obj, this);
         }
+    }
+    private alignGroup(parents: string[], tempTabel: {}): string[] {
+        let newList: string[] = [];
+        let parentist: string[] = [];
+        let child: string;
+        let childNode: NodeModel;
+        let i: number; let j: number;
+        for (i = 0; i < parents.length; i++) {
+            child = parents[i];
+            childNode = tempTabel[child]; let node: string;
+            if (childNode && childNode.children.length) {
+                for (j = 0; j < childNode.children.length; j++) {
+                    node = childNode.children[j];
+                    if (parents.indexOf(node) > -1 && (newList.indexOf(node) === -1) &&
+                        (parentist.indexOf(node) === -1)) {
+                        newList.splice(0, 0, node);
+                    }
+                }
+            }
+            if (newList.indexOf(child) === -1) {
+                parentist.push(child);
+            }
+        }
+        newList = newList.concat(parentist);
+        return newList;
     }
     private addToLayer(obj: NodeModel | ConnectorModel, hasLayers: boolean): void {
         let layer: LayerModel;
@@ -5745,6 +5791,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     private initNode(obj: Node, diagramId: string, group?: boolean): void {
         let canvas: Container = obj.initContainer(); let portContainer: Canvas = new Canvas(); let content: DiagramElement;
+        if (!this.diagramSettings.inversedAlignment) {
+            canvas.inversedAlignment = false;
+        }
         if (!canvas.children) { canvas.children = []; }
         if (obj.children) {
             canvas.measureChildren = false;
@@ -5821,7 +5870,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /** @private */
     public updateDiagramElementQuad(): void {
         for (let i: number = 0; i < this.nodes.length; i++) {
-            this.updateQuad(this.nodes[i] as IElement);
+            if (this.nodes[i].wrapper && (this.nodes[i].wrapper instanceof Container)) {
+                this.updateQuad(this.nodes[i] as IElement);
+            }
         }
     }
 

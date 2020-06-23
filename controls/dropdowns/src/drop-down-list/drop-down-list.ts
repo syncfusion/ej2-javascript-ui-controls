@@ -890,7 +890,8 @@ export class DropDownList extends DropDownBase implements IInput {
 
     protected incrementalSearch(e: KeyboardEventArgs): void {
         if (this.liCollections.length > 0) {
-            let li: Element = incrementalSearch(e.charCode, this.liCollections, this.activeIndex, true, this.isServerBlazor);
+            let li: Element =
+            incrementalSearch(e.charCode, this.liCollections, this.activeIndex, true, this.element.id, this.isServerBlazor);
             if (!isNullOrUndefined(li)) {
                 this.setSelection(li, e);
                 this.setScrollPosition();

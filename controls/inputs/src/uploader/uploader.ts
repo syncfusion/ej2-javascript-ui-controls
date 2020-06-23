@@ -1474,6 +1474,9 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 this.renderActionButtons();
             }
             this.checkActionButtonStatus();
+            if (this.sequentialUpload) {
+                this.count = this.filesData.length - 1;
+            }
         }
     }
 
@@ -1828,7 +1831,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             if (!(liElement.classList.contains(RESTRICT_RETRY))) {
                 this.checkActionComplete(true);
             }
-        } else {
+        } else if (!closest(args.target as Element, '.' + SPINNER_PANE)) {
             this.remove(fileData, false, false, true, args);
         }
         this.element.value = '';

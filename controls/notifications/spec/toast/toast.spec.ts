@@ -1893,4 +1893,25 @@ describe("EJ2-33526 XSS attack prevent with enableHtmlSanitizer as true", () => 
         expect(toastEle.firstElementChild.firstElementChild.querySelectorAll('script').length).toBe(0);
         expect(toastEle.firstElementChild.querySelectorAll('script').length).toBe(0);
     });
+
+    describe("Toast Position Custom accepts both enum and pixel values testing", () => {
+        let toast: Toast;
+        beforeEach((): void => {
+            let ele: HTMLElement = document.createElement("div");
+            ele.id = "toast";
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            document.body.innerHTML = "";
+        });
+        it("Toast Position Custom testing", () => {
+            let ele: HTMLElement = document.getElementById("toast");
+            toast = new Toast({ timeOut: 50, position: {X :'Left' , Y: 50 }}, ele);
+            toast.show();
+            expect(ele.style.top).toBe('50px');
+            expect(ele.classList.contains('e-toast-left')).toBe(true);
+        });
+        
+    });
+
 });

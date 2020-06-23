@@ -408,9 +408,9 @@ describe('Maps Component Base Spec', () => {
         it('Shape layer render checking with polyline', () => {
             maps.loaded = (args: ILoadedEventArgs) => {
                 let element: Element = document.getElementById(maps.element.id + '_LayerIndex_0_Polygon_Group');
-                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+                expect(element === null).toBe(false);
                 element = document.getElementById(maps.element.id + '_LayerIndex_1_LineString_Group');
-                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+                expect(element === null).toBe(true);
             };
             maps.layers = [{
                 shapeData: World_Map
@@ -442,11 +442,11 @@ describe('Maps Component Base Spec', () => {
         it('Shape layer render with all typesof data', () => {
             maps.loaded = (args: ILoadedEventArgs) => {
                 let element: Element = document.getElementById(maps.element.id + '_LayerIndex_0_Polygon_Group');
-                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+                expect(element.childElementCount === null).toBe(false);
                 element = document.getElementById(maps.element.id + '_LayerIndex_1_LineString_Group');
-                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+                expect(element === null).toBe(true);
                 element = document.getElementById(maps.element.id + '_LayerIndex_2_Point_Group');
-                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+                expect(element.childElementCount === null).toBe(false);
             };
             maps.layers = [{
                 shapeData: World_Map

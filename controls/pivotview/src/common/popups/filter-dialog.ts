@@ -157,7 +157,7 @@ export class FilterDialog {
         });
         let levelWrapper: HTMLElement = createElement('button', {
             id: this.parent.parentID + '_LevelDiv',
-            className: 'e-level-wrapper-class'
+            className: 'e-level-wrapper-class', attrs: { 'type': 'button' }
         });
         let searchWrapper: HTMLElement = createElement('div', {
             id: this.parent.parentID + '_SearchDiv', attrs: { 'tabindex': '-1' },
@@ -276,11 +276,11 @@ export class FilterDialog {
             this.parent.element.appendChild(sortWrapper);
             let sortAscendElement: HTMLElement = createElement('button', {
                 className: (sortOrder === 'Ascending' ? cls.SORT_SELECTED_CLASS + ' ' : '') + cls.MEMBER_SORT_CLASS,
-                id: this.parent.element.id + '_Sort_Ascend'
+                id: this.parent.element.id + '_Sort_Ascend', attrs: { 'type': 'button' }
             });
             let sortDescendElement: HTMLElement = createElement('button', {
                 className: (sortOrder === 'Descending' ? cls.SORT_SELECTED_CLASS + ' ' : '') + cls.MEMBER_SORT_CLASS,
-                id: this.parent.element.id + '_Sort_Descend'
+                id: this.parent.element.id + '_Sort_Descend', attrs: { 'type': 'button' }
             });
             let sortBtnElement: Button = new Button({
                 iconCss: cls.ICON + ' ' + cls.SORT_ASCEND_ICON_CLASS, enableRtl: this.parent.enableRtl

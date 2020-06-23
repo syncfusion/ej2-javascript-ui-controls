@@ -1300,8 +1300,15 @@ export class MultiSelect extends DropDownBase implements IInput {
             target = <HTMLElement>eve.relatedTarget;
         }
         if (this.popupObj && document.body.contains(this.popupObj.element) && this.popupObj.element.contains(target)) {
-            if (this.mode !== 'CheckBox') { this.inputElement.focus(); }
+            if (this.mode !== 'CheckBox') { this.inputElement.focus(); } else if ((this.floatLabelType === 'Auto' &&
+            ((this.overAllWrapper.classList.contains('e-outline')) || (this.overAllWrapper.classList.contains('e-filled'))))) {
+                addClass([this.overAllWrapper], 'e-valid-input');
+            }
             return;
+        }
+        if (this.floatLabelType === 'Auto' && (this.overAllWrapper.classList.contains('e-outline')) && this.mode === 'CheckBox' &&
+        ((isNullOrUndefined(this.value)) || this.value.length === 0)) {
+            removeClass([this.overAllWrapper], 'e-valid-input');
         }
         if (this.mode === 'CheckBox' && Browser.isIE && !isNullOrUndefined(eve) && !isDocClickFromCheck) {
             this.inputFocus = false;
@@ -1358,6 +1365,10 @@ export class MultiSelect extends DropDownBase implements IInput {
             let downIconWidth: number = this.dropIcon.offsetWidth +
                 parseInt(window.getComputedStyle(this.dropIcon).marginRight, 10);
             this.setPlaceholderSize(downIconWidth);
+        } else {
+            if (!isNullOrUndefined(this.dropIcon)) {
+            this.setPlaceholderSize(this.showDropDownIcon ? this.dropIcon.offsetWidth : 0);
+            }
         }
     }
     private setPlaceholderSize(downIconWidth: number): void {
@@ -3312,7 +3323,9 @@ export class MultiSelect extends DropDownBase implements IInput {
                             let textArr: string[] = this.viewWrapper.innerHTML.split(this.delimiterChar);
                             textArr.pop();
                             this.viewWrapper.innerHTML = textArr.join(this.delimiterChar);
-                            remaining++;
+                            if (this.viewWrapper.innerHTML === '') {
+                                remaining++;
+                            }
                             wrapperleng = this.viewWrapper.offsetWidth;
                         }
                         break;
@@ -3434,7 +3447,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             'li.e-list-item:not([aria-selected="true"]):not(.e-reorder-hide)' :
             'li.e-list-item[aria-selected="true"]:not(.e-reorder-hide)');
         if (this.value && this.value.length && this.isPopupOpen() && event && event.target
-        && closest(event.target as Element, '.e-close-hooker')) {
+        && closest(event.target as Element, '.e-close-hooker') && this.allowFiltering) {
             li = <HTMLElement[] & NodeListOf<Element>>this.mainList.querySelectorAll(state ?
                 'li.e-list-item:not([aria-selected="true"]):not(.e-reorder-hide)' :
                 'li.e-list-item[aria-selected="true"]:not(.e-reorder-hide)');

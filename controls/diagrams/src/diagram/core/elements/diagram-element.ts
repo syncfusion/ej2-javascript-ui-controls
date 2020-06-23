@@ -242,6 +242,9 @@ export class DiagramElement {
     /** @private */
     public elementActions: ElementAction = ElementAction.None;
 
+    /** @private */
+    public inversedAlignment: boolean = true;
+
     // public constructor() {
     //     this.id = randomId();
     // }

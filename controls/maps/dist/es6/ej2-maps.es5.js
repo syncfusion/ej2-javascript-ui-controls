@@ -4967,7 +4967,9 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
                     geometryData['coordinates'];
                 var data = geometryData['geometry'];
                 var properties = geometryData['properties'];
-                _this.generatePoints(type, coords, data, properties);
+                if (type !== 'LineString') {
+                    _this.generatePoints(type, coords, data, properties);
+                }
             }
         });
         this.currentLayer.rectBounds = this.rectBounds;

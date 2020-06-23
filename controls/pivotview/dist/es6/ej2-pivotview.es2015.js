@@ -9024,7 +9024,7 @@ class FilterDialog {
         });
         let levelWrapper = createElement('button', {
             id: this.parent.parentID + '_LevelDiv',
-            className: 'e-level-wrapper-class'
+            className: 'e-level-wrapper-class', attrs: { 'type': 'button' }
         });
         let searchWrapper = createElement('div', {
             id: this.parent.parentID + '_SearchDiv', attrs: { 'tabindex': '-1' },
@@ -9145,11 +9145,11 @@ class FilterDialog {
             this.parent.element.appendChild(sortWrapper);
             let sortAscendElement = createElement('button', {
                 className: (sortOrder === 'Ascending' ? SORT_SELECTED_CLASS + ' ' : '') + MEMBER_SORT_CLASS,
-                id: this.parent.element.id + '_Sort_Ascend'
+                id: this.parent.element.id + '_Sort_Ascend', attrs: { 'type': 'button' }
             });
             let sortDescendElement = createElement('button', {
                 className: (sortOrder === 'Descending' ? SORT_SELECTED_CLASS + ' ' : '') + MEMBER_SORT_CLASS,
-                id: this.parent.element.id + '_Sort_Descend'
+                id: this.parent.element.id + '_Sort_Descend', attrs: { 'type': 'button' }
             });
             let sortBtnElement = new Button({
                 iconCss: ICON + ' ' + SORT_ASCEND_ICON_CLASS, enableRtl: this.parent.enableRtl
@@ -23155,12 +23155,12 @@ class DialogRenderer {
         });
         if (this.parent.allowDeferLayoutUpdate) {
             let deferUpdateButton1 = createElement('button', {
-                id: this.parent.element.id + '_DeferUpdateButton1'
+                id: this.parent.element.id + '_DeferUpdateButton1', attrs: { 'type': 'button' }
             });
             buttonLayout.appendChild(deferUpdateButton1);
         }
         let deferUpdateButton2 = createElement('button', {
-            id: this.parent.element.id + '_DeferUpdateButton2'
+            id: this.parent.element.id + '_DeferUpdateButton2', attrs: { 'type': 'button' }
         });
         buttonLayout.appendChild(deferUpdateButton2);
         layoutFooter.appendChild(buttonLayout);
@@ -27966,11 +27966,11 @@ class CalculatedField {
             let buttonDiv = createElement('div', { id: this.parentID + 'buttonDiv', className: CALCBUTTONDIV });
             let addBtn = createElement('button', {
                 id: this.parentID + 'addBtn', innerHTML: this.parent.localeObj.getConstant('add'),
-                className: CALCADDBTN
+                className: CALCADDBTN, attrs: { 'type': 'button' }
             });
             let cancelBtn = createElement('button', {
                 id: this.parentID + 'cancelBtn', innerHTML: this.parent.localeObj.getConstant('cancel'),
-                className: CALCCANCELBTN
+                className: CALCCANCELBTN, attrs: { 'type': 'button' }
             });
             buttonDiv.appendChild(cancelBtn);
             buttonDiv.appendChild(addBtn);
@@ -28051,7 +28051,7 @@ class CalculatedField {
                 let buttonDiv = createElement('div', { id: this.parentID + 'buttonDiv', className: CALCBUTTONDIV });
                 let okBtn = createElement('button', {
                     id: this.parentID + 'okBtn', innerHTML: this.parent.localeObj.getConstant('apply'),
-                    className: CALCOKBTN
+                    className: CALCOKBTN, attrs: { 'type': 'button' }
                 });
                 buttonDiv.appendChild(okBtn);
                 outerDiv.appendChild(buttonDiv);

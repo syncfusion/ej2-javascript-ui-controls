@@ -681,34 +681,40 @@ export class GanttChart {
         }
         let $target: Element = isInEditedState ? (e.target as Element).closest('.e-rowcell') : e.target as Element;
         let isTab: boolean = (e.action === 'tab') ? true : false;
-        let nextElement: Element = this.getNextElement($target, isTab);
-        if ($target.classList.contains('e-rowcell') || $target.closest('.e-chart-row-cell') ||
-            $target.classList.contains('e-headercell')) {
-            e.preventDefault();
+        let nextElement: Element | string = this.getNextElement($target, isTab);
+        if (nextElement === 'noNextRow') {
+            this.manageFocus($target as HTMLElement, 'remove', true);
+            return;
         }
-        if ($target.classList.contains('e-rowcell') && (nextElement && nextElement.classList.contains('e-rowcell')) ||
+        if (typeof nextElement !== 'string') {
+            if ($target.classList.contains('e-rowcell') || $target.closest('.e-chart-row-cell') ||
             $target.classList.contains('e-headercell')) {
-            this.parent.treeGrid.grid.notify('key-pressed', e);
-        }
-        if (!isInEditedState) {
-            if (nextElement) {
-                if ($target.classList.contains('e-rowcell')) {
-                    this.manageFocus($target as HTMLElement, 'remove', false);
-                } else {
-                    this.manageFocus($target as HTMLElement, 'remove', true);
-                }
-                if (nextElement.classList.contains('e-rowcell')) {
-                    if (!$target.classList.contains('e-rowcell')) {
-                        this.parent.treeGrid.grid.notify('key-pressed', e);
-                        let fmodule: FocusStrategy = getValue('focusModule', this.parent.treeGrid.grid);
-                        fmodule.currentInfo.element = nextElement as HTMLElement;
-                        fmodule.currentInfo.elementToFocus = nextElement as HTMLElement;
-                        /* tslint:disable-next-line:no-any */
-                        fmodule.content.matrix.current = [(nextElement.parentElement as any).rowIndex, (nextElement as any).cellIndex];
+                e.preventDefault();
+            }
+            if ($target.classList.contains('e-rowcell') && (nextElement && nextElement.classList.contains('e-rowcell')) ||
+                $target.classList.contains('e-headercell')) {
+                    this.parent.treeGrid.grid.notify('key-pressed', e);
+            }
+            if (!isInEditedState) {
+                if (nextElement) {
+                    if ($target.classList.contains('e-rowcell')) {
+                        this.manageFocus($target as HTMLElement, 'remove', false);
+                    } else {
+                        this.manageFocus($target as HTMLElement, 'remove', true);
                     }
-                    this.manageFocus(nextElement as HTMLElement, 'add', false);
-                } else {
-                    this.manageFocus(nextElement as HTMLElement, 'add', true);
+                    if (nextElement.classList.contains('e-rowcell')) {
+                        if (!$target.classList.contains('e-rowcell')) {
+                            this.parent.treeGrid.grid.notify('key-pressed', e);
+                            let fmodule: FocusStrategy = getValue('focusModule', this.parent.treeGrid.grid);
+                            fmodule.currentInfo.element = nextElement as HTMLElement;
+                            fmodule.currentInfo.elementToFocus = nextElement as HTMLElement;
+                            /* tslint:disable-next-line:no-any */
+                            fmodule.content.matrix.current = [(nextElement.parentElement as any).rowIndex, (nextElement as any).cellIndex];
+                        }
+                        this.manageFocus(nextElement as HTMLElement, 'add', false);
+                    } else {
+                        this.manageFocus(nextElement as HTMLElement, 'add', true);
+                    }
                 }
             }
         }
@@ -718,7 +724,7 @@ export class GanttChart {
      * @param $target 
      * @param isTab 
      */
-    private getNextElement($target: Element, isTab: boolean): Element {
+    private getNextElement($target: Element, isTab: boolean): Element | string {
         let nextElement: Element = isTab ? $target.nextElementSibling : $target.previousElementSibling;
         while (nextElement && nextElement.parentElement.classList.contains('e-row')) {
             if (!nextElement.matches('.e-hide') && !nextElement.matches('.e-rowdragdrop')) {
@@ -772,7 +778,7 @@ export class GanttChart {
                         childElement = isTab ? childElement.nextElementSibling : childElement.previousElementSibling;
                     }
                 } else {
-                    return null;
+                    return 'noNextRow';
                 }
             }
         }

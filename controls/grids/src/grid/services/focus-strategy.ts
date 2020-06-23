@@ -132,7 +132,7 @@ export class FocusStrategy {
         if (this.currentInfo.skipAction) { this.clearIndicator(); return true; }
         if (['pageUp', 'pageDown', 'altDownArrow'].indexOf(e.action) > -1) { this.clearIndicator(); return true; }
         let th: boolean = closest(target, 'th') && !(closest(target, 'th') as HTMLElement).tabIndex;
-        if ((e.target as HTMLElement).classList.contains('e-dropdownlist') && (e.keyCode === 13 || e.keyCode === 27)) {
+        if ((e.target as HTMLElement).classList.contains('e-filterbaroperator') && (e.keyCode === 13 || e.keyCode === 27)) {
             let inputTarget: Element = closest(e.target as HTMLElement, '.e-filterbarcell');
             inputTarget.querySelector('input').focus();
         }
@@ -668,7 +668,8 @@ export class ContentFocus implements IFocus {
         let [rowIndex, cellIndex]: number[] = [(<HTMLTableRowElement>target.parentElement).rowIndex, target.cellIndex];
         let [oRowIndex, oCellIndex]: number[] = this.matrix.current;
         let val: number = getValue(`${rowIndex}.${cellIndex}`, this.matrix.matrix);
-        if (this.matrix.inValid(val) || (!force && oRowIndex === rowIndex && oCellIndex === cellIndex)) { return false; }
+        if (this.matrix.inValid(val) || (!force && oRowIndex === rowIndex && oCellIndex === cellIndex) ||
+            parentsUntil(e.target as Element, 'e-summarycell')) { return false; }
         this.matrix.select(rowIndex, cellIndex);
     }
 

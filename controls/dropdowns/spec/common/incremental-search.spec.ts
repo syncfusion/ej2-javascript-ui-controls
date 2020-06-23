@@ -47,14 +47,14 @@ describe('Incremental search', () => {
             listObj.index = 3;
             listObj.dataBind();
             let charCode: number = 65;
-            li1 = incrementalSearch(charCode, listObj.getItems(), 3, true) as HTMLElement;
+            li1 = incrementalSearch(charCode, listObj.getItems(), 3, true, element.id) as HTMLElement;
             expect(li1.innerText).toBe("Armenia");
             addClass([li1], 'e-active');
         });
         it('again again "a" key pressing ', (done) => {
             setTimeout(() => {
                 let charCode: number = 65;
-                li2 = incrementalSearch(charCode, listObj.getItems(), 6, true) as HTMLElement;
+                li2 = incrementalSearch(charCode, listObj.getItems(), 6, true, element.id) as HTMLElement;
                 expect(li2.innerText).toBe("Algeria");
                 addClass([li2], 'e-active');
                 removeClass([li1], 'e-active');
@@ -64,7 +64,7 @@ describe('Incremental search', () => {
         it('again "a" key pressing ', (done) => {
             setTimeout(() => {
                 let charCode: number = 65;
-                li2 = incrementalSearch(charCode, listObj.getItems(), 6, true) as HTMLElement;
+                li2 = incrementalSearch(charCode, listObj.getItems(), 6, true, element.id) as HTMLElement;
                 expect(li2.innerText).toBe("Algeria");
                 addClass([li2], 'e-active');
                 removeClass([li1], 'e-active');
@@ -74,7 +74,7 @@ describe('Incremental search', () => {
         it('I key with camelcase false', (done) => {
             setTimeout(() => {
                 let charCode: number = 73;
-                li3 = incrementalSearch(charCode, listObj.getItems(), 6, false) as HTMLElement;
+                li3 = incrementalSearch(charCode, listObj.getItems(), 6, false, element.id) as HTMLElement;
                 expect(li3.innerText).toBe("India");
                 addClass([li3], 'e-active');
                 removeClass([li2], 'e-active');
@@ -84,14 +84,14 @@ describe('Incremental search', () => {
         it('getting matches "a" key pressing ', (done) => {
             setTimeout(() => {
                 let charCode: number = 65;
-                let li: HTMLElement = incrementalSearch(charCode, listObj.getItems(), 6, true) as HTMLElement;
+                let li: HTMLElement = incrementalSearch(charCode, listObj.getItems(), 6, true, element.id) as HTMLElement;
                 expect(li.innerText).toBe("Algeria");
                 done();
             }, 1000)
         });
         it('"M" key pressing ', () => {
             let charCode: number = 77;
-            let li: Element = incrementalSearch(charCode, listObj.getItems(), 3, true);
+            let li: Element = incrementalSearch(charCode, listObj.getItems(), 3, true, element.id);
             expect(isUndefined(li)).toBe(true);
         });
     });

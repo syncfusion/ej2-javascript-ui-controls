@@ -1107,4 +1107,52 @@ describe('DropDownList', () => {
             expect(ddlObj.list.querySelectorAll('li').length === 7).toBe(true);
         });
     });
+    describe('EJ2-40058', () => {
+        let keyEventArgs = {charCode: 115};
+        let ddlObj1: any;
+        let ddlObj2: any; 
+        let ddlEle1: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'ddl1' });
+        let ddlEle2: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'ddl2' });
+        let empList: any = [ 
+            { id: 'level1', sports: 'American Football' }, { id: 'level2', sports: 'Badminton' },
+        { id: 'level3', sports: 'Basketball' }, { id: 'level4', sports: 'Cricket' },
+        { id: 'level5', sports: 'Football' }, { id: 'level6', sports: 'Golf' },
+        { id: 'level7', sports: 'Hockey' }, { id: 'level8', sports: 'Rugby' },
+        { id: 'level9', sports: 'Snooker' }, { id: 'level10', sports: 'Tennis' },
+        ];
+        beforeAll(() => {
+            document.body.appendChild(ddlEle1);
+            document.body.appendChild(ddlEle2);
+            ddlObj1 = new DropDownList({
+                dataSource: empList,
+                fields: { text: 'sports' },
+            });
+            ddlObj1.appendTo(ddlEle1);
+            ddlObj2 = new DropDownList({
+                dataSource: empList,
+                fields: { text: 'sports' },
+            });
+            ddlObj2.appendTo(ddlEle2);
+        });
+        afterAll(() => {
+            ddlObj1.destroy();
+            ddlEle1.remove();
+            ddlObj2.destroy();
+            ddlEle2.remove();
+        });
+        it('Dropdownlist search produces undefined values', (done) => {
+            ddlObj1.focusIn();
+            ddlObj1.onSearch(keyEventArgs);
+            expect(ddlObj1.value).toBe('Snooker');
+            ddlObj1.focusOut();
+            // Used settimeout since we reset the querystring variable in source after 1000 milliseconds
+            setTimeout(() => {
+                ddlObj2.focusIn();
+                ddlObj2.onSearch(keyEventArgs);
+                expect(ddlObj2.value).toBe('Snooker');
+                ddlObj2.focusOut();
+                done();
+            }, 1000);
+        });
+    });
 });

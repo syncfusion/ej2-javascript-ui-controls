@@ -348,6 +348,8 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     public progressAnnotationModule: ProgressAnnotation;
     /** @private */
     // private resizeTo: number;
+   /** @private */
+   public isBlazor: boolean;
 
     /**
      * controlRenderedTimeStamp used to avoid inital resize issue while theme change
@@ -359,6 +361,9 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     }
 
     protected preRender(): void {
+        let blazor: string = 'Blazor';
+        // tslint:disable-next-line
+        this.isBlazor = (window as any)[blazor];
         this.unWireEvents();
         this.initPrivateVariable();
         this.wireEvents();
@@ -370,14 +375,23 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     }
 
     protected render(): void {
-        this.trigger('load', { progressBar: this });
+        this.trigger('load', { progressBar: this.isBlazor ? {} as ProgressBar : this });
         this.element.style.display = 'block';
         this.element.style.position = 'relative';
         this.calculateProgressBarSize();
         this.setTheme();
         this.createSVG();
+        this.argsData = { value: this.value, progressColor: this.progressColor, trackColor: this.trackColor };
+        if (this.argsData.value === this.maximum) {
+            this.trigger(progressCompleted, this.argsData, () => { this.controlRendering(); });
+        } else {
+            this.trigger(valueChanged, this.argsData, () => { this.controlRendering(); });
+        }
+    }
+
+    private controlRendering(): void {
         this.renderElements();
-        this.trigger('loaded', { progressBar: this });
+        this.trigger('loaded', { progressBar: this.isBlazor ? {} as ProgressBar : this });
         this.renderComplete();
         this.controlRenderedTimeStamp = new Date().getTime();
     }
@@ -462,16 +476,6 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     }
 
     private renderTrack(): void {
-        this.argsData = {
-            value: this.value,
-            progressColor: this.progressColor,
-            trackColor: this.trackColor
-        };
-        if (this.argsData.value === this.maximum) {
-            this.trigger(progressCompleted, this.argsData);
-        } else {
-            this.trigger(valueChanged, this.argsData);
-        }
         if (this.type === 'Linear') {
             this.linear.renderLinearTrack();
         } else if (this.type === 'Circular') {
@@ -728,16 +732,16 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
                 case 'value':
                     this.argsData = {
                         value: this.value,
-                        progressColor: this.progressColor,
-                        trackColor: this.trackColor
+                        progressColor: this.argsData.progressColor,
+                        trackColor: this.argsData.trackColor
                     };
+                    if (this.argsData.value < oldProp.value && this.animation.enable) {
+                        this.argsData.value = oldProp.value;
+                    }
                     if (this.argsData.value === this.maximum) {
                         this.trigger(progressCompleted, this.argsData);
                     } else {
                         this.trigger(valueChanged, this.argsData);
-                    }
-                    if (this.argsData.value < oldProp.value) {
-                        this.argsData.value = oldProp.value;
                     }
                     if (this.type === 'Circular') {
                         this.circular.renderCircularProgress(this.previousEndAngle, this.previousTotalEnd, true);

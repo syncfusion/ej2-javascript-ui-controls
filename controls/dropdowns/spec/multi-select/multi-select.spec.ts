@@ -6969,4 +6969,76 @@ describe('MultiSelect', () => {
             listObj.destroy();
         });
     });
+    describe('EJ2-40111: Incorrect count in the multiselect field when multiple items are selected', () => {
+        let listObj: MultiSelect;
+        let divElement: HTMLElement = createElement('div', { id: 'divElement' });
+        divElement.style.width = '300px';
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { 'type': 'text' } });
+        let empList: { [key: string]: Object }[] = [
+            {displayName: 'SMITH,- 00000001', npi: '00000001'},
+            {displayName: 'JOHNSON, JAMES WILLIAM- 00000002', npi: '00000002'},
+            {displayName: 'SANDERS, JASON ADAMCILGIRIST  - 00000003', npi: '00000003'},
+            {displayName: 'ERICSON, VANESSA  - 00000004', npi: '00000004'},
+            ];
+        beforeAll(() => {
+            document.body.innerHTML = '';
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+        it('Update  with 1st value which has less length than the input element', () => {
+            let listObj: MultiSelect = new MultiSelect({
+                dataSource: empList,
+                fields: { text: 'displayName', value: 'npi' },
+                mode : "CheckBox",
+                showDropDownIcon: true,
+                showSelectAll: true,
+                allowFiltering: true,
+                value: ['00000001'],
+                width: '300px'
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            expect((<any>listObj).text).toBe("SMITH,- 00000001");
+            listObj.hidePopup();
+            listObj.destroy();
+        });
+        it('Update with 3rd value which has more length than the input element', () => {
+            let listObj: MultiSelect = new MultiSelect({
+                dataSource: empList,
+                fields: { text: 'displayName', value: 'npi' },
+                mode : "CheckBox",
+                showDropDownIcon: true,
+                showSelectAll: true,
+                allowFiltering: true,
+                value: ['00000003'],
+                width: '300px'
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            expect((<any>listObj).text).toBe("SANDERS, JASON ADAMCILGIRIST  - 00000003");
+            listObj.hidePopup();
+            listObj.destroy();
+        });
+        it('Update with 2nd and then 1st value respectively', () => {
+            let listObj: MultiSelect = new MultiSelect({
+                dataSource: empList,
+                fields: { text: 'displayName', value: 'npi' },
+                mode : "CheckBox",
+                showDropDownIcon: true,
+                showSelectAll: true,
+                allowFiltering: true,
+                value: ['00000002', '00000001'],
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            expect((<any>listObj).text).toBe("JOHNSON, JAMES WILLIAM- 00000002,SMITH,- 00000001");
+            listObj.hidePopup();
+            listObj.destroy();
+        });
+    });
 });

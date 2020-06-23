@@ -7906,5 +7906,281 @@ describe('Swimlane - Enable Line Routing', () => {
             });
     
         });
+        describe('render multiple swimlane  ', () => {
+           let diagram: Diagram;
+           let mouseEvents: MouseEvents = new MouseEvents();
+           let pathData = 'M 120 24.9999 C 120 38.8072 109.642 50 96.8653 50 L 23.135' +
+           ' 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C' +
+           '0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z';
+           let ele: HTMLElement;
+           beforeAll((): void => {
+               ele = createElement('div', { id: 'diagramSwimlane1' });
+               document.body.appendChild(ele);
+               let nodes: NodeModel[] =  [
+                {
+                    id: 'swimlane',
+                    shape: {
+                        type: 'SwimLane',
+                        header: {
+                            annotation: { content: 'ONLINE PURCHASE STATUS', style: { fill: '#111111' } },
+                            height: 50, style: { fontSize: 11 },
+                            orientation: 'Horizontal',
+                        },
+                        lanes: [
+                            {
+                                id: 'stackCanvas1',
+                                header: {
+                                    annotation: { content: 'CUSTOMER' }, width: 50,
+                                    style: { fontSize: 11 }
+                                },
+                                height: 100,
+                                children: [
+                                    {
+                                        id: 'Order',
+                                        shape: { type: 'Path', data: pathData },
+                                        annotations: [
+                                            {
+                                                content: 'ORDER',
+                                                style: { fontSize: 11 }
+                                            }
+                                        ],
+                                        constraints: NodeConstraints.Default &~ NodeConstraints.Delete,
+                                        margin: { left: 60, top: 20 },
+                                        height: 40, width: 100
+                                    }
+                                ],
+                            },
+                            {
+                                id: 'stackCanvas2',
+                                header: {
+                                    annotation: { content: 'ONLINE' }, width: 50,
+                                    style: { fontSize: 11 }
+                                },
+                                height: 100,
+                                children: [
+                                    {
+                                        id: 'selectItemaddcart',
+                                        annotations: [{ content: 'Select item\nAdd cart' }],
+                                        margin: { left: 190, top: 20 },
+                                        height: 40, width: 100
+                                    },
+                                    {
+                                        id: 'paymentondebitcreditcard',
+                                        annotations: [{ content: 'Payment on\nDebit/Credit Card' }],
+                                        margin: { left: 350, top: 20 },
+                                        height: 40, width: 100
+                                    }
+                                ],
+                            },
+                            {
+                                id: 'stackCanvas3',
+                                header: {
+                                    annotation: { content: 'SHOP' }, width: 50,
+                                    style: { fontSize: 11 }
+                                },
+                                height: 100,
+                                children: [
+                                    {
+                                        id: 'getmaildetailaboutorder',
+                                        annotations: [{ content: 'Get mail detail\nabout order' }],
+                                        margin: { left: 190, top: 20 },
+                                        height: 40, width: 100
+                                    },
+                                    {
+                                        id: 'pakingitem',
+                                        annotations: [{ content: 'Paking item' }],
+                                        margin: { left: 350, top: 20 },
+                                        height: 40, width: 100
+                                    }
+                                ],
+                            },
+                            {
+                                id: 'stackCanvas4',
+                                header: {
+                                    annotation: { content: 'DELIVERY' }, width: 50,
+                                    style: { fontSize: 11 }
+                                },
+                                height: 100,
+                                children: [
+                                    {
+                                        id: 'sendcourieraboutaddress',
+                                        annotations: [{ content: 'Send Courier\n about Address' }],
+                                        margin: { left: 190, top: 20 },
+                                        height: 40, width: 100
+                                    },
+                                    {
+                                        id: 'deliveryonthataddress',
+                                        annotations: [{ content: 'Delivery on that\n Address' }],
+                                        margin: { left: 350, top: 20 },
+                                        height: 40, width: 100
+                                    },
+                                    {
+                                        id: 'getitItem',
+                                        shape: { type: 'Path', data: pathData },
+                                        annotations: [{ content: 'GET IT ITEM', style: { fontSize: 11 } }],
+                                        margin: { left: 500, top: 20 },
+                                        height: 40, width: 100
+                                    }
+                                ],
+                            },
+                        ],
+                        phases: [
+                            {
+                                id: 'phase1', offset: 170,
+                                header: { content: { content: 'Phase' } }
+                            },
+                            {
+                                id: 'phase2', offset: 450,
+                                header: { content: { content: 'Phase' } }
+                            },
+                        ],
+                        phaseSize: 20,
+                    },
+                    offsetX: 420, offsetY: 270,
+                    height: 100,
+                    width: 650
+                }, {
+                    id: 'swimlane1',
+                    shape: {
+                        type: 'SwimLane',
+                        header: {
+                            annotation: { content: 'ONLINE PURCHASE STATUS', style: { fill: '#111111' } },
+                            height: 50, style: { fontSize: 11 },
+                            orientation: 'Horizontal',
+                        },
+                        lanes: [
+                            {
+                                id: 'stackCanvas11',
+                                header: {
+                                    annotation: { content: 'CUSTOMER' }, width: 50,
+                                    style: { fontSize: 11 }
+                                },
+                                height: 100,
+                                children: [
+                                    {
+                                        id: 'Order1',
+                                        shape: { type: 'Path', data: pathData },
+                                        annotations: [
+                                            {
+                                                content: 'ORDER',
+                                                style: { fontSize: 11 }
+                                            }
+                                        ],
+                                        constraints: NodeConstraints.Default &~ NodeConstraints.Delete,
+                                        margin: { left: 60, top: 20 },
+                                        height: 40, width: 100
+                                    }
+                                ],
+                            },
+                            {
+                                id: 'stackCanvas21',
+                                header: {
+                                    annotation: { content: 'ONLINE' }, width: 50,
+                                    style: { fontSize: 11 }
+                                },
+                                height: 100,
+                                children: [
+                                    {
+                                        id: 'selectItemaddcart1',
+                                        annotations: [{ content: 'Select item\nAdd cart' }],
+                                        margin: { left: 190, top: 20 },
+                                        height: 40, width: 100
+                                    },
+                                    {
+                                        id: 'paymentondebitcreditcard1',
+                                        annotations: [{ content: 'Payment on\nDebit/Credit Card' }],
+                                        margin: { left: 350, top: 20 },
+                                        height: 40, width: 100
+                                    }
+                                ],
+                            },
+                            {
+                                id: 'stackCanvas31',
+                                header: {
+                                    annotation: { content: 'SHOP' }, width: 50,
+                                    style: { fontSize: 11 }
+                                },
+                                height: 100,
+                                children: [
+                                    {
+                                        id: 'getmaildetailaboutorder1',
+                                        annotations: [{ content: 'Get mail detail\nabout order' }],
+                                        margin: { left: 190, top: 20 },
+                                        height: 40, width: 100
+                                    },
+                                    {
+                                        id: 'pakingitem1',
+                                        annotations: [{ content: 'Paking item' }],
+                                        margin: { left: 350, top: 20 },
+                                        height: 40, width: 100
+                                    }
+                                ],
+                            },
+                            {
+                                id: 'stackCanvas41',
+                                header: {
+                                    annotation: { content: 'DELIVERY' }, width: 50,
+                                    style: { fontSize: 11 }
+                                },
+                                height: 100,
+                                children: [
+                                    {
+                                        id: 'sendcourieraboutaddress1',
+                                        annotations: [{ content: 'Send Courier\n about Address' }],
+                                        margin: { left: 190, top: 20 },
+                                        height: 40, width: 100
+                                    },
+                                    {
+                                        id: 'deliveryonthataddress1',
+                                        annotations: [{ content: 'Delivery on that\n Address' }],
+                                        margin: { left: 350, top: 20 },
+                                        height: 40, width: 100
+                                    },
+                                    {
+                                        id: 'getitItem1',
+                                        shape: { type: 'Path', data: pathData },
+                                        annotations: [{ content: 'GET IT ITEM', style: { fontSize: 11 } }],
+                                        margin: { left: 500, top: 20 },
+                                        height: 40, width: 100
+                                    }
+                                ],
+                            },
+                        ],
+                        phases: [
+                            {
+                                id: 'phase11', offset: 170,
+                                header: { content: { content: 'Phase' } }
+                            },
+                            {
+                                id: 'phase21', offset: 450,
+                                header: { content: { content: 'Phase' } }
+                            },
+                        ],
+                        phaseSize: 20,
+                    },
+                    offsetX: 420, offsetY: 270,
+                    height: 100,
+                    width: 650
+                },
+            ];
+               diagram = new Diagram({ width: 1000, height: 1000, nodes: nodes });
+               diagram.appendTo('#diagramSwimlane1');
+           });
+           afterAll((): void => {
+               diagram.destroy();
+               ele.remove();
+           });
+   
+           it('check with two swimlane', (done: Function) => {
+            
+               expect(diagram.nodes.length === 48).toBe(true);
+               done();
+               let savedString: string = diagram.saveDiagram();
+               diagram.loadDiagram(savedString);
+               expect(diagram.nodes.length === 48).toBe(true);
+               done();
+           });
+   
+       });
     });
 });

@@ -2583,6 +2583,7 @@ export class Node extends NodeBase implements IElement {
                 wrapperContent = contentAccessibility(port, this);
             }
             port.description = wrapperContent ? wrapperContent : port.id;
+            port.inversedAlignment = canvas.inversedAlignment;
             container.children.push(port);
         }
     }
@@ -2634,6 +2635,7 @@ export class Node extends NodeBase implements IElement {
                 wrapperContent = contentAccessibility(icon, this);
             }
             iconContainer.description = wrapperContent ? wrapperContent : iconContainer.id;
+            iconContainer.inversedAlignment = canvas.inversedAlignment;
             container.children.push(iconContainer);
         }
     }
@@ -2653,6 +2655,7 @@ export class Node extends NodeBase implements IElement {
                 wrapperContent = contentAccessibility(annotation, this);
             }
             annotation.description = wrapperContent ? wrapperContent : annotation.id;
+            annotation.inversedAlignment = container.inversedAlignment;
             container.children.push(annotation);
         }
     }

@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+### Diagram
+
+#### Bug Fixes
+
+- `278119`  - The issue with "Exception occurs when try to export the diagram with mode data" has been fixed.
+- `279145`  - The issue with "Exception occurs when try to save diagram with prevent defaults set as true" has been fixed.
+- `278617`  - The issue with "Exception occurs when define two swim lanes in the diagram" has been fixed.
+- `F154840` - The issue with "Exception occurs when try to load the diagram with group nodes" has been fixed.
+- `279486`  - The issue with "Exception occurs when try to load the diagram with prevent defaults set as true" has been fixed.
+- `F154304` - The issue with "Annotation Horizontal and vertical alignments are aligned wrongly" has been fixed.
+
 ## 18.1.57 (2020-06-16)
 
 ### Diagram

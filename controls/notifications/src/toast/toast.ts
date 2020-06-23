@@ -590,23 +590,23 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
       extend(this, this, toastObj);
     }
     if (isNOU(this.toastContainer)) {
-        this.toastContainer = this.getContainer();
-        let target: HTEle = typeof (this.target) === 'string' ? <HTEle>document.querySelector(this.target) : <HTEle>document.body;
-        if (isNOU(target)) {
-          return;
-        }
-        if (target.tagName === 'BODY') {
-          this.toastContainer.style.position = 'fixed';
-        } else {
-          this.toastContainer.style.position = 'absolute';
-          (target as HTEle).style.position = 'relative';
-        }
-        this.setPositioning(this.position);
-        target.appendChild(this.toastContainer);
+      this.toastContainer = this.getContainer();
+      let target: HTEle = typeof (this.target) === 'string' ? <HTEle>document.querySelector(this.target) : <HTEle>document.body;
+      if (isNOU(target)) {
+        return;
+      }
+      if (target.tagName === 'BODY') {
+        this.toastContainer.style.position = 'fixed';
+      } else {
+        this.toastContainer.style.position = 'absolute';
+        (target as HTEle).style.position = 'relative';
+      }
+      this.setPositioning(this.position);
+      target.appendChild(this.toastContainer);
     }
     if (this.isBlazorServer() && this.element.classList.contains('e-control')) {
-        this.isToastModel(toastObj);
-        return;
+      this.isToastModel(toastObj);
+      return;
     }
     this.toastEle = this.createElement('div', { className: ROOT, id: getUniqueID('toast') });
     this.setWidthHeight();
@@ -622,12 +622,21 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
     }
   }
 
+  /**
+   * @hidden
+   * @deprecated
+   * This method applicable for blazor alone.
+   */
+  public showToast(id: string, toastObj?: ToastModel): void {
+    this.toastEle = this.element.querySelector('#' + id);
+    this.show(toastObj);
+  }
+
   private isToastModel(toastObj?: ToastModel): void {
     this.toastContainer = this.element;
     this.setPositioning(this.position);
     let proxy: Toast = this;
     if (!isNOU(proxy.element.lastElementChild)) {
-      this.toastEle = proxy.element.lastElementChild as HTEle;
       this.setProgress();
     }
     this.setAria();
@@ -883,9 +892,15 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
     if (this.isBlazorServer()) {
       return;
     }
-    if (!isNaN(parseFloat(pos.X as string)) || !isNaN(parseFloat(pos.Y as string))) {
+    if (!isNaN(parseFloat(pos.X as string)) && !isNaN(parseFloat(pos.Y as string))) {
       this.customPosition = true;
       setStyleAttribute(this.toastContainer, { 'left': formatUnit(pos.X), 'top': formatUnit(pos.Y) });
+    } else if ((!isNaN(parseFloat(pos.X as string)) && isNaN(parseFloat(pos.Y as string)))) {
+      setStyleAttribute(this.toastContainer, { 'left': formatUnit(pos.X) });
+      this.toastContainer.classList.add(ROOT + '-' + pos.Y.toString().toLowerCase());
+    } else if ((isNaN(parseFloat(pos.X as string)) && !isNaN(parseFloat(pos.Y as string)))) {
+      setStyleAttribute(this.toastContainer, { 'top': formatUnit(pos.Y) });
+      this.toastContainer.classList.add(ROOT + '-' + pos.X.toString().toLowerCase());
     } else {
       this.toastContainer.classList.add(ROOT + '-' + pos.Y.toString().toLowerCase() + '-' + pos.X.toString().toLowerCase());
     }
@@ -1053,13 +1068,13 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
         this.toastContainer.style.zIndex = getZindexPartial(this.toastContainer) + '';
         this.displayToast(this.toastEle, toastObj);
       } else if (this.isBlazorServer()) {
-            let intervalId: number = parseInt(this.toastEle.id.split('toast_')[1], 10);
-            this.clearProgress(intervalId);
-            detach(this.toastEle);
-            if (this.toastContainer.childElementCount === 0) {
-                this.clearContainerPos();
-            }
+        let intervalId: number = parseInt(this.toastEle.id.split('toast_')[1], 10);
+        this.clearProgress(intervalId);
+        detach(this.toastEle);
+        if (this.toastContainer.childElementCount === 0) {
+          this.clearContainerPos();
         }
+      }
     });
   }
 

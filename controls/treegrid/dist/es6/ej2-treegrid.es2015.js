@@ -1631,6 +1631,7 @@ class DataManipulation {
                 result[r].parentItem = parentData;
                 result[r].parentUniqueID = rowDetails.record.uniqueID;
                 result[r].uniqueID = getUid(this.parent.element.id + '_data_');
+                result[r].checkboxState = 'uncheck';
                 setValue('uniqueIDCollection.' + result[r].uniqueID, result[r], this.parent);
                 // delete result[r].parentItem.childRecords;
                 if ((result[r][this.parent.hasChildMapping] || this.parentItems.indexOf(result[r][this.parent.idMapping]) !== -1)
@@ -2875,12 +2876,6 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         };
         this.grid.rowDeselected = (args) => {
             this.updateSelectionProperty();
-            if (isBlazor()) {
-                let length = 'length';
-                args.data = args.data[args.data[length] - 1];
-                args.rowIndex = args.rowIndex[args.rowIndex[length] - 1];
-                args.row = args.row[args.row[length] - 1];
-            }
             this.trigger(rowDeselected, args);
         };
         this.grid.rowDeselecting = (args) => {

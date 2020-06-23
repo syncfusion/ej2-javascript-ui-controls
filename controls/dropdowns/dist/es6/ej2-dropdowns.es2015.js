@@ -13,6 +13,7 @@ let queryString = '';
 let prevString = '';
 let matches$1 = [];
 let activeClass = 'e-active';
+let prevElementId = '';
 /**
  * Search and focus the list item based on key code matches with list text content
  * @param  { number } keyCode - Specifies the key code which pressed on keyboard events.
@@ -21,12 +22,12 @@ let activeClass = 'e-active';
  * after selected item otherwise it will do from initial.
  * @param  { boolean } ignoreCase - Specifies the case consideration when search has done.
  */
-function incrementalSearch(keyCode, items, selectedIndex, ignoreCase, isBlazor$$1) {
+function incrementalSearch(keyCode, items, selectedIndex, ignoreCase, elementId, isBlazor$$1) {
     queryString += String.fromCharCode(keyCode);
     setTimeout(() => { queryString = ''; }, 1000);
     let index;
     queryString = ignoreCase ? queryString.toLowerCase() : queryString;
-    if (prevString === queryString) {
+    if (prevElementId === elementId && prevString === queryString) {
         for (let i = 0; i < matches$1.length; i++) {
             if (matches$1[i].classList.contains(activeClass)) {
                 index = i;
@@ -62,6 +63,7 @@ function incrementalSearch(keyCode, items, selectedIndex, ignoreCase, isBlazor$$
             i++;
         } while (i !== selectedIndex);
         prevString = queryString;
+        prevElementId = elementId;
         return matches$1[0];
     }
 }
@@ -1882,7 +1884,7 @@ let DropDownList = class DropDownList extends DropDownBase {
     ;
     incrementalSearch(e) {
         if (this.liCollections.length > 0) {
-            let li = incrementalSearch(e.charCode, this.liCollections, this.activeIndex, true, this.isServerBlazor);
+            let li = incrementalSearch(e.charCode, this.liCollections, this.activeIndex, true, this.element.id, this.isServerBlazor);
             if (!isNullOrUndefined(li)) {
                 this.setSelection(li, e);
                 this.setScrollPosition();
@@ -8739,7 +8741,15 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             if (this.mode !== 'CheckBox') {
                 this.inputElement.focus();
             }
+            else if ((this.floatLabelType === 'Auto' &&
+                ((this.overAllWrapper.classList.contains('e-outline')) || (this.overAllWrapper.classList.contains('e-filled'))))) {
+                addClass([this.overAllWrapper], 'e-valid-input');
+            }
             return;
+        }
+        if (this.floatLabelType === 'Auto' && (this.overAllWrapper.classList.contains('e-outline')) && this.mode === 'CheckBox' &&
+            ((isNullOrUndefined(this.value)) || this.value.length === 0)) {
+            removeClass([this.overAllWrapper], 'e-valid-input');
         }
         if (this.mode === 'CheckBox' && Browser.isIE && !isNullOrUndefined(eve) && !isDocClickFromCheck) {
             this.inputFocus = false;
@@ -8790,6 +8800,11 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             let downIconWidth = this.dropIcon.offsetWidth +
                 parseInt(window.getComputedStyle(this.dropIcon).marginRight, 10);
             this.setPlaceholderSize(downIconWidth);
+        }
+        else {
+            if (!isNullOrUndefined(this.dropIcon)) {
+                this.setPlaceholderSize(this.showDropDownIcon ? this.dropIcon.offsetWidth : 0);
+            }
         }
     }
     setPlaceholderSize(downIconWidth) {
@@ -10821,7 +10836,9 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                             let textArr = this.viewWrapper.innerHTML.split(this.delimiterChar);
                             textArr.pop();
                             this.viewWrapper.innerHTML = textArr.join(this.delimiterChar);
-                            remaining++;
+                            if (this.viewWrapper.innerHTML === '') {
+                                remaining++;
+                            }
                             wrapperleng = this.viewWrapper.offsetWidth;
                         }
                         break;
@@ -10937,7 +10954,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             'li.e-list-item:not([aria-selected="true"]):not(.e-reorder-hide)' :
             'li.e-list-item[aria-selected="true"]:not(.e-reorder-hide)');
         if (this.value && this.value.length && this.isPopupOpen() && event && event.target
-            && closest(event.target, '.e-close-hooker')) {
+            && closest(event.target, '.e-close-hooker') && this.allowFiltering) {
             li = this.mainList.querySelectorAll(state ?
                 'li.e-list-item:not([aria-selected="true"]):not(.e-reorder-hide)' :
                 'li.e-list-item[aria-selected="true"]:not(.e-reorder-hide)');

@@ -880,7 +880,7 @@ function preventDefaults(clonedObject: Object, model: object, defaultObject?: ob
         }
         if (clonedObject[property] instanceof Array) {
             preventArrayDefaults(clonedObject, defaultObject, model, property);
-        } else if (clonedObject[property] instanceof Object) {
+        } else if ((clonedObject[property] instanceof Object) && defaultObject && defaultObject[property]) {
             if (property !== 'wrapper') {
                 clonedObject[property] = preventDefaults(clonedObject[property], model[property], defaultObject[property], isNodeShape);
             }
@@ -1107,7 +1107,7 @@ export function deserialize(model: string, diagram: Diagram): Object {
     diagram.getNodeDefaults = nodeDefaults;
     diagram.getCustomProperty = getCustomProperty;
     diagram.mode = dataObj.mode || 'SVG';
-    if (dataObj.nodes.length) {
+    if (dataObj.nodes) {
         for (let i: number = 0; i < dataObj.nodes.length; i++) {
             if (dataObj.nodes[i].shape && dataObj.nodes[i].shape.type === 'SwimLane') {
                 pasteSwimLane(dataObj.nodes[i] as NodeModel, undefined, undefined, undefined, undefined, true);
@@ -1145,7 +1145,7 @@ export function deserialize(model: string, diagram: Diagram): Object {
 
 /** @private */
 export function upgrade(dataObj: Diagram): Diagram {
-    if (dataObj && (dataObj.version === undefined || (dataObj.version < 17.1))) {
+    if (dataObj && (dataObj.version === undefined || (dataObj.version < 17.1)) && dataObj.nodes) {
         let nodes: NodeModel[] = dataObj.nodes;
         for (let node of nodes) {
             if (node && node.ports && node.ports.length > 0) {
@@ -1156,6 +1156,7 @@ export function upgrade(dataObj: Diagram): Diagram {
                 }
             }
         }
+
     }
     return dataObj;
 }

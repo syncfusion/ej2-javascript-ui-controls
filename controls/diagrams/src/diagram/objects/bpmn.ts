@@ -427,7 +427,7 @@ export class BpmnDiagrams {
                 innerEvtNode.style.fill = event !== 'End' ? 'white' : 'black';
                 innerEvtNode.style.gradient = null;
                 triggerNode.style.fill = 'black';
-                triggerNode.style.strokeColor = node.style.strokeColor;
+                triggerNode.style.strokeColor = 'white';
                 break;
         }
         //append child and set style

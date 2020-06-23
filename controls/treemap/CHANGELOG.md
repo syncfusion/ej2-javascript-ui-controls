@@ -8,8 +8,6 @@
 
 ## [Unreleased]
 
-## 18.1.57 (2020-06-16)
-
 ### TreeMap
 
 #### Bug Fixes

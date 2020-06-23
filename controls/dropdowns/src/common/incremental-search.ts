@@ -7,6 +7,7 @@ let queryString: string = '';
 let prevString: string = '';
 let matches: Element[] = [];
 let activeClass: string = 'e-active';
+let prevElementId: string = '';
 export type SearchType = 'StartsWith' | 'Equal';
 /**
  * Search and focus the list item based on key code matches with list text content 
@@ -18,12 +19,12 @@ export type SearchType = 'StartsWith' | 'Equal';
  */
 
 export function incrementalSearch(
-    keyCode: number, items: HTMLElement[], selectedIndex: number, ignoreCase: boolean, isBlazor?: boolean): Element {
+    keyCode: number, items: HTMLElement[], selectedIndex: number, ignoreCase: boolean, elementId: string, isBlazor?: boolean): Element {
     queryString += String.fromCharCode(keyCode);
     setTimeout(() => { queryString = ''; }, 1000);
     let index: number;
     queryString = ignoreCase ? queryString.toLowerCase() : queryString;
-    if (prevString === queryString) {
+    if (prevElementId === elementId && prevString === queryString) {
         for (let i: number = 0; i < matches.length; i++) {
             if (matches[i].classList.contains(activeClass)) { index = i; break; }
         }
@@ -52,6 +53,7 @@ export function incrementalSearch(
             i++;
         } while (i !== selectedIndex);
         prevString = queryString;
+        prevElementId = elementId;
         return matches[0];
     }
 }
