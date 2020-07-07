@@ -152,6 +152,7 @@ export class EventWindow {
         this.parent.currentAction = type;
         this.parent.removeNewEventElement();
         this.parent.quickPopup.quickPopupHide(true);
+        this.parent.inlineModule.removeInlineAppointmentElement();
         if (type === 'Add') {
             let eventObj: { [key: string]: Object } = {};
             this.cellClickAction = !isEventData;
@@ -308,7 +309,10 @@ export class EventWindow {
                     this.recurrenceEditor = null;
                 }
                 this.destroyComponents();
-                [].slice.call(form.children).forEach((node: HTMLElement) => remove(node));
+                let formElements: HTMLElement[] = [].slice.call(form.children);
+                for (let element of formElements) {
+                    remove(element);
+                }
             }
             if (!isBlazor() || (isBlazor() && args)) {
                 let templateId: string = this.parent.element.id + '_editorTemplate';
@@ -431,14 +435,14 @@ export class EventWindow {
     }
 
     public refreshDateTimePicker(duration?: number): void {
-        let startEndElement: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.EVENT_WINDOW_START_CLASS + ',.' +
-            cls.EVENT_WINDOW_END_CLASS));
-        startEndElement.forEach((element: HTMLElement) => {
+        let elementSelector: string = '.' + cls.EVENT_WINDOW_START_CLASS + ',.' + cls.EVENT_WINDOW_END_CLASS;
+        let startEndElement: HTMLElement[] = [].slice.call(this.element.querySelectorAll(elementSelector));
+        for (let element of startEndElement) {
             let instance: DateTimePicker = ((<HTMLElement>element) as EJ2Instance).ej2_instances[0] as DateTimePicker;
             instance.firstDayOfWeek = this.parent.activeViewOptions.firstDayOfWeek;
             instance.step = duration || this.getSlotDuration();
             instance.dataBind();
-        });
+        }
     }
 
     private onTimeChange(): void {
@@ -1309,7 +1313,8 @@ export class EventWindow {
 
     public setDefaultValueToObject(eventObj: { [key: string]: Object }): void {
         if (!isNullOrUndefined(eventObj[this.fields.subject])) {
-            eventObj[this.fields.subject] = eventObj[this.fields.subject] || this.l10n.getConstant('addTitle');
+            eventObj[this.fields.subject] = eventObj[this.fields.subject] || this.parent.eventSettings.fields.subject.default
+                || this.l10n.getConstant('addTitle');
         }
         if (!isNullOrUndefined(eventObj[this.fields.location])) {
             eventObj[this.fields.location] = eventObj[this.fields.location] || this.parent.eventSettings.fields.location.default;
@@ -1718,8 +1723,10 @@ export class EventWindow {
      * @private
      */
     public destroy(): void {
-        this.resetEditorTemplate();
-        this.updateEditorTemplate();
+        if (!this.parent.isDestroyed) {
+            this.resetEditorTemplate();
+            this.updateEditorTemplate();
+        }
         if (this.recurrenceEditor) {
             this.recurrenceEditor.destroy();
         }

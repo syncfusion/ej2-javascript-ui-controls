@@ -1484,9 +1484,13 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
 }
 
 export interface ChangeEventArgs extends BaseEventArgs {
-    /** Returns the entered value of the NumericTextBox. */
+    /** Returns the entered value of the NumericTextBox.
+     * @isGenericType true
+     */
     value?: number;
-    /** Returns the previously entered value of the NumericTextBox. */
+    /** Returns the previously entered value of the NumericTextBox. 
+     * @isGenericType true
+     */
     previousValue?: number;
     /** Returns the event parameters from NumericTextBox. */
     event?: Event;
@@ -1501,7 +1505,9 @@ export interface ChangeEventArgs extends BaseEventArgs {
 export interface NumericFocusEventArgs extends BaseEventArgs {
     /** Returns the original event arguments. */
     event?: MouseEvent | FocusEvent | TouchEvent | KeyboardEvent;
-    /** Returns the value of the NumericTextBox. */
+    /** Returns the value of the NumericTextBox.
+     * @isGenericType true
+     */
     value: number;
     /** Returns the NumericTextBox container element */
     container?: HTMLElement;
@@ -1510,7 +1516,9 @@ export interface NumericFocusEventArgs extends BaseEventArgs {
 export interface NumericBlurEventArgs extends BaseEventArgs {
     /** Returns the original event arguments. */
     event?: MouseEvent | FocusEvent | TouchEvent | KeyboardEvent;
-    /** Returns the value of the NumericTextBox. */
+    /** Returns the value of the NumericTextBox.
+     * @isGenericType true
+     */
     value: number;
     /** Returns the NumericTextBox container element */
     container?: HTMLElement;

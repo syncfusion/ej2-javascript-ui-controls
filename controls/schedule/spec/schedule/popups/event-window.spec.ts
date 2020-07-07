@@ -1821,16 +1821,16 @@ describe('Schedule event window initial load', () => {
         });
 
         it('event window validation checking with save', (done: Function) => {
-            schObj.dataBound = () => {
-                expect(beginArgs).not.toBeUndefined();
-                expect(beginArgs).toEqual('eventCreate');
-                done();
-            };
             util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
             util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
             let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
             let saveButton: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS) as HTMLElement;
             saveButton.click();
+            setTimeout(() => {
+                expect(beginArgs).not.toBeUndefined();
+                expect(beginArgs).toEqual('eventCreate');
+                done();
+            }, 500);
         });
     });
 

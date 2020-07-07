@@ -9160,6 +9160,9 @@ __decorate$11([
 __decorate$11([
     Property(false)
 ], UserHandle.prototype, "disableConnectors", void 0);
+__decorate$11([
+    Property('')
+], UserHandle.prototype, "template", void 0);
 
 /**
  * UMLActivityShapeDictionary defines the shape of the built-in uml activity shapes
@@ -13742,18 +13745,18 @@ function getUserHandlePosition(selectorItem, handle, transform) {
         switch (handle.side) {
             case 'Top':
                 point.x += left + bounds.width * offset;
-                point.y += top - size;
+                point.y += top - (size / 2 + 12.5);
                 break;
             case 'Bottom':
                 point.x += left + offset * bounds.width;
-                point.y += top + wrapper.actualSize.height + size;
+                point.y += top + wrapper.actualSize.height + (size / 2 + 12.5);
                 break;
             case 'Left':
-                point.x += left - size;
+                point.x += left - (size / 2 + 12.5);
                 point.y += top + offset * bounds.height;
                 break;
             case 'Right':
-                point.x += left + wrapper.actualSize.width + size;
+                point.x += left + wrapper.actualSize.width + (size / 2 + 12.5);
                 point.y += top + offset * bounds.height;
                 break;
         }
@@ -14557,6 +14560,7 @@ function getULMClassifierShapes(content, node, diagram) {
     }, true);
     diagram.initObject(newObj);
     diagram.nodes.push(newObj);
+    diagram.UpdateBlazorDiagramModel(newObj, 'Node');
     node.children.push(newObj.id);
     getClassNodes(node, diagram, classifier, textWrap);
     getClassMembers(node, diagram, classifier, textWrap);
@@ -14602,6 +14606,7 @@ function getClassNodes(node, diagram, classifier, textWrap) {
                     }, true);
                     diagram.initObject(temp);
                     diagram.nodes.push(temp);
+                    diagram.UpdateBlazorDiagramModel(temp, 'Node');
                     node.children.push(temp.id);
                     memberText = '';
                     if (members.isSeparator && (i !== member.length - 1)) {
@@ -14656,6 +14661,7 @@ function getClassNodes(node, diagram, classifier, textWrap) {
                     }, true);
                     diagram.initObject(temp);
                     diagram.nodes.push(temp);
+                    diagram.UpdateBlazorDiagramModel(temp, 'Node');
                     node.children.push(temp.id);
                     attributeText = '';
                     if (attribute.isSeparator && (i !== attributes.length - 1)) {
@@ -14728,6 +14734,7 @@ function getClassMembers(node, diagram, classifier, textWrap) {
                 }, true);
                 diagram.initObject(temp);
                 diagram.nodes.push(temp);
+                diagram.UpdateBlazorDiagramModel(temp, 'Node');
                 node.children.push(temp.id);
                 methodText = '';
                 if (method.isSeparator && (i !== methods.length - 1)) {
@@ -16799,6 +16806,17 @@ function getAdornerLayer(diagramId) {
     adornerLayer = diagramAdornerSvg.getElementById(diagramId + '_diagramAdorner');
     return adornerLayer;
 }
+/**
+ * @private
+ */
+function getUserHandleLayer(diagramId) {
+    let adornerLayer = null;
+    let diagramUserHandleLayer = getDiagramElement(diagramId);
+    let elementcoll;
+    elementcoll = diagramUserHandleLayer.getElementsByClassName('e-userHandle-layer');
+    adornerLayer = elementcoll[0];
+    return adornerLayer;
+}
 /** @private */
 function getDiagramLayer(diagramId) {
     let diagramLayer;
@@ -17124,6 +17142,47 @@ function getTemplateContent(annotationcontent, annotation, annotationTemplate) {
         annotationcontent.content = annotation.template;
     }
     return annotationcontent;
+}
+/** @private */
+function createUserHandleTemplates(userHandleTemplate, template, selectedItems) {
+    let userHandleFn;
+    let handle;
+    let compiledString;
+    let i;
+    let div;
+    if (userHandleTemplate && template) {
+        userHandleFn = templateCompiler(userHandleTemplate);
+        for (handle of selectedItems.userHandles) {
+            if (userHandleFn) {
+                compiledString = userHandleFn(cloneObject(handle), undefined, 'template', undefined, undefined, false);
+                for (i = 0; i < compiledString.length; i++) {
+                    let attr = {
+                        'style': 'height: 100%; width: 100%; pointer-events: all',
+                        'id': handle.name + '_template_hiddenUserHandle'
+                    };
+                    div = createHtmlElement('div', attr);
+                    div.appendChild(compiledString[i]);
+                }
+                template[0].appendChild(div);
+            }
+        }
+    }
+    else if (isBlazor()) {
+        let content = 'diagramsf_userHandle_template';
+        let a;
+        for (handle of selectedItems.userHandles) {
+            compiledString = compile(handle.content);
+            for (i = 0, a = compiledString(cloneBlazorObject(handle), null, null, content); i < a.length; i++) {
+                let attr = {
+                    'style': 'height: 100%; width: 100%; pointer-events: all',
+                    'id': handle.name + '_template_hiddenUserHandle'
+                };
+                div = createHtmlElement('div', attr);
+                div.appendChild(a[i]);
+            }
+            template[0].appendChild(div);
+        }
+    }
 }
 
 /**
@@ -19390,18 +19449,19 @@ class DiagramRenderer {
         this.svgRenderer.drawRectangle(canvas, options, this.diagramId, undefined, true, parentSvg);
     }
     /**   @private  */
-    renderUserHandler(selectorItem, canvas, transform) {
+    renderUserHandler(selectorItem, canvas, transform, diagramUserHandlelayer) {
         let wrapper = selectorItem.wrapper;
         let canDraw$$1;
         for (let obj of selectorItem.userHandles) {
             canDraw$$1 = true;
-            if (obj.disableConnectors && selectorItem.connectors.length > 0) {
+            if ((obj.disableConnectors && selectorItem.connectors.length > 0) ||
+                (obj.disableNodes && selectorItem.nodes.length > 0)) {
                 canDraw$$1 = false;
             }
-            if (obj.disableNodes && selectorItem.nodes.length > 0) {
-                canDraw$$1 = false;
+            let div = document.getElementById(obj.name + '_template_hiddenUserHandle');
+            if (div) {
+                obj.template = (div.childNodes[0]).cloneNode(true);
             }
-            let element = new PathElement();
             let newPoint;
             newPoint = getUserHandlePosition(selectorItem, obj, transform);
             newPoint.x = (newPoint.x + transform.tx) * transform.scale;
@@ -19410,7 +19470,7 @@ class DiagramRenderer {
                 obj.visible = (selectorItem.constraints & SelectorConstraints.UserHandle) ? true : false;
             }
             if (canDraw$$1) {
-                if (obj.content === '' && obj.source === '') {
+                if (obj.pathData) {
                     let data = obj.pathData ? obj.pathData : obj.content;
                     let option = this.getBaseAttributes(wrapper);
                     option.id = obj.name + '_userhandle';
@@ -19437,22 +19497,19 @@ class DiagramRenderer {
                     pathSize = measurePath(newData);
                     let options = {
                         x: newPoint.x - pathSize.width / 2,
-                        y: newPoint.y - pathSize.height / 2,
-                        angle: 0, id: '',
-                        class: 'e-diagram-userhandle-path',
-                        fill: obj.pathColor, stroke: obj.backgroundColor, strokeWidth: 0.5, dashArray: '', data: newData,
+                        y: newPoint.y - pathSize.height / 2, angle: 0, id: '',
+                        class: 'e-diagram-userhandle-path', fill: obj.pathColor,
+                        stroke: obj.backgroundColor, strokeWidth: 0.5, dashArray: '', data: newData,
                         width: obj.size - pathPading, height: obj.size - pathPading, pivotX: 0, pivotY: 0, opacity: 1, visible: obj.visible
                     };
                     this.svgRenderer.drawPath(canvas, options, this.diagramId, undefined, undefined, { 'aria-label': obj.name + 'user handle' });
                 }
-                else if (obj.content !== '') {
+                else if (obj.content) {
                     let handleContent;
                     handleContent = new DiagramNativeElement(obj.name, this.diagramId);
                     handleContent.content = obj.content;
                     handleContent.offsetX = newPoint.x;
                     handleContent.offsetY = newPoint.y;
-                    handleContent.height = obj.size;
-                    handleContent.width = obj.size;
                     handleContent.id = obj.name + '_shape';
                     handleContent.horizontalAlignment = 'Center';
                     handleContent.verticalAlignment = 'Center';
@@ -19464,7 +19521,7 @@ class DiagramRenderer {
                     handleContent.arrange(handleContent.desiredSize);
                     this.svgRenderer.drawNativeContent(handleContent, canvas, obj.size, obj.size, this.adornerSvgLayer);
                 }
-                else {
+                else if (obj.source) {
                     let element = new ImageElement();
                     let options = this.getBaseAttributes(element, transform);
                     options.width = obj.size;
@@ -19480,6 +19537,19 @@ class DiagramRenderer {
                     options.description = obj.name || 'User handle';
                     options.id = obj.name + '_';
                     this.renderer.drawImage(canvas, options, this.adornerSvgLayer, false);
+                }
+                else {
+                    let templateContent;
+                    templateContent = new DiagramHtmlElement(obj.name, this.diagramId);
+                    templateContent.offsetX = newPoint.x;
+                    templateContent.offsetY = newPoint.y;
+                    templateContent.id = obj.name + '_shape';
+                    templateContent.visible = obj.visible;
+                    templateContent.relativeMode = 'Object';
+                    templateContent.template = obj.template;
+                    templateContent.measure(new Size(obj.size, obj.size));
+                    templateContent.arrange(templateContent.desiredSize);
+                    this.svgRenderer.drawHTMLContent(templateContent, diagramUserHandlelayer, undefined, true, undefined);
                 }
             }
         }
@@ -21840,9 +21910,8 @@ class ConnectTool extends ToolBase {
             if (isBlazor()) {
                 let trigger = DiagramEvent.connectionChange;
                 let temparg;
-                if (this.tempArgs) {
+                if (this.tempArgs && this.oldConnector) {
                     this.tempArgs.state = 'Changed';
-                    let connector = args.source.connectors[0];
                     let nodeEndId = this.endPoint === 'ConnectorSourceEnd' ? 'sourceID' : 'targetID';
                     let portEndId = this.endPoint === 'ConnectorSourceEnd' ? 'sourcePortID' : 'targetPortID';
                     this.tempArgs.oldValue = this.endPoint === 'ConnectorSourceEnd' ?
@@ -22853,6 +22922,7 @@ class ConnectorDrawingTool extends ConnectTool {
     }
     /**   @private  */
     mouseMove(args) {
+        this.commandHandler.enableServerDataBinding(false);
         if (this.inAction) {
             let connector = {
                 sourcePoint: this.currentPosition, targetPoint: this.currentPosition,
@@ -22863,9 +22933,7 @@ class ConnectorDrawingTool extends ConnectTool {
             args.source = this.drawingObject;
             if ((args.target || (args.actualObject && args.sourceWrapper && checkPort(args.actualObject, args.sourceWrapper)))
                 && (this.endPoint !== 'ConnectorTargetEnd' || (canInConnect(args.target)))) {
-                this.commandHandler.diagram.allowServerDataBinding = false;
                 this.commandHandler.connect(this.endPoint, args);
-                this.commandHandler.diagram.allowServerDataBinding = true;
             }
             this.endPoint = 'ConnectorTargetEnd';
         }
@@ -22876,12 +22944,14 @@ class ConnectorDrawingTool extends ConnectTool {
             }
         }
         super.mouseMove(args);
+        this.commandHandler.enableServerDataBinding(true);
         return !this.blocked;
     }
     /**   @private  */
     mouseUp(args) {
         const _super = name => super[name];
         return __awaiter$1(this, void 0, void 0, function* () {
+            this.commandHandler.enableServerDataBinding(false);
             this.checkPropertyValue();
             if (this.drawingObject && this.drawingObject instanceof Connector) {
                 this.commandHandler.addObjectToDiagram(this.drawingObject);
@@ -22889,6 +22959,7 @@ class ConnectorDrawingTool extends ConnectTool {
             }
             this.commandHandler.updateBlazorSelector();
             this.inAction = false;
+            this.commandHandler.enableServerDataBinding(true);
             _super("mouseUp").call(this, args);
         });
     }
@@ -24786,7 +24857,13 @@ class DiagramEventHandler {
             }
             this.diagram.currentDrawingObject = undefined;
             let selector = this.diagram.selectedItems;
-            if (!this.inAction && selector.wrapper && selector.userHandles.length > 0) {
+            let disbleRenderSelector = false;
+            if (this.commandHandler.isUserHandle(this.currentPosition)) {
+                if (this.isForeignObject(evt.target)) {
+                    disbleRenderSelector = true;
+                }
+            }
+            if (!this.inAction && selector.wrapper && selector.userHandles.length > 0 && !disbleRenderSelector) {
                 this.diagram.renderSelector(true);
             }
             if (!this.inAction && !this.diagram.currentSymbol && this.eventArgs) {
@@ -25140,11 +25217,13 @@ class DiagramEventHandler {
         let label = this.diagram.activeLabel;
         args.target = this.diagram.element.id + '_editBox';
         let node = this.diagram.nameTable[label.parentId];
-        args.text = document.getElementById(this.diagram.element.id + '_editBox').value;
-        for (let i = 0; i < node.annotations.length; i++) {
-            if (node.annotations[i].id === label.id) {
-                args.label = node.annotations[i];
-                break;
+        if (document.getElementById(this.diagram.element.id + '_editBox')) {
+            args.text = document.getElementById(this.diagram.element.id + '_editBox').value;
+            for (let i = 0; i < node.annotations.length; i++) {
+                if (node.annotations[i].id === label.id) {
+                    args.label = node.annotations[i];
+                    break;
+                }
             }
         }
     }
@@ -25950,9 +26029,12 @@ class DiagramEventHandler {
             let highlighter = adornerSvg.getElementById(adornerSvg.id + '_stack_highlighter');
             if (highlighter) {
                 let index = node.wrapper.children.indexOf(target.wrapper) + 1;
+                this.diagram.enableServerDataBinding(false);
                 let temp = new Node(this.diagram, 'nodes', {
-                    style: { fill: node.style.fill,
-                        strokeColor: (node.style.strokeColor === 'black') ? '#ffffff00' : node.style.strokeColor },
+                    style: {
+                        fill: node.style.fill,
+                        strokeColor: (node.style.strokeColor === 'black') ? '#ffffff00' : node.style.strokeColor
+                    },
                     annotations: target.annotations, verticalAlignment: 'Stretch', horizontalAlignment: 'Stretch',
                     constraints: (NodeConstraints.Default | NodeConstraints.HideThumbs) & ~(NodeConstraints.Rotate | NodeConstraints.Drag | NodeConstraints.Resize),
                     minHeight: 25
@@ -25968,6 +26050,7 @@ class DiagramEventHandler {
                     sourceIndex: node.wrapper.children.indexOf(temp.wrapper), source: temp,
                     target: undefined, targetIndex: undefined
                 };
+                this.diagram.enableServerDataBinding(true);
                 this.diagram.add(temp);
                 this.diagram.updateConnectorEdges(node);
                 this.diagram.clearSelection();
@@ -26961,17 +27044,18 @@ class CommandHandler {
             this.diagram.refreshDiagramLayer();
         }
     }
-    UpdateBlazorDiagramModelLayers(layer) {
+    UpdateBlazorDiagramModelLayers(layer, isRemove) {
         let blazorInterop = 'sfBlazor';
         let updatedModel = cloneBlazorObject(layer);
         let blazor = 'Blazor';
         if (window && window[blazor]) {
-            let obj = { 'methodName': 'UpdateBlazorDiagramModelLayers', 'diagramobj': JSON.stringify(updatedModel) };
+            let obj = { 'methodName': 'UpdateBlazorDiagramModelLayers',
+                'diagramobj': JSON.stringify(updatedModel), 'isRemove': isRemove };
             window[blazorInterop].updateBlazorProperties(obj, this.diagram);
         }
     }
     /** @private */
-    addLayer(layer, objects, isClone = false) {
+    addLayer(layer, objects, isServerUpdate = true) {
         layer.id = layer.id || randomId();
         layer.zIndex = this.diagram.layers.length;
         this.diagram.enableServerDataBinding(false);
@@ -26980,8 +27064,8 @@ class CommandHandler {
         layer.objectZIndex = -1;
         layer.zIndexTable = {};
         this.diagram.layers.push(layer);
-        if (isClone) {
-            this.UpdateBlazorDiagramModelLayers(layer);
+        if (isServerUpdate) {
+            this.UpdateBlazorDiagramModelLayers(layer, false);
         }
         this.diagram.layerZIndexTable[layer.zIndex] = layer.id;
         this.diagram.activeLayer = layer;
@@ -27014,7 +27098,7 @@ class CommandHandler {
         return undefined;
     }
     /** @private */
-    removeLayer(layerId) {
+    removeLayer(layerId, isServerUpdate = true) {
         let layers = this.getLayer(layerId);
         if (layers) {
             let index = this.diagram.layers.indexOf(layers);
@@ -27027,6 +27111,9 @@ class CommandHandler {
                         this.diagram.activeLayer = this.diagram.layers[this.diagram.layers.length - 1];
                     }
                 }
+            }
+            if (isServerUpdate) {
+                this.UpdateBlazorDiagramModelLayers(this.diagram.layers[index], true);
             }
             delete this.diagram.layerZIndexTable[layers.zIndex];
             this.diagram.layers.splice(index, 1);
@@ -27965,7 +28052,10 @@ class CommandHandler {
     /** @private */
     labelSelect(obj, textWrapper) {
         let selectorModel = (this.diagram.selectedItems);
+        let isEnableServerDatabind = this.diagram.allowServerDataBinding;
+        this.diagram.allowServerDataBinding = false;
         selectorModel.nodes = selectorModel.connectors = [];
+        this.diagram.allowServerDataBinding = isEnableServerDatabind;
         if (obj instanceof Node) {
             selectorModel.nodes[0] = obj;
         }
@@ -28622,6 +28712,7 @@ class CommandHandler {
     /** @private */
     clearSelection(triggerAction, isTriggered) {
         return __awaiter$2(this, void 0, void 0, function* () {
+            let enableServerDataBinding = this.diagram.allowServerDataBinding;
             this.diagram.enableServerDataBinding(false);
             if (hasSelection(this.diagram)) {
                 let selectormodel = this.diagram.selectedItems;
@@ -28682,7 +28773,7 @@ class CommandHandler {
                     }
                 }
                 this.updateBlazorSelector();
-                this.diagram.enableServerDataBinding(true);
+                this.diagram.enableServerDataBinding(enableServerDataBinding);
             }
         });
     }
@@ -32574,6 +32665,8 @@ class Diagram extends Component {
             }
         }
         this.initCommands();
+        let hiddenUserHandleTemplate = document.getElementsByClassName(this.element.id + '_hiddenUserHandleTemplate');
+        createUserHandleTemplates(this.userHandleTemplate, hiddenUserHandleTemplate, this.selectedItems);
         this.updateTemplate();
         this.isLoading = false;
         this.renderComplete();
@@ -32605,6 +32698,11 @@ class Diagram extends Component {
                 updateBlazorTemplate('diagramsf_annotation_template', 'AnnotationTemplate', this, false);
             }
         }
+        for (let i = 0; i < this.selectedItems.userHandles.length; i++) {
+            {
+                updateBlazorTemplate('diagramsf_userHandle_template', 'UserHandleTemplate', this, false);
+            }
+        }
     }
     resetTemplate() {
         let htmlNode;
@@ -32624,6 +32722,11 @@ class Diagram extends Component {
             path = this.connectors[i].annotations[0];
             if (path && path.annotationType === 'Template') {
                 resetBlazorTemplate('diagramsf_annotation_template', 'AnnotationTemplate');
+            }
+        }
+        for (let i = 0; i < this.selectedItems.userHandles.length; i++) {
+            {
+                updateBlazorTemplate('diagramsf_userHandle_template', 'UserHandleTemplate', this, false);
             }
         }
     }
@@ -33025,6 +33128,12 @@ class Diagram extends Component {
         this.commandHandler.addLayer(layer, layerObject);
     }
     /**
+     *  @private
+     */
+    addDiagramLayer(layer, layerObject) {
+        this.commandHandler.addLayer(layer, layerObject, false);
+    }
+    /**
      * remove the layer from diagram
      * @param {string} layerId - define the id of the layer
      * @deprecated
@@ -33033,9 +33142,14 @@ class Diagram extends Component {
         this.commandHandler.removeLayer(layerId);
     }
     /**
+     *  @private
+     */
+    removeDiagramLayer(layerId) {
+        this.commandHandler.removeLayer(layerId, false);
+    }
+    /**
      * move objects from the layer to another layer from diagram
      * @param {string[]} objects - define the objects id of string array
-     * @blazorArgsType objects|List<string>
      */
     moveObjects(objects, targetLayer) {
         let oldValues = cloneObject(this.layers);
@@ -33116,7 +33230,6 @@ class Diagram extends Component {
     }
     /**
      * gets the node or connector having the given name
-     * @deprecated
      */
     getObject(name) {
         return this.nameTable[name];
@@ -33400,7 +33513,6 @@ class Diagram extends Component {
      * @param {NodeModel[] | ConnectorModel[]}objects - Defines the collection of objects, from which the object has to be found.
      * @param {Actions} action - Defines the action, using which the relevant object has to be found.
      * @param {boolean} inAction - Defines the active state of the action.
-     * @deprecated
      */
     findObjectUnderMouse(objects, action, inAction) {
         return this.eventHandler.findObjectUnderMouse(objects, action, inAction);
@@ -33410,7 +33522,6 @@ class Diagram extends Component {
      * @param {NodeModel[] | ConnectorModel[]} objects - Defines the collection of objects, from which the object has to be found.
      * @param {Actions} action - Defines the action, using which the relevant object has to be found.
      * @param {boolean} inAction - Defines the active state of the action.
-     * @deprecated
      */
     findTargetObjectUnderMouse(objects, action, inAction, position, source) {
         return this.eventHandler.findTargetUnderMouse(objects, action, inAction, position, source);
@@ -33420,7 +33531,6 @@ class Diagram extends Component {
      * @param {IElement} obj - Defines the object, the child element of which has to be found
      * @param {PointModel} position - Defines the position, the child element under which has to be found
      * @param {number} padding - Defines the padding, the child element under which has to be found
-     * @deprecated
      */
     findElementUnderMouse(obj, position, padding) {
         return this.eventHandler.findElementUnderMouse(obj, position, padding);
@@ -33438,7 +33548,6 @@ class Diagram extends Component {
     /**
      * Returns the tool that handles the given action
      * @param {string} action - Defines the action that is going to be performed
-     * @deprecated
      */
     getTool(action) {
         let tool;
@@ -33917,7 +34026,7 @@ class Diagram extends Component {
      * Adds the given diagram object to the group.
      * @param {NodeModel} Group - defines where the diagram object to be added.
      * @param {string | NodeModel | ConnectorModel} Child - defines the diagram object to be added to the group
-     * @blazorArgsType group|DiagramNode
+     * @blazorArgsType obj|DiagramNode
      */
     addChildToGroup(group, child) {
         this.addChild(group, child);
@@ -33965,7 +34074,6 @@ class Diagram extends Component {
      * Adds the given connector to diagram control
      * @param {ConnectorModel} obj - Defines the connector that has to be added to diagram
      * @blazorArgsType obj|DiagramConnector
-     * @blazorType DiagramConnector
      */
     addConnector(obj) {
         return this.add(obj);
@@ -34030,6 +34138,9 @@ class Diagram extends Component {
             window[blazorInterop].updateBlazorProperties(dgmObj, this);
         }
     }
+    /**
+     * @private
+     */
     UpdateBlazorDiagramModel(obj, objectType, removalIndex, annotationNodeIndex) {
         let blazorInterop = 'sfBlazor';
         let updatedModel = cloneBlazorObject(obj);
@@ -35118,7 +35229,7 @@ class Diagram extends Component {
     }
     /**
      * Add ports at the run time
-     * @blazorArgsType obj|DiagramNode, ports|ObservableCollection<DiagramPort>
+     * @blazorArgsType obj|DiagramNode
      */
     addPorts(obj, ports) {
         this.protectPropertyChange(true);
@@ -35168,14 +35279,12 @@ class Diagram extends Component {
     }
     /**
      * Add labels in node at the run time in the blazor platform
-     * @blazorArgsType obj|DiagramNode,labels|ObservableCollection<DiagramNodeAnnotation>
      */
     addNodeLabels(obj, labels) {
         this.addLabels(obj, labels);
     }
     /**
      * Add labels in connector at the run time in the blazor platform
-     * @blazorArgsType obj|DiagramConnector , labels|ObservableCollection<DiagramConnectorAnnotation>
      */
     addConnectorLabels(obj, labels) {
         this.addLabels(obj, labels);
@@ -35243,7 +35352,6 @@ class Diagram extends Component {
     }
     /**
      * Add dynamic Lanes to swimLane at runtime
-     * @deprecated
      */
     addLanes(node, lane, index) {
         node = this.nameTable[node.id] || node;
@@ -35257,7 +35365,6 @@ class Diagram extends Component {
     }
     /**
      * Add a phase to a swimLane at runtime
-     * @deprecated
      */
     addPhases(node, phases) {
         node = this.nameTable[node.id] || node;
@@ -35268,7 +35375,6 @@ class Diagram extends Component {
     }
     /**
      * Remove dynamic Lanes to swimLane at runtime
-     * @deprecated
      */
     removeLane(node, lane) {
         removeLane(this, undefined, node, lane);
@@ -35276,7 +35382,6 @@ class Diagram extends Component {
     }
     /**
      * Remove a phase to a swimLane at runtime
-     * @deprecated
      */
     removePhase(node, phase) {
         removePhase(this, undefined, node, phase);
@@ -35376,7 +35481,6 @@ class Diagram extends Component {
     }
     /**
      * Remove Ports at the run time
-     * @blazorArgsType obj|DiagramNode,ports|ObservableCollection<DiagramPort>
      */
     removePorts(obj, ports) {
         obj = this.nameTable[obj.id] || obj;
@@ -35466,6 +35570,15 @@ class Diagram extends Component {
         });
     }
     ;
+    renderHiddenUserHandleTemplateLayer(bounds) {
+        let element;
+        let attributes = {
+            'class': this.element.id + '_hiddenUserHandleTemplate',
+            'style': 'width:' + bounds.width + 'px; height:' + bounds.height + 'px;' + 'visibility:hidden ;  overflow: hidden;'
+        };
+        element = createHtmlElement('div', attributes);
+        this.element.appendChild(element);
+    }
     renderBackgroundLayer(bounds, commonStyle) {
         let bgLayer = this.createSvg(this.element.id + '_backgroundLayer_svg', bounds.width, bounds.height);
         applyStyleAgainstCsp(bgLayer, commonStyle);
@@ -35545,12 +35658,19 @@ class Diagram extends Component {
         this.renderPortsExpandLayer(bounds, commonStyle);
         this.renderNativeLayer(bounds, commonStyle);
         this.renderAdornerLayer(bounds, commonStyle);
+        this.renderHiddenUserHandleTemplateLayer(bounds);
     }
     renderAdornerLayer(bounds, commonStyle) {
         let divElement = createHtmlElement('div', {
             'id': this.element.id + '_diagramAdornerLayer',
             'style': 'width:' + bounds.width + 'px;height:' + bounds.height + 'px;' + commonStyle
         });
+        let element = createHtmlElement('div', {
+            'id': this.element.id + '_diagramUserHandleLayer',
+            'style': 'width:' + bounds.width + 'px;height:' + bounds.height + 'px;' + commonStyle
+        });
+        element.setAttribute('class', 'e-userHandle-layer');
+        divElement.appendChild(element);
         let svgAdornerSvg = this.createSvg(this.element.id + '_diagramAdorner_svg', bounds.width, bounds.height);
         svgAdornerSvg.setAttribute('class', 'e-adorner-layer');
         svgAdornerSvg.style['pointer-events'] = 'none';
@@ -36993,6 +37113,11 @@ class Diagram extends Component {
                 (this.constraints & DiagramConstraints.Virtualization)) ? this.scroller.viewPortHeight : height;
             diagramLayer.setAttribute('width', (factor * w).toString());
             diagramLayer.setAttribute('height', (factor * h).toString());
+            let hiddenUserHandleTemplate = document.getElementById(this.element.id + '_diagramUserHandleLayer');
+            if (hiddenUserHandleTemplate) {
+                hiddenUserHandleTemplate.style.width = width + 'px';
+                hiddenUserHandleTemplate.style.height = height + 'px';
+            }
             let attr = { 'width': width.toString(), 'height': height.toString() };
             this.diagramLayerDiv.style.width = width + 'px';
             this.diagramLayerDiv.style.height = height + 'px';
@@ -37250,6 +37375,8 @@ class Diagram extends Component {
             let bounds = this.spatialSearch.getPageBounds();
             let selectorElement;
             selectorElement = getSelectorElement(this.element.id);
+            let diagramUserHandlelayer;
+            diagramUserHandlelayer = getUserHandleLayer(this.element.id);
             selectorModel.thumbsConstraints = ThumbsConstraints.Default;
             if (selectorModel.annotation) {
                 this.updateThumbConstraints([selectorModel.annotation], selectorModel);
@@ -37287,7 +37414,7 @@ class Diagram extends Component {
                 this.diagramRenderer.renderResizeHandle(selectorModel.wrapper, selectorElement, selectorModel.thumbsConstraints, this.scroller.currentZoom, selectorModel.constraints, this.scroller.transform, undefined, canMove(selectorModel));
             }
             if (!(selectorModel.annotation) && !this.currentSymbol) {
-                this.diagramRenderer.renderUserHandler(selectorModel, selectorElement, this.scroller.transform);
+                this.diagramRenderer.renderUserHandler(selectorModel, selectorElement, this.scroller.transform, diagramUserHandlelayer);
             }
         }
         this.commandHandler.updateBlazorSelector();
@@ -37319,6 +37446,8 @@ class Diagram extends Component {
                 selector.offsetY = selector.wrapper.offsetY;
                 let selectorEle;
                 selectorEle = getSelectorElement(this.element.id);
+                let diagramUserHandlelayer;
+                diagramUserHandlelayer = getUserHandleLayer(this.element.id);
                 let canHideResizers = this.eventHandler.canHideResizers();
                 selector.thumbsConstraints = ThumbsConstraints.Default;
                 if (selector.annotation) {
@@ -37329,7 +37458,7 @@ class Diagram extends Component {
                     this.updateThumbConstraints(selector.connectors, selector, true);
                 }
                 if ((this.selectedItems.constraints & SelectorConstraints.UserHandle) && (!(selector.annotation)) && !this.currentSymbol) {
-                    this.diagramRenderer.renderUserHandler(selector, selectorEle, this.scroller.transform);
+                    this.diagramRenderer.renderUserHandler(selector, selectorEle, this.scroller.transform, diagramUserHandlelayer);
                 }
                 if (selector.annotation) {
                     this.renderSelectorForAnnotation(selector, selectorEle);
@@ -37420,6 +37549,11 @@ class Diagram extends Component {
                 child = childNodes[i - 1];
                 child.parentNode.removeChild(child);
             }
+            let templates = getUserHandleLayer(this.element.id).childNodes;
+            let i;
+            for (i = templates.length; i > 0; i--) {
+                templates[i - 1].parentNode.removeChild(templates[i - 1]);
+            }
         }
         else {
             let symbolBorder = adornerSvg.getElementById('borderRect_symbol');
@@ -37485,7 +37619,13 @@ class Diagram extends Component {
     endEdit() {
         return __awaiter(this, void 0, void 0, function* () {
             if (this.diagramActions & DiagramAction.TextEdit) {
+                let oldValues;
+                let changedvalues;
+                let annotations = {};
                 this.enableServerDataBinding(false);
+                if (isBlazor()) {
+                    this.canEnableBlazorObject = true;
+                }
                 let textArea = document.getElementById(this.element.id + '_editBox');
                 if ((isBlazor() && textArea) || !isBlazor()) {
                     let text = textArea.value;
@@ -37522,6 +37662,20 @@ class Diagram extends Component {
                     }
                     if (!bpmnAnnotation) {
                         node = this.nameTable[this.activeLabel.parentId];
+                        let annotation = findAnnotation(node, this.activeLabel.id);
+                        if (annotation && !(annotation instanceof Text$1)) {
+                            let index = findObjectIndex(node, annotation.id, true);
+                            annotations[index] = { content: annotation.content };
+                            oldValues = { annotations: annotations };
+                        }
+                        else {
+                            if (isBlazor() && (node.shape).type === "Text") {
+                                oldValues = { shape: { textContent: node.shape.content } };
+                            }
+                            else {
+                                oldValues = { shape: { content: node.shape.content } };
+                            }
+                        }
                         let deleteNode = this.eventHandler.isAddTextNode(node, true);
                         if (!deleteNode && (element.textContent !== text || text !== this.activeLabel.text)) {
                             if (isBlazor()) {
@@ -37534,7 +37688,6 @@ class Diagram extends Component {
                         if (!textWrapper) {
                             textWrapper = this.getWrapper(node.wrapper, this.activeLabel.id);
                         }
-                        let annotation = findAnnotation(node, this.activeLabel.id);
                         if (annotation.content !== text && !args.cancel) {
                             if (node.parentId && this.nameTable[node.parentId].shape.type === 'UmlClassifier'
                                 && text.indexOf('+') === -1 && text.indexOf('-') === -1 && text.indexOf('#') === -1
@@ -37544,11 +37697,41 @@ class Diagram extends Component {
                             if (node.isLane || node.isPhase) {
                                 this.protectPropertyChange(true);
                             }
+                            if (!(annotation instanceof Text$1)) {
+                                let index = findObjectIndex(node, annotation.id, true);
+                                let changesAnnotation = {};
+                                changesAnnotation[index] = { content: text };
+                                changedvalues = { annotations: changesAnnotation };
+                            }
+                            else {
+                                if (isBlazor() && (node.shape).type === "Text") {
+                                    changedvalues = { shape: { textContent: text } };
+                                }
+                                else {
+                                    changedvalues = { shape: { content: text } };
+                                }
+                            }
+                            let nodeIndex = this.getIndex(node, node.id);
+                            if (nodeIndex) {
+                                let oldnodes = {};
+                                oldnodes[nodeIndex] = oldValues;
+                                let newnodes = {};
+                                newnodes[nodeIndex] = changedvalues;
+                                if (getObjectType(node) === Node) {
+                                    this.onPropertyChanged({ nodes: newnodes }, { nodes: oldnodes });
+                                }
+                                else {
+                                    this.onPropertyChanged({ connectors: newnodes }, { connectors: oldnodes });
+                                }
+                            }
+                            this.protectPropertyChange(true);
                             if (isBlazor() && (node.shape).type === "Text") {
                                 node.shape.textContent = text;
                             }
-                            annotation.content = text;
-                            this.dataBind();
+                            else {
+                                annotation.content = text;
+                            }
+                            this.protectPropertyChange(false);
                             this.updateSelector();
                             if (node.isLane || node.isPhase) {
                                 this.protectPropertyChange(false);
@@ -37600,11 +37783,24 @@ class Diagram extends Component {
                     }
                     this.activeLabel = { id: '', parentId: '', isGroup: false, text: undefined };
                     this.commandHandler.getBlazorOldValues();
+                    if (isBlazor()) {
+                        this.canEnableBlazorObject = false;
+                    }
                     this.enableServerDataBinding(true);
                 }
             }
         });
     }
+    getIndex(node, id) {
+        let collection = (getObjectType(node) === Node) ? this.nodes : this.connectors;
+        for (var i = 0; i < collection.length; i++) {
+            if (collection[i].id.toString() === id.toString()) {
+                return i.toString();
+            }
+        }
+        return null;
+    }
+    ;
     /* tslint:enable */
     getBlazorTextEditArgs(args) {
         let element = getObjectType(args.element) === Connector ? { connector: cloneBlazorObject(args.element) }
@@ -39582,7 +39778,6 @@ class Diagram extends Component {
     }
     /**
      * moves the node or connector forward within given layer
-     * @deprecated
      */
     moveObjectsUp(node, currentLayer) {
         let targetLayer;
@@ -39600,21 +39795,18 @@ class Diagram extends Component {
     }
     /**
      * Inserts newly added element into the database
-     * @deprecated
      */
     insertData(node) {
         return this.crudOperation(node, 'create', this.getNewUpdateNodes('New'));
     }
     /**
      * updates the user defined element properties into the existing database
-     * @deprecated
      */
     updateData(node) {
         return this.crudOperation(node, 'update', this.getNewUpdateNodes('Update'));
     }
     /**
      * Removes the user deleted element from the existing database
-     * @deprecated
      */
     removeData(node) {
         return this.crudOperation(node, 'destroy', this.getDeletedNodes());
@@ -39785,6 +39977,9 @@ __decorate([
 __decorate([
     Property()
 ], Diagram.prototype, "annotationTemplate", void 0);
+__decorate([
+    Property()
+], Diagram.prototype, "userHandleTemplate", void 0);
 __decorate([
     Property()
 ], Diagram.prototype, "getNodeDefaults", void 0);
@@ -52374,7 +52569,7 @@ class SymbolPalette extends Component {
         }
     }
     /**
-     * Add particular palettes to symbol palette at runtime
+     * Add particular palettes to symbol palette at runtime.
      * @param { PaletteModel } palettes - Defines the collection of palettes to be added
      * @blazorArgsType palettes|System.Collections.ObjectModel.ObservableCollection<SymbolPalettePalette>
      */
@@ -52407,8 +52602,8 @@ class SymbolPalette extends Component {
         }
     }
     /**
-     * Add particular palettes to symbol palette at runtime
-     * @param { PaletteModel } palettes - Defines the collection of palettes to be added
+     * Remove particular palettes to symbol palette at runtime
+     * @param {string[]} palettes - Defines the collection of palettes to be remove
      * @blazorArgsType palettes|string[]
      */
     removePalettes(palettes) {
@@ -52629,6 +52824,11 @@ class SymbolPalette extends Component {
             let getSymbolInfo = getFunction(this.getSymbolInfo);
             if (getSymbolInfo) {
                 symbolInfo = getSymbolInfo(symbol);
+            }
+            else if (isBlazor()) {
+                symbolInfo.fit = this.symbolInfo.fit;
+                symbolInfo.width = this.symbolInfo.width;
+                symbolInfo.height = this.symbolInfo.height;
             }
             symbolInfo = symbolInfo || this.symbolInfo || {};
             if (symbol.shape && symbol.shape.isPhase) {
@@ -53440,7 +53640,7 @@ __decorate$25([
     Property()
 ], SymbolPalette.prototype, "getSymbolInfo", void 0);
 __decorate$25([
-    Property()
+    Property({ fit: true })
 ], SymbolPalette.prototype, "symbolInfo", void 0);
 __decorate$25([
     Property()

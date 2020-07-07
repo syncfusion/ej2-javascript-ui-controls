@@ -44,8 +44,8 @@ export class Toolbar {
                 this.parent.element.appendChild(this.element);
             }
             let preItems: ToolbarItem[] = ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll',
-            'PrevTimeSpan', 'NextTimeSpan', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'ExcelExport', 'CsvExport',
-            'PdfExport', 'Indent', 'Outdent'];
+                'PrevTimeSpan', 'NextTimeSpan', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'ExcelExport', 'CsvExport',
+                'PdfExport', 'Indent', 'Outdent'];
             for (let item of preItems) {
                 let itemStr: string = item.toLowerCase();
                 let localeName: string = item[0].toLowerCase() + item.slice(1);
@@ -118,6 +118,12 @@ export class Toolbar {
             if (this.parent.searchSettings) {
                 this.updateSearchTextBox();
             }
+        }
+        if (this.parent.readOnly) {
+            this.enableItems(
+                [this.parent.element.id + '_add', this.parent.element.id + '_update', this.parent.element.id + '_delete'
+                    , this.parent.element.id + '_cancel', this.parent.element.id + '_indent', this.parent.element.id + '_outdent'],
+                false);
         }
     }
     private getSearchBarElement(): HTMLElement {
@@ -346,26 +352,26 @@ export class Toolbar {
         let edit: EditSettingsModel = gObj.editSettings;
         let gID: string = this.id;
         let ind: number = gObj.selectedRowIndex;
-        let previousGanttRecord : IGanttData;
+        let previousGanttRecord: IGanttData;
         let isSelected: boolean = gObj.selectionModule ? gObj.selectionModule.selectedRowIndexes.length === 1 ||
             gObj.selectionModule.getSelectedRowCellIndexes().length === 1 ? true : false : false;
         let toolbarItems: ItemModel[] = this.toolbar ? this.toolbar.items : [];
         let toolbarDefaultItems: string[] = [gID + '_add', gID + '_edit', gID + '_delete',
         gID + '_update', gID + '_cancel', gID + '_indent', gID + '_outdent'];
         let isResouceParent: boolean = ((this.parent.viewType === 'ResourceView' && getValue('data.level', args) !== 0
-          || this.parent.viewType === 'ProjectView'));
+            || this.parent.viewType === 'ProjectView'));
         if (!isNullOrUndefined(this.parent.editModule)) {
             let touchEdit: boolean = gObj.editModule.taskbarEditModule ?
                 gObj.editModule.taskbarEditModule.touchEdit : false;
             let hasData: number = gObj.currentViewData && gObj.currentViewData.length;
-            edit.allowAdding && isResouceParent && !touchEdit ? enableItems.push(gID + '_add') : disableItems.push(gID + '_add');
+            edit.allowAdding && !touchEdit ? enableItems.push(gID + '_add') : disableItems.push(gID + '_add');
             edit.allowEditing && isResouceParent && hasData && isSelected && !touchEdit ?
                 enableItems.push(gID + '_edit') : disableItems.push(gID + '_edit');
             if (!edit.allowEditing || ind === 0 || ind === -1 || !hasData || !isSelected || this.parent.viewType === 'ResourceView') {
                 disableItems.push(gID + '_indent');
                 disableItems.push(gID + '_outdent');
             } else {
-                if (gObj.currentViewData[ind].level === 0 && hasData && !touchEdit ) {
+                if (gObj.currentViewData[ind].level === 0 && hasData && !touchEdit) {
                     enableItems.push(gID + '_indent');
                     disableItems.push(gID + '_outdent');
                 } else {

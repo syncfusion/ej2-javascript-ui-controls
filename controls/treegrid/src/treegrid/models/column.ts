@@ -572,18 +572,18 @@ export interface ColumnModel {
   displayAsCheckBox?: boolean;
 
   /**
-   * If `showInColumnChooser` set to false, then hide the particular column in column chooser.
-   *  By default all columns are displayed in column Chooser.
-   * @default true
-   */
-  showInColumnChooser?: boolean;
-
-  /**
    * Defines the method which is used to achieve custom formatting from an external function.
    * This function triggers before rendering of each cell.
    * @default null
    */
   formatter?: { new(): ITreeGridCellFormatter } | ITreeGridCellFormatter | Function;
+
+  /**
+   * If `showInColumnChooser` set to false, then hide the particular column in column chooser.
+   *  By default all columns are displayed in column Chooser.
+   * @default true
+   */
+  showInColumnChooser?: boolean;
 
   /**
    * Defines the method used to apply custom cell values from external function and display this on each cell rendered.

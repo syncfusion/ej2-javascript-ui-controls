@@ -588,7 +588,8 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         this.valueWrap.classList.remove(classes.LOAD);
     }
     private renderValue(val: string): void {
-        this.enableHtmlSanitizer && this.type !== 'RTE' ? this.valueEle.innerText = val : this.valueEle.innerHTML = val;
+        this.enableHtmlSanitizer && this.type !== 'RTE' && this.type !== 'MultiSelect' ? this.valueEle.innerText = val :
+            this.valueEle.innerHTML = val;
         if (this.type === 'Color') { setStyleAttribute(this.valueEle, { 'color': val }); }
         if (this.mode === 'Inline') {
             removeClass([this.valueWrap], [classes.HIDE]);
@@ -947,7 +948,9 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         if (!isBlazorDestroy) { this.setProperties({ enableEditMode: false }, true); }
         if (this.editableOn !== 'EditIconClick') {
             let titleConstant: string = (this.editableOn === 'DblClick') ? 'editAreaDoubleClick' : 'editAreaClick';
-            this.valueWrap.parentElement.setAttribute('title', this.getLocale(localeConstant[this.editableOn], titleConstant));
+            if (!isNOU(this.valueWrap.parentElement)) {
+                this.valueWrap.parentElement.setAttribute('title', this.getLocale(localeConstant[this.editableOn], titleConstant));
+            }
         }
     }
     private destroyComponents(): void {
@@ -1425,7 +1428,6 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
      * @returns void
      */
     public destroy(): void {
-        if (this.isDestroyed) { return; }
         this.removeEditor(isBlazor());
         if (this.isExtModule) {
             this.notify(events.destroy, {});
@@ -1438,11 +1440,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         while (this.element.firstElementChild) {
             this.element.removeChild(this.element.firstElementChild);
         }
-        if (!(isBlazor() && this.isServerRendered)) {
-            super.destroy();
-        } else {
-            this.isDestroyed = true;
-        }
+        if (!(isBlazor() && this.isServerRendered)) { super.destroy(); }
     }
     /**
      * Get the properties to be maintained in the persisted state.

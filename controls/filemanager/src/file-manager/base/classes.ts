@@ -58,6 +58,8 @@ export const ROOT_POPUP: string = 'e-fe-popup';
 /** @hidden */
 export const MOBILE: string = 'e-fe-mobile';
 /** @hidden */
+export const MOB_POPUP: string = 'e-fe-popup e-fe-mobile';
+/** @hidden */
 export const MULTI_SELECT: string = 'e-fe-m-select';
 /** @hidden */
 export const FILTER: string = 'e-fe-m-filter';

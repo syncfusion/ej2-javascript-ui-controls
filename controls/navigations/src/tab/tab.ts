@@ -506,14 +506,8 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     public refresh(): void {
         if (!this.isServerRendered) {
             super.refresh();
-        } else if (this.isServerRendered) {
-            if (this.tbObj) {
-                this.tbObj.refreshOverflow();
-                this.refreshActiveBorder();
-            }
-            if (this.loadOn !== 'Dynamic') {
-                this.setActiveBorder();
-            }
+        } else if (this.isServerRendered && this.loadOn !== 'Dynamic') {
+            this.setActiveBorder();
         }
     }
 
@@ -1416,6 +1410,9 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     }
     private swipeHandler(e: SwipeEventArgs): void {
         if (e.velocity < 3 && isNOU(e.originalEvent.changedTouches)) { return; }
+        if (e.originalEvent) {
+            e.originalEvent.stopPropagation();
+        }
         this.isSwipeed = true;
         if (e.swipeDirection === 'Right' && this.selectedItem !== 0) {
             for (let k: number = this.selectedItem - 1; k >= 0; k--) {

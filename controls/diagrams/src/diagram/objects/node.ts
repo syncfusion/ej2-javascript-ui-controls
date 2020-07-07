@@ -2160,7 +2160,7 @@ export class Node extends NodeBase implements IElement {
     /**
      * Sets or gets the UI of a node
      * @default null
-     * @@deprecated
+     * @deprecated
      */
     @Property(null)
     public wrapper: Container;
@@ -2256,7 +2256,6 @@ export class Node extends NodeBase implements IElement {
      * Used to define the column for the grid container
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
-     * @deprecated
      * @default undefined
      */
 
@@ -3073,7 +3072,6 @@ export class Selector extends ChildProperty<Selector> implements IElement {
     /**
      * Defines the size and position of the container
      * @default null
-     * @deprecated
      */
     @Property(null)
     public wrapper: Container;

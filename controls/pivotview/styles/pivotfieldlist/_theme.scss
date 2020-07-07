@@ -1114,6 +1114,12 @@
                   color: $field-list-tree-icon-color;
                 }
 
+                .e-calcfieldmember .e-list-text {
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                  width: 53%;
+                }
+
                 .e-list-header-icon {
                   display: table;
                   height: 30px;
@@ -1124,9 +1130,11 @@
                   right: 16px;
                   top: 0;
 
-                  .e-list-edit-icon {
+                  .e-list-edit-icon,
+                  .e-remove-report.e-icons {
                     color: $field-list-tree-icon-color;
                     display: table-cell;
+                    padding: 5px;
                     pointer-events: all;
                     text-align: center;
                     vertical-align: middle;

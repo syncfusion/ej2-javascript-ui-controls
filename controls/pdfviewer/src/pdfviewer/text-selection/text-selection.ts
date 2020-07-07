@@ -133,7 +133,7 @@ export class TextSelection {
                 currentPosition += 1;
             }
             // tslint:disable-next-line:max-line-length
-            if (this.pdfViewer.enableTextMarkupResizer && this.pdfViewer.annotationModule && this.pdfViewer.annotation.textMarkupAnnotationModule) {
+            if (this.pdfViewer.annotationModule.textMarkupAnnotationModule.isEnableTextMarkupResizer(this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAddMode)  && this.pdfViewer.annotationModule && this.pdfViewer.annotation.textMarkupAnnotationModule) {
                 // tslint:disable-next-line
                 let leftDivElement: any = document.getElementById(this.pdfViewer.element.id + '_droplet_left');
                 if (this.pdfViewerBase.isSelection && selection && selection.rangeCount > 0) {
@@ -499,7 +499,7 @@ export class TextSelection {
             this.selectionStartPage = parseInt(range.startContainer.parentElement.id.split('_text_')[1]);
             selection.addRange(range);
             this.isTextSelection = true;
-            if (selection != null && this.pdfViewer.contextMenuOption === 'MouseUp') {
+            if (selection != null && this.pdfViewer.contextMenuSettings.contextMenuAction === 'MouseUp') {
                 this.calculateContextMenuPosition(event.clientY, event.clientY);
             }
         }
@@ -621,7 +621,7 @@ export class TextSelection {
             if (this.pdfViewer.linkAnnotationModule) {
                 this.pdfViewer.linkAnnotationModule.modifyZindexForTextSelection(this.pdfViewerBase.currentPageNumber - 1, false);
             }
-            if (this.isTextSearched && this.pdfViewer.contextMenuOption === 'MouseUp') {
+            if (this.isTextSearched && this.pdfViewer.contextMenuSettings.contextMenuAction === 'MouseUp') {
                 this.calculateContextMenuPosition(event.clientY, event.clientX);
                 this.isTextSearched = false;
             }
@@ -1759,7 +1759,7 @@ export class TextSelection {
                 top = contextTop;
             }
         }
-        if (this.pdfViewer.contextMenuOption === 'MouseUp') {
+        if (this.pdfViewer.contextMenuSettings.contextMenuAction === 'MouseUp') {
             left = left - 50;
         }
         // tslint:disable-next-line:max-line-length

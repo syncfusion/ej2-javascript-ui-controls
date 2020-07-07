@@ -35,7 +35,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     private emptyString: string = '';
     private leftBrace: string = '{';
     private rightBrace: string = '}';
-    private cell: string = this.emptyString;
+    public cell: string = this.emptyString;
     private cellPrefix: string = '!0!A';
     private treatEmptyStringAsZero: boolean = false;
     /** @hidden */

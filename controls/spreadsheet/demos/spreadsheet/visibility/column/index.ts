@@ -1,7 +1,7 @@
 /**
  * Spreadsheet show/hide column sample
  */
-import { Spreadsheet, SheetModel, ColumnModel } from './../../../../src/index';
+import { Spreadsheet, SheetModel, ColumnModel, RowModel, RangeModel, SpreadsheetModel } from './../../../../src/index';
 import { enableRipple } from '@syncfusion/ej2-base';
 import { switchTheme } from '../../../common/switch-theme';
 import { defaultData as dataSource } from './../../../common/data-source';
@@ -11,25 +11,27 @@ enableRipple(true);
 
 document.getElementById('wrapper').style.height = `${document.documentElement.clientHeight - 70}px`;
 
-// Hiding the 1st and 2nd column index through property binding
-let columns: ColumnModel[] = [{ width: 150 }, { width: 100, hidden: true }, { width: 100, hidden: true }, { width: 80 }, { width: 80 },
-    { width: 80 }, { width: 80 }, { width: 80 }];
+let columns: ColumnModel[] = [{ hidden: true }, { width: 130 }, { hidden: true, width: 92 }, { width: 96, hidden: true },
+    { index: 5, hidden: true }, { index: 7, hidden: true }];
 
-let sheets: SheetModel[] = [{ ranges: [{ dataSource: dataSource }], columns: columns }];
+let rows: RowModel[] = [{ hidden: true }];
 
-let spreadsheet: Spreadsheet = new Spreadsheet({
-    sheets: sheets,
-    created: (): void => {
-        spreadsheet.cellFormat({ fontWeight: 'bold', textAlign: 'center' }, 'A1:H1');
-        // Unhide the 2nd index hidden column
-        spreadsheet.hideColumn(1, 1, false);
-        // Hiding the 6th index column
-        spreadsheet.hideColumn(6);
-        spreadsheet.cellFormat({ textAlign: 'center' }, 'D2:H11');
-    },
+let rangeSettings: RangeModel[] = [{ dataSource: dataSource, startCell: 'B2' }];
+
+let sheet: SheetModel[] = [{ name: 'Price Details', columns: columns, selectedRange: 'B2', rows: rows, ranges: rangeSettings }];
+
+let spreadsheetModel: SpreadsheetModel = {
+    sheets: sheet,
     openUrl: 'https://ej2services.syncfusion.com/production/web-services/api/spreadsheet/open',
-    saveUrl: 'https://ej2services.syncfusion.com/production/web-services/api/spreadsheet/save'
-});
+    saveUrl: 'https://ej2services.syncfusion.com/production/web-services/api/spreadsheet/save',
+    beforeDataBound: (): void => {
+        if (spreadsheet.sheets[spreadsheet.activeSheetIndex].name === 'Price Details') {
+            spreadsheet.cellFormat({ fontWeight: 'bold', textAlign: 'center' }, 'B2:I2');
+        }
+    }
+};
+
+let spreadsheet: Spreadsheet = new Spreadsheet(spreadsheetModel);
 
 spreadsheet.appendTo('#spreadsheet');
 

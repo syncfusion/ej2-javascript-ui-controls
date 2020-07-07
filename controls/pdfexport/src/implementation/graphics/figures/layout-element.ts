@@ -6,6 +6,7 @@ import { RectangleF, PointF } from './../../drawing/pdf-drawing';
 import { PdfLayoutParams, PdfLayoutFormat, PdfLayoutResult } from './base/element-layouter';
 import { PdfBorders} from './../../structured-elements/grid/styles/pdf-borders';
 import { PdfGridBeginPageLayoutEventArgs, PdfGridEndPageLayoutEventArgs } from './../../structured-elements/grid/layout/grid-layouter';
+import { BeginPageLayoutEventArgs, EndPageLayoutEventArgs } from './../../structured-elements/grid/layout/grid-layouter';
 /**
  * `PdfLayoutElement` class represents the base class for all elements that can be layout on the pages.
  * @private
@@ -37,12 +38,12 @@ export abstract class PdfLayoutElement {
         return (typeof this.endPageLayout !== 'undefined');
     }
     //Event Handlers
-    public onBeginPageLayout(args : PdfGridBeginPageLayoutEventArgs ): void {
+    public onBeginPageLayout(args : PdfGridBeginPageLayoutEventArgs | BeginPageLayoutEventArgs): void {
         if (this.beginPageLayout) {
             this.beginPageLayout(this, args);
         }
     }
-    public onEndPageLayout(args : PdfGridEndPageLayoutEventArgs ): void {
+    public onEndPageLayout(args : PdfGridEndPageLayoutEventArgs | EndPageLayoutEventArgs): void {
         if (this.endPageLayout) {
             this.endPageLayout(this, args);
         }

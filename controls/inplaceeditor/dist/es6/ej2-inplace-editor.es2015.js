@@ -361,7 +361,8 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         this.valueWrap.classList.remove(LOAD);
     }
     renderValue(val) {
-        this.enableHtmlSanitizer && this.type !== 'RTE' ? this.valueEle.innerText = val : this.valueEle.innerHTML = val;
+        this.enableHtmlSanitizer && this.type !== 'RTE' && this.type !== 'MultiSelect' ? this.valueEle.innerText = val :
+            this.valueEle.innerHTML = val;
         if (this.type === 'Color') {
             setStyleAttribute(this.valueEle, { 'color': val });
         }
@@ -758,7 +759,9 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         }
         if (this.editableOn !== 'EditIconClick') {
             let titleConstant = (this.editableOn === 'DblClick') ? 'editAreaDoubleClick' : 'editAreaClick';
-            this.valueWrap.parentElement.setAttribute('title', this.getLocale(localeConstant[this.editableOn], titleConstant));
+            if (!isNullOrUndefined(this.valueWrap.parentElement)) {
+                this.valueWrap.parentElement.setAttribute('title', this.getLocale(localeConstant[this.editableOn], titleConstant));
+            }
         }
     }
     destroyComponents() {
@@ -1268,9 +1271,6 @@ let InPlaceEditor = class InPlaceEditor extends Component {
      * @returns void
      */
     destroy() {
-        if (this.isDestroyed) {
-            return;
-        }
         this.removeEditor(isBlazor());
         if (this.isExtModule) {
             this.notify(destroy, {});
@@ -1285,9 +1285,6 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         }
         if (!(isBlazor() && this.isServerRendered)) {
             super.destroy();
-        }
-        else {
-            this.isDestroyed = true;
         }
     }
     /**

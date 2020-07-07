@@ -4,7 +4,7 @@ import { isNullOrUndefined, L10n, EmitType, Browser } from '@syncfusion/ej2-base
 import { Save } from '@syncfusion/ej2-file-utils';
 // tslint:disable-next-line:max-line-length
 import { DocumentChangeEventArgs, ViewChangeEventArgs, ZoomFactorChangeEventArgs, StyleType, WStyle, BeforePaneSwitchEventArgs, LayoutType, FormFieldFillEventArgs, FormFieldData } from './index';
-import { SelectionChangeEventArgs, RequestNavigateEventArgs, ContentChangeEventArgs, DocumentEditorKeyDownEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs } from './index';
+import { SelectionChangeEventArgs, RequestNavigateEventArgs, ContentChangeEventArgs, DocumentEditorKeyDownEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, CommentDeleteEventArgs } from './index';
 import { LayoutViewer, PageLayoutViewer, WebLayoutViewer, BulletsAndNumberingDialog } from './index';
 import { Print, SearchResultsChangeEventArgs } from './index';
 import { Page, BodyWidget, ParagraphWidget } from './index';
@@ -36,7 +36,9 @@ import { PasteOptions } from './index';
 import { CommentReviewPane, CheckBoxFormFieldDialog, DropDownFormField, TextFormField, CheckBoxFormField, FieldElementBox, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo } from './implementation/index';
 import { TextFormFieldDialog } from './implementation/dialogs/form-field-text-dialog';
 import { DropDownFormFieldDialog } from './implementation/dialogs/form-field-drop-down-dialog';
-import { FormFillingMode } from './base';
+import { FormFillingMode, TrackChangeEventArgs } from './base';
+import { TrackChangesPane } from './implementation/track-changes/track-changes-pane';
+import { RevisionCollection } from './implementation/track-changes/track-changes';
 
 /**
  * The `DocumentEditorSettings` module is used to provide the customize property of Document Editor.
@@ -466,6 +468,12 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     @Property(false)
     public enableComment: boolean;
     /**
+     * Gets or set a value indicating whether track changes is enabled or not
+     * @default false
+     */
+    @Property(false)
+    public enableTrackChanges: boolean;
+    /**
      * Gets or set a value indicating whether form fields is enabled or not.
      * @default false
      */
@@ -526,6 +534,12 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Property(false)
     public showComments: boolean;
+    /**
+     * Shows revision changes in the document.
+     * @default false
+     */
+    @Property(false)
+    public showRevisions: boolean;
 
     /**
      * Triggers whenever document changes in the document editor.
@@ -633,6 +647,20 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     @Event()
     public commentEnd: EmitType<Object>;
     /**
+     * Triggers after inserting comment.
+     * @blazorproperty 'OnCommentDelete'
+     * @event
+     */
+    @Event()
+    public commentDelete: EmitType<CommentDeleteEventArgs>;
+    /**
+     * Triggers when TrackChanges enabled / disabled.
+     * @blazorproperty 'OnTrackChange'
+     * @event
+     */
+    @Event()
+    public trackChange: EmitType<TrackChangeEventArgs>;
+    /**
      * Triggers before form field fill.
      * @event
      */
@@ -661,6 +689,14 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @private
      */
     public commentReviewPane: CommentReviewPane;
+    /**
+     * @private
+     */
+    public trackChangesPane: TrackChangesPane;
+    /**
+     * @private
+     */
+    public revisionsInternal: RevisionCollection;
     /**
      * Gets the total number of pages.
      * @blazorType int
@@ -749,6 +785,15 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     set isDocumentLoaded(value: boolean) {
         this.isDocumentLoadedIn = value;
+    }
+    /**
+     * Gets the revision collection which contains information about changes made from original document
+     */
+    public get revisions(): RevisionCollection {
+        if (isNullOrUndefined(this.revisionsInternal)) {
+            this.revisionsInternal = new RevisionCollection(this);
+        }
+        return this.revisionsInternal;
     }
     /**
      * Determines whether history needs to be enabled or not.
@@ -877,7 +922,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                         this.optionsPaneModule.showHideOptionsPane(false);
                     }
                     if (this.showComments) {
-                        this.commentReviewPane.showHidePane(true);
+                        this.commentReviewPane.showHidePane(true, 'Comments');
                     }
                     break;
                 case 'currentUser':
@@ -910,6 +955,12 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     if (this.viewer && this.showComments) {
                         this.showComments = this.showComments ? this.enableComment : false;
                         this.documentHelper.showComments(model.enableComment);
+                    }
+                    this.viewer.updateScrollBars();
+                    break;
+                case 'showRevisions':
+                    if (this.viewer) {
+                        this.documentHelper.showRevisions(model.showRevisions);
                     }
                     this.viewer.updateScrollBars();
                     break;
@@ -978,11 +1029,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             if (this.tableOfContentsDialogModule) {
                 this.tableOfContentsDialogModule.initTableOfContentDialog(l10n, enableRtl);
             }
-            if (this.commentReviewPane && this.commentReviewPane.reviewPane) {
+            if (this.commentReviewPane && this.commentReviewPane.parentPaneElement) {
                 if (this.enableRtl) {
-                    classList(this.commentReviewPane.reviewPane, ['e-rtl'], []);
+                    classList(this.commentReviewPane.parentPaneElement, ['e-rtl'], []);
                 } else {
-                    classList(this.commentReviewPane.reviewPane, [], ['e-rtl']);
+                    classList(this.commentReviewPane.parentPaneElement, [], ['e-rtl']);
                 }
             }
         }
@@ -1649,6 +1700,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Your permissions': 'Your permissions',
         // tslint:disable-next-line:max-line-length
         'Protected Document': 'This document is protected from unintentional editing.You may edit in this region.',
+        'FormFieldsOnly': 'This document is protected from unintentional editing. You may only fill in forms in this region.',
         'You may format text only with certain styles': 'You may format text only with certain styles.',
         'Stop Protection': 'Stop Protection',
         'Password': 'Password',
@@ -1716,7 +1768,25 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Fillin enabled': 'Fill-in enabled',
         'Default number': 'Default number',
         'Default date': 'Default date',
-        'Date format': 'Date format'
+        'Date format': 'Date format',
+        'Merge Track': 'This action wont be marked as change. Do you want to continue?',
+        'UnTrack': 'Cannot be tracked !',
+        'Accept': 'Accept',
+        'Reject': 'Reject',
+        'Previous Changes': 'Previous Changes',
+        'Next Changes': 'Next Changes',
+        'Inserted': 'Inserted',
+        'Deleted': 'Deleted',
+        'Changes': 'Changes',
+        'Accept all': 'Accept all',
+        'Reject all': 'Reject all',
+        'No changes': 'No changes',
+        'Accept Changes': 'Accept Changes',
+        'Reject Changes': 'Reject Changes',
+        'User': 'User',
+        'View': 'View',
+        'Insertion': 'Insertion',
+        'Deletion': 'Deletion'
     };
     // Public Implementation Starts
     /**
@@ -1732,6 +1802,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             this.documentHelper.abstractLists = [];
             this.documentHelper.styles = new WStyles();
             this.documentHelper.cachedPages = [];
+            this.showRevisions = false;
             if (this.isSpellCheck && !this.spellChecker.enableOptimizedSpellCheck) {
                 this.documentHelper.triggerElementsOnLoading = true;
                 this.documentHelper.triggerSpellCheck = true;
@@ -2186,6 +2257,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         if (this.commentReviewPane) {
             this.commentReviewPane.destroy();
             this.commentReviewPane = undefined;
+        }
+        if (this.trackChangesPane) {
+            this.trackChangesPane.destroy();
+            this.trackChangesPane = undefined;
         }
         if (!isNullOrUndefined(this.hyperlinkDialogModule)) {
             this.hyperlinkDialogModule.destroy();

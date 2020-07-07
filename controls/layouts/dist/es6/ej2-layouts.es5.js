@@ -1,4 +1,4 @@
-import { Browser, ChildProperty, Collection, Component, Draggable, Event, EventHandler, NotifyPropertyChanges, Property, SanitizeHtmlHelper, addClass, append, closest, compile, detach, extend, formatUnit, isBlazor, isNullOrUndefined, isUndefined, removeClass, select, selectAll, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Collection, Component, Draggable, Event, EventHandler, NotifyPropertyChanges, Property, SanitizeHtmlHelper, addClass, append, closest, compile, detach, extend, formatUnit, getValue, isBlazor, isNullOrUndefined, isUndefined, removeClass, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2291,6 +2291,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         _this.isBlazor = false;
         _this.isInlineRendering = false;
         _this.removeAllCalled = false;
+        setValue('mergePersistData', _this.mergePersistPanelData, _this);
         return _this;
     }
     /**
@@ -4941,6 +4942,39 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
     DashboardLayout.prototype.getPersistData = function () {
         var keyEntity = ['panels'];
         return this.addOnPersist(keyEntity);
+    };
+    /* istanbul ignore next */
+    DashboardLayout.prototype.mergePersistPanelData = function (persistedData) {
+        var data = window.localStorage.getItem(this.getModuleName() + this.element.id);
+        if (!(isNullOrUndefined(data) || (data === '')) || !isNullOrUndefined(persistedData)) {
+            var dataObj = !isNullOrUndefined(persistedData) ? persistedData : JSON.parse(data);
+            var keys = Object.keys(dataObj);
+            this.isProtectedOnChange = true;
+            for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
+                var key = keys_1[_i];
+                if ((typeof getValue(key, this) === 'object' && !isNullOrUndefined(getValue(key, this)))) {
+                    if (Array.isArray(getValue(key, this)) && key === 'panels') {
+                        this.mergePanels(dataObj[key], this[key]);
+                    }
+                }
+            }
+            this.isProtectedOnChange = false;
+        }
+    };
+    /* istanbul ignore next */
+    DashboardLayout.prototype.mergePanels = function (sortedPanels, panels) {
+        var storedColumns = sortedPanels;
+        var _loop_6 = function (i) {
+            this_4.checkForIDValues(panels);
+            var localPanel = panels.filter(function (pan) { return pan.id === storedColumns[i].id; })[0];
+            if (!isNullOrUndefined(localPanel)) {
+                storedColumns[i] = extend(localPanel, storedColumns[i], {}, true);
+            }
+        };
+        var this_4 = this;
+        for (var i = 0; i < storedColumns.length; i++) {
+            _loop_6(i);
+        }
     };
     /**
      * Returns the current module name.

@@ -6,7 +6,6 @@ export class EventMarker extends ChildProperty<EventMarker> {
     /**
      * Defines day of event marker.
      * @default null     
-     * @blazorType Date
      */
     @Property(null)
     public day: Date | string;

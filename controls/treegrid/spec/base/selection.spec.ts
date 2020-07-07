@@ -701,18 +701,7 @@ describe('Selection module', () => {
     });
   });
 
-  it('memory leak', () => {
-    profile.sample();
-    let average: any = inMB(profile.averageChange)
-    //Check average change in memory samples to not be over 10MB
-    expect(average).toBeLessThan(10);
-    let memory: any = inMB(getMemoryProfile())
-    //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-    expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-  });
-});
-
-describe('TreeGrid enabletoggle', () => {
+  describe('TreeGrid enabletoggle', () => {
     let gridObj: TreeGrid;
     beforeAll((done: Function) => {
       gridObj = createGrid(
@@ -744,55 +733,13 @@ describe('TreeGrid enabletoggle', () => {
   });
 
 
-describe('Expand collapse not to select rows', () => {
-  let gridObj: TreeGrid;
-  let rowSelected: () => void;
-  let rowDeselected: () => void;
-  beforeAll((done: Function) => {
-    rowSelected = (args?: RowSelectEventArgs): void => {
-      if (args.rowIndex === 0 && args.isInteracted) {
-        expect(gridObj.getSelectedRowIndexes().length).toBe(1);
-      }
-      done();
-    };
-    rowDeselected = (args?: RowDeselectEventArgs): void => {
-      expect(args.rowIndex === 0).toBe(true);
-      expect(gridObj.getSelectedRowIndexes().length).toBe(0);
-      done();
-    };
-    gridObj = createGrid(
-      {
-        dataSource: sampleData,
-        childMapping: 'subtasks',
-        allowPaging: true,
-        rowSelected: rowSelected,
-        rowDeselected: rowDeselected,
-        selectionSettings: { persistSelection: true },
-        treeColumnIndex: 2,
-        columns: [
-          { type: 'checkbox', width: 80 },
-          { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, width: 120 },
-          { field: 'taskName', headerText: 'Task Name', width: 150 },
-          { field: 'duration', headerText: 'Duration', width: 150 },
-          { field: 'progress', headerText: 'Progress', width: 150 }
-        ],
-      },
-      done
-    );
-  });
-
-  it('Collapsed row not to deselect the selected row', (done: Function) => {
-    (<HTMLElement>gridObj.getRows()[0].querySelectorAll('.e-checkselect')[0]).click();
-    (<HTMLElement>gridObj.getRows()[0].querySelectorAll('.e-treegridexpand')[0]).click();
-    done();
-  });
-  it('Expanded row not to select the deselected row', (done: Function) => {
-    expect(gridObj.getSelectedRows().length === 1).toBe(true);
-    (<HTMLElement>gridObj.getRows()[0].querySelectorAll('.e-checkselect')[0]).click();
-    (<HTMLElement>gridObj.getRows()[0].querySelectorAll('.e-treegridcollapse')[0]).click();
-    done();
-  });
-  afterAll(() => {
-    destroy(gridObj);
+  it('memory leak', () => {
+    profile.sample();
+    let average: any = inMB(profile.averageChange)
+    //Check average change in memory samples to not be over 10MB
+    expect(average).toBeLessThan(10);
+    let memory: any = inMB(getMemoryProfile())
+    //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+    expect(memory).toBeLessThan(profile.samples[0] + 0.25);
   });
 });

@@ -1494,6 +1494,6 @@ let formFieldData: any = {
         let formFieldData: TextFormField = new TextFormField();
         fieldElement.formFieldData = formFieldData;
         expect((fieldElement.formFieldData as DropDownFormField).selectedIndex).toBe(undefined);
-        expect((fieldElement.formFieldData as DropDownFormField).dropDownItems).toString;
+        expect((fieldElement.formFieldData as DropDownFormField).dropdownItems).toString;
     });
 });

@@ -66,6 +66,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private onBlurHandler: EventListenerOrEventListenerObject;
     private onResizeHandler: EventListenerOrEventListenerObject;
     private timeInterval: number;
+    private idleInterval: number;
     private touchModule: EJ2Touch;
     private defaultResetValue: string = null;
     /**
@@ -390,6 +391,15 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Property(null)
     public placeholder: string;
+
+    /**
+     * Enables or disables the auto-save option which performs the save action while in the idle state after typed content.
+     * If enabled, the Rich Text Editor will save the content on idle state with `saveInterval` property's value.
+     * The change event will be triggered if the content has changed from the last saved state.
+     * @default false.
+     */
+    @Property(false)
+    public autoSaveOnIdle: boolean;
 
     /**
      * The user interactions on the component are disabled, when set to true.
@@ -1135,8 +1145,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             this.formatter.enableUndo(this);
         }
         this.setPlaceHolder();
+        this.notify(events.contentChanged, {});
     }
-
     private htmlPurifier(
         command: CommandName, value?: string | HTMLElement | ILinkCommandsArgs |
             IImageCommandsArgs | ITableCommandsArgs): string {
@@ -1637,6 +1647,27 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     /**
+     * It shows the inline quick toolbar 
+     */
+    public showInlineToolbar(): void {
+        if (this.inlineMode.enable) {
+            let currentRange: Range = this.getRange();
+            let targetElm: HTMLElement = currentRange.endContainer.nodeName === '#text' ?
+            currentRange.endContainer.parentElement : currentRange.endContainer as HTMLElement;
+            let x: number = currentRange.getClientRects()[0].left;
+            let y: number = currentRange.getClientRects()[0].top;
+            this.quickToolbarModule.showInlineQTBar(x, y, (targetElm as HTMLElement));
+        }
+    }
+
+    /**
+     * It hides the inline quick toolbar 
+     */
+    public hideInlineToolbar(): void {
+        this.quickToolbarModule.hideInlineQTBar();
+    }
+
+    /**
      * For internal use only - Get the module name.
      * @private
      * @deprecated
@@ -1771,7 +1802,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private updatePanelValue(): void {
         let value: string = this.value;
         value = (this.enableHtmlEncode && this.value) ? decode(value) : value;
+        let getTextArea: HTMLInputElement = this.element.querySelector('.e-rte-srctextarea') ;
         if (value) {
+            if (getTextArea && getTextArea.style.display === 'block') {
+                getTextArea.value = this.value;
+            }
             if (this.valueContainer) {
                 this.valueContainer.value = (this.enableHtmlEncode) ? this.value : value;
             }
@@ -1782,6 +1817,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 (this.inputElement as HTMLTextAreaElement).value = value;
             }
         } else {
+            if (getTextArea && getTextArea.style.display === 'block') {
+                getTextArea.value = '';
+            }
             if (this.editorMode === 'HTML') {
                 this.inputElement.innerHTML = '<p><br/></p>';
             } else {
@@ -2259,8 +2297,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             }
             this.preventDefaultResize(e);
             this.trigger('focus', { event: e, isInteracted: Object.keys(e).length === 0 ? false : true });
-            if (!isNOU(this.saveInterval) && this.saveInterval > 0) {
-                this.timeInterval = setInterval(this.updateIntervalValue.bind(this), this.saveInterval);
+            if (!isNOU(this.saveInterval) && this.saveInterval > 0 && !this.autoSaveOnIdle) {
+                this.timeInterval = setInterval(this.updateValueOnIdle.bind(this), this.saveInterval);
             }
             EventHandler.add(document, 'mousedown', this.onDocumentClick, this);
         }
@@ -2289,10 +2327,14 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         return value;
     }
 
-    private updateIntervalValue(): void {
+    private updateValueOnIdle(): void {
         this.setProperties({ value: this.getUpdatedValue() }, true);
         this.valueContainer.value = this.value;
         this.invokeChangeEvent();
+    }
+    private updateIntervalValue(): void {
+        clearTimeout(this.idleInterval);
+        this.idleInterval = setTimeout(this.updateValueOnIdle.bind(this), 0);
     }
 
     private onDocumentClick(e: MouseEvent): void {
@@ -2339,6 +2381,20 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             EventHandler.remove(document, 'mousedown', this.onDocumentClick);
         } else {
             this.isRTE = true;
+        }
+    }
+
+    /**
+     * invokeChangeEvent method
+     * @hidden
+     * @deprecated
+     */
+    private contentChanged(): void {
+        if (this.autoSaveOnIdle) {
+            if (!isNOU(this.saveInterval)) {
+                clearTimeout(this.timeInterval);
+                this.timeInterval = setTimeout(this.updateIntervalValue.bind(this), this.saveInterval);
+            }
         }
     }
 
@@ -2443,6 +2499,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private wireEvents(): void {
         this.element.addEventListener('focusin', this.onFocusHandler, true);
         this.element.addEventListener('focusout', this.onBlurHandler, true);
+        this.on(events.contentChanged, this.contentChanged, this);
         if (this.readonly && this.enabled) { return; }
         this.bindEvents();
     }
@@ -2519,6 +2576,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private unWireEvents(): void {
         this.element.removeEventListener('focusin', this.onFocusHandler, true);
         this.element.removeEventListener('focusout', this.onBlurHandler, true);
+        this.off(events.contentChanged, this.contentChanged);
         if (this.readonly && this.enabled) { return; }
         this.unbindEvents();
     }

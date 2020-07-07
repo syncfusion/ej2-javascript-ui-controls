@@ -2,13 +2,7 @@
 
 ## [Unreleased]
 
-### Excel Export
-
-#### Bug Fixes
-
-- Fixed currency format thousand separator missing issue.
-
-## 18.1.36-beta (2020-03-19)
+## 18.2.44 (2020-07-07)
 
 ### Excel Export
 
@@ -19,6 +13,8 @@
 - Date issue is fixed for CSV export.
 
 - File corruption issue is fixed in Grid to Excel export.
+
+- Fixed currency format thousand separator missing issue.
 
 ## 17.2.48-beta (2019-08-28)
 

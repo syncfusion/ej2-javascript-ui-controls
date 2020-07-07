@@ -4113,4 +4113,29 @@ describe('Datepicker', () => {
             expect(datePicker.value).toBe(null);
         });
     });
+    describe('popup open while focus the component',function(){
+        let datePicker:any;
+        let keyEventArgs:any={
+            action:'tab'
+        };
+        beforeEach(function(){
+            let element: HTMLElement = createElement('input',{id:'date'});
+            document.body.appendChild(element);
+        });
+        afterEach(function(){
+            if(datePicker){
+                datePicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('check the popup open',function(){
+            datePicker = new DatePicker({
+                openOnFocus:true
+            });
+            datePicker.appendTo('#date');
+            keyEventArgs.action = 'tab';
+            datePicker.inputKeyActionHandle(keyEventArgs);
+            expect((datePicker.popupObj) !== null).toBe(true);
+        });
+    });
 });

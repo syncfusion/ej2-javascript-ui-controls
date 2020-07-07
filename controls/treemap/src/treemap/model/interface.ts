@@ -44,6 +44,10 @@ export interface ILoadedEventArgs extends ITreeMapEventArgs {
      * @deprecated
      */
     treemap?: TreeMap;
+
+    /** Defines isResized argument.
+     */
+    isResized: boolean;
 }
 
 /**

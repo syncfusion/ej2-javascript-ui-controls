@@ -54,6 +54,7 @@ export interface MenuModel extends MenuBaseModel{
      * @default { itemId: "id", text: "text", parentId: "parentId", iconCss: "iconCss", url: "url", separator: "separator",
      * children: "items" }
      */
+	// tslint:disable-next-line
     fields?: FieldSettingsModel;
 
 }

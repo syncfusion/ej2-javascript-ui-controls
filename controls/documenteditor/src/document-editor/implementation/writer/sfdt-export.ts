@@ -19,6 +19,8 @@ import { StreamWriter } from '@syncfusion/ej2-file-utils';
 import { TextPosition } from '../selection';
 import { DocumentHelper } from '../viewer';
 import { WLevelOverride } from '../list';
+import {DocumentEditor} from '../../document-editor';
+import {Revision} from '../track-changes/track-changes';
 /**
  * Exports the document to Sfdt format.
  */
@@ -33,6 +35,9 @@ export class SfdtExport {
     private document: any = undefined;
     private writeInlineStyles: boolean = undefined;
     private editRangeId: number = -1;
+    /**
+     * @private
+     */
     private isExport: boolean = true;
     private documentHelper: DocumentHelper;
     private checkboxOrDropdown: boolean = false;
@@ -44,6 +49,9 @@ export class SfdtExport {
     }
     get viewer(): LayoutViewer {
         return this.documentHelper.owner.viewer;
+    }
+    get owner(): DocumentEditor{
+        return this.documentHelper.owner;
     }
     private getModuleName(): string {
         return 'SfdtExport';
@@ -181,6 +189,7 @@ export class SfdtExport {
         this.writeStyles(this.documentHelper);
         this.writeLists(this.documentHelper);
         this.writeComments(this.documentHelper);
+        this.writeRevisions(this.documentHelper);
         let doc: Document = this.document;
         this.clear();
         return doc;
@@ -195,6 +204,7 @@ export class SfdtExport {
         this.document.characterFormat = this.writeCharacterFormat(this.documentHelper.characterFormat);
         this.document.paragraphFormat = this.writeParagraphFormat(this.documentHelper.paragraphFormat);
         this.document.defaultTabWidth = this.documentHelper.defaultTabWidth;
+        this.document.trackChanges = this.owner.enableTrackChanges;
         this.document.enforcement = this.documentHelper.isDocumentProtected;
         this.document.hashValue = this.documentHelper.hashValue;
         this.document.saltValue = this.documentHelper.saltValue;
@@ -331,6 +341,11 @@ export class SfdtExport {
             if (element instanceof ListTextElementBox) {
                 continue;
             }
+            if (element.removedIds.length > 0) {
+                for (let i: number = 0 ; i < element.removedIds.length; i++) {
+                    element.revisions[i] = this.documentHelper.revisionsInternal.get(element.removedIds[i]);
+                }
+            }
             let inline: any = this.writeInline(element);
             if (!isNullOrUndefined(inline)) {
                 inlines.push(inline);
@@ -341,6 +356,7 @@ export class SfdtExport {
             }
         }
     }
+    /* tslint:disable:max-func-body-length */
     private writeInline(element: ElementBox): any {
         let inline: any = {};
         inline.characterFormat = this.writeCharacterFormat(element.characterFormat);
@@ -370,7 +386,7 @@ export class SfdtExport {
                     } else {
                         inline.formFieldData.dropDownList = {};
                         this.checkboxOrDropdown = true;
-                        inline.formFieldData.dropDownList.dropDownItems = (element.formFieldData as DropDownFormField).dropDownItems;
+                        inline.formFieldData.dropDownList.dropDownItems = (element.formFieldData as DropDownFormField).dropdownItems;
                         inline.formFieldData.dropDownList.selectedIndex = (element.formFieldData as DropDownFormField).selectedIndex;
                     }
                 }
@@ -393,6 +409,30 @@ export class SfdtExport {
                 inline.text = element.text.replace('\u001e', '-');
             } else if (element.text.indexOf('\u001f') !== -1) {
                 inline.text = element.text.replace('\u001f', '');
+            } else if (element.revisions.length !== 0) {
+               if (this.isExport === false && this.owner.enableTrackChanges === true) {
+                for (let x: number = 0; x < element.revisions.length; x++) {
+                    //let insertionFlag, deletionFlag: boolean = false;
+                    if (element.revisions.length > 1) {
+                        for (let i: number = 0; i < element.revisions.length; i++) {
+                            if (element.revisions[x].revisionType === 'Deletion') {
+                                inline.text = element.text;
+                            } else if (element.revisions[x].revisionType === 'Insertion') {
+                                element.revisions.pop();
+                            }
+                        }
+                    } else if (element.revisions[x].revisionType === 'Deletion') {
+                        element.revisions.pop();
+                    } else if (element.revisions[x].revisionType === 'Insertion') {
+                        element.revisions.pop();
+                        inline.text = element.text;
+                    } else {
+                        inline.text = element.text;
+                    }
+                    }
+               } else {
+                   inline.text = element.text;
+               }
             } else {
                 inline.text = element.text;
             }
@@ -418,6 +458,20 @@ export class SfdtExport {
         } else {
             inline = undefined;
         }
+        if (element.revisions.length > 0) {
+            inline.revisionIds = [];
+            for (let x: number = 0; x < element.revisions.length; x++) {
+            //revisionIdes[x] = element.revisions[x];
+            inline.revisionIds.push(element.revisions[x].revisionID);
+            //this.document.revisionIdes.push(inline.revisionIds)
+            }
+        }
+        /*if(element.removedIds.length > 0){
+            inline.revisionIds = [];
+            for(let x:number = 0;x < element.removedIds.length; x++){
+            inline.revisionIds.push(element.removedIds);
+            }
+        }*/
         return inline;
     }
     private writeShape(element: ShapeElementBox, inline: any): void {
@@ -920,6 +974,7 @@ export class SfdtExport {
     }
     private writeRowFormat(wRowFormat: WRowFormat): any {
         let rowFormat: any = {};
+        let revisionIds: any = [];
         rowFormat.height = wRowFormat.hasValue('height') ? wRowFormat.height : undefined;
         rowFormat.allowBreakAcrossPages = wRowFormat.hasValue('allowBreakAcrossPages') ? wRowFormat.allowBreakAcrossPages : undefined;
         rowFormat.heightType = wRowFormat.hasValue('heightType') ? wRowFormat.heightType : undefined;
@@ -936,7 +991,14 @@ export class SfdtExport {
         rowFormat.rightMargin = wRowFormat.hasValue('rightMargin') ? wRowFormat.rightMargin : undefined;
         rowFormat.bottomMargin = wRowFormat.hasValue('bottomMargin') ? wRowFormat.bottomMargin : undefined;
         rowFormat.leftIndent = wRowFormat.hasValue('leftIndent') ? wRowFormat.leftIndent : undefined;
+        for (let j: number = 0; j < wRowFormat.revisions.length; j++) {
+            rowFormat.revisionIds = this.writeRowRevisions(wRowFormat.revisions[j], revisionIds);
+        }
         return rowFormat;
+    }
+    private writeRowRevisions(wrevisions: Revision, revisionIds: any): any {
+        revisionIds.push(wrevisions.revisionID);
+        return revisionIds;
     }
     private writeTableFormat(wTableFormat: WTableFormat): any {
         let tableFormat: any = {};
@@ -944,7 +1006,7 @@ export class SfdtExport {
         tableFormat.shading = this.writeShading(wTableFormat.shading);
         tableFormat.cellSpacing = wTableFormat.hasValue('cellSpacing') ? wTableFormat.cellSpacing : undefined;
         tableFormat.leftIndent = wTableFormat.hasValue('leftIndent') ? wTableFormat.leftIndent : undefined;
-        tableFormat.tableAlignment = wTableFormat.hasValue('tableAlignment') ? wTableFormat.tableAlignment : undefined;
+        tableFormat.tableAlignment = wTableFormat.hasValue('tableAlignment"') ? wTableFormat.tableAlignment : undefined;
         tableFormat.topMargin = wTableFormat.hasValue('topMargin') ? wTableFormat.topMargin : undefined;
         tableFormat.rightMargin = wTableFormat.hasValue('rightMargin') ? wTableFormat.rightMargin : undefined;
         tableFormat.leftMargin = wTableFormat.hasValue('leftMargin') ? wTableFormat.leftMargin : undefined;
@@ -984,6 +1046,20 @@ export class SfdtExport {
             wStyle.next = style.next.name;
         }
         return wStyle;
+    }
+    public writeRevisions(documentHelper: DocumentHelper): void {
+        this.document.revisions = [];
+        for (let i: number = 0; i < documentHelper.owner.revisions.changes.length; i++) {
+            this.document.revisions.push(this.writeRevision(documentHelper.owner.revisions.changes[i]));
+        }
+    }
+    private writeRevision(revisions: Revision): any {
+        let revision: any = {};
+        revision.author = revisions.author;
+        revision.date = revisions.date;
+        revision.revisionType = revisions.revisionType;
+        revision.revisionId = revisions.revisionID;
+        return revision;
     }
     public writeComments(documentHelper: DocumentHelper): void {
         this.document.comments = [];

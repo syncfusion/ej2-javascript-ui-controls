@@ -1,13 +1,15 @@
 import { addClass, detach, EventHandler, L10n, isNullOrUndefined, KeyboardEventArgs, select, isBlazor } from '@syncfusion/ej2-base';
 import { Browser, closest, removeClass, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
-import { IImageCommandsArgs, IRenderer, IDropDownItemModel, IToolbarItemModel, OffsetPosition,
-    ImageDragEvent, ActionBeginEventArgs, AfterImageDeleteEventArgs } from '../base/interface';
+import {
+    IImageCommandsArgs, IRenderer, IDropDownItemModel, IToolbarItemModel, OffsetPosition,
+    ImageDragEvent, ActionBeginEventArgs, AfterImageDeleteEventArgs
+} from '../base/interface';
 import { IRichTextEditor, IImageNotifyArgs, NotifyArgs, IShowPopupArgs, ResizeArgs } from '../base/interface';
 import * as events from '../base/constant';
 import * as classes from '../base/classes';
 import { ServiceLocator } from '../services/service-locator';
 import { NodeSelection } from '../../selection/selection';
-import { Uploader, SelectedEventArgs, MetaData, NumericTextBox, FileInfo } from '@syncfusion/ej2-inputs';
+import { Uploader, SelectedEventArgs, MetaData, NumericTextBox, FileInfo, BeforeUploadEventArgs } from '@syncfusion/ej2-inputs';
 import { RemovingEventArgs, UploadingEventArgs } from '@syncfusion/ej2-inputs';
 import { Dialog, DialogModel, Popup } from '@syncfusion/ej2-popups';
 import { Button, CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
@@ -91,8 +93,8 @@ export class Image {
         this.parent.off(events.initialEnd, this.afterRender);
         this.parent.off(events.paste, this.imagePaste);
         this.parent.off(events.destroy, this.removeEventListener);
-        let dropElement : HTMLElement | Document = this.parent.iframeSettings.enable ? this.parent.inputElement.ownerDocument
-        : this.parent.inputElement;
+        let dropElement: HTMLElement | Document = this.parent.iframeSettings.enable ? this.parent.inputElement.ownerDocument
+            : this.parent.inputElement;
         dropElement.removeEventListener('drop', this.dragDrop.bind(this), true);
         dropElement.removeEventListener('dragstart', this.dragStart.bind(this), true);
         dropElement.removeEventListener('dragenter', this.dragEnter.bind(this), true);
@@ -102,7 +104,7 @@ export class Image {
             this.parent.formatter.editorManager.observer.off(events.checkUndo, this.undoStack);
             if (this.parent.insertImageSettings.resize) {
                 EventHandler.remove(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.resizeStart);
-                EventHandler.remove(this.parent.element.ownerDocument , 'mousedown', this.onDocumentClick);
+                EventHandler.remove(this.parent.element.ownerDocument, 'mousedown', this.onDocumentClick);
             }
         }
     }
@@ -118,8 +120,8 @@ export class Image {
             EventHandler.add(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.resizeStart, this);
             EventHandler.add(this.parent.element.ownerDocument, 'mousedown', this.onDocumentClick, this);
         }
-        let dropElement : HTMLElement | Document = this.parent.iframeSettings.enable ? this.parent.inputElement.ownerDocument :
-         this.parent.inputElement;
+        let dropElement: HTMLElement | Document = this.parent.iframeSettings.enable ? this.parent.inputElement.ownerDocument :
+            this.parent.inputElement;
         dropElement.addEventListener('drop', this.dragDrop.bind(this), true);
         dropElement.addEventListener('dragstart', this.dragStart.bind(this), true);
         dropElement.addEventListener('dragenter', this.dragOver.bind(this), true);
@@ -482,7 +484,7 @@ export class Image {
         let save: NodeSelection;
         let selectNodeEle: Node[]; let selectParentEle: Node[]; this.deletedImg = []; let isCursor: boolean;
         let keyCodeValues: number[] = [27, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123,
-        44, 45, 9, 16, 17, 18, 19, 20, 33, 34, 35, 36, 37, 38, 39, 40, 91, 92, 93, 144, 145, 182, 183];
+            44, 45, 9, 16, 17, 18, 19, 20, 33, 34, 35, 36, 37, 38, 39, 40, 91, 92, 93, 144, 145, 182, 183];
         if (this.parent.editorMode === 'HTML') {
             range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
             isCursor = range.startContainer === range.endContainer && range.startOffset === range.endOffset;
@@ -496,7 +498,7 @@ export class Image {
             }
         }
         if (this.parent.editorMode === 'HTML' && ((originalEvent.which === 8 && originalEvent.code === 'Backspace') ||
-        (originalEvent.which === 46 && originalEvent.code === 'Delete'))) {
+            (originalEvent.which === 46 && originalEvent.code === 'Delete'))) {
             let isCursor: boolean = range.startContainer === range.endContainer && range.startOffset === range.endOffset;
             if ((originalEvent.which === 8 && originalEvent.code === 'Backspace' && isCursor)) {
                 this.checkImageBack(range);
@@ -505,7 +507,7 @@ export class Image {
             }
         }
         if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection) &&
-        originalEvent.code !== 'KeyK') {
+            originalEvent.code !== 'KeyK') {
             range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
             save = this.parent.formatter.editorManager.nodeSelection.save(
                 range, this.parent.contentModule.getDocument());
@@ -589,19 +591,19 @@ export class Image {
     }
     private checkImageBack(range: Range): void {
         if (range.startContainer.nodeName === '#text' && range.startOffset === 0 &&
-        !isNOU(range.startContainer.previousSibling) && range.startContainer.previousSibling.nodeName === 'IMG') {
+            !isNOU(range.startContainer.previousSibling) && range.startContainer.previousSibling.nodeName === 'IMG') {
             this.deletedImg.push(range.startContainer.previousSibling);
         } else if (range.startContainer.nodeName !== '#text' && !isNOU(range.startContainer.childNodes[range.startOffset - 1]) &&
-        range.startContainer.childNodes[range.startOffset - 1].nodeName === 'IMG') {
+            range.startContainer.childNodes[range.startOffset - 1].nodeName === 'IMG') {
             this.deletedImg.push(range.startContainer.childNodes[range.startOffset - 1]);
         }
     }
     private checkImageDel(range: Range): void {
         if (range.startContainer.nodeName === '#text' && range.startOffset === range.startContainer.textContent.length &&
-        !isNOU(range.startContainer.nextSibling) && range.startContainer.nextSibling.nodeName === 'IMG') {
+            !isNOU(range.startContainer.nextSibling) && range.startContainer.nextSibling.nodeName === 'IMG') {
             this.deletedImg.push(range.startContainer.nextSibling);
         } else if (range.startContainer.nodeName !== '#text' && !isNOU(range.startContainer.childNodes[range.startOffset]) &&
-        range.startContainer.childNodes[range.startOffset].nodeName === 'IMG') {
+            range.startContainer.childNodes[range.startOffset].nodeName === 'IMG') {
             this.deletedImg.push(range.startContainer.childNodes[range.startOffset]);
         }
     }
@@ -1354,18 +1356,22 @@ export class Image {
             id: this.rteID + '_upload', attrs: { type: 'File', name: 'UploadFiles' }
         });
         uploadParentEle.appendChild(uploadEle); let altText: string; let rawFile: FileInfo[];
+        let selectArgs: SelectedEventArgs;
+        let beforeUploadArgs: BeforeUploadEventArgs;
         this.uploadObj = new Uploader({
             asyncSettings: { saveUrl: this.parent.insertImageSettings.saveUrl, },
             dropArea: span, multiple: false, enableRtl: this.parent.enableRtl,
             allowedExtensions: this.parent.insertImageSettings.allowedTypes.toString(),
             selected: (e: SelectedEventArgs) => {
-                if (isBlazor()) {
+                proxy.isImgUploaded = true;
+                selectArgs = e;
+                if (this.parent.isServerRendered) {
+                    selectArgs = JSON.parse(JSON.stringify(e));
                     e.cancel = true;
                     rawFile = e.filesData;
                 }
-                proxy.isImgUploaded = true;
-                this.parent.trigger(events.imageSelected, e, (e: SelectedEventArgs) => {
-                    this.checkExtension(e.filesData[0]); altText = e.filesData[0].name;
+                this.parent.trigger(events.imageSelected, selectArgs, (selectArgs: SelectedEventArgs) => {
+                    this.checkExtension(selectArgs.filesData[0]); altText = selectArgs.filesData[0].name;
                     if (this.parent.editorMode === 'HTML' && isNullOrUndefined(this.parent.insertImageSettings.path)) {
                         let reader: FileReader = new FileReader();
                         reader.addEventListener('load', (e: MouseEvent) => {
@@ -1373,7 +1379,7 @@ export class Image {
                                 URL.createObjectURL(convertToBlob(reader.result as string));
                             proxy.uploadUrl = {
                                 url: url, selection: save, altText: altText,
-                            selectParent: selectParent,
+                                selectParent: selectParent,
                                 width: {
                                     width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
                                     maxWidth: proxy.parent.insertImageSettings.maxWidth
@@ -1384,18 +1390,31 @@ export class Image {
                             };
                             proxy.inputUrl.setAttribute('disabled', 'true');
                         });
-                        reader.readAsDataURL(e.filesData[0].rawFile as Blob);
+                        reader.readAsDataURL(selectArgs.filesData[0].rawFile as Blob);
                     }
-                    if (isBlazor()) {
-                        e.cancel = false;
+                    if (this.parent.isServerRendered) {
                         /* tslint:disable */
-                        (this.uploadObj as any)._internalRenderSelect(e, rawFile);
+                        (this.uploadObj as any)._internalRenderSelect(selectArgs, rawFile);
                         /* tslint:enable */
                     }
                 });
             },
+            beforeUpload: (args: BeforeUploadEventArgs) => {
+                if (this.parent.isServerRendered) {
+                    beforeUploadArgs = JSON.parse(JSON.stringify(args));
+                    args.cancel = true;
+                    this.parent.trigger(events.imageUploading, beforeUploadArgs, (beforeUploadArgs: BeforeUploadEventArgs) => {
+                        if (beforeUploadArgs.cancel) { return; }
+                        /* tslint:disable */
+                        (this.uploadObj as any).uploadFiles(rawFile, null);
+                        /* tslint:enable */
+                    });
+                }
+            },
             uploading: (e: UploadingEventArgs) => {
-                this.parent.trigger(events.imageUploading, e);
+                if (!this.parent.isServerRendered) {
+                    this.parent.trigger(events.imageUploading, e);
+                }
             },
             success: (e: Object) => {
                 this.parent.trigger(events.imageUploadSuccess, e, (e: object) => {
@@ -1464,7 +1483,7 @@ export class Image {
     };
     private dragOver(e?: DragEvent): void | boolean {
         if ((Browser.info.name === 'edge' && e.dataTransfer.items[0].type.split('/')[0].indexOf('image') > -1) ||
-         (Browser.isIE && e.dataTransfer.types[0] === 'Files')) {
+            (Browser.isIE && e.dataTransfer.types[0] === 'Files')) {
             e.preventDefault();
         } else {
             return true;
@@ -1482,7 +1501,7 @@ export class Image {
                     e.preventDefault();
                 } else {
                     if (closest((e.target as HTMLElement), '#' + this.parent.getID() + '_toolbar') ||
-                    this.parent.inputElement.contentEditable === 'false') {
+                        this.parent.inputElement.contentEditable === 'false') {
                         e.preventDefault();
                         return;
                     }
@@ -1652,6 +1671,8 @@ export class Image {
         let timeOut: number = dragEvent.dataTransfer.files[0].size > 1000000 ? 300 : 100;
         setTimeout(() => { proxy.refreshPopup(imageElement); }, timeOut);
         let range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
+        let rawFile: FileInfo[];
+        let beforeUploadArgs: BeforeUploadEventArgs;
         this.uploadObj = new Uploader({
             asyncSettings: {
                 saveUrl: this.parent.insertImageSettings.saveUrl,
@@ -1671,14 +1692,33 @@ export class Image {
                 detach(imageElement);
                 this.popupObj.close();
             },
+            beforeUpload: (args: BeforeUploadEventArgs) => {
+                if (this.parent.isServerRendered) {
+                    beforeUploadArgs = JSON.parse(JSON.stringify(args));
+                    args.cancel = true;
+                    isUploading = true;
+                    this.parent.trigger(events.imageUploading, beforeUploadArgs, (beforeUploadArgs: BeforeUploadEventArgs) => {
+                        if (beforeUploadArgs.cancel) { return; }
+                        /* tslint:disable */
+                        (this.uploadObj as any).uploadFiles(rawFile, null);
+                        this.parent.inputElement.contentEditable = 'false';
+                        /* tslint:enable */
+                    });
+                }
+            },
             uploading: (e: UploadingEventArgs) => {
-                isUploading = true;
-                this.parent.trigger(events.imageUploading, e);
-                this.parent.inputElement.contentEditable = 'false';
+                if (!this.parent.isServerRendered) {
+                    isUploading = true;
+                    this.parent.trigger(events.imageUploading, e);
+                    this.parent.inputElement.contentEditable = 'false';
+                }
             },
             selected: (e: SelectedEventArgs) => {
                 if (isUploading) {
                     e.cancel = true;
+                }
+                if (this.parent.isServerRendered) {
+                    rawFile = e.filesData;
                 }
             },
             failure: (e: Object) => {
@@ -1711,7 +1751,7 @@ export class Image {
     }
     private refreshPopup(imageElement: HTMLElement): void {
         let imgPosition: number = this.parent.iframeSettings.enable ? this.parent.element.offsetTop +
-        imageElement.offsetTop : imageElement.offsetTop;
+            imageElement.offsetTop : imageElement.offsetTop;
         let rtePosition: number = this.parent.element.offsetTop + this.parent.element.offsetHeight;
         if (imgPosition > rtePosition) {
             this.popupObj.relateTo = this.parent.inputElement;
@@ -1719,8 +1759,8 @@ export class Image {
             this.popupObj.element.style.display = 'block';
         } else {
             if (this.popupObj) {
-            this.popupObj.refreshPosition(imageElement);
-            this.popupObj.element.style.display = 'block';
+                this.popupObj.refreshPosition(imageElement);
+                this.popupObj.element.style.display = 'block';
             }
         }
     }
@@ -1728,7 +1768,7 @@ export class Image {
     /**
      * Called when drop image upload was failed
      */
-    private uploadFailure(imgEle: HTMLElement, args: IShowPopupArgs , e : Object): void {
+    private uploadFailure(imgEle: HTMLElement, args: IShowPopupArgs, e: Object): void {
         detach(imgEle);
         if (this.popupObj) {
             this.popupObj.close();
@@ -1764,7 +1804,7 @@ export class Image {
                 let url: IImageCommandsArgs = {
                     cssClass: (proxy.parent.insertImageSettings.display === 'inline' ? classes.CLS_IMGINLINE : classes.CLS_IMGBREAK),
                     url: this.parent.insertImageSettings.saveFormat === 'Base64' || !isNullOrUndefined(args.callBack) ?
-                    reader.result as string : URL.createObjectURL(convertToBlob(reader.result as string)),
+                        reader.result as string : URL.createObjectURL(convertToBlob(reader.result as string)),
                     width: {
                         width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
                         maxWidth: proxy.parent.insertImageSettings.maxWidth
@@ -1799,7 +1839,7 @@ export class Image {
         if (imageElement) {
             setTimeout(() => { this.showImageQuickToolbar(args); this.resizeStart(e.args as PointerEvent, imageElement); }, 0);
         }
-     }
+    }
 
     /**
      * Destroys the ToolBar.

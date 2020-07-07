@@ -45,6 +45,6 @@ button1.element.onclick = (): void => {
 
 button.element.onclick = (): void => {
     if (pivotGridObj.numberFormattingModule) {
-        pivotGridObj.numberFormattingModule.showNumberFormattingDialog();
+        pivotGridObj.showNumberFormattingDialog();
     }
 };

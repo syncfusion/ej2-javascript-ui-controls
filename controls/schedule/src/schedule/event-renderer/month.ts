@@ -26,6 +26,7 @@ export class MonthEvent extends EventBase {
     public maxHeight: boolean;
     public withIndicator: boolean;
     public maxOrIndicator: boolean;
+    public inlineValue: boolean;
 
     /**
      * Constructor for month events
@@ -44,6 +45,17 @@ export class MonthEvent extends EventBase {
         this.addEventListener();
     }
 
+    private removeEventWarapper(appElement: Element[]): void {
+        if (appElement.length > 0) {
+            appElement = (this.parent.currentView === 'Month') ? appElement : [appElement[0]];
+            for (let wrap of appElement) {
+                if (!wrap.classList.contains('e-more-indicator') && wrap.parentElement && wrap.parentElement.parentNode) {
+                    remove(wrap.parentElement);
+                }
+            }
+        }
+    }
+
     public renderAppointments(): void {
         let conWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
         if (this.parent.rowAutoHeight) {
@@ -51,8 +63,22 @@ export class MonthEvent extends EventBase {
             this.parent.uiStateValues.left = conWrap.scrollLeft;
         }
         let appointmentWrapper: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.APPOINTMENT_WRAPPER_CLASS));
-        for (let wrap of appointmentWrapper) {
-            remove(wrap);
+        if (this.parent.crudModule && this.parent.crudModule.crudObj.isCrudAction) {
+            for (let i: number = 0, len: number = this.parent.crudModule.crudObj.sourceEvent.length; i < len; i++) {
+                let appElement: Element[] = [].slice.call(this.element.querySelectorAll('.e-appointment-wrapper ' + '[data-group-index="' +
+                    this.parent.crudModule.crudObj.sourceEvent[i].groupIndex + '"]'));
+                this.removeEventWarapper(appElement);
+                if (this.parent.crudModule.crudObj.sourceEvent[i].groupIndex !==
+                    this.parent.crudModule.crudObj.targetEvent[i].groupIndex) {
+                    let ele: Element[] = [].slice.call(this.element.querySelectorAll('.e-appointment-wrapper ' + '[data-group-index="' +
+                        this.parent.crudModule.crudObj.targetEvent[i].groupIndex + '"]'));
+                    this.removeEventWarapper(ele);
+                }
+            }
+        } else {
+            for (let wrap of appointmentWrapper) {
+                remove(wrap);
+            }
         }
         this.removeHeightProperty(cls.CONTENT_TABLE_CLASS);
         if (!this.element.querySelector('.' + cls.WORK_CELLS_CLASS)) {
@@ -108,8 +134,9 @@ export class MonthEvent extends EventBase {
         }
         this.sortByDateTime(eventsList);
         this.sortByDateTime(blockList);
-        this.cellWidth = this.workCells.slice(-1)[0].getBoundingClientRect().width;
-        this.cellHeight = this.workCells.slice(-1)[0].offsetHeight;
+        let cellDetail: object = this.workCells.slice(-1)[0].getBoundingClientRect();
+        this.cellWidth = (<{ [key: string]: Object }>cellDetail).width as number;
+        this.cellHeight = (<{ [key: string]: Object }>cellDetail).height as number;
         this.dateRender = dateRender;
         let filteredDates: Date[] = this.getRenderedDates(dateRender);
         this.getSlotDates(workDays);
@@ -256,8 +283,21 @@ export class MonthEvent extends EventBase {
         let resources: TdData[] = this.parent.uiStateValues.isGroupAdaptive ?
             [this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex]] :
             this.parent.resourceBase.lastResourceLevel;
-        for (let slotData of resources) {
-            this.renderEventsHandler(slotData.renderDates, slotData.workDays, slotData);
+        if (this.parent.crudModule && this.parent.crudModule.crudObj.isCrudAction) {
+            for (let i: number = 0, len: number = this.parent.crudModule.crudObj.sourceEvent.length; i < len; i++) {
+                let sourceRes: TdData = this.parent.crudModule.crudObj.sourceEvent[i];
+                this.renderEventsHandler(sourceRes.renderDates, sourceRes.workDays, sourceRes);
+                if (this.parent.crudModule.crudObj.sourceEvent[i].groupIndex !==
+                    this.parent.crudModule.crudObj.targetEvent[i].groupIndex) {
+                    let target: TdData = this.parent.crudModule.crudObj.targetEvent[i];
+                    this.renderEventsHandler(target.renderDates, target.workDays, target);
+                }
+            }
+            this.parent.crudModule.crudObj.isCrudAction = false;
+        } else {
+            for (let slotData of resources) {
+                this.renderEventsHandler(slotData.renderDates, slotData.workDays, slotData);
+            }
         }
     }
 
@@ -409,7 +449,12 @@ export class MonthEvent extends EventBase {
                 this.monthHeaderHeight + ((overlapCount + 1) * (appHeight + EVENT_GAP)) + this.moreIndicatorHeight;
             let enableAppRender: boolean = this.maxOrIndicator ? overlapCount < 1 ? true : false : this.cellHeight > height;
             if (this.parent.rowAutoHeight || enableAppRender) {
-                let appointmentElement: HTMLElement = this.createAppointmentElement(event, resIndex);
+                let appointmentElement: HTMLElement;
+                if (this.inlineValue) {
+                    appointmentElement = this.parent.inlineModule.createInlineAppointmentElement();
+                } else {
+                    appointmentElement = this.createAppointmentElement(event, resIndex);
+                }
                 this.applyResourceColor(appointmentElement, event, 'backgroundColor', this.groupOrder);
                 this.wireAppointmentEvents(appointmentElement, event);
                 setStyleAttribute(appointmentElement, { 'width': appWidth + 'px', 'top': appTop + 'px' });

@@ -407,7 +407,12 @@ export namespace ListBase {
             let hdr: string = 'isHeader';
             grpItem[curFields.text] = (ds[j] as { key: string } & { [key: string]: Object }).key;
             grpItem[hdr] = true;
-            grpItem.id = 'group-list-item-' + ((ds[j] as { [key: string]: Object }).key ?
+            let newtext: string = curFields.text;
+            if (newtext === 'id') {
+                newtext = 'text';
+                grpItem[newtext] = ds[j].key;
+            }
+            grpItem._id = 'group-list-item-' + ((ds[j] as { [key: string]: Object }).key ?
                 (ds[j] as { [key: string]: Object }).key.toString().trim() : 'undefined');
             grpItem.items = itemObj;
             dataSource.push(grpItem);
@@ -780,7 +785,8 @@ export namespace ListBase {
         if (typeof item !== 'string' && typeof item !== 'number') {
             dataSource = <{ [key: string]: Object }>item;
             text = <string>fieldData[fields.text] || '';
-            uID = <string>fieldData[fields.id];
+			// tslint:disable-next-line
+            uID = (isNullOrUndefined(<string>fieldData['_id'])) ? <string>fieldData[fields.id] : <string>fieldData['_id'];
             grpLI = (item.hasOwnProperty('isHeader') && (item as { isHeader: Object } & { [key: string]: Object }).isHeader)
                 ? true : false;
         }
@@ -916,6 +922,9 @@ export interface FieldsMapping {
     imageAttributes?: string;
 }
 
+/**
+ * An enum type that denotes the Expand Icon Position. Available options are as follows Right, Left;
+ */
 export type Position = 'Right' | 'Left';
 
 /**

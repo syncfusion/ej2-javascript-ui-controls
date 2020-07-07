@@ -73,5 +73,4 @@ export class SelectionSettings extends ChildProperty<SelectionSettings> {
      */
     @Property(true)
     public enableToggle: boolean;
-
 }

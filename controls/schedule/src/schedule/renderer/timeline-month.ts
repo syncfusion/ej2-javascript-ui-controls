@@ -3,10 +3,10 @@ import { TdData, NotifyEventArgs } from '../base/interface';
 import { Schedule } from '../base/schedule';
 import { Month } from './month';
 import { TimelineEvent } from '../event-renderer/timeline-view';
+import { TimelineHeaderRow } from './timeline-header-row';
 import * as util from '../base/util';
 import * as event from '../base/constant';
 import * as cls from '../base/css-constant';
-import { TimelineHeaderRow } from './timeline-header-row';
 
 /**
  * timeline month view

@@ -1,9 +1,10 @@
 import { RangeNavigator, RangeSlider } from '../../range-navigator';
 import { Tooltip as SVGTooltip} from '@syncfusion/ej2-svg-base';
-import { getElement } from '../../common/utils/helper';
+import { getElement, createTemplate, firstToLowerCase } from '../../common/utils/helper';
 import { stopTimer } from '../../common/utils/helper';
-import { RangeTooltipSettingsModel, firstToLowerCase, Axis, FontModel } from '../../index';
-import { RangeValueType, IRangeTooltipRenderEventArgs, createTemplate } from '../../index';
+import { Axis } from '../../chart/axis/axis';
+import { FontModel } from '../../common/model/base-model';
+import { RangeValueType, IRangeTooltipRenderEventArgs, RangeTooltipSettingsModel } from '../../range-navigator/index';
 import { Rect, measureText } from '@syncfusion/ej2-svg-base';
 import { createElement } from '@syncfusion/ej2-base';
 import { StockChart } from '../../stock-chart/stock-chart';

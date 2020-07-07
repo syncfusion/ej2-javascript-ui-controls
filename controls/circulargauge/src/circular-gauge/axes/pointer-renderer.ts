@@ -1,5 +1,5 @@
 import { CircularGauge } from '../circular-gauge';
-import { Pointer, VisibleRangeModel, Axis } from './axis';
+import { Pointer, VisibleRangeModel, Axis, NeedleTail, Cap } from './axis';
 import {
     linear, getAngleFromValue, getCompleteArc, getRoundedPathArc, getLocationFromAngle, appendPath,
     textElement, PathOption, TextOption, calculateShapes, Size, GaugeLocation, stringToNumber
@@ -107,6 +107,8 @@ export class PointerRenderer {
      */
     private drawNeedlePointer(axis: Axis, axisIndex: number, index: number, parentElement: Element, gauge: CircularGauge): void {
         let pointer: Pointer = <Pointer>axis.pointers[index];
+        let needle: NeedleTail = <NeedleTail>pointer.needleTail;
+        let cap: Cap = <Cap>pointer.cap;
         let pointerRadius: number;
         let location: GaugeLocation;
         let direction: string;
@@ -115,9 +117,11 @@ export class PointerRenderer {
         let mid: GaugeLocation = gauge.midPoint;
         let width: number = pointer.pointerWidth / 2;
         let rectDirection: string;
-        // To render the needle
+        let gradientColor: string;
+        let gradientTailColor: string;
+        let gradientCapColor: string;
+       // To render the needle
         location = getLocationFromAngle(0, pointer.currentRadius, mid);
-        let color: string = pointer.color || this.gauge.themeStyle.needleColor;
         if ((needleStartWidth === 0) && (needleEndWidth === 0) && width) {
             direction = 'M ' + mid.x + ' ' + (mid.y) + ' L ' + (location.x) + ' ' + mid.y +
             ' L ' + (mid.x) + ' ' + (mid.y) + ' Z';
@@ -125,9 +129,13 @@ export class PointerRenderer {
             direction = 'M ' + mid.x + ' ' + (mid.y  - width - needleEndWidth) + ' L ' + (location.x) + ' ' + mid.y +
         ' L ' + location.x + ' ' + (mid.y + needleStartWidth) + ' L ' + mid.x + ' ' + (mid.y + width + needleEndWidth) + ' Z';
         }
+        if (gauge.gradientModule) {
+            gradientColor = gauge.gradientModule.getGradientColorString(pointer);
+        }
         pointer.pathElement.push(appendPath(
             new PathOption(
-                gauge.element.id + '_Axis_' + axisIndex + '_Pointer_Needle_' + index, color,
+                gauge.element.id + '_Axis_' + axisIndex + '_Pointer_Needle_' + index, gradientColor ? gradientColor :
+                pointer.color || this.gauge.themeStyle.needleColor,
                 pointer.border.width, pointer.border.color, null, '0', direction
             ),
             parentElement, gauge)
@@ -142,17 +150,19 @@ export class PointerRenderer {
             ' L ' + location.x + ' ' + (mid.y + width) + ' L ' + mid.x + ' ' + (mid.y + width);
 
         // To render the needle tail
+        if (gauge.gradientModule) {
+            gradientTailColor = gauge.gradientModule.getGradientColorString(needle);
+        }
         if (pointerRadius) {
             location = getLocationFromAngle(180, pointerRadius, gauge.midPoint);
             direction = 'M ' + mid.x + ' ' + (mid.y - width) +
                 ' L ' + (location.x) + ' ' + (mid.y - width) +
                 ' L ' + (location.x) + ' ' + (mid.y + width) +
                 ' L ' + (mid.x) + ' ' + (mid.y + width) + ' Z';
-
             pointer.pathElement.push(appendPath(
                 new PathOption(
                     gauge.element.id + '_Axis_' + axisIndex + '_Pointer_NeedleTail_' + index,
-                    pointer.needleTail.color || this.gauge.themeStyle.needleTailColor,
+                    gradientTailColor ? gradientTailColor : pointer.needleTail.color || this.gauge.themeStyle.needleTailColor,
                     pointer.needleTail.border.width, pointer.needleTail.border.color, null, '0', direction
                 ),
                 parentElement, gauge)
@@ -160,14 +170,16 @@ export class PointerRenderer {
             rectDirection += ' L ' + location.x + ' ' + (mid.y + width) + ' L ' + location.x + ' ' + (mid.y - width);
         }
         // To render the cap
-        let capcolor: string = pointer.cap.color || this.gauge.themeStyle.capColor;
+        if (gauge.gradientModule) {
+            gradientCapColor = gauge.gradientModule.getGradientColorString(cap);
+        }
         if (pointer.cap.radius) {
             pointer.pathElement.push(appendPath(
                 calculateShapes(
                     mid, 'Circle', new Size(pointer.cap.radius * 2, pointer.cap.radius * 2),
                     '', new PathOption(
                         gauge.element.id + '_Axis_' + axisIndex + '_Pointer_NeedleCap_' + index,
-                        capcolor, pointer.cap.border.width,
+                        gradientCapColor ? gradientCapColor : pointer.cap.color || this.gauge.themeStyle.capColor, pointer.cap.border.width,
                         pointer.cap.border.color, null, '0', '', ''
                     )
                 ),
@@ -265,8 +277,12 @@ export class PointerRenderer {
         let min: number = axis.visibleRange.min;
         let max: number = axis.visibleRange.max;
         let angle: number;
+        let gradientMarkerColor: string;
         angle = Math.round(getAngleFromValue(pointer.value, max, min, axis.startAngle, axis.endAngle, axis.direction === 'ClockWise'));
         let shapeBasedOnPosition: GaugeShape = pointer.markerShape;
+        if (gauge.gradientModule) {
+            gradientMarkerColor = gauge.gradientModule.getGradientColorString(pointer);
+        }
         if (isNullOrUndefined(pointer.radius) && !isNullOrUndefined(pointer.position) && (pointer.markerShape === 'InvertedTriangle' ||
             pointer.markerShape === 'Triangle')) {
             shapeBasedOnPosition = ((pointer.position === 'Outside' || pointer.position === 'Cross') && pointer.markerShape === 'Triangle' ?
@@ -289,13 +305,13 @@ export class PointerRenderer {
         } else {
             pointer.pathElement.push(appendPath(
                 calculateShapes(
-                                location, shapeBasedOnPosition, new Size( pointer.markerWidth, pointer.markerHeight),
-                                pointer.imageUrl, new PathOption
-                                (
-                                    gauge.element.id + '_Axis_' + axisIndex + '_Pointer_Marker_' + index,
-                                    pointer.color || this.gauge.themeStyle.pointerColor, pointer.border.width,
-                                    pointer.border.color, null, '0', '', ''
-                                )
+                    location, shapeBasedOnPosition, new Size(pointer.markerWidth, pointer.markerHeight),
+                    pointer.imageUrl, new PathOption
+                    (
+                        gauge.element.id + '_Axis_' + axisIndex + '_Pointer_Marker_' + index,
+                        gradientMarkerColor ? gradientMarkerColor : pointer.color || this.gauge.themeStyle.pointerColor,
+                        pointer.border.width, pointer.border.color, null, '0', '', ''
+                    )
                 ),
                 parentElement, gauge,
                 pointer.markerShape === 'Circle' ? 'Ellipse' : (pointer.markerShape === 'Image' ? 'Image' : 'Path')
@@ -310,9 +326,14 @@ export class PointerRenderer {
      */
     private drawRangeBarPointer(axis: Axis, axisIndex: number, index: number, parentElement: Element, gauge: CircularGauge): void {
         let pointer: Pointer = <Pointer>axis.pointers[index];
+        let gradientBarColor: string;
+        if (gauge.gradientModule) {
+            gradientBarColor = gauge.gradientModule.getGradientColorString(pointer);
+        }
         pointer.pathElement.push(appendPath(
             new PathOption(
-                gauge.element.id + '_Axis_' + axisIndex + '_Pointer_RangeBar_' + index, pointer.color || this.gauge.themeStyle.pointerColor,
+                gauge.element.id + '_Axis_' + axisIndex + '_Pointer_RangeBar_' + index, gradientBarColor ? gradientBarColor :
+                pointer.color || this.gauge.themeStyle.pointerColor,
                 pointer.border.width, pointer.border.color,
                 1, '0', ''
             ),

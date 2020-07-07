@@ -25,6 +25,11 @@ export const initialLoad: string = 'initial-load';
  * @hidden
  * @deprecated
  */
+export const contentChanged: string = 'content-changed';
+/** 
+ * @hidden
+ * @deprecated
+ */
 export const initialEnd: string = 'initial-end';
 /** 
  * @hidden

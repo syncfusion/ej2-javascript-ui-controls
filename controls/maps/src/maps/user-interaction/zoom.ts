@@ -384,6 +384,21 @@ export class Zoom {
                             if (!isNullOrUndefined(currentEle)) {
                                 for (let k: number = 0; k < currentEle.childElementCount; k++) {
                                     this.markerTranslate(<Element>currentEle.childNodes[k], factor, x, y, scale, 'Marker', animate);
+                                    let layerIndex : number = parseInt(currentEle.childNodes[k]['id'].split('_LayerIndex_')[1].split('_')[0], 10);
+                                    let dataIndex : number = parseInt(currentEle.childNodes[k]['id'].split('_dataIndex_')[1].split('_')[0], 10);
+                                    let markerIndex  : number = parseInt(currentEle.childNodes[k]['id'].split('_MarkerIndex_')[1].split('_')[0], 10);
+                                    let markerSelectionValues : object = this.currentLayer.markerSettings[markerIndex].dataSource[dataIndex];
+                                    for (let x : number = 0; x < this.currentLayer.markerSettings[markerIndex].initialMarkerSelection.length; x++) {
+                                        if (this.currentLayer.markerSettings[markerIndex].initialMarkerSelection[x]['latitude'] ===
+                                            markerSelectionValues['latitude'] ||
+                                            this.currentLayer.markerSettings[markerIndex].initialMarkerSelection[x]['longitude'] ===
+                                            markerSelectionValues['longitude']) {
+                                                this.maps.markerSelection(this.currentLayer.markerSettings[markerIndex].selectionSettings,
+                                                                          this.maps, currentEle.children[k],
+                                                                          this.currentLayer.markerSettings[markerIndex].dataSource[dataIndex]
+                                                                          );
+                                        }
+                                    }
                                     if (!this.maps.isTileMap && this.currentLayer.animationDuration > 0) {
                                         markerStyle = 'visibility:hidden';
                                         currentEle.setAttribute('style', markerStyle);
@@ -533,6 +548,14 @@ export class Zoom {
                     if (this.maps.isBlazor) {
                         const {maps, marker, ...blazorEventArgs } : IMarkerRenderingEventArgs = eventArgs;
                         eventArgs = blazorEventArgs;
+                        let latitudeValue: string = 'Latitude';
+                        let longitudeValue: string = 'Longitude';
+                        markerSettings.longitudeValuePath = !isNullOrUndefined(markerSettings.longitudeValuePath) ?
+                        markerSettings.longitudeValuePath : !isNullOrUndefined(data['Longitude']) ? longitudeValue :
+                        !isNullOrUndefined(data['longitude']) ? 'longitude' : null;
+                        markerSettings.latitudeValuePath = !isNullOrUndefined(markerSettings.latitudeValuePath) ?
+                        markerSettings.latitudeValuePath : !isNullOrUndefined(data['Latitude']) ? latitudeValue :
+                        !isNullOrUndefined(data['latitude']) ? 'latitude' : null;
                     }
                     this.maps.trigger('markerRendering', eventArgs, (MarkerArgs: IMarkerRenderingEventArgs) => {
                         if (markerSettings.shapeValuePath !== eventArgs.shapeValuePath ) {
@@ -542,9 +565,11 @@ export class Zoom {
                             eventArgs = markerColorChoose(eventArgs, data);
                         }
                         let lati: number = (!isNullOrUndefined(markerSettings.latitudeValuePath)) ?
-                            Number(getValueFromObject(data, markerSettings.latitudeValuePath)) : parseFloat(data['latitude']);
+                            Number(getValueFromObject(data, markerSettings.latitudeValuePath)) : !isNullOrUndefined(data['latitude']) ?
+                             parseFloat(data['latitude']) : !isNullOrUndefined(data['Latitude']) ? data['Latitude'] : 0;
                         let long: number = (!isNullOrUndefined(markerSettings.longitudeValuePath)) ?
-                         Number(getValueFromObject(data, markerSettings.longitudeValuePath)) : parseFloat(data['longitude']);
+                         Number(getValueFromObject(data, markerSettings.longitudeValuePath)) : !isNullOrUndefined(data['longitude']) ?
+                         parseFloat(data['longitude']) : !isNullOrUndefined(data['Longitude']) ? data['Longitude'] : 0;
                         if (this.maps.isBlazor) {
                             let data1: Object = {};
                             let j: number = 0;
@@ -559,10 +584,6 @@ export class Zoom {
                                 }
                             }
                             data['text'] = data1['text'];
-                            if (data == {} || isNullOrUndefined(data['latitude']) || isNullOrUndefined(data['longitude'])) {
-                                lati = (data['latitude'] && !isNullOrUndefined(data['latitude'])) ? data['latitude'] : 0;
-                                long = (data['longitude'] && !isNullOrUndefined(data['longitude'])) ? data['longitude'] : 0;
-                            }
                         }
                         let offset: Point = markerSettings.offset;
                         if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(long) && !isNullOrUndefined(lati)) {
@@ -764,31 +785,35 @@ export class Zoom {
         let layer: LayerSettings = <LayerSettings>this.maps.layersCollection[layerIndex];
         let marker: MarkerSettings = <MarkerSettings>layer.markerSettings[markerIndex];
         if (!isNullOrUndefined(marker) && !isNullOrUndefined(marker.dataSource) && !isNullOrUndefined(marker.dataSource[dataIndex])) {
-          let lng: number = (!isNullOrUndefined(marker.longitudeValuePath)) ?
-          Number(getValueFromObject(marker.dataSource[dataIndex], marker.longitudeValuePath)) :
-          parseFloat(marker.dataSource[dataIndex]['longitude']);
-         let lat: number = (!isNullOrUndefined(marker.latitudeValuePath)) ?
-          Number(getValueFromObject(marker.dataSource[dataIndex], marker.latitudeValuePath)) :
-          parseFloat(marker.dataSource[dataIndex]['latitude']);
-          if (this.maps.isBlazor) {
-            let data1: Object = {};                           
-            let j: number = 0;
-            let text: string[] = [];
-            if (isNullOrUndefined(marker.dataSource[dataIndex]['latitude']) || isNullOrUndefined(marker.dataSource[dataIndex]['longitude'])) {
-                lat = (marker.dataSource[dataIndex]['latitude'] && !isNullOrUndefined(marker.dataSource[dataIndex]['latitude'])) ? marker.dataSource[dataIndex]['latitude'] : 0;
-                lng = (marker.dataSource[dataIndex]['longitude'] && !isNullOrUndefined(marker.dataSource[dataIndex]['longitude'])) ? marker.dataSource[dataIndex]['longitude'] : 0;
-            }
-            for (let i: number = 0; i < Object.keys(marker.dataSource[dataIndex]).length; i++) {
-                if (Object.keys(marker.dataSource[dataIndex])[i].toLowerCase() !== 'text' && Object.keys(marker.dataSource[dataIndex])[i].toLowerCase() !== 'longitude'
-                    && Object.keys(marker.dataSource[dataIndex])[i].toLowerCase() !== 'latitude' && Object.keys(marker.dataSource[dataIndex])[i].toLowerCase() !== 'blazortemplateid' 
-                    && Object.keys(marker.dataSource[dataIndex])[i].toLowerCase() !== 'name') {
-                    data1['text'] = text;
-                    text[j] = marker.dataSource[dataIndex][Object.keys(marker.dataSource[dataIndex])[i].toLowerCase()];                                    
-                    j++;
+            if (this.maps.isBlazor) {
+                marker.longitudeValuePath = !isNullOrUndefined(marker.longitudeValuePath) ?
+                marker.longitudeValuePath : !isNullOrUndefined(marker.dataSource[dataIndex]['Longitude']) ? 'Longitude' :
+                !isNullOrUndefined(marker.dataSource[dataIndex]['longitude']) ? 'longitude' : null;
+                marker.latitudeValuePath = !isNullOrUndefined(marker.latitudeValuePath) ?
+                marker.latitudeValuePath : !isNullOrUndefined(marker.dataSource[dataIndex]['Latitude']) ? 'Latitude' :
+                !isNullOrUndefined(marker.dataSource[dataIndex]['latitude']) ? 'latitude' : null;
+                let data1: Object = {};                           
+                let j: number = 0;
+                let text: string[] = [];
+                for (let i: number = 0; i < Object.keys(marker.dataSource[dataIndex]).length; i++) {
+                    if (Object.keys(marker.dataSource[dataIndex])[i].toLowerCase() !== 'text' && Object.keys(marker.dataSource[dataIndex])[i].toLowerCase() !== 'longitude'
+                        && Object.keys(marker.dataSource[dataIndex])[i].toLowerCase() !== 'latitude' && Object.keys(marker.dataSource[dataIndex])[i].toLowerCase() !== 'blazortemplateid' 
+                        && Object.keys(marker.dataSource[dataIndex])[i].toLowerCase() !== 'name') {
+                        data1['text'] = text;
+                        text[j] = marker.dataSource[dataIndex][Object.keys(marker.dataSource[dataIndex])[i].toLowerCase()];                                    
+                        j++;
+                    }
                 }
+                marker.dataSource[dataIndex]['text'] = data1['text'];            
             }
-            marker.dataSource[dataIndex]['text'] = data1['text'];            
-        }
+            let lng: number = (!isNullOrUndefined(marker.longitudeValuePath)) ?
+          Number(getValueFromObject(marker.dataSource[dataIndex], marker.longitudeValuePath)) :
+          !isNullOrUndefined(marker.dataSource[dataIndex]['longitude']) ? parseFloat(marker.dataSource[dataIndex]['longitude']) :
+          !isNullOrUndefined(marker.dataSource[dataIndex]['Latitude']) ? parseFloat(marker.dataSource[dataIndex]['Latitude']) : 0;
+          let lat: number = (!isNullOrUndefined(marker.latitudeValuePath)) ?
+          Number(getValueFromObject(marker.dataSource[dataIndex], marker.latitudeValuePath)) :
+          !isNullOrUndefined(marker.dataSource[dataIndex]['latitude']) ? parseFloat(marker.dataSource[dataIndex]['latitude']) :
+          !isNullOrUndefined(marker.dataSource[dataIndex]['Latitude']) ? parseFloat(marker.dataSource[dataIndex]['Latitude']) : 0;
             let duration: number = this.currentLayer.animationDuration;
             let location: Point = (this.maps.isTileMap) ? convertTileLatLongToPoint(
                 new Point(lng, lat), this.maps.tileZoomLevel, this.maps.tileTranslatePoint, true
@@ -940,7 +965,8 @@ export class Zoom {
         zoomFactor = (type === 'Reset') ? 1 : (Math.round(zoomFactor) === 0) ? 1 : zoomFactor;
         zoomFactor = (minZoom > zoomFactor && type === 'ZoomIn') ? minZoom + 1 : zoomFactor;
         let zoomArgs: IMapZoomEventArgs;
-        if ((!map.isTileMap) && (type === 'ZoomIn' ? zoomFactor >= minZoom && zoomFactor <= maxZoom : zoomFactor >= minZoom)) {
+        if ((!map.isTileMap) && (type === 'ZoomIn' ? zoomFactor >= minZoom && zoomFactor <= maxZoom : zoomFactor >= minZoom 
+        || map.isReset)) {
             let min: Object = map.baseMapRectBounds['min'] as Object;
             let max: Object = map.baseMapRectBounds['max'] as Object;
             let mapWidth: number = Math.abs(max['x'] - min['x']);
@@ -957,8 +983,8 @@ export class Zoom {
             map.scale = zoomFactor;
             this.triggerZoomEvent(prevTilePoint, prevLevel, type);
             this.applyTransform(true);
-        } else if ((map.isTileMap) && (zoomFactor >= minZoom && zoomFactor <= maxZoom)) {
-            let tileZoomFactor: number = zoomFactor;
+        } else if ((map.isTileMap) && ((zoomFactor >= minZoom && zoomFactor <= maxZoom) || map.isReset)) {
+          let tileZoomFactor: number = prevLevel < minZoom && !map.isReset ? minZoom : zoomFactor;
             map.scale = Math.pow(2, tileZoomFactor - 1);
             map.tileZoomLevel = tileZoomFactor;
             let position: Point = { x: map.availableSize.width / 2, y: map.availableSize.height / 2 };
@@ -1143,6 +1169,7 @@ export class Zoom {
      */
     public performZoomingByToolBar(type: string): void {
         let map: Maps = this.maps;
+        map.isReset = false;
         switch (type.toLowerCase()) {
             case 'zoom':
                 this.panColor = this.fillColor;
@@ -1168,14 +1195,14 @@ export class Zoom {
                 }
                 break;
             case 'zoomin':
-                map.staticMapZoom = map.tileZoomLevel
+                map.staticMapZoom = map.tileZoomLevel;
                 if (map.staticMapZoom > 0 && map.staticMapZoom < 22) {
                     map.staticMapZoom += 1
                 }
                 this.toolBarZooming((map.isTileMap ? map.tileZoomLevel : map.scale) + 1, 'ZoomIn');
                 break;
             case 'zoomout':
-                map.staticMapZoom = map.tileZoomLevel
+            map.staticMapZoom = map.tileZoomLevel;
                 map.markerCenterLatitude = null;
                 map.markerCenterLongitude = null;
                 this.toolBarZooming((map.isTileMap ? map.tileZoomLevel : map.scale) - 1, 'ZoomOut');

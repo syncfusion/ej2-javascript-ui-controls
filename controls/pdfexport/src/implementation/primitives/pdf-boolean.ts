@@ -29,7 +29,7 @@ export class PdfBoolean implements IPdfPrimitive {
      * The `value` of the PDF boolean.
      * @private
      */
-    private value : boolean;
+    public value : boolean;
     /**
      * Internal variable to store the `position`.
      * @default -1
@@ -63,7 +63,7 @@ export class PdfBoolean implements IPdfPrimitive {
         return this.saving;
     }
     public set isSaving(value : boolean) {
-        this. saving = value;
+        this.saving = value;
     }
     /**
      * Gets or sets the `index` value of the specified object.

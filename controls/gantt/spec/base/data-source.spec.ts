@@ -1255,3 +1255,221 @@ export let taskTypeWorkData: Object[] = [
         ]
     },
 ];
+
+export let resourceCollection = [
+    { resourceId: 1, resourceName: 'Martin Tamer', resourceGroup: 'Planning Team'},
+    { resourceId: 2, resourceName: 'Rose Fuller', resourceGroup: 'Testing Team' },
+    { resourceId: 3, resourceName: 'Margaret Buchanan', resourceGroup: 'Approval Team' },
+    { resourceId: 4, resourceName: 'Fuller King', resourceGroup: 'Development Team' },
+    { resourceId: 5, resourceName: 'Davolio Fuller', resourceGroup: 'Approval Team' },
+    { resourceId: 6, resourceName: 'Van Jack', resourceGroup: 'Development Team' }
+];
+
+export let normalResourceData = [
+    {
+        TaskID: 1,
+        TaskName: 'Project initiation',
+        StartDate: new Date('03/29/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('03/29/2019'), Duration: 3,
+                Progress: 30, work: 10, resources: [{ resourceId: 1, resourceUnit: 50 }]
+            },
+            {
+                TaskID: 3, TaskName: 'Perform soil test', StartDate: new Date('03/29/2019'), Duration: 4,
+                resources: [{ resourceId: 2, resourceUnit: 70 }], Progress: 30, work: 20
+            },
+            {
+                TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('03/29/2019'), Duration: 4,
+                resources: [{ resourceId: 1, resourceUnit: 75 }], Predecessor: 2, Progress: 30, work: 10,
+            },
+        ]
+    },
+    {
+        TaskID: 5,
+        TaskName: 'Project estimation', StartDate: new Date('03/29/2019'), EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 6, TaskName: 'Develop floor plan for estimation', StartDate: new Date('03/29/2019'),
+                Duration: 3, Progress: 30, resources: [{ resourceId: 2, resourceUnit: 70 }], Predecessor: '3FS+2', work: 30
+            },
+            {
+                TaskID: 7, TaskName: 'List materials', StartDate: new Date('04/08/2019'), Duration: 12,
+                resources: [{ resourceId: 6, resourceUnit: 40 }], Progress: 30, work: 40
+            },
+            {
+                TaskID: 8, TaskName: 'Estimation approval', StartDate: new Date('04/03/2019'),
+                Duration: 10, resources: [{ resourceId: 5, resourceUnit: 75 }], Progress: 30, work: 60,
+            },
+            {
+                TaskID: 9, TaskName: 'Excavate for foundations', StartDate: new Date('04/01/2019'),
+                Duration: 4, Progress: 30, resources: [4]
+            },
+            {
+                TaskID: 10, TaskName: 'Install plumbing grounds', StartDate: new Date('04/08/2019'), Duration: 4,
+                Progress: 30, Predecessor: '9SS', resources: [3]
+            },
+            {
+                TaskID: 11, TaskName: 'Dig footer', StartDate: new Date('04/08/2019'),
+                Duration: 3, resources: [2]
+            },
+            {
+                TaskID: 12, TaskName: 'Electrical utilities', StartDate: new Date('04/03/2019'),
+                Duration: 4, Progress: 30, resources: [3]
+            }
+        ]
+    },
+    {
+        TaskID: 13, TaskName: 'Sign contract', StartDate: new Date('04/04/2019'), Duration: 2,
+        Progress: 30,
+    }
+];
+export let multiTaskbarData: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Project initiation',
+        StartDate: new Date('03/29/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('03/29/2019'), Duration: 3,
+                Progress: 30, work: 10, resources: [{ resourceId: 1, resourceUnit: 50 }]
+            },
+            {
+                TaskID: 3, TaskName: 'Perform soil test', StartDate: new Date('04/03/2019'), Duration: 4,
+                resources: [{ resourceId: 1, resourceUnit: 70 }], Predecessor: 2, Progress: 30, work: 20
+            },
+            {
+                TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('04/09/2019'), Duration: 4,
+                resources: [{ resourceId: 1, resourceUnit: 25 }], Predecessor: 3, Progress: 30, work: 10,
+            },
+        ]
+    },
+    {
+        TaskID: 5,
+        TaskName: 'Project estimation', StartDate: new Date('03/29/2019'), EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 6, TaskName: 'Develop floor plan for estimation', StartDate: new Date('04/01/2019'),
+                Duration: 5, Progress: 30, resources: [{ resourceId: 2, resourceUnit: 50 }], work: 30
+            },
+            {
+                TaskID: 7, TaskName: 'List materials', StartDate: new Date('04/04/2019'), Duration: 4,
+                resources: [{ resourceId: 2, resourceUnit: 40 }], Predecessor: '6FS-2', Progress: 30, work: 40
+            },
+            {
+                TaskID: 8, TaskName: 'Estimation approval', StartDate: new Date('04/09/2019'),
+                Duration: 4, resources: [{ resourceId: 2, resourceUnit: 75 }], Predecessor: '7FS-1', Progress: 30, work: 60,
+            }
+        ]
+    },
+    {
+        TaskID: 9,
+        TaskName: 'Site work',
+        StartDate: new Date('04/04/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 10, TaskName: 'Install temporary power service', StartDate: new Date('04/01/2019'), Duration: 14,
+                Progress: 30, resources: [{ resourceId: 3, resourceUnit: 75 }]
+            },
+            {
+                TaskID: 11, TaskName: 'Clear the building site', StartDate: new Date('04/08/2019'),
+                Duration: 9, Progress: 30, Predecessor: '10FS-9', resources: [3]
+            },
+            {
+                TaskID: 12, TaskName: 'Sign contract', StartDate: new Date('04/12/2019'),
+                Duration: 5, resources: [3], Predecessor: '11FS-5'
+            },
+        ]
+    },
+    {
+        TaskID: 13,
+        TaskName: 'Foundation',
+        StartDate: new Date('04/04/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 14, TaskName: 'Excavate for foundations', StartDate: new Date('04/01/2019'),
+                Duration: 2, Progress: 30, resources: [4]
+            },
+            {
+                TaskID: 15, TaskName: 'Dig footer', StartDate: new Date('04/04/2019'),
+                Duration: 2, Predecessor: '14FS + 1', resources: [4]
+            },
+            {
+                TaskID: 16, TaskName: 'Install plumbing grounds', StartDate: new Date('04/08/2019'), Duration: 2,
+                Progress: 30, Predecessor: 15, resources: [4]
+            }
+        ]
+    },
+    {
+        TaskID: 17,
+        TaskName: 'Framing',
+        StartDate: new Date('04/04/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 18, TaskName: 'Add load-bearing structure', StartDate: new Date('04/03/2019'),
+                Duration: 2, Progress: 30, resources: [5]
+            },
+            {
+                TaskID: 19, TaskName: 'Natural gas utilities', StartDate: new Date('04/08/2019'),
+                Duration: 4, Predecessor: '18', resources: [5]
+            },
+            {
+                TaskID: 20, TaskName: 'Electrical utilities', StartDate: new Date('04/11/2019'),
+                Duration: 2, Progress: 30, Predecessor: '19FS + 1', resources: [5]
+            }
+        ]
+    }
+];
+
+export let multiResources = [
+    { resourceId: 1, resourceName: 'Martin Tamer', resourceGroup: 'Planning Team', isExpand: false },
+    { resourceId: 2, resourceName: 'Rose Fuller', resourceGroup: 'Testing Team', isExpand: true },
+    { resourceId: 3, resourceName: 'Margaret Buchanan', resourceGroup: 'Approval Team', isExpand: false },
+    { resourceId: 4, resourceName: 'Fuller King', resourceGroup: 'Development Team', isExpand: false },
+    { resourceId: 5, resourceName: 'Davolio Fuller', resourceGroup: 'Approval Team', isExpand: true }
+];
+
+export let resourceSelefReferenceData = [
+    {
+        TaskID: 1,
+        TaskName: 'Project initiation',
+        StartDate: new Date('03/29/2019'),
+        EndDate: new Date('04/21/2019'),
+        resources: [{ resourceId: 1, resourceUnit: 50 }]
+    },
+    {
+        TaskID: 2, parentId: 1, TaskName: 'Identify site location', StartDate: new Date('03/29/2019'), Duration: 3,
+        Progress: 30, work: 10, resources: [{ resourceId: 2, resourceUnit: 50 }]
+    },
+    {
+        TaskID: 3, parentId: 1, TaskName: 'Perform soil test', StartDate: new Date('04/03/2019'), Duration: 4,
+        resources: [{ resourceId: 2, resourceUnit: 70 }], Predecessor: 2, Progress: 30, work: 20
+    },
+    {
+        TaskID: 4, parentId: 1, TaskName: 'Soil test approval', StartDate: new Date('04/09/2019'), Duration: 4,
+        resources: [{ resourceId: 3, resourceUnit: 25 }], Predecessor: 3, Progress: 30, work: 10,
+    },
+    {
+        TaskID: 5,
+        TaskName: 'Project estimation', StartDate: new Date('03/29/2019'), EndDate: new Date('04/21/2019'),
+        resources: [{ resourceId: 2, resourceUnit: 40 }],
+    },
+    {
+        TaskID: 6, parentId: 5, TaskName: 'Develop floor plan for estimation', StartDate: new Date('04/01/2019'),
+        Duration: 5, Progress: 30, resources: [{ resourceId: 2, resourceUnit: 50 }], work: 30
+    },
+    {
+        TaskID: 7, parentId: 5, TaskName: 'List materials', StartDate: new Date('04/04/2019'), Duration: 4,
+        resources: [{ resourceId: 2, resourceUnit: 40 }], Predecessor: '6FS-2', Progress: 30, work: 40
+    },
+    {
+        TaskID: 8, parentId: 5, TaskName: 'Estimation approval', StartDate: new Date('04/09/2019'),
+        Duration: 4, resources: [{ resourceId: 5, resourceUnit: 75 }], Predecessor: '7FS-1', Progress: 30, work: 60,
+    }
+
+];

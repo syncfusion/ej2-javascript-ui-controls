@@ -10,6 +10,7 @@ import { DialogSettings } from '../models/dialog-settings';
 import { Columns } from '../models/columns';
 import { StackedHeaders } from '../models/stacked-headers';
 import { CardSettingsModel, ColumnsModel, SwimlaneSettingsModel, StackedHeadersModel, DialogSettingsModel } from '../models/index';
+import { SortSettingsModel } from '../models/index';
 import { ActionEventArgs, CardClickEventArgs, CardRenderedEventArgs, DragEventArgs } from './interface';
 import { QueryCellInfoEventArgs, DialogEventArgs } from './interface';
 import { ReturnType, ConstraintType, CurrentAction } from './type';
@@ -23,6 +24,7 @@ import { KanbanTouch } from '../actions/touch';
 import { LayoutRender } from './layout-render';
 import * as events from '../base/constant';
 import * as cls from './css-constant';
+import { SortSettings } from '../models/sort-settings';
 
 /**
  * The Kanban component is an efficient way to visually depict various stages of a process using cards with transparent workflows.
@@ -159,6 +161,14 @@ export class Kanban extends Component<HTMLElement> {
      */
     @Complex<CardSettingsModel>({}, CardSettings)
     public cardSettings: CardSettingsModel;
+
+    /**
+     * Defines the sort settings such as field and direction.
+     * @deprecated
+     * @default {}
+     */
+    @Complex<SortSettingsModel>({}, SortSettings)
+    public sortSettings: SortSettingsModel;
 
     /**
      * Defines the dialog settings such as template and fields.
@@ -476,6 +486,9 @@ export class Kanban extends Component<HTMLElement> {
                         this.notifyChange();
                     }
                     break;
+                case 'sortSettings':
+                    this.notify(events.dataReady, { processedData: this.kanbanData });
+                    break;
                 default:
                     break;
             }
@@ -490,7 +503,7 @@ export class Kanban extends Component<HTMLElement> {
                 case 'showEmptyRow':
                 case 'showItemCount':
                 case 'template':
-                case 'sortBy':
+                case 'sortDirection':
                     if (!this.isBlazorRender()) {
                         this.notify(events.dataReady, { processedData: this.kanbanData });
                     } else {
@@ -508,6 +521,9 @@ export class Kanban extends Component<HTMLElement> {
                 case 'headerField':
                 case 'contentField':
                 case 'template':
+                case 'tagsField':
+                case 'grabberField':
+                case 'footerCssField':
                     if (!this.isBlazorRender()) {
                         this.layoutModule.refreshCards();
                     } else {

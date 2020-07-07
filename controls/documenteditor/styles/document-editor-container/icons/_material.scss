@@ -331,6 +331,11 @@
     font-family: 'e-icons';
   }
 
+  .e-de-cnt-track::before {
+    content: '\e20a';
+    font-family: 'e-icons';
+  }
+
   .e-de-weblayout::before {
     content: '\e193';
     font-family: 'e-icons';
@@ -382,7 +387,7 @@
   }
 
   .e-de-update-field::before {
-    content: '\e191';
+    content: '\e19e';
     font-family: 'e-icons';
   }
 }

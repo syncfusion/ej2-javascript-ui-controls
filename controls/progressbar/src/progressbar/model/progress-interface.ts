@@ -45,7 +45,8 @@ export interface IProgressResizeEventArgs {
     currentSize: Size;
     /** Defines progress bar instance */
     bar: ProgressBar;
-    /** Defines the name of event */
+    /** cancel the event */
+    cancel: boolean;
 }
 
 /** chart theme style */

@@ -1,5 +1,5 @@
 window.sf = window.sf || {};
-window.sf.circulargauge = (function (exports) {
+var sfcirculargauge = (function (exports) {
 'use strict';
 
 var __extends$1 = (undefined && undefined.__extends) || (function () {
@@ -1119,6 +1119,12 @@ var Range = /** @class */ (function (_super) {
     __decorate$2([
         sf.base.Property(0)
     ], Range.prototype, "offset", void 0);
+    __decorate$2([
+        sf.base.Property(null)
+    ], Range.prototype, "linearGradient", void 0);
+    __decorate$2([
+        sf.base.Property(null)
+    ], Range.prototype, "radialGradient", void 0);
     return Range;
 }(sf.base.ChildProperty));
 /**
@@ -1167,6 +1173,12 @@ var Cap = /** @class */ (function (_super) {
         sf.base.Property(null)
     ], Cap.prototype, "color", void 0);
     __decorate$2([
+        sf.base.Property(null)
+    ], Cap.prototype, "linearGradient", void 0);
+    __decorate$2([
+        sf.base.Property(null)
+    ], Cap.prototype, "radialGradient", void 0);
+    __decorate$2([
         sf.base.Complex({ color: null, width: 8 }, Border)
     ], Cap.prototype, "border", void 0);
     __decorate$2([
@@ -1191,6 +1203,12 @@ var NeedleTail = /** @class */ (function (_super) {
     __decorate$2([
         sf.base.Property('0%')
     ], NeedleTail.prototype, "length", void 0);
+    __decorate$2([
+        sf.base.Property(null)
+    ], NeedleTail.prototype, "linearGradient", void 0);
+    __decorate$2([
+        sf.base.Property(null)
+    ], NeedleTail.prototype, "radialGradient", void 0);
     return NeedleTail;
 }(sf.base.ChildProperty));
 /**
@@ -1311,6 +1329,12 @@ var Pointer = /** @class */ (function (_super) {
     __decorate$2([
         sf.base.Property(null)
     ], Pointer.prototype, "needleEndWidth", void 0);
+    __decorate$2([
+        sf.base.Property(null)
+    ], Pointer.prototype, "linearGradient", void 0);
+    __decorate$2([
+        sf.base.Property(null)
+    ], Pointer.prototype, "radialGradient", void 0);
     return Pointer;
 }(sf.base.ChildProperty));
 /**
@@ -2331,6 +2355,7 @@ var AxisRenderer = /** @class */ (function () {
         var roundedEndAngle;
         var oldStart;
         var oldEnd;
+        var gradientRangeColor;
         axis.ranges.map(function (range, rangeIndex) {
             rangeIndex = rangeIndex;
             range.pathElement = [];
@@ -2377,6 +2402,10 @@ var AxisRenderer = /** @class */ (function () {
                     radius) / (range.currentRadius)) * 180) / Math.PI;
                 roundedEndAngle = ((((range.currentRadius) * ((endAngle * Math.PI) / 180) -
                     radius) / (range.currentRadius)) * 180) / Math.PI;
+                if (gauge.gradientModule) {
+                    gradientRangeColor = gauge.gradientModule.getGradientColorString(range);
+                }
+                range.rangeColor = gradientRangeColor ? gradientRangeColor : range.rangeColor;
                 if (range.roundedCornerRadius) {
                     range.pathElement.push(appendPath(new PathOption(gauge.element.id + '_Axis_' + index + '_Range_' + rangeIndex, range.rangeColor, 0, range.rangeColor, range.opacity, '0', getRoundedPathArc(location, Math.floor(roundedStartAngle), Math.ceil(roundedEndAngle), oldStart, oldEnd, range.currentRadius, startWidth, endWidth), '', ''), rangeElement, gauge));
                 }
@@ -2511,6 +2540,8 @@ var PointerRenderer = /** @class */ (function () {
      */
     PointerRenderer.prototype.drawNeedlePointer = function (axis, axisIndex, index, parentElement, gauge) {
         var pointer = axis.pointers[index];
+        var needle = pointer.needleTail;
+        var cap = pointer.cap;
         var pointerRadius;
         var location;
         var direction;
@@ -2519,9 +2550,11 @@ var PointerRenderer = /** @class */ (function () {
         var mid = gauge.midPoint;
         var width = pointer.pointerWidth / 2;
         var rectDirection;
+        var gradientColor;
+        var gradientTailColor;
+        var gradientCapColor;
         // To render the needle
         location = getLocationFromAngle(0, pointer.currentRadius, mid);
-        var color = pointer.color || this.gauge.themeStyle.needleColor;
         if ((needleStartWidth === 0) && (needleEndWidth === 0) && width) {
             direction = 'M ' + mid.x + ' ' + (mid.y) + ' L ' + (location.x) + ' ' + mid.y +
                 ' L ' + (mid.x) + ' ' + (mid.y) + ' Z';
@@ -2530,25 +2563,34 @@ var PointerRenderer = /** @class */ (function () {
             direction = 'M ' + mid.x + ' ' + (mid.y - width - needleEndWidth) + ' L ' + (location.x) + ' ' + mid.y +
                 ' L ' + location.x + ' ' + (mid.y + needleStartWidth) + ' L ' + mid.x + ' ' + (mid.y + width + needleEndWidth) + ' Z';
         }
-        pointer.pathElement.push(appendPath(new PathOption(gauge.element.id + '_Axis_' + axisIndex + '_Pointer_Needle_' + index, color, pointer.border.width, pointer.border.color, null, '0', direction), parentElement, gauge));
+        if (gauge.gradientModule) {
+            gradientColor = gauge.gradientModule.getGradientColorString(pointer);
+        }
+        pointer.pathElement.push(appendPath(new PathOption(gauge.element.id + '_Axis_' + axisIndex + '_Pointer_Needle_' + index, gradientColor ? gradientColor :
+            pointer.color || this.gauge.themeStyle.needleColor, pointer.border.width, pointer.border.color, null, '0', direction), parentElement, gauge));
         pointerRadius = stringToNumber(pointer.needleTail.length, pointer.currentRadius);
         // To render the rect element for touch
         rectDirection = 'M ' + mid.x + ' ' + (mid.y - width) + ' L ' + (location.x) + ' ' + (mid.y - width) +
             ' L ' + location.x + ' ' + (mid.y + width) + ' L ' + mid.x + ' ' + (mid.y + width);
         // To render the needle tail
+        if (gauge.gradientModule) {
+            gradientTailColor = gauge.gradientModule.getGradientColorString(needle);
+        }
         if (pointerRadius) {
             location = getLocationFromAngle(180, pointerRadius, gauge.midPoint);
             direction = 'M ' + mid.x + ' ' + (mid.y - width) +
                 ' L ' + (location.x) + ' ' + (mid.y - width) +
                 ' L ' + (location.x) + ' ' + (mid.y + width) +
                 ' L ' + (mid.x) + ' ' + (mid.y + width) + ' Z';
-            pointer.pathElement.push(appendPath(new PathOption(gauge.element.id + '_Axis_' + axisIndex + '_Pointer_NeedleTail_' + index, pointer.needleTail.color || this.gauge.themeStyle.needleTailColor, pointer.needleTail.border.width, pointer.needleTail.border.color, null, '0', direction), parentElement, gauge));
+            pointer.pathElement.push(appendPath(new PathOption(gauge.element.id + '_Axis_' + axisIndex + '_Pointer_NeedleTail_' + index, gradientTailColor ? gradientTailColor : pointer.needleTail.color || this.gauge.themeStyle.needleTailColor, pointer.needleTail.border.width, pointer.needleTail.border.color, null, '0', direction), parentElement, gauge));
             rectDirection += ' L ' + location.x + ' ' + (mid.y + width) + ' L ' + location.x + ' ' + (mid.y - width);
         }
         // To render the cap
-        var capcolor = pointer.cap.color || this.gauge.themeStyle.capColor;
+        if (gauge.gradientModule) {
+            gradientCapColor = gauge.gradientModule.getGradientColorString(cap);
+        }
         if (pointer.cap.radius) {
-            pointer.pathElement.push(appendPath(calculateShapes(mid, 'Circle', new Size(pointer.cap.radius * 2, pointer.cap.radius * 2), '', new PathOption(gauge.element.id + '_Axis_' + axisIndex + '_Pointer_NeedleCap_' + index, capcolor, pointer.cap.border.width, pointer.cap.border.color, null, '0', '', '')), parentElement, gauge, 'Ellipse'));
+            pointer.pathElement.push(appendPath(calculateShapes(mid, 'Circle', new Size(pointer.cap.radius * 2, pointer.cap.radius * 2), '', new PathOption(gauge.element.id + '_Axis_' + axisIndex + '_Pointer_NeedleCap_' + index, gradientCapColor ? gradientCapColor : pointer.cap.color || this.gauge.themeStyle.capColor, pointer.cap.border.width, pointer.cap.border.color, null, '0', '', '')), parentElement, gauge, 'Ellipse'));
         }
         pointer.pathElement.push(appendPath(new PathOption(gauge.element.id + '_Axis_' + axisIndex + '_Pointer_NeedleRect_' + index, 'transparent', 0, 'transpanret', null, '0', rectDirection + ' Z'), parentElement, gauge));
     };
@@ -2617,8 +2659,12 @@ var PointerRenderer = /** @class */ (function () {
         var min = axis.visibleRange.min;
         var max = axis.visibleRange.max;
         var angle;
+        var gradientMarkerColor;
         angle = Math.round(getAngleFromValue(pointer.value, max, min, axis.startAngle, axis.endAngle, axis.direction === 'ClockWise'));
         var shapeBasedOnPosition = pointer.markerShape;
+        if (gauge.gradientModule) {
+            gradientMarkerColor = gauge.gradientModule.getGradientColorString(pointer);
+        }
         if (sf.base.isNullOrUndefined(pointer.radius) && !sf.base.isNullOrUndefined(pointer.position) && (pointer.markerShape === 'InvertedTriangle' ||
             pointer.markerShape === 'Triangle')) {
             shapeBasedOnPosition = ((pointer.position === 'Outside' || pointer.position === 'Cross') && pointer.markerShape === 'Triangle' ?
@@ -2632,7 +2678,7 @@ var PointerRenderer = /** @class */ (function () {
             textElement(textOption, pointer.textStyle, pointer.textStyle.color, parentElement, 'pointer-events : auto; ');
         }
         else {
-            pointer.pathElement.push(appendPath(calculateShapes(location, shapeBasedOnPosition, new Size(pointer.markerWidth, pointer.markerHeight), pointer.imageUrl, new PathOption(gauge.element.id + '_Axis_' + axisIndex + '_Pointer_Marker_' + index, pointer.color || this.gauge.themeStyle.pointerColor, pointer.border.width, pointer.border.color, null, '0', '', '')), parentElement, gauge, pointer.markerShape === 'Circle' ? 'Ellipse' : (pointer.markerShape === 'Image' ? 'Image' : 'Path')));
+            pointer.pathElement.push(appendPath(calculateShapes(location, shapeBasedOnPosition, new Size(pointer.markerWidth, pointer.markerHeight), pointer.imageUrl, new PathOption(gauge.element.id + '_Axis_' + axisIndex + '_Pointer_Marker_' + index, gradientMarkerColor ? gradientMarkerColor : pointer.color || this.gauge.themeStyle.pointerColor, pointer.border.width, pointer.border.color, null, '0', '', '')), parentElement, gauge, pointer.markerShape === 'Circle' ? 'Ellipse' : (pointer.markerShape === 'Image' ? 'Image' : 'Path')));
         }
     };
     /**
@@ -2641,7 +2687,12 @@ var PointerRenderer = /** @class */ (function () {
      */
     PointerRenderer.prototype.drawRangeBarPointer = function (axis, axisIndex, index, parentElement, gauge) {
         var pointer = axis.pointers[index];
-        pointer.pathElement.push(appendPath(new PathOption(gauge.element.id + '_Axis_' + axisIndex + '_Pointer_RangeBar_' + index, pointer.color || this.gauge.themeStyle.pointerColor, pointer.border.width, pointer.border.color, 1, '0', ''), parentElement, gauge));
+        var gradientBarColor;
+        if (gauge.gradientModule) {
+            gradientBarColor = gauge.gradientModule.getGradientColorString(pointer);
+        }
+        pointer.pathElement.push(appendPath(new PathOption(gauge.element.id + '_Axis_' + axisIndex + '_Pointer_RangeBar_' + index, gradientBarColor ? gradientBarColor :
+            pointer.color || this.gauge.themeStyle.pointerColor, pointer.border.width, pointer.border.color, 1, '0', ''), parentElement, gauge));
     };
     /**
      * Method to perform the animation of the pointer in circular gauge.
@@ -4171,6 +4222,221 @@ var Print = /** @class */ (function () {
     return Print;
 }());
 
+var __extends$5 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Specifies the color information for the gradient in the circular gauge.
+ */
+var ColorStop = /** @class */ (function (_super) {
+    __extends$5(ColorStop, _super);
+    function ColorStop() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$4([
+        sf.base.Property('#000000')
+    ], ColorStop.prototype, "color", void 0);
+    __decorate$4([
+        sf.base.Property(1)
+    ], ColorStop.prototype, "opacity", void 0);
+    __decorate$4([
+        sf.base.Property('0%')
+    ], ColorStop.prototype, "offset", void 0);
+    __decorate$4([
+        sf.base.Property('')
+    ], ColorStop.prototype, "style", void 0);
+    return ColorStop;
+}(sf.base.ChildProperty));
+/**
+ * Specifies the position in percentage from which the radial gradient must be applied.
+ */
+var GradientPosition = /** @class */ (function (_super) {
+    __extends$5(GradientPosition, _super);
+    function GradientPosition() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$4([
+        sf.base.Property('0%')
+    ], GradientPosition.prototype, "x", void 0);
+    __decorate$4([
+        sf.base.Property('0%')
+    ], GradientPosition.prototype, "y", void 0);
+    return GradientPosition;
+}(sf.base.ChildProperty));
+/**
+ * This specifies the properties of the linear gradient colors for the circular gauge.
+ */
+var LinearGradient = /** @class */ (function (_super) {
+    __extends$5(LinearGradient, _super);
+    function LinearGradient() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$4([
+        sf.base.Property('0%')
+    ], LinearGradient.prototype, "startValue", void 0);
+    __decorate$4([
+        sf.base.Property('100%')
+    ], LinearGradient.prototype, "endValue", void 0);
+    __decorate$4([
+        sf.base.Collection([{ color: '#000000', opacity: 1, offset: '0%', style: '' }], ColorStop)
+    ], LinearGradient.prototype, "colorStop", void 0);
+    return LinearGradient;
+}(sf.base.ChildProperty));
+/**
+ * This specifies the properties of the radial gradient colors for the circular gauge.
+ */
+var RadialGradient = /** @class */ (function (_super) {
+    __extends$5(RadialGradient, _super);
+    function RadialGradient() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$4([
+        sf.base.Property('0%')
+    ], RadialGradient.prototype, "radius", void 0);
+    __decorate$4([
+        sf.base.Complex({ x: '0%', y: '0%' }, GradientPosition)
+    ], RadialGradient.prototype, "outerPosition", void 0);
+    __decorate$4([
+        sf.base.Complex({ x: '0%', y: '0%' }, GradientPosition)
+    ], RadialGradient.prototype, "innerPosition", void 0);
+    __decorate$4([
+        sf.base.Collection([{ color: '#000000', opacity: 1, offset: '0%', style: '' }], ColorStop)
+    ], RadialGradient.prototype, "colorStop", void 0);
+    return RadialGradient;
+}(sf.base.ChildProperty));
+/**
+ * Sets and gets the module that enables the gradient option for pointers and ranges.
+ * @hidden
+ */
+var Gradient = /** @class */ (function () {
+    /**
+     * Constructor for gauge
+     * @param gauge
+     */
+    function Gradient(gauge) {
+        this.gauge = gauge;
+    }
+    /**
+     * To get linear gradient string for pointers and ranges
+     * @private
+     */
+    Gradient.prototype.getLinearGradientColor = function (element) {
+        var render = new sf.svgbase.SvgRenderer('');
+        var colors = this.getGradientColor(element.linearGradient.colorStop);
+        var name = '_' + this.gauge.svgObject.id + '_' + this.gauge.gradientCount + '_' + 'linearGradient';
+        var gradientPosition = {
+            id: name,
+            x1: (element.linearGradient.startValue.indexOf('%') === -1 ?
+                element.linearGradient.startValue :
+                parseFloat(element.linearGradient.startValue).toString()) + '%',
+            x2: (element.linearGradient.endValue.indexOf('%') === -1 ?
+                element.linearGradient.endValue :
+                parseFloat(element.linearGradient.endValue).toString()) + '%',
+            y1: '0' + '%',
+            y2: '0' + '%'
+        };
+        var def = render.drawGradient('linearGradient', gradientPosition, colors);
+        this.gauge.svgObject.appendChild(def);
+        return 'url(#' + name + ')';
+    };
+    /**
+     * To get the radial gradient string.
+     * @private
+     */
+    Gradient.prototype.getRadialGradientColor = function (element) {
+        var render = new sf.svgbase.SvgRenderer('');
+        var colors = this.getGradientColor(element.radialGradient.colorStop);
+        var name = '_' + this.gauge.svgObject.id + '_' + this.gauge.gradientCount + '_' + 'radialGradient';
+        var gradientPosition = {
+            id: name,
+            r: (element.radialGradient.radius.indexOf('%') === -1 ?
+                element.radialGradient.radius :
+                parseFloat(element.radialGradient.radius).toString()) + '%',
+            cx: (element.radialGradient.outerPosition.x.indexOf('%') === -1 ?
+                element.radialGradient.outerPosition.x :
+                parseFloat(element.radialGradient.outerPosition.x).toString()) + '%',
+            cy: (element.radialGradient.outerPosition.y.indexOf('%') === -1 ?
+                element.radialGradient.outerPosition.y :
+                parseFloat(element.radialGradient.outerPosition.y).toString()) + '%',
+            fx: (element.radialGradient.innerPosition.x.indexOf('%') === -1 ?
+                element.radialGradient.innerPosition.x :
+                parseFloat(element.radialGradient.innerPosition.x).toString()) + '%',
+            fy: (element.radialGradient.innerPosition.y.indexOf('%') === -1 ?
+                element.radialGradient.innerPosition.y :
+                parseFloat(element.radialGradient.innerPosition.y).toString()) + '%'
+        };
+        var def = render.drawGradient('radialGradient', gradientPosition, colors);
+        this.gauge.svgObject.appendChild(def);
+        return 'url(#' + name + ')';
+    };
+    /**
+     * To get color, opacity, offset and style.
+     * @private
+     */
+    Gradient.prototype.getGradientColor = function (colorStop) {
+        var colors = [];
+        for (var j = 0; j < colorStop.length; j++) {
+            var color = {
+                color: colorStop[j].color,
+                colorStop: colorStop[j].offset,
+                opacity: colorStop[j].opacity ? colorStop[j].opacity.toString() : '1',
+                style: colorStop[j].style,
+            };
+            colors.push(color);
+        }
+        return colors;
+    };
+    /**
+     * To get a gradient color string
+     * @private
+     */
+    Gradient.prototype.getGradientColorString = function (element) {
+        var gradientColor;
+        if (element.linearGradient || element.radialGradient) {
+            if (element.linearGradient) {
+                gradientColor = this.getLinearGradientColor(element);
+            }
+            else {
+                gradientColor = this.getRadialGradientColor(element);
+            }
+            this.gauge.gradientCount = this.gauge.gradientCount + 1;
+        }
+        else {
+            return null;
+        }
+        return gradientColor;
+    };
+    Gradient.prototype.getModuleName = function () {
+        // Returns te module name
+        return 'Gradient';
+    };
+    /**
+     * To destroy the Gradient.
+     * @return {void}
+     * @private
+     */
+    Gradient.prototype.destroy = function (gauge) {
+        // Destroy method performed here
+    };
+    return Gradient;
+}());
+
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -4213,23 +4479,18 @@ var CircularGauge = /** @class */ (function (_super) {
         var _this = _super.call(this, options, element) || this;
         /** @private */
         _this.isDrag = false;
+        /**
+         * @private
+         */
+        _this.gradientCount = 0;
         return _this;
     }
-    CircularGauge_1 = CircularGauge;
     /**
      *  To create svg object, renderer and binding events for the container.
      */
     //tslint:disable
     CircularGauge.prototype.preRender = function () {
         this.isBlazor = sf.base.isBlazor();
-        if (!this.isBlazor) {
-            this.allowPrint = true;
-            this.allowImageExport = true;
-            this.allowPdfExport = true;
-            CircularGauge_1.Inject(Print);
-            CircularGauge_1.Inject(PdfExport);
-            CircularGauge_1.Inject(ImageExport);
-        }
         this.unWireEvents();
         this.trigger(load, this.isBlazor ? null : { gauge: this });
         this.initPrivateVariable();
@@ -5005,6 +5266,10 @@ var CircularGauge = /** @class */ (function (_super) {
                 args: [this, Legend]
             });
         }
+        modules.push({
+            member: 'Gradient',
+            args: [this, Gradient]
+        });
         return modules;
     };
     /**
@@ -5086,7 +5351,6 @@ var CircularGauge = /** @class */ (function (_super) {
     CircularGauge.prototype.getModuleName = function () {
         return 'circulargauge';
     };
-    var CircularGauge_1;
     __decorate([
         sf.base.Property(null)
     ], CircularGauge.prototype, "width", void 0);
@@ -5204,7 +5468,7 @@ var CircularGauge = /** @class */ (function (_super) {
     __decorate([
         sf.base.Event()
     ], CircularGauge.prototype, "beforePrint", void 0);
-    CircularGauge = CircularGauge_1 = __decorate([
+    CircularGauge = __decorate([
         sf.base.NotifyPropertyChanges
     ], CircularGauge);
     return CircularGauge;
@@ -5214,11 +5478,7 @@ var CircularGauge = /** @class */ (function (_super) {
  * Circular Gauge component exported items
  */
 
-/**
- * Circular Gauge component exported.
- */
-
-CircularGauge.Inject(GaugeTooltip, Annotations, Legend, Print, PdfExport, ImageExport);
+CircularGauge.Inject(GaugeTooltip, Annotations, Legend, Print, PdfExport, ImageExport, Gradient);
 
 exports.CircularGauge = CircularGauge;
 exports.Annotations = Annotations;
@@ -5291,10 +5551,16 @@ exports.LegendOptions = LegendOptions;
 exports.ImageExport = ImageExport;
 exports.PdfExport = PdfExport;
 exports.Print = Print;
+exports.ColorStop = ColorStop;
+exports.GradientPosition = GradientPosition;
+exports.LinearGradient = LinearGradient;
+exports.RadialGradient = RadialGradient;
+exports.Gradient = Gradient;
 
 return exports;
 
 });
+sfBlazor.modules["circulargauge"] = "circulargauge.CircularGauge";
 sfBlazor.loadDependencies(sfBlazor.dependencyJson.circulargauge, () => {
-    sf.circulargauge = sf.circulargauge({});
+    sf.circulargauge = sf.base.extend({}, sf.circulargauge, sfcirculargauge({}));
 });

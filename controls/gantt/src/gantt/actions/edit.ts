@@ -5,7 +5,7 @@ import { IGanttData, ITaskData, ITaskbarEditedEventArgs, IValidateArgs, IParent,
 import { IActionBeginEventArgs, ITaskAddedEventArgs, ITaskDeletedEventArgs, RowDropEventArgs } from '../base/interface';
 import { ColumnModel, Column as GanttColumn } from '../models/column';
 import { DataManager, DataUtil, Query } from '@syncfusion/ej2-data';
-import { ReturnType, RecordDoubleClickEventArgs, Row, Column, IEditCell, EJ2Intance } from '@syncfusion/ej2-grids';
+import { ReturnType, RecordDoubleClickEventArgs, Row, Column, IEditCell, EJ2Intance, getUid } from '@syncfusion/ej2-grids';
 import { getSwapKey, isScheduledTask, getTaskData, isRemoteData, getIndex } from '../base/utils';
 import { RowPosition } from '../base/enum';
 import { CellEdit } from './cell-edit';
@@ -15,6 +15,7 @@ import { Dialog } from '@syncfusion/ej2-popups';
 import { NumericTextBoxModel } from '@syncfusion/ej2-inputs';
 import { MultiSelect, CheckBoxSelection, DropDownList } from '@syncfusion/ej2-dropdowns';
 import { ConnectorLineEdit } from './connector-line-edit';
+
 
 
 
@@ -38,7 +39,13 @@ export class Edit {
     /** @hidden */
     private droppedRecord: IGanttData;
     /** @hidden */
+    private isTreeGridRefresh: boolean;
+    /** @hidden */
     public isaddtoBottom: boolean = false;
+    /** @hidden */
+    public addRowPosition: RowPosition;
+    /** @hidden */
+    public addRowIndex: number;
     /** @hidden */
     private dropPosition: string;
     public confirmDialog: Dialog = null;
@@ -338,52 +345,59 @@ export class Edit {
      * @param {Object} data - Defines new data to update.
      */
     public updateRecordByID(data: Object): void {
-        let tasks: TaskFieldsModel = this.parent.taskFields;
-        if (isNullOrUndefined(data) || isNullOrUndefined(data[tasks.id])) {
-            return;
-        }
-        let ganttData: IGanttData = this.parent.getRecordByID(data[tasks.id]);
-        if (isBlazor()) {
-            let keys: string[] = Object.keys(data);
-            if (keys.indexOf(tasks.startDate) !== -1 && !isNullOrUndefined(getValue(this.parent.taskFields.startDate, data))) {
-                setValue(
-                    this.parent.taskFields.startDate,
-                    this.parent.dataOperation.getDateFromFormat(getValue(this.parent.taskFields.startDate, data)), data);
+        if (!this.parent.readOnly) {
+            let tasks: TaskFieldsModel = this.parent.taskFields;
+            if (isNullOrUndefined(data) || isNullOrUndefined(data[tasks.id])) {
+                return;
             }
-            if (keys.indexOf(tasks.endDate) !== -1 && !isNullOrUndefined(getValue(this.parent.taskFields.endDate, data))) {
-                setValue(
-                    this.parent.taskFields.endDate,
-                    this.parent.dataOperation.getDateFromFormat(getValue(this.parent.taskFields.endDate, data)), data);
+            let ganttData: IGanttData = this.parent.viewType === 'ResourceView' ?
+                this.parent.flatData[this.parent.getTaskIds().indexOf('T' + data[tasks.id])] : this.parent.getRecordByID(data[tasks.id]);
+            if (isBlazor()) {
+                let keys: string[] = Object.keys(data);
+                if (keys.indexOf(tasks.startDate) !== -1 && !isNullOrUndefined(getValue(this.parent.taskFields.startDate, data))) {
+                    setValue(
+                        this.parent.taskFields.startDate,
+                        this.parent.dataOperation.getDateFromFormat(getValue(this.parent.taskFields.startDate, data)), data);
+                }
+                if (keys.indexOf(tasks.endDate) !== -1 && !isNullOrUndefined(getValue(this.parent.taskFields.endDate, data))) {
+                    setValue(
+                        this.parent.taskFields.endDate,
+                        this.parent.dataOperation.getDateFromFormat(getValue(this.parent.taskFields.endDate, data)), data);
+                }
+                /* tslint:disable-next-line */
+                if (keys.indexOf(tasks.baselineStartDate) !== -1 && !isNullOrUndefined(getValue(this.parent.taskFields.baselineStartDate, data))) {
+                    setValue(
+                        this.parent.taskFields.baselineStartDate,
+                        this.parent.dataOperation.getDateFromFormat(getValue(this.parent.taskFields.baselineStartDate, data)), data);
+                }
+                if (keys.indexOf(tasks.baselineEndDate) !== -1 && !isNullOrUndefined(getValue(this.parent.taskFields.baselineEndDate, data)
+                )) {
+                    setValue(
+                        this.parent.taskFields.baselineEndDate,
+                        this.parent.dataOperation.getDateFromFormat(getValue(this.parent.taskFields.baselineEndDate, data)), data);
+                }
             }
-            /* tslint:disable-next-line */
-            if (keys.indexOf(tasks.baselineStartDate) !== -1 && !isNullOrUndefined(getValue(this.parent.taskFields.baselineStartDate, data))) {
-                setValue(
-                    this.parent.taskFields.baselineStartDate,
-                    this.parent.dataOperation.getDateFromFormat(getValue(this.parent.taskFields.baselineStartDate, data)), data);
-            }
-            if (keys.indexOf(tasks.baselineEndDate) !== -1 && !isNullOrUndefined(getValue(this.parent.taskFields.baselineEndDate, data))) {
-                setValue(
-                    this.parent.taskFields.baselineEndDate,
-                    this.parent.dataOperation.getDateFromFormat(getValue(this.parent.taskFields.baselineEndDate, data)), data);
-            }
-        }
-        if (!isNullOrUndefined(this.parent.editModule) && ganttData) {
-            this.parent.isOnEdit = true;
-            this.validateUpdateValues(data, ganttData, true);
-            let keys: string[] = Object.keys(data);
-            if (keys.indexOf(tasks.startDate) !== -1 || keys.indexOf(tasks.endDate) !== -1 ||
-                keys.indexOf(tasks.duration) !== -1) {
-                this.parent.dataOperation.calculateScheduledValues(ganttData, ganttData.taskData, false);
-            }
-            this.parent.dataOperation.updateWidthLeft(ganttData);
-            if (!isUndefined(data[this.parent.taskFields.dependency]) &&
-                data[this.parent.taskFields.dependency] !== ganttData.ganttProperties.predecessorsName) {
-                this.parent.connectorLineEditModule.updatePredecessor(
-                    ganttData, data[this.parent.taskFields.dependency]);
-            } else {
-                let args: ITaskbarEditedEventArgs = {} as ITaskbarEditedEventArgs;
-                args.data = ganttData;
-                this.parent.editModule.initiateUpdateAction(args);
+            if (!isNullOrUndefined(this.parent.editModule) && ganttData) {
+                this.parent.isOnEdit = true;
+                this.validateUpdateValues(data, ganttData, true);
+                let keys: string[] = Object.keys(data);
+                if (keys.indexOf(tasks.startDate) !== -1 || keys.indexOf(tasks.endDate) !== -1 ||
+                    keys.indexOf(tasks.duration) !== -1) {
+                    this.parent.dataOperation.calculateScheduledValues(ganttData, ganttData.taskData, false);
+                }
+                this.parent.dataOperation.updateWidthLeft(ganttData);
+                if (!isUndefined(data[this.parent.taskFields.dependency]) &&
+                    data[this.parent.taskFields.dependency] !== ganttData.ganttProperties.predecessorsName) {
+                    this.parent.connectorLineEditModule.updatePredecessor(
+                        ganttData, data[this.parent.taskFields.dependency]);
+                } else {
+                    let args: ITaskbarEditedEventArgs = {} as ITaskbarEditedEventArgs;
+                    args.data = ganttData;
+                    if (this.parent.viewType === 'ResourceView') {
+                        args.action = 'methodUpdate';
+                    }
+                    this.parent.editModule.initiateUpdateAction(args);
+                }
             }
         }
     }
@@ -422,6 +436,15 @@ export class Edit {
                 }
             } else if (tasks.resourceInfo === key) {
                 let resourceData: Object[] = ganttObj.dataOperation.setResourceInfo(data);
+                if (this.parent.viewType === 'ResourceView') {
+                    if (JSON.stringify(resourceData) !== JSON.stringify(ganttData.ganttProperties.resourceInfo)) {
+                        this.parent.editModule.dialogModule.isResourceUpdate  = true;
+                        this.parent.editModule.dialogModule.previousResource = !isNullOrUndefined(ganttData.ganttProperties.resourceInfo) ?
+                            [...ganttData.ganttProperties.resourceInfo] : [];
+                    } else {
+                        this.parent.editModule.dialogModule.isResourceUpdate = false;
+                    }
+                }
                 ganttData.ganttProperties.resourceInfo = resourceData;
                 ganttObj.dataOperation.updateMappingData(ganttData, 'resourceInfo');
             } else if (tasks.dependency === key) {
@@ -485,7 +508,7 @@ export class Edit {
                 ganttObj.setRecordValue('isAutoSchedule', !data[key], ganttData.ganttProperties, true);
                 this.parent.setRecordValue(key, data[key], ganttData);
                 this.updateTaskScheduleModes(ganttData);
-             }
+            }
         }
         if (isScheduleValueUpdated) {
             this.validateScheduleValues(scheduleFieldNames, ganttData, data);
@@ -522,7 +545,7 @@ export class Edit {
                             if (column === 'duration' || column === 'endDate') {
                                 this.parent.dataOperation.updateUnitWithWork(currentData);
                                 if (ganttProp.duration === 0) {
-                                    this.parent.setRecordValue('work', 0, ganttProp);
+                                    this.parent.setRecordValue('work', 0, ganttProp, true);
                                     if (!isNullOrUndefined(this.parent.taskFields.work)) {
                                         this.parent.dataOperation.updateMappingData(currentData, 'work');
                                     }
@@ -540,7 +563,7 @@ export class Edit {
                         break;
                     case 'FixedDuration':
                         if (ganttProp.resourceInfo.length && (column === 'work' || (isAutoSchedule &&
-                             isEffectDriven && (column === 'resource')))) {
+                            isEffectDriven && (column === 'resource')))) {
                             this.parent.dataOperation.updateUnitWithWork(currentData);
                         } else {
                             this.parent.dataOperation.updateWorkWithDuration(currentData);
@@ -650,71 +673,6 @@ export class Edit {
             }
         }
         return isValidatePredecessor;
-    }
-    /**
-     * Method to update the resource records while editing
-     * @private 
-     */
-    public updateRsourceRecords(args: ITaskbarEditedEventArgs, isResourceEdited?: boolean, previousResources?: Object[]): void {
-        let editedRecords: IGanttData[] = [];
-        let unassignedTasks: IGanttData;
-        if (!args.data.hasChildRecords) {
-            for (let i: number = 0; i < this.parent.getTaskIds().length; i++) {
-                if (this.parent.getTaskIds()[i] === 'T' + args.data.ganttProperties.taskId) {
-                    editedRecords.push(this.parent.currentViewData[i]);
-                    this.updateGanttProperties(args.data, this.parent.currentViewData[i]);
-                    this.parent.dataOperation.updateTaskData(this.parent.currentViewData[i]);
-                }
-            }
-        }
-        if (isResourceEdited) {
-            // Block for if the resources of the task gets edited.
-            let addRecords: IGanttData[] = [];
-            this.deleteRow(editedRecords);
-            if (args.data.taskData[this.parent.taskFields.resourceInfo].length) {
-                args.data.taskData[this.parent.taskFields.resourceInfo].forEach((resourceID: string) => {
-                    let taskIds: string[] = this.parent.getTaskIds();
-                    addRecords.push(this.parent.currentViewData[taskIds.indexOf('R' + resourceID)]);
-                });
-                for (let j: number = 0; j < addRecords.length; j++) {
-                    if (!addRecords[j][this.parent.taskFields.resourceInfo]) {
-                        let data: IGanttData = { ...args.data };
-                        data[this.parent.taskFields.resourceInfo] = data.taskData[this.parent.taskFields.resourceInfo];
-                        /* tslint:disable-next-line */
-                        this.parent.isSameResourceAdd = true;
-                        this.parent.editModule.addRecord(data, 'Child', this.parent.ids.indexOf(addRecords[j].ganttProperties.rowUniqueID));
-                        this.parent.isSameResourceAdd = false;
-                    }
-                }
-            } else {
-                // Block for if the added record has no resources
-                for (let i: number = 0; i < this.parent.currentViewData.length; i++) {
-                    if (this.parent.currentViewData[i].ganttProperties.taskName === this.parent.localeObj.getConstant('unassignedTask')) {
-                        unassignedTasks = this.parent.currentViewData[i];
-                    }
-                }
-                this.parent.isOnEdit = false;
-                if (unassignedTasks) {
-                    /* tslint:disable-next-line */
-                    this.parent.editModule.addRecord({ ...args.data }, 'Child', this.parent.ids.indexOf(unassignedTasks.ganttProperties.rowUniqueID));
-                } else {
-                    // Block for create the unassigned task.
-                    let unassignTask: Object = {};
-                    unassignTask[this.parent.taskFields.id] = 0;
-                    unassignTask[this.parent.taskFields.name] = this.parent.localeObj.getConstant('unassignedTask');
-                    this.parent.editModule.addRecord({ ...unassignTask }, 'Bottom');
-                    this.parent.editModule.addRecord({ ...args.data }, 'Child', this.parent.ids.length - 1);
-                }
-            }
-        } else {
-            for (let j: number = 0; j < editedRecords.length; j++) {
-                let editArgs: ITaskbarEditedEventArgs = {};
-                editArgs.data = editedRecords[j];
-                this.parent.isOnEdit = true;
-                this.initiateUpdateAction(editArgs);
-                this.parent.isOnEdit = false;
-            }
-        }
     }
     /**
      * Method to copy the ganttProperties values
@@ -858,12 +816,12 @@ export class Edit {
                 true
             );
             this.parent.dataOperation.calculateDuration(data);
-         } else  if (data.hasChildRecords && !ganttProp.isAutoSchedule) {
+        } else if (data.hasChildRecords && !ganttProp.isAutoSchedule) {
             this.parent.dataOperation.updateWidthLeft(data);
             this.parent.dataOperation.calculateDuration(data);
             this.parent.setRecordValue('autoStartDate', ganttProp.startDate, ganttProp, true);
             this.parent.setRecordValue('autoEndDate', ganttProp.endDate, ganttProp, true);
-            this.parent.setRecordValue('autoDuration',  this.parent.dataOperation.calculateAutoDuration(data), ganttProp, true);
+            this.parent.setRecordValue('autoDuration', this.parent.dataOperation.calculateAutoDuration(data), ganttProp, true);
             this.parent.dataOperation.updateAutoWidthLeft(data);
         } else {
             let startDate: Date = this.parent.dateValidationModule.checkStartDate(currentValue, data.ganttProperties);
@@ -1173,7 +1131,21 @@ export class Edit {
         this.resetEditProperties();
         this.parent.trigger('actionFailure', { error: e });
     }
-
+    private updateSharedTask(data: IGanttData): void {
+        let ids: string[] = data.ganttProperties.sharedTaskUniqueIds;
+        for (let i: number = 0; i < ids.length; i++) {
+            let editRecord: IGanttData = this.parent.flatData[this.parent.ids.indexOf(ids[i].toString())];
+            if (editRecord.uniqueID !== data.uniqueID) {
+                this.updateGanttProperties(data, editRecord);
+                this.parent.setRecordValue('taskData', data.taskData, editRecord, true);
+                this.parent.dataOperation.updateTaskData(editRecord);
+                this.parent.dataOperation.updateResourceName(editRecord);
+                if (!isNullOrUndefined(editRecord.parentItem)) {
+                    this.parent.dataOperation.updateParentItems(editRecord.parentItem);
+                }
+            }
+        }
+    }
     /**
      * Method for save action success for local and remote data
      */
@@ -1183,12 +1155,35 @@ export class Edit {
             let tempArray: IGanttData[] = this.parent.editedRecords;
             this.parent.timelineModule.updateTimeLineOnEditing(tempArray, args.action);
         }
-        this.parent.chartRowsModule.refreshRecords(this.parent.editedRecords);
-        if (this.parent.isConnectorLineUpdate && !isNullOrUndefined(this.parent.connectorLineEditModule)) {
-            this.parent.updatedConnectorLineCollection = [];
-            this.parent.connectorLineIds = [];
-            this.parent.connectorLineEditModule.refreshEditedRecordConnectorLine(this.parent.editedRecords);
-            this.updateScheduleDatesOnEditing(args);
+        if (this.parent.viewType === 'ResourceView') {
+            if (args.action === 'TaskbarEditing') {
+                this.updateSharedTask(args.data);
+            } else if (args.action === 'DialogEditing' || args.action === 'CellEditing'  || args.action === 'methodUpdate') {
+                if (this.parent.editModule.dialogModule.isResourceUpdate) {
+                    /* tslint:disable-next-line */
+                    this.updateResoures(this.parent.editModule.dialogModule.previousResource, args.data.ganttProperties.resourceInfo, args.data);
+                    this.updateSharedTask(args.data);
+                    this.isTreeGridRefresh = true;
+                } else {
+                    this.updateSharedTask(args.data);
+                }
+            }
+            // method to update the edited parent records
+            for (let k: number = 0; k < this.updateParentRecords.length; k++) {
+                this.parent.dataOperation.updateParentItems(this.updateParentRecords[k]);
+            }
+            this.updateParentRecords = [];
+            this.parent.editModule.dialogModule.isResourceUpdate = false;
+            this.parent.editModule.dialogModule.previousResource = [];
+        }
+        if (!this.isTreeGridRefresh) {
+            this.parent.chartRowsModule.refreshRecords(this.parent.editedRecords);
+            if (this.parent.isConnectorLineUpdate && !isNullOrUndefined(this.parent.connectorLineEditModule)) {
+                this.parent.updatedConnectorLineCollection = [];
+                this.parent.connectorLineIds = [];
+                this.parent.connectorLineEditModule.refreshEditedRecordConnectorLine(this.parent.editedRecords);
+                this.updateScheduleDatesOnEditing(args);
+            }
         }
         if (!this.parent.editSettings.allowTaskbarEditing || (this.parent.editSettings.allowTaskbarEditing &&
             !this.taskbarEditModule.dependencyCancel)) {
@@ -1213,6 +1208,246 @@ export class Edit {
             if (isBlazor()) {
                 this.parent.updateDataArgs(eventArgs);
             }
+        }
+        if (this.parent.viewType === 'ResourceView' && this.isTreeGridRefresh) {
+            this.parent.treeGrid.refresh();
+            this.isTreeGridRefresh = false;
+        }
+    }
+
+    private updateResoures(prevResource: Object[], currentResource: Object[], updateRecord: IGanttData): void {
+        let flatRecords: IGanttData[] = this.parent.flatData;
+        let currentLength: number = currentResource ? currentResource.length : 0;
+        let previousLength: number = prevResource ? prevResource.length : 0;
+        if (currentLength === 0 && previousLength === 0) {
+            return;
+        }
+        for (let index: number = 0; index < currentLength; index++) {
+            let recordIndex: number[] = [];
+            let resourceID: number = parseInt(currentResource[index][this.parent.resourceFields.id], 10);
+            for (let i: number = 0; i < prevResource.length; i++) {
+                if (parseInt(prevResource[i][this.parent.resourceFields.id], 10) === resourceID) {
+                    recordIndex.push(i);
+                    break;
+                }
+            }
+            if (recordIndex.length === 0) {
+                let parentRecord: IGanttData = flatRecords[this.parent.getTaskIds().indexOf('R' + resourceID)];
+                if (parentRecord) {
+                    this.addNewRecord(updateRecord, parentRecord);
+                }
+            } else {
+                prevResource.splice(parseInt(recordIndex[0].toString(), 10), 1);
+            }
+        }
+        let prevLength: number = prevResource ? prevResource.length : 0;
+        for (let index: number = 0; index < prevLength; index++) {
+            let taskID: string = updateRecord.ganttProperties.taskId;
+            let resourceID: string = prevResource[index][this.parent.resourceFields.id];
+            let record: IGanttData = flatRecords[this.parent.getTaskIds().indexOf('R' + resourceID)];
+            for (let j: number = 0; j < record.childRecords.length; j++) {
+                if (record.childRecords[j].ganttProperties.taskId === taskID) {
+                    this.removeChildRecord(record.childRecords[j]);
+                }
+            }
+        }
+        if (currentLength > 0) {
+            let parentTask: IGanttData = this.parent.getParentTask(updateRecord.parentItem);
+            if (parentTask) {
+                if (parentTask.ganttProperties.taskName === this.parent.localeObj.getConstant('unassignedTask')) {
+                    this.removeChildRecord(updateRecord);
+                }
+            }
+        }
+         //Assign resource to unassigned task
+        if (currentLength === 0) {
+            this.checkWithUnassignedTask(updateRecord);
+        }
+    }
+    /**
+     * @private
+     */
+    public checkWithUnassignedTask(updateRecord: IGanttData): void {
+        let unassignedTasks: IGanttData = null;
+            // Block for check the unassigned task.
+        for (let i: number = 0; i < this.parent.flatData.length; i++) {
+            if (this.parent.flatData[i].ganttProperties.taskName === this.parent.localeObj.getConstant('unassignedTask')) {
+                unassignedTasks = this.parent.flatData[i];
+            }
+        }
+        if (!isNullOrUndefined(unassignedTasks)) {
+            this.addNewRecord(updateRecord, unassignedTasks);
+        } else {
+            // Block for create the unassigned task.
+            let unassignTaskObj: Object = {};
+            unassignTaskObj[this.parent.taskFields.id] = 0;
+            unassignTaskObj[this.parent.taskFields.name] = this.parent.localeObj.getConstant('unassignedTask');
+            let cAddedRecord: IGanttData;
+            let beforeEditStatus: boolean = this.parent.isOnEdit;
+            this.parent.isOnEdit = false;
+            cAddedRecord = this.parent.dataOperation.createRecord(unassignTaskObj, 0);
+            this.parent.isOnEdit = beforeEditStatus;
+            this.addRecordAsBottom(cAddedRecord);
+            let parentRecord: IGanttData = this.parent.flatData[this.parent.flatData.length - 1];
+            this.addNewRecord(updateRecord, parentRecord);
+        }
+    }
+
+    private addRecordAsBottom(cAddedRecord: IGanttData): void {
+        let recordIndex1: number = this.parent.flatData.length;
+        if (this.parent.taskFields.parentID && (this.parent.dataSource as IGanttData[]).length > 0) {
+            (this.parent.dataSource as IGanttData[]).splice(recordIndex1 + 1, 0, cAddedRecord.taskData);
+        }
+        this.parent.currentViewData.splice(recordIndex1 + 1, 0, cAddedRecord);
+        this.parent.flatData.splice(recordIndex1 + 1, 0, cAddedRecord);
+        this.parent.ids.splice(recordIndex1 + 1, 0, cAddedRecord.ganttProperties.rowUniqueID.toString());
+        /* tslint:disable-next-line */
+        let taskId: string = cAddedRecord.level === 0 ? 'R' + cAddedRecord.ganttProperties.taskId : 'T' + cAddedRecord.ganttProperties.taskId;
+        this.parent.getTaskIds().splice(recordIndex1 + 1, 0, taskId);
+        this.updateTreeGridUniqueID(cAddedRecord, 'add');
+    }
+
+    private addNewRecord(updateRecord: IGanttData, parentRecord: IGanttData): void {
+        let cAddedRecord: IGanttData = null;
+        cAddedRecord = extend({}, {}, updateRecord, true);
+        this.parent.setRecordValue('uniqueID', getUid(this.parent.element.id + '_data_'), cAddedRecord);
+        this.parent.setRecordValue('uniqueID', cAddedRecord.uniqueID, cAddedRecord.ganttProperties, true);
+        let uniqueId: string = cAddedRecord.uniqueID.replace(this.parent.element.id + '_data_', '');
+        this.parent.setRecordValue('rowUniqueID', uniqueId, cAddedRecord);
+        this.parent.setRecordValue('rowUniqueID', uniqueId, cAddedRecord.ganttProperties, true);
+        this.parent.setRecordValue('level', 1, cAddedRecord);
+        if (this.parent.taskFields.parentID) {
+            this.parent.setRecordValue('parentId', parentRecord.ganttProperties.taskId, cAddedRecord.ganttProperties, true);
+        }
+        this.parent.setRecordValue('parentItem', this.parent.dataOperation.getCloneParent(parentRecord), cAddedRecord);
+        let parentUniqId: string = cAddedRecord.parentItem ? cAddedRecord.parentItem.uniqueID : null;
+        this.parent.setRecordValue('parentUniqueID', parentUniqId, cAddedRecord);
+        updateRecord.ganttProperties.sharedTaskUniqueIds.push(uniqueId);
+        cAddedRecord.ganttProperties.sharedTaskUniqueIds = updateRecord.ganttProperties.sharedTaskUniqueIds;
+        this.addRecordAsChild(parentRecord, cAddedRecord);
+    }
+    private removeChildRecord(record: IGanttData): void {
+        let gObj: Gantt = this.parent;
+        let dataSource: Object;
+        let data: IGanttData[] = [];
+        if (this.parent.dataSource instanceof DataManager && this.parent.dataSource.dataSource.json.length > 0) {
+            data = this.parent.dataSource.dataSource.json;
+        } else {
+            data = this.parent.currentViewData as IGanttData[];
+        }
+        dataSource = this.parent.dataSource;
+        let deletedRow: IGanttData = record;
+        let flatParentData: IGanttData = this.parent.getParentTask(deletedRow.parentItem);
+        if (deletedRow) {
+            if (deletedRow.parentItem) {
+                let deleteChildRecords: IGanttData[] = flatParentData ? flatParentData.childRecords : [];
+                let childIndex: number = 0;
+                if (deleteChildRecords && deleteChildRecords.length > 0) {
+                    if (deleteChildRecords.length === 1) {
+                        //For updating the parent record which has no child reords.
+                        this.parent.isOnDelete = true;
+                        deleteChildRecords[0].isDelete = true;
+                        this.parent.dataOperation.updateParentItems(flatParentData);
+                        this.parent.isOnDelete = false;
+                        deleteChildRecords[0].isDelete = false;
+                    }
+                    childIndex = deleteChildRecords.indexOf(deletedRow);
+                    flatParentData.childRecords.splice(childIndex, 1);
+                    // collection for updating parent record
+                    this.updateParentRecords.push(flatParentData);
+                }
+            }
+            if (deletedRow.ganttProperties.sharedTaskUniqueIds.length) {
+                let uniqueIDIndex: number = deletedRow.ganttProperties.sharedTaskUniqueIds.indexOf(deletedRow.ganttProperties.rowUniqueID);
+                deletedRow.ganttProperties.sharedTaskUniqueIds.splice(uniqueIDIndex, 1);
+            }
+            this.updateTreeGridUniqueID(deletedRow, 'delete');
+            //method to delete the record from datasource collection
+            if (deletedRow && !this.parent.taskFields.parentID) {
+                let deleteRecordIDs: string[] = [];
+                deleteRecordIDs.push(deletedRow.ganttProperties.rowUniqueID.toString());
+                this.parent.editModule.removeFromDataSource(deleteRecordIDs);
+            }
+            if (gObj.taskFields.parentID) {
+                let idx: number;
+                let ganttData: IGanttData[] = this.parent.currentViewData;
+                for (let i: number = 0; i < ganttData.length; i++) {
+                    if (ganttData[i].ganttProperties.rowUniqueID === deletedRow.ganttProperties.rowUniqueID) {
+                        idx = i;
+                    }
+                }
+                if (idx !== -1) {
+                    if ((dataSource as IGanttData[]).length > 0) {
+                        (dataSource as IGanttData[]).splice(idx, 1);
+                    }
+                    data.splice(idx, 1);
+                    this.parent.flatData.splice(idx, 1);
+                    this.parent.ids.splice(idx, 1);
+                    this.parent.getTaskIds().splice(idx, 1);
+                }
+            }
+            let recordIndex: number = data.indexOf(deletedRow);
+            if (!gObj.taskFields.parentID) {
+                let deletedRecordCount: number = this.parent.editModule.getChildCount(deletedRow, 0);
+                data.splice(recordIndex, deletedRecordCount + 1);
+                this.parent.flatData.splice(recordIndex, deletedRecordCount + 1);
+                this.parent.ids.splice(recordIndex, deletedRecordCount + 1);
+                this.parent.getTaskIds().splice(recordIndex, deletedRecordCount + 1);
+            }
+            if (deletedRow.parentItem && flatParentData && flatParentData.childRecords && !flatParentData.childRecords.length) {
+                flatParentData.expanded = false;
+                flatParentData.hasChildRecords = false;
+            }
+        }
+    }
+    // Method to add new record after resource edit
+    private addRecordAsChild(droppedRecord: IGanttData, draggedRecord: IGanttData): void {
+        let gObj: Gantt = this.parent;
+        let recordIndex1: number = this.parent.flatData.indexOf(droppedRecord);
+        let childRecords: number = this.parent.editModule.getChildCount(droppedRecord, 0);
+        let childRecordsLength: number;
+        if (!isNullOrUndefined(this.addRowIndex) && this.addRowPosition && droppedRecord.childRecords && this.addRowPosition !== 'Child') {
+            let dropChildRecord: IGanttData = droppedRecord.childRecords[this.addRowIndex];
+            let position: RowPosition = this.addRowPosition === 'Above' || this.addRowPosition === 'Below' ? this.addRowPosition :
+                'Child';
+            childRecordsLength = dropChildRecord ? this.addRowIndex + recordIndex1 + 1 :
+                childRecords + recordIndex1 + 1;
+            childRecordsLength = position === 'Above' ? childRecordsLength : childRecordsLength + 1;
+        } else {
+            childRecordsLength = (isNullOrUndefined(childRecords) ||
+                childRecords === 0) ? recordIndex1 + 1 :
+                childRecords + recordIndex1 + 1;
+        }
+        if (gObj.taskFields.parentID && (this.parent.dataSource as IGanttData[]).length > 0) {
+            (this.parent.dataSource as IGanttData[]).splice(childRecordsLength, 0, draggedRecord.taskData);
+        }
+        //this.ganttData.splice(childRecordsLength, 0, this.draggedRecord);
+        this.parent.currentViewData.splice(childRecordsLength, 0, draggedRecord);
+        this.parent.flatData.splice(childRecordsLength, 0, draggedRecord);
+        this.parent.ids.splice(childRecordsLength, 0, draggedRecord.ganttProperties.rowUniqueID.toString());
+        this.updateTreeGridUniqueID(draggedRecord, 'add');
+        /* tslint:disable-next-line */
+        let recordId: string = draggedRecord.level === 0 ? 'R' + draggedRecord.ganttProperties.taskId : 'T' + draggedRecord.ganttProperties.taskId;
+        this.parent.getTaskIds().splice(childRecordsLength, 0, recordId);
+        if (!droppedRecord.hasChildRecords) {
+            droppedRecord.hasChildRecords = true;
+            droppedRecord.expanded = true;
+            if (!droppedRecord.childRecords.length) {
+                droppedRecord.childRecords = [];
+                if (!gObj.taskFields.parentID && isNullOrUndefined(droppedRecord.taskData[this.parent.taskFields.child])) {
+                    droppedRecord.taskData[this.parent.taskFields.child] = [];
+                }
+            }
+        }
+        droppedRecord.childRecords.splice(droppedRecord.childRecords.length, 0, draggedRecord);
+        if (!isNullOrUndefined(draggedRecord) && !this.parent.taskFields.parentID
+            && !isNullOrUndefined(droppedRecord.taskData[this.parent.taskFields.child])) {
+            droppedRecord.taskData[this.parent.taskFields.child].splice(droppedRecord.childRecords.length, 0, draggedRecord.taskData);
+        }
+
+        if (!isNullOrUndefined(draggedRecord.parentItem)) {
+            //collection to update the parent records
+            this.updateParentRecords.push(droppedRecord);
         }
     }
 
@@ -1306,16 +1541,20 @@ export class Edit {
             }
         }
     }
-
+    /**
+     * 
+     * @param selectedRecords - Defines the deleted records
+     * Method to delete the records from resource view Gantt.
+     */
     private deleteResourceRecords(selectedRecords: IGanttData[]): void {
         let deleteRecords: IGanttData[] = [];
         for (let i: number = 0; i < selectedRecords.length; i++) {
             /* tslint:disable-next-line */
             if (selectedRecords[i].parentItem) {
-                for (let j: number = 0; j < this.parent.getTaskIds().length; j++) {
-                    if (this.parent.getTaskIds()[j] === 'T' + selectedRecords[i].ganttProperties.taskId) {
-                        deleteRecords.push(this.parent.currentViewData[j]);
-                    }
+                let data: IGanttData = selectedRecords[i];
+                let ids: string[] = data.ganttProperties.sharedTaskUniqueIds;
+                for (let j: number = 0; j < ids.length; j++) {
+                    deleteRecords.push(this.parent.flatData[this.parent.ids.indexOf(ids[j].toString())]);
                 }
             }
         }
@@ -1360,9 +1599,15 @@ export class Edit {
             case 'number':
             case 'string':
                 let taskId: string = taskDetail.toString();
+                if (this.parent.viewType === 'ResourceView') {
+                    if (!isNullOrUndefined(taskId) && this.parent.getTaskIds().indexOf('T' + taskId) !== -1) {
+                        this.targetedRecords.push(this.parent.flatData[this.parent.getTaskIds().indexOf('T' + taskId)]);
+                    }
+                } else {
                 if (!isNullOrUndefined(taskId) && this.parent.ids.indexOf(taskId) !== -1) {
                     this.targetedRecords.push(this.parent.getRecordByID(taskId));
                 }
+            }
                 break;
             case 'object':
                 if (!Array.isArray(taskDetail)) {
@@ -1387,9 +1632,13 @@ export class Edit {
             } else {
                 // Get record from array of task ids
                 for (let i: number = 0; i < taskDetailArray.length; i++) {
-                    let taskId: string = taskDetailArray[i].toString();
-                    if (!isNullOrUndefined(taskId) && this.parent.ids.indexOf(taskId) !== -1) {
-                        this.targetedRecords.push(this.parent.getRecordByID(taskId));
+                    let id: string = taskDetailArray[i].toString();
+                    if (this.parent.viewType === 'ResourceView') {
+                        if (!isNullOrUndefined(id) && this.parent.getTaskIds().indexOf('T' + id) !== -1) {
+                            this.targetedRecords.push(this.parent.flatData[this.parent.getTaskIds().indexOf('T' + id)]);
+                        }
+                    } else if (!isNullOrUndefined(id) && this.parent.ids.indexOf(id) !== -1) {
+                        this.targetedRecords.push(this.parent.getRecordByID(id));
                     }
                 }
             }
@@ -1453,37 +1702,44 @@ export class Edit {
         let predecessors: IPredecessor[] = record.ganttProperties.predecessor;
         for (let i: number = 0; i < predecessors.length; i++) {
             let predecessor: IPredecessor = predecessors[i];
-            if (predecessor.from.toString() === record.ganttProperties.rowUniqueID.toString()) {
-                let toRecord: IGanttData = this.parent.getRecordByID(predecessor.to.toString());
+            let recordId: string = this.parent.viewType === 'ResourceView' ? record.ganttProperties.taskId :
+                record.ganttProperties.rowUniqueID;
+            if (predecessor.from.toString() === recordId.toString()) {
+                let toRecord: IGanttData = this.parent.connectorLineModule.getRecordByID(predecessor.to.toString());
                 if (!isNullOrUndefined(toRecord)) {
-                let toRecordPredcessor: IPredecessor[] = extend([], [], toRecord.ganttProperties.predecessor, true) as IPredecessor[];
-                let index: number;
-                for (let t: number = 0; t < toRecordPredcessor.length; t++) {
-                    if (toRecordPredcessor[t].to.toString() === toRecord.ganttProperties.rowUniqueID.toString()
-                        && toRecordPredcessor[t].from.toString() === record.ganttProperties.rowUniqueID.toString()) {
-                        index = t;
-                        break;
+                    let toRecordPredcessor: IPredecessor[] = extend([], [], toRecord.ganttProperties.predecessor, true) as IPredecessor[];
+                    let index: number;
+                    for (let t: number = 0; t < toRecordPredcessor.length; t++) {
+                        let toId: string = this.parent.viewType === 'ResourceView' ? toRecord.ganttProperties.taskId :
+                            toRecord.ganttProperties.rowUniqueID;
+                        if (toRecordPredcessor[t].to.toString() === toId.toString()
+                            && toRecordPredcessor[t].from.toString() === recordId.toString()) {
+                            index = t;
+                            break;
+                        }
                     }
+                    toRecordPredcessor.splice(index, 1);
+                    this.updatePredecessorValues(toRecord, toRecordPredcessor);
                 }
-                toRecordPredcessor.splice(index, 1);
-                this.updatePredecessorValues(toRecord, toRecordPredcessor);
-            }
-            } else if (predecessor.to.toString() === record.ganttProperties.rowUniqueID.toString()) {
-                let fromRecord: IGanttData = this.parent.getRecordByID(predecessor.from.toString());
+            } else if (predecessor.to.toString() === recordId.toString()) {
+                let fromRecord: IGanttData = this.parent.connectorLineModule.getRecordByID(predecessor.from.toString());
                 if (!isNullOrUndefined(fromRecord)) {
-                let fromRecordPredcessor: IPredecessor[] = extend([], [], fromRecord.ganttProperties.predecessor, true) as IPredecessor[];
-                let index: number;
-                for (let t: number = 0; t < fromRecordPredcessor.length; t++) {
-                    if (fromRecordPredcessor[t].from.toString() === fromRecord.ganttProperties.rowUniqueID.toString()
-                        && fromRecordPredcessor[t].to.toString() === record.ganttProperties.rowUniqueID.toString()) {
-                        index = t;
-                        break;
+                    let fromRecordPredcessor: IPredecessor[] = extend(
+                        [], [], fromRecord.ganttProperties.predecessor, true) as IPredecessor[];
+                    let index: number;
+                    for (let t: number = 0; t < fromRecordPredcessor.length; t++) {
+                        let fromId: string = this.parent.viewType === 'ResourceView' ? fromRecord.ganttProperties.taskId :
+                            fromRecord.ganttProperties.rowUniqueID;
+                        if (fromRecordPredcessor[t].from.toString() === fromId.toString()
+                            && fromRecordPredcessor[t].to.toString() === recordId.toString()) {
+                            index = t;
+                            break;
+                        }
                     }
+                    fromRecordPredcessor.splice(index, 1);
+                    this.updatePredecessorValues(fromRecord, fromRecordPredcessor);
                 }
-                fromRecordPredcessor.splice(index, 1);
-                this.updatePredecessorValues(fromRecord, fromRecordPredcessor);
             }
-        }
         }
     }
 
@@ -1499,44 +1755,46 @@ export class Edit {
      * Method to update TaskID of a gantt record
      */
     public updateTaskId(currentId: string | number, newId: number | string): void {
-        let cId: string = typeof currentId === 'number' ? currentId.toString() : currentId;
-        let nId: string = typeof newId === 'number' ? newId.toString() : newId;
-        let ids: string[] = this.parent.ids;
-        if (!isNullOrUndefined(cId) && !isNullOrUndefined(nId)) {
-            let cIndex: number = ids.indexOf(cId);
-            let nIndex: number = ids.indexOf(nId);
-            // return false for invalid taskID
-            if (cIndex === -1 || nIndex > -1) {
-                return;
-            }
-            let thisRecord: IGanttData = this.parent.flatData[cIndex];
-            thisRecord.ganttProperties.taskId = thisRecord.ganttProperties.rowUniqueID = nId;
-            thisRecord.taskData[this.parent.taskFields.id] = nId;
-            thisRecord[this.parent.taskFields.id] = nId;
-            ids[cIndex] = nId;
-            if (thisRecord.hasChildRecords && this.parent.taskFields.parentID) {
-                let childRecords: IGanttData[] = thisRecord.childRecords;
-                for (let count: number = 0; count < childRecords.length; count++) {
-                    let childRecord: IGanttData = childRecords[count];
-                    childRecord[this.parent.taskFields.parentID] = newId;
-                    this.parent.chartRowsModule.refreshRecords([childRecord]);
+        if (!this.parent.readOnly) {
+            let cId: string = typeof currentId === 'number' ? currentId.toString() : currentId;
+            let nId: string = typeof newId === 'number' ? newId.toString() : newId;
+            let ids: string[] = this.parent.ids;
+            if (!isNullOrUndefined(cId) && !isNullOrUndefined(nId)) {
+                let cIndex: number = ids.indexOf(cId);
+                let nIndex: number = ids.indexOf(nId);
+                // return false for invalid taskID
+                if (cIndex === -1 || nIndex > -1) {
+                    return;
                 }
-            }
-            if (this.parent.taskFields.dependency && !isNullOrUndefined(thisRecord.ganttProperties.predecessor)) {
-                let predecessors: IPredecessor[] = thisRecord.ganttProperties.predecessor;
-                let currentGanttRecord: IGanttData;
-                for (let i: number = 0; i < predecessors.length; i++) {
-                    let predecessor: IPredecessor = predecessors[i];
-                    if (predecessor.to === cId) {
-                        currentGanttRecord = this.parent.flatData[ids.indexOf(predecessor.from)];
-                    } else if (predecessor.from === cId) {
-                        currentGanttRecord = this.parent.flatData[ids.indexOf(predecessor.to)];
+                let thisRecord: IGanttData = this.parent.flatData[cIndex];
+                thisRecord.ganttProperties.taskId = thisRecord.ganttProperties.rowUniqueID = nId;
+                thisRecord.taskData[this.parent.taskFields.id] = nId;
+                thisRecord[this.parent.taskFields.id] = nId;
+                ids[cIndex] = nId;
+                if (thisRecord.hasChildRecords && this.parent.taskFields.parentID) {
+                    let childRecords: IGanttData[] = thisRecord.childRecords;
+                    for (let count: number = 0; count < childRecords.length; count++) {
+                        let childRecord: IGanttData = childRecords[count];
+                        childRecord[this.parent.taskFields.parentID] = newId;
+                        this.parent.chartRowsModule.refreshRecords([childRecord]);
                     }
-                    this.updatePredecessorOnUpdateId(currentGanttRecord, cId, nId);
                 }
+                if (this.parent.taskFields.dependency && !isNullOrUndefined(thisRecord.ganttProperties.predecessor)) {
+                    let predecessors: IPredecessor[] = thisRecord.ganttProperties.predecessor;
+                    let currentGanttRecord: IGanttData;
+                    for (let i: number = 0; i < predecessors.length; i++) {
+                        let predecessor: IPredecessor = predecessors[i];
+                        if (predecessor.to === cId) {
+                            currentGanttRecord = this.parent.flatData[ids.indexOf(predecessor.from)];
+                        } else if (predecessor.from === cId) {
+                            currentGanttRecord = this.parent.flatData[ids.indexOf(predecessor.to)];
+                        }
+                        this.updatePredecessorOnUpdateId(currentGanttRecord, cId, nId);
+                    }
+                }
+                this.updatePredecessorOnUpdateId(thisRecord, cId, nId);
+                this.parent.treeGrid.refresh();
             }
-            this.updatePredecessorOnUpdateId(thisRecord, cId, nId);
-            this.parent.treeGrid.refresh();
         }
     }
     private updatePredecessorOnUpdateId(currentGanttRecord: IGanttData, cId: string, nId: string): void {
@@ -1638,7 +1896,7 @@ export class Edit {
                         changedRecords: isBlazor() ? blazorArgs.modifiedTaskData : eventArgs.modifiedTaskData
                     };
                     if (isBlazor()) {
-                        let blazAddedRec : string =  'addedRecords';
+                        let blazAddedRec: string = 'addedRecords';
                         updatedData[blazAddedRec] = [];
                     }
                     let crud: Promise<Object> = data.saveChanges(updatedData, this.parent.taskFields.id) as Promise<Object>;
@@ -1738,7 +1996,7 @@ export class Edit {
         let ids: string[] = this.parent.ids;
         /*Validate Task Id of data*/
         if (obj[taskModel.id]) {
-            if (ids.indexOf(obj[taskModel.id].toString()) !== -1 && !this.parent.isSameResourceAdd) {
+            if (ids.indexOf(obj[taskModel.id].toString()) !== -1) {
                 obj[taskModel.id] = null;
             } else {
                 obj[taskModel.id] = isNullOrUndefined(obj[taskModel.id]) ? null : parseInt(obj[taskModel.id], 10);
@@ -1977,8 +2235,8 @@ export class Edit {
                 if (this.addRowSelectedItem.hasChildRecords) {
                     let dataChildCount: number = this.getChildCount(this.addRowSelectedItem, 0);
                     recordIndex = currentItemIndex + dataChildCount + 1;
-                    //Expand Add record's parent item 
-                    if (!this.addRowSelectedItem.expanded) {
+                    //Expand Add record's parent item for project view
+                    if (!this.addRowSelectedItem.expanded && !this.parent.enableMultiTaskbar) {
                         this.parent.expandByID(Number(this.addRowSelectedItem.ganttProperties.rowUniqueID));
                     }
                     updatedCollectionIndex = currentViewData.indexOf(this.addRowSelectedItem) +
@@ -2041,7 +2299,7 @@ export class Edit {
     private constructTaskAddedEventArgs(
         cAddedRecord: IGanttData, modifiedRecords: IGanttData[], event: string): ITaskAddedEventArgs {
         let eventArgs: ITaskAddedEventArgs = {};
-        eventArgs.action =  eventArgs.requestType  = event;
+        eventArgs.action = eventArgs.requestType = event;
         eventArgs.data = cAddedRecord;
         eventArgs.newTaskData = getTaskData([cAddedRecord])[0];
         eventArgs.recordIndex = cAddedRecord.index;
@@ -2094,7 +2352,7 @@ export class Edit {
     private addDataInRealDataSource(
         dataCollection: Object[], record: IGanttData, rowPosition?: RowPosition): boolean | void {
         for (let i: number = 0; i < dataCollection.length; i++) {
-            let child : string = this.parent.taskFields.child;
+            let child: string = this.parent.taskFields.child;
             if (this.isBreakLoop) {
                 break;
             }
@@ -2133,126 +2391,128 @@ export class Edit {
     /* tslint:disable-next-line:max-func-body-length */
     public addRecord(data?: Object | IGanttData, rowPosition?: RowPosition, rowIndex?: number): void {
         if (this.parent.editModule && this.parent.editSettings.allowAdding) {
-        let selectedRowIndex: number = isNullOrUndefined(rowIndex) || isNaN(parseInt(rowIndex.toString(), 10)) ?
-            this.parent.selectionModule ?
-                (this.parent.selectionSettings.mode === 'Row' || this.parent.selectionSettings.mode === 'Both') &&
-                    this.parent.selectionModule.selectedRowIndexes.length === 1 ?
-                    this.parent.selectionModule.selectedRowIndexes[0] :
-                    this.parent.selectionSettings.mode === 'Cell' && this.parent.selectionModule.getSelectedRowCellIndexes().length === 1 ?
-                        this.parent.selectionModule.getSelectedRowCellIndexes()[0].rowIndex : null : null : rowIndex;
-        this.addRowSelectedItem = isNullOrUndefined(selectedRowIndex) ? null : this.parent.currentViewData[selectedRowIndex];
-        rowPosition = isNullOrUndefined(rowPosition) ? this.parent.editSettings.newRowPosition : rowPosition;
-        data = isNullOrUndefined(data) ? this.parent.editModule.dialogModule.composeAddRecord() : data;
-        if (((isNullOrUndefined(selectedRowIndex) || selectedRowIndex < 0 ||
-            isNullOrUndefined(this.addRowSelectedItem)) && (rowPosition === 'Above'
-                || rowPosition === 'Below'
-                || rowPosition === 'Child')) || !rowPosition || (rowPosition !== 'Above'
-                    && rowPosition !== 'Below'
-                    && rowPosition !== 'Child' && rowPosition !== 'Top' &&
-                    rowPosition !== 'Bottom')) {
-            rowPosition = 'Top';
-        }
-        let level: number = 0;
-        let cAddedRecord: IGanttData;
-        let args: ITaskAddedEventArgs = {};
-        let parentItem: IGanttData;
-        switch (rowPosition) {
-            case 'Top':
-            case 'Bottom':
-                level = 0;
-                break;
-            case 'Above':
-            case 'Below':
-                level = this.addRowSelectedItem.level;
-                parentItem = this.parent.getParentTask(this.addRowSelectedItem.parentItem);
-                break;
-            case 'Child':
-                level = this.addRowSelectedItem.level + 1;
-                parentItem = this.addRowSelectedItem;
-                break;
-        }
-        //Add Action Init.
-        this.prepareNewlyAddedData(data, rowPosition);
-        cAddedRecord = this.updateNewlyAddedDataBeforeAjax(data, level, rowPosition, parentItem);
-        args = this.constructTaskAddedEventArgs(cAddedRecord, this.parent.editedRecords, 'beforeAdd');
-        this.parent.showSpinner();
-        let blazorArgs: ITaskAddedEventArgs = {};
-        if (isBlazor()) {
-            if (!Array.isArray(args.data)) {
-                let customData: IGanttData[] = [];
-                customData.push(args.data);
-                setValue('data', customData, args);
+            let selectedRowIndex: number = isNullOrUndefined(rowIndex) || isNaN(parseInt(rowIndex.toString(), 10)) ?
+                this.parent.selectionModule ?
+                    (this.parent.selectionSettings.mode === 'Row' || this.parent.selectionSettings.mode === 'Both') &&
+                        this.parent.selectionModule.selectedRowIndexes.length === 1 ?
+                        this.parent.selectionModule.selectedRowIndexes[0] :
+                        this.parent.selectionSettings.mode === 'Cell' &&
+                        this.parent.selectionModule.getSelectedRowCellIndexes().length === 1 ?
+                            this.parent.selectionModule.getSelectedRowCellIndexes()[0].rowIndex : null : null : rowIndex;
+            this.addRowSelectedItem = isNullOrUndefined(selectedRowIndex) ? null : this.parent.currentViewData[selectedRowIndex];
+            rowPosition = isNullOrUndefined(rowPosition) ? this.parent.editSettings.newRowPosition : rowPosition;
+            data = isNullOrUndefined(data) ? this.parent.editModule.dialogModule.composeAddRecord() : data;
+            if (((isNullOrUndefined(selectedRowIndex) || selectedRowIndex < 0 ||
+                isNullOrUndefined(this.addRowSelectedItem)) && (rowPosition === 'Above'
+                    || rowPosition === 'Below'
+                    || rowPosition === 'Child')) || !rowPosition || (rowPosition !== 'Above'
+                        && rowPosition !== 'Below'
+                        && rowPosition !== 'Child' && rowPosition !== 'Top' &&
+                        rowPosition !== 'Bottom')) {
+                rowPosition = 'Top';
             }
-            blazorArgs = { ...args };
-        }
-        this.parent.trigger('actionBegin', args, (args: ITaskAddedEventArgs) => {
-            if (!args.cancel) {
-                if (rowPosition === 'Child' && this.addRowSelectedItem && this.addRowSelectedItem.ganttProperties.predecessor
-                    && this.addRowSelectedItem.ganttProperties.predecessor.length > 0) {
-                    this.updatePredecessorOnIndentOutdent(this.addRowSelectedItem);
+            let level: number = 0;
+            let cAddedRecord: IGanttData;
+            let args: ITaskAddedEventArgs = {};
+            let parentItem: IGanttData;
+            switch (rowPosition) {
+                case 'Top':
+                case 'Bottom':
+                    level = 0;
+                    break;
+                case 'Above':
+                case 'Below':
+                    level = this.addRowSelectedItem.level;
+                    parentItem = this.parent.getParentTask(this.addRowSelectedItem.parentItem);
+                    break;
+                case 'Child':
+                    level = this.addRowSelectedItem.level + 1;
+                    parentItem = this.addRowSelectedItem;
+                    break;
+            }
+            //Add Action Init.
+            this.prepareNewlyAddedData(data, rowPosition);
+            cAddedRecord = this.updateNewlyAddedDataBeforeAjax(data, level, rowPosition, parentItem);
+            args = this.constructTaskAddedEventArgs(cAddedRecord, this.parent.editedRecords, 'beforeAdd');
+            this.parent.showSpinner();
+            let blazorArgs: ITaskAddedEventArgs = {};
+            if (isBlazor()) {
+                if (!Array.isArray(args.data)) {
+                    let customData: IGanttData[] = [];
+                    customData.push(args.data);
+                    setValue('data', customData, args);
                 }
-                if (isBlazor()) {
-                    blazorArgs.data = blazorArgs.data[0];
-                    args = blazorArgs;
-                    this._resetProperties();
-                }
-                if (isRemoteData(this.parent.dataSource)) {
-                    let data: DataManager = this.parent.dataSource as DataManager;
-                    let updatedData: object = {
-                        addedRecords: [args.newTaskData], // to check
-                        changedRecords: args.modifiedTaskData
-                    };
-                    let prevID: string = args.data.ganttProperties.taskId.toString();
-                    /* tslint:disable-next-line */
-                    let query: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
-                    let crud: Promise<Object> = data.saveChanges(updatedData, this.parent.taskFields.id, null, query) as Promise<Object>;
-                    crud.then((e: { addedRecords: Object[], changedRecords: Object[] }) => {
-                        if (this.parent.taskFields.id && !isNullOrUndefined(e.addedRecords[0][this.parent.taskFields.id]) &&
-                            e.addedRecords[0][this.parent.taskFields.id].toString() !== prevID) {
-                            this.parent.setRecordValue(
-                                'taskId', e.addedRecords[0][this.parent.taskFields.id], args.data.ganttProperties, true);
-                            this.parent.setRecordValue(
-                                'taskData.' + this.parent.taskFields.id, e.addedRecords[0][this.parent.taskFields.id], args.data);
-                            this.parent.setRecordValue(
-                                this.parent.taskFields.id, e.addedRecords[0][this.parent.taskFields.id], args.data);
-                            this.parent.setRecordValue(
-                                'rowUniqueID', e.addedRecords[0][this.parent.taskFields.id].toString(), args.data.ganttProperties, true);
-                            let idsIndex: number = this.parent.ids.indexOf(prevID);
-                            if (idsIndex !== -1) {
-                            this.parent.ids[idsIndex] = e.addedRecords[0][this.parent.taskFields.id].toString();
+                blazorArgs = { ...args };
+            }
+            this.parent.trigger('actionBegin', args, (args: ITaskAddedEventArgs) => {
+                if (!args.cancel) {
+                    if (rowPosition === 'Child' && this.addRowSelectedItem && this.addRowSelectedItem.ganttProperties.predecessor
+                        && this.addRowSelectedItem.ganttProperties.predecessor.length > 0) {
+                        this.updatePredecessorOnIndentOutdent(this.addRowSelectedItem);
+                    }
+                    if (isBlazor()) {
+                        blazorArgs.data = blazorArgs.data[0];
+                        args = blazorArgs;
+                        this._resetProperties();
+                    }
+                    if (isRemoteData(this.parent.dataSource)) {
+                        let data: DataManager = this.parent.dataSource as DataManager;
+                        let updatedData: object = {
+                            addedRecords: [args.newTaskData], // to check
+                            changedRecords: args.modifiedTaskData
+                        };
+                        let prevID: string = args.data.ganttProperties.taskId.toString();
+                        /* tslint:disable-next-line */
+                        let query: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
+                        let crud: Promise<Object> = data.saveChanges(updatedData, this.parent.taskFields.id, null, query) as Promise<Object>;
+                        crud.then((e: { addedRecords: Object[], changedRecords: Object[] }) => {
+                            if (this.parent.taskFields.id && !isNullOrUndefined(e.addedRecords[0][this.parent.taskFields.id]) &&
+                                e.addedRecords[0][this.parent.taskFields.id].toString() !== prevID) {
+                                this.parent.setRecordValue(
+                                    'taskId', e.addedRecords[0][this.parent.taskFields.id], args.data.ganttProperties, true);
+                                this.parent.setRecordValue(
+                                    'taskData.' + this.parent.taskFields.id, e.addedRecords[0][this.parent.taskFields.id], args.data);
+                                this.parent.setRecordValue(
+                                    this.parent.taskFields.id, e.addedRecords[0][this.parent.taskFields.id], args.data);
+                                this.parent.setRecordValue(
+                                    'rowUniqueID', e.addedRecords[0][this.parent.taskFields.id].toString(),
+                                    args.data.ganttProperties, true);
+                                let idsIndex: number = this.parent.ids.indexOf(prevID);
+                                if (idsIndex !== -1) {
+                                    this.parent.ids[idsIndex] = e.addedRecords[0][this.parent.taskFields.id].toString();
+                                }
                             }
-                        }
+                            if (cAddedRecord.level === 0) {
+                                this.parent.treeGrid.parentData.splice(0, 0, cAddedRecord);
+                            }
+                            this.updateTreeGridUniqueID(cAddedRecord, 'add');
+                            this.refreshNewlyAddedRecord(args, cAddedRecord);
+                            this._resetProperties();
+                        }).catch((e: { result: Object[] }) => {
+                            this.removeAddedRecord();
+                            this.dmFailure(e as { result: Object[] }, args);
+                            this._resetProperties();
+                        });
+                    } else {
+                        this.updateRealDataSource(args.data, rowPosition);
                         if (cAddedRecord.level === 0) {
                             this.parent.treeGrid.parentData.splice(0, 0, cAddedRecord);
                         }
                         this.updateTreeGridUniqueID(cAddedRecord, 'add');
                         this.refreshNewlyAddedRecord(args, cAddedRecord);
                         this._resetProperties();
-                    }).catch((e: { result: Object[] }) => {
-                        this.removeAddedRecord();
-                        this.dmFailure(e as { result: Object[] }, args);
-                        this._resetProperties();
-                    });
-                } else {
-                    this.updateRealDataSource(args.data, rowPosition);
-                    if (cAddedRecord.level === 0) {
-                        this.parent.treeGrid.parentData.splice(0, 0, cAddedRecord);
                     }
-                    this.updateTreeGridUniqueID(cAddedRecord, 'add');
-                    this.refreshNewlyAddedRecord(args, cAddedRecord);
+                } else {
+                    args = isBlazor() ? blazorArgs : args;
+                    this.removeAddedRecord();
+                    this.reUpdatePreviousRecords();
+                    if (this.dialogModule.dialog && !this.dialogModule.dialogObj.isDestroyed) {
+                        this.dialogModule.dialogObj.hide();
+                    }
+                    this.dialogModule.dialogClose();
                     this._resetProperties();
                 }
-            } else {
-                args = isBlazor() ? blazorArgs : args;
-                this.removeAddedRecord();
-                this.reUpdatePreviousRecords();
-                if (this.dialogModule.dialog && !this.dialogModule.dialogObj.isDestroyed) {
-                    this.dialogModule.dialogObj.hide();
-                }
-                this.dialogModule.dialogClose();
-                this._resetProperties();
-            }
-        });
+            });
         }
     }
     /**
@@ -2305,6 +2565,23 @@ export class Edit {
             this.dialogModule.dialogObj.hide();
         }
         this.dialogModule.dialogClose();
+        if (this.parent.viewType === 'ResourceView') {
+            args.data.ganttProperties.sharedTaskUniqueIds.push(args.data.ganttProperties.rowUniqueID);
+            if (args.data.ganttProperties.resourceInfo.length) {
+                if (args.data.ganttProperties.resourceInfo.length > 1) {
+                    let resources: Object[] = extend([], [], args.data.ganttProperties.resourceInfo, true) as Object[];
+                    resources.splice(0, 1);
+                    this.updateResoures([], resources, args.data);
+                }
+            } else {
+                this.removeChildRecord(args.data);
+                this.parent.editModule.checkWithUnassignedTask(args.data);
+            }
+            for (let k: number = 0; k < this.updateParentRecords.length; k++) {
+                this.parent.dataOperation.updateParentItems(this.updateParentRecords[k]);
+            }
+            this.updateParentRecords = [];
+        }
     }
 
     /**
@@ -2336,14 +2613,14 @@ export class Edit {
      * indent a selected record
      */
     public indent(): void {
-        let index : number = this.parent.selectedRowIndex;
+        let index: number = this.parent.selectedRowIndex;
         let isSelected: boolean = this.parent.selectionModule ? this.parent.selectionModule.selectedRowIndexes.length === 1 ||
             this.parent.selectionModule.getSelectedRowCellIndexes().length === 1 ? true : false : false;
         let dropIndex: number;
         let prevRecord: IGanttData = this.parent.currentViewData[this.parent.selectionModule.getSelectedRowIndexes()[0] - 1];
         if (!this.parent.editSettings.allowEditing || index === 0 || index === -1 || !isSelected ||
             this.parent.viewType === 'ResourceView' || this.parent.currentViewData[index].level - prevRecord.level === 1) {
-                return;
+            return;
         } else {
             if (prevRecord.level > (this.parent.selectionModule.getSelectedRecords()[0] as IGanttData).level) {
                 let thisParent: IGanttData = this.parent.getRecordByID(prevRecord.parentItem.taskId);
@@ -2371,8 +2648,8 @@ export class Edit {
             this.parent.viewType === 'ResourceView' || this.parent.currentViewData[index].level === 0) {
             return;
         } else {
-            let thisParent : IGanttData = this.parent.getRecordByID((this.parent.selectionModule.getSelectedRecords()[0] as
-            IGanttData).parentItem.taskId);
+            let thisParent: IGanttData = this.parent.getRecordByID((this.parent.selectionModule.getSelectedRecords()[0] as
+                IGanttData).parentItem.taskId);
             for (let i: number = 0; i < this.parent.currentViewData.length; i++) {
                 if ((this.parent.currentViewData[i] as IGanttData).taskData === thisParent.taskData) {
                     dropIndex = i;
@@ -2453,7 +2730,7 @@ export class Edit {
                     if (this.dropPosition === 'bottomSegment') {
                         if (!droppedRec.hasChildRecords) {
                             if (this.parent.taskFields.parentID && (this.parent.dataSource as IGanttData[]).length > 0) {
-                               (this.parent.dataSource as IGanttData[]).splice(recordIndex1 + 1, 0, this.draggedRecord.taskData);
+                                (this.parent.dataSource as IGanttData[]).splice(recordIndex1 + 1, 0, this.draggedRecord.taskData);
                             }
                             this.parent.flatData.splice(recordIndex1 + 1, 0, this.draggedRecord);
                             this.ganttData.splice(recordIndex1 + 1, 0, this.draggedRecord);
@@ -2462,7 +2739,7 @@ export class Edit {
                         } else {
                             c = this.parent.editModule.getChildCount(droppedRec, 0);
                             if (this.parent.taskFields.parentID && (this.parent.dataSource as IGanttData[]).length > 0) {
-                               (this.parent.dataSource as IGanttData[]).splice(recordIndex1 + c + 1, 0, this.draggedRecord.taskData);
+                                (this.parent.dataSource as IGanttData[]).splice(recordIndex1 + c + 1, 0, this.draggedRecord.taskData);
                             }
                             this.ganttData.splice(recordIndex1 + c + 1, 0, this.draggedRecord);
                             this.parent.flatData.splice(recordIndex1 + c + 1, 0, this.draggedRecord);
@@ -2494,12 +2771,12 @@ export class Edit {
             }
             if (this.dropPosition === 'middleSegment') {
                 if (droppedRec.ganttProperties.predecessor) {
-                this.parent.editModule.removePredecessorOnDelete(droppedRec);
-                droppedRec.ganttProperties.predecessor = null;
-                droppedRec.ganttProperties.predecessorsName = null;
-                droppedRec[this.parent.taskFields.dependency] = null;
-                droppedRec.taskData[this.parent.taskFields.dependency] = null;
-            }
+                    this.parent.editModule.removePredecessorOnDelete(droppedRec);
+                    droppedRec.ganttProperties.predecessor = null;
+                    droppedRec.ganttProperties.predecessorsName = null;
+                    droppedRec[this.parent.taskFields.dependency] = null;
+                    droppedRec.taskData[this.parent.taskFields.dependency] = null;
+                }
                 if (droppedRec.ganttProperties.isMilestone) {
                     this.parent.setRecordValue('isMilestone', false, droppedRec.ganttProperties, true);
                     if (!isNullOrUndefined(droppedRec.taskData[this.parent.taskFields.milestone])) {
@@ -2508,7 +2785,7 @@ export class Edit {
                         }
                     }
                 }
-        }
+            }
             for (let k: number = 0; k < this.updateParentRecords.length; k++) {
                 this.parent.dataOperation.updateParentItems(this.updateParentRecords[k]);
             }
@@ -2546,11 +2823,11 @@ export class Edit {
                 if (!this.parent.taskFields.parentID) {
                     (tempData as IGanttData[]).splice(indx, 0, draggedRec.taskData);
                 }
-           } else if (this.dropPosition === 'bottomSegment') {
+            } else if (this.dropPosition === 'bottomSegment') {
                 if (!this.parent.taskFields.parentID) {
                     (tempData as IGanttData[]).splice(indx + 1, 0, draggedRec.taskData);
                 }
-           }
+            }
         } else if (!this.parent.taskFields.parentID && (!isNullOrUndefined(droppedRec) && droppedRec.parentItem)) {
             if (this.dropPosition === 'topSegment' || this.dropPosition === 'bottomSegment') {
                 let rowPos: RowPosition = this.dropPosition === 'topSegment' ? 'Above' : 'Below';
@@ -2560,18 +2837,18 @@ export class Edit {
             }
         }
         if (this.parent.taskFields.parentID) {
-           if (draggedRec.parentItem) {
-              if (this.dropPosition === 'topSegment' || this.dropPosition === 'bottomSegment') {
-                draggedRec[this.parent.taskFields.parentID] = droppedRec[this.parent.taskFields.parentID];
-                draggedRec.taskData[this.parent.taskFields.parentID] = droppedRec[this.parent.taskFields.parentID];
-              } else {
-                draggedRec[this.parent.taskFields.parentID] = droppedRec[this.parent.taskFields.id];
-                draggedRec.taskData[this.parent.taskFields.parentID] = droppedRec[this.parent.taskFields.id];
-              }
-           } else {
-            draggedRec[this.parent.taskFields.parentID] = null;
-            draggedRec.taskData[this.parent.taskFields.parentID] = null;
-           }
+            if (draggedRec.parentItem) {
+                if (this.dropPosition === 'topSegment' || this.dropPosition === 'bottomSegment') {
+                    draggedRec[this.parent.taskFields.parentID] = droppedRec[this.parent.taskFields.parentID];
+                    draggedRec.taskData[this.parent.taskFields.parentID] = droppedRec[this.parent.taskFields.parentID];
+                } else {
+                    draggedRec[this.parent.taskFields.parentID] = droppedRec[this.parent.taskFields.id];
+                    draggedRec.taskData[this.parent.taskFields.parentID] = droppedRec[this.parent.taskFields.id];
+                }
+            } else {
+                draggedRec[this.parent.taskFields.parentID] = null;
+                draggedRec.taskData[this.parent.taskFields.parentID] = null;
+            }
         }
     }
     private deleteDragRow(): void {
@@ -2618,7 +2895,7 @@ export class Edit {
             childRec === 0) ? recordIndex1 + 1 :
             childRec + recordIndex1 + 1;
         if (this.dropPosition === 'middleSegment') {
-            if (obj.taskFields.parentID &&  (this.parent.dataSource as IGanttData[]).length > 0) {
+            if (obj.taskFields.parentID && (this.parent.dataSource as IGanttData[]).length > 0) {
                 (this.parent.dataSource as IGanttData[]).splice(childRecordsLength, 0, this.draggedRecord.taskData);
             }
             this.parent.flatData.splice(childRecordsLength, 0, this.draggedRecord);
@@ -2696,7 +2973,7 @@ export class Edit {
                     this.updateParentRecords.push(flatParent);
                 }
             }
-             //method to delete the record from datasource collection
+            //method to delete the record from datasource collection
             if (delRow && !this.parent.taskFields.parentID) {
                 let deleteRecordIDs: string[] = [];
                 deleteRecordIDs.push(delRow.ganttProperties.rowUniqueID.toString());
@@ -2744,8 +3021,8 @@ export class Edit {
             currentRec = record.childRecords[i];
             let data: Object;
             data = (this.parent.dataSource as IGanttData[]).length > 0 ?
-               this.parent.dataSource as IGanttData[] : this.parent.currentViewData;
-            for (let i: number = 0; i < (< IGanttData[]>data).length; i++) {
+                this.parent.dataSource as IGanttData[] : this.parent.currentViewData;
+            for (let i: number = 0; i < (<IGanttData[]>data).length; i++) {
                 if (data[i][this.parent.taskFields.id] === currentRec.taskData[this.parent.taskFields.id]) {
                     indx = i;
                 }
@@ -2781,11 +3058,11 @@ export class Edit {
             let parentItem: IGanttData = extend({}, droppedRec);
             delete parentItem.childRecords;
             let createParentItem: IParent = {
-                uniqueID : parentItem.uniqueID,
-                expanded : parentItem.expanded,
-                level : parentItem.level,
-                index : parentItem.index,
-                taskId : parentItem.ganttProperties.rowUniqueID
+                uniqueID: parentItem.uniqueID,
+                expanded: parentItem.expanded,
+                level: parentItem.level,
+                index: parentItem.index,
+                taskId: parentItem.ganttProperties.rowUniqueID
             };
             draggedRec.parentItem = createParentItem;
             draggedRec.parentUniqueID = droppedRec.uniqueID;

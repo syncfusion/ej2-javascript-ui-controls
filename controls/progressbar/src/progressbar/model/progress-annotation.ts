@@ -11,7 +11,7 @@ import { ProgressAnimation } from '../utils/progress-animation';
 export class ProgressAnnotation extends AnnotationBase {
     private progress: ProgressBar;
     private annotations: ProgressAnnotationSettingsModel[];
-    private parentElement: HTMLElement;
+    public parentElement: HTMLElement;
     private animation: ProgressAnimation = new ProgressAnimation();
     /**
      * Constructor for ProgressBar annotation
@@ -30,7 +30,6 @@ export class ProgressAnnotation extends AnnotationBase {
     public renderAnnotations(element: Element): void {
         this.annotations = this.progress.annotations;
         let parentElement: HTMLElement = document.getElementById(this.progress.element.id + 'Annotation_collections');
-        let annotationElement: Element;
         this.parentElement = parentElement ? parentElement : createElement('div', {
             id: this.progress.element.id + 'Annotation_collections',
             styles: 'position:absolute'

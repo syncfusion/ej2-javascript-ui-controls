@@ -1088,7 +1088,7 @@ describe('form field validation', () => {
     it('edit dropdown form field', () => {
         let formfields: FieldElementBox[] = editor.documentHelper.formFields;
         let formfield: DropDownFormField = formfields[2].formFieldData as DropDownFormField;
-        formfield.dropDownItems = ['one', 'two', 'three'];
+        formfield.dropdownItems = ['one', 'two', 'three'];
         formfield.selectedIndex = 1;
         editor.editor.editFormField('DropDown', formfield);
         (editor.documentHelper.formFields[2].formFieldData as DropDownFormField) = formfield;
@@ -1110,7 +1110,7 @@ describe('form field validation', () => {
         editor.editor.insertFormField('DropDown');
         let formfields: FieldElementBox[] = editor.documentHelper.formFields;
         let formfield: DropDownFormField = formfields[3].formFieldData as DropDownFormField;
-        formfield.dropDownItems = ['one', 'two', 'three'];
+        formfield.dropdownItems = ['one', 'two', 'three'];
         formfield.selectedIndex = 1;
         (formfields[3].formFieldData as DropDownFormField) = formfield;
         let text: string = (editor.editor as any).getDefaultText(formfield as DropDownFormField);
@@ -1120,7 +1120,7 @@ describe('form field validation', () => {
         editor.editor.insertFormField('DropDown');
         let formfields: FieldElementBox[] = editor.documentHelper.formFields;
         let formfield: DropDownFormField = formfields[4].formFieldData as DropDownFormField;
-        formfield.dropDownItems = [];
+        formfield.dropdownItems = [];
         formfield.selectedIndex = 1;
         (formfields[4].formFieldData as DropDownFormField) = formfield;
         let text: string = (editor.editor as any).getDefaultText(formfield as DropDownFormField);
@@ -1144,7 +1144,7 @@ describe('form field validation', () => {
     it('update dropdown form field', () => {
         let formfields: FieldElementBox[] = editor.documentHelper.formFields;
         let formfield: DropDownFormField = formfields[4].formFieldData as DropDownFormField;
-        formfield.dropDownItems = ['one', 'two', 'three'];
+        formfield.dropdownItems = ['one', 'two', 'three'];
         editor.editor.updateFormField(formfields[4], 1, true);
         expect((formfields[4].formFieldData as DropDownFormField).selectedIndex).toBe(1);
     });
@@ -1155,7 +1155,7 @@ describe('form field validation', () => {
     it('update dropdown form field', () => {
         let formfields: FieldElementBox[] = editor.documentHelper.formFields;
         let formfield: DropDownFormField = formfields[4].formFieldData as DropDownFormField;
-        formfield.dropDownItems = ['one', 'two', 'three'];
+        formfield.dropdownItems = ['one', 'two', 'three'];
         editor.editor.setFormField;
         expect((formfields[4].formFieldData as DropDownFormField).selectedIndex).toBe(1);
     });

@@ -116,8 +116,10 @@ export class DetailsView {
             if (this.parent.isMobile) {
                 sortSettings = [];
             } else {
-                sortSettings = [{ direction: this.parent.sortOrder, field: this.parent.sortBy }];
-            }
+                if (this.parent.sortOrder !== 'None') {
+                    sortSettings = [{ direction: this.parent.sortOrder, field: this.parent.sortBy }];
+                }
+        }
             this.gridObj = new Grid({
                 dataSource: items,
                 allowSorting: true,
@@ -450,7 +452,11 @@ export class DetailsView {
     }
 
     private onSortColumn(): void {
-        this.gridObj.sortModule.sortColumn(this.parent.sortBy, this.parent.sortOrder);
+        if (this.parent.sortOrder !== 'None') {
+            this.gridObj.sortModule.sortColumn(this.parent.sortBy, this.parent.sortOrder);
+        } else {
+            this.gridObj.dataSource = getSortedData(this.parent, this.gridObj.dataSource as Object[]);
+        }
     }
 
     private onPropertyChanged(e: NotifyArgs): void {
@@ -634,7 +640,9 @@ export class DetailsView {
             }
             this.adjustHeight();
             if (this.gridObj.sortSettings.columns.length > 0 && this.gridObj.sortSettings.columns[0].field !== this.parent.sortBy) {
-                this.gridObj.sortColumn(this.parent.sortBy, this.parent.sortOrder);
+                if (this.parent.sortOrder !== 'None') {
+                    this.gridObj.sortColumn(this.parent.sortBy, this.parent.sortOrder);
+                }
             }
         }
     }
@@ -659,7 +667,11 @@ export class DetailsView {
         if (columnData[len - 1].field && (columnData[len - 1].field === 'filterPath')) {
             /* istanbul ignore next */
             if (this.gridObj.sortSettings.columns[0].field === 'filterPath') {
-                this.gridObj.sortColumn('name', this.parent.sortOrder);
+                if (this.parent.sortOrder !== 'None') {
+                    this.gridObj.sortColumn('name', this.parent.sortOrder);
+                } else {
+                    this.gridObj.dataSource = getSortedData(this.parent, this.gridObj.dataSource as Object[]);
+                }
                 this.parent.notify(events.sortByChange, {});
             }
             this.gridObj.columns.pop();
@@ -1069,7 +1081,7 @@ export class DetailsView {
                 this.openContent(args.data);
             }
         }
-        this.parent.visitedItem = args.row;
+        this.parent.visitedItem = <Element>args.row;
         if (this.parent.allowMultiSelection && !isNOU(item) && !isNOU(item.querySelector('.e-checkselect'))) {
             let checkItem: HTMLElement = <HTMLElement>item.querySelector('.e-checkselect');
             checkItem.focus();

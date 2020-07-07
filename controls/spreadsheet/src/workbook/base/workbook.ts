@@ -9,8 +9,9 @@ import { DefineName, CellStyle, updateUsedRange, getIndexesFromAddress, localeDa
 import * as events from '../common/event';
 import { CellStyleModel, DefineNameModel, HyperlinkModel, insertModel, InsertDeleteModelArgs, getAddressInfo } from '../common/index';
 import { setCellFormat, sheetCreated, deleteModel, ModelType, ProtectSettingsModel, ValidationModel, setLockCells } from '../common/index';
-import { BeforeSaveEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, SaveOptions, SetCellFormatArgs } from '../common/interface';
-import { SortOptions, BeforeSortEventArgs, SortEventArgs, FindOptions, CellInfoEventArgs, UnprotectArgs } from '../common/index';
+import { BeforeSaveEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs } from '../common/interface';
+import { SaveOptions, SetCellFormatArgs, ClearOptions } from '../common/interface';
+import { SortOptions, BeforeSortEventArgs, SortEventArgs, FindOptions, CellInfoEventArgs, ConditionalFormatModel } from '../common/index';
 import { FilterEventArgs, FilterOptions, BeforeFilterEventArgs, setMerge, MergeType, MergeArgs } from '../common/index';
 import { getCell, skipDefaultValue, setCell, wrap as wrapText } from './cell';
 import { DataBind, setRow, setColumn } from '../index';
@@ -22,6 +23,7 @@ import { ServiceLocator } from '../services/index';
 import { setLinkModel } from '../common/event';
 import { beginAction, completeAction } from '../../spreadsheet/common/event';
 import { WorkbookFindAndReplace } from '../actions/find-and-replace';
+import { WorkbookConditionalFormat } from '../actions/conditional-formatting';
 
 /**
  * Represents the Workbook.
@@ -217,6 +219,13 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     public allowDataValidation: boolean;
 
     /**
+     * It allows you to apply conditional formatting to the sheet. 
+     * @default true
+     */
+    @Property(true)
+    public allowConditionalFormat: boolean;
+
+    /**
      * Specifies the cell style options.
      *  ```html
      * <div id='Spreadsheet'></div>
@@ -394,7 +403,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         Workbook.Inject(
             DataBind, WorkbookSave, WorkbookOpen, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit,
             WorkbookFormula, WorkbookSort, WorkbookHyperlink, WorkbookFilter, WorkbookInsert, WorkbookFindAndReplace,
-            WorkbookDataValidation, WorkbookProtectSheet, WorkbookMerge);
+            WorkbookDataValidation, WorkbookProtectSheet, WorkbookMerge, WorkbookConditionalFormat);
         this.commonCellStyle = {};
         if (options && options.cellStyle) { this.commonCellStyle = options.cellStyle; }
         if (this.getModuleName() === 'workbook') {
@@ -452,8 +461,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Applies the style (font family, font weight, background color, etc...) to the specified range of cells.
      * @param {CellStyleModel} style - Specifies the cell style.
-     * @param {string} range - Specifies the address for the range of cells.
-     * @returns void
+     * @param {string} range? - Specifies the address for the range of cells.
      */
     public cellFormat(style: CellStyleModel, range?: string): void {
         let sheet: SheetModel = this.getActiveSheet();
@@ -463,7 +471,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Applies cell lock to the specified range of cells.
-     * @param {string} range - Specifies the address for the range of cells.
+     * @param {string} range? - Specifies the address for the range of cells.
      * @param {boolean} isLocked -Specifies the cell is locked or not.
      */
     public lockCells(range?: string, isLocked?: boolean): void {
@@ -488,7 +496,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Applies the number format (number, currency, percentage, short date, etc...) to the specified range of cells.
      * @param {string} format - Specifies the number format code.
-     * @param {string} range - Specifies the address for the range of cells.
+     * @param {string} range? - Specifies the address for the range of cells.
      */
     public numberFormat(format: string, range?: string): void {
         this.notify(events.applyNumberFormatting, { format: format, range: range });
@@ -553,43 +561,37 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Used to hide/show the rows in spreadsheet.
-     * @param {number} startIndex - Specifies the start row index.
-     * @param {number} endIndex - Specifies the end row index.
-     * @param {boolean} hide - To hide/show the rows in specified range.
-     * @param {string | number} sheet - Specifies the sheet name or index. By default it sets to active sheet index.
+     * @param {number} startRow - Specifies the start row index.
+     * @param {number} endRow? - Specifies the end row index.
+     * @param {boolean} hide? - To hide/show the rows in specified range.
      * @returns void
      */
-    public hideRow(startIndex: number, endIndex?: number, hide?: boolean, sheet?: string | number): void {
-        if (isNullOrUndefined(hide)) { hide = true; }
-        if (isNullOrUndefined(endIndex)) { endIndex = startIndex; }
-        let sheetModel: SheetModel = getSheet(this, sheet);
+    public hideRow(startIndex: number, endIndex: number = startIndex, hide: boolean = true): void {
+        let sheet: SheetModel = this.getActiveSheet();
         for (let i: number = startIndex; i <= endIndex; i++) {
-            setRow(sheetModel, i, { hidden: hide });
+            setRow(sheet, i, { hidden: hide });
         }
     }
 
     /**
      * Used to hide/show the columns in spreadsheet.
      * @param {number} startIndex - Specifies the start column index.
-     * @param {number} endIndex - Specifies the end column index.
-     * @param {boolean} hide - Set `true` / `false` to hide / show the columns.
-     * @param {string | number} sheet - Specifies the sheet name or index. By default it sets to active sheet index.
+     * @param {number} endIndex? - Specifies the end column index.
+     * @param {boolean} hide? - Set `true` / `false` to hide / show the columns.
      * @returns void
      */
-    public hideColumn(startIndex: number, endIndex?: number, hide?: boolean, sheet?: string | number): void {
-        if (isNullOrUndefined(endIndex)) { endIndex = startIndex; }
-        if (isNullOrUndefined(hide)) { hide = true; }
-        let model: SheetModel = getSheet(this, sheet);
+    public hideColumn(startIndex: number, endIndex: number = startIndex, hide: boolean = true): void {
+        let sheet: SheetModel = this.getActiveSheet();
         for (let i: number = startIndex; i <= endIndex; i++) {
-            setColumn(model, i, { hidden: hide });
+            setColumn(sheet, i, { hidden: hide });
         }
     }
 
     /**
      * Sets the border to specified range of cells.
-     * @param {CellStyleModel} style - Specifies the style property which contains border value.
-     * @param {string} range - Specifies the range of cell reference. If not specified, it will considered the active cell reference.
-     * @param {BorderType} type - Specifies the range of cell reference. If not specified, it will considered the active cell reference.
+     * @param {CellStyleModel} style? - Specifies the style property which contains border value.
+     * @param {string} range? - Specifies the range of cell reference. If not specified, it will considered the active cell reference.
+     * @param {BorderType} type? - Specifies the range of cell reference. If not specified, it will considered the active cell reference.
      * @returns void
      */
     public setBorder(style: CellStyleModel, range?: string, type?: BorderType): void {
@@ -601,36 +603,31 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Used to insert rows in to the spreadsheet.
-     * @param {number | RowModel[]} startRow - Specifies the start row index / row model which needs to be inserted.
-     * @param {number} endRow - Specifies the end row index.
-     * @param {string | number} sheet - Specifies the sheet name or index. By default it sets to active sheet index.
+     * @param {number | RowModel[]} startRow? - Specifies the start row index / row model which needs to be inserted.
+     * @param {number} endRow? - Specifies the end row index.
      * @returns void
      */
-    public insertRow(startRow?: number | RowModel[], endRow?: number, sheet?: string | number): void {
-        sheet = getSheetIndex(this, sheet) || 0;
-        this.notify(insertModel, <InsertDeleteModelArgs>{
-            model: this.sheets[sheet], start: startRow, end: endRow, modelType: 'Row', sheet: sheet
-        });
+    public insertRow(startRow?: number | RowModel[], endRow?: number): void {
+        this.notify(insertModel, <InsertDeleteModelArgs>{ model: this.getActiveSheet(), start: startRow, end: endRow, modelType: 'Row' });
     }
 
     /**
      * Used to insert columns in to the spreadsheet.
-     * @param {number | ColumnModel[]} startColumn - Specifies the start column index / column model which needs to be inserted.
-     * @param {number} endColumn - Specifies the end column index.
-     * @param {string | number} sheet - Specifies the sheet name or index. By default it sets to active sheet index.
+     * @param {number | ColumnModel[]} startColumn? - Specifies the start column index / column model which needs to be inserted.
+     * @param {number} endColumn? - Specifies the end column index.
      * @returns void
      */
-    public insertColumn(startColumn?: number | ColumnModel[], endColumn?: number, sheet?: string | number): void {
-        sheet = getSheetIndex(this, sheet) || 0;
+    public insertColumn(startColumn?: number | ColumnModel[], endColumn?: number): void {
         this.notify(insertModel, <InsertDeleteModelArgs>{
-            model: this.sheets[sheet], start: startColumn, end: endColumn, modelType: 'Column', sheet: sheet
+            model: this.getActiveSheet(), start: startColumn, end: endColumn,
+            modelType: 'Column'
         });
     }
 
     /**
      * Used to insert sheets in to the spreadsheet.
-     * @param {number | SheetModel[]} startSheet - Specifies the start column index / column model which needs to be inserted.
-     * @param {number} endSheet - Specifies the end column index.
+     * @param {number | SheetModel[]} startSheet? - Specifies the start column index / column model which needs to be inserted.
+     * @param {number} endSheet? - Specifies the end column index.
      * @returns void
      */
     public insertSheet(startSheet?: number | SheetModel[], endSheet?: number): void {
@@ -639,28 +636,25 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Used to delete rows, columns and sheets from the spreadsheet.
-     * @param {number | RowModel[]} startIndex - Specifies the start sheet / row / column index.
-     * @param {number} endIndex - Specifies the end sheet / row / column index.
-     * @param {ModelType} model - Specifies the delete model type. By default, the model is considered as `Sheet`. The possible values are,
+     * @param {number | RowModel[]} startIndex? - Specifies the start sheet / row / column index.
+     * @param {number} endIndex? - Specifies the end sheet / row / column index.
+     * @param {ModelType} model? - Specifies the delete model type. By default, the model is considered as `Sheet`. The possible values are,
      * - Row: To delete rows.
      * - Column: To delete columns.
      * - Sheet: To delete sheets.
-     * @param {string | number} sheet - Specifies the sheet name or index. By default it sets to active sheet index.
-     * This parameter is not applicable for `model: 'Sheet'`.
      * @returns void
      */
-    public delete(startIndex?: number, endIndex?: number, model?: ModelType, sheet?: string | number): void {
-        sheet = getSheetIndex(this, sheet) || 0;
+    public delete(startIndex?: number, endIndex?: number, model?: ModelType): void {
         this.notify(deleteModel, <InsertDeleteModelArgs>{
-            model: !model || model === 'Sheet' ? this : this.sheets[sheet], sheet: sheet, start: startIndex || 0,
-            end: isNullOrUndefined(endIndex) ? (startIndex || 0) : endIndex, modelType: model || 'Sheet'
+            model: !model || model === 'Sheet' ? this : this.getActiveSheet(), start:
+                startIndex || 0, end: endIndex || 0, modelType: model || 'Sheet'
         });
     }
 
     /**
      * Used to merge the range of cells.
-     * @param {string} range - Specifies the range of cells as address.
-     * @param {MergeType} type - Specifies the merge type. The possible values are,
+     * @param {string} range? - Specifies the rnage of cells as address.
+     * @param {MergeType} type? - Specifies the merge type. The possible values are,
      * - All: Merge all the cells between provided range.
      * - Horizontally: Merge the cells row-wise.
      * - Vertically: Merge the cells column-wise.
@@ -669,16 +663,6 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     public merge(range?: string, type?: MergeType): void {
         range = range || this.getActiveSheet().selectedRange;
         this.notify(setMerge, <MergeArgs>{ merge: true, range: range, type: type || 'All', refreshRibbon:
-            range.indexOf(this.getActiveSheet().activeCell) > -1 ? true : false });
-    }
-
-    /**
-     * Used to split the merged cells in to multiple cells.
-     * @param {string} range - Specifies the cell address. If not specified, it will consider the selected range.
-     * @returns void
-     */
-    public unMerge(range: string = this.getActiveSheet().selectedRange): void {
-        this.notify(setMerge, <MergeArgs>{ merge: false, range: range, type: 'All', refreshRibbon:
             range.indexOf(this.getActiveSheet().activeCell) > -1 ? true : false });
     }
 
@@ -711,14 +695,14 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * Used for setting the used range row and column index.
      * @hidden
      */
-    public setUsedRange(rowIdx: number, colIdx: number, sheet?: string | number): void {
-        let model: SheetModel = getSheet(this, sheet);
-        if (rowIdx > model.usedRange.rowIndex) {
-            model.usedRange.rowIndex = rowIdx;
+    public setUsedRange(rowIdx: number, colIdx: number): void {
+        let sheet: SheetModel = this.getActiveSheet();
+        if (rowIdx > sheet.usedRange.rowIndex) {
+            sheet.usedRange.rowIndex = rowIdx;
             this.notify(updateUsedRange, { index: rowIdx, update: 'row' });
         }
-        if (colIdx > model.usedRange.colIndex) {
-            model.usedRange.colIndex = colIdx;
+        if (colIdx > sheet.usedRange.colIndex) {
+            sheet.usedRange.colIndex = colIdx;
             this.notify(updateUsedRange, { index: colIdx, update: 'col' });
         }
     }
@@ -873,22 +857,11 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Protect the active sheet based on the protect sheetings.
-     * @param sheet - Specifies the sheet to protect.
      * @param protectSettings - Specifies the protect settings of the sheet.
      */
-    public protectSheet(sheet?: number | string, protectSettings?: ProtectSettingsModel): void {
+    public protectSheet(sheetIndex?: number | string, protectSettings?: ProtectSettingsModel): void {
       this.notify(events.protectsheetHandler, protectSettings);
     }
-
-    /**
-     * Protect the active sheet based on the protect sheetings.
-     * @param sheet - Specifies the sheet to protect.
-     * @param protectSettings - Specifies the protect settings of the sheet.
-     */
-    public unprotectSheet(sheet: number): void {
-        let args: UnprotectArgs = { sheet: sheet};
-        this.notify(events.unprotectsheetHandler, args);
-      }
 
     /**
      * Sorts the range of cells in the active Spreadsheet.
@@ -939,6 +912,16 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
 
     public removeInvalidHighlight(range: string): void {
         this.notify(events.removeHighlight, { range: range });
+    }
+
+    public conditionalFormat(conditionalFormat: ConditionalFormatModel): void {
+        conditionalFormat.range = conditionalFormat.range || this.getActiveSheet().selectedRange;
+        this.notify(events.setCFRule, { conditionalFormat: conditionalFormat });
+    }
+
+    public clearConditionalFormat(range: string): void {
+        range = range || this.getActiveSheet().selectedRange;
+        this.notify(events.clearCFRule, { range: range });
     }
 
     /**
@@ -1051,6 +1034,14 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
             functionName: functionName
         };
         this.notify(events.workbookFormulaOperation, eventArgs);
+    }
+
+    /**
+     * This method is used to Clear contents, formats and hyperlinks in spreadsheet.
+     *    * @param {ClearOptions} options - Options for clearing the content, formats and hyperlinks in spreadsheet.     
+     */
+    public clear(options: ClearOptions): void {
+        this.notify(events.clear, options);
     }
 
     /**

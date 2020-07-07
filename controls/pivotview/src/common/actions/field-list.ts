@@ -3,7 +3,7 @@ import { IAction } from '../../common/base/interface';
 import * as events from '../../common/base/constant';
 import * as cls from '../base/css-constant';
 import { PivotFieldList } from '../../pivotfieldlist/base/field-list';
-import { createElement, setStyleAttribute, formatUnit, prepend, addClass, removeClass } from '@syncfusion/ej2-base';
+import { createElement, setStyleAttribute, formatUnit, prepend, addClass, removeClass, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { CalculatedField } from '../../common/calculatedfield/calculated-field';
 
 PivotFieldList.Inject(CalculatedField);
@@ -83,7 +83,7 @@ export class FieldList implements IAction {
             if (this.parent.showGroupingBar && this.parent.groupingBarModule) {
                 clearTimeout(this.timeOutObj);
                 this.timeOutObj = setTimeout(this.update.bind(this));
-            } else {
+            } else if (!isNullOrUndefined((this.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS)))) {
                 setStyleAttribute(this.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement, {
                     left: 'auto'
                 });
@@ -107,7 +107,7 @@ export class FieldList implements IAction {
         } else {
             currentWidth = this.parent.grid ? this.parent.grid.element.offsetWidth : currentWidth;
         }
-        if (currentWidth) {
+        if (currentWidth && (!isNullOrUndefined((this.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS))))) {
             let actualWidth: number = currentWidth < 400 ? 400 : currentWidth;
             setStyleAttribute(this.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement, {
                 left: formatUnit(this.parent.enableRtl ?

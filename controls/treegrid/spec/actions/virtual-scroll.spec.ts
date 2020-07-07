@@ -3,13 +3,19 @@ import { createGrid, destroy } from '../base/treegridutil.spec';
 import { QueryCellInfoEventArgs, RowSelectEventArgs } from '@syncfusion/ej2-grids';
 import { isNullOrUndefined, EventHandler } from '@syncfusion/ej2-base';
 import { VirtualScroll } from '../../src/treegrid/actions/virtual-scroll';
-import { virtualData } from '../base/datasource.spec';
+import { virtualData, editVirtualData, dataSource } from '../base/datasource.spec';
+import { Edit } from '../../src/treegrid/actions/edit';
+import { Toolbar } from '../../src/treegrid/actions/toolbar';
 
 /**
  * TreeGrid Virtual Scroll spec 
  */
 
-TreeGrid.Inject(VirtualScroll);
+TreeGrid.Inject(VirtualScroll, Edit, Toolbar);
+
+if(!editVirtualData.length){
+    dataSource();
+}
 
 describe('TreeGrid Virtual Scroll', () => {
   describe('Rendering and basic actions', () => {
@@ -350,5 +356,392 @@ describe('TreeGrid Virtual Scroll', () => {
       destroy(treegrid);
     });
   });
+
+
+  describe('Row Editing with Virtual Scrolling', () => {
+    let gridObj: TreeGrid;
+    let rowIndex: number;
+    let actionBegin: () => void;
+    let actionComplete: () => void;    
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: editVirtualData,
+                enableVirtualization: true,
+                treeColumnIndex: 1,
+                toolbar: ['Add','Edit','Update','Delete','Cancel'],               
+                editSettings:{ allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Row', newRowPosition: 'Below' },
+                childMapping: 'Crew',
+                height: 400,
+                columns: [
+                    { field: 'TaskID', headerText: 'Player Jersey', isPrimaryKey: true, width: 140, textAlign: 'Right' },
+                    { field: 'FIELD1', headerText: 'Player Name', width: 140 },
+                    { field: 'FIELD2', headerText: 'Year', width: 120,allowEditing: false, textAlign: 'Right' },
+                    { field: 'FIELD3', headerText: 'Stint', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD4', headerText: 'TMID', width: 120, textAlign: 'Right' }
+                   ]
+            },
+        done
+      );
+    });
+
+    it('Rendering Test', (done: Function) => {
+        expect(gridObj.getRows().length > 12).toBe(true);
+        done();
+    })
+    
+    it('Edit Start in Current View Records', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'beginEdit') {                
+                expect(gridObj.grid.element.querySelectorAll('.e-editedrow').length).toBe(1);
+                expect(gridObj.grid.element.querySelectorAll('.e-normaledit').length).toBe(1);
+                expect(gridObj.grid.element.querySelectorAll('.e-gridform').length).toBe(1);
+                expect(gridObj.grid.element.querySelectorAll('form').length).toBe(1);
+                let cells = gridObj.grid.element.querySelector('.e-editedrow').querySelectorAll('.e-rowcell');
+                expect(cells.length).toBe(gridObj.grid.columns.length);
+                //primary key check
+                expect(cells[0].querySelectorAll('input.e-disabled').length).toBe(1);
+                // allow Editing false
+                expect(cells[2].querySelectorAll('input.e-disabled').length).toBe(1);
+                //focus check
+                expect(document.activeElement.id).toBe(gridObj.grid.element.id + 'FIELD1');
+                //toolbar status check
+                expect(gridObj.grid.element.querySelectorAll('.e-overlay').length).toBe(4);
+                expect(gridObj.grid.isEdit).toBeTruthy();                
+                done();
+            }            
+        };
+        actionBegin = (args?: any): void => {
+            if (args.requestType === 'beginEdit') {
+                expect(gridObj.grid.isEdit).toBeFalsy();
+            }
+        };
+        gridObj.grid.actionComplete = actionComplete;
+        gridObj.grid.actionBegin = actionBegin;
+        gridObj.grid.selectRow(0);
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_edit' } });
+    });
+
+    it('Edit Complete in Current View Records', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'save') {
+                expect(gridObj.grid.element.querySelectorAll('.e-normaledit').length).toBe(0);
+                expect(gridObj.grid.element.querySelectorAll('.e-gridform').length).toBe(0);
+                expect(gridObj.grid.element.querySelectorAll('form').length).toBe(0);
+                //updatated data cehck
+                expect((gridObj.grid.currentViewData[0] as any).FIELD1).toBe('updated');
+                done();
+            }
+        };
+        actionBegin = (args?: any): void => {
+            if (args.requestType === 'save') {
+                expect(gridObj.grid.isEdit).toBeTruthy();
+            }
+        };
+        gridObj.grid.actionComplete = actionComplete;
+        gridObj.grid.actionBegin = actionBegin;
+        (gridObj.grid.element.querySelector('#' + gridObj.grid.element.id + 'FIELD1') as any).value = 'updated';
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+    });
+
+    it('Scroll', (done: Function) => {
+        (<HTMLElement>gridObj.grid.getContent().firstChild).scrollTop = 1480;
+        setTimeout(done, 400);
+    });    
+
+    it('Edit Start After Scroll', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'beginEdit') {                
+                expect(gridObj.grid.element.querySelectorAll('.e-editedrow').length).toBe(1);
+                expect(gridObj.grid.element.querySelectorAll('.e-normaledit').length).toBe(1);
+                expect(gridObj.grid.element.querySelectorAll('.e-gridform').length).toBe(1);
+                expect(gridObj.grid.element.querySelectorAll('form').length).toBe(1);
+                let cells = gridObj.grid.element.querySelector('.e-editedrow').querySelectorAll('.e-rowcell');
+                expect(cells.length).toBe(gridObj.grid.columns.length);
+                //primary key check
+                expect(cells[0].querySelectorAll('input.e-disabled').length).toBe(1);
+                // allow Editing false
+                expect(cells[2].querySelectorAll('input.e-disabled').length).toBe(1);
+                //focus check
+                expect(document.activeElement.id).toBe(gridObj.grid.element.id + 'FIELD1');
+                //toolbar status check
+                expect(gridObj.grid.element.querySelectorAll('.e-overlay').length).toBe(4);
+                expect(gridObj.grid.isEdit).toBeTruthy();                
+                done();
+            }            
+        };
+        actionBegin = (args?: any): void => {
+            if (args.requestType === 'beginEdit') {
+                expect(gridObj.grid.isEdit).toBeFalsy();
+            }
+        };
+        gridObj.grid.actionComplete = actionComplete;
+        gridObj.grid.actionBegin = actionBegin;
+        rowIndex = parseInt(gridObj.getRows()[0].getAttribute('aria-rowindex'), 10);
+        gridObj.grid.selectRow(rowIndex);
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_edit' } });
+    });
+
+    it('Edit Complete After Scroll', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'save') {
+                expect(gridObj.grid.element.querySelectorAll('.e-normaledit').length).toBe(0);
+                expect(gridObj.grid.element.querySelectorAll('.e-gridform').length).toBe(0);
+                expect(gridObj.grid.element.querySelectorAll('form').length).toBe(0);
+                //updatated data cehck
+                expect((gridObj.grid.currentViewData[0] as any).FIELD1).toBe('scroll updated');
+                done();
+            }
+        };
+        actionBegin = (args?: any): void => {
+            if (args.requestType === 'save') {
+                expect(gridObj.grid.isEdit).toBeTruthy();
+            }
+        };
+        gridObj.grid.actionComplete = actionComplete;
+        gridObj.grid.actionBegin = actionBegin;
+        (gridObj.grid.element.querySelector('#' + gridObj.grid.element.id + 'FIELD1') as any).value = 'scroll updated';
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+    });
+
+
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+
+  describe('Add New Row with Virtual Scrolling', () => {
+    let gridObj: TreeGrid;
+    let rows: Element[];
+    let actionBegin: () => void;
+    let actionComplete: () => void;    
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: editVirtualData,
+                enableVirtualization: true,
+                treeColumnIndex: 1,
+                toolbar: ['Add','Edit','Update','Delete','Cancel'],               
+                editSettings:{ allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Row'},
+                childMapping: 'Crew',
+                height: 400,
+                columns: [
+                    { field: 'TaskID', headerText: 'Player Jersey', isPrimaryKey: true, width: 140, textAlign: 'Right' },
+                    { field: 'FIELD1', headerText: 'Player Name', width: 140 },
+                    { field: 'FIELD2', headerText: 'Year', width: 120,allowEditing: false, textAlign: 'Right' },
+                    { field: 'FIELD3', headerText: 'Stint', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD4', headerText: 'TMID', width: 120, textAlign: 'Right' }
+                   ]
+            },
+        done
+      );
+    });
+
+    it('Rendering Test', (done: Function) => {
+        expect(gridObj.getRows().length > 12).toBe(true);
+        done();
+    })
+    
+    it('Add New Row Begin', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'add') {                
+                expect(gridObj.grid.element.querySelectorAll('.e-addedrow').length).toBe(1);
+                expect(gridObj.grid.element.querySelectorAll('.e-normaledit').length).toBe(1);
+                expect(gridObj.grid.element.querySelectorAll('.e-gridform').length).toBe(1);
+                expect(gridObj.grid.element.querySelectorAll('form').length).toBe(1);                
+                expect(document.activeElement.id).toBe(gridObj.grid.element.id + 'TaskID');
+                //toolbar status check
+                expect(gridObj.grid.element.querySelectorAll('.e-overlay').length).toBe(4);
+                expect(gridObj.grid.isEdit).toBeTruthy();                
+                done();
+            }            
+        };        
+        gridObj.grid.actionComplete = actionComplete;
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+    });
+
+    it('Save New Row', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'save') {
+                expect(gridObj.grid.element.querySelectorAll('.e-normaledit').length).toBe(0);
+                expect(gridObj.grid.element.querySelectorAll('.e-gridform').length).toBe(0);
+                expect(gridObj.grid.element.querySelectorAll('form').length).toBe(0);
+                //updatated data cehck
+                expect((gridObj.grid.currentViewData[0] as any).TaskID).toBe(98765);
+                expect((gridObj.grid.currentViewData[0] as any).FIELD1).toBe('New Row');
+                done();
+            }
+        };
+        actionBegin = (args?: any): void => {
+            if (args.requestType === 'save') {
+                expect(gridObj.grid.isEdit).toBeTruthy();
+            }
+        };
+        gridObj.grid.actionComplete = actionComplete;
+        gridObj.grid.actionBegin = actionBegin;
+        (gridObj.grid.element.querySelector('#' + gridObj.grid.element.id + 'TaskID') as any).value = '98765';
+        (gridObj.grid.element.querySelector('#' + gridObj.grid.element.id + 'FIELD1') as any).value = 'New Row';
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+    });
+
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });  
+
+
+  describe('Delete Row with Virtual Scrolling', () => {
+    let gridObj: TreeGrid;
+    let rows: Element[];
+    let actionBegin: () => void;
+    let actionComplete: () => void;    
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: editVirtualData,
+                enableVirtualization: true,
+                treeColumnIndex: 1,
+                toolbar: ['Add','Edit','Update','Delete','Cancel'],               
+                editSettings:{ allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Row'},
+                childMapping: 'Crew',
+                height: 400,
+                columns: [
+                    { field: 'TaskID', headerText: 'Player Jersey', isPrimaryKey: true, width: 140, textAlign: 'Right' },
+                    { field: 'FIELD1', headerText: 'Player Name', width: 140 },
+                    { field: 'FIELD2', headerText: 'Year', width: 120,allowEditing: false, textAlign: 'Right' },
+                    { field: 'FIELD3', headerText: 'Stint', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD4', headerText: 'TMID', width: 120, textAlign: 'Right' }
+                   ]
+            },
+        done
+      );
+    });
+
+    it('Rendering Test', (done: Function) => {
+        expect(gridObj.getRows().length > 12).toBe(true);
+        done();
+    })
+    
+    it('Delete First Parent Row', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'delete') {                
+               expect((gridObj.grid.dataSource as any).length === 995).toBe(true);
+               done();
+            }            
+        };        
+        gridObj.grid.actionComplete = actionComplete;
+        gridObj.grid.selectRow(0);
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_delete' } });
+    });
+
+    it('Scroll', (done: Function) => {
+        (<HTMLElement>gridObj.grid.getContent().firstChild).scrollTop = 4000;
+        setTimeout(done, 400);
+    });    
+
+    it('Delete Row after Scroll', (done: Function) => {
+        let isParent: boolean;
+        let row: Element;
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'delete') {         
+                if (isParent) {
+                    expect((gridObj.grid.dataSource as any).length === 990).toBe(true);
+                } else {
+                    expect((gridObj.grid.dataSource as any).length === 994).toBe(true);
+                }                
+                done();
+            }
+        };        
+        gridObj.grid.actionComplete = actionComplete;
+        row = gridObj.getRows()[0];
+        if(row.querySelector('.e-treegridexpand')){
+            isParent = true;
+        }
+        gridObj.selectRow(parseInt(row.getAttribute('aria-rowindex'), 10));
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_delete' } });
+    });
+
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+
+  describe('Edit Cancel Checking', () => {
+    let gridObj: TreeGrid;
+    let rows: Element[];
+    let actionBegin: () => void;
+    let actionComplete: () => void;    
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: editVirtualData,
+                enableVirtualization: true,
+                treeColumnIndex: 1,
+                toolbar: ['Add','Edit','Update','Delete','Cancel'],               
+                editSettings:{ allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Row'},
+                childMapping: 'Crew',
+                height: 400,
+                columns: [
+                    { field: 'TaskID', headerText: 'Player Jersey', isPrimaryKey: true, width: 140, textAlign: 'Right' },
+                    { field: 'FIELD1', headerText: 'Player Name', width: 140 },
+                    { field: 'FIELD2', headerText: 'Year', width: 120,allowEditing: false, textAlign: 'Right' },
+                    { field: 'FIELD3', headerText: 'Stint', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD4', headerText: 'TMID', width: 120, textAlign: 'Right' }
+                   ]
+            },
+        done
+      );
+    });
+
+    it('Rendering Test', (done: Function) => {
+        expect(gridObj.getRows().length > 12).toBe(true);
+        done();
+    })
+    
+    it('Edit Row', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'beginEdit') {                
+                expect(gridObj.grid.element.querySelectorAll('.e-editedrow').length).toBe(1);
+                expect(gridObj.grid.element.querySelectorAll('.e-normaledit').length).toBe(1);
+                expect(gridObj.grid.element.querySelectorAll('.e-gridform').length).toBe(1);
+                expect(gridObj.grid.element.querySelectorAll('form').length).toBe(1);
+                done();
+            }            
+        };        
+        gridObj.grid.actionComplete = actionComplete;
+        gridObj.grid.selectRow(1);
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_edit' } });
+    });       
+
+    it('Cancel Edit', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'cancel') {
+                //form destroy check
+                expect(gridObj.grid.editModule.formObj.isDestroyed).toBeTruthy();
+                expect(gridObj.grid.isEdit).toBeFalsy();
+                done();
+            }
+        };
+        actionBegin = (args?: any): void => {
+            if (args.requestType === 'cancel') {
+                expect(gridObj.grid.element.querySelectorAll('.e-normaledit').length).toBe(1);
+                expect(gridObj.grid.element.querySelectorAll('.e-gridform').length).toBe(1);
+                expect(gridObj.grid.element.querySelectorAll('form').length).toBe(1);
+                expect(gridObj.grid.isEdit).toBeTruthy();
+            }
+        };
+        gridObj.grid.actionComplete = actionComplete;
+        gridObj.grid.actionBegin = actionBegin;
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_cancel' } });
+    });
+
+    afterAll(() => {
+      gridObj.grid.contentModule.removeEventListener();
+      destroy(gridObj);
+    });
+  });
+
 
 });

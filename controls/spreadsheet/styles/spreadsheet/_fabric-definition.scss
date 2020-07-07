@@ -14,6 +14,7 @@ $cell-color: #000 !default;
 $cell-border-color: #e0e0e0 !default;
 $hdr-cell-border-color: $cell-border-color !default;
 $dlg-error-color: #dd2c2c !default;
+$agg-clr: #808080;
 //enddefault
 //selection
 $selection-bg-color: rgba($theme-primary, .12) !default;
@@ -99,4 +100,7 @@ $bigger-find-goto-dlg-height: 258px !default;
 $protect-dlg-height: 406px !default;
 $protect-dlg-width: 300px !default;
 //End Protect Sheet
+//Conditional Formatting
+$ele-hover-color: #eee;
+//End Conditional Formatting
 

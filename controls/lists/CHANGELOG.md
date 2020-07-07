@@ -2,55 +2,19 @@
 
 ## [Unreleased]
 
-## 18.1.53 (2020-05-19)
+## 18.2.44 (2020-07-07)
 
 ### ListView
 
 #### Bug Fixes
 
-- #152966 - The issue with `The console error thrown when enabling the htmlSanitizer in the ListView` has been resolved.
-
-## 18.1.46 (2020-04-28)
-
-### ListBox
-
-#### Bug Fixes
-
-- Issue with drag and drop on empty group has been fixed.
-
-## 18.1.45 (2020-04-21)
+- #276068 Issue with `Angular's ngTemplate with Virtualization being enabled` has been fixed.
 
 ### ListBase
 
 #### Bug Fixes
 
-- #270788 - The issue with `The icon elements are not generated when enabling the fullRowNavigable in the TreeView` has been resolved.
-
-### ListView
-
-#### Bug Fixes
-
-- #152966 - The issue with `The enableHtmlSanitizer property is not working in the ListView` has been resolved.
-
-## 18.1.44 (2020-04-14)
-
-### ListBox
-
-#### New Features
-
-- Provided `beforeDragStart` event.
-
-## 18.1.43 (2020-04-07)
-
-### ListView
-
-#### Bug Fixes
-
-- #269547 - The issue with `ListView move backwards during text selection` has been resolved.
-
-- #266788 - The issue with `Checkbox is not displayed while enabling the virtualization property in ListView` has been resolved.
-
-## 18.1.36-beta (2020-03-19)
+- #276068 Issue with `grouping of list-item in header` has been fixed.
 
 ### ListView
 
@@ -72,7 +36,7 @@
 
 #### Bug Fixes
 
-- Issue with Drag and Drop in Empty area of List Box has been fixed.
+- Issue with Drag and Drop in Empty area of List Box has been fixed
 
 ## 17.3.21 (2019-10-30)
 

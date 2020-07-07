@@ -1,4 +1,4 @@
-import { Animation, Base, ChildProperty, Complex, Component, Draggable, Event, EventHandler, NotifyPropertyChanges, Property, SanitizeHtmlHelper, Touch, addClass, append, attributes, blazorTemplates, closest, compareElementParent, compile, detach, extend, formatUnit, getComponent, getUniqueID, getValue, isBlazor, isNullOrUndefined, isVisible, merge, prepend, remove, removeClass, resetBlazorTemplate, rippleEffect, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Base, ChildProperty, Complex, Component, Draggable, Event, EventHandler, NotifyPropertyChanges, Property, SanitizeHtmlHelper, Touch, addClass, append, attributes, blazorTemplates, closest, compareElementParent, compile, debounce, detach, extend, formatUnit, getComponent, getUniqueID, getValue, isBlazor, isNullOrUndefined, isVisible, merge, prepend, remove, removeClass, resetBlazorTemplate, rippleEffect, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 
@@ -355,7 +355,12 @@ var ListBase;
             let hdr = 'isHeader';
             grpItem[curFields.text] = ds[j].key;
             grpItem[hdr] = true;
-            grpItem.id = 'group-list-item-' + (ds[j].key ?
+            let newtext = curFields.text;
+            if (newtext === 'id') {
+                newtext = 'text';
+                grpItem[newtext] = ds[j].key;
+            }
+            grpItem._id = 'group-list-item-' + (ds[j].key ?
                 ds[j].key.toString().trim() : 'undefined');
             grpItem.items = itemObj;
             dataSource.push(grpItem);
@@ -698,7 +703,8 @@ var ListBase;
         if (typeof item !== 'string' && typeof item !== 'number') {
             dataSource = item;
             text = fieldData[fields.text] || '';
-            uID = fieldData[fields.id];
+            // tslint:disable-next-line
+            uID = (isNullOrUndefined(fieldData['_id'])) ? fieldData[fields.id] : fieldData['_id'];
             grpLI = (item.hasOwnProperty('isHeader') && item.isHeader)
                 ? true : false;
         }
@@ -932,6 +938,10 @@ let ListView = class ListView extends Component {
     constructor(options, element) {
         super(options, element);
         this.itemReRender = false;
+        this.previousSelectedItems = [];
+        this.hiddenItems = [];
+        this.enabledItems = [];
+        this.disabledItems = [];
     }
     /**
      * @private
@@ -994,7 +1004,7 @@ let ListView = class ListView extends Component {
                     break;
                 case 'showCheckBox':
                 case 'checkBoxPosition':
-                    if (!isBlazor() || !this.isServerRendered || this.enableVirtualization) {
+                    if (!isBlazor() || !this.isServerRendered) {
                         if (this.enableVirtualization) {
                             this.virtualizationModule.reRenderUiVirtualization();
                         }
@@ -1016,7 +1026,7 @@ let ListView = class ListView extends Component {
                     break;
                 case 'sortOrder':
                 case 'showIcon':
-                    if (isBlazor() && this.isServerRendered && !this.enableVirtualization) {
+                    if (isBlazor() && this.isServerRendered) {
                         // tslint:disable
                         this.interopAdaptor.invokeMethodAsync('ItemSorting');
                         //tslint:enable
@@ -1077,7 +1087,7 @@ let ListView = class ListView extends Component {
     }
     // Support Component Functions
     header(text, showBack) {
-        if (isBlazor() && this.isServerRendered && !this.enableVirtualization) {
+        if (isBlazor() && this.isServerRendered) {
             let args = { HeaderText: text, BackButton: showBack };
             // tslint:disable
             this.interopAdaptor.invokeMethodAsync('HeaderTitle', args);
@@ -1201,7 +1211,34 @@ let ListView = class ListView extends Component {
         };
         this.initialization();
     }
+    updateLiELementHeight() {
+        let liContainer = this.element.querySelector('#virtualUlContainer');
+        if (liContainer.children[0]) {
+            this.liElementHeight = liContainer.children[0].getBoundingClientRect().height;
+            // tslint:disable
+            this.interopAdaptor.invokeMethodAsync('LiElementHeight', this.liElementHeight);
+            // tslint:enable
+        }
+    }
     initialization() {
+        if (isBlazor() && this.isServerRendered && this.enableVirtualization) {
+            let ulContainer = this.element.querySelector('#virtualUlContainer');
+            if (ulContainer !== null) {
+                if (this.height === '') {
+                    // tslint:disable
+                    this.interopAdaptor.invokeMethodAsync('SetComponentHeight', window.innerHeight);
+                    // tslint:enable
+                    this.isWindow = true;
+                    ulContainer.scrollIntoView();
+                }
+                if (ulContainer.children[0]) {
+                    this.liElementHeight = ulContainer.children[0].getBoundingClientRect().height;
+                    // tslint:disable
+                    this.interopAdaptor.invokeMethodAsync('LiElementHeight', this.liElementHeight);
+                    // tslint:enable
+                }
+            }
+        }
         this.curDSLevel = [];
         this.animateOptions = {};
         this.curViewDS = [];
@@ -1256,7 +1293,8 @@ let ListView = class ListView extends Component {
                 args.item.firstElementChild.appendChild(checkboxElement);
             }
             this.currentLiElements.push(args.item);
-            this.checkBoxPosition == "Left" ? this.virtualCheckBox = args.item.firstElementChild.children[0] : this.virtualCheckBox = args.item.firstElementChild.lastElementChild;
+            this.checkBoxPosition === 'Left' ? this.virtualCheckBox = args.item.firstElementChild.children[0] :
+                this.virtualCheckBox = args.item.firstElementChild.lastElementChild;
         }
     }
     checkInternally(args, checkboxElement) {
@@ -1422,8 +1460,45 @@ let ListView = class ListView extends Component {
                 this.setSelectLI(li, e);
             }
             if (e.target.closest('li')) {
-                if (e.target.closest('li').classList.contains('e-has-child') && !e.target.parentElement.classList.contains('e-listview-checkbox')) {
+                if (e.target.closest('li').classList.contains('e-has-child') &&
+                    !e.target.parentElement.classList.contains('e-listview-checkbox')) {
                     e.target.closest('li').classList.add(classNames.disable);
+                }
+            }
+        }
+        if (isBlazor() && this.isServerRendered && this.enableVirtualization) {
+            let ulElementContainer = this.element.querySelector('#virtualUlContainer');
+            if (ulElementContainer.querySelector('.e-active')) {
+                // tslint:disable-next-line:no-any
+                let selectedElements = ulElementContainer.querySelectorAll('.e-active');
+                // tslint:enable-next-line:no-any
+                if (this.showCheckBox) {
+                    for (let i = 0; i < selectedElements.length; i++) {
+                        // tslint:disable-next-line:no-any
+                        if (!this.previousSelectedItems.includes(selectedElements[i].getAttribute('data-uid'))) {
+                            this.previousSelectedItems.push(selectedElements[i].getAttribute('data-uid'));
+                        }
+                        // tslint:enable-next-line:no-any
+                    }
+                }
+                else {
+                    this.previousSelectedItems[0] = (ulElementContainer.querySelector('.e-active').getAttribute('data-uid'));
+                }
+            }
+            if (ulElementContainer.querySelector('.e-focused')) {
+                // tslint:disable-next-line:no-any
+                let focusElement = ulElementContainer.querySelector('.e-focused');
+                // tslint:enable-next-line:no-any
+                if (!focusElement.classList.contains('e-active')) {
+                    let focusElementId = focusElement.getAttribute('data-uid');
+                    // tslint:disable-next-line:no-any
+                    if (this.previousSelectedItems.includes(focusElementId)) {
+                        let selectedElement1 = this.previousSelectedItems.slice(0, this.previousSelectedItems.indexOf(focusElementId));
+                        let selectedElement2 = this.previousSelectedItems.
+                            slice(this.previousSelectedItems.indexOf(focusElementId) + 1, this.previousSelectedItems.length);
+                        this.previousSelectedItems = selectedElement1.concat(selectedElement2);
+                    }
+                    // tslint:enable-next-line:no-any
                 }
             }
         }
@@ -1620,7 +1695,7 @@ let ListView = class ListView extends Component {
         }
     }
     swipeActionHandler(e) {
-        if (e.swipeDirection === 'Right' && e.velocity > swipeVelocity && e.originalEvent.type == "touchend") {
+        if (e.swipeDirection === 'Right' && e.velocity > swipeVelocity && e.originalEvent.type === 'touchend') {
             if (this.showCheckBox && this.curDSLevel[this.curDSLevel.length - 1]) {
                 this.uncheckAllItems();
             }
@@ -1893,15 +1968,15 @@ let ListView = class ListView extends Component {
     }
     setLocalData() {
         this.trigger('actionBegin');
-        let _this = this;
+        let listViewComponent = this;
         if (this.dataSource instanceof DataManager) {
             this.dataSource.executeQuery(this.getQuery()).then((e) => {
                 if (this.isDestroyed) {
                     return;
                 }
                 this.localData = e.result;
-                if (_this.enableVirtualization || !this.isServerRendered || (!isBlazor())) {
-                    _this.removeElement(_this.contentContainer);
+                if (!this.isServerRendered || (!isBlazor())) {
+                    listViewComponent.removeElement(listViewComponent.contentContainer);
                 }
                 this.renderList();
                 this.trigger('actionComplete', e);
@@ -2004,6 +2079,87 @@ let ListView = class ListView extends Component {
             // tslint:enable
         }
     }
+    removeActiveClass() {
+        let listViewComponent = this;
+        setTimeout(() => {
+            for (let i = 0; i < this.element.querySelector('#virtualUlContainer').childElementCount; i++) {
+                let selectedElement = this.element.querySelector('#virtualUlContainer').children[i];
+                let elementIndex;
+                let hiddenElementIndex;
+                if (listViewComponent.showCheckBox) {
+                    if (listViewComponent.previousSelectedItems.length > 0) {
+                        for (let j = 0; j < listViewComponent.previousSelectedItems.length; j++) {
+                            if (selectedElement.getAttribute('data-uid') === listViewComponent.previousSelectedItems[j]) {
+                                selectedElement.classList.add('e-active');
+                                selectedElement.setAttribute('aria-selected', 'true');
+                                if (selectedElement.querySelector('.e-frame.e-icons')) {
+                                    selectedElement.querySelector('.e-frame.e-icons').classList.add('e-check');
+                                }
+                                elementIndex = i;
+                            }
+                            else {
+                                if (elementIndex !== i) {
+                                    selectedElement.classList.remove('e-active');
+                                    selectedElement.removeAttribute('aria-selected');
+                                    if (selectedElement.querySelector('.e-check')) {
+                                        selectedElement.querySelector('.e-check').classList.remove('e-check');
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        selectedElement.classList.remove('e-active');
+                        selectedElement.removeAttribute('aria-selected');
+                        if (selectedElement.querySelector('.e-check')) {
+                            selectedElement.querySelector('.e-check').classList.remove('e-check');
+                        }
+                    }
+                }
+                else {
+                    if (selectedElement.getAttribute('data-uid') === listViewComponent.previousSelectedItems[0]) {
+                        selectedElement.classList.add('e-active');
+                        selectedElement.setAttribute('aria-selected', 'true');
+                    }
+                    else {
+                        selectedElement.classList.remove('e-active');
+                        selectedElement.removeAttribute('aria-selected');
+                    }
+                }
+                if (listViewComponent.hiddenItems.length > 0) {
+                    for (let k = 0; k < listViewComponent.hiddenItems.length; k++) {
+                        if (selectedElement.getAttribute('data-uid') === listViewComponent.previousSelectedItems[k]) {
+                            selectedElement.style.display = 'none';
+                            hiddenElementIndex = i;
+                        }
+                        else {
+                            if (hiddenElementIndex !== i) {
+                                selectedElement.style.display = null;
+                            }
+                        }
+                    }
+                }
+                if (listViewComponent.enabledItems.length > 0) {
+                    for (let x = 0; x < listViewComponent.enabledItems.length; x++) {
+                        if (selectedElement.getAttribute('data-uid') === listViewComponent.enabledItems[x]) {
+                            if (selectedElement.classList.contains('e-disabled')) {
+                                selectedElement.classList.remove('e-disabled');
+                            }
+                        }
+                    }
+                }
+                if (listViewComponent.disabledItems.length > 0) {
+                    for (let y = 0; y < listViewComponent.disabledItems.length; y++) {
+                        if (selectedElement.getAttribute('data-uid') === listViewComponent.disabledItems[y]) {
+                            if (!selectedElement.classList.contains('e-disabled')) {
+                                selectedElement.classList.add('e-disabled');
+                            }
+                        }
+                    }
+                }
+            }
+        }, 200);
+    }
     renderingNestedList() {
         let ul = closest(this.liElement.parentNode, '.' + classNames.parentItem);
         let ctrlId = this.element.id;
@@ -2022,7 +2178,7 @@ let ListView = class ListView extends Component {
             this.setViewDataSource(this.getSubDS());
             if (!ele) {
                 let data = this.curViewDS;
-                if (isBlazor() && this.isServerRendered && !this.enableVirtualization) {
+                if (isBlazor() && this.isServerRendered) {
                     // tslint:disable
                     this.interopAdaptor.invokeMethodAsync('ListChildDataSource', data);
                     // tslint:enable
@@ -2056,13 +2212,15 @@ let ListView = class ListView extends Component {
         if (!isBlazor() || !this.isServerRendered || this.enableVirtualization) {
             if (this.enableVirtualization) {
                 if (Object.keys(this.dataSource).length) {
-                    if ((this.template || this.groupTemplate) && !this.virtualizationModule.isNgTemplate()) {
-                        this.listBaseOption.template = null;
-                        this.listBaseOption.groupTemplate = null;
-                        this.listBaseOption.itemCreated = this.virtualizationModule.createUIItem.bind(this.virtualizationModule);
+                    if (!(isBlazor() && this.isServerRendered)) {
+                        if ((this.template || this.groupTemplate) && !this.virtualizationModule.isNgTemplate()) {
+                            this.listBaseOption.template = null;
+                            this.listBaseOption.groupTemplate = null;
+                            this.listBaseOption.itemCreated = this.virtualizationModule.createUIItem.bind(this.virtualizationModule);
+                        }
                     }
-                    this.virtualizationModule.uiVirtualization();
                 }
+                this.virtualizationModule.uiVirtualization();
             }
             else {
                 this.createList();
@@ -2086,7 +2244,7 @@ let ListView = class ListView extends Component {
      * Initializes the ListView component rendering.
      */
     render() {
-        if (!isBlazor() || !this.isServerRendered || this.enableVirtualization) {
+        if (!isBlazor() || !this.isServerRendered) {
             this.element.classList.add(classNames.root);
             attributes(this.element, { role: 'list', tabindex: '0' });
             this.setCSSClass();
@@ -2155,7 +2313,12 @@ let ListView = class ListView extends Component {
             toUL = this.curUL;
         }
         else {
-            toUL = toUL.parentElement;
+            if (isBlazor() && this.isServerRendered && this.enableVirtualization) {
+                toUL = toUL.parentElement.parentElement.parentElement;
+            }
+            else {
+                toUL = toUL.parentElement;
+            }
         }
         let fieldData = getFieldValues(this.curDSJSON, this.listBaseOption.fields);
         let text = fieldData[this.fields.text];
@@ -2795,6 +2958,7 @@ ListView = __decorate([
 
 class Virtualization {
     constructor(instance) {
+        this.elementDifference = 0;
         this.listViewInstance = instance;
     }
     /**
@@ -2811,10 +2975,12 @@ class Virtualization {
     uiVirtualization() {
         let curViewDS = this.listViewInstance.curViewDS;
         let firstDs = curViewDS.slice(0, 1);
-        this.listViewInstance.ulElement = this.listViewInstance.curUL = ListBase.createList(this.listViewInstance.createElement, firstDs, this.listViewInstance.listBaseOption);
-        this.listViewInstance.contentContainer = this.listViewInstance.createElement('div', { className: classNames.content });
-        this.listViewInstance.element.appendChild(this.listViewInstance.contentContainer);
-        this.listViewInstance.contentContainer.appendChild(this.listViewInstance.ulElement);
+        if (!(isBlazor() || this.listViewInstance.isServerRendered)) {
+            this.listViewInstance.ulElement = this.listViewInstance.curUL = ListBase.createList(this.listViewInstance.createElement, firstDs, this.listViewInstance.listBaseOption);
+            this.listViewInstance.contentContainer = this.listViewInstance.createElement('div', { className: classNames.content });
+            this.listViewInstance.element.appendChild(this.listViewInstance.contentContainer);
+            this.listViewInstance.contentContainer.appendChild(this.listViewInstance.ulElement);
+        }
         this.listItemHeight = this.listViewInstance.ulElement.firstElementChild.getBoundingClientRect().height;
         this.expectedDomItemCount = this.ValidateItemCount(10000);
         this.domItemCount = this.ValidateItemCount(Object.keys(this.listViewInstance.curViewDS).length);
@@ -2822,34 +2988,78 @@ class Virtualization {
         this.uiLastIndex = this.domItemCount - 1;
         this.wireScrollEvent(false);
         let otherDs = curViewDS.slice(1, this.domItemCount);
-        let listItems = ListBase.createListItemFromJson(this.listViewInstance.createElement, otherDs, this.listViewInstance.listBaseOption);
-        append(listItems, this.listViewInstance.ulElement);
-        this.listViewInstance.liCollection = this.listViewInstance.curUL.querySelectorAll('li');
-        this.topElement = this.listViewInstance.createElement('div');
-        this.listViewInstance.ulElement.insertBefore(this.topElement, this.listViewInstance.ulElement.firstElementChild);
-        this.bottomElement = this.listViewInstance.createElement('div');
-        this.listViewInstance.ulElement.insertBefore(this.bottomElement, null);
-        this.totalHeight = (Object.keys(curViewDS).length * this.listItemHeight) - (this.domItemCount * this.listItemHeight);
-        this.topElement.style.height = 0 + 'px';
-        this.bottomElement.style.height = this.totalHeight + 'px';
-        this.topElementHeight = 0;
-        this.bottomElementHeight = this.totalHeight;
+        if (!(isBlazor() || this.listViewInstance.isServerRendered)) {
+            let listItems = ListBase.createListItemFromJson(this.listViewInstance.createElement, otherDs, this.listViewInstance.listBaseOption);
+            append(listItems, this.listViewInstance.ulElement);
+            this.listViewInstance.liCollection = this.listViewInstance.curUL.querySelectorAll('li');
+            this.topElement = this.listViewInstance.createElement('div');
+            this.listViewInstance.ulElement.insertBefore(this.topElement, this.listViewInstance.ulElement.firstElementChild);
+            this.bottomElement = this.listViewInstance.createElement('div');
+            this.listViewInstance.ulElement.insertBefore(this.bottomElement, null);
+            this.totalHeight = (Object.keys(curViewDS).length * this.listItemHeight) - (this.domItemCount * this.listItemHeight);
+            this.topElement.style.height = 0 + 'px';
+            this.bottomElement.style.height = this.totalHeight + 'px';
+            this.topElementHeight = 0;
+            this.bottomElementHeight = this.totalHeight;
+        }
+        else {
+            this.listViewInstance.contentContainer = this.listViewInstance.element.querySelector('.e-content');
+            this.listViewInstance.liCollection = this.listViewInstance.curUL.querySelectorAll('li');
+        }
         this.listDiff = 0;
         this.uiIndicesInitialization();
     }
     wireScrollEvent(destroy) {
         if (!destroy) {
-            if (this.listViewInstance.isWindow) {
-                this.onVirtualScroll = this.onVirtualUiScroll.bind(this);
-                window.addEventListener('scroll', this.onVirtualScroll);
+            if (!(isBlazor() && this.listViewInstance.isServerRendered)) {
+                if (this.listViewInstance.isWindow) {
+                    this.onVirtualScroll = this.onVirtualUiScroll.bind(this);
+                    window.addEventListener('scroll', this.onVirtualScroll);
+                }
+                else {
+                    EventHandler.add(this.listViewInstance.element, 'scroll', this.onVirtualUiScroll, this);
+                }
             }
             else {
-                EventHandler.add(this.listViewInstance.element, 'scroll', this.onVirtualUiScroll, this);
+                if (this.listViewInstance.isWindow) {
+                    // tslint:disable-next-line:no-any
+                    this.onVirtualScroll = debounce(this.onVirtualUiScroll.bind(this), 350);
+                    // tslint:enable-next-line:no-any      
+                    this.updateUl = this.updateUlContainer.bind(this);
+                    window.addEventListener('scroll', this.onVirtualScroll);
+                    window.addEventListener('scroll', this.updateUl);
+                }
+                else {
+                    EventHandler.add(this.listViewInstance.element, 'scroll', debounce(this.onVirtualUiScroll, 350), this);
+                    EventHandler.add(this.listViewInstance.element, 'scroll', this.updateUlContainer, this);
+                }
             }
         }
         else {
             this.listViewInstance.isWindow ? window.removeEventListener('scroll', this.onVirtualScroll) :
                 EventHandler.remove(this.listViewInstance.element, 'scroll', this.onVirtualUiScroll);
+            this.listViewInstance.isWindow ? window.removeEventListener('scroll', this.updateUl) :
+                EventHandler.remove(this.listViewInstance.element, 'scroll', this.updateUlContainer);
+        }
+    }
+    updateUlContainer(e) {
+        let listDiff;
+        if (this.listViewInstance.isWindow) {
+            // tslint:disable-next-line:no-any
+            listDiff = Math.round(e.target.documentElement.scrollTop / this.listViewInstance.liElementHeight) - 2;
+            // tslint:enable-next-line:no-any  
+        }
+        else {
+            // tslint:disable-next-line:no-any
+            listDiff = Math.round(e.target.scrollTop / this.listViewInstance.liElementHeight) - 2;
+            // tslint:enable-next-line:no-any  
+        }
+        let virtualElementContainer = this.listViewInstance.ulElement.children[0].children[0];
+        if (((listDiff - 1) * this.listViewInstance.liElementHeight) < 0) {
+            virtualElementContainer.style.top = '0px';
+        }
+        else {
+            virtualElementContainer.style.top = (listDiff) * this.listViewInstance.liElementHeight + 'px';
         }
     }
     ValidateItemCount(dataSourceLength) {
@@ -2876,17 +3086,23 @@ class Virtualization {
         if (this.isNgTemplate()) {
             let items = this.listViewInstance.element.querySelectorAll('.' + classNames.listItem);
             for (let index = 0; index < items.length; index++) {
-                items[index].context = this.listViewInstance.viewContainerRef._embeddedViews[index].context;
+                items[index].context = this.listViewInstance.viewContainerRef.get(index).context;
             }
         }
     }
     refreshItemHeight() {
         if (this.listViewInstance.curViewDS.length) {
             let curViewDS = this.listViewInstance.curViewDS;
-            this.listItemHeight = this.topElement.nextSibling.getBoundingClientRect().height;
-            this.totalHeight = (Object.keys(curViewDS).length * this.listItemHeight) - (this.domItemCount * this.listItemHeight);
-            this.bottomElementHeight = this.totalHeight;
-            this.bottomElement.style.height = this.totalHeight + 'px';
+            if (isBlazor() && this.listViewInstance.isServerRendered) {
+                this.listViewInstance.ulElement.children[0].style.height =
+                    (this.listViewInstance.liElementHeight * (Object.keys(curViewDS).length)) + 'px';
+            }
+            else {
+                this.listItemHeight = this.topElement.nextSibling.getBoundingClientRect().height;
+                this.totalHeight = (Object.keys(curViewDS).length * this.listItemHeight) - (this.domItemCount * this.listItemHeight);
+                this.bottomElementHeight = this.totalHeight;
+                this.bottomElement.style.height = this.totalHeight + 'px';
+            }
         }
     }
     getscrollerHeight(startingHeight) {
@@ -2894,7 +3110,7 @@ class Virtualization {
             (pageYOffset - startingHeight)) : ((this.listViewInstance.element.scrollTop - startingHeight) <= 0) ? 0 :
             (this.listViewInstance.element.scrollTop - startingHeight);
     }
-    onVirtualUiScroll() {
+    onVirtualUiScroll(e) {
         let startingHeight;
         if (this.listViewInstance.isWindow) {
             startingHeight = this.listViewInstance.ulElement.getBoundingClientRect().top -
@@ -2909,25 +3125,52 @@ class Virtualization {
         this.bottomElementHeight = this.totalHeight - this.topElementHeight;
         [this.topElementHeight, this.bottomElementHeight] = scroll <= this.totalHeight ?
             [this.topElementHeight, this.bottomElementHeight] : [this.totalHeight, 0];
-        if (this.topElementHeight !== parseFloat(this.topElement.style.height)) {
-            this.topElement.style.height = this.topElementHeight + 'px';
-            this.bottomElement.style.height = this.bottomElementHeight + 'px';
-            if (scroll > this.scrollPosition) {
-                let listDiff = Math.round(((this.topElementHeight / this.listItemHeight) - this.listDiff));
-                if (listDiff > (this.expectedDomItemCount + 5)) {
-                    this.onLongScroll(listDiff, true);
-                }
-                else {
-                    this.onNormalScroll(listDiff, true);
+        if (isBlazor() && this.listViewInstance.isServerRendered) {
+            let listDiff;
+            if (!isNullOrUndefined(this.listViewInstance.liElementHeight)) {
+                let ulContainer = this.listViewInstance.element.querySelector('#virtualUlContainer');
+                if (ulContainer.children[0]) {
+                    this.listViewInstance.liElementHeight = ulContainer.children[0].getBoundingClientRect().height;
                 }
             }
+            if (this.listViewInstance.isWindow) {
+                listDiff = Math.round(document.documentElement.scrollTop / this.listViewInstance.liElementHeight);
+            }
             else {
-                let listDiff = Math.round((this.listDiff - (this.topElementHeight / this.listItemHeight)));
-                if (listDiff > (this.expectedDomItemCount + 5)) {
-                    this.onLongScroll(listDiff, false);
+                // tslint:disable-next-line:no-any
+                listDiff = Math.round(e.target.scrollTop / this.listViewInstance.liElementHeight);
+                // tslint:enable-next-line:no-any
+            }
+            if ((listDiff - 2) - this.elementDifference >= 3 || (listDiff - 2) - this.elementDifference <= -1) {
+                let args = { listDiff: listDiff - 2, selectedItems: this.listViewInstance.previousSelectedItems };
+                this.listViewInstance.interopAdaptor.invokeMethodAsync('VirtalScrolling', args);
+                if (this.listViewInstance.ulElement.querySelector('.e-focused')) {
+                    this.listViewInstance.ulElement.querySelector('.e-focused').classList.remove('e-focused');
+                }
+                this.elementDifference = listDiff - 2;
+            }
+        }
+        else {
+            if (this.topElementHeight !== parseFloat(this.topElement.style.height)) {
+                this.topElement.style.height = this.topElementHeight + 'px';
+                this.bottomElement.style.height = this.bottomElementHeight + 'px';
+                if (scroll > this.scrollPosition) {
+                    let listDiff = Math.round(((this.topElementHeight / this.listItemHeight) - this.listDiff));
+                    if (listDiff > (this.expectedDomItemCount + 5)) {
+                        this.onLongScroll(listDiff, true);
+                    }
+                    else {
+                        this.onNormalScroll(listDiff, true);
+                    }
                 }
                 else {
-                    this.onNormalScroll(listDiff, false);
+                    let listDiff = Math.round((this.listDiff - (this.topElementHeight / this.listItemHeight)));
+                    if (listDiff > (this.expectedDomItemCount + 5)) {
+                        this.onLongScroll(listDiff, false);
+                    }
+                    else {
+                        this.onNormalScroll(listDiff, false);
+                    }
                 }
             }
             this.listDiff = Math.round(this.topElementHeight / this.listItemHeight);
@@ -3111,6 +3354,14 @@ class Virtualization {
                 }
             }
             else {
+                if (isBlazor() && this.listViewInstance.isServerRendered) {
+                    let scrollDiff = Math.round(this.listViewInstance.element.scrollTop /
+                        this.listViewInstance.liElementHeight) - 2;
+                    if (scrollDiff < 0) {
+                        scrollDiff = 0;
+                    }
+                    this.activeIndex += scrollDiff;
+                }
                 let curViewDS = this.listViewInstance.curViewDS;
                 let text = this.listViewInstance.fields.text;
                 if (this.listViewInstance.showCheckBox) {
@@ -3201,35 +3452,117 @@ class Virtualization {
             this.listViewInstance.removeSelect();
             this.activeIndex = undefined;
         }
+        if (isBlazor() && this.listViewInstance.isServerRendered) {
+            // tslint:disable-next-line:no-any
+            let elementId = resutJSON.data[this.listViewInstance.fields.id];
+            // tslint:enable-next-line:no-any
+            if (this.listViewInstance.showCheckBox) {
+                if (!this.listViewInstance.previousSelectedItems.includes(elementId)) {
+                    this.listViewInstance.previousSelectedItems.push(elementId);
+                }
+                else {
+                    let indexPosition = this.listViewInstance.previousSelectedItems.indexOf(elementId);
+                    if (indexPosition > -1) {
+                        this.listViewInstance.previousSelectedItems.splice(indexPosition, 1);
+                    }
+                }
+            }
+            else {
+                this.listViewInstance.previousSelectedItems[0] = elementId;
+            }
+            this.listViewInstance.removeActiveClass();
+        }
     }
     enableItem(obj) {
         let resutJSON = this.findDSAndIndexFromId(this.listViewInstance.curViewDS, obj);
-        if (Object.keys(resutJSON).length) {
-            this.uiIndices.disabledItemIndices.splice(this.uiIndices.disabledItemIndices.indexOf(resutJSON.index), 1);
+        if (isBlazor() && this.listViewInstance.isServerRendered) {
+            let itemId = resutJSON.data[this.listViewInstance.fields.id];
+            if (!this.listViewInstance.enabledItems.includes(itemId)) {
+                this.listViewInstance.enabledItems.push(itemId);
+                this.listViewInstance.removeActiveClass();
+            }
+            if (this.listViewInstance.disabledItems.includes(itemId)) {
+                let indexPosition = this.listViewInstance.disabledItems.indexOf(itemId);
+                if (indexPosition > -1) {
+                    this.listViewInstance.disabledItems.splice(indexPosition, 1);
+                }
+            }
+        }
+        else {
+            if (Object.keys(resutJSON).length) {
+                this.uiIndices.disabledItemIndices.splice(this.uiIndices.disabledItemIndices.indexOf(resutJSON.index), 1);
+            }
         }
     }
     disableItem(obj) {
         let resutJSON = this.findDSAndIndexFromId(this.listViewInstance.curViewDS, obj);
-        if (Object.keys(resutJSON).length && this.uiIndices.disabledItemIndices.indexOf(resutJSON.index) === -1) {
-            this.uiIndices.disabledItemIndices.push(resutJSON.index);
+        if (isBlazor() && this.listViewInstance.isServerRendered) {
+            let liElementId = resutJSON.data[this.listViewInstance.fields.id];
+            if (!this.listViewInstance.disabledItems.includes(liElementId)) {
+                this.listViewInstance.disabledItems.push(liElementId);
+                this.listViewInstance.removeActiveClass();
+            }
+            if (this.listViewInstance.enabledItems.includes(liElementId)) {
+                let indexPosition = this.listViewInstance.enabledItems.indexOf(liElementId);
+                if (indexPosition > -1) {
+                    this.listViewInstance.enabledItems.splice(indexPosition, 1);
+                }
+            }
+        }
+        else {
+            if (Object.keys(resutJSON).length && this.uiIndices.disabledItemIndices.indexOf(resutJSON.index) === -1) {
+                this.uiIndices.disabledItemIndices.push(resutJSON.index);
+            }
         }
     }
     showItem(obj) {
         let resutJSON = this.findDSAndIndexFromId(this.listViewInstance.curViewDS, obj);
-        if (Object.keys(resutJSON).length) {
-            this.uiIndices.hiddenItemIndices.splice(this.uiIndices.hiddenItemIndices.indexOf(resutJSON.index), 1);
+        if (isBlazor() && this.listViewInstance.isServerRendered) {
+            // tslint:disable-next-line:no-any
+            let hiddenElementId = resutJSON.data[this.listViewInstance.fields.id];
+            // tslint:enable-next-line:no-any
+            if (this.listViewInstance.hiddenItems.includes(hiddenElementId)) {
+                let indexPosition = this.listViewInstance.hiddenItems.indexOf(hiddenElementId);
+                if (indexPosition > -1) {
+                    this.listViewInstance.previousSelectedItems.splice(indexPosition, 1);
+                    this.listViewInstance.removeActiveClass();
+                }
+            }
+        }
+        else {
+            if (Object.keys(resutJSON).length) {
+                this.uiIndices.hiddenItemIndices.splice(this.uiIndices.hiddenItemIndices.indexOf(resutJSON.index), 1);
+            }
         }
     }
     hideItem(obj) {
         let resutJSON = this.findDSAndIndexFromId(this.listViewInstance.curViewDS, obj);
-        if (Object.keys(resutJSON).length && this.uiIndices.hiddenItemIndices.indexOf(resutJSON.index) === -1) {
-            this.uiIndices.hiddenItemIndices.push(resutJSON.index);
+        if (isBlazor() && this.listViewInstance.isServerRendered) {
+            // tslint:disable-next-line:no-any
+            let elementId = resutJSON.data[this.listViewInstance.fields.id];
+            // tslint:enable-next-line:no-any
+            if (!this.listViewInstance.hiddenItems.includes(elementId)) {
+                this.listViewInstance.hiddenItems.push(elementId);
+                this.listViewInstance.removeActiveClass();
+            }
+        }
+        else {
+            if (Object.keys(resutJSON).length && this.uiIndices.hiddenItemIndices.indexOf(resutJSON.index) === -1) {
+                this.uiIndices.hiddenItemIndices.push(resutJSON.index);
+            }
         }
     }
     removeItem(obj) {
         let dataSource;
         const curViewDS = this.listViewInstance.curViewDS;
         let resutJSON = this.findDSAndIndexFromId(curViewDS, obj);
+        if (isBlazor() && this.listViewInstance.isServerRendered) {
+            if (resutJSON.index !== undefined) {
+                // tslint:disable
+                this.listViewInstance.interopAdaptor.invokeMethodAsync('RemoveItemPosition', resutJSON.index);
+                // tslint:enable
+            }
+        }
         if (Object.keys(resutJSON).length) {
             dataSource = resutJSON.data;
             if (curViewDS[resutJSON.index - 1] &&
@@ -3240,7 +3573,9 @@ class Virtualization {
                 this.removeUiItem(resutJSON.index - 1);
             }
             else {
-                this.removeUiItem(resutJSON.index);
+                if (!(isBlazor() && this.listViewInstance.isServerRendered)) {
+                    this.removeUiItem(resutJSON.index);
+                }
             }
         }
         const listDataSource = this.listViewInstance.dataSource instanceof DataManager
@@ -3255,6 +3590,12 @@ class Virtualization {
             this.listViewInstance.curUL.querySelectorAll('li');
     }
     setCheckboxLI(li, e) {
+        if (isBlazor() && this.listViewInstance.isServerRendered) {
+            this.uiFirstIndex = Math.round(this.listViewInstance.element.scrollTop / 36) - 4;
+            if (this.uiFirstIndex < 0) {
+                this.uiFirstIndex = 0;
+            }
+        }
         let index = Array.prototype.indexOf.call(this.listViewInstance.curUL.querySelectorAll('li'), li) + this.uiFirstIndex;
         this.activeIndex = Array.prototype.indexOf.call(this.listViewInstance.curUL.querySelectorAll('li'), li) + this.uiFirstIndex;
         if (li.classList.contains(classNames.selected)) {

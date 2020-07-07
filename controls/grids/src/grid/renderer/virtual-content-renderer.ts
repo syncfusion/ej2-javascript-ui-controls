@@ -14,7 +14,7 @@ import { ServiceLocator } from '../services/service-locator';
 import { InterSectionObserver } from '../services/intersection-observer';
 import { RendererFactory } from '../services/renderer-factory';
 import { VirtualRowModelGenerator } from '../services/virtual-row-model-generator';
-import { isGroupAdaptive, getTransformValues, ensureLastRow, ensureFirstRow, getEditedDataIndex } from '../base/util';
+import { isGroupAdaptive, getTransformValues, ensureLastRow, ensureFirstRow, getEditedDataIndex, getScrollBarWidth } from '../base/util';
 import { isBlazor, setStyleAttribute } from '@syncfusion/ej2-base';
 import { Grid } from '../base/grid';
 /**
@@ -89,7 +89,11 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         super.renderTable();
         this.virtualEle.table = <HTMLElement>this.getTable();
         this.virtualEle.content = this.content = <HTMLElement>this.getPanel().querySelector('.e-content');
-        this.virtualEle.renderWrapper(<number>this.parent.height);
+        let minHeight: number = <number>this.parent.height;
+        if (this.parent.getFrozenColumns() && this.parent.height.toString().indexOf('%') < 0) {
+            minHeight = parseInt(this.parent.height as string, 10) - getScrollBarWidth();
+        }
+        this.virtualEle.renderWrapper(minHeight);
         this.virtualEle.renderPlaceHolder();
         if (!this.parent.getFrozenColumns()) {
             this.virtualEle.wrapper.style.position = 'absolute';
@@ -563,13 +567,17 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         let width: string = this.parent.enableColumnVirtualization ?
             this.getColumnOffset(this.parent.columns.length + this.parent.groupSettings.columns.length - 1) + 'px' : '100%';
         if (this.parent.getFrozenColumns()) {
+            let virtualHeightTemp: number = (this.parent.pageSettings.currentPage === 1 && Object.keys(this.offsets).length <= 2) ?
+                this.offsets[1] : this.offsets[this.getTotalBlocks() - 2];
+            let scrollableElementHeight: number = this.parent.getMovableVirtualContent().clientHeight;
+            virtualHeightTemp = virtualHeightTemp > scrollableElementHeight ? virtualHeightTemp : 0;
             let fTblWidth: string = this.parent.enableColumnVirtualization ? 'auto' : width;
             this.virtualEle.placeholder = this.parent.getFrozenVirtualContent().querySelector('.e-virtualtrack');
             // To overcome the white space issue in last page (instead of position absolute)
-            this.virtualEle.setVirtualHeight(this.offsets[this.getTotalBlocks() - 2], fTblWidth);
+            this.virtualEle.setVirtualHeight(virtualHeightTemp, fTblWidth);
             this.virtualEle.placeholder = this.parent.getMovableVirtualContent().querySelector('.e-virtualtrack');
             // To overcome the white space issue in last page (instead of position absolute)
-            this.virtualEle.setVirtualHeight(this.offsets[this.getTotalBlocks() - 2], width);
+            this.virtualEle.setVirtualHeight(virtualHeightTemp, width);
         } else {
             let virtualHeight: number = (isBlazor() && this.parent.isServerRendered && this.parent.groupSettings.columns.length && height)
                 ? height : (this.offsets[isGroupAdaptive(this.parent) ? this.getGroupedTotalBlocks() : this.getTotalBlocks()]);

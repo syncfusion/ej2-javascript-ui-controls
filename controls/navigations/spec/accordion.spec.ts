@@ -442,7 +442,7 @@ describe("Accordion Testing", () => {
             expect(isVisible(itemContent)).toBe(true);
             expect(acrdnItem1.childElementCount).toBe(2);
             expect(accordion.initExpand[0]).toBe(0);
-            expect(accordion.expandedItems[0]).toBe(0);
+            expect(accordion.expandedIndices[0]).toBe(0);
             itemContent = acrdnItem1.querySelector("." + CLS_CONTENT);
             expect(isNOU(itemContent)).toBe(false);
             expect(isVisible(itemContent)).toBe(true);
@@ -482,7 +482,7 @@ describe("Accordion Testing", () => {
             expect(isVisible(itemContent)).toBe(true);
             expect(acrdnItem1.childElementCount).toBe(2);
             expect(accordion.initExpand[0]).toBe(0);
-            expect(accordion.expandedItems[0]).toBe(0);
+            expect(accordion.expandedIndices[0]).toBe(0);
             itemContent = acrdnItem1.querySelector("." + CLS_CONTENT);
             expect(isNOU(itemContent)).toBe(false);
             expect(isVisible(itemContent)).toBe(true);
@@ -765,7 +765,7 @@ describe("Accordion Testing", () => {
             document.body.innerHTML = "";
         });
         it("Accordion getPersistance data  Testing", (done: Function) => {
-            window.localStorage.setItem('accordionaccordion', JSON.stringify({ expandedItems: '[0]' }));
+            window.localStorage.setItem('accordionaccordion', JSON.stringify({ expandedIndices: '[0]' }));
             let ele: HTMLElement = document.getElementById("accordion");
             accordion = new Accordion(
                 {
@@ -778,7 +778,7 @@ describe("Accordion Testing", () => {
             setTimeout(() => { done(); }, TIME_DELAY);
         });
         it("Accordion getPersistance data  Testing", (done: Function) => {
-            window.localStorage.setItem('accordionaccordion', JSON.stringify({ expandedItems: '[0]' }));
+            window.localStorage.setItem('accordionaccordion', JSON.stringify({ expandedIndices: '[0]' }));
             let ele: HTMLElement = document.getElementById("accordion");
             accordion = new Accordion(
                 {
@@ -964,13 +964,13 @@ describe("Accordion Testing", () => {
             let eleItem: Element = ele.children[0];
             expect(isVisible(eleItem.children[1])).toBe(false);
             expect(isVisible(ele.children[1].children[1])).toBe(false);
-            expect(accordion.expandedItems.length).toBe(0);
+            expect(accordion.expandedIndices.length).toBe(0);
             accordion.destroy();
             document.body.innerHTML = "";
         });
         it("Accordion expandMode on property Change behavior", (done: Function) => {
             let ele: HTMLElement = document.getElementById("accordion");
-            expect(accordion.expandedItems.length).toBe(2);
+            expect(accordion.expandedIndices.length).toBe(2);
             accordion.expandMode = 'Single';
             accordion.dataBind();
             setTimeout(() => { done(); }, TIME_DELAY);
@@ -2980,8 +2980,8 @@ describe("Accordion Testing", () => {
     describe("Accordion Expanded Items Testing with private variables ", () => {
         let accordion: any;
         afterEach((): void => {
-            expect(accordion.expandedItems.length).toBe(1);
-            expect(accordion.expandedItems[0]).toBe(1);
+            expect(accordion.expandedIndices.length).toBe(1);
+            expect(accordion.expandedIndices[0]).toBe(1);
             if (accordion) {
                 accordion.destroy();
             }
@@ -3003,8 +3003,8 @@ describe("Accordion Testing", () => {
         });
         it("Accordion Expanded Items Testing with private variables", (done: Function) => {
             let ele: HTMLElement = document.getElementById('accordion');
-            expect(accordion.expandedItems.length).toBe(1);
-            expect(accordion.expandedItems[0]).toBe(0);
+            expect(accordion.expandedIndices.length).toBe(1);
+            expect(accordion.expandedIndices[0]).toBe(0);
             (<HTMLElement>ele.children[1].children[0]).click();
             setTimeout(() => { done(); }, TIME_DELAY);
         });
@@ -3012,8 +3012,8 @@ describe("Accordion Testing", () => {
     describe("Accordion Expanded Items Testing with private variables with public methods ", () => {
         let accordion: any;
         afterEach((): void => {
-            expect(accordion.expandedItems.length).toBe(2);
-            expect(accordion.expandedItems[1]).toBe(1);
+            expect(accordion.expandedIndices.length).toBe(2);
+            expect(accordion.expandedIndices[1]).toBe(1);
             if (accordion) {
                 accordion.destroy();
             }
@@ -3035,9 +3035,9 @@ describe("Accordion Testing", () => {
         });
         it("Accordion Expanding with  private variables and public Methods testing", () => {
             let ele: HTMLElement = document.getElementById('accordion');
-            expect(accordion.expandedItems.length).toBe(2);
-            expect(accordion.expandedItems[0]).toBe(0);
-            expect(accordion.expandedItems[1]).toBe(1);
+            expect(accordion.expandedIndices.length).toBe(2);
+            expect(accordion.expandedIndices[0]).toBe(0);
+            expect(accordion.expandedIndices[1]).toBe(1);
             let eleItem: Element = ele.children[0];
             expect(eleItem.children[0].getAttribute('aria-controls')).toBe(eleItem.children[1].id);
             expect(eleItem.children[1].getAttribute('aria-labelledby')).toBe(eleItem.children[0].id);

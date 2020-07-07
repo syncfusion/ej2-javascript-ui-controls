@@ -19,9 +19,15 @@ export type CurrentAction = 'Add' | 'Edit' | 'Delete';
 export type SelectionType = 'None' | 'Single' | 'Multiple';
 
 /**
- * Defines types to be used as SortType.
+ * Defines types to be used as SortDirection.
  */
-export type SortType = 'Ascending' | 'Descending';
+export type SortDirection = 'Ascending' | 'Descending';
+
+/**
+ * Defines types to be used as SortOrder.
+ * @deprecated
+ */
+export type SortOrderBy = 'DataSourceOrder' | 'Index' | 'Custom';
 
 /**
  * Defines types to be used as ConstraintType.

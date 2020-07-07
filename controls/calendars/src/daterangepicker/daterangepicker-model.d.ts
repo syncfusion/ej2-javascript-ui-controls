@@ -90,6 +90,13 @@ export interface DateRangePickerModel extends CalendarBaseModel{
     calendarMode?: CalendarType;
 
     /**
+     * By default, the popup opens while clicking on the daterangepicker icon.
+     * If you want to open the popup while focusing the daterange input then specify its value as true.
+     * @default false
+     */
+    openOnFocus?: boolean;
+
+    /**
      * Triggers when Calendar is created.
      * @event
      * @blazorProperty 'Created'

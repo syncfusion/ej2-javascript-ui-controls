@@ -550,5 +550,16 @@
         }
        }
    }
+
+    &.sf-pager {
+      .e-link,
+      .e-prev,
+      .e-last,
+      .e-next.e-icons.e-icon-next.e-nextpage.e-pager-default,
+      .e-mnext,
+      .e-mlast {
+        margin-left: -4px;
+      }
+    }
 }
 }

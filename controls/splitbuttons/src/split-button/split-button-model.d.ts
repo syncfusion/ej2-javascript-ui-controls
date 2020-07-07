@@ -1,4 +1,4 @@
-import { Event, EmitType, remove, addClass, removeClass, detach, getValue, setValue } from '@syncfusion/ej2-base';import { EventHandler, Collection, BaseEventArgs, NotifyPropertyChanges, INotifyPropertyChanged, Property } from '@syncfusion/ej2-base';import { attributes, getUniqueID, getInstance, KeyboardEvents, KeyboardEventArgs, isBlazor } from '@syncfusion/ej2-base';import { Button, ButtonModel, buttonObserver } from '@syncfusion/ej2-buttons';import { MenuEventArgs, BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs } from './../common/common';import { getModel, SplitButtonIconPosition, Item } from './../common/common';import { DropDownButton, dropDownButtonObserver } from '../drop-down-button/drop-down-button';import { ItemModel } from './../common/common-model';
+import { Event, EmitType, remove, addClass, removeClass, detach, getValue, setValue } from '@syncfusion/ej2-base';import { EventHandler, Collection, BaseEventArgs, NotifyPropertyChanges, INotifyPropertyChanged, Property } from '@syncfusion/ej2-base';import { attributes, getUniqueID, getInstance, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';import { Button, ButtonModel } from '@syncfusion/ej2-buttons';import { MenuEventArgs, BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs } from './../common/common';import { getModel, SplitButtonIconPosition, Item } from './../common/common';import { DropDownButton } from '../drop-down-button/drop-down-button';import { ItemModel } from './../common/common-model';
 import {ClickEventArgs} from "./split-button";
 import {DropDownButtonModel} from "../drop-down-button/drop-down-button-model";
 
@@ -56,56 +56,48 @@ export interface SplitButtonModel extends DropDownButtonModel{
     /**
      * Triggers while rendering each Popup item of SplitButton.
      * @event
-     * @blazorProperty 'OnItemRender'
      */
     beforeItemRender?: EmitType<MenuEventArgs>;
 
     /**
      * Triggers before opening the SplitButton popup.
      * @event
-     * @blazorProperty 'OnOpen'
      */
     beforeOpen?: EmitType<BeforeOpenCloseMenuEventArgs>;
 
     /**
      * Triggers before closing the SplitButton popup.
      * @event
-     * @blazorProperty 'OnClose'
      */
     beforeClose?: EmitType<BeforeOpenCloseMenuEventArgs>;
 
     /**
      * Triggers when the primary button of SplitButton has been clicked.
      * @event
-     * @blazorProperty 'Clicked'
      */
     click?: EmitType<ClickEventArgs>;
 
     /**
      * Triggers while closing the SplitButton popup.
      * @event
-     * @blazorProperty 'Closed'
      */
     close?: EmitType<OpenCloseMenuEventArgs>;
 
     /**
      * Triggers while opening the SplitButton popup.
      * @event
-     * @blazorProperty 'Opened'
      */
     open?: EmitType<OpenCloseMenuEventArgs>;
 
     /**
      * Triggers while selecting action item of SplitButton popup.
      * @event
-     * @blazorProperty 'ItemSelected'
      */
     select?: EmitType<MenuEventArgs>;
 
     /**
      * Triggers once the component rendering is completed.
      * @event
-     * @blazorProperty 'Created'
      */
     created?: EmitType<Event>;
 

@@ -662,9 +662,11 @@ describe('Internationalization', () => {
         it('Check Number Formatting format C2', () => {
             enableBlazorMode()
             let intl: Internationalization = new Internationalization();
-            let res: string = intl.formatNumber(-12122, { format: 'C2' });
+            let res: string = intl.formatNumber(-12122, { format: 'C2' ,currency:'CNY'});
+            intl.parseNumber(res,{ format: 'C2', currency: 'CNY' })
             disableBlazorMode()
-            expect(res).toBe('($12,122.00)');
+            debugger;
+            expect(res).toBe('(¥12,122.00)');
         });
         it('Check Number Parsing  C2', () => {
             enableBlazorMode()

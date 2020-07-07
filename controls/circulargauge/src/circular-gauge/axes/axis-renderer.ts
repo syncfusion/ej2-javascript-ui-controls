@@ -9,7 +9,6 @@ import { TickModel } from './axis-model';
 import { getRangePalette } from '../model/theme';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
-
 /**
  * Specifies the Axis rendering for circular gauge
  */
@@ -356,6 +355,7 @@ export class AxisRenderer {
         let roundedEndAngle: number;
         let oldStart: number;
         let oldEnd: number;
+        let gradientRangeColor: string;
         axis.ranges.map((range: Range, rangeIndex: number) => {
             rangeIndex = rangeIndex;
             range.pathElement = [];
@@ -399,6 +399,10 @@ export class AxisRenderer {
                     radius) / (range.currentRadius)) * 180) / Math.PI;
                 roundedEndAngle = ((((range.currentRadius) * ((endAngle * Math.PI) / 180) -
                     radius) / (range.currentRadius)) * 180) / Math.PI;
+                if (gauge.gradientModule) {
+                    gradientRangeColor = gauge.gradientModule.getGradientColorString(range);
+                }
+                range.rangeColor = gradientRangeColor ? gradientRangeColor : range.rangeColor;
                 if (range.roundedCornerRadius) {
                     range.pathElement.push( appendPath(
                         new PathOption(

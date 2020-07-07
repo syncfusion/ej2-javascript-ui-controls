@@ -345,6 +345,15 @@ export class Operators {
      */
     private forTest : string = 'test';
     /**
+     * Same as SC, but also supports Pattern, Separation, DeviceN, and ICCBased color spaces. For non-stroking operations.
+     * @public
+     */
+    public static readonly setColorAndPattern : string = 'scn';
+    /**
+     * Same as SC, but also supports Pattern, Separation, DeviceN, and ICCBased color spaces. For stroking.
+     */
+    public static readonly setColorAndPatternStroking : string = 'SCN';
+    /**
      * Create an instance of `PdfOperator` class.
      * @private
      */

@@ -42,6 +42,8 @@ const CONTEXTMENU_RESTART_AT: string = '_contextmenu_restart_at';
 const CONTEXTMENU_SPELLING_DIALOG: string = '_contextmenu_spelling_dialog';
 const CONTEXTMENU_SPELLCHECK_OTHERSUGGESTIONS: string = '_contextmenu_otherSuggestions_spellcheck_';
 const CONTEXTMENU_NO_SUGGESTION: string = '_contextmenu_no_suggestion';
+const CONTEXTMENU_ACCEPT_CHANGES: string = '_contextmenu_accept_changes';
+const CONTEXTMENU_REJECT_CHANGES: string = '_contextmenu_reject_changes';
 /**
  * Context Menu class
  */
@@ -154,6 +156,16 @@ export class ContextMenu {
             },
             {
                 separator: true
+            },
+            {
+                text: localValue.getConstant('Accept Changes'),
+                iconCss: 'e-icons e-de-acceptchange',
+                id: id + CONTEXTMENU_ACCEPT_CHANGES
+            },
+            {
+                text: localValue.getConstant('Reject Changes'),
+                iconCss: 'e-icons e-de-rejectchange',
+                id: id + CONTEXTMENU_REJECT_CHANGES
             },
             {
                 text: localValue.getConstant('Update Field'),
@@ -462,6 +474,12 @@ export class ContextMenu {
                 this.currentContextInfo = null;
                 this.documentHelper.owner.spellCheckDialog.show(contextInfo.text, contextInfo.element);
                 break;
+            case id + CONTEXTMENU_ACCEPT_CHANGES:
+                this.documentHelper.selection.handleAcceptReject(true);
+                break;
+            case id + CONTEXTMENU_REJECT_CHANGES:
+                this.documentHelper.selection.handleAcceptReject(false);
+                break;
             case id + CONTEXTMENU_PROPERTIES:
                 let inline: ElementBox = this.documentHelper.selection.getCurrentFormField();
                 if (inline instanceof FieldElementBox) {
@@ -703,6 +721,8 @@ export class ContextMenu {
         cut.style.display = 'none';
         paste.style.display = 'none';
         (paste.nextSibling as HTMLElement).style.display = 'none';
+        let acceptChange: HTMLElement = document.getElementById(id + CONTEXTMENU_ACCEPT_CHANGES);
+        let rejectChange: HTMLElement = document.getElementById(id + CONTEXTMENU_REJECT_CHANGES);
         hyperlink.style.display = 'none';
         (font.previousSibling as HTMLElement).style.display = 'none';
         openHyperlink.style.display = 'none';
@@ -722,6 +742,8 @@ export class ContextMenu {
         updateField.style.display = 'none';
         let field: FieldElementBox = selection.getHyperlinkField();
         let isCrossRefField: boolean = false;
+        acceptChange.style.display = 'none';
+        rejectChange.style.display = 'none';
         if (field instanceof FieldElementBox && selection.isReferenceField(field)) {
             isCrossRefField = true;
         }
@@ -750,6 +772,7 @@ export class ContextMenu {
         } else {
             classList(addComment, [], ['e-disabled']);
         }
+        (acceptChange.previousSibling as HTMLElement).style.display = 'none';
         cut.style.display = 'block';
         paste.style.display = 'block';
         (paste.nextSibling as HTMLElement).style.display = 'block';
@@ -832,6 +855,12 @@ export class ContextMenu {
             font.style.display = 'none';
             paragraph.style.display = 'none';
             (removeHyperlink.nextSibling as HTMLElement).style.display = 'none';
+        }
+        if (this.documentHelper.selection.hasRevisions()) {
+             // tslint:disable-next-line:max-line-length
+            (acceptChange.previousSibling as HTMLElement).style.display = this.documentHelper.owner.enableHeaderAndFooter ? 'none' : 'block';
+            acceptChange.style.display = 'block';
+            rejectChange.style.display = 'block';
         }
         return true;
     }

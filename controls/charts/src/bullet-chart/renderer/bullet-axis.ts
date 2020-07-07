@@ -1,6 +1,7 @@
 import { BulletChart } from '../bullet-chart';
 import { measureText, textElement, TextOption, Rect } from '@syncfusion/ej2-svg-base';
-import { MajorTickLinesModel, Orientation } from '../../chart';
+import { Orientation } from '../../chart/utils/enum';
+import { MajorTickLinesModel } from '../../chart/axis/axis-model';
 
 /**
  * Class for Bullet chart axis

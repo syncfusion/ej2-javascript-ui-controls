@@ -477,7 +477,6 @@ describe('Diagram Control', () => {
             done();
         });
         it('Checking fixed node - right to left orientation', (done: Function) => {
-            
             diagram.layout.orientation = 'RightToLeft';
 
             diagram.dataBind();
@@ -1031,7 +1030,6 @@ describe('Tree Layout', () => {
     });
 
     it('Checking icons on proper layer', (done: Function) => {
-        
         let svgElement: SVGSVGElement = document.getElementsByClassName('e-ports-expand-layer')[0] as SVGSVGElement;
         let gElement: SVGElement = svgElement.getElementById(diagram.nodes[0].id + '_icon_content_groupElement') as SVGElement;
         expect(gElement != null).toBe(true);
@@ -1085,7 +1083,6 @@ describe('Tree Layout', () => {
     it('Checking icons on proper layer if removed', (done: Function) => {
         let id = diagram.nodes[0].id;
         diagram.remove(diagram.nodes[0]);
-        
         let svgElement: SVGSVGElement = document.getElementsByClassName('e-ports-expand-layer')[0] as SVGSVGElement;
         let gElement: SVGElement = svgElement.getElementById(id + '_icon_content_groupElement') as SVGElement;
         expect(gElement == null).toBe(true);
@@ -2083,7 +2080,6 @@ describe('OrgChart-Layout Expand collapse issue exception raise issue', () => {
         ele.remove();
     });
     it('OrgChart-Layout Expand collapse issue exception raise issue', (done: Function) => {
-        
         let mouseEvents: MouseEvents = new MouseEvents();
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         var element = document.getElementById('General Manager_icon_content_rect');

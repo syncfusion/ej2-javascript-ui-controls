@@ -1,6 +1,7 @@
 /**
  * PdfViewer component exported items
  */
+export * from './drawing/index';
 export * from './annotation/index'
 export * from './base/index';
 export * from './magnification/index';

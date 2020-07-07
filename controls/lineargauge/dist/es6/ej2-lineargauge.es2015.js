@@ -241,6 +241,12 @@ __decorate$2([
     Property(0)
 ], Range.prototype, "end", void 0);
 __decorate$2([
+    Property(null)
+], Range.prototype, "linearGradient", void 0);
+__decorate$2([
+    Property(null)
+], Range.prototype, "radialGradient", void 0);
+__decorate$2([
     Property('Outside')
 ], Range.prototype, "position", void 0);
 __decorate$2([
@@ -296,6 +302,12 @@ class Pointer extends ChildProperty {
 __decorate$2([
     Property('Marker')
 ], Pointer.prototype, "type", void 0);
+__decorate$2([
+    Property(null)
+], Pointer.prototype, "linearGradient", void 0);
+__decorate$2([
+    Property(null)
+], Pointer.prototype, "radialGradient", void 0);
 __decorate$2([
     Property(null)
 ], Pointer.prototype, "value", void 0);
@@ -1331,6 +1343,7 @@ class AxisRenderer extends Animations {
                 pointesGroup.appendChild(pointerClipRectGroup);
             }
         }
+        this.gauge.gradientCount = 0;
         axisObject.appendChild(pointesGroup);
     }
     drawMarkerPointer(axis, axisIndex, pointer, pointerIndex, parentElement) {
@@ -1338,6 +1351,10 @@ class AxisRenderer extends Animations {
         let pointerID = this.gauge.element.id + '_AxisIndex_' + axisIndex + '_' + pointer.type + 'Pointer' + '_' + pointerIndex;
         let transform = 'translate( 0, 0 )';
         let pointerElement;
+        let gradientMarkerColor;
+        if (this.gauge.gradientModule) {
+            gradientMarkerColor = this.gauge.gradientModule.getGradientColorString(pointer);
+        }
         if (getElement(pointerID) && getElement(pointerID).childElementCount > 0) {
             remove(getElement(pointerID));
         }
@@ -1351,7 +1368,7 @@ class AxisRenderer extends Animations {
                 (((pointer.position === 'Inside' && !axis.opposedPosition) || (pointer.position === 'Outside' && axis.opposedPosition)) &&
                     pointer.markerType === 'InvertedTriangle' ? 'Triangle' : pointer.markerType));
         }
-        options = new PathOption(pointerID, pointerColor, pointer.border.width, pointer.border.color, pointer.opacity, null, null, transform);
+        options = new PathOption(pointerID, (gradientMarkerColor) ? gradientMarkerColor : pointerColor, pointer.border.width, pointer.border.color, pointer.opacity, null, null, transform);
         options = calculateShapes(pointer.bounds, shapeBasedOnPosition, new Size(pointer.width, pointer.height), pointer.imageUrl, options, this.gauge.orientation, axis, pointer);
         pointerElement = ((pointer.markerType === 'Circle' ? this.gauge.renderer.drawCircle(options)
             : (pointer.markerType === 'Image') ? this.gauge.renderer.drawImage(options) :
@@ -1372,17 +1389,22 @@ class AxisRenderer extends Animations {
         let box;
         let size = new Size(this.gauge.availableSize.width, this.gauge.availableSize.height);
         let pointerID = this.gauge.element.id + '_AxisIndex_' + axisIndex + '_' + pointer.type + 'Pointer' + '_' + pointerIndex;
+        let gradientBarColor;
+        if (this.gauge.gradientModule) {
+            gradientBarColor = this.gauge.gradientModule.getGradientColorString(pointer);
+        }
         if (getElement(pointerID) && getElement(pointerID).childElementCount > 0) {
             remove(getElement(pointerID));
         }
         if (this.gauge.container.type === 'Normal') {
-            rectOptions = new RectOption(pointerID, pointer.color || this.gauge.themeStyle.pointerColor, pointer.border, pointer.opacity, pointer.bounds, null, null);
+            rectOptions = new RectOption(pointerID, (gradientBarColor) ?
+                gradientBarColor : pointer.color || this.gauge.themeStyle.pointerColor, pointer.border, pointer.opacity, pointer.bounds, null, null);
             box = pointer.bounds;
             pointerElement = this.gauge.renderer.drawRectangle(rectOptions);
         }
         else {
             path = getBox(pointer.bounds, this.gauge.container.type, this.gauge.orientation, new Size(pointer.bounds.width, pointer.bounds.height), 'bar', this.gauge.container.width, axis, pointer.roundedCornerRadius);
-            options = new PathOption(pointerID, pointer.color || this.gauge.themeStyle.pointerColor, pointer.border.width, pointer.border.color, pointer.opacity, null, path);
+            options = new PathOption(pointerID, (gradientBarColor) ? gradientBarColor : pointer.color || this.gauge.themeStyle.pointerColor, pointer.border.width, pointer.border.color, pointer.opacity, null, path);
             pointerElement = this.gauge.renderer.drawPath(options);
             box = getPathToRect(pointerElement.cloneNode(true), size, this.gauge.element);
         }
@@ -1802,11 +1824,15 @@ class AxisLayoutPanel {
         let width;
         let height;
         let position;
+        let gradientRangeColor;
         let startWidth;
         let endWidth;
         let colors;
         for (let i = 0; i < axis.ranges.length; i++) {
             range = axis.ranges[i];
+            if (this.gauge.gradientModule) {
+                gradientRangeColor = this.gauge.gradientModule.getGradientColorString(range);
+            }
             if (range.offset.length > 0) {
                 range.currentOffset = stringToNumber(range.offset, (this.gauge.orientation === 'Horizontal' ?
                     this.gauge.availableSize.height / 2 : this.gauge.availableSize.width / 2));
@@ -1823,7 +1849,8 @@ class AxisLayoutPanel {
                 startWidth = range.startWidth;
                 endWidth = range.endWidth;
                 colors = this.gauge.rangePalettes.length ? this.gauge.rangePalettes : getRangePalette();
-                range.interior = range.color ? range.color : colors[i % colors.length];
+                range.interior = (gradientRangeColor) ? gradientRangeColor :
+                    (range.color) ? range.color : colors[i % colors.length];
                 if (this.gauge.orientation === 'Vertical') {
                     pointX = line.x + (range.currentOffset) + (position === 'Cross' ? startWidth / 2 :
                         (position === 'Outside' || position === 'Auto') ?
@@ -2282,7 +2309,7 @@ class GaugeTooltip {
             enableAnimation: args.tooltip.enableAnimation,
             fill: fill || gauge.themeStyle.tooltipFillColor,
             availableSize: gauge.availableSize,
-            areaBounds: new Rect(areaRect.left, tooltipPos === 'Bottom' ? location.y : areaRect.top, tooltipPos === 'Right' ? Math.abs(areaRect.left - location.x) : areaRect.width, areaRect.height),
+            areaBounds: new Rect((this.gauge.orientation === 'Vertical') ? areaRect.left : location.x, (this.gauge.orientation === 'Vertical') ? location.y : (tooltipPos === 'Bottom') ? location.y : areaRect.top, tooltipPos === 'Right' ? Math.abs(areaRect.left - location.x) : areaRect.width, areaRect.height),
             textStyle: args.tooltip.textStyle,
             border: tooltipBorder,
             theme: args.gauge.theme,
@@ -2471,224 +2498,180 @@ function getThemeStyle(theme) {
     return style;
 }
 
+var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 /**
- * Represent the print and export for gauge.
+ * Specified the color information for the gradient in the linear gauge.
+ */
+class ColorStop extends ChildProperty {
+}
+__decorate$3([
+    Property('#000000')
+], ColorStop.prototype, "color", void 0);
+__decorate$3([
+    Property(1)
+], ColorStop.prototype, "opacity", void 0);
+__decorate$3([
+    Property('0%')
+], ColorStop.prototype, "offset", void 0);
+__decorate$3([
+    Property('')
+], ColorStop.prototype, "style", void 0);
+/**
+ * Specifies the position in percentage from which the radial gradient must be applied.
+ */
+class GradientPosition extends ChildProperty {
+}
+__decorate$3([
+    Property('0%')
+], GradientPosition.prototype, "x", void 0);
+__decorate$3([
+    Property('0%')
+], GradientPosition.prototype, "y", void 0);
+/**
+ * This specifies the properties of the linear gradient colors for the linear gauge.
+ */
+class LinearGradient extends ChildProperty {
+}
+__decorate$3([
+    Property('0%')
+], LinearGradient.prototype, "startValue", void 0);
+__decorate$3([
+    Property('100%')
+], LinearGradient.prototype, "endValue", void 0);
+__decorate$3([
+    Collection([{ color: '#000000', opacity: 1, offset: '0%', style: '' }], ColorStop)
+], LinearGradient.prototype, "colorStop", void 0);
+/**
+ * This specifies the properties of the radial gradient colors for the linear gauge.
+ */
+class RadialGradient extends ChildProperty {
+}
+__decorate$3([
+    Property('0%')
+], RadialGradient.prototype, "radius", void 0);
+__decorate$3([
+    Complex({ x: '0%', y: '0%' }, GradientPosition)
+], RadialGradient.prototype, "outerPosition", void 0);
+__decorate$3([
+    Complex({ x: '0%', y: '0%' }, GradientPosition)
+], RadialGradient.prototype, "innerPosition", void 0);
+__decorate$3([
+    Collection([{ color: '#000000', opacity: 1, offset: '0%', style: '' }], ColorStop)
+], RadialGradient.prototype, "colorStop", void 0);
+/**
+ * To get the gradient support for pointers and ranges in the linear gauge.
  * @hidden
  */
-class Print {
-    /**
-     * Constructor for gauge
-     * @param control
-     */
+class Gradient {
     constructor(control) {
-        this.control = control;
+        this.gauge = control;
     }
     /**
-     * To print the gauge
-     * @param elements
+     * To get the linear gradient string.
      * @private
      */
-    print(elements) {
-        this.printWindow = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
-        this.printWindow.moveTo(0, 0);
-        this.printWindow.resizeTo(screen.availWidth, screen.availHeight);
-        let argsData = {
-            cancel: false, htmlContent: this.getHTMLContent(elements), name: beforePrint
+    getLinearGradientColor(element) {
+        let render = new SvgRenderer('');
+        let colorStop = element.linearGradient.colorStop;
+        let colors = this.getGradientColor(colorStop);
+        let name = '_' + this.gauge.svgObject.id + '_' + this.gauge.gradientCount + '_' + 'linearGradient';
+        let gradientPosition = {
+            id: name,
+            x1: (element.linearGradient.startValue.indexOf('%') === -1 ?
+                element.linearGradient.startValue :
+                parseFloat(element.linearGradient.startValue).toString()) + '%',
+            x2: (element.linearGradient.endValue.indexOf('%') === -1 ?
+                element.linearGradient.endValue :
+                parseFloat(element.linearGradient.endValue).toString()) + '%',
+            y1: '0' + '%',
+            y2: '0' + '%'
         };
-        this.control.trigger('beforePrint', argsData, (beforePrintArgs) => {
-            if (!argsData.cancel) {
-                print(argsData.htmlContent, this.printWindow);
-            }
-        });
+        let def = render.drawGradient('linearGradient', gradientPosition, colors);
+        this.gauge.svgObject.appendChild(def);
+        return 'url(#' + name + ')';
     }
     /**
-     * To get the html string of the gauge
-     * @param elements
+     * To get the radial gradient string.
      * @private
      */
-    getHTMLContent(elements) {
-        let div = createElement('div');
-        if (elements) {
-            if (elements instanceof Array) {
-                elements.forEach((value) => {
-                    div.appendChild(getElement(value).cloneNode(true));
-                });
-            }
-            else if (elements instanceof Element) {
-                div.appendChild(elements.cloneNode(true));
+    getRadialGradientColor(element) {
+        let render = new SvgRenderer('');
+        let colorStop = element.radialGradient.colorStop;
+        let colors = this.getGradientColor(colorStop);
+        let name = '_' + this.gauge.svgObject.id + '_' + this.gauge.gradientCount + '_' + 'radialGradient';
+        let gradientPosition = {
+            id: name,
+            r: (element.radialGradient.radius.indexOf('%') === -1 ?
+                element.radialGradient.radius :
+                parseFloat(element.radialGradient.radius).toString()) + '%',
+            cx: (element.radialGradient.outerPosition.x.indexOf('%') === -1 ?
+                element.radialGradient.outerPosition.x :
+                parseFloat(element.radialGradient.outerPosition.x).toString()) + '%',
+            cy: (element.radialGradient.outerPosition.y.indexOf('%') === -1 ?
+                element.radialGradient.outerPosition.y :
+                parseFloat(element.radialGradient.outerPosition.y).toString()) + '%',
+            fx: (element.radialGradient.innerPosition.x.indexOf('%') === -1 ?
+                element.radialGradient.innerPosition.y :
+                parseFloat(element.radialGradient.innerPosition.x).toString()) + '%',
+            fy: (element.radialGradient.innerPosition.y.indexOf('%') === -1 ?
+                element.radialGradient.innerPosition.y :
+                parseFloat(element.radialGradient.innerPosition.y).toString()) + '%',
+        };
+        let def = render.drawGradient('radialGradient', gradientPosition, colors);
+        this.gauge.svgObject.appendChild(def);
+        return 'url(#' + name + ')';
+    }
+    /**
+     * To get the color, offset, opacity and style.
+     * @private
+     */
+    getGradientColor(colorStop) {
+        let colors = [];
+        let length = colorStop.length;
+        for (let j = 0; j < length; j++) {
+            let color = {
+                color: colorStop[j].color,
+                colorStop: colorStop[j].offset,
+                opacity: (colorStop[j].opacity) ? (colorStop[j].opacity).toString() : '1',
+                style: colorStop[j].style
+            };
+            colors.push(color);
+        }
+        return colors;
+    }
+    /**
+     * To get the gradient color string.
+     * @private
+     */
+    getGradientColorString(element) {
+        let gradientColor;
+        if ((element.linearGradient || element.radialGradient)) {
+            if (element.linearGradient) {
+                gradientColor = this.getLinearGradientColor(element);
             }
             else {
-                div.appendChild(getElement(elements).cloneNode(true));
+                gradientColor = this.getRadialGradientColor(element);
             }
+            this.gauge.gradientCount += 1;
         }
         else {
-            div.appendChild(this.control.element.cloneNode(true));
+            return null;
         }
-        return div;
+        return gradientColor;
     }
     /**
      * Get module name.
      */
     getModuleName() {
-        return 'Print';
+        return 'Gradient';
     }
     /**
-     * To destroy the print.
-     * @return {void}
-     * @private
-     */
-    destroy(control) {
-        /**
-         * Destroy method performed here
-         */
-    }
-}
-
-/**
- * Represent the print and export for gauge.
- * @hidden
- */
-class PdfExport {
-    /**
-     * Constructor for gauge
-     * @param control
-     */
-    constructor(control) {
-        this.control = control;
-    }
-    /**
-     * To export the file as pdf format
-     * @param type
-     * @param fileName
-     * @private
-     */
-    export(type, fileName, orientation, allowDownload) {
-        let promise = new Promise((resolve, reject) => {
-            let canvasElement = createElement('canvas', {
-                id: 'ej2-canvas',
-                attrs: {
-                    'width': this.control.availableSize.width.toString(),
-                    'height': this.control.availableSize.height.toString()
-                }
-            });
-            orientation = isNullOrUndefined(orientation) ? PdfPageOrientation.Landscape : orientation;
-            let svgData = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
-                this.control.svgObject.outerHTML +
-                '</svg>';
-            let url = window.URL.createObjectURL(new Blob(type === 'SVG' ? [svgData] :
-                [(new XMLSerializer()).serializeToString(this.control.svgObject)], { type: 'image/svg+xml' }));
-            let image = new Image();
-            let context = canvasElement.getContext('2d');
-            image.onload = (() => {
-                context.drawImage(image, 0, 0);
-                window.URL.revokeObjectURL(url);
-                let document = new PdfDocument();
-                let imageString = canvasElement.toDataURL('image/jpeg').replace('image/jpeg', 'image/octet-stream');
-                document.pageSettings.orientation = orientation;
-                imageString = imageString.slice(imageString.indexOf(',') + 1);
-                document.pages.add().graphics.drawImage(new PdfBitmap(imageString), 0, 0, (this.control.availableSize.width - 60), this.control.availableSize.height);
-                if (allowDownload) {
-                    document.save(fileName + '.pdf');
-                    document.destroy();
-                }
-                else {
-                    resolve(null);
-                }
-            });
-            image.src = url;
-        });
-        return promise;
-    }
-    /**
-     * Get module name.
-     */
-    getModuleName() {
-        return 'PdfExport';
-    }
-    /**
-     * To destroy the PdfExport.
-     * @return {void}
-     * @private
-     */
-    destroy(control) {
-        /**
-         * Destroy method performed here
-         */
-    }
-}
-
-/**
- * Represent the print and export for gauge.
- * @hidden
- */
-class ImageExport {
-    /**
-     * Constructor for gauge
-     * @param control
-     */
-    constructor(control) {
-        this.control = control;
-    }
-    /**
-     * To export the file as image/svg format
-     * @param type
-     * @param fileName
-     * @private
-     */
-    export(type, fileName, allowDownload) {
-        let promise = new Promise((resolve, reject) => {
-            let element = createElement('canvas', {
-                id: 'ej2-canvas',
-                attrs: {
-                    'width': this.control.availableSize.width.toString(),
-                    'height': this.control.availableSize.height.toString()
-                }
-            });
-            let isDownload = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
-            let svgData = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
-                this.control.svgObject.outerHTML +
-                '</svg>';
-            let url = window.URL.createObjectURL(new Blob(type === 'SVG' ? [svgData] :
-                [(new XMLSerializer()).serializeToString(this.control.svgObject)], { type: 'image/svg+xml' }));
-            if (type === 'SVG') {
-                if (allowDownload) {
-                    triggerDownload(fileName, type, url, isDownload);
-                }
-                else {
-                    resolve(null);
-                }
-            }
-            else {
-                let image = new Image();
-                let context = element.getContext('2d');
-                image.onload = (() => {
-                    context.drawImage(image, 0, 0);
-                    window.URL.revokeObjectURL(url);
-                    if (allowDownload) {
-                        triggerDownload(fileName, type, element.toDataURL('image/png').replace('image/png', 'image/octet-stream'), isDownload);
-                    }
-                    else {
-                        if (type === 'JPEG') {
-                            resolve(element.toDataURL('image/jpeg'));
-                        }
-                        else if (type === 'PNG') {
-                            resolve(element.toDataURL('image/png'));
-                        }
-                    }
-                });
-                image.src = url;
-            }
-        });
-        return promise;
-    }
-    /**
-     * Get module name.
-     */
-    getModuleName() {
-        return 'ImageExport';
-    }
-    /**
-     * To destroy the ImageExport.
+     * To destroy the gradient.
      * @return {void}
      * @private
      */
@@ -2714,7 +2697,6 @@ var __rest = (undefined && undefined.__rest) || function (s, e) {
             t[p[i]] = s[p[i]];
     return t;
 };
-var LinearGauge_1;
 /**
  * Represents the EJ2 Linear gauge control.
  * ```html
@@ -2725,7 +2707,7 @@ var LinearGauge_1;
  * </script>
  * ```
  */
-let LinearGauge = LinearGauge_1 = class LinearGauge extends Component {
+let LinearGauge = class LinearGauge extends Component {
     /**
      * @private
      * Constructor for creating the widget
@@ -2733,6 +2715,11 @@ let LinearGauge = LinearGauge_1 = class LinearGauge extends Component {
      */
     constructor(options, element) {
         super(options, element);
+        /**
+         * Specifies the gradient count of the linear gauge.
+         * @private
+         */
+        this.gradientCount = 0;
         /** @private */
         this.isDrag = false;
         /** @private */
@@ -2749,14 +2736,6 @@ let LinearGauge = LinearGauge_1 = class LinearGauge extends Component {
      */
     preRender() {
         this.isBlazor = isBlazor();
-        if (!this.isBlazor) {
-            this.allowPrint = true;
-            this.allowImageExport = true;
-            this.allowPdfExport = true;
-            LinearGauge_1.Inject(Print);
-            LinearGauge_1.Inject(PdfExport);
-            LinearGauge_1.Inject(ImageExport);
-        }
         this.unWireEvents();
         this.trigger(load, { gauge: !this.isBlazor ? this : null });
         this.initPrivateVariable();
@@ -3542,6 +3521,10 @@ let LinearGauge = LinearGauge_1 = class LinearGauge extends Component {
                 args: [this]
             });
         }
+        modules.push({
+            member: 'Gradient',
+            args: [this, Gradient]
+        });
         return modules;
     }
     /**
@@ -3722,9 +3705,237 @@ __decorate([
 __decorate([
     Event()
 ], LinearGauge.prototype, "beforePrint", void 0);
-LinearGauge = LinearGauge_1 = __decorate([
+LinearGauge = __decorate([
     NotifyPropertyChanges
 ], LinearGauge);
+
+/**
+ * Represent the print and export for gauge.
+ * @hidden
+ */
+class Print {
+    /**
+     * Constructor for gauge
+     * @param control
+     */
+    constructor(control) {
+        this.control = control;
+    }
+    /**
+     * To print the gauge
+     * @param elements
+     * @private
+     */
+    print(elements) {
+        this.printWindow = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
+        this.printWindow.moveTo(0, 0);
+        this.printWindow.resizeTo(screen.availWidth, screen.availHeight);
+        let argsData = {
+            cancel: false, htmlContent: this.getHTMLContent(elements), name: beforePrint
+        };
+        this.control.trigger('beforePrint', argsData, (beforePrintArgs) => {
+            if (!argsData.cancel) {
+                print(argsData.htmlContent, this.printWindow);
+            }
+        });
+    }
+    /**
+     * To get the html string of the gauge
+     * @param elements
+     * @private
+     */
+    getHTMLContent(elements) {
+        let div = createElement('div');
+        if (elements) {
+            if (elements instanceof Array) {
+                elements.forEach((value) => {
+                    div.appendChild(getElement(value).cloneNode(true));
+                });
+            }
+            else if (elements instanceof Element) {
+                div.appendChild(elements.cloneNode(true));
+            }
+            else {
+                div.appendChild(getElement(elements).cloneNode(true));
+            }
+        }
+        else {
+            div.appendChild(this.control.element.cloneNode(true));
+        }
+        return div;
+    }
+    /**
+     * Get module name.
+     */
+    getModuleName() {
+        return 'Print';
+    }
+    /**
+     * To destroy the print.
+     * @return {void}
+     * @private
+     */
+    destroy(control) {
+        /**
+         * Destroy method performed here
+         */
+    }
+}
+
+/**
+ * Represent the print and export for gauge.
+ * @hidden
+ */
+class ImageExport {
+    /**
+     * Constructor for gauge
+     * @param control
+     */
+    constructor(control) {
+        this.control = control;
+    }
+    /**
+     * To export the file as image/svg format
+     * @param type
+     * @param fileName
+     * @private
+     */
+    export(type, fileName, allowDownload) {
+        let promise = new Promise((resolve, reject) => {
+            let element = createElement('canvas', {
+                id: 'ej2-canvas',
+                attrs: {
+                    'width': this.control.availableSize.width.toString(),
+                    'height': this.control.availableSize.height.toString()
+                }
+            });
+            let isDownload = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
+            let svgData = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
+                this.control.svgObject.outerHTML +
+                '</svg>';
+            let url = window.URL.createObjectURL(new Blob(type === 'SVG' ? [svgData] :
+                [(new XMLSerializer()).serializeToString(this.control.svgObject)], { type: 'image/svg+xml' }));
+            if (type === 'SVG') {
+                if (allowDownload) {
+                    triggerDownload(fileName, type, url, isDownload);
+                }
+                else {
+                    resolve(null);
+                }
+            }
+            else {
+                let image = new Image();
+                let context = element.getContext('2d');
+                image.onload = (() => {
+                    context.drawImage(image, 0, 0);
+                    window.URL.revokeObjectURL(url);
+                    if (allowDownload) {
+                        triggerDownload(fileName, type, element.toDataURL('image/png').replace('image/png', 'image/octet-stream'), isDownload);
+                    }
+                    else {
+                        if (type === 'JPEG') {
+                            resolve(element.toDataURL('image/jpeg'));
+                        }
+                        else if (type === 'PNG') {
+                            resolve(element.toDataURL('image/png'));
+                        }
+                    }
+                });
+                image.src = url;
+            }
+        });
+        return promise;
+    }
+    /**
+     * Get module name.
+     */
+    getModuleName() {
+        return 'ImageExport';
+    }
+    /**
+     * To destroy the ImageExport.
+     * @return {void}
+     * @private
+     */
+    destroy(control) {
+        /**
+         * Destroy method performed here
+         */
+    }
+}
+
+/**
+ * Represent the print and export for gauge.
+ * @hidden
+ */
+class PdfExport {
+    /**
+     * Constructor for gauge
+     * @param control
+     */
+    constructor(control) {
+        this.control = control;
+    }
+    /**
+     * To export the file as pdf format
+     * @param type
+     * @param fileName
+     * @private
+     */
+    export(type, fileName, orientation, allowDownload) {
+        let promise = new Promise((resolve, reject) => {
+            let canvasElement = createElement('canvas', {
+                id: 'ej2-canvas',
+                attrs: {
+                    'width': this.control.availableSize.width.toString(),
+                    'height': this.control.availableSize.height.toString()
+                }
+            });
+            orientation = isNullOrUndefined(orientation) ? PdfPageOrientation.Landscape : orientation;
+            let svgData = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
+                this.control.svgObject.outerHTML +
+                '</svg>';
+            let url = window.URL.createObjectURL(new Blob(type === 'SVG' ? [svgData] :
+                [(new XMLSerializer()).serializeToString(this.control.svgObject)], { type: 'image/svg+xml' }));
+            let image = new Image();
+            let context = canvasElement.getContext('2d');
+            image.onload = (() => {
+                context.drawImage(image, 0, 0);
+                window.URL.revokeObjectURL(url);
+                let document = new PdfDocument();
+                let imageString = canvasElement.toDataURL('image/jpeg').replace('image/jpeg', 'image/octet-stream');
+                document.pageSettings.orientation = orientation;
+                imageString = imageString.slice(imageString.indexOf(',') + 1);
+                document.pages.add().graphics.drawImage(new PdfBitmap(imageString), 0, 0, (this.control.availableSize.width - 60), this.control.availableSize.height);
+                if (allowDownload) {
+                    document.save(fileName + '.pdf');
+                    document.destroy();
+                }
+                else {
+                    resolve(null);
+                }
+            });
+            image.src = url;
+        });
+        return promise;
+    }
+    /**
+     * Get module name.
+     */
+    getModuleName() {
+        return 'PdfExport';
+    }
+    /**
+     * To destroy the PdfExport.
+     * @return {void}
+     * @private
+     */
+    destroy(control) {
+        /**
+         * Destroy method performed here
+         */
+    }
+}
 
 /**
  * Linear gauge component exported items
@@ -3734,5 +3945,5 @@ LinearGauge = LinearGauge_1 = __decorate([
  * LinearGauge component exported.
  */
 
-export { LinearGauge, Font, Margin, Border, Annotation, Container, RangeTooltip, TooltipSettings, Line, Label, Range, Tick, Pointer, Axis, stringToNumber, measureText, withInRange, convertPixelToValue, getPathToRect, getElement, removeElement, isPointerDrag, valueToCoefficient, getFontStyle, textFormatter, formatValue, getLabelFormat, getTemplateFunction, getElementOffset, triggerDownload, VisibleRange, GaugeLocation, Size, Rect, CustomizeOption, PathOption, RectOption, TextOption, VisibleLabels, Align, textElement, calculateNiceInterval, getActualDesiredIntervalsCount, getPointer, getRangeColor, getMousePosition, getRangePalette, calculateShapes, getBox, Annotations, GaugeTooltip, Print, ImageExport, PdfExport };
+export { LinearGauge, Font, Margin, Border, Annotation, Container, RangeTooltip, TooltipSettings, Line, Label, Range, Tick, Pointer, Axis, stringToNumber, measureText, withInRange, convertPixelToValue, getPathToRect, getElement, removeElement, isPointerDrag, valueToCoefficient, getFontStyle, textFormatter, formatValue, getLabelFormat, getTemplateFunction, getElementOffset, triggerDownload, VisibleRange, GaugeLocation, Size, Rect, CustomizeOption, PathOption, RectOption, TextOption, VisibleLabels, Align, textElement, calculateNiceInterval, getActualDesiredIntervalsCount, getPointer, getRangeColor, getMousePosition, getRangePalette, calculateShapes, getBox, Annotations, GaugeTooltip, Print, ImageExport, PdfExport, ColorStop, GradientPosition, LinearGradient, RadialGradient, Gradient };
 //# sourceMappingURL=ej2-lineargauge.es2015.js.map

@@ -12,6 +12,7 @@ import { KeyboardInteraction } from '../actions/keyboard';
 import { Data } from '../actions/data';
 import { View, CurrentAction, ReturnType } from '../base/type';
 import { EventBase } from '../event-renderer/event-base';
+import { InlineEdit } from '../event-renderer/inline-edit';
 import { QuickPopups } from '../popups/quick-popups';
 import { EventTooltip } from '../popups/event-tooltip';
 import { EventWindow } from '../popups/event-window';
@@ -81,6 +82,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public renderModule: Render;
     public headerModule: HeaderRenderer;
     public scrollModule: Scroll;
+    public inlineModule: InlineEdit;
     public virtualScrollModule: VirtualScroll;
     public iCalendarExportModule: ICalendarExport;
     public iCalendarImportModule: ICalendarImport;
@@ -185,12 +187,14 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * * Week
      * * WorkWeek
      * * Month
+     * * Year
      * * Agenda
      * * MonthAgenda
      * * TimelineDay
      * * TimelineWeek
      * * TimelineWorkWeek
      * * TimelineMonth
+     * * TimelineYear
      * {% codeBlock src='schedule/currentView/index.md' %}{% endcodeBlock %}
      * @default 'Week'
      */
@@ -380,12 +384,19 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public readonly: boolean;
     /**
      * When set to `true`, displays a quick popup with cell or event details on single clicking over the cells or on events.
-     *  By default, it is set to `true`.
+     * By default, it is set to `true`.
      * {% codeBlock src='schedule/showQuickInfo/index.md' %}{% endcodeBlock %}
      * @default true
      */
     @Property(true)
     public showQuickInfo: boolean;
+    /**
+     * This property helps user to add/edit the event in inline.
+     * By default, it is set to `false`.
+     * @default false
+     */
+    @Property(false)
+    public allowInline: boolean;
     /**
      * This property helps user to allow/prevent the selection of multiple cells.
      * By default, it is set to `true`.
@@ -768,6 +779,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         if (this.allowKeyboardInteraction) {
             this.keyboardInteractionModule = new KeyboardInteraction(this);
         }
+        this.inlineModule = new InlineEdit(this);
         this.initializeDataModule();
         this.on(events.dataReady, this.resetEventTemplates, this);
         this.on(events.eventsLoaded, this.updateEventTemplates, this);
@@ -787,7 +799,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public isServerRenderer(view: View = this.currentView): boolean {
         // tslint:disable-next-line:max-line-length
         let views: View[] = ['Day', 'Week', 'WorkWeek', 'Month', 'MonthAgenda', 'TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth'];
-        if (isBlazor() && (views.indexOf(view) !== -1) && !this.virtualScrollModule) {
+        if (isBlazor() && (views.indexOf(view) !== -1)) {
             return true;
         }
         return false;
@@ -911,6 +923,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     /** @hidden */
     public updateEventTemplates(): void {
         let view: ViewsModel = this.views[this.viewIndex] as ViewsModel;
+        let viewCollections: ViewsData = this.viewCollections[this.viewIndex];
         if (this.eventSettings.template) {
             updateBlazorTemplate(this.element.id + '_eventTemplate', 'Template', this.eventSettings, false);
         }
@@ -918,7 +931,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             let tempID: string = this.element.id + '_' + this.activeViewOptions.eventTemplateName + 'eventTemplate';
             updateBlazorTemplate(tempID, 'EventTemplate', view, false);
         }
-        if (this.viewCollections[this.viewIndex].option === 'Agenda' || this.viewCollections[this.viewIndex].option === 'MonthAgenda') {
+        if (viewCollections.option === 'Agenda' || viewCollections.option === 'MonthAgenda' || viewCollections.option === 'TimelineYear') {
             this.updateLayoutTemplates();
         }
     }
@@ -937,7 +950,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             (blazorTemplates as any)[tempID] = [];
             updateBlazorTemplate(tempID, 'EventTemplate', this.views[this.activeView.viewIndex] as ViewsModel);
         }
-        if (view.option === 'Agenda' || view.option === 'MonthAgenda') {
+        if (view.option === 'Agenda' || view.option === 'MonthAgenda' || view.option === 'TimelineYear') {
             this.resetLayoutTemplates();
         }
     }
@@ -1029,6 +1042,12 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             obj.cellTemplateName = obj.cellTemplate ? obj.option : '';
             obj.resourceHeaderTemplateName = obj.resourceHeaderTemplate ? obj.option : '';
             obj.eventTemplateName = obj.eventTemplate ? obj.option : '';
+            if (!isNullOrUndefined(obj.firstDayOfWeek) && obj.firstDayOfWeek === 0) {
+                delete obj.firstDayOfWeek;
+            }
+            if (!isNullOrUndefined(obj.interval) && obj.interval === 1) {
+                delete obj.interval;
+            }
             this.viewCollections.push(obj);
             if (isNullOrUndefined(this.viewOptions[fieldViewName])) {
                 this.viewOptions[fieldViewName] = [obj];
@@ -1073,10 +1092,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             enableCompactView: this.group.enableCompactView
         };
         let workDays: number[] = this.viewCollections[this.viewIndex].workDays ? [] : this.workDays;
-        if (Object.keys(this.viewCollections[this.viewIndex]).indexOf('firstDayOfWeek') > -1 &&
-            isNullOrUndefined(this.viewCollections[this.viewIndex].firstDayOfWeek)) {
-            delete this.viewCollections[this.viewIndex].firstDayOfWeek;
-        }
         let scheduleOptions: ViewsModel = {
             dateFormat: this.dateFormat,
             endHour: this.endHour,
@@ -1101,7 +1116,12 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             headerRows: this.headerRows,
             orientation: 'Horizontal'
         };
-        return extend(scheduleOptions, this.viewCollections[this.viewIndex], undefined, true);
+        let viewOptions: ViewsData = this.viewCollections[this.viewIndex];
+        let viewsData: ViewsData = extend(scheduleOptions, viewOptions, undefined, true);
+        if (this.firstDayOfWeek !== 0 && viewOptions.firstDayOfWeek && this.firstDayOfWeek !== viewOptions.firstDayOfWeek) {
+            viewsData.firstDayOfWeek = this.firstDayOfWeek;
+        }
+        return viewsData;
     }
     private initializeDataModule(): void {
         this.eventFields = {
@@ -1243,9 +1263,12 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         let args: ActionEventArgs = { requestType: 'viewNavigate', cancel: false, event: event };
         this.trigger(events.actionBegin, args, (actionArgs: ActionEventArgs) => {
             if (!actionArgs.cancel) {
-                let navArgs: NavigatingEventArgs = { action: 'view', cancel: false, previousView: this.currentView, currentView: view };
+                let navArgs: NavigatingEventArgs = {
+                    action: 'view', cancel: false, previousView: this.currentView, currentView: view, viewIndex: this.viewIndex
+                };
                 this.trigger(events.navigating, navArgs, (navigationArgs: NavigatingEventArgs) => {
                     if (!navigationArgs.cancel) {
+                        this.viewIndex = navigationArgs.viewIndex;
                         this.setScheduleProperties({ currentView: view });
                         if (this.headerModule) {
                             this.headerModule.updateActiveView();
@@ -1255,6 +1278,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                         this.initializeView(this.currentView);
                         this.onServerDataBind();
                         this.animateLayout();
+                        if (isBlazor() && this.virtualScrollModule) {
+                            this.resetScrollTop();
+                        }
                         args = { requestType: 'viewNavigate', cancel: false, event: event };
                         this.trigger(events.actionComplete, args);
                     }
@@ -1282,12 +1308,27 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                         this.initializeView(this.currentView);
                         this.onServerDataBind();
                         this.animateLayout();
+                        if (isBlazor() && this.virtualScrollModule) {
+                            this.resetScrollTop();
+                        }
                         args = { requestType: 'dateNavigate', cancel: false, event: event };
                         this.trigger(events.actionComplete, args);
                     }
                 });
             }
         });
+    }
+
+    /** @hidden */
+    private resetScrollTop(): void {
+        let resWrap: HTMLElement = this.element.querySelector('.' + cls.RESOURCE_COLUMN_WRAP_CLASS) as HTMLElement;
+        let conWrap: HTMLElement = this.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
+        if (!isNullOrUndefined(conWrap)) {
+            conWrap.scrollTop = 0;
+        }
+        if (!isNullOrUndefined(resWrap)) {
+            resWrap.scrollTop = 0;
+        }
     }
 
     /** @hidden */
@@ -1558,6 +1599,16 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /** @hidden */
+    public getTargetElement(selector: string, left: number, top: number): Element[] {
+        let element: Element = document.elementFromPoint(left, top);
+        let targetElement: Element;
+        if (element) {
+            targetElement = element.closest(selector);
+        }
+        return (targetElement) ? [targetElement] : null;
+    }
+
+    /** @hidden */
     public getCellHeaderTemplate(): Function {
         return this.cellHeaderTemplateFn;
     }
@@ -1747,6 +1798,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Called internally, if any of the property value changed.
      * @private
      */
+
     public onPropertyChanged(newProp: ScheduleModel, oldProp: ScheduleModel): void {
         let state: StateArgs = { isRefresh: false, isResource: false, isDate: false, isView: false, isLayout: false, isDataManager: false };
         for (let prop of Object.keys(newProp)) {
@@ -2692,6 +2744,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @return {void}
      */
     public destroy(): void {
+        if (isBlazor()) {
+            this.isDestroyed = true;
+        }
         if (this.eventTooltip) {
             this.eventTooltip.destroy();
             this.eventTooltip = null;
@@ -2700,6 +2755,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         this.unwireEvents();
         this.destroyHeaderModule();
         this.workCellAction.destroy();
+        this.inlineModule.destroy();
         if (this.keyboardInteractionModule) {
             this.keyboardInteractionModule.destroy();
         }

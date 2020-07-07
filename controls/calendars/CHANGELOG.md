@@ -2,6 +2,32 @@
 
 ## [Unreleased]
 
+## 18.2.44 (2020-07-07)
+
+### DatePicker
+
+#### New Features
+
+- `#274484`,`F145781` - Provided option to open the popup while focusing the input element.
+
+### DateTimePicker
+
+#### New Features
+
+- `#274484`,`F145781` - Provided option to open the popup while focusing the input element.
+
+### TimePicker
+
+#### New Features
+
+- `#274484`,`F145781` - Provided option to open the popup while focusing the input element.
+
+### DateRangePicker
+
+#### New Features
+
+- `#274484`,`F145781` - Provided option to open the popup while focusing the input element.
+
 ## 18.1.43 (2020-04-07)
 
 ### TimePicker

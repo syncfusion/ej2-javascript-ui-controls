@@ -45,6 +45,8 @@ export const resizeStart: string = 'resizeStart';
 export const resizing: string = 'resizing';
 /** @hidden */
 export const resizeStop: string = 'resizeStop';
+/** @hidden */
+export const inlineClick: string = 'inlineClick';
 
 /**
  * Specifies schedule internal events

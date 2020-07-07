@@ -45,6 +45,7 @@ export let defaultLocale: Object = {
     'Permission': 'Permission',
     'Ascending': 'Ascending',
     'Descending': 'Descending',
+    'None': 'None',
     'View-LargeIcons': 'Large icons',
     'View-Details': 'Details',
     'Search': 'Search',

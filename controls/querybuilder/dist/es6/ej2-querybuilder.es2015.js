@@ -46,6 +46,9 @@ __decorate([
     Property(null)
 ], Columns.prototype, "operators", void 0);
 __decorate([
+    Property()
+], Columns.prototype, "ruleTemplate", void 0);
+__decorate([
     Property(null)
 ], Columns.prototype, "template", void 0);
 __decorate([
@@ -181,6 +184,9 @@ let QueryBuilder = class QueryBuilder extends Component {
                     if (categories.indexOf(columns[i].category) < 0) {
                         categories.push(columns[i].category);
                     }
+                    if (!columns[i].operators) {
+                        columns[i].operators = this.customOperators[columns[i].type + 'Operator'];
+                    }
                 }
                 if (groupBy && (categories.length > 1 || categories[0] !== this.l10n.getConstant('OtherFields'))) {
                     this.fields = { text: 'label', value: 'field', groupBy: 'category' };
@@ -200,6 +206,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                     cols[i] = { 'field': columnKeys[i], 'label': columnKeys[i], 'type': isDate ? 'date' : type,
                         'validation': validateObj };
                     isDate = false;
+                    cols[i].operators = this.customOperators[cols[i].type + 'Operator'];
                 }
                 this.columns = cols;
             }
@@ -214,6 +221,9 @@ let QueryBuilder = class QueryBuilder extends Component {
                     columns[i].category = this.l10n.getConstant('OtherFields');
                 }
                 this.updateCustomOperator(columns[i]);
+                if (!columns[i].operators) {
+                    columns[i].operators = this.customOperators[columns[i].type + 'Operator'];
+                }
             }
         }
     }
@@ -360,56 +370,98 @@ let QueryBuilder = class QueryBuilder extends Component {
             this.addGroupElement(true, closest(target, '.e-group-container'), '', true);
         }
     }
-    addRuleElement(target, rule) {
+    appendRuleElem(target, column, type, parentId, action, rule) {
+        let ruleElem;
+        let elem;
+        let ruleListElem = target.querySelector('.e-rule-list');
+        let args;
+        if (type === 'change') {
+            ruleElem = target.querySelector('#' + parentId);
+        }
+        else {
+            ruleElem = this.createElement('div', { attrs: { class: 'e-rule-container' } });
+            ruleElem.setAttribute('id', target.id + '_rule' + this.ruleIdCounter);
+            ruleListElem.appendChild(ruleElem);
+            this.ruleIdCounter++;
+        }
+        if (column && column.ruleTemplate) {
+            args = { requestType: 'template-initialize', ruleID: ruleElem.id, action: action, fields: this.fields, rule: rule };
+            this.trigger('actionBegin', args);
+            this.ruleTemplateFn = this.templateParser(column.ruleTemplate);
+            let templateID = this.element.id + column.field;
+            let template;
+            args.fields = this.fields;
+            args.columns = this.columns;
+            args.operators = this.getOperators(rule.field);
+            args.operatorFields = { text: 'key', value: 'value' };
+            template = this.ruleTemplateFn(args, this, 'Template', templateID);
+            elem = template[0];
+            elem.className += ' e-rule-field';
+        }
+        else {
+            elem = this.ruleElem.querySelector('.e-rule-field').cloneNode(true);
+        }
+        ruleElem.appendChild(elem);
+        return ruleElem;
+    }
+    addRuleElement(target, rule, column, action, parentId, isRuleTemplate) {
         if (!target) {
             return;
         }
         let args = { groupID: target.id.replace(this.element.id + '_', ''), cancel: false, type: 'insertRule' };
         if (!this.isImportRules && !this.isInitialLoad) {
             this.trigger('beforeChange', args, (observedChangeArgs) => {
-                this.addRuleSuccessCallBack(observedChangeArgs, target, rule);
+                this.addRuleSuccessCallBack(observedChangeArgs, target, rule, column, action, parentId, isRuleTemplate);
             });
         }
         else {
             this.isInitialLoad = false;
-            this.addRuleSuccessCallBack(args, target, rule);
+            this.addRuleSuccessCallBack(args, target, rule, column, action, parentId, isRuleTemplate);
         }
     }
-    addRuleSuccessCallBack(args, target, rule) {
+    addRuleSuccessCallBack(args, trgt, rule, col, act, pId, isRlTmp) {
+        let height = (this.element.className.indexOf('e-device') > -1) ? '250px' : '200px';
+        let ruleID;
+        let column = (rule && rule.field) ? this.getColumn(rule.field) : col ? col : this.columns[0];
+        let operators;
+        let dropDownList;
+        let ruleElem;
+        let newRule = { 'label': '', 'field': '', 'type': '', 'operator': '' };
         if (!args.cancel) {
-            let ruleElem = this.ruleElem.cloneNode(true);
+            if (column && column.ruleTemplate) {
+                this.selectedColumn = column;
+                operators = this.selectedColumn.operators;
+                newRule = { 'label': column.label, 'field': column.field, 'type': column.type, 'operator': operators[0].value };
+                let passedRule = Object.keys(rule).length ? rule : newRule;
+                ruleElem = this.appendRuleElem(trgt, column, act, pId, 'field', passedRule);
+                let args = { requestType: 'template-create', action: 'insert-rule', ruleID: ruleElem.id,
+                    fields: this.fields, rule: passedRule };
+                this.trigger('actionBegin', args);
+            }
+            else {
+                ruleElem = this.appendRuleElem(trgt, column, act, pId, 'field');
+                ruleElem.querySelector('.e-filter-input').setAttribute('id', ruleElem.id + '_filterkey');
+                let element = ruleElem.querySelector('button');
+                if (this.element.className.indexOf('e-device') > -1 || this.displayMode === 'Vertical') {
+                    element.textContent = this.l10n.getConstant('Remove');
+                    addClass([element], 'e-flat');
+                    addClass([element], 'e-primary');
+                }
+                else {
+                    addClass([element], 'e-round');
+                    addClass([element], 'e-icon-btn');
+                    let tooltip = new Tooltip({ content: this.l10n.getConstant('DeleteRule') });
+                    tooltip.appendTo(element);
+                    element = this.createElement('span', { attrs: { class: 'e-btn-icon e-icons e-delete-icon' } });
+                    ruleElem.querySelector('button').appendChild(element);
+                }
+            }
             if (this.displayMode === 'Vertical' || this.element.className.indexOf('e-device') > -1) {
                 ruleElem.className = 'e-rule-container e-vertical-mode';
             }
             else {
                 ruleElem.className = 'e-rule-container e-horizontal-mode';
             }
-            let groupLevel;
-            let rules;
-            let i;
-            let len;
-            let dropDownList;
-            let ruleListElem = target.querySelector('.e-rule-list');
-            let element = ruleElem.querySelector('button');
-            let height;
-            let ruleID;
-            if (this.element.className.indexOf('e-device') > -1 || this.displayMode === 'Vertical') {
-                element.textContent = this.l10n.getConstant('Remove');
-                addClass([element], 'e-flat');
-                addClass([element], 'e-primary');
-            }
-            else {
-                addClass([element], 'e-round');
-                addClass([element], 'e-icon-btn');
-                let tooltip = new Tooltip({ content: this.l10n.getConstant('DeleteRule') });
-                tooltip.appendTo(element);
-                element = this.createElement('span', { attrs: { class: 'e-btn-icon e-icons e-delete-icon' } });
-                ruleElem.querySelector('button').appendChild(element);
-            }
-            ruleElem.setAttribute('id', target.id + '_rule' + this.ruleIdCounter);
-            this.ruleIdCounter++;
-            ruleElem.querySelector('.e-filter-input').setAttribute('id', ruleElem.id + '_filterkey');
-            ruleListElem.appendChild(ruleElem);
             if (ruleElem.previousElementSibling && ruleElem.previousElementSibling.className.indexOf('e-rule-container') > -1) {
                 if (ruleElem.className.indexOf('e-joined-rule') < 0) {
                     ruleElem.className += ' e-joined-rule';
@@ -422,44 +474,69 @@ let QueryBuilder = class QueryBuilder extends Component {
                 ruleElem.className.indexOf('e-separate-rule') < 0) {
                 ruleElem.className += ' e-separate-rule';
             }
-            height = (this.element.className.indexOf('e-device') > -1) ? '250px' : '200px';
-            dropDownList = new DropDownList({
-                dataSource: this.columns,
-                fields: this.fields,
-                placeholder: this.l10n.getConstant('SelectField'),
-                popupHeight: ((this.columns.length > 5) ? height : 'auto'),
-                change: this.changeField.bind(this),
-                value: rule ? rule.field : null
-            });
-            dropDownList.appendTo('#' + ruleElem.id + '_filterkey');
-            groupLevel = this.levelColl[target.id];
-            this.selectedColumn = dropDownList.getDataByValue(dropDownList.value);
             if (!this.isImportRules) {
-                rules = this.rule;
-                for (i = 0, len = groupLevel.length; i < len; i++) {
-                    rules = this.findGroupByIdx(groupLevel[i], rules, i === 0);
-                }
+                this.updateAddedRule(trgt, rule, newRule, isRlTmp);
+            }
+            if (!column || (column && !column.ruleTemplate)) {
+                dropDownList = new DropDownList({
+                    dataSource: this.columns,
+                    fields: this.fields, placeholder: this.l10n.getConstant('SelectField'),
+                    popupHeight: ((this.columns.length > 5) ? height : 'auto'),
+                    change: this.changeField.bind(this), value: rule ? rule.field : null
+                });
+                dropDownList.appendTo('#' + ruleElem.id + '_filterkey');
+                this.selectedColumn = dropDownList.getDataByValue(dropDownList.value);
                 if (Object.keys(rule).length) {
-                    rules.rules.push({
-                        'field': rule.field, 'type': rule.type, 'label': rule.label, 'operator': rule.operator, value: rule.value
+                    this.changeRule(rule, {
+                        element: dropDownList.element,
+                        itemData: this.selectedColumn
                     });
                 }
-                else {
-                    rules.rules.push({ 'field': '', 'type': '', 'label': '', 'operator': '', 'value': '' });
-                }
-            }
-            if (!this.isImportRules) {
-                this.disableRuleCondition(target, rules);
-            }
-            if (Object.keys(rule).length) {
-                this.changeRule(rule, {
-                    element: dropDownList.element,
-                    itemData: this.selectedColumn
-                });
             }
             ruleID = ruleElem.id.replace(this.element.id + '_', '');
             if (!this.isImportRules) {
-                this.trigger('change', { groupID: target.id.replace(this.element.id + '_', ''), ruleID: ruleID, type: 'insertRule' });
+                this.trigger('change', { groupID: trgt.id.replace(this.element.id + '_', ''), ruleID: ruleID, type: 'insertRule' });
+            }
+        }
+    }
+    updateAddedRule(target, rule, newRule, isRuleTemplate) {
+        let groupElem = closest(target, '.e-group-container');
+        let rules = this.getParentGroup(groupElem);
+        let ruleElem = closest(target, '.e-rule-container');
+        let index = 0;
+        while (ruleElem && ruleElem.previousElementSibling !== null) {
+            ruleElem = ruleElem.previousElementSibling;
+            index++;
+        }
+        if (isRuleTemplate) {
+            rules.rules[index] = rule;
+        }
+        else {
+            if (Object.keys(rule).length) {
+                rules.rules.push({
+                    'field': rule.field, 'type': rule.type, 'label': rule.label, 'operator': rule.operator, value: rule.value
+                });
+            }
+            else {
+                rules.rules.push(newRule);
+            }
+        }
+        this.disableRuleCondition(target, rules);
+    }
+    // tslint:disable-next-line:no-any
+    changeRuleTemplate(column, element, rule, type) {
+        let operVal = this.selectedColumn.operators;
+        if (column.ruleTemplate) {
+            return;
+        }
+        else {
+            let parentId = closest(element, '.e-rule-container').id;
+            if (this.previousColumn && this.previousColumn.ruleTemplate) {
+                detach(element.closest('#' + parentId).querySelector('.e-rule-field'));
+            }
+            if (column) {
+                let rule = { field: column.field, label: column.label, operator: operVal[0].value, value: '' };
+                this.addRuleElement(this.element.querySelector('.e-group-container'), rule, column, 'change', parentId, true);
             }
         }
     }
@@ -737,22 +814,22 @@ let QueryBuilder = class QueryBuilder extends Component {
             }
         }
     }
-    notifyChange(value, element) {
-        let tempColl = closest(element, '.e-rule-value').querySelectorAll('.e-template');
-        let filterElem = closest(element, '.e-rule-container').querySelector('.e-filter-input');
-        let dropDownObj = getComponent(filterElem, 'dropdownlist');
-        let column = dropDownObj.getDataByValue(dropDownObj.value);
-        let format;
-        format = this.getFormat(column.format);
-        let valueColl = [];
-        for (let i = 0, iLen = tempColl.length; i < iLen; i++) {
-            if (column.type === 'date' && value[i] instanceof Date) {
-                valueColl.push(this.intl.formatDate(value[i], format));
-            }
-            else {
-                valueColl = value;
-            }
+    /**
+     * notify the changes to component.
+     * @returns void.
+     */
+    notifyChange(value, element, type) {
+        let grpElement = closest(element, '.e-group-container');
+        let rules = this.getParentGroup(grpElement);
+        let ruleElement = closest(element, '.e-rule-container');
+        let index = 0;
+        while (ruleElement && ruleElement.previousElementSibling !== null) {
+            ruleElement = ruleElement.previousElementSibling;
+            index++;
         }
+        let rule = rules.rules[index];
+        let column = this.getColumn(rule.field);
+        let format = this.getFormat(column.format);
         if (column.type === 'date') {
             if (value instanceof Date) {
                 value = this.intl.formatDate(value, format);
@@ -765,7 +842,108 @@ let QueryBuilder = class QueryBuilder extends Component {
                 }
             }
         }
-        this.updateRules(element, (tempColl.length > 1) ? valueColl : value);
+        if (column.ruleTemplate) {
+            this.templateChange(element, value, type);
+        }
+        else {
+            let tempColl = closest(element, '.e-rule-value').querySelectorAll('.e-template');
+            let filterElem = closest(element, '.e-rule-container').querySelector('.e-filter-input');
+            let dropDownObj = getComponent(filterElem, 'dropdownlist');
+            column = dropDownObj.getDataByValue(dropDownObj.value);
+            let valueColl = [];
+            for (let i = 0, iLen = tempColl.length; i < iLen; i++) {
+                if (column.type === 'date' && value[i] instanceof Date) {
+                    valueColl.push(this.intl.formatDate(value[i], format));
+                }
+                else {
+                    valueColl = value;
+                }
+            }
+            this.updateRules(element, (tempColl.length > 1) ? valueColl : value);
+        }
+    }
+    // tslint:disable-next-line:no-any
+    templateChange(element, value, type) {
+        let grpElem = closest(element, '.e-group-container');
+        let rules = this.getParentGroup(grpElem);
+        let ruleElem = closest(element, '.e-rule-container');
+        let index = 0;
+        while (ruleElem && ruleElem.previousElementSibling !== null) {
+            ruleElem = ruleElem.previousElementSibling;
+            index++;
+        }
+        let rule = rules.rules[index];
+        if (type === 'field') {
+            this.selectedColumn = this.getColumn(value);
+        }
+        else if (rule) {
+            this.selectedColumn = this.getColumn(rule.field);
+        }
+        let operVal;
+        this.previousColumn = this.getColumn(rule.field);
+        let beforeRules = this.getValidRules(this.rule);
+        if (this.selectedColumn) {
+            if (this.selectedColumn.operators) {
+                operVal = this.selectedColumn.operators;
+            }
+            else {
+                operVal = this.customOperators[this.selectedColumn.type + 'Operator'];
+            }
+        }
+        let arrOper = ['in', 'notin', 'between', 'notbetween'];
+        let prevOper;
+        switch (type) {
+            case 'field':
+                rule.field = value;
+                rule.label = this.selectedColumn.label;
+                rule.type = this.selectedColumn.type;
+                rule.value = '';
+                rule.operator = operVal[0].value;
+                break;
+            case 'operator':
+                prevOper = rule.operator;
+                rule.operator = value;
+                if (arrOper.indexOf(rule.operator) > -1) {
+                    rule.value = [];
+                }
+                else if (arrOper.indexOf(prevOper) > -1) {
+                    rule.value = '';
+                }
+                break;
+            case 'value':
+                rule.value = value;
+        }
+        this.changeRuleTemplate(this.selectedColumn, element, rule, type);
+        this.filterRules(beforeRules, this.getValidRules(this.rule), type);
+        if (this.selectedColumn && this.selectedColumn.ruleTemplate) {
+            if (type === 'field' || type === 'operator') {
+                let grpEle = closest(element, '.e-rule-container');
+                this.destroyControls(grpEle, true);
+                detach(grpEle.querySelector('.e-rule-field'));
+                let ruleElement = this.appendRuleElem(closest(grpEle, '.e-group-container'), this.selectedColumn, 'change', grpEle.id, type, rule);
+                if (this.displayMode === 'Vertical' || this.element.className.indexOf('e-device') > -1) {
+                    ruleElement.className = 'e-rule-container e-vertical-mode';
+                }
+                else {
+                    ruleElement.className = 'e-rule-container e-horizontal-mode';
+                }
+                if (ruleElement.previousElementSibling && ruleElement.previousElementSibling.className.indexOf('e-rule-container') > -1) {
+                    if (ruleElement.className.indexOf('e-joined-rule') < 0) {
+                        ruleElement.className += ' e-joined-rule';
+                    }
+                    if (ruleElement.previousElementSibling.className.indexOf('e-prev-joined-rule') < 0) {
+                        ruleElement.previousElementSibling.className += ' e-prev-joined-rule';
+                    }
+                }
+                if (ruleElement.previousElementSibling && ruleElement.previousElementSibling.className.indexOf('e-group-container') > -1 &&
+                    ruleElement.className.indexOf('e-separate-rule') < 0) {
+                    ruleElement.className += ' e-separate-rule';
+                }
+                let args = { requestType: 'template-create', action: type, ruleID: grpEle.id,
+                    fields: this.fields, rule: rule };
+                this.trigger('actionBegin', args);
+            }
+        }
     }
     changeValue(i, args) {
         let groupID;
@@ -842,15 +1020,21 @@ let QueryBuilder = class QueryBuilder extends Component {
     }
     changeField(args) {
         if (args.isInteracted) {
-            let groupElem = closest(args.element, '.e-group-container');
-            let rules = this.getParentGroup(groupElem);
-            let ruleElem = closest(args.element, '.e-rule-container');
-            let index = 0;
-            while (ruleElem && ruleElem.previousElementSibling !== null) {
-                ruleElem = ruleElem.previousElementSibling;
-                index++;
+            let column = this.getColumn(args.value);
+            if (column && column.ruleTemplate) {
+                this.templateChange(args.element, column.field, 'field');
             }
-            this.changeRule(rules.rules[index], args);
+            else {
+                let groupElem = closest(args.element, '.e-group-container');
+                let rules = this.getParentGroup(groupElem);
+                let ruleElem = closest(args.element, '.e-rule-container');
+                let index = 0;
+                while (ruleElem && ruleElem.previousElementSibling !== null) {
+                    ruleElem = ruleElem.previousElementSibling;
+                    index++;
+                }
+                this.changeRule(rules.rules[index], args);
+            }
         }
     }
     changeRule(rule, ddlArgs) {
@@ -1019,16 +1203,17 @@ let QueryBuilder = class QueryBuilder extends Component {
         }
     }
     // tslint:disable-next-line:no-any
-    destroyControls(target) {
+    destroyControls(target, isRuleTemplate) {
+        let element = isRuleTemplate ? target : target.nextElementSibling;
         let inputElement;
-        inputElement = target.nextElementSibling.querySelectorAll('input.e-control');
+        inputElement = element.querySelectorAll('input.e-control');
         let divElement;
-        divElement = target.nextElementSibling.querySelectorAll('div.e-control:not(.e-handle)');
+        divElement = element.querySelectorAll('div.e-control:not(.e-handle)');
         let columns = this.columns;
         for (let i = 0, len = inputElement.length; i < len; i++) {
             if (inputElement[i].classList.contains('e-textbox')) {
                 getComponent(inputElement[i], 'textbox').destroy();
-                detach(target.nextElementSibling.querySelector('input#' + inputElement[i].id));
+                detach(element.querySelector('input#' + inputElement[i].id));
             }
             else if (inputElement[i].classList.contains('e-dropdownlist')) {
                 getComponent(inputElement[i], 'dropdownlist').destroy();
@@ -1038,7 +1223,7 @@ let QueryBuilder = class QueryBuilder extends Component {
             }
             else if (inputElement[i].classList.contains('e-numerictextbox')) {
                 getComponent(inputElement[i], 'numerictextbox').destroy();
-                detach(target.nextElementSibling.querySelector('input#' + inputElement[i].id));
+                detach(element.querySelector('input#' + inputElement[i].id));
             }
             else if (inputElement[i].classList.contains('e-datepicker')) {
                 getComponent(inputElement[i], 'datepicker').destroy();
@@ -1072,7 +1257,7 @@ let QueryBuilder = class QueryBuilder extends Component {
             detach(divElement[i]);
         }
         let templateElement;
-        templateElement = target.nextElementSibling.querySelectorAll('.e-template:not(.e-control)');
+        templateElement = element.querySelectorAll('.e-template:not(.e-control)');
         for (let i = 0, len = templateElement.length; i < len; i++) {
             detach(templateElement[i]);
         }
@@ -1090,6 +1275,67 @@ let QueryBuilder = class QueryBuilder extends Component {
                 column.template.destroy({ elementId: elemId, elements: templateElements });
             }
         }
+    }
+    /**
+     * return values bound to the column.
+     * @returns object[].
+     */
+    getValues(field) {
+        let original = {};
+        let result = [];
+        let value;
+        let dataSource = this.dataColl;
+        let fieldColl = field.split('.');
+        if (this.dataColl[1]) {
+            for (let i = 0, iLen = dataSource.length; i < iLen; i++) {
+                let data = {};
+                if (fieldColl.length > 1) {
+                    let dataObj = dataSource[i];
+                    let fieldStr;
+                    for (let j = 0, jLen = fieldColl.length; j < jLen; j++) {
+                        fieldStr = fieldColl[j];
+                        if (fieldColl.length === (j + 1)) {
+                            value = dataObj[fieldStr];
+                            if (Number(dataObj[fieldStr]) === dataObj[fieldStr] && dataObj[fieldStr] % 1 !== 0) {
+                                value = dataObj[fieldStr].toString();
+                            }
+                        }
+                        else {
+                            dataObj = dataObj[fieldStr];
+                        }
+                    }
+                }
+                else {
+                    value = dataSource[i][field];
+                    if (Number(dataSource[i][field]) === dataSource[i][field] && dataSource[i][field] % 1 !== 0) {
+                        value = dataSource[i][field].toString();
+                    }
+                }
+                if (!(value in original)) {
+                    original[value] = 1;
+                    if (fieldColl.length > 1) {
+                        this.createNestedObject(data, fieldColl, value);
+                    }
+                    else {
+                        data[field] = value;
+                    }
+                    result.push(data);
+                }
+            }
+        }
+        return result;
+    }
+    createNestedObject(obj, fieldColl, value) {
+        let key;
+        let lastIndex = fieldColl.length - 1;
+        for (let k = 0; k < lastIndex; ++k) {
+            key = fieldColl[k];
+            if (!(key in obj)) {
+                obj[key] = {};
+            }
+            obj = obj[key];
+        }
+        obj[fieldColl[lastIndex]] = value;
     }
     getDistinctValues(dataSource, field) {
         let original = {};
@@ -2877,6 +3123,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         return localeString;
     }
     getColumn(field) {
+        field = field.split('.')[0];
         let columns = this.columns;
         let column;
         for (let i = 0, iLen = columns.length; i < iLen; i++) {
@@ -2885,6 +3132,14 @@ let QueryBuilder = class QueryBuilder extends Component {
             }
         }
         return column;
+    }
+    /**
+     * return the operator bound to the column.
+     * @returns {[key: string]: Object}[].
+     */
+    getOperators(field) {
+        let column = this.getColumn(field);
+        return column.operators;
     }
     datePredicate(ruleColl, value, predicate, condition) {
         let pred;
@@ -3588,6 +3843,9 @@ let QueryBuilder = class QueryBuilder extends Component {
 __decorate([
     Event()
 ], QueryBuilder.prototype, "created", void 0);
+__decorate([
+    Event()
+], QueryBuilder.prototype, "actionBegin", void 0);
 __decorate([
     Event()
 ], QueryBuilder.prototype, "beforeChange", void 0);

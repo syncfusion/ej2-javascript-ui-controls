@@ -172,8 +172,8 @@ export class GaugeTooltip {
             fill: fill || gauge.themeStyle.tooltipFillColor,
             availableSize: gauge.availableSize,
             areaBounds: new Rect(
-                areaRect.left,
-                tooltipPos === 'Bottom' ? location.y : areaRect.top,
+                (this.gauge.orientation === 'Vertical') ? areaRect.left : location.x,
+                (this.gauge.orientation === 'Vertical') ? location.y : (tooltipPos === 'Bottom') ? location.y : areaRect.top,
                 tooltipPos === 'Right' ? Math.abs(areaRect.left - location.x) : areaRect.width,
                 areaRect.height
             ),

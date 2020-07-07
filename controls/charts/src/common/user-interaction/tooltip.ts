@@ -127,11 +127,13 @@ export class BaseTooltip extends ChartData {
         let element: HTMLElement = this.getElement(this.element.id + '_Series_' + series.index + '_Point_' + pointIndex);
         let selectionModule: AccumulationSelection = (this.control as AccumulationChart).accumulationSelectionModule;
         let isSelectedElement: boolean = selectionModule && selectionModule.selectedDataIndexes.length > 0 ? true : false;
-        if (element && (!isSelectedElement || isSelectedElement && element.getAttribute('class')
-            && element.getAttribute('class').indexOf('_ej2_chart_selection_series_') === -1)) {
-            element.setAttribute('opacity', (highlight ? series.opacity / 2 : series.opacity).toString());
-        } else {
-            element.setAttribute('opacity', series.opacity.toString());
+        if (element) {
+            if ((!isSelectedElement || isSelectedElement && element.getAttribute('class')
+                && element.getAttribute('class').indexOf('_ej2_chart_selection_series_') === -1)) {
+                element.setAttribute('opacity', (highlight ? series.opacity / 2 : series.opacity).toString());
+            } else {
+                element.setAttribute('opacity', series.opacity.toString());
+            }
         }
     }
 

@@ -1,4 +1,5 @@
-import { ChartTheme, IFontMapping } from '../../index';
+import { IFontMapping } from '../../common/model/interface';
+import { ChartTheme } from '../../chart/utils/enum';
 import { BulletChart } from '../index';
 import { IBulletStyle } from '../model/bullet-interface';
 

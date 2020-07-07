@@ -18,6 +18,7 @@ import {
 } from './page';
 import { TextSizeInfo } from './text-helper';
 import { DocumentHelper, LayoutViewer, PageLayoutViewer, WebLayoutViewer } from './viewer';
+import { Revision } from '../track-changes/track-changes';
 
 /** 
  * @private
@@ -192,6 +193,7 @@ export class Layout {
         if (headerFooterWidget) {
             let header: HeaderFooterWidget = headerFooterWidget.clone();
             header.page = page;
+            this.updateRevisionsToHeaderFooter(header, page);
             viewer.updateHFClientArea(section.sectionFormat, true);
             page.headerWidget = this.layoutHeaderFooterItems(viewer, header);
             this.updateHeaderFooterToParent(header);
@@ -202,6 +204,7 @@ export class Layout {
             let footer: HeaderFooterWidget = headerFooterWidget.clone();
             footer.page = page;
             viewer.updateHFClientArea(section.sectionFormat, false);
+            this.updateRevisionsToHeaderFooter(footer, page);
             page.footerWidget = this.layoutHeaderFooterItems(viewer, footer);
             this.updateHeaderFooterToParent(footer);
         }
@@ -222,6 +225,47 @@ export class Layout {
         }
         return clone;
     }
+    /**
+     * @private
+     */
+    /* tslint:disable:no-any */
+    public updateRevisionsToHeaderFooter(clone: HeaderFooterWidget, page: Page): any {
+        let childWidge: any = clone.childWidgets;
+        if (clone instanceof HeaderFooterWidget && childWidge.length > 0) {
+            for (let i: number = 0; i < childWidge.length; i++) {
+                if (childWidge[i].childWidgets.length > 0) {
+                    let lineWidge: any = childWidge[i].childWidgets;
+                    for ( let j: number = 0; j < lineWidge.length; j++) {
+                        let childrens: any = lineWidge[j].children;
+                        if (childrens) {
+                            for (let k: number = 0; k < childrens.length; k++) {
+                                if (childrens[k].removedIds.length > 0) {
+                                    let removeId: any = childrens[k].removedIds;
+                                    for (let l: number = 0; l < removeId.length; l++) {
+                                        let revision: Revision = this.documentHelper.revisionsInternal.get(removeId[l]);
+                                        childrens[k].revisions[l] = revision;
+                                        this.updateRevisionRange(revision, page);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    /**
+     * @private
+     */
+    public updateRevisionRange(revision: Revision, page: Page): any {
+        for (let i: number = 0; i < revision.range.length; i++) {
+            let inline: TextElementBox = (revision.range[i] as TextElementBox);
+            if (!inline.line.paragraph.bodyWidget.page) {
+                inline.line.paragraph.bodyWidget.page = page;
+            }
+        }
+    }
+
     private linkFieldInHeaderFooter(widget: HeaderFooterWidget): void {
         let firstChild: BlockWidget = widget.firstChild as BlockWidget;
         do {
@@ -1057,8 +1101,8 @@ export class Layout {
                     let dropDownTextElement: TextElementBox = new TextElementBox();
                     dropDownTextElement.characterFormat = fieldBegin.characterFormat.cloneFormat();
                     dropDownTextElement.line = fieldBegin.line;
-                    if (formFieldData.dropDownItems.length > 0) {
-                        dropDownTextElement.text = formFieldData.dropDownItems[formFieldData.selectedIndex];
+                    if (formFieldData.dropdownItems.length > 0) {
+                        dropDownTextElement.text = formFieldData.dropdownItems[formFieldData.selectedIndex];
                     } else {
                         // tslint:disable-next-line:max-line-length
                         dropDownTextElement.text = this.documentHelper.textHelper.repeatChar(this.documentHelper.textHelper.getEnSpaceCharacter(), 5);
@@ -1374,6 +1418,10 @@ export class Layout {
             elementBox.text = elementBox.text.substr(0, index);
             elementBox.width -= splittedElementBox.width;
             elementBox.trimEndWidth = elementBox.width;
+            if (elementBox.revisions.length > 0) {
+                this.updateRevisionForSpittedElement(elementBox, splittedElementBox, true);
+                splittedElementBox.isMarkedForRevision = elementBox.isMarkedForRevision;
+            }
             splittedElementBox.height = elementBox.height;
             splittedElementBox.baselineOffset = elementBox.baselineOffset;
             this.splitErrorCollection(elementBox, splittedElementBox);
@@ -1449,6 +1497,10 @@ export class Layout {
             splittedElement.height = textElement.height;
             splittedElement.baselineOffset = textElement.baselineOffset;
             lineWidget.children.splice(textElement.indexInOwner + 1, 0, splittedElement);
+            if (textElement.revisions.length > 0) {
+                this.updateRevisionForSpittedElement(textElement, splittedElement, index > 0);
+                splittedElement.isMarkedForRevision = textElement.isMarkedForRevision;
+            }
             this.addSplittedLineWidget(lineWidget, indexOf);
             this.addElementToLine(paragraph, textElement);
             if (textElement.width === 0) {
@@ -1458,6 +1510,31 @@ export class Layout {
             //Adds the last text element on inline to line elements collection. 
             this.addSplittedLineWidget(lineWidget, indexOf);
             this.addElementToLine(paragraph, textElement);
+        }
+    }
+    private updateRevisionForSpittedElement(item: TextElementBox, spittedElement: TextElementBox, isSpitted: boolean): void {
+        if (item.revisions.length > 0) {
+            for (let i: number = 0; i < item.revisions.length; i++) {
+                let currentRevision: Revision = item.revisions[i];
+                if (isSpitted) {
+                    spittedElement.revisions.push(currentRevision);
+                    let rangeIndex: number = currentRevision.range.length - 1;
+                    if (currentRevision.range[rangeIndex] instanceof WCharacterFormat) {
+                        currentRevision.range.splice(rangeIndex, 0, spittedElement);
+                    } else {
+                        rangeIndex = currentRevision.range.indexOf(item);
+                        if (rangeIndex < 0) {
+                        currentRevision.range.push(spittedElement);
+                        } else {
+                            currentRevision.range.splice(rangeIndex + 1, 0, spittedElement);
+                        }
+                    }
+                } else {
+                    currentRevision.range.splice(currentRevision.range.length - 1, 1);
+                    currentRevision.range.push(spittedElement);
+                    spittedElement.revisions.push(currentRevision);
+                }
+            }
         }
     }
     /**

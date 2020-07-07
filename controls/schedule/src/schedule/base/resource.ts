@@ -216,9 +216,14 @@ export class ResourceBase {
                     hide = false;
                 }
                 let eventElements: Element[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_CLASS));
-                eventElements.forEach((node: HTMLElement) => remove(node));
+                for (let element of eventElements) {
+                    remove(element);
+                }
                 if (this.parent.virtualScrollModule) {
-                    this.updateVirtualContent(index, hide);
+                    this.updateVirtualContent(index, hide, e, target);
+                    if (isBlazor()) {
+                        return;
+                    }
                 } else {
                     this.updateContent(index, hide);
                 }
@@ -289,7 +294,41 @@ export class ResourceBase {
         }
     }
 
-    public updateVirtualContent(index: number, expand: boolean): void {
+    public updateVirtualContent(index: number, expand: boolean, e: Event, target: Element): void {
+        if (isBlazor()) {
+            // tslint:disable-next-line:no-any
+            let scheduleObj: any = this.parent;
+            let adaptor: string = 'interopAdaptor';
+            let invokeMethodAsync: string = 'invokeMethodAsync';
+            scheduleObj[adaptor][invokeMethodAsync]('UpdateVirtualContent', index, expand).then(() => {
+                this.lastResourceLevel[index].resourceData[this.lastResourceLevel[index].resource.expandedField] = !expand;
+                this.setExpandedResources();
+                let resourcesCount: number = this.parent.virtualScrollModule.getRenderedCount();
+                let startIndex: number = this.expandedResources.indexOf(this.renderedResources[0]);
+                this.renderedResources = this.expandedResources.slice(startIndex, startIndex + resourcesCount);
+                if (this.renderedResources.length < resourcesCount) {
+                    let sIndex: number = this.expandedResources.length - resourcesCount;
+                    sIndex = (sIndex > 0) ? sIndex : 0;
+                    this.renderedResources = this.expandedResources.slice(sIndex, this.expandedResources.length);
+                }
+                let virtualTrack: HTMLElement = this.parent.element.querySelector('.' + cls.VIRTUAL_TRACK_CLASS);
+                this.parent.virtualScrollModule.updateVirtualTrackHeight(virtualTrack);
+                let timeIndicator: HTMLElement = this.parent.element.querySelector('.' + cls.CURRENT_TIMELINE_CLASS) as HTMLElement;
+                if (!isNullOrUndefined(timeIndicator)) {
+                    timeIndicator.style.height =
+                        (this.parent.element.querySelector('.' + cls.CONTENT_TABLE_CLASS) as HTMLElement).offsetHeight + 'px';
+                }
+                let data: NotifyEventArgs = { cssProperties: this.parent.getCssProperties(), module: 'scroll' };
+                this.parent.notify(events.scrollUiUpdate, data);
+                let args: ActionEventArgs = {
+                    cancel: false, event: e, groupIndex: index,
+                    requestType: target.classList.contains(cls.RESOURCE_COLLAPSE_CLASS) ? 'resourceExpanded' : 'resourceCollapsed',
+                };
+                this.parent.notify(events.dataReady, {});
+                this.parent.trigger(events.actionComplete, args);
+            });
+            return;
+        }
         this.lastResourceLevel[index].resourceData[this.lastResourceLevel[index].resource.expandedField] = !expand;
         this.setExpandedResources();
         let resourceCount: number = this.parent.virtualScrollModule.getRenderedCount();
@@ -373,7 +412,7 @@ export class ResourceBase {
         let treeCollection: ResourceDetails[] = [];
         let resTreeColl: TdData[] = [];
         let groupIndex: number = 0;
-        this.resourceTreeLevel.forEach((resTree: TreeSlotData, index: number) => {
+        for (let i: number = 0, len: number = this.resourceTreeLevel.length; i < len; i++) {
             let treeHandler: Function = (treeLevel: TreeSlotData, index: number, levelId: string): ResourceDetails => {
                 let resource: ResourcesModel = this.resourceCollection[index];
                 let treeArgs: ResourceDetails;
@@ -412,11 +451,11 @@ export class ResourceBase {
                 return treeArgs;
             };
             if (!isTimeLine) {
-                treeCollection.push(treeHandler(resTree, 0, (index + 1).toString()));
+                treeCollection.push(treeHandler(this.resourceTreeLevel[i], 0, (i + 1).toString()));
             } else {
-                treeHandler(resTree, 0, (index + 1).toString());
+                treeHandler(this.resourceTreeLevel[i], 0, (i + 1).toString());
             }
-        });
+        }
         if (isTimeLine) {
             this.lastResourceLevel = resTreeColl;
             return resTreeColl;
@@ -428,10 +467,10 @@ export class ResourceBase {
     private renderResourceHeaderText(): void {
         let resource: TdData = this.lastResourceLevel[this.parent.uiStateValues.groupIndex];
         let headerCollection: HTMLElement[] = [];
-        resource.groupOrder.forEach((level: string, index: number) => {
-            let resourceLevel: ResourcesModel = this.resourceCollection[index];
+        for (let i: number = 0, len: number = resource.groupOrder.length; i < len; i++) {
+            let resourceLevel: ResourcesModel = this.resourceCollection[i];
             let resourceText: Object[] = (<Object[]>resourceLevel.dataSource).filter((resData: { [key: string]: Object }) =>
-                resData[resourceLevel.idField] === level);
+                resData[resourceLevel.idField] === resource.groupOrder[i]);
             let resourceName: HTMLElement = createElement('div', {
                 className: cls.RESOURCE_NAME,
                 innerHTML: (<{ [key: string]: Object }>resourceText[0])[resourceLevel.textField] as string
@@ -439,12 +478,14 @@ export class ResourceBase {
             headerCollection.push(resourceName);
             let levelIcon: HTMLElement = createElement('div', { className: 'e-icons e-icon-next' });
             headerCollection.push(levelIcon);
-        });
+        }
         headerCollection.pop();
         let target: HTMLElement = (this.parent.currentView === 'MonthAgenda') ? this.parent.activeView.getPanel() : this.parent.element;
         let headerWrapper: Element = target.querySelector('.' + cls.RESOURCE_LEVEL_TITLE);
         util.removeChildren(headerWrapper);
-        headerCollection.forEach((element: Element) => headerWrapper.appendChild(element));
+        for (let header of headerCollection) {
+            headerWrapper.appendChild(header);
+        }
         if (this.lastResourceLevel.length === 1) {
             addClass([this.parent.element.querySelector('.' + cls.RESOURCE_MENU)], cls.DISABLE_CLASS);
         }

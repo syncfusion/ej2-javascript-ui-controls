@@ -468,7 +468,7 @@ L10n.load({
 /**
  * Container component
  */
-let container: DocumentEditorContainer = new DocumentEditorContainer();
+let container: DocumentEditorContainer = new DocumentEditorContainer({ height: "590px" });
 container.serviceUrl = 'https://ej2services.syncfusion.com/production/web-services/api/documenteditor/';
 DocumentEditorContainer.Inject(Toolbar);
 container.appendTo('#container');

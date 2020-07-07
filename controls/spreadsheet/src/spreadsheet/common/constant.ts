@@ -11,6 +11,8 @@ export const dialog: string = 'dialog';
 /** @hidden */
 export const actionEvents: string = 'actionEvents';
 /** @hidden */
+export const overlay: string = 'shape';
+/** @hidden */
 export const fontColor: { [key: string]: string[] } = {
     'Custom': [
         '#ffffff', '#000000', '#e7e6e6', '#44546a', '#4472c4', '#ed7d31', '#a5a5a5', '#ffc000', '#70ad47', '#ff0000',
@@ -105,7 +107,6 @@ export let defaultLocale: object = {
     MergeCellsAlert: 'Merging cells will only preserve the top-leftmost(Uppermost) value. Merge anyway?',
     PasteMergeAlert: 'We can"t do that to a merge cell.',
     Borders: 'Borders',
-    SelectBorderOption: 'Select Border Option',
     TopBorders: 'Top Borders',
     LeftBorders: 'Left Borders',
     RightBorders: 'Right Borders',
@@ -339,11 +340,46 @@ export let defaultLocale: object = {
     ClearHighlight: 'Clear Highlight',
     HighlightInvalidData: 'Highlight Invalid Data',
     ClearValidation: 'Clear Validation',
+    HighlightCellsRules: 'Highlight Cells Rules',
+    CFEqualTo: 'Equal To',
+    TextThatContains: 'Text that Contains',
+    ADateOccuring: 'A Date Occuring',
+    DuplicateValues: 'Duplicate Values',
+    TopBottomRules: 'Top/Bottom Rules',
+    Top10Items: 'Top 10 Items',
+    Top10: 'Top 10',
+    Bottom10Items: 'Bottom 10 Items',
+    Bottom10: 'Bottom 10',
+    AboveAverage: 'Above Average',
+    BelowAverage: 'Below Average',
+    FormatCellsGreaterThan: 'Format cells that are GREATER THAN:',
+    FormatCellsLessThan: 'Format cells that are LESS THAN:',
+    FormatCellsBetween: 'Format cells that are BETWEEN:',
+    FormatCellsEqualTo: 'Format cells that are EQUAL TO:',
+    FormatCellsText: 'Format cells that contain the text:',
+    FormatCellsDate: 'Format cells that contain a date occurring:',
+    FormatCellsDuplicate: 'Format cells that contain:',
+    FormatCellsTop: 'Format cells that rank in the TOP:',
+    FormatCellsBottom: 'Format cells that rank in the BOTTOM:',
+    FormatCellsAbove: 'Format cells that are ABOVE AVERAGE:',
+    FormatCellsBelow: 'Format cells that are BELOW AVERAGE:',
+    With: 'with',
+    DataBars: 'Data Bars',
+    ColorScales: 'Color Scales',
+    IconSets: 'Icon Sets',
+    ClearRules: 'ClearRules',
+    SelectedCells: 'Clear Rules from Selected Cells',
+    EntireSheet: 'Clear Rules from Entire Sheet',
     ISNUMBER:  'Returns true when the value parses as a numeric value.',
     ROUND: 'Rounds a number to a specified number of digits.',
     GEOMEAN: 'Returns the geometric mean of an array or range of positive data.',
     POWER: 'Returns the result of a number raised to power',
     LOG: 'Returns the logarithm of a number to the base that you specify.',
     TRUNC: 'Returns the truncated value of a number to a specified number of decimal places.',
-    EXP: 'Returns e raised to the power of the given number.'
+    EXP: 'Returns e raised to the power of the given number.',
+    Clear: 'Clear',
+    ClearContents: 'Clear Contents',
+    ClearAll: 'Clear All',
+    ClearFormats: 'Clear Formats',
+    ClearHyperlinks: 'Clear Hyperlinks'
 };

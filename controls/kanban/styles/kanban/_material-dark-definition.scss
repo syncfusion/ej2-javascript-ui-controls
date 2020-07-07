@@ -2,7 +2,10 @@
 $kanban-skin: 'material' !default;
 $kanban-column-bg-color: $grey-100 !default;
 $kanban-default-font: rgba($grey-light-font, .87) !default;
+$kanban-header-font: $kanban-default-font !default;
+$kanban-content-font: rgba($grey-light-font, .6) !default;
 $kanban-border-color: $grey-500 !default;
+$kanban-focus-color: $grey-300 !default;
 $kanban-card-selection: $grey-200 !default;
 $kanban-primary-color: $primary !default;
 $kanban-dropped-clone-bg-color: rgba($kanban-primary-color, .1) !default;
@@ -23,3 +26,5 @@ $kanban-header-icons-bg-color: #eee !default;
 $kanban-icons-toggle-bg-color: rgba($grey-white, .1) !default;
 $kanban-icons-toggle-color: $grey-dark-font !default;
 $kanban-icons-border-radius: 0% !default;
+$kanban-tags-bg-color: #eceaff !default;
+$kanban-tags-color: #3225c9 !default;

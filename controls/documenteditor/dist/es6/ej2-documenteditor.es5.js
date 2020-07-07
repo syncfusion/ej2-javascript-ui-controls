@@ -1,4 +1,4 @@
-import { Browser, ChildProperty, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, classList, createElement, formatUnit, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, classList, createElement, formatUnit, isBlazor, isNullOrUndefined, select } from '@syncfusion/ej2-base';
 import { ContextMenu, Tab, Toolbar } from '@syncfusion/ej2-navigations';
 import { Dialog, DialogUtility, Popup, Tooltip, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { Button, CheckBox, RadioButton } from '@syncfusion/ej2-buttons';
@@ -6,8 +6,8 @@ import { ListView } from '@syncfusion/ej2-lists';
 import { ComboBox, DropDownList } from '@syncfusion/ej2-dropdowns';
 import { ColorPicker, NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
 import { DateTimePicker } from '@syncfusion/ej2-calendars';
-import { ChartComponent } from '@syncfusion/ej2-office-chart';
 import { DropDownButton, SplitButton } from '@syncfusion/ej2-splitbuttons';
+import { ChartComponent } from '@syncfusion/ej2-office-chart';
 import { ZipArchive, ZipArchiveItem } from '@syncfusion/ej2-compression';
 import { Save, StreamWriter, XmlWriter } from '@syncfusion/ej2-file-utils';
 import { Query } from '@syncfusion/ej2-data';
@@ -2377,1304 +2377,6 @@ var WParagraphFormat = /** @__PURE__ @class */ (function () {
 /**
  * @private
  */
-var WCharacterFormat = /** @__PURE__ @class */ (function () {
-    function WCharacterFormat(node) {
-        this.uniqueCharacterFormat = undefined;
-        this.ownerBase = undefined;
-        this.baseCharStyle = undefined;
-        this.ownerBase = node;
-    }
-    Object.defineProperty(WCharacterFormat.prototype, "bold", {
-        get: function () {
-            return this.getPropertyValue('bold');
-        },
-        set: function (value) {
-            this.setPropertyValue('bold', value);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(WCharacterFormat.prototype, "italic", {
-        get: function () {
-            return this.getPropertyValue('italic');
-        },
-        set: function (value) {
-            this.setPropertyValue('italic', value);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(WCharacterFormat.prototype, "fontSize", {
-        get: function () {
-            return this.getPropertyValue('fontSize');
-        },
-        set: function (value) {
-            this.setPropertyValue('fontSize', value);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(WCharacterFormat.prototype, "fontFamily", {
-        get: function () {
-            return this.getPropertyValue('fontFamily');
-        },
-        set: function (value) {
-            this.setPropertyValue('fontFamily', value);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(WCharacterFormat.prototype, "underline", {
-        get: function () {
-            return this.getPropertyValue('underline');
-        },
-        set: function (value) {
-            this.setPropertyValue('underline', value);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(WCharacterFormat.prototype, "strikethrough", {
-        get: function () {
-            return this.getPropertyValue('strikethrough');
-        },
-        set: function (value) {
-            this.setPropertyValue('strikethrough', value);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(WCharacterFormat.prototype, "baselineAlignment", {
-        get: function () {
-            return this.getPropertyValue('baselineAlignment');
-        },
-        set: function (value) {
-            this.setPropertyValue('baselineAlignment', value);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(WCharacterFormat.prototype, "highlightColor", {
-        get: function () {
-            return this.getPropertyValue('highlightColor');
-        },
-        set: function (value) {
-            this.setPropertyValue('highlightColor', value);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(WCharacterFormat.prototype, "fontColor", {
-        get: function () {
-            return this.getPropertyValue('fontColor');
-        },
-        set: function (value) {
-            this.setPropertyValue('fontColor', value);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(WCharacterFormat.prototype, "bidi", {
-        get: function () {
-            return this.getPropertyValue('bidi');
-        },
-        set: function (value) {
-            this.setPropertyValue('bidi', value);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(WCharacterFormat.prototype, "bdo", {
-        get: function () {
-            return this.getPropertyValue('bdo');
-        },
-        set: function (value) {
-            this.setPropertyValue('bdo', value);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(WCharacterFormat.prototype, "boldBidi", {
-        get: function () {
-            return this.getPropertyValue('boldBidi');
-        },
-        set: function (value) {
-            this.setPropertyValue('boldBidi', value);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(WCharacterFormat.prototype, "italicBidi", {
-        get: function () {
-            return this.getPropertyValue('italicBidi');
-        },
-        set: function (value) {
-            this.setPropertyValue('italicBidi', value);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(WCharacterFormat.prototype, "fontSizeBidi", {
-        get: function () {
-            return this.getPropertyValue('fontSizeBidi');
-        },
-        set: function (value) {
-            this.setPropertyValue('fontSizeBidi', value);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(WCharacterFormat.prototype, "fontFamilyBidi", {
-        get: function () {
-            return this.getPropertyValue('fontFamilyBidi');
-        },
-        set: function (value) {
-            this.setPropertyValue('fontFamilyBidi', value);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    WCharacterFormat.prototype.getPropertyValue = function (property) {
-        if (!this.hasValue(property)) {
-            var charStyleValue = this.checkCharacterStyle(property);
-            if (!isNullOrUndefined(charStyleValue)) {
-                return charStyleValue;
-            }
-            else {
-                if (!isNullOrUndefined(this.baseCharStyle)) {
-                    /* tslint:disable-next-line:no-any */
-                    var paragraph = this.ownerBase.paragraph;
-                    var line = this.ownerBase.line;
-                    if (!isNullOrUndefined(paragraph) && !isNullOrUndefined(line)) {
-                        var length_1 = line.children.length;
-                        for (var i = 0; i < length_1; i++) {
-                            /* tslint:disable-next-line:no-any */
-                            var element = this.ownerBase.line.children[i];
-                            if (element instanceof TextElementBox) {
-                                /* tslint:disable-next-line:no-any */
-                                var text = element.text;
-                                if (text.startsWith('HYPERLINK')) {
-                                    var index = text.indexOf('_Toc');
-                                    if (index !== -1) {
-                                        this.baseCharStyle = this.ownerBase.paragraph.paragraphFormat.baseStyle;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                var baseStyleValue = this.checkBaseStyle(property);
-                if (!isNullOrUndefined(baseStyleValue)) {
-                    return baseStyleValue;
-                }
-            }
-        }
-        else {
-            var propertyType = WUniqueFormat.getPropertyType(WCharacterFormat.uniqueFormatType, property);
-            if (!isNullOrUndefined(this.uniqueCharacterFormat) && this.uniqueCharacterFormat.propertiesHash.containsKey(propertyType)) {
-                return this.uniqueCharacterFormat.propertiesHash.get(propertyType);
-            }
-        }
-        return this.getDefaultValue(property);
-    };
-    WCharacterFormat.prototype.getDefaultValue = function (property) {
-        var propertyType = WUniqueFormat.getPropertyType(WCharacterFormat.uniqueFormatType, property);
-        var docCharacterFormat = this.documentCharacterFormat();
-        // tslint:disable-next-line:max-line-length
-        if (!isNullOrUndefined(docCharacterFormat) && !isNullOrUndefined(docCharacterFormat.uniqueCharacterFormat) && docCharacterFormat.uniqueCharacterFormat.propertiesHash.containsKey(propertyType)) {
-            return docCharacterFormat.uniqueCharacterFormat.propertiesHash.get(propertyType);
-        }
-        else {
-            return WCharacterFormat.getPropertyDefaultValue(property);
-        }
-    };
-    WCharacterFormat.prototype.documentCharacterFormat = function () {
-        var docCharacterFormat;
-        if (!isNullOrUndefined(this.ownerBase)) {
-            // tslint:disable-next-line:max-line-length
-            if (!isNullOrUndefined(this.ownerBase.paragraph) && !isNullOrUndefined(this.ownerBase.paragraph.bodyWidget)) {
-                docCharacterFormat = this.ownerBase.paragraph.bodyWidget.page.documentHelper.characterFormat;
-            }
-            else {
-                if (!isNullOrUndefined(this.ownerBase.bodyWidget)) {
-                    docCharacterFormat = this.ownerBase.bodyWidget.page.documentHelper.characterFormat;
-                }
-            }
-        }
-        return docCharacterFormat;
-    };
-    WCharacterFormat.prototype.checkBaseStyle = function (property) {
-        /* tslint:disable-next-line:no-any */
-        var baseStyle;
-        if (!isNullOrUndefined(this.ownerBase)) {
-            if (!isNullOrUndefined(this.ownerBase.paragraph)) {
-                baseStyle = this.ownerBase.paragraph.paragraphFormat.baseStyle;
-            }
-            else {
-                // tslint:disable-next-line:max-line-length
-                if ((this.ownerBase instanceof ParagraphWidget) && !isNullOrUndefined(this.ownerBase.paragraphFormat)) {
-                    baseStyle = this.ownerBase.paragraphFormat.baseStyle;
-                }
-                else {
-                    if (!isNullOrUndefined(this.ownerBase instanceof WParagraphStyle)) {
-                        baseStyle = this.ownerBase.basedOn;
-                    }
-                }
-            }
-        }
-        while (!isNullOrUndefined(baseStyle)) {
-            if (baseStyle.characterFormat.hasValue(property)) {
-                break;
-            }
-            else {
-                baseStyle = baseStyle.basedOn;
-            }
-        }
-        if (!isNullOrUndefined(baseStyle)) {
-            var propertyType = WUniqueFormat.getPropertyType(WCharacterFormat.uniqueFormatType, property);
-            return baseStyle.characterFormat.uniqueCharacterFormat.propertiesHash.get(propertyType);
-        }
-        return undefined;
-    };
-    WCharacterFormat.prototype.checkCharacterStyle = function (property) {
-        /* tslint:disable-next-line:no-any */
-        var baseStyle = this.baseCharStyle;
-        if (!isNullOrUndefined(baseStyle)) {
-            while (!isNullOrUndefined(baseStyle) && baseStyle.name !== 'Default Paragraph Font') {
-                var hasKey = baseStyle.characterFormat.hasValue(property);
-                if (hasKey) {
-                    var returnPropertyType = WUniqueFormat.getPropertyType(WCharacterFormat.uniqueFormatType, property);
-                    return baseStyle.characterFormat.uniqueCharacterFormat.propertiesHash.get(returnPropertyType);
-                }
-                else {
-                    baseStyle = baseStyle.basedOn;
-                }
-            }
-        }
-        return undefined;
-    };
-    WCharacterFormat.prototype.setPropertyValue = function (property, value) {
-        if (isNullOrUndefined(value) || value === '') {
-            value = WCharacterFormat.getPropertyDefaultValue(property);
-        }
-        if (isNullOrUndefined(this.uniqueCharacterFormat)) {
-            this.initializeUniqueCharacterFormat(property, value);
-        }
-        else {
-            var propertyType = WUniqueFormat.getPropertyType(this.uniqueCharacterFormat.uniqueFormatType, property);
-            if (this.uniqueCharacterFormat.propertiesHash.containsKey(propertyType) &&
-                // tslint:disable-next-line:max-line-length
-                this.uniqueCharacterFormat.propertiesHash.get(propertyType) === value) { //Do nothing, since no change in property value and return
-                return;
-            }
-            // tslint:disable-next-line:max-line-length
-            this.uniqueCharacterFormat = WCharacterFormat.uniqueCharacterFormats.updateUniqueFormat(this.uniqueCharacterFormat, property, value);
-        }
-    };
-    WCharacterFormat.prototype.initializeUniqueCharacterFormat = function (property, propValue) {
-        var uniqueCharFormatTemp = new Dictionary();
-        this.addUniqueCharacterFormat('fontColor', property, propValue, uniqueCharFormatTemp);
-        this.addUniqueCharacterFormat('fontFamily', property, propValue, uniqueCharFormatTemp);
-        this.addUniqueCharacterFormat('fontSize', property, propValue, uniqueCharFormatTemp);
-        this.addUniqueCharacterFormat('bold', property, propValue, uniqueCharFormatTemp);
-        this.addUniqueCharacterFormat('italic', property, propValue, uniqueCharFormatTemp);
-        this.addUniqueCharacterFormat('underline', property, propValue, uniqueCharFormatTemp);
-        this.addUniqueCharacterFormat('strikethrough', property, propValue, uniqueCharFormatTemp);
-        this.addUniqueCharacterFormat('baselineAlignment', property, propValue, uniqueCharFormatTemp);
-        this.addUniqueCharacterFormat('highlightColor', property, propValue, uniqueCharFormatTemp);
-        this.addUniqueCharacterFormat('styleName', property, propValue, uniqueCharFormatTemp);
-        this.addUniqueCharacterFormat('bidi', property, propValue, uniqueCharFormatTemp);
-        this.addUniqueCharacterFormat('bdo', property, propValue, uniqueCharFormatTemp);
-        this.addUniqueCharacterFormat('fontFamilyBidi', property, propValue, uniqueCharFormatTemp);
-        this.addUniqueCharacterFormat('fontSizeBidi', property, propValue, uniqueCharFormatTemp);
-        this.addUniqueCharacterFormat('boldBidi', property, propValue, uniqueCharFormatTemp);
-        this.addUniqueCharacterFormat('italicBidi', property, propValue, uniqueCharFormatTemp);
-        // tslint:disable-next-line:max-line-length
-        this.uniqueCharacterFormat = WCharacterFormat.uniqueCharacterFormats.addUniqueFormat(uniqueCharFormatTemp, WCharacterFormat.uniqueFormatType);
-    };
-    // tslint:disable-next-line:max-line-length
-    WCharacterFormat.prototype.addUniqueCharacterFormat = function (property, modifiedProperty, propValue, uniqueCharFormatTemp) {
-        var propertyType;
-        propertyType = WUniqueFormat.getPropertyType(WCharacterFormat.uniqueFormatType, property);
-        if (property === modifiedProperty) {
-            uniqueCharFormatTemp.add(propertyType, propValue);
-        }
-    };
-    WCharacterFormat.getPropertyDefaultValue = function (property) {
-        var value = undefined;
-        switch (property) {
-            case 'bold':
-                value = false;
-                break;
-            case 'italic':
-                value = false;
-                break;
-            case 'fontSize':
-                value = 11;
-                break;
-            case 'underline':
-                value = 'None';
-                break;
-            case 'strikethrough':
-                value = 'None';
-                break;
-            case 'baselineAlignment':
-                value = 'Normal';
-                break;
-            case 'highlightColor':
-                value = 'NoColor';
-                break;
-            case 'fontColor':
-                value = '#000000';
-                break;
-            case 'fontFamily':
-                value = 'Calibri';
-                break;
-            case 'styleName':
-                value = 'Default Paragraph Font';
-                break;
-            case 'bidi':
-                value = false;
-                break;
-            case 'bdo':
-                value = 'None';
-                break;
-            case 'boldBidi':
-                value = false;
-                break;
-            case 'italicBidi':
-                value = false;
-                break;
-            case 'fontSizeBidi':
-                value = 11;
-                break;
-            case 'fontFamilyBidi':
-                value = 'Calibri';
-                break;
-        }
-        return value;
-    };
-    WCharacterFormat.prototype.isEqualFormat = function (format) {
-        return (this.fontSize === format.fontSize
-            && this.fontFamily === format.fontFamily
-            && this.bold === format.bold
-            && this.italic === format.italic
-            && this.baselineAlignment === format.baselineAlignment
-            && this.underline === format.underline
-            && this.fontColor === format.fontColor
-            && this.strikethrough === format.strikethrough
-            && this.highlightColor === format.highlightColor && this.bidi === format.bidi
-            && this.bdo === format.bdo);
-    };
-    WCharacterFormat.prototype.isSameFormat = function (format) {
-        return this.baseCharStyle === format.baseCharStyle &&
-            this.uniqueCharacterFormat === format.uniqueCharacterFormat;
-    };
-    WCharacterFormat.prototype.cloneFormat = function () {
-        var format = new WCharacterFormat(undefined);
-        format.uniqueCharacterFormat = this.uniqueCharacterFormat;
-        format.baseCharStyle = this.baseCharStyle;
-        return format;
-    };
-    /**
-     * @private
-     */
-    WCharacterFormat.prototype.hasValue = function (property) {
-        if (!isNullOrUndefined(this.uniqueCharacterFormat) && !isNullOrUndefined(this.uniqueCharacterFormat.propertiesHash)) {
-            var propertyType = WUniqueFormat.getPropertyType(this.uniqueCharacterFormat.uniqueFormatType, property);
-            return this.uniqueCharacterFormat.propertiesHash.containsKey(propertyType);
-        }
-        return false;
-    };
-    WCharacterFormat.prototype.clearFormat = function () {
-        if (!isNullOrUndefined(this.uniqueCharacterFormat) && this.uniqueCharacterFormat.referenceCount === 0) {
-            WCharacterFormat.uniqueCharacterFormats.remove(this.uniqueCharacterFormat);
-        }
-        this.uniqueCharacterFormat = undefined;
-        this.baseCharStyle = undefined;
-    };
-    WCharacterFormat.prototype.destroy = function () {
-        this.clearFormat();
-    };
-    WCharacterFormat.prototype.copyFormat = function (format) {
-        if (!isNullOrUndefined(format)) {
-            if (!isNullOrUndefined(format.uniqueCharacterFormat) && format.uniqueCharacterFormat.propertiesHash) {
-                this.updateUniqueCharacterFormat(format);
-            }
-            if (!isNullOrUndefined(format.baseCharStyle)) {
-                this.baseCharStyle = format.baseCharStyle;
-            }
-        }
-    };
-    WCharacterFormat.prototype.updateUniqueCharacterFormat = function (format) {
-        var hash = undefined;
-        if (this.uniqueCharacterFormat) {
-            hash = this.uniqueCharacterFormat.mergeProperties(format.uniqueCharacterFormat);
-            if (this.uniqueCharacterFormat.referenceCount === 0) {
-                WCharacterFormat.uniqueCharacterFormats.remove(this.uniqueCharacterFormat);
-                this.uniqueCharacterFormat = undefined;
-            }
-        }
-        this.uniqueCharacterFormat = new WUniqueFormat(WCharacterFormat.uniqueFormatType);
-        if (isNullOrUndefined(hash)) {
-            hash = this.uniqueCharacterFormat.mergeProperties(format.uniqueCharacterFormat);
-        }
-        this.uniqueCharacterFormat = WCharacterFormat.uniqueCharacterFormats.addUniqueFormat(hash, WCharacterFormat.uniqueFormatType);
-    };
-    WCharacterFormat.clear = function () {
-        this.uniqueCharacterFormats.clear();
-    };
-    WCharacterFormat.prototype.ApplyStyle = function (baseCharStyle) {
-        this.baseCharStyle = baseCharStyle;
-    };
-    /**
-     * For internal use
-     * @private
-     */
-    WCharacterFormat.prototype.getValue = function (property) {
-        return this.hasValue(property) ? this.getPropertyValue(property) : undefined;
-    };
-    /**
-     * For internal use
-     * @private
-     */
-    WCharacterFormat.prototype.mergeFormat = function (format) {
-        if (isNullOrUndefined(this.getValue('bold'))) {
-            this.bold = format.getValue('bold');
-        }
-        if (isNullOrUndefined(this.getValue('italic'))) {
-            this.italic = format.getValue('italic');
-        }
-        if (isNullOrUndefined(this.getValue('fontSize'))) {
-            this.fontSize = format.getValue('fontSize');
-        }
-        if (isNullOrUndefined(this.getValue('fontFamily'))) {
-            this.fontFamily = format.getValue('fontFamily');
-        }
-        if (isNullOrUndefined(this.getValue('underline'))) {
-            this.underline = format.getValue('underline');
-        }
-        if (isNullOrUndefined(this.getValue('strikethrough'))) {
-            this.strikethrough = format.getValue('strikethrough');
-        }
-        if (isNullOrUndefined(this.getValue('baselineAlignment'))) {
-            this.baselineAlignment = format.getValue('baselineAlignment');
-        }
-        if (isNullOrUndefined(this.getValue('highlightColor'))) {
-            this.highlightColor = format.getValue('highlightColor');
-        }
-        if (isNullOrUndefined(this.getValue('fontColor'))) {
-            this.fontColor = format.getValue('fontColor');
-        }
-        if (isNullOrUndefined(this.getValue('bidi'))) {
-            this.bidi = format.getValue('bidi');
-        }
-        if (isNullOrUndefined(this.getValue('bdo'))) {
-            this.bdo = format.getValue('bdo');
-        }
-    };
-    WCharacterFormat.uniqueCharacterFormats = new WUniqueFormats();
-    WCharacterFormat.uniqueFormatType = 2;
-    return WCharacterFormat;
-}());
-
-/**
- * @private
- */
-var HelperMethods = /** @__PURE__ @class */ (function () {
-    function HelperMethods() {
-    }
-    /**
-     * Inserts text at specified index in string.
-     * @param {string} spanText
-     * @param {number} index
-     * @param {string} text
-     * @private
-     */
-    HelperMethods.insert = function (spanText, index, text) {
-        if (index >= 0) {
-            return [spanText.slice(0, index) + text + spanText.slice(index)].join('');
-        }
-        else {
-            return text + this;
-        }
-    };
-    /**
-     * Removes text from specified index in string.
-     * @param {string} text
-     * @param {number} index
-     * @param {number} length
-     * @private
-     */
-    HelperMethods.remove = function (text, index, length) {
-        if (index === 0) {
-            return text.substring(index + 1, text.length);
-        }
-        else {
-            return text.substring(0, index) + text.substring(index + 1, text.length);
-        }
-    };
-    /**
-     * Returns the index of word split character in a string.
-     * @param {string} text
-     * @param {string[]} wordSplitCharacter
-     * @private
-     */
-    /* tslint:disable:no-any */
-    HelperMethods.indexOfAny = function (text, wordSplitCharacter) {
-        var index = undefined;
-        for (var j = 0; j < wordSplitCharacter.length; j++) {
-            var temp = text.indexOf(wordSplitCharacter[j]);
-            if (temp !== -1 && isNullOrUndefined(index)) {
-                index = temp;
-            }
-            else if (temp !== -1 && temp < index) {
-                index = temp;
-            }
-        }
-        return isNullOrUndefined(index) ? -1 : index;
-    };
-    /**
-     * Returns the last index of word split character in a string.
-     * @param {string} text
-     * @param {string[]} wordSplitCharacter
-     * @private
-     */
-    HelperMethods.lastIndexOfAny = function (text, wordSplitCharacter) {
-        for (var i = text.length - 1; i >= 0; i--) {
-            for (var j = 0; j <= wordSplitCharacter.length - 1; j++) {
-                if (text[i] === wordSplitCharacter[j]) {
-                    return i;
-                }
-            }
-        }
-        return -1;
-    };
-    /**
-     * Adds css styles to document header.
-     * @param {string} css
-     * @private
-     */
-    HelperMethods.addCssStyle = function (css) {
-        var style = document.createElement('style');
-        if (style.style.cssText) {
-            style.style.cssText = css;
-        }
-        else {
-            style.appendChild(document.createTextNode(css));
-        }
-        document.getElementsByTagName('head')[0].appendChild(style);
-    };
-    /**
-     * Gets highlight color code.
-     * @param {HighlightColor} highlightColor
-     * @private
-     */
-    HelperMethods.getHighlightColorCode = function (highlightColor) {
-        var color = '#ffffff';
-        switch (highlightColor) {
-            case 'Yellow':
-                color = '#ffff00';
-                break;
-            case 'BrightGreen':
-                color = '#00ff00';
-                break;
-            case 'Turquoise':
-                color = '#00ffff';
-                break;
-            case 'Pink':
-                color = '#ff00ff';
-                break;
-            case 'Blue':
-                color = '#0000ff';
-                break;
-            case 'Red':
-                color = '#ff0000';
-                break;
-            case 'DarkBlue':
-                color = '#000080';
-                break;
-            case 'Teal':
-                color = '#008080';
-                break;
-            case 'Green':
-                color = '#008000';
-                break;
-            case 'Violet':
-                color = '#800080';
-                break;
-            case 'DarkRed':
-                color = '#800000';
-                break;
-            case 'DarkYellow':
-                color = '#808000';
-                break;
-            case 'Gray50':
-                color = '#808080';
-                break;
-            case 'Gray25':
-                color = '#c0c0c0';
-                break;
-            case 'Black':
-                color = '#000000';
-                break;
-        }
-        return color;
-    };
-    HelperMethods.getColor = function (color) {
-        if (color.length > 0) {
-            if (color[0] === '#') {
-                if (color.length > 7) {
-                    return color.substr(0, 7);
-                }
-            }
-        }
-        return color;
-    };
-    /**
-     * Converts point to pixel.
-     * @param {number} point
-     * @private
-     */
-    HelperMethods.convertPointToPixel = function (point) {
-        var pixel = HelperMethods.round((point * 96 / 72), 5);
-        return pixel;
-    };
-    /**
-     * Converts pixel to point.
-     * @param {number} pixel
-     * @private
-     */
-    HelperMethods.convertPixelToPoint = function (pixel) {
-        var point = HelperMethods.round((pixel * 72 / 96), 5);
-        return point;
-    };
-    /**
-     * Return true if field linked
-     * @private
-     */
-    HelperMethods.isLinkedFieldCharacter = function (inline) {
-        if (inline instanceof FieldElementBox && inline.fieldType === 0) {
-            return !isNullOrUndefined(inline.fieldEnd);
-        }
-        else if (inline instanceof FieldElementBox && inline.fieldType === 2) {
-            return !isNullOrUndefined(inline.fieldBegin) && !isNullOrUndefined(inline.fieldEnd);
-        }
-        else {
-            return !isNullOrUndefined(inline.fieldBegin);
-        }
-    };
-    /**
-     * Removes white space in a string.
-     * @param {string} text
-     * @private
-     */
-    HelperMethods.removeSpace = function (text) {
-        if (!isNullOrUndefined(text) && text.length !== 0) {
-            for (var i = 0; i < text.length; i++) {
-                if (text.charAt(i) === ' ') {
-                    //replace the space by empty string in string
-                    text = text.replace(' ', '');
-                }
-            }
-        }
-        return text;
-    };
-    /**
-     * Trims white space at start of the string.
-     * @param {string} text
-     * @private
-     */
-    HelperMethods.trimStart = function (text) {
-        var i = 0;
-        for (i; i < text.length; i++) {
-            if (text[i] !== ' ') {
-                break;
-            }
-        }
-        return text.substring(i, text.length);
-    };
-    /**
-     * Trims white space at end of the string.
-     * @param {string} text
-     * @private
-     */
-    HelperMethods.trimEnd = function (text) {
-        var i = text.length - 1;
-        for (i; i >= 0; i--) {
-            if (text[i] !== ' ') {
-                break;
-            }
-        }
-        return text.substring(0, i + 1);
-    };
-    /**
-     * Checks whether string ends with whitespace.
-     * @param {string} text
-     * @private
-     */
-    HelperMethods.endsWith = function (text) {
-        if (!isNullOrUndefined(text) && text.length !== 0) {
-            return text[text.length - 1] === ' ';
-        }
-        return false;
-    };
-    /**
-     * Return specified number of string count
-     * @private
-     */
-    HelperMethods.addSpace = function (length) {
-        var str = '';
-        if (length > 0) {
-            for (var i = 0; i < length; i++) {
-                str += ' ';
-            }
-        }
-        return str;
-    };
-    /**
-     * @private
-     * Write Characterformat
-     * @param {any} characterFormat
-     * @param {boolean} isInline
-     * @param {WCharacterFormat} format
-     */
-    HelperMethods.writeCharacterFormat = function (characterFormat, isInline, format) {
-        characterFormat.bold = isInline ? format.bold : format.getValue('bold');
-        characterFormat.italic = isInline ? format.italic : format.getValue('italic');
-        characterFormat.fontSize = isInline ? this.toWriteInline(format, 'fontSize') : format.getValue('fontSize');
-        characterFormat.fontFamily = isInline ? this.toWriteInline(format, 'fontFamily') : format.getValue('fontFamily');
-        characterFormat.underline = isInline ? format.underline : format.getValue('underline');
-        characterFormat.strikethrough = isInline ? format.strikethrough : format.getValue('strikethrough');
-        characterFormat.baselineAlignment = isInline ? format.baselineAlignment : format.getValue('baselineAlignment');
-        characterFormat.highlightColor = isInline ? format.highlightColor : format.getValue('highlightColor');
-        characterFormat.fontColor = isInline ? this.toWriteInline(format, 'fontColor') : format.getValue('fontColor');
-        characterFormat.styleName = !isNullOrUndefined(format.baseCharStyle) ? format.baseCharStyle.name : undefined;
-        characterFormat.bidi = isInline ? format.bidi : format.getValue('bidi');
-        characterFormat.bdo = isInline ? format.bdo : format.getValue('bdo');
-        characterFormat.boldBidi = isInline ? format.boldBidi : format.getValue('boldBidi');
-        characterFormat.italicBidi = isInline ? format.italicBidi : format.getValue('italicBidi');
-        characterFormat.fontSizeBidi = isInline ? format.fontSizeBidi : format.getValue('fontSizeBidi');
-        characterFormat.fontFamilyBidi = isInline ? format.fontFamilyBidi : format.getValue('fontFamilyBidi');
-    };
-    HelperMethods.toWriteInline = function (format, propertyName) {
-        if (!isNullOrUndefined(format.ownerBase) && (format.ownerBase instanceof ElementBox)) {
-            return format.hasValue(propertyName) ? format[propertyName] : format.getValue(propertyName);
-        }
-        else {
-            return format[propertyName];
-        }
-    };
-    /* tslint:enable:no-any */
-    /**
-     * Rounds the values with specified decimal digits.
-     * @param {number} value
-     * @param {number} decimalDigits
-     * @private
-     */
-    HelperMethods.round = function (value, decimalDigits) {
-        var temp = value;
-        for (var i = 0; i < decimalDigits; i++) {
-            temp = temp * 10;
-        }
-        temp = Math.round(temp);
-        for (var i = 0; i < decimalDigits; i++) {
-            temp = temp / 10;
-        }
-        return temp;
-    };
-    HelperMethods.ReverseString = function (text) {
-        if (!isNullOrUndefined(text) && text !== '') {
-            // return a new array
-            var splitString = text.split('');
-            // reverse the new created array
-            var reverseString = splitString.reverse();
-            // join all elements of the array into a string
-            text = reverseString.join('');
-        }
-        return text;
-    };
-    /**
-     * @private
-     */
-    HelperMethods.formatClippedString = function (base64ImageString) {
-        var extension = '';
-        var formatClippedString = '';
-        if (this.startsWith(base64ImageString, 'data:image/bmp;base64,')) {
-            extension = '.bmp';
-            formatClippedString = base64ImageString.replace('data:image/bmp;base64,', '');
-        }
-        else if (this.startsWith(base64ImageString, 'data:image/x-emf;base64,')) {
-            extension = '.emf';
-            formatClippedString = base64ImageString.replace('data:image/x-emf;base64,', '');
-        }
-        else if (this.startsWith(base64ImageString, 'data:image/exif;base64,')) {
-            extension = '.exif';
-            formatClippedString = base64ImageString.replace('data:image/exif;base64,', '');
-        }
-        else if (this.startsWith(base64ImageString, 'data:image/gif;base64,')) {
-            extension = '.gif';
-            formatClippedString = base64ImageString.replace('data:image/gif;base64,', '');
-        }
-        else if (this.startsWith(base64ImageString, 'data:image/icon;base64,')) {
-            extension = '.ico';
-            formatClippedString = base64ImageString.replace('data:image/icon;base64,', '');
-        }
-        else if (this.startsWith(base64ImageString, 'data:image/jpeg;base64,')) {
-            extension = '.jpeg';
-            formatClippedString = base64ImageString.replace('data:image/jpeg;base64,', '');
-        }
-        else if (this.startsWith(base64ImageString, 'data:image/jpg;base64,')) {
-            extension = '.jpg';
-            formatClippedString = base64ImageString.replace('data:image/jpg;base64,', '');
-        }
-        else if (this.startsWith(base64ImageString, 'data:image/png;base64,')) {
-            extension = '.png';
-            formatClippedString = base64ImageString.replace('data:image/png;base64,', '');
-        }
-        else if (this.startsWith(base64ImageString, 'data:image/tiff;base64,')) {
-            extension = '.tif';
-            formatClippedString = base64ImageString.replace('data:image/tiff;base64,', '');
-        }
-        else if (this.startsWith(base64ImageString, 'data:image/x-wmf;base64,')) {
-            extension = '.wmf';
-            formatClippedString = base64ImageString.replace('data:image/x-wmf;base64,', '');
-        }
-        else {
-            extension = '.jpeg';
-        }
-        return { 'extension': extension, 'formatClippedString': formatClippedString };
-    };
-    HelperMethods.startsWith = function (sourceString, startString) {
-        return startString.length > 0 && sourceString.substring(0, startString.length) === startString;
-    };
-    /**
-     * @private
-     */
-    HelperMethods.formatText = function (format, value) {
-        var text = value;
-        switch (format.toLowerCase()) {
-            case 'uppercase':
-                text = value.toUpperCase();
-                break;
-            case 'lowercase':
-                text = value.toLowerCase();
-                break;
-            case 'firstcapital':
-                text = this.capitaliseFirst(value, 'FirstCapital');
-                break;
-            case 'titlecase':
-                text = this.capitaliseFirst(value, 'Titlecase');
-                break;
-        }
-        return text;
-    };
-    /**
-     * @private
-     */
-    HelperMethods.formatNumber = function (format, value) {
-        var numberFormat;
-        var intl = new Internationalization();
-        var formattedValue;
-        var dotData = value.split('.');
-        value = dotData[0];
-        var numberValue;
-        numberValue = intl.parseNumber(value);
-        if (value.toString() === 'NaN') {
-            return '';
-        }
-        if (format === '') {
-            format = '0';
-        }
-        numberFormat = { format: format };
-        formattedValue = intl.formatNumber(numberValue, numberFormat);
-        return formattedValue;
-    };
-    /**
-     * @private
-     */
-    HelperMethods.formatDate = function (format, value) {
-        var dateFormat;
-        var intl = new Internationalization();
-        var formattedValue;
-        var date = new Date(value);
-        if (isNaN(date.getDate())) {
-            return '';
-        }
-        if (format === '') {
-            return value;
-        }
-        if (format.indexOf('am/pm') !== -1) {
-            format = format.replace(/am\/pm/gi, 'a');
-        }
-        dateFormat = { 'format': format };
-        formattedValue = intl.formatDate(date, dateFormat);
-        return formattedValue;
-    };
-    /* tslint:enable:no-any */
-    /**
-     * @private
-     */
-    HelperMethods.capitaliseFirst = function (value, type, splitBy) {
-        var text = '';
-        if (type === 'Titlecase') {
-            var valArry = splitBy ? value.split(splitBy) : value.split(' ');
-            for (var i = 0; i < valArry.length; i++) {
-                // tslint:disable-next-line:max-line-length
-                text += splitBy ? valArry[i].charAt(0).toUpperCase() + valArry[i].slice(1, valArry[i].length) : this.capitaliseFirstInternal(valArry[i]);
-                if (valArry.length >= 0 && !splitBy) {
-                    text += ' ';
-                }
-            }
-            if (!splitBy) {
-                text = this.capitaliseFirst(text, 'Titlecase', '\r');
-            }
-        }
-        else if (type === 'FirstCapital') {
-            text = this.capitaliseFirstInternal(value);
-        }
-        return text;
-    };
-    HelperMethods.capitaliseFirstInternal = function (value) {
-        return (value.charAt(0).toUpperCase() + value.slice(1, value.length).toLowerCase());
-    };
-    /**
-     * @private
-     */
-    HelperMethods.wordBefore = '\\b';
-    /**
-     * @private
-     */
-    HelperMethods.wordAfter = '\\b';
-    /**
-     * @private
-     */
-    HelperMethods.wordSplitCharacters = [' ', ',', '.', ':', ';', '<', '>', '=',
-        '+', '-', '_', '{', '}', '[', ']', '`', '~', '!', '@', '#', '$', '%', '^', '&',
-        '*', '(', ')', '"', '?', '/', '|', '\\', '”', '　', '،', '؟', '؛', '’', '‘'];
-    return HelperMethods;
-}());
-/**
- * @private
- */
-var Point = /** @__PURE__ @class */ (function () {
-    function Point(xPosition, yPosition) {
-        this.xIn = 0;
-        this.yIn = 0;
-        this.xIn = xPosition;
-        this.yIn = yPosition;
-    }
-    Object.defineProperty(Point.prototype, "x", {
-        /**
-         * Gets or sets x value.
-         * @private
-         */
-        get: function () {
-            return this.xIn;
-        },
-        set: function (value) {
-            this.xIn = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Point.prototype, "y", {
-        /**
-         * Gets or sets y value.
-         * @private
-         */
-        get: function () {
-            return this.yIn;
-        },
-        set: function (value) {
-            this.yIn = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     * @private
-     */
-    Point.prototype.copy = function (point) {
-        this.xIn = point.xIn;
-        this.yIn = point.yIn;
-    };
-    /**
-     * Destroys the internal objects maintained.
-     * @returns void
-     */
-    Point.prototype.destroy = function () {
-        this.xIn = undefined;
-        this.yIn = undefined;
-    };
-    return Point;
-}());
-/**
- * @private
- */
-var Base64 = /** @__PURE__ @class */ (function () {
-    function Base64() {
-        this.keyStr = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
-    }
-    // public method for encoding
-    Base64.prototype.encodeString = function (input) {
-        var output = '';
-        var chr1;
-        var chr2;
-        var chr3;
-        var enc1;
-        var enc2;
-        var enc3;
-        var enc4;
-        var i = 0;
-        input = this.unicodeEncode(input);
-        while (i < input.length) {
-            chr1 = input.charCodeAt(i++);
-            chr2 = input.charCodeAt(i++);
-            chr3 = input.charCodeAt(i++);
-            enc1 = chr1 >> 2;
-            enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
-            enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
-            enc4 = chr3 & 63;
-            if (isNaN(chr2)) {
-                enc3 = enc4 = 64;
-            }
-            else if (isNaN(chr3)) {
-                enc4 = 64;
-            }
-            output = output +
-                this.keyStr.charAt(enc1) + this.keyStr.charAt(enc2) +
-                this.keyStr.charAt(enc3) + this.keyStr.charAt(enc4);
-        }
-        return output;
-    };
-    // private method for UTF-8 encoding
-    Base64.prototype.unicodeEncode = function (input) {
-        var tempInput = input.replace(/\r\n/g, '\n');
-        var utftext = '';
-        for (var n = 0; n < tempInput.length; n++) {
-            var c = tempInput.charCodeAt(n);
-            if (c < 128) {
-                utftext += String.fromCharCode(c);
-            }
-            else if ((c > 127) && (c < 2048)) {
-                utftext += String.fromCharCode((c >> 6) | 192);
-                utftext += String.fromCharCode((c & 63) | 128);
-            }
-            else {
-                utftext += String.fromCharCode((c >> 12) | 224);
-                utftext += String.fromCharCode(((c >> 6) & 63) | 128);
-                utftext += String.fromCharCode((c & 63) | 128);
-            }
-        }
-        return utftext;
-    };
-    /**
-     * @private
-     */
-    Base64.prototype.decodeString = function (input) {
-        var chr1;
-        var chr2;
-        var chr3;
-        var enc1;
-        var enc2;
-        var enc3;
-        var enc4;
-        var i = 0;
-        var resultIndex = 0;
-        /*let dataUrlPrefix: string = 'data:';*/
-        input = input.replace(/[^A-Za-z0-9\+\/\=]/g, '');
-        var totalLength = input.length * 3 / 4;
-        if (input.charAt(input.length - 1) === this.keyStr.charAt(64)) {
-            totalLength--;
-        }
-        if (input.charAt(input.length - 2) === this.keyStr.charAt(64)) {
-            totalLength--;
-        }
-        if (totalLength % 1 !== 0) {
-            // totalLength is not an integer, the length does not match a valid
-            // base64 content. That can happen if:
-            // - the input is not a base64 content
-            // - the input is *almost* a base64 content, with a extra chars at the
-            // beginning or at the end
-            // - the input uses a base64 variant (base64url for example)
-            throw new Error('Invalid base64 input, bad content length.');
-        }
-        var output = new Uint8Array(totalLength | 0);
-        while (i < input.length) {
-            enc1 = this.keyStr.indexOf(input.charAt(i++));
-            enc2 = this.keyStr.indexOf(input.charAt(i++));
-            enc3 = this.keyStr.indexOf(input.charAt(i++));
-            enc4 = this.keyStr.indexOf(input.charAt(i++));
-            chr1 = (enc1 << 2) | (enc2 >> 4);
-            chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
-            chr3 = ((enc3 & 3) << 6) | enc4;
-            output[resultIndex++] = chr1;
-            if (enc3 !== 64) {
-                output[resultIndex++] = chr2;
-            }
-            if (enc4 !== 64) {
-                output[resultIndex++] = chr3;
-            }
-        }
-        return output;
-    };
-    return Base64;
-}());
-
-var __extends$1 = (undefined && undefined.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-/**
- * @private
- */
-var WStyle = /** @__PURE__ @class */ (function () {
-    function WStyle() {
-    }
-    return WStyle;
-}());
-/**
- * @private
- */
-var WParagraphStyle = /** @__PURE__ @class */ (function (_super) {
-    __extends$1(WParagraphStyle, _super);
-    function WParagraphStyle(node) {
-        var _this = _super.call(this) || this;
-        _this.ownerBase = node;
-        _this.paragraphFormat = new WParagraphFormat(_this);
-        _this.characterFormat = new WCharacterFormat(_this);
-        return _this;
-    }
-    WParagraphStyle.prototype.destroy = function () {
-        this.characterFormat.destroy();
-        this.paragraphFormat.destroy();
-    };
-    WParagraphStyle.prototype.copyStyle = function (paraStyle) {
-        this.name = paraStyle.name;
-        this.ownerBase = paraStyle.ownerBase;
-        this.type = paraStyle.type;
-        this.next = paraStyle.next;
-        this.basedOn = paraStyle.basedOn;
-        this.link = paraStyle.link;
-        this.characterFormat.copyFormat(paraStyle.characterFormat);
-        this.paragraphFormat.copyFormat(paraStyle.paragraphFormat);
-    };
-    return WParagraphStyle;
-}(WStyle));
-/**
- * @private
- */
-var WCharacterStyle = /** @__PURE__ @class */ (function (_super) {
-    __extends$1(WCharacterStyle, _super);
-    function WCharacterStyle(node) {
-        var _this = _super.call(this) || this;
-        _this.ownerBase = node;
-        _this.characterFormat = new WCharacterFormat(_this);
-        return _this;
-    }
-    WCharacterStyle.prototype.destroy = function () {
-        this.characterFormat.destroy();
-    };
-    WCharacterStyle.prototype.copyStyle = function (charStyle) {
-        this.name = charStyle.name;
-        this.ownerBase = charStyle.ownerBase;
-        this.type = charStyle.type;
-        this.next = charStyle.next;
-        this.basedOn = charStyle.basedOn;
-        this.characterFormat.copyFormat(charStyle.characterFormat);
-    };
-    return WCharacterStyle;
-}(WStyle));
-/**
- * @private
- */
-var WStyles = /** @__PURE__ @class */ (function () {
-    function WStyles() {
-        this.collection = [];
-        /* tslint:enable:no-any */
-    }
-    Object.defineProperty(WStyles.prototype, "length", {
-        get: function () {
-            return this.collection.length;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    WStyles.prototype.remove = function (item) {
-        this.collection = this.collection.filter(function (a) { return (a.name !== item.name); });
-    };
-    WStyles.prototype.push = function (item) {
-        if (item != null && item !== undefined) {
-            this.collection.push(item);
-        }
-        return 1;
-    };
-    WStyles.prototype.getItem = function (index) {
-        if (this.collection.length > index) {
-            return this.collection[index];
-        }
-        return null;
-    };
-    WStyles.prototype.indexOf = function (item) {
-        return this.collection.indexOf(item);
-    };
-    WStyles.prototype.contains = function (item) {
-        var index = this.collection.indexOf(item);
-        return index > -1 && index < this.collection.length;
-    };
-    WStyles.prototype.clear = function () {
-        while (this.collection.length > 0) {
-            this.collection.pop();
-        }
-    };
-    WStyles.prototype.findByName = function (name, type) {
-        var returnStyle;
-        for (var _i = 0, _a = this.collection; _i < _a.length; _i++) {
-            var value = _a[_i];
-            if (value.name === name) {
-                returnStyle = value;
-                if (!isNullOrUndefined(type) && value.type === type) {
-                    returnStyle = value;
-                }
-            }
-        }
-        return returnStyle;
-    };
-    WStyles.prototype.getStyleNames = function (type) {
-        return this.collection.filter(function (a) { return (a.type === type); }).map(function (a) { return a.name; });
-    };
-    /* tslint:disable:no-any */
-    WStyles.prototype.getStyles = function (type) {
-        var styles = this.collection.filter(function (a) { return (a.type === type); }).map(function (a) { return a; });
-        var styleObjects = [];
-        for (var _i = 0, styles_1 = styles; _i < styles_1.length; _i++) {
-            var style = styles_1[_i];
-            var returnStyle = {};
-            var returnStyleObject = {};
-            returnStyleObject.characterFormat = {};
-            HelperMethods.writeCharacterFormat(returnStyleObject.characterFormat, true, style.characterFormat);
-            returnStyle.name = style.name;
-            returnStyle.style = JSON.stringify(returnStyleObject);
-            styleObjects.push(returnStyle);
-        }
-        return styleObjects;
-    };
-    return WStyles;
-}());
-
-/**
- * @private
- */
 var WBorder = /** @__PURE__ @class */ (function () {
     function WBorder(node) {
         this.uniqueBorderFormat = undefined;
@@ -4411,6 +3113,2161 @@ var WBorders = /** @__PURE__ @class */ (function () {
 /**
  * @private
  */
+var WRowFormat = /** @__PURE__ @class */ (function () {
+    function WRowFormat(node) {
+        this.uniqueRowFormat = undefined;
+        /**
+         * @private
+         */
+        this.borders = new WBorders(this);
+        /**
+         * @private
+         */
+        this.ownerBase = undefined;
+        /**
+         * @private
+         */
+        this.beforeWidth = 0;
+        /**
+         * @private
+         */
+        this.afterWidth = 0;
+        /**
+         * @private
+         */
+        this.revisions = [];
+        /**
+         * @private
+         */
+        this.removedIds = [];
+        this.ownerBase = node;
+    }
+    Object.defineProperty(WRowFormat.prototype, "gridBefore", {
+        get: function () {
+            return this.getPropertyValue('gridBefore');
+        },
+        set: function (value) {
+            this.setPropertyValue('gridBefore', value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(WRowFormat.prototype, "gridBeforeWidth", {
+        get: function () {
+            return this.getPropertyValue('gridBeforeWidth');
+        },
+        set: function (value) {
+            this.setPropertyValue('gridBeforeWidth', value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(WRowFormat.prototype, "gridBeforeWidthType", {
+        get: function () {
+            return this.getPropertyValue('gridBeforeWidthType');
+        },
+        set: function (value) {
+            this.setPropertyValue('gridBeforeWidthType', value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(WRowFormat.prototype, "gridAfter", {
+        get: function () {
+            return this.getPropertyValue('gridAfter');
+        },
+        set: function (value) {
+            this.setPropertyValue('gridAfter', value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(WRowFormat.prototype, "gridAfterWidth", {
+        get: function () {
+            return this.getPropertyValue('gridAfterWidth');
+        },
+        set: function (value) {
+            this.setPropertyValue('gridAfterWidth', value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(WRowFormat.prototype, "gridAfterWidthType", {
+        get: function () {
+            return this.getPropertyValue('gridAfterWidthType');
+        },
+        set: function (value) {
+            this.setPropertyValue('gridAfterWidthType', value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(WRowFormat.prototype, "allowBreakAcrossPages", {
+        get: function () {
+            return this.getPropertyValue('allowBreakAcrossPages');
+        },
+        set: function (value) {
+            this.setPropertyValue('allowBreakAcrossPages', value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(WRowFormat.prototype, "isHeader", {
+        get: function () {
+            return this.getPropertyValue('isHeader');
+        },
+        set: function (value) {
+            this.setPropertyValue('isHeader', value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(WRowFormat.prototype, "rightMargin", {
+        get: function () {
+            return this.getPropertyValue('rightMargin');
+        },
+        set: function (value) {
+            this.setPropertyValue('rightMargin', value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(WRowFormat.prototype, "height", {
+        get: function () {
+            return this.getPropertyValue('height');
+        },
+        set: function (value) {
+            if (value === 0 && (this.heightType === 'AtLeast' || this.heightType === 'Exactly')) {
+                value = 1;
+            }
+            else if (this.heightType === 'Auto') {
+                value = 0;
+            }
+            this.setPropertyValue('height', value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(WRowFormat.prototype, "heightType", {
+        get: function () {
+            return this.getPropertyValue('heightType');
+        },
+        set: function (value) {
+            if (value === 'AtLeast' || value === 'Exactly') {
+                this.height = 1;
+            }
+            else {
+                this.height = 0;
+            }
+            this.setPropertyValue('heightType', value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(WRowFormat.prototype, "bottomMargin", {
+        get: function () {
+            return this.getPropertyValue('bottomMargin');
+        },
+        set: function (value) {
+            this.setPropertyValue('bottomMargin', value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(WRowFormat.prototype, "leftIndent", {
+        get: function () {
+            return this.getPropertyValue('leftIndent');
+        },
+        set: function (value) {
+            this.setPropertyValue('leftIndent', value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(WRowFormat.prototype, "topMargin", {
+        get: function () {
+            return this.getPropertyValue('topMargin');
+        },
+        set: function (value) {
+            this.setPropertyValue('topMargin', value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(WRowFormat.prototype, "leftMargin", {
+        get: function () {
+            return this.getPropertyValue('leftMargin');
+        },
+        set: function (value) {
+            this.setPropertyValue('leftMargin', value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    WRowFormat.prototype.getPropertyValue = function (property) {
+        var hasValue = this.hasValue(property);
+        if (hasValue) {
+            var propertyType = WUniqueFormat.getPropertyType(WRowFormat.uniqueFormatType, property);
+            if (!isNullOrUndefined(this.uniqueRowFormat) && this.uniqueRowFormat.propertiesHash.containsKey(propertyType)) {
+                return this.uniqueRowFormat.propertiesHash.get(propertyType);
+            }
+        }
+        return WRowFormat.getPropertyDefaultValue(property);
+    };
+    WRowFormat.prototype.setPropertyValue = function (property, value) {
+        if (isNullOrUndefined(value) || value === '') {
+            value = WRowFormat.getPropertyDefaultValue(property);
+        }
+        if (isNullOrUndefined(this.uniqueRowFormat)) {
+            this.initializeUniqueRowFormat(property, value);
+        }
+        else {
+            var propertyType = WUniqueFormat.getPropertyType(this.uniqueRowFormat.uniqueFormatType, property);
+            if (this.uniqueRowFormat.propertiesHash.containsKey(propertyType) &&
+                this.uniqueRowFormat.propertiesHash.get(propertyType) === value) {
+                //Do nothing, since no change in property value and return
+                return;
+            }
+            this.uniqueRowFormat = WRowFormat.uniqueRowFormats.updateUniqueFormat(this.uniqueRowFormat, property, value);
+        }
+    };
+    WRowFormat.prototype.initializeUniqueRowFormat = function (property, propValue) {
+        var uniqueRowFormatTemp = new Dictionary();
+        this.addUniqueRowFormat('allowBreakAcrossPages', property, propValue, uniqueRowFormatTemp);
+        this.addUniqueRowFormat('isHeader', property, propValue, uniqueRowFormatTemp);
+        this.addUniqueRowFormat('height', property, propValue, uniqueRowFormatTemp);
+        this.addUniqueRowFormat('heightType', property, propValue, uniqueRowFormatTemp);
+        this.addUniqueRowFormat('gridBefore', property, propValue, uniqueRowFormatTemp);
+        this.addUniqueRowFormat('gridBeforeWidth', property, propValue, uniqueRowFormatTemp);
+        this.addUniqueRowFormat('gridBeforeWidthType', property, propValue, uniqueRowFormatTemp);
+        this.addUniqueRowFormat('gridAfter', property, propValue, uniqueRowFormatTemp);
+        this.addUniqueRowFormat('gridAfterWidth', property, propValue, uniqueRowFormatTemp);
+        this.addUniqueRowFormat('gridgridAfterWidth', property, propValue, uniqueRowFormatTemp);
+        this.addUniqueRowFormat('gridBeforeWidthType', property, propValue, uniqueRowFormatTemp);
+        this.addUniqueRowFormat('leftMargin', property, propValue, uniqueRowFormatTemp);
+        this.addUniqueRowFormat('rightMargin', property, propValue, uniqueRowFormatTemp);
+        this.addUniqueRowFormat('topMargin', property, propValue, uniqueRowFormatTemp);
+        this.addUniqueRowFormat('bottomMargin', property, propValue, uniqueRowFormatTemp);
+        this.addUniqueRowFormat('leftIndent', property, propValue, uniqueRowFormatTemp);
+        this.uniqueRowFormat = WRowFormat.uniqueRowFormats.addUniqueFormat(uniqueRowFormatTemp, WRowFormat.uniqueFormatType);
+    };
+    // tslint:disable-next-line:max-line-length
+    WRowFormat.prototype.addUniqueRowFormat = function (property, modifiedProperty, propValue, uniqueRowFormatTemp) {
+        var propertyType;
+        propertyType = WUniqueFormat.getPropertyType(WRowFormat.uniqueFormatType, property);
+        if (property === modifiedProperty) {
+            uniqueRowFormatTemp.add(propertyType, propValue);
+        }
+    };
+    WRowFormat.getPropertyDefaultValue = function (property) {
+        var value = undefined;
+        switch (property) {
+            case 'allowBreakAcrossPages':
+                value = true;
+                break;
+            case 'isHeader':
+                value = false;
+                break;
+            case 'height':
+                value = 0;
+                break;
+            case 'heightType':
+                value = 'Auto';
+                break;
+            case 'gridBefore':
+                value = 0;
+                break;
+            case 'gridBeforeWidth':
+                value = 0;
+                break;
+            case 'gridBeforeWidthType':
+                value = 'Point';
+                break;
+            case 'gridAfter':
+                value = 0;
+                break;
+            case 'gridAfterWidth':
+                value = 0;
+                break;
+            case 'gridAfterWidthType':
+                value = 'Point';
+                break;
+            case 'leftMargin':
+                value = undefined;
+                break;
+            case 'topMargin':
+                value = undefined;
+                break;
+            case 'bottomMargin':
+                value = undefined;
+                break;
+            case 'rightMargin':
+                value = undefined;
+                break;
+            case 'leftIndent':
+                value = 0;
+                break;
+        }
+        return value;
+    };
+    WRowFormat.prototype.containsMargins = function () {
+        return (!isNullOrUndefined(this.leftMargin)
+            || !isNullOrUndefined(this.rightMargin)
+            || !isNullOrUndefined(this.bottomMargin)
+            || !isNullOrUndefined(this.topMargin));
+    };
+    WRowFormat.prototype.cloneFormat = function () {
+        var format = new WRowFormat();
+        format.allowBreakAcrossPages = this.allowBreakAcrossPages;
+        format.heightType = this.heightType;
+        format.height = this.height;
+        format.isHeader = this.isHeader;
+        format.gridBefore = this.gridBefore;
+        format.gridBeforeWidth = this.gridBeforeWidth;
+        format.gridBeforeWidthType = this.gridBeforeWidthType;
+        format.gridAfter = this.gridAfter;
+        format.gridAfterWidth = this.gridAfterWidth;
+        format.gridAfterWidthType = this.gridAfterWidthType;
+        format.leftMargin = this.leftMargin;
+        format.rightMargin = this.rightMargin;
+        format.topMargin = this.topMargin;
+        format.bottomMargin = this.bottomMargin;
+        format.leftIndent = this.leftIndent;
+        if (this.revisions.length > 0) {
+            format.removedIds = Revision.cloneRevisions(this.revisions);
+        }
+        else {
+            format.removedIds = this.removedIds.slice();
+        }
+        return format;
+    };
+    WRowFormat.prototype.hasValue = function (property) {
+        if (!isNullOrUndefined(this.uniqueRowFormat)) {
+            var propertyType = WUniqueFormat.getPropertyType(this.uniqueRowFormat.uniqueFormatType, property);
+            return this.uniqueRowFormat.propertiesHash.containsKey(propertyType);
+        }
+        return false;
+    };
+    WRowFormat.prototype.copyFormat = function (format) {
+        if (!isNullOrUndefined(format)) {
+            if (!isNullOrUndefined(format.uniqueRowFormat)) {
+                this.allowBreakAcrossPages = format.allowBreakAcrossPages;
+                this.isHeader = format.isHeader;
+                this.heightType = format.heightType;
+                this.height = format.height;
+                this.gridBefore = format.gridBefore;
+                this.gridBeforeWidth = format.gridBeforeWidth;
+                this.gridBeforeWidthType = format.gridBeforeWidthType;
+                this.gridAfter = format.gridAfter;
+                this.gridAfterWidth = format.gridAfterWidth;
+                this.gridAfterWidthType = format.gridAfterWidthType;
+                this.leftMargin = format.leftMargin;
+                this.topMargin = format.topMargin;
+                this.rightMargin = format.rightMargin;
+                this.bottomMargin = format.bottomMargin;
+                this.leftIndent = format.leftIndent;
+            }
+            if (!isNullOrUndefined(format.borders)) {
+                this.borders = new WBorders(this);
+                this.borders.ownerBase = format;
+                this.borders.copyFormat(format.borders);
+            }
+            if (format.revisions.length > 0) {
+                this.removedIds = Revision.cloneRevisions(format.revisions);
+            }
+            else {
+                this.removedIds = format.removedIds.slice();
+            }
+        }
+    };
+    WRowFormat.prototype.destroy = function () {
+        if (!isNullOrUndefined(this.borders)) {
+            this.borders.destroy();
+        }
+        if (!isNullOrUndefined(this.uniqueRowFormat)) {
+            WRowFormat.uniqueRowFormats.remove(this.uniqueRowFormat);
+        }
+        this.beforeWidth = undefined;
+        this.afterWidth = undefined;
+        this.borders = undefined;
+        this.uniqueRowFormat = undefined;
+    };
+    WRowFormat.clear = function () {
+        this.uniqueRowFormats.clear();
+    };
+    WRowFormat.uniqueRowFormats = new WUniqueFormats();
+    WRowFormat.uniqueFormatType = 6;
+    return WRowFormat;
+}());
+
+/**
+ * The revision class which holds the information related to changes made in the document
+ */
+var Revision = /** @__PURE__ @class */ (function () {
+    /**
+     *
+     */
+    function Revision(documentHelper, author, date) {
+        /**
+         * Gets or sets the author name who made the change
+         * @private
+         */
+        this.author = null;
+        /**
+         * Indicates when the track changes made
+         * @private
+         */
+        this.date = null;
+        /**
+         * Holds the reference of the items which are under this revision.
+         * @private
+         */
+        this.range = [];
+        /**
+         * @private
+         */
+        this.revisionID = '';
+        /**
+         * Used to update cursor position by ensuring items were removed or not
+         */
+        this.isContentRemoved = false;
+        this.isTableRevision = false;
+        /**
+         * Indicates whether to skip unlinking ranges for table elements.
+         */
+        this.canSkipTableItems = false;
+        this.skipUnLinkElement = false;
+        this.author = author;
+        this.date = date;
+        this.owner = documentHelper;
+    }
+    /**
+     * Handles Accept reject for the revision
+     * @param isFromAccept
+     */
+    Revision.prototype.handleAcceptReject = function (isFromAccept) {
+        this.owner.selection.selectRevision(this);
+        var selection = this.owner.selection;
+        var startPos = selection.start;
+        var endPos = selection.end;
+        if (!selection.start.isExistBefore(selection.end)) {
+            startPos = selection.end;
+            endPos = selection.start;
+        }
+        var blockInfo = selection.getParagraphInfo(startPos);
+        this.owner.editor.initHistory(isFromAccept ? 'Accept Change' : 'Reject Change');
+        if (this.revisionType === 'Deletion') {
+            blockInfo = selection.getParagraphInfo(this.owner.selection.start);
+            selection.editPosition = this.owner.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+        }
+        else {
+            selection.editPosition = this.owner.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+        }
+        this.owner.editor.updateInsertPosition();
+        this.isContentRemoved = false;
+        this.canSkipTableItems = false;
+        this.skipUnLinkElement = false;
+        // Implement to accept/reject the revision
+        if (this.revisionType === 'Insertion' || this.revisionType === 'Deletion') {
+            var rangeIndex = 0;
+            while (this.range.length > 0) {
+                // tslint:disable-next-line:max-line-length
+                if (this.range[rangeIndex] instanceof ElementBox || this.range[rangeIndex] instanceof WCharacterFormat || this.range[rangeIndex] instanceof WRowFormat) {
+                    var moveToNextItem = this.unlinkRangeItem(this.range[rangeIndex], this, isFromAccept);
+                    if (moveToNextItem) {
+                        rangeIndex++;
+                    }
+                    else {
+                        rangeIndex = 0;
+                    }
+                }
+                else {
+                    break;
+                }
+            }
+        }
+        this.isTableRevision = false;
+        if (this.isContentRemoved) {
+            var textPosition = selection.getTextPosBasedOnLogicalIndex(selection.editPosition);
+            this.owner.selection.selectContent(textPosition, true);
+            this.owner.editor.updateEndPosition();
+        }
+        else {
+            selection.selectRange(startPos, endPos);
+            this.owner.editor.updateHistoryPosition(endPos, false);
+        }
+        if (this.owner.editorHistory && this.owner.editorHistory.currentBaseHistoryInfo.action !== 'BackSpace') {
+            this.owner.editorHistory.currentBaseHistoryInfo.removedNodes.reverse();
+        }
+        /* tslint:disable:max-func-body-length */
+        if (this.owner.editorHistory) {
+            this.owner.editorHistory.updateHistory();
+        }
+        this.owner.editor.reLayout(this.owner.selection);
+    };
+    /**
+     * Method which accepts the selected revision, revision marks will be removed and changes will be included in the viewer.
+     */
+    Revision.prototype.accept = function () {
+        this.handleAcceptReject(true);
+    };
+    /**
+     * Method which rejects the selected revision, revision marks will be removed leaving the original content.
+     */
+    Revision.prototype.reject = function () {
+        this.handleAcceptReject(false);
+    };
+    /**
+     * Unlinks revision and its assosiated range
+     * @private
+     * @param item
+     * @param revision
+     * @param isFromAccept
+     */
+    /* tslint:disable:no-any */
+    /* tslint:disable:max-func-body-length */
+    Revision.prototype.unlinkRangeItem = function (item, revision, isFromAccept) {
+        if (this.isTableRevision) {
+            this.removeRangeRevisionForItem(item);
+            if (revision.range.length === 0) {
+                this.owner.revisions.remove(revision);
+            }
+            return false;
+        }
+        // tslint:disable-next-line:max-line-length
+        var removeChanges = (!isNullOrUndefined(isFromAccept)) && (revision.revisionType === 'Insertion' && !isFromAccept || revision.revisionType === 'Deletion' && isFromAccept);
+        if (this.owner.selection.isTOC()) {
+            if (removeChanges) {
+                this.owner.editor.deleteSelectedContents(this.owner.selection, true);
+                if (revision.range.length === 0) {
+                    this.owner.revisions.remove(revision);
+                }
+                this.isContentRemoved = true;
+                this.owner.editorHistory.currentBaseHistoryInfo.action = 'BackSpace';
+            }
+            else {
+                while (this.range.length > 0) {
+                    var currentElement = this.range[0];
+                    this.removeRangeRevisionForItem(currentElement);
+                    if (revision.range.length === 0) {
+                        this.owner.revisions.remove(revision);
+                    }
+                }
+                this.owner.editor.addRemovedNodes(this.revisionID);
+                this.owner.editorHistory.currentBaseHistoryInfo.action = 'AcceptTOC';
+            }
+            return false;
+        }
+        if (item instanceof ElementBox && !this.canSkipTableItems) {
+            if (removeChanges) {
+                if (!this.skipeElementRemoval(item)) {
+                    this.owner.editor.addRemovedNodes(item.clone());
+                }
+                else {
+                    this.skipUnLinkElement = true;
+                    return true;
+                }
+            }
+            else {
+                this.owner.editorHistory.currentBaseHistoryInfo.action = 'ClearRevisions';
+                this.updateRevisionID();
+            }
+        }
+        else if (!this.canSkipTableItems && (item instanceof WCharacterFormat) && (!removeChanges)) {
+            this.owner.editorHistory.currentBaseHistoryInfo.action = 'ClearRevisions';
+            this.updateRevisionID();
+        }
+        else if (item instanceof WRowFormat && !removeChanges) {
+            this.isTableRevision = true;
+            var tableWidget = item.ownerBase.ownerTable;
+            var currentRow = item.ownerBase;
+            this.owner.editorHistory.currentBaseHistoryInfo.action = 'RemoveRowTrack';
+            this.owner.editor.cloneTableToHistoryInfo(tableWidget);
+        }
+        removeChanges = removeChanges && !this.canSkipTableItems;
+        if (item instanceof ElementBox && removeChanges) {
+            var currentPara = item.line.paragraph;
+            this.removeRevisionItemsFromRange(item);
+            this.removeItem(item);
+            this.isContentRemoved = true;
+            this.owner.documentHelper.layout.reLayoutParagraph(currentPara, 0, 0);
+        }
+        else if (item instanceof WCharacterFormat && removeChanges) {
+            this.isContentRemoved = true;
+            this.skipUnLinkElement = false;
+            this.removeRevisionItemsFromRange(item);
+            if (revision.range.length === 1) {
+                this.owner.editor.deleteSelectedContents(this.owner.selection, true);
+            }
+            else {
+                this.owner.editor.deleteSelectedContents(this.owner.selection, true);
+                var rangeIndex = revision.range.indexOf(item);
+                revision.range.splice(rangeIndex, 1);
+                while (this.range.length > 0) {
+                    this.removeRangeRevisionForItem(this.range[0]);
+                }
+            }
+            this.owner.editorHistory.currentBaseHistoryInfo.action = 'BackSpace';
+        }
+        else if (item instanceof WRowFormat && removeChanges) {
+            var tableWidget = item.ownerBase.ownerTable;
+            var currentRow = item.ownerBase;
+            this.removeRevisionItemsFromRange(item);
+            this.owner.editorHistory.currentBaseHistoryInfo.action = 'DeleteCells';
+            this.owner.editor.cloneTableToHistoryInfo(tableWidget);
+            this.owner.editor.removeDeletedCellRevision(currentRow);
+            this.isContentRemoved = true;
+            tableWidget.removeChild(tableWidget.childWidgets.indexOf(currentRow));
+            this.canSkipTableItems = true;
+            currentRow.destroy();
+            if (tableWidget.childWidgets.length === 0) {
+                this.owner.selection.editPosition = this.owner.selection.getHierarchicalIndex(tableWidget, '0');
+                this.owner.editor.removeBlock(tableWidget);
+                tableWidget.destroy();
+            }
+            else {
+                this.owner.editor.updateTable(tableWidget);
+            }
+        }
+        // tslint:disable-next-line:max-line-length
+        // if the range is of row format, we will remove the row and for history preservation we use whole table to be cloned, hence skipping this part
+        if (!(item instanceof WRowFormat) || !removeChanges) {
+            if (!this.skipUnLinkElement) {
+                this.removeRangeRevisionForItem(item);
+            }
+        }
+        if (revision.range.length === 0) {
+            this.owner.revisions.remove(revision);
+        }
+        return false;
+    };
+    Revision.prototype.updateRevisionID = function () {
+        this.owner.editor.addRemovedNodes(this.revisionID);
+        while (this.range.length > 0) {
+            this.removeRangeRevisionForItem(this.range[0]);
+        }
+    };
+    /**
+     * If we accept the reject revision or reject the insert revision, corresponding item should be removed its revision collection
+     * @param item
+     */
+    /* tslint:disable:no-any */
+    Revision.prototype.removeRevisionItemsFromRange = function (item) {
+        if (item.revisions.length > 0) {
+            for (var revisionIndex = 0; revisionIndex < item.revisions.length; revisionIndex++) {
+                var currentRevision = item.revisions[revisionIndex];
+                if (this.revisionID !== currentRevision.revisionID) {
+                    var rangeIndex = currentRevision.range.indexOf(item);
+                    item.revisions[revisionIndex].range.splice(rangeIndex, 1);
+                }
+                if (currentRevision.range.length === 0) {
+                    this.owner.revisions.remove(currentRevision);
+                }
+            }
+        }
+    };
+    /* tslint:disable:no-any */
+    Revision.prototype.removeRangeRevisionForItem = function (item) {
+        var revisionIndex = item.revisions.indexOf(this);
+        if (revisionIndex >= 0) {
+            item.revisions.splice(revisionIndex, 1);
+            var rangeIndex = this.range.indexOf(item);
+            this.range.splice(rangeIndex, 1);
+        }
+    };
+    /**
+     * @private
+     * @param element
+     * @param revision
+     */
+    Revision.prototype.skipeElementRemoval = function (element) {
+        var elementPara = element.paragraph;
+        if (elementPara.characterFormat.revisions.length > 0) {
+            for (var i = 0; i < elementPara.characterFormat.revisions.length; i++) {
+                var currentRevision = elementPara.characterFormat.revisions[i];
+                var rangeIndex = currentRevision.range.indexOf(element);
+                if (rangeIndex >= 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
+    Revision.prototype.removeRevisionFromRow = function (row) {
+        this.owner.editor.unlinkRangeFromRevision(row.rowFormat);
+        //this.owner.editor.addRemovedRevisionInfo(row.rowFormat, undefined);
+        for (var i = 0; i < row.childWidgets.length; i++) {
+            var cellWidget = row.childWidgets[i];
+            this.owner.editor.removeRevisionForCell(cellWidget, false);
+        }
+    };
+    /**
+     * Method removes item from the widget
+     */
+    Revision.prototype.removeItem = function (element) {
+        var paraWidget = element.line.paragraph;
+        this.owner.editor.unLinkFieldCharacter(element);
+        var elementIndex = element.line.children.indexOf(element);
+        element.line.children.splice(elementIndex, 1);
+        this.owner.editor.removeEmptyLine(paraWidget);
+    };
+    Revision.prototype.canSkipCloning = function () {
+        if (!isNullOrUndefined(this.owner) && this.owner.editorHistory && this.owner.editorHistory.currentBaseHistoryInfo) {
+            var baseHistoryInfo = this.owner.editorHistory.currentBaseHistoryInfo;
+            if (baseHistoryInfo.action === 'DeleteCells') {
+                return true;
+            }
+        }
+        return false;
+    };
+    /**
+     * @private
+     */
+    Revision.prototype.clone = function () {
+        if (this.canSkipCloning()) {
+            return this;
+        }
+        var revision = new Revision(undefined, this.author, this.date);
+        revision.revisionID = this.revisionID;
+        revision.revisionType = this.revisionType;
+        return revision;
+    };
+    /**
+     * Method to clone the revisions for the element
+     * @param revisions | revision array
+     */
+    Revision.cloneRevisions = function (revisions) {
+        var clonedRevisions = [];
+        for (var i = 0; i < revisions.length; i++) {
+            clonedRevisions.push(revisions[i].revisionID);
+        }
+        return clonedRevisions;
+    };
+    return Revision;
+}());
+/**
+ * Represents the revision collections in the document.
+ */
+var RevisionCollection = /** @__PURE__ @class */ (function () {
+    function RevisionCollection(owner) {
+        /**
+         * @private
+         */
+        this.changes = [];
+        this.owner = owner;
+    }
+    /**
+     * @private
+     */
+    RevisionCollection.prototype.get = function (index) {
+        if (index >= this.changes.length || index < 0) {
+            throw new ReferenceError('Provided index is not within the range');
+        }
+        return this.changes[index];
+    };
+    Object.defineProperty(RevisionCollection.prototype, "length", {
+        get: function () {
+            return this.changes.length;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    RevisionCollection.prototype.remove = function (revision) {
+        if (isNullOrUndefined(revision) || this.changes.indexOf(revision) < 0) {
+            return;
+        }
+        this.changes.splice(this.changes.indexOf(revision), 1);
+    };
+    /**
+     * Method which accepts all the revision in the revision collection
+     */
+    RevisionCollection.prototype.acceptAll = function () {
+        this.handleRevisionCollection(true);
+    };
+    /**
+     * Method which rejects all the revision in the revision collection
+     */
+    RevisionCollection.prototype.rejectAll = function () {
+        this.handleRevisionCollection(false);
+    };
+    /**
+     * @private
+     * @param isfromAcceptAll
+     * @param changes
+     */
+    RevisionCollection.prototype.handleRevisionCollection = function (isfromAcceptAll, changes) {
+        var selection = this.owner.selection;
+        var startPos = selection.start;
+        var endPos = selection.end;
+        if (!selection.start.isExistBefore(selection.end)) {
+            startPos = selection.end;
+            endPos = selection.start;
+        }
+        startPos = startPos.clone();
+        endPos = endPos.clone();
+        if (isfromAcceptAll) {
+            this.owner.editor.initComplexHistory('Accept All');
+        }
+        else {
+            this.owner.editor.initComplexHistory('Reject All');
+        }
+        var revisionCollec = changes ? changes : this.changes;
+        while (revisionCollec.length > 0) {
+            if (isfromAcceptAll) {
+                revisionCollec[0].accept();
+            }
+            else {
+                revisionCollec[0].reject();
+            }
+            if (changes) {
+                revisionCollec.splice(0, 1);
+            }
+        }
+        var textPosition = selection.getTextPosBasedOnLogicalIndex(selection.editPosition);
+        this.owner.selection.selectContent(textPosition, true);
+        if (this.owner.editorHistory) {
+            this.owner.editorHistory.updateComplexHistory();
+        }
+        this.owner.editor.reLayout(this.owner.selection, false);
+    };
+    RevisionCollection.prototype.destroy = function () {
+        this.changes = [];
+    };
+    return RevisionCollection;
+}());
+
+/**
+ * @private
+ */
+var WCharacterFormat = /** @__PURE__ @class */ (function () {
+    function WCharacterFormat(node) {
+        this.uniqueCharacterFormat = undefined;
+        this.ownerBase = undefined;
+        this.baseCharStyle = undefined;
+        /**
+         * @private
+         */
+        this.removedIds = [];
+        /**
+         * @private
+         */
+        this.revisions = [];
+        this.ownerBase = node;
+    }
+    Object.defineProperty(WCharacterFormat.prototype, "bold", {
+        get: function () {
+            return this.getPropertyValue('bold');
+        },
+        set: function (value) {
+            this.setPropertyValue('bold', value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(WCharacterFormat.prototype, "italic", {
+        get: function () {
+            return this.getPropertyValue('italic');
+        },
+        set: function (value) {
+            this.setPropertyValue('italic', value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(WCharacterFormat.prototype, "fontSize", {
+        get: function () {
+            return this.getPropertyValue('fontSize');
+        },
+        set: function (value) {
+            this.setPropertyValue('fontSize', value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(WCharacterFormat.prototype, "fontFamily", {
+        get: function () {
+            return this.getPropertyValue('fontFamily');
+        },
+        set: function (value) {
+            this.setPropertyValue('fontFamily', value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(WCharacterFormat.prototype, "underline", {
+        get: function () {
+            return this.getPropertyValue('underline');
+        },
+        set: function (value) {
+            this.setPropertyValue('underline', value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(WCharacterFormat.prototype, "strikethrough", {
+        get: function () {
+            return this.getPropertyValue('strikethrough');
+        },
+        set: function (value) {
+            this.setPropertyValue('strikethrough', value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(WCharacterFormat.prototype, "baselineAlignment", {
+        get: function () {
+            return this.getPropertyValue('baselineAlignment');
+        },
+        set: function (value) {
+            this.setPropertyValue('baselineAlignment', value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(WCharacterFormat.prototype, "highlightColor", {
+        get: function () {
+            return this.getPropertyValue('highlightColor');
+        },
+        set: function (value) {
+            this.setPropertyValue('highlightColor', value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(WCharacterFormat.prototype, "fontColor", {
+        get: function () {
+            return this.getPropertyValue('fontColor');
+        },
+        set: function (value) {
+            this.setPropertyValue('fontColor', value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(WCharacterFormat.prototype, "bidi", {
+        get: function () {
+            return this.getPropertyValue('bidi');
+        },
+        set: function (value) {
+            this.setPropertyValue('bidi', value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(WCharacterFormat.prototype, "bdo", {
+        get: function () {
+            return this.getPropertyValue('bdo');
+        },
+        set: function (value) {
+            this.setPropertyValue('bdo', value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(WCharacterFormat.prototype, "boldBidi", {
+        get: function () {
+            return this.getPropertyValue('boldBidi');
+        },
+        set: function (value) {
+            this.setPropertyValue('boldBidi', value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(WCharacterFormat.prototype, "italicBidi", {
+        get: function () {
+            return this.getPropertyValue('italicBidi');
+        },
+        set: function (value) {
+            this.setPropertyValue('italicBidi', value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(WCharacterFormat.prototype, "fontSizeBidi", {
+        get: function () {
+            return this.getPropertyValue('fontSizeBidi');
+        },
+        set: function (value) {
+            this.setPropertyValue('fontSizeBidi', value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(WCharacterFormat.prototype, "fontFamilyBidi", {
+        get: function () {
+            return this.getPropertyValue('fontFamilyBidi');
+        },
+        set: function (value) {
+            this.setPropertyValue('fontFamilyBidi', value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    WCharacterFormat.prototype.getPropertyValue = function (property) {
+        if (!this.hasValue(property)) {
+            var charStyleValue = this.checkCharacterStyle(property);
+            if (!isNullOrUndefined(charStyleValue)) {
+                return charStyleValue;
+            }
+            else {
+                if (!isNullOrUndefined(this.baseCharStyle)) {
+                    /* tslint:disable-next-line:no-any */
+                    var paragraph = this.ownerBase.paragraph;
+                    var line = this.ownerBase.line;
+                    if (!isNullOrUndefined(paragraph) && !isNullOrUndefined(line)) {
+                        var length_1 = line.children.length;
+                        for (var i = 0; i < length_1; i++) {
+                            /* tslint:disable-next-line:no-any */
+                            var element = this.ownerBase.line.children[i];
+                            if (element instanceof TextElementBox) {
+                                /* tslint:disable-next-line:no-any */
+                                var text = element.text;
+                                if (text.startsWith('HYPERLINK')) {
+                                    var index = text.indexOf('_Toc');
+                                    if (index !== -1) {
+                                        this.baseCharStyle = this.ownerBase.paragraph.paragraphFormat.baseStyle;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                var baseStyleValue = this.checkBaseStyle(property);
+                if (!isNullOrUndefined(baseStyleValue)) {
+                    return baseStyleValue;
+                }
+            }
+        }
+        else {
+            var propertyType = WUniqueFormat.getPropertyType(WCharacterFormat.uniqueFormatType, property);
+            if (!isNullOrUndefined(this.uniqueCharacterFormat) && this.uniqueCharacterFormat.propertiesHash.containsKey(propertyType)) {
+                return this.uniqueCharacterFormat.propertiesHash.get(propertyType);
+            }
+        }
+        return this.getDefaultValue(property);
+    };
+    WCharacterFormat.prototype.getDefaultValue = function (property) {
+        var propertyType = WUniqueFormat.getPropertyType(WCharacterFormat.uniqueFormatType, property);
+        var docCharacterFormat = this.documentCharacterFormat();
+        // tslint:disable-next-line:max-line-length
+        if (!isNullOrUndefined(docCharacterFormat) && !isNullOrUndefined(docCharacterFormat.uniqueCharacterFormat) && docCharacterFormat.uniqueCharacterFormat.propertiesHash.containsKey(propertyType)) {
+            return docCharacterFormat.uniqueCharacterFormat.propertiesHash.get(propertyType);
+        }
+        else {
+            return WCharacterFormat.getPropertyDefaultValue(property);
+        }
+    };
+    WCharacterFormat.prototype.documentCharacterFormat = function () {
+        var docCharacterFormat;
+        if (!isNullOrUndefined(this.ownerBase)) {
+            // tslint:disable-next-line:max-line-length
+            if (!isNullOrUndefined(this.ownerBase.paragraph) && !isNullOrUndefined(this.ownerBase.paragraph.bodyWidget)) {
+                docCharacterFormat = this.ownerBase.paragraph.bodyWidget.page.documentHelper.characterFormat;
+            }
+            else {
+                if (!isNullOrUndefined(this.ownerBase.bodyWidget)) {
+                    docCharacterFormat = this.ownerBase.bodyWidget.page.documentHelper.characterFormat;
+                }
+            }
+        }
+        return docCharacterFormat;
+    };
+    WCharacterFormat.prototype.checkBaseStyle = function (property) {
+        /* tslint:disable-next-line:no-any */
+        var baseStyle;
+        if (!isNullOrUndefined(this.ownerBase)) {
+            if (!isNullOrUndefined(this.ownerBase.paragraph)) {
+                baseStyle = this.ownerBase.paragraph.paragraphFormat.baseStyle;
+            }
+            else {
+                // tslint:disable-next-line:max-line-length
+                if ((this.ownerBase instanceof ParagraphWidget) && !isNullOrUndefined(this.ownerBase.paragraphFormat)) {
+                    baseStyle = this.ownerBase.paragraphFormat.baseStyle;
+                }
+                else {
+                    if (!isNullOrUndefined(this.ownerBase instanceof WParagraphStyle)) {
+                        baseStyle = this.ownerBase.basedOn;
+                    }
+                }
+            }
+        }
+        while (!isNullOrUndefined(baseStyle)) {
+            if (baseStyle.characterFormat.hasValue(property)) {
+                break;
+            }
+            else {
+                baseStyle = baseStyle.basedOn;
+            }
+        }
+        if (!isNullOrUndefined(baseStyle)) {
+            var propertyType = WUniqueFormat.getPropertyType(WCharacterFormat.uniqueFormatType, property);
+            return baseStyle.characterFormat.uniqueCharacterFormat.propertiesHash.get(propertyType);
+        }
+        return undefined;
+    };
+    WCharacterFormat.prototype.checkCharacterStyle = function (property) {
+        /* tslint:disable-next-line:no-any */
+        var baseStyle = this.baseCharStyle;
+        if (!isNullOrUndefined(baseStyle)) {
+            while (!isNullOrUndefined(baseStyle) && baseStyle.name !== 'Default Paragraph Font') {
+                var hasKey = baseStyle.characterFormat.hasValue(property);
+                if (hasKey) {
+                    var returnPropertyType = WUniqueFormat.getPropertyType(WCharacterFormat.uniqueFormatType, property);
+                    return baseStyle.characterFormat.uniqueCharacterFormat.propertiesHash.get(returnPropertyType);
+                }
+                else {
+                    baseStyle = baseStyle.basedOn;
+                }
+            }
+        }
+        return undefined;
+    };
+    WCharacterFormat.prototype.setPropertyValue = function (property, value) {
+        if (isNullOrUndefined(value) || value === '') {
+            value = WCharacterFormat.getPropertyDefaultValue(property);
+        }
+        if (isNullOrUndefined(this.uniqueCharacterFormat)) {
+            this.initializeUniqueCharacterFormat(property, value);
+        }
+        else {
+            var propertyType = WUniqueFormat.getPropertyType(this.uniqueCharacterFormat.uniqueFormatType, property);
+            if (this.uniqueCharacterFormat.propertiesHash.containsKey(propertyType) &&
+                // tslint:disable-next-line:max-line-length
+                this.uniqueCharacterFormat.propertiesHash.get(propertyType) === value) { //Do nothing, since no change in property value and return
+                return;
+            }
+            // tslint:disable-next-line:max-line-length
+            this.uniqueCharacterFormat = WCharacterFormat.uniqueCharacterFormats.updateUniqueFormat(this.uniqueCharacterFormat, property, value);
+        }
+    };
+    WCharacterFormat.prototype.initializeUniqueCharacterFormat = function (property, propValue) {
+        var uniqueCharFormatTemp = new Dictionary();
+        this.addUniqueCharacterFormat('fontColor', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('fontFamily', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('fontSize', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('bold', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('italic', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('underline', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('strikethrough', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('baselineAlignment', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('highlightColor', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('styleName', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('bidi', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('bdo', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('fontFamilyBidi', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('fontSizeBidi', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('boldBidi', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('italicBidi', property, propValue, uniqueCharFormatTemp);
+        // tslint:disable-next-line:max-line-length
+        this.uniqueCharacterFormat = WCharacterFormat.uniqueCharacterFormats.addUniqueFormat(uniqueCharFormatTemp, WCharacterFormat.uniqueFormatType);
+    };
+    // tslint:disable-next-line:max-line-length
+    WCharacterFormat.prototype.addUniqueCharacterFormat = function (property, modifiedProperty, propValue, uniqueCharFormatTemp) {
+        var propertyType;
+        propertyType = WUniqueFormat.getPropertyType(WCharacterFormat.uniqueFormatType, property);
+        if (property === modifiedProperty) {
+            uniqueCharFormatTemp.add(propertyType, propValue);
+        }
+    };
+    WCharacterFormat.getPropertyDefaultValue = function (property) {
+        var value = undefined;
+        switch (property) {
+            case 'bold':
+                value = false;
+                break;
+            case 'italic':
+                value = false;
+                break;
+            case 'fontSize':
+                value = 11;
+                break;
+            case 'underline':
+                value = 'None';
+                break;
+            case 'strikethrough':
+                value = 'None';
+                break;
+            case 'baselineAlignment':
+                value = 'Normal';
+                break;
+            case 'highlightColor':
+                value = 'NoColor';
+                break;
+            case 'fontColor':
+                value = '#000000';
+                break;
+            case 'fontFamily':
+                value = 'Calibri';
+                break;
+            case 'styleName':
+                value = 'Default Paragraph Font';
+                break;
+            case 'bidi':
+                value = false;
+                break;
+            case 'bdo':
+                value = 'None';
+                break;
+            case 'boldBidi':
+                value = false;
+                break;
+            case 'italicBidi':
+                value = false;
+                break;
+            case 'fontSizeBidi':
+                value = 11;
+                break;
+            case 'fontFamilyBidi':
+                value = 'Calibri';
+                break;
+        }
+        return value;
+    };
+    WCharacterFormat.prototype.isEqualFormat = function (format) {
+        return (this.fontSize === format.fontSize
+            && this.fontFamily === format.fontFamily
+            && this.bold === format.bold
+            && this.italic === format.italic
+            && this.baselineAlignment === format.baselineAlignment
+            && this.underline === format.underline
+            && this.fontColor === format.fontColor
+            && this.strikethrough === format.strikethrough
+            && this.highlightColor === format.highlightColor && this.bidi === format.bidi
+            && this.bdo === format.bdo);
+    };
+    WCharacterFormat.prototype.isSameFormat = function (format) {
+        return this.baseCharStyle === format.baseCharStyle &&
+            this.uniqueCharacterFormat === format.uniqueCharacterFormat;
+    };
+    WCharacterFormat.prototype.cloneFormat = function () {
+        var format = new WCharacterFormat(undefined);
+        format.uniqueCharacterFormat = this.uniqueCharacterFormat;
+        format.baseCharStyle = this.baseCharStyle;
+        if (this.revisions.length > 0) {
+            format.removedIds = Revision.cloneRevisions(this.revisions);
+        }
+        else {
+            format.removedIds = this.removedIds.slice();
+        }
+        return format;
+    };
+    /**
+     * @private
+     */
+    WCharacterFormat.prototype.hasValue = function (property) {
+        if (!isNullOrUndefined(this.uniqueCharacterFormat) && !isNullOrUndefined(this.uniqueCharacterFormat.propertiesHash)) {
+            var propertyType = WUniqueFormat.getPropertyType(this.uniqueCharacterFormat.uniqueFormatType, property);
+            return this.uniqueCharacterFormat.propertiesHash.containsKey(propertyType);
+        }
+        return false;
+    };
+    WCharacterFormat.prototype.clearFormat = function () {
+        if (!isNullOrUndefined(this.uniqueCharacterFormat) && this.uniqueCharacterFormat.referenceCount === 0) {
+            WCharacterFormat.uniqueCharacterFormats.remove(this.uniqueCharacterFormat);
+        }
+        this.uniqueCharacterFormat = undefined;
+        this.baseCharStyle = undefined;
+    };
+    WCharacterFormat.prototype.destroy = function () {
+        this.clearFormat();
+    };
+    WCharacterFormat.prototype.copyFormat = function (format) {
+        if (!isNullOrUndefined(format)) {
+            if (!isNullOrUndefined(format.uniqueCharacterFormat) && format.uniqueCharacterFormat.propertiesHash) {
+                this.updateUniqueCharacterFormat(format);
+            }
+            if (!isNullOrUndefined(format.baseCharStyle)) {
+                this.baseCharStyle = format.baseCharStyle;
+            }
+            if (format.revisions.length > 0) {
+                this.removedIds = Revision.cloneRevisions(format.revisions);
+            }
+            else {
+                this.removedIds = format.removedIds.slice();
+            }
+        }
+    };
+    WCharacterFormat.prototype.updateUniqueCharacterFormat = function (format) {
+        var hash = undefined;
+        if (this.uniqueCharacterFormat) {
+            hash = this.uniqueCharacterFormat.mergeProperties(format.uniqueCharacterFormat);
+            if (this.uniqueCharacterFormat.referenceCount === 0) {
+                WCharacterFormat.uniqueCharacterFormats.remove(this.uniqueCharacterFormat);
+                this.uniqueCharacterFormat = undefined;
+            }
+        }
+        this.uniqueCharacterFormat = new WUniqueFormat(WCharacterFormat.uniqueFormatType);
+        if (isNullOrUndefined(hash)) {
+            hash = this.uniqueCharacterFormat.mergeProperties(format.uniqueCharacterFormat);
+        }
+        this.uniqueCharacterFormat = WCharacterFormat.uniqueCharacterFormats.addUniqueFormat(hash, WCharacterFormat.uniqueFormatType);
+    };
+    WCharacterFormat.clear = function () {
+        this.uniqueCharacterFormats.clear();
+    };
+    WCharacterFormat.prototype.ApplyStyle = function (baseCharStyle) {
+        this.baseCharStyle = baseCharStyle;
+    };
+    /**
+     * For internal use
+     * @private
+     */
+    WCharacterFormat.prototype.getValue = function (property) {
+        return this.hasValue(property) ? this.getPropertyValue(property) : undefined;
+    };
+    /**
+     * For internal use
+     * @private
+     */
+    WCharacterFormat.prototype.mergeFormat = function (format) {
+        if (isNullOrUndefined(this.getValue('bold'))) {
+            this.bold = format.getValue('bold');
+        }
+        if (isNullOrUndefined(this.getValue('italic'))) {
+            this.italic = format.getValue('italic');
+        }
+        if (isNullOrUndefined(this.getValue('fontSize'))) {
+            this.fontSize = format.getValue('fontSize');
+        }
+        if (isNullOrUndefined(this.getValue('fontFamily'))) {
+            this.fontFamily = format.getValue('fontFamily');
+        }
+        if (isNullOrUndefined(this.getValue('underline'))) {
+            this.underline = format.getValue('underline');
+        }
+        if (isNullOrUndefined(this.getValue('strikethrough'))) {
+            this.strikethrough = format.getValue('strikethrough');
+        }
+        if (isNullOrUndefined(this.getValue('baselineAlignment'))) {
+            this.baselineAlignment = format.getValue('baselineAlignment');
+        }
+        if (isNullOrUndefined(this.getValue('highlightColor'))) {
+            this.highlightColor = format.getValue('highlightColor');
+        }
+        if (isNullOrUndefined(this.getValue('fontColor'))) {
+            this.fontColor = format.getValue('fontColor');
+        }
+        if (isNullOrUndefined(this.getValue('bidi'))) {
+            this.bidi = format.getValue('bidi');
+        }
+        if (isNullOrUndefined(this.getValue('bdo'))) {
+            this.bdo = format.getValue('bdo');
+        }
+    };
+    WCharacterFormat.uniqueCharacterFormats = new WUniqueFormats();
+    WCharacterFormat.uniqueFormatType = 2;
+    return WCharacterFormat;
+}());
+
+/**
+ * @private
+ */
+var HelperMethods = /** @__PURE__ @class */ (function () {
+    function HelperMethods() {
+    }
+    /**
+     * Inserts text at specified index in string.
+     * @param {string} spanText
+     * @param {number} index
+     * @param {string} text
+     * @private
+     */
+    HelperMethods.insert = function (spanText, index, text) {
+        if (index >= 0) {
+            return [spanText.slice(0, index) + text + spanText.slice(index)].join('');
+        }
+        else {
+            return text + this;
+        }
+    };
+    /**
+     * Removes text from specified index in string.
+     * @param {string} text
+     * @param {number} index
+     * @param {number} length
+     * @private
+     */
+    HelperMethods.remove = function (text, index, length) {
+        if (index === 0) {
+            return text.substring(index + 1, text.length);
+        }
+        else {
+            return text.substring(0, index) + text.substring(index + 1, text.length);
+        }
+    };
+    /**
+     * Returns the index of word split character in a string.
+     * @param {string} text
+     * @param {string[]} wordSplitCharacter
+     * @private
+     */
+    /* tslint:disable:no-any */
+    HelperMethods.indexOfAny = function (text, wordSplitCharacter) {
+        var index = undefined;
+        for (var j = 0; j < wordSplitCharacter.length; j++) {
+            var temp = text.indexOf(wordSplitCharacter[j]);
+            if (temp !== -1 && isNullOrUndefined(index)) {
+                index = temp;
+            }
+            else if (temp !== -1 && temp < index) {
+                index = temp;
+            }
+        }
+        return isNullOrUndefined(index) ? -1 : index;
+    };
+    /**
+     * Returns the last index of word split character in a string.
+     * @param {string} text
+     * @param {string[]} wordSplitCharacter
+     * @private
+     */
+    HelperMethods.lastIndexOfAny = function (text, wordSplitCharacter) {
+        for (var i = text.length - 1; i >= 0; i--) {
+            for (var j = 0; j <= wordSplitCharacter.length - 1; j++) {
+                if (text[i] === wordSplitCharacter[j]) {
+                    return i;
+                }
+            }
+        }
+        return -1;
+    };
+    /**
+     * Adds css styles to document header.
+     * @param {string} css
+     * @private
+     */
+    HelperMethods.addCssStyle = function (css) {
+        var style = document.createElement('style');
+        if (style.style.cssText) {
+            style.style.cssText = css;
+        }
+        else {
+            style.appendChild(document.createTextNode(css));
+        }
+        document.getElementsByTagName('head')[0].appendChild(style);
+    };
+    /**
+     * Gets highlight color code.
+     * @param {HighlightColor} highlightColor
+     * @private
+     */
+    HelperMethods.getHighlightColorCode = function (highlightColor) {
+        var color = '#ffffff';
+        switch (highlightColor) {
+            case 'Yellow':
+                color = '#ffff00';
+                break;
+            case 'BrightGreen':
+                color = '#00ff00';
+                break;
+            case 'Turquoise':
+                color = '#00ffff';
+                break;
+            case 'Pink':
+                color = '#ff00ff';
+                break;
+            case 'Blue':
+                color = '#0000ff';
+                break;
+            case 'Red':
+                color = '#ff0000';
+                break;
+            case 'DarkBlue':
+                color = '#000080';
+                break;
+            case 'Teal':
+                color = '#008080';
+                break;
+            case 'Green':
+                color = '#008000';
+                break;
+            case 'Violet':
+                color = '#800080';
+                break;
+            case 'DarkRed':
+                color = '#800000';
+                break;
+            case 'DarkYellow':
+                color = '#808000';
+                break;
+            case 'Gray50':
+                color = '#808080';
+                break;
+            case 'Gray25':
+                color = '#c0c0c0';
+                break;
+            case 'Black':
+                color = '#000000';
+                break;
+        }
+        return color;
+    };
+    HelperMethods.getColor = function (color) {
+        if (color.length > 0) {
+            if (color[0] === '#') {
+                if (color.length > 7) {
+                    return color.substr(0, 7);
+                }
+            }
+        }
+        return color;
+    };
+    /**
+     * Converts point to pixel.
+     * @param {number} point
+     * @private
+     */
+    HelperMethods.convertPointToPixel = function (point) {
+        var pixel = HelperMethods.round((point * 96 / 72), 5);
+        return pixel;
+    };
+    /**
+     * Converts pixel to point.
+     * @param {number} pixel
+     * @private
+     */
+    HelperMethods.convertPixelToPoint = function (pixel) {
+        var point = HelperMethods.round((pixel * 72 / 96), 5);
+        return point;
+    };
+    /**
+     * Return true if field linked
+     * @private
+     */
+    HelperMethods.isLinkedFieldCharacter = function (inline) {
+        if (inline instanceof FieldElementBox && inline.fieldType === 0) {
+            return !isNullOrUndefined(inline.fieldEnd);
+        }
+        else if (inline instanceof FieldElementBox && inline.fieldType === 2) {
+            return !isNullOrUndefined(inline.fieldBegin) && !isNullOrUndefined(inline.fieldEnd);
+        }
+        else {
+            return !isNullOrUndefined(inline.fieldBegin);
+        }
+    };
+    /**
+     * Removes white space in a string.
+     * @param {string} text
+     * @private
+     */
+    HelperMethods.removeSpace = function (text) {
+        if (!isNullOrUndefined(text) && text.length !== 0) {
+            for (var i = 0; i < text.length; i++) {
+                if (text.charAt(i) === ' ') {
+                    //replace the space by empty string in string
+                    text = text.replace(' ', '');
+                }
+            }
+        }
+        return text;
+    };
+    /**
+     * Trims white space at start of the string.
+     * @param {string} text
+     * @private
+     */
+    HelperMethods.trimStart = function (text) {
+        var i = 0;
+        for (i; i < text.length; i++) {
+            if (text[i] !== ' ') {
+                break;
+            }
+        }
+        return text.substring(i, text.length);
+    };
+    /**
+     * Trims white space at end of the string.
+     * @param {string} text
+     * @private
+     */
+    HelperMethods.trimEnd = function (text) {
+        var i = text.length - 1;
+        for (i; i >= 0; i--) {
+            if (text[i] !== ' ') {
+                break;
+            }
+        }
+        return text.substring(0, i + 1);
+    };
+    /**
+     * Checks whether string ends with whitespace.
+     * @param {string} text
+     * @private
+     */
+    HelperMethods.endsWith = function (text) {
+        if (!isNullOrUndefined(text) && text.length !== 0) {
+            return text[text.length - 1] === ' ';
+        }
+        return false;
+    };
+    /**
+     * Return specified number of string count
+     * @private
+     */
+    HelperMethods.addSpace = function (length) {
+        var str = '';
+        if (length > 0) {
+            for (var i = 0; i < length; i++) {
+                str += ' ';
+            }
+        }
+        return str;
+    };
+    /**
+     * @private
+     * Write Characterformat
+     * @param {any} characterFormat
+     * @param {boolean} isInline
+     * @param {WCharacterFormat} format
+     */
+    HelperMethods.writeCharacterFormat = function (characterFormat, isInline, format) {
+        characterFormat.bold = isInline ? format.bold : format.getValue('bold');
+        characterFormat.italic = isInline ? format.italic : format.getValue('italic');
+        characterFormat.fontSize = isInline ? this.toWriteInline(format, 'fontSize') : format.getValue('fontSize');
+        characterFormat.fontFamily = isInline ? this.toWriteInline(format, 'fontFamily') : format.getValue('fontFamily');
+        characterFormat.underline = isInline ? format.underline : format.getValue('underline');
+        characterFormat.strikethrough = isInline ? format.strikethrough : format.getValue('strikethrough');
+        characterFormat.baselineAlignment = isInline ? format.baselineAlignment : format.getValue('baselineAlignment');
+        characterFormat.highlightColor = isInline ? format.highlightColor : format.getValue('highlightColor');
+        characterFormat.fontColor = isInline ? this.toWriteInline(format, 'fontColor') : format.getValue('fontColor');
+        characterFormat.styleName = !isNullOrUndefined(format.baseCharStyle) ? format.baseCharStyle.name : undefined;
+        characterFormat.bidi = isInline ? format.bidi : format.getValue('bidi');
+        characterFormat.bdo = isInline ? format.bdo : format.getValue('bdo');
+        characterFormat.boldBidi = isInline ? format.boldBidi : format.getValue('boldBidi');
+        characterFormat.italicBidi = isInline ? format.italicBidi : format.getValue('italicBidi');
+        characterFormat.fontSizeBidi = isInline ? format.fontSizeBidi : format.getValue('fontSizeBidi');
+        characterFormat.fontFamilyBidi = isInline ? format.fontFamilyBidi : format.getValue('fontFamilyBidi');
+    };
+    HelperMethods.toWriteInline = function (format, propertyName) {
+        if (!isNullOrUndefined(format.ownerBase) && (format.ownerBase instanceof ElementBox)) {
+            return format.hasValue(propertyName) ? format[propertyName] : format.getValue(propertyName);
+        }
+        else {
+            return format[propertyName];
+        }
+    };
+    /* tslint:enable:no-any */
+    /**
+     * Rounds the values with specified decimal digits.
+     * @param {number} value
+     * @param {number} decimalDigits
+     * @private
+     */
+    HelperMethods.round = function (value, decimalDigits) {
+        var temp = value;
+        for (var i = 0; i < decimalDigits; i++) {
+            temp = temp * 10;
+        }
+        temp = Math.round(temp);
+        for (var i = 0; i < decimalDigits; i++) {
+            temp = temp / 10;
+        }
+        return temp;
+    };
+    HelperMethods.ReverseString = function (text) {
+        if (!isNullOrUndefined(text) && text !== '') {
+            // return a new array
+            var splitString = text.split('');
+            // reverse the new created array
+            var reverseString = splitString.reverse();
+            // join all elements of the array into a string
+            text = reverseString.join('');
+        }
+        return text;
+    };
+    /**
+     * @private
+     */
+    HelperMethods.formatClippedString = function (base64ImageString) {
+        var extension = '';
+        var formatClippedString = '';
+        if (this.startsWith(base64ImageString, 'data:image/bmp;base64,')) {
+            extension = '.bmp';
+            formatClippedString = base64ImageString.replace('data:image/bmp;base64,', '');
+        }
+        else if (this.startsWith(base64ImageString, 'data:image/x-emf;base64,')) {
+            extension = '.emf';
+            formatClippedString = base64ImageString.replace('data:image/x-emf;base64,', '');
+        }
+        else if (this.startsWith(base64ImageString, 'data:image/exif;base64,')) {
+            extension = '.exif';
+            formatClippedString = base64ImageString.replace('data:image/exif;base64,', '');
+        }
+        else if (this.startsWith(base64ImageString, 'data:image/gif;base64,')) {
+            extension = '.gif';
+            formatClippedString = base64ImageString.replace('data:image/gif;base64,', '');
+        }
+        else if (this.startsWith(base64ImageString, 'data:image/icon;base64,')) {
+            extension = '.ico';
+            formatClippedString = base64ImageString.replace('data:image/icon;base64,', '');
+        }
+        else if (this.startsWith(base64ImageString, 'data:image/jpeg;base64,')) {
+            extension = '.jpeg';
+            formatClippedString = base64ImageString.replace('data:image/jpeg;base64,', '');
+        }
+        else if (this.startsWith(base64ImageString, 'data:image/jpg;base64,')) {
+            extension = '.jpg';
+            formatClippedString = base64ImageString.replace('data:image/jpg;base64,', '');
+        }
+        else if (this.startsWith(base64ImageString, 'data:image/png;base64,')) {
+            extension = '.png';
+            formatClippedString = base64ImageString.replace('data:image/png;base64,', '');
+        }
+        else if (this.startsWith(base64ImageString, 'data:image/tiff;base64,')) {
+            extension = '.tif';
+            formatClippedString = base64ImageString.replace('data:image/tiff;base64,', '');
+        }
+        else if (this.startsWith(base64ImageString, 'data:image/x-wmf;base64,')) {
+            extension = '.wmf';
+            formatClippedString = base64ImageString.replace('data:image/x-wmf;base64,', '');
+        }
+        else {
+            extension = '.jpeg';
+        }
+        return { 'extension': extension, 'formatClippedString': formatClippedString };
+    };
+    HelperMethods.startsWith = function (sourceString, startString) {
+        return startString.length > 0 && sourceString.substring(0, startString.length) === startString;
+    };
+    /**
+     * @private
+     */
+    HelperMethods.formatText = function (format, value) {
+        var text = value;
+        switch (format.toLowerCase()) {
+            case 'uppercase':
+                text = value.toUpperCase();
+                break;
+            case 'lowercase':
+                text = value.toLowerCase();
+                break;
+            case 'firstcapital':
+                text = this.capitaliseFirst(value, 'FirstCapital');
+                break;
+            case 'titlecase':
+                text = this.capitaliseFirst(value, 'Titlecase');
+                break;
+        }
+        return text;
+    };
+    /**
+     * @private
+     */
+    HelperMethods.formatNumber = function (format, value) {
+        var numberFormat;
+        var intl = new Internationalization();
+        var formattedValue;
+        var dotData = value.split('.');
+        value = dotData[0];
+        var numberValue;
+        numberValue = intl.parseNumber(value);
+        if (value.toString() === 'NaN') {
+            return '';
+        }
+        if (format === '') {
+            format = '0';
+        }
+        numberFormat = { format: format };
+        formattedValue = intl.formatNumber(numberValue, numberFormat);
+        return formattedValue;
+    };
+    /**
+     * @private
+     */
+    HelperMethods.formatDate = function (format, value) {
+        var dateFormat;
+        var intl = new Internationalization();
+        var formattedValue;
+        var date = new Date(value);
+        if (isNaN(date.getDate())) {
+            return '';
+        }
+        if (format === '') {
+            return value;
+        }
+        if (format.indexOf('am/pm') !== -1) {
+            format = format.replace(/am\/pm/gi, 'a');
+        }
+        dateFormat = { 'format': format };
+        formattedValue = intl.formatDate(date, dateFormat);
+        return formattedValue;
+    };
+    /* tslint:enable:no-any */
+    /**
+     * @private
+     */
+    HelperMethods.capitaliseFirst = function (value, type, splitBy) {
+        var text = '';
+        if (type === 'Titlecase') {
+            var valArry = splitBy ? value.split(splitBy) : value.split(' ');
+            for (var i = 0; i < valArry.length; i++) {
+                // tslint:disable-next-line:max-line-length
+                text += splitBy ? valArry[i].charAt(0).toUpperCase() + valArry[i].slice(1, valArry[i].length) : this.capitaliseFirstInternal(valArry[i]);
+                if (valArry.length >= 0 && !splitBy) {
+                    text += ' ';
+                }
+            }
+            if (!splitBy) {
+                text = this.capitaliseFirst(text, 'Titlecase', '\r');
+            }
+        }
+        else if (type === 'FirstCapital') {
+            text = this.capitaliseFirstInternal(value);
+        }
+        return text;
+    };
+    HelperMethods.capitaliseFirstInternal = function (value) {
+        return (value.charAt(0).toUpperCase() + value.slice(1, value.length).toLowerCase());
+    };
+    /**
+     * @private
+     * @param date
+     */
+    HelperMethods.getModifiedDate = function (date) {
+        var modifiedDate = new Date(date);
+        var dateString = modifiedDate.toLocaleDateString([], { year: 'numeric', month: 'long', day: 'numeric' });
+        var time = modifiedDate.toLocaleTimeString([], { hour: 'numeric', minute: 'numeric' });
+        var dateTime = dateString + ' ' + time;
+        return dateTime;
+    };
+    /**
+     * @private
+     */
+    HelperMethods.wordBefore = '\\b';
+    /**
+     * @private
+     */
+    HelperMethods.wordAfter = '\\b';
+    /**
+     * @private
+     */
+    HelperMethods.wordSplitCharacters = [' ', ',', '.', ':', ';', '<', '>', '=',
+        '+', '-', '_', '{', '}', '[', ']', '`', '~', '!', '@', '#', '$', '%', '^', '&',
+        '*', '(', ')', '"', '?', '/', '|', '\\', '”', '　', '،', '؟', '؛', '’', '‘'];
+    return HelperMethods;
+}());
+/**
+ * @private
+ */
+var Point = /** @__PURE__ @class */ (function () {
+    function Point(xPosition, yPosition) {
+        this.xIn = 0;
+        this.yIn = 0;
+        this.xIn = xPosition;
+        this.yIn = yPosition;
+    }
+    Object.defineProperty(Point.prototype, "x", {
+        /**
+         * Gets or sets x value.
+         * @private
+         */
+        get: function () {
+            return this.xIn;
+        },
+        set: function (value) {
+            this.xIn = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Point.prototype, "y", {
+        /**
+         * Gets or sets y value.
+         * @private
+         */
+        get: function () {
+            return this.yIn;
+        },
+        set: function (value) {
+            this.yIn = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * @private
+     */
+    Point.prototype.copy = function (point) {
+        this.xIn = point.xIn;
+        this.yIn = point.yIn;
+    };
+    /**
+     * Destroys the internal objects maintained.
+     * @returns void
+     */
+    Point.prototype.destroy = function () {
+        this.xIn = undefined;
+        this.yIn = undefined;
+    };
+    return Point;
+}());
+/**
+ * @private
+ */
+var Base64 = /** @__PURE__ @class */ (function () {
+    function Base64() {
+        this.keyStr = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+    }
+    // public method for encoding
+    Base64.prototype.encodeString = function (input) {
+        var output = '';
+        var chr1;
+        var chr2;
+        var chr3;
+        var enc1;
+        var enc2;
+        var enc3;
+        var enc4;
+        var i = 0;
+        input = this.unicodeEncode(input);
+        while (i < input.length) {
+            chr1 = input.charCodeAt(i++);
+            chr2 = input.charCodeAt(i++);
+            chr3 = input.charCodeAt(i++);
+            enc1 = chr1 >> 2;
+            enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
+            enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
+            enc4 = chr3 & 63;
+            if (isNaN(chr2)) {
+                enc3 = enc4 = 64;
+            }
+            else if (isNaN(chr3)) {
+                enc4 = 64;
+            }
+            output = output +
+                this.keyStr.charAt(enc1) + this.keyStr.charAt(enc2) +
+                this.keyStr.charAt(enc3) + this.keyStr.charAt(enc4);
+        }
+        return output;
+    };
+    // private method for UTF-8 encoding
+    Base64.prototype.unicodeEncode = function (input) {
+        var tempInput = input.replace(/\r\n/g, '\n');
+        var utftext = '';
+        for (var n = 0; n < tempInput.length; n++) {
+            var c = tempInput.charCodeAt(n);
+            if (c < 128) {
+                utftext += String.fromCharCode(c);
+            }
+            else if ((c > 127) && (c < 2048)) {
+                utftext += String.fromCharCode((c >> 6) | 192);
+                utftext += String.fromCharCode((c & 63) | 128);
+            }
+            else {
+                utftext += String.fromCharCode((c >> 12) | 224);
+                utftext += String.fromCharCode(((c >> 6) & 63) | 128);
+                utftext += String.fromCharCode((c & 63) | 128);
+            }
+        }
+        return utftext;
+    };
+    /**
+     * @private
+     */
+    Base64.prototype.decodeString = function (input) {
+        var chr1;
+        var chr2;
+        var chr3;
+        var enc1;
+        var enc2;
+        var enc3;
+        var enc4;
+        var i = 0;
+        var resultIndex = 0;
+        /*let dataUrlPrefix: string = 'data:';*/
+        input = input.replace(/[^A-Za-z0-9\+\/\=]/g, '');
+        var totalLength = input.length * 3 / 4;
+        if (input.charAt(input.length - 1) === this.keyStr.charAt(64)) {
+            totalLength--;
+        }
+        if (input.charAt(input.length - 2) === this.keyStr.charAt(64)) {
+            totalLength--;
+        }
+        if (totalLength % 1 !== 0) {
+            // totalLength is not an integer, the length does not match a valid
+            // base64 content. That can happen if:
+            // - the input is not a base64 content
+            // - the input is *almost* a base64 content, with a extra chars at the
+            // beginning or at the end
+            // - the input uses a base64 variant (base64url for example)
+            throw new Error('Invalid base64 input, bad content length.');
+        }
+        var output = new Uint8Array(totalLength | 0);
+        while (i < input.length) {
+            enc1 = this.keyStr.indexOf(input.charAt(i++));
+            enc2 = this.keyStr.indexOf(input.charAt(i++));
+            enc3 = this.keyStr.indexOf(input.charAt(i++));
+            enc4 = this.keyStr.indexOf(input.charAt(i++));
+            chr1 = (enc1 << 2) | (enc2 >> 4);
+            chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
+            chr3 = ((enc3 & 3) << 6) | enc4;
+            output[resultIndex++] = chr1;
+            if (enc3 !== 64) {
+                output[resultIndex++] = chr2;
+            }
+            if (enc4 !== 64) {
+                output[resultIndex++] = chr3;
+            }
+        }
+        return output;
+    };
+    return Base64;
+}());
+
+var __extends$1 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+/**
+ * @private
+ */
+var WStyle = /** @__PURE__ @class */ (function () {
+    function WStyle() {
+    }
+    return WStyle;
+}());
+/**
+ * @private
+ */
+var WParagraphStyle = /** @__PURE__ @class */ (function (_super) {
+    __extends$1(WParagraphStyle, _super);
+    function WParagraphStyle(node) {
+        var _this = _super.call(this) || this;
+        _this.ownerBase = node;
+        _this.paragraphFormat = new WParagraphFormat(_this);
+        _this.characterFormat = new WCharacterFormat(_this);
+        return _this;
+    }
+    WParagraphStyle.prototype.destroy = function () {
+        this.characterFormat.destroy();
+        this.paragraphFormat.destroy();
+    };
+    WParagraphStyle.prototype.copyStyle = function (paraStyle) {
+        this.name = paraStyle.name;
+        this.ownerBase = paraStyle.ownerBase;
+        this.type = paraStyle.type;
+        this.next = paraStyle.next;
+        this.basedOn = paraStyle.basedOn;
+        this.link = paraStyle.link;
+        this.characterFormat.copyFormat(paraStyle.characterFormat);
+        this.paragraphFormat.copyFormat(paraStyle.paragraphFormat);
+    };
+    return WParagraphStyle;
+}(WStyle));
+/**
+ * @private
+ */
+var WCharacterStyle = /** @__PURE__ @class */ (function (_super) {
+    __extends$1(WCharacterStyle, _super);
+    function WCharacterStyle(node) {
+        var _this = _super.call(this) || this;
+        _this.ownerBase = node;
+        _this.characterFormat = new WCharacterFormat(_this);
+        return _this;
+    }
+    WCharacterStyle.prototype.destroy = function () {
+        this.characterFormat.destroy();
+    };
+    WCharacterStyle.prototype.copyStyle = function (charStyle) {
+        this.name = charStyle.name;
+        this.ownerBase = charStyle.ownerBase;
+        this.type = charStyle.type;
+        this.next = charStyle.next;
+        this.basedOn = charStyle.basedOn;
+        this.characterFormat.copyFormat(charStyle.characterFormat);
+    };
+    return WCharacterStyle;
+}(WStyle));
+/**
+ * @private
+ */
+var WStyles = /** @__PURE__ @class */ (function () {
+    function WStyles() {
+        this.collection = [];
+        /* tslint:enable:no-any */
+    }
+    Object.defineProperty(WStyles.prototype, "length", {
+        get: function () {
+            return this.collection.length;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    WStyles.prototype.remove = function (item) {
+        this.collection = this.collection.filter(function (a) { return (a.name !== item.name); });
+    };
+    WStyles.prototype.push = function (item) {
+        if (item != null && item !== undefined) {
+            this.collection.push(item);
+        }
+        return 1;
+    };
+    WStyles.prototype.getItem = function (index) {
+        if (this.collection.length > index) {
+            return this.collection[index];
+        }
+        return null;
+    };
+    WStyles.prototype.indexOf = function (item) {
+        return this.collection.indexOf(item);
+    };
+    WStyles.prototype.contains = function (item) {
+        var index = this.collection.indexOf(item);
+        return index > -1 && index < this.collection.length;
+    };
+    WStyles.prototype.clear = function () {
+        while (this.collection.length > 0) {
+            this.collection.pop();
+        }
+    };
+    WStyles.prototype.findByName = function (name, type) {
+        var returnStyle;
+        for (var _i = 0, _a = this.collection; _i < _a.length; _i++) {
+            var value = _a[_i];
+            if (value.name === name) {
+                returnStyle = value;
+                if (!isNullOrUndefined(type) && value.type === type) {
+                    returnStyle = value;
+                }
+            }
+        }
+        return returnStyle;
+    };
+    WStyles.prototype.getStyleNames = function (type) {
+        return this.collection.filter(function (a) { return (a.type === type); }).map(function (a) { return a.name; });
+    };
+    /* tslint:disable:no-any */
+    WStyles.prototype.getStyles = function (type) {
+        var styles = this.collection.filter(function (a) { return (a.type === type); }).map(function (a) { return a; });
+        var styleObjects = [];
+        for (var _i = 0, styles_1 = styles; _i < styles_1.length; _i++) {
+            var style = styles_1[_i];
+            var returnStyle = {};
+            var returnStyleObject = {};
+            returnStyleObject.characterFormat = {};
+            HelperMethods.writeCharacterFormat(returnStyleObject.characterFormat, true, style.characterFormat);
+            returnStyle.name = style.name;
+            returnStyle.style = JSON.stringify(returnStyleObject);
+            styleObjects.push(returnStyle);
+        }
+        return styleObjects;
+    };
+    return WStyles;
+}());
+
+/**
+ * @private
+ */
 var WShading = /** @__PURE__ @class */ (function () {
     function WShading(node) {
         this.uniqueShadingFormat = undefined;
@@ -4852,376 +5709,6 @@ var WTableFormat = /** @__PURE__ @class */ (function () {
     WTableFormat.uniqueTableFormats = new WUniqueFormats();
     WTableFormat.uniqueFormatType = 8;
     return WTableFormat;
-}());
-
-/**
- * @private
- */
-var WRowFormat = /** @__PURE__ @class */ (function () {
-    function WRowFormat(node) {
-        this.uniqueRowFormat = undefined;
-        /**
-         * @private
-         */
-        this.borders = new WBorders(this);
-        /**
-         * @private
-         */
-        this.ownerBase = undefined;
-        /**
-         * @private
-         */
-        this.beforeWidth = 0;
-        /**
-         * @private
-         */
-        this.afterWidth = 0;
-        this.ownerBase = node;
-    }
-    Object.defineProperty(WRowFormat.prototype, "gridBefore", {
-        get: function () {
-            return this.getPropertyValue('gridBefore');
-        },
-        set: function (value) {
-            this.setPropertyValue('gridBefore', value);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(WRowFormat.prototype, "gridBeforeWidth", {
-        get: function () {
-            return this.getPropertyValue('gridBeforeWidth');
-        },
-        set: function (value) {
-            this.setPropertyValue('gridBeforeWidth', value);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(WRowFormat.prototype, "gridBeforeWidthType", {
-        get: function () {
-            return this.getPropertyValue('gridBeforeWidthType');
-        },
-        set: function (value) {
-            this.setPropertyValue('gridBeforeWidthType', value);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(WRowFormat.prototype, "gridAfter", {
-        get: function () {
-            return this.getPropertyValue('gridAfter');
-        },
-        set: function (value) {
-            this.setPropertyValue('gridAfter', value);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(WRowFormat.prototype, "gridAfterWidth", {
-        get: function () {
-            return this.getPropertyValue('gridAfterWidth');
-        },
-        set: function (value) {
-            this.setPropertyValue('gridAfterWidth', value);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(WRowFormat.prototype, "gridAfterWidthType", {
-        get: function () {
-            return this.getPropertyValue('gridAfterWidthType');
-        },
-        set: function (value) {
-            this.setPropertyValue('gridAfterWidthType', value);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(WRowFormat.prototype, "allowBreakAcrossPages", {
-        get: function () {
-            return this.getPropertyValue('allowBreakAcrossPages');
-        },
-        set: function (value) {
-            this.setPropertyValue('allowBreakAcrossPages', value);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(WRowFormat.prototype, "isHeader", {
-        get: function () {
-            return this.getPropertyValue('isHeader');
-        },
-        set: function (value) {
-            this.setPropertyValue('isHeader', value);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(WRowFormat.prototype, "rightMargin", {
-        get: function () {
-            return this.getPropertyValue('rightMargin');
-        },
-        set: function (value) {
-            this.setPropertyValue('rightMargin', value);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(WRowFormat.prototype, "height", {
-        get: function () {
-            return this.getPropertyValue('height');
-        },
-        set: function (value) {
-            if (value === 0 && (this.heightType === 'AtLeast' || this.heightType === 'Exactly')) {
-                value = 1;
-            }
-            else if (this.heightType === 'Auto') {
-                value = 0;
-            }
-            this.setPropertyValue('height', value);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(WRowFormat.prototype, "heightType", {
-        get: function () {
-            return this.getPropertyValue('heightType');
-        },
-        set: function (value) {
-            if (value === 'AtLeast' || value === 'Exactly') {
-                this.height = 1;
-            }
-            else {
-                this.height = 0;
-            }
-            this.setPropertyValue('heightType', value);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(WRowFormat.prototype, "bottomMargin", {
-        get: function () {
-            return this.getPropertyValue('bottomMargin');
-        },
-        set: function (value) {
-            this.setPropertyValue('bottomMargin', value);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(WRowFormat.prototype, "leftIndent", {
-        get: function () {
-            return this.getPropertyValue('leftIndent');
-        },
-        set: function (value) {
-            this.setPropertyValue('leftIndent', value);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(WRowFormat.prototype, "topMargin", {
-        get: function () {
-            return this.getPropertyValue('topMargin');
-        },
-        set: function (value) {
-            this.setPropertyValue('topMargin', value);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(WRowFormat.prototype, "leftMargin", {
-        get: function () {
-            return this.getPropertyValue('leftMargin');
-        },
-        set: function (value) {
-            this.setPropertyValue('leftMargin', value);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    WRowFormat.prototype.getPropertyValue = function (property) {
-        var hasValue = this.hasValue(property);
-        if (hasValue) {
-            var propertyType = WUniqueFormat.getPropertyType(WRowFormat.uniqueFormatType, property);
-            if (!isNullOrUndefined(this.uniqueRowFormat) && this.uniqueRowFormat.propertiesHash.containsKey(propertyType)) {
-                return this.uniqueRowFormat.propertiesHash.get(propertyType);
-            }
-        }
-        return WRowFormat.getPropertyDefaultValue(property);
-    };
-    WRowFormat.prototype.setPropertyValue = function (property, value) {
-        if (isNullOrUndefined(value) || value === '') {
-            value = WRowFormat.getPropertyDefaultValue(property);
-        }
-        if (isNullOrUndefined(this.uniqueRowFormat)) {
-            this.initializeUniqueRowFormat(property, value);
-        }
-        else {
-            var propertyType = WUniqueFormat.getPropertyType(this.uniqueRowFormat.uniqueFormatType, property);
-            if (this.uniqueRowFormat.propertiesHash.containsKey(propertyType) &&
-                this.uniqueRowFormat.propertiesHash.get(propertyType) === value) {
-                //Do nothing, since no change in property value and return
-                return;
-            }
-            this.uniqueRowFormat = WRowFormat.uniqueRowFormats.updateUniqueFormat(this.uniqueRowFormat, property, value);
-        }
-    };
-    WRowFormat.prototype.initializeUniqueRowFormat = function (property, propValue) {
-        var uniqueRowFormatTemp = new Dictionary();
-        this.addUniqueRowFormat('allowBreakAcrossPages', property, propValue, uniqueRowFormatTemp);
-        this.addUniqueRowFormat('isHeader', property, propValue, uniqueRowFormatTemp);
-        this.addUniqueRowFormat('height', property, propValue, uniqueRowFormatTemp);
-        this.addUniqueRowFormat('heightType', property, propValue, uniqueRowFormatTemp);
-        this.addUniqueRowFormat('gridBefore', property, propValue, uniqueRowFormatTemp);
-        this.addUniqueRowFormat('gridBeforeWidth', property, propValue, uniqueRowFormatTemp);
-        this.addUniqueRowFormat('gridBeforeWidthType', property, propValue, uniqueRowFormatTemp);
-        this.addUniqueRowFormat('gridAfter', property, propValue, uniqueRowFormatTemp);
-        this.addUniqueRowFormat('gridAfterWidth', property, propValue, uniqueRowFormatTemp);
-        this.addUniqueRowFormat('gridgridAfterWidth', property, propValue, uniqueRowFormatTemp);
-        this.addUniqueRowFormat('gridBeforeWidthType', property, propValue, uniqueRowFormatTemp);
-        this.addUniqueRowFormat('leftMargin', property, propValue, uniqueRowFormatTemp);
-        this.addUniqueRowFormat('rightMargin', property, propValue, uniqueRowFormatTemp);
-        this.addUniqueRowFormat('topMargin', property, propValue, uniqueRowFormatTemp);
-        this.addUniqueRowFormat('bottomMargin', property, propValue, uniqueRowFormatTemp);
-        this.addUniqueRowFormat('leftIndent', property, propValue, uniqueRowFormatTemp);
-        this.uniqueRowFormat = WRowFormat.uniqueRowFormats.addUniqueFormat(uniqueRowFormatTemp, WRowFormat.uniqueFormatType);
-    };
-    // tslint:disable-next-line:max-line-length
-    WRowFormat.prototype.addUniqueRowFormat = function (property, modifiedProperty, propValue, uniqueRowFormatTemp) {
-        var propertyType;
-        propertyType = WUniqueFormat.getPropertyType(WRowFormat.uniqueFormatType, property);
-        if (property === modifiedProperty) {
-            uniqueRowFormatTemp.add(propertyType, propValue);
-        }
-    };
-    WRowFormat.getPropertyDefaultValue = function (property) {
-        var value = undefined;
-        switch (property) {
-            case 'allowBreakAcrossPages':
-                value = true;
-                break;
-            case 'isHeader':
-                value = false;
-                break;
-            case 'height':
-                value = 0;
-                break;
-            case 'heightType':
-                value = 'Auto';
-                break;
-            case 'gridBefore':
-                value = 0;
-                break;
-            case 'gridBeforeWidth':
-                value = 0;
-                break;
-            case 'gridBeforeWidthType':
-                value = 'Point';
-                break;
-            case 'gridAfter':
-                value = 0;
-                break;
-            case 'gridAfterWidth':
-                value = 0;
-                break;
-            case 'gridAfterWidthType':
-                value = 'Point';
-                break;
-            case 'leftMargin':
-                value = undefined;
-                break;
-            case 'topMargin':
-                value = undefined;
-                break;
-            case 'bottomMargin':
-                value = undefined;
-                break;
-            case 'rightMargin':
-                value = undefined;
-                break;
-            case 'leftIndent':
-                value = 0;
-                break;
-        }
-        return value;
-    };
-    WRowFormat.prototype.containsMargins = function () {
-        return (!isNullOrUndefined(this.leftMargin)
-            || !isNullOrUndefined(this.rightMargin)
-            || !isNullOrUndefined(this.bottomMargin)
-            || !isNullOrUndefined(this.topMargin));
-    };
-    WRowFormat.prototype.cloneFormat = function () {
-        var format = new WRowFormat();
-        format.allowBreakAcrossPages = this.allowBreakAcrossPages;
-        format.heightType = this.heightType;
-        format.height = this.height;
-        format.isHeader = this.isHeader;
-        format.gridBefore = this.gridBefore;
-        format.gridBeforeWidth = this.gridBeforeWidth;
-        format.gridBeforeWidthType = this.gridBeforeWidthType;
-        format.gridAfter = this.gridAfter;
-        format.gridAfterWidth = this.gridAfterWidth;
-        format.gridAfterWidthType = this.gridAfterWidthType;
-        format.leftMargin = this.leftMargin;
-        format.rightMargin = this.rightMargin;
-        format.topMargin = this.topMargin;
-        format.bottomMargin = this.bottomMargin;
-        format.leftIndent = this.leftIndent;
-        return format;
-    };
-    WRowFormat.prototype.hasValue = function (property) {
-        if (!isNullOrUndefined(this.uniqueRowFormat)) {
-            var propertyType = WUniqueFormat.getPropertyType(this.uniqueRowFormat.uniqueFormatType, property);
-            return this.uniqueRowFormat.propertiesHash.containsKey(propertyType);
-        }
-        return false;
-    };
-    WRowFormat.prototype.copyFormat = function (format) {
-        if (!isNullOrUndefined(format)) {
-            if (!isNullOrUndefined(format.uniqueRowFormat)) {
-                this.allowBreakAcrossPages = format.allowBreakAcrossPages;
-                this.isHeader = format.isHeader;
-                this.heightType = format.heightType;
-                this.height = format.height;
-                this.gridBefore = format.gridBefore;
-                this.gridBeforeWidth = format.gridBeforeWidth;
-                this.gridBeforeWidthType = format.gridBeforeWidthType;
-                this.gridAfter = format.gridAfter;
-                this.gridAfterWidth = format.gridAfterWidth;
-                this.gridAfterWidthType = format.gridAfterWidthType;
-                this.leftMargin = format.leftMargin;
-                this.topMargin = format.topMargin;
-                this.rightMargin = format.rightMargin;
-                this.bottomMargin = format.bottomMargin;
-                this.leftIndent = format.leftIndent;
-            }
-            if (!isNullOrUndefined(format.borders)) {
-                this.borders = new WBorders(this);
-                this.borders.ownerBase = format;
-                this.borders.copyFormat(format.borders);
-            }
-        }
-    };
-    WRowFormat.prototype.destroy = function () {
-        if (!isNullOrUndefined(this.borders)) {
-            this.borders.destroy();
-        }
-        if (!isNullOrUndefined(this.uniqueRowFormat)) {
-            WRowFormat.uniqueRowFormats.remove(this.uniqueRowFormat);
-        }
-        this.beforeWidth = undefined;
-        this.afterWidth = undefined;
-        this.borders = undefined;
-        this.uniqueRowFormat = undefined;
-    };
-    WRowFormat.clear = function () {
-        this.uniqueRowFormats.clear();
-    };
-    WRowFormat.uniqueRowFormats = new WUniqueFormats();
-    WRowFormat.uniqueFormatType = 6;
-    return WRowFormat;
 }());
 
 /**
@@ -5880,6 +6367,7 @@ var Layout = /** @__PURE__ @class */ (function () {
         if (headerFooterWidget) {
             var header = headerFooterWidget.clone();
             header.page = page;
+            this.updateRevisionsToHeaderFooter(header, page);
             viewer.updateHFClientArea(section.sectionFormat, true);
             page.headerWidget = this.layoutHeaderFooterItems(viewer, header);
             this.updateHeaderFooterToParent(header);
@@ -5890,6 +6378,7 @@ var Layout = /** @__PURE__ @class */ (function () {
             var footer = headerFooterWidget.clone();
             footer.page = page;
             viewer.updateHFClientArea(section.sectionFormat, false);
+            this.updateRevisionsToHeaderFooter(footer, page);
             page.footerWidget = this.layoutHeaderFooterItems(viewer, footer);
             this.updateHeaderFooterToParent(footer);
         }
@@ -5909,6 +6398,46 @@ var Layout = /** @__PURE__ @class */ (function () {
             }
         }
         return clone;
+    };
+    /**
+     * @private
+     */
+    /* tslint:disable:no-any */
+    Layout.prototype.updateRevisionsToHeaderFooter = function (clone, page) {
+        var childWidge = clone.childWidgets;
+        if (clone instanceof HeaderFooterWidget && childWidge.length > 0) {
+            for (var i = 0; i < childWidge.length; i++) {
+                if (childWidge[i].childWidgets.length > 0) {
+                    var lineWidge = childWidge[i].childWidgets;
+                    for (var j = 0; j < lineWidge.length; j++) {
+                        var childrens = lineWidge[j].children;
+                        if (childrens) {
+                            for (var k = 0; k < childrens.length; k++) {
+                                if (childrens[k].removedIds.length > 0) {
+                                    var removeId = childrens[k].removedIds;
+                                    for (var l = 0; l < removeId.length; l++) {
+                                        var revision = this.documentHelper.revisionsInternal.get(removeId[l]);
+                                        childrens[k].revisions[l] = revision;
+                                        this.updateRevisionRange(revision, page);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    };
+    /**
+     * @private
+     */
+    Layout.prototype.updateRevisionRange = function (revision, page) {
+        for (var i = 0; i < revision.range.length; i++) {
+            var inline = revision.range[i];
+            if (!inline.line.paragraph.bodyWidget.page) {
+                inline.line.paragraph.bodyWidget.page = page;
+            }
+        }
     };
     Layout.prototype.linkFieldInHeaderFooter = function (widget) {
         var firstChild = widget.firstChild;
@@ -6777,8 +7306,8 @@ var Layout = /** @__PURE__ @class */ (function () {
                     var dropDownTextElement = new TextElementBox();
                     dropDownTextElement.characterFormat = fieldBegin.characterFormat.cloneFormat();
                     dropDownTextElement.line = fieldBegin.line;
-                    if (formFieldData.dropDownItems.length > 0) {
-                        dropDownTextElement.text = formFieldData.dropDownItems[formFieldData.selectedIndex];
+                    if (formFieldData.dropdownItems.length > 0) {
+                        dropDownTextElement.text = formFieldData.dropdownItems[formFieldData.selectedIndex];
                     }
                     else {
                         // tslint:disable-next-line:max-line-length
@@ -7102,6 +7631,10 @@ var Layout = /** @__PURE__ @class */ (function () {
             elementBox.text = elementBox.text.substr(0, index);
             elementBox.width -= splittedElementBox.width;
             elementBox.trimEndWidth = elementBox.width;
+            if (elementBox.revisions.length > 0) {
+                this.updateRevisionForSpittedElement(elementBox, splittedElementBox, true);
+                splittedElementBox.isMarkedForRevision = elementBox.isMarkedForRevision;
+            }
             splittedElementBox.height = elementBox.height;
             splittedElementBox.baselineOffset = elementBox.baselineOffset;
             this.splitErrorCollection(elementBox, splittedElementBox);
@@ -7177,6 +7710,10 @@ var Layout = /** @__PURE__ @class */ (function () {
             splittedElement.height = textElement.height;
             splittedElement.baselineOffset = textElement.baselineOffset;
             lineWidget.children.splice(textElement.indexInOwner + 1, 0, splittedElement);
+            if (textElement.revisions.length > 0) {
+                this.updateRevisionForSpittedElement(textElement, splittedElement, index > 0);
+                splittedElement.isMarkedForRevision = textElement.isMarkedForRevision;
+            }
             this.addSplittedLineWidget(lineWidget, indexOf);
             this.addElementToLine(paragraph, textElement);
             if (textElement.width === 0) {
@@ -7187,6 +7724,34 @@ var Layout = /** @__PURE__ @class */ (function () {
             //Adds the last text element on inline to line elements collection. 
             this.addSplittedLineWidget(lineWidget, indexOf);
             this.addElementToLine(paragraph, textElement);
+        }
+    };
+    Layout.prototype.updateRevisionForSpittedElement = function (item, spittedElement, isSpitted) {
+        if (item.revisions.length > 0) {
+            for (var i = 0; i < item.revisions.length; i++) {
+                var currentRevision = item.revisions[i];
+                if (isSpitted) {
+                    spittedElement.revisions.push(currentRevision);
+                    var rangeIndex = currentRevision.range.length - 1;
+                    if (currentRevision.range[rangeIndex] instanceof WCharacterFormat) {
+                        currentRevision.range.splice(rangeIndex, 0, spittedElement);
+                    }
+                    else {
+                        rangeIndex = currentRevision.range.indexOf(item);
+                        if (rangeIndex < 0) {
+                            currentRevision.range.push(spittedElement);
+                        }
+                        else {
+                            currentRevision.range.splice(rangeIndex + 1, 0, spittedElement);
+                        }
+                    }
+                }
+                else {
+                    currentRevision.range.splice(currentRevision.range.length - 1, 1);
+                    currentRevision.range.push(spittedElement);
+                    spittedElement.revisions.push(currentRevision);
+                }
+            }
         }
     };
     /**
@@ -12627,7 +13192,7 @@ var Renderer = /** @__PURE__ @class */ (function () {
             }
             if (height < lineWidget.children[i].height + lineWidget.children[i].margin.top) {
                 height = lineWidget.children[i].margin.top + lineWidget.children[i].height;
-                lineHeight = lineWidget.children[i].height / 20;
+                lineHeight = (lineWidget.children[i] instanceof ImageElementBox) ? 0.9 : lineWidget.children[i].height / 20;
             }
         }
         return height - 2 * lineHeight;
@@ -12722,7 +13287,9 @@ var Renderer = /** @__PURE__ @class */ (function () {
             // tslint:disable-next-line:max-line-length
             this.pageContext.fillRect(this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width), this.getScaledValue(elementBox.height));
         }
-        var color = format.fontColor;
+        var revisionInfo = this.checkRevisionType(elementBox);
+        // tslint:disable-next-line:max-line-length
+        var color = revisionInfo.length > 0 ? this.getRevisionColor(revisionInfo) : format.fontColor;
         this.pageContext.textBaseline = 'alphabetic';
         var bold = '';
         var italic = '';
@@ -12778,12 +13345,17 @@ var Renderer = /** @__PURE__ @class */ (function () {
                 this.handleChangeDetectedElements(elementBox, underlineY, left, top, format.baselineAlignment);
             }
         }
-        if (format.underline !== 'None' && !isNullOrUndefined(format.underline)) {
+        var currentInfo = this.getRevisionType(revisionInfo, true);
+        // tslint:disable-next-line:max-line-length
+        if (format.underline !== 'None' && !isNullOrUndefined(format.underline) || (!isNullOrUndefined(currentInfo) && (currentInfo.type === 'Insertion' || currentInfo.type === 'MoveTo'))) {
             // tslint:disable-next-line:max-line-length
-            this.renderUnderline(elementBox, left, top, underlineY, color, format.underline, format.baselineAlignment);
+            this.renderUnderline(elementBox, left, top, underlineY, color, format.underline, format.baselineAlignment, currentInfo);
         }
-        if (format.strikethrough !== 'None' && !isNullOrUndefined(format.strikethrough)) {
-            this.renderStrikeThrough(elementBox, left, top, format.strikethrough, color, format.baselineAlignment);
+        currentInfo = this.getRevisionType(revisionInfo, false);
+        // tslint:disable-next-line:max-line-length
+        if (format.strikethrough !== 'None' && !isNullOrUndefined(format.strikethrough) || (!isNullOrUndefined(currentInfo) && (currentInfo.type === 'Deletion' || currentInfo.type === 'MoveFrom'))) {
+            // tslint:disable-next-line:max-line-length
+            this.renderStrikeThrough(elementBox, left, top, format.strikethrough, color, format.baselineAlignment, currentInfo);
         }
         if (isHeightType) {
             this.pageContext.restore();
@@ -13029,11 +13601,12 @@ var Renderer = /** @__PURE__ @class */ (function () {
      * @param {BaselineAlignment} baselineAlignment
      */
     // tslint:disable-next-line:max-line-length
-    Renderer.prototype.renderUnderline = function (elementBox, left, top, underlineY, color, underline, baselineAlignment) {
+    Renderer.prototype.renderUnderline = function (elementBox, left, top, underlineY, color, underline, baselineAlignment, revisionInfo) {
         var renderedHeight = elementBox.height / (baselineAlignment === 'Normal' ? 1 : 1.5);
         var topMargin = elementBox.margin.top;
         var underlineHeight = renderedHeight / 20;
         var y = 0;
+        var lineHeight = renderedHeight / 20;
         if (baselineAlignment === 'Subscript' || elementBox instanceof ListTextElementBox) {
             y = (renderedHeight - 2 * underlineHeight) + top;
             topMargin += elementBox.height - renderedHeight;
@@ -13042,8 +13615,22 @@ var Renderer = /** @__PURE__ @class */ (function () {
         else {
             y = underlineY + top;
         }
-        // tslint:disable-next-line:max-line-length
-        this.pageContext.fillRect(this.getScaledValue(left + elementBox.margin.left, 1), this.getScaledValue(y, 2), this.getScaledValue(elementBox.width), this.getScaledValue(underlineHeight));
+        var lineCount = 0;
+        if (!isNullOrUndefined(revisionInfo)) {
+            underline = (revisionInfo.type === 'MoveTo') ? 'Double' : 'Single';
+        }
+        if (underline === 'Double') {
+            y -= lineHeight;
+        }
+        if (elementBox instanceof ImageElementBox) {
+            underlineHeight = 0.9;
+        }
+        while (lineCount < (underline === 'Double' ? 2 : 1)) {
+            lineCount++;
+            // tslint:disable-next-line:max-line-length
+            this.pageContext.fillRect(this.getScaledValue(left + elementBox.margin.left, 1), this.getScaledValue(y, 2), this.getScaledValue(elementBox.width), this.getScaledValue(underlineHeight));
+            y += 2 * lineHeight;
+        }
     };
     /**
      * Renders strike through.
@@ -13055,7 +13642,7 @@ var Renderer = /** @__PURE__ @class */ (function () {
      * @param {BaselineAlignment} baselineAlignment
      */
     // tslint:disable-next-line:max-line-length
-    Renderer.prototype.renderStrikeThrough = function (elementBox, left, top, strikethrough, color, baselineAlignment) {
+    Renderer.prototype.renderStrikeThrough = function (elementBox, left, top, strikethrough, color, baselineAlignment, revisionInfo) {
         var renderedHeight = elementBox.height / (baselineAlignment === 'Normal' ? 1 : 1.5);
         var topMargin = elementBox.margin.top;
         if (baselineAlignment === 'Subscript') {
@@ -13065,6 +13652,12 @@ var Renderer = /** @__PURE__ @class */ (function () {
         var lineHeight = renderedHeight / 20;
         var y = (renderedHeight / 2) + (0.5 * lineHeight);
         var lineCount = 0;
+        if (!isNullOrUndefined(revisionInfo)) {
+            strikethrough = (revisionInfo.type === 'Deletion') ? 'SingleStrike' : 'DoubleStrike';
+        }
+        if (elementBox instanceof ImageElementBox) {
+            lineHeight = 0.9;
+        }
         if (strikethrough === 'DoubleStrike') {
             y -= lineHeight;
         }
@@ -13086,6 +13679,8 @@ var Renderer = /** @__PURE__ @class */ (function () {
     Renderer.prototype.renderImageElementBox = function (elementBox, left, top, underlineY) {
         var topMargin = elementBox.margin.top;
         var leftMargin = elementBox.margin.left;
+        var revisionInfo = this.checkRevisionType(elementBox);
+        var color = revisionInfo.length > 0 ? this.getRevisionColor(revisionInfo) : 'black';
         this.pageContext.textBaseline = 'top';
         var widgetWidth = 0;
         var isClipped = false;
@@ -13129,6 +13724,19 @@ var Renderer = /** @__PURE__ @class */ (function () {
                 // tslint:disable-next-line:max-line-length
                 this.pageContext.drawImage(elementBox.element, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width), this.getScaledValue(elementBox.height));
             }
+        }
+        this.pageContext.fillStyle = HelperMethods.getColor(color);
+        var currentRevision = this.getRevisionType(revisionInfo, false);
+        // tslint:disable-next-line:max-line-length
+        if (!isNullOrUndefined(currentRevision) && (currentRevision.type === 'Deletion' || currentRevision.type === 'MoveFrom')) {
+            // tslint:disable-next-line:max-line-length
+            this.renderStrikeThrough(elementBox, left, top, 'SingleStrike', color, 'Normal', currentRevision);
+        }
+        currentRevision = this.getRevisionType(revisionInfo, true);
+        // tslint:disable-next-line:max-line-length
+        if (!isNullOrUndefined(currentRevision) && (currentRevision.type === 'Insertion' || currentRevision.type === 'MoveTo')) {
+            var y = this.getUnderlineYPosition(elementBox.line);
+            this.renderUnderline(elementBox, left, top, y, color, 'Single', 'Normal');
         }
         if (isClipped) {
             this.pageContext.restore();
@@ -13310,6 +13918,10 @@ var Renderer = /** @__PURE__ @class */ (function () {
         var topMargin = cellWidget.topMargin ? HelperMethods.convertPointToPixel(cellWidget.topMargin) : 0;
         var top = cellWidget.y - topMargin;
         var width = cellWidget.width + leftMargin + cellWidget.margin.right - lineWidth;
+        if (cellWidget.ownerRow.rowFormat.revisions.length > 0) {
+            var revision = cellWidget.ownerRow.rowFormat.revisions[cellWidget.ownerRow.rowFormat.revisions.length - 1];
+            bgColor = (revision.revisionType === 'Insertion') ? '#e1f2fa' : '#fce6f4';
+        }
         this.pageContext.beginPath();
         if (bgColor !== 'empty') {
             this.pageContext.fillStyle = HelperMethods.getColor(bgColor);
@@ -13365,6 +13977,48 @@ var Renderer = /** @__PURE__ @class */ (function () {
         }
         var x = value * this.documentHelper.zoomFactor;
         return x + (type === 1 ? this.pageLeft : (type === 2 ? this.pageTop : 0));
+    };
+    Renderer.prototype.checkRevisionType = function (elementBox) {
+        var revisions = [];
+        var count = elementBox.revisions.length;
+        for (var i = 0; i < count; i++) {
+            var currentRevision = elementBox.revisions[i];
+            var color = this.documentHelper.authors.get(currentRevision.author);
+            revisions.push({ 'type': currentRevision.revisionType, 'color': color });
+        }
+        return revisions;
+    };
+    Renderer.prototype.getRevisionColor = function (revisionInfo) {
+        if (revisionInfo.length === 1) {
+            return revisionInfo[0].color;
+        }
+        for (var i = 0; i < revisionInfo.length; i++) {
+            if (revisionInfo[i].type === 'Deletion' || revisionInfo[i].type === 'MoveFrom') {
+                return revisionInfo[i].color;
+            }
+        }
+        return undefined;
+    };
+    Renderer.prototype.getRevisionType = function (revisionInfo, checkInsert) {
+        if (revisionInfo.length === 0) {
+            return undefined;
+        }
+        for (var i = 0; i < revisionInfo.length; i++) {
+            var type = undefined;
+            if (checkInsert && (revisionInfo[i].type === 'Insertion' || revisionInfo[i].type === 'MoveTo')) {
+                type = revisionInfo[i];
+                this.pageContext.fillStyle = HelperMethods.getColor(type.color);
+                revisionInfo.splice(i, 1);
+                return type;
+            }
+            if (!checkInsert && (revisionInfo[i].type === 'Deletion' || revisionInfo[i].type === 'MoveFrom')) {
+                type = revisionInfo[i];
+                this.pageContext.fillStyle = HelperMethods.getColor(type.color);
+                revisionInfo.splice(i, 1);
+                return type;
+            }
+        }
+        return undefined;
     };
     /**
      * Destroys the internal objects which is maintained.
@@ -14223,6 +14877,12 @@ var RestrictEditing = /** @__PURE__ @class */ (function () {
                 _this.addedUser.uncheckAllItems();
                 _this.viewer.owner.editor.removeAllEditRestrictions();
             }
+            if (args.value === 'Filling in forms') {
+                _this.contentDiv1.innerHTML = _this.localObj.getConstant('FormFieldsOnly');
+            }
+            else {
+                _this.contentDiv1.innerHTML = _this.localObj.getConstant('Protected Document');
+            }
         };
         this.selectHandler = function (args) {
             if (args.isChecked) {
@@ -14396,8 +15056,8 @@ var RestrictEditing = /** @__PURE__ @class */ (function () {
         this.stopProtectionDiv.appendChild(headerDiv);
         // tslint:disable-next-line:max-line-length
         var content = localObj.getConstant('Protected Document');
-        var contentDiv1 = createElement('div', { innerHTML: content, className: 'e-de-rp-stop-div2' });
-        this.stopProtectionDiv.appendChild(contentDiv1);
+        this.contentDiv1 = createElement('div', { innerHTML: content, className: 'e-de-rp-stop-div2' });
+        this.stopProtectionDiv.appendChild(this.contentDiv1);
         // tslint:disable-next-line:max-line-length
         var contentDiv2 = createElement('div', { innerHTML: localObj.getConstant('You may format text only with certain styles'), className: 'e-de-rp-stop-div3' });
         this.stopProtectionDiv.appendChild(contentDiv2);
@@ -14744,7 +15404,7 @@ var FormFieldPopUp = /** @__PURE__ @class */ (function () {
                 }
                 else if (formFieldData instanceof DropDownFormField) {
                     classList(this.target, ['e-de-ddl-form'], []);
-                    this.ddlInstance.dataSource = formFieldData.dropDownItems;
+                    this.ddlInstance.dataSource = formFieldData.dropdownItems;
                     this.ddlInstance.index = formFieldData.selectedIndex;
                     setTimeout(function () {
                         _this.ddlInstance.showPopup();
@@ -14768,6 +15428,604 @@ var FormFieldPopUp = /** @__PURE__ @class */ (function () {
         }
     };
     return FormFieldPopUp;
+}());
+
+//tslint:disable-next-line:max-line-length
+/**
+ * Track changes pane
+ */
+var TrackChangesPane = /** @__PURE__ @class */ (function () {
+    function TrackChangesPane(owner, commentReviewPane) {
+        this.users = [];
+        this.enableButtons = true;
+        this.viewTypeitems = [];
+        this.sortedRevisions = [];
+        this.noChangesVisibleInternal = true;
+        this.owner = owner;
+        this.commentReviewPane = commentReviewPane;
+        this.locale = new L10n('documenteditor', this.owner.defaultLocale);
+        this.locale.setLocale(this.owner.locale);
+        this.selectedUser = this.locale.getConstant('All');
+        this.selectedType = this.locale.getConstant('All');
+        this.initTrackChangePane();
+        this.commentReviewPane.reviewTab.items[1].content = this.trackChangeDiv;
+    }
+    Object.defineProperty(TrackChangesPane.prototype, "setNoChangesVisibility", {
+        get: function () {
+            return this.noChangesVisibleInternal;
+        },
+        set: function (visible) {
+            this.noChangeDivElement.style.display = visible ? 'block' : 'none';
+            this.noChangesVisibleInternal = visible;
+            this.enableDisableToolbarItem(!visible);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(TrackChangesPane.prototype, "currentSelectedRevision", {
+        get: function () {
+            return this.currentSelectedRevisionInternal;
+        },
+        set: function (value) {
+            var selectedElement = select('.e-de-trckchanges-inner-select', this.changesInfoDiv);
+            if (isNullOrUndefined(value)) {
+                if (!isNullOrUndefined(selectedElement)) {
+                    selectedElement.classList.remove('e-de-trckchanges-inner-select');
+                }
+            }
+            else if (value !== this.currentSelectedRevisionInternal || isNullOrUndefined(selectedElement)) {
+                if (selectedElement) {
+                    selectedElement.classList.remove('e-de-trckchanges-inner-select');
+                }
+                if (this.changes.length > 0 && this.changes.containsKey(value)) {
+                    var currentChangeView = this.changes.get(value);
+                    currentChangeView.singleInnerDiv.classList.add('e-de-trckchanges-inner-select');
+                }
+            }
+            this.currentSelectedRevisionInternal = value;
+            selectedElement = select('.e-de-trckchanges-inner-select', this.changesInfoDiv);
+            if (!isNullOrUndefined(selectedElement)) {
+                selectedElement.parentElement.scrollIntoView({ block: 'nearest' });
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    TrackChangesPane.prototype.initTrackChangePane = function () {
+        this.changes = new Dictionary();
+        this.trackChangeDiv = createElement('div', { className: 'e-de-tc-pane' });
+        this.trackChangeDiv.appendChild(this.initPaneHeader());
+        this.changesInfoDiv = createElement('div', { id: 'e-de-tc-pane-revision', styles: 'overflow:auto' });
+        this.trackChangeDiv.appendChild(this.changesInfoDiv);
+        this.noChangeDivElement = createElement('div', { styles: 'display:none;', className: 'e-de-tc-no-chng' });
+        this.noChangeDivElement.textContent = this.locale.getConstant('No changes');
+        this.changesInfoDiv.appendChild(this.noChangeDivElement);
+        this.updateTrackChanges();
+    };
+    TrackChangesPane.prototype.initPaneHeader = function () {
+        var _this = this;
+        this.toolbarElement = createElement('div', { className: 'e-de-track-toolbar' });
+        this.toolbar = new Toolbar({
+            enableRtl: this.owner.enableRtl,
+            items: [
+                {
+                    template: this.locale.getConstant('User') + ':', cssClass: 'e-de-track-toolbar-overlay', disabled: true
+                },
+                {
+                    template: createElement('div', { id: 'e-de-user-list' })
+                },
+                {
+                    type: 'Separator'
+                },
+                {
+                    template: this.locale.getConstant('View') + ':', cssClass: 'e-de-track-toolbar-overlay', disabled: true
+                },
+                {
+                    template: createElement('div', { id: 'e-de-revision-list' })
+                },
+                {
+                    prefixIcon: 'e-de-nav-left-arrow e-de-tc-tbr', align: 'Right', cssClass: 'e-de-nvgte-left',
+                    tooltipText: this.locale.getConstant('Previous Changes'), click: this.navigatePreviousChanges.bind(this)
+                },
+                {
+                    prefixIcon: 'e-de-nav-right-arrow e-de-tc-tbr', align: 'Right', cssClass: 'e-de-nvgte-right',
+                    tooltipText: this.locale.getConstant('Next Changes'), click: this.navigateNextChanges.bind(this)
+                },
+                {
+                    template: createElement('div', { id: 'e-de-menu-option' }), align: 'Right', cssClass: 'e-de-tc-tbr',
+                    tooltipText: this.locale.getConstant('More Options') + '...'
+                }
+            ]
+        });
+        this.toolbar.appendTo(this.toolbarElement);
+        var navigateLeftButton = select('.e-de-nvgte-left', this.toolbarElement);
+        navigateLeftButton.firstChild.classList.add('e-tc-nvgte');
+        var navigateRightButton = select('.e-de-nvgte-right', this.toolbarElement);
+        navigateRightButton.firstChild.classList.add('e-tc-nvgte');
+        //User list drop down button
+        var userButtonEle = select('#e-de-user-list', this.toolbarElement);
+        this.userDropDownitems = [{ text: this.locale.getConstant('All') }];
+        this.userDropDown = {
+            items: this.userDropDownitems,
+            cssClass: 'e-de-track-pane-drop-btn e-tc-btn-bg-clr',
+            select: this.onUserSelect.bind(this),
+            beforeOpen: this.onUserOpen.bind(this),
+            beforeItemRender: function (args) {
+                _this.beforeDropDownItemRender(args, _this.selectedUser);
+            }
+        };
+        this.userDropDownButton = new DropDownButton(this.userDropDown);
+        this.userDropDownButton.appendTo(userButtonEle);
+        //tslint:disable-next-line:max-line-length
+        this.userDropDownButton.content = this.getSpanView(this.userDropDown.items[0].text, 0);
+        //Revision view type drop down button
+        var viewTypeEle = select('#e-de-revision-list', this.toolbarElement);
+        //tslint:disable-next-line:max-line-length
+        this.viewTypeitems = [{ text: this.locale.getConstant('All') }, { text: this.locale.getConstant('Inserted') }, { text: this.locale.getConstant('Deleted') }];
+        this.viewTypeDropDownButton = new DropDownButton({
+            items: this.viewTypeitems,
+            cssClass: 'e-de-track-pane-drop-btn e-tc-btn-bg-clr',
+            select: this.onTypeSelect.bind(this),
+            beforeItemRender: function (args) {
+                _this.beforeDropDownItemRender(args, _this.selectedType);
+            }
+        });
+        //tslint:disable-next-line:max-line-length
+        this.viewTypeDropDownButton.content = this.getSpanView(this.viewTypeitems[0].text, 1);
+        this.viewTypeDropDownButton.appendTo(viewTypeEle);
+        //More menu option drop down button
+        this.menuoptionEle = select('#e-de-menu-option', this.toolbarElement);
+        var menuOptions = [{ text: this.locale.getConstant('Accept all') }, { text: this.locale.getConstant('Reject all') }];
+        var menuDropDown = {
+            items: menuOptions,
+            select: this.onMenuSelect.bind(this),
+            iconCss: 'e-de-menu-icon',
+            cssClass: 'e-caret-hide e-tc-btn-bg-clr'
+        };
+        this.menuDropDownButton = new DropDownButton(menuDropDown);
+        this.menuDropDownButton.appendTo(this.menuoptionEle);
+        return this.toolbarElement;
+    };
+    TrackChangesPane.prototype.beforeDropDownItemRender = function (args, content) {
+        args.element.innerHTML = '<span></span>' + args.item.text;
+        var span = args.element.children[0];
+        if (args.item.text === content) {
+            span.style.marginRight = '10px';
+            span.style.alignSelf = 'center';
+            span.setAttribute('class', 'e-de-selected-item e-icons');
+        }
+        else {
+            args.element.children[0].style.marginRight = '25px';
+            args.element.children[0].classList.remove('e-de-selected-item');
+        }
+    };
+    TrackChangesPane.prototype.onUserOpen = function (arg) {
+        var ele = arg.element;
+        ele.style.maxHeight = '200px';
+        ele.style.overflowY = 'auto';
+    };
+    TrackChangesPane.prototype.enableDisableToolbarItem = function (enable) {
+        var elements = this.toolbar.element.querySelectorAll('.e-de-tc-tbr');
+        if (this.owner && this.owner.viewer) {
+            this.toolbar.enableItems(elements[0].parentElement.parentElement, enable);
+            this.toolbar.enableItems(elements[1].parentElement.parentElement, enable);
+            this.toolbar.enableItems(elements[2], enable);
+        }
+    };
+    TrackChangesPane.prototype.getSpanView = function (value, type) {
+        return (type === 0 ? '<span class="e-de-track-span-user">' : '<span class="e-de-track-span-view">') + value + '</span>';
+    };
+    TrackChangesPane.prototype.onMenuSelect = function (arg) {
+        var _this = this;
+        var selectedText = arg.item.text;
+        if (selectedText.match(this.locale.getConstant('Accept all'))) {
+            setTimeout(function () {
+                _this.owner.revisionsInternal.handleRevisionCollection(true, _this.sortedRevisions);
+                /* tslint:disable */
+            }, 0);
+        }
+        else if (selectedText.match(this.locale.getConstant('Reject all'))) {
+            setTimeout(function () {
+                _this.owner.revisionsInternal.handleRevisionCollection(false, _this.sortedRevisions);
+                /* tslint:disable */
+            }, 0);
+        }
+        this.updateUsers();
+    };
+    TrackChangesPane.prototype.onSelection = function (revision) {
+        this.currentSelectedRevision = revision;
+    };
+    TrackChangesPane.prototype.onUserSelect = function (arg) {
+        var selectedText = arg.item.text;
+        this.selectedUser = selectedText;
+        this.userDropDownButton.content = this.getSpanView(selectedText, 0);
+        this.sortCollectionToDisplay();
+    };
+    TrackChangesPane.prototype.onTypeSelect = function (arg) {
+        var selectedText = arg.item.text;
+        this.selectedType = selectedText;
+        this.viewTypeDropDownButton.content = this.getSpanView(selectedText, 1);
+        this.sortCollectionToDisplay();
+    };
+    TrackChangesPane.prototype.updateMenuOptions = function () {
+        var revisionType;
+        if (this.selectedType !== this.locale.getConstant('All')) {
+            revisionType = this.selectedType === this.locale.getConstant('Inserted') ? this.locale.getConstant('Insertion')
+                : this.locale.getConstant('Deletion');
+        }
+        if (this.selectedUser === this.locale.getConstant('All') && this.selectedType === this.locale.getConstant('All')) {
+            this.menuDropDownButton.items[0].text = this.locale.getConstant('Accept all') + ' ' + this.locale.getConstant('Changes');
+            this.menuDropDownButton.items[1].text = this.locale.getConstant('Reject all') + ' ' + this.locale.getConstant('Changes');
+        }
+        else if (this.selectedUser === this.locale.getConstant('All') && this.selectedType !== this.locale.getConstant('All')) {
+            this.menuDropDownButton.items[0].text = this.locale.getConstant('Accept all') + ' ' + revisionType;
+            this.menuDropDownButton.items[1].text = this.locale.getConstant('Reject all') + ' ' + revisionType;
+        }
+        else if (this.selectedUser !== this.locale.getConstant('All') && this.selectedType === this.locale.getConstant('All')) {
+            this.menuDropDownButton.items[0].text = this.locale.getConstant('Accept all') + ' ' + this.locale.getConstant('Changes') +
+                ' ' + this.locale.getConstant('By').toLowerCase() + ' ' + this.selectedUser;
+            this.menuDropDownButton.items[1].text = this.locale.getConstant('Reject all') + ' ' + this.locale.getConstant('Changes') +
+                ' ' + this.locale.getConstant('By').toLowerCase() + ' ' + this.selectedUser;
+        }
+        else {
+            this.menuDropDownButton.items[0].text = this.locale.getConstant('Accept all') + ' ' + revisionType +
+                ' ' + this.locale.getConstant('By').toLowerCase() + ' ' + this.selectedUser;
+            this.menuDropDownButton.items[1].text = this.locale.getConstant('Reject all') + ' ' + revisionType +
+                ' ' + this.locale.getConstant('By').toLowerCase() + ' ' + this.selectedUser;
+        }
+    };
+    TrackChangesPane.prototype.sortCollectionToDisplay = function () {
+        var isRevisionVisible = false;
+        this.sortedRevisions = [];
+        this.updateMenuOptions();
+        for (var i = 0; i < this.changes.length; i++) {
+            var changes = this.changes.get(this.revisions[i]);
+            var singleChangesDiv = changes.outerSingleDiv;
+            if (this.selectedUser === this.locale.getConstant('All') && this.selectedType === this.locale.getConstant('All')) {
+                singleChangesDiv.style.display = 'block';
+                isRevisionVisible = true;
+            }
+            else if (this.selectedUser === this.locale.getConstant('All') && this.selectedType !== this.locale.getConstant('All')) {
+                if (changes.revisionType === this.selectedType) {
+                    singleChangesDiv.style.display = 'block';
+                    isRevisionVisible = true;
+                }
+                else {
+                    singleChangesDiv.style.display = 'none';
+                }
+            }
+            else if (this.selectedUser !== this.locale.getConstant('All') && this.selectedType === this.locale.getConstant('All')) {
+                if (changes.user === this.selectedUser) {
+                    singleChangesDiv.style.display = 'block';
+                    isRevisionVisible = true;
+                }
+                else {
+                    singleChangesDiv.style.display = 'none';
+                }
+            }
+            else {
+                if (changes.user === this.selectedUser && changes.revisionType === this.selectedType) {
+                    singleChangesDiv.style.display = 'block';
+                    isRevisionVisible = true;
+                }
+                else {
+                    singleChangesDiv.style.display = 'none';
+                }
+            }
+            if (singleChangesDiv.style.display === 'block') {
+                this.sortedRevisions.push(this.revisions[i]);
+            }
+        }
+        this.setNoChangesVisibility = !isRevisionVisible;
+    };
+    TrackChangesPane.prototype.enableDisableButton = function (enableButton) {
+        this.enableButtons = enableButton;
+        this.updateTrackChanges();
+    };
+    TrackChangesPane.prototype.updateTrackChanges = function (show) {
+        if (show || isNullOrUndefined(show)) {
+            this.removeAllChanges();
+            if (!this.enableButtons && !this.menuoptionEle.classList.contains('e-de-overlay')) {
+                this.menuoptionEle.classList.add('e-de-overlay');
+                this.menuDropDownButton.disabled = true;
+            }
+            else if (this.menuoptionEle.classList.contains('e-de-overlay')) {
+                this.menuoptionEle.classList.remove('e-de-overlay');
+                this.menuDropDownButton.disabled = false;
+            }
+            for (var i = 0; i < this.owner.revisions.changes.length; i++) {
+                var revision = this.owner.revisions.changes[i];
+                this.addChanges(revision);
+            }
+            this.sortCollectionToDisplay();
+            this.updateUsers();
+            if (show) {
+                this.currentSelectedRevision = this.currentSelectedRevisionInternal;
+                this.updateHeight();
+                this.owner.resize();
+            }
+        }
+        else {
+            this.currentSelectedRevision = undefined;
+        }
+    };
+    TrackChangesPane.prototype.updateUsers = function () {
+        if (this.users.length > 0) {
+            this.userDropDownButton.removeItems(this.users);
+            this.users = [];
+        }
+        for (var i = 0; i < this.revisions.length; i++) {
+            if (this.users.indexOf(this.revisions[i].author) === -1) {
+                this.users.push(this.revisions[i].author);
+                this.userDropDownButton.items.push({ text: this.revisions[i].author });
+            }
+        }
+    };
+    TrackChangesPane.prototype.updateHeight = function () {
+        //tslint:disable-next-line:max-line-length
+        var tabHeaderHeight = this.commentReviewPane.reviewTab.getRootElement().getElementsByClassName('e-tab-header')[0].getBoundingClientRect().height;
+        this.changesInfoDiv.style.height = this.commentReviewPane.parentPaneElement.clientHeight - this.toolbarElement.clientHeight
+            - tabHeaderHeight - 2 + 'px';
+    };
+    TrackChangesPane.prototype.removeAllChanges = function () {
+        while (this.changesInfoDiv.childNodes.length > 1) {
+            this.changesInfoDiv.removeChild(this.changesInfoDiv.lastChild);
+        }
+        this.revisions = [];
+        this.changes.clear();
+    };
+    /**
+     * @private
+     */
+    TrackChangesPane.prototype.clear = function () {
+        this.removeAllChanges();
+        this.selectedUser = this.locale.getConstant('All');
+        this.userDropDownButton.content = this.getSpanView(this.selectedUser, 0);
+        this.selectedType = this.locale.getConstant('All');
+        this.viewTypeDropDownButton.content = this.getSpanView(this.selectedType, 1);
+        this.currentSelectedRevision = undefined;
+    };
+    /**
+     * @private
+     */
+    TrackChangesPane.prototype.destroy = function () {
+        this.removeAllChanges();
+        if (this.toolbar) {
+            this.toolbar.destroy();
+        }
+        if (this.userDropDownButton) {
+            this.userDropDownButton.destroy();
+        }
+        if (this.viewTypeDropDownButton) {
+            this.viewTypeDropDownButton.destroy();
+        }
+        if (this.userDropDown) {
+            this.userDropDown = undefined;
+        }
+        if (this.users.length > 0) {
+            this.users = [];
+        }
+        if (this.trackChangeDiv) {
+            this.trackChangeDiv = undefined;
+        }
+    };
+    TrackChangesPane.prototype.addChanges = function (revision) {
+        var currentChangeView = new ChangesSingleView(this.owner, this);
+        this.changesInfoDiv.appendChild(currentChangeView.createSingleChangesDiv(revision));
+        if (!this.enableButtons) {
+            if (!(currentChangeView.acceptButtonElement.classList.contains('e-de-overlay'))) {
+                currentChangeView.acceptButtonElement.classList.add('e-de-overlay');
+                currentChangeView.rejectButtonElement.classList.add('e-de-overlay');
+            }
+        }
+        else if (currentChangeView.acceptButtonElement.classList.contains('e-de-overlay')) {
+            currentChangeView.acceptButtonElement.classList.remove('e-de-overlay');
+            currentChangeView.rejectButtonElement.classList.remove('e-de-overlay');
+        }
+        this.revisions.push(revision);
+        this.changes.add(revision, currentChangeView);
+    };
+    TrackChangesPane.prototype.navigatePreviousChanges = function () {
+        this.owner.selection.navigatePreviousRevision();
+    };
+    TrackChangesPane.prototype.navigateNextChanges = function () {
+        this.owner.selection.navigateNextRevision();
+    };
+    return TrackChangesPane;
+}());
+var ChangesSingleView = /** @__PURE__ @class */ (function () {
+    function ChangesSingleView(owner, trackChangesPane) {
+        this.owner = owner;
+        this.locale = new L10n('documenteditor', this.owner.defaultLocale);
+        this.locale.setLocale(this.owner.locale);
+        this.trackChangesPane = trackChangesPane;
+    }
+    ChangesSingleView.prototype.createSingleChangesDiv = function (revision) {
+        this.revision = revision;
+        this.user = revision.author;
+        this.outerSingleDiv = createElement('div', { className: 'e-de-tc-outer' });
+        this.singleInnerDiv = createElement('div', { className: 'e-de-trckchanges-inner' });
+        this.singleInnerDiv.addEventListener('click', this.selectRevision.bind(this));
+        this.outerSingleDiv.appendChild(this.singleInnerDiv);
+        var userNameTotalDiv = createElement('div', { className: 'e-de-track-usernme-div' });
+        var userNameLabel = createElement('div', { innerHTML: revision.author, className: 'e-de-track-user-nme' });
+        if (!isNullOrUndefined(revision.author)) {
+            userNameTotalDiv.style.display = 'flex';
+            this.owner.documentHelper.getAvatar(userNameTotalDiv, userNameLabel, undefined, revision);
+        }
+        var revisionTypeLabel = createElement('div');
+        if (revision.revisionType === 'Insertion') {
+            this.revisionType = 'Inserted';
+            revisionTypeLabel.innerHTML = this.locale.getConstant('Inserted').toUpperCase();
+            revisionTypeLabel.classList.add('e-de-track-insert');
+        }
+        else if (revision.revisionType === 'Deletion') {
+            this.revisionType = 'Deleted';
+            revisionTypeLabel.innerHTML = this.locale.getConstant('Deleted').toUpperCase();
+            revisionTypeLabel.classList.add('e-de-track-delete');
+        }
+        userNameTotalDiv.appendChild(revisionTypeLabel);
+        this.singleInnerDiv.appendChild(userNameTotalDiv);
+        var dateView = createElement('div', {
+            className: 'e-de-track-date',
+            innerHTML: HelperMethods.getModifiedDate(revision.date)
+        });
+        this.singleInnerDiv.appendChild(dateView);
+        var changesTextDiv = createElement('div', {
+            className: 'e-de-track-chngs-text'
+        });
+        this.layoutElementText(revision.range, changesTextDiv);
+        this.singleInnerDiv.appendChild(changesTextDiv);
+        var buttonTotalDiv = createElement('div', {
+            styles: 'display:inline-block;width:100%'
+        });
+        this.singleInnerDiv.appendChild(buttonTotalDiv);
+        var buttonDiv = createElement('div', {
+            styles: 'float:left;'
+        });
+        this.acceptButtonElement = createElement('button', { className: 'e-de-track-accept-button' });
+        var acceptButton = new Button({ cssClass: 'e-outline', content: this.locale.getConstant('Accept') });
+        buttonDiv.appendChild(this.acceptButtonElement);
+        buttonTotalDiv.appendChild(buttonDiv);
+        acceptButton.appendTo(this.acceptButtonElement);
+        this.acceptButtonElement.addEventListener('click', this.acceptButtonClick.bind(this));
+        buttonDiv = createElement('div', {
+            styles: 'float:left;'
+        });
+        this.rejectButtonElement = createElement('button', { className: 'e-de-track-reject-button' });
+        var rejectButton = new Button({ cssClass: 'e-outline', content: this.locale.getConstant('Reject') });
+        buttonDiv.appendChild(this.rejectButtonElement);
+        buttonTotalDiv.appendChild(buttonDiv);
+        rejectButton.appendTo(this.rejectButtonElement);
+        this.rejectButtonElement.addEventListener('click', this.rejectButtonClick.bind(this));
+        var changesCount = createElement('div', { className: 'e-de-track-chngs-count', styles: 'float:right;' });
+        var currentCount = this.owner.revisions.changes.indexOf(revision) + 1;
+        var totalCount = this.owner.revisions.changes.length;
+        changesCount.innerHTML = this.locale.getConstant('Changes') + ' ' + currentCount.toString() +
+            ' ' + this.locale.getConstant('of') + ' ' + totalCount.toString();
+        buttonTotalDiv.appendChild(changesCount);
+        return this.outerSingleDiv;
+    };
+    ChangesSingleView.prototype.selectRevision = function () {
+        this.owner.selection.selectRevision(this.revision);
+        this.trackChangesPane.onSelection(this.revision);
+    };
+    ChangesSingleView.prototype.layoutElementText = function (range, changesText) {
+        changesText.style.width = '100%';
+        var text = '';
+        var toSkip = false;
+        for (var i = 0; i < range.length; i++) {
+            var element = range[i];
+            if (element instanceof FieldElementBox && element.fieldType === 1) {
+                toSkip = false;
+                continue;
+            }
+            if (toSkip) {
+                continue;
+            }
+            if (element instanceof FieldElementBox && element.fieldType === 0) {
+                toSkip = true;
+            }
+            if (element instanceof TextElementBox) {
+                text += element.text;
+            }
+            else if (element instanceof FieldElementBox && element.fieldType === 0) {
+                var fieldCode = this.owner.selection.getFieldCode(element);
+                if (fieldCode.match('TOC ') || fieldCode.match('Toc')) {
+                    text += '<Table of Content>';
+                    changesText.appendChild(this.addSpan(text));
+                    return;
+                    //tslint:disable-next-line:max-line-length
+                }
+                else if (fieldCode.match('HYPERLINK ') || fieldCode.match('MERGEFIELD') || fieldCode.match('FORMTEXT') || fieldCode.match('PAGE ')) {
+                    text = this.owner.editor.retrieveFieldResultantText(element.fieldEnd);
+                }
+                else if (fieldCode.match('PAGE ')) {
+                    text += this.owner.editor.retrieveFieldResultantText(element.fieldEnd);
+                }
+                else if (element.formFieldData) {
+                    var emptyChar = this.owner.documentHelper.textHelper.repeatChar(this.owner.documentHelper.textHelper.getEnSpaceCharacter(), 5);
+                    if (text !== '') {
+                        changesText.appendChild(this.addSpan(text));
+                        text = '';
+                    }
+                    if (element.formFieldData instanceof TextFormField) {
+                        //tslint:disable-next-line:max-line-length
+                        changesText.appendChild(this.addSpan(element.formFieldData.defaultValue === '' ? emptyChar : element.formFieldData.defaultValue, 'e-de-tc-field'));
+                    }
+                    else if (element.formFieldData instanceof DropDownFormField) {
+                        //tslint:disable-next-line:max-line-length
+                        changesText.appendChild(this.addSpan(element.formFieldData.dropdownItems.length > 0 ? element.formFieldData.dropdownItems[0] : emptyChar, 'e-de-tc-field'));
+                    }
+                    else {
+                        //tslint:disable-next-line:max-line-length
+                        changesText.appendChild(this.addSpan(element.formFieldData.checked ? String.fromCharCode(9745) : String.fromCharCode(9744), 'e-de-tc-field'));
+                    }
+                }
+            }
+            else if (element instanceof ImageElementBox) {
+                if (text !== '') {
+                    changesText.appendChild(this.addSpan(text));
+                    text = '';
+                }
+                var imageEle = createElement('img');
+                imageEle.setAttribute('src', element.imageString);
+                imageEle.classList.add('e-de-tc-shrink-img');
+                changesText.appendChild(imageEle);
+            }
+            else if (element instanceof WRowFormat) {
+                var tableEle = createElement('table');
+                tableEle.classList.add('e-de-track-chng-table');
+                tableEle.insertRow();
+                for (var i_1 = 0; i_1 < element.ownerBase.childWidgets.length; i_1++) {
+                    tableEle.rows[0].insertCell();
+                    tableEle.rows[0].cells[i_1].classList.add('e-de-tc-tble-cell');
+                }
+                changesText.appendChild(tableEle);
+                return;
+            }
+            else if (element instanceof WCharacterFormat) {
+                if (text !== '') {
+                    changesText.appendChild(this.addSpan(text));
+                    text = '';
+                }
+                var paraMark = '¶';
+                if (element.ownerBase instanceof ParagraphWidget && element.ownerBase.isEndsWithPageBreak) {
+                    paraMark = '............Page Break............' + paraMark;
+                }
+                changesText.appendChild(this.addSpan(paraMark, 'e-de-tc-pmark'));
+                changesText.appendChild(createElement('br'));
+            }
+        }
+        changesText.appendChild(this.addSpan(text));
+    };
+    ChangesSingleView.prototype.addSpan = function (text, cssClass) {
+        var span = createElement('span');
+        span.textContent = text;
+        if (cssClass) {
+            span.classList.add(cssClass);
+        }
+        return span;
+    };
+    ChangesSingleView.prototype.acceptButtonClick = function () {
+        this.trackChangesPane.changesInfoDiv.removeChild(this.outerSingleDiv);
+        this.removeFromParentCollec();
+        this.revision.accept();
+    };
+    ChangesSingleView.prototype.rejectButtonClick = function () {
+        this.trackChangesPane.changesInfoDiv.removeChild(this.outerSingleDiv);
+        this.removeFromParentCollec();
+        this.revision.reject();
+    };
+    ChangesSingleView.prototype.removeFromParentCollec = function () {
+        this.trackChangesPane.changes.remove(this.revision);
+        this.trackChangesPane.revisions.splice(this.trackChangesPane.revisions.indexOf(this.revision), 1);
+        if (this.trackChangesPane.changes.length === 0) {
+            this.trackChangesPane.setNoChangesVisibility = true;
+        }
+        this.trackChangesPane.updateUsers();
+    };
+    return ChangesSingleView;
 }());
 
 var __extends$2 = (undefined && undefined.__extends) || (function () {
@@ -14934,6 +16192,14 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
          * @private
          */
         this.comments = [];
+        /**
+         * @private
+         */
+        this.authors = new Dictionary();
+        /**
+         * @private
+         */
+        this.revisionsInternal = new Dictionary();
         /**
          * @private
          */
@@ -15444,15 +16710,20 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
             if (!isNullOrUndefined(_this.selection)) {
                 _this.isTouchInput = false;
                 var cursorPoint = new Point(event.offsetX, event.offsetY);
+                var touchPoint = _this.owner.viewer.findFocusedPage(cursorPoint, true);
                 if (_this.selection.checkAndEnableHeaderFooter(cursorPoint, _this.owner.viewer.findFocusedPage(cursorPoint, true))) {
                     return;
                 }
-                var formField = _this.selection.getCurrentFormField();
+                var widget = _this.getLineWidget(touchPoint);
+                var formField = _this.selection.getHyperLinkFieldInCurrentSelection(widget, touchPoint, true);
+                if (isNullOrUndefined(formField)) {
+                    formField = _this.selection.getCurrentFormField();
+                }
                 if (!_this.isDocumentProtected && _this.owner.enableFormField) {
-                    var formatType = _this.selection.getFormFieldType();
+                    var formatType = _this.selection.getFormFieldType(formField);
                     if (formatType) {
                         if (formatType.toString() !== '') {
-                            _this.selection.selectField();
+                            _this.selection.selectField(formField);
                         }
                         switch (formatType) {
                             case 'Text':
@@ -15572,8 +16843,14 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
                 else if (_this.isMouseDown) {
                     if (_this.formFields.length > 0) {
                         var formField = _this.selection.getCurrentFormField(true);
-                        if (formField && formField.formFieldData) {
+                        if (formField && formField.formFieldData instanceof TextFormField) {
                             _this.selection.selectField();
+                            // tslint:disable-next-line:max-line-length
+                        }
+                        else if (_this.isLeftButtonPressed(event) && formField && formField.formFieldData instanceof DropDownFormField) {
+                            var offset = formField.line.getOffset(formField, 0);
+                            var point = _this.selection.getPhysicalPositionInternal(formField.line, offset, false);
+                            _this.selection.selectInternal(formField.line, formField, 0, point);
                         }
                     }
                 }
@@ -16126,6 +17403,25 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(DocumentHelper.prototype, "currentSelectedRevision", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.currentSelectedRevisionInternal;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            // if (this.owner && this.owner.commentReviewPane) {
+            //     this.owner.commentReviewPane.previousSelectedComment = this.currentSelectedCommentInternal;
+            // }
+            this.currentSelectedRevisionInternal = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(DocumentHelper.prototype, "isInlineFormFillProtectedMode", {
         /**
          * @private
@@ -16205,6 +17501,7 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
         this.fields = [];
         this.formFields = [];
         this.currentSelectedComment = undefined;
+        this.currentSelectedRevision = undefined;
         for (var i = 0; i < this.comments.length; i++) {
             var commentStart = this.comments[i].commentStart;
             if (commentStart) {
@@ -16214,8 +17511,14 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
         this.comments = [];
         this.bookmarks.clear();
         this.styles.clear();
+        this.authors.clear();
+        this.revisionsInternal.clear();
+        this.owner.revisions.destroy();
         this.characterFormat.clearFormat();
         this.paragraphFormat.clearFormat();
+        if (this.owner.trackChangesPane) {
+            this.owner.trackChangesPane.clear();
+        }
         this.setDefaultCharacterValue(this.characterFormat);
         this.setDefaultParagraphValue(this.paragraphFormat);
         if (this.owner.commentReviewPane) {
@@ -16343,7 +17646,22 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
             var eventArgs = { type: 'Comment' };
             this.owner.trigger('beforePaneSwitch', eventArgs);
         }
-        this.owner.commentReviewPane.showHidePane(show && this.owner.enableComment);
+        this.owner.commentReviewPane.showHidePane(show && this.owner.enableComment, 'Comments');
+    };
+    /**
+     * @private
+     */
+    DocumentHelper.prototype.showRevisions = function (show) {
+        if (this.owner && show) {
+            var eventArgs = { type: 'comment' };
+            this.owner.trigger('beforePaneSwitch', eventArgs);
+        }
+        if (!show && this.owner.showComments) {
+            this.owner.commentReviewPane.showHidePane(true, 'Comments');
+        }
+        else {
+            this.owner.commentReviewPane.showHidePane(show, 'Changes');
+        }
     };
     /**
      * Initializes components.
@@ -16392,6 +17710,7 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
         this.wireEvent();
         this.restrictEditingPane = new RestrictEditing(this);
         this.owner.commentReviewPane = new CommentReviewPane(this.owner);
+        this.owner.trackChangesPane = new TrackChangesPane(this.owner, this.owner.commentReviewPane);
         createSpinner({ target: this.owner.element, cssClass: 'e-spin-overlay' });
     };
     DocumentHelper.prototype.measureScrollbarWidth = function (element) {
@@ -16498,6 +17817,83 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
     };
     DocumentHelper.prototype.getEditableDivTextContent = function () {
         return this.editableDiv.textContent;
+    };
+    /**
+     * @private
+     */
+    DocumentHelper.prototype.updateAuthorIdentity = function () {
+        var revisions = this.owner.revisions.changes;
+        for (var i = 0; i < revisions.length; i++) {
+            this.getAuthorColor(revisions[i].author);
+        }
+    };
+    /**
+     * @private
+     */
+    DocumentHelper.prototype.getAvatar = function (userInfo, userName, comment, revision) {
+        var author;
+        var userinitial;
+        if (!isNullOrUndefined(comment)) {
+            author = comment.author;
+            userinitial = comment.initial;
+        }
+        else {
+            author = revision.author;
+        }
+        if (!isNullOrUndefined(author)) {
+            var avatarDiv = createElement('div', { className: 'e-de-cmt-avatar' });
+            var avatar = createElement('div', { className: 'e-de-ff-cmt-avatar' });
+            avatar.style.backgroundColor = this.owner.documentHelper.getAuthorColor(author);
+            if (userinitial === '' || isNullOrUndefined(userinitial)) {
+                var authorName = author.split(' ');
+                var initial = authorName[0].charAt(0);
+                if (authorName.length > 1) {
+                    initial += authorName[authorName.length - 1][0];
+                }
+                avatar.innerText = initial.toUpperCase();
+            }
+            else {
+                if (userinitial.length > 2) {
+                    avatar.innerText = userinitial.substring(0, 2);
+                }
+                else {
+                    avatar.innerText = userinitial;
+                }
+            }
+            avatarDiv.appendChild(avatar);
+            avatarDiv.appendChild(userName);
+            userInfo.appendChild(avatarDiv);
+        }
+    };
+    /**
+     * @private
+     */
+    DocumentHelper.prototype.getAuthorColor = function (author) {
+        if (this.authors.containsKey(author)) {
+            return this.authors.get(author);
+        }
+        var color = this.owner.userColor;
+        if (author !== this.owner.currentUser) {
+            if (this.authors.length === 0 && color !== '#b70f34') {
+                color = '#b70f34';
+            }
+            else {
+                color = this.generateRandomColor();
+            }
+        }
+        this.authors.add(author, color);
+        return color;
+    };
+    /**
+     * @private
+     */
+    DocumentHelper.prototype.generateRandomColor = function () {
+        var letters = '0123456789ABCDEF';
+        var color = '#';
+        for (var i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
     };
     /**
      * @private
@@ -16620,6 +18016,7 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
         }
         this.heightInfoCollection = {};
         this.owner.isDocumentLoaded = false;
+        this.updateAuthorIdentity();
         for (var i = 0; i < this.pages.length; i++) {
             this.pages[i].bodyWidgets[0].destroy();
         }
@@ -16962,8 +18359,8 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
                 this.restrictEditingPane.restrictPane.getBoundingClientRect() : undefined;
             var optionsRect = this.owner.optionsPaneModule && this.owner.optionsPaneModule.isOptionsPaneShow ?
                 this.owner.optionsPaneModule.optionsPane.getBoundingClientRect() : undefined;
-            var commentPane = this.owner.commentReviewPane && this.owner.commentReviewPane.reviewPane ?
-                this.owner.commentReviewPane.reviewPane.getBoundingClientRect() : undefined;
+            var commentPane = this.owner.commentReviewPane && this.owner.commentReviewPane.parentPaneElement ?
+                this.owner.commentReviewPane.parentPaneElement.getBoundingClientRect() : undefined;
             if (restrictPaneRect || optionsRect || commentPane) {
                 var paneWidth = restrictPaneRect ? restrictPaneRect.width : 0;
                 paneWidth += optionsRect ? optionsRect.width : 0;
@@ -22569,7 +23966,7 @@ var LineWidget = /** @__PURE__ @class */ (function () {
                     //     continue;
                     // }
                     // tslint:disable-next-line:max-line-length
-                    if (inlineElement instanceof TextElementBox && (inlineElement.text === ' ' && isInsert)) {
+                    if (inlineElement instanceof TextElementBox && (inlineElement.text === ' ' && inlineElement.revisions.length === 0 && isInsert)) {
                         var currentElement = this.getNextTextElement(this, i + 1);
                         inlineElement = !isNullOrUndefined(currentElement) ? currentElement : inlineElement;
                         indexInInline = isNullOrUndefined(currentElement) ? (offset - count) : 0;
@@ -22709,6 +24106,22 @@ var ElementBox = /** @__PURE__ @class */ (function () {
          * @private
          */
         this.isSpellChecked = false;
+        /**
+         * @private
+         */
+        this.revisions = [];
+        /**
+         * @private
+         */
+        this.canTrack = false;
+        /**
+         * @private
+         */
+        this.removedIds = [];
+        /**
+         * @private
+         */
+        this.isMarkedForRevision = false;
         this.characterFormat = new WCharacterFormat(this);
         this.margin = new Margin(0, 0, 0, 0);
     }
@@ -22721,6 +24134,21 @@ var ElementBox = /** @__PURE__ @class */ (function () {
                 return this.text === '\f';
             }
             return false;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ElementBox.prototype, "isValidNodeForTracking", {
+        /**
+         * @private
+         * Method to indicate whether current element is trackable.
+         */
+        get: function () {
+            // tslint:disable-next-line:max-line-length
+            if (this instanceof BookmarkElementBox || this instanceof CommentCharacterElementBox || this instanceof EditRangeStartElementBox || this instanceof EditRangeEndElementBox) {
+                return false;
+            }
+            return true;
         },
         enumerable: true,
         configurable: true
@@ -22768,6 +24196,19 @@ var ElementBox = /** @__PURE__ @class */ (function () {
             //Links the field begin and separator for the current end.
             if (isNullOrUndefined(fieldEnd.fieldBegin)) {
                 this.linkFieldTraversingBackward(this.line, fieldEnd, fieldEnd);
+            }
+        }
+    };
+    /**
+     * @private
+     * Method to clear linked ranges in revision
+     */
+    ElementBox.prototype.clearElementRevisions = function () {
+        var revisions = this.revisions;
+        for (var i = 0; i < revisions.length; i++) {
+            var currentRevision = revisions[i];
+            while (currentRevision.range.length > 0) {
+                revisions[i].unlinkRangeItem(currentRevision.range[0], currentRevision, undefined);
             }
         }
     };
@@ -22959,6 +24400,36 @@ var ElementBox = /** @__PURE__ @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(ElementBox.prototype, "nextValidNodeForTracking", {
+        /**
+         * @private
+         */
+        get: function () {
+            var elementBox = this;
+            //tslint:disable-next-line:max-line-length
+            while (!isNullOrUndefined(elementBox) && (elementBox instanceof BookmarkElementBox || elementBox instanceof CommentCharacterElementBox || elementBox instanceof EditRangeStartElementBox || elementBox instanceof EditRangeEndElementBox)) {
+                elementBox = elementBox.nextNode;
+            }
+            return elementBox;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ElementBox.prototype, "previousValidNodeForTracking", {
+        /**
+         * @private
+         */
+        get: function () {
+            var elementBox = this;
+            //tslint:disable-next-line:max-line-length
+            while (!isNullOrUndefined(elementBox) && (elementBox instanceof BookmarkElementBox || elementBox instanceof CommentCharacterElementBox || elementBox instanceof EditRangeStartElementBox || elementBox instanceof EditRangeEndElementBox)) {
+                elementBox = elementBox.previousNode;
+            }
+            return elementBox;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(ElementBox.prototype, "previousNode", {
         /**
          * @private
@@ -23119,6 +24590,12 @@ var FieldElementBox = /** @__PURE__ @class */ (function (_super) {
         }
         field.width = this.width;
         field.height = this.height;
+        if (this.revisions.length > 0) {
+            field.removedIds = Revision.cloneRevisions(this.revisions);
+        }
+        else {
+            field.removedIds = this.removedIds.slice();
+        }
         field.fieldCodeType = this.fieldCodeType;
         return field;
     };
@@ -23324,7 +24801,7 @@ var DropDownFormField = /** @__PURE__ @class */ (function (_super) {
         /**
          * @private
          */
-        _this.dropDownItems = [];
+        _this.dropdownItems = [];
         /**
          * @private
          */
@@ -23340,7 +24817,7 @@ var DropDownFormField = /** @__PURE__ @class */ (function (_super) {
         dropDown.enabled = this.enabled;
         dropDown.helpText = this.helpText;
         dropDown.statusText = this.statusText;
-        dropDown.dropDownItems = this.dropDownItems.slice();
+        dropDown.dropdownItems = this.dropdownItems.slice();
         dropDown.selectedIndex = this.selectedIndex;
         return dropDown;
     };
@@ -23349,7 +24826,7 @@ var DropDownFormField = /** @__PURE__ @class */ (function (_super) {
      */
     DropDownFormField.prototype.getFormFieldInfo = function () {
         var dropDownFormField = {
-            dropDownItems: this.dropDownItems.slice(),
+            dropdownItems: this.dropdownItems.slice(),
             enabled: this.enabled,
             helpText: this.helpText
         };
@@ -23359,8 +24836,8 @@ var DropDownFormField = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     DropDownFormField.prototype.copyFieldInfo = function (info) {
-        if (!isNullOrUndefined(info.dropDownItems)) {
-            this.dropDownItems = info.dropDownItems;
+        if (!isNullOrUndefined(info.dropdownItems)) {
+            this.dropdownItems = info.dropdownItems;
         }
         if (!isNullOrUndefined(info.enabled)) {
             this.enabled = info.enabled;
@@ -23418,6 +24895,12 @@ var TextElementBox = /** @__PURE__ @class */ (function (_super) {
             span.margin = this.margin.clone();
         }
         span.baselineOffset = this.baselineOffset;
+        if (this.revisions.length > 0) {
+            span.removedIds = Revision.cloneRevisions(this.revisions);
+        }
+        else {
+            span.removedIds = this.removedIds.slice();
+        }
         span.width = this.width;
         span.height = this.height;
         return span;
@@ -23499,6 +24982,12 @@ var FieldTextElementBox = /** @__PURE__ @class */ (function (_super) {
         if (this.margin) {
             span.margin = this.margin.clone();
         }
+        if (this.revisions.length > 0) {
+            span.removedIds = Revision.cloneRevisions(this.revisions);
+        }
+        else {
+            span.removedIds = this.removedIds.slice();
+        }
         span.width = this.width;
         span.height = this.height;
         return span;
@@ -23543,6 +25032,12 @@ var TabElementBox = /** @__PURE__ @class */ (function (_super) {
         }
         span.width = this.width;
         span.height = this.height;
+        if (this.revisions.length > 0) {
+            span.removedIds = Revision.cloneRevisions(this.revisions);
+        }
+        else {
+            span.removedIds = this.removedIds.slice();
+        }
         return span;
     };
     return TabElementBox;
@@ -23881,6 +25376,12 @@ var ImageElementBox = /** @__PURE__ @class */ (function (_super) {
         image.height = this.height;
         if (this.margin) {
             image.margin = this.margin.clone();
+        }
+        if (this.revisions.length > 0) {
+            image.removedIds = Revision.cloneRevisions(this.revisions);
+        }
+        else {
+            image.removedIds = this.removedIds.slice();
         }
         return image;
     };
@@ -26352,6 +27853,8 @@ var CONTEXTMENU_RESTART_AT = '_contextmenu_restart_at';
 var CONTEXTMENU_SPELLING_DIALOG = '_contextmenu_spelling_dialog';
 var CONTEXTMENU_SPELLCHECK_OTHERSUGGESTIONS = '_contextmenu_otherSuggestions_spellcheck_';
 var CONTEXTMENU_NO_SUGGESTION = '_contextmenu_no_suggestion';
+var CONTEXTMENU_ACCEPT_CHANGES = '_contextmenu_accept_changes';
+var CONTEXTMENU_REJECT_CHANGES = '_contextmenu_reject_changes';
 /**
  * Context Menu class
  */
@@ -26506,6 +28009,16 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
             },
             {
                 separator: true
+            },
+            {
+                text: localValue.getConstant('Accept Changes'),
+                iconCss: 'e-icons e-de-acceptchange',
+                id: id + CONTEXTMENU_ACCEPT_CHANGES
+            },
+            {
+                text: localValue.getConstant('Reject Changes'),
+                iconCss: 'e-icons e-de-rejectchange',
+                id: id + CONTEXTMENU_REJECT_CHANGES
             },
             {
                 text: localValue.getConstant('Update Field'),
@@ -26817,6 +28330,12 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
                 this.currentContextInfo = null;
                 this.documentHelper.owner.spellCheckDialog.show(contextInfo.text, contextInfo.element);
                 break;
+            case id + CONTEXTMENU_ACCEPT_CHANGES:
+                this.documentHelper.selection.handleAcceptReject(true);
+                break;
+            case id + CONTEXTMENU_REJECT_CHANGES:
+                this.documentHelper.selection.handleAcceptReject(false);
+                break;
             case id + CONTEXTMENU_PROPERTIES:
                 var inline = this.documentHelper.selection.getCurrentFormField();
                 if (inline instanceof FieldElementBox) {
@@ -27017,6 +28536,8 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
         cut.style.display = 'none';
         paste.style.display = 'none';
         paste.nextSibling.style.display = 'none';
+        var acceptChange = document.getElementById(id + CONTEXTMENU_ACCEPT_CHANGES);
+        var rejectChange = document.getElementById(id + CONTEXTMENU_REJECT_CHANGES);
         hyperlink.style.display = 'none';
         font.previousSibling.style.display = 'none';
         openHyperlink.style.display = 'none';
@@ -27036,6 +28557,8 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
         updateField.style.display = 'none';
         var field = selection.getHyperlinkField();
         var isCrossRefField = false;
+        acceptChange.style.display = 'none';
+        rejectChange.style.display = 'none';
         if (field instanceof FieldElementBox && selection.isReferenceField(field)) {
             isCrossRefField = true;
         }
@@ -27065,6 +28588,7 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
         else {
             classList(addComment, [], ['e-disabled']);
         }
+        acceptChange.previousSibling.style.display = 'none';
         cut.style.display = 'block';
         paste.style.display = 'block';
         paste.nextSibling.style.display = 'block';
@@ -27153,6 +28677,12 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
             paragraph.style.display = 'none';
             removeHyperlink.nextSibling.style.display = 'none';
         }
+        if (this.documentHelper.selection.hasRevisions()) {
+            // tslint:disable-next-line:max-line-length
+            acceptChange.previousSibling.style.display = this.documentHelper.owner.enableHeaderAndFooter ? 'none' : 'block';
+            acceptChange.style.display = 'block';
+            rejectChange.style.display = 'block';
+        }
         return true;
     };
     /**
@@ -27190,6 +28720,7 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
         this.commentStarts = undefined;
         this.commentEnds = undefined;
         this.commentsCollection = undefined;
+        this.revisionCollection = undefined;
         this.isPageBreakInsideTable = false;
         this.isParseHeader = false;
         /**
@@ -27221,6 +28752,7 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
         this.commentStarts = new Dictionary();
         this.commentEnds = new Dictionary();
         this.commentsCollection = new Dictionary();
+        this.revisionCollection = new Dictionary();
         var sections = [];
         var jsonObject = json;
         jsonObject = (jsonObject instanceof Object) ? jsonObject : JSON.parse(jsonObject);
@@ -27233,6 +28765,10 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
         this.parseDocumentProtection(jsonObject);
         if (!isNullOrUndefined(jsonObject.defaultTabWidth)) {
             this.documentHelper.defaultTabWidth = jsonObject.defaultTabWidth;
+        }
+        if (!isNullOrUndefined(jsonObject.trackChanges)) {
+            this.documentHelper.owner.showRevisions = jsonObject.trackChanges;
+            this.documentHelper.owner.enableTrackChanges = jsonObject.trackChanges;
         }
         if (!isNullOrUndefined(jsonObject.dontUseHTMLParagraphAutoSpacing)) {
             this.documentHelper.dontUseHtmlParagraphAutoSpacing = jsonObject.dontUseHTMLParagraphAutoSpacing;
@@ -27251,6 +28787,9 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
         }
         if (!isNullOrUndefined(jsonObject.comments)) {
             this.parseComments(jsonObject, this.documentHelper.comments);
+        }
+        if (!isNullOrUndefined(jsonObject.revisions)) {
+            this.parseRevisions(jsonObject, this.viewer.owner.revisionsInternal.changes);
         }
         if (!isNullOrUndefined(jsonObject.sections)) {
             this.parseSections(jsonObject.sections, sections);
@@ -27278,6 +28817,42 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
         for (var i = 0; i < data.styles.length; i++) {
             if (isNullOrUndefined(this.documentHelper.styles.findByName(data.styles[i].name))) {
                 this.parseStyle(data, data.styles[i], styles);
+            }
+        }
+    };
+    SfdtReader.prototype.parseRevisions = function (data, revisions) {
+        for (var i = 0; i < data.revisions.length; i++) {
+            var revisionData = data.revisions[i];
+            if (!isNullOrUndefined(revisionData.revisionId)) {
+                var revision = this.parseRevision(revisionData);
+                this.revisionCollection.add(revisionData.revisionId, revision);
+                revisions.push(revision);
+            }
+        }
+        this.documentHelper.revisionsInternal = this.revisionCollection;
+    };
+    SfdtReader.prototype.parseRevision = function (data) {
+        if (!isNullOrUndefined(data)) {
+            var revision = new Revision(this.viewer.owner, data.author, data.date);
+            revision.revisionID = data.revisionId;
+            revision.revisionType = data.revisionType;
+            return revision;
+        }
+        else {
+            return undefined;
+        }
+    };
+    SfdtReader.prototype.checkAndApplyRevision = function (inline, item) {
+        if (!isNullOrUndefined(inline.revisionIds) && inline.revisionIds.length > 0) {
+            for (var i = 0; i < inline.revisionIds.length; i++) {
+                var id = inline.revisionIds[i];
+                if (this.revisionCollection.containsKey(id)) {
+                    var revision = this.revisionCollection.get(id);
+                    if (!(item instanceof WParagraphFormat)) {
+                        revision.range.push(item);
+                    }
+                    item.revisions.push(revision);
+                }
             }
         }
     };
@@ -27705,6 +29280,7 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
                 this.applyCharacterStyle(inline, textElement);
                 textElement.text = inline.text;
                 textElement.line = lineWidget;
+                this.checkAndApplyRevision(inline, textElement);
                 lineWidget.children.push(textElement);
                 hasValidElmts = true;
             }
@@ -27740,6 +29316,7 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
                 image.isMetaFile = data[i].isMetaFile;
                 image.characterFormat = new WCharacterFormat(image);
                 image.line = lineWidget;
+                this.checkAndApplyRevision(inline, image);
                 lineWidget.children.push(image);
                 var imageString = HelperMethods.formatClippedString(inline.imageString).formatClippedString;
                 var isValidImage = this.validateImageUrl(imageString);
@@ -27779,7 +29356,7 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
                     }
                     else {
                         formFieldData = new DropDownFormField();
-                        formFieldData.dropDownItems = inline.formFieldData.dropDownList.dropDownItems;
+                        formFieldData.dropdownItems = inline.formFieldData.dropDownList.dropDownItems;
                         formFieldData.selectedIndex = inline.formFieldData.dropDownList.selectedIndex;
                     }
                     formFieldData.name = inline.formFieldData.name;
@@ -27790,6 +29367,7 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
                     this.documentHelper.formFields.push(fieldBegin);
                 }
                 this.documentHelper.fieldStacks.push(fieldBegin);
+                this.checkAndApplyRevision(inline, fieldBegin);
                 fieldBegin.line = lineWidget;
                 this.documentHelper.fields.push(fieldBegin);
                 lineWidget.children.push(fieldBegin);
@@ -27818,6 +29396,7 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
                     field = new FieldElementBox(1);
                     this.parseCharacterFormat(inline.characterFormat, field.characterFormat, writeInlineFormat);
                     this.applyCharacterStyle(inline, field);
+                    this.checkAndApplyRevision(inline, field);
                     //For Field End Updated begin and separator.                                      
                     if (this.documentHelper.fieldStacks.length > 0) {
                         field.fieldBegin = this.documentHelper.fieldStacks[this.documentHelper.fieldStacks.length - 1];
@@ -28280,6 +29859,9 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
             if (!isNullOrUndefined(sourceFormat.leftIndent)) {
                 rowFormat.leftIndent = sourceFormat.leftIndent;
             }
+            if (!isNullOrUndefined(sourceFormat.revisionIds) && sourceFormat.revisionIds.length > 0) {
+                this.checkAndApplyRevision(sourceFormat, rowFormat);
+            }
             this.parseBorders(sourceFormat.borders, rowFormat.borders);
         }
     };
@@ -28380,6 +29962,9 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
             }
             if (!isNullOrUndefined(sourceFormat.italicBidi)) {
                 characterFormat.italicBidi = sourceFormat.italicBidi;
+            }
+            if (!isNullOrUndefined(sourceFormat.revisionIds) && sourceFormat.revisionIds.length > 0) {
+                this.checkAndApplyRevision(sourceFormat, characterFormat);
             }
         }
     };
@@ -34983,9 +36568,11 @@ var Selection = /** @__PURE__ @class */ (function () {
     /**
      * Select the current field if selection is in field
      */
-    Selection.prototype.selectField = function () {
-        if (this.isInField) {
-            var fieldStart = this.getHyperlinkField(true);
+    Selection.prototype.selectField = function (fieldStart) {
+        if (this.isInField || !isNullOrUndefined(fieldStart)) {
+            if (isNullOrUndefined(fieldStart)) {
+                fieldStart = this.getHyperlinkField(true);
+            }
             this.selectFieldInternal(fieldStart);
         }
     };
@@ -40832,6 +42419,14 @@ var Selection = /** @__PURE__ @class */ (function () {
                 return;
             }
         }
+        var currentRevision = this.getCurrentRevision();
+        if (currentRevision) {
+            this.owner.showRevisions = true;
+            this.owner.trackChangesPane.currentSelectedRevision = currentRevision[0];
+        }
+        else if (!isNullOrUndefined(this.owner.trackChangesPane.currentSelectedRevision)) {
+            this.owner.trackChangesPane.currentSelectedRevision = undefined;
+        }
         if (this.start.paragraph.isInHeaderFooter) {
             var isInHeader = this.start.paragraph.bodyWidget.headerFooterType.indexOf('Header') !== -1;
             if (contextIsinTable) {
@@ -40859,6 +42454,178 @@ var Selection = /** @__PURE__ @class */ (function () {
                 this.contextTypeInternal = contextIsinImage ? 'Image' : 'Text';
             }
         }
+    };
+    /* tslint:disable:no-any */
+    Selection.prototype.addItemRevisions = function (currentItem, isFromAccept) {
+        for (var i = 0; i < currentItem.revisions.length; i++) {
+            var currentRevision = currentItem.revisions[i];
+            this.selectRevision(currentRevision);
+            if (isFromAccept) {
+                currentRevision.accept();
+            }
+            else {
+                currentRevision.reject();
+            }
+        }
+    };
+    /**
+     * @private
+     */
+    Selection.prototype.hasRevisions = function () {
+        if (this.getCurrentRevision()) {
+            return true;
+        }
+        return false;
+    };
+    Selection.prototype.getCurrentRevision = function () {
+        var start = this.start;
+        var end = this.end;
+        if (!this.isForward) {
+            start = this.end;
+            end = this.start;
+        }
+        var elementInfo = start.currentWidget.getInline(start.offset, 0);
+        var currentElement = elementInfo.element;
+        var startPara = start.paragraph;
+        var nextOffsetElement = start.currentWidget.getInline(start.offset + 1, 0).element;
+        var eleEndPosition;
+        if (currentElement && currentElement === nextOffsetElement) {
+            var offset = currentElement.line.getOffset(currentElement, (currentElement.length));
+            eleEndPosition = new TextPosition(this.owner);
+            eleEndPosition.setPositionParagraph(currentElement.line, offset);
+            if (end.offset === eleEndPosition.offset) {
+                return undefined;
+            }
+        }
+        if (nextOffsetElement !== currentElement) {
+            currentElement = nextOffsetElement;
+        }
+        if (!isNullOrUndefined(currentElement) && currentElement.revisions.length > 0) {
+            return currentElement.revisions;
+        }
+        if (startPara.isInsideTable) {
+            var cellWidget = startPara.associatedCell;
+            if (!isNullOrUndefined(cellWidget.ownerRow) && cellWidget.ownerRow.rowFormat.revisions.length > 0) {
+                return cellWidget.ownerRow.rowFormat.revisions;
+            }
+        }
+        if (end.offset > end.paragraph.getLength()) {
+            if (end.paragraph.characterFormat.revisions.length > 0) {
+                return end.paragraph.characterFormat.revisions;
+            }
+        }
+        return undefined;
+    };
+    Selection.prototype.processLineRevisions = function (linewidget, isFromAccept) {
+        for (var i = 0; i < linewidget.children.length; i++) {
+            var element = linewidget.children[i];
+            if (element.revisions.length > 0) {
+                this.addItemRevisions(element, isFromAccept);
+            }
+        }
+    };
+    /**
+     * @private
+     * @param isFromAccept
+     */
+    Selection.prototype.handleAcceptReject = function (isFromAccept) {
+        if (this.isEmpty) {
+            var elementInfo = this.start.currentWidget.getInline((this.start.offset + 1), 0);
+            var currentElement = elementInfo.element;
+            var startPara = this.start.paragraph;
+            if (!isNullOrUndefined(currentElement) && currentElement.revisions.length > 0) {
+                this.addItemRevisions(currentElement, isFromAccept);
+            }
+            if (startPara.isInsideTable) {
+                var cellWidget = startPara.associatedCell;
+                if (!isNullOrUndefined(cellWidget)) {
+                    if (cellWidget.ownerRow.rowFormat.revisions.length > 0) {
+                        this.addItemRevisions(cellWidget.ownerRow.rowFormat, isFromAccept);
+                    }
+                }
+                else if (!startPara.isEmpty()) {
+                    for (var i = 0; i < cellWidget.childWidgets.length; i++) {
+                        var paraWidget = cellWidget.childWidgets[i];
+                        for (var lineIndex = void 0; lineIndex < paraWidget.childWidgets.length; lineIndex++) {
+                            var linewidget = paraWidget.childWidgets[lineIndex];
+                            this.processLineRevisions(linewidget, isFromAccept);
+                        }
+                    }
+                }
+            }
+        }
+        else {
+            var revisions = this.getselectedRevisionElements();
+            for (var i = 0; i < revisions.length; i++) {
+                this.acceptReject(revisions[i], isFromAccept);
+            }
+        }
+    };
+    Selection.prototype.acceptReject = function (currentRevision, toAccept) {
+        this.selectRevision(currentRevision);
+        if (toAccept) {
+            currentRevision.accept();
+        }
+        else {
+            currentRevision.reject();
+        }
+    };
+    Selection.prototype.getselectedRevisionElements = function () {
+        var revisionCollec = [];
+        var start = this.start;
+        var end = this.end;
+        if (!this.isForward) {
+            start = this.end;
+            end = this.start;
+        }
+        for (var i = 0; i < this.selectedWidgets.length; i++) {
+            var currentWidget = this.selectedWidgets.keys[i];
+            if (currentWidget instanceof LineWidget) {
+                revisionCollec = this.getSelectedLineRevisions(currentWidget, start, end, revisionCollec);
+            }
+            else if (currentWidget instanceof TableCellWidget) {
+                if (currentWidget.ownerRow.rowFormat.revisions.length > 0) {
+                    revisionCollec = this.addRevisionsCollec(currentWidget.ownerRow.rowFormat.revisions, revisionCollec);
+                }
+                for (var i_3 = 0; i_3 < currentWidget.childWidgets.length; i_3++) {
+                    var paraWidget = currentWidget.childWidgets[i_3];
+                    for (var lineIndex = 0; lineIndex < paraWidget.childWidgets.length; lineIndex++) {
+                        var linewidget = paraWidget.childWidgets[lineIndex];
+                        revisionCollec = this.getSelectedLineRevisions(linewidget, start, end, revisionCollec);
+                    }
+                }
+            }
+        }
+        return revisionCollec;
+    };
+    Selection.prototype.getSelectedLineRevisions = function (currentWidget, start, end, elements) {
+        if (currentWidget.paragraph.characterFormat.revisions.length > 0) {
+            elements = this.addRevisionsCollec(currentWidget.paragraph.characterFormat.revisions, elements);
+        }
+        for (var j = 0; j < currentWidget.children.length; j++) {
+            var currentElement = currentWidget.children[j];
+            var offset = currentElement.line.getOffset(currentElement, 0);
+            var eleStartPosition = new TextPosition(this.owner);
+            eleStartPosition.setPositionParagraph(currentElement.line, offset);
+            offset = currentElement.line.getOffset(currentElement, (currentElement.length));
+            var eleEndPosition = new TextPosition(this.owner);
+            eleEndPosition.setPositionParagraph(currentElement.line, offset);
+            if (((eleEndPosition.isExistAfter(start) && eleEndPosition.isExistBefore(end))
+                || (eleStartPosition.isExistAfter(start) && eleStartPosition.isExistBefore(end))
+                || eleStartPosition.isAtSamePosition(start)
+                || (start.isExistAfter(eleStartPosition) && end.isExistBefore(eleEndPosition))) && currentElement.revisions.length > 0) {
+                elements = this.addRevisionsCollec(currentElement.revisions, elements);
+            }
+        }
+        return elements;
+    };
+    Selection.prototype.addRevisionsCollec = function (element, revisCollec) {
+        for (var i = 0; i < element.length; i++) {
+            if (revisCollec.indexOf(element[i]) === -1) {
+                revisCollec.push(element[i]);
+            }
+        }
+        return revisCollec;
     };
     //Table Format retrieval starts
     /**
@@ -42185,8 +43952,10 @@ var Selection = /** @__PURE__ @class */ (function () {
     /**
      * @private
      */
-    Selection.prototype.getFormFieldType = function () {
-        var formField = this.getCurrentFormField();
+    Selection.prototype.getFormFieldType = function (formField) {
+        if (isNullOrUndefined(formField)) {
+            formField = this.getCurrentFormField();
+        }
         if (formField instanceof FieldElementBox) {
             if (formField.formFieldData instanceof TextFormField) {
                 return 'Text';
@@ -42864,6 +44633,17 @@ var Selection = /** @__PURE__ @class */ (function () {
                     break;
             }
         }
+        if (this.isFormField() && !(this.documentHelper.isDocumentProtected)) {
+            var formField = this.getCurrentFormField(true);
+            if (formField && formField.formFieldData instanceof DropDownFormField) {
+                // tslint:disable-next-line:max-line-length
+                formField = (event.keyCode === 37 || event.keyCode === 38 || event.keyCode === 40) ? formField : formField.nextElement instanceof BookmarkElementBox ? formField.nextElement.reference : formField.fieldEnd;
+                var index = event.keyCode === 39 ? 1 : 0;
+                var offset = formField.line.getOffset(formField, index);
+                var point = this.getPhysicalPositionInternal(formField.line, offset, false);
+                this.selectInternal(formField.line, formField, index, point);
+            }
+        }
         if (!this.owner.isReadOnlyMode || this.isInlineFormFillMode()) {
             this.owner.editorModule.onKeyDownInternal(event, ctrl, shift, alt);
         }
@@ -43109,6 +44889,27 @@ var Selection = /** @__PURE__ @class */ (function () {
         return (style !== undefined && (style.name.toLowerCase().indexOf('toc') !== -1));
     };
     /**
+     * Return true if selection is in TOC
+     * @private
+     */
+    Selection.prototype.isTOC = function () {
+        var info = this.getParagraphInfo(this.start);
+        var para = info.paragraph;
+        for (var i = 0; i < para.childWidgets[0].children.length; i++) {
+            var element = para.childWidgets[0].children[i];
+            if (element instanceof FieldElementBox) {
+                var fieldCode = this.owner.selection.getFieldCode(element);
+                if (fieldCode.match('TOC ') || fieldCode.match('Toc')) {
+                    return true;
+                }
+            }
+            else {
+                continue;
+            }
+        }
+        return false;
+    };
+    /**
      * @private
      */
     Selection.prototype.getElementsForward = function (lineWidget, startElement, endElement, bidi) {
@@ -43207,6 +45008,43 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
     };
     /**
+     * Navigate to previous revision in the document.
+     */
+    Selection.prototype.navigatePreviousRevision = function () {
+        this.revisionNavigateInternal(false);
+    };
+    /**
+     * Navigate to next revision in the document.
+     */
+    Selection.prototype.navigateNextRevision = function () {
+        this.revisionNavigateInternal(true);
+    };
+    /**
+     * Method to navigate revisions
+     */
+    Selection.prototype.revisionNavigateInternal = function (next) {
+        if (!this.documentHelper.currentSelectedRevisionInternal) {
+            if (this.documentHelper.owner.revisions.length === 0) {
+                return;
+            }
+            this.documentHelper.currentSelectedRevision = this.documentHelper.owner.revisions.get(0);
+        }
+        if (this.documentHelper.currentSelectedRevision) {
+            var revisions = this.documentHelper.owner.revisions.changes;
+            var revision = this.documentHelper.currentSelectedRevision;
+            var index = revisions.indexOf(revision);
+            if (next) {
+                revision = (index === (revisions.length - 1)) ? revisions[0] : revisions[index + 1];
+            }
+            else {
+                revision = index === 0 ? revisions[revisions.length - 1] : revisions[index - 1];
+            }
+            this.documentHelper.currentSelectedRevision = revision;
+            this.selectRevision(revision);
+        }
+        this.owner.trackChangesPane.currentSelectedRevision = this.documentHelper.currentSelectedRevision;
+    };
+    /**
      * @private
      */
     Selection.prototype.selectComment = function (comment) {
@@ -43216,6 +45054,59 @@ var Selection = /** @__PURE__ @class */ (function () {
             this.selectPosition(startPosition, endPosition);
             if (this.owner.commentReviewPane) {
                 this.owner.commentReviewPane.selectComment(comment);
+            }
+        }
+    };
+    /**
+     * @private
+     * @param revision
+     */
+    Selection.prototype.selectRevision = function (revision) {
+        if (!isNullOrUndefined(revision) && revision.range.length > 0) {
+            /* tslint:disable:no-any */
+            var firstElement = revision.range[0];
+            var lastElement = revision.range[revision.range.length - 1];
+            if (firstElement instanceof WRowFormat) {
+                var rowWidget = firstElement.ownerBase;
+                var firstCell = rowWidget.childWidgets[0];
+                var lastCell = rowWidget.childWidgets[rowWidget.childWidgets.length - 1];
+                var firstPara = this.getFirstParagraph(firstCell);
+                var lastPara = this.getLastParagraph(lastCell);
+                this.start.setPosition(firstPara.firstChild, true);
+                this.end.setPositionParagraph(lastPara.lastChild, lastPara.lastChild.getEndOffset() + 1);
+                this.selectPosition(this.start, this.end);
+            }
+            else if (firstElement && lastElement) {
+                var startPosition = new TextPosition(this.owner);
+                var offset = 0;
+                if (firstElement instanceof WCharacterFormat) {
+                    var currentPara = firstElement.ownerBase;
+                    offset = currentPara.getLength();
+                    startPosition.setPositionParagraph(currentPara.lastChild, offset);
+                }
+                else {
+                    offset = firstElement.line.getOffset(firstElement, 0);
+                    startPosition.setPositionForLineWidget(firstElement.line, offset);
+                }
+                var endPosition = new TextPosition(this.owner);
+                if (lastElement instanceof WCharacterFormat) {
+                    var currentPara = lastElement.ownerBase;
+                    offset = currentPara.getLength();
+                    endPosition.setPositionParagraph(currentPara.lastChild, offset + 1);
+                }
+                else {
+                    offset = lastElement.line.getOffset(lastElement, 0) + lastElement.length;
+                    if (this.isTOC()) {
+                        offset += 1;
+                    }
+                    endPosition.setPositionForLineWidget(lastElement.line, offset);
+                }
+                var curentPosition = startPosition.clone();
+                if (!startPosition.isExistBefore(endPosition)) {
+                    startPosition = endPosition;
+                    endPosition = curentPosition;
+                }
+                this.selectPosition(startPosition, endPosition);
             }
         }
     };
@@ -44214,6 +46105,15 @@ var Search = /** @__PURE__ @class */ (function () {
         }
         this.navigate(result);
         var endPosition = this.documentHelper.selection.start;
+        if (this.owner.enableTrackChanges && this.documentHelper.selection.start.currentWidget) {
+            var inline = undefined;
+            // tslint:disable-next-line:max-line-length
+            var inlineElement = this.documentHelper.selection.end.currentWidget.getInline(this.owner.selection.start.offset, 0);
+            inline = inlineElement.element;
+            if (inline.revisions.length > 0) {
+                this.isRepalceTracking = true;
+            }
+        }
         var index = results.indexOf(result);
         if (index < 0) {
             return 0;
@@ -46916,6 +48816,8 @@ var Editor = /** @__PURE__ @class */ (function () {
         this.endParagraph = undefined;
         this.removeEditRange = false;
         this.formFieldCounter = 1;
+        this.skipFieldDeleteTracking = false;
+        this.isForHyperlinkFormat = false;
         /**
          * @private
          */
@@ -46948,6 +48850,7 @@ var Editor = /** @__PURE__ @class */ (function () {
          */
         this.isInsertingTOC = false;
         this.editStartRangeCollection = [];
+        this.skipReplace = false;
         /* tslint:disable:no-any */
         this.copiedContent = '';
         /* tslint:enable:no-any */
@@ -48080,6 +49983,13 @@ var Editor = /** @__PURE__ @class */ (function () {
                     if (!this.owner.isReadOnlyMode) {
                         this.toggleBaselineAlignment('Superscript');
                     }
+                    break;
+                case 69:
+                    event.preventDefault();
+                    if (!this.owner.isReadOnlyMode) {
+                        var eventArgs = { isTrackChangesEnabled: !this.owner.enableTrackChanges };
+                        this.owner.trigger('trackChange', eventArgs);
+                    }
             }
         }
         else if (!shift && ctrl && alt) {
@@ -48264,7 +50174,7 @@ var Editor = /** @__PURE__ @class */ (function () {
      * @private
      */
     //tslint:disable: max-func-body-length
-    Editor.prototype.insertTextInternal = function (text, isReplace) {
+    Editor.prototype.insertTextInternal = function (text, isReplace, revisionType) {
         if (this.documentHelper.protectionType === 'FormFieldsOnly' && this.selection.isInlineFormFillMode()) {
             var inline = this.selection.getCurrentFormField();
             var resultText = this.getFormFieldText();
@@ -48281,8 +50191,11 @@ var Editor = /** @__PURE__ @class */ (function () {
         var selection = this.documentHelper.selection;
         var insertPosition;
         var isRemoved = true;
+        revisionType = (this.owner.enableTrackChanges && isNullOrUndefined(revisionType)) ? 'Insertion' : revisionType;
         this.isListTextSelected();
-        this.initHistory('Insert');
+        if (isNullOrUndefined(revisionType) || revisionType === 'Insertion') {
+            this.initHistory('Insert');
+        }
         var paragraphInfo = this.selection.getParagraphInfo(selection.start);
         var paraFormat = paragraphInfo.paragraph.paragraphFormat;
         selection.editPosition = selection.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
@@ -48291,7 +50204,29 @@ var Editor = /** @__PURE__ @class */ (function () {
             this.documentHelper.isListTextSelected && selection.contextType === 'List') {
             selection.isSkipLayouting = true;
             selection.skipFormatRetrieval = true;
+            var endPosition = undefined;
+            if (this.owner.enableTrackChanges) {
+                if (!this.selection.start.isExistBefore(this.selection.end)) {
+                    endPosition = this.selection.start.clone();
+                }
+                else {
+                    endPosition = this.selection.end.clone();
+                }
+                this.skipReplace = true;
+            }
             isRemoved = this.removeSelectedContents(selection);
+            this.skipReplace = false;
+            if (!isNullOrUndefined(endPosition) && this.owner.search.isRepalceTracking) {
+                this.owner.search.isRepalceTracking = false;
+                this.selection.start.setPositionInternal(this.selection.start);
+                this.selection.end.setPositionInternal(endPosition);
+            }
+            else {
+                if (!isNullOrUndefined(endPosition)) {
+                    this.selection.start.setPositionInternal(endPosition);
+                    this.selection.end.setPositionInternal(endPosition);
+                }
+            }
             selection.skipFormatRetrieval = false;
             selection.isSkipLayouting = false;
         }
@@ -48316,6 +50251,18 @@ var Editor = /** @__PURE__ @class */ (function () {
                 span.line = insertPosition.paragraph.childWidgets[0];
                 span.margin = new Margin(0, 0, 0, 0);
                 span.line.children.push(span);
+                if (this.owner.enableTrackChanges) {
+                    if (span.paragraph.characterFormat.revisions.length > 0) {
+                        // tslint:disable-next-line:max-line-length
+                        var matchedRevisions = this.getMatchedRevisionsToCombine(span.paragraph.characterFormat.revisions, revisionType);
+                        if (matchedRevisions.length > 0) {
+                            this.mapMatchedRevisions(matchedRevisions, span.paragraph.characterFormat, span, true);
+                        }
+                    }
+                    else if (!this.checkToCombineRevisionWithPrevPara(span, revisionType)) {
+                        this.insertRevision(span, revisionType);
+                    }
+                }
                 if ((insertPosition.paragraph.paragraphFormat.textAlignment === 'Center'
                     || insertPosition.paragraph.paragraphFormat.textAlignment === 'Right') &&
                     insertPosition.paragraph.paragraphFormat.listFormat.listId === -1) {
@@ -48355,7 +50302,7 @@ var Editor = /** @__PURE__ @class */ (function () {
                     insertFormat.bidi = isBidi;
                 }
                 // tslint:disable-next-line:max-line-length
-                if ((!this.documentHelper.owner.isSpellCheck || (text !== ' ' && inline.text !== ' ')) && insertFormat.isSameFormat(inline.characterFormat) && (insertLangId === inlineLangId)
+                if ((!this.documentHelper.owner.isSpellCheck || (text !== ' ' && inline.text !== ' ')) && insertFormat.isSameFormat(inline.characterFormat) && this.canInsertRevision(inline, revisionType) && (insertLangId === inlineLangId)
                     || (text.trim() === '' && !isBidi && inline.characterFormat.bidi) || isRtl && insertFormat.isSameFormat(inline.characterFormat) && isSpecialChars) {
                     this.insertTextInline(inline, selection, text, indexInInline);
                 }
@@ -48366,7 +50313,9 @@ var Editor = /** @__PURE__ @class */ (function () {
                     tempSpan.line = inline.line;
                     tempSpan.isRightToLeft = isRtl;
                     tempSpan.characterFormat.copyFormat(insertFormat);
+                    var isRevisionCombined = false;
                     var insertIndex = inline.indexInOwner;
+                    var prevRevisionCount = tempSpan.revisions.length;
                     if (indexInInline === inline.length) {
                         var isParaBidi = inline.line.paragraph.bidi;
                         if (isParaBidi && inline instanceof FieldElementBox && inline.fieldType === 1) {
@@ -48381,14 +50330,36 @@ var Editor = /** @__PURE__ @class */ (function () {
                         else {
                             index = insertIndex + 1;
                         }
-                        inline.line.children.splice(index, 0, tempSpan);
+                        if (this.owner.enableTrackChanges) {
+                            // tslint:disable-next-line:max-line-length
+                            isRevisionCombined = this.checkToMapRevisionWithInlineText(inline, indexInInline, tempSpan, isBidi, revisionType);
+                            if (!isRevisionCombined && tempSpan.revisions.length === prevRevisionCount) {
+                                isRevisionCombined = this.checkToMapRevisionWithNextNode(inline.nextNode, tempSpan, isBidi, revisionType);
+                            }
+                        }
+                        if (!isRevisionCombined) {
+                            inline.line.children.splice(index, 0, tempSpan);
+                            // tslint:disable-next-line:max-line-length
+                            this.checkToCombineRevisionsinBlocks(tempSpan, prevRevisionCount === tempSpan.revisions.length, true, revisionType);
+                        }
                     }
                     else if (indexInInline === 0) {
-                        if (isRtl && !isBidi) {
-                            inline.line.children.splice(insertIndex + 1, 0, tempSpan);
+                        if (this.owner.enableTrackChanges) {
+                            // tslint:disable-next-line:max-line-length
+                            isRevisionCombined = this.checkToMapRevisionWithInlineText(inline, indexInInline, tempSpan, isBidi, revisionType);
+                            if (!isRevisionCombined && tempSpan.revisions.length === 0) {
+                                this.checkToMapRevisionWithPreviousNode(inline.previousNode, tempSpan, isBidi, revisionType);
+                            }
                         }
-                        else {
-                            inline.line.children.splice(insertIndex, 0, tempSpan);
+                        if (!isRevisionCombined) {
+                            if (isRtl && !isBidi) {
+                                inline.line.children.splice(insertIndex + 1, 0, tempSpan);
+                            }
+                            else {
+                                inline.line.children.splice(insertIndex, 0, tempSpan);
+                            }
+                            // tslint:disable-next-line:max-line-length
+                            this.checkToCombineRevisionsinBlocks(tempSpan, prevRevisionCount === tempSpan.revisions.length, true, revisionType);
                         }
                     }
                     else {
@@ -48398,23 +50369,48 @@ var Editor = /** @__PURE__ @class */ (function () {
                             splittedSpan.characterFormat.copyFormat(inline.characterFormat);
                             if (bidi && isRtl && !isBidi) {
                                 splittedSpan.text = inline.text.slice(0, indexInInline);
+                                if (!this.owner.enableTrackChanges) {
+                                    this.updateRevisionForSpittedTextElement(inline, splittedSpan);
+                                }
                                 inline.text = inline.text.substring(indexInInline);
                             }
                             else {
                                 splittedSpan.text = inline.text.substring(indexInInline);
+                                if (!this.owner.enableTrackChanges && !this.selection.isInField) {
+                                    this.updateRevisionForSpittedTextElement(inline, splittedSpan);
+                                }
                                 inline.text = inline.text.slice(0, indexInInline);
+                            }
+                            if (this.owner.enableTrackChanges) {
+                                // tslint:disable-next-line:max-line-length
+                                isRevisionCombined = this.checkToMapRevisionWithInlineText(inline, indexInInline, tempSpan, isBidi, revisionType);
+                                if (isRevisionCombined || tempSpan.revisions.length > prevRevisionCount) {
+                                    this.copyElementRevision(inline, splittedSpan, true);
+                                }
+                                else if (tempSpan.revisions.length === prevRevisionCount) {
+                                    this.updateRevisionForSpittedTextElement(inline, splittedSpan);
+                                    this.insertRevision(tempSpan, revisionType);
+                                }
+                            }
+                            else if (this.selection.isInField) {
+                                this.copyElementRevision(inline, splittedSpan, false);
+                                this.updateElementInFieldRevision(inline, tempSpan, inline.revisions, true);
                             }
                             if (this.owner.isSpellCheck) {
                                 this.owner.spellChecker.updateSplittedElementError(inline, splittedSpan);
                             }
                             inline.line.children.splice(insertIndex + 1, 0, splittedSpan);
                         }
-                        inline.line.children.splice(insertIndex + 1, 0, tempSpan);
+                        if (!isRevisionCombined) {
+                            inline.line.children.splice(insertIndex + 1, 0, tempSpan);
+                        }
                     }
                     if (!bidi && this.documentHelper.layout.isContainsRtl(selection.start.currentWidget)) {
                         this.documentHelper.layout.reArrangeElementsForRtl(selection.start.currentWidget, bidi);
                     }
+                    //if (!isRevisionCombined) {
                     this.documentHelper.layout.reLayoutParagraph(insertPosition.paragraph, inline.line.indexInOwner, 0);
+                    //}
                 }
             }
             this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset + text.length, true);
@@ -48425,7 +50421,9 @@ var Editor = /** @__PURE__ @class */ (function () {
                 this.editorHistory.updateHistory();
                 this.editorHistory.updateComplexHistory();
             }
-            this.reLayout(selection);
+            if (isNullOrUndefined(revisionType) || revisionType === 'Insertion') {
+                this.reLayout(selection);
+            }
             this.documentHelper.isTextInput = false;
         }
         if (!isReplace && isRemoved && (text === ' ' || text === '\t' || text === '\v')) {
@@ -48441,6 +50439,185 @@ var Editor = /** @__PURE__ @class */ (function () {
                 this.checkAndConvertToHyperlink(selection, false);
             }
         }
+    };
+    // tslint:disable-next-line:max-line-length
+    Editor.prototype.updateElementInFieldRevision = function (revisionElement, elementToInclude, revisions, isEnd) {
+        for (var i = 0; i < revisions.length; i++) {
+            var currentRevision = revisions[i];
+            var rangeIndex = currentRevision.range.indexOf(revisionElement);
+            currentRevision.range.splice(isEnd ? rangeIndex + 1 : rangeIndex, 0, elementToInclude);
+        }
+    };
+    /**
+     * @private
+     */
+    Editor.prototype.retrieveFieldResultantText = function (item) {
+        var resultantText = '';
+        if (item.fieldType === 1) {
+            var textElement = item.previousElement;
+            while (!isNullOrUndefined(textElement) && textElement instanceof TextElementBox) {
+                resultantText = textElement.text + resultantText;
+                textElement = textElement.previousElement.previousValidNodeForTracking;
+            }
+        }
+        return resultantText;
+    };
+    /**
+     * Method to combine revisions in blocks
+     */
+    Editor.prototype.checkToCombineRevisionsinBlocks = function (tempSpan, checkWidget, isEnd, revisionType) {
+        if (!checkWidget || !this.owner.enableTrackChanges) {
+            return;
+        }
+        // if (tempSpan instanceof FieldElementBox && tempSpan.fieldType === 2) {
+        //     return;
+        // }
+        // tslint:disable-next-line:max-line-length
+        if (tempSpan instanceof BookmarkElementBox || tempSpan instanceof CommentCharacterElementBox || tempSpan instanceof EditRangeStartElementBox || tempSpan instanceof EditRangeEndElementBox) {
+            return;
+        }
+        var isCombined = false;
+        if (isEnd) {
+            isCombined = this.combineRevisionWithNextPara(tempSpan, revisionType);
+        }
+        else {
+            isCombined = this.combineRevisionWithPrevPara(tempSpan, revisionType);
+        }
+        if (!isCombined) {
+            this.insertRevision(tempSpan, revisionType);
+        }
+    };
+    Editor.prototype.checkToMapRevisionWithNextNode = function (inline, tempSpan, isBidi, revisionType) {
+        if (isNullOrUndefined(inline)) {
+            return false;
+        }
+        var nextElement = inline.nextValidNodeForTracking;
+        if (!isNullOrUndefined(nextElement)) {
+            return this.checkToMapRevisionWithInlineText(nextElement, 0, tempSpan, isBidi, revisionType);
+        }
+        return false;
+    };
+    // tslint:disable-next-line:max-line-length
+    Editor.prototype.checkToMapRevisionWithPreviousNode = function (inline, tempSpan, isBidi, revisionType) {
+        if (isNullOrUndefined(inline)) {
+            return false;
+        }
+        var prevElement = inline.previousValidNodeForTracking;
+        if (!isNullOrUndefined(prevElement)) {
+            return this.checkToMapRevisionWithInlineText(prevElement, prevElement.length, tempSpan, isBidi, revisionType);
+        }
+        return false;
+    };
+    /**
+     * Method to combine revisions withtin the inline text
+     */
+    // tslint:disable-next-line:max-line-length
+    Editor.prototype.checkToMapRevisionWithInlineText = function (inline, indexInInline, newElement, isBidi, revisionType) {
+        if (!isNullOrUndefined(inline)) {
+            if (revisionType === 'Deletion') {
+                this.updateLastElementRevision(newElement);
+            }
+            if (inline.length === indexInInline) {
+                inline = inline.previousValidNodeForTracking;
+                indexInInline = inline.length;
+                if (inline.revisions.length > 0) {
+                    return this.applyMatchedRevisionInorder(inline, newElement, indexInInline, false, isBidi, revisionType);
+                }
+            }
+            else if (indexInInline === 0) {
+                inline = inline.nextValidNodeForTracking;
+                if (inline.revisions.length > 0) {
+                    return this.applyMatchedRevisionInorder(inline, newElement, indexInInline, true, isBidi, revisionType);
+                }
+            }
+        }
+        return false;
+    };
+    /**
+     * Method to combine element revisions
+     */
+    Editor.prototype.combineElementRevisions = function (inline, elementToCombine) {
+        if (inline.revisions.length === 0 || elementToCombine.revisions.length === 0) {
+            return;
+        }
+        for (var i = 0; i < inline.revisions.length; i++) {
+            var prevRevision = inline.revisions[i];
+            for (var j = 0; j < elementToCombine.revisions.length; j++) {
+                var currentRevision = elementToCombine.revisions[i];
+                // tslint:disable-next-line:max-line-length
+                if (prevRevision.range.indexOf(elementToCombine) === -1 && currentRevision.revisionType === prevRevision.revisionType && currentRevision.author === prevRevision.author) {
+                    elementToCombine.revisions.splice(j, 1);
+                    prevRevision.range.push(elementToCombine);
+                    elementToCombine.revisions.splice(j, 0, prevRevision);
+                }
+            }
+        }
+    };
+    /**
+     * Method to apply matched revisions
+     */
+    // tslint:disable-next-line:max-line-length
+    Editor.prototype.applyMatchedRevisionInorder = function (inline, newElement, indexInInline, isBegin, isBidi, revisionType) {
+        var revisionsMatched = this.getMatchedRevisionsToCombine(inline.revisions, revisionType);
+        // tslint:disable-next-line:max-line-length
+        // if (revisionsMatched.length === inline.revisions.length && this.documentHelper.isTextInput && inline instanceof TextElementBox && newElement instanceof TextElementBox && !isBidi && (<TextElementBox>inline).text !== ' ') {
+        //     this.insertTextInline(inline, this.selection, (newElement as TextElementBox).text, indexInInline, true);
+        //     this.updateLastElementRevision(inline);
+        //     return true;
+        // } else
+        if (revisionsMatched.length > 0) {
+            this.mapMatchedRevisions(revisionsMatched, inline, newElement, isBegin);
+        }
+        //this.updateLastElementRevision(newElement);
+        return false;
+    };
+    /**
+     * Method to copy element revision which is
+     * @param elementToCopy
+     * @param elementToInclude
+     */
+    Editor.prototype.copyElementRevision = function (elementToCopy, elementToInclude, isSplitElementMerged) {
+        for (var i = 0; i < elementToCopy.revisions.length; i++) {
+            var currentRevision = elementToCopy.revisions[i];
+            var rangeIndex = currentRevision.range.indexOf(elementToCopy);
+            elementToInclude.revisions.splice(0, 0, currentRevision);
+            currentRevision.range.splice(rangeIndex + ((isSplitElementMerged) ? 2 : 1), 0, elementToInclude);
+        }
+    };
+    /**
+     * Method to map the matched revisions
+     */
+    /* tslint:disable:no-any */
+    Editor.prototype.mapMatchedRevisions = function (revisions, revisionElement, elementToInclude, isBegin) {
+        for (var i = 0; i < revisions.length; i++) {
+            var currentRevision = revisions[i];
+            elementToInclude.revisions.splice(0, 0, currentRevision);
+            var rangeIndex = currentRevision.range.indexOf(revisionElement);
+            currentRevision.range.splice((isBegin) ? rangeIndex : rangeIndex + 1, 0, elementToInclude);
+        }
+    };
+    /**
+     * Retrieve matched revisions
+     */
+    Editor.prototype.getMatchedRevisionsToCombine = function (revisions, revisionType) {
+        var matchedRevisions = [];
+        for (var i = 0; i < revisions.length; i++) {
+            if (this.isRevisionMatched(revisions[i], revisionType)) {
+                matchedRevisions.push(revisions[i]);
+            }
+        }
+        return matchedRevisions;
+    };
+    Editor.prototype.decideInlineForTrackChanges = function (inline, revisionType) {
+        var matched = false;
+        if (this.owner.enableTrackChanges && !this.canInsertRevision(inline, revisionType)) {
+            var currentElement = inline.nextValidNodeForTracking;
+            if (!isNullOrUndefined(currentElement) && this.canInsertRevision(currentElement, revisionType)) {
+                inline = currentElement;
+                matched = true;
+            }
+        }
+        return { 'element': inline, 'isMatched': matched };
     };
     /**
      * @private
@@ -48482,6 +50659,571 @@ var Editor = /** @__PURE__ @class */ (function () {
         this.reLayout(selection, true);
         if (this.owner.layoutType === 'Continuous') {
             this.layoutWholeDocument();
+        }
+    };
+    /**
+     * Method used to
+     */
+    Editor.prototype.combineRevisionWithBlocks = function (elementBox, revisionType) {
+        if (!this.owner.enableTrackChanges || isNullOrUndefined(elementBox)) {
+            return;
+        }
+        while (elementBox instanceof BookmarkElementBox || elementBox instanceof CommentCharacterElementBox) {
+            elementBox = elementBox.nextElement;
+        }
+        if (isNullOrUndefined(elementBox)) {
+            return;
+        }
+        var prevPara = elementBox.paragraph.previousRenderedWidget;
+        if (prevPara instanceof TableWidget) {
+            return;
+        }
+        if (!isNullOrUndefined(prevPara) && !prevPara.isEmpty() && prevPara.characterFormat.revisions.length > 0) {
+            var lastLine_1 = prevPara.lastChild;
+            if (isNullOrUndefined(lastLine_1) || lastLine_1.children.length === 0) {
+                return;
+            }
+            var lastElement_1 = lastLine_1.children[lastLine_1.children.length - 1];
+            while (lastElement_1 instanceof BookmarkElementBox || lastElement_1 instanceof CommentCharacterElementBox) {
+                lastElement_1 = lastElement_1.previousElement;
+            }
+            if (lastElement_1.revisions.length > 0) {
+                if (this.compareElementRevision(prevPara.characterFormat, elementBox)) {
+                    var currentRevision = elementBox.revisions[elementBox.revisions.length - 1];
+                    if (this.compareElementRevision(lastElement_1, elementBox)) {
+                        var lastElementRevision = lastElement_1.revisions[lastElement_1.revisions.length - 1];
+                        if (currentRevision !== lastElementRevision) {
+                            // tslint:disable-next-line:max-line-length
+                            this.clearAndUpdateRevisons(currentRevision.range, lastElementRevision, lastElementRevision.range.indexOf(lastElement_1) + 1);
+                        }
+                    }
+                }
+            }
+        }
+        prevPara = null;
+        var lastLine = elementBox.paragraph.lastChild;
+        var lastElement = lastLine.children[lastLine.children.length - 1];
+        elementBox = lastElement;
+        var nextPara = elementBox.paragraph.nextRenderedWidget;
+        if (nextPara instanceof TableWidget) {
+            return;
+        }
+        if (!isNullOrUndefined(nextPara) && !nextPara.isEmpty() && elementBox.paragraph.characterFormat.revisions.length > 0) {
+            // let lastLine: LineWidget = elementBox.paragraph.lastChild as LineWidget;
+            // let lastElement: ElementBox = lastLine.children[lastLine.children.length - 1];
+            var firstLine = nextPara.firstChild;
+            var firstElement = firstLine.children[0];
+            while (firstElement instanceof BookmarkElementBox || firstElement instanceof CommentCharacterElementBox) {
+                firstElement = firstElement.previousElement;
+            }
+            if (isNullOrUndefined(firstElement)) {
+                return;
+            }
+            if (firstElement.revisions.length > 0) {
+                var firstEleRevision = firstElement.revisions[firstElement.revisions.length - 1];
+                if (this.compareElementRevision(elementBox.paragraph.characterFormat, firstElement)) {
+                    if (this.compareElementRevision(elementBox, firstElement)) {
+                        var lastElementRevision = elementBox.revisions[elementBox.revisions.length - 1];
+                        if (firstEleRevision !== lastElementRevision) {
+                            // tslint:disable-next-line:max-line-length
+                            this.clearAndUpdateRevisons(firstEleRevision.range, lastElementRevision, lastElementRevision.range.indexOf(elementBox) + 1);
+                        }
+                    }
+                }
+            }
+        }
+        if (elementBox.revisions.length === 0) {
+            this.insertRevision(elementBox, revisionType);
+        }
+    };
+    /**
+     * Method checks to combine new element to be inserted can be matched with next para's first element.
+     */
+    Editor.prototype.checkToCombineRevisionWithNextPara = function (elementBox, revisionType) {
+        var nextPara = elementBox.paragraph.nextRenderedWidget;
+        if (nextPara instanceof TableWidget) {
+            return false;
+        }
+        if (!isNullOrUndefined(nextPara) && !nextPara.isEmpty()) {
+            var firstLine = nextPara.firstChild;
+            var firstElement = firstLine.children[0];
+            while (firstElement instanceof BookmarkElementBox || firstElement instanceof CommentCharacterElementBox) {
+                firstElement = firstElement.previousElement;
+            }
+            if (isNullOrUndefined(firstElement)) {
+                return false;
+            }
+            if (firstElement.revisions.length > 0) {
+                var mappedRevisions = this.getMatchedRevisionsToCombine(firstElement.revisions, revisionType);
+                if (mappedRevisions.length > 0) {
+                    this.mapMatchedRevisions(mappedRevisions, firstElement, elementBox, true);
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
+    /**
+     * Method checks to combine new element to be inserted can be matched with previous para's last element.
+     */
+    Editor.prototype.checkToCombineRevisionWithPrevPara = function (elementBox, revisionType) {
+        var prevPara = elementBox.paragraph.previousRenderedWidget;
+        if (prevPara instanceof TableWidget) {
+            return false;
+        }
+        if (!isNullOrUndefined(prevPara) && prevPara.characterFormat.revisions.length > 0) {
+            if (!this.isRevisionMatched(prevPara.characterFormat, revisionType)) {
+                return false;
+            }
+            // let firstLine: LineWidget = prevPara.firstChild as LineWidget;
+            // let lastLine: LineWidget = prevPara.lastChild as LineWidget;
+            // if (isNullOrUndefined(lastLine) || lastLine.children.length === 0) {
+            //     return false;
+            // }
+            // let lastElement: ElementBox = lastLine.children[lastLine.children.length - 1];
+            // if (lastElement instanceof BookmarkElementBox || lastElement instanceof CommentCharacterElementBox) {
+            //     lastElement = lastElement.previousValidNodeForTracking;
+            // }
+            // if (isNullOrUndefined(lastElement)) {
+            //     return false;
+            // }
+            // if (lastElement.revisions.length > 0) {
+            var mappedRevisions = this.getMatchedRevisionsToCombine(prevPara.characterFormat.revisions, revisionType);
+            if (mappedRevisions.length > 0) {
+                this.mapMatchedRevisions(mappedRevisions, prevPara.characterFormat, elementBox, false);
+                return true;
+            }
+            // }
+        }
+        return false;
+    };
+    /**
+     * Method to combine revision with next para, returns true if it requires new revision
+     */
+    Editor.prototype.combineRevisionWithNextPara = function (elementBox, revisionType) {
+        var isLastLine = elementBox.line.isLastLine();
+        var nextElement = elementBox.nextNode;
+        if (isLastLine && isNullOrUndefined(nextElement)) {
+            return this.checkToCombineRevisionWithNextPara(elementBox, revisionType);
+        }
+        return false;
+    };
+    Editor.prototype.combineRevisionWithPrevPara = function (elementBox, revisionType) {
+        var isFirstLine = elementBox.line.isFirstLine();
+        var prevElement = elementBox.previousNode;
+        if (isFirstLine && isNullOrUndefined(prevElement)) {
+            return this.checkToCombineRevisionWithPrevPara(elementBox, revisionType);
+        }
+        return false;
+    };
+    Editor.prototype.removeRevision = function (revisionToRemove) {
+        var elementInfo = this.selection.start.currentWidget.getInline(this.selection.start.offset + 1, 0);
+        var elementBox = elementInfo.element;
+        if (elementInfo.element.revisions.length > 0) {
+            for (var i = 0; i < elementBox.revisions.length; i++) {
+                if (elementBox.revisions[i].revisionType === revisionToRemove.revisionType) {
+                    var revision = elementBox.revisions[i];
+                    var startIndex = revision.range.indexOf(elementBox);
+                    for (var j = startIndex; startIndex < revision.range.length; startIndex++) {
+                        revision.range[j].revisions.splice(i, 1);
+                        revision.range.splice(j, 1);
+                    }
+                }
+            }
+        }
+    };
+    Editor.prototype.insertHistoryRevision = function (revisionToInsert) {
+        var elementInfo = this.selection.start.currentWidget.getInline(this.selection.start.offset + 1, 0);
+        var elementBox = elementInfo.element;
+        //for (let i: number = 0; i < revisionToInsert.range.length; i++) {
+        //}
+    };
+    Editor.prototype.clearElementRevision = function (revision) {
+        if (isNullOrUndefined(revision)) {
+            return;
+        }
+        for (var i = 0; i < revision.range.length; i++) {
+            if (revision.range[i] instanceof ElementBox) {
+                var currentElement = revision.range[i];
+                currentElement.revisions.splice(currentElement.revisions.length - 1, 1);
+                revision.range.splice(i, 1);
+            }
+        }
+    };
+    /* tslint:disable:no-any */
+    Editor.prototype.insertRevision = function (item, type, author, date, spittedRange) {
+        author = !isNullOrUndefined(author) ? author : this.owner.currentUser ? this.owner.currentUser : 'Guest user';
+        var currentDate = !isNullOrUndefined(date) ? date : new Date().toISOString();
+        // tslint:disable-next-line:max-line-length
+        if (item instanceof ElementBox && !isNullOrUndefined(item.line) && item.line.paragraph.associatedCell || (item instanceof WCharacterFormat && item.ownerBase instanceof ParagraphWidget && item.ownerBase.associatedCell)) {
+            var cellWidget = undefined;
+            if (item instanceof ElementBox) {
+                cellWidget = item.line.paragraph.associatedCell;
+            }
+            else if (item instanceof WCharacterFormat) {
+                cellWidget = item.ownerBase.associatedCell;
+            }
+            if (cellWidget.ownerRow.rowFormat.revisions.length > 0) {
+                var rowFormat = cellWidget.ownerRow.rowFormat;
+                var matchedRevisions = this.getMatchedRevisionsToCombine(rowFormat.revisions, type);
+                if (matchedRevisions.length > 0) {
+                    for (var i = 0; i < matchedRevisions.length; i++) {
+                        item.revisions.splice(0, 0, matchedRevisions[i]);
+                        matchedRevisions[i].range.push(item);
+                    }
+                    return;
+                }
+            }
+        }
+        var revision = new Revision(this.owner, author, currentDate);
+        revision.revisionType = type;
+        revision.revisionID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        if (!isNullOrUndefined(spittedRange) && spittedRange.length > 0) {
+            this.clearAndUpdateRevisons(spittedRange, revision, spittedRange.indexOf(item));
+        }
+        else {
+            item.revisions.push(revision);
+            revision.range.push(item);
+        }
+        this.updateRevisionCollection(revision);
+    };
+    /**
+     * Method help to clear previous revisions and include new revision at specified index
+     * @param range - range of elements to be cleared
+     * @param revision - revision to be inserted
+     * @param index - index at which to be included in the revision range
+     */
+    Editor.prototype.clearAndUpdateRevisons = function (range, revision, index) {
+        for (var i = 0; i < range.length; i++) {
+            if (range[i] instanceof ElementBox) {
+                var currentElement = range[i];
+                currentElement.revisions.splice(currentElement.revisions.length - 1, 1);
+                currentElement.revisions.push(revision);
+                revision.range.splice(index + i, 0, currentElement);
+            }
+        }
+    };
+    Editor.prototype.splitRevisionByElement = function (item, revision) {
+        if (item.revisions.length > 0) {
+            var range = revision.range;
+            var index = range.indexOf(item);
+            revision.range = range.splice(0, index + 1);
+            return range;
+        }
+        return undefined;
+    };
+    /**
+     * Method to update revision for the splitted text element
+     * @param inline - Original text element
+     * @param splittedSpan - Splitted element
+     */
+    Editor.prototype.updateRevisionForSpittedTextElement = function (inline, splittedSpan) {
+        for (var i = 0; i < inline.revisions.length; i++) {
+            var revision = inline.revisions[i];
+            /* tslint:disable:no-any */
+            var splittedRange = this.splitRevisionByElement(inline, revision);
+            this.insertRevision(splittedSpan, revision.revisionType, revision.author, revision.date, splittedRange);
+        }
+    };
+    Editor.prototype.isRevisionMatched = function (item, type) {
+        var author = this.owner.currentUser ? this.owner.currentUser : 'Guest user';
+        if (item instanceof Revision) {
+            if ((isNullOrUndefined(type) || type === item.revisionType) && item.author === author) {
+                return true;
+            }
+        }
+        else if (item.revisions.length > 0) {
+            for (var i = 0; i < item.revisions.length; i++) {
+                var elementRevision = item.revisions[i];
+                if ((isNullOrUndefined(type) || type === elementRevision.revisionType) && elementRevision.author === author) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
+    /**
+     * Method to compare revisions of two
+     * @param element
+     * @param compare
+     */
+    Editor.prototype.compareElementRevision = function (element, compare) {
+        if (element.revisions.length === 0 || compare.revisions.length === 0) {
+            return false;
+        }
+        for (var i = 0; i < element.revisions.length; i++) {
+            var currentRevision = element.revisions[i];
+            for (var j = 0; j < compare.revisions.length; j++) {
+                // tslint:disable-next-line:max-line-length
+                if (currentRevision.author === compare.revisions[i].author && currentRevision.revisionType === compare.revisions[i].revisionType) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
+    /* tslint:disable:no-any */
+    Editor.prototype.canInsertRevision = function (item, type) {
+        var revisionType = isNullOrUndefined(type) ? 'Insertion' : type;
+        if (revisionType === 'Deletion') {
+            return false;
+        }
+        if (this.owner.enableTrackChanges) {
+            return this.isRevisionMatched(item, revisionType);
+            //if it has revision
+        }
+        else if (item.revisions.length > 0) {
+            return false;
+        }
+        return true;
+    };
+    Editor.prototype.insertRevisionAtEnd = function (item, newElement, revisionType) {
+        // tslint:disable-next-line:max-line-length
+        if (newElement instanceof BookmarkElementBox || newElement instanceof CommentCharacterElementBox || newElement instanceof EditRangeStartElementBox || newElement instanceof EditRangeEndElementBox) {
+            return false;
+        }
+        item = item.previousValidNodeForTracking;
+        if (isNullOrUndefined(item)) {
+            return false;
+        }
+        return this.insertRevisionAtPosition(item, newElement, true, revisionType);
+    };
+    Editor.prototype.insertRevisionAtPosition = function (item, newElement, isEnd, revisionType) {
+        // if (newElement instanceof FieldElementBox && (newElement as FieldElementBox).fieldType === 2) {
+        //     return false;
+        // }
+        var prevRevisionLength = newElement.revisions.length;
+        // tslint:disable-next-line:max-line-length
+        var isRevisionCombined = this.checkToMapRevisionWithInlineText(item, (isEnd) ? item.length : 0, newElement, false, revisionType);
+        // Check to combine with previous and next element
+        if (isEnd) {
+            if (!isRevisionCombined && newElement.revisions.length === prevRevisionLength) {
+                isRevisionCombined = this.checkToMapRevisionWithNextNode(item.nextNode, newElement, false, revisionType);
+            }
+        }
+        else {
+            if (!isRevisionCombined && newElement.revisions.length === prevRevisionLength) {
+                isRevisionCombined = this.checkToMapRevisionWithPreviousNode(item.previousNode, newElement, false, revisionType);
+            }
+        }
+        return isRevisionCombined;
+    };
+    Editor.prototype.insertRevisionAtBegining = function (item, newElement, revisionType) {
+        // tslint:disable-next-line:max-line-length
+        if (newElement instanceof BookmarkElementBox || newElement instanceof CommentCharacterElementBox || newElement instanceof EditRangeStartElementBox || newElement instanceof EditRangeEndElementBox) {
+            return false;
+        }
+        item = item.nextValidNodeForTracking;
+        if (isNullOrUndefined(item)) {
+            return false;
+        }
+        return this.insertRevisionAtPosition(item, newElement, false, revisionType);
+    };
+    /**
+     * Method to split the revision from the element from which it was splitted.
+     * @param {element} - element from which it was spitted
+     * @param {spittedElement} - element which is splitted
+     */
+    Editor.prototype.splitRevisionForSpittedElement = function (element, spittedElement) {
+        for (var i = element.revisions.length - 1; i >= 0; i--) {
+            var revision = element.revisions[i];
+            var splittedRange = this.splitRevisionByElement(element, revision);
+            this.insertRevision(spittedElement, revision.revisionType, revision.author, revision.date, splittedRange);
+        }
+    };
+    /**
+     * Method to combine element revision if not inserts new revision
+     */
+    // private checkToCombineRevision(element: ElementBox, newElement: ElementBox, revisionType: RevisionType): boolean {
+    //     let isCombined: boolean = false;
+    //     if (this.isRevisionMatched(element, revisionType)) {
+    //         isCombined = true;
+    //         this.combineElementRevision(element, newElement, true);
+    //     } else {
+    //         this.insertRevision(newElement, revisionType);
+    //     }
+    //     return isCombined;
+    // }
+    Editor.prototype.combineElementRevision = function (currentElementRevisions, elementToCombine) {
+        for (var i = 0; i < currentElementRevisions.length; i++) {
+            for (var j = 0; j < elementToCombine.length; j++) {
+                var currentRevision = currentElementRevisions[i];
+                var revisionToCombine = elementToCombine[i];
+                // tslint:disable-next-line:max-line-length
+                if (currentRevision.author === revisionToCombine.author && currentRevision.revisionType === revisionToCombine.revisionType) {
+                    var rangeLength = revisionToCombine.range.length;
+                    for (var k = 0; k < rangeLength; k++) {
+                        var item = revisionToCombine.range[0];
+                        item.revisions.splice(item.revisions.indexOf(revisionToCombine), 1);
+                        revisionToCombine.range.splice(0, 1);
+                        currentRevision.range.push(item);
+                        item.revisions.push(currentRevision);
+                    }
+                    if (revisionToCombine.range.length === 0) {
+                        this.owner.revisions.remove(revisionToCombine);
+                    }
+                }
+            }
+        }
+    };
+    /**
+     *
+     * @param block
+     * @param startPosition
+     * @param endposition
+     */
+    Editor.prototype.combineRevisions = function (block, startPosition, endposition) {
+        if (!this.owner.enableTrackChanges) {
+            return;
+        }
+        var info = this.selection.getLineInfo(block, startPosition.offset);
+        var elementInfo = info.line.getInline(startPosition.offset, 0);
+        var currentElement = elementInfo.element;
+        if (currentElement.revisions.length > 0) {
+            if (this.isRevisionMatched(currentElement, 'Insertion')) {
+                var nextElement = currentElement.nextElement;
+                if (!isNullOrUndefined(nextElement) && nextElement.revisions.length > 0) {
+                    var revision = currentElement.revisions[currentElement.revisions.length - 1];
+                    var range = nextElement.revisions[nextElement.revisions.length - 1].range;
+                    this.clearAndUpdateRevisons(range, revision, revision.range.indexOf(currentElement) + 1);
+                }
+            }
+        }
+        // let startOffset: number = startPosition.currentWidget.getOffset(firstElement, 0);
+        // let endOffset: number = endposition.currentWidget.getOffset(lastElement, 0);
+    };
+    /**
+     * Method to update the revision for whole block
+     * @private
+     */
+    Editor.prototype.insertRevisionForBlock = function (widget, revisionType, isTOC, revision) {
+        if (widget.childWidgets.length === 0 || !this.owner.enableTrackChanges) {
+            return;
+        }
+        if (revisionType === 'Deletion') {
+            var editPostion = this.selection.editPosition;
+            var start = this.selection.start.clone();
+            var end = this.selection.end.clone();
+            for (var i = 0; i < widget.childWidgets.length; i++) {
+                var line = (widget.childWidgets[i]);
+                this.removeContent(line, 0, this.documentHelper.selection.getLineLength(line));
+            }
+            this.selection.editPosition = editPostion;
+            this.selection.start.setPositionInternal(start);
+            this.selection.end.setPositionInternal(end);
+            // let textPosition: TextPosition = this.selection.getTextPosBasedOnLogicalIndex(editPostion);
+            // this.selection.selectContent(textPosition, true);
+            this.removeEmptyLine(widget);
+        }
+        else {
+            var skipParaMark = false;
+            if (isNullOrUndefined(revision)) {
+                var author = this.owner.currentUser ? this.owner.currentUser : 'Guest user';
+                var currentDate = new Date().toISOString();
+                revision = new Revision(this.owner, author, currentDate);
+                revision.revisionID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+                revision.revisionType = revisionType;
+            }
+            for (var i = 0; i < widget.childWidgets.length; i++) {
+                var elemets = widget.childWidgets[i].children;
+                if (elemets.length === 0) {
+                    var paraIndex = widget.containerWidget.childWidgets.indexOf(widget);
+                    var prevWidget = undefined;
+                    if (paraIndex > 0) {
+                        prevWidget = widget.containerWidget.childWidgets[paraIndex - 1];
+                    }
+                    if (!isNullOrUndefined(prevWidget) && prevWidget.characterFormat.revisions.length > 0) {
+                        if (this.isRevisionMatched(prevWidget.characterFormat, revisionType)) {
+                            // tslint:disable-next-line:max-line-length
+                            var mappedRevisions = this.getMatchedRevisionsToCombine(prevWidget.characterFormat.revisions, revisionType);
+                            if (mappedRevisions.length > 0) {
+                                this.mapMatchedRevisions(mappedRevisions, prevWidget.characterFormat, widget.characterFormat, false);
+                                skipParaMark = true;
+                                revision = undefined;
+                            }
+                        }
+                    }
+                }
+                for (var j = 0; j < elemets.length; j++) {
+                    if (j === 0 && !isTOC) {
+                        var prevRevisionCount = elemets[i].revisions.length;
+                        this.checkToCombineRevisionsinBlocks(elemets[i], true, false, 'Insertion');
+                        if (elemets[i].revisions.length > prevRevisionCount) {
+                            revision = elemets[i].revisions[elemets[i].revisions.length - 1];
+                        }
+                        else {
+                            elemets[j].revisions.push(revision);
+                            revision.range.push(elemets[j]);
+                        }
+                    }
+                    else {
+                        elemets[j].revisions.push(revision);
+                        revision.range.push(elemets[j]);
+                    }
+                }
+            }
+            if (!isTOC && !skipParaMark) {
+                widget.characterFormat.revisions.push(revision);
+                revision.range.push(widget.characterFormat);
+            }
+            if (!isNullOrUndefined(revision)) {
+                this.updateRevisionCollection(revision);
+            }
+        }
+    };
+    /**
+     * Method to update revision collection
+     * @private
+     */
+    Editor.prototype.updateRevisionCollection = function (revision) {
+        var isInserted = false;
+        var paraIndex = undefined;
+        if (this.owner.revisions.changes.indexOf(revision) < 0) {
+            if (!this.documentHelper.revisionsInternal.containsKey(revision.revisionID)) {
+                this.documentHelper.revisionsInternal.add(revision.revisionID, revision);
+            }
+            if (this.owner.revisions.changes.length > 0) {
+                var currentStart = this.owner.selection.start;
+                for (var i = 0; i < this.owner.revisions.changes.length; i++) {
+                    var currentRange = this.owner.revisions.changes[i].range[0];
+                    // tslint:disable-next-line:max-line-length
+                    if (currentRange instanceof ElementBox && !isNullOrUndefined(currentRange.line) && currentRange.line.paragraph.bodyWidget) {
+                        // tslint:disable-next-line:max-line-length
+                        paraIndex = this.selection.getElementPosition(this.owner.revisions.changes[i].range[0]).startPosition;
+                    }
+                    else if (currentRange instanceof WRowFormat) {
+                        var rowWidget = currentRange.ownerBase;
+                        var firstCell = rowWidget.childWidgets[0];
+                        var firstPara = this.selection.getFirstParagraph(firstCell);
+                        if (firstPara.bodyWidget) {
+                            var selection = this.documentHelper.selection;
+                            this.updateEditPosition(firstCell, selection);
+                            paraIndex = this.selection.getTextPosBasedOnLogicalIndex(selection.editPosition);
+                        }
+                        // tslint:disable-next-line:max-line-length
+                    }
+                    else if (currentRange instanceof WCharacterFormat) {
+                        var paraWidget = currentRange.ownerBase;
+                        if (paraWidget.lastChild.paragraph.bodyWidget) {
+                            var offset = paraWidget.getLength();
+                            var startPosition = new TextPosition(this.owner);
+                            startPosition.setPositionParagraph(paraWidget.lastChild, offset);
+                            paraIndex = startPosition;
+                        }
+                    }
+                    if (!isNullOrUndefined(paraIndex) && !isNullOrUndefined(currentStart)) {
+                        if (currentStart.isExistBefore(paraIndex)) {
+                            isInserted = true;
+                            this.owner.revisions.changes.splice(i, 0, revision);
+                            break;
+                        }
+                    }
+                }
+            }
+            if (!isInserted) {
+                this.owner.revisions.changes.push(revision);
+            }
+            this.documentHelper.updateAuthorIdentity();
         }
     };
     /**
@@ -48881,7 +51623,7 @@ var Editor = /** @__PURE__ @class */ (function () {
     /**
      * @private
      */
-    Editor.prototype.insertTextInline = function (element, selection, text, index) {
+    Editor.prototype.insertTextInline = function (element, selection, text, index, skipReLayout) {
         if (element instanceof TextElementBox) {
             element.text = HelperMethods.insert(element.text, index, text);
             var paragraph = element.line.paragraph;
@@ -48890,7 +51632,9 @@ var Editor = /** @__PURE__ @class */ (function () {
             if (element.line.paragraph.bidi || this.documentHelper.layout.isContainsRtl(element.line)) {
                 this.documentHelper.layout.reArrangeElementsForRtl(element.line, element.line.paragraph.bidi);
             }
-            this.documentHelper.layout.reLayoutParagraph(paragraph, lineIndex, elementIndex, element.line.paragraph.bidi);
+            if (isNullOrUndefined(skipReLayout) || !skipReLayout) {
+                this.documentHelper.layout.reLayoutParagraph(paragraph, lineIndex, elementIndex, element.line.paragraph.bidi);
+            }
         }
         else if (element instanceof ImageElementBox) {
             this.insertImageText(element, selection, text, index);
@@ -49116,7 +51860,9 @@ var Editor = /** @__PURE__ @class */ (function () {
         this.reLayout(selection, false);
         // Applies font color for field result.
         this.initHistory('FontColor');
+        this.isForHyperlinkFormat = true;
         this.updateCharacterFormatWithUpdate(selection, 'fontColor', '#0563c1', false);
+        this.isForHyperlinkFormat = false;
         if (this.editorHistory) {
             this.editorHistory.updateHistory();
         }
@@ -49168,6 +51914,40 @@ var Editor = /** @__PURE__ @class */ (function () {
         this.initInsertInline(separator);
         return begin;
     };
+    /**
+     * @private
+     */
+    /* tslint:disable:no-any */
+    Editor.prototype.unlinkRangeFromRevision = function (inline, removeCollection) {
+        for (var i = 0; i < inline.revisions.length; i++) {
+            var currentRevision = inline.revisions[i];
+            var rangeIndex = currentRevision.range.indexOf(inline);
+            if (rangeIndex >= 0) {
+                currentRevision.range.splice(rangeIndex, 1);
+            }
+            if (currentRevision.range.length === 0 && removeCollection) {
+                this.owner.revisions.remove(currentRevision);
+            }
+        }
+    };
+    /**
+     * @private
+     */
+    /* tslint:disable:no-any */
+    Editor.prototype.unlinkWholeRangeInRevision = function (item, revision) {
+        var currentRevision = revision;
+        item.revisions.splice(item.revisions.indexOf(item), 1);
+        var rangeLength = currentRevision.range.length;
+        for (var rangeIndex = 0; rangeIndex < rangeLength; rangeIndex++) {
+            currentRevision.range.splice(0, 1);
+        }
+        if (currentRevision.range.length === 0) {
+            this.owner.revisions.remove(currentRevision);
+        }
+    };
+    /**
+     * @private
+     */
     Editor.prototype.unLinkFieldCharacter = function (inline) {
         if (inline instanceof FieldElementBox && inline.fieldType === 0) {
             if (inline.fieldEnd) {
@@ -49303,7 +52083,10 @@ var Editor = /** @__PURE__ @class */ (function () {
         this.initHistory('InsertHyperlink');
         var isRemoved = true;
         if (!selection.isEmpty) {
+            var isTrackEnabled = this.owner.enableTrackChanges;
+            this.owner.enableTrackChanges = false;
             isRemoved = this.removeSelectedContents(selection);
+            this.owner.enableTrackChanges = isTrackEnabled;
         }
         if (isRemoved) {
             // Preserves the character format for hyperlink field.
@@ -49410,6 +52193,7 @@ var Editor = /** @__PURE__ @class */ (function () {
         selection.start.setPositionParagraph(fieldBegin.line, offset);
         offset = fieldBegin.fieldEnd.line.getOffset(fieldBegin.fieldEnd, 1);
         selection.end.setPositionParagraph(fieldBegin.fieldEnd.line, offset);
+        this.skipFieldDeleteTracking = true;
         this.deleteSelectedContents(selection, false);
         if (!isNestedField && fieldResult !== displayText || isNullOrUndefined(fieldSeparator)) {
             this.insertHyperlinkByFormat(selection, url, displayText, format, isBookmark);
@@ -49436,6 +52220,7 @@ var Editor = /** @__PURE__ @class */ (function () {
             this.insertClonedFieldResult(selection, nodes, fieldSeparator);
             var fieldEnd = selection.end.currentWidget.getInline(selection.end.offset, 0).element;
             fieldEnd.linkFieldCharacter(this.documentHelper);
+            this.skipFieldDeleteTracking = false;
             var paragraph = newFieldBegin.line.paragraph;
             var lineIndex = newFieldBegin.line.paragraph.childWidgets.indexOf(newFieldBegin.line);
             var elementIndex = newFieldBegin.line.children.indexOf(newFieldBegin);
@@ -49601,16 +52386,10 @@ var Editor = /** @__PURE__ @class */ (function () {
                 htmlContent = clipbordData.getData('Text/Html');
             }
             this.copiedTextContent = textContent = clipbordData.getData('Text');
-            if (this.selection.start.paragraph.isEmpty()) {
-                this.previousCharFormat = new WCharacterFormat();
-                this.previousCharFormat.copyFormat(this.selection.start.paragraph.characterFormat);
-                this.previousParaFormat = new WParagraphFormat();
-                this.previousParaFormat.copyFormat(this.selection.start.paragraph.paragraphFormat);
-            }
-            else {
-                this.previousCharFormat = undefined;
-                this.previousParaFormat = undefined;
-            }
+            this.previousCharFormat = new WCharacterFormat();
+            this.previousCharFormat.copyFormat(this.selection.start.paragraph.characterFormat);
+            this.previousParaFormat = new WParagraphFormat();
+            this.previousParaFormat.copyFormat(this.selection.start.paragraph.paragraphFormat);
             if (this.documentHelper.protectionType === 'FormFieldsOnly' && this.documentHelper.selection.isInlineFormFillMode()) {
                 htmlContent = '';
                 rtfContent = '';
@@ -50190,6 +52969,8 @@ var Editor = /** @__PURE__ @class */ (function () {
             }
         }
         var owner = table.containerWidget;
+        //remove old table revisions if it is present.
+        this.constructRevisionsForTable(table, false);
         this.removeBlock(table, true);
         //Inserts table in the current table position.        
         var blockAdvCollection = owner.childWidgets;
@@ -50199,10 +52980,113 @@ var Editor = /** @__PURE__ @class */ (function () {
         newTable.containerWidget = owner;
         this.documentHelper.layout.clearTableWidget(newTable, true, true, true);
         newTable.buildTableColumns();
+        this.constructRevisionsForTable(newTable, true);
         newTable.isGridUpdated = true;
         this.updateNextBlocksIndex(newTable, true);
         this.documentHelper.layout.linkFieldInTable(newTable);
         this.documentHelper.layout.layoutBodyWidgetCollection(newTable.index, owner, newTable, false);
+    };
+    /* tslint:disable:no-any */
+    Editor.prototype.canConstructRevision = function (item) {
+        if ((item.revisions.length > 0 && item.revisions[0].range.length === 0) || item.removedIds.length > 0) {
+            return true;
+        }
+        return false;
+    };
+    Editor.prototype.constructRevisionsForTable = function (table, canConstructRevision) {
+        for (var i = 0; i < table.childWidgets.length; i++) {
+            var rowWidget = table.childWidgets[i];
+            if (canConstructRevision) {
+                if (this.canConstructRevision(rowWidget.rowFormat)) {
+                    this.constructRevisionFromID(rowWidget.rowFormat, true);
+                }
+                for (var rowIndex = 0; rowIndex < rowWidget.childWidgets.length; rowIndex++) {
+                    var cellWidget = rowWidget.childWidgets[rowIndex];
+                    for (var paraIndex = 0; paraIndex < cellWidget.childWidgets.length; paraIndex++) {
+                        if (cellWidget.childWidgets[paraIndex] instanceof ParagraphWidget) {
+                            this.constructRevisionsForBlock(cellWidget.childWidgets[paraIndex], canConstructRevision);
+                        }
+                    }
+                }
+            }
+            else {
+                this.removeDeletedCellRevision(rowWidget);
+            }
+        }
+    };
+    /**
+     * @private
+     */
+    Editor.prototype.constructRevisionsForBlock = function (paragraph, canConstructRevision) {
+        for (var linIndex = 0; linIndex < paragraph.childWidgets.length; linIndex++) {
+            var lineWidget = paragraph.childWidgets[linIndex];
+            for (var elementIndex = 0; elementIndex < lineWidget.children.length; elementIndex++) {
+                if (canConstructRevision) {
+                    // tslint:disable-next-line:max-line-length
+                    if (lineWidget.children[elementIndex] instanceof ElementBox && this.canConstructRevision(lineWidget.children[elementIndex])) {
+                        this.constructRevisionFromID(lineWidget.children[elementIndex], true);
+                    }
+                }
+            }
+        }
+        if (this.canConstructRevision(paragraph.characterFormat)) {
+            this.constructRevisionFromID(paragraph.characterFormat, true);
+        }
+    };
+    /**
+     * @private
+     * @param paraWidget
+     * @param startoffset
+     * @param endoffset
+     * @param revisionId
+     * @param isParaMarkIncluded
+     */
+    // tslint:disable-next-line:max-line-length
+    Editor.prototype.applyRevisionForCurrentPara = function (paraWidget, startoffset, endoffset, revisionId, isParaMarkIncluded) {
+        var elementInfo = paraWidget.getInline(startoffset + 1, 0);
+        var currentElement = elementInfo.element;
+        var skipElement = false;
+        if (startoffset === paraWidget.getLength()) {
+            skipElement = true;
+        }
+        var endElement = paraWidget.getInline(endoffset, 0).element;
+        if (endoffset > paraWidget.getLength()) {
+            isParaMarkIncluded = true;
+        }
+        if (!isNullOrUndefined(currentElement) && !isNullOrUndefined(endElement)) {
+            if (!skipElement && currentElement === endElement) {
+                currentElement.removedIds.push(revisionId);
+                this.constructRevisionFromID(currentElement, true);
+            }
+            else {
+                while (currentElement !== endElement) {
+                    if (!skipElement) {
+                        currentElement.removedIds.push(revisionId);
+                        this.constructRevisionFromID(currentElement, true);
+                    }
+                    if (!isNullOrUndefined(currentElement.nextNode)) {
+                        currentElement = currentElement.nextNode.nextValidNodeForTracking;
+                    }
+                    skipElement = false;
+                }
+                if (!isNullOrUndefined(currentElement) && !skipElement) {
+                    currentElement.removedIds.push(revisionId);
+                    this.constructRevisionFromID(currentElement, true);
+                }
+            }
+        }
+        else if (!isNullOrUndefined(currentElement) && !skipElement) {
+            currentElement.removedIds.push(revisionId);
+            this.constructRevisionFromID(currentElement, true);
+        }
+        else if (!isNullOrUndefined(endElement)) {
+            endElement.removedIds.push(revisionId);
+            this.constructRevisionFromID(endElement, true);
+        }
+        if (isParaMarkIncluded) {
+            paraWidget.characterFormat.removedIds.push(revisionId);
+            this.constructRevisionFromID(paraWidget.characterFormat, true);
+        }
     };
     /**
      * Insert Table on undo
@@ -50285,18 +53169,30 @@ var Editor = /** @__PURE__ @class */ (function () {
         }
         this.reLayout(selection);
     };
-    Editor.prototype.insertInlineInternal = function (element) {
+    /**
+     * @private
+     */
+    Editor.prototype.insertInlineInternal = function (element, revisionType) {
         var selection = this.selection;
         var length = element.length;
         var paragraphInfo = this.selection.getParagraphInfo(selection.start);
+        revisionType = (isNullOrUndefined(revisionType) ? 'Insertion' : revisionType);
         if (selection.start.paragraph.isEmpty()) {
             var paragraph = selection.start.paragraph;
             if ((paragraph.paragraphFormat.textAlignment === 'Center' || paragraph.paragraphFormat.textAlignment === 'Right')
                 && paragraph.paragraphFormat.listFormat.listId === -1) {
                 paragraph.x = this.owner.viewer.clientActiveArea.x;
             }
+            // tslint:disable-next-line:max-line-length
+            var isUndoing = !isNullOrUndefined(this.editorHistory) ? (this.editorHistory.isUndoing || this.editorHistory.isRedoing) : false;
             paragraph.childWidgets[0].children.push(element);
             element.line = paragraph.childWidgets[0];
+            if (this.owner.enableTrackChanges && element.isValidNodeForTracking && !isUndoing) {
+                this.insertRevision(element, revisionType);
+            }
+            if (element.removedIds.length > 0 || isUndoing) {
+                this.constructRevisionFromID(element, true);
+            }
             element.linkFieldCharacter(this.documentHelper);
             this.documentHelper.layout.reLayoutParagraph(paragraph, 0, 0);
         }
@@ -50305,7 +53201,7 @@ var Editor = /** @__PURE__ @class */ (function () {
             var inlineObj = selection.start.currentWidget.getInline(selection.start.offset, indexInInline);
             var curInline = inlineObj.element;
             indexInInline = inlineObj.index;
-            this.insertElementInternal(curInline, element, indexInInline, true);
+            this.insertElementInternal(curInline, element, indexInInline, revisionType, true);
         }
         this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset + length, true);
     };
@@ -50316,17 +53212,21 @@ var Editor = /** @__PURE__ @class */ (function () {
         var lineIndex = -1;
         var lineWidget = undefined;
         var insertIndex = 0;
+        var begin = undefined;
         var paragraphInfo = this.selection.getParagraphInfo(selection.start);
+        var isTrackingEnabled = this.owner.enableTrackChanges;
+        var curInline = undefined;
+        var prevElement = undefined;
+        var indexInInline = 0;
         if (selection.start.paragraph.isEmpty()) {
             paragraph = selection.start.paragraph;
             lineWidget = paragraph.childWidgets[0];
             lineIndex = 0;
         }
         else {
-            var indexInInline = 0;
             var bidi = selection.start.paragraph.paragraphFormat.bidi;
             var inlineObj = selection.start.currentWidget.getInline(selection.start.offset, indexInInline, bidi);
-            var curInline = inlineObj.element;
+            curInline = inlineObj.element;
             indexInInline = inlineObj.index;
             paragraph = curInline.line.paragraph;
             lineIndex = paragraph.childWidgets.indexOf(curInline.line);
@@ -50340,26 +53240,31 @@ var Editor = /** @__PURE__ @class */ (function () {
                 if (!bidi) {
                     insertIndex++;
                 }
+                begin = false;
             }
             else if (indexInInline === 0) {
-                if (isRtl && bidi && (this.isInsertField || this.isPaste)) {
+                if (isRtl && bidi && this.isInsertField) {
                     insertIndex++;
                 }
                 else if (isNullOrUndefined(curInline.previousNode)) {
                     insertIndex = 0;
                 }
+                begin = true;
             }
             else {
                 insertIndex++;
-                var prevElement = new TextElementBox();
+                prevElement = new TextElementBox();
                 prevElement.characterFormat.copyFormat(curInline.characterFormat);
-                if (bidi && (this.isInsertField || this.isPaste) && isRtl) {
+                if (bidi && this.isInsertField && isRtl) {
                     prevElement.text = curInline.text.slice(0, indexInInline);
                     curInline.text = curInline.text.substring(indexInInline);
                 }
                 else {
                     prevElement.text = curInline.text.substring(indexInInline);
                     curInline.text = curInline.text.slice(0, indexInInline);
+                }
+                if (curInline.revisions.length > 0 && !this.owner.enableTrackChanges) {
+                    this.splitRevisionForSpittedElement(curInline, prevElement);
                 }
                 lineWidget.children.splice(insertIndex, 0, prevElement);
                 prevElement.line = curInline.line;
@@ -50370,35 +53275,81 @@ var Editor = /** @__PURE__ @class */ (function () {
             if (element[i] instanceof TextElementBox && element[i].text.indexOf(' ') >= 0) {
                 this.documentHelper.triggerSpellCheck = true;
             }
+            var prevRevisionsCount = element[i].revisions.length;
             element[i].ischangeDetected = true;
             lineWidget.children.splice(insertIndex, 0, element[i]);
             element[i].line = lineWidget;
             element[i].linkFieldCharacter(this.documentHelper);
+            // tslint:disable-next-line:max-line-length
+            var isRevisionCombined = this.updateRevisionForElement(curInline, element[i], indexInInline, (i === 0) ? true : false, prevElement, begin);
+            //Check to combine elements with previous / next para
+            if (isTrackingEnabled && !isRevisionCombined && element[i].revisions.length === prevRevisionsCount) {
+                //if (!(element[i] instanceof FieldElementBox && (element[i] as FieldElementBox).fieldType === 2)) {
+                // tslint:disable-next-line:max-line-length
+                this.checkToCombineRevisionsinBlocks(element[i], prevRevisionsCount === element[i].revisions.length, (i > 0 && i === element.length - 1), 'Insertion');
+                //}
+            }
+            curInline = element[i];
             insertIndex++;
         }
         if (paragraphFormat) {
-            // If paragraph direction is right to left and paste paragraph with LTR direction
-            // Considered new paragraph also RTL
-            if (paragraph.paragraphFormat.bidi === true) {
-                this.isInsertField = true;
-                paragraphFormat.bidi = true;
-                paragraphFormat.textAlignment = paragraph.paragraphFormat.textAlignment;
-            }
-            if (this.copiedTextContent.indexOf('\n') !== -1 || paragraphFormat.listFormat && paragraphFormat.listFormat.listId !== -1) {
-                paragraph.paragraphFormat.copyFormat(paragraphFormat);
-            }
+            paragraph.paragraphFormat.copyFormat(paragraphFormat);
         }
         // tslint:disable-next-line:max-line-length
         this.documentHelper.layout.reLayoutParagraph(paragraph, lineIndex, 0, this.isInsertField ? undefined : paragraph.paragraphFormat.bidi);
         this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset + length, true);
     };
-    Editor.prototype.insertElementInternal = function (element, newElement, index, relayout) {
+    // tslint:disable-next-line:max-line-length
+    Editor.prototype.updateRevisionForElement = function (currentElement, newElement, indexInInline, isFirstItem, prevElement, isBeginning) {
+        if (!this.owner.enableTrackChanges) {
+            return false;
+        }
+        if (isNullOrUndefined(currentElement) && isNullOrUndefined(prevElement)) {
+            return false;
+        }
+        var isMiddle = isNullOrUndefined(isBeginning) ? true : false;
+        var prevRevisionCount = newElement.revisions.length;
+        if (isFirstItem) {
+            if (isMiddle) {
+                // tslint:disable-next-line:max-line-length
+                var isRevisionCombined = this.checkToMapRevisionWithInlineText(currentElement, indexInInline, newElement, false, 'Insertion');
+                if (isRevisionCombined || newElement.revisions.length > prevRevisionCount) {
+                    this.copyElementRevision(currentElement, prevElement, true);
+                }
+                else if (newElement.revisions.length === 0) {
+                    this.splitRevisionForSpittedElement(currentElement, prevElement);
+                    this.insertRevision(newElement, 'Insertion');
+                }
+            }
+            else if (isBeginning) {
+                return this.insertRevisionAtBegining(currentElement, newElement, 'Insertion');
+            }
+            else {
+                return this.insertRevisionAtEnd(currentElement, newElement, 'Insertion');
+            }
+        }
+        else {
+            // if (currentElement instanceof FieldElementBox && currentElement.fieldType === 2) {
+            //     currentElement = (currentElement as FieldElementBox).previousElement;
+            // }
+            return this.insertRevisionAtEnd(currentElement, newElement, 'Insertion');
+        }
+        return false;
+    };
+    // tslint:disable-next-line:max-line-length
+    Editor.prototype.insertElementInternal = function (element, newElement, index, revisionType, relayout) {
         var line = element.line;
         var paragraph = line.paragraph;
         var lineIndex = line.indexInOwner;
         var insertIndex = element.indexInOwner;
         var isBidi = paragraph.paragraphFormat.bidi && element.isRightToLeft;
         var isEqualFormat = false;
+        revisionType = isNullOrUndefined(revisionType) ? 'Insertion' : revisionType;
+        // tslint:disable-next-line:max-line-length
+        var isUndoing = this.skipTracking();
+        var isTrackingEnabled = this.owner.enableTrackChanges;
+        var isRevisionCombined = false;
+        var prevRevisionCount = newElement.revisions.length;
         if (this.owner.editorHistory && (this.owner.editorHistory.isUndoing || this.owner.editorHistory.isRedoing)
             && newElement instanceof TextElementBox) {
             isEqualFormat = element.characterFormat.isEqualFormat(newElement.characterFormat)
@@ -50410,9 +53361,21 @@ var Editor = /** @__PURE__ @class */ (function () {
                 if (!isBidi) {
                     insertIndex++;
                 }
+                if (newElement.removedIds.length > 0 || isUndoing) {
+                    this.constructRevisionFromID(newElement, true, element);
+                }
+                else if (isTrackingEnabled && !isUndoing && !this.skipFieldDeleteTracking) {
+                    isRevisionCombined = this.insertRevisionAtEnd(element, newElement, revisionType);
+                }
                 line.children.splice(insertIndex, 0, newElement);
             }
             else if (index === 0) {
+                if (newElement.removedIds.length > 0) {
+                    this.constructRevisionFromID(newElement, false);
+                }
+                else if (isTrackingEnabled && !isUndoing && !this.skipFieldDeleteTracking) {
+                    isRevisionCombined = this.insertRevisionAtBegining(element, newElement, revisionType);
+                }
                 if (isNullOrUndefined(element.previousNode)) {
                     element.line.children.splice(0, 0, newElement);
                     insertIndex = 0;
@@ -50428,9 +53391,34 @@ var Editor = /** @__PURE__ @class */ (function () {
                 var textElement = new TextElementBox();
                 textElement.characterFormat.copyFormat(element.characterFormat);
                 textElement.text = element.text.substring(index);
+                if (element.revisions.length > 0 && !isTrackingEnabled && !isUndoing && newElement.removedIds.length === 0) {
+                    this.splitRevisionForSpittedElement(element, textElement);
+                }
                 element.text = element.text.substr(0, index);
                 line.children.splice(insertIndex, 0, textElement);
                 textElement.line = element.line;
+                isRevisionCombined = true;
+                if (newElement.removedIds.length > 0) {
+                    this.constructRevisionFromID(newElement, false);
+                    this.copyElementRevision(element, textElement, true);
+                }
+                else if (this.owner.enableTrackChanges) {
+                    // tslint:disable-next-line:max-line-length
+                    if (!(newElement instanceof BookmarkElementBox) && !(newElement instanceof CommentCharacterElementBox) && !(newElement instanceof EditRangeStartElementBox) && !(newElement instanceof EditRangeEndElementBox)) {
+                        // tslint:disable-next-line:max-line-length
+                        var isRevisionCombined_1 = this.checkToMapRevisionWithInlineText(element, index, newElement, isBidi, revisionType);
+                        if (isRevisionCombined_1 || newElement.revisions.length > prevRevisionCount) {
+                            this.copyElementRevision(element, textElement, true);
+                        }
+                        else if (newElement.revisions.length === prevRevisionCount) {
+                            this.splitRevisionForSpittedElement(element, textElement);
+                            this.insertRevision(newElement, revisionType);
+                        }
+                    }
+                    else {
+                        this.copyElementRevision(element, textElement, false);
+                    }
+                }
                 //Inserts the new inline.
                 line.children.splice(isBidi ? insertIndex + 1 : insertIndex, 0, newElement);
                 insertIndex -= 1;
@@ -50442,8 +53430,59 @@ var Editor = /** @__PURE__ @class */ (function () {
         }
         newElement.line = element.line;
         newElement.linkFieldCharacter(this.documentHelper);
+        if (isTrackingEnabled && !isRevisionCombined && !isUndoing && !this.skipFieldDeleteTracking) {
+            // tslint:disable-next-line:max-line-length
+            this.checkToCombineRevisionsinBlocks(newElement, prevRevisionCount === newElement.revisions.length, (index === element.length), revisionType);
+        }
         if (relayout) {
             this.documentHelper.layout.reLayoutParagraph(paragraph, lineIndex, insertIndex);
+        }
+    };
+    /**
+     * @private
+     */
+    /* tslint:disable:no-any */
+    Editor.prototype.constructRevisionFromID = function (insertElement, isEnd, prevElement) {
+        if (insertElement.removedIds.length > 0) {
+            for (var i = 0; i < insertElement.removedIds.length; i++) {
+                var revisionToInclude = undefined;
+                if (this.documentHelper.revisionsInternal.containsKey(insertElement.removedIds[i])) {
+                    revisionToInclude = this.documentHelper.revisionsInternal.get(insertElement.removedIds[i]);
+                    insertElement.revisions.push(revisionToInclude);
+                    isEnd = isEnd ? true : this.skipTracking();
+                    if (isEnd) {
+                        // tslint:disable-next-line:max-line-length
+                        if (this.editorHistory.isRedoing && this.owner.editorHistory.currentBaseHistoryInfo && this.owner.editorHistory.currentBaseHistoryInfo.action === 'BackSpace') {
+                            isEnd = false;
+                        }
+                    }
+                    if (!isNullOrUndefined(prevElement)) {
+                        var rangeIndex = revisionToInclude.range.indexOf(prevElement);
+                        if (rangeIndex >= 0) {
+                            revisionToInclude.range.splice(rangeIndex + ((isEnd) ? 1 : 0), 0, insertElement);
+                        }
+                        else {
+                            revisionToInclude.range.splice((isEnd) ? revisionToInclude.range.length : 0, 0, insertElement);
+                        }
+                    }
+                    else {
+                        revisionToInclude.range.splice((isEnd) ? revisionToInclude.range.length : 0, 0, insertElement);
+                    }
+                    this.updateRevisionCollection(revisionToInclude);
+                }
+            }
+            insertElement.removedIds = [];
+        }
+        else {
+            // on undoing revisions will be cloned , so need to update range information.
+            for (var i = 0; i < insertElement.revisions.length; i++) {
+                var currentRevision = insertElement.revisions[i];
+                if (this.documentHelper.revisionsInternal.containsKey(currentRevision.revisionID)) {
+                    currentRevision = this.documentHelper.revisionsInternal.get(currentRevision.revisionID);
+                    currentRevision.range.splice(isEnd ? currentRevision.range.length : 0, 0, insertElement);
+                    this.updateRevisionCollection(currentRevision);
+                }
+            }
         }
     };
     /**
@@ -50486,7 +53525,12 @@ var Editor = /** @__PURE__ @class */ (function () {
         var startPara = this.selection.start.paragraph;
         if (!selection.start.isAtParagraphStart) {
             if (block instanceof ParagraphWidget) {
+                var startPosition = selection.start.clone();
+                //let prevBlock: ParagraphWidget = (block as ParagraphWidget).clone()
                 this.insertNewParagraphWidget(block, false);
+                if (!this.isInsertingTOC) {
+                    this.combineRevisions(block, startPosition, this.selection.end);
+                }
                 return;
             }
             this.updateInsertPosition();
@@ -50509,6 +53553,15 @@ var Editor = /** @__PURE__ @class */ (function () {
                 block.isGridUpdated = true;
             }
             this.updateNextBlocksIndex(block, true);
+            if (!this.isInsertingTOC && this.owner.enableTrackChanges && !this.skipTracking() && block instanceof ParagraphWidget) {
+                this.insertRevisionForBlock(block, 'Insertion');
+            }
+            else if (block instanceof ParagraphWidget) {
+                this.constructRevisionsForBlock(block, true);
+            }
+            else if (block instanceof TableWidget) {
+                this.constructRevisionsForTable(block, true);
+            }
             this.documentHelper.layout.layoutBodyWidgetCollection(blockIndex, bodyWidget, block, false);
         }
     };
@@ -50616,6 +53669,9 @@ var Editor = /** @__PURE__ @class */ (function () {
                 var cellCountInfo = this.updateRowspan(row, rowPlacement === 'Below' ? endCell : startCell, rowPlacement);
                 var newRow = this.createRowAndColumn(cellCountInfo.count, i);
                 newRow.rowFormat.copyFormat(row.rowFormat);
+                if (this.owner.enableTrackChanges) {
+                    this.insertRevision(newRow.rowFormat, 'Insertion');
+                }
                 this.updateCellFormatForInsertedRow(newRow, cellCountInfo.cellFormats);
                 rows.push(newRow);
             }
@@ -50923,6 +53979,9 @@ var Editor = /** @__PURE__ @class */ (function () {
         while (index < rows) {
             var tableRow = this.createRowAndColumn(columns, index);
             tableRow.rowFormat.heightType = 'Auto';
+            if (this.owner.enableTrackChanges) {
+                this.insertRevision(tableRow.rowFormat, 'Insertion');
+            }
             tableRow.containerWidget = table;
             table.childWidgets.push(tableRow);
             index++;
@@ -51047,6 +54106,27 @@ var Editor = /** @__PURE__ @class */ (function () {
         if (!this.canMergeCells()) {
             return;
         }
+        if (this.owner.enableTrackChanges) {
+            var localizeValue = new L10n('documenteditor', this.owner.defaultLocale);
+            localizeValue.setLocale(this.owner.locale);
+            // tslint:disable:no-duplicate-variable
+            this.alertDialog = DialogUtility.alert({
+                title: localizeValue.getConstant('UnTrack'),
+                content: localizeValue.getConstant('Merge Track'),
+                showCloseIcon: true,
+                okButton: {
+                    text: 'Ok', click: this.confirmCellMerge.bind(this)
+                },
+                closeOnEscape: true,
+                position: { X: 'center', Y: 'center' },
+                animationSettings: { effect: 'Zoom' }
+            });
+        }
+        else {
+            this.confirmCellMerge();
+        }
+    };
+    Editor.prototype.confirmCellMerge = function () {
         if (this.checkIsNotRedoing()) {
             this.initHistory('MergeCells');
         }
@@ -51076,6 +54156,10 @@ var Editor = /** @__PURE__ @class */ (function () {
         }
         if (this.checkIsNotRedoing() || isNullOrUndefined(this.editorHistory)) {
             this.reLayout(this.selection, false);
+        }
+        if (!isNullOrUndefined(this.alertDialog)) {
+            this.alertDialog.close();
+            this.alertDialog = undefined;
         }
     };
     Editor.prototype.mergeSelectedCells = function (table, startCell, endCell) {
@@ -51432,6 +54516,7 @@ var Editor = /** @__PURE__ @class */ (function () {
         newParagraph.index = currentParagraph.index;
         newParagraph.containerWidget = bodyWidget;
         bodyWidget.childWidgets.splice(insertIndex, 0, newParagraph);
+        this.constructRevisionsForBlock(newParagraph, true);
         this.updateNextBlocksIndex(insertAfter ? currentParagraph : newParagraph, true);
         newParagraph.height = 0;
         this.documentHelper.layout.layoutBodyWidgetCollection(newParagraph.index, bodyWidget, newParagraph, false);
@@ -51522,6 +54607,7 @@ var Editor = /** @__PURE__ @class */ (function () {
                 paragraph.firstChild.children.splice(insertIndex, 0, span);
                 span.line = paragraph.firstChild;
                 insertIndex++;
+                this.updateRevisionForMovedContent(inline, span);
                 inline.text = inline.text.slice(0, startIndex) + inline.text.slice(endIndex);
                 inline.ischangeDetected = true;
             }
@@ -51531,6 +54617,14 @@ var Editor = /** @__PURE__ @class */ (function () {
             count += endIndex - startIndex;
         }
         return insertIndex;
+    };
+    Editor.prototype.updateRevisionForMovedContent = function (inline, tempSpan) {
+        for (var i = 0; i < inline.revisions.length; i++) {
+            var currentRevision = inline.revisions[i];
+            var rangeIndex = currentRevision.range.indexOf(inline);
+            tempSpan.revisions.splice(0, 0, currentRevision);
+            currentRevision.range.splice(rangeIndex, 0, tempSpan);
+        }
     };
     /**
      * update complex changes when history is not preserved
@@ -51585,7 +54679,7 @@ var Editor = /** @__PURE__ @class */ (function () {
      * @param isSelectionChanged
      * @private
      */
-    Editor.prototype.reLayout = function (selection, isSelectionChanged, isLayoutChanged) {
+    Editor.prototype.reLayout = function (selection, isSelectionChanged) {
         if (!this.documentHelper.isComposingIME && this.editorHistory && this.editorHistory.isHandledComplexHistory()) {
             if (this.editorHistory.currentHistoryInfo && this.editorHistory.currentHistoryInfo.action !== 'ClearFormat') {
                 if (this.editorHistory.currentHistoryInfo.action !== 'ApplyStyle') {
@@ -51608,6 +54702,9 @@ var Editor = /** @__PURE__ @class */ (function () {
         }
         if (isNullOrUndefined(isSelectionChanged)) {
             isSelectionChanged = selection.isEmpty;
+        }
+        if (this.owner.showRevisions) {
+            this.owner.trackChangesPane.updateTrackChanges();
         }
         if (selection.owner.isShiftingEnabled) {
             selection.owner.isShiftingEnabled = false;
@@ -51632,9 +54729,6 @@ var Editor = /** @__PURE__ @class */ (function () {
                 this.editorHistory.currentBaseHistoryInfo.updateSelection();
             }
             this.editorHistory.updateHistory();
-        }
-        if (isLayoutChanged) {
-            return;
         }
         this.fireContentChange();
     };
@@ -52002,6 +55096,9 @@ var Editor = /** @__PURE__ @class */ (function () {
         this.applyCharFormatValue(listLevel.characterFormat, property, value, update);
         this.startSelectionReLayouting(startPositionInternal.paragraph, selection, startPositionInternal, endPositionInternal);
     };
+    /**
+     * @private
+     */
     Editor.prototype.updateInsertPosition = function () {
         var selection = this.documentHelper.selection;
         var position = selection.start;
@@ -52846,6 +55943,28 @@ var Editor = /** @__PURE__ @class */ (function () {
                 format.copyFormat(value);
             }
             return;
+        }
+        if (this.isForHyperlinkFormat && this.owner.enableTrackChanges && format.ownerBase instanceof ElementBox) {
+            var currentElement = format.ownerBase;
+            var prevElement = currentElement.previousNode;
+            if (isNullOrUndefined(prevElement)) {
+                var paraWidget = currentElement.paragraph.previousWidget;
+                if (!isNullOrUndefined(paraWidget) && !paraWidget.isEmpty()) {
+                    var lineWidget = paraWidget.lastChild;
+                    prevElement = lineWidget.children[lineWidget.children.length - 1];
+                }
+            }
+            while (!isNullOrUndefined(prevElement) && !(prevElement instanceof TextElementBox)) {
+                prevElement = prevElement.previousNode;
+            }
+            if (!isNullOrUndefined(prevElement) && prevElement.revisions.length > 0) {
+                var currentRevision = prevElement.revisions[prevElement.revisions.length - 1];
+                currentElement.revisions.push(currentRevision);
+                currentRevision.range.push(currentElement);
+            }
+            else {
+                this.insertRevision(currentElement, 'Insertion');
+            }
         }
         if (isNullOrUndefined(value)) {
             format.clearFormat();
@@ -53918,7 +57037,7 @@ var Editor = /** @__PURE__ @class */ (function () {
         this.setPositionForCurrentIndex(startPosition, startIndex);
         this.setPositionForCurrentIndex(endPosition, endIndex);
         this.documentHelper.selection.selectPosition(startPosition, endPosition);
-        this.reLayout(this.documentHelper.selection, false, isLayoutChanged);
+        this.reLayout(this.documentHelper.selection);
     };
     Editor.prototype.combineSection = function () {
         var sections = [];
@@ -54260,7 +57379,8 @@ var Editor = /** @__PURE__ @class */ (function () {
         //If end is not table end and start is outside the table, then skip removing the contents and move caret to start position.
         if (end.paragraph.isInsideTable
             && end.paragraph !== selection.getLastParagraphInLastCell(end.paragraph.associatedCell.ownerTable)
-            && (!start.paragraph.isInsideTable || start.paragraph.associatedCell.ownerTable !== end.paragraph.associatedCell.ownerTable)) {
+            && (!start.paragraph.isInsideTable
+                || start.paragraph.associatedCell.ownerTable.index !== end.paragraph.associatedCell.ownerTable.index)) {
             return false;
         }
         selection.owner.isShiftingEnabled = true;
@@ -54368,7 +57488,18 @@ var Editor = /** @__PURE__ @class */ (function () {
             if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo) {
                 this.editorHistory.currentBaseHistoryInfo.removedNodes.push(table.clone());
             }
-            this.removeBlock(table);
+            if (this.owner.enableTrackChanges) {
+                for (var i = 0; i < table.childWidgets.length; i++) {
+                    if (i === 0) {
+                        var nextCell = table.childWidgets[0];
+                        paragraph = this.selection.getFirstParagraph(nextCell);
+                    }
+                    this.trackRowDeletion(table.childWidgets[i]);
+                }
+            }
+            else {
+                this.removeBlock(table);
+            }
             this.selection.selectParagraphInternal(paragraph, true);
             if (this.checkIsNotRedoing() || isNullOrUndefined(this.editorHistory)) {
                 this.reLayout(this.selection);
@@ -54382,6 +57513,26 @@ var Editor = /** @__PURE__ @class */ (function () {
         if (this.owner.isReadOnlyMode) {
             return;
         }
+        if (this.owner.enableTrackChanges) {
+            var localizeValue = new L10n('documenteditor', this.owner.defaultLocale);
+            localizeValue.setLocale(this.owner.locale);
+            this.alertDialog = DialogUtility.alert({
+                title: localizeValue.getConstant('UnTrack'),
+                content: localizeValue.getConstant('Merge Track'),
+                showCloseIcon: true,
+                okButton: {
+                    text: 'Ok', click: this.onDeleteColumnConfirmed.bind(this)
+                },
+                closeOnEscape: true,
+                position: { X: 'center', Y: 'center' },
+                animationSettings: { effect: 'Zoom' }
+            });
+        }
+        else {
+            this.onDeleteColumnConfirmed();
+        }
+    };
+    Editor.prototype.onDeleteColumnConfirmed = function () {
         var startPos = this.selection.isForward ? this.selection.start : this.selection.end;
         var endPos = this.selection.isForward ? this.selection.end : this.selection.start;
         if (startPos.paragraph.isInsideTable) {
@@ -54453,6 +57604,10 @@ var Editor = /** @__PURE__ @class */ (function () {
             if (isNullOrUndefined(this.editorHistory) || this.checkIsNotRedoing()) {
                 this.reLayout(this.selection, true);
             }
+            if (!isNullOrUndefined(this.alertDialog)) {
+                this.alertDialog.close();
+                this.alertDialog = undefined;
+            }
         }
     };
     /**
@@ -54464,6 +57619,8 @@ var Editor = /** @__PURE__ @class */ (function () {
         }
         var startPos = !this.selection.isForward ? this.selection.end : this.selection.start;
         var endPos = !this.selection.isForward ? this.selection.start : this.selection.end;
+        var blockInfo = this.selection.getParagraphInfo(startPos);
+        var startIndex = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
         if (startPos.paragraph.isInsideTable) {
             var startCell = this.getOwnerCell(this.selection.isForward);
             var endCell = this.getOwnerCell(!this.selection.isForward);
@@ -54484,6 +57641,7 @@ var Editor = /** @__PURE__ @class */ (function () {
             if (isNullOrUndefined(paragraph)) {
                 paragraph = this.getParagraphForSelection(table);
             }
+            startPos = startPos.clone();
             if (!this.selection.isEmpty) {
                 //tslint:disable-next-line:max-line-length
                 var containerCell = this.selection.getContainerCellOf(startCell, endCell);
@@ -54509,9 +57667,14 @@ var Editor = /** @__PURE__ @class */ (function () {
                         for (var i = 0; i < table.childWidgets.length; i++) {
                             var tableRow = table.childWidgets[i];
                             if (tableRow.rowIndex >= row.rowIndex && tableRow.rowIndex <= endRow.rowIndex) {
-                                table.childWidgets.splice(i, 1);
-                                tableRow.destroy();
-                                i--;
+                                if (this.owner.enableTrackChanges && this.checkIsNotRedoing()) {
+                                    this.trackRowDeletion(tableRow);
+                                }
+                                else {
+                                    table.childWidgets.splice(i, 1);
+                                    tableRow.destroy();
+                                    i--;
+                                }
                             }
                         }
                         if (table.childWidgets.length === 0) {
@@ -54528,16 +57691,88 @@ var Editor = /** @__PURE__ @class */ (function () {
                 }
             }
             else {
-                this.removeRow(row);
+                if (this.owner.enableTrackChanges) {
+                    this.trackRowDeletion(row);
+                }
+                else {
+                    this.removeRow(row);
+                }
             }
-            this.selection.selectParagraphInternal(paragraph, true);
+            if (!this.owner.enableTrackChanges || isNullOrUndefined(table.childWidgets)) {
+                this.selection.selectParagraphInternal(paragraph, true);
+            }
+            else {
+                var textPosition = this.selection.getTextPosBasedOnLogicalIndex(startIndex);
+                this.selection.selectContent(textPosition, true);
+                // this.selection.start.setPositionInternal(startPos);
+                // this.selection.end.setPositionInternal(this.selection.start);
+            }
             if (isNullOrUndefined(this.editorHistory) || this.checkIsNotRedoing()) {
                 this.reLayout(this.selection, true);
             }
         }
     };
+    /**
+     * Method to track row deletion
+     * @param row
+     */
+    Editor.prototype.trackRowDeletion = function (row, canremoveRow) {
+        var rowFormat = row.rowFormat;
+        if (!isNullOrUndefined(rowFormat)) {
+            var canInsertRevision = true;
+            if (rowFormat.revisions.length > 0) {
+                var revision = this.retrieveRevisionInOder(rowFormat);
+                if (revision.revisionType === 'Insertion') {
+                    if (this.isRevisionMatched(rowFormat, undefined)) {
+                        if (isNullOrUndefined(canremoveRow)) {
+                            this.removeRow(row);
+                        }
+                        else {
+                            this.removeRevisionsInRow(row);
+                        }
+                        return true;
+                    }
+                }
+                else if (revision.revisionType === 'Deletion') {
+                    this.unlinkWholeRangeInRevision(rowFormat, revision);
+                }
+            }
+            if (canInsertRevision) {
+                this.insertRevision(rowFormat, 'Deletion');
+            }
+            for (var i = 0; i < row.childWidgets.length; i++) {
+                var cellWidget = row.childWidgets[i];
+                for (var j = 0; j < cellWidget.childWidgets.length; j++) {
+                    if (cellWidget.childWidgets[j] instanceof TableWidget) {
+                        this.trackInnerTable(cellWidget.childWidgets[i]);
+                    }
+                    else {
+                        var paraWidget = cellWidget.childWidgets[j];
+                        this.insertRevisionForBlock(paraWidget, 'Deletion');
+                    }
+                }
+            }
+        }
+        return false;
+    };
+    Editor.prototype.trackInnerTable = function (tableWidget) {
+        for (var i = 0; i < tableWidget.childWidgets.length; i++) {
+            this.trackRowDeletion(tableWidget.childWidgets[i]);
+        }
+    };
+    Editor.prototype.returnDeleteRevision = function (revisions) {
+        for (var i = 0; i < revisions.length; i++) {
+            if (revisions[i].revisionType === 'Deletion') {
+                return revisions[i];
+            }
+        }
+        return undefined;
+    };
     Editor.prototype.removeRow = function (row) {
         var table = row.ownerTable;
+        if (row.rowFormat.revisions.length > 0) {
+            this.removeRevisionsInRow(row);
+        }
         if (table.childWidgets.length === 1) {
             this.removeBlock(table);
             if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo) {
@@ -54551,6 +57786,10 @@ var Editor = /** @__PURE__ @class */ (function () {
             this.updateTable(table);
         }
     };
+    /**
+     * @private
+     * @param table
+     */
     Editor.prototype.updateTable = function (table) {
         table.updateRowIndex(0);
         table.isGridUpdated = false;
@@ -54649,9 +57888,34 @@ var Editor = /** @__PURE__ @class */ (function () {
                 return;
             }
             else {
-                currentParagraph = this.splitParagraph(paragraph, paragraph.firstChild, 0, startLine, startOffset, true);
-                this.insertParagraphPaste(paragraph, currentParagraph, start, end, isCombineNextParagraph, editAction);
-                this.addRemovedNodes(paragraph);
+                if (this.skipTracking() && this.editorHistory.currentBaseHistoryInfo.action === 'ParaMarkTrack') {
+                    this.addRemovedNodes(paragraph.characterFormat.cloneFormat());
+                    if (paragraph.characterFormat.revisions.length > 0) {
+                        this.unlinkRangeFromRevision(paragraph.characterFormat, true);
+                    }
+                    paragraph.characterFormat.revisions = [];
+                }
+                else {
+                    // tslint:disable-next-line:max-line-length
+                    if (this.owner.enableTrackChanges && !this.skipTracking() && this.editorHistory.currentBaseHistoryInfo.action !== 'TOC' && this.editorHistory.currentBaseHistoryInfo.action !== 'Reject Change') {
+                        if (isCombineNextParagraph) {
+                            // tslint:disable-next-line:max-line-length
+                            currentParagraph = this.splitParagraph(paragraph, paragraph.firstChild, 0, startLine, startOffset, true);
+                            this.deleteParagraphMark(currentParagraph, selection, editAction, true);
+                            this.addRemovedNodes(paragraph);
+                        }
+                        else {
+                            this.removeInlines(paragraph, startLine, startOffset, endLineWidget, endOffset, editAction);
+                        }
+                    }
+                    else {
+                        // tslint:disable-next-line:max-line-length
+                        currentParagraph = this.splitParagraph(paragraph, paragraph.firstChild, 0, startLine, startOffset, true);
+                        this.insertParagraphPaste(paragraph, currentParagraph, start, end, isCombineNextParagraph, editAction);
+                        this.removeRevisionForBlock(paragraph, undefined, false);
+                        this.addRemovedNodes(paragraph);
+                    }
+                }
                 return;
             }
         }
@@ -54661,13 +57925,38 @@ var Editor = /** @__PURE__ @class */ (function () {
             var prevParagraph = (previousBlock instanceof ParagraphWidget) ? previousBlock : undefined;
             var nextWidget = paragraph.nextRenderedWidget;
             if (editAction < 4) {
+                // tslint:disable-next-line:max-line-length
                 //Checks whether this is last paragraph of owner text body and previousBlock is not paragraph.
-                newParagraph = this.checkAndInsertBlock(paragraph, start, end, editAction, prevParagraph);
-                this.removeBlock(paragraph);
+                if (this.owner.enableTrackChanges && !this.skipTracking() && this.editorHistory.currentBaseHistoryInfo && this.editorHistory.currentBaseHistoryInfo.action !== 'TOC') {
+                    this.insertRevisionForBlock(paragraph, 'Deletion');
+                    if (paragraph.isEmpty()) {
+                        newParagraph = this.checkAndInsertBlock(paragraph, start, end, editAction, prevParagraph);
+                        this.removeBlock(paragraph);
+                    }
+                    else {
+                        // tslint:disable-next-line:max-line-length
+                        // On deleting para, para items may be added with delete revisions so we need to ensure whether it can be combined with prev/ next para.
+                        this.combineRevisionWithBlocks(paragraph.firstChild.children[0]);
+                    }
+                    if (paragraph === end.paragraph && this.editorHistory.currentBaseHistoryInfo.action === 'Delete') {
+                        var paraInfo = this.selection.getParagraphInfo(end);
+                        this.selection.editPosition = this.selection.getHierarchicalIndex(paraInfo.paragraph, paraInfo.offset.toString());
+                    }
+                    if (start.paragraph !== paragraph && !isNullOrUndefined(block)) {
+                        this.delBlockContinue = true;
+                        this.delBlock = block;
+                        return;
+                    }
+                }
+                else {
+                    newParagraph = this.checkAndInsertBlock(paragraph, start, end, editAction, prevParagraph);
+                    this.removeRevisionForBlock(paragraph, undefined, false);
+                    this.addRemovedNodes(paragraph);
+                    this.removeBlock(paragraph);
+                }
                 if (this.documentHelper.blockToShift === paragraph) {
                     this.documentHelper.blockToShift = undefined;
                 }
-                this.addRemovedNodes(paragraph);
                 if (!isNullOrUndefined(newParagraph)) {
                     selection.editPosition = this.selection.getHierarchicalIndex(newParagraph, '0');
                     var offset = selection.getParagraphLength(newParagraph) + 1;
@@ -54766,6 +58055,9 @@ var Editor = /** @__PURE__ @class */ (function () {
         }
         return undefined;
     };
+    /**
+     * @private
+     */
     // tslint:disable-next-line:max-line-length
     Editor.prototype.splitParagraph = function (paragraphAdv, startLine, startOffset, endLine, endOffset, removeBlock) {
         var paragraph = new ParagraphWidget();
@@ -54819,6 +58111,19 @@ var Editor = /** @__PURE__ @class */ (function () {
             this.documentHelper.layout.layoutBodyWidgetCollection(block.index, containerWidget, block, false, isSkipShifting);
         }
     };
+    Editor.prototype.toCheckForTrack = function (block) {
+        if (this.owner.enableTrackChanges && !this.skipTracking()) {
+            if (block instanceof TableWidget && block.childWidgets.length > 0) {
+                var rowFormat = block.childWidgets[0].rowFormat;
+                if ((rowFormat.revisions.length > 0 && rowFormat.revisions[0].revisionType !== 'Insertion'
+                    && rowFormat.revisions[0].author === (this.owner.currentUser === '' ? 'Guest user' : this.owner.currentUser))
+                    || (rowFormat.revisions.length === 0)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
     Editor.prototype.removeAutoShape = function (inline) {
         var shapeIndex = inline.line.paragraph.floatingElements.indexOf(inline);
         // tslint:disable-next-line:max-line-length
@@ -54853,6 +58158,9 @@ var Editor = /** @__PURE__ @class */ (function () {
             }
         }
     };
+    /**
+     * @private
+     */
     Editor.prototype.addRemovedNodes = function (node) {
         if (node instanceof CommentCharacterElementBox && node.commentType === 0 && node.commentMark) {
             node.removeCommentMark();
@@ -54976,54 +58284,126 @@ var Editor = /** @__PURE__ @class */ (function () {
     // tslint:disable-next-line:max-line-length
     Editor.prototype.deleteCellsInTable = function (table, selection, start, end, editAction) {
         var clonedTable = undefined;
-        var isDeleteCells = false;
         var action = 'Delete';
+        var isDeleteCells = false;
         var startCell = start.paragraph.associatedCell;
         var endCell = end.paragraph.associatedCell;
         if (this.editorHistory && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)) {
             action = this.editorHistory.currentBaseHistoryInfo.action;
             //tslint:disable-next-line:max-line-length
             isDeleteCells = this.editorHistory.currentBaseHistoryInfo.action === 'BackSpace' || this.editorHistory.currentBaseHistoryInfo.action === 'DeleteCells'
-                || this.editorHistory.currentBaseHistoryInfo.action === 'InsertTable' || (isNullOrUndefined(startCell.ownerRow.previousWidget)
+                || this.editorHistory.currentBaseHistoryInfo.action === 'InsertTable' || this.editorHistory.currentBaseHistoryInfo.action === 'RemoveRowTrack' || (isNullOrUndefined(startCell.ownerRow.previousWidget)
                 && isNullOrUndefined(endCell.ownerRow.nextWidget) && this.editorHistory.currentBaseHistoryInfo.action === 'Cut');
-            this.editorHistory.currentBaseHistoryInfo.action = isDeleteCells ? 'DeleteCells' : 'ClearCells';
             clonedTable = this.cloneTableToHistoryInfo(table);
+            if (this.editorHistory.currentBaseHistoryInfo.action === 'RemoveRowTrack') {
+                return;
+            }
+            this.editorHistory.currentBaseHistoryInfo.action = isDeleteCells ? 'DeleteCells' : 'ClearCells';
             selection.owner.isLayoutEnabled = false;
         }
         var startColumnIndex = startCell.columnIndex;
         var endColumnIndex = endCell.columnIndex + endCell.cellFormat.columnSpan - 1;
         var startRowIndex = startCell.rowIndex;
         var endRowIndex = endCell.rowIndex;
-        var isStarted = false;
-        var isCellCleared = false;
-        for (var i = 0; i < table.childWidgets.length; i++) {
-            var row = table.childWidgets[i];
-            if (row.index >= startRowIndex && row.index <= endRowIndex) {
-                for (var j = 0; j < row.childWidgets.length; j++) {
-                    var cell = row.childWidgets[j];
-                    if (cell.columnIndex >= startColumnIndex && cell.columnIndex <= endColumnIndex) {
-                        if (!isStarted) {
-                            this.updateEditPosition(cell, selection);
-                            isStarted = true;
-                        }
-                        if (isDeleteCells) {
-                            //Specific for Backspace and Cut if selection includes all rows.
-                            var cell_1 = row.childWidgets[j];
-                            this.updateNextBlocksIndex(cell_1, false);
-                            row.childWidgets.splice(j, 1);
-                            j--;
-                        }
-                        else if (editAction < 4) {
-                            isCellCleared = this.deleteCell(cell, selection, editAction, false);
+        var isRowSelected = this.isWholeRowSelected(startCell.ownerRow, startColumnIndex, endColumnIndex);
+        if (this.owner.enableTrackChanges && !this.skipTracking()) {
+            if (!isRowSelected) {
+                var localizeValue = new L10n('documenteditor', this.owner.defaultLocale);
+                localizeValue.setLocale(this.owner.locale);
+                this.alertDialog = DialogUtility.alert({
+                    title: localizeValue.getConstant('UnTrack'),
+                    content: localizeValue.getConstant('Merge Track'),
+                    showCloseIcon: true,
+                    okButton: {
+                        text: 'Ok',
+                        // tslint:disable-next-line:max-line-length
+                        click: this.onConfirmedTableCellsDeletion.bind(this, table, selection, startRowIndex, endRowIndex, startColumnIndex, endColumnIndex, isDeleteCells, editAction, isRowSelected, action)
+                    },
+                    closeOnEscape: true,
+                    position: { X: 'center', Y: 'center' },
+                    animationSettings: { effect: 'Zoom' }
+                });
+            }
+            else {
+                // tslint:disable-next-line:max-line-length
+                this.onConfirmedTableCellsDeletion(table, selection, startRowIndex, endRowIndex, startColumnIndex, endColumnIndex, isDeleteCells, editAction, isRowSelected, action);
+            }
+        }
+        else {
+            // tslint:disable-next-line:max-line-length
+            this.onConfirmedTableCellsDeletion(table, selection, startRowIndex, endRowIndex, startColumnIndex, endColumnIndex, isDeleteCells, editAction, isRowSelected, action);
+        }
+    };
+    /**
+     * @private
+     */
+    Editor.prototype.removeDeletedCellRevision = function (row) {
+        if (row.rowFormat.revisions.length > 0) {
+            this.unlinkRangeFromRevision(row.rowFormat, true);
+        }
+        for (var i = 0; i < row.childWidgets.length; i++) {
+            var cellWidget = row.childWidgets[i];
+            for (var j = 0; j < cellWidget.childWidgets.length; j++) {
+                var paraWidget = cellWidget.childWidgets[j];
+                if (!isNullOrUndefined(paraWidget) && paraWidget instanceof ParagraphWidget) {
+                    for (var lineIndex = 0; lineIndex < paraWidget.childWidgets.length; lineIndex++) {
+                        var lineWidget = paraWidget.childWidgets[lineIndex];
+                        if (!isNullOrUndefined(lineWidget.children)) {
+                            for (var elementIndex = 0; elementIndex < lineWidget.children.length; elementIndex++) {
+                                var element = lineWidget.children[elementIndex];
+                                if (element.revisions.length > 0) {
+                                    this.unlinkRangeFromRevision(element, true);
+                                }
+                            }
                         }
                     }
+                    this.unlinkRangeFromRevision(paraWidget.characterFormat, true);
                 }
-                if (row.childWidgets.length === 0) {
-                    this.updateNextBlocksIndex(table.childWidgets[i], false);
-                    table.childWidgets.splice(i, 1);
-                    i--;
-                    endRowIndex--;
+            }
+        }
+    };
+    /**
+     * Method to handle table cells deletion
+     * @param table
+     * @param selection
+     * @param startRowIndex
+     * @param endRowIndex
+     * @param startColumnIndex
+     * @param endColumnIndex
+     * @param isDeleteCells
+     * @param editAction
+     * @param isRowSelected
+     * @param action
+     */
+    // tslint:disable-next-line:max-line-length
+    Editor.prototype.onConfirmedTableCellsDeletion = function (table, selection, startRowIndex, endRowIndex, startColumnIndex, endColumnIndex, isDeleteCells, editAction, isRowSelected, action) {
+        for (var i = 0; i < table.childWidgets.length; i++) {
+            var row = table.childWidgets[i];
+            var canRemoveRow = false;
+            if (row.index >= startRowIndex && row.index <= endRowIndex) {
+                if (this.owner.enableTrackChanges && !this.skipTracking()) {
+                    if (isRowSelected) {
+                        canRemoveRow = this.trackRowDeletion(row, false);
+                        if (canRemoveRow) {
+                            // tslint:disable-next-line:max-line-length
+                            this.onConfirmedCellDeletion(row, selection, startRowIndex, endRowIndex, startColumnIndex, endColumnIndex, isDeleteCells, editAction);
+                        }
+                    }
+                    else {
+                        // tslint:disable-next-line:max-line-length
+                        this.onConfirmedCellDeletion(row, selection, startRowIndex, endRowIndex, startColumnIndex, endColumnIndex, isDeleteCells, editAction);
+                    }
                 }
+                else {
+                    // tslint:disable-next-line:max-line-length
+                    this.onConfirmedCellDeletion(row, selection, startRowIndex, endRowIndex, startColumnIndex, endColumnIndex, isDeleteCells, editAction);
+                }
+            }
+            if (!canRemoveRow && row.childWidgets.length === 0) {
+                this.updateNextBlocksIndex(table.childWidgets[i], false);
+                table.childWidgets.splice(i, 1);
+                i--;
+                endRowIndex--;
             }
         }
         //Layouts the table after delete cells.
@@ -55040,6 +58420,153 @@ var Editor = /** @__PURE__ @class */ (function () {
             table.isGridUpdated = true;
             this.documentHelper.layout.reLayoutTable(table);
         }
+        if (!isNullOrUndefined(this.alertDialog)) {
+            var textPosition = selection.getTextPosBasedOnLogicalIndex(selection.editPosition);
+            selection.selectContent(textPosition, true);
+            this.reLayout(selection);
+            this.alertDialog.close();
+            this.alertDialog = undefined;
+        }
+    };
+    /**
+     * Method to handle cell deletion on confirmation
+     * @param row
+     * @param selection
+     * @param startRowIndex
+     * @param endRowIndex
+     * @param startColumnIndex
+     * @param endColumnIndex
+     * @param isDeleteCells
+     * @param editAction
+     */
+    // tslint:disable-next-line:max-line-length
+    Editor.prototype.onConfirmedCellDeletion = function (row, selection, startRowIndex, endRowIndex, startColumnIndex, endColumnIndex, isDeleteCells, editAction) {
+        var isStarted = false;
+        var isCellCleared = false;
+        this.removeDeletedCellRevision(row);
+        for (var j = 0; j < row.childWidgets.length; j++) {
+            var cell = row.childWidgets[j];
+            //this.removeRevisionForCell(cell, true);
+            if (cell.columnIndex >= startColumnIndex && cell.columnIndex <= endColumnIndex) {
+                if (!isStarted) {
+                    this.updateEditPosition(cell, selection);
+                    isStarted = true;
+                }
+                if (isDeleteCells) {
+                    //Specific for Backspace and Cut if selection includes all rows.
+                    var cell_1 = row.childWidgets[j];
+                    this.updateNextBlocksIndex(cell_1, false);
+                    row.childWidgets.splice(j, 1);
+                    j--;
+                }
+                else if (editAction < 4) {
+                    isCellCleared = this.deleteCell(cell, selection, editAction, false);
+                }
+            }
+        }
+    };
+    /**
+     * @private
+     */
+    Editor.prototype.removeRevisionForRow = function (rowWidget) {
+        if (rowWidget.rowFormat.revisions.length > 0 && this.skipTracking()) {
+            this.unlinkRangeFromRevision(rowWidget.rowFormat, true);
+            this.addRemovedRevisionInfo(rowWidget.rowFormat, undefined);
+        }
+    };
+    /**
+     * @private
+     */
+    Editor.prototype.removeRevisionsInRow = function (rowWidget) {
+        if (rowWidget.rowFormat.revisions.length > 0) {
+            for (var i = 0; i < rowWidget.rowFormat.revisions.length; i++) {
+                var rowRevision = rowWidget.rowFormat.revisions[i];
+                this.unlinkWholeRangeInRevision(rowWidget.rowFormat, rowRevision);
+            }
+        }
+    };
+    /**
+     * @private
+     */
+    Editor.prototype.removeRevisionForCell = function (cellWidget, removeCollection) {
+        for (var i = 0; i < cellWidget.childWidgets.length; i++) {
+            if (cellWidget.childWidgets[i] instanceof ParagraphWidget) {
+                var paraWidget = cellWidget.childWidgets[i];
+                for (var lineIndex = 0; lineIndex < paraWidget.childWidgets.length; lineIndex++) {
+                    var lineWidget = paraWidget.childWidgets[lineIndex];
+                    for (var elementIndex = 0; elementIndex < lineWidget.children.length; elementIndex++) {
+                        var currentElement = lineWidget.children[elementIndex];
+                        if (!isNullOrUndefined(currentElement) && currentElement.revisions.length > 0) {
+                            this.unlinkRangeFromRevision(currentElement, removeCollection);
+                            this.addRemovedRevisionInfo(currentElement, undefined);
+                        }
+                    }
+                }
+            }
+            else if (cellWidget.childWidgets[i] instanceof TableWidget) {
+                this.removeRevisionForInnerTable(cellWidget.childWidgets[i]);
+            }
+        }
+    };
+    Editor.prototype.removeRevisionForInnerTable = function (tableWidget) {
+        if (tableWidget.childWidgets.length > 0) {
+            for (var i = 0; i < tableWidget.childWidgets.length; i++) {
+                var row = tableWidget.childWidgets[i];
+                if (!isNullOrUndefined(row)) {
+                    this.removeRevisionForRow(row);
+                }
+            }
+        }
+    };
+    /**
+     * @private
+     */
+    Editor.prototype.removeRevisionForBlock = function (paraWidget, revision, skipParaMark) {
+        if (paraWidget.characterFormat.revisions.length > 0 && !skipParaMark) {
+            this.addRemovedRevisionInfo(paraWidget.characterFormat, undefined, false);
+            if (isNullOrUndefined(revision)) {
+                this.unlinkRangeFromRevision(paraWidget.characterFormat, true);
+            }
+            else {
+                this.unlinkRangeByRevision(paraWidget.characterFormat, revision);
+            }
+            paraWidget.characterFormat.revisions = [];
+        }
+        if (!isNullOrUndefined(paraWidget)) {
+            for (var lineIndex = 0; lineIndex < paraWidget.childWidgets.length; lineIndex++) {
+                var lineWidget = paraWidget.childWidgets[lineIndex];
+                for (var elementIndex = 0; elementIndex < lineWidget.children.length; elementIndex++) {
+                    var currentElement = lineWidget.children[elementIndex];
+                    if (!isNullOrUndefined(currentElement) && currentElement.revisions.length > 0) {
+                        this.addRemovedRevisionInfo(currentElement, undefined, false);
+                        if (isNullOrUndefined(revision)) {
+                            this.unlinkRangeFromRevision(currentElement, true);
+                        }
+                        else {
+                            this.unlinkRangeByRevision(currentElement, revision);
+                        }
+                        currentElement.revisions = [];
+                    }
+                }
+            }
+        }
+    };
+    Editor.prototype.unlinkRangeByRevision = function (item, revision) {
+        for (var i = 0; i < item.revisions.length; i++) {
+            var currentRevision = item.revisions[i];
+            if (currentRevision.author === revision.author && currentRevision.revisionType === revision.revisionType) {
+                item.revisions.splice(item.revisions.indexOf(revision), 1);
+                var rangeIndex = revision.range.indexOf(item);
+                revision.range.splice(rangeIndex, 1);
+            }
+        }
+    };
+    Editor.prototype.isWholeRowSelected = function (ownerRow, startColumnIndex, endColumnIndex) {
+        var columnCount = startColumnIndex + endColumnIndex;
+        if (startColumnIndex === 0 && ownerRow.childWidgets.length - 1 === columnCount) {
+            return true;
+        }
+        return false;
     };
     Editor.prototype.deleteCell = function (cell, selection, editAction, copyChildToClipboard) {
         //Checks whether this is last paragraph of owner textbody.
@@ -55094,17 +58621,29 @@ var Editor = /** @__PURE__ @class */ (function () {
             this.deleteContent(ownerTable, selection, editAction);
         }
         else {
-            for (var i = 0; i < ownerTable.childWidgets.length; i++) {
-                var row = ownerTable.childWidgets[i];
-                if (editAction < 4) {
-                    this.updateNextBlocksIndex(row, false);
-                    ownerTable.childWidgets.splice(i, 1);
-                    this.addRemovedNodes(row);
-                    i--;
+            if (this.toCheckForTrack(ownerTable)) {
+                for (var i = 0; i < ownerTable.childWidgets.length; i++) {
+                    var inline = ownerTable.childWidgets[i];
+                    this.trackRowDeletion(inline);
+                    if (end.paragraph.isInsideTable && selection.containsRow(inline, end.paragraph.associatedCell)) {
+                        this.documentHelper.layout.reLayoutTable(ownerTable);
+                        return;
+                    }
                 }
-                if (end.paragraph.isInsideTable && selection.containsRow(row, end.paragraph.associatedCell)) {
-                    this.documentHelper.layout.reLayoutTable(ownerTable);
-                    return;
+            }
+            else {
+                for (var i = 0; i < ownerTable.childWidgets.length; i++) {
+                    var row = ownerTable.childWidgets[i];
+                    if (editAction < 4) {
+                        this.updateNextBlocksIndex(row, false);
+                        ownerTable.childWidgets.splice(i, 1);
+                        this.addRemovedNodes(row);
+                        i--;
+                    }
+                    if (end.paragraph.isInsideTable && selection.containsRow(row, end.paragraph.associatedCell)) {
+                        this.documentHelper.layout.reLayoutTable(ownerTable);
+                        return;
+                    }
                 }
             }
         }
@@ -55133,7 +58672,14 @@ var Editor = /** @__PURE__ @class */ (function () {
         else {
             var blockAdv = table.previousRenderedWidget;
             var sectionAdv = table.bodyWidget instanceof BodyWidget ? table.bodyWidget : undefined;
-            this.deleteContent(table, selection, editAction);
+            if (this.owner.enableTrackChanges) {
+                for (var i = 0; i < table.childWidgets.length; i++) {
+                    this.trackRowDeletion(table.childWidgets[i]);
+                }
+            }
+            else {
+                this.deleteContent(table, selection, editAction);
+            }
             if (!isNullOrUndefined(blockAdv)) {
                 // let nextSection: WSection = blockAdv.section instanceof WSection ? blockAdv.section as WSection : undefined;
                 // if (sectionAdv !== nextSection) {
@@ -55195,6 +58741,10 @@ var Editor = /** @__PURE__ @class */ (function () {
         var selectionEnd = end.split(';');
         return selectionStart.length < selectionEnd.length;
     };
+    /**
+     * @private
+     * @param table
+     */
     Editor.prototype.cloneTableToHistoryInfo = function (table) {
         if (this.editorHistory && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)) {
             //Clones the entire table to preserve in history.
@@ -55212,7 +58762,8 @@ var Editor = /** @__PURE__ @class */ (function () {
     };
     // tslint:disable-next-line:max-line-length
     Editor.prototype.insertParagraphPaste = function (paragraph, currentParagraph, start, end, isCombineNextParagraph, editAction) {
-        if (this.editorHistory && (this.editorHistory.isUndoing || this.editorHistory.isRedoing) && this.editorHistory.currentBaseHistoryInfo.action === 'Paste') {
+        // tslint:disable-next-line:max-line-length
+        if (this.editorHistory && (this.editorHistory.isUndoing || this.editorHistory.isRedoing) && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo) && this.editorHistory.currentBaseHistoryInfo.action === 'Paste') {
             var nextParagraph = this.selection.getNextParagraphBlock(currentParagraph);
             if (nextParagraph) {
                 if (start.offset > 0 && nextParagraph === end.paragraph && paragraph === start.paragraph
@@ -55246,6 +58797,9 @@ var Editor = /** @__PURE__ @class */ (function () {
         var isRemoved = false;
         this.documentHelper.layout.clearListElementBox(paragraph);
         var startIndex = paragraph.childWidgets.indexOf(startLine);
+        var startPosition = this.selection.start.clone();
+        var endPosition = this.selection.end.clone();
+        var editPosition = this.selection.editPosition;
         for (var i = paragraph.childWidgets.length - 1; i >= 0; i--) {
             var lineWidget = paragraph.childWidgets[i];
             if (startLine === lineWidget && endLine === lineWidget) {
@@ -55265,10 +58819,36 @@ var Editor = /** @__PURE__ @class */ (function () {
                 this.removeContent(lineWidget, 0, this.documentHelper.selection.getLineLength(lineWidget));
             }
         }
+        if (this.owner.enableTrackChanges && !this.skipTracking()) {
+            this.selection.start.setPositionInternal(startPosition);
+            this.selection.end.setPositionInternal(endPosition);
+            if (this.editorHistory.currentBaseHistoryInfo && this.editorHistory.currentBaseHistoryInfo.action === 'Delete') {
+                if (startPosition.offset > endPosition.offset) {
+                    endPosition = startPosition;
+                }
+                var parInfo = this.selection.getParagraphInfo(endPosition);
+                editPosition = this.selection.getHierarchicalIndex(parInfo.paragraph, parInfo.offset.toString());
+            }
+            if (this.skipReplace) {
+                this.editorHistory.currentBaseHistoryInfo.insertPosition = undefined;
+                this.updateInsertPosition();
+            }
+            this.selection.editPosition = editPosition;
+        }
         if (isRemoved) {
             this.removeEmptyLine(paragraph);
             this.documentHelper.layout.reLayoutParagraph(paragraph, 0, 0);
         }
+    };
+    Editor.prototype.skipTracking = function () {
+        if (!isNullOrUndefined(this.editorHistory) && (this.editorHistory.isUndoing || this.editorHistory.isRedoing)) {
+            return true;
+            // tslint:disable-next-line:max-line-length
+        }
+        else if (!isNullOrUndefined(this.editorHistory) && this.editorHistory.currentBaseHistoryInfo && (this.editorHistory.currentBaseHistoryInfo.action === 'Reject Change' || this.editorHistory.currentBaseHistoryInfo.action === 'Accept Change')) {
+            return true;
+        }
+        return false;
     };
     /**
      * @private
@@ -55276,6 +58856,8 @@ var Editor = /** @__PURE__ @class */ (function () {
     Editor.prototype.removeContent = function (lineWidget, startOffset, endOffset) {
         var count = this.selection.getLineLength(lineWidget);
         var isBidi = lineWidget.paragraph.paragraphFormat.bidi;
+        // tslint:disable-next-line:max-line-length
+        var skipTracking = (!isNullOrUndefined(this.editorHistory)) ? (this.editorHistory.isUndoing || this.editorHistory.isRedoing) : false;
         // tslint:disable-next-line:max-line-length
         for (var i = isBidi ? 0 : lineWidget.children.length - 1; isBidi ? i < lineWidget.children.length : i >= 0; isBidi ? i++ : i--) {
             var inline = lineWidget.children[i];
@@ -55308,10 +58890,22 @@ var Editor = /** @__PURE__ @class */ (function () {
                 if (inline instanceof ShapeElementBox) {
                     this.removeAutoShape(inline);
                 }
-                // if (editAction < 4) {
-                this.unLinkFieldCharacter(inline);
-                this.addRemovedNodes(lineWidget.children[i]);
-                lineWidget.children.splice(i, 1);
+                //clear form field revisions if it is intentionally deleted.
+                if (this.skipFieldDeleteTracking && inline.revisions.length > 0) {
+                    inline.clearElementRevisions();
+                }
+                if (this.owner.enableTrackChanges && !this.skipTracking() && !this.skipFieldDeleteTracking) {
+                    this.addRemovedNodes(inline.clone());
+                    this.handleDeleteTracking(inline, startOffset, endOffset, i);
+                }
+                else {
+                    // if (editAction < 4) {
+                    this.unLinkFieldCharacter(inline);
+                    this.unlinkRangeFromRevision(inline, true);
+                    this.addRemovedRevisionInfo(inline, undefined);
+                    this.addRemovedNodes(inline);
+                    lineWidget.children.splice(i, 1);
+                }
                 if (isBidi) {
                     if (this.isSkipHistory) {
                         i--;
@@ -55323,17 +58917,54 @@ var Editor = /** @__PURE__ @class */ (function () {
                 // }
             }
             else if (inline instanceof TextElementBox) {
-                // if (editAction < 4) {
-                var span = new TextElementBox();
-                span.characterFormat.copyFormat(inline.characterFormat);
-                span.text = inline.text.substr(startIndex, endIndex - startIndex);
-                this.addRemovedNodes(span);
-                inline.text = inline.text.slice(0, startIndex) + inline.text.slice(endIndex);
+                var span = this.handleDeleteTracking(inline, startIndex, endIndex);
+                //if (editAction < 4) {
+                // let span: TextElementBox = new TextElementBox();
+                // span.characterFormat.copyFormat(inline.characterFormat);
+                // span.text = inline.text.substr(startIndex, endIndex - startIndex);
+                // for (let i = inline.revisions.length - 1; i >= 0; i--) {
+                //     let revision: Revision = inline.revisions[i];
+                //     let splittedRange: object[] = this.splitRevisionByElement(inline, revision);
+                //     this.insertRevision(span, revision.revisionType, revision.author, revision.date, splittedRange);
+                // }
+                // inline.text = inline.text.slice(0, startIndex) + inline.text.slice(endIndex);
+                if (!isNullOrUndefined(span)) {
+                    if (inline.revisions.length > 0) {
+                        this.addRemovedRevisionInfo(inline, span);
+                    }
+                    this.addRemovedNodes(span);
+                }
+                // else {
+                //     this.insertTextInternal(span.text, false, 'Deletion');
+                //     this.editorHistory.currentBaseHistoryInfo.revisionToRemove = inline.revisions[inline.revisions.length - 1];
+                //     // let info: ElementInfo = this.selection.start.currentWidget.getInline(startOffset +1, 0);
+                //     // let element: ElementBox = info.element.clone();
+                //     //this.addRemovedNodes(span);
+                // }
             }
             if (startOffset >= count - (endIndex - startIndex)) {
                 break;
             }
             count -= (endIndex - startIndex);
+        }
+    };
+    /**
+     * @private
+     * @param currentElement
+     * @param spittedElement
+     */
+    Editor.prototype.addRemovedRevisionInfo = function (currentElement, spittedElement, removePrevRevisions) {
+        for (var i = 0; i < currentElement.revisions.length; i++) {
+            var revisionId = currentElement.revisions[i].revisionID;
+            if (!isNullOrUndefined(spittedElement)) {
+                spittedElement.removedIds.push(revisionId);
+            }
+            else {
+                currentElement.removedIds.push(revisionId);
+            }
+        }
+        if (isNullOrUndefined(spittedElement) && (isNullOrUndefined(removePrevRevisions) || removePrevRevisions)) {
+            currentElement.revisions = [];
         }
     };
     /**
@@ -55705,6 +59336,12 @@ var Editor = /** @__PURE__ @class */ (function () {
                 line.children.push(pageBreak);
                 pageBreak.line = line;
                 breakParagraph.childWidgets.push(line);
+                if (this.owner.enableTrackChanges && currentParagraph.characterFormat.revisions.length > 0) {
+                    var currentRevision = this.retrieveRevisionInOder(currentParagraph.characterFormat);
+                    currentRevision.range.push(breakParagraph.characterFormat);
+                    breakParagraph.characterFormat.revisions.push(currentRevision);
+                    breakParagraph.characterFormat.removedIds = [];
+                }
                 this.insertParagraph(breakParagraph, true);
                 selection.selectParagraphInternal(breakParagraph, true);
             }
@@ -55754,7 +59391,7 @@ var Editor = /** @__PURE__ @class */ (function () {
         var paragraph = new ParagraphWidget();
         var lineWidget = new LineWidget(paragraph);
         paragraph.childWidgets.push(lineWidget);
-        //Copies the format to new paragraph.
+        //Cop ies the format to new paragraph.
         paragraph.paragraphFormat.ownerBase = paragraph;
         if (currentLine === paragraphAdv.lastChild && offset === selection.getLineLength(currentLine)) {
             // tslint:disable-next-line:max-line-length
@@ -55773,6 +59410,21 @@ var Editor = /** @__PURE__ @class */ (function () {
                 paragraph.paragraphFormat.copyFormat(paragraphAdv.paragraphFormat);
                 paragraph.characterFormat.copyFormat(paragraphAdv.characterFormat);
             }
+            // let revisions: Revision[] = [];
+            // if (paragraphAdv.characterFormat.revisions.length > 0) {
+            //     revisions = paragraphAdv.characterFormat.revisions;
+            // } else {
+            if (this.owner.enableTrackChanges) {
+                var lastLine = paragraphAdv.lastChild;
+                if (!isNullOrUndefined(lastLine) && lastLine.children.length > 0) {
+                    var lastElement = lastLine.children[lastLine.children.length - 1].previousValidNodeForTracking;
+                    //ensure whether para mark can be combined with element revision
+                    if (!this.checkParaMarkMatchedWithElement(lastElement, paragraphAdv.characterFormat, false, 'Insertion')) {
+                        this.insertParaRevision(paragraphAdv);
+                    }
+                }
+            }
+            //}
             //ToDo in future: Need to skip copying formattings to new paragraph, if the style for following paragraph is same style.
             insertIndex++;
             blockIndex++;
@@ -55783,6 +59435,17 @@ var Editor = /** @__PURE__ @class */ (function () {
             if (offset > 0 || !currentLine.isFirstLine()) {
                 paragraphAdv = paragraphAdv.combineWidget(this.owner.viewer);
                 this.moveInlines(paragraphAdv, paragraph, 0, 0, paragraphAdv.firstChild, offset, currentLine);
+                this.insertParaRevision(paragraph, paragraphAdv.firstChild);
+            }
+            else {
+                if (this.owner.enableTrackChanges) {
+                    var firstLine = paragraphAdv.firstChild;
+                    var firstElement = firstLine.children[0].previousValidNodeForTracking;
+                    //ensure whether para mark can be combined with element revision
+                    if (!this.checkParaMarkMatchedWithElement(firstElement, paragraph.characterFormat, true, 'Insertion')) {
+                        this.insertParaRevision(paragraph);
+                    }
+                }
             }
             paragraphAdv = paragraphAdv.getSplitWidgets()[0];
         }
@@ -55790,10 +59453,130 @@ var Editor = /** @__PURE__ @class */ (function () {
         var container = paragraphAdv.containerWidget;
         var childNodes = container.childWidgets;
         childNodes.splice(insertIndex, 0, paragraph);
+        // tslint:disable-next-line:max-line-length
+        if (this.owner.enableTrackChanges && (paragraph.characterFormat.revisions.length === 0 && paragraphAdv.characterFormat.revisions.length === 0)) {
+            if (!this.checkToMatchEmptyParaMark(paragraphAdv)) {
+                this.insertParaRevision(paragraphAdv);
+            }
+        }
         paragraph.containerWidget = container;
         paragraph.index = blockIndex;
         this.updateNextBlocksIndex(paragraph, true);
+        // tslint:disable-next-line:max-line-length
         this.documentHelper.layout.layoutBodyWidgetCollection(blockIndex, container, paragraph, false);
+    };
+    /**
+     * Method to insert revision for para marks
+     * @param paragraph
+     * @param firstChild
+     */
+    Editor.prototype.insertParaRevision = function (paragraph, firstChild) {
+        // tslint:disable-next-line:max-line-length
+        if (this.owner.enableTrackChanges && isNullOrUndefined(firstChild) && !this.isRevisionMatched(paragraph.characterFormat, 'Insertion')) {
+            paragraph.characterFormat.revisions = [];
+            this.insertRevision(paragraph.characterFormat, 'Insertion');
+        }
+        //If it is spitted para, we need to ensure whether first element of the spitted para matches with inserted revision
+        if (!isNullOrUndefined(firstChild)) {
+            if (firstChild.paragraph.isInsideTable) {
+                this.insertRevision(paragraph.characterFormat, 'Insertion');
+                return;
+            }
+            this.applyRevisionForParaMark(paragraph, firstChild, 'Insertion', true);
+            // let firstElement: ElementBox = firstChild.children[0];
+            // firstElement = firstElement.nextValidNodeForTracking;
+            // let lastLine: LineWidget = paragraph.lastChild as LineWidget;
+            // tslint:disable-next-line:max-line-length
+            // let lastElement: ElementBox = lastLine.children.length === 0 ? undefined : lastLine.children[lastLine.children.length - 1].previousValidNodeForTracking;
+            // let isCombined: boolean = false;
+            // //Ensure revision matched with inserted para mark
+            // if (!isNullOrUndefined(lastElement)) {
+            //     isCombined = this.checkParaMarkMatchedWithElement(lastElement, paragraph.characterFormat, true);
+            // }
+            // if (!isNullOrUndefined(firstElement)) {
+            //     if (paragraph.characterFormat.revisions.length > 0) {
+            //         if (this.isRevisionMatched(firstElement, 'Insertion')) {
+            //             let revisionToInclude: Revision = paragraph.characterFormat.revisions[0];
+            //             let matchedRevisions: Revision[] = this.getMatchedRevisionsToCombine(firstElement.revisions, 'Insertion');
+            //             for (let i: number = 0; i < matchedRevisions.length; i++) {
+            //                 isCombined = true;
+            // tslint:disable-next-line:max-line-length
+            //                 this.clearAndUpdateRevisons(matchedRevisions[i].range, revisionToInclude, revisionToInclude.range.indexOf(paragraph.characterFormat) + 1);
+            //             }
+            //         }
+            //     } else {
+            //         isCombined = this.checkParaMarkMatchedWithElement(firstElement, paragraph.characterFormat, false);
+            //     }
+            // }
+            // if (!isCombined) {
+            //     this.insertRevision(paragraph.characterFormat, 'Insertion');
+            // }
+        }
+    };
+    // tslint:disable-next-line:max-line-length
+    Editor.prototype.applyRevisionForParaMark = function (paragraph, firstChild, revisionType, splitRevision) {
+        var firstElement = firstChild.children[0];
+        if (isNullOrUndefined(firstElement)) {
+            return;
+        }
+        firstElement = firstElement.nextValidNodeForTracking;
+        var lastLine = paragraph.lastChild;
+        // tslint:disable-next-line:max-line-length
+        var lastElement = lastLine.children.length === 0 ? undefined : lastLine.children[lastLine.children.length - 1].previousValidNodeForTracking;
+        var isCombined = false;
+        var prevRevCount = paragraph.characterFormat.revisions.length;
+        //Ensure revision matched with inserted para mark
+        if (!isNullOrUndefined(lastElement)) {
+            isCombined = this.checkParaMarkMatchedWithElement(lastElement, paragraph.characterFormat, false, revisionType);
+        }
+        if (!isNullOrUndefined(firstElement)) {
+            //Ensure previous inserted para mark revision matched with first element of the next paragraph.
+            if (paragraph.characterFormat.revisions.length > prevRevCount) {
+                if (this.isRevisionMatched(firstElement, revisionType)) {
+                    var revisionToInclude = paragraph.characterFormat.revisions[0];
+                    var matchedRevisions = this.getMatchedRevisionsToCombine(firstElement.revisions, revisionType);
+                    for (var i = 0; i < matchedRevisions.length; i++) {
+                        if (matchedRevisions[i] !== revisionToInclude) {
+                            isCombined = true;
+                            // tslint:disable-next-line:max-line-length
+                            this.clearAndUpdateRevisons(matchedRevisions[i].range, revisionToInclude, revisionToInclude.range.indexOf(paragraph.characterFormat) + 1);
+                        }
+                    }
+                }
+            }
+            else {
+                isCombined = this.checkParaMarkMatchedWithElement(firstElement, paragraph.characterFormat, true, revisionType);
+            }
+        }
+        if (!isCombined) {
+            this.insertRevision(paragraph.characterFormat, revisionType);
+            // tslint:disable-next-line:max-line-length
+            // for spitted paragraph on moving content we maintain same revision, so if it not matched with inserted paragraph then we need to spit it.
+            if (splitRevision && lastElement.revisions.length > 0 && firstElement.revisions.length > 0) {
+                this.updateRevisionForSpittedTextElement(lastElement, firstElement);
+            }
+        }
+    };
+    //Combines para mark with element revision
+    // tslint:disable-next-line:max-line-length
+    Editor.prototype.checkParaMarkMatchedWithElement = function (lastElement, characterFormat, isBegin, revisionType) {
+        var matchedRevisions = this.getMatchedRevisionsToCombine(lastElement.revisions, revisionType);
+        if (matchedRevisions.length > 0) {
+            this.mapMatchedRevisions(matchedRevisions, lastElement, characterFormat, isBegin);
+            return true;
+        }
+        return false;
+    };
+    Editor.prototype.checkToMatchEmptyParaMark = function (paraWidget) {
+        var prevPara = paraWidget.previousRenderedWidget;
+        if (!isNullOrUndefined(prevPara) && prevPara.characterFormat.revisions.length > 0) {
+            var matchedRevisions = this.getMatchedRevisionsToCombine(prevPara.characterFormat.revisions, 'Insertion');
+            if (matchedRevisions.length > 0) {
+                this.mapMatchedRevisions(matchedRevisions, prevPara.characterFormat, paraWidget.characterFormat, false);
+                return true;
+            }
+        }
+        return false;
     };
     /**
      * @private
@@ -55861,6 +59644,9 @@ var Editor = /** @__PURE__ @class */ (function () {
             widget.index--;
         }
     };
+    /**
+     * @private
+     */
     Editor.prototype.updateEndPosition = function () {
         var selection = this.documentHelper.selection;
         if (this.editorHistory && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)) {
@@ -56271,22 +60057,318 @@ var Editor = /** @__PURE__ @class */ (function () {
                 this.documentHelper.triggerSpellCheck = false;
             }
             if (offset === count && inline.length === 1) {
-                this.unLinkFieldCharacter(inline);
-                lineWidget.children.splice(i, 1);
+                if (this.owner.enableTrackChanges) {
+                    this.addRemovedNodes(inline.clone());
+                    this.handleDeleteTracking(inline, indexInInline, 1, i);
+                }
+                else {
+                    this.unLinkFieldCharacter(inline);
+                    this.unlinkRangeFromRevision(inline, true);
+                    this.addRemovedRevisionInfo(inline, undefined);
+                    this.addRemovedNodes(inline);
+                    lineWidget.children.splice(i, 1);
+                }
                 this.documentHelper.layout.reLayoutParagraph(lineWidget.paragraph, lineIndex, i, undefined, isRearrange);
-                this.addRemovedNodes(inline);
             }
             else {
-                var span = new TextElementBox();
-                span.characterFormat.copyFormat(inline.characterFormat);
-                span.text = inline.text.substr(indexInInline, 1);
-                inline.text = HelperMethods.remove(inline.text, indexInInline, 1);
+                var span = this.handleDeleteTracking(inline, indexInInline, 1);
                 this.documentHelper.layout.reLayoutParagraph(lineWidget.paragraph, lineIndex, i, undefined, isRearrange);
-                this.addRemovedNodes(span);
+                if (!isNullOrUndefined(span)) {
+                    if (inline.revisions.length > 0) {
+                        this.addRemovedRevisionInfo(inline, span);
+                    }
+                    this.addRemovedNodes(span);
+                }
             }
             isBreak = true;
         }
         return isBreak;
+    };
+    Editor.prototype.removeCharacterInLine = function (inline, indexInInline, endOffset) {
+        var span = new TextElementBox();
+        span.characterFormat.copyFormat(inline.characterFormat);
+        var removedCount = (endOffset === 1) ? 1 : (endOffset - indexInInline);
+        span.text = inline.text.substr(indexInInline, removedCount);
+        var text = inline.text;
+        inline.text = text.substring(0, indexInInline) + text.substring(indexInInline + removedCount, text.length);
+        return span;
+    };
+    // tslint:disable-next-line:max-line-length
+    Editor.prototype.handleDeleteTracking = function (elementBox, indexInInline, endOffset, elementIndex, startIndex, endIndex) {
+        var isTrackingEnabled = this.owner.enableTrackChanges;
+        // tslint:disable-next-line:max-line-length
+        var isUndoing = isNullOrUndefined(this.editorHistory) ? false : (this.editorHistory.isUndoing || this.editorHistory.isRedoing);
+        var removedNode = undefined;
+        if (isTrackingEnabled && !this.skipTracking()) {
+            // tslint:disable-next-line:max-line-length
+            if (elementBox instanceof BookmarkElementBox || elementBox instanceof CommentCharacterElementBox || elementBox instanceof EditRangeStartElementBox || elementBox instanceof EditRangeEndElementBox) {
+                return undefined;
+            }
+            var isDelete = false;
+            if (this.owner.editorHistory) {
+                // tslint:disable-next-line:max-line-length
+                isDelete = (!isNullOrUndefined(this.owner.editorHistory.currentBaseHistoryInfo) && this.owner.editorHistory.currentBaseHistoryInfo.action === 'Delete');
+            }
+            this.updateEndRevisionIndex();
+            if (elementBox.revisions.length > 0) {
+                var revision = this.retrieveRevisionInOder(elementBox);
+                if (revision.revisionType === 'Insertion') {
+                    if (this.isRevisionMatched(elementBox, undefined)) {
+                        // inserted revision same author as delete revision so we can delete
+                        if (isNullOrUndefined(elementIndex)) {
+                            removedNode = this.removeCharacterInLine(elementBox, indexInInline, endOffset);
+                        }
+                        else {
+                            revision.range.splice(revision.range.indexOf(elementBox), 1);
+                            if (revision.range.length === 0) {
+                                this.owner.revisionsInternal.remove(revision);
+                            }
+                            this.unLinkFieldCharacter(elementBox);
+                            elementBox.line.children.splice(elementIndex, 1);
+                        }
+                    }
+                    else {
+                        //Insert revision and delete revision (which is to be included) haven't matched
+                        if (isNullOrUndefined(elementIndex)) {
+                            var text = this.removeCharacterInLine(elementBox, indexInInline, endOffset);
+                            if (indexInInline === 0) {
+                                var prevElement = elementBox.previousElement;
+                                this.handleDeletionForInsertRevision(prevElement, elementBox, text, endOffset, indexInInline, true);
+                            }
+                            else if (elementBox.length !== indexInInline) {
+                                for (var i = elementBox.revisions.length - 1; i >= 0; i--) {
+                                    var revision_1 = elementBox.revisions[i];
+                                    var index = revision_1.range.indexOf(elementBox);
+                                    var newElement = new TextElementBox();
+                                    newElement.characterFormat.copyFormat(elementBox.characterFormat);
+                                    newElement.line = elementBox.line;
+                                    newElement.text = elementBox.text.substr(indexInInline);
+                                    newElement.revisions.splice(0, 0, revision_1);
+                                    revision_1.range.splice(index + 1, 0, newElement);
+                                    text.revisions.splice(0, 0, revision_1);
+                                    text.line = elementBox.line;
+                                    revision_1.range.splice(index + 1, 0, text);
+                                    elementBox.text = elementBox.text.substr(0, indexInInline);
+                                    var indexInOwner = elementBox.indexInOwner;
+                                    elementBox.line.children.splice(indexInOwner + 1, 0, newElement);
+                                    elementBox.line.children.splice(indexInOwner + 1, 0, text);
+                                    this.addRemovedNodes(text.clone());
+                                    this.insertRevision(text, 'Deletion');
+                                    this.updateLastElementRevision(text);
+                                }
+                            }
+                            else if (elementBox.length === indexInInline) {
+                                var nextElement = elementBox.nextElement;
+                                this.handleDeletionForInsertRevision(nextElement, elementBox, text, endOffset, indexInInline, false);
+                            }
+                            else {
+                                if (endOffset === 1) {
+                                    if (!isDelete) {
+                                        this.selection.start.movePreviousPosition();
+                                        this.selection.end.setPositionInternal(this.selection.start);
+                                    }
+                                }
+                                else {
+                                    this.updateCursorForInsertRevision(elementBox, indexInInline, endOffset);
+                                }
+                                this.addRemovedNodes(text.clone());
+                                this.insertInlineInternal(text, 'Deletion');
+                            }
+                        }
+                        else if (!this.checkToCombineRevisionsInSides(elementBox, 'Deletion')) {
+                            this.insertRevision(elementBox, 'Deletion');
+                            this.updateLastElementRevision(elementBox);
+                        }
+                    }
+                }
+                else if (revision.revisionType === 'Deletion') {
+                    if (endOffset === 1) {
+                        if (isDelete) {
+                            this.selection.start.moveNextPosition();
+                            this.selection.end.setPositionInternal(this.selection.start);
+                        }
+                        else {
+                            this.selection.start.movePreviousPosition();
+                            this.selection.end.setPositionInternal(this.selection.start);
+                        }
+                    }
+                    else {
+                        this.updateCursorForInsertRevision(elementBox, indexInInline, endOffset);
+                        //this.handleDeleteBySplitting(elementBox, indexInInline, endOffset);
+                    }
+                    this.updateLastElementRevision(elementBox);
+                }
+            }
+            else {
+                //No revision information in the element
+                if (!isNullOrUndefined(elementIndex)) {
+                    if (!this.checkToCombineRevisionsInSides(elementBox, 'Deletion')) {
+                        this.insertRevision(elementBox, 'Deletion');
+                    }
+                    this.updateLastElementRevision(elementBox);
+                }
+                else {
+                    this.handleDeleteBySplitting(elementBox, indexInInline, endOffset);
+                }
+            }
+        }
+        else {
+            removedNode = this.removeCharacterInLine(elementBox, indexInInline, endOffset);
+        }
+        return removedNode;
+    };
+    /**
+     * @private
+     * @param elementBox
+     */
+    Editor.prototype.updateLastElementRevision = function (elementBox) {
+        // tslint:disable-next-line:max-line-length
+        if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo && !this.skipReplace && !isNullOrUndefined(this.owner.search) && !this.owner.search.isRepalceTracking) {
+            if (isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo.lastElementRevision)) {
+                this.editorHistory.currentBaseHistoryInfo.lastElementRevision = elementBox;
+                elementBox.isMarkedForRevision = true;
+            }
+        }
+    };
+    /**
+     * Method to upate previous history end revision index on deletion
+     */
+    Editor.prototype.updateEndRevisionIndex = function () {
+        if (!isNullOrUndefined(this.editorHistory.undoStack) && this.editorHistory.undoStack.length > 0) {
+            var prevHistoryInfo = this.editorHistory.undoStack[this.editorHistory.undoStack.length - 1];
+            if (prevHistoryInfo.lastElementRevision && isNullOrUndefined(prevHistoryInfo.endRevisionLogicalIndex)) {
+                prevHistoryInfo.updateEndRevisionInfo();
+            }
+        }
+    };
+    Editor.prototype.retrieveRevisionInOder = function (elementBox) {
+        if (elementBox.revisions.length === 1) {
+            return elementBox.revisions[0];
+        }
+        for (var i = 0; i < elementBox.revisions.length; i++) {
+            if (elementBox.revisions[i].revisionType === 'Deletion') {
+                return elementBox.revisions[i];
+            }
+        }
+        return elementBox.revisions[elementBox.revisions.length - 1];
+    };
+    /**
+     * Handles deletion for element already has insert revision
+     * @param elementToEnsure
+     * @param currentElement
+     * @param spittedSpan
+     * @param endOffset
+     * @param indexInInline
+     */
+    // tslint:disable-next-line:max-line-length
+    Editor.prototype.handleDeletionForInsertRevision = function (elementToEnsure, currentElement, spittedSpan, endOffset, indexInInline, isBegin) {
+        // tslint:disable-next-line:max-line-length
+        if (!isNullOrUndefined(elementToEnsure) && currentElement.revisions.length === 0 && this.isRevisionMatched(elementToEnsure, 'Deletion')) {
+            this.addRemovedNodes(spittedSpan.clone());
+            this.insertTextInline(elementToEnsure, this.selection, spittedSpan.text, 0);
+        }
+        else {
+            var revision = currentElement.revisions[currentElement.revisions.length - 1];
+            var index = revision.range.indexOf(currentElement);
+            revision.range.splice((isBegin) ? index : index + 1, 0, spittedSpan);
+            spittedSpan.revisions.splice(0, 0, revision);
+            var isDelete = false;
+            if (this.owner.editorHistory) {
+                // tslint:disable-next-line:max-line-length
+                isDelete = (!isNullOrUndefined(this.owner.editorHistory.currentBaseHistoryInfo) && this.owner.editorHistory.currentBaseHistoryInfo.action === 'Delete');
+            }
+            if (endOffset === 1 && !isDelete) {
+                this.selection.start.movePreviousPosition();
+                this.selection.end.setPositionInternal(this.selection.start);
+            }
+            else {
+                this.updateCursorForInsertRevision(currentElement, indexInInline, endOffset);
+            }
+            this.addRemovedNodes(spittedSpan.clone());
+            this.insertInlineInternal(spittedSpan, 'Deletion');
+        }
+    };
+    Editor.prototype.handleDeleteBySplitting = function (elementBox, indexInInline, endOffset) {
+        var isDelete = false;
+        if (this.owner.editorHistory) {
+            // tslint:disable-next-line:max-line-length
+            isDelete = (!isNullOrUndefined(this.owner.editorHistory.currentBaseHistoryInfo) && this.owner.editorHistory.currentBaseHistoryInfo.action === 'Delete');
+        }
+        //Update cursor position to insert removed content
+        if (endOffset === 1) {
+            var startPosition = elementBox.line.getOffset(elementBox, 0);
+            if (startPosition > 0) {
+                var currentPosition = new TextPosition(this.owner);
+                currentPosition.setPositionForLineWidget(elementBox.line, startPosition + indexInInline);
+                this.selection.start.setPositionInternal(currentPosition);
+                this.selection.end.setPositionInternal(this.selection.start);
+            }
+            else {
+                if (!isDelete) {
+                    this.selection.start.movePreviousPosition();
+                    this.selection.end.setPositionInternal(this.selection.start);
+                }
+            }
+        }
+        else {
+            this.updateCursorForInsertRevision(elementBox, indexInInline, endOffset);
+        }
+        var spittedElement = this.removeCharacterInLine(elementBox, indexInInline, endOffset);
+        this.addRemovedNodes(spittedElement.clone());
+        this.insertTextInternal(spittedElement.text, false, 'Deletion');
+    };
+    /**
+     * Update cursor position for inserting text
+     */
+    Editor.prototype.updateCursorForInsertRevision = function (inline, startOffset, endOffset) {
+        var startPosition = inline.line.getOffset(inline, 0);
+        if (startPosition > 0) {
+            startOffset = startPosition + startOffset;
+            endOffset = startPosition + endOffset;
+        }
+        var currentPosition = new TextPosition(this.owner);
+        currentPosition.setPositionFromLine(inline.line, startOffset);
+        var endPosition = new TextPosition(this.owner);
+        endPosition.setPositionFromLine(inline.line, endOffset);
+        if (!currentPosition.isExistBefore(endPosition)) {
+            this.selection.start.setPositionInternal(endPosition);
+            this.selection.end.setPositionInternal(endPosition);
+        }
+        else {
+            this.selection.end.setPositionInternal(currentPosition);
+            this.selection.start.setPositionInternal(currentPosition);
+        }
+    };
+    Editor.prototype.checkToCombineRevisionsInSides = function (currentElement, revisionType) {
+        var prevElement = currentElement.previousNode;
+        var nextElement = currentElement.nextNode;
+        var isCombined = false;
+        if (!isNullOrUndefined(prevElement)) {
+            prevElement = prevElement.previousValidNodeForTracking;
+            if (!isNullOrUndefined(prevElement)) {
+                var matchedRevisions = this.getMatchedRevisionsToCombine(prevElement.revisions, revisionType);
+                if (matchedRevisions.length > 0) {
+                    this.mapMatchedRevisions(matchedRevisions, prevElement, currentElement, false);
+                    isCombined = true;
+                }
+            }
+        }
+        if (!isNullOrUndefined(nextElement)) {
+            nextElement = nextElement.nextValidNodeForTracking;
+            if (!isNullOrUndefined(nextElement)) {
+                var matchedRevisions = this.getMatchedRevisionsToCombine(nextElement.revisions, revisionType);
+                if (matchedRevisions.length > 0) {
+                    if (isCombined) {
+                        this.combineElementRevision(currentElement.revisions, nextElement.revisions);
+                    }
+                    else {
+                        this.mapMatchedRevisions(matchedRevisions, nextElement, currentElement, true);
+                    }
+                    isCombined = true;
+                }
+            }
+        }
+        return isCombined;
     };
     /**
      * Remove the current selected content or one character right of cursor.
@@ -56350,7 +60432,7 @@ var Editor = /** @__PURE__ @class */ (function () {
             }
             var resultText = this.getFormFieldText();
             if (!(inline instanceof TextElementBox)) {
-                inline = this.selection.getNextRenderedElementBox(inline, 1);
+                inline = inline.nextElement;
             }
             if (resultText.length === 1 && inline instanceof TextElementBox) {
                 this.selection.selectFieldInternal(this.selection.getCurrentFormField());
@@ -56545,7 +60627,12 @@ var Editor = /** @__PURE__ @class */ (function () {
             removeOffset = removeOffset - lineLength;
         }
         this.removeAtOffset(lineWidget, selection, removeOffset);
-        this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset, false);
+        if (this.owner.enableTrackChanges && !this.skipTracking()) {
+            this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset + 1, false);
+        }
+        else {
+            this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset, false);
+        }
         if (!isRedoing) {
             this.reLayout(selection);
         }
@@ -56553,7 +60640,10 @@ var Editor = /** @__PURE__ @class */ (function () {
             this.fireContentChange();
         }
     };
-    Editor.prototype.deleteParagraphMark = function (paragraph, selection, editAction) {
+    /**
+     * @private
+     */
+    Editor.prototype.deleteParagraphMark = function (paragraph, selection, editAction, handleParaMark) {
         if (isNullOrUndefined(paragraph.containerWidget)) {
             return;
         }
@@ -56609,20 +60699,112 @@ var Editor = /** @__PURE__ @class */ (function () {
                 this.documentHelper.layout.clearListElementBox(nextParagraph);
                 this.documentHelper.layout.clearListElementBox(paragraph);
                 this.updateEditPositionOnMerge(paragraph, nextParagraph);
-                for (var i = 0; i < nextParagraph.childWidgets.length; i++) {
-                    var inline = nextParagraph.childWidgets[i];
-                    nextParagraph.childWidgets.splice(i, 1);
-                    paragraph.childWidgets.push(inline);
-                    inline.paragraph = paragraph;
-                    i--;
+                // tslint:disable-next-line:max-line-length
+                var canRemoveParaMark = (!isNullOrUndefined(handleParaMark) && handleParaMark) ? this.handleDeleteParaMark(paragraph, nextPara[0]) : true;
+                if (canRemoveParaMark) {
+                    var prevLastLineIndex = paragraph.childWidgets.length - 1;
+                    var elementIndex = paragraph.childWidgets[prevLastLineIndex].children.length - 1;
+                    for (var i = 0; i < nextParagraph.childWidgets.length; i++) {
+                        var inline = nextParagraph.childWidgets[i];
+                        nextParagraph.childWidgets.splice(i, 1);
+                        paragraph.childWidgets.push(inline);
+                        inline.paragraph = paragraph;
+                        i--;
+                    }
+                    if (nextParagraph.childWidgets.length === 0) {
+                        nextParagraph.childWidgets.push(new LineWidget(nextParagraph));
+                    }
+                    this.removeBlock(nextParagraph);
+                    this.documentHelper.layout.reLayoutParagraph(paragraph, 0, 0);
+                    //this.combineRevisionOnDeleteParaMark(paragraph, prevLastLineIndex, elementIndex);
+                    this.addRemovedNodes(nextParagraph);
                 }
-                if (nextParagraph.childWidgets.length === 0) {
-                    nextParagraph.childWidgets.push(new LineWidget(nextParagraph));
-                }
-                this.removeBlock(nextParagraph);
-                this.documentHelper.layout.reLayoutParagraph(paragraph, 0, 0);
-                this.addRemovedNodes(nextParagraph);
             }
+        }
+    };
+    Editor.prototype.handleDeleteParaMark = function (currentPara, nextPara) {
+        if (!this.owner.enableTrackChanges && currentPara.characterFormat.revisions.length > 0) {
+            // If tracking disabled and revision exists then remove revision from character format
+            for (var i = 0; i < currentPara.characterFormat.revisions.length; i++) {
+                var currentRevision = currentPara.characterFormat.revisions[i];
+                var rangeIndex = currentRevision.range.indexOf(currentPara.characterFormat);
+                currentRevision.range.splice(rangeIndex, 1);
+                if (currentRevision.range.length === 0) {
+                    this.owner.revisions.remove(currentRevision);
+                }
+                return true;
+            }
+        }
+        if (this.owner.enableTrackChanges) {
+            var canRemoveParaMark = false;
+            if (currentPara.characterFormat.revisions.length > 0) {
+                var deleteRevision = this.retrieveRevisionByType(currentPara.characterFormat, 'Deletion');
+                if (!isNullOrUndefined(deleteRevision) && this.isRevisionMatched(deleteRevision, 'Deletion')) {
+                    var revisionIndex = currentPara.characterFormat.revisions.indexOf(deleteRevision);
+                    currentPara.characterFormat.revisions.splice(revisionIndex, 1);
+                    deleteRevision.range.splice(deleteRevision.range.indexOf(currentPara.characterFormat), 1);
+                    if (deleteRevision.range.length === 0) {
+                        this.owner.revisions.remove(deleteRevision);
+                    }
+                    canRemoveParaMark = true;
+                }
+                var insertRevision = this.retrieveRevisionByType(currentPara.characterFormat, 'Insertion');
+                if (!isNullOrUndefined(insertRevision) && this.isRevisionMatched(currentPara.characterFormat, 'Insertion')) {
+                    var rangeIndex = insertRevision.range.indexOf(currentPara.characterFormat);
+                    insertRevision.range.splice(rangeIndex, 1);
+                    if (insertRevision.range.length === 0) {
+                        this.owner.revisions.remove(insertRevision);
+                    }
+                    canRemoveParaMark = true;
+                }
+                if (canRemoveParaMark) {
+                    return true;
+                }
+                else {
+                    this.applyRevisionForParaMark(currentPara, nextPara.firstChild, 'Deletion', false);
+                }
+                return false;
+            }
+            else {
+                this.applyRevisionForParaMark(currentPara, nextPara.firstChild, 'Deletion', false);
+                return false;
+            }
+        }
+        return true;
+    };
+    Editor.prototype.insertDeleteParaMarkRevision = function (currentPara, nextPara) {
+        var lastLine = currentPara.lastChild;
+        // tslint:disable-next-line:max-line-length
+        var lastElement = lastLine.children.length > 0 ? lastLine.children[lastLine.children.length - 1].previousValidNodeForTracking : undefined;
+        if (!isNullOrUndefined(lastElement)) {
+            var matchedRevisions = this.getMatchedRevisionsToCombine(lastElement.revisions, 'Deletion');
+            if (matchedRevisions.length > 0) {
+                this.mapMatchedRevisions(matchedRevisions, lastElement, currentPara.characterFormat, false);
+            }
+        }
+        var firstLine = nextPara.firstChild;
+        var firstElement = firstLine.children[0].nextValidNodeForTracking;
+    };
+    /**
+     * Method to retrieve delete revision
+     * @param item
+     */
+    Editor.prototype.retrieveRevisionByType = function (item, revisionToRetrieve) {
+        for (var i = 0; i < item.revisions.length; i++) {
+            if (item.revisions[i].revisionType === revisionToRetrieve) {
+                return item.revisions[i];
+            }
+        }
+        return undefined;
+    };
+    Editor.prototype.combineRevisionOnDeleteParaMark = function (paragraph, lineIndex, elementIndex) {
+        var lastLine = paragraph.childWidgets[lineIndex];
+        var lastElement = lastLine.children[elementIndex];
+        var firstElement = lastElement.nextNode;
+        firstElement = firstElement.nextValidNodeForTracking;
+        lastElement = lastElement.nextValidNodeForTracking;
+        if (firstElement.revisions.length > 0 && lastElement.revisions.length > 0) {
+            this.combineElementRevisions(lastElement, firstElement);
         }
     };
     Editor.prototype.updateEditPositionOnMerge = function (currentParagraph, nextParagraph) {
@@ -57340,7 +61522,7 @@ var Editor = /** @__PURE__ @class */ (function () {
             var curInline = inlineObj.element;
             indexInInline = inlineObj.index;
             var firstElement = elements[0];
-            this.insertElementInternal(curInline, firstElement, indexInInline, true);
+            this.insertElementInternal(curInline, firstElement, indexInInline, undefined, true);
             var index = firstElement.indexInOwner;
             var lastElement = firstElement;
             for (var i = 1; i < elements.length; i++) {
@@ -58490,6 +62672,12 @@ var Editor = /** @__PURE__ @class */ (function () {
         fieldEnd.fieldBegin = fieldBegin;
         fieldEnd.fieldBegin.fieldEnd = fieldEnd;
         fieldEnd.line = lineWidget;
+        //For TOC we used to append field end at last we need to map that inserted revision to field end.
+        if (fieldBegin.revisions.length > 0) {
+            var currentRevision = fieldBegin.revisions[fieldBegin.revisions.length - 1];
+            currentRevision.range.push(fieldEnd);
+            fieldEnd.revisions.push(currentRevision);
+        }
         lineWidget.children.push(fieldEnd);
     };
     Editor.prototype.validateTocSettings = function (tocSettings) {
@@ -58584,13 +62772,12 @@ var Editor = /** @__PURE__ @class */ (function () {
     /**
      * Creates TOC field element.
      */
-    Editor.prototype.createTocFieldElement = function (lineWidget, fieldCode) {
+    Editor.prototype.createTocFieldElement = function (lineWidget, fieldCode, isSkipRevision) {
         //begin
         var fieldBegin = new FieldElementBox(0);
         fieldBegin.hasFieldEnd = true;
         fieldBegin.line = lineWidget;
         lineWidget.children.push(fieldBegin);
-        //format toc
         var textElement = new TextElementBox();
         textElement.text = fieldCode;
         textElement.line = lineWidget;
@@ -58601,6 +62788,7 @@ var Editor = /** @__PURE__ @class */ (function () {
         fieldSeparator.fieldBegin.fieldSeparator = fieldSeparator;
         fieldSeparator.line = lineWidget;
         lineWidget.children.push(fieldSeparator);
+        // If revision enabled.
         return fieldBegin;
     };
     /**
@@ -58611,6 +62799,7 @@ var Editor = /** @__PURE__ @class */ (function () {
         var fieldBegin = undefined;
         var tocPara = undefined;
         var tocLine = undefined;
+        var emptyParaAppended = false;
         // tslint:disable-next-line:max-line-length
         if (widgets.length === 1 && widgets[0].childWidgets[0].children.length === 3 && !isNullOrUndefined(isFirstPara) && !isFirstPara) {
             tocLine = widgets[0].childWidgets[0];
@@ -58650,6 +62839,7 @@ var Editor = /** @__PURE__ @class */ (function () {
         if ((isFirstPara !== undefined) && isFirstPara) {
             if (!isNullOrUndefined(isStartParagraph) && !isStartParagraph) {
                 this.appendEmptyPara(widgets);
+                emptyParaAppended = true;
             }
             this.createTocFieldElement(tocLine, fieldCode);
         }
@@ -58715,13 +62905,22 @@ var Editor = /** @__PURE__ @class */ (function () {
         if (!isNullOrUndefined(tocPara) && (text !== '' || isFirstPara)) {
             widgets.push(tocPara);
         }
+        if (this.owner.enableTrackChanges && !isNullOrUndefined(tocPara)) {
+            if (widgets.length === 1 || emptyParaAppended) {
+                this.insertRevisionForBlock(tocPara, 'Insertion', true);
+            }
+            else {
+                var revision = this.owner.revisionsInternal.changes[0];
+                this.insertRevisionForBlock(tocPara, 'Insertion', true, revision);
+            }
+        }
     };
     /**
      * Inserts toc hyperlink.
      */
     Editor.prototype.insertTocHyperlink = function (lineWidget, bookmarkName, text) {
         var fieldCode = ' HYPERLINK \\l \"' + bookmarkName + '\" ';
-        var fieldBegin = this.createTocFieldElement(lineWidget, fieldCode);
+        var fieldBegin = this.createTocFieldElement(lineWidget, fieldCode, true);
         //text element.
         var span = new TextElementBox();
         span.text = text;
@@ -58735,7 +62934,7 @@ var Editor = /** @__PURE__ @class */ (function () {
     // tslint:disable-next-line:max-line-length
     Editor.prototype.insertTocPageNumber = function (bookMarkname, lineWidget, isRightAlign, widget) {
         var fieldCode = ' PAGEREF' + bookMarkname + ' \\h ';
-        var fieldBegin = this.createTocFieldElement(lineWidget, fieldCode);
+        var fieldBegin = this.createTocFieldElement(lineWidget, fieldCode, true);
         var text = (this.documentHelper.pages.indexOf(widget.bodyWidget.page) + 1).toString();
         //text element.
         var span = new FieldTextElementBox();
@@ -59217,7 +63416,7 @@ var Editor = /** @__PURE__ @class */ (function () {
             type = 'CheckBox';
             formField = new CheckBoxFormField();
         }
-        else if (!isNullOrUndefined(info.dropDownItems)) {
+        else if (!isNullOrUndefined(info.dropdownItems)) {
             type = 'DropDown';
             formField = new DropDownFormField();
         }
@@ -59266,7 +63465,9 @@ var Editor = /** @__PURE__ @class */ (function () {
         }
         currentOffset = endElement.line.getOffset(endElement, 1);
         this.selection.end.setPositionParagraph(endElement.line, currentOffset);
+        this.skipFieldDeleteTracking = true;
         this.deleteSelectedContents(this.selection, false);
+        this.skipFieldDeleteTracking = false;
         this.updateInsertPosition();
         var element = [];
         var fieldBegin = new FieldElementBox(0);
@@ -59339,8 +63540,8 @@ var Editor = /** @__PURE__ @class */ (function () {
             defaultText = formField.defaultValue ? String.fromCharCode(9745) : String.fromCharCode(9744);
         }
         else if (formField instanceof DropDownFormField) {
-            if (formField.dropDownItems.length > 0) {
-                defaultText = formField.dropDownItems[0];
+            if (formField.dropdownItems.length > 0) {
+                defaultText = formField.dropdownItems[0];
             }
             else {
                 defaultText = this.documentHelper.textHelper.repeatChar(this.documentHelper.textHelper.getEnSpaceCharacter(), 5);
@@ -59442,7 +63643,7 @@ var Editor = /** @__PURE__ @class */ (function () {
             this.updateFormFieldResult(field, formattedText);
         }
         else if (formFieldData instanceof DropDownFormField) {
-            var text = formFieldData.dropDownItems[value];
+            var text = formFieldData.dropdownItems[value];
             formFieldData.selectedIndex = value;
             this.updateFormFieldResult(field, text);
         }
@@ -60112,6 +64313,15 @@ var BaseHistoryInfo = /** @__PURE__ @class */ (function () {
             var isForward = TextPosition.isForwardSelection(this.insertPosition, this.endPosition);
             var insertTextPosition = sel.getTextPosBasedOnLogicalIndex(isForward ? this.insertPosition : this.endPosition);
             var endTextPosition = sel.getTextPosBasedOnLogicalIndex(isForward ? this.endPosition : this.insertPosition);
+            if (this.lastElementRevision && this.editorHistory.isUndoing) {
+                if (isNullOrUndefined(this.endRevisionLogicalIndex)) {
+                    this.updateEndRevisionInfo();
+                }
+            }
+            if (this.action === 'ClearRevisions') {
+                this.undoRevisionForElements(insertTextPosition, endTextPosition, deletedNodes[deletedNodes.length - 1]);
+                deletedNodes = [];
+            }
             if (insertTextPosition.isAtSamePosition(endTextPosition)) {
                 sel.selectContent(insertTextPosition, true);
             }
@@ -60134,16 +64344,29 @@ var BaseHistoryInfo = /** @__PURE__ @class */ (function () {
             this.selectionEnd = this.endPosition;
             this.endPosition = undefined;
             var isRemoveContent = false;
+            if (this.endRevisionLogicalIndex && deletedNodes.length > 0) {
+                // tslint:disable-next-line:max-line-length      
+                if (this.editorHistory.isUndoing || (this.editorHistory.isRedoing && insertTextPosition.isAtSamePosition(endTextPosition))) {
+                    var currentPosition = sel.getTextPosBasedOnLogicalIndex(this.endRevisionLogicalIndex);
+                    sel.selectPosition(insertTextPosition, currentPosition);
+                }
+                if (this.editorHistory.isUndoing) {
+                    this.owner.editor.deleteSelectedContents(sel, true);
+                }
+            }
             if (!insertTextPosition.isAtSamePosition(endTextPosition)) {
                 isRemoveContent = this.action === 'BackSpace' || this.action === 'Delete' || this.action === 'ClearCells'
                     || this.action === 'DeleteCells';
+                // tslint:disable-next-line:max-line-length
+                var skipDelete = (deletedNodes.length > 0 && this.action === 'ParaMarkTrack') || this.action === 'ClearRevisions' || this.action === 'AcceptTOC';
                 if (!(isRemoveContent) && this.action !== 'MergeCells' && this.action !== 'InsertRowAbove'
                     && this.action !== 'InsertRowBelow' && this.action !== 'InsertColumnLeft'
                     && this.action !== 'InsertColumnRight' && this.action !== 'Borders'
                     && this.action !== 'DeleteTable' && this.action !== 'DeleteColumn' && this.action !== 'DeleteRow') {
                     sel.end.setPositionInternal(endTextPosition);
-                    if (!this.owner.selection.isEmpty) {
-                        if (this.editorHistory.isRedoing) {
+                    if (!this.owner.selection.isEmpty && !skipDelete) {
+                        if (this.editorHistory.isRedoing && this.action !== 'Accept Change' && this.action !== 'ParaMarkTrack' &&
+                            this.action !== 'ParaMarkReject' && this.action !== 'RemoveRowTrack') {
                             this.owner.editorModule.removeSelectedContents(sel);
                         }
                         else {
@@ -60157,6 +64380,7 @@ var BaseHistoryInfo = /** @__PURE__ @class */ (function () {
                 }
             }
             var isRedoAction = this.editorHistory.isRedoing && !isRemoveContent;
+            isRemoveContent = this.lastElementRevision ? false : isRemoveContent;
             this.revertModifiedNodes(deletedNodes, isRedoAction, isForwardSelection ? start : end, start === end);
             if (isRemoveContent) {
                 this.removeContent(insertTextPosition, endTextPosition);
@@ -60164,10 +64388,16 @@ var BaseHistoryInfo = /** @__PURE__ @class */ (function () {
             //this.owner.editorModule.reLayout(this.documentHelper.selection);
         }
         var isSelectionChanged = false;
-        if ((this.editorHistory.isUndoing && isNullOrUndefined(this.editorHistory.currentHistoryInfo)) ||
+        var updateSelection = false;
+        // tslint:disable-next-line:max-line-length
+        if (!isNullOrUndefined(this.editorHistory.currentHistoryInfo) && (this.editorHistory.currentHistoryInfo.action === 'Reject All' || this.editorHistory.currentHistoryInfo.action === 'Accept All')) {
+            updateSelection = true;
+        }
+        // tslint:disable-next-line:max-line-length
+        if (((this.editorHistory.isUndoing || this.endRevisionLogicalIndex || this.action === 'RemoveRowTrack' || updateSelection) && isNullOrUndefined(this.editorHistory.currentHistoryInfo) || updateSelection) ||
             ((this.action === 'InsertRowAbove' || this.action === 'Borders' || this.action === 'InsertRowBelow'
                 || this.action === 'InsertColumnLeft'
-                || this.action === 'InsertColumnRight') && (this.editorHistory.isRedoing
+                || this.action === 'InsertColumnRight' || this.action === 'Accept Change') && (this.editorHistory.isRedoing
                 || this.editorHistory.currentHistoryInfo.action === 'Paste'))) {
             selectionStartTextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(start);
             selectionEndTextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(end);
@@ -60217,9 +64447,38 @@ var BaseHistoryInfo = /** @__PURE__ @class */ (function () {
                 && endTextPosition.paragraph.containerWidget instanceof TextFrame)) {
             //Removes if any empty paragraph is added while delete.
             this.owner.selection.selectRange(insertTextPosition, endTextPosition);
-            var isDelete = (this.action === 'BackSpace') ? true : false;
+            var isDelete = (this.action === 'BackSpace' || this.action === 'RemoveRowTrack') ? true : false;
             this.owner.editorModule.deleteSelectedContents(this.owner.selection, isDelete);
         }
+    };
+    /**
+     * @private
+     */
+    BaseHistoryInfo.prototype.updateEndRevisionInfo = function () {
+        this.lastElementRevision = this.checkAdjacentNodeForMarkedRevision(this.lastElementRevision);
+        var currentRevision = this.retrieveEndPosition(this.lastElementRevision);
+        var blockInfo = this.owner.selection.getParagraphInfo(currentRevision);
+        this.endRevisionLogicalIndex = this.owner.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+        this.lastElementRevision.isMarkedForRevision = false;
+    };
+    BaseHistoryInfo.prototype.retrieveEndPosition = function (elementBox) {
+        var endPosition = new TextPosition(this.owner);
+        var offset = elementBox.line.getOffset(elementBox, 0) + elementBox.length;
+        endPosition.setPositionFromLine(elementBox.line, offset);
+        return endPosition;
+    };
+    /**
+     * Method to retrieve exact spitted node which is marked as last available element.
+     * @param elementBox
+     */
+    BaseHistoryInfo.prototype.checkAdjacentNodeForMarkedRevision = function (elementBox) {
+        var nextItem = elementBox.nextNode;
+        var markedNode;
+        while (!isNullOrUndefined(nextItem) && nextItem.isMarkedForRevision) {
+            markedNode = nextItem;
+            nextItem = nextItem.nextNode;
+        }
+        return !isNullOrUndefined(markedNode) ? markedNode : elementBox;
     };
     BaseHistoryInfo.prototype.revertModifiedProperties = function (start, end) {
         if (this.action === 'CellFormat' || this.action === 'CellOptions' || this.action === 'TableOptions') {
@@ -60282,6 +64541,9 @@ var BaseHistoryInfo = /** @__PURE__ @class */ (function () {
             case 'TableFixedColumnWidth':
                 editor.autoFitTable('FixedColumnWidth');
                 break;
+            case 'RemoveRowTrack':
+                this.owner.selection.handleAcceptReject(true);
+                break;
         }
     };
     /**
@@ -60303,12 +64565,12 @@ var BaseHistoryInfo = /** @__PURE__ @class */ (function () {
             }
         }
         if (deletedNodes.length > 0) {
-            if ((this.editorHistory.isUndoing && (this.action === 'DeleteCells' || this.action === 'DeleteColumn'
-                || this.action === 'DeleteRow' || this.action === 'MergeCells'))
+            if ((this.editorHistory.isUndoing && (this.action === 'RemoveRowTrack' || this.action === 'DeleteCells' ||
+                this.action === 'DeleteColumn' || this.action === 'DeleteRow' || this.action === 'MergeCells'))
                 || (this.action === 'InsertRowAbove' || this.action === 'InsertRowBelow' || this.action === 'InsertColumnLeft'
                     || this.action === 'ClearCells' || this.action === 'InsertColumnRight' || this.action === 'Borders' ||
                     this.action === 'TableAutoFitToContents' || this.action === 'TableAutoFitToWindow' ||
-                    this.action === 'TableFixedColumnWidth')) {
+                    this.action === 'TableFixedColumnWidth' || this.action === 'RemoveRowTrack')) {
                 var insertIndex = this.selectionStart;
                 var block = this.owner.editorModule.getBlock({ index: insertIndex }).node;
                 var lastNode = deletedNodes[deletedNodes.length - 1];
@@ -60316,6 +64578,9 @@ var BaseHistoryInfo = /** @__PURE__ @class */ (function () {
                     && lastNode instanceof TableWidget) {
                     if (block instanceof ParagraphWidget && !block.isInsideTable) {
                         block = block.previousRenderedWidget;
+                    }
+                    else if (block instanceof ParagraphWidget && block.isInsideTable) {
+                        block = block.associatedCell.ownerTable;
                     }
                     block = block.combineWidget(this.viewer);
                     this.owner.editorModule.insertTableInternal(block, lastNode, false);
@@ -60339,6 +64604,9 @@ var BaseHistoryInfo = /** @__PURE__ @class */ (function () {
                     }
                     if (lastNode instanceof ParagraphWidget && this.owner.selection.start.offset > 0) {
                         this.owner.editorModule.insertNewParagraphWidget(lastNode, true);
+                        if (lastNode.characterFormat.removedIds.length > 0) {
+                            this.owner.editor.constructRevisionFromID(lastNode.characterFormat, undefined);
+                        }
                         deletedNodes.splice(deletedNodes.indexOf(lastNode), 1);
                         if (isNullOrUndefined(block)) {
                             // tslint:disable-next-line:max-line-length
@@ -60390,6 +64658,9 @@ var BaseHistoryInfo = /** @__PURE__ @class */ (function () {
                         && this.owner.selection.start.offset === this.owner.selection.getLineLength(this.owner.selection.start.paragraph.lastChild)) {
                         var editor = this.owner.editorModule;
                         editor.insertNewParagraphWidget(firstNode, false);
+                        if (firstNode.characterFormat.removedIds.length > 0) {
+                            this.owner.editor.constructRevisionFromID(firstNode.characterFormat, undefined);
+                        }
                         deletedNodes.splice(deletedNodes.indexOf(firstNode), 1);
                         //Removes the intermediate empty paragraph instance.
                         if (this.action !== 'Paste') {
@@ -60441,11 +64712,95 @@ var BaseHistoryInfo = /** @__PURE__ @class */ (function () {
                     this.owner.editorModule.insertBlock(node);
                 }
             }
+            else if (node instanceof WCharacterFormat) {
+                var insertIndex = this.selectionStart;
+                var wiget = this.owner.editorModule.getBlock({ index: insertIndex }).node;
+                if (wiget instanceof ParagraphWidget) {
+                    if (node.removedIds.length > 0) {
+                        wiget.characterFormat.removedIds = node.removedIds.slice();
+                        this.owner.editor.constructRevisionFromID(wiget.characterFormat, true);
+                    }
+                    else if (wiget.characterFormat.revisions.length > 0) {
+                        wiget.characterFormat = node.cloneFormat();
+                    }
+                }
+            }
             else if (node instanceof BodyWidget) {
                 this.owner.editorModule.insertSection(this.owner.selection, false);
             }
+            else if (typeof (node) === 'string' && this.action === 'AcceptTOC') {
+                var insertIndex = this.selectionStart;
+                var widget = this.owner.editorModule.getBlock({ index: insertIndex }).node;
+                var endWidget = this.owner.editorModule.getBlock({ index: this.selectionEnd }).node;
+                var currentRevision = this.owner.documentHelper.revisionsInternal.get(node);
+                if (this.editorHistory.isUndoing) {
+                    while (widget instanceof ParagraphWidget && widget !== endWidget) {
+                        this.owner.editor.insertRevisionForBlock(widget, currentRevision.revisionType, true, currentRevision);
+                        // tslint:disable-next-line:max-line-length
+                        widget = this.documentHelper.selection.getNextParagraphBlock(widget.getSplitWidgets().pop());
+                    }
+                    // tslint:disable-next-line:max-line-length
+                    this.owner.editor.insertRevisionForBlock(endWidget, currentRevision.revisionType, true, currentRevision);
+                }
+                else {
+                    while (currentRevision.range.length > 0) {
+                        var item = currentRevision.range[0];
+                        var revisionIndex = item.revisions.indexOf(currentRevision);
+                        if (revisionIndex >= 0) {
+                            item.revisions.splice(revisionIndex, 1);
+                            var rangeIndex = currentRevision.range.indexOf(item);
+                            currentRevision.range.splice(rangeIndex, 1);
+                        }
+                        if (currentRevision.range.length === 0) {
+                            this.owner.revisions.remove(currentRevision);
+                        }
+                    }
+                }
+                this.owner.editor.addRemovedNodes(currentRevision.revisionID);
+            }
         }
         deletedNodes = [];
+    };
+    /**
+     * @private
+     */
+    BaseHistoryInfo.prototype.undoRevisionForElements = function (start, end, id) {
+        var currentPara = start.paragraph;
+        var endPara = end.paragraph;
+        var currentRevision = this.documentHelper.revisionsInternal.get(id);
+        var startoffset = this.owner.selection.getParagraphInfo(start).offset;
+        var endoffset = this.owner.selection.getParagraphInfo(end).offset;
+        var isSamePara = start.paragraph === end.paragraph;
+        if (this.editorHistory.isUndoing) {
+            while (currentPara !== endPara) {
+                this.owner.editor.applyRevisionForCurrentPara(currentPara, startoffset, currentPara.getLength(), id, true);
+                currentPara = this.documentHelper.selection.getNextParagraphBlock(currentPara.getSplitWidgets().pop());
+                if (currentPara !== endPara) {
+                    startoffset = 0;
+                }
+            }
+            if (currentPara === endPara) {
+                if (!isSamePara) {
+                    startoffset = 0;
+                }
+                this.owner.editor.applyRevisionForCurrentPara(currentPara, startoffset, endoffset, id, false);
+            }
+        }
+        else {
+            while (currentRevision.range.length > 0) {
+                var item = currentRevision.range[0];
+                var revisionIndex = item.revisions.indexOf(currentRevision);
+                if (revisionIndex >= 0) {
+                    item.revisions.splice(revisionIndex, 1);
+                    var rangeIndex = currentRevision.range.indexOf(item);
+                    currentRevision.range.splice(rangeIndex, 1);
+                }
+                if (currentRevision.range.length === 0) {
+                    this.owner.revisions.remove(currentRevision);
+                }
+            }
+        }
+        this.removedNodes.push(id);
     };
     BaseHistoryInfo.prototype.revertResizing = function () {
         this.editorHistory.currentBaseHistoryInfo = this;
@@ -62908,6 +67263,9 @@ var EditorHistory = /** @__PURE__ @class */ (function () {
                 this.documentHelper.removeEmptyPages();
             }
         }
+        if (this.owner.showRevisions) {
+            this.owner.trackChangesPane.updateTrackChanges();
+        }
         selection.owner.isShiftingEnabled = false;
         selection.owner.isLayoutEnabled = true;
         // // selection.addMultipleSelectionRanges();
@@ -63389,12 +67747,16 @@ var WordExport = /** @__PURE__ @class */ (function () {
         this.mDifferentFirstPage = false;
         this.mBookmarks = undefined;
         this.mComments = [];
+        this.revisions = [];
         this.paraID = 0;
         this.commentParaID = 0;
         this.commentParaIDInfo = {};
         this.isInsideComment = false;
         this.commentId = {};
         this.currentCommentId = 0;
+        this.trackChangesId = 0;
+        this.prevRevisionIds = [];
+        this.isRevisionContinuous = false;
         /* tslint:enable:no-any */
     }
     WordExport.prototype.getModuleName = function () {
@@ -63569,6 +67931,7 @@ var WordExport = /** @__PURE__ @class */ (function () {
         var document = documentHelper.owner.sfdtExportModule.write();
         this.setDocument(document);
         this.mComments = documentHelper.comments;
+        this.revisions = documentHelper.owner.revisions.changes;
         this.mArchive = new ZipArchive();
         this.mArchive.compressionLevel = 'Normal';
         this.commentParaIDInfo = {};
@@ -64147,8 +68510,52 @@ var WordExport = /** @__PURE__ @class */ (function () {
         writer.writeEndElement(); //end of pPr
         // Serialize watermark if paragraph is the first item of Header document.
         // EnsureWatermark(paragraph);
+        this.prevRevisionIds = [];
         this.serializeParagraphItems(writer, paragraph.inlines);
         writer.writeEndElement(); //end of paragraph tag.
+    };
+    //Serialize Revision start
+    WordExport.prototype.serializeRevisionStart = function (writer, item, previousNode) {
+        if (item.hasOwnProperty('revisionIds')) {
+            if (!isNullOrUndefined(previousNode) && previousNode.hasOwnProperty('fieldType') && previousNode.fieldType === 0) {
+                return;
+            }
+            if (item.hasOwnProperty('fieldType') && item.fieldType === 1) {
+                return;
+            }
+            // tslint:disable-next-line:max-line-length
+            if (!isNullOrUndefined(previousNode) && previousNode.hasOwnProperty('bookmarkType') && (previousNode.bookmarkType === 0 && !(previousNode.name.indexOf('_Toc') >= 0))) {
+                return;
+            }
+            var ids = item.revisionIds;
+            for (var i = 0; i < ids.length; i++) {
+                var revision = this.retrieveRevision(ids[i]);
+                if (revision.revisionType === 'Insertion') {
+                    this.serializeTrackChanges(writer, 'ins', revision.author, revision.date);
+                }
+                if (revision.revisionType === 'Deletion') {
+                    this.serializeTrackChanges(writer, 'del', revision.author, revision.date);
+                }
+            }
+        }
+    };
+    //Serialize track changes
+    WordExport.prototype.serializeTrackChanges = function (writer, type, author, date) {
+        writer.writeStartElement('w', type, this.wNamespace);
+        writer.writeAttributeString('w', 'id', this.wNamespace, (this.trackChangesId++).toString());
+        writer.writeAttributeString('w', 'author', this.wNamespace, author);
+        writer.writeAttributeString('w', 'date', this.wNamespace, date);
+    };
+    /**
+     * Method to return matched revisions
+     */
+    WordExport.prototype.retrieveRevision = function (id) {
+        for (var i = 0; i < this.revisions.length; i++) {
+            if (this.revisions[i].revisionID === id) {
+                return this.revisions[i];
+            }
+        }
+        return undefined;
     };
     // Serialize the paragraph items
     WordExport.prototype.serializeParagraphItems = function (writer, paraItems) {
@@ -64156,6 +68563,7 @@ var WordExport = /** @__PURE__ @class */ (function () {
         var isContinueOverride = false;
         for (var i = 0; i < paraItems.length; i++) {
             var item = paraItems[i];
+            this.serializeRevisionStart(writer, item, previousNode);
             var isBdo = false;
             if (item.characterFormat) {
                 isBdo = !isNullOrUndefined(item.characterFormat.bdo) && item.characterFormat.bdo !== 'None';
@@ -64197,10 +68605,33 @@ var WordExport = /** @__PURE__ @class */ (function () {
             else {
                 this.serializeTextRange(writer, item, previousNode);
             }
+            //Serialize revision end
+            this.serializeRevisionEnd(writer, item, previousNode);
             previousNode = item;
         }
         if (isContinueOverride) {
             writer.writeEndElement();
+        }
+    };
+    //Serialize Revision end
+    WordExport.prototype.serializeRevisionEnd = function (writer, item, previousNode) {
+        if (item.hasOwnProperty('revisionIds')) {
+            //skip revision end for field begin as we combine to end with field code text
+            if (item.hasOwnProperty('fieldType') && item.fieldType === 0) {
+                return;
+            }
+            //skip revision end for field result text as we need to only on field end.
+            // tslint:disable-next-line:max-line-length
+            if (!isNullOrUndefined(previousNode) && previousNode.hasOwnProperty('fieldType') && (previousNode.fieldType === 2 || (previousNode.fieldType === 0 && item.text.indexOf('TOC') >= 0))) {
+                return;
+            }
+            for (var i = 0; i < item.revisionIds.length; i++) {
+                var revision = this.retrieveRevision(item.revisionIds[i]);
+                // tslint:disable-next-line:max-line-length
+                if (revision.revisionType === 'Insertion' || revision.revisionType === 'Deletion') {
+                    writer.writeEndElement();
+                }
+            }
         }
     };
     // Serialize the comment
@@ -66211,6 +70642,11 @@ var WordExport = /** @__PURE__ @class */ (function () {
             writer.writeStartElement(undefined, 'tblHeader', this.wNamespace);
             writer.writeEndElement();
         }
+        //serialize revision
+        if (!isNullOrUndefined(rowFormat.revisionIds) && rowFormat.revisionIds.length > 0) {
+            this.serializeRevisionStart(writer, rowFormat, undefined);
+            this.serializeRevisionEnd(writer, rowFormat, undefined);
+        }
         writer.writeEndElement();
     };
     // serialize the table cells
@@ -67020,17 +71456,34 @@ var WordExport = /** @__PURE__ @class */ (function () {
             writer.writeEndElement();
         }
         else {
+            var isDeleteText = this.retrieveDeleteRevision(span);
             var isField = !isNullOrUndefined(previousNode)
                 && previousNode.hasOwnProperty('fieldType') && previousNode.fieldType !== 2;
-            writer.writeStartElement(undefined, isField ? 'instrText' : 't', this.wNamespace);
+            var localName = isField ? isDeleteText ? 'delInstrText' : 'instrText' : isDeleteText ? 'delText' : 't';
+            writer.writeStartElement(undefined, localName, this.wNamespace);
             writer.writeAttributeString('xml', 'space', this.xmlNamespace, 'preserve');
             writer.writeString(span.text);
             writer.writeEndElement();
         }
         writer.writeEndElement();
     };
+    WordExport.prototype.retrieveDeleteRevision = function (span) {
+        if (span.hasOwnProperty('revisionIds')) {
+            if (span.revisionIds.length > 0) {
+                for (var i = 0; i < span.revisionIds.length; i++) {
+                    if (this.retrieveRevision(span.revisionIds[i]).revisionType === 'Deletion') {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    };
     // Serializes the paragraph format
     WordExport.prototype.serializeParagraphFormat = function (writer, paragraphFormat, paragraph) {
+        if (isNullOrUndefined(paragraphFormat)) {
+            return;
+        }
         if (!isNullOrUndefined(paragraphFormat.styleName)) {
             writer.writeStartElement(undefined, 'pStyle', this.wNamespace);
             writer.writeAttributeString('w', 'val', this.wNamespace, paragraphFormat.styleName);
@@ -67046,6 +71499,12 @@ var WordExport = /** @__PURE__ @class */ (function () {
             writer.writeStartElement(undefined, 'bidi', this.wNamespace);
             writer.writeEndElement();
         }
+        if (!isNullOrUndefined(paragraphFormat.outlineLevel)) {
+            writer.writeStartElement(undefined, 'outlineLvl', this.wNamespace);
+            writer.writeAttributeString('w', 'val', this.wNamespace, this.getOutlineLevelValue(paragraphFormat.outlineLevel).toString());
+            writer.writeEndElement();
+        }
+        this.serializeParagraphSpacing(writer, paragraphFormat);
         if (!isNullOrUndefined(paragraphFormat.contextualSpacing)) {
             writer.writeStartElement('w', 'contextualSpacing', this.wNamespace);
             if (!paragraphFormat.contextualSpacing) {
@@ -67053,12 +71512,6 @@ var WordExport = /** @__PURE__ @class */ (function () {
             }
             writer.writeEndElement();
         }
-        if (!isNullOrUndefined(paragraphFormat.outlineLevel)) {
-            writer.writeStartElement(undefined, 'outlineLvl', this.wNamespace);
-            writer.writeAttributeString('w', 'val', this.wNamespace, this.getOutlineLevelValue(paragraphFormat.outlineLevel).toString());
-            writer.writeEndElement();
-        }
-        this.serializeParagraphSpacing(writer, paragraphFormat);
         this.serializeIndentation(writer, paragraphFormat);
         this.serializeParagraphAlignment(writer, paragraphFormat.textAlignment, paragraphFormat.bidi);
         if (!isNullOrUndefined(paragraphFormat.tabs) && paragraphFormat.tabs.length > 0) {
@@ -67503,6 +71956,10 @@ var WordExport = /** @__PURE__ @class */ (function () {
             writer.writeStartElement(undefined, 'highlight', this.wNamespace);
             writer.writeAttributeString('w', 'val', this.wNamespace, this.getHighlightColor(characterFormat.highlightColor));
             writer.writeEndElement();
+        }
+        if (!isNullOrUndefined(characterFormat.revisionIds) && characterFormat.revisionIds.length > 0) {
+            this.serializeRevisionStart(writer, characterFormat, undefined);
+            this.serializeRevisionEnd(writer, characterFormat, undefined);
         }
         if (!isNullOrUndefined(characterFormat.underline) && characterFormat.underline !== 'None') {
             writer.writeStartElement(undefined, 'u', this.wNamespace);
@@ -68614,6 +73071,9 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
         this.document = undefined;
         this.writeInlineStyles = undefined;
         this.editRangeId = -1;
+        /**
+         * @private
+         */
         this.isExport = true;
         this.checkboxOrDropdown = false;
         this.documentHelper = documentHelper;
@@ -68621,6 +73081,13 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SfdtExport.prototype, "viewer", {
         get: function () {
             return this.documentHelper.owner.viewer;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(SfdtExport.prototype, "owner", {
+        get: function () {
+            return this.documentHelper.owner;
         },
         enumerable: true,
         configurable: true
@@ -68762,6 +73229,7 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
         this.writeStyles(this.documentHelper);
         this.writeLists(this.documentHelper);
         this.writeComments(this.documentHelper);
+        this.writeRevisions(this.documentHelper);
         var doc = this.document;
         this.clear();
         return doc;
@@ -68776,6 +73244,7 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
         this.document.characterFormat = this.writeCharacterFormat(this.documentHelper.characterFormat);
         this.document.paragraphFormat = this.writeParagraphFormat(this.documentHelper.paragraphFormat);
         this.document.defaultTabWidth = this.documentHelper.defaultTabWidth;
+        this.document.trackChanges = this.owner.enableTrackChanges;
         this.document.enforcement = this.documentHelper.isDocumentProtected;
         this.document.hashValue = this.documentHelper.hashValue;
         this.document.saltValue = this.documentHelper.saltValue;
@@ -68912,6 +73381,11 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
             if (element instanceof ListTextElementBox) {
                 continue;
             }
+            if (element.removedIds.length > 0) {
+                for (var i_1 = 0; i_1 < element.removedIds.length; i_1++) {
+                    element.revisions[i_1] = this.documentHelper.revisionsInternal.get(element.removedIds[i_1]);
+                }
+            }
             var inline = this.writeInline(element);
             if (!isNullOrUndefined(inline)) {
                 inlines.push(inline);
@@ -68922,6 +73396,7 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
             }
         }
     };
+    /* tslint:disable:max-func-body-length */
     SfdtExport.prototype.writeInline = function (element) {
         var inline = {};
         inline.characterFormat = this.writeCharacterFormat(element.characterFormat);
@@ -68953,7 +73428,7 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
                     else {
                         inline.formFieldData.dropDownList = {};
                         this.checkboxOrDropdown = true;
-                        inline.formFieldData.dropDownList.dropDownItems = element.formFieldData.dropDownItems;
+                        inline.formFieldData.dropDownList.dropDownItems = element.formFieldData.dropdownItems;
                         inline.formFieldData.dropDownList.selectedIndex = element.formFieldData.selectedIndex;
                     }
                 }
@@ -68981,6 +73456,36 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
             }
             else if (element.text.indexOf('\u001f') !== -1) {
                 inline.text = element.text.replace('\u001f', '');
+            }
+            else if (element.revisions.length !== 0) {
+                if (this.isExport === false && this.owner.enableTrackChanges === true) {
+                    for (var x = 0; x < element.revisions.length; x++) {
+                        //let insertionFlag, deletionFlag: boolean = false;
+                        if (element.revisions.length > 1) {
+                            for (var i = 0; i < element.revisions.length; i++) {
+                                if (element.revisions[x].revisionType === 'Deletion') {
+                                    inline.text = element.text;
+                                }
+                                else if (element.revisions[x].revisionType === 'Insertion') {
+                                    element.revisions.pop();
+                                }
+                            }
+                        }
+                        else if (element.revisions[x].revisionType === 'Deletion') {
+                            element.revisions.pop();
+                        }
+                        else if (element.revisions[x].revisionType === 'Insertion') {
+                            element.revisions.pop();
+                            inline.text = element.text;
+                        }
+                        else {
+                            inline.text = element.text;
+                        }
+                    }
+                }
+                else {
+                    inline.text = element.text;
+                }
             }
             else {
                 inline.text = element.text;
@@ -69012,6 +73517,20 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
         else {
             inline = undefined;
         }
+        if (element.revisions.length > 0) {
+            inline.revisionIds = [];
+            for (var x = 0; x < element.revisions.length; x++) {
+                //revisionIdes[x] = element.revisions[x];
+                inline.revisionIds.push(element.revisions[x].revisionID);
+                //this.document.revisionIdes.push(inline.revisionIds)
+            }
+        }
+        /*if(element.removedIds.length > 0){
+            inline.revisionIds = [];
+            for(let x:number = 0;x < element.removedIds.length; x++){
+            inline.revisionIds.push(element.removedIds);
+            }
+        }*/
         return inline;
     };
     SfdtExport.prototype.writeShape = function (element, inline) {
@@ -69515,6 +74034,7 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
     };
     SfdtExport.prototype.writeRowFormat = function (wRowFormat) {
         var rowFormat = {};
+        var revisionIds = [];
         rowFormat.height = wRowFormat.hasValue('height') ? wRowFormat.height : undefined;
         rowFormat.allowBreakAcrossPages = wRowFormat.hasValue('allowBreakAcrossPages') ? wRowFormat.allowBreakAcrossPages : undefined;
         rowFormat.heightType = wRowFormat.hasValue('heightType') ? wRowFormat.heightType : undefined;
@@ -69531,7 +74051,14 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
         rowFormat.rightMargin = wRowFormat.hasValue('rightMargin') ? wRowFormat.rightMargin : undefined;
         rowFormat.bottomMargin = wRowFormat.hasValue('bottomMargin') ? wRowFormat.bottomMargin : undefined;
         rowFormat.leftIndent = wRowFormat.hasValue('leftIndent') ? wRowFormat.leftIndent : undefined;
+        for (var j = 0; j < wRowFormat.revisions.length; j++) {
+            rowFormat.revisionIds = this.writeRowRevisions(wRowFormat.revisions[j], revisionIds);
+        }
         return rowFormat;
+    };
+    SfdtExport.prototype.writeRowRevisions = function (wrevisions, revisionIds) {
+        revisionIds.push(wrevisions.revisionID);
+        return revisionIds;
     };
     SfdtExport.prototype.writeTableFormat = function (wTableFormat) {
         var tableFormat = {};
@@ -69539,7 +74066,7 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
         tableFormat.shading = this.writeShading(wTableFormat.shading);
         tableFormat.cellSpacing = wTableFormat.hasValue('cellSpacing') ? wTableFormat.cellSpacing : undefined;
         tableFormat.leftIndent = wTableFormat.hasValue('leftIndent') ? wTableFormat.leftIndent : undefined;
-        tableFormat.tableAlignment = wTableFormat.hasValue('tableAlignment') ? wTableFormat.tableAlignment : undefined;
+        tableFormat.tableAlignment = wTableFormat.hasValue('tableAlignment"') ? wTableFormat.tableAlignment : undefined;
         tableFormat.topMargin = wTableFormat.hasValue('topMargin') ? wTableFormat.topMargin : undefined;
         tableFormat.rightMargin = wTableFormat.hasValue('rightMargin') ? wTableFormat.rightMargin : undefined;
         tableFormat.leftMargin = wTableFormat.hasValue('leftMargin') ? wTableFormat.leftMargin : undefined;
@@ -69578,6 +74105,20 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
             wStyle.next = style.next.name;
         }
         return wStyle;
+    };
+    SfdtExport.prototype.writeRevisions = function (documentHelper) {
+        this.document.revisions = [];
+        for (var i = 0; i < documentHelper.owner.revisions.changes.length; i++) {
+            this.document.revisions.push(this.writeRevision(documentHelper.owner.revisions.changes[i]));
+        }
+    };
+    SfdtExport.prototype.writeRevision = function (revisions) {
+        var revision = {};
+        revision.author = revisions.author;
+        revision.date = revisions.date;
+        revision.revisionType = revisions.revisionType;
+        revision.revisionId = revisions.revisionID;
+        return revision;
     };
     SfdtExport.prototype.writeComments = function (documentHelper) {
         this.document.comments = [];
@@ -79093,7 +83634,7 @@ var DropDownFormFieldDialog = /** @__PURE__ @class */ (function () {
          */
         this.insertDropDownField = function () {
             var dropDownField = new DropDownFormField();
-            dropDownField.dropDownItems = _this.dropDownItems;
+            dropDownField.dropdownItems = _this.dropDownItems;
             dropDownField.selectedIndex = 0;
             dropDownField.name = _this.bookmarkInput.value;
             dropDownField.helpText = _this.tooltipInput.value;
@@ -79287,9 +83828,9 @@ var DropDownFormFieldDialog = /** @__PURE__ @class */ (function () {
         if (inline instanceof FieldElementBox) {
             this.fieldBegin = inline;
             this.dropDownInstance = inline.formFieldData;
-            if (this.dropDownInstance.dropDownItems.length > 0) {
+            if (this.dropDownInstance.dropdownItems.length > 0) {
                 var index = this.dropDownInstance.selectedIndex;
-                this.currentSelectedItem = this.dropDownInstance.dropDownItems[index];
+                this.currentSelectedItem = this.dropDownInstance.dropdownItems[index];
             }
             if (this.dropDownInstance.enabled) {
                 this.dropDownEnable.checked = true;
@@ -79309,7 +83850,7 @@ var DropDownFormFieldDialog = /** @__PURE__ @class */ (function () {
             else {
                 this.bookmarkInput.value = '';
             }
-            this.dropDownItems = this.dropDownInstance.dropDownItems.slice();
+            this.dropDownItems = this.dropDownInstance.dropdownItems.slice();
             this.updateList();
         }
     };
@@ -80639,12 +85180,27 @@ var SpellChecker = /** @__PURE__ @class */ (function () {
  */
 var CommentReviewPane = /** @__PURE__ @class */ (function () {
     function CommentReviewPane(owner) {
+        var _this = this;
         this.isNewComment = false;
+        /**
+         * @private
+         */
+        this.selectedTab = 0;
+        this.onTabSelection = function (arg) {
+            _this.selectedTab = arg.selectedIndex;
+            if (_this.selectedTab === 1) {
+                _this.owner.trackChangesPane.updateHeight();
+            }
+            else {
+                _this.commentPane.updateHeight();
+            }
+            _this.owner.resize();
+        };
         this.owner = owner;
         var localObj = new L10n('documenteditor', this.owner.defaultLocale);
         localObj.setLocale(this.owner.locale);
         this.initReviewPane(localObj);
-        this.reviewPane.style.display = 'none';
+        this.parentPaneElement.style.display = 'none';
     }
     Object.defineProperty(CommentReviewPane.prototype, "previousSelectedComment", {
         get: function () {
@@ -80679,54 +85235,72 @@ var CommentReviewPane = /** @__PURE__ @class */ (function () {
     /**
      * @private
      */
-    CommentReviewPane.prototype.showHidePane = function (show) {
-        if (this.reviewPane) {
-            this.reviewPane.style.display = show ? 'block' : 'none';
-        }
-        if (show) {
-            var readOnly = this.owner.isReadOnly;
-            this.enableDisableToolbarItem();
-            if (readOnly) {
-                classList(this.commentPane.parent, ['e-de-cmt-protection'], []);
+    CommentReviewPane.prototype.showHidePane = function (show, tab) {
+        if (this.parentPaneElement) {
+            this.updateTabHeaderWidth();
+            this.parentPaneElement.style.display = show ? 'block' : 'none';
+            if (tab === 'Changes') {
+                this.reviewTab.select(1);
             }
             else {
-                classList(this.commentPane.parent, [], ['e-de-cmt-protection']);
+                this.reviewTab.select(0);
             }
+        }
+        this.owner.trackChangesPane.updateTrackChanges(show);
+        if (show) {
             this.commentPane.updateHeight();
         }
         if (this.owner) {
             this.owner.resize();
         }
     };
+    CommentReviewPane.prototype.updateTabHeaderWidth = function () {
+        var reviewTabsEle = this.reviewTab.getRootElement().getElementsByClassName('e-tab-wrap');
+        reviewTabsEle[0].style.padding = '0 8px';
+        reviewTabsEle[1].style.padding = '0 8px';
+    };
     CommentReviewPane.prototype.initReviewPane = function (localValue) {
         var reviewContainer = this.owner.documentHelper.optionsPaneContainer;
         reviewContainer.style.display = 'inline-flex';
-        reviewContainer.appendChild(this.initPaneHeader(localValue));
+        this.initPaneHeader(localValue);
+        reviewContainer.appendChild(this.addReviewTab(localValue));
         this.initCommentPane();
+    };
+    CommentReviewPane.prototype.addReviewTab = function (localValue) {
+        var commentHeader = createElement('div', { innerHTML: localValue.getConstant('Comments') });
+        var changesHeader = createElement('div', { innerHTML: localValue.getConstant('Changes') });
+        // tslint:disable-next-line:max-line-length
+        this.parentPaneElement = createElement('div', { styles: 'height:100%;overflow:auto;display:none', className: 'e-de-review-pane' });
+        this.element = createElement('div', { className: 'e-de-property-tab' });
+        // tslint:disable-next-line:max-line-length
+        var items = [{ header: { text: commentHeader }, content: this.reviewPane }, { header: { text: changesHeader } }];
+        this.reviewTab = new Tab({ items: items, selected: this.onTabSelection, animation: { previous: { effect: 'None' }, next: { effect: 'None' } } });
+        this.reviewTab.appendTo(this.element);
+        if (this.owner.enableRtl) {
+            this.reviewTab.enableRtl = true;
+        }
+        this.reviewTab.enablePersistence = true;
+        this.parentPaneElement.appendChild(this.element);
+        this.closeButton = createElement('button', {
+            className: 'e-de-close-icon e-btn e-flat e-icon-btn', id: 'close',
+            attrs: { type: 'button', style: 'position:absolute;top:6px;right:1px' }
+        });
+        this.closeButton.title = localValue.getConstant('Close');
+        var closeSpan = createElement('span', { className: 'e-de-op-close-icon e-de-close-icon e-btn-icon e-icons' });
+        this.closeButton.appendChild(closeSpan);
+        this.element.appendChild(this.closeButton);
+        this.closeButton.addEventListener('click', this.closePane.bind(this));
+        return this.parentPaneElement;
     };
     CommentReviewPane.prototype.initPaneHeader = function (localValue) {
         this.headerContainer = createElement('div');
-        this.reviewPane = createElement('div', { className: 'e-de-cmt-pane', styles: 'display:none' });
+        this.reviewPane = createElement('div', { className: 'e-de-cmt-pane' });
         if (this.owner.enableRtl) {
             classList(this.reviewPane, ['e-rtl'], []);
         }
-        var headerWholeDiv = createElement('div', { className: 'e-de-cp-whole-header' });
-        var headerDiv1 = createElement('div', {
-            innerHTML: localValue.getConstant('Comments'), className: 'e-de-cp-header'
-        });
-        this.closeButton = createElement('button', {
-            className: 'e-de-cp-close e-de-close-icon e-btn e-flat e-icon-btn', id: 'close',
-            attrs: { type: 'button' }
-        });
-        this.closeButton.title = localValue.getConstant('Close');
-        headerWholeDiv.appendChild(this.closeButton);
-        headerWholeDiv.appendChild(headerDiv1);
-        var closeSpan = createElement('span', { className: 'e-de-op-close-icon e-de-close-icon e-btn-icon e-icons' });
-        this.closeButton.appendChild(closeSpan);
-        this.headerContainer.appendChild(headerWholeDiv);
         this.headerContainer.appendChild(this.initToolbar(localValue));
         this.reviewPane.appendChild(this.headerContainer);
-        this.closeButton.addEventListener('click', this.closePane.bind(this));
+        this.reviewPane.style.display = 'block';
         return this.reviewPane;
     };
     CommentReviewPane.prototype.closePane = function () {
@@ -80767,6 +85341,8 @@ var CommentReviewPane = /** @__PURE__ @class */ (function () {
         else {
             this.owner.documentHelper.currentSelectedComment = undefined;
             this.owner.showComments = false;
+            this.owner.showRevisions = false;
+            this.owner.documentHelper.currentSelectedRevision = undefined;
         }
     };
     CommentReviewPane.prototype.discardButtonClick = function () {
@@ -80876,9 +85452,6 @@ var CommentReviewPane = /** @__PURE__ @class */ (function () {
             var enable = true;
             if (this.commentPane.isEditMode) {
                 enable = !this.commentPane.isEditMode;
-            }
-            if (this.owner.isReadOnly) {
-                enable = false;
             }
             var elements = this.toolbar.element.querySelectorAll('.' + 'e-de-cmt-tbr');
             this.toolbar.enableItems(elements[0].parentElement.parentElement, enable);
@@ -81018,7 +85591,10 @@ var CommentPane = /** @__PURE__ @class */ (function () {
         commentView.hideDrawer();
     };
     CommentPane.prototype.updateHeight = function () {
-        this.commentPane.style.height = this.parent.clientHeight - this.parentPane.headerContainer.clientHeight + 'px';
+        // tslint:disable-next-line:max-line-length
+        var tabHeaderHeight = this.parentPane.reviewTab.getRootElement().getElementsByClassName('e-tab-header')[0].getBoundingClientRect().height;
+        // tslint:disable-next-line:max-line-length
+        this.commentPane.style.height = this.parentPane.parentPaneElement.clientHeight - this.parentPane.headerContainer.clientHeight - tabHeaderHeight + 'px';
     };
     CommentPane.prototype.insertReply = function (replyComment) {
         var parentComment = replyComment.ownerComment;
@@ -81211,6 +85787,10 @@ var CommentView = /** @__PURE__ @class */ (function () {
         var commentUserInfo = createElement('div', { className: 'e-de-cmt-author' });
         var userName = createElement('div', { className: 'e-de-cmt-author-name' });
         userName.textContent = this.comment.author;
+        if (!isNullOrUndefined(this.comment.author)) {
+            commentUserInfo.style.display = 'flex';
+            this.owner.documentHelper.getAvatar(commentUserInfo, userName, this.comment, undefined);
+        }
         //if (this.comment.author === this.owner.currentUser) {
         this.menuBar = createElement('button', { className: 'e-de-cp-option', attrs: { type: 'button' } });
         var userOption = [{ text: localObj.getConstant('Edit') },
@@ -81228,8 +85808,6 @@ var CommentView = /** @__PURE__ @class */ (function () {
         menuItem.appendTo(this.menuBar);
         commentUserInfo.appendChild(this.menuBar);
         this.dropDownButton = menuItem;
-        //}
-        commentUserInfo.appendChild(userName);
         commentDiv.appendChild(commentUserInfo);
         this.commentView = commentDiv;
         this.parentElement.appendChild(commentDiv);
@@ -81269,10 +85847,8 @@ var CommentView = /** @__PURE__ @class */ (function () {
         this.textArea.addEventListener('keydown', this.updateTextAreaHeight.bind(this));
         this.textArea.addEventListener('keyup', this.enableDisablePostButton.bind(this));
         var editRegionFooter = createElement('div', { className: 'e-de-cmt-action-button' });
-        var postButton = createElement('button', {
-            className: 'e-de-cmt-post-btn e-btn e-flat',
-            attrs: { type: 'button' }
-        });
+        //tslint:disable-next-line:max-line-length
+        var postButton = createElement('button', { className: 'e-de-cmt-post-btn e-btn e-flat', attrs: { type: 'button' } });
         //tslint:disable-next-line:max-line-length
         this.postButton = new Button({ cssClass: 'e-btn e-flat e-primary e-de-overlay', iconCss: 'e-de-cmt-post', disabled: true }, postButton);
         postButton.addEventListener('click', this.postComment.bind(this));
@@ -81292,10 +85868,7 @@ var CommentView = /** @__PURE__ @class */ (function () {
     };
     CommentView.prototype.initDateView = function () {
         this.commentDate = createElement('div', { className: 'e-de-cmt-date' });
-        var modifiedDate = new Date(this.comment.date);
-        var date = modifiedDate.toLocaleDateString([], { year: 'numeric', month: 'long', day: 'numeric' });
-        var time = modifiedDate.toLocaleTimeString([], { hour: 'numeric', minute: 'numeric' });
-        this.commentDate.innerText = date + ' ' + time;
+        this.commentDate.innerText = HelperMethods.getModifiedDate(this.comment.date);
         this.commentView.appendChild(this.commentDate);
     };
     CommentView.prototype.initDrawer = function () {
@@ -81346,6 +85919,7 @@ var CommentView = /** @__PURE__ @class */ (function () {
         var editRegionFooter = createElement('div', { className: 'e-de-cmt-resolve-btn' });
         //tslint:disable-next-line:max-line-length
         var postButton = createElement('button', { className: 'e-de-cmt-post-btn e-btn e-flat', attrs: { type: 'button' } });
+        //tslint:disable-next-line:max-line-length
         this.reopenButton = new Button({ cssClass: 'e-btn e-flat', iconCss: 'e-de-cmt-reopen' }, postButton);
         postButton.title = localObj.getConstant('Reopen');
         postButton.addEventListener('click', this.reopenButtonClick.bind(this));
@@ -81355,7 +85929,7 @@ var CommentView = /** @__PURE__ @class */ (function () {
         });
         cancelButton.title = localObj.getConstant('Delete');
         this.deleteButton = new Button({ cssClass: 'e-btn e-flat', iconCss: 'e-de-cmt-delete' }, cancelButton);
-        cancelButton.addEventListener('click', this.deleteButtonClick.bind(this));
+        cancelButton.addEventListener('click', this.deleteComment.bind(this));
         editRegionFooter.appendChild(postButton);
         editRegionFooter.appendChild(cancelButton);
         this.parentElement.appendChild(editRegionFooter);
@@ -81363,7 +85937,12 @@ var CommentView = /** @__PURE__ @class */ (function () {
     CommentView.prototype.reopenButtonClick = function () {
         this.owner.editor.reopenComment(this.comment);
     };
-    CommentView.prototype.deleteButtonClick = function () {
+    CommentView.prototype.deleteComment = function () {
+        var eventArgs = { author: this.comment.author, cancel: false };
+        this.owner.trigger('commentDelete', eventArgs);
+        if (eventArgs.cancel) {
+            return;
+        }
         this.owner.editorModule.deleteCommentInternal(this.comment);
     };
     CommentView.prototype.updateReplyTextAreaHeight = function () {
@@ -81427,9 +86006,6 @@ var CommentView = /** @__PURE__ @class */ (function () {
         if (this.comment.isReply) {
             if (!this.commentPane.isEditMode && (!isNullOrUndefined(this.comment) && !this.comment.isResolved)) {
                 this.menuBar.style.display = 'block';
-            }
-            if (this.owner.isReadOnly) {
-                this.menuBar.style.display = 'none';
             }
         }
         var commentStart = this.commentPane.getCommentStart(this.comment);
@@ -81571,7 +86147,7 @@ var CommentView = /** @__PURE__ @class */ (function () {
                 this.enableReplyView();
                 break;
             case localObj.getConstant('Delete'):
-                this.owner.editorModule.deleteCommentInternal(this.comment);
+                this.deleteComment();
                 break;
             case localObj.getConstant('Resolve'):
                 this.owner.editor.resolveComment(this.comment);
@@ -81658,6 +86234,10 @@ var CommentView = /** @__PURE__ @class */ (function () {
 
 /**
  * Comments
+ */
+
+/**
+ * Track changes
  */
 
 /**
@@ -82031,6 +86611,7 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
             'Your permissions': 'Your permissions',
             // tslint:disable-next-line:max-line-length
             'Protected Document': 'This document is protected from unintentional editing.You may edit in this region.',
+            'FormFieldsOnly': 'This document is protected from unintentional editing. You may only fill in forms in this region.',
             'You may format text only with certain styles': 'You may format text only with certain styles.',
             'Stop Protection': 'Stop Protection',
             'Password': 'Password',
@@ -82098,7 +86679,25 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
             'Fillin enabled': 'Fill-in enabled',
             'Default number': 'Default number',
             'Default date': 'Default date',
-            'Date format': 'Date format'
+            'Date format': 'Date format',
+            'Merge Track': 'This action wont be marked as change. Do you want to continue?',
+            'UnTrack': 'Cannot be tracked !',
+            'Accept': 'Accept',
+            'Reject': 'Reject',
+            'Previous Changes': 'Previous Changes',
+            'Next Changes': 'Next Changes',
+            'Inserted': 'Inserted',
+            'Deleted': 'Deleted',
+            'Changes': 'Changes',
+            'Accept all': 'Accept all',
+            'Reject all': 'Reject all',
+            'No changes': 'No changes',
+            'Accept Changes': 'Accept Changes',
+            'Reject Changes': 'Reject Changes',
+            'User': 'User',
+            'View': 'View',
+            'Insertion': 'Insertion',
+            'Deletion': 'Deletion'
         };
         _this.documentHelper = new DocumentHelper(_this);
         if (_this.layoutType === 'Pages') {
@@ -82257,6 +86856,19 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(DocumentEditor.prototype, "revisions", {
+        /**
+         * Gets the revision collection which contains information about changes made from original document
+         */
+        get: function () {
+            if (isNullOrUndefined(this.revisionsInternal)) {
+                this.revisionsInternal = new RevisionCollection(this);
+            }
+            return this.revisionsInternal;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(DocumentEditor.prototype, "enableHistoryMode", {
         /**
          * Determines whether history needs to be enabled or not.
@@ -82398,7 +87010,7 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
                         this.optionsPaneModule.showHideOptionsPane(false);
                     }
                     if (this.showComments) {
-                        this.commentReviewPane.showHidePane(true);
+                        this.commentReviewPane.showHidePane(true, 'Comments');
                     }
                     break;
                 case 'currentUser':
@@ -82431,6 +87043,12 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
                     if (this.viewer && this.showComments) {
                         this.showComments = this.showComments ? this.enableComment : false;
                         this.documentHelper.showComments(model.enableComment);
+                    }
+                    this.viewer.updateScrollBars();
+                    break;
+                case 'showRevisions':
+                    if (this.viewer) {
+                        this.documentHelper.showRevisions(model.showRevisions);
                     }
                     this.viewer.updateScrollBars();
                     break;
@@ -82499,12 +87117,12 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
             if (this.tableOfContentsDialogModule) {
                 this.tableOfContentsDialogModule.initTableOfContentDialog(l10n, enableRtl);
             }
-            if (this.commentReviewPane && this.commentReviewPane.reviewPane) {
+            if (this.commentReviewPane && this.commentReviewPane.parentPaneElement) {
                 if (this.enableRtl) {
-                    classList(this.commentReviewPane.reviewPane, ['e-rtl'], []);
+                    classList(this.commentReviewPane.parentPaneElement, ['e-rtl'], []);
                 }
                 else {
-                    classList(this.commentReviewPane.reviewPane, [], ['e-rtl']);
+                    classList(this.commentReviewPane.parentPaneElement, [], ['e-rtl']);
                 }
             }
         }
@@ -82911,6 +87529,7 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
             this.documentHelper.abstractLists = [];
             this.documentHelper.styles = new WStyles();
             this.documentHelper.cachedPages = [];
+            this.showRevisions = false;
             if (this.isSpellCheck && !this.spellChecker.enableOptimizedSpellCheck) {
                 this.documentHelper.triggerElementsOnLoading = true;
                 this.documentHelper.triggerSpellCheck = true;
@@ -83382,6 +88001,10 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
             this.commentReviewPane.destroy();
             this.commentReviewPane = undefined;
         }
+        if (this.trackChangesPane) {
+            this.trackChangesPane.destroy();
+            this.trackChangesPane = undefined;
+        }
         if (!isNullOrUndefined(this.hyperlinkDialogModule)) {
             this.hyperlinkDialogModule.destroy();
             this.hyperlinkDialogModule = undefined;
@@ -83587,6 +88210,9 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
         Property(false)
     ], DocumentEditor.prototype, "enableComment", void 0);
     __decorate([
+        Property(false)
+    ], DocumentEditor.prototype, "enableTrackChanges", void 0);
+    __decorate([
         Property(true)
     ], DocumentEditor.prototype, "enableFormField", void 0);
     __decorate([
@@ -83616,6 +88242,9 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property(false)
     ], DocumentEditor.prototype, "showComments", void 0);
+    __decorate([
+        Property(false)
+    ], DocumentEditor.prototype, "showRevisions", void 0);
     __decorate([
         Event()
     ], DocumentEditor.prototype, "documentChange", void 0);
@@ -83661,6 +88290,12 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Event()
     ], DocumentEditor.prototype, "commentEnd", void 0);
+    __decorate([
+        Event()
+    ], DocumentEditor.prototype, "commentDelete", void 0);
+    __decorate([
+        Event()
+    ], DocumentEditor.prototype, "trackChange", void 0);
     __decorate([
         Event()
     ], DocumentEditor.prototype, "beforeFormFieldFill", void 0);
@@ -83746,6 +88381,7 @@ var INSERT_TABLE_ID = '_table';
 var INSERT_LINK_ID = '_link';
 var BOOKMARK_ID = '_bookmark';
 var COMMENT_ID = '_comment';
+var TRACK_ID = '_track';
 var TABLE_OF_CONTENT_ID = '_toc';
 var HEADER_ID = '_header';
 var FOOTER_ID = '_footer';
@@ -83882,6 +88518,9 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
         });
         if (this.toolbarItems.indexOf('LocalClipboard') >= 0) {
             this.toggleButton(id + CLIPBOARD_ID, this.container.enableLocalPaste);
+        }
+        if (this.toolbarItems.indexOf('TrackChanges') >= 0) {
+            this.toggleButton(id + TRACK_ID, this.container.enableTrackChanges);
         }
         if (this.toolbarItems.indexOf('RestrictEditing') >= 0) {
             this.toggleButton(id + RESTRICT_EDITING_ID, this.container.restrictEditing);
@@ -84033,9 +88672,16 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
                         id: id + COMMENT_ID, text: locale.getConstant('Comments'), cssClass: className
                     });
                     break;
+                case 'TrackChanges':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-cnt-track',
+                        tooltipText: locale.getConstant('Track Changes'),
+                        id: id + TRACK_ID, text: this.onWrapText(locale.getConstant('TrackChanges')), cssClass: className
+                    });
+                    break;
                 case 'Image':
                     toolbarItems.push({
-                        tooltipText: locale.getConstant('Insert inline picture from a file'), id: id + INSERT_IMAGE_ID,
+                        tooltipText: locale.getConstant('Insert inline picture from a file.'), id: id + INSERT_IMAGE_ID,
                         text: locale.getConstant('Image'), cssClass: className + ' e-de-image-splitbutton e-de-image-focus'
                     });
                     break;
@@ -84168,6 +88814,9 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
             case id + COMMENT_ID:
                 this.documentEditor.editor.insertComment('');
                 break;
+            case id + TRACK_ID:
+                this.toggleTrackChangesInternal(args.item.id);
+                break;
             case id + HEADER_ID:
                 this.container.documentEditor.selection.goToHeader();
                 this.container.statusBar.toggleWebLayout();
@@ -84219,6 +88868,14 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
         else {
             classList(element, [], ['e-btn-toggle']);
         }
+    };
+    Toolbar$$1.prototype.toggleTrackChangesInternal = function (id, enable) {
+        if (!isNullOrUndefined(enable)) {
+            this.container.enableTrackChanges = !enable;
+        }
+        this.container.enableTrackChanges = !this.container.enableTrackChanges;
+        this.container.documentEditor.showRevisions = this.container.enableTrackChanges;
+        this.toggleButton(id, this.container.enableTrackChanges);
     };
     Toolbar$$1.prototype.togglePropertiesPane = function () {
         this.container.showPropertiesPane = !this.container.showPropertiesPane;
@@ -84340,6 +88997,28 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
     };
     /**
      * @private
+     *
+     */
+    Toolbar$$1.prototype.toggleTrackChanges = function (enable) {
+        var trackId = this.container.element.id + TOOLBAR_ID + TRACK_ID;
+        var element = document.getElementById(trackId);
+        if (element) {
+            this.toggleTrackChangesInternal(trackId, enable);
+        }
+    };
+    // /**
+    //  * @private
+    //  */
+    // public enableDisableTrackChanges(enable: boolean): void {
+    //     let id: string = this.container.element.id + TOOLBAR_ID + TRACK_ID;
+    //     if (!isNullOrUndefined(this.documentEditor) && (this.documentEditor.isReadOnly ||
+    //         this.documentEditor.documentHelper.isDocumentProtected)) {
+    //         enable = false;
+    //     }
+    //     this.toggleTrackChanges(id, enable);
+    // }
+    /**
+     * @private
      */
     Toolbar$$1.prototype.enableDisableToolBarItem = function (enable, isProtectedContent) {
         var id = this.container.element.id + TOOLBAR_ID;
@@ -84356,7 +89035,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
                     itemId !== id + INSERT_LINK_ID && itemId !== id + BOOKMARK_ID && itemId !== id + COMMENT_ID &&
                     itemId !== id + HEADER_ID && itemId !== id + TABLE_OF_CONTENT_ID && itemId !== id + FOOTER_ID &&
                     itemId !== id + PAGE_SET_UP_ID && itemId !== id + PAGE_NUMBER_ID && itemId !== id + INSERT_IMAGE_ID
-                    && itemId !== id + FORM_FIELDS_ID && itemId !== BREAK_ID) {
+                    && itemId !== id + FORM_FIELDS_ID && itemId !== BREAK_ID && itemId !== id + TRACK_ID) {
                     continue;
                 }
                 var element = document.getElementById(item.id);
@@ -87896,7 +92575,9 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
             'Check Box': 'Check Box',
             'DropDown': 'Drop-Down',
             'Update Fields': 'Update Fields',
-            'Update cross reference fields': 'Update cross reference fields'
+            'Update cross reference fields': 'Update cross reference fields',
+            'Track Changes': 'Keep track of the changes made in the document',
+            'TrackChanges': 'Track Changes'
         };
         return _this;
     }
@@ -87945,6 +92626,16 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'showPropertiesPane':
                     this.showHidePropertiesPane(newModel.showPropertiesPane);
+                    break;
+                case 'enableTrackChanges':
+                    if (this.documentEditor) {
+                        this.documentEditor.enableTrackChanges = newModel.enableTrackChanges;
+                        this.documentEditor.showRevisions = newModel.enableTrackChanges;
+                        if (this.toolbarModule) {
+                            this.toolbarModule.toggleTrackChanges(newModel.enableTrackChanges);
+                        }
+                        this.documentEditor.resize();
+                    }
                     break;
                 case 'enableLocalPaste':
                     if (this.documentEditor) {
@@ -88018,6 +92709,7 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
                     if (newModel.enableToolbar && this.toolbarModule) {
                         this.toolbarModule.initToolBar(this.toolbarItems);
                         this.toolbarModule.enableDisableInsertComment(this.enableComment);
+                        this.toolbarModule.toggleTrackChanges(this.enableTrackChanges);
                     }
                     if (this.documentEditor) {
                         this.documentEditor.resize();
@@ -88204,6 +92896,8 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
             beforePaneSwitch: this.onBeforePaneSwitch.bind(this),
             commentBegin: this.onCommentBegin.bind(this),
             commentEnd: this.onCommentEnd.bind(this),
+            commentDelete: this.onCommentDelete.bind(this),
+            trackChange: this.onTrackChange.bind(this),
             locale: this.locale,
             acceptTab: true,
             zIndex: this.zIndex,
@@ -88213,7 +92907,9 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
             currentUser: this.currentUser,
             userColor: this.userColor,
             height: '100%',
-            width: '100%'
+            width: '100%',
+            enableTrackChanges: this.enableTrackChanges,
+            showRevisions: this.enableTrackChanges
         });
         this.documentEditor.enableAllModules();
         this.documentEditor.enableComment = this.enableComment;
@@ -88230,6 +92926,15 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
     DocumentEditorContainer.prototype.onCommentEnd = function () {
         if (this.toolbarModule) {
             this.toolbarModule.enableDisableInsertComment(true && this.enableComment);
+        }
+    };
+    DocumentEditorContainer.prototype.onCommentDelete = function (args) {
+        this.trigger('commentDelete', args);
+    };
+    DocumentEditorContainer.prototype.onTrackChange = function (args) {
+        this.trigger('trackChange', args);
+        if (this.toolbarModule) {
+            this.toolbarModule.toggleTrackChanges(args.isTrackChangesEnabled);
         }
     };
     DocumentEditorContainer.prototype.onBeforePaneSwitch = function (args) {
@@ -88265,6 +92970,7 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     DocumentEditorContainer.prototype.onDocumentChange = function () {
+        this.enableTrackChanges = this.documentEditor.enableTrackChanges;
         if (this.toolbarModule) {
             this.toolbarModule.isCommentEditing = false;
             this.toolbarModule.enableDisableInsertComment(true);
@@ -88510,6 +93216,9 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
         Property(false)
     ], DocumentEditorContainer.prototype, "enableSpellCheck", void 0);
     __decorate$1([
+        Property(false)
+    ], DocumentEditorContainer.prototype, "enableTrackChanges", void 0);
+    __decorate$1([
         Property('Pages')
     ], DocumentEditorContainer.prototype, "layoutType", void 0);
     __decorate$1([
@@ -88567,13 +93276,19 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
         Event()
     ], DocumentEditorContainer.prototype, "beforePaneSwitch", void 0);
     __decorate$1([
+        Event()
+    ], DocumentEditorContainer.prototype, "commentDelete", void 0);
+    __decorate$1([
+        Event()
+    ], DocumentEditorContainer.prototype, "trackChange", void 0);
+    __decorate$1([
         Complex({}, DocumentEditorSettings)
     ], DocumentEditorContainer.prototype, "documentEditorSettings", void 0);
     __decorate$1([
         Property({ import: 'Import', systemClipboard: 'SystemClipboard', spellCheck: 'SpellCheck', restrictEditing: 'RestrictEditing' })
     ], DocumentEditorContainer.prototype, "serverActionSettings", void 0);
     __decorate$1([
-        Property(['New', 'Open', 'Separator', 'Undo', 'Redo', 'Separator', 'Image', 'Table', 'Hyperlink', 'Bookmark', 'Comments', 'TableOfContents', 'Separator', 'Header', 'Footer', 'PageSetup', 'PageNumber', 'Break', 'Separator', 'Find', 'Separator', 'LocalClipboard', 'RestrictEditing', 'Separator', 'FormFields', 'UpdateFields'])
+        Property(['New', 'Open', 'Separator', 'Undo', 'Redo', 'Separator', 'Image', 'Table', 'Hyperlink', 'Bookmark', 'TableOfContents', 'Separator', 'Header', 'Footer', 'PageSetup', 'PageNumber', 'Break', 'Separator', 'Find', 'Separator', 'Comments', 'TrackChanges', 'Separator', 'LocalClipboard', 'RestrictEditing', 'Separator', 'FormFields', 'UpdateFields'])
     ], DocumentEditorContainer.prototype, "toolbarItems", void 0);
     __decorate$1([
         Property([])
@@ -88592,5 +93307,5 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
  * export document editor modules
  */
 
-export { Dictionary, WUniqueFormat, WUniqueFormats, XmlHttpRequestHandler, Print, ContextMenu$1 as ContextMenu, WSectionFormat, WStyle, WParagraphStyle, WCharacterStyle, WStyles, WCharacterFormat, WListFormat, WTabStop, WParagraphFormat, WTableFormat, WRowFormat, WCellFormat, WBorder, WBorders, WShading, WList, WAbstractList, WListLevel, WLevelOverride, DocumentHelper, LayoutViewer, PageLayoutViewer, WebLayoutViewer, Rect, Padding, Margin, Widget, BlockContainer, BodyWidget, HeaderFooterWidget, BlockWidget, ParagraphWidget, TableWidget, TableRowWidget, TableCellWidget, LineWidget, ElementBox, FieldElementBox, FormField, TextFormField, CheckBoxFormField, DropDownFormField, TextElementBox, ErrorTextElementBox, FieldTextElementBox, TabElementBox, BookmarkElementBox, ShapeCommon, ShapeBase, ShapeElementBox, TextFrame, LineFormat, ImageElementBox, ListTextElementBox, EditRangeEndElementBox, EditRangeStartElementBox, ChartElementBox, ChartArea, ChartCategory, ChartData, ChartLegend, ChartSeries, ChartErrorBar, ChartSeriesFormat, ChartDataLabels, ChartTrendLines, ChartTitleArea, ChartDataFormat, ChartFill, ChartLayout, ChartCategoryAxis, ChartDataTable, CommentCharacterElementBox, CommentElementBox, Page, WTableHolder, WColumn, ColumnSizeInfo, Layout, Renderer, SfdtReader, TextHelper, Zoom, Selection, SelectionCharacterFormat, SelectionParagraphFormat, SelectionSectionFormat, SelectionTableFormat, SelectionCellFormat, SelectionRowFormat, SelectionImageFormat, TextPosition, SelectionWidgetInfo, Hyperlink, ImageFormat, Search, OptionsPane, TextSearch, SearchWidgetInfo, TextSearchResult, TextSearchResults, Editor, ImageResizer, ImageResizingPoints, SelectedImageInfo, TableResizer, HelperMethods, Point, Base64, EditorHistory, BaseHistoryInfo, HistoryInfo, ModifiedLevel, ModifiedParagraphFormat, RowHistoryFormat, TableHistoryInfo, TableFormatHistoryInfo, RowFormatHistoryInfo, CellFormatHistoryInfo, CellHistoryFormat, WordExport, TextExport, SfdtExport, HtmlExport, HyperlinkDialog, TableDialog, BookmarkDialog, TableOfContentsDialog, PageSetupDialog, ParagraphDialog, ListDialog, StyleDialog, BulletsAndNumberingDialog, FontDialog, TablePropertiesDialog, BordersAndShadingDialog, TableOptionsDialog, CellOptionsDialog, StylesDialog, SpellCheckDialog, CheckBoxFormFieldDialog, TextFormFieldDialog, DropDownFormFieldDialog, FormFieldPopUp, SpellChecker, AddUserDialog, EnforceProtectionDialog, UnProtectDocumentDialog, RestrictEditing, CommentReviewPane, CommentPane, CommentView, DocumentEditorSettings, DocumentEditor, ServerActionSettings, FormFieldSettings, ContainerServerActionSettings, Toolbar$1 as Toolbar, DocumentEditorContainer };
+export { Dictionary, WUniqueFormat, WUniqueFormats, XmlHttpRequestHandler, Print, ContextMenu$1 as ContextMenu, WSectionFormat, WStyle, WParagraphStyle, WCharacterStyle, WStyles, WCharacterFormat, WListFormat, WTabStop, WParagraphFormat, WTableFormat, WRowFormat, WCellFormat, WBorder, WBorders, WShading, WList, WAbstractList, WListLevel, WLevelOverride, DocumentHelper, LayoutViewer, PageLayoutViewer, WebLayoutViewer, Rect, Padding, Margin, Widget, BlockContainer, BodyWidget, HeaderFooterWidget, BlockWidget, ParagraphWidget, TableWidget, TableRowWidget, TableCellWidget, LineWidget, ElementBox, FieldElementBox, FormField, TextFormField, CheckBoxFormField, DropDownFormField, TextElementBox, ErrorTextElementBox, FieldTextElementBox, TabElementBox, BookmarkElementBox, ShapeCommon, ShapeBase, ShapeElementBox, TextFrame, LineFormat, ImageElementBox, ListTextElementBox, EditRangeEndElementBox, EditRangeStartElementBox, ChartElementBox, ChartArea, ChartCategory, ChartData, ChartLegend, ChartSeries, ChartErrorBar, ChartSeriesFormat, ChartDataLabels, ChartTrendLines, ChartTitleArea, ChartDataFormat, ChartFill, ChartLayout, ChartCategoryAxis, ChartDataTable, CommentCharacterElementBox, CommentElementBox, Page, WTableHolder, WColumn, ColumnSizeInfo, Layout, Renderer, SfdtReader, TextHelper, Zoom, Selection, SelectionCharacterFormat, SelectionParagraphFormat, SelectionSectionFormat, SelectionTableFormat, SelectionCellFormat, SelectionRowFormat, SelectionImageFormat, TextPosition, SelectionWidgetInfo, Hyperlink, ImageFormat, Search, OptionsPane, TextSearch, SearchWidgetInfo, TextSearchResult, TextSearchResults, Editor, ImageResizer, ImageResizingPoints, SelectedImageInfo, TableResizer, HelperMethods, Point, Base64, EditorHistory, BaseHistoryInfo, HistoryInfo, ModifiedLevel, ModifiedParagraphFormat, RowHistoryFormat, TableHistoryInfo, TableFormatHistoryInfo, RowFormatHistoryInfo, CellFormatHistoryInfo, CellHistoryFormat, WordExport, TextExport, SfdtExport, HtmlExport, HyperlinkDialog, TableDialog, BookmarkDialog, TableOfContentsDialog, PageSetupDialog, ParagraphDialog, ListDialog, StyleDialog, BulletsAndNumberingDialog, FontDialog, TablePropertiesDialog, BordersAndShadingDialog, TableOptionsDialog, CellOptionsDialog, StylesDialog, SpellCheckDialog, CheckBoxFormFieldDialog, TextFormFieldDialog, DropDownFormFieldDialog, FormFieldPopUp, SpellChecker, AddUserDialog, EnforceProtectionDialog, UnProtectDocumentDialog, RestrictEditing, CommentReviewPane, CommentPane, CommentView, Revision, RevisionCollection, TrackChangesPane, ChangesSingleView, DocumentEditorSettings, DocumentEditor, ServerActionSettings, FormFieldSettings, ContainerServerActionSettings, Toolbar$1 as Toolbar, DocumentEditorContainer };
 //# sourceMappingURL=ej2-documenteditor.es5.js.map

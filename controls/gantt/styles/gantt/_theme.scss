@@ -203,6 +203,32 @@
         border-radius: $gantt-parent-progress-bar-border-radius;
       }
 
+      .e-collapse-parent {
+        .e-gantt-child-taskbar-inner-div {
+          border: 1px solid $gantt-task-label-font-color;
+          border-bottom: 0;
+          border-top: 0;
+        }
+
+        .e-gantt-child-progressbar {
+          width: $gantt-collapse-progress-width;
+        }
+
+
+        .e-collapsed-taskbar-drag {
+          background-color: $gantt-child-progress-bar;
+        }
+
+
+        .e-left-connectorpoint-outer-div {
+          display: none;
+        }
+
+        .e-right-connectorpoint-outer-div {
+          display: none;
+        }
+      }
+
       .e-gantt-parent-taskbar-inner-div {
         background-color: $gantt-parent-task-bar;
         border: $gantt-parent-task-bar-border;
@@ -250,6 +276,15 @@
 
       .e-weekend-header-cell {
         background: $weekend-background;
+      }
+
+      .e-rangecontainer {
+
+        .e-rg-rangdiv {
+          border: 2px solid $rangecontainer-border-color;
+          width: 5px;
+          z-index: 6;
+        }
       }
 
       .e-event-markers {

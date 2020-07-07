@@ -219,7 +219,7 @@ export class Print {
     private hideColGroup(colGroups: NodeList, depth: number): void {
         for (let i: number = 0; i < colGroups.length; i++) {
             for (let j: number = 0; j < depth; j++) {
-                (<HTMLElement>colGroups[i].childNodes[j]).style.display = 'none';
+                (<HTMLElement>(<HTMLElement>colGroups[i]).children[j]).style.display = 'none';
             }
         }
     }

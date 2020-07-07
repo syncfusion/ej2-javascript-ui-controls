@@ -193,6 +193,11 @@ export class BookmarkView {
         this.setHeight(args.node);
         let bookid: number = Number(args.nodeData.id);
         this.navigateToBookmark(bookid);
+        if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.inkAnnotationModule) {
+            // tslint:disable-next-line
+            let currentPageNumber: number = parseInt(this.pdfViewer.annotationModule.inkAnnotationModule.currentPageNumber);
+            this.pdfViewer.annotationModule.inkAnnotationModule.drawInkAnnotation(currentPageNumber);
+        }
         return false;
     }
 

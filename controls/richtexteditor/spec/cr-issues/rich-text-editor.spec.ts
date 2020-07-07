@@ -7,6 +7,21 @@ import { dispatchEvent } from '../../src/rich-text-editor/base/util';
 import { RichTextEditor } from '../../src/rich-text-editor/base/rich-text-editor';
 import { renderRTE, destroy, setCursorPoint, dispatchEvent as dispatchEve } from './../rich-text-editor/render.spec';
 
+let keyboardEventArgs = {
+    preventDefault: function () { },
+    altKey: false,
+    ctrlKey: false,
+    shiftKey: false,
+    char: '',
+    key: '',
+    charCode: 22,
+    keyCode: 22,
+    which: 22,
+    code: 22,
+    action: '',
+    type: 'keyup'
+};
+
 describe('RTE CR issues', () => {
     describe('EJ2-20672 - Full Screen not working properly when render inside the overflow element', () => {
         let rteObj: RichTextEditor;
@@ -128,7 +143,7 @@ describe('RTE CR issues', () => {
                 value: `<div><p>First p node-0</p></div>`,
                 placeholder: 'Type something'
             });
-            rteObj.saveInterval = 100;
+            rteObj.saveInterval = 10;
             rteObj.dataBind();
             done();
         });
@@ -143,8 +158,8 @@ describe('RTE CR issues', () => {
                 setTimeout(() => {
                     expect(rteObj.value === '<div><p>First p node-2</p></div>').toBe(true);
                     done();
-                }, 110);
-            }, 110);
+                }, 400);
+            }, 400);
         });
         it(" Clear the setInterval at component blur", (done) => {
             rteObj.focusOut();
@@ -159,6 +174,7 @@ describe('RTE CR issues', () => {
             destroy(rteObj);
         });
     });
+  
     describe('EJ2-20436 - Changing font color of underlined text doesn’t changes the color of the line in RTE', () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
@@ -990,5 +1006,32 @@ describe('RTE CR issues', () => {
             expect(rteEle.querySelectorAll(".e-toolbar").length).toBe(0);
         });
     });
-    
+
+    describe('RichTextEditor databinding not working in SourceCode view', () => {
+        let rteObj: RichTextEditor;
+        let elem: any;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['SourceCode']
+                }
+            });
+            done();
+        });
+        it(' Check SourceCode view ', (done) => {
+            rteObj.showSourceCode();
+            let item: HTMLInputElement = rteObj.element.querySelector('.e-rte-srctextarea');
+            rteObj.value = 'rich text editor';
+            rteObj.dataBind();
+            setTimeout(() => {
+                expect((item as HTMLInputElement).value).toBe('<p>rich text editor</p>');
+                done();
+              }, 100);
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+    });
+
+
 });

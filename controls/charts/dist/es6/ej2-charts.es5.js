@@ -1056,8 +1056,6 @@ var axisMultiLabelRender = 'axisMultiLabelRender';
 /** @private */
 var tooltipRender = 'tooltipRender';
 /** @private */
-var sharedTooltipRender = 'sharedTooltipRender';
-/** @private */
 var chartMouseMove = 'chartMouseMove';
 /** @private */
 var chartMouseClick = 'chartMouseClick';
@@ -6481,10 +6479,10 @@ var Series = /** @__PURE__ @class */ (function (_super) {
         }
         if (marker.visible && (chart.chartAreaType === 'Cartesian' ||
             ((this.drawType !== 'Scatter') && chart.chartAreaType === 'PolarRadar')) && this.type !== 'Scatter' &&
-            this.type !== 'Bubble' && this.type !== 'Candle' && this.type !== 'Hilo' && this.type !== 'HiloOpenClose') {
+            this.type !== 'Bubble' && this.type !== 'Candle' && this.type !== 'Hilo' && this.type !== 'HiloOpenClose' && this.symbolElement) {
             appendChildElement(chart.enableCanvas, chart.seriesElements, this.symbolElement, redraw);
         }
-        if (dataLabel.visible) {
+        if (dataLabel.visible && this.textElement) {
             appendChildElement(chart.enableCanvas, chart.dataLabelElements, this.shapeElement, redraw);
             appendChildElement(chart.enableCanvas, chart.dataLabelElements, this.textElement, redraw);
         }
@@ -8274,6 +8272,8 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         /** @private */
         _this.isScrolling = false;
         /** @private */
+        _this.checkResize = 0;
+        /** @private */
         _this.visible = 0;
         /** @private */
         _this.clickCount = 0;
@@ -9700,14 +9700,14 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
                 args: [this]
             });
         }
-        if (this.enableExport) {
+        if (this.enableExport || this.allowExport) {
             modules.push({
                 member: 'Export',
                 args: [this]
             });
         }
         if (this.chartAreaType !== 'PolarRadar' && !this.scrollSettingEnabled && (zooming.enableSelectionZooming
-            || zooming.enableMouseWheelZooming || zooming.enablePinchZooming || zooming.enablePan)) {
+            || zooming.enableMouseWheelZooming || zooming.enablePinchZooming || zooming.enablePan || zooming.enableScrollbar)) {
             modules.push({
                 member: 'Zoom',
                 args: [this, this.zoomSettings]
@@ -9933,7 +9933,7 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
             removeLength = 1;
         }
         // Fix for blazor resize issue
-        if (this.resizeTo && this.isBlazor && this.element.childElementCount) {
+        if (this.resizeTo !== this.checkResize && this.isBlazor && this.element.childElementCount) {
             var containerCollection = document.querySelectorAll('.e-chart');
             for (var index = 0; index < containerCollection.length; index++) {
                 var container = containerCollection[index];
@@ -9941,6 +9941,7 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
                     remove(container.firstChild);
                 }
             }
+            this.checkResize = this.resizeTo;
         }
         if (this.svgObject) {
             while (this.svgObject.childNodes.length > removeLength) {
@@ -10314,6 +10315,9 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         Property(true)
     ], Chart.prototype, "enableExport", void 0);
     __decorate([
+        Property(false)
+    ], Chart.prototype, "allowExport", void 0);
+    __decorate([
         Collection([], Indexes)
     ], Chart.prototype, "selectedDataIndexes", void 0);
     __decorate([
@@ -10397,9 +10401,6 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Event()
     ], Chart.prototype, "tooltipRender", void 0);
-    __decorate([
-        Event()
-    ], Chart.prototype, "sharedTooltipRender", void 0);
     __decorate([
         Event()
     ], Chart.prototype, "chartMouseMove", void 0);
@@ -10661,9 +10662,6 @@ var NiceInterval = /** @__PURE__ @class */ (function (_super) {
      */
     NiceInterval.prototype.findCustomFormats = function (axis, currentValue, previousValue) {
         var labelFormat = axis.labelFormat ? axis.labelFormat : '';
-        if (labelFormat === 'YYYY-MM-DD') {
-            labelFormat = 'yyyy-MM-dd';
-        }
         if (axis.isChart && !axis.skeleton && axis.actualIntervalType === 'Months' && !labelFormat) {
             labelFormat = axis.valueType === 'DateTime' ? this.getMonthFormat(axis, currentValue, previousValue) : 'yMMM';
         }
@@ -13616,11 +13614,13 @@ var PolarSeries = /** @__PURE__ @class */ (function (_super) {
             visiblePoint.visible = visiblePoint.visible && !((!isNullOrUndefined(yAxisMin) && visiblePoint.yValue < yAxisMin) ||
                 (!isNullOrUndefined(yAxisMax) && visiblePoint.yValue > yAxisMax));
         }
-        if ((series.drawType.indexOf('Column') > -1) && (series.points.length > 0)) {
-            this.columnDrawTypeRender(series, xAxis, yAxis);
-        }
-        else {
-            series.chart[seriesType + 'SeriesModule'].render(series, xAxis, yAxis, inverted);
+        if (series.points.length) {
+            if ((series.drawType.indexOf('Column') > -1)) {
+                this.columnDrawTypeRender(series, xAxis, yAxis);
+            }
+            else {
+                series.chart[seriesType + 'SeriesModule'].render(series, xAxis, yAxis, inverted);
+            }
         }
     };
     /**
@@ -13939,11 +13939,13 @@ var RadarSeries = /** @__PURE__ @class */ (function (_super) {
             point.visible = point.visible && !((!isNullOrUndefined(yAxisMin) && point.yValue < yAxisMin) ||
                 (!isNullOrUndefined(yAxisMax) && point.yValue > yAxisMax));
         }
-        if (series.drawType.indexOf('Column') === -1) {
-            series.chart[seriesType + 'SeriesModule'].render(series, xAxis, yAxis, inverted);
-        }
-        else {
-            this.columnDrawTypeRender(series, xAxis, yAxis);
+        if (series.points.length) {
+            if (series.drawType.indexOf('Column') === -1) {
+                series.chart[seriesType + 'SeriesModule'].render(series, xAxis, yAxis, inverted);
+            }
+            else {
+                this.columnDrawTypeRender(series, xAxis, yAxis);
+            }
         }
     };
     // path calculation for isInversed polar area series
@@ -18827,12 +18829,14 @@ var BaseTooltip = /** @__PURE__ @class */ (function (_super) {
         var element = this.getElement(this.element.id + '_Series_' + series.index + '_Point_' + pointIndex);
         var selectionModule = this.control.accumulationSelectionModule;
         var isSelectedElement = selectionModule && selectionModule.selectedDataIndexes.length > 0 ? true : false;
-        if (element && (!isSelectedElement || isSelectedElement && element.getAttribute('class')
-            && element.getAttribute('class').indexOf('_ej2_chart_selection_series_') === -1)) {
-            element.setAttribute('opacity', (highlight ? series.opacity / 2 : series.opacity).toString());
-        }
-        else {
-            element.setAttribute('opacity', series.opacity.toString());
+        if (element) {
+            if ((!isSelectedElement || isSelectedElement && element.getAttribute('class')
+                && element.getAttribute('class').indexOf('_ej2_chart_selection_series_') === -1)) {
+                element.setAttribute('opacity', (highlight ? series.opacity / 2 : series.opacity).toString());
+            }
+            else {
+                element.setAttribute('opacity', series.opacity.toString());
+            }
         }
     };
     BaseTooltip.prototype.highlightPoints = function () {
@@ -19304,13 +19308,12 @@ var Tooltip$1 = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             else {
-                document.getElementById(chart.stockChart.element.id + '_Secondary_Element').appendChild(tooltipDiv);
+                if (tooltipDiv && !getElement(tooltipDiv.id)) {
+                    document.getElementById(chart.stockChart.element.id + '_Secondary_Element').appendChild(tooltipDiv);
+                }
             }
         }
         this.removeText();
-        var argument = {
-            text: [], cancel: false, name: sharedTooltipRender, data: [], headerText: '', textStyle: this.textStyle
-        };
         for (var _i = 0, _a = chart.visibleSeries; _i < _a.length; _i++) {
             var series = _a[_i];
             if (!series.enableTooltip || !series.visible) {
@@ -19326,15 +19329,7 @@ var Tooltip$1 = /** @__PURE__ @class */ (function (_super) {
                 headerContent = this.findHeader(data);
             }
             if (data) {
-                if (!chart.isBlazor) {
-                    this.triggerSharedTooltip(data, isFirst, this.getTooltipText(data), this.findHeader(data), extraPoints);
-                }
-                else {
-                    argument.data.push({ pointX: data.point.x, pointY: data.point.y, seriesIndex: data.series.index,
-                        seriesName: data.series.name, pointIndex: data.point.index, pointText: data.point.text });
-                    argument.headerText = this.findHeader(data);
-                    argument.text.push(this.getTooltipText(data));
-                }
+                this.triggerSharedTooltip(data, isFirst, this.getTooltipText(data), this.findHeader(data), extraPoints);
             }
             // if (data && this.triggerEvent(data, isFirst, this.getTooltipText(data)), this.findHeader(data)) {
             //     this.findMouseValue(data, chart);
@@ -19344,33 +19339,12 @@ var Tooltip$1 = /** @__PURE__ @class */ (function (_super) {
             //     extraPoints.push(data);
             // }
         }
-        if (chart.isBlazor) {
-            this.triggerBlazorSharedTooltip(argument, data, extraPoints);
-        }
         if (this.currentPoints.length > 0) {
             this.createTooltip(chart, isFirst, this.findSharedLocation(), this.currentPoints.length === 1 ? this.currentPoints[0].series.clipRect : null, null, this.findShapes(), this.findMarkerHeight(this.currentPoints[0]), chart.chartAxisLayoutPanel.seriesClipRect, extraPoints);
         }
         else if (this.getElement(this.element.id + '_tooltip_path')) {
             this.getElement(this.element.id + '_tooltip_path').setAttribute('d', '');
         }
-    };
-    Tooltip$$1.prototype.triggerBlazorSharedTooltip = function (argument, point, extraPoints) {
-        var _this = this;
-        var blazorSharedTooltip = function (argument) {
-            if (!argument.cancel) {
-                _this.formattedText = _this.formattedText.concat(argument.text);
-                _this.text = _this.formattedText;
-                _this.headerText = argument.headerText;
-                _this.findMouseValue(point, _this.chart);
-                _this.currentPoints.push(point);
-                point = null;
-            }
-            else {
-                extraPoints.push(point);
-            }
-        };
-        blazorSharedTooltip.bind(this, point, extraPoints);
-        this.chart.trigger(sharedTooltipRender, argument, blazorSharedTooltip);
     };
     Tooltip$$1.prototype.triggerSharedTooltip = function (point, isFirst, textCollection, headerText, extraPoints) {
         var _this = this;
@@ -19465,7 +19439,7 @@ var Tooltip$1 = /** @__PURE__ @class */ (function (_super) {
             textValue = customLabelFormat ? axis.labelFormat.replace('{value}', axis.format(point[dataValue])) :
                 axis.format(point[dataValue]);
         }
-        else if (isYPoint) {
+        else if (isYPoint && !isNullOrUndefined(point[dataValue])) {
             customLabelFormat = axis.labelFormat && axis.labelFormat.match('{value}') !== null;
             value = dataValue === 'outliers' ? axis.format(point[dataValue][this.lierIndex - 4]) :
                 axis.format(point[dataValue]);
@@ -22983,8 +22957,8 @@ var DataLabel = /** @__PURE__ @class */ (function () {
             ((Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000)) >= 128 ? 'black' : 'white');
         if (childElement.childElementCount && (!isCollide(rect, this.chart.dataLabelCollections, clip) ||
             dataLabel.labelIntersectAction === 'None') && (series.seriesType !== 'XY' || point.yValue === undefined ||
-            withIn(point.yValue, series.yAxis.visibleRange) || (series.type.indexOf('Stacking') > -1) ||
-            (series.type.indexOf('100') > -1 && withIn(series.stackedValues.endValues[point.index], series.yAxis.visibleRange))) &&
+            withIn(point.yValue, series.yAxis.visibleRange) || (series.type.indexOf('100') > -1 &&
+            withIn(series.stackedValues.endValues[point.index], series.yAxis.visibleRange))) &&
             withIn(point.xValue, series.xAxis.visibleRange) && parseFloat(childElement.style.top) >= vAxis.rect.y &&
             parseFloat(childElement.style.left) >= hAxis.rect.x &&
             parseFloat(childElement.style.top) <= vAxis.rect.y + vAxis.rect.height &&
@@ -24216,7 +24190,7 @@ var AnnotationBase = /** @__PURE__ @class */ (function () {
                     }
                     else if (xAxis.valueType === 'DateTime') {
                         var option = { skeleton: 'full', type: 'dateTime' };
-                        xValue = (typeof this.annotation.x === 'object' || typeof new Date(this.annotation.x) === 'object') ?
+                        xValue = (typeof this.annotation.x === 'object') ?
                             Date.parse(chart.intl.getDateParser(option)(chart.intl.getDateFormat(option)(new Date(DataUtil.parse.parseJson({ val: annotation.x }).val)))) : 0;
                     }
                     else {
@@ -26643,6 +26617,11 @@ var AccPoints = /** @__PURE__ @class */ (function () {
         this.isClubbed = false;
         /** @private */
         this.isSliced = false;
+        /** @private  */
+        this.argsData = null;
+        /** @private */
+        this.isLabelUpdated = null;
+        this.initialLabelRegion = null;
     }
     return AccPoints;
 }());
@@ -26689,6 +26668,10 @@ var AccumulationSeries = /** @__PURE__ @class */ (function (_super) {
         _this.clipRect = new Rect(0, 0, 0, 0);
         /** @private */
         _this.category = 'Series';
+        /** @private */
+        _this.rightSidePoints = [];
+        /** @private */
+        _this.leftSidePoints = [];
         return _this;
     }
     /** @private To refresh the Datamanager for series */
@@ -26883,6 +26866,9 @@ var AccumulationSeries = /** @__PURE__ @class */ (function (_super) {
         var element = createElement('div', {
             id: accumulation.element.id + '_Series_0' + '_DataLabelCollections'
         });
+        this.leftSidePoints = [], this.rightSidePoints = [];
+        var firstQuarter = [];
+        var secondQuarter = [];
         for (var _i = 0, _a = this.points; _i < _a.length; _i++) {
             var point = _a[_i];
             if (point.visible) {
@@ -26890,7 +26876,23 @@ var AccumulationSeries = /** @__PURE__ @class */ (function (_super) {
                     accumulation.accumulationDataLabelModule.renderDataLabel(point, this.dataLabel, datalabelGroup, this.points, this.index, element, redraw);
                 }
             }
+            if (point.midAngle >= 90 && point.midAngle <= 270) {
+                this.leftSidePoints.push(point);
+            }
+            else {
+                if (point.midAngle >= 0 && point.midAngle <= 90) {
+                    secondQuarter.push(point);
+                }
+                else {
+                    firstQuarter.push(point);
+                }
+            }
         }
+        firstQuarter.sort(function (a, b) { return a.midAngle - b.midAngle; });
+        secondQuarter.sort(function (a, b) { return a.midAngle - b.midAngle; });
+        this.leftSidePoints.sort(function (a, b) { return a.midAngle - b.midAngle; });
+        this.rightSidePoints = firstQuarter.concat(secondQuarter);
+        accumulation.accumulationDataLabelModule.drawDataLabels(this, this.dataLabel, datalabelGroup, element, redraw);
         if (this.dataLabel.template !== null && element.childElementCount) {
             appendChildElement(false, getElement$1(accumulation.element.id + '_Secondary_Element'), element, redraw);
         }
@@ -28615,7 +28617,7 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
                 args: [this]
             });
         }
-        if (this.enableExport) {
+        if (this.enableExport || this.allowExport) {
             modules.push({
                 member: 'Export',
                 args: [this]
@@ -28858,6 +28860,9 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
     __decorate$7([
         Property(true)
     ], AccumulationChart.prototype, "enableExport", void 0);
+    __decorate$7([
+        Property(false)
+    ], AccumulationChart.prototype, "allowExport", void 0);
     __decorate$7([
         Event()
     ], AccumulationChart.prototype, "loaded", void 0);
@@ -29698,6 +29703,8 @@ var AccumulationDataLabel = /** @__PURE__ @class */ (function (_super) {
     __extends$68(AccumulationDataLabel, _super);
     function AccumulationDataLabel(accumulation) {
         var _this = _super.call(this, accumulation) || this;
+        _this.rightSideRenderingPoints = [];
+        _this.leftSideRenderingPoints = [];
         _this.id = accumulation.element.id + '_datalabel_Series_';
         if (accumulation.title) {
             var titleSize = measureText(accumulation.title, accumulation.titleStyle);
@@ -29788,25 +29795,6 @@ var AccumulationDataLabel = /** @__PURE__ @class */ (function (_super) {
                 || this.isOverlapping(point, points) || this.isConnectorLineOverlapping(point, previousPoint))) {
                 this.setOuterSmartLabel(previousPoint, point, dataLabel.border.width, labelRadius_1, textSize, this.marginValue);
             }
-        }
-        if (this.isOverlapping(point, points) ||
-            (this.titleRect && point.labelRegion && isOverlap(point.labelRegion, this.titleRect))) {
-            this.setPointVisibileFalse(point);
-        }
-        if (this.accumulation.accumulationLegendModule && point.labelVisible && point.labelRegion) {
-            var rect = this.accumulation.accumulationLegendModule.legendBounds;
-            var padding = this.accumulation.legendSettings.border.width / 2;
-            this.textTrimming(point, new Rect(rect.x - padding, rect.y - padding, rect.width + (2 * padding), rect.height + (2 * padding)), dataLabel.font, this.accumulation.accumulationLegendModule.position);
-        }
-        if (point.labelVisible && point.labelRegion) {
-            var position = this.isCircular() ? (point.labelRegion.x >= this.center.x) ? 'InsideRight' : 'InsideLeft' :
-                (point.labelRegion.x >= point.region.x) ? 'InsideRight' : 'InsideLeft';
-            this.textTrimming(point, this.areaRect, dataLabel.font, position);
-        }
-        if (point.labelVisible && point.labelRegion && ((point.labelRegion.y + point.labelRegion.height >
-            this.areaRect.y + this.areaRect.height || point.labelRegion.y < this.areaRect.y) || (point.labelRegion.x < this.areaRect.x ||
-            point.labelRegion.x + point.labelRegion.width > this.areaRect.x + this.areaRect.width))) {
-            this.setPointVisibileFalse(point);
         }
     };
     /**
@@ -29920,13 +29908,14 @@ var AccumulationDataLabel = /** @__PURE__ @class */ (function (_super) {
             var labelAngle = this.getOverlappedAngle(previousPoint.labelRegion, point.labelRegion, point.midAngle, border * 2);
             this.getLabelRegion(point, 'Outside', textsize, labelRadius, margin, labelAngle);
             if (labelAngle > point.endAngle) {
-                this.setPointVisibileFalse(point);
+                labelAngle = point.midAngle;
+                //this.setPointVisibileFalse(point);
             }
             point.labelAngle = labelAngle;
             while (point.labelVisible && (isOverlap(previousPoint.labelRegion, point.labelRegion) || labelAngle <= previousPoint.labelAngle
                 || this.isConnectorLineOverlapping(point, previousPoint))) {
                 if (labelAngle > point.endAngle) {
-                    this.setPointVisibileFalse(point);
+                    //this.setPointVisibileFalse(point);
                     break;
                 }
                 point.labelAngle = labelAngle;
@@ -30034,7 +30023,7 @@ var AccumulationDataLabel = /** @__PURE__ @class */ (function (_super) {
             this.getLabelDistance(point, dataLabel);
         //let labelRadius: number = this.isCircular() ? this.labelRadius : this.getLabelDistance(point, dataLabel);
         var start = this.getConnectorStartPoint(point, connector);
-        var labelAngle = end || point.midAngle;
+        var labelAngle = this.accumulation.enableSmartLabels ? point.midAngle : end || point.midAngle;
         var middle = new ChartLocation(0, 0);
         var endPoint = this.getEdgeOfLabel(label, labelAngle, middle, connector.width, point);
         if (connector.type === 'Curve') {
@@ -30042,7 +30031,15 @@ var AccumulationDataLabel = /** @__PURE__ @class */ (function (_super) {
                 var r = labelRadius - (this.isVariousRadius() ? stringToNumber(point.sliceRadius, this.accumulation.pieSeriesModule.seriesRadius) :
                     this.radius);
                 //let r: number = labelRadius - this.radius;
-                middle = degreeToLocation(labelAngle, labelRadius - (r / 2), this.center);
+                if (point.isLabelUpdated) {
+                    middle = this.getPerpendicularDistance(start, point);
+                }
+                else {
+                    middle = degreeToLocation(labelAngle, labelRadius - (r / 2), this.center);
+                    if (point.labelPosition === 'Outside' && dataLabel.position === 'Inside') {
+                        middle = degreeToLocation(labelAngle, labelRadius - r * 1.25, this.center);
+                    }
+                }
                 return 'M ' + start.x + ' ' + start.y + ' Q ' + middle.x + ' ' + middle.y + ' ' + endPoint.x + ' ' + endPoint.y;
             }
             else {
@@ -30207,8 +30204,7 @@ var AccumulationDataLabel = /** @__PURE__ @class */ (function (_super) {
             text: point.label, border: border, color: dataLabel.fill, template: dataLabel.template, font: argsFont
         };
         this.accumulation.trigger(textRender, argsData);
-        var angle;
-        var degree;
+        point.argsData = argsData;
         var isTemplate = argsData.template !== null;
         point.labelVisible = !argsData.cancel;
         point.text = point.label = argsData.text;
@@ -30228,62 +30224,128 @@ var AccumulationDataLabel = /** @__PURE__ @class */ (function (_super) {
             measureText(point.label, dataLabel.font);
         textSize.height += 4; // 4 for calculation with padding for smart label shape
         textSize.width += 4;
+        point.textSize = textSize;
         this.getDataLabelPosition(point, dataLabel, textSize, points, datalabelGroup, id);
-        var dataLabelElement;
-        var location;
-        var element;
-        if (point.labelVisible) {
-            angle = degree = dataLabel.angle;
-            this.correctLabelRegion(point.labelRegion, textSize);
-            if (isTemplate) {
-                this.setTemplateStyle(childElement, point, templateElement, dataLabel.font.color, argsData.color, redraw);
-            }
-            else {
-                location = new ChartLocation(point.labelRegion.x + this.marginValue, point.labelRegion.y + (textSize.height * 3 / 4) + this.marginValue);
-                element = getElement$1(id + 'shape_' + point.index);
-                var startLocation = element ? new ChartLocation(+element.getAttribute('x'), +element.getAttribute('y')) : null;
-                dataLabelElement = this.accumulation.renderer.drawRectangle(new RectOption(id + 'shape_' + point.index, argsData.color, argsData.border, 1, point.labelRegion, dataLabel.rx, dataLabel.ry));
-                appendChildElement(false, datalabelGroup, dataLabelElement, redraw, true, 'x', 'y', startLocation, null, false, false, null, this.accumulation.duration);
-                var textWidth = textSize.width;
-                var textHeight = textSize.height;
-                var rotate = void 0;
-                if (angle !== 0 && dataLabel.enableRotation) {
-                    if (point.labelPosition === 'Outside') {
-                        degree = 0;
+        if (point.labelRegion) {
+            this.correctLabelRegion(point.labelRegion, point.textSize);
+        }
+    };
+    /**
+     * @private
+     */
+    // tslint:disable-next-line:max-func-body-length
+    AccumulationDataLabel.prototype.drawDataLabels = function (series, dataLabel, parent, templateElement, redraw) {
+        var angle;
+        var degree;
+        var modifiedPoints = series.leftSidePoints.concat(series.rightSidePoints);
+        modifiedPoints.sort(function (a, b) { return a.index - b.index; });
+        if (series.type === 'Pie' && this.accumulation.enableSmartLabels) {
+            this.extendedLabelsCalculation();
+        }
+        for (var _i = 0, modifiedPoints_1 = modifiedPoints; _i < modifiedPoints_1.length; _i++) {
+            var point = modifiedPoints_1[_i];
+            if (!isNullOrUndefined(point.argsData) && !isNullOrUndefined(point.y)) {
+                this.finalizeDatalabels(point, modifiedPoints, dataLabel);
+                var id = this.accumulation.element.id + '_datalabel_Series_' + 0 + '_';
+                var datalabelGroup = this.accumulation.renderer.createGroup({ id: id + 'g_' + point.index });
+                var dataLabelElement = void 0;
+                var location_3 = void 0;
+                // tslint:disable-next-line:max-line-length
+                var childElement = createElement('div', {
+                    id: this.accumulation.element.id + '_Series_' + 0 + '_DataLabel_' + point.index,
+                    styles: 'position: absolute;background-color:' + point.argsData.color + ';' +
+                        // tslint:disable-next-line:max-line-length
+                        getFontStyle(dataLabel.font) + ';border:' + point.argsData.border.width + 'px solid ' + point.argsData.border.color + ';'
+                });
+                var textSize = point.argsData ?
+                    this.getTemplateSize(childElement, point, point.argsData, redraw) :
+                    measureText(point.label, dataLabel.font);
+                var element = void 0;
+                if (point.visible && point.labelVisible) {
+                    angle = degree = dataLabel.angle;
+                    if (point.argsData.template) {
+                        this.setTemplateStyle(childElement, point, templateElement, dataLabel.font.color, point.color, redraw);
                     }
                     else {
-                        if (point.midAngle >= 90 && point.midAngle <= 270) {
-                            degree = point.midAngle + 180;
+                        location_3 = new ChartLocation(
+                        // tslint:disable-next-line:max-line-length
+                        point.labelRegion.x + this.marginValue, point.labelRegion.y + (point.textSize.height * 3 / 4) + this.marginValue);
+                        element = getElement$1(id + 'shape_' + point.index);
+                        var startLocation = element ? new ChartLocation(+element.getAttribute('x'), +element.getAttribute('y')) : null;
+                        dataLabelElement = this.accumulation.renderer.drawRectangle(new RectOption(id + 'shape_' + point.index, point.argsData.color, point.argsData.border, 1, point.labelRegion, dataLabel.rx, dataLabel.ry));
+                        appendChildElement(false, datalabelGroup, dataLabelElement, redraw, true, 'x', 'y', startLocation, null, false, false, null, this.accumulation.duration);
+                        var textWidth = point.textSize.width;
+                        var textHeight = point.textSize.height;
+                        var rotate = void 0;
+                        if (angle !== 0 && dataLabel.enableRotation) {
+                            if (point.labelPosition === 'Outside') {
+                                degree = 0;
+                            }
+                            else {
+                                if (point.midAngle >= 90 && point.midAngle <= 270) {
+                                    degree = point.midAngle + 180;
+                                }
+                                else {
+                                    degree = point.midAngle;
+                                }
+                            }
+                            // tslint:disable-next-line:max-line-length
+                            rotate = 'rotate(' + degree + ',' + (location_3.x + (textWidth / 2)) + ',' + (location_3.y - (textHeight / 4)) + ')';
                         }
                         else {
-                            degree = point.midAngle;
+                            if (angle) {
+                                degree = (angle > 360) ? angle - 360 : (angle < -360) ? angle + 360 : angle;
+                            }
+                            else {
+                                degree = 0;
+                            }
+                            rotate = 'rotate(' + degree + ',' + (location_3.x + (textWidth / 2)) + ',' + (location_3.y) + ')';
                         }
+                        point.transform = rotate;
+                        textElement$1(this.accumulation.renderer, new TextOption(id + 'text_' + point.index, location_3.x, location_3.y, 'start', point.label, rotate, 'auto', degree), point.argsData.font, point.argsData.font.color || this.getSaturatedColor(point, point.argsData.color), datalabelGroup, false, redraw, true, false, this.accumulation.duration);
+                        element = null;
                     }
-                    rotate = 'rotate(' + degree + ',' + (location.x + (textWidth / 2)) + ',' + (location.y - (textHeight / 4)) + ')';
+                    // tslint:disable-next-line:max-line-length
+                    if (this.accumulation.accumulationLegendModule && (dataLabel.position === 'Outside' || this.accumulation.enableSmartLabels)) {
+                        this.accumulation.visibleSeries[0].findMaxBounds(this.accumulation.visibleSeries[0].labelBound, point.labelRegion);
+                    }
+                    if (point.labelPosition === 'Outside') {
+                        var element_1 = getElement$1(id + 'connector_' + point.index);
+                        var previousDirection = element_1 ? element_1.getAttribute('d') : '';
+                        var pathElement = this.accumulation.renderer.drawPath(new PathOption(id + 'connector_' + point.index, 'transparent', dataLabel.connectorStyle.width, dataLabel.connectorStyle.color || point.color, 1, dataLabel.connectorStyle.dashArray, this.getConnectorPath(extend({}, point.labelRegion, null, true), point, dataLabel, point.labelAngle)));
+                        appendChildElement(false, datalabelGroup, pathElement, redraw, true, null, null, null, previousDirection, false, false, null, this.accumulation.duration);
+                    }
+                    appendChildElement(false, parent, datalabelGroup, redraw);
                 }
-                else {
-                    if (angle) {
-                        degree = (angle > 360) ? angle - 360 : (angle < -360) ? angle + 360 : angle;
-                    }
-                    else {
-                        degree = 0;
-                    }
-                    rotate = 'rotate(' + degree + ',' + (location.x + (textWidth / 2)) + ',' + (location.y) + ')';
-                }
-                point.transform = rotate;
-                textElement$1(this.accumulation.renderer, new TextOption(id + 'text_' + point.index, location.x, location.y, 'start', point.label, rotate, 'auto', degree), argsData.font, argsData.font.color || this.getSaturatedColor(point, argsData.color), datalabelGroup, false, redraw, true, false, this.accumulation.duration);
-                element = null;
             }
-            if (this.accumulation.accumulationLegendModule && (dataLabel.position === 'Outside' || this.accumulation.enableSmartLabels)) {
-                this.accumulation.visibleSeries[0].findMaxBounds(this.accumulation.visibleSeries[0].labelBound, point.labelRegion);
-            }
-            if (point.labelPosition === 'Outside') {
-                var element_1 = getElement$1(id + 'connector_' + point.index);
-                var previousDirection = element_1 ? element_1.getAttribute('d') : '';
-                var pathElement = this.accumulation.renderer.drawPath(new PathOption(id + 'connector_' + point.index, 'transparent', dataLabel.connectorStyle.width, dataLabel.connectorStyle.color || point.color, 1, dataLabel.connectorStyle.dashArray, this.getConnectorPath(extend({}, point.labelRegion, null, true), point, dataLabel, point.labelAngle)));
-                appendChildElement(false, datalabelGroup, pathElement, redraw, true, null, null, null, previousDirection, false, false, null, this.accumulation.duration);
-            }
-            appendChildElement(false, parent, datalabelGroup, redraw);
+        }
+    };
+    /**
+     * In this method datalabels region checked with legebdBounds and areaBounds.
+     * Trimming of datalabel and point's visibility again changed here.
+     * @param point current point in which trimming and visibility to be checked
+     * @param points finalized points
+     * @param dataLabel datalabel model
+     */
+    AccumulationDataLabel.prototype.finalizeDatalabels = function (point, points, dataLabel) {
+        if (this.isOverlapping(point, points) ||
+            (this.titleRect && point.labelRegion && isOverlap(point.labelRegion, this.titleRect))) {
+            //this.setPointVisibileFalse(point);
+        }
+        if (this.accumulation.accumulationLegendModule && point.labelVisible && point.labelRegion) {
+            var rect = this.accumulation.accumulationLegendModule.legendBounds;
+            var padding = this.accumulation.legendSettings.border.width / 2;
+            this.textTrimming(point, new Rect(rect.x - padding, rect.y - padding, rect.width + (2 * padding), rect.height + (2 * padding)), dataLabel.font, this.accumulation.accumulationLegendModule.position);
+        }
+        if (point.labelVisible && point.labelRegion) {
+            var position = this.isCircular() ? (point.labelRegion.x >= this.center.x) ? 'InsideRight' : 'InsideLeft' :
+                (point.labelRegion.x >= point.region.x) ? 'InsideRight' : 'InsideLeft';
+            this.textTrimming(point, this.areaRect, dataLabel.font, position);
+        }
+        if (point.labelVisible && point.labelRegion && ((point.labelRegion.y + point.labelRegion.height >
+            this.areaRect.y + this.areaRect.height || point.labelRegion.y < this.areaRect.y) || (point.labelRegion.x < this.areaRect.x ||
+            point.labelRegion.x + point.labelRegion.width > this.areaRect.x + this.areaRect.width))) {
+            this.setPointVisibileFalse(point);
         }
     };
     /**
@@ -30389,6 +30451,297 @@ var AccumulationDataLabel = /** @__PURE__ @class */ (function (_super) {
         /**
          * Destroy method performed here
          */
+    };
+    //calculation for placing labels smartly
+    AccumulationDataLabel.prototype.extendedLabelsCalculation = function () {
+        var _this = this;
+        var series = this.accumulation.series[0];
+        series.rightSidePoints.forEach(function (point, index, halfSidePoints) {
+            point.initialLabelRegion = point.labelRegion;
+            point.isLabelUpdated = 0;
+            _this.skipPoints(point, halfSidePoints, index);
+        });
+        series.leftSidePoints.forEach(function (point, index, halfSidePoints) {
+            point.initialLabelRegion = point.labelRegion;
+            point.isLabelUpdated = 0;
+            _this.skipPoints(point, halfSidePoints, index);
+        });
+        this.arrangeLeftSidePoints(series);
+        this.isIncreaseAngle = false;
+        this.arrangeRightSidePoints(series);
+    };
+    /**
+     * Rightside points alignments calculation
+     * @param series
+     */
+    AccumulationDataLabel.prototype.arrangeRightSidePoints = function (series) {
+        var startFresh;
+        var angleChanged;
+        var rightSideRenderPoints = series.rightSidePoints.filter(function (point) { return (point.labelVisible && point.labelPosition === 'Outside'); });
+        this.rightSideRenderingPoints = rightSideRenderPoints;
+        var checkAngle;
+        var currentPoint;
+        var lastPoint = rightSideRenderPoints[rightSideRenderPoints.length - 1];
+        var nextPoint;
+        if (lastPoint) {
+            if (lastPoint.labelAngle > 90 && lastPoint.labelAngle < 270) {
+                this.isIncreaseAngle = true;
+                this.changeLabelAngle(lastPoint, 89);
+            }
+        }
+        /**
+         * Right side points arranged from last point.
+         * A point checked with successive points for overlapping.
+         * If that is overlapped, its label angle is decreased and placing in optimal position
+         * If one point's angle is decreased, its previous points in the half side points also decreased until it reaced optimum position.
+         * When decreasing angle falls beyond 270, label angle increased.
+         * If one point's angle is increased, its successive points in that half point also increased until it reaced optimum position.
+         */
+        for (var i = rightSideRenderPoints.length - 1; i >= 0; i--) {
+            currentPoint = rightSideRenderPoints[i];
+            nextPoint = rightSideRenderPoints[i + 1];
+            // A point checked for overlapping, label visibility
+            if (this.isOverlapWithNext(currentPoint, rightSideRenderPoints, i) && currentPoint.labelVisible
+                || !(currentPoint.labelAngle <= 90 || currentPoint.labelAngle >= 270)) {
+                checkAngle = lastPoint.labelAngle + 10;
+                angleChanged = true;
+                //If last's point change angle in beyond the limit, stop the increasing angle and do decrease the angle.
+                if (startFresh) {
+                    this.isIncreaseAngle = false;
+                }
+                else if (checkAngle > 90 && checkAngle < 270 && nextPoint.isLabelUpdated) {
+                    this.isIncreaseAngle = true;
+                }
+                if (!this.isIncreaseAngle) {
+                    for (var k = i + 1; k < rightSideRenderPoints.length; k++) {
+                        this.increaseAngle(rightSideRenderPoints[k - 1], rightSideRenderPoints[k], series, true);
+                    }
+                }
+                else {
+                    for (var k = i + 1; k > 0; k--) {
+                        this.decreaseAngle(rightSideRenderPoints[k], rightSideRenderPoints[k - 1], series, true);
+                    }
+                }
+            }
+            else {
+                //If a point did not overlapped with previous points, increase the angle always for right side points.
+                if (angleChanged && nextPoint && !nextPoint.isLabelUpdated) {
+                    startFresh = true;
+                }
+            }
+        }
+    };
+    /**
+     * Leftside points alignments calculation
+     * @param series
+     */
+    AccumulationDataLabel.prototype.arrangeLeftSidePoints = function (series) {
+        var _this = this;
+        var leftSideRenderPoints = series.leftSidePoints.filter(function (point) { return (point.labelVisible && point.labelPosition === 'Outside'); });
+        this.leftSideRenderingPoints = leftSideRenderPoints;
+        var previousPoint;
+        var currentPoint;
+        var angleChanged;
+        var startFresh;
+        /**
+         * Left side points arranged from first point.
+         * A point checked with previous points for overlapping.
+         * If that is overlapped, its label angle is decreased and placing in optimal position
+         * If one point's angle is decreased, its previous points in the half side points also decreased until it reaced optimum position.
+         * When decreasing angle falls beyond 90, label angle increased.
+         * If one point's angle is increased, its successive points in that half point also increased until it reaced optimum position.
+         */
+        for (var i = 0; i < leftSideRenderPoints.length; i++) {
+            currentPoint = leftSideRenderPoints[i];
+            previousPoint = leftSideRenderPoints[i - 1];
+            // A point checked
+            if (this.isOverlapWithPrevious(currentPoint, leftSideRenderPoints, i) && currentPoint.labelVisible
+                || !(currentPoint.labelAngle < 270)) {
+                angleChanged = true;
+                if (startFresh) {
+                    this.isIncreaseAngle = false;
+                }
+                if (!this.isIncreaseAngle) {
+                    for (var k = i; k > 0; k--) {
+                        this.decreaseAngle(leftSideRenderPoints[k], leftSideRenderPoints[k - 1], series, false);
+                        leftSideRenderPoints.filter(function (point, index) {
+                            if (point.isLabelUpdated && leftSideRenderPoints[index].labelAngle - 10 < 100) {
+                                _this.isIncreaseAngle = true;
+                            }
+                        });
+                    }
+                }
+                else {
+                    for (var k = i; k < leftSideRenderPoints.length; k++) {
+                        this.increaseAngle(leftSideRenderPoints[k - 1], leftSideRenderPoints[k], series, false);
+                    }
+                }
+            }
+            else {
+                if (angleChanged && previousPoint && previousPoint.isLabelUpdated) {
+                    startFresh = true;
+                }
+            }
+        }
+    };
+    AccumulationDataLabel.prototype.decreaseAngle = function (currentPoint, previousPoint, series, isRightSide) {
+        if (isNullOrUndefined(currentPoint) || isNullOrUndefined(previousPoint)) {
+            return null;
+        }
+        var count = 1;
+        if (isRightSide) {
+            while (isOverlap(currentPoint.labelRegion, previousPoint.labelRegion) || (!this.isVariousRadius() &&
+                !((previousPoint.labelRegion.height + previousPoint.labelRegion.y) < currentPoint.labelRegion.y))) {
+                var newAngle = previousPoint.midAngle - count;
+                if (newAngle < 0) {
+                    newAngle = 360 + newAngle;
+                }
+                if (newAngle <= 270 && newAngle >= 90) {
+                    newAngle = 270;
+                    this.isIncreaseAngle = true;
+                    break;
+                }
+                this.changeLabelAngle(previousPoint, newAngle);
+                count++;
+            }
+        }
+        else {
+            if (currentPoint.labelAngle > 270) {
+                this.changeLabelAngle(currentPoint, 270);
+                previousPoint.labelAngle = 270;
+            }
+            while (isOverlap(currentPoint.labelRegion, previousPoint.labelRegion) || (!this.isVariousRadius() &&
+                ((currentPoint.labelRegion.y + currentPoint.labelRegion.height) > previousPoint.labelRegion.y))) {
+                var newAngle = previousPoint.midAngle - count;
+                if (!(newAngle <= 270 && newAngle >= 90)) {
+                    newAngle = 90;
+                    this.isIncreaseAngle = true;
+                    break;
+                }
+                this.changeLabelAngle(previousPoint, newAngle);
+                if (isOverlap(currentPoint.labelRegion, previousPoint.labelRegion) &&
+                    !series.leftSidePoints.indexOf(previousPoint) && (newAngle - 1 < 90 && newAngle - 1 > 270)) {
+                    this.changeLabelAngle(currentPoint, currentPoint.labelAngle + 1);
+                    this.arrangeLeftSidePoints(series);
+                    break;
+                }
+                count++;
+            }
+        }
+    };
+    AccumulationDataLabel.prototype.increaseAngle = function (currentPoint, nextPoint, series, isRightSide) {
+        if (isNullOrUndefined(currentPoint) || isNullOrUndefined(nextPoint)) {
+            return null;
+        }
+        var count = 1;
+        if (isRightSide) {
+            while (isOverlap(currentPoint.labelRegion, nextPoint.labelRegion) || (!this.isVariousRadius() &&
+                !((currentPoint.labelRegion.y + currentPoint.labelRegion.height) < nextPoint.labelRegion.y))) {
+                var newAngle = nextPoint.midAngle + count;
+                if (newAngle < 270 && newAngle > 90) {
+                    newAngle = 90;
+                    this.isIncreaseAngle = true;
+                    break;
+                }
+                this.changeLabelAngle(nextPoint, newAngle);
+                if (isOverlap(currentPoint.labelRegion, nextPoint.labelRegion) && (newAngle + 1 > 90 && newAngle + 1 < 270) &&
+                    this.rightSideRenderingPoints.indexOf(nextPoint) === this.rightSideRenderingPoints.length - 1) {
+                    this.changeLabelAngle(currentPoint, currentPoint.labelAngle - 1);
+                    nextPoint.labelRegion = nextPoint.initialLabelRegion;
+                    this.arrangeRightSidePoints(series);
+                    break;
+                }
+                count++;
+            }
+        }
+        else {
+            while (isOverlap(currentPoint.labelRegion, nextPoint.labelRegion) || (!this.isVariousRadius() &&
+                (currentPoint.labelRegion.y < (nextPoint.labelRegion.y + nextPoint.labelRegion.height)))) {
+                var newAngle = nextPoint.midAngle + count;
+                if (!(newAngle < 270 && newAngle > 90)) {
+                    newAngle = 270;
+                    this.isIncreaseAngle = true;
+                    break;
+                }
+                this.changeLabelAngle(nextPoint, newAngle);
+                count++;
+            }
+        }
+    };
+    AccumulationDataLabel.prototype.changeLabelAngle = function (currentPoint, newAngle) {
+        var dataLabel = this.accumulation.series[0].dataLabel;
+        var variableR;
+        if (!this.isVariousRadius()) {
+            variableR = this.accumulation.pieSeriesModule.getLabelRadius(this.accumulation.visibleSeries[0], currentPoint);
+        }
+        //padding 10px is added to label radius for increasing the angle and avoid congestion.
+        var labelRadius = (currentPoint.labelPosition === 'Outside' && this.accumulation.enableSmartLabels &&
+            dataLabel.position === 'Inside') ?
+            this.radius + stringToNumber(dataLabel.connectorStyle.length || '4%', this.accumulation.pieSeriesModule.size / 2) :
+            (!this.isVariousRadius() ? this.accumulation.pieSeriesModule.labelRadius + 10 : variableR);
+        var radius = (!this.isVariousRadius() ? labelRadius : variableR);
+        this.getLabelRegion(currentPoint, 'Outside', currentPoint.textSize, radius, this.marginValue, newAngle);
+        currentPoint.isLabelUpdated = 1;
+        currentPoint.labelAngle = newAngle;
+    };
+    AccumulationDataLabel.prototype.isOverlapWithPrevious = function (currentPoint, points, currentPointIndex) {
+        for (var i = 0; i < currentPointIndex; i++) {
+            if (i !== points.indexOf(currentPoint) &&
+                points[i].visible && points[i].labelVisible && points[i].labelRegion && currentPoint.labelRegion &&
+                currentPoint.labelVisible && isOverlap(currentPoint.labelRegion, points[i].labelRegion)) {
+                return true;
+            }
+        }
+        return false;
+    };
+    AccumulationDataLabel.prototype.isOverlapWithNext = function (point, points, pointIndex) {
+        for (var i = pointIndex; i < points.length; i++) {
+            if (i !== points.indexOf(point) && points[i].visible && points[i].labelVisible && points[i].labelRegion &&
+                point.labelRegion && point.labelVisible && isOverlap(point.labelRegion, points[i].labelRegion)) {
+                return true;
+            }
+        }
+        return false;
+    };
+    AccumulationDataLabel.prototype.skipPoints = function (currentPoint, halfsidePoints, pointIndex) {
+        if (pointIndex > 0 && ((currentPoint.midAngle < 285 && currentPoint.midAngle > 255) ||
+            (currentPoint.midAngle < 105 && currentPoint.midAngle > 75))) {
+            var previousPoint = halfsidePoints[pointIndex - 1];
+            var angleDiff = currentPoint.endAngle % 360 - currentPoint.startAngle % 360;
+            var prevAngleDiff = previousPoint.endAngle % 360 - previousPoint.startAngle % 360;
+            if (prevAngleDiff <= angleDiff && angleDiff < 5 && previousPoint.labelVisible) {
+                this.setPointVisibileFalse(currentPoint);
+            }
+        }
+        else if (pointIndex > 1 && ((currentPoint.midAngle < 300 && currentPoint.midAngle > 240) ||
+            (currentPoint.midAngle < 120 && currentPoint.midAngle > 60))) {
+            var prevPoint = halfsidePoints[pointIndex - 1];
+            var secondPrevPoint = halfsidePoints[pointIndex - 2];
+            var angleDiff = currentPoint.endAngle % 360 - currentPoint.startAngle % 360;
+            var prevAngleDiff = prevPoint.endAngle % 360 - prevPoint.startAngle % 360;
+            var thirdAngleDiff = secondPrevPoint.endAngle % 360 - secondPrevPoint.startAngle % 360;
+            if (angleDiff < 3 && prevAngleDiff < 3 && thirdAngleDiff < 3 && prevPoint.labelVisible && currentPoint.labelVisible) {
+                this.setPointVisibileFalse(currentPoint);
+            }
+        }
+    };
+    AccumulationDataLabel.prototype.getPerpendicularDistance = function (startPoint, point) {
+        var increasedLocation;
+        var add = 10;
+        var height = add + 10 * Math.sin(point.midAngle * Math.PI / 360);
+        if (point.midAngle > 270 && point.midAngle < 360) {
+            increasedLocation = new ChartLocation(startPoint.x + height * (Math.cos((360 - point.midAngle) * Math.PI / 180)), startPoint.y - height * (Math.sin((360 - point.midAngle) * Math.PI / 180)));
+        }
+        else if (point.midAngle > 0 && point.midAngle < 90) {
+            increasedLocation = new ChartLocation(startPoint.x + height * (Math.cos((point.midAngle) * Math.PI / 180)), startPoint.y + height * (Math.sin((point.midAngle) * Math.PI / 180)));
+        }
+        else if (point.midAngle > 0 && point.midAngle < 90) {
+            increasedLocation = new ChartLocation(startPoint.x - height * (Math.cos((point.midAngle - 90) * Math.PI / 180)), startPoint.y + height * (Math.sin((point.midAngle - 90) * Math.PI / 180)));
+        }
+        else {
+            increasedLocation = new ChartLocation(startPoint.x - height * (Math.cos((point.midAngle - 180) * Math.PI / 180)), startPoint.y - height * (Math.sin((point.midAngle - 180) * Math.PI / 180)));
+        }
+        return increasedLocation;
     };
     return AccumulationDataLabel;
 }(AccumulationBase));
@@ -30842,8 +31195,7 @@ var AccumulationSelection = /** @__PURE__ @class */ (function (_super) {
                     legendShape = document.getElementById(this.control.element.id + '_chart_legend_shape_' + index.point);
                     this.removeSvgClass(legendShape, this.getSelectionClass(legendShape.id));
                 }
-                var opacity = accumulationTooltip && (accumulationTooltip.previousPoints.length > 0 &&
-                    accumulationTooltip.previousPoints[0].point.index === index.point) ?
+                var opacity = accumulationTooltip && (accumulationTooltip.previousPoints[0].point.index === index.point) ?
                     accumulationTooltip.svgTooltip.opacity : this.series[index.series].opacity;
                 element.setAttribute('opacity', opacity.toString());
                 this.removeSvgClass(element, this.getSelectionClass(element.id));
@@ -32402,6 +32754,349 @@ var RangeSlider = /** @__PURE__ @class */ (function () {
     return RangeSlider;
 }());
 
+/**
+ * Period selector class
+ */
+var PeriodSelector = /** @__PURE__ @class */ (function () {
+    //constructor for period selector
+    function PeriodSelector(control) {
+        this.control = {};
+        this.rootControl = control;
+    }
+    /**
+     * To set the control values
+     * @param control
+     */
+    PeriodSelector.prototype.setControlValues = function (control) {
+        if (control.getModuleName() === 'rangeNavigator') {
+            this.control.periods = this.rootControl.periodSelectorSettings.periods;
+            this.control.seriesXMax = control.chartSeries.xMax;
+            this.control.seriesXMin = control.chartSeries.xMin;
+            this.control.rangeSlider = control.rangeSlider;
+            this.control.rangeNavigatorControl = control;
+            this.control.endValue = control.endValue;
+            this.control.startValue = control.startValue;
+        }
+        else {
+            this.control.periods = this.rootControl.periods;
+            this.control.endValue = this.control.seriesXMax = control.seriesXMax;
+            this.control.startValue = this.control.seriesXMin = control.seriesXMin;
+            this.control.rangeNavigatorControl = this.rootControl.rangeNavigator;
+            if (this.control.rangeNavigatorControl) {
+                this.control.rangeSlider = this.rootControl.rangeNavigator.rangeSlider;
+            }
+        }
+        this.control.element = control.element;
+        this.control.disableRangeSelector = control.disableRangeSelector;
+    };
+    /**
+     *  To initialize the period selector properties
+     */
+    PeriodSelector.prototype.appendSelector = function (options, x) {
+        if (x === void 0) { x = 0; }
+        this.renderSelectorElement(null, options, x);
+        this.renderSelector();
+    };
+    /**
+     * renderSelector div
+     * @param control
+     */
+    PeriodSelector.prototype.renderSelectorElement = function (control, options, x) {
+        //render border
+        this.periodSelectorSize = control ? this.periodSelectorSize : new Rect(x, this.rootControl.titleSize.height, options.width, options.height);
+        var thumbSize;
+        var element;
+        if (control) {
+            thumbSize = control.themeStyle.thumbWidth;
+            element = control.element;
+        }
+        else {
+            thumbSize = options.thumbSize;
+            element = options.element;
+        }
+        if (getElement$1(element.id + '_Secondary_Element')) {
+            remove(getElement$1(element.id + '_Secondary_Element'));
+        }
+        this.periodSelectorDiv = createElement('div', {
+            id: element.id + '_Secondary_Element',
+            styles: 'width: ' + (this.periodSelectorSize.width - thumbSize) + 'px;height: ' +
+                this.periodSelectorSize.height + 'px;top:' +
+                this.periodSelectorSize.y + 'px;left:' +
+                (this.periodSelectorSize.x + thumbSize / 2) + 'px; position: absolute'
+        });
+        element.appendChild(this.periodSelectorDiv);
+    };
+    /**
+     * renderSelector elements
+     */
+    // tslint:disable-next-line:max-func-body-length
+    PeriodSelector.prototype.renderSelector = function () {
+        var _this = this;
+        this.setControlValues(this.rootControl);
+        var enableCustom = true;
+        var controlId = this.control.element.id;
+        var selectorElement = createElement('div', { id: controlId + '_selector' });
+        this.periodSelectorDiv.appendChild(selectorElement);
+        var buttons = this.control.periods;
+        var selector = this.updateCustomElement();
+        var buttonStyles = 'text-transform: none; text-overflow: unset';
+        for (var i = 0; i < buttons.length; i++) {
+            selector.push({ align: 'Left', text: buttons[i].text });
+        }
+        if (this.rootControl.getModuleName() === 'stockChart') {
+            enableCustom = this.rootControl.enableCustomRange;
+        }
+        var selctorArgs;
+        if (enableCustom) {
+            this.calendarId = controlId + '_calendar';
+            selector.push({ template: '<button id=' + this.calendarId + '></button>', align: 'Right' });
+        }
+        selctorArgs = {
+            selector: selector, name: 'RangeSelector', cancel: false, enableCustomFormat: true, content: 'Date Range'
+        };
+        if (this.rootControl.getModuleName() === 'stockChart') {
+            selector.push({ template: createElement('button', { id: controlId + '_reset', innerHTML: 'Reset',
+                    styles: buttonStyles, className: 'e-dropdown-btn e-btn' }),
+                align: 'Right' });
+            if (this.rootControl.exportType.indexOf('Print') > -1) {
+                selector.push({ template: createElement('button', { id: controlId + '_print', innerHTML: 'Print', styles: buttonStyles,
+                        className: 'e-dropdown-btn e-btn' }),
+                    align: 'Right' });
+            }
+            if (this.rootControl.exportType.length) {
+                selector.push({ template: createElement('button', { id: controlId + '_export', innerHTML: 'Export', styles: buttonStyles,
+                        className: 'e-dropdown-btn e-btn' }),
+                    align: 'Right' });
+            }
+        }
+        this.rootControl.trigger('selectorRender', selctorArgs);
+        this.toolbar = new Toolbar({
+            items: selctorArgs.selector, height: this.periodSelectorSize.height,
+            clicked: function (args) {
+                _this.buttonClick(args, _this.control);
+            }, created: function () {
+                _this.nodes = _this.toolbar.element.querySelectorAll('.e-toolbar-left')[0];
+                if (isNullOrUndefined(_this.selectedIndex)) {
+                    buttons.map(function (period, index) {
+                        if (period.selected) {
+                            _this.control.startValue = _this.changedRange(period.intervalType, _this.control.endValue, period.interval).getTime();
+                            _this.selectedIndex = (_this.nodes.childNodes.length - buttons.length) + index;
+                        }
+                    });
+                }
+                _this.setSelectedStyle(_this.selectedIndex);
+            }
+        });
+        var isStringTemplate = 'isStringTemplate';
+        this.toolbar[isStringTemplate] = true;
+        this.toolbar.appendTo(selectorElement);
+        this.triggerChange = true;
+        if (enableCustom) {
+            this.datePicker = new DateRangePicker({
+                min: new Date(this.control.seriesXMin),
+                max: new Date(this.control.seriesXMax),
+                format: 'dd\'\/\'MM\'\/\'yyyy', placeholder: 'Select a range',
+                showClearButton: false, startDate: new Date(this.control.startValue),
+                endDate: new Date(this.control.endValue),
+                created: function (args) {
+                    if (selctorArgs.enableCustomFormat) {
+                        var datePickerElement = document.getElementsByClassName('e-date-range-wrapper')[0];
+                        datePickerElement.style.display = 'none';
+                        datePickerElement.insertAdjacentElement('afterend', createElement('div', {
+                            id: 'customRange',
+                            innerHTML: selctorArgs.content, className: 'e-btn e-dropdown-btn',
+                            styles: 'font-family: "Segoe UI"; font-size: 14px; font-weight: 500; text-transform: none '
+                        }));
+                        getElement$1('customRange').insertAdjacentElement('afterbegin', (createElement('span', {
+                            id: 'dateIcon', className: 'e-input-group-icon e-range-icon e-btn-icon e-icons',
+                            styles: 'font-size: 16px; min-height: 0px; margin: -3px 0 0 0; outline: none; min-width: 30px'
+                            // fix for date range icon alignment issue.
+                        })));
+                        document.getElementById('customRange').onclick = function () {
+                            _this.datePicker.show(getElement$1('customRange'));
+                        };
+                    }
+                },
+                change: function (args) {
+                    if (_this.triggerChange) {
+                        if (_this.control.rangeSlider && args.event) {
+                            _this.control.rangeSlider.performAnimation(args.startDate.getTime(), args.endDate.getTime(), _this.control.rangeNavigatorControl);
+                        }
+                        else if (args.event) {
+                            _this.rootControl.rangeChanged(args.startDate.getTime(), args.endDate.getTime());
+                        }
+                        _this.nodes = _this.toolbar.element.querySelectorAll('.e-toolbar-left')[0];
+                        if (!_this.rootControl.resizeTo && _this.control.rangeSlider && _this.control.rangeSlider.isDrag) {
+                            /**
+                             * Issue: While disabling range navigator console error throws
+                             * Fix:Check with rangeSlider present or not. Then checked with isDrag.
+                             */
+                            for (var i = 0, length_1 = _this.nodes.childNodes.length; i < length_1; i++) {
+                                _this.nodes.childNodes[i].childNodes[0].classList.remove('e-active');
+                                _this.nodes.childNodes[i].childNodes[0].classList.remove('e-active');
+                            }
+                        }
+                    }
+                }
+            });
+            this.datePicker.appendTo('#' + this.calendarId);
+        }
+    };
+    PeriodSelector.prototype.updateCustomElement = function () {
+        var selector = [];
+        var controlId = this.rootControl.element.id;
+        var buttonStyles = 'text-transform: none; text-overflow: unset';
+        if (this.rootControl.getModuleName() === 'stockChart') {
+            if (this.rootControl.seriesType.length) {
+                selector.push({ template: createElement('button', { id: controlId + '_seriesType', innerHTML: 'Series',
+                        styles: buttonStyles }),
+                    align: 'Left' });
+            }
+            if (this.rootControl.indicatorType.length) {
+                selector.push({ template: createElement('button', { id: controlId + '_indicatorType', innerHTML: 'Indicators',
+                        styles: buttonStyles }),
+                    align: 'Left' });
+            }
+            if (this.rootControl.trendlineType.length) {
+                selector.push({ template: createElement('button', { id: controlId + '_trendType', innerHTML: 'Trendline',
+                        styles: buttonStyles }),
+                    align: 'Left' });
+            }
+        }
+        return selector;
+    };
+    /**
+     * To set and deselect the acrive style
+     * @param buttons
+     */
+    PeriodSelector.prototype.setSelectedStyle = function (selectedIndex) {
+        if (this.control.disableRangeSelector || this.rootControl.getModuleName() === 'stockChart') {
+            for (var i = 0, length_2 = this.nodes.childNodes.length; i < length_2; i++) {
+                this.nodes.childNodes[i].childNodes[0].classList.remove('e-active');
+                this.nodes.childNodes[i].childNodes[0].classList.remove('e-active');
+            }
+            this.nodes.childNodes[selectedIndex].childNodes[0].classList.add('e-flat');
+            this.nodes.childNodes[selectedIndex].childNodes[0].classList.add('e-active');
+        }
+    };
+    /**
+     * Button click handling
+     */
+    PeriodSelector.prototype.buttonClick = function (args, control) {
+        var _this = this;
+        var toolBarItems = this.toolbar.items;
+        var clickedEle = args.item;
+        var slider = this.control.rangeSlider;
+        var updatedStart;
+        var updatedEnd;
+        var buttons = this.control.periods;
+        var button = buttons.filter(function (btn) { return (btn.text === clickedEle.text); });
+        buttons.map(function (period, index) {
+            if (period.text === args.item.text) {
+                _this.selectedIndex = (_this.nodes.childNodes.length - buttons.length) + index;
+            }
+        });
+        if (args.item.text !== '') {
+            this.setSelectedStyle(this.selectedIndex);
+        }
+        if (clickedEle.text.toLowerCase() === 'all') {
+            updatedStart = control.seriesXMin;
+            updatedEnd = control.seriesXMax;
+            if (slider) {
+                slider.performAnimation(updatedStart, updatedEnd, this.control.rangeNavigatorControl);
+            }
+            else {
+                this.rootControl.rangeChanged(updatedStart, updatedEnd);
+            }
+        }
+        else if (clickedEle.text.toLowerCase() === 'ytd') {
+            if (slider) {
+                updatedStart = new Date(new Date(slider.currentEnd).getFullYear().toString()).getTime();
+                updatedEnd = slider.currentEnd;
+                slider.performAnimation(updatedStart, updatedEnd, this.control.rangeNavigatorControl);
+            }
+            else {
+                updatedStart = new Date(new Date(this.rootControl.currentEnd).getFullYear().toString()).getTime();
+                updatedEnd = this.rootControl.currentEnd;
+                this.rootControl.rangeChanged(updatedStart, updatedEnd);
+            }
+        }
+        else if (clickedEle.text.toLowerCase() !== '') {
+            if (slider) {
+                updatedStart = this.changedRange(button[0].intervalType, slider.currentEnd, button[0].interval).getTime();
+                updatedEnd = slider.currentEnd;
+                slider.performAnimation(updatedStart, updatedEnd, this.control.rangeNavigatorControl);
+            }
+            else {
+                updatedStart = this.changedRange(button[0].intervalType, this.rootControl.currentEnd, button[0].interval).getTime();
+                updatedEnd = this.rootControl.currentEnd;
+                this.rootControl.rangeChanged(updatedStart, updatedEnd);
+            }
+        }
+        if (this.rootControl.getModuleName() === 'stockChart') {
+            this.rootControl.zoomChange = false;
+        }
+        if (getElement$1(this.calendarId + '_popup') && !Browser.isDevice) {
+            var element = getElement$1(this.calendarId + '_popup');
+            element.querySelectorAll('.e-range-header')[0].style.display = 'none';
+        }
+    };
+    /**
+     *
+     * @param type updatedRange for selector
+     * @param end
+     * @param interval
+     */
+    PeriodSelector.prototype.changedRange = function (type, end, interval) {
+        var result = new Date(end);
+        switch (type) {
+            case 'Quarter':
+                result.setMonth(result.getMonth() - (3 * interval));
+                break;
+            case 'Months':
+                result.setMonth(result.getMonth() - interval);
+                break;
+            case 'Weeks':
+                result.setDate(result.getDate() - (interval * 7));
+                break;
+            case 'Days':
+                result.setDate(result.getDate() - interval);
+                break;
+            case 'Hours':
+                result.setHours(result.getHours() - interval);
+                break;
+            case 'Minutes':
+                result.setMinutes(result.getMinutes() - interval);
+                break;
+            case 'Seconds':
+                result.setSeconds(result.getSeconds() - interval);
+                break;
+            default:
+                result.setFullYear(result.getFullYear() - interval);
+                break;
+        }
+        return result;
+    };
+    
+    /**
+     * Get module name
+     */
+    PeriodSelector.prototype.getModuleName = function () {
+        return 'PeriodSelector';
+    };
+    /**
+     * To destroy the period selector.
+     * @return {void}
+     * @private
+     */
+    PeriodSelector.prototype.destroy = function () {
+        /**
+         * destroy method
+         */
+    };
+    return PeriodSelector;
+}());
+
 var __extends$73 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -32527,6 +33222,9 @@ var RangeNavigator = /** @__PURE__ @class */ (function (_super) {
         var isLeightWeight = !this.series.length;
         var tooltipSpace = (!this.disableRangeSelector) &&
             isLeightWeight && this.tooltip.enable ? 35 : 0;
+        if (this.isBlazor && !this.periodSelectorModule && this.periodSelectorSettings.periods.length && !this.stockChart) {
+            this.periodSelectorModule = new PeriodSelector(this);
+        }
         var selector = this.periodSelectorModule;
         if (this.periodSelectorModule && this.periodSelectorSettings.periods.length > 0) {
             selector.periodSelectorSize = { x: 0, y: 0, height: 0, width: 0 };
@@ -33094,542 +33792,6 @@ var RangeNavigator = /** @__PURE__ @class */ (function (_super) {
     ], RangeNavigator);
     return RangeNavigator;
 }(Component));
-
-/**
- * `Tooltip` module is used to render the tooltip for chart series.
- */
-var RangeTooltip = /** @__PURE__ @class */ (function () {
-    /**
-     * Constructor for tooltip module.
-     * @private.
-     */
-    function RangeTooltip(range) {
-        this.control = range;
-        this.elementId = range.element.id;
-    }
-    /**
-     * Left tooltip method called here
-     * @param rangeSlider
-     */
-    RangeTooltip.prototype.renderLeftTooltip = function (rangeSlider) {
-        this.fadeOutTooltip();
-        var content = this.getTooltipContent(rangeSlider.currentStart);
-        var contentWidth = this.getContentSize(content);
-        var rect = this.control.enableRtl ? rangeSlider.rightRect : rangeSlider.leftRect;
-        if (contentWidth > rect.width) {
-            rect = rangeSlider.midRect;
-        }
-        this.leftTooltip = this.renderTooltip(rect, this.createElement('_leftTooltip'), rangeSlider.startX, content);
-    };
-    /**
-     * get the content size
-     * @param value
-     */
-    RangeTooltip.prototype.getContentSize = function (value) {
-        var width;
-        var font = this.control.tooltip.textStyle;
-        if (this.control.tooltip.template) {
-            width = createTemplate(createElement('div', {
-                id: 'measureElement',
-                styles: 'position: absolute;'
-            }), 0, this.control.tooltip.template, this.control).getBoundingClientRect().width;
-        }
-        else {
-            // 20 for tooltip padding
-            width = measureText(value[0], font).width + 20;
-        }
-        return width;
-    };
-    /**
-     * Right tooltip method called here
-     * @param rangeSlider
-     */
-    RangeTooltip.prototype.renderRightTooltip = function (rangeSlider) {
-        this.fadeOutTooltip();
-        var content = this.getTooltipContent(rangeSlider.currentEnd);
-        var contentWidth = this.getContentSize(content);
-        var rect = this.control.enableRtl ? rangeSlider.leftRect : rangeSlider.rightRect;
-        if (contentWidth > rect.width) {
-            rect = rangeSlider.midRect;
-            rect.x = !this.control.series.length ? rect.x : 0;
-        }
-        this.rightTooltip = this.renderTooltip(rect, this.createElement('_rightTooltip'), rangeSlider.endX, content);
-    };
-    /**
-     * Tooltip element creation
-     * @param id
-     */
-    RangeTooltip.prototype.createElement = function (id) {
-        if (getElement$1(this.elementId + id)) {
-            return getElement$1(this.elementId + id);
-        }
-        else {
-            var element = document.createElement('div');
-            element.id = this.elementId + id;
-            element.className = 'ejSVGTooltip';
-            element.setAttribute('style', 'pointer-events:none; position:absolute;z-index: 1');
-            if (!this.control.stockChart) {
-                getElement$1(this.elementId + '_Secondary_Element').appendChild(element);
-            }
-            else {
-                var stockChart = this.control.stockChart;
-                getElement$1(stockChart.element.id + '_Secondary_Element').appendChild(element);
-                element.style.transform = 'translateY(' + (((stockChart.availableSize.height - stockChart.toolbarHeight - 80) +
-                    stockChart.toolbarHeight) + stockChart.titleSize.height) + 'px)';
-            }
-            return element;
-        }
-    };
-    /**
-     * Tooltip render called here
-     * @param bounds
-     * @param parent
-     * @param pointX
-     * @param value
-     */
-    RangeTooltip.prototype.renderTooltip = function (bounds, parent, pointX, content) {
-        var control = this.control;
-        var tooltip = control.tooltip;
-        var argsData = {
-            cancel: false, name: 'tooltipRender', text: content,
-            textStyle: tooltip.textStyle
-        };
-        this.control.trigger('tooltipRender', argsData);
-        var left = control.svgObject.getBoundingClientRect().left -
-            control.element.getBoundingClientRect().left;
-        if (!argsData.cancel) {
-            return new Tooltip({
-                location: { x: pointX, y: control.rangeSlider.sliderY },
-                content: argsData.text, marginX: 2,
-                enableShadow: false,
-                marginY: 2, arrowPadding: 8, rx: 0, ry: 0,
-                inverted: control.series.length > 0,
-                areaBounds: bounds, fill: tooltip.fill,
-                theme: this.control.theme,
-                //enableShadow: false,
-                clipBounds: { x: left },
-                border: tooltip.border, opacity: tooltip.opacity,
-                template: tooltip.template,
-                textStyle: argsData.textStyle,
-                availableSize: control.availableSize,
-                data: {
-                    'start': this.getTooltipContent(this.control.startValue)[0],
-                    'end': this.getTooltipContent(this.control.endValue)[0],
-                    'value': content[0]
-                }
-            }, parent);
-        }
-        else {
-            return null;
-        }
-    };
-    /**
-     * Tooltip content processed here
-     * @param value
-     */
-    RangeTooltip.prototype.getTooltipContent = function (value) {
-        var control = this.control;
-        var tooltip = control.tooltip;
-        var xAxis = control.chartSeries.xAxis;
-        var text;
-        var format = tooltip.format || xAxis.labelFormat;
-        var isCustom = format.match('{value}') !== null;
-        var valueType = xAxis.valueType;
-        if (valueType === 'DateTime') {
-            text = (control.intl.getDateFormat({
-                format: format || 'MM/dd/yyyy',
-                type: firstToLowerCase(control.skeletonType),
-                skeleton: control.dateTimeModule.getSkeleton(xAxis, null, null, control.isBlazor)
-            }))(new Date(value));
-        }
-        else {
-            xAxis.format = control.intl.getNumberFormat({
-                format: isCustom ? '' : format,
-                useGrouping: control.useGroupingSeparator
-            });
-            text = control.doubleModule.formatValue(xAxis, isCustom, format, valueType === 'Logarithmic' ? Math.pow(xAxis.logBase, value) : value);
-        }
-        return [text];
-    };
-    /**
-     * Fadeout animation performed here
-     */
-    RangeTooltip.prototype.fadeOutTooltip = function () {
-        var _this = this;
-        var tooltip = this.control.tooltip;
-        if (tooltip.displayMode === 'OnDemand') {
-            stopTimer(this.toolTipInterval);
-            if (this.rightTooltip) {
-                this.toolTipInterval = setTimeout(function () {
-                    _this.leftTooltip.fadeOut();
-                    _this.rightTooltip.fadeOut();
-                }, 1000);
-            }
-        }
-    };
-    /**
-     * Get module name.
-     */
-    RangeTooltip.prototype.getModuleName = function () {
-        return 'RangeTooltip';
-    };
-    /**
-     * To destroy the tooltip.
-     * @return {void}
-     * @private
-     */
-    RangeTooltip.prototype.destroy = function (chart) {
-        // Destroy method called here
-    };
-    return RangeTooltip;
-}());
-
-/**
- * Range Navigator component export methods
- */
-
-/**
- * Period selector class
- */
-var PeriodSelector = /** @__PURE__ @class */ (function () {
-    //constructor for period selector
-    function PeriodSelector(control) {
-        this.control = {};
-        this.rootControl = control;
-    }
-    /**
-     * To set the control values
-     * @param control
-     */
-    PeriodSelector.prototype.setControlValues = function (control) {
-        if (control.getModuleName() === 'rangeNavigator') {
-            this.control.periods = this.rootControl.periodSelectorSettings.periods;
-            this.control.seriesXMax = control.chartSeries.xMax;
-            this.control.seriesXMin = control.chartSeries.xMin;
-            this.control.rangeSlider = control.rangeSlider;
-            this.control.rangeNavigatorControl = control;
-            this.control.endValue = control.endValue;
-            this.control.startValue = control.startValue;
-        }
-        else {
-            this.control.periods = this.rootControl.periods;
-            this.control.endValue = this.control.seriesXMax = control.seriesXMax;
-            this.control.startValue = this.control.seriesXMin = control.seriesXMin;
-            this.control.rangeNavigatorControl = this.rootControl.rangeNavigator;
-            if (this.control.rangeNavigatorControl) {
-                this.control.rangeSlider = this.rootControl.rangeNavigator.rangeSlider;
-            }
-        }
-        this.control.element = control.element;
-        this.control.disableRangeSelector = control.disableRangeSelector;
-    };
-    /**
-     *  To initialize the period selector properties
-     */
-    PeriodSelector.prototype.appendSelector = function (options, x) {
-        if (x === void 0) { x = 0; }
-        this.renderSelectorElement(null, options, x);
-        this.renderSelector();
-    };
-    /**
-     * renderSelector div
-     * @param control
-     */
-    PeriodSelector.prototype.renderSelectorElement = function (control, options, x) {
-        //render border
-        this.periodSelectorSize = control ? this.periodSelectorSize : new Rect(x, this.rootControl.titleSize.height, options.width, options.height);
-        var thumbSize;
-        var element;
-        if (control) {
-            thumbSize = control.themeStyle.thumbWidth;
-            element = control.element;
-        }
-        else {
-            thumbSize = options.thumbSize;
-            element = options.element;
-        }
-        if (getElement$1(element.id + '_Secondary_Element')) {
-            remove(getElement$1(element.id + '_Secondary_Element'));
-        }
-        this.periodSelectorDiv = createElement('div', {
-            id: element.id + '_Secondary_Element',
-            styles: 'width: ' + (this.periodSelectorSize.width - thumbSize) + 'px;height: ' +
-                this.periodSelectorSize.height + 'px;top:' +
-                this.periodSelectorSize.y + 'px;left:' +
-                (this.periodSelectorSize.x + thumbSize / 2) + 'px; position: absolute'
-        });
-        element.appendChild(this.periodSelectorDiv);
-    };
-    /**
-     * renderSelector elements
-     */
-    // tslint:disable-next-line:max-func-body-length
-    PeriodSelector.prototype.renderSelector = function () {
-        var _this = this;
-        this.setControlValues(this.rootControl);
-        var enableCustom = true;
-        var controlId = this.control.element.id;
-        var selectorElement = createElement('div', { id: controlId + '_selector' });
-        this.periodSelectorDiv.appendChild(selectorElement);
-        var buttons = this.control.periods;
-        var selector = this.updateCustomElement();
-        var buttonStyles = 'text-transform: none; text-overflow: unset';
-        for (var i = 0; i < buttons.length; i++) {
-            selector.push({ align: 'Left', text: buttons[i].text });
-        }
-        if (this.rootControl.getModuleName() === 'stockChart') {
-            enableCustom = this.rootControl.enableCustomRange;
-        }
-        var selctorArgs;
-        if (enableCustom) {
-            this.calendarId = controlId + '_calendar';
-            selector.push({ template: '<button id=' + this.calendarId + '></button>', align: 'Right' });
-        }
-        selctorArgs = {
-            selector: selector, name: 'RangeSelector', cancel: false, enableCustomFormat: true, content: 'Date Range'
-        };
-        if (this.rootControl.getModuleName() === 'stockChart') {
-            selector.push({ template: createElement('button', { id: controlId + '_reset', innerHTML: 'Reset',
-                    styles: buttonStyles, className: 'e-dropdown-btn e-btn' }),
-                align: 'Right' });
-            if (this.rootControl.exportType.indexOf('Print') > -1) {
-                selector.push({ template: createElement('button', { id: controlId + '_print', innerHTML: 'Print', styles: buttonStyles,
-                        className: 'e-dropdown-btn e-btn' }),
-                    align: 'Right' });
-            }
-            if (this.rootControl.exportType.length) {
-                selector.push({ template: createElement('button', { id: controlId + '_export', innerHTML: 'Export', styles: buttonStyles,
-                        className: 'e-dropdown-btn e-btn' }),
-                    align: 'Right' });
-            }
-        }
-        this.rootControl.trigger('selectorRender', selctorArgs);
-        this.toolbar = new Toolbar({
-            items: selctorArgs.selector, height: this.periodSelectorSize.height,
-            clicked: function (args) {
-                _this.buttonClick(args, _this.control);
-            }, created: function () {
-                _this.nodes = _this.toolbar.element.querySelectorAll('.e-toolbar-left')[0];
-                if (isNullOrUndefined(_this.selectedIndex)) {
-                    buttons.map(function (period, index) {
-                        if (period.selected) {
-                            _this.control.startValue = _this.changedRange(period.intervalType, _this.control.endValue, period.interval).getTime();
-                            _this.selectedIndex = (_this.nodes.childNodes.length - buttons.length) + index;
-                        }
-                    });
-                }
-                _this.setSelectedStyle(_this.selectedIndex);
-            }
-        });
-        var isStringTemplate = 'isStringTemplate';
-        this.toolbar[isStringTemplate] = true;
-        this.toolbar.appendTo(selectorElement);
-        this.triggerChange = true;
-        if (enableCustom) {
-            this.datePicker = new DateRangePicker({
-                min: new Date(this.control.seriesXMin),
-                max: new Date(this.control.seriesXMax),
-                format: 'dd\'\/\'MM\'\/\'yyyy', placeholder: 'Select a range',
-                showClearButton: false, startDate: new Date(this.control.startValue),
-                endDate: new Date(this.control.endValue),
-                created: function (args) {
-                    if (selctorArgs.enableCustomFormat) {
-                        var datePickerElement = document.getElementsByClassName('e-date-range-wrapper')[0];
-                        datePickerElement.style.display = 'none';
-                        datePickerElement.insertAdjacentElement('afterend', createElement('div', {
-                            id: 'customRange',
-                            innerHTML: selctorArgs.content, className: 'e-btn e-dropdown-btn',
-                            styles: 'font-family: "Segoe UI"; font-size: 14px; font-weight: 500; text-transform: none '
-                        }));
-                        getElement$1('customRange').insertAdjacentElement('afterbegin', (createElement('span', {
-                            id: 'dateIcon', className: 'e-input-group-icon e-range-icon e-btn-icon e-icons',
-                            styles: 'font-size: 16px; min-height: 0px; margin: -3px 0 0 0; outline: none; min-width: 30px'
-                            // fix for date range icon alignment issue.
-                        })));
-                        document.getElementById('customRange').onclick = function () {
-                            _this.datePicker.show(getElement$1('customRange'));
-                        };
-                    }
-                },
-                change: function (args) {
-                    if (_this.triggerChange) {
-                        if (_this.control.rangeSlider && args.event) {
-                            _this.control.rangeSlider.performAnimation(args.startDate.getTime(), args.endDate.getTime(), _this.control.rangeNavigatorControl);
-                        }
-                        else if (args.event) {
-                            _this.rootControl.rangeChanged(args.startDate.getTime(), args.endDate.getTime());
-                        }
-                        _this.nodes = _this.toolbar.element.querySelectorAll('.e-toolbar-left')[0];
-                        if (!_this.rootControl.resizeTo && _this.control.rangeSlider && _this.control.rangeSlider.isDrag) {
-                            /**
-                             * Issue: While disabling range navigator console error throws
-                             * Fix:Check with rangeSlider present or not. Then checked with isDrag.
-                             */
-                            for (var i = 0, length_1 = _this.nodes.childNodes.length; i < length_1; i++) {
-                                _this.nodes.childNodes[i].childNodes[0].classList.remove('e-active');
-                                _this.nodes.childNodes[i].childNodes[0].classList.remove('e-active');
-                            }
-                        }
-                    }
-                }
-            });
-            this.datePicker.appendTo('#' + this.calendarId);
-        }
-    };
-    PeriodSelector.prototype.updateCustomElement = function () {
-        var selector = [];
-        var controlId = this.rootControl.element.id;
-        var buttonStyles = 'text-transform: none; text-overflow: unset';
-        if (this.rootControl.getModuleName() === 'stockChart') {
-            if (this.rootControl.seriesType.length) {
-                selector.push({ template: createElement('button', { id: controlId + '_seriesType', innerHTML: 'Series',
-                        styles: buttonStyles }),
-                    align: 'Left' });
-            }
-            if (this.rootControl.indicatorType.length) {
-                selector.push({ template: createElement('button', { id: controlId + '_indicatorType', innerHTML: 'Indicators',
-                        styles: buttonStyles }),
-                    align: 'Left' });
-            }
-            if (this.rootControl.trendlineType.length) {
-                selector.push({ template: createElement('button', { id: controlId + '_trendType', innerHTML: 'Trendline',
-                        styles: buttonStyles }),
-                    align: 'Left' });
-            }
-        }
-        return selector;
-    };
-    /**
-     * To set and deselect the acrive style
-     * @param buttons
-     */
-    PeriodSelector.prototype.setSelectedStyle = function (selectedIndex) {
-        if (this.control.disableRangeSelector || this.rootControl.getModuleName() === 'stockChart') {
-            for (var i = 0, length_2 = this.nodes.childNodes.length; i < length_2; i++) {
-                this.nodes.childNodes[i].childNodes[0].classList.remove('e-active');
-                this.nodes.childNodes[i].childNodes[0].classList.remove('e-active');
-            }
-            this.nodes.childNodes[selectedIndex].childNodes[0].classList.add('e-flat');
-            this.nodes.childNodes[selectedIndex].childNodes[0].classList.add('e-active');
-        }
-    };
-    /**
-     * Button click handling
-     */
-    PeriodSelector.prototype.buttonClick = function (args, control) {
-        var _this = this;
-        var toolBarItems = this.toolbar.items;
-        var clickedEle = args.item;
-        var slider = this.control.rangeSlider;
-        var updatedStart;
-        var updatedEnd;
-        var buttons = this.control.periods;
-        var button = buttons.filter(function (btn) { return (btn.text === clickedEle.text); });
-        buttons.map(function (period, index) {
-            if (period.text === args.item.text) {
-                _this.selectedIndex = (_this.nodes.childNodes.length - buttons.length) + index;
-            }
-        });
-        if (args.item.text !== '') {
-            this.setSelectedStyle(this.selectedIndex);
-        }
-        if (clickedEle.text.toLowerCase() === 'all') {
-            updatedStart = control.seriesXMin;
-            updatedEnd = control.seriesXMax;
-            if (slider) {
-                slider.performAnimation(updatedStart, updatedEnd, this.control.rangeNavigatorControl);
-            }
-            else {
-                this.rootControl.rangeChanged(updatedStart, updatedEnd);
-            }
-        }
-        else if (clickedEle.text.toLowerCase() === 'ytd') {
-            if (slider) {
-                updatedStart = new Date(new Date(slider.currentEnd).getFullYear().toString()).getTime();
-                updatedEnd = slider.currentEnd;
-                slider.performAnimation(updatedStart, updatedEnd, this.control.rangeNavigatorControl);
-            }
-            else {
-                updatedStart = new Date(new Date(this.rootControl.currentEnd).getFullYear().toString()).getTime();
-                updatedEnd = this.rootControl.currentEnd;
-                this.rootControl.rangeChanged(updatedStart, updatedEnd);
-            }
-        }
-        else if (clickedEle.text.toLowerCase() !== '') {
-            if (slider) {
-                updatedStart = this.changedRange(button[0].intervalType, slider.currentEnd, button[0].interval).getTime();
-                updatedEnd = slider.currentEnd;
-                slider.performAnimation(updatedStart, updatedEnd, this.control.rangeNavigatorControl);
-            }
-            else {
-                updatedStart = this.changedRange(button[0].intervalType, this.rootControl.currentEnd, button[0].interval).getTime();
-                updatedEnd = this.rootControl.currentEnd;
-                this.rootControl.rangeChanged(updatedStart, updatedEnd);
-            }
-        }
-        if (this.rootControl.getModuleName() === 'stockChart') {
-            this.rootControl.zoomChange = false;
-        }
-        if (getElement$1(this.calendarId + '_popup') && !Browser.isDevice) {
-            var element = getElement$1(this.calendarId + '_popup');
-            element.querySelectorAll('.e-range-header')[0].style.display = 'none';
-        }
-    };
-    /**
-     *
-     * @param type updatedRange for selector
-     * @param end
-     * @param interval
-     */
-    PeriodSelector.prototype.changedRange = function (type, end, interval) {
-        var result = new Date(end);
-        switch (type) {
-            case 'Quarter':
-                result.setMonth(result.getMonth() - (3 * interval));
-                break;
-            case 'Months':
-                result.setMonth(result.getMonth() - interval);
-                break;
-            case 'Weeks':
-                result.setDate(result.getDate() - (interval * 7));
-                break;
-            case 'Days':
-                result.setDate(result.getDate() - interval);
-                break;
-            case 'Hours':
-                result.setHours(result.getHours() - interval);
-                break;
-            case 'Minutes':
-                result.setMinutes(result.getMinutes() - interval);
-                break;
-            case 'Seconds':
-                result.setSeconds(result.getSeconds() - interval);
-                break;
-            default:
-                result.setFullYear(result.getFullYear() - interval);
-                break;
-        }
-        return result;
-    };
-    
-    /**
-     * Get module name
-     */
-    PeriodSelector.prototype.getModuleName = function () {
-        return 'PeriodSelector';
-    };
-    /**
-     * To destroy the period selector.
-     * @return {void}
-     * @private
-     */
-    PeriodSelector.prototype.destroy = function () {
-        /**
-         * destroy method
-         */
-    };
-    return PeriodSelector;
-}());
 
 /**
  * Cartesian chart renderer for financial chart
@@ -35276,7 +35438,7 @@ var StockEvents = /** @__PURE__ @class */ (function (_super) {
         }
     };
     StockEvents.prototype.renderStockEventTooltip = function (targetId) {
-        var seriesIndex = parseInt(targetId.split('_StockEvents_')[0].replace(/\D+/g, ''), 10);
+        var seriesIndex = parseInt((targetId.split('_StockEvents_')[0]).split(this.chartId + '_Series_')[1], 10);
         var pointIndex = parseInt(targetId.split('_StockEvents_')[1].replace(/\D+/g, ''), 10);
         var updatedLocation = this.symbolLocations[seriesIndex][pointIndex];
         var pointLocation = new ChartLocation(updatedLocation.x, updatedLocation.y + this.stockChart.toolbarHeight + this.stockChart.titleSize.height);
@@ -36224,6 +36386,199 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
 
 /**
  * Chart and accumulation common files
+ */
+
+/**
+ * `Tooltip` module is used to render the tooltip for chart series.
+ */
+var RangeTooltip = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for tooltip module.
+     * @private.
+     */
+    function RangeTooltip(range) {
+        this.control = range;
+        this.elementId = range.element.id;
+    }
+    /**
+     * Left tooltip method called here
+     * @param rangeSlider
+     */
+    RangeTooltip.prototype.renderLeftTooltip = function (rangeSlider) {
+        this.fadeOutTooltip();
+        var content = this.getTooltipContent(rangeSlider.currentStart);
+        var contentWidth = this.getContentSize(content);
+        var rect = this.control.enableRtl ? rangeSlider.rightRect : rangeSlider.leftRect;
+        if (contentWidth > rect.width) {
+            rect = rangeSlider.midRect;
+        }
+        this.leftTooltip = this.renderTooltip(rect, this.createElement('_leftTooltip'), rangeSlider.startX, content);
+    };
+    /**
+     * get the content size
+     * @param value
+     */
+    RangeTooltip.prototype.getContentSize = function (value) {
+        var width;
+        var font = this.control.tooltip.textStyle;
+        if (this.control.tooltip.template) {
+            width = createTemplate(createElement('div', {
+                id: 'measureElement',
+                styles: 'position: absolute;'
+            }), 0, this.control.tooltip.template, this.control).getBoundingClientRect().width;
+        }
+        else {
+            // 20 for tooltip padding
+            width = measureText(value[0], font).width + 20;
+        }
+        return width;
+    };
+    /**
+     * Right tooltip method called here
+     * @param rangeSlider
+     */
+    RangeTooltip.prototype.renderRightTooltip = function (rangeSlider) {
+        this.fadeOutTooltip();
+        var content = this.getTooltipContent(rangeSlider.currentEnd);
+        var contentWidth = this.getContentSize(content);
+        var rect = this.control.enableRtl ? rangeSlider.leftRect : rangeSlider.rightRect;
+        if (contentWidth > rect.width) {
+            rect = rangeSlider.midRect;
+            rect.x = !this.control.series.length ? rect.x : 0;
+        }
+        this.rightTooltip = this.renderTooltip(rect, this.createElement('_rightTooltip'), rangeSlider.endX, content);
+    };
+    /**
+     * Tooltip element creation
+     * @param id
+     */
+    RangeTooltip.prototype.createElement = function (id) {
+        if (getElement$1(this.elementId + id)) {
+            return getElement$1(this.elementId + id);
+        }
+        else {
+            var element = document.createElement('div');
+            element.id = this.elementId + id;
+            element.className = 'ejSVGTooltip';
+            element.setAttribute('style', 'pointer-events:none; position:absolute;z-index: 1');
+            if (!this.control.stockChart) {
+                getElement$1(this.elementId + '_Secondary_Element').appendChild(element);
+            }
+            else {
+                var stockChart = this.control.stockChart;
+                getElement$1(stockChart.element.id + '_Secondary_Element').appendChild(element);
+                element.style.transform = 'translateY(' + (((stockChart.availableSize.height - stockChart.toolbarHeight - 80) +
+                    stockChart.toolbarHeight) + stockChart.titleSize.height) + 'px)';
+            }
+            return element;
+        }
+    };
+    /**
+     * Tooltip render called here
+     * @param bounds
+     * @param parent
+     * @param pointX
+     * @param value
+     */
+    RangeTooltip.prototype.renderTooltip = function (bounds, parent, pointX, content) {
+        var control = this.control;
+        var tooltip = control.tooltip;
+        var argsData = {
+            cancel: false, name: 'tooltipRender', text: content,
+            textStyle: tooltip.textStyle
+        };
+        this.control.trigger('tooltipRender', argsData);
+        var left = control.svgObject.getBoundingClientRect().left -
+            control.element.getBoundingClientRect().left;
+        if (!argsData.cancel) {
+            return new Tooltip({
+                location: { x: pointX, y: control.rangeSlider.sliderY },
+                content: argsData.text, marginX: 2,
+                enableShadow: false,
+                marginY: 2, arrowPadding: 8, rx: 0, ry: 0,
+                inverted: control.series.length > 0,
+                areaBounds: bounds, fill: tooltip.fill,
+                theme: this.control.theme,
+                //enableShadow: false,
+                clipBounds: { x: left },
+                border: tooltip.border, opacity: tooltip.opacity,
+                template: tooltip.template,
+                textStyle: argsData.textStyle,
+                availableSize: control.availableSize,
+                data: {
+                    'start': this.getTooltipContent(this.control.startValue)[0],
+                    'end': this.getTooltipContent(this.control.endValue)[0],
+                    'value': content[0]
+                }
+            }, parent);
+        }
+        else {
+            return null;
+        }
+    };
+    /**
+     * Tooltip content processed here
+     * @param value
+     */
+    RangeTooltip.prototype.getTooltipContent = function (value) {
+        var control = this.control;
+        var tooltip = control.tooltip;
+        var xAxis = control.chartSeries.xAxis;
+        var text;
+        var format = tooltip.format || xAxis.labelFormat;
+        var isCustom = format.match('{value}') !== null;
+        var valueType = xAxis.valueType;
+        if (valueType === 'DateTime') {
+            text = (control.intl.getDateFormat({
+                format: format || 'MM/dd/yyyy',
+                type: firstToLowerCase(control.skeletonType),
+                skeleton: control.dateTimeModule.getSkeleton(xAxis, null, null, control.isBlazor)
+            }))(new Date(value));
+        }
+        else {
+            xAxis.format = control.intl.getNumberFormat({
+                format: isCustom ? '' : format,
+                useGrouping: control.useGroupingSeparator
+            });
+            text = control.doubleModule.formatValue(xAxis, isCustom, format, valueType === 'Logarithmic' ? Math.pow(xAxis.logBase, value) : value);
+        }
+        return [text];
+    };
+    /**
+     * Fadeout animation performed here
+     */
+    RangeTooltip.prototype.fadeOutTooltip = function () {
+        var _this = this;
+        var tooltip = this.control.tooltip;
+        if (tooltip.displayMode === 'OnDemand') {
+            stopTimer(this.toolTipInterval);
+            if (this.rightTooltip) {
+                this.toolTipInterval = setTimeout(function () {
+                    _this.leftTooltip.fadeOut();
+                    _this.rightTooltip.fadeOut();
+                }, 1000);
+            }
+        }
+    };
+    /**
+     * Get module name.
+     */
+    RangeTooltip.prototype.getModuleName = function () {
+        return 'RangeTooltip';
+    };
+    /**
+     * To destroy the tooltip.
+     * @return {void}
+     * @private
+     */
+    RangeTooltip.prototype.destroy = function (chart) {
+        // Destroy method called here
+    };
+    return RangeTooltip;
+}());
+
+/**
+ * Range Navigator component export methods
  */
 
 /**
@@ -45604,5 +45959,5 @@ var SparklineTooltip = /** @__PURE__ @class */ (function () {
  * Chart components exported.
  */
 
-export { CrosshairSettings, ZoomSettings, Chart, Row, Column, MajorGridLines, MinorGridLines, AxisLine, MajorTickLines, MinorTickLines, CrosshairTooltip, Axis, VisibleLabels, Double, DateTime, Category, Logarithmic, DateTimeCategory, NiceInterval, StripLine, Connector, Font, Border, Offset, ChartArea, Margin, Animation$1 as Animation, Indexes, CornerRadius, Index, EmptyPointSettings, DragSettings, TooltipSettings, Periods, PeriodSelectorSettings, LineSeries, ColumnSeries, AreaSeries, BarSeries, PolarSeries, RadarSeries, StackingBarSeries, CandleSeries, StackingColumnSeries, StepLineSeries, StepAreaSeries, StackingAreaSeries, StackingLineSeries, ScatterSeries, RangeColumnSeries, WaterfallSeries, HiloSeries, HiloOpenCloseSeries, RangeAreaSeries, BubbleSeries, SplineSeries, HistogramSeries, SplineAreaSeries, TechnicalIndicator, SmaIndicator, EmaIndicator, TmaIndicator, AccumulationDistributionIndicator, AtrIndicator, MomentumIndicator, RsiIndicator, StochasticIndicator, BollingerBands, MacdIndicator, Trendlines, sort, isBreakLabel, getVisiblePoints, rotateTextSize, removeElement$1 as removeElement, logBase, showTooltip, inside, withIn, logWithIn, withInRange, sum, subArraySum, subtractThickness, subtractRect, degreeToLocation, degreeToRadian, getRotatedRectangleCoordinates, isRotatedRectIntersect, getAngle, subArray, valueToCoefficient, TransformToVisible, indexFinder, CoefficientToVector, valueToPolarCoefficient, Mean, PolarArc, createTooltip, createZoomingLabels, withInBounds, getValueXByPoint, getValueYByPoint, findClipRect, firstToLowerCase, getTransform, getMinPointsDelta, getAnimationFunction, linear, markerAnimate, animateRectElement, pathAnimation, appendClipElement, triggerLabelRender, setRange, getActualDesiredIntervalsCount, templateAnimate, drawSymbol, calculateShapes, getRectLocation, minMax, getElement$1 as getElement, getTemplateFunction, createTemplate, getFontStyle, measureElementRect, findlElement, getPoint, appendElement, appendChildElement, getDraggedRectLocation, checkBounds, getLabelText, stopTimer, isCollide, isOverlap, containsRect, calculateRect, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, getSaturationColor, getMedian, calculateLegendShapes, textTrim, lineBreakLabelTrim, stringToNumber, redrawElement, animateRedrawElement, textElement$1 as textElement, calculateSize, createSvg, getTitle, titlePositionX, textWrap, getUnicodeText, blazorTemplatesReset, CustomizeOption, StackValues, RectOption, ImageOption, CircleOption, PolygonOption, ChartLocation, LabelLocation, Thickness, ColorValue, PointData, AccPointData, ControlPoints, Crosshair, Tooltip$1 as Tooltip, Zoom, Selection, DataEditing, Highlight, DataLabel, ErrorBar, DataLabelSettings, MarkerSettings, Points, Trendline, ErrorBarCapSettings, ChartSegment, ErrorBarSettings, SeriesBase, Series, Legend, ChartAnnotation, ChartAnnotationSettings, LabelBorder, MultiLevelCategories, StripLineSettings, MultiLevelLabels, ScrollbarSettingsRange, ScrollbarSettings, BoxAndWhiskerSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiColoredSeries, MultiLevelLabel, ScrollBar, ParetoSeries, Export, AccumulationChart, AccumulationAnnotationSettings, AccumulationDataLabelSettings, PieCenter, AccPoints, AccumulationSeries, getSeriesFromIndex, pointByIndex, PieSeries, FunnelSeries, PyramidSeries, AccumulationLegend, AccumulationDataLabel, AccumulationTooltip, AccumulationSelection, AccumulationAnnotation, StockChart, StockChartFont, StockChartBorder, StockChartArea, StockMargin, StockChartStripLineSettings, StockEmptyPointSettings, StockChartConnector, StockSeries, StockChartIndicator, StockChartAxis, StockChartRow, StockChartTrendline, StockChartAnnotationSettings, StockChartIndexes, StockEventsSettings, loaded, legendClick, load, animationComplete, legendRender, textRender, pointRender, seriesRender, axisLabelRender, axisRangeCalculated, axisMultiLabelRender, tooltipRender, sharedTooltipRender, chartMouseMove, chartMouseClick, pointClick, pointDoubleClick, pointMove, chartMouseLeave, chartMouseDown, chartMouseUp, zoomComplete, dragComplete, selectionComplete, resized, beforePrint, annotationRender, scrollStart, scrollEnd, scrollChanged, stockEventRender, multiLevelLabelClick, dragStart, drag, dragEnd, regSub, regSup, beforeExport, afterExport, bulletChartMouseClick, onZooming, Theme, getSeriesColor, getThemeColor, getScrollbarThemeColor, PeriodSelector, RangeNavigator, rangeValueToCoefficient, getXLocation, getRangeValueXByPoint, getExactData, getNearestValue, DataPoint, RangeNavigatorTheme, getRangeThemeColor, RangeNavigatorAxis, RangeSeries, RangeSlider, RangeNavigatorSeries, ThumbSettings, StyleSettings, RangeTooltipSettings, RangeTooltip, BulletChart, Range, MajorTickLinesSettings, MinorTickLinesSettings, BulletLabelStyle, BulletTooltipSettings, BulletDataLabel, BulletChartLegendSettings, BulletChartTheme, getBulletThemeColor, BulletTooltip, BulletChartLegend, Smithchart, SmithchartMajorGridLines, SmithchartMinorGridLines, SmithchartAxisLine, SmithchartAxis, LegendTitle, LegendLocation, LegendItemStyleBorder, LegendItemStyle, LegendBorder, SmithchartLegendSettings, SeriesTooltipBorder, SeriesTooltip, SeriesMarkerBorder, SeriesMarkerDataLabelBorder, SeriesMarkerDataLabelConnectorLine, SeriesMarkerDataLabel, SeriesMarker, SmithchartSeries, TooltipRender, Subtitle, Title, SmithchartFont, SmithchartMargin, SmithchartBorder, SmithchartRect, LabelCollection, LegendSeries, LabelRegion, HorizontalLabelCollection, RadialLabelCollections, LineSegment, PointRegion, Point, ClosestPoint, MarkerOptions, SmithchartLabelPosition, Direction, DataLabelTextOptions, LabelOption, SmithchartSize, GridArcPoints, smithchartBeforePrint, SmithchartLegend, Sparkline, SparklineTooltip, SparklineBorder, SparklineFont, TrackLineSettings, SparklineTooltipSettings, ContainerArea, LineSettings, RangeBandSettings, AxisSettings, Padding, SparklineMarkerSettings, LabelOffset, SparklineDataLabelSettings };
+export { CrosshairSettings, ZoomSettings, Chart, Row, Column, MajorGridLines, MinorGridLines, AxisLine, MajorTickLines, MinorTickLines, CrosshairTooltip, Axis, VisibleLabels, Double, DateTime, Category, Logarithmic, DateTimeCategory, NiceInterval, StripLine, Connector, Font, Border, Offset, ChartArea, Margin, Animation$1 as Animation, Indexes, CornerRadius, Index, EmptyPointSettings, DragSettings, TooltipSettings, Periods, PeriodSelectorSettings, LineSeries, ColumnSeries, AreaSeries, BarSeries, PolarSeries, RadarSeries, StackingBarSeries, CandleSeries, StackingColumnSeries, StepLineSeries, StepAreaSeries, StackingAreaSeries, StackingLineSeries, ScatterSeries, RangeColumnSeries, WaterfallSeries, HiloSeries, HiloOpenCloseSeries, RangeAreaSeries, BubbleSeries, SplineSeries, HistogramSeries, SplineAreaSeries, TechnicalIndicator, SmaIndicator, EmaIndicator, TmaIndicator, AccumulationDistributionIndicator, AtrIndicator, MomentumIndicator, RsiIndicator, StochasticIndicator, BollingerBands, MacdIndicator, Trendlines, sort, isBreakLabel, getVisiblePoints, rotateTextSize, removeElement$1 as removeElement, logBase, showTooltip, inside, withIn, logWithIn, withInRange, sum, subArraySum, subtractThickness, subtractRect, degreeToLocation, degreeToRadian, getRotatedRectangleCoordinates, isRotatedRectIntersect, getAngle, subArray, valueToCoefficient, TransformToVisible, indexFinder, CoefficientToVector, valueToPolarCoefficient, Mean, PolarArc, createTooltip, createZoomingLabels, withInBounds, getValueXByPoint, getValueYByPoint, findClipRect, firstToLowerCase, getTransform, getMinPointsDelta, getAnimationFunction, linear, markerAnimate, animateRectElement, pathAnimation, appendClipElement, triggerLabelRender, setRange, getActualDesiredIntervalsCount, templateAnimate, drawSymbol, calculateShapes, getRectLocation, minMax, getElement$1 as getElement, getTemplateFunction, createTemplate, getFontStyle, measureElementRect, findlElement, getPoint, appendElement, appendChildElement, getDraggedRectLocation, checkBounds, getLabelText, stopTimer, isCollide, isOverlap, containsRect, calculateRect, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, getSaturationColor, getMedian, calculateLegendShapes, textTrim, lineBreakLabelTrim, stringToNumber, redrawElement, animateRedrawElement, textElement$1 as textElement, calculateSize, createSvg, getTitle, titlePositionX, textWrap, getUnicodeText, blazorTemplatesReset, CustomizeOption, StackValues, RectOption, ImageOption, CircleOption, PolygonOption, ChartLocation, LabelLocation, Thickness, ColorValue, PointData, AccPointData, ControlPoints, Crosshair, Tooltip$1 as Tooltip, Zoom, Selection, DataEditing, Highlight, DataLabel, ErrorBar, DataLabelSettings, MarkerSettings, Points, Trendline, ErrorBarCapSettings, ChartSegment, ErrorBarSettings, SeriesBase, Series, Legend, ChartAnnotation, ChartAnnotationSettings, LabelBorder, MultiLevelCategories, StripLineSettings, MultiLevelLabels, ScrollbarSettingsRange, ScrollbarSettings, BoxAndWhiskerSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiColoredSeries, MultiLevelLabel, ScrollBar, ParetoSeries, Export, AccumulationChart, AccumulationAnnotationSettings, AccumulationDataLabelSettings, PieCenter, AccPoints, AccumulationSeries, getSeriesFromIndex, pointByIndex, PieSeries, FunnelSeries, PyramidSeries, AccumulationLegend, AccumulationDataLabel, AccumulationTooltip, AccumulationSelection, AccumulationAnnotation, StockChart, StockChartFont, StockChartBorder, StockChartArea, StockMargin, StockChartStripLineSettings, StockEmptyPointSettings, StockChartConnector, StockSeries, StockChartIndicator, StockChartAxis, StockChartRow, StockChartTrendline, StockChartAnnotationSettings, StockChartIndexes, StockEventsSettings, loaded, legendClick, load, animationComplete, legendRender, textRender, pointRender, seriesRender, axisLabelRender, axisRangeCalculated, axisMultiLabelRender, tooltipRender, chartMouseMove, chartMouseClick, pointClick, pointDoubleClick, pointMove, chartMouseLeave, chartMouseDown, chartMouseUp, zoomComplete, dragComplete, selectionComplete, resized, beforePrint, annotationRender, scrollStart, scrollEnd, scrollChanged, stockEventRender, multiLevelLabelClick, dragStart, drag, dragEnd, regSub, regSup, beforeExport, afterExport, bulletChartMouseClick, onZooming, Theme, getSeriesColor, getThemeColor, getScrollbarThemeColor, PeriodSelector, RangeNavigator, rangeValueToCoefficient, getXLocation, getRangeValueXByPoint, getExactData, getNearestValue, DataPoint, RangeNavigatorTheme, getRangeThemeColor, RangeNavigatorAxis, RangeSeries, RangeSlider, RangeNavigatorSeries, ThumbSettings, StyleSettings, RangeTooltipSettings, RangeTooltip, BulletChart, Range, MajorTickLinesSettings, MinorTickLinesSettings, BulletLabelStyle, BulletTooltipSettings, BulletDataLabel, BulletChartLegendSettings, BulletChartTheme, getBulletThemeColor, BulletTooltip, BulletChartLegend, Smithchart, SmithchartMajorGridLines, SmithchartMinorGridLines, SmithchartAxisLine, SmithchartAxis, LegendTitle, LegendLocation, LegendItemStyleBorder, LegendItemStyle, LegendBorder, SmithchartLegendSettings, SeriesTooltipBorder, SeriesTooltip, SeriesMarkerBorder, SeriesMarkerDataLabelBorder, SeriesMarkerDataLabelConnectorLine, SeriesMarkerDataLabel, SeriesMarker, SmithchartSeries, TooltipRender, Subtitle, Title, SmithchartFont, SmithchartMargin, SmithchartBorder, SmithchartRect, LabelCollection, LegendSeries, LabelRegion, HorizontalLabelCollection, RadialLabelCollections, LineSegment, PointRegion, Point, ClosestPoint, MarkerOptions, SmithchartLabelPosition, Direction, DataLabelTextOptions, LabelOption, SmithchartSize, GridArcPoints, smithchartBeforePrint, SmithchartLegend, Sparkline, SparklineTooltip, SparklineBorder, SparklineFont, TrackLineSettings, SparklineTooltipSettings, ContainerArea, LineSettings, RangeBandSettings, AxisSettings, Padding, SparklineMarkerSettings, LabelOffset, SparklineDataLabelSettings };
 //# sourceMappingURL=ej2-charts.es5.js.map

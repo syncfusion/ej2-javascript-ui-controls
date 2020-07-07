@@ -2,7 +2,7 @@ import { Gantt } from '../base/gantt';
 import { Tooltip as TooltipComponent, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { parentsUntil } from '../base/utils';
 import * as cls from '../base/css-constants';
-import { extend, isNullOrUndefined, getValue, EventHandler, } from '@syncfusion/ej2-base';
+import { extend, isNullOrUndefined, getValue, EventHandler, closest } from '@syncfusion/ej2-base';
 import { ITaskData, IGanttData, BeforeTooltipRenderEventArgs, PredecessorTooltip, IPredecessor } from '../base/interface';
 import { EventMarkerModel } from '../models/models';
 import { Deferred } from '@syncfusion/ej2-data';
@@ -54,7 +54,13 @@ export class Tooltip {
         if (parent.isOnEdit) {
             args.cancel = true;
         }
-        let element: Element = parentsUntil(args.target as Element, cls.chartRowCell);
+        let element: Element;
+        let row: Element = closest(args.target, 'div.' + cls.taskBarMainContainer);
+        if (!isNullOrUndefined(row)) {
+            element = args.target;
+        } else {
+            element = parentsUntil(args.target as Element, cls.chartRowCell);
+        }
         let data: IGanttData;
         let argsData: BeforeTooltipRenderEventArgs = {
             data: {},
@@ -355,13 +361,20 @@ export class Tooltip {
     public getPredecessorTooltipData(args: TooltipEventArgs): PredecessorTooltip {
         let predeceesorParent: string = args.target.parentElement.id;
         let taskIds: string[] = predeceesorParent.match(/\d+/g);
-        let fromTask: IGanttData = this.parent.flatData[this.parent.ids.indexOf(taskIds[0])];
-        let toTask: IGanttData = this.parent.flatData[this.parent.ids.indexOf(taskIds[1])];
+        let fromTask: IGanttData;
+        let toTask: IGanttData;
+        if (this.parent.viewType === 'ResourceView') {
+             fromTask = this.parent.flatData[this.parent.getTaskIds().indexOf('T' + taskIds[0])];
+             toTask = this.parent.flatData[this.parent.getTaskIds().indexOf('T' + taskIds[1])];
+        } else {
+             fromTask = this.parent.flatData[this.parent.ids.indexOf(taskIds[0])];
+             toTask = this.parent.flatData[this.parent.ids.indexOf(taskIds[1])];
+        }
         let predecessor: IPredecessor[] = (fromTask.ganttProperties.predecessor as IPredecessor[]).filter(
             (pdc: IPredecessor) => { return pdc.to === taskIds[1]; });
         let predecessorTooltipData: PredecessorTooltip = {
-            fromId: fromTask.ganttProperties.rowUniqueID,
-            toId: toTask.ganttProperties.rowUniqueID,
+            fromId: this.parent.viewType === 'ResourceView' ? fromTask.ganttProperties.taskId : fromTask.ganttProperties.rowUniqueID,
+            toId: this.parent.viewType === 'ResourceView' ? toTask.ganttProperties.taskId : toTask.ganttProperties.rowUniqueID,
             fromName: fromTask.ganttProperties.taskName,
             toName: toTask.ganttProperties.taskName,
             linkType: predecessor[0].type,

@@ -397,8 +397,10 @@ describe('CRUD actions module', () => {
         let kanbanObj: Kanban;
         beforeAll((done: DoneFn) => {
             let model: KanbanModel = {
-                cardSettings: {
-                    priority: 'RankId'
+                sortSettings: {
+                    sortBy: 'Index',
+                    field: 'RankId',
+                    direction: 'Ascending'
                 }
             };
             kanbanObj = util.createKanban(model, kanbanData, done);
@@ -465,8 +467,10 @@ describe('CRUD actions module', () => {
         let kanbanObj: Kanban;
         beforeAll((done: DoneFn) => {
             let model: KanbanModel = {
-                cardSettings: {
-                    priority: 'RankId'
+                sortSettings: {
+                    sortBy: 'Index',
+                    field: 'RankId',
+                    direction: 'Ascending'
                 },
                 swimlaneSettings: {
                     keyField: 'Assignee'
@@ -497,8 +501,10 @@ describe('CRUD actions module', () => {
         let kanbanObj: Kanban;
         beforeAll((done: DoneFn) => {
             let model: KanbanModel = {
-                cardSettings: {
-                    priority: 'RankId'
+                sortSettings: {
+                    sortBy: 'Index',
+                    field: 'RankId',
+                    direction: 'Ascending'
                 }
             };
             kanbanObj = util.createKanban(model, kanbanData, done);
@@ -567,8 +573,10 @@ describe('CRUD actions module', () => {
         let dragElement: HTMLElement;
         beforeAll((done: DoneFn) => {
             let model: KanbanModel = {
-                cardSettings: {
-                    priority: 'RankId'
+                sortSettings: {
+                    sortBy: 'Index',
+                    field: 'RankId',
+                    direction: 'Ascending'
                 }
             };
             kanbanObj = util.createKanban(model, kanbanData, done);
@@ -620,8 +628,10 @@ describe('CRUD actions module', () => {
         let dragElement: HTMLElement;
         beforeAll((done: DoneFn) => {
             let model: KanbanModel = {
-                cardSettings: {
-                    priority: 'RankId'
+                sortSettings: {
+                    sortBy: 'Index',
+                    field: 'RankId',
+                    direction: 'Ascending'
                 },
                 swimlaneSettings: {
                     keyField: 'Assignee'

@@ -128,4 +128,11 @@ export interface UserHandleModel {
      */
     disableConnectors?: boolean;
 
+    /**
+     * defines geometry of the html element
+     * @private
+     * @default ''
+     */
+    template?: HTMLElement;
+
 }

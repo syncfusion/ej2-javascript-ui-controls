@@ -220,7 +220,7 @@ export class FormFieldPopUp {
 
                 } else if (formFieldData instanceof DropDownFormField) {
                     classList(this.target, ['e-de-ddl-form'], []);
-                    this.ddlInstance.dataSource = formFieldData.dropDownItems;
+                    this.ddlInstance.dataSource = formFieldData.dropdownItems;
                     this.ddlInstance.index = formFieldData.selectedIndex;
                     setTimeout(() => {
                         this.ddlInstance.showPopup();

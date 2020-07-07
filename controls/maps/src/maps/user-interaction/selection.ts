@@ -161,9 +161,13 @@ export class Selection {
                     let layetElement: Element = getElementByID(this.maps.element.id + '_Layer_Collections');
                     if (!this.selectionsettings.enableMultiSelect &&
                         layetElement.getElementsByClassName(this.selectionType + 'selectionMapStyle').length > 0) {
-                        let ele: Element = layetElement.getElementsByClassName(this.selectionType + 'selectionMapStyle')[0];
-                        removeClass(ele);
-                        this.removedSelectionList(ele);
+                        let eleCount : number = layetElement.getElementsByClassName(this.selectionType + 'selectionMapStyle').length;
+                        let ele : Element;
+                        for (let k : number = 0 ; k < eleCount; k++) {
+                            ele = layetElement.getElementsByClassName(this.selectionType + 'selectionMapStyle')[0];
+                            removeClass(ele);
+                            this.removedSelectionList(ele);
+                        }
                         if (this.selectionType === 'Shape') {
                             this.maps.shapeSelectionItem = [];
                             let selectionLength: number = this.maps.selectedElementId.length;

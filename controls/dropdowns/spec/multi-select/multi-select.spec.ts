@@ -6801,9 +6801,6 @@ describe('MultiSelect', () => {
             { "Name": "United States", "Code": "US", "Start": "U" }
         ];
         beforeAll(() => {
-            let androidPhoneUa: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
-            'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
-            Browser.userAgent = androidPhoneUa;
             document.body.innerHTML = '';
             document.body.appendChild(element);
         });
@@ -6812,9 +6809,12 @@ describe('MultiSelect', () => {
                 listObj.destroy();
                 element.remove();
             }
-            Browser.userAgent = navigator.userAgent;
         });
         it('Checkbox with allowFiltering', () => {
+            let currentAgent: string = Browser.userAgent;
+            let androidPhoneUa: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+            'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
+            Browser.userAgent = androidPhoneUa;
             let listObj: MultiSelect = new MultiSelect({
                 dataSource: empList,
                 fields: { text: 'Name', value: 'Name' },
@@ -6831,8 +6831,13 @@ describe('MultiSelect', () => {
             expect(document.body.classList.contains('e-popup-full-page')).toBe(true);
             listObj.hidePopup();
             listObj.destroy();
+            Browser.userAgent = currentAgent;
         });
         it('Checkbox without allowFiltering', () => {
+            let currentAgent: string = Browser.userAgent;
+            let androidPhoneUa: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+            'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
+            Browser.userAgent = androidPhoneUa;
             let listObj: MultiSelect = new MultiSelect({
                 dataSource: empList,
                 fields: { text: 'Name', value: 'Name' },
@@ -6850,8 +6855,13 @@ describe('MultiSelect', () => {
             expect(document.body.classList.contains('e-popup-full-page')).toBe(false);
             listObj.hidePopup();
             listObj.destroy();
+            Browser.userAgent = currentAgent;
         });
         it('With grouping', () => {
+            let currentAgent: string = Browser.userAgent;
+            let androidPhoneUa: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+            'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
+            Browser.userAgent = androidPhoneUa;
             let listObj: MultiSelect = new MultiSelect({
                 dataSource: empList,
                 fields: { text: 'Name', value: 'Name', groupBy: 'Start' },
@@ -6868,8 +6878,13 @@ describe('MultiSelect', () => {
             expect(document.body.classList.contains('e-popup-full-page')).toBe(true);
             listObj.hidePopup();
             listObj.destroy();
+            Browser.userAgent = currentAgent;
         });
         it('With grouping without allowFiltering', () => {
+            let currentAgent: string = Browser.userAgent;
+            let androidPhoneUa: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+            'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
+            Browser.userAgent = androidPhoneUa;
             let listObj: MultiSelect = new MultiSelect({
                 dataSource: empList,
                 fields: { text: 'Name', value: 'Name', groupBy: 'Start' },
@@ -6887,8 +6902,13 @@ describe('MultiSelect', () => {
             expect(document.body.classList.contains('e-popup-full-page')).toBe(false);
             listObj.hidePopup();
             listObj.destroy();
+            Browser.userAgent = currentAgent;
         });
         it('Grouping with checkbox', () => {
+            let currentAgent: string = Browser.userAgent;
+            let androidPhoneUa: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+            'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
+            Browser.userAgent = androidPhoneUa;
             let listObj: MultiSelect = new MultiSelect({
                 dataSource: empList,
                 fields: { text: 'Name', value: 'Name', groupBy: 'Start' },
@@ -6906,8 +6926,13 @@ describe('MultiSelect', () => {
             expect(document.body.classList.contains('e-popup-full-page')).toBe(true);
             listObj.hidePopup();
             listObj.destroy();
+            Browser.userAgent = currentAgent;
         });
         it('Grouping with checkbox without allowFiltering', () => {
+            let currentAgent: string = Browser.userAgent;
+            let androidPhoneUa: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+            'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
+            Browser.userAgent = androidPhoneUa;
             let listObj: MultiSelect = new MultiSelect({
                 dataSource: empList,
                 fields: { text: 'Name', value: 'Name', groupBy: 'Start' },
@@ -6926,8 +6951,13 @@ describe('MultiSelect', () => {
             expect(document.body.classList.contains('e-popup-full-page')).toBe(false);
             listObj.hidePopup();
             listObj.destroy();
+            Browser.userAgent = currentAgent;
         });
         it('Grouping with checkbox with selectAll', () => {
+            let currentAgent: string = Browser.userAgent;
+            let androidPhoneUa: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+            'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
+            Browser.userAgent = androidPhoneUa;
             let listObj: MultiSelect = new MultiSelect({
                 dataSource: empList,
                 fields: { text: 'Name', value: 'Name', groupBy: 'Start' },
@@ -6946,8 +6976,13 @@ describe('MultiSelect', () => {
             expect(document.body.classList.contains('e-popup-full-page')).toBe(true);
             listObj.hidePopup();
             listObj.destroy();
+            Browser.userAgent = currentAgent;
         });
         it('Grouping with checkbox with selectAll without allowFiltering', () => {
+            let currentAgent: string = Browser.userAgent;
+            let androidPhoneUa: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+            'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
+            Browser.userAgent = androidPhoneUa;
             let listObj: MultiSelect = new MultiSelect({
                 dataSource: empList,
                 fields: { text: 'Name', value: 'Name', groupBy: 'Start' },
@@ -6967,6 +7002,7 @@ describe('MultiSelect', () => {
             expect(document.body.classList.contains('e-popup-full-page')).toBe(false);
             listObj.hidePopup();
             listObj.destroy();
+            Browser.userAgent = currentAgent;
         });
     });
     describe('EJ2-40111: Incorrect count in the multiselect field when multiple items are selected', () => {

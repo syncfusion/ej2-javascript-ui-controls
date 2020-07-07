@@ -296,7 +296,6 @@ describe('Stacked data Reorder', () => {
         };
    TreeGridObj.actionComplete = actionComplete;
    TreeGridObj.reorderColumns( "orderName","orderID");
-   debugger;
     
       TreeGridObj.reorderModule.destroy();
      

@@ -52,11 +52,15 @@ export function calculateSize(maps: Maps): void {
     let parentWidth: number = maps.element.parentElement.clientWidth;
     let containerElementWidth : number = stringToNumber(maps.element.style.width, containerWidth);
     let containerElementHeight : number = stringToNumber(maps.element.style.height, containerWidth);
-    maps.availableSize = new Size(
-        stringToNumber(maps.width, containerWidth) || containerWidth || containerElementWidth || 600,
-        stringToNumber(maps.height, containerHeight) || containerHeight || containerElementHeight || (maps.isDevice ?
-            Math.min(window.innerWidth, window.innerHeight) : 450)
-    );
+    if (maps.width === '0px' || maps.width === '0%' || maps.height === '0%' || maps.height === '0px') {
+        maps.availableSize = new Size(0, 0);
+    } else {
+        maps.availableSize = new Size(
+            stringToNumber(maps.width, containerWidth) || containerWidth || containerElementWidth || 600,
+            stringToNumber(maps.height, containerHeight) || containerHeight || containerElementHeight || (maps.isDevice ?
+                Math.min(window.innerWidth, window.innerHeight) : 450)
+        );
+}
 }
 /**
  * Method to create svg for maps.
@@ -69,6 +73,10 @@ export function createSvg(maps: Maps): void {
         width: maps.availableSize.width,
         height: maps.availableSize.height
     });
+    if (maps.width === '0px' || maps.width === '0%' || maps.height === '0%' || maps.height === '0px') {
+        maps.svgObject.setAttribute('height', '0');
+        maps.svgObject.setAttribute('width', '0');
+    }
 }
 export function getMousePosition(pageX: number, pageY: number, element: Element): MapLocation {
     let elementRect: ClientRect = element.getBoundingClientRect();
@@ -324,10 +332,13 @@ export function measureText(text: string, font: FontModel): Size {
         measureObject = createElement('text', { id: 'mapsmeasuretext' });
         document.body.appendChild(measureObject);
     }
-
     measureObject.innerHTML = text;
     measureObject.style.position = 'absolute';
-    measureObject.style.fontSize = font.size;
+    if (typeof(font.size) === 'number') {
+        measureObject.style.fontSize = (font.size) + 'px';
+    } else {
+        measureObject.style.fontSize = font.size;
+    }
     measureObject.style.fontWeight = font.fontWeight;
     measureObject.style.fontStyle = font.fontStyle;
     measureObject.style.fontFamily = font.fontFamily;
@@ -1970,23 +1981,23 @@ export function getTargetElement(layerIndex: number, name: string, enable: boole
 /**
  * Function to create style element for highlight and selection
  */
-export function createStyle(id: string, className: string, eventArgs: IShapeSelectedEventArgs): Element {
+export function createStyle(id: string, className: string, eventArgs: IShapeSelectedEventArgs | Object): Element {
     return createElement('style', {
         id: id, innerHTML: '.' + className + '{fill:'
-            + eventArgs.fill + ';' + 'opacity:' + eventArgs.opacity.toString() + ';' +
-            'stroke-width:' + eventArgs.border.width.toString() + ';' +
-            'stroke:' + eventArgs.border.color + ';' + '}'
+            + eventArgs['fill'] + ';' + 'opacity:' + (eventArgs['opacity']).toString() + ';' +
+            'stroke-width:' + (eventArgs['border']['width']).toString() + ';' +
+            'stroke:' + eventArgs['border']['color'] + ';' + '}'
     });
 }
 /**
  * Function to customize the style for highlight and selection
  */
-export function customizeStyle(id: string, className: string, eventArgs: IShapeSelectedEventArgs): void {
+export function customizeStyle(id: string, className: string, eventArgs: IShapeSelectedEventArgs | Object): void {
     let styleEle: Element = getElement(id);
     styleEle.innerHTML = '.' + className + '{fill:'
-        + eventArgs.fill + ';' + 'opacity:' + eventArgs.opacity.toString() + ';' +
-        'stroke-width:' + eventArgs.border.width.toString() + ';' +
-        'stroke:' + eventArgs.border.color + '}';
+        + eventArgs['fill'] + ';' + 'opacity:' + (eventArgs['opacity']).toString() + ';' +
+        'stroke-width:' + (eventArgs['border']['width']).toString() + ';' +
+        'stroke:' + eventArgs['border']['color'] + '}';
 }
 
 /**
@@ -2592,5 +2603,17 @@ export function calculateZoomLevel(minLat: number, maxLat: number, minLong: numb
     }
     return scaleFactor;
 }
-
-
+// tslint:disable:no-any
+export function processResult(e: object): object{
+    let dataValue: object;
+    let resultValue: any = !isNullOrUndefined(e['result']) ? e['result'] : e['actual']; 
+    if (isNullOrUndefined(resultValue.length)) {
+        if (!isNullOrUndefined(resultValue['Items'])) {
+            dataValue = resultValue['Items'];
+        }
+    }
+    else {
+        dataValue = resultValue;
+    }
+      return dataValue;
+}

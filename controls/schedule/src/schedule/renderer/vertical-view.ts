@@ -1,6 +1,7 @@
 import { isNullOrUndefined, extend, EventHandler, formatUnit, Browser, isBlazor } from '@syncfusion/ej2-base';
 import { createElement, remove, addClass, removeClass, append, prepend } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
+import { View } from '../base/type';
 import { ViewBase, ViewHelper } from './view-base';
 import { VerticalEvent } from '../event-renderer/vertical-view';
 import { MonthEvent } from '../event-renderer/month';
@@ -8,7 +9,6 @@ import { RenderCellEventArgs, CellTemplateArgs, TdData, NotifyEventArgs, IRender
 import * as util from '../base/util';
 import * as event from '../base/constant';
 import * as cls from '../base/css-constant';
-import { View } from '../base/type';
 
 /**
  * vertical view
@@ -95,6 +95,9 @@ export class VerticalView extends ViewBase implements IRenderer {
                 this.scrollToWorkHour();
                 this.parent.uiStateValues.isInitial = false;
             } else {
+                if (timecells) {
+                    timecells.scrollTop = this.parent.uiStateValues.top;
+                }
                 content.scrollTop = this.parent.uiStateValues.top;
                 content.scrollLeft = this.parent.uiStateValues.left;
             }
@@ -226,7 +229,9 @@ export class VerticalView extends ViewBase implements IRenderer {
     public removeCurrentTimeIndicatorElements(): void {
         let queryString: string = '.' + cls.PREVIOUS_TIMELINE_CLASS + ',.' + cls.CURRENT_TIMELINE_CLASS + ',.' + cls.CURRENT_TIME_CLASS;
         let timeIndicator: HTMLElement[] = [].slice.call(this.element.querySelectorAll(queryString));
-        timeIndicator.forEach((indicator: HTMLElement) => remove(indicator));
+        for (let indicator of timeIndicator) {
+            remove(indicator);
+        }
     }
     public changeCurrentTimePosition(): void {
         if (this.parent.isDestroyed) { return; }
@@ -340,6 +345,9 @@ export class VerticalView extends ViewBase implements IRenderer {
             EventHandler.clearEvents(cell);
             this.wireCellEvents(cell);
         }
+        if (this.parent.virtualScrollModule) {
+            this.parent.virtualScrollModule.setTranslateValue();
+        }
         let wrap: Element = this.element.querySelector('.' + cls.CONTENT_WRAP_CLASS);
         let contentBody: Element = this.element.querySelector('.' + cls.CONTENT_TABLE_CLASS + ' tbody');
         EventHandler.clearEvents(contentBody);
@@ -353,7 +361,8 @@ export class VerticalView extends ViewBase implements IRenderer {
     public renderLayout(type: string): void {
         if (this.parent.isServerRenderer()) {
             this.colLevels = this.generateColumnLevels();
-            if (this.parent.resourceBase && !this.parent.uiStateValues.isGroupAdaptive && this.parent.activeView.isTimelineView()) {
+            if (this.parent.resourceBase && this.parent.activeViewOptions.group.resources.length > 0 &&
+                !this.parent.uiStateValues.isGroupAdaptive && this.parent.activeView.isTimelineView()) {
                 this.parent.resourceBase.setRenderedResources();
             }
             return;
@@ -638,7 +647,9 @@ export class VerticalView extends ViewBase implements IRenderer {
     }
     private createEventWrapper(type: string = ''): HTMLElement {
         let tr: HTMLElement = createElement('tr');
-        this.colLevels.slice(-1)[0].forEach((col: TdData, day: number) => {
+        let levels: TdData[] = this.colLevels.slice(-1)[0];
+        for (let i: number = 0, len: number = levels.length; i < len; i++) {
+            let col: TdData = levels[i];
             let appointmentWrap: HTMLElement = createElement('td', {
                 className: (type === 'allDay') ? cls.ALLDAY_APPOINTMENT_WRAPPER_CLASS : (type === 'timeIndicator') ?
                     cls.TIMELINE_WRAPPER_CLASS : cls.DAY_WRAPPER_CLASS, attrs: { 'data-date': col.date.getTime().toString() }
@@ -648,13 +659,13 @@ export class VerticalView extends ViewBase implements IRenderer {
             }
             if (type === '') {
                 let innerWrapper: HTMLElement = createElement('div', {
-                    id: cls.APPOINTMENT_WRAPPER_CLASS + '-' + day.toString(),
+                    id: cls.APPOINTMENT_WRAPPER_CLASS + '-' + i.toString(),
                     className: cls.APPOINTMENT_WRAPPER_CLASS
                 });
                 appointmentWrap.appendChild(innerWrapper);
             }
             tr.appendChild(appointmentWrap);
-        });
+        }
         return tr;
     }
     public getScrollableElement(): Element {

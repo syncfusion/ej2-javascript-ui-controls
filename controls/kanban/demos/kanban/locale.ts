@@ -73,7 +73,7 @@ L10n.load({
             'cancel': 'Cancel',
             'yes': 'Yes',
             'no': 'No',
-            'close': 'Close',
+            'close': 'Close'
         }
     }
 });

@@ -103,7 +103,6 @@ export class Dependency {
             }
         }
     }
-
     /**
      * 
      * @param ganttData Method to check parent dependency in predecessor
@@ -111,7 +110,7 @@ export class Dependency {
      */
     private checkIsParent(fromId: string): boolean {
         let boolValue: boolean = false;
-        let task: IGanttData = this.parent.getRecordByID(fromId);
+        let task: IGanttData = this.parent.connectorLineModule.getRecordByID(fromId);
         if (task.hasChildRecords) {
             boolValue = true;
         }
@@ -140,8 +139,10 @@ export class Dependency {
                 offsetValue = '-';
             }
             match = values[0].match(/(\d+|[A-z]+)/g);
+            let ids: string[] = this.parent.viewType === 'ResourceView' ? this.parent.getTaskIds() : this.parent.ids;
+            let isExist: number = this.parent.viewType === 'ResourceView' ? ids.indexOf('T' + match[0]) : ids.indexOf(match[0]);
             /*Validate for appropriate predecessor*/
-            if (match[0] && this.parent.ids.indexOf(match[0]) !== -1) {
+            if (match[0] && isExist !== -1) {
                 if (match.length > 1) {
                     let type: string = match[1].toUpperCase();
                     if (type === 'FS' || type === 'FF' || type === 'SF' || type === 'SS') {
@@ -162,7 +163,8 @@ export class Dependency {
                 from: match[0],
                 type: predecessorText,
                 isDrawn: false,
-                to: ganttRecord.ganttProperties.rowUniqueID.toString(),
+                to: this.parent.viewType === 'ResourceView' ? ganttRecord.ganttProperties.taskId.toString()
+                    : ganttRecord.ganttProperties.rowUniqueID.toString(),
                 offsetUnit: offsetUnits.durationUnit,
                 offset: offsetUnits.duration
             };
@@ -188,7 +190,9 @@ export class Dependency {
             for (let i: number = 0; i < length; i++) {
                 let currentValue: IPredecessor = predecessors[i];
                 let temp: string = '';
-                if (currentValue.from !== data.ganttProperties.rowUniqueID.toString()) {
+                let id: string = this.parent.viewType === 'ResourceView' ? data.ganttProperties.taskId
+                    : data.ganttProperties.rowUniqueID;
+                if (currentValue.from !== id.toString()) {
                     temp = currentValue.from + currentValue.type;
                     if (currentValue.offset !== 0) {
                         temp += currentValue.offset > 0 ? ('+' + currentValue.offset + ' ') : (currentValue.offset + ' ');
@@ -288,8 +292,10 @@ export class Dependency {
         connectorCount = connectorsCollection.length;
         for (let i: number = 0; i < connectorCount; i++) {
             let connector: IPredecessor = connectorsCollection[i];
-            successorGanttRecord = this.parent.getRecordByID(connector.from);
-            if (connector.from !== ganttRecord.ganttProperties.rowUniqueID.toString()) {
+            successorGanttRecord = this.parent.connectorLineModule.getRecordByID(connector.from);
+            let id: string = this.parent.viewType === 'ResourceView' ? ganttRecord.ganttProperties.taskId
+                : ganttRecord.ganttProperties.rowUniqueID;
+            if (connector.from !== id.toString()) {
                 if (successorGanttRecord) {
                     let predecessorCollection: IPredecessor[];
                     if (successorGanttRecord.ganttProperties.predecessor) {
@@ -317,7 +323,7 @@ export class Dependency {
     public updatedRecordsDateByPredecessor(): void {
         let flatData: IGanttData[] = this.parent.flatData;
         for (let count: number = 0; count < flatData.length; count++) {
-            if (flatData[count].ganttProperties.predecessor && flatData[count].taskData[this.parent.taskFields.dependency]) {
+            if (flatData[count].ganttProperties.predecessor) {
                 this.validatePredecessorDates(flatData[count]);
             }
         }
@@ -333,7 +339,8 @@ export class Dependency {
             let count: number;
             let parentGanttRecord: IGanttData;
             let record: IGanttData = null;
-            let currentTaskId: string = ganttRecord.ganttProperties.rowUniqueID.toString();
+            let currentTaskId: string = this.parent.viewType === 'ResourceView' ? ganttRecord.ganttProperties.taskId.toString()
+                : ganttRecord.ganttProperties.rowUniqueID.toString();
             let predecessors: IPredecessor[] = predecessorsCollection.filter((data: IPredecessor): IPredecessor => {
                 if (data.to === currentTaskId) {
                     return data;
@@ -344,8 +351,8 @@ export class Dependency {
             for (count = 0; count < predecessors.length; count++) {
                 let predecessor: IPredecessor;
                 predecessor = predecessors[count];
-                parentGanttRecord = this.parent.getRecordByID(predecessor.from);
-                record = this.parent.getRecordByID(predecessor.to);
+                parentGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor.from);
+                record = this.parent.connectorLineModule.getRecordByID(predecessor.to);
                 if (record.ganttProperties.isAutoSchedule || this.parent.validateManualTasksOnLinking) {
                     this.validateChildGanttRecord(parentGanttRecord, record);
                 }
@@ -365,7 +372,8 @@ export class Dependency {
         if (this.parent.isInPredecessorValidation && (childGanttRecord.ganttProperties.isAutoSchedule ||
              this.parent.validateManualTasksOnLinking)) {
             let childRecordProperty: ITaskData = childGanttRecord.ganttProperties;
-            let currentTaskId: string = childRecordProperty.rowUniqueID.toString();
+            let currentTaskId: string = this.parent.viewType === 'ResourceView' ? childRecordProperty.taskId.toString()
+                : childRecordProperty.rowUniqueID.toString();
             let predecessorsCollection: IPredecessor[] = childRecordProperty.predecessor;
             let childPredecessor: IPredecessor[] = predecessorsCollection.filter((data: IPredecessor): IPredecessor => {
                 if (data.to === currentTaskId) { return data; } else { return null; }
@@ -407,7 +415,9 @@ export class Dependency {
         let parentGanttRecord: IGanttData;
         let childGanttRecord: IGanttData;
         let validatedPredecessor: IPredecessor[] = predecessorsCollection.filter((data: IPredecessor): IPredecessor => {
-            if (data.to === ganttRecord.ganttProperties.rowUniqueID.toString()) {
+            let id: string = this.parent.viewType === 'ResourceView' ? ganttRecord.ganttProperties.taskId
+                : ganttRecord.ganttProperties.rowUniqueID;
+            if (data.to === id.toString()) {
                 return data;
             } else {
                 return null;
@@ -417,8 +427,8 @@ export class Dependency {
             let length: number = validatedPredecessor.length;
             for (let i: number = 0; i < length; i++) {
                 let predecessor: IPredecessor = validatedPredecessor[i];
-                parentGanttRecord = this.parent.getRecordByID(predecessor.from);
-                childGanttRecord = this.parent.getRecordByID(predecessor.to);
+                parentGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor.from);
+                childGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor.to);
                 tempStartDate =
                     this.getValidatedStartDate(childGanttRecord.ganttProperties, parentGanttRecord.ganttProperties, predecessor);
                 if (maxStartDate == null) {
@@ -510,12 +520,14 @@ export class Dependency {
      * @param records 
      * @private
      */
-    public createConnectorLinesCollection(records: IGanttData[]): void {
-        let recordLength: number = records.length;
+    public createConnectorLinesCollection(records?: IGanttData[]): void {
+        let ganttRecords: IGanttData [] = records ? records : this.parent.currentViewData;
+        let recordLength: number = ganttRecords.length;
         let count: number; let ganttRecord: IGanttData;
         let predecessorsCollection: object[];
+        this.parent.connectorLineModule.expandedRecords = this.parent.getExpandedRecords(this.parent.currentViewData);
         for (count = 0; count < recordLength; count++) {
-            ganttRecord = records[count];
+            ganttRecord = ganttRecords[count];
             predecessorsCollection = ganttRecord.ganttProperties.predecessor;
             if (predecessorsCollection) {
                 this.addPredecessorsCollection(predecessorsCollection);
@@ -537,8 +549,8 @@ export class Dependency {
             for (predecessorCount = 0; predecessorCount < predecessorsLength; predecessorCount++) {
                 predecessor = predecessorsCollection[predecessorCount];
                 let from: string = 'from'; let to: string = 'to';
-                parentGanttRecord = this.parent.getRecordByID(predecessor[from]);
-                childGanttRecord = this.parent.getRecordByID(predecessor[to]);
+                parentGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor[from]);
+                childGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor[to]);
                 if (this.parent.currentViewData && this.parent.currentViewData.indexOf(parentGanttRecord) !== -1 &&
                     this.parent.currentViewData.indexOf(childGanttRecord) !== -1) {
                     this.updateConnectorLineObject(parentGanttRecord, childGanttRecord, predecessor);
@@ -591,7 +603,9 @@ export class Dependency {
             let predecessorsCollection: IPredecessor[] = childGanttRecord.ganttProperties.predecessor;
             let parentGanttRecord: IGanttData; let record: IGanttData = null;
             let predecessor: IPredecessor;
-            let currentTaskId: string = childGanttRecord.ganttProperties.rowUniqueID.toString();
+            let successor: IPredecessor;
+            let currentTaskId: string = this.parent.viewType === 'ResourceView' ? childGanttRecord.ganttProperties.taskId.toString()
+                : childGanttRecord.ganttProperties.rowUniqueID.toString();
             let predecessors: IPredecessor[] = predecessorsCollection.filter((data: IPredecessor): IPredecessor => {
                 if (data.to === currentTaskId) { return data; } else { return null; }
             });
@@ -600,24 +614,26 @@ export class Dependency {
             });
             for (let count: number = 0; count < predecessors.length; count++) {
                 predecessor = predecessors[count];
-                parentGanttRecord = this.parent.getRecordByID(predecessor.from);
-                record = this.parent.getRecordByID(predecessor.to);
+                parentGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor.from);
+                record = this.parent.connectorLineModule.getRecordByID(predecessor.to);
                 if (this.parent.isInPredecessorValidation && record.ganttProperties.isAutoSchedule) {
                     this.parent.isValidationEnabled = true;
                 } else {
                     this.parent.isValidationEnabled = false;
                 }
-                if ((childGanttRecord.ganttProperties.rowUniqueID.toString() === predecessor.to
-                    || childGanttRecord.ganttProperties.rowUniqueID.toString() === predecessor.from)
+                let id: string = this.parent.viewType === 'ResourceView' ? childGanttRecord.ganttProperties.taskId
+                    : childGanttRecord.ganttProperties.rowUniqueID;
+                if ((id.toString() === predecessor.to
+                    || id.toString() === predecessor.from)
                     && (!validationOn || validationOn === 'predecessor')) {
                     this.validateChildGanttRecord(parentGanttRecord, record);
                 }
             }
 
             for (let count: number = 0; count < successors.length; count++) {
-                predecessor = successors[count];
-                parentGanttRecord = this.parent.getRecordByID(predecessor.from);
-                record = this.parent.getRecordByID(predecessor.to);
+                successor = successors[count];
+                parentGanttRecord = this.parent.connectorLineModule.getRecordByID(successor.from);
+                record = this.parent.connectorLineModule.getRecordByID(successor.to);
                 if (this.parent.isInPredecessorValidation && record.ganttProperties.isAutoSchedule) {
                     this.parent.isValidationEnabled = true;
                 } else {
@@ -646,7 +662,9 @@ export class Dependency {
             let recPredecessor: IPredecessor[] = record.ganttProperties.predecessor;
             if (recPredecessor && recPredecessor.length > 0) {
                 validPredecessor = recPredecessor.filter((value: IPredecessor) => {
-                    return value.from !== record.ganttProperties.rowUniqueID.toString();
+                    let id: string = this.parent.viewType === 'ResourceView' ? record.ganttProperties.taskId
+                        : record.ganttProperties.rowUniqueID;
+                    return value.from !== id.toString();
                 });
             }
         }

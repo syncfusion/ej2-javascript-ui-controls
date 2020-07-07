@@ -109,7 +109,7 @@ export class AggregateMenu {
             enableRtl: this.parent.enableRtl,
             beforeOpen: this.beforeMenuOpen.bind(this, isStringField),
             onClose: (args: OpenCloseMenuEventArgs) => {
-                this.buttonElement.focus();
+                (this.parentElement.querySelector('#' + this.buttonElement.id) as HTMLElement).focus();
             },
             select: this.selectOptionInContextMenu.bind(this)
         };
@@ -416,7 +416,7 @@ export class AggregateMenu {
         this.updateDataSource(true);
     }
     private removeDialog(): void {
-        this.buttonElement.focus();
+        (this.parentElement.querySelector('#' + this.buttonElement.id) as HTMLElement).focus();
         if (this.valueDialog && !this.valueDialog.isDestroyed) { this.valueDialog.destroy(); }
         if (document.getElementById(this.parentElement.id + '_ValueDialog')) {
             remove(document.getElementById(this.parentElement.id + '_ValueDialog'));

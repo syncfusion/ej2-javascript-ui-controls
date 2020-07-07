@@ -33,8 +33,7 @@ export class DataBind {
      * Update given data source to sheet.
      */
     // tslint:disable-next-line
-    private updateSheetFromDataSourceHandler(args: { sheet: ExtendedSheet, indexes: number[], promise: Promise<CellModel>, rangeSettingCount?: number[],
-        skipModelUpdate?: boolean }): void {
+    private updateSheetFromDataSourceHandler(args: { sheet: ExtendedSheet, indexes: number[], promise: Promise<CellModel>, rangeSettingCount?: number[] }): void {
         let cell: CellModel; let flds: string[]; let sCellIdx: number[];
         let result: Object[]; let remoteUrl: string; let isLocal: boolean; let dataManager: DataManager;
         let requestedRange: boolean[] = []; let sRanges: number[] = []; let rowIdx: number;
@@ -75,14 +74,13 @@ export class DataBind {
                 } else if (eRange > count) {
                     eRange = count;
                 }
-                this.requestedInfo.push({ deferred: deferred, indexes: args.indexes, isNotLoaded: loadedInfo.isNotLoaded,
-                    sheetId: args.sheet.id });
+                this.requestedInfo.push({ deferred: deferred, indexes: args.indexes, isNotLoaded: loadedInfo.isNotLoaded });
                 if (sRange >= 0 && loadedInfo.isNotLoaded && !isEndReached) {
                     sRanges[k] = sRange; requestedRange.push(false);
                     let query: Query = (range.query ? range.query : new Query()).clone();
                     dataManager.executeQuery(query.range(sRange, eRange >= count ? eRange : eRange + 1)
                         .requiresCount()).then((e: ReturnOption) => {
-                            if (!this.parent || this.parent.isDestroyed || args.skipModelUpdate) { return; }
+                            if (!this.parent || this.parent.isDestroyed) { return; }
                             result = (e.result && e.result.result ? e.result.result : e.result) as Object[];
                             sCellIdx = getRangeIndexes(range.startCell);
                             sRowIdx = sCellIdx[0]; sColIdx = sCellIdx[1];
@@ -170,22 +168,22 @@ export class DataBind {
                                     });
                                     //}
                                 }
-                                this.checkResolve(args.indexes, args.sheet.id);
+                                this.checkResolve(args.indexes);
                             }
                         });
                 } else if (k === 0 && requestedRange.indexOf(false) === -1) {
-                    this.checkResolve(args.indexes, args.sheet.id);
+                    this.checkResolve(args.indexes);
                 }
             }
         } else { deferred.resolve(); }
     }
 
-    private checkResolve(indexes: number[], sheetId: number): void {
+    private checkResolve(indexes: number[]): void {
         let resolved: boolean;
         let isSameRng: boolean;
         let cnt: number = 0;
         this.requestedInfo.forEach((info: RequestedInfo, idx: number) => {
-            isSameRng = JSON.stringify(info.indexes) === JSON.stringify(indexes) && sheetId === info.sheetId;
+            isSameRng = JSON.stringify(info.indexes) === JSON.stringify(indexes);
             if (isSameRng || resolved) {
                 if (idx === 0) {
                     info.deferred.resolve();
@@ -361,5 +359,4 @@ interface RequestedInfo {
   indexes: number[];
   isLoaded?: boolean;
   isNotLoaded?: boolean;
-  sheetId?: number;
 }

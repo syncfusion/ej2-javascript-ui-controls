@@ -12,7 +12,7 @@ import * as cls from '../../common/base/css-constant';
 import * as events from '../../common/base/constant';
 import { DataBoundEventArgs, BeforeOpenCloseMenuEventArgs, MenuEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';
 import { GridSettingsModel } from '../model/gridsettings-model';
-import { HyperCellClickEventArgs, PivotCellSelectedEventArgs, QueryCellInfoEventArgs, PivotColumn } from '../../common/base/interface';
+import { HyperCellClickEventArgs, PivotCellSelectedEventArgs, QueryCellInfoEventArgs, PivotColumn, ExcelRow } from '../../common/base/interface';
 import { AggregateMenuOpenEventArgs, BeforeExportEventArgs } from '../../common/base/interface';
 import { AggregateMenu } from '../../common/popups/aggregate-menu';
 import { SummaryTypes } from '../../base/types';
@@ -41,6 +41,8 @@ export class Render {
     public indentCollection: { [key: number]: number } = {};
     private formatList: { [key: string]: string };
     private colPos: number = 0;
+    private colGrandPos: number;
+    private rowGrandPos: number;
     private lastSpan: number = 0;
     private resColWidth: number;
     private aggMenu: AggregateMenu;
@@ -204,6 +206,7 @@ export class Render {
             (this.parent.grid as any)[isJsComponent] = true;
         }
         this.parent.grid.on('header-refreshed', this.headerRefreshed.bind(this));
+        this.parent.grid.on('export-DataBound', this.excelDataBound.bind(this));
     }
     /* tslint:disable-next-line */
     private headerRefreshed(args: any): void {
@@ -1001,15 +1004,11 @@ export class Render {
                 let localizedText: string = cell.formattedText;
                 if (cell.type) {
                     if (cell.type === 'grand sum') {
+                        this.rowGrandPos = cell.rowIndex;
                         tCell.classList.add('e-gtot');
                         localizedText = this.parent.localeObj.getConstant('grandTotal');
-                    } else if (this.parent.enableValueSorting) {
-                        if (cell.valueSort.levelName === (this.parent.localeObj.getConstant('grandTotal') +
-                            (this.parent.dataSourceSettings.valueSortSettings.headerDelimiter) + (cell.formattedText))) {
-                            tCell.classList.add('e-gtot');
-                        }
-                    } else if (cell.valueSort.levelName ===
-                        (this.parent.localeObj.getConstant('grandTotal') + '.' + (cell.formattedText))) {
+                    } else if (cell.valueSort.levelName === (this.parent.localeObj.getConstant('grandTotal') +
+                        (this.parent.dataSourceSettings.valueSortSettings.headerDelimiter) + (cell.formattedText))) {
                         tCell.classList.add('e-gtot');
                     } else {
                         tCell.classList.add('e-stot');
@@ -1055,7 +1054,7 @@ export class Render {
                 if (cell.isSum) {
                     tCell.classList.add(cls.SUMMARY);
                 }
-                if (cell.isGrandSum) {
+                if (cell.isGrandSum || this.colGrandPos === Number(tCell.getAttribute('aria-colindex')) || this.rowGrandPos === Number(tCell.getAttribute('index'))) {
                     tCell.classList.add('e-gtot');
                 } else if (this.parent.dataType === 'olap' ? cell.isSum : this.validateColumnTotalcell(!isNullOrUndefined(cell.value) ? cell.colIndex : cell.colIndex - 1)) {
                     tCell.classList.add('e-colstot');
@@ -1254,7 +1253,9 @@ export class Render {
                 }
                 if (cell.type) {
                     tCell.classList.add(cell.type === 'grand sum' ? 'e-gtot' : 'e-stot');
-                    if (cell.type !== 'grand sum') {
+                    if (cell.type === 'grand sum') {
+                        this.colGrandPos = cell.colIndex;
+                    } else {
                         tCell.classList.add('e-colstot');
                     }
                     let localizedText: string = cell.type === 'grand sum' ? this.parent.localeObj.getConstant('grandTotal') :
@@ -1323,14 +1324,8 @@ export class Render {
                                 tCell.classList.add('e-gtot');
                             }
                         }
-                        if (this.parent.enableValueSorting) {
-                            if (cell.valueSort.levelName === (this.parent.localeObj.getConstant('grandTotal') +
-                                (this.parent.dataSourceSettings.valueSortSettings.headerDelimiter) + (cell.formattedText))) {
-                                tCell.classList.add('e-gtot');
-                            }
-                        } else if (cell.valueSort.levelName ===
-                            (this.parent.localeObj.getConstant('grandTotal') + '.' + (cell.formattedText))) {
-                            tCell.classList.add(cls.VALUESHEADER);
+                        if (cell.valueSort.levelName === (this.parent.localeObj.getConstant('grandTotal') +
+                            (this.parent.dataSourceSettings.valueSortSettings.headerDelimiter) + (cell.formattedText))) {
                             tCell.classList.add('e-gtot');
                         } else {
                             tCell.classList.add(cls.VALUESHEADER);
@@ -1447,8 +1442,10 @@ export class Render {
     }
 
     public calculateColWidth(colCount: number): number {
+        let offsetWidth: number = this.parent.element.offsetWidth ? this.parent.element.offsetWidth :
+            this.parent.element.getBoundingClientRect().width;
         let parWidth: number = isNaN(this.parent.width as number) ? (this.parent.width.toString().indexOf('%') > -1 ?
-            ((parseFloat(this.parent.width.toString()) / 100) * this.parent.element.offsetWidth) : this.parent.element.offsetWidth) :
+            ((parseFloat(this.parent.width.toString()) / 100) * offsetWidth) : offsetWidth) :
             Number(this.parent.width);
         parWidth = parWidth - (this.gridSettings.columnWidth > this.resColWidth ? this.gridSettings.columnWidth : this.resColWidth) - 2;
         colCount = colCount - 1;
@@ -1626,7 +1623,7 @@ export class Render {
             let lastColumn: ColumnModel = integrateModel[integrateModel.length - 1];
             lastColumn.minWidth = lastColumn.width;
             lastColumn.width = 'auto';
-            if (lastColumn.columns && lastColumn.columns.length > 0 && !this.parent.allowPdfExport) {
+            if (lastColumn.columns && lastColumn.columns.length > 0 && !this.parent.allowPdfExport && !this.parent.allowExcelExport) {
                 this.configLastColumnWidth((lastColumn.columns as ColumnModel[])[lastColumn.columns.length - 1]);
             }
         }
@@ -1738,6 +1735,22 @@ export class Render {
         this.parent.trigger(events.pdfQueryCellInfo, args);
     }
 
+    /* tslint:disable:no-any */
+    private excelDataBound(args: any): void {
+        let excelRows: ExcelRow[] = args.excelRows;
+        let rowStartPos: number = Object.keys(this.engine.headerContent).length;
+        for (let i: number = 0; i < rowStartPos; i++) {
+            let cells: any = excelRows[i].cells;
+            let tmpCell: any = [];
+            for (let j: number = 0; j < cells.length; j++) {
+                if (cells[j].rowSpan !== -1) {
+                    tmpCell.push(cells[j]);
+                }
+            }
+            excelRows[i].cells = tmpCell;
+        }
+    };
+
     private exportHeaderEvent(args: ExcelHeaderQueryCellInfoEventArgs | PdfHeaderQueryCellInfoEventArgs): any {
         let rowSpan: number = 1;
         if (((args as any).gridCell as any).column.customAttributes) {
@@ -1746,6 +1759,14 @@ export class Render {
                 ((args as any).gridCell as any).colSpan = (args.cell as any).colSpan = cell.colSpan > -1 ? cell.colSpan : 1;
             }
             rowSpan = cell.rowSpan > -1 ? cell.rowSpan : 1;
+            if ((args as any).name === 'excelHeaderQueryCellInfo') {
+                if (cell.rowSpan > -1) {
+                    rowSpan = cell.rowSpan;
+                } else if (!isNullOrUndefined(cell.type) && cell.level !== 0) {
+                    rowSpan = -1;
+                    (args.cell as any).rowSpan = -1;
+                }
+            }
             this.actualText = cell.actualText as string;
         } else {
             rowSpan = Object.keys(this.engine.headerContent).length;
@@ -1755,6 +1776,7 @@ export class Render {
         }
         return args;
     }
+    /* tslint:enable:no-any */
 
     private exportContentEvent(args: ExcelQueryCellInfoEventArgs | PdfQueryCellInfoEventArgs): any {
         args.value = (<any>args).data[Number(args.column.field.split('.formattedText')[0])].type === 'grand sum' ?

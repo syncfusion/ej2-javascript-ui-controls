@@ -479,59 +479,6 @@
       }
     }
 
-    .e-dialog {
-
-      td {
-        @include ellipsis;
-        font-size: $fe-dg-td-font-size;
-        max-width: 211px;
-        min-width: 51px;
-        padding: $fe-dg-td-padding;
-      }
-
-      td.e-fe-value {
-        white-space: unset;
-        word-break: break-word;
-      }
-
-      .e-fe-errorcontent {
-        white-space: normal;
-        word-break: break-word;
-      }
-
-      .e-fe-icon {
-        display: inline-block;
-        height: 18px;
-        margin: 0 8px -2px 0;
-        width: 18px;
-      }
-
-      .e-fe-access-header {
-        display: inline-block;
-      }
-
-      .e-fe-retrycontent {
-        padding: 16px 0;
-      }
-
-      .e-image {
-        height: 100%;
-        width: 100%;
-      }
-
-      &.e-rtl {
-
-        td {
-          padding: $fe-dg-rtl-td-padding;
-        }
-
-        .e-fe-icon {
-          margin: 0 0 -2px 8px;
-        }
-
-      }
-    }
-
     .e-large-icons {
       @include checkbox($fe-cb-line-height);
       float: left;
@@ -629,11 +576,6 @@
         margin: $fe-lg-icon-margin;
         width: $fe-lg-icon-width;
       }
-    }
-
-    .e-fe-error {
-      font-size: 12px;
-      line-height: 1.5;
     }
 
     .e-fe-clone {
@@ -786,23 +728,6 @@
       }
     }
 
-    .e-upload {
-      border-bottom-width: 0;
-      border-top-width: 0;
-
-      .e-file-select-wrap {
-        display: none;
-      }
-
-      .e-icons.e-file-delete-btn {
-        display: none;
-      }
-
-      .e-upload-actions {
-        border-bottom: 1px solid;
-      }
-    }
-
     .e-layout-content {
       position: relative;
     }
@@ -824,10 +749,6 @@
       .e-fe-overlay {
         visibility: visible;
       }
-    }
-
-    .e-dialog.e-popup.e-dlg-resizable {
-      min-height: 200px;
     }
   }
 
@@ -854,6 +775,85 @@
       .e-fe-grid {
         display: inline-table;
         transform: rotate(180deg);
+      }
+    }
+
+    &.e-dialog {
+
+      td {
+        @include ellipsis;
+        font-size: $fe-dg-td-font-size;
+        max-width: 211px;
+        min-width: 51px;
+        padding: $fe-dg-td-padding;
+      }
+
+      td.e-fe-value {
+        white-space: unset;
+        word-break: break-word;
+      }
+
+      .e-fe-errorcontent {
+        white-space: normal;
+        word-break: break-word;
+      }
+
+      .e-fe-icon {
+        display: inline-block;
+        height: 18px;
+        margin: 0 8px -2px 0;
+        width: 18px;
+      }
+
+      .e-fe-access-header {
+        display: inline-block;
+      }
+
+      .e-fe-retrycontent {
+        padding: 16px 0;
+      }
+
+      .e-image {
+        height: 100%;
+        width: 100%;
+      }
+
+      &.e-rtl {
+
+        td {
+          padding: $fe-dg-rtl-td-padding;
+        }
+
+        .e-fe-icon {
+          margin: 0 0 -2px 8px;
+        }
+
+      }
+    }
+
+    &.e-dialog.e-popup.e-dlg-resizable {
+      min-height: 200px;
+    }
+
+    .e-fe-error {
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .e-upload {
+      border-bottom-width: 0;
+      border-top-width: 0;
+
+      .e-file-select-wrap {
+        display: none;
+      }
+
+      .e-icons.e-file-delete-btn {
+        display: none;
+      }
+
+      .e-upload-actions {
+        border-bottom: 1px solid;
       }
     }
   }
@@ -995,14 +995,6 @@
           font-size: $fe-mobile-icon-font-size;
           margin: 3px 0;
           right: 13px;
-        }
-      }
-
-      .e-dialog {
-
-        td.e-fe-value {
-          white-space: unset;
-          word-break: break-word;
         }
       }
 
@@ -1158,6 +1150,25 @@
             padding-right: 10px;
           }
         }
+      }
+    }
+  }
+
+  #{&}.e-fe-popup.e-bigger,
+  .e-bigger #{&}.e-fe-popup {
+
+    &.e-dialog {
+
+      .e-dlg-header-content {
+        padding: $fe-big-dg-header-font-size;
+      }
+
+      td {
+        @include ellipsis;
+        font-size: $fe-big-dg-td-font-size;
+        max-width: 205px;
+        min-width: 45px;
+        padding: $fe-big-dg-td-padding;
       }
     }
   }
@@ -1326,21 +1337,6 @@
         opacity: $fe-big-grid-empty-inner-content-opacity;
         padding: $fe-big-grid-empty-inner-content-padding;
         text-align: $fe-big-grid-empty-inner-content-text-align;
-      }
-    }
-
-    .e-dialog {
-
-      .e-dlg-header-content {
-        padding: $fe-big-dg-header-font-size;
-      }
-
-      td {
-        @include ellipsis;
-        font-size: $fe-big-dg-td-font-size;
-        max-width: 205px;
-        min-width: 45px;
-        padding: $fe-big-dg-td-padding;
       }
     }
 

@@ -65,6 +65,7 @@ export function getULMClassifierShapes(content: DiagramElement, node: NodeModel,
         true);
     diagram.initObject(newObj);
     diagram.nodes.push(newObj);
+    diagram.UpdateBlazorDiagramModel(newObj as Node, 'Node');
     node.children.push(newObj.id);
     getClassNodes(node as Node, diagram, classifier, textWrap);
     getClassMembers(node as Node, diagram, classifier, textWrap);
@@ -81,8 +82,7 @@ export function getClassNodes(node: Node, diagram: Diagram, classifier: UmlClass
     if ((node.shape as UmlClassifierShapeModel).classifier === 'Enumeration') {
         let member: UmlEnumerationMemberModel[] = (classifier as UmlEnumerationModel).members;
         if (member && member.length) {
-            addSeparator(node, diagram);
-            let memberText: string = '';
+            addSeparator(node, diagram); let memberText: string = '';
             for (let i: number = 0; i < member.length; i++) {
                 let members: UmlEnumerationMemberModel = member[i];
                 if (members.name !== '') {
@@ -114,6 +114,7 @@ export function getClassNodes(node: Node, diagram: Diagram, classifier: UmlClass
                         true);
                     diagram.initObject(temp);
                     diagram.nodes.push(temp);
+                    diagram.UpdateBlazorDiagramModel(temp as Node, 'Node');
                     node.children.push(temp.id);
                     memberText = '';
                     if (members.isSeparator && (i !== member.length - 1)) {
@@ -167,6 +168,7 @@ export function getClassNodes(node: Node, diagram: Diagram, classifier: UmlClass
                         true);
                     diagram.initObject(temp as Node);
                     diagram.nodes.push(temp);
+                    diagram.UpdateBlazorDiagramModel(temp as Node, 'Node');
                     node.children.push(temp.id);
                     attributeText = '';
                     if (attribute.isSeparator && (i !== attributes.length - 1)) {
@@ -239,6 +241,7 @@ export function getClassMembers(node: Node, diagram: Diagram, classifier: UmlCla
                     true);
                 diagram.initObject(temp as Node);
                 diagram.nodes.push(temp);
+                diagram.UpdateBlazorDiagramModel(temp as Node, 'Node');
                 node.children.push(temp.id);
                 methodText = '';
                 if (method.isSeparator && (i !== methods.length - 1)) {

@@ -351,7 +351,8 @@ export class SvgRenderer {
      * @param {string[]} colorStop - Array of string specifies the values for colorStop
      * @return {Element}
      */
-    public drawGradient(gradientType: string, options: RadialGradient | LinearGradient, colors: GradientColor[]): Element {
+    public drawGradient(gradientType: string, options: RadialGradient | LinearGradient, colors:
+GradientColor[]): Element {
         let defs: Element = this.createDefs();
         let gradient: Element = document.createElementNS(this.svgLink, gradientType);
         gradient = this.setElementAttributes(options as SVGCanvasAttributes, gradient);
@@ -359,7 +360,10 @@ export class SvgRenderer {
             let stop: Element = document.createElementNS(this.svgLink, 'stop');
             stop.setAttribute('offset', colors[i].colorStop);
             stop.setAttribute('stop-color', colors[i].color);
-            stop.setAttribute('stop-opacity', '1');
+            stop.setAttribute('stop-opacity', colors[i].opacity ? (colors[i].opacity) : '1');
+            if (!isNullOrUndefined(colors[i].style)) {
+                stop.setAttribute('style', colors[i].style);
+            }
             gradient.appendChild(stop);
         }
         defs.appendChild(gradient);

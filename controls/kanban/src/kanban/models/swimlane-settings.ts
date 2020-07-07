@@ -1,5 +1,5 @@
 import { Property, ChildProperty } from '@syncfusion/ej2-base';
-import { SortType } from '../base/type';
+import { SortDirection } from '../base/type';
 
 /**  
  * Holds the configuration of swimlane settings in kanban board.
@@ -56,6 +56,6 @@ export class SwimlaneSettings extends ChildProperty<SwimlaneSettings> {
      * @default 'Ascending'
      */
     @Property('Ascending')
-    public sortBy: SortType;
+    public sortDirection: SortDirection;
 
 }

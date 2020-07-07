@@ -151,7 +151,7 @@ export class ExportHelper {
      */
     private processPredecessor(): void {
         if (isNullOrUndefined(this.exportProps.showPredecessorLines) || this.exportProps.showPredecessorLines) {
-            this.parent.predecessorModule.createConnectorLinesCollection(this.parent.currentViewData);
+            this.parent.predecessorModule.createConnectorLinesCollection();
             this.parent.updatedConnectorLineCollection.forEach((data: IConnectorLineObject) => {
                 let predecessor: PdfGanttPredecessor = this.gantt.predecessor.add();
                 predecessor.parentLeft = data.parentLeft;

@@ -1,7 +1,7 @@
 import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, isUndefined, BlazorDragEventArgs } from '@syncfusion/ej2-base';
-import { Collection, Draggable, isNullOrUndefined, DragEventArgs, append, updateBlazorTemplate } from '@syncfusion/ej2-base';
-import { EmitType, Event, formatUnit, ChildProperty, compile, closest, isBlazor, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
-import { setStyleAttribute as setStyle, addClass, detach, removeClass, EventHandler, Browser } from '@syncfusion/ej2-base';
+import { Collection, Draggable, isNullOrUndefined, DragEventArgs, append, updateBlazorTemplate, setValue } from '@syncfusion/ej2-base';
+import { EmitType, Event, formatUnit, ChildProperty, compile, closest, isBlazor, SanitizeHtmlHelper, getValue } from '@syncfusion/ej2-base';
+import { setStyleAttribute as setStyle, addClass, detach, removeClass, EventHandler, Browser, extend } from '@syncfusion/ej2-base';
 import { DashboardLayoutModel, PanelModel } from './dashboard-layout-model';
 
 
@@ -2803,6 +2803,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
 
     constructor(options?: DashboardLayoutModel, element?: string | HTMLInputElement) {
         super(options, element);
+        setValue('mergePersistData', this.mergePersistPanelData, this);
     }
 
     /**
@@ -3080,6 +3081,36 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     public getPersistData(): string {
         let keyEntity: string[] = ['panels'];
         return this.addOnPersist(keyEntity);
+    }
+
+    /* istanbul ignore next */
+    private mergePersistPanelData(persistedData?: Object): void {
+        let data: string = window.localStorage.getItem(this.getModuleName() + this.element.id);
+        if (!(isNullOrUndefined(data) || (data === '')) || !isNullOrUndefined(persistedData)) {
+            let dataObj: DashboardLayout = !isNullOrUndefined(persistedData) ? persistedData : JSON.parse(data);
+            let keys: string[] = Object.keys(dataObj);
+            this.isProtectedOnChange = true;
+            for (let key of keys) {
+                if ((typeof getValue(key, this) === 'object' && !isNullOrUndefined(getValue(key, this)))) {
+                    if (Array.isArray(getValue(key, this)) && key === 'panels') {
+                        this.mergePanels(<Panel[]>dataObj[key], <Panel[]>this[key]);
+                    }
+                }
+            }
+            this.isProtectedOnChange = false;
+        }
+    }
+
+    /* istanbul ignore next */
+    protected mergePanels(sortedPanels: Panel[], panels: Panel[]): void {
+        let storedColumns: Panel[] = (<Panel[]>sortedPanels);
+        for (let i: number = 0; i < storedColumns.length; i++) {
+            this.checkForIDValues(panels);
+            let localPanel: Panel = panels.filter((pan: Panel) => pan.id === storedColumns[i].id)[0];
+            if (!isNullOrUndefined(localPanel)) {
+                storedColumns[i] = <Panel>extend(localPanel, storedColumns[i], {}, true);
+            }
+        }
     }
 
     /**

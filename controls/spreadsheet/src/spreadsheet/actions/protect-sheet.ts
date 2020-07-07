@@ -6,8 +6,8 @@ import { ListView, SelectedCollection} from '@syncfusion/ej2-lists';
 import { L10n, EventHandler } from '@syncfusion/ej2-base';
 import { locale, updateToggleItem, dialog} from '../common/index';
 import { CheckBox } from '@syncfusion/ej2-buttons';
-import { SheetModel} from '../../workbook';
-import { applyLockCells, CellModel, setCell} from '../../workbook/index';
+import { SheetModel } from '../../workbook';
+import { applyLockCells, CellModel, setCell } from '../../workbook/index';
 /**
  * The `Protect-sheet` module is used to handle the Protecting functionalities in Spreadsheet.
  */
@@ -152,10 +152,11 @@ export class ProtectSheet {
         let disableHomeBtnId: string[] = [id + '_undo', id + '_redo', id + '_cut', id + '_copy', id + '_paste', id + '_number_format',
             id + '_font_name', id + '_font_size', id + '_bold', id + '_italic', id + '_line-through', id + '_underline',
             id + '_font_color_picker', id + '_fill_color_picker', id + '_borders', id + '_merge_cells', id + '_text_align',
-            id + '_vertical_align', id + '_wrap', id + '_sorting'];
+            id + '_vertical_align', id + '_wrap', id + '_sorting', id + '_clear', id + '_conditionalformatting'];
         let enableHomeBtnId: string[] = [id + '_cut', id + '_copy', id + '_number_format', id + '_font_name', id + '_font_size',
             id + '_bold', id + '_italic', id + '_line-through', id + '_underline', id + '_font_color_picker', id + '_fill_color_picker',
-            id + '_borders', id + '_text_align', id + '_vertical_align', id + '_wrap', id + '_sorting'];
+            id + '_borders', id + '_text_align', id + '_vertical_align', id + '_wrap', id + '_sorting',
+            id + '_clear', id + '_conditionalformatting'];
         let enableFrmlaBtnId: string[] = [id + '_insert_function'];
         let enableInsertBtnId: string[] = [id + '_hyperlink'];
         let findBtnId: string[] = [id + '_find'];

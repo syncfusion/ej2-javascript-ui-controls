@@ -188,6 +188,15 @@ export class Filter {
     private actionBegin(args: FilterEventArgs): void {
         // ...
     }
+    public closeFilterOnContextClick(element: Element): void {
+        if (this.filterMenuElement && document.body.contains(this.filterMenuElement)) {
+            if (!(this.filterMenuElement.contains(element))) {
+                remove(this.filterMenuElement);
+                this.parent.treeGrid.grid.notify('filter-menu-close', { isOpen: false });
+                this.filterMenuElement = null;
+            }
+        }
+    }
     private actionComplete(args: GroupEventArgs): void {
         if (args.requestType === filterAfterOpen) {
             this.filterMenuElement = getValue('filterModel.dlgObj.element', args);

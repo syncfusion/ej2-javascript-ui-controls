@@ -136,8 +136,6 @@ export const updateToggle: string = 'updateToggleItem';
 /** @hidden */
 export const protectsheetHandler: string = 'protectsheetHandler';
 /** @hidden */
-export const unprotectsheetHandler: string = 'unprotectsheetHandler';
-/** @hidden */
 export const replaceAllDialog: string = 'replaceAllDialog';
 /** @hidden */
 export const workBookeditAlert: string = 'editAlert';
@@ -157,3 +155,21 @@ export const activeCellMergedRange: string = 'activeCellMergedRange';
 export const insertMerge: string = 'insertMerge';
 /** @hidden */
 export const pasteMerge: string = 'pasteMerge';
+/** @hidden */
+export const setCFRule: string = 'setCFRule';
+/** @hidden */
+export const cFInitialCheck: string = 'cFInitialCheck';
+/** @hidden */
+export const clearCFRule: string = 'clearCFRule';
+/** @hidden */
+export const initiateClearCFRule: string = 'initiateClearCFRule';
+/** @hidden */
+export const cFRender: string = 'cFRender';
+/** @hidden */
+export const cFDelete: string = 'cFDelete';
+/** @hidden */
+export const clear: string = 'clear';
+/** @hidden */
+export const clearCF: string = 'clearCF';
+/** @hidden */
+export const clearCells: string = 'clearCells';

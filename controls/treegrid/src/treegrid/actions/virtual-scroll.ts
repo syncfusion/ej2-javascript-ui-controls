@@ -86,7 +86,7 @@ export class VirtualScroll {
         });
         this.visualData = visualData;
         this.parent.grid.notify(events.dataListener, {data: visualData});
-        let counts: {startIndex: number, endIndex: number} = { startIndex: -1, endIndex: -1 };
+        let counts: {startIndex: number, endIndex: number, count: number} = { startIndex: -1, endIndex: -1, count: pageingDetails.count };
         this.parent.grid.notify(events.indexModifier, counts);
         let startIndex: number = counts.startIndex;
         let endIndex: number = counts.endIndex;

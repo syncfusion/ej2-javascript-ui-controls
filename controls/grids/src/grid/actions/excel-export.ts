@@ -272,6 +272,7 @@ export class ExcelExport {
 
             this.book.worksheets = this.workSheet;
             this.book.styles = this.styles;
+            gObj.notify('finalPageSetup', this.book);
 
             if (!isMultipleExport) {
                 if (this.isCsvExport) {
@@ -547,7 +548,7 @@ export class ExcelExport {
                 (<Grid>childGridObj).beforeDataBound = this.childGridCell(excelRow, childGridObj, excelExportProperties, row);
                 childGridObj.appendTo(element);
             }
-            gObj.notify(events.exportRowDataBound, { rowObj: row, type: 'excel' });
+            gObj.notify(events.exportRowDataBound, { rowObj: row, type: 'excel',  excelRows: excelRows });
         }
         return startIndex;
     }

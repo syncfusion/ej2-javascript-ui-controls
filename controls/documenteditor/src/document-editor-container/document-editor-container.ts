@@ -11,13 +11,13 @@ import { TocProperties } from './properties-pane/table-of-content-pane';
 import { TableProperties } from './properties-pane/table-properties-pane';
 import { StatusBar } from './properties-pane/status-bar';
 // tslint:disable-next-line:max-line-length
-import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs, ContainerDocumentChangeEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, BeforePaneSwitchEventArgs, LayoutType } from '../document-editor/base';
+import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs, ContainerDocumentChangeEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, BeforePaneSwitchEventArgs, LayoutType, CommentDeleteEventArgs } from '../document-editor/base';
 import { createSpinner } from '@syncfusion/ej2-popups';
 // tslint:disable-next-line:max-line-length
 import { ContainerServerActionSettingsModel, DocumentEditorSettingsModel, FormFieldSettingsModel } from '../document-editor/document-editor-model';
 import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties } from '../document-editor/implementation';
 import { ToolbarItem } from '../document-editor/base/types';
-import { CustomToolbarItemModel } from '../document-editor/base/events-helper';
+import { CustomToolbarItemModel, TrackChangeEventArgs } from '../document-editor/base/events-helper';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 
 /**
@@ -49,6 +49,12 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      */
     @Property(false)
     public enableSpellCheck: boolean;
+    /**
+     * Enable or disable track changes in document editor container.
+     * @default false
+     */
+    @Property(false)
+    public enableTrackChanges: boolean;
     /**
      * Layout Type
      * @default Pages
@@ -176,6 +182,20 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     @Event()
     public beforePaneSwitch: EmitType<BeforePaneSwitchEventArgs>;
     /**
+     * Triggers after inserting comment.
+     * @blazorproperty 'OnCommentDelete'
+     * @event
+     */
+    @Event()
+    public commentDelete: EmitType<CommentDeleteEventArgs>;
+    /**
+     * Triggers Keyboard shortcut of TrackChanges.
+     * @blazorproperty 'OnEnableTrackChanges'
+     * @event
+     */
+    @Event()
+    public trackChange: EmitType<TrackChangeEventArgs>;
+    /**
      * Document editor container's toolbar module
      * @private
      */
@@ -273,9 +293,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     //tslint:disable:max-line-length
     /**    
      * Defines toolbar items for DocumentEditorContainer.
-     * @default ['New','Open','Separator','Undo','Redo','Separator','Image','Table','Hyperlink','Bookmark','Comments','TableOfContents','Separator','Header','Footer','PageSetup','PageNumber','Break','Separator','Find','Separator','LocalClipboard','RestrictEditing','Separator','FormFields']
+     * @default ['New','Open','Separator','Undo','Redo','Separator','Image','Table','Hyperlink','Bookmark','TableOfContents','Separator','Header','Footer','PageSetup','PageNumber','Break','Separator','Find','Separator','Comments','TrackChanges','LocalClipboard','RestrictEditing','Separator','FormFields']
      */
-    @Property(['New', 'Open', 'Separator', 'Undo', 'Redo', 'Separator', 'Image', 'Table', 'Hyperlink', 'Bookmark', 'Comments', 'TableOfContents', 'Separator', 'Header', 'Footer', 'PageSetup', 'PageNumber', 'Break', 'Separator', 'Find', 'Separator', 'LocalClipboard', 'RestrictEditing', 'Separator', 'FormFields', 'UpdateFields'])
+    @Property(['New', 'Open', 'Separator', 'Undo', 'Redo', 'Separator', 'Image', 'Table', 'Hyperlink', 'Bookmark', 'TableOfContents', 'Separator', 'Header', 'Footer', 'PageSetup', 'PageNumber', 'Break', 'Separator', 'Find', 'Separator', 'Comments', 'TrackChanges', 'Separator', 'LocalClipboard', 'RestrictEditing', 'Separator', 'FormFields', 'UpdateFields'])
     public toolbarItems: (CustomToolbarItemModel | ToolbarItem)[];
     //tslint:enable:max-line-length
     /**
@@ -462,7 +482,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         'Check Box': 'Check Box',
         'DropDown': 'Drop-Down',
         'Update Fields': 'Update Fields',
-        'Update cross reference fields': 'Update cross reference fields'
+        'Update cross reference fields': 'Update cross reference fields',
+        'Track Changes': 'Keep track of the changes made in the document',
+        'TrackChanges': 'Track Changes'
     };
 
     /**
@@ -487,6 +509,16 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
                     break;
                 case 'showPropertiesPane':
                     this.showHidePropertiesPane(newModel.showPropertiesPane);
+                    break;
+                case 'enableTrackChanges':
+                    if (this.documentEditor) {
+                        this.documentEditor.enableTrackChanges = newModel.enableTrackChanges;
+                        this.documentEditor.showRevisions = newModel.enableTrackChanges;
+                        if (this.toolbarModule) {
+                            this.toolbarModule.toggleTrackChanges(newModel.enableTrackChanges);
+                        }
+                        this.documentEditor.resize();
+                    }
                     break;
                 case 'enableLocalPaste':
                     if (this.documentEditor) {
@@ -560,6 +592,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
                     if (newModel.enableToolbar && this.toolbarModule) {
                         this.toolbarModule.initToolBar(this.toolbarItems);
                         this.toolbarModule.enableDisableInsertComment(this.enableComment);
+                        this.toolbarModule.toggleTrackChanges(this.enableTrackChanges);
                     }
                     if (this.documentEditor) {
                         this.documentEditor.resize();
@@ -749,6 +782,8 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             beforePaneSwitch: this.onBeforePaneSwitch.bind(this),
             commentBegin: this.onCommentBegin.bind(this),
             commentEnd: this.onCommentEnd.bind(this),
+            commentDelete: this.onCommentDelete.bind(this),
+            trackChange: this.onTrackChange.bind(this),
             locale: this.locale,
             acceptTab: true,
             zIndex: this.zIndex,
@@ -758,7 +793,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             currentUser: this.currentUser,
             userColor: this.userColor,
             height: '100%',
-            width: '100%'
+            width: '100%',
+            enableTrackChanges: this.enableTrackChanges,
+            showRevisions: this.enableTrackChanges
         });
         this.documentEditor.enableAllModules();
         this.documentEditor.enableComment = this.enableComment;
@@ -776,6 +813,16 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (this.toolbarModule) {
             this.toolbarModule.enableDisableInsertComment(true && this.enableComment);
         }
+    }
+    private onCommentDelete(args: CommentDeleteEventArgs): void {
+        this.trigger('commentDelete', args);
+    }
+    private onTrackChange(args: TrackChangeEventArgs): void {
+        this.trigger('trackChange', args);
+        if (this.toolbarModule) {
+            this.toolbarModule.toggleTrackChanges(args.isTrackChangesEnabled);
+        }
+
     }
     private onBeforePaneSwitch(args: BeforePaneSwitchEventArgs): void {
         this.trigger('beforePaneSwitch', args);
@@ -811,6 +858,8 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      * @private
      */
     public onDocumentChange(): void {
+        this.enableTrackChanges = this.documentEditor.enableTrackChanges;
+
         if (this.toolbarModule) {
             this.toolbarModule.isCommentEditing = false;
             this.toolbarModule.enableDisableInsertComment(true);

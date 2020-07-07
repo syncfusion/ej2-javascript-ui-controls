@@ -167,7 +167,6 @@ export class SelectionCommands {
         let fontStyle: string;
         if (format === 'backgroundcolor') {
             fontStyle = (formatNode as HTMLElement).style.fontSize;
-
         }
         let bgStyle: string;
         if (format === 'fontsize') {

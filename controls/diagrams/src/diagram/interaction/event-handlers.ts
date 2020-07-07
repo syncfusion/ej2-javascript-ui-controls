@@ -765,7 +765,13 @@ export class DiagramEventHandler {
             }
             if (!touches) { evt.preventDefault(); }
             this.diagram.currentDrawingObject = undefined; let selector: SelectorModel = this.diagram.selectedItems;
-            if (!this.inAction && selector.wrapper && selector.userHandles.length > 0) {
+            let disbleRenderSelector:boolean=false;
+            if(this.commandHandler.isUserHandle(this.currentPosition)){
+                if(this.isForeignObject(evt.target as HTMLElement)){
+                    disbleRenderSelector=true;
+                }
+            }
+            if (!this.inAction && selector.wrapper && selector.userHandles.length > 0 && !disbleRenderSelector) {
                 this.diagram.renderSelector(true);
             }
             if (!this.inAction && !this.diagram.currentSymbol && this.eventArgs) {
@@ -1097,11 +1103,13 @@ export class DiagramEventHandler {
         let label: ActiveLabel = this.diagram.activeLabel;
         args.target = this.diagram.element.id + '_editBox';
         let node: NodeModel = this.diagram.nameTable[label.parentId];
-        args.text = (document.getElementById(this.diagram.element.id + '_editBox') as HTMLTextAreaElement).value;
-        for (let i: number = 0; i < node.annotations.length; i++) {
-            if (node.annotations[i].id === label.id) {
-                args.label = node.annotations[i];
-                break;
+        if (document.getElementById(this.diagram.element.id + '_editBox')) {
+            args.text = (document.getElementById(this.diagram.element.id + '_editBox') as HTMLTextAreaElement).value;
+            for (let i: number = 0; i < node.annotations.length; i++) {
+                if (node.annotations[i].id === label.id) {
+                    args.label = node.annotations[i];
+                    break;
+                }
             }
         }
     }
@@ -1907,10 +1915,13 @@ export class DiagramEventHandler {
                 (adornerSvg as SVGSVGElement).getElementById(adornerSvg.id + '_stack_highlighter') as SVGElement;
             if (highlighter) {
                 let index: number = node.wrapper.children.indexOf(target.wrapper) + 1;
+                this.diagram.enableServerDataBinding(false);
                 let temp: NodeModel = new Node(
                     this.diagram, 'nodes', {
-                        style: { fill: node.style.fill,
-                        strokeColor: (node.style.strokeColor === 'black') ? '#ffffff00' : node.style.strokeColor },
+                        style: {
+                            fill: node.style.fill,
+                            strokeColor: (node.style.strokeColor === 'black') ? '#ffffff00' : node.style.strokeColor
+                        },
                         annotations: (target as Node).annotations, verticalAlignment: 'Stretch', horizontalAlignment: 'Stretch',
                         constraints: (NodeConstraints.Default | NodeConstraints.HideThumbs) & ~
                             (NodeConstraints.Rotate | NodeConstraints.Drag | NodeConstraints.Resize),
@@ -1928,6 +1939,7 @@ export class DiagramEventHandler {
                     sourceIndex: node.wrapper.children.indexOf(temp.wrapper), source: temp,
                     target: undefined, targetIndex: undefined
                 };
+                this.diagram.enableServerDataBinding(true);
                 this.diagram.add(temp);
                 this.diagram.updateConnectorEdges(node as Node);
                 this.diagram.clearSelection();

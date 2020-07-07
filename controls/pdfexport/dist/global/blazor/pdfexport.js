@@ -715,6 +715,15 @@ var Operators = /** @class */ (function () {
      * @private
      */
     Operators.setMiterLimit = 'M';
+    /**
+     * Same as SC, but also supports Pattern, Separation, DeviceN, and ICCBased color spaces. For non-stroking operations.
+     * @public
+     */
+    Operators.setColorAndPattern = 'scn';
+    /**
+     * Same as SC, but also supports Pattern, Separation, DeviceN, and ICCBased color spaces. For stroking.
+     */
+    Operators.setColorAndPatternStroking = 'SCN';
     return Operators;
 }());
 
@@ -1145,6 +1154,91 @@ var DictionaryProperties = /** @class */ (function () {
          * @private
          */
         this.descendantFonts = 'DescendantFonts';
+        /**
+         * Specifies the value of 'background'.
+         * @private
+         */
+        this.background = 'Background';
+        /**
+         * Specifies the value of 'shading'.
+         * @private
+         */
+        this.shading = 'Shading';
+        /**
+         * Specifies the value of 'matrix'.
+         * @private
+         */
+        this.matrix = 'Matrix';
+        /**
+         * Specifies the value of 'antiAlias'.
+         * @private
+         */
+        this.antiAlias = 'AntiAlias';
+        /**
+         * Specifies the value of 'function'.
+         * @private
+         */
+        this.function = 'Function';
+        /**
+         * Specifies the value of 'extend'.
+         * @private
+         */
+        this.extend = 'Extend';
+        /**
+         * Specifies the value of 'shadingType'.
+         * @private
+         */
+        this.shadingType = 'ShadingType';
+        /**
+         * Specifies the value of 'coords'.
+         * @private
+         */
+        this.coords = 'Coords';
+        /**
+         * Specifies the value of 'domain'.
+         * @private
+         */
+        this.domain = 'Domain';
+        /**
+         * Specifies the value of 'range'.
+         * @private
+         */
+        this.range = 'Range';
+        /**
+         * Specifies the value of 'functionType'.
+         * @private
+         */
+        this.functionType = 'FunctionType';
+        /**
+         * Specifies the value of 'bitsPerSample'.
+         * @private
+         */
+        this.bitsPerSample = 'BitsPerSample';
+        /**
+         * Specifies the value of 'patternType'.
+         * @private
+         */
+        this.patternType = 'PatternType';
+        /**
+         * Specifies the value of 'paintType'.
+         * @private
+         */
+        this.paintType = 'PaintType';
+        /**
+         * Specifies the value of 'tilingType'.
+         * @private
+         */
+        this.tilingType = 'TilingType';
+        /**
+         * Specifies the value of 'xStep'.
+         * @private
+         */
+        this.xStep = 'XStep';
+        /**
+         * Specifies the value of 'yStep'.
+         * @private
+         */
+        this.yStep = 'YStep';
         //
     }
     return DictionaryProperties;
@@ -3735,6 +3829,25 @@ var PdfColor = /** @class */ (function () {
             this.grayColor = color1.gray;
             this.alpha = color1.alpha;
             this.filled = (this.alpha !== 0);
+            /* tslint:disable-next-line:max-line-length */
+        }
+        else if (typeof color1 === 'number' && typeof color2 === 'undefined' && typeof color3 === 'undefined' && typeof color4 === 'undefined') {
+            if (color1 < 0) {
+                color1 = 0;
+            }
+            if (color1 > 1) {
+                color1 = 1;
+            }
+            this.redColor = color1 * PdfColor.maxColourChannelValue;
+            this.greenColor = color1 * PdfColor.maxColourChannelValue;
+            this.blueColor = color1 * PdfColor.maxColourChannelValue;
+            this.cyanColor = color1;
+            this.magentaColor = color1;
+            this.yellowColor = color1;
+            this.blackColor = color1;
+            this.grayColor = color1;
+            this.alpha = PdfColor.maxColourChannelValue;
+            this.filled = true;
         }
         else if (typeof color4 === 'undefined') {
             this.assignRGB(color1, color2, color3);
@@ -3846,6 +3959,102 @@ var PdfColor = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(PdfColor.prototype, "c", {
+        /**
+         * Gets or sets `Cyan` channel value.
+         * @private
+         */
+        get: function () {
+            return this.cyanColor;
+        },
+        set: function (value) {
+            if (value < 0) {
+                this.cyanColor = 0;
+            }
+            else if (value > 1) {
+                this.cyanColor = 1;
+            }
+            else {
+                this.cyanColor = value;
+            }
+            this.assignRGB(this.cyanColor, this.magentaColor, this.yellowColor, this.blackColor);
+            this.filled = true;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfColor.prototype, "k", {
+        /**
+         * Gets or sets `Black` channel value.
+         * @private
+         */
+        get: function () {
+            return this.blackColor;
+        },
+        set: function (value) {
+            if ((value < 0)) {
+                this.blackColor = 0;
+            }
+            else if ((value > 1)) {
+                this.blackColor = 1;
+            }
+            else {
+                this.blackColor = value;
+            }
+            this.assignRGB(this.cyanColor, this.magentaColor, this.yellowColor, this.blackColor);
+            this.filled = true;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfColor.prototype, "m", {
+        /**
+         * Gets or sets `Magenta` channel value.
+         * @private
+         */
+        get: function () {
+            return this.magentaColor;
+        },
+        set: function (value) {
+            if ((value < 0)) {
+                this.magentaColor = 0;
+            }
+            else if ((value > 1)) {
+                this.magentaColor = 1;
+            }
+            else {
+                this.magentaColor = value;
+            }
+            this.assignRGB(this.cyanColor, this.magentaColor, this.yellowColor, this.blackColor);
+            this.filled = true;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfColor.prototype, "y", {
+        /**
+         * Gets or sets `Yellow` channel value.
+         * @private
+         */
+        get: function () {
+            return this.yellowColor;
+        },
+        set: function (value) {
+            if ((value < 0)) {
+                this.yellowColor = 0;
+            }
+            else if ((value > 1)) {
+                this.yellowColor = 1;
+            }
+            else {
+                this.yellowColor = value;
+            }
+            this.assignRGB(this.cyanColor, this.magentaColor, this.yellowColor, this.blackColor);
+            this.filled = true;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(PdfColor.prototype, "g", {
         /**
          *  Gets or sets `Green` channel value.
@@ -3942,7 +4151,40 @@ var PdfColor = /** @class */ (function () {
         if (this.isEmpty) {
             return '';
         }
-        return this.rgbToString(stroke);
+        var str = '';
+        switch (colorSpace) {
+            case exports.PdfColorSpace.Rgb:
+                str = this.rgbToString(stroke);
+                break;
+            case exports.PdfColorSpace.GrayScale:
+                str = this.grayScaleToString(stroke);
+                break;
+            case exports.PdfColorSpace.Cmyk:
+                str = this.cmykToString(stroke);
+                break;
+        }
+        return str;
+    };
+    /**
+     * Sets `GrayScale` color.
+     * @private
+     */
+    PdfColor.prototype.grayScaleToString = function (ifStroking) {
+        var gray = this.gray;
+        var colour = '';
+        var obj = null;
+        /* tslint:disable-next-line:max-line-length */
+        obj = (ifStroking) ? PdfColor.grayStringsSroke.containsKey(gray) ? PdfColor.grayStringsSroke.getValue(gray) : null : PdfColor.grayStringsFill.containsKey(gray) ? PdfColor.grayStringsFill.getValue(gray) : null;
+        if (obj == null) {
+            if (ifStroking) {
+                colour = gray.toString() + ' G';
+                PdfColor.grayStringsSroke.setValue(gray, colour);
+            }
+        }
+        else {
+            colour = obj.toString();
+        }
+        return colour + Operators.newLine;
     };
     /**
      * Sets `RGB` color.
@@ -3978,6 +4220,19 @@ var PdfColor = /** @class */ (function () {
         }
         return colour + Operators.newLine;
     };
+    /***
+     * Sets `CMYK` color.
+     * @private
+     */
+    PdfColor.prototype.cmykToString = function (ifStroking) {
+        var cyan = this.c;
+        var magenta = this.m;
+        var yellow = this.y;
+        var black = this.b;
+        var colour = '';
+        colour = cyan.toString() + ' ' + magenta.toString() + ' ' + yellow.toString() + ' ' + black.toString() + ' K';
+        return colour + Operators.newLine;
+    };
     /**
      * Converts `colour to a PDF array`.
      * @private
@@ -3990,8 +4245,6 @@ var PdfColor = /** @class */ (function () {
                 array.add(new PdfNumber(this.green));
                 array.add(new PdfNumber(this.blue));
                 break;
-            default:
-                throw new Error('NotSupportedException : Unsupported colour space.');
         }
         return array;
     };
@@ -4183,6 +4436,10 @@ var PdfBrush = /** @class */ (function () {
     function PdfBrush() {
         //
     }
+    //IClonable implementation
+    PdfBrush.prototype.clone = function () {
+        return this;
+    };
     return PdfBrush;
 }());
 
@@ -8390,6 +8647,40 @@ var PdfStreamWriter = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    /* tslint:disable-next-line:max-line-length */
+    PdfStreamWriter.prototype.appendBezierSegment = function (arg1, arg2, arg3, arg4, arg5, arg6) {
+        if (arg1 instanceof PointF && arg2 instanceof PointF && arg3 instanceof PointF) {
+            this.writePoint(arg1.x, arg1.y);
+            this.writePoint(arg2.x, arg2.y);
+            this.writePoint(arg3.x, arg3.y);
+        }
+        else {
+            this.writePoint(arg1, arg2);
+            this.writePoint(arg3, arg4);
+            this.writePoint(arg5, arg6);
+        }
+        this.writeOperator(Operators.appendbeziercurve);
+    };
+    PdfStreamWriter.prototype.setColourWithPattern = function (colours, patternName, forStroking) {
+        if ((colours != null)) {
+            var count = colours.length;
+            var i = 0;
+            for (i = 0; i < count; ++i) {
+                this.stream.write(colours[i].toString());
+                this.stream.write(Operators.whiteSpace);
+            }
+        }
+        if ((patternName != null)) {
+            this.stream.write(patternName.toString());
+            this.stream.write(Operators.whiteSpace);
+        }
+        if (forStroking) {
+            this.writeOperator(Operators.setColorAndPatternStroking);
+        }
+        else {
+            this.writeOperator(Operators.setColorAndPattern);
+        }
+    };
     return PdfStreamWriter;
 }());
 
@@ -8674,6 +8965,10 @@ var PdfPen = /** @class */ (function () {
      */
     PdfPen.prototype.setBrush = function (brush) {
         var sBrush = brush;
+        if ((sBrush != null && sBrush instanceof PdfSolidBrush)) {
+            this.color = sBrush.color;
+            this.pdfBrush = sBrush;
+        }
         this.color = sBrush.color;
         this.pdfBrush = sBrush;
     };
@@ -14340,6 +14635,1137 @@ var RtlRenderer = /** @class */ (function () {
 }());
 
 /**
+ * public Enum for `PdfLayoutType`.
+ * @private
+ */
+
+(function (PdfLayoutType) {
+    /**
+     * Specifies the type of `Paginate`.
+     * @private
+     */
+    PdfLayoutType[PdfLayoutType["Paginate"] = 0] = "Paginate";
+    /**
+     * Specifies the type of `OnePage`.
+     * @private
+     */
+    PdfLayoutType[PdfLayoutType["OnePage"] = 1] = "OnePage";
+})(exports.PdfLayoutType || (exports.PdfLayoutType = {}));
+/**
+ * public Enum for `PdfLayoutBreakType`.
+ * @private
+ */
+
+(function (PdfLayoutBreakType) {
+    /**
+     * Specifies the type of `FitPage`.
+     * @private
+     */
+    PdfLayoutBreakType[PdfLayoutBreakType["FitPage"] = 0] = "FitPage";
+    /**
+     * Specifies the type of `FitElement`.
+     * @private
+     */
+    PdfLayoutBreakType[PdfLayoutBreakType["FitElement"] = 1] = "FitElement";
+    /**
+     * Specifies the type of `FitColumnsToPage`.
+     * @private
+     */
+    PdfLayoutBreakType[PdfLayoutBreakType["FitColumnsToPage"] = 2] = "FitColumnsToPage";
+})(exports.PdfLayoutBreakType || (exports.PdfLayoutBreakType = {}));
+
+(function (PathPointType) {
+    /**
+     * Specifies the path point type of `Start`.
+     * @private
+     */
+    PathPointType[PathPointType["Start"] = 0] = "Start";
+    /**
+     * Specifies the path point type of `Line`.
+     * @private
+     */
+    PathPointType[PathPointType["Line"] = 1] = "Line";
+    /**
+     * Specifies the path point type of `Bezier3`.
+     * @private
+     */
+    PathPointType[PathPointType["Bezier3"] = 3] = "Bezier3";
+    /**
+     * Specifies the path point type of `Bezier`.
+     * @private
+     */
+    PathPointType[PathPointType["Bezier"] = 3] = "Bezier";
+    /**
+     * Specifies the path point type of `PathTypeMask`.
+     * @private
+     */
+    PathPointType[PathPointType["PathTypeMask"] = 7] = "PathTypeMask";
+    /**
+     * Specifies the path point type of `DashMode`.
+     * @private
+     */
+    PathPointType[PathPointType["DashMode"] = 16] = "DashMode";
+    /**
+     * Specifies the path point type of `PathMarker`.
+     * @private
+     */
+    PathPointType[PathPointType["PathMarker"] = 32] = "PathMarker";
+    /**
+     * Specifies the path point type of `CloseSubpath`.
+     * @private
+     */
+    PathPointType[PathPointType["CloseSubpath"] = 128] = "CloseSubpath";
+})(exports.PathPointType || (exports.PathPointType = {}));
+
+var __extends$13 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+/**
+ * `PdfGradientBrush` class provides objects used to fill the interiors of graphical shapes such as rectangles,
+ * ellipses, pies, polygons, and paths.
+ * @private
+ */
+var PdfGradientBrush = /** @class */ (function (_super) {
+    __extends$13(PdfGradientBrush, _super);
+    //Constructor
+    /**
+     * Initializes a new instance of the `PdfGradientBrush` class.
+     * @public
+     */
+    /* tslint:disable-next-line:max-line-length */
+    function PdfGradientBrush(shading) {
+        var _this = _super.call(this) || this;
+        // Fields
+        /**
+         * Local variable to store the background color.
+         * @private
+         */
+        _this.mbackground = new PdfColor(255, 255, 255);
+        /**
+         * Local variable to store the stroking color.
+         * @private
+         */
+        _this.mbStroking = false;
+        /**
+         * Local variable to store the function.
+         * @private
+         */
+        _this.mfunction = null;
+        /**
+         * Local variable to store the DictionaryProperties.
+         * @private
+         */
+        _this.dictionaryProperties = new DictionaryProperties();
+        _this.mpatternDictionary = new PdfDictionary();
+        _this.mpatternDictionary.items.setValue(_this.dictionaryProperties.type, new PdfName(_this.dictionaryProperties.pattern));
+        _this.mpatternDictionary.items.setValue(_this.dictionaryProperties.patternType, new PdfNumber(2));
+        _this.shading = shading;
+        _this.colorSpace = exports.PdfColorSpace.Rgb;
+        return _this;
+    }
+    Object.defineProperty(PdfGradientBrush.prototype, "background", {
+        //Properties
+        /**
+         * Gets or sets the background color of the brush.
+         * @public
+         */
+        get: function () {
+            return this.mbackground;
+        },
+        set: function (value) {
+            this.mbackground = value;
+            var sh = this.shading;
+            if (value.isEmpty) {
+                sh.remove(this.dictionaryProperties.background);
+            }
+            else {
+                sh.items.setValue(this.dictionaryProperties.background, value.toArray(this.colorSpace));
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfGradientBrush.prototype, "antiAlias", {
+        /**
+         * Gets or sets a value indicating whether use anti aliasing algorithm.
+         * @public
+         */
+        get: function () {
+            var sh = this.shading;
+            var aa = (sh.items.getValue(this.dictionaryProperties.antiAlias));
+            return aa.value;
+        },
+        set: function (value) {
+            var sh = this.shading;
+            var aa = (sh.items.getValue(this.dictionaryProperties.antiAlias));
+            if ((aa == null && typeof aa === 'undefined')) {
+                aa = new PdfBoolean(value);
+                sh.items.setValue(this.dictionaryProperties.antiAlias, aa);
+            }
+            else {
+                aa.value = value;
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfGradientBrush.prototype, "function", {
+        /**
+         * Gets or sets the function of the brush.
+         * @protected
+         */
+        get: function () {
+            return this.mfunction;
+        },
+        set: function (value) {
+            this.mfunction = value;
+            if (value != null && typeof value !== 'undefined') {
+                this.shading.items.setValue(this.dictionaryProperties.function, new PdfReferenceHolder(this.mfunction));
+            }
+            else {
+                this.shading.remove(this.dictionaryProperties.function);
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfGradientBrush.prototype, "bBox", {
+        /**
+         * Gets or sets the boundary box of the brush.
+         * @protected
+         */
+        get: function () {
+            var sh = this.shading;
+            var box = (sh.items.getValue(this.dictionaryProperties.bBox));
+            return box;
+        },
+        set: function (value) {
+            var sh = this.shading;
+            if (value == null && typeof value === 'undefined') {
+                sh.remove(this.dictionaryProperties.bBox);
+            }
+            else {
+                sh.items.setValue(this.dictionaryProperties.bBox, value);
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfGradientBrush.prototype, "colorSpace", {
+        /**
+         * Gets or sets the color space of the brush.
+         * @public
+         */
+        get: function () {
+            return this.mcolorSpace;
+        },
+        set: function (value) {
+            var colorSpace = this.shading.items.getValue(this.dictionaryProperties.colorSpace);
+            if ((value !== this.mcolorSpace) || (colorSpace == null)) {
+                this.mcolorSpace = value;
+                var csValue = this.colorSpaceToDeviceName(value);
+                this.shading.items.setValue(this.dictionaryProperties.colorSpace, new PdfName(csValue));
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfGradientBrush.prototype, "stroking", {
+        /**
+         * Gets or sets a value indicating whether this PdfGradientBrush is stroking.
+         * @public
+         */
+        get: function () {
+            return this.mbStroking;
+        },
+        set: function (value) {
+            this.mbStroking = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfGradientBrush.prototype, "patternDictionary", {
+        /**
+         * Gets the pattern dictionary.
+         * @protected
+         */
+        get: function () {
+            if (this.mpatternDictionary == null) {
+                this.mpatternDictionary = new PdfDictionary();
+            }
+            return this.mpatternDictionary;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfGradientBrush.prototype, "shading", {
+        /**
+         * Gets or sets the shading dictionary.
+         * @protected
+         */
+        get: function () {
+            return this.mshading;
+        },
+        set: function (value) {
+            if (value == null) {
+                throw new Error('ArgumentNullException : Shading');
+            }
+            if (value !== this.mshading) {
+                this.mshading = value;
+                this.patternDictionary.items.setValue(this.dictionaryProperties.shading, new PdfReferenceHolder(this.mshading));
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfGradientBrush.prototype, "matrix", {
+        /**
+         * Gets or sets the transformation matrix.
+         * @public
+         */
+        get: function () {
+            return this.mmatrix;
+        },
+        set: function (value) {
+            if (value == null) {
+                throw new Error('ArgumentNullException : Matrix');
+            }
+            if (value !== this.mmatrix) {
+                this.mmatrix = value.clone();
+                var m = new PdfArray(this.mmatrix.matrix.elements);
+                this.mpatternDictionary.items.setValue(this.dictionaryProperties.matrix, m);
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    //Overrides
+    /**
+     * Monitors the changes of the brush and modify PDF state respectfully.
+     * @param brush The brush.
+     * @param streamWriter The stream writer.
+     * @param getResources The get resources delegate.
+     * @param saveChanges if set to true the changes should be saved anyway.
+     * @param currentColorSpace The current color space.
+     */
+    /* tslint:disable-next-line:max-line-length */
+    PdfGradientBrush.prototype.monitorChanges = function (brush, streamWriter, getResources, saveChanges, currentColorSpace) {
+        var diff = false;
+        if (brush instanceof PdfGradientBrush) {
+            if ((this.colorSpace !== currentColorSpace)) {
+                this.colorSpace = currentColorSpace;
+                this.resetFunction();
+            }
+            //  Set the /Pattern colour space.
+            streamWriter.setColorSpace('Pattern', this.mbStroking);
+            //  Set the pattern for non-stroking operations.
+            var resources = getResources.getResources();
+            var name_1 = resources.getName(this);
+            streamWriter.setColourWithPattern(null, name_1, this.mbStroking);
+            diff = true;
+        }
+        return diff;
+    };
+    /**
+     * Resets the changes, which were made by the brush.
+     * In other words resets the state to the initial one.
+     * @param streamWriter The stream writer.
+     */
+    PdfGradientBrush.prototype.resetChanges = function (streamWriter) {
+        //  Unable reset.
+    };
+    //Implementation
+    /**
+     * Converts colorspace enum to a PDF name.
+     * @param colorSpace The color space enum value.
+     */
+    PdfGradientBrush.prototype.colorSpaceToDeviceName = function (colorSpace) {
+        var result;
+        switch (colorSpace) {
+            case exports.PdfColorSpace.Rgb:
+                result = 'DeviceRGB';
+                break;
+        }
+        return result;
+    };
+    /**
+     * Resets the pattern dictionary.
+     * @param dictionary A new pattern dictionary.
+     */
+    PdfGradientBrush.prototype.resetPatternDictionary = function (dictionary) {
+        this.mpatternDictionary = dictionary;
+    };
+    /**
+     * Clones the anti aliasing value.
+     * @param brush The brush.
+     */
+    PdfGradientBrush.prototype.cloneAntiAliasingValue = function (brush) {
+        if ((brush == null)) {
+            throw new Error('ArgumentNullException : brush');
+        }
+        var sh = this.shading;
+        var aa = (sh.items.getValue(this.dictionaryProperties.antiAlias));
+        if ((aa != null)) {
+            brush.shading.items.setValue(this.dictionaryProperties.antiAlias, new PdfBoolean(aa.value));
+        }
+    };
+    /**
+     * Clones the background value.
+     * @param brush The brush.
+     */
+    PdfGradientBrush.prototype.cloneBackgroundValue = function (brush) {
+        var background = this.background;
+        if (!background.isEmpty) {
+            brush.background = background;
+        }
+    };
+    Object.defineProperty(PdfGradientBrush.prototype, "element", {
+        /* tslint:enable */
+        // IPdfWrapper Members
+        /**
+         * Gets the `element`.
+         * @private
+         */
+        get: function () {
+            return this.patternDictionary;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return PdfGradientBrush;
+}(PdfBrush));
+
+/**
+ * PdfTemplate.ts class for EJ2-PDF
+ */
+/**
+ * Represents `Pdf Template` object.
+ * @private
+ */
+var PdfTemplate = /** @class */ (function () {
+    function PdfTemplate(arg1, arg2) {
+        /**
+         * Initialize an instance for `DictionaryProperties` class.
+         * @private
+         * @hidden
+         */
+        this.dictionaryProperties = new DictionaryProperties();
+        /**
+         * Checks whether the transformation 'is performed'.
+         * @default true
+         * @private
+         */
+        this.writeTransformation = true;
+        if (typeof arg1 === 'undefined') {
+            //
+        }
+        else if (arg1 instanceof SizeF && typeof arg2 === 'undefined') {
+            this.content = new PdfStream();
+            var tempSize = new SizeF(arg1.width, arg1.height);
+            this.setSize(tempSize);
+            this.initialize();
+        }
+        else {
+            this.content = new PdfStream();
+            this.setSize(new SizeF(arg1, arg2));
+            this.initialize();
+        }
+    }
+    Object.defineProperty(PdfTemplate.prototype, "size", {
+        //Properties
+        /**
+         * Gets the size of the 'PdfTemplate'.
+         */
+        get: function () {
+            return this.templateSize;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfTemplate.prototype, "width", {
+        /**
+         * Gets the width of the 'PdfTemplate'.
+         */
+        get: function () {
+            return this.size.width;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfTemplate.prototype, "height", {
+        /**
+         * Gets the height of the 'PdfTemplate'.
+         */
+        get: function () {
+            return this.size.height;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfTemplate.prototype, "graphics", {
+        /**
+         * Gets the `graphics` of the 'PdfTemplate'.
+         */
+        get: function () {
+            if (this.pdfGraphics == null || typeof this.pdfGraphics === 'undefined') {
+                var gr = new GetResourceEventHandler(this);
+                var g = new PdfGraphics(this.size, gr, this.content);
+                this.pdfGraphics = g;
+                // if(this.writeTransformation) {
+                // Transform co-ordinates to Top/Left.
+                this.pdfGraphics.initializeCoordinates();
+                // }
+            }
+            return this.pdfGraphics;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * Gets the resources and modifies the template dictionary.
+     * @private
+     */
+    PdfTemplate.prototype.getResources = function () {
+        if (this.resources == null) {
+            this.resources = new PdfResources();
+            this.content.items.setValue(this.dictionaryProperties.resources, this.resources);
+        }
+        return this.resources;
+    };
+    // Public methods
+    /**
+     * `Initialize` the type and subtype of the template.
+     * @private
+     */
+    PdfTemplate.prototype.initialize = function () {
+        this.addType();
+        this.addSubType();
+    };
+    /**
+     * `Adds type key`.
+     * @private
+     */
+    PdfTemplate.prototype.addType = function () {
+        var value = new PdfName(this.dictionaryProperties.xObject);
+        this.content.items.setValue(this.dictionaryProperties.type, value);
+    };
+    /**
+     * `Adds SubType key`.
+     * @private
+     */
+    PdfTemplate.prototype.addSubType = function () {
+        var value = new PdfName(this.dictionaryProperties.form);
+        this.content.items.setValue(this.dictionaryProperties.subtype, value);
+    };
+    PdfTemplate.prototype.reset = function (size) {
+        if (typeof size === 'undefined') {
+            if (this.resources != null) {
+                this.resources = null;
+                this.content.remove(this.dictionaryProperties.resources);
+            }
+            if (this.graphics != null) {
+                this.graphics.reset(this.size);
+            }
+        }
+        else {
+            this.setSize(size);
+            this.reset();
+        }
+    };
+    /**
+     * `Set the size` of the 'PdfTemplate'.
+     * @private
+     */
+    PdfTemplate.prototype.setSize = function (size) {
+        var rect = new RectangleF(new PointF(0, 0), size);
+        var val = PdfArray.fromRectangle(rect);
+        this.content.items.setValue(this.dictionaryProperties.bBox, val);
+        this.templateSize = size;
+    };
+    Object.defineProperty(PdfTemplate.prototype, "element", {
+        // /**
+        //  * Returns the value of current graphics.
+        //  * @private
+        //  */
+        // public GetGraphics(g : PdfGraphics) : PdfGraphics {
+        //     if (this.graphics == null || typeof this.graphics === 'undefined') {
+        //         this.graphics = g;
+        //         this.graphics.Size = this.Size;
+        //         this.graphics.StreamWriter = new PdfStreamWriter(this.content)
+        //         this.graphics.Initialize();
+        //         if(this.writeTransformation) {
+        //             this.graphics.InitializeCoordinates();
+        //         }
+        //     }
+        //     return this.graphics;
+        // }
+        // IPdfWrapper Members
+        /**
+         * Gets the `content stream` of 'PdfTemplate' class.
+         * @private
+         */
+        get: function () {
+            return this.content;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return PdfTemplate;
+}());
+
+var __extends$15 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+/**
+ * PdfResources.ts class for EJ2-PDF
+ */
+/**
+ * `PdfResources` class used to set resource contents like font, image.
+ * @private
+ */
+var PdfResources = /** @class */ (function (_super) {
+    __extends$15(PdfResources, _super);
+    function PdfResources(baseDictionary) {
+        var _this = _super.call(this, baseDictionary) || this;
+        /**
+         * Dictionary for the `properties names`.
+         * @private
+         */
+        _this.properties = new PdfDictionary();
+        return _this;
+    }
+    Object.defineProperty(PdfResources.prototype, "names", {
+        //Properties
+        /**
+         * Gets the `font names`.
+         * @private
+         */
+        get: function () {
+            return this.getNames();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfResources.prototype, "document", {
+        /**
+         * Get or set the `page document`.
+         * @private
+         */
+        get: function () {
+            return this.pdfDocument;
+        },
+        set: function (value) {
+            this.pdfDocument = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    //Public Methods
+    /**
+     * `Generates name` for the object and adds to the resource if the object is new.
+     * @private
+     */
+    PdfResources.prototype.getName = function (obj) {
+        var primitive = obj.element;
+        var name = null;
+        if (this.names.containsKey(primitive)) {
+            name = this.names.getValue(primitive);
+        }
+        // Object is new.
+        if (name == null) {
+            var sName = this.generateName();
+            name = new PdfName(sName);
+            this.names.setValue(primitive, name);
+            if (obj instanceof PdfFont) {
+                this.add(obj, name);
+            }
+            else if (obj instanceof PdfTemplate) {
+                this.add(obj, name);
+            }
+            else if (obj instanceof PdfGradientBrush || obj instanceof PdfTilingBrush) {
+                this.add(obj, name);
+            }
+            else if (obj instanceof PdfTransparency) {
+                this.add(obj, name);
+            }
+            else if (obj instanceof PdfImage || obj instanceof PdfBitmap) {
+                this.add(obj, name);
+            }
+        }
+        return name;
+    };
+    /**
+     * Gets `resource names` to font dictionaries.
+     * @private
+     */
+    PdfResources.prototype.getNames = function () {
+        if (this.pdfNames == null) {
+            this.pdfNames = new TemporaryDictionary();
+        }
+        var fonts = this.items.getValue(this.dictionaryProperties.font);
+        if (fonts != null) {
+            var dictionary = fonts;
+            dictionary = PdfCrossTable.dereference(fonts);
+        }
+        return this.pdfNames;
+    };
+    /**
+     * Add `RequireProcedureSet` into procset array.
+     * @private
+     */
+    PdfResources.prototype.requireProcedureSet = function (procedureSetName) {
+        if (procedureSetName == null) {
+            throw new Error('ArgumentNullException:procedureSetName');
+        }
+        var procSets = this.items.getValue(this.dictionaryProperties.procset);
+        if (procSets == null) {
+            procSets = new PdfArray();
+            this.items.setValue(this.dictionaryProperties.procset, procSets);
+        }
+        var name = new PdfName(procedureSetName);
+        if (!procSets.contains(name)) {
+            procSets.add(name);
+        }
+    };
+    //Helper Methods
+    /**
+     * `Remove font` from array.
+     * @private
+     */
+    PdfResources.prototype.removeFont = function (name) {
+        var key = null;
+        var keys = this.pdfNames.keys();
+        for (var index = 0; index < this.pdfNames.size(); index++) {
+            if (this.pdfNames.getValue(keys[index]) === new PdfName(name)) {
+                key = keys[index];
+                break;
+            }
+        }
+        if (key != null) {
+            this.pdfNames.remove(key);
+        }
+    };
+    /**
+     * Generates `Unique string name`.
+     * @private
+     */
+    PdfResources.prototype.generateName = function () {
+        var name = Guid.getNewGuidString();
+        return name;
+    };
+    PdfResources.prototype.add = function (arg1, arg2) {
+        if (arg1 instanceof PdfFont) {
+            var dictionary = null;
+            var fonts = this.items.getValue(this.dictionaryProperties.font);
+            if (fonts != null) {
+                var reference = fonts;
+                dictionary = fonts;
+                dictionary = fonts;
+            }
+            else {
+                dictionary = new PdfDictionary();
+                this.items.setValue(this.dictionaryProperties.font, dictionary);
+            }
+            dictionary.items.setValue(arg2.value, new PdfReferenceHolder(arg1.element));
+        }
+        else if (arg1 instanceof PdfTemplate) {
+            var xobjects = void 0;
+            xobjects = this.items.getValue(this.dictionaryProperties.xObject);
+            // Create fonts dictionary.
+            if (xobjects == null) {
+                xobjects = new PdfDictionary();
+                this.items.setValue(this.dictionaryProperties.xObject, xobjects);
+            }
+            xobjects.items.setValue(arg2.value, new PdfReferenceHolder(arg1.element));
+        }
+        else if (arg1 instanceof PdfBrush) {
+            if (arg1 instanceof PdfGradientBrush || arg1 instanceof PdfTilingBrush) {
+                var savable = arg1.element;
+                if (savable != null) {
+                    var pattern = this.items.getValue(this.dictionaryProperties.pattern);
+                    // Create a new pattern dictionary.
+                    if (pattern == null) {
+                        pattern = new PdfDictionary();
+                        this.items.setValue(this.dictionaryProperties.pattern, pattern);
+                    }
+                    pattern.items.setValue(arg2.value, new PdfReferenceHolder(savable));
+                }
+            }
+        }
+        else if (arg1 instanceof PdfTransparency) {
+            var savable = arg1.element;
+            var transDic = null;
+            transDic = this.items.getValue(this.dictionaryProperties.extGState);
+            // Create a new pattern dictionary.
+            if (transDic == null) {
+                transDic = new PdfDictionary();
+                this.items.setValue(this.dictionaryProperties.extGState, transDic);
+            }
+            transDic.items.setValue(arg2.value, new PdfReferenceHolder(savable));
+        }
+        else {
+            /* tslint:disable */
+            var xobjects = this.Dictionary.items.getValue(this.dictionaryProperties.xObject);
+            var parentXObjects = void 0;
+            if (typeof this.pdfDocument !== 'undefined') {
+                parentXObjects = this.pdfDocument.sections.element.items.getValue(this.dictionaryProperties.resources).items.getValue(this.dictionaryProperties.xObject);
+            }
+            var values = this.Dictionary.items.values();
+            var hasSameImageStream = false;
+            var oldReference = void 0;
+            if (typeof this.pdfDocument !== 'undefined' && (typeof parentXObjects === undefined || parentXObjects == null)) {
+                parentXObjects = new PdfDictionary();
+                this.pdfDocument.sections.element.items.getValue(this.dictionaryProperties.resources).items.setValue(this.dictionaryProperties.xObject, parentXObjects);
+            }
+            else if (typeof this.pdfDocument !== 'undefined') {
+                var values_1 = parentXObjects.items.values();
+                for (var i = 0; i < values_1.length; i++) {
+                    if (typeof values_1[i] !== 'undefined' && typeof values_1[i].element !== 'undefined') {
+                        if (values_1[i].element.data[0] === arg1.element.data[0]) {
+                            oldReference = values_1[i];
+                            hasSameImageStream = true;
+                        }
+                    }
+                }
+            }
+            if (xobjects == null) {
+                xobjects = new PdfDictionary();
+                this.Dictionary.items.setValue(this.dictionaryProperties.xObject, xobjects);
+            }
+            if (hasSameImageStream && typeof oldReference !== 'undefined') {
+                xobjects.items.setValue(arg2.value, oldReference);
+            }
+            else {
+                var reference = new PdfReferenceHolder(arg1.element);
+                xobjects.items.setValue(arg2.value, reference);
+                if (typeof this.pdfDocument !== 'undefined') {
+                    parentXObjects.items.setValue(arg2.value, reference);
+                }
+            }
+            /* tslint:enable */
+        }
+    };
+    return PdfResources;
+}(PdfDictionary));
+/* tslint:disable */
+/**
+ * Used to create new guid for resources.
+ * @private
+ */
+var Guid = /** @class */ (function () {
+    function Guid() {
+    }
+    /**
+     * Generate `new GUID`.
+     * @private
+     */
+    Guid.getNewGuidString = function () {
+        return 'aaaaaaaa-aaaa-4aaa-baaa-aaaaaaaaaaaa'.replace(/[ab]/g, function (c) {
+            var random = Math.random() * 16 | 0;
+            var result = c === 'a' ? random : (random & 0x3 | 0x8);
+            return result.toString(16);
+        });
+    };
+    return Guid;
+}());
+
+/* tslint:enable */
+
+var __extends$14 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+/**
+ * `PdfTilingBrush` Implements a colored tiling brush.
+ */
+var PdfTilingBrush = /** @class */ (function (_super) {
+    __extends$14(PdfTilingBrush, _super);
+    /**
+     * Initializes a new instance of the `PdfTilingBrush` class.
+     * @public
+     */
+    function PdfTilingBrush(arg1, arg2) {
+        var _this = _super.call(this) || this;
+        /**
+         * Local variable to store Stroking.
+         * @private
+         */
+        _this.mStroking = false;
+        /**
+         * Local variable to store the tile start location.
+         * @private
+         */
+        _this.mLocation = new PointF(0, 0);
+        /**
+         * Local variable to store the dictionary properties.
+         * @private
+         */
+        _this.mDictionaryProperties = new DictionaryProperties();
+        var rect = null;
+        if (arg1 instanceof Rectangle) {
+            rect = arg1;
+        }
+        else if (arg1 instanceof SizeF) {
+            rect = new Rectangle(0, 0, arg1.width, arg1.height);
+        }
+        if (arg2 !== null && arg2 instanceof PdfPage) {
+            _this.mPage = arg2;
+        }
+        _this.brushStream = new PdfStream();
+        _this.mResources = new PdfResources();
+        _this.brushStream.items.setValue(_this.mDictionaryProperties.resources, _this.mResources);
+        _this.setBox(rect);
+        _this.setObligatoryFields();
+        if (arg2 !== null && arg2 instanceof PdfPage) {
+            _this.mPage = arg2;
+            _this.graphics.colorSpace = arg2.document.colorSpace;
+        }
+        return _this;
+    }
+    /**
+     * Initializes a new instance of the `PdfTilingBrush` class.
+     * @private
+     * @param rectangle The size of the smallest brush cell.
+     * @param page The Current Page Object.
+     * @param location The Tile start location.
+     * @param matrix The matrix.
+     */
+    PdfTilingBrush.prototype.initialize = function (rectangle, page, location, matrix) {
+        this.mPage = page;
+        this.mLocation = location;
+        this.mTransformationMatrix = matrix;
+        this.tempBrushStream = this.brushStream;
+        this.brushStream = new PdfStream();
+        var tempResource = new PdfResources();
+        this.brushStream.items.setValue(this.mDictionaryProperties.resources, tempResource);
+        this.setBox(rectangle);
+        this.setObligatoryFields();
+        return this;
+    };
+    Object.defineProperty(PdfTilingBrush.prototype, "location", {
+        //Properties
+        /**
+         * Location representing the start position of the tiles.
+         * @public
+         */
+        get: function () {
+            return this.mLocation;
+        },
+        set: function (value) {
+            this.mLocation = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * Sets the obligatory fields.
+     * @private
+     */
+    PdfTilingBrush.prototype.setObligatoryFields = function () {
+        this.brushStream.items.setValue(this.mDictionaryProperties.patternType, new PdfNumber(1));
+        //  Tiling brush.
+        this.brushStream.items.setValue(this.mDictionaryProperties.paintType, new PdfNumber(1));
+        //  Coloured.
+        this.brushStream.items.setValue(this.mDictionaryProperties.tilingType, new PdfNumber(1));
+        //  Constant spacing.
+        this.brushStream.items.setValue(this.mDictionaryProperties.xStep, new PdfNumber((this.mBox.right - this.mBox.left)));
+        this.brushStream.items.setValue(this.mDictionaryProperties.yStep, new PdfNumber((this.mBox.bottom - this.mBox.top)));
+        if ((this.mPage != null) && (this.mLocation != null)) {
+            if ((this.mTransformationMatrix == null && typeof this.mTransformationMatrix === 'undefined')) {
+                // Transform the tile origin to fit the location
+                var tileTransform = (this.mPage.size.height % this.rectangle.size.height) - (this.mLocation.y);
+                /* tslint:disable-next-line:max-line-length */
+                this.brushStream.items.setValue(this.mDictionaryProperties.matrix, new PdfArray([1, 0, 0, 1, this.mLocation.x, tileTransform]));
+            }
+            else {
+                var tileTransform = 0;
+                // Transform the tile origin to fit the location
+                var elements = this.mTransformationMatrix.matrix.elements;
+                if ((this.mPage.size.height > this.rectangle.size.height)) {
+                    tileTransform = (this.mTransformationMatrix.matrix.offsetY
+                        - (this.mPage.size.height % this.rectangle.size.height));
+                }
+                else {
+                    tileTransform = ((this.mPage.size.height % this.rectangle.size.height) + this.mTransformationMatrix.matrix.offsetY);
+                }
+                this.brushStream.items.setValue(this.mDictionaryProperties.matrix, new PdfArray([
+                    elements[0], elements[1], elements[2], elements[3], elements[4], tileTransform
+                ]));
+            }
+        }
+    };
+    /**
+     * Sets the BBox coordinates.
+     * @private
+     */
+    PdfTilingBrush.prototype.setBox = function (box) {
+        this.mBox = box;
+        var rect = new RectangleF(this.mBox.left, this.mBox.top, this.mBox.right, this.mBox.bottom);
+        this.brushStream.items.setValue(this.mDictionaryProperties.bBox, PdfArray.fromRectangle(rect));
+    };
+    Object.defineProperty(PdfTilingBrush.prototype, "rectangle", {
+        //Properties
+        /**
+         * Gets the boundary box of the smallest brush cell.
+         * @public
+         */
+        get: function () {
+            return this.mBox;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfTilingBrush.prototype, "size", {
+        /**
+         * Gets the size of the smallest brush cell.
+         * @public
+         */
+        get: function () {
+            return this.mBox.size;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfTilingBrush.prototype, "graphics", {
+        /**
+         * Gets Graphics context of the brush.
+         */
+        get: function () {
+            if ((this.mGraphics == null && typeof this.mGraphics === 'undefined')) {
+                var gr = new GetResourceEventHandler(this);
+                var g = new PdfGraphics(this.size, gr, this.brushStream);
+                this.mGraphics = g;
+                this.mResources = this.getResources();
+                this.mGraphics.initializeCoordinates();
+            }
+            return this.mGraphics;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * Gets the resources and modifies the template dictionary.
+     * @public
+     */
+    PdfTilingBrush.prototype.getResources = function () {
+        return this.mResources;
+    };
+    Object.defineProperty(PdfTilingBrush.prototype, "stroking", {
+        /**
+         * Gets or sets a value indicating whether this PdfTilingBrush
+         * is used for stroking operations.
+         */
+        get: function () {
+            return this.mStroking;
+        },
+        set: function (value) {
+            this.mStroking = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    //PdfBrush methods
+    /**
+     * Creates a new copy of a brush.
+     * @public
+     */
+    PdfTilingBrush.prototype.clone = function () {
+        var brush = this.initialize(this.rectangle, this.mPage, this.location, this.mTransformationMatrix);
+        if ((this.mTransformationMatrix != null) && (this.mTransformationMatrix.matrix != null)) {
+            /* tslint:disable-next-line:max-line-length */
+            brush.brushStream.items.setValue(this.mDictionaryProperties.matrix, new PdfArray(this.mTransformationMatrix.matrix.elements));
+        }
+        brush.brushStream.data = this.tempBrushStream.data;
+        brush.mResources = new PdfResources(this.mResources);
+        brush.brushStream.items.setValue(this.mDictionaryProperties.resources, brush.mResources);
+        return brush;
+    };
+    /**
+     * Monitors the changes of the brush and modify PDF state respectfully.
+     * @param brush The brush
+     * @param streamWriter The stream writer
+     * @param getResources The get resources delegate.
+     * @param saveChanges if set to true the changes should be saved anyway.
+     * @param currentColorSpace The current color space.
+     */
+    /* tslint:disable-next-line:max-line-length */
+    PdfTilingBrush.prototype.monitorChanges = function (brush, streamWriter, getResources, saveChanges, currentColorSpace) {
+        var diff = false;
+        if (brush !== this) {
+            //  Set the Pattern colour space.
+            streamWriter.setColorSpace('Pattern', this.mStroking);
+            //  Set the pattern for non-stroking operations.
+            var resources1 = getResources.getResources();
+            var name1 = resources1.getName(this);
+            streamWriter.setColourWithPattern(null, name1, this.mStroking);
+            diff = true;
+        }
+        else if (brush instanceof PdfTilingBrush) {
+            //  Set the /Pattern colour space.
+            streamWriter.setColorSpace('Pattern', this.mStroking);
+            //  Set the pattern for non-stroking operations.
+            var resources = getResources.getResources();
+            var name_1 = resources.getName(this);
+            streamWriter.setColourWithPattern(null, name_1, this.mStroking);
+            diff = true;
+        }
+        return diff;
+    };
+    /**
+     * Resets the changes, which were made by the brush.
+     * In other words resets the state to the initial one.
+     * @param streamWriter The stream writer.
+     */
+    PdfTilingBrush.prototype.resetChanges = function (streamWriter) {
+        //  We shouldn't do anything to reset changes.
+        //  All changes will be reset automatically by setting a new colour space.
+    };
+    Object.defineProperty(PdfTilingBrush.prototype, "element", {
+        /* tslint:enable */
+        // IPdfWrapper Members
+        /**
+         * Gets the `element`.
+         * @public
+         */
+        get: function () {
+            return this.brushStream;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return PdfTilingBrush;
+}(PdfBrush));
+
+/**
  * PdfGraphics.ts class for EJ2-PDF
  */
 /**
@@ -14781,6 +16207,22 @@ var PdfGraphics = /** @class */ (function () {
             var temparg4 = arg4;
             var temparg5 = arg5;
             var temparg6 = arg6;
+            if ((arg2 instanceof PdfTilingBrush)) {
+                this.bCSInitialized = false;
+                var xOffset = (this.matrix.matrix.offsetX + temparg3);
+                var yOffset = void 0;
+                if (((this.layer != null) && (this.layer.page != null))) {
+                    yOffset = ((this.layer.page.size.height - this.matrix.matrix.offsetY) + temparg4);
+                }
+                else {
+                    yOffset = ((this.clientSize.height - this.matrix.matrix.offsetY) + temparg4);
+                }
+                (arg2).location = new PointF(xOffset, yOffset);
+                (arg2).graphics.colorSpace = this.colorSpace;
+            }
+            else if ((arg2 instanceof PdfGradientBrush)) {
+                arg2.colorSpace = this.colorSpace;
+            }
             if (arg2 instanceof PdfSolidBrush && arg2.color.isEmpty) {
                 arg2 = null;
             }
@@ -14788,13 +16230,13 @@ var PdfGraphics = /** @class */ (function () {
             var temparg2 = arg2;
             this.stateControl(temparg1, temparg2, null);
             this.streamWriter.appendRectangle(temparg3, temparg4, temparg5, temparg6);
-            this.drawPath(temparg1, temparg2, false);
+            this.drawPathHelper(temparg1, temparg2, false);
         }
     };
-    PdfGraphics.prototype.drawPath = function (arg1, arg2, arg3, arg4) {
+    PdfGraphics.prototype.drawPathHelper = function (arg1, arg2, arg3, arg4) {
         if (typeof arg3 === 'boolean') {
             var temparg3 = arg3;
-            this.drawPath(arg1, arg2, exports.PdfFillMode.Winding, temparg3);
+            this.drawPathHelper(arg1, arg2, exports.PdfFillMode.Winding, temparg3);
         }
         else {
             var temparg3 = arg3;
@@ -15003,6 +16445,14 @@ var PdfGraphics = /** @class */ (function () {
      * @private
      */
     PdfGraphics.prototype.applyStringSettings = function (font, pen, brush, format, bounds) {
+        if (brush instanceof PdfTilingBrush) {
+            this.bCSInitialized = false;
+            brush.graphics.colorSpace = this.colorSpace;
+        }
+        else if ((brush instanceof PdfGradientBrush)) {
+            this.bCSInitialized = false;
+            brush.colorSpace = this.colorSpace;
+        }
         var tm = this.getTextRenderingMode(pen, brush, format);
         this.stateControl(pen, brush, font, format);
         this.pdfStreamWriter.beginText();
@@ -15468,6 +16918,14 @@ var PdfGraphics = /** @class */ (function () {
             this.stateControl(pen, brush, font, null);
         }
         else {
+            if (brush instanceof PdfGradientBrush) {
+                this.bCSInitialized = false;
+                brush.colorSpace = this.colorSpace;
+            }
+            if (brush instanceof PdfTilingBrush) {
+                this.bCSInitialized = false;
+                brush.graphics.colorSpace = this.colorSpace;
+            }
             var saveState = false;
             if (brush !== null) {
                 if (typeof this.pageLayer !== 'undefined' && this.pageLayer != null) {
@@ -15501,9 +16959,16 @@ var PdfGraphics = /** @class */ (function () {
     PdfGraphics.prototype.initCurrentColorSpace = function (colorspace) {
         var re = this.getResources.getResources();
         if (!this.bCSInitialized) {
-            this.pdfStreamWriter.setColorSpace('Device' + this.currentColorSpaces[this.currentColorSpace], true);
-            this.pdfStreamWriter.setColorSpace('Device' + this.currentColorSpaces[this.currentColorSpace], false);
-            this.bCSInitialized = true;
+            if (this.currentColorSpace != exports.PdfColorSpace.GrayScale) {
+                this.pdfStreamWriter.setColorSpace('Device' + this.currentColorSpaces[this.currentColorSpace], true);
+                this.pdfStreamWriter.setColorSpace('Device' + this.currentColorSpaces[this.currentColorSpace], false);
+                this.bCSInitialized = true;
+            }
+            else {
+                this.pdfStreamWriter.setColorSpace('DeviceGray', true);
+                this.pdfStreamWriter.setColorSpace('DeviceGray', false);
+                this.bCSInitialized = true;
+            }
         }
     };
     /**
@@ -15513,7 +16978,6 @@ var PdfGraphics = /** @class */ (function () {
     PdfGraphics.prototype.penControl = function (pen, saveState) {
         if (pen != null) {
             this.currentPen = pen;
-            this.colorSpace = exports.PdfColorSpace.Rgb;
             /* tslint:disable */
             pen.monitorChanges(this.currentPen, this.pdfStreamWriter, this.getResources, saveState, this.colorSpace, this.matrix.clone());
             /* tslint:enable */
@@ -15525,10 +16989,20 @@ var PdfGraphics = /** @class */ (function () {
      * @private
      */
     PdfGraphics.prototype.brushControl = function (brush, saveState) {
-        if (brush != null) {
-            this.currentBrush = brush;
-            /* tslint:disable */
-            brush.monitorChanges(this.currentBrush, this.pdfStreamWriter, this.getResources, saveState, this.colorSpace);
+        if (brush != null && typeof brush !== 'undefined') {
+            var b = brush.clone();
+            var lgb = b;
+            if (lgb !== null && typeof lgb !== 'undefined' && !(brush instanceof PdfSolidBrush) && !(brush instanceof PdfTilingBrush)) {
+                var m = lgb.matrix;
+                var matrix = this.matrix.clone();
+                if ((m != null)) {
+                    m.multiply(matrix);
+                    matrix = m;
+                }
+                lgb.matrix = matrix;
+            }
+            this.currentBrush = lgb;
+            b.monitorChanges(this.currentBrush, this.pdfStreamWriter, this.getResources, saveState, this.colorSpace);
             /* tslint:enable */
             this.currentBrush = brush;
             brush = null;
@@ -15822,6 +17296,192 @@ var PdfGraphics = /** @class */ (function () {
         this.previousTextRenderingMode = state.textRenderingMode;
         this.pdfStreamWriter.restoreGraphicsState();
         return state;
+    };
+    /* tslint:enable */
+    /**
+     * `Draws the specified path`, using its original physical size, at the location specified by a coordinate pair.
+     * ```typescript
+     * // create a new PDF document.
+     * let document : PdfDocument = new PdfDocument();
+     * // add a page to the document.
+     * let page1 : PdfPage = document.pages.add();
+     * //Create new PDF path.
+     * let path : PdfPath = new PdfPath();
+     * //Add line path points.
+     * path.addLine(new PointF(10, 100), new PointF(10, 200));
+     * path.addLine(new PointF(100, 100), new PointF(100, 200));
+     * path.addLine(new PointF(100, 200), new PointF(55, 150));
+     * // set pen
+     * let pen : PdfPen = new PdfPen(new PdfColor(255, 0, 0));
+     * // set brush
+     * let brush : PdfSolidBrush = new PdfSolidBrush(new PdfColor(0, 0, 0));
+     * // draw the path
+     * page1.graphics.drawPath(pen, brush, path);
+     * //
+     * // save the document.
+     * document.save('output.pdf');
+     * // destroy the document
+     * document.destroy();
+     * ```
+     * @param pen Color of the text.
+     * @param brush Color of the text.
+     * @param path Draw path.
+     */
+    PdfGraphics.prototype.drawPath = function (pen, brush, path) {
+        if (brush instanceof PdfTilingBrush) {
+            this.bCSInitialized = false;
+            brush.graphics.colorSpace = this.colorSpace;
+        }
+        else if (brush instanceof PdfGradientBrush) {
+            this.bCSInitialized = false;
+            brush.colorSpace = this.colorSpace;
+        }
+        this.stateControl(pen, brush, null);
+        this.buildUpPath(path.pathPoints, path.pathTypes);
+        this.drawPathHelper(pen, brush, path.fillMode, false);
+    };
+    /* tslint:disable-next-line:max-line-length */
+    PdfGraphics.prototype.drawArc = function (arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
+        if (arg2 instanceof RectangleF) {
+            this.drawArc(arg1, arg2.x, arg2.y, arg2.width, arg2.height, arg3, arg4);
+        }
+        else {
+            if ((arg7 !== 0)) {
+                this.stateControl(arg1, null, null);
+                this.constructArcPath(arg2, arg3, (arg2 + arg4), (arg3 + arg5), arg6, arg7);
+                this.drawPathHelper(arg1, null, false);
+            }
+        }
+    };
+    /**
+     * Builds up the path.
+     * @private
+     */
+    PdfGraphics.prototype.buildUpPath = function (arg1, arg2) {
+        var cnt = arg1.length;
+        for (var i = 0; i < cnt; ++i) {
+            var typeValue = 0;
+            var point = arg1[i];
+            switch (((arg2[i] & (PdfGraphics.pathTypesValuesMask)))) {
+                case exports.PathPointType.Start:
+                    this.pdfStreamWriter.beginPath(point.x, point.y);
+                    break;
+                case exports.PathPointType.Bezier3:
+                    var p2 = new PointF(0, 0);
+                    var p3 = new PointF(0, 0);
+                    var result1 = this.getBezierPoints(arg1, arg2, i, p2, p3);
+                    this.pdfStreamWriter.appendBezierSegment(point, result1.p2, result1.p3);
+                    i = result1.i;
+                    break;
+                case exports.PathPointType.Line:
+                    this.pdfStreamWriter.appendLineSegment(point);
+                    break;
+                default:
+                    throw new Error('ArithmeticException - Incorrect path formation.');
+            }
+            typeValue = arg2[i];
+            this.checkFlags(typeValue);
+        }
+    };
+    /**
+     * Gets the bezier points from respective arrays.
+     * @private
+     */
+    /* tslint:disable-next-line:max-line-length */
+    PdfGraphics.prototype.getBezierPoints = function (points, types, i, p2, p3) {
+        ++i;
+        if ((((types[i] & PdfGraphics.pathTypesValuesMask)) === exports.PathPointType.Bezier3)) {
+            p2 = points[i];
+            ++i;
+            if ((((types[i] & PdfGraphics.pathTypesValuesMask)) === exports.PathPointType.Bezier3)) {
+                p3 = points[i];
+            }
+            else {
+                throw new Error('ArgumentException : errorMsg');
+            }
+        }
+        else {
+            throw new Error('ArgumentException : errorMsg');
+        }
+        return { i: i, p2: p2, p3: p3 };
+    };
+    /**
+     * Checks path point type flags.
+     * @private
+     */
+    PdfGraphics.prototype.checkFlags = function (type) {
+        if ((((type & (exports.PathPointType.CloseSubpath))) === exports.PathPointType.CloseSubpath)) {
+            this.pdfStreamWriter.closePath();
+        }
+    };
+    /**
+     * Constructs the arc path using Bezier curves.
+     * @private
+     */
+    PdfGraphics.prototype.constructArcPath = function (x1, y1, x2, y2, startAng, sweepAngle) {
+        var points = this.getBezierArc(x1, y1, x2, y2, startAng, sweepAngle);
+        if ((points.length === 0)) {
+            return;
+        }
+        var pt = [points[0], points[1], points[2], points[3], points[4], points[5], points[6], points[7]];
+        this.pdfStreamWriter.beginPath(pt[0], pt[1]);
+        var i = 0;
+        for (i = 0; i < points.length; i = i + 8) {
+            pt = [points[i], points[i + 1], points[i + 2], points[i + 3], points[i + 4], points[i + 5], points[i + 6], points[i + 7]];
+            this.pdfStreamWriter.appendBezierSegment(pt[2], pt[3], pt[4], pt[5], pt[6], pt[7]);
+        }
+    };
+    /**
+     * Gets the bezier points for arc constructing.
+     * @private
+     */
+    PdfGraphics.prototype.getBezierArc = function (numX1, numY1, numX2, numY2, s1, e1) {
+        if ((numX1 > numX2)) {
+            var tmp = void 0;
+            tmp = numX1;
+            numX1 = numX2;
+            numX2 = tmp;
+        }
+        if ((numY2 > numY1)) {
+            var tmp = void 0;
+            tmp = numY1;
+            numY1 = numY2;
+            numY2 = tmp;
+        }
+        var fragAngle1;
+        var numFragments;
+        if ((Math.abs(e1) <= 90)) {
+            fragAngle1 = e1;
+            numFragments = 1;
+        }
+        else {
+            numFragments = (Math.ceil((Math.abs(e1) / 90)));
+            fragAngle1 = (e1 / numFragments);
+        }
+        var xcen = ((numX1 + numX2) / 2);
+        var ycen = ((numY1 + numY2) / 2);
+        var rx = ((numX2 - numX1) / 2);
+        var ry = ((numY2 - numY1) / 2);
+        var halfAng = ((fragAngle1 * (Math.PI / 360)));
+        var kappa = (Math.abs(4.0 / 3.0 * (1.0 - Math.cos(halfAng)) / Math.sin(halfAng)));
+        var pointsList = [];
+        for (var i = 0; (i < numFragments); i++) {
+            var thetaValue0 = (((s1 + (i * fragAngle1)) * (Math.PI / 180)));
+            var thetaValue1 = (((s1 + ((i + 1) * fragAngle1)) * (Math.PI / 180)));
+            var cos0 = (Math.cos(thetaValue0));
+            var cos1 = (Math.cos(thetaValue1));
+            var sin0 = (Math.sin(thetaValue0));
+            var sin1 = (Math.sin(thetaValue1));
+            if ((fragAngle1 > 0)) {
+                /* tslint:disable-next-line:max-line-length */
+                pointsList.push((xcen + (rx * cos0)), (ycen - (ry * sin0)), (xcen + (rx * (cos0 - (kappa * sin0)))), (ycen - (ry * (sin0 + (kappa * cos0)))), (xcen + (rx * (cos1 + (kappa * sin1)))), (ycen - (ry * (sin1 - (kappa * cos1)))), (xcen + (rx * cos1)), (ycen - (ry * sin1)));
+            }
+            else {
+                /* tslint:disable-next-line:max-line-length */
+                pointsList.push((xcen + (rx * cos0)), (ycen - (ry * sin0)), (xcen + (rx * (cos0 + (kappa * sin0)))), (ycen - (ry * (sin0 - (kappa * cos0)))), (xcen + (rx * (cos1 - (kappa * sin1)))), (ycen - (ry * (sin1 + (kappa * cos1)))), (xcen + (rx * cos1)), (ycen - (ry * sin1)));
+            }
+        }
+        return pointsList;
     };
     // Constants
     /**
@@ -16619,448 +18279,6 @@ var PdfPageLayerCollection = /** @class */ (function (_super) {
     };
     return PdfPageLayerCollection;
 }(PdfCollection));
-
-/**
- * PdfTemplate.ts class for EJ2-PDF
- */
-/**
- * Represents `Pdf Template` object.
- * @private
- */
-var PdfTemplate = /** @class */ (function () {
-    function PdfTemplate(arg1, arg2) {
-        /**
-         * Initialize an instance for `DictionaryProperties` class.
-         * @private
-         * @hidden
-         */
-        this.dictionaryProperties = new DictionaryProperties();
-        /**
-         * Checks whether the transformation 'is performed'.
-         * @default true
-         * @private
-         */
-        this.writeTransformation = true;
-        if (typeof arg1 === 'undefined') {
-            //
-        }
-        else if (arg1 instanceof SizeF && typeof arg2 === 'undefined') {
-            this.content = new PdfStream();
-            var tempSize = new SizeF(arg1.width, arg1.height);
-            this.setSize(tempSize);
-            this.initialize();
-        }
-        else {
-            this.content = new PdfStream();
-            this.setSize(new SizeF(arg1, arg2));
-            this.initialize();
-        }
-    }
-    Object.defineProperty(PdfTemplate.prototype, "size", {
-        //Properties
-        /**
-         * Gets the size of the 'PdfTemplate'.
-         */
-        get: function () {
-            return this.templateSize;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(PdfTemplate.prototype, "width", {
-        /**
-         * Gets the width of the 'PdfTemplate'.
-         */
-        get: function () {
-            return this.size.width;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(PdfTemplate.prototype, "height", {
-        /**
-         * Gets the height of the 'PdfTemplate'.
-         */
-        get: function () {
-            return this.size.height;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(PdfTemplate.prototype, "graphics", {
-        /**
-         * Gets the `graphics` of the 'PdfTemplate'.
-         */
-        get: function () {
-            if (this.pdfGraphics == null || typeof this.pdfGraphics === 'undefined') {
-                var gr = new GetResourceEventHandler(this);
-                var g = new PdfGraphics(this.size, gr, this.content);
-                this.pdfGraphics = g;
-                // if(this.writeTransformation) {
-                // Transform co-ordinates to Top/Left.
-                this.pdfGraphics.initializeCoordinates();
-                // }
-            }
-            return this.pdfGraphics;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     * Gets the resources and modifies the template dictionary.
-     * @private
-     */
-    PdfTemplate.prototype.getResources = function () {
-        if (this.resources == null) {
-            this.resources = new PdfResources();
-            this.content.items.setValue(this.dictionaryProperties.resources, this.resources);
-        }
-        return this.resources;
-    };
-    // Public methods
-    /**
-     * `Initialize` the type and subtype of the template.
-     * @private
-     */
-    PdfTemplate.prototype.initialize = function () {
-        this.addType();
-        this.addSubType();
-    };
-    /**
-     * `Adds type key`.
-     * @private
-     */
-    PdfTemplate.prototype.addType = function () {
-        var value = new PdfName(this.dictionaryProperties.xObject);
-        this.content.items.setValue(this.dictionaryProperties.type, value);
-    };
-    /**
-     * `Adds SubType key`.
-     * @private
-     */
-    PdfTemplate.prototype.addSubType = function () {
-        var value = new PdfName(this.dictionaryProperties.form);
-        this.content.items.setValue(this.dictionaryProperties.subtype, value);
-    };
-    PdfTemplate.prototype.reset = function (size) {
-        if (typeof size === 'undefined') {
-            if (this.resources != null) {
-                this.resources = null;
-                this.content.remove(this.dictionaryProperties.resources);
-            }
-            if (this.graphics != null) {
-                this.graphics.reset(this.size);
-            }
-        }
-        else {
-            this.setSize(size);
-            this.reset();
-        }
-    };
-    /**
-     * `Set the size` of the 'PdfTemplate'.
-     * @private
-     */
-    PdfTemplate.prototype.setSize = function (size) {
-        var rect = new RectangleF(new PointF(0, 0), size);
-        var val = PdfArray.fromRectangle(rect);
-        this.content.items.setValue(this.dictionaryProperties.bBox, val);
-        this.templateSize = size;
-    };
-    Object.defineProperty(PdfTemplate.prototype, "element", {
-        // /**
-        //  * Returns the value of current graphics.
-        //  * @private
-        //  */
-        // public GetGraphics(g : PdfGraphics) : PdfGraphics {
-        //     if (this.graphics == null || typeof this.graphics === 'undefined') {
-        //         this.graphics = g;
-        //         this.graphics.Size = this.Size;
-        //         this.graphics.StreamWriter = new PdfStreamWriter(this.content)
-        //         this.graphics.Initialize();
-        //         if(this.writeTransformation) {
-        //             this.graphics.InitializeCoordinates();
-        //         }
-        //     }
-        //     return this.graphics;
-        // }
-        // IPdfWrapper Members
-        /**
-         * Gets the `content stream` of 'PdfTemplate' class.
-         * @private
-         */
-        get: function () {
-            return this.content;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    return PdfTemplate;
-}());
-
-var __extends$13 = (undefined && undefined.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-/**
- * PdfResources.ts class for EJ2-PDF
- */
-/**
- * `PdfResources` class used to set resource contents like font, image.
- * @private
- */
-var PdfResources = /** @class */ (function (_super) {
-    __extends$13(PdfResources, _super);
-    function PdfResources(baseDictionary) {
-        var _this = _super.call(this, baseDictionary) || this;
-        /**
-         * Dictionary for the `properties names`.
-         * @private
-         */
-        _this.properties = new PdfDictionary();
-        return _this;
-    }
-    Object.defineProperty(PdfResources.prototype, "names", {
-        //Properties
-        /**
-         * Gets the `font names`.
-         * @private
-         */
-        get: function () {
-            return this.getNames();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(PdfResources.prototype, "document", {
-        /**
-         * Get or set the `page document`.
-         * @private
-         */
-        get: function () {
-            return this.pdfDocument;
-        },
-        set: function (value) {
-            this.pdfDocument = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    //Public Methods
-    /**
-     * `Generates name` for the object and adds to the resource if the object is new.
-     * @private
-     */
-    PdfResources.prototype.getName = function (obj) {
-        var primitive = obj.element;
-        var name = null;
-        if (this.names.containsKey(primitive)) {
-            name = this.names.getValue(primitive);
-        }
-        // Object is new.
-        if (name == null) {
-            var sName = this.generateName();
-            name = new PdfName(sName);
-            this.names.setValue(primitive, name);
-            if (obj instanceof PdfFont) {
-                this.add(obj, name);
-            }
-            else if (obj instanceof PdfTemplate) {
-                this.add(obj, name);
-            }
-            else if (obj instanceof PdfTransparency) {
-                this.add(obj, name);
-            }
-            else if (obj instanceof PdfImage || obj instanceof PdfBitmap) {
-                this.add(obj, name);
-            }
-        }
-        return name;
-    };
-    /**
-     * Gets `resource names` to font dictionaries.
-     * @private
-     */
-    PdfResources.prototype.getNames = function () {
-        if (this.pdfNames == null) {
-            this.pdfNames = new TemporaryDictionary();
-        }
-        var fonts = this.items.getValue(this.dictionaryProperties.font);
-        if (fonts != null) {
-            var dictionary = fonts;
-            dictionary = PdfCrossTable.dereference(fonts);
-        }
-        return this.pdfNames;
-    };
-    /**
-     * Add `RequireProcedureSet` into procset array.
-     * @private
-     */
-    PdfResources.prototype.requireProcedureSet = function (procedureSetName) {
-        if (procedureSetName == null) {
-            throw new Error('ArgumentNullException:procedureSetName');
-        }
-        var procSets = this.items.getValue(this.dictionaryProperties.procset);
-        if (procSets == null) {
-            procSets = new PdfArray();
-            this.items.setValue(this.dictionaryProperties.procset, procSets);
-        }
-        var name = new PdfName(procedureSetName);
-        if (!procSets.contains(name)) {
-            procSets.add(name);
-        }
-    };
-    //Helper Methods
-    /**
-     * `Remove font` from array.
-     * @private
-     */
-    PdfResources.prototype.removeFont = function (name) {
-        var key = null;
-        var keys = this.pdfNames.keys();
-        for (var index = 0; index < this.pdfNames.size(); index++) {
-            if (this.pdfNames.getValue(keys[index]) === new PdfName(name)) {
-                key = keys[index];
-                break;
-            }
-        }
-        if (key != null) {
-            this.pdfNames.remove(key);
-        }
-    };
-    /**
-     * Generates `Unique string name`.
-     * @private
-     */
-    PdfResources.prototype.generateName = function () {
-        var name = Guid.getNewGuidString();
-        return name;
-    };
-    PdfResources.prototype.add = function (arg1, arg2) {
-        if (arg1 instanceof PdfFont) {
-            var dictionary = null;
-            var fonts = this.items.getValue(this.dictionaryProperties.font);
-            if (fonts != null) {
-                var reference = fonts;
-                dictionary = fonts;
-                dictionary = fonts;
-            }
-            else {
-                dictionary = new PdfDictionary();
-                this.items.setValue(this.dictionaryProperties.font, dictionary);
-            }
-            dictionary.items.setValue(arg2.value, new PdfReferenceHolder(arg1.element));
-        }
-        else if (arg1 instanceof PdfTemplate) {
-            var xobjects = void 0;
-            xobjects = this.items.getValue(this.dictionaryProperties.xObject);
-            // Create fonts dictionary.
-            if (xobjects == null) {
-                xobjects = new PdfDictionary();
-                this.items.setValue(this.dictionaryProperties.xObject, xobjects);
-            }
-            xobjects.items.setValue(arg2.value, new PdfReferenceHolder(arg1.element));
-        }
-        else if (arg1 instanceof PdfBrush) {
-            // let savable : IPdfPrimitive = (arg1 as IPdfWrapper).Element;
-            // if (savable != null)
-            // {
-            //     let pattern : PdfDictionary = this.Items.getValue(this.dictionaryProperties.pattern) as PdfDictionary;
-            //     // Create a new pattern dictionary.
-            //     if (pattern == null) {
-            //         pattern = new PdfDictionary();
-            //         this.Items.setValue(this.dictionaryProperties.pattern, pattern);
-            //     }
-            //     pattern.Items.setValue(name, new PdfReferenceHolder(savable));
-            // }
-        }
-        else if (arg1 instanceof PdfTransparency) {
-            var savable = arg1.element;
-            var transDic = null;
-            transDic = this.items.getValue(this.dictionaryProperties.extGState);
-            // Create a new pattern dictionary.
-            if (transDic == null) {
-                transDic = new PdfDictionary();
-                this.items.setValue(this.dictionaryProperties.extGState, transDic);
-            }
-            transDic.items.setValue(arg2.value, new PdfReferenceHolder(savable));
-        }
-        else {
-            /* tslint:disable */
-            var xobjects = this.Dictionary.items.getValue(this.dictionaryProperties.xObject);
-            var parentXObjects = void 0;
-            if (typeof this.pdfDocument !== 'undefined') {
-                parentXObjects = this.pdfDocument.sections.element.items.getValue(this.dictionaryProperties.resources).items.getValue(this.dictionaryProperties.xObject);
-            }
-            var values = this.Dictionary.items.values();
-            var hasSameImageStream = false;
-            var oldReference = void 0;
-            if (typeof this.pdfDocument !== 'undefined' && (typeof parentXObjects === undefined || parentXObjects == null)) {
-                parentXObjects = new PdfDictionary();
-                this.pdfDocument.sections.element.items.getValue(this.dictionaryProperties.resources).items.setValue(this.dictionaryProperties.xObject, parentXObjects);
-            }
-            else if (typeof this.pdfDocument !== 'undefined') {
-                var values_1 = parentXObjects.items.values();
-                for (var i = 0; i < values_1.length; i++) {
-                    if (typeof values_1[i] !== 'undefined' && typeof values_1[i].element !== 'undefined') {
-                        if (values_1[i].element.data[0] === arg1.element.data[0]) {
-                            oldReference = values_1[i];
-                            hasSameImageStream = true;
-                        }
-                    }
-                }
-            }
-            if (xobjects == null) {
-                xobjects = new PdfDictionary();
-                this.Dictionary.items.setValue(this.dictionaryProperties.xObject, xobjects);
-            }
-            if (hasSameImageStream && typeof oldReference !== 'undefined') {
-                xobjects.items.setValue(arg2.value, oldReference);
-            }
-            else {
-                var reference = new PdfReferenceHolder(arg1.element);
-                xobjects.items.setValue(arg2.value, reference);
-                if (typeof this.pdfDocument !== 'undefined') {
-                    parentXObjects.items.setValue(arg2.value, reference);
-                }
-            }
-            /* tslint:enable */
-        }
-    };
-    return PdfResources;
-}(PdfDictionary));
-/* tslint:disable */
-/**
- * Used to create new guid for resources.
- * @private
- */
-var Guid = /** @class */ (function () {
-    function Guid() {
-    }
-    /**
-     * Generate `new GUID`.
-     * @private
-     */
-    Guid.getNewGuidString = function () {
-        return 'aaaaaaaa-aaaa-4aaa-baaa-aaaaaaaaaaaa'.replace(/[ab]/g, function (c) {
-            var random = Math.random() * 16 | 0;
-            var result = c === 'a' ? random : (random & 0x3 | 0x8);
-            return result.toString(16);
-        });
-    };
-    return Guid;
-}());
-
-/* tslint:enable */
 
 /**
  * The abstract base class for all pages,
@@ -18017,7 +19235,7 @@ var PdfDocumentTemplate = /** @class */ (function () {
     return PdfDocumentTemplate;
 }());
 
-var __extends$14 = (undefined && undefined.__extends) || (function () {
+var __extends$16 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -18037,7 +19255,7 @@ var __extends$14 = (undefined && undefined.__extends) || (function () {
  * Represents a `page template` for all the pages in the section.
  */
 var PdfSectionTemplate = /** @class */ (function (_super) {
-    __extends$14(PdfSectionTemplate, _super);
+    __extends$16(PdfSectionTemplate, _super);
     // Constructors
     /**
      * `Creates a new object`.
@@ -20575,7 +21793,7 @@ var PdfActionLinkAnnotation = /** @class */ (function (_super) {
     return PdfActionLinkAnnotation;
 }(PdfLinkAnnotation));
 
-var __extends$15 = (undefined && undefined.__extends) || (function () {
+var __extends$17 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -20617,7 +21835,7 @@ var __extends$15 = (undefined && undefined.__extends) || (function () {
  * ```
  */
 var PdfDocumentLinkAnnotation = /** @class */ (function (_super) {
-    __extends$15(PdfDocumentLinkAnnotation, _super);
+    __extends$17(PdfDocumentLinkAnnotation, _super);
     function PdfDocumentLinkAnnotation(rectangle, destination) {
         var _this = _super.call(this, rectangle) || this;
         // Fields
@@ -20754,6 +21972,14 @@ var ElementLayouter = /** @class */ (function () {
         var section = currentPage.section;
         var nextPage = section.add();
         return nextPage;
+    };
+    ElementLayouter.prototype.getPaginateBounds = function (param) {
+        if ((param == null)) {
+            throw new Error('ArgumentNullException : param');
+        }
+        var result = param.format.usePaginateBounds ? param.format.paginateBounds
+            : new RectangleF(param.bounds.x, 0, param.bounds.width, param.bounds.height);
+        return result;
     };
     return ElementLayouter;
 }());
@@ -21247,47 +22473,7 @@ var PdfLayoutElement = /** @class */ (function () {
     return PdfLayoutElement;
 }());
 
-/**
- * public Enum for `PdfLayoutType`.
- * @private
- */
-
-(function (PdfLayoutType) {
-    /**
-     * Specifies the type of `Paginate`.
-     * @private
-     */
-    PdfLayoutType[PdfLayoutType["Paginate"] = 0] = "Paginate";
-    /**
-     * Specifies the type of `OnePage`.
-     * @private
-     */
-    PdfLayoutType[PdfLayoutType["OnePage"] = 1] = "OnePage";
-})(exports.PdfLayoutType || (exports.PdfLayoutType = {}));
-/**
- * public Enum for `PdfLayoutBreakType`.
- * @private
- */
-
-(function (PdfLayoutBreakType) {
-    /**
-     * Specifies the type of `FitPage`.
-     * @private
-     */
-    PdfLayoutBreakType[PdfLayoutBreakType["FitPage"] = 0] = "FitPage";
-    /**
-     * Specifies the type of `FitElement`.
-     * @private
-     */
-    PdfLayoutBreakType[PdfLayoutBreakType["FitElement"] = 1] = "FitElement";
-    /**
-     * Specifies the type of `FitColumnsToPage`.
-     * @private
-     */
-    PdfLayoutBreakType[PdfLayoutBreakType["FitColumnsToPage"] = 2] = "FitColumnsToPage";
-})(exports.PdfLayoutBreakType || (exports.PdfLayoutBreakType = {}));
-
-var __extends$18 = (undefined && undefined.__extends) || (function () {
+var __extends$20 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -21308,7 +22494,7 @@ var __extends$18 = (undefined && undefined.__extends) || (function () {
  * @private
  */
 var TextLayouter = /** @class */ (function (_super) {
-    __extends$18(TextLayouter, _super);
+    __extends$20(TextLayouter, _super);
     // Constructors
     /**
      * Initializes a new instance of the `TextLayouter` class.
@@ -21426,7 +22612,7 @@ var TextPageLayoutResult = /** @class */ (function () {
     return TextPageLayoutResult;
 }());
 var PdfTextLayoutResult = /** @class */ (function (_super) {
-    __extends$18(PdfTextLayoutResult, _super);
+    __extends$20(PdfTextLayoutResult, _super);
     // Constructors
     /**
      * Initializes the new instance of `PdfTextLayoutResult` class.
@@ -21464,7 +22650,7 @@ var PdfTextLayoutResult = /** @class */ (function (_super) {
     return PdfTextLayoutResult;
 }(PdfLayoutResult));
 
-var __extends$17 = (undefined && undefined.__extends) || (function () {
+var __extends$19 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -21486,7 +22672,7 @@ var __extends$17 = (undefined && undefined.__extends) || (function () {
  * @private
  */
 var PdfTextElement = /** @class */ (function (_super) {
-    __extends$17(PdfTextElement, _super);
+    __extends$19(PdfTextElement, _super);
     function PdfTextElement(arg1, arg2, arg3, arg4, arg5) {
         var _this = _super.call(this) || this;
         // Fields
@@ -21862,7 +23048,7 @@ var PdfTextElement = /** @class */ (function (_super) {
     return PdfTextElement;
 }(PdfLayoutElement));
 
-var __extends$19 = (undefined && undefined.__extends) || (function () {
+var __extends$21 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -21880,7 +23066,7 @@ var __extends$19 = (undefined && undefined.__extends) || (function () {
  * @private
  */
 var PdfUriAnnotation = /** @class */ (function (_super) {
-    __extends$19(PdfUriAnnotation, _super);
+    __extends$21(PdfUriAnnotation, _super);
     function PdfUriAnnotation(rectangle, uri) {
         var _this = _super.call(this, rectangle) || this;
         if (typeof uri !== 'undefined') {
@@ -21948,7 +23134,7 @@ var PdfUriAnnotation = /** @class */ (function (_super) {
     return PdfUriAnnotation;
 }(PdfActionLinkAnnotation));
 
-var __extends$16 = (undefined && undefined.__extends) || (function () {
+var __extends$18 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -21989,7 +23175,7 @@ var __extends$16 = (undefined && undefined.__extends) || (function () {
  * ```
  */
 var PdfTextWebLink = /** @class */ (function (_super) {
-    __extends$16(PdfTextWebLink, _super);
+    __extends$18(PdfTextWebLink, _super);
     // Constructors
     /**
      * Initializes a new instance of the `PdfTextWebLink` class.
@@ -22399,7 +23585,7 @@ var PdfTemplateValuePair = /** @class */ (function () {
     return PdfTemplateValuePair;
 }());
 
-var __extends$21 = (undefined && undefined.__extends) || (function () {
+var __extends$23 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -22419,7 +23605,7 @@ var __extends$21 = (undefined && undefined.__extends) || (function () {
  * Represents automatic field which has the same value within the `PdfGraphics`.
  */
 var PdfMultipleValueField = /** @class */ (function (_super) {
-    __extends$21(PdfMultipleValueField, _super);
+    __extends$23(PdfMultipleValueField, _super);
     function PdfMultipleValueField() {
         var _this = _super.call(this) || this;
         //  Fields
@@ -22445,7 +23631,7 @@ var PdfMultipleValueField = /** @class */ (function (_super) {
     return PdfMultipleValueField;
 }(PdfAutomaticField));
 
-var __extends$20 = (undefined && undefined.__extends) || (function () {
+var __extends$22 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -22463,7 +23649,7 @@ var __extends$20 = (undefined && undefined.__extends) || (function () {
  * @public
  */
 var PdfPageNumberField = /** @class */ (function (_super) {
-    __extends$20(PdfPageNumberField, _super);
+    __extends$22(PdfPageNumberField, _super);
     function PdfPageNumberField(font, arg2) {
         var _this = _super.call(this) || this;
         // Fields
@@ -22522,7 +23708,7 @@ var PdfPageNumberField = /** @class */ (function (_super) {
     return PdfPageNumberField;
 }(PdfMultipleValueField));
 
-var __extends$22 = (undefined && undefined.__extends) || (function () {
+var __extends$24 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -22542,7 +23728,7 @@ var __extends$22 = (undefined && undefined.__extends) || (function () {
  * Represents class which can concatenate multiple automatic fields into single string.
  */
 var PdfCompositeField = /** @class */ (function (_super) {
-    __extends$22(PdfCompositeField, _super);
+    __extends$24(PdfCompositeField, _super);
     // Constructor
     /**
      * Initialize a new instance of `PdfCompositeField` class.
@@ -22621,7 +23807,7 @@ var PdfCompositeField = /** @class */ (function (_super) {
     return PdfCompositeField;
 }(PdfMultipleValueField));
 
-var __extends$24 = (undefined && undefined.__extends) || (function () {
+var __extends$26 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -22641,7 +23827,7 @@ var __extends$24 = (undefined && undefined.__extends) || (function () {
  * Represents automatic field which has the same value in the whole document.
  */
 var PdfSingleValueField = /** @class */ (function (_super) {
-    __extends$24(PdfSingleValueField, _super);
+    __extends$26(PdfSingleValueField, _super);
     // Constructors
     function PdfSingleValueField() {
         var _this = _super.call(this) || this;
@@ -22678,7 +23864,7 @@ var PdfSingleValueField = /** @class */ (function (_super) {
     return PdfSingleValueField;
 }(PdfAutomaticField));
 
-var __extends$23 = (undefined && undefined.__extends) || (function () {
+var __extends$25 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -22698,7 +23884,7 @@ var __extends$23 = (undefined && undefined.__extends) || (function () {
  * Represents total PDF document page count automatic field.
  */
 var PdfPageCountField = /** @class */ (function (_super) {
-    __extends$23(PdfPageCountField, _super);
+    __extends$25(PdfPageCountField, _super);
     function PdfPageCountField(font, arg2) {
         var _this = _super.call(this) || this;
         // Fields
@@ -22930,7 +24116,82 @@ var PdfDestination = /** @class */ (function () {
     return PdfDestination;
 }());
 
-var __extends$25 = (undefined && undefined.__extends) || (function () {
+var PdfFunction = /** @class */ (function () {
+    //Constructor
+    /**
+     * Initializes a new instance of the `PdfFunction` class.
+     * @public
+     */
+    function PdfFunction(dictionary) {
+        //Field
+        /**
+         * Internal variable to store dictionary.
+         * @private
+         */
+        this.mDictionary = null;
+        /**
+         * Local variable to store the dictionary properties.
+         * @private
+         */
+        this.mDictionaryProperties = new DictionaryProperties();
+        this.mDictionary = dictionary;
+    }
+    Object.defineProperty(PdfFunction.prototype, "domain", {
+        //Properties
+        /**
+         * Gets or sets the domain of the function.
+         * @public
+         */
+        get: function () {
+            var domain = this.mDictionary.items.getValue(this.mDictionaryProperties.domain);
+            return domain;
+        },
+        set: function (value) {
+            this.mDictionary.items.setValue(this.mDictionaryProperties.domain, value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfFunction.prototype, "range", {
+        /**
+         * Gets or sets the range.
+         * @public
+         */
+        get: function () {
+            var range = (this.mDictionary.items.getValue(this.mDictionaryProperties.range));
+            return range;
+        },
+        set: function (value) {
+            this.mDictionary.items.setValue(this.mDictionaryProperties.range, value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfFunction.prototype, "dictionary", {
+        /**
+         * Gets the dictionary.
+         */
+        get: function () {
+            return this.mDictionary;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfFunction.prototype, "element", {
+        //IPdfWrapper Members
+        /**
+         * Gets the element.
+         */
+        get: function () {
+            return this.mDictionary;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return PdfFunction;
+}());
+
+var __extends$27 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -22944,789 +24205,4519 @@ var __extends$25 = (undefined && undefined.__extends) || (function () {
     };
 })();
 /**
- * PdfTrueTypeFont.ts class for EJ2-PDF
+ * PdfSampledFunction.ts class for EJ2-PDF
+ * Implements PDF Sampled Function.
  */
-//https://www.giftofspeed.com/base64-encoder/
-var PdfTrueTypeFont = /** @class */ (function (_super) {
-    __extends$25(PdfTrueTypeFont, _super);
-    function PdfTrueTypeFont(base64String, size, style) {
-        var _this = _super.call(this, size) || this;
-        /**
-         * Indicates whether the font is embedded or not.
-         * @private
-         */
-        _this.isEmbedFont = false;
-        /**
-         * Indicates whether the font is unicoded or not.
-         * @private
-         */
-        _this.isUnicode = true;
-        if (style !== undefined) {
-            _this.createFontInternal(base64String, style);
+var PdfSampledFunction = /** @class */ (function (_super) {
+    __extends$27(PdfSampledFunction, _super);
+    /**
+     * Initializes a new instance of the `PdfSampledFunction` class.
+     * @public
+     */
+    function PdfSampledFunction(domain, range, sizes, samples) {
+        var _this = _super.call(this, new PdfStream()) || this;
+        if (typeof domain === 'undefined') {
+            _this.dictionary.items.setValue(_this.mDictionaryProperties.functionType, new PdfNumber(0));
         }
         else {
-            _this.createFontInternal(base64String, exports.PdfFontStyle.Regular);
+            _this.dictionary.items.setValue(_this.mDictionaryProperties.functionType, new PdfNumber(0));
+            _this.checkParams(domain, range, sizes, samples);
+            _this.setDomainAndRange(domain, range);
+            _this.setSizeAndValues(sizes, samples);
         }
         return _this;
     }
-    PdfTrueTypeFont.prototype.equalsToFont = function (font) {
-        var result = false;
-        //let result : boolean = this.fontInternal.equalsToFont(font);
-        return result;
-    };
-    PdfTrueTypeFont.prototype.getLineWidth = function (line, format) {
-        var width = 0;
-        if (format !== null && format.textDirection !== exports.PdfTextDirection.None) {
-            var returnValue = this.getUnicodeLineWidth(line, /*out*/ width, format);
-            width = returnValue.width;
-        }
-        else {
-            width = this.fontInternal.getLineWidth(line);
-        }
-        var size = this.metrics.getSize(format);
-        width *= (PdfFont.charSizeMultiplier * size);
-        width = this.applyFormatSettings(line, format, width);
-        return width;
+    // Helper methods
+    /**
+     * Checks the input parameters.
+     */
+    PdfSampledFunction.prototype.checkParams = function (domain, range, sizes, samples) {
+        var rLength = range.length;
+        var dLength = domain.length;
+        var sLength = samples.length;
+        
     };
     /**
-     * Returns width of the char.
+     * Sets the domain and range.
      */
-    PdfTrueTypeFont.prototype.getCharWidth = function (charCode, format) {
-        var codeWidth = this.fontInternal.getCharWidth(charCode);
-        var size = this.metrics.getSize(format);
-        codeWidth *= (0.001 * size);
-        return codeWidth;
-    };
-    //Implementation
-    PdfTrueTypeFont.prototype.createFontInternal = function (base64String, style) {
-        this.fontInternal = new UnicodeTrueTypeFont(base64String, this.size);
-        this.calculateStyle(style);
-        this.initializeInternals();
-    };
-    PdfTrueTypeFont.prototype.calculateStyle = function (style) {
-        var iStyle = this.fontInternal.ttfMetrics.macStyle;
-        if ((style & exports.PdfFontStyle.Underline) !== 0) {
-            iStyle |= exports.PdfFontStyle.Underline;
-        }
-        if ((style & exports.PdfFontStyle.Strikeout) !== 0) {
-            iStyle |= exports.PdfFontStyle.Strikeout;
-        }
-        this.setStyle(iStyle);
-    };
-    PdfTrueTypeFont.prototype.initializeInternals = function () {
-        var equalFont = null;
-        if (PdfDocument.enableCache) {
-            // Search for the similar fonts.
-            equalFont = PdfDocument.cache.search(this);
-        }
-        var internals = null;
-        // There is not equal font in the cache.
-        if (equalFont !== null && equalFont !== undefined) {
-            // Get the settings from the cached font.
-            internals = equalFont.getInternals();
-            var metrics = equalFont.metrics;
-            metrics = metrics.clone();
-            metrics.size = this.size;
-            this.metrics = metrics;
-            this.fontInternal = equalFont.fontInternal;
-        }
-        else {
-            if (equalFont == null) {
-                if (this.fontInternal instanceof UnicodeTrueTypeFont) {
-                    this.fontInternal.isEmbed = this.isEmbedFont;
-                }
-                this.fontInternal.createInternals();
-                internals = this.fontInternal.getInternals();
-                this.metrics = this.fontInternal.metrics;
-            }
-        }
-        this.metrics.isUnicodeFont = true;
-        this.setInternals(internals);
-        //this.ttfReader = (this.fontInternal as UnicodeTrueTypeFont).ttfReader;
+    PdfSampledFunction.prototype.setDomainAndRange = function (domain, range) {
+        this.domain = new PdfArray(domain);
+        this.range = new PdfArray(range);
     };
     /**
-     * Stores used symbols.
+     * Sets the size and values.
      */
-    PdfTrueTypeFont.prototype.setSymbols = function (text) {
-        var internalFont = this.fontInternal;
-        if (internalFont != null) {
-            internalFont.setSymbols(text);
-        }
+    PdfSampledFunction.prototype.setSizeAndValues = function (sizes, samples) {
+        var s = (this.dictionary);
+        this.dictionary.items.setValue(this.mDictionaryProperties.size, new PdfArray(sizes));
+        this.dictionary.items.setValue(this.mDictionaryProperties.bitsPerSample, new PdfNumber(8));
+        s.writeBytes(samples);
     };
-    Object.defineProperty(PdfTrueTypeFont.prototype, "Unicode", {
-        /**
-         * Property
-         *
-         */
-        get: function () {
-            return this.isUnicode;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    // public get Font() : UnicodeTrueTypeFont {
-    //     return this.fontInternal as UnicodeTrueTypeFont;
-    // }
-    PdfTrueTypeFont.prototype.getUnicodeLineWidth = function (line, /*out*/ width, format) {
-        // if (line == null) {
-        //     throw new Error('ArgumentNullException : line');
-        // }
-        width = 0;
-        var glyphIndices = null;
-        var rtlRender = new RtlRenderer();
-        /* tslint:disable-next-line:max-line-length */
-        var result = rtlRender.getGlyphIndex(line, this, (format.textDirection === exports.PdfTextDirection.RightToLeft) ? true : false, /*out*/ glyphIndices, true);
-        var resultGlyph = result.success;
-        glyphIndices = result.glyphs;
-        if (resultGlyph && glyphIndices !== null) {
-            var ttfReader = this.fontInternal.ttfReader;
-            for (var i = 0, len = glyphIndices.length; i < len; i++) {
-                var glyphIndex = glyphIndices[i];
-                var glyph = ttfReader.getGlyph(glyphIndex);
-                if (glyph !== null && typeof glyph !== 'undefined') {
-                    width += glyph.width;
-                }
-            }
-        }
-        return { success: resultGlyph, width: width };
-    };
-    return PdfTrueTypeFont;
-}(PdfFont));
+    return PdfSampledFunction;
+}(PdfFunction));
 
 /**
- * PdfPageTemplateElement.ts class for EJ2-Pdf
+ * Specifies the constant values specifying whether to extend the shading
+ * beyond the starting and ending points of the axis.
+ */
+var PdfExtend;
+(function (PdfExtend) {
+    /**
+     * Do not extend any point.
+     */
+    PdfExtend[PdfExtend["None"] = 0] = "None";
+    /**
+     * Extend start point.
+     */
+    PdfExtend[PdfExtend["Start"] = 1] = "Start";
+    /**
+     * Extend end point.
+     */
+    PdfExtend[PdfExtend["End"] = 2] = "End";
+    /**
+     * Extend both start and end points.
+     */
+    PdfExtend[PdfExtend["Both"] = 3] = "Both";
+})(PdfExtend || (PdfExtend = {}));
+/**
+ * Specifies the gradient direction of the linear gradient brush.
+ */
+var PdfLinearGradientMode;
+(function (PdfLinearGradientMode) {
+    /**
+     * Specifies a gradient from upper right to lower left.
+     */
+    PdfLinearGradientMode[PdfLinearGradientMode["BackwardDiagonal"] = 0] = "BackwardDiagonal";
+    /**
+     * Specifies a gradient from upper left to lower right.
+     */
+    PdfLinearGradientMode[PdfLinearGradientMode["ForwardDiagonal"] = 1] = "ForwardDiagonal";
+    /**
+     * Specifies a gradient from left to right.
+     */
+    PdfLinearGradientMode[PdfLinearGradientMode["Horizontal"] = 2] = "Horizontal";
+    /**
+     * Specifies a gradient from top to bottom.
+     */
+    PdfLinearGradientMode[PdfLinearGradientMode["Vertical"] = 3] = "Vertical";
+})(PdfLinearGradientMode || (PdfLinearGradientMode = {}));
+/**
+ * Shading type constants.
+ */
+var ShadingType;
+(function (ShadingType) {
+    /**
+     * Function-based shading.
+     */
+    ShadingType[ShadingType["Function"] = 1] = "Function";
+    /**
+     * Axial shading.
+     */
+    ShadingType[ShadingType["Axial"] = 2] = "Axial";
+    /**
+     * Radial shading.
+     */
+    ShadingType[ShadingType["Radial"] = 3] = "Radial";
+})(ShadingType || (ShadingType = {}));
+var KnownColor;
+(function (KnownColor) {
+    KnownColor[KnownColor["ActiveBorder"] = 1] = "ActiveBorder";
+    KnownColor[KnownColor["ActiveCaption"] = 2] = "ActiveCaption";
+    KnownColor[KnownColor["ActiveCaptionText"] = 3] = "ActiveCaptionText";
+    KnownColor[KnownColor["AppWorkspace"] = 4] = "AppWorkspace";
+    KnownColor[KnownColor["Control"] = 5] = "Control";
+    KnownColor[KnownColor["ControlDark"] = 6] = "ControlDark";
+    KnownColor[KnownColor["ControlDarkDark"] = 7] = "ControlDarkDark";
+    KnownColor[KnownColor["ControlLight"] = 8] = "ControlLight";
+    KnownColor[KnownColor["ControlLightLight"] = 9] = "ControlLightLight";
+    KnownColor[KnownColor["ControlText"] = 10] = "ControlText";
+    KnownColor[KnownColor["Desktop"] = 11] = "Desktop";
+    KnownColor[KnownColor["GrayText"] = 12] = "GrayText";
+    KnownColor[KnownColor["Highlight"] = 13] = "Highlight";
+    KnownColor[KnownColor["HighlightText"] = 14] = "HighlightText";
+    KnownColor[KnownColor["HotTrack"] = 15] = "HotTrack";
+    KnownColor[KnownColor["InactiveBorder"] = 16] = "InactiveBorder";
+    KnownColor[KnownColor["InactiveCaption"] = 17] = "InactiveCaption";
+    KnownColor[KnownColor["InactiveCaptionText"] = 18] = "InactiveCaptionText";
+    KnownColor[KnownColor["Info"] = 19] = "Info";
+    KnownColor[KnownColor["InfoText"] = 20] = "InfoText";
+    KnownColor[KnownColor["Menu"] = 21] = "Menu";
+    KnownColor[KnownColor["MenuText"] = 22] = "MenuText";
+    KnownColor[KnownColor["ScrollBar"] = 23] = "ScrollBar";
+    KnownColor[KnownColor["Window"] = 24] = "Window";
+    KnownColor[KnownColor["WindowFrame"] = 25] = "WindowFrame";
+    KnownColor[KnownColor["WindowText"] = 26] = "WindowText";
+    KnownColor[KnownColor["Transparent"] = 27] = "Transparent";
+    KnownColor[KnownColor["AliceBlue"] = 28] = "AliceBlue";
+    KnownColor[KnownColor["AntiqueWhite"] = 29] = "AntiqueWhite";
+    KnownColor[KnownColor["Aqua"] = 30] = "Aqua";
+    KnownColor[KnownColor["Aquamarine"] = 31] = "Aquamarine";
+    KnownColor[KnownColor["Azure"] = 32] = "Azure";
+    KnownColor[KnownColor["Beige"] = 33] = "Beige";
+    KnownColor[KnownColor["Bisque"] = 34] = "Bisque";
+    KnownColor[KnownColor["Black"] = 35] = "Black";
+    KnownColor[KnownColor["BlanchedAlmond"] = 36] = "BlanchedAlmond";
+    KnownColor[KnownColor["Blue"] = 37] = "Blue";
+    KnownColor[KnownColor["BlueViolet"] = 38] = "BlueViolet";
+    KnownColor[KnownColor["Brown"] = 39] = "Brown";
+    KnownColor[KnownColor["BurlyWood"] = 40] = "BurlyWood";
+    KnownColor[KnownColor["CadetBlue"] = 41] = "CadetBlue";
+    KnownColor[KnownColor["Chartreuse"] = 42] = "Chartreuse";
+    KnownColor[KnownColor["Chocolate"] = 43] = "Chocolate";
+    KnownColor[KnownColor["Coral"] = 44] = "Coral";
+    KnownColor[KnownColor["CornflowerBlue"] = 45] = "CornflowerBlue";
+    KnownColor[KnownColor["Cornsilk"] = 46] = "Cornsilk";
+    KnownColor[KnownColor["Crimson"] = 47] = "Crimson";
+    KnownColor[KnownColor["Cyan"] = 48] = "Cyan";
+    KnownColor[KnownColor["DarkBlue"] = 49] = "DarkBlue";
+    KnownColor[KnownColor["DarkCyan"] = 50] = "DarkCyan";
+    KnownColor[KnownColor["DarkGoldenrod"] = 51] = "DarkGoldenrod";
+    KnownColor[KnownColor["DarkGray"] = 52] = "DarkGray";
+    KnownColor[KnownColor["DarkGreen"] = 53] = "DarkGreen";
+    KnownColor[KnownColor["DarkKhaki"] = 54] = "DarkKhaki";
+    KnownColor[KnownColor["DarkMagenta"] = 55] = "DarkMagenta";
+    KnownColor[KnownColor["DarkOliveGreen"] = 56] = "DarkOliveGreen";
+    KnownColor[KnownColor["DarkOrange"] = 57] = "DarkOrange";
+    KnownColor[KnownColor["DarkOrchid"] = 58] = "DarkOrchid";
+    KnownColor[KnownColor["DarkRed"] = 59] = "DarkRed";
+    KnownColor[KnownColor["DarkSalmon"] = 60] = "DarkSalmon";
+    KnownColor[KnownColor["DarkSeaGreen"] = 61] = "DarkSeaGreen";
+    KnownColor[KnownColor["DarkSlateBlue"] = 62] = "DarkSlateBlue";
+    KnownColor[KnownColor["DarkSlateGray"] = 63] = "DarkSlateGray";
+    KnownColor[KnownColor["DarkTurquoise"] = 64] = "DarkTurquoise";
+    KnownColor[KnownColor["DarkViolet"] = 65] = "DarkViolet";
+    KnownColor[KnownColor["DeepPink"] = 66] = "DeepPink";
+    KnownColor[KnownColor["DeepSkyBlue"] = 67] = "DeepSkyBlue";
+    KnownColor[KnownColor["DimGray"] = 68] = "DimGray";
+    KnownColor[KnownColor["DodgerBlue"] = 69] = "DodgerBlue";
+    KnownColor[KnownColor["Firebrick"] = 70] = "Firebrick";
+    KnownColor[KnownColor["FloralWhite"] = 71] = "FloralWhite";
+    KnownColor[KnownColor["ForestGreen"] = 72] = "ForestGreen";
+    KnownColor[KnownColor["Fuchsia"] = 73] = "Fuchsia";
+    KnownColor[KnownColor["Gainsboro"] = 74] = "Gainsboro";
+    KnownColor[KnownColor["GhostWhite"] = 75] = "GhostWhite";
+    KnownColor[KnownColor["Gold"] = 76] = "Gold";
+    KnownColor[KnownColor["Goldenrod"] = 77] = "Goldenrod";
+    KnownColor[KnownColor["Gray"] = 78] = "Gray";
+    KnownColor[KnownColor["Green"] = 79] = "Green";
+    KnownColor[KnownColor["GreenYellow"] = 80] = "GreenYellow";
+    KnownColor[KnownColor["Honeydew"] = 81] = "Honeydew";
+    KnownColor[KnownColor["HotPink"] = 82] = "HotPink";
+    KnownColor[KnownColor["IndianRed"] = 83] = "IndianRed";
+    KnownColor[KnownColor["Indigo"] = 84] = "Indigo";
+    KnownColor[KnownColor["Ivory"] = 85] = "Ivory";
+    KnownColor[KnownColor["Khaki"] = 86] = "Khaki";
+    KnownColor[KnownColor["Lavender"] = 87] = "Lavender";
+    KnownColor[KnownColor["LavenderBlush"] = 88] = "LavenderBlush";
+    KnownColor[KnownColor["LawnGreen"] = 89] = "LawnGreen";
+    KnownColor[KnownColor["LemonChiffon"] = 90] = "LemonChiffon";
+    KnownColor[KnownColor["LightBlue"] = 91] = "LightBlue";
+    KnownColor[KnownColor["LightCoral"] = 92] = "LightCoral";
+    KnownColor[KnownColor["LightCyan"] = 93] = "LightCyan";
+    KnownColor[KnownColor["LightGoldenrodYellow"] = 94] = "LightGoldenrodYellow";
+    KnownColor[KnownColor["LightGray"] = 95] = "LightGray";
+    KnownColor[KnownColor["LightGreen"] = 96] = "LightGreen";
+    KnownColor[KnownColor["LightPink"] = 97] = "LightPink";
+    KnownColor[KnownColor["LightSalmon"] = 98] = "LightSalmon";
+    KnownColor[KnownColor["LightSeaGreen"] = 99] = "LightSeaGreen";
+    KnownColor[KnownColor["LightSkyBlue"] = 100] = "LightSkyBlue";
+    KnownColor[KnownColor["LightSlateGray"] = 101] = "LightSlateGray";
+    KnownColor[KnownColor["LightSteelBlue"] = 102] = "LightSteelBlue";
+    KnownColor[KnownColor["LightYellow"] = 103] = "LightYellow";
+    KnownColor[KnownColor["Lime"] = 104] = "Lime";
+    KnownColor[KnownColor["LimeGreen"] = 105] = "LimeGreen";
+    KnownColor[KnownColor["Linen"] = 106] = "Linen";
+    KnownColor[KnownColor["Magenta"] = 107] = "Magenta";
+    KnownColor[KnownColor["Maroon"] = 108] = "Maroon";
+    KnownColor[KnownColor["MediumAquamarine"] = 109] = "MediumAquamarine";
+    KnownColor[KnownColor["MediumBlue"] = 110] = "MediumBlue";
+    KnownColor[KnownColor["MediumOrchid"] = 111] = "MediumOrchid";
+    KnownColor[KnownColor["MediumPurple"] = 112] = "MediumPurple";
+    KnownColor[KnownColor["MediumSeaGreen"] = 113] = "MediumSeaGreen";
+    KnownColor[KnownColor["MediumSlateBlue"] = 114] = "MediumSlateBlue";
+    KnownColor[KnownColor["MediumSpringGreen"] = 115] = "MediumSpringGreen";
+    KnownColor[KnownColor["MediumTurquoise"] = 116] = "MediumTurquoise";
+    KnownColor[KnownColor["MediumVioletRed"] = 117] = "MediumVioletRed";
+    KnownColor[KnownColor["MidnightBlue"] = 118] = "MidnightBlue";
+    KnownColor[KnownColor["MintCream"] = 119] = "MintCream";
+    KnownColor[KnownColor["MistyRose"] = 120] = "MistyRose";
+    KnownColor[KnownColor["Moccasin"] = 121] = "Moccasin";
+    KnownColor[KnownColor["NavajoWhite"] = 122] = "NavajoWhite";
+    KnownColor[KnownColor["Navy"] = 123] = "Navy";
+    KnownColor[KnownColor["OldLace"] = 124] = "OldLace";
+    KnownColor[KnownColor["Olive"] = 125] = "Olive";
+    KnownColor[KnownColor["OliveDrab"] = 126] = "OliveDrab";
+    KnownColor[KnownColor["Orange"] = 127] = "Orange";
+    KnownColor[KnownColor["OrangeRed"] = 128] = "OrangeRed";
+    KnownColor[KnownColor["Orchid"] = 129] = "Orchid";
+    KnownColor[KnownColor["PaleGoldenrod"] = 130] = "PaleGoldenrod";
+    KnownColor[KnownColor["PaleGreen"] = 131] = "PaleGreen";
+    KnownColor[KnownColor["PaleTurquoise"] = 132] = "PaleTurquoise";
+    KnownColor[KnownColor["PaleVioletRed"] = 133] = "PaleVioletRed";
+    KnownColor[KnownColor["PapayaWhip"] = 134] = "PapayaWhip";
+    KnownColor[KnownColor["PeachPuff"] = 135] = "PeachPuff";
+    KnownColor[KnownColor["Peru"] = 136] = "Peru";
+    KnownColor[KnownColor["Pink"] = 137] = "Pink";
+    KnownColor[KnownColor["Plum"] = 138] = "Plum";
+    KnownColor[KnownColor["PowderBlue"] = 139] = "PowderBlue";
+    KnownColor[KnownColor["Purple"] = 140] = "Purple";
+    KnownColor[KnownColor["Red"] = 141] = "Red";
+    KnownColor[KnownColor["RosyBrown"] = 142] = "RosyBrown";
+    KnownColor[KnownColor["RoyalBlue"] = 143] = "RoyalBlue";
+    KnownColor[KnownColor["SaddleBrown"] = 144] = "SaddleBrown";
+    KnownColor[KnownColor["Salmon"] = 145] = "Salmon";
+    KnownColor[KnownColor["SandyBrown"] = 146] = "SandyBrown";
+    KnownColor[KnownColor["SeaGreen"] = 147] = "SeaGreen";
+    KnownColor[KnownColor["SeaShell"] = 148] = "SeaShell";
+    KnownColor[KnownColor["Sienna"] = 149] = "Sienna";
+    KnownColor[KnownColor["Silver"] = 150] = "Silver";
+    KnownColor[KnownColor["SkyBlue"] = 151] = "SkyBlue";
+    KnownColor[KnownColor["SlateBlue"] = 152] = "SlateBlue";
+    KnownColor[KnownColor["SlateGray"] = 153] = "SlateGray";
+    KnownColor[KnownColor["Snow"] = 154] = "Snow";
+    KnownColor[KnownColor["SpringGreen"] = 155] = "SpringGreen";
+    KnownColor[KnownColor["SteelBlue"] = 156] = "SteelBlue";
+    KnownColor[KnownColor["Tan"] = 157] = "Tan";
+    KnownColor[KnownColor["Teal"] = 158] = "Teal";
+    KnownColor[KnownColor["Thistle"] = 159] = "Thistle";
+    KnownColor[KnownColor["Tomato"] = 160] = "Tomato";
+    KnownColor[KnownColor["Turquoise"] = 161] = "Turquoise";
+    KnownColor[KnownColor["Violet"] = 162] = "Violet";
+    KnownColor[KnownColor["Wheat"] = 163] = "Wheat";
+    KnownColor[KnownColor["White"] = 164] = "White";
+    KnownColor[KnownColor["WhiteSmoke"] = 165] = "WhiteSmoke";
+    KnownColor[KnownColor["Yellow"] = 166] = "Yellow";
+    KnownColor[KnownColor["YellowGreen"] = 167] = "YellowGreen";
+    KnownColor[KnownColor["ButtonFace"] = 168] = "ButtonFace";
+    KnownColor[KnownColor["ButtonHighlight"] = 169] = "ButtonHighlight";
+    KnownColor[KnownColor["ButtonShadow"] = 170] = "ButtonShadow";
+    KnownColor[KnownColor["GradientActiveCaption"] = 171] = "GradientActiveCaption";
+    KnownColor[KnownColor["GradientInactiveCaption"] = 172] = "GradientInactiveCaption";
+    KnownColor[KnownColor["MenuBar"] = 173] = "MenuBar";
+    KnownColor[KnownColor["MenuHighlight"] = 174] = "MenuHighlight";
+})(KnownColor || (KnownColor = {}));
+
+/**
+ * PdfBrushes.ts class for EJ2-PDF
  */
 /**
- * Describes a `page template` object that can be used as header/footer, watermark or stamp.
+ * `PdfBrushes` class provides objects used to fill the interiors of graphical shapes such as rectangles,
+ * ellipses, pies, polygons, and paths.
+ * @private
  */
-var PdfPageTemplateElement = /** @class */ (function () {
-    /* tslint:disable */
-    function PdfPageTemplateElement(arg1, arg2, arg3, arg4, arg5) {
-        if (arg1 instanceof RectangleF && typeof arg2 === 'undefined') {
-            this.InitiateBounds(arg1.x, arg1.y, arg1.width, arg1.height, null);
-        }
-        else if (arg1 instanceof RectangleF && arg2 instanceof PdfPage && typeof arg3 === 'undefined') {
-            this.InitiateBounds(arg1.x, arg1.y, arg1.width, arg1.height, arg2);
-        }
-        else if (arg1 instanceof PointF && arg2 instanceof SizeF && typeof arg3 === 'undefined') {
-            this.InitiateBounds(arg1.x, arg1.y, arg2.width, arg2.height, null);
-        }
-        else if (arg1 instanceof PointF && arg2 instanceof SizeF && arg3 instanceof PdfPage && typeof arg4 === 'undefined') {
-            this.InitiateBounds(arg1.x, arg1.y, arg2.width, arg2.height, arg3);
-        }
-        else if (arg1 instanceof SizeF && typeof arg2 === 'undefined') {
-            this.InitiateBounds(0, 0, arg1.width, arg1.height, null);
-        }
-        else if (typeof arg1 === 'number' && typeof arg2 === 'number' && typeof arg3 === 'undefined') {
-            this.InitiateBounds(0, 0, arg1, arg2, null);
-        }
-        else if (typeof arg1 === 'number' && typeof arg2 === 'number' && arg3 instanceof PdfPage && typeof arg4 === 'undefined') {
-            this.InitiateBounds(0, 0, arg1, arg2, arg3);
-        }
-        else if (typeof arg1 === 'number' && typeof arg2 === 'number' && typeof arg3 === 'number' && typeof arg4 === 'number' && typeof arg5 === 'undefined') {
-            this.InitiateBounds(arg1, arg2, arg3, arg4, null);
-        }
-        else {
-            this.InitiateBounds(arg1, arg2, arg3, arg4, null);
-            // this.graphics.colorSpace = this.page.document.colorSpace;
-        }
-        /* tslint:enable */
+var PdfBrushes = /** @class */ (function () {
+    function PdfBrushes() {
     }
-    Object.defineProperty(PdfPageTemplateElement.prototype, "dock", {
-        // Properties
+    Object.defineProperty(PdfBrushes, "AliceBlue", {
+        //Static Properties
         /**
-         * Gets or sets the `dock style` of the page template element.
-         * @private
-         */
-        get: function () {
-            return this.dockStyle;
-        },
-        set: function (value) {
-            // if (this.dockStyle !== value && this.Type === TemplateType.None) {
-            this.dockStyle = value;
-            // Reset alignment.
-            this.resetAlignment();
-            // }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(PdfPageTemplateElement.prototype, "alignment", {
-        /**
-         * Gets or sets `alignment` of the page template element.
-         * @private
-         */
-        get: function () {
-            return this.alignmentStyle;
-        },
-        set: function (value) {
-            // if (this.alignmentStyle !== value) {
-            this.setAlignment(value);
-            // }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(PdfPageTemplateElement.prototype, "foreground", {
-        /**
-         * Indicates whether the page template is located `in front of the page layers or behind of it`.
-         * @private
-         */
-        get: function () {
-            return this.isForeground;
-        },
-        set: function (value) {
-            // if (this.foreground !== value) {
-            this.isForeground = value;
-            // }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(PdfPageTemplateElement.prototype, "background", {
-        /**
-         * Indicates whether the page template is located `behind of the page layers or in front of it`.
-         * @private
-         */
-        get: function () {
-            return !this.isForeground;
-        },
-        set: function (value) {
-            this.isForeground = !value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(PdfPageTemplateElement.prototype, "location", {
-        /**
-         * Gets or sets `location` of the page template element.
-         * @private
-         */
-        get: function () {
-            return this.currentLocation;
-        },
-        set: function (value) {
-            if (this.type === exports.TemplateType.None) {
-                this.currentLocation = value;
-            }
-            else {
-                //
-            }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(PdfPageTemplateElement.prototype, "x", {
-        /**
-         * Gets or sets `X` co-ordinate of the template element on the page.
-         * @private
-         */
-        get: function () {
-            var value = (typeof this.currentLocation !== 'undefined') ? this.currentLocation.x : 0;
-            return value;
-        },
-        set: function (value) {
-            if (this.type === exports.TemplateType.None) {
-                this.currentLocation.x = value;
-            }
-            else {
-                //
-            }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(PdfPageTemplateElement.prototype, "y", {
-        /**
-         * Gets or sets `Y` co-ordinate of the template element on the page.
-         * @private
-         */
-        get: function () {
-            var value = (typeof this.currentLocation !== 'undefined') ? this.currentLocation.y : 0;
-            return value;
-        },
-        set: function (value) {
-            if (this.type === exports.TemplateType.None) {
-                this.currentLocation.y = value;
-            }
-            else {
-                //
-            }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(PdfPageTemplateElement.prototype, "size", {
-        /**
-         * Gets or sets `size` of the page template element.
-         * @private
-         */
-        get: function () {
-            return this.template.size;
-        },
-        set: function (value) {
-            if (this.type === exports.TemplateType.None) {
-                this.template.reset(value);
-            }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(PdfPageTemplateElement.prototype, "width", {
-        /**
-         * Gets or sets `width` of the page template element.
-         * @private
-         */
-        get: function () {
-            return this.template.width;
-        },
-        set: function (value) {
-            if (this.template.width !== value && this.type === exports.TemplateType.None) {
-                var size = this.template.size;
-                size.width = value;
-                this.template.reset(size);
-            }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(PdfPageTemplateElement.prototype, "height", {
-        /**
-         * Gets or sets `height` of the page template element.
-         * @private
-         */
-        get: function () {
-            return this.template.height;
-        },
-        set: function (value) {
-            if (this.template.height !== value && this.type === exports.TemplateType.None) {
-                var size = this.template.size;
-                size.height = value;
-                this.template.reset(size);
-            }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(PdfPageTemplateElement.prototype, "graphics", {
-        /**
-         * Gets `graphics` context of the page template element.
-         * @private
-         */
-        get: function () {
-            return this.template.graphics;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(PdfPageTemplateElement.prototype, "template", {
-        /**
-         * Gets Pdf `template` object.
-         * @private
-         */
-        get: function () {
-            // if (typeof this.pdfTemplate === 'undefined' || this.pdfTemplate == null) {
-            //     this.pdfTemplate = new PdfTemplate(this.size);
-            // }
-            return this.pdfTemplate;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(PdfPageTemplateElement.prototype, "type", {
-        /**
-         * Gets or sets `type` of the usage of this page template.
-         * @private
-         */
-        get: function () {
-            return this.templateType;
-        },
-        set: function (value) {
-            this.updateDocking(value);
-            this.templateType = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(PdfPageTemplateElement.prototype, "bounds", {
-        /**
-         * Gets or sets `bounds` of the page template.
+         * Gets the AliceBlue brush.
          * @public
          */
         get: function () {
-            return new RectangleF(new PointF(this.x, this.y), this.size);
-        },
-        set: function (value) {
-            if (this.type === exports.TemplateType.None) {
-                this.location = new PointF(value.x, value.y);
-                this.size = new SizeF(value.width, value.height);
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.AliceBlue)) {
+                brush = (this.sBrushes.getValue(KnownColor.AliceBlue));
             }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.AliceBlue);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "AntiqueWhite", {
+        /**
+         * Gets the antique white brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.AntiqueWhite)) {
+                brush = (this.sBrushes.getValue(KnownColor.AntiqueWhite));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.AntiqueWhite);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Aqua", {
+        /**
+         * Gets the Aqua default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Aqua)) {
+                brush = (this.sBrushes.getValue(KnownColor.Aqua));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Aqua);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Aquamarine", {
+        /**
+         * Gets the Aquamarine default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Aquamarine)) {
+                brush = (this.sBrushes.getValue(KnownColor.Aquamarine));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Aquamarine);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Azure", {
+        /**
+         * Gets the Azure default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Azure)) {
+                brush = (this.sBrushes.getValue(KnownColor.Azure));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Azure);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Beige", {
+        /**
+         * Gets the Beige default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Beige)) {
+                brush = (this.sBrushes.getValue(KnownColor.Beige));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Beige);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Bisque", {
+        /**
+         * Gets the Bisque default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Bisque)) {
+                brush = (this.sBrushes.getValue(KnownColor.Bisque));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Bisque);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Black", {
+        /**
+         * Gets the Black default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Black)) {
+                brush = (this.sBrushes.getValue(KnownColor.Black));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Black);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "BlanchedAlmond", {
+        /**
+         * Gets the BlanchedAlmond default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.BlanchedAlmond)) {
+                brush = (this.sBrushes.getValue(KnownColor.BlanchedAlmond));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.BlanchedAlmond);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Blue", {
+        /**
+         * Gets the Blue default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Blue)) {
+                brush = (this.sBrushes.getValue(KnownColor.Blue));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Blue);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "BlueViolet", {
+        /**
+         * Gets the BlueViolet default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.BlueViolet)) {
+                brush = (this.sBrushes.getValue(KnownColor.BlueViolet));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.BlueViolet);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Brown", {
+        /**
+         * Gets the Brown default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Brown)) {
+                brush = (this.sBrushes.getValue(KnownColor.Brown));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Brown);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "BurlyWood", {
+        /**
+         * Gets the BurlyWood default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.BurlyWood)) {
+                brush = (this.sBrushes.getValue(KnownColor.BurlyWood));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.BurlyWood);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "CadetBlue", {
+        /**
+         * Gets the CadetBlue default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.CadetBlue)) {
+                brush = (this.sBrushes.getValue(KnownColor.CadetBlue));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.CadetBlue);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Chartreuse", {
+        /**
+         * Gets the Chartreuse default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Chartreuse)) {
+                brush = (this.sBrushes.getValue(KnownColor.Chartreuse));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Chartreuse);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Chocolate", {
+        /**
+         * Gets the Chocolate default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Chocolate)) {
+                brush = (this.sBrushes.getValue(KnownColor.Chocolate));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Chocolate);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Coral", {
+        /**
+         * Gets the Coral default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Coral)) {
+                brush = (this.sBrushes.getValue(KnownColor.Coral));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Coral);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "CornflowerBlue", {
+        /**
+         * Gets the CornflowerBlue default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.CornflowerBlue)) {
+                brush = (this.sBrushes.getValue(KnownColor.CornflowerBlue));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.CornflowerBlue);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Cornsilk", {
+        /**
+         * Gets the Corn silk default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Cornsilk)) {
+                brush = (this.sBrushes.getValue(KnownColor.Cornsilk));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Cornsilk);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Crimson", {
+        /**
+         *  Gets the Crimson default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Crimson)) {
+                brush = (this.sBrushes.getValue(KnownColor.Crimson));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Crimson);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Cyan", {
+        /**
+         * Gets the Cyan default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Cyan)) {
+                brush = (this.sBrushes.getValue(KnownColor.Cyan));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Cyan);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "DarkBlue", {
+        /**
+         * Gets the DarkBlue default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.DarkBlue)) {
+                brush = (this.sBrushes.getValue(KnownColor.DarkBlue));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.DarkBlue);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "DarkCyan", {
+        /**
+         * Gets the DarkCyan default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.DarkCyan)) {
+                brush = (this.sBrushes.getValue(KnownColor.DarkCyan));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.DarkCyan);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "DarkGoldenrod", {
+        /**
+         * Gets the DarkGoldenrod default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.DarkGoldenrod)) {
+                brush = (this.sBrushes.getValue(KnownColor.DarkGoldenrod));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.DarkGoldenrod);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "DarkGray", {
+        /**
+         * Gets the DarkGray default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.DarkGray)) {
+                brush = (this.sBrushes.getValue(KnownColor.DarkGray));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.DarkGray);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "DarkGreen", {
+        /**
+         * Gets the DarkGreen default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.DarkGreen)) {
+                brush = (this.sBrushes.getValue(KnownColor.DarkGreen));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.DarkGreen);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "DarkKhaki", {
+        /**
+         * Gets the DarkKhaki default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.DarkKhaki)) {
+                brush = (this.sBrushes.getValue(KnownColor.DarkKhaki));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.DarkKhaki);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "DarkMagenta", {
+        /**
+         * Gets the DarkMagenta default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.DarkMagenta)) {
+                brush = (this.sBrushes.getValue(KnownColor.DarkMagenta));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.DarkMagenta);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "DarkOliveGreen", {
+        /**
+         * Gets the DarkOliveGreen default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.DarkOliveGreen)) {
+                brush = (this.sBrushes.getValue(KnownColor.DarkOliveGreen));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.DarkOliveGreen);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "DarkOrange", {
+        /**
+         * Gets the DarkOrange default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.DarkOrange)) {
+                brush = (this.sBrushes.getValue(KnownColor.DarkOrange));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.DarkOrange);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "DarkOrchid", {
+        /**
+         * Gets the DarkOrchid default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.DarkOrchid)) {
+                brush = (this.sBrushes.getValue(KnownColor.DarkOrchid));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.DarkOrchid);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "DarkRed", {
+        /**
+         * Gets the DarkRed default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.DarkRed)) {
+                brush = (this.sBrushes.getValue(KnownColor.DarkRed));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.DarkRed);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "DarkSalmon", {
+        /**
+         * Gets the DarkSalmon default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.DarkSalmon)) {
+                brush = (this.sBrushes.getValue(KnownColor.DarkSalmon));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.DarkSalmon);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "DarkSeaGreen", {
+        /**
+         * Gets the DarkSeaGreen default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.DarkSeaGreen)) {
+                brush = (this.sBrushes.getValue(KnownColor.DarkSeaGreen));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.DarkSeaGreen);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "DarkSlateBlue", {
+        /**
+         * Gets the DarkSlateBlue default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.DarkSlateBlue)) {
+                brush = (this.sBrushes.getValue(KnownColor.DarkSlateBlue));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.DarkSlateBlue);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "DarkSlateGray", {
+        /**
+         * Gets the DarkSlateGray default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.DarkSlateGray)) {
+                brush = (this.sBrushes.getValue(KnownColor.DarkSlateGray));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.DarkSlateGray);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "DarkTurquoise", {
+        /**
+         * Gets the DarkTurquoise default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.DarkTurquoise)) {
+                brush = (this.sBrushes.getValue(KnownColor.DarkTurquoise));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.DarkTurquoise);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "DarkViolet", {
+        /**
+         * Gets the DarkViolet default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.DarkViolet)) {
+                brush = (this.sBrushes.getValue(KnownColor.DarkViolet));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.DarkViolet);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "DeepPink", {
+        /**
+         * Gets the DeepPink default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.DeepPink)) {
+                brush = (this.sBrushes.getValue(KnownColor.DeepPink));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.DeepPink);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "DeepSkyBlue", {
+        /**
+         * Gets the DeepSkyBlue default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.DeepSkyBlue)) {
+                brush = (this.sBrushes.getValue(KnownColor.DeepSkyBlue));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.DeepSkyBlue);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "DimGray", {
+        /**
+         * Gets the DimGray default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.DimGray)) {
+                brush = (this.sBrushes.getValue(KnownColor.DimGray));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.DimGray);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "DodgerBlue", {
+        /**
+         * Gets the DodgerBlue default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.DodgerBlue)) {
+                brush = (this.sBrushes.getValue(KnownColor.DodgerBlue));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.DodgerBlue);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Firebrick", {
+        /**
+         * Gets the Firebrick default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Firebrick)) {
+                brush = (this.sBrushes.getValue(KnownColor.Firebrick));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Firebrick);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "FloralWhite", {
+        /**
+         * Gets the FloralWhite default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.FloralWhite)) {
+                brush = (this.sBrushes.getValue(KnownColor.FloralWhite));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.FloralWhite);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "ForestGreen", {
+        /**
+         * Gets the ForestGreen default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.ForestGreen)) {
+                brush = (this.sBrushes.getValue(KnownColor.ForestGreen));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.ForestGreen);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Fuchsia", {
+        /**
+         * Gets the Fuchsia default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Fuchsia)) {
+                brush = (this.sBrushes.getValue(KnownColor.Fuchsia));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Fuchsia);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Gainsboro", {
+        /**
+         * Gets the Gainsborough default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Gainsboro)) {
+                brush = (this.sBrushes.getValue(KnownColor.Gainsboro));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Gainsboro);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "GhostWhite", {
+        /**
+         * Gets the GhostWhite default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.GhostWhite)) {
+                brush = (this.sBrushes.getValue(KnownColor.GhostWhite));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.GhostWhite);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Gold", {
+        /**
+         * Gets the Gold default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Gold)) {
+                brush = (this.sBrushes.getValue(KnownColor.Gold));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Gold);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Goldenrod", {
+        /**
+         * Gets the Goldenrod default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Goldenrod)) {
+                brush = (this.sBrushes.getValue(KnownColor.Goldenrod));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Goldenrod);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Gray", {
+        /**
+         * Gets the Gray default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Gray)) {
+                brush = (this.sBrushes.getValue(KnownColor.Gray));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Gray);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Green", {
+        /**
+         * Gets the Green default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Green)) {
+                brush = (this.sBrushes.getValue(KnownColor.Green));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Green);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "GreenYellow", {
+        /**
+         * Gets the GreenYellow default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.GreenYellow)) {
+                brush = (this.sBrushes.getValue(KnownColor.GreenYellow));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.GreenYellow);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Honeydew", {
+        /**
+         * Gets the Honeydew default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Honeydew)) {
+                brush = (this.sBrushes.getValue(KnownColor.Honeydew));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Honeydew);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "HotPink", {
+        /**
+         * Gets the HotPink default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.HotPink)) {
+                brush = (this.sBrushes.getValue(KnownColor.HotPink));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.HotPink);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "IndianRed", {
+        /**
+         * Gets the IndianRed default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.IndianRed)) {
+                brush = (this.sBrushes.getValue(KnownColor.IndianRed));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.IndianRed);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Indigo", {
+        /**
+         * Gets the Indigo default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Indigo)) {
+                brush = (this.sBrushes.getValue(KnownColor.Indigo));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Indigo);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Ivory", {
+        /**
+         * Gets the Ivory default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Ivory)) {
+                brush = (this.sBrushes.getValue(KnownColor.Ivory));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Ivory);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Khaki", {
+        /**
+         * Gets the Khaki default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Khaki)) {
+                brush = (this.sBrushes.getValue(KnownColor.Khaki));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Khaki);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Lavender", {
+        /**
+         * Gets the Lavender default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Lavender)) {
+                brush = (this.sBrushes.getValue(KnownColor.Lavender));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Lavender);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "LavenderBlush", {
+        /**
+         * Gets the LavenderBlush default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.LavenderBlush)) {
+                brush = (this.sBrushes.getValue(KnownColor.LavenderBlush));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.LavenderBlush);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "LawnGreen", {
+        /**
+         * Gets the LawnGreen default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.LawnGreen)) {
+                brush = (this.sBrushes.getValue(KnownColor.LawnGreen));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.LawnGreen);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "LemonChiffon", {
+        /**
+         * Gets the LemonChiffon default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.LemonChiffon)) {
+                brush = (this.sBrushes.getValue(KnownColor.LemonChiffon));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.LemonChiffon);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "LightBlue", {
+        /**
+         * Gets the LightBlue default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.LightBlue)) {
+                brush = (this.sBrushes.getValue(KnownColor.LightBlue));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.LightBlue);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "LightCoral", {
+        /**
+         * Gets the LightCoral default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.LightCoral)) {
+                brush = (this.sBrushes.getValue(KnownColor.LightCoral));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.LightCoral);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "LightCyan", {
+        /**
+         * Gets the LightCyan default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.LightCyan)) {
+                brush = (this.sBrushes.getValue(KnownColor.LightCyan));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.LightCyan);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "LightGoldenrodYellow", {
+        /**
+         * Gets the LightGoldenrodYellow default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.LightGoldenrodYellow)) {
+                brush = (this.sBrushes.getValue(KnownColor.LightGoldenrodYellow));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.LightGoldenrodYellow);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "LightGray", {
+        /**
+         * Gets the LightGray default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.LightGray)) {
+                brush = (this.sBrushes.getValue(KnownColor.LightGray));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.LightGray);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "LightGreen", {
+        /**
+         * Gets the LightGreen default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.LightGreen)) {
+                brush = (this.sBrushes.getValue(KnownColor.LightGreen));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.LightGreen);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "LightPink", {
+        /**
+         * Gets the LightPink default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.LightPink)) {
+                brush = (this.sBrushes.getValue(KnownColor.LightPink));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.LightPink);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "LightSalmon", {
+        /**
+         * Gets the LightSalmon default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.LightSalmon)) {
+                brush = (this.sBrushes.getValue(KnownColor.LightSalmon));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.LightSalmon);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "LightSeaGreen", {
+        /**
+         * Gets the LightSeaGreen default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.LightSeaGreen)) {
+                brush = (this.sBrushes.getValue(KnownColor.LightSeaGreen));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.LightSeaGreen);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "LightSkyBlue", {
+        /**
+         * Gets the LightSkyBlue default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.LightSkyBlue)) {
+                brush = (this.sBrushes.getValue(KnownColor.LightSkyBlue));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.LightSkyBlue);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "LightSlateGray", {
+        /**
+         * Gets the LightSlateGray default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.LightSlateGray)) {
+                brush = (this.sBrushes.getValue(KnownColor.LightSlateGray));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.LightSlateGray);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "LightSteelBlue", {
+        /**
+         * Gets the LightSteelBlue default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.LightSteelBlue)) {
+                brush = (this.sBrushes.getValue(KnownColor.LightSteelBlue));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.LightSteelBlue);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "LightYellow", {
+        /**
+         * Gets the LightYellow default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.LightYellow)) {
+                brush = (this.sBrushes.getValue(KnownColor.LightYellow));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.LightYellow);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Lime", {
+        /**
+         * Gets the Lime default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Lime)) {
+                brush = (this.sBrushes.getValue(KnownColor.Lime));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Lime);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "LimeGreen", {
+        /**
+         * Gets the LimeGreen default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.LimeGreen)) {
+                brush = (this.sBrushes.getValue(KnownColor.LimeGreen));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.LimeGreen);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Linen", {
+        /**
+         * Gets the Linen default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Linen)) {
+                brush = (this.sBrushes.getValue(KnownColor.Linen));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Linen);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Magenta", {
+        /**
+         * Gets the Magenta default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Magenta)) {
+                brush = (this.sBrushes.getValue(KnownColor.Magenta));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Magenta);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Maroon", {
+        /**
+         * Gets the Maroon default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Maroon)) {
+                brush = (this.sBrushes.getValue(KnownColor.Maroon));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Maroon);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "MediumAquamarine", {
+        /**
+         * Gets the MediumAquamarine default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.MediumAquamarine)) {
+                brush = (this.sBrushes.getValue(KnownColor.MediumAquamarine));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.MediumAquamarine);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "MediumBlue", {
+        /**
+         * Gets the MediumBlue default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.MediumBlue)) {
+                brush = (this.sBrushes.getValue(KnownColor.MediumBlue));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.MediumBlue);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "MediumOrchid", {
+        /**
+         * Gets the MediumOrchid default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.MediumOrchid)) {
+                brush = (this.sBrushes.getValue(KnownColor.MediumOrchid));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.MediumOrchid);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "MediumPurple", {
+        /**
+         * Gets the MediumPurple default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.MediumPurple)) {
+                brush = (this.sBrushes.getValue(KnownColor.MediumPurple));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.MediumPurple);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "MediumSeaGreen", {
+        /**
+         * Gets the MediumSeaGreen default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.MediumSeaGreen)) {
+                brush = (this.sBrushes.getValue(KnownColor.MediumSeaGreen));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.MediumSeaGreen);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "MediumSlateBlue", {
+        /**
+         * Gets the MediumSlateBlue default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.MediumSlateBlue)) {
+                brush = (this.sBrushes.getValue(KnownColor.MediumSlateBlue));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.MediumSlateBlue);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "MediumSpringGreen", {
+        /**
+         * Gets the MediumSpringGreen default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.MediumSpringGreen)) {
+                brush = (this.sBrushes.getValue(KnownColor.MediumSpringGreen));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.MediumSpringGreen);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "MediumTurquoise", {
+        /**
+         * Gets the MediumTurquoise default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.MediumTurquoise)) {
+                brush = (this.sBrushes.getValue(KnownColor.MediumTurquoise));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.MediumTurquoise);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "MediumVioletRed", {
+        /**
+         * Gets the MediumVioletRed default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.MediumVioletRed)) {
+                brush = (this.sBrushes.getValue(KnownColor.MediumVioletRed));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.MediumVioletRed);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "MidnightBlue", {
+        /**
+         * Gets the MidnightBlue default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.MidnightBlue)) {
+                brush = (this.sBrushes.getValue(KnownColor.MidnightBlue));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.MidnightBlue);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "MintCream", {
+        /**
+         * Gets the MintCream default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.MintCream)) {
+                brush = (this.sBrushes.getValue(KnownColor.MintCream));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.MintCream);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "MistyRose", {
+        /**
+         * Gets the MistyRose default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.MistyRose)) {
+                brush = (this.sBrushes.getValue(KnownColor.MistyRose));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.MistyRose);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Moccasin", {
+        /**
+         * Gets the Moccasin default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Moccasin)) {
+                brush = (this.sBrushes.getValue(KnownColor.Moccasin));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Moccasin);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "NavajoWhite", {
+        /**
+         * Gets the NavajoWhite default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.NavajoWhite)) {
+                brush = (this.sBrushes.getValue(KnownColor.NavajoWhite));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.NavajoWhite);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Navy", {
+        /**
+         * Gets the Navy default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Navy)) {
+                brush = (this.sBrushes.getValue(KnownColor.Navy));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Navy);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "OldLace", {
+        /**
+         * Gets the OldLace default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.OldLace)) {
+                brush = (this.sBrushes.getValue(KnownColor.OldLace));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.OldLace);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Olive", {
+        /**
+         * Gets the Olive default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Olive)) {
+                brush = (this.sBrushes.getValue(KnownColor.Olive));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Olive);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "OliveDrab", {
+        /**
+         * Gets the OliveDrab default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.OliveDrab)) {
+                brush = (this.sBrushes.getValue(KnownColor.OliveDrab));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.OliveDrab);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Orange", {
+        /**
+         * Gets the Orange default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Orange)) {
+                brush = (this.sBrushes.getValue(KnownColor.Orange));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Orange);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "OrangeRed", {
+        /**
+         * Gets the OrangeRed default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.OrangeRed)) {
+                brush = (this.sBrushes.getValue(KnownColor.OrangeRed));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.OrangeRed);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Orchid", {
+        /**
+         * Gets the Orchid default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Orchid)) {
+                brush = (this.sBrushes.getValue(KnownColor.Orchid));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Orchid);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "PaleGoldenrod", {
+        /**
+         * Gets the PaleGoldenrod default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.PaleGoldenrod)) {
+                brush = (this.sBrushes.getValue(KnownColor.PaleGoldenrod));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.PaleGoldenrod);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "PaleGreen", {
+        /**
+         * Gets the PaleGreen default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.PaleGreen)) {
+                brush = (this.sBrushes.getValue(KnownColor.PaleGreen));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.PaleGreen);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "PaleTurquoise", {
+        /**
+         * Gets the PaleTurquoise default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.PaleTurquoise)) {
+                brush = (this.sBrushes.getValue(KnownColor.PaleTurquoise));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.PaleTurquoise);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "PaleVioletRed", {
+        /**
+         * Gets the PaleVioletRed default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.PaleVioletRed)) {
+                brush = (this.sBrushes.getValue(KnownColor.PaleVioletRed));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.PaleVioletRed);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "PapayaWhip", {
+        /**
+         * Gets the PapayaWhip default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.PapayaWhip)) {
+                brush = (this.sBrushes.getValue(KnownColor.PapayaWhip));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.PapayaWhip);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "PeachPuff", {
+        /**
+         * Gets the PeachPuff default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.PeachPuff)) {
+                brush = (this.sBrushes.getValue(KnownColor.PeachPuff));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.PeachPuff);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Peru", {
+        /**
+         * Gets the Peru default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Peru)) {
+                brush = (this.sBrushes.getValue(KnownColor.Peru));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Peru);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Pink", {
+        /**
+         * Gets the Pink default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Pink)) {
+                brush = (this.sBrushes.getValue(KnownColor.Pink));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Pink);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Plum", {
+        /**
+         * Gets the Plum default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Plum)) {
+                brush = (this.sBrushes.getValue(KnownColor.Plum));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Plum);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "PowderBlue", {
+        /**
+         * Gets the PowderBlue default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.PowderBlue)) {
+                brush = (this.sBrushes.getValue(KnownColor.PowderBlue));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.PowderBlue);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Purple", {
+        /**
+         * Gets the Purple default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Purple)) {
+                brush = (this.sBrushes.getValue(KnownColor.Purple));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Purple);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Red", {
+        /**
+         * Gets the Red default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Red)) {
+                brush = (this.sBrushes.getValue(KnownColor.Red));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Red);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "RosyBrown", {
+        /**
+         * Gets the RosyBrown default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.RosyBrown)) {
+                brush = (this.sBrushes.getValue(KnownColor.RosyBrown));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.RosyBrown);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "RoyalBlue", {
+        /**
+         * Gets the RoyalBlue default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.RoyalBlue)) {
+                brush = (this.sBrushes.getValue(KnownColor.RoyalBlue));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.RoyalBlue);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "SaddleBrown", {
+        /**
+         * Gets the SaddleBrown default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.SaddleBrown)) {
+                brush = (this.sBrushes.getValue(KnownColor.SaddleBrown));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.SaddleBrown);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Salmon", {
+        /**
+         * Gets the Salmon default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Salmon)) {
+                brush = (this.sBrushes.getValue(KnownColor.Salmon));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Salmon);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "SandyBrown", {
+        /**
+         * Gets the SandyBrown default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.SandyBrown)) {
+                brush = (this.sBrushes.getValue(KnownColor.SandyBrown));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.SandyBrown);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "SeaGreen", {
+        /**
+         * Gets the SeaGreen default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.SeaGreen)) {
+                brush = (this.sBrushes.getValue(KnownColor.SeaGreen));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.SeaGreen);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "SeaShell", {
+        /**
+         * Gets the SeaShell default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.SeaShell)) {
+                brush = (this.sBrushes.getValue(KnownColor.SeaShell));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.SeaShell);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Sienna", {
+        /**
+         * Gets the Sienna default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Sienna)) {
+                brush = (this.sBrushes.getValue(KnownColor.Sienna));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Sienna);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Silver", {
+        /**
+         * Gets the Silver default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Silver)) {
+                brush = (this.sBrushes.getValue(KnownColor.Silver));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Silver);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "SkyBlue", {
+        /**
+         * Gets the SkyBlue default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.SkyBlue)) {
+                brush = (this.sBrushes.getValue(KnownColor.SkyBlue));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.SkyBlue);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "SlateBlue", {
+        /**
+         * Gets the SlateBlue default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.SlateBlue)) {
+                brush = (this.sBrushes.getValue(KnownColor.SlateBlue));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.SlateBlue);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "SlateGray", {
+        /**
+         * Gets the SlateGray default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.SlateGray)) {
+                brush = (this.sBrushes.getValue(KnownColor.SlateGray));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.SlateGray);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Snow", {
+        /**
+         * Gets the Snow default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Snow)) {
+                brush = (this.sBrushes.getValue(KnownColor.Snow));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Snow);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "SpringGreen", {
+        /**
+         * Gets the SpringGreen default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.SpringGreen)) {
+                brush = (this.sBrushes.getValue(KnownColor.SpringGreen));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.SpringGreen);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "SteelBlue", {
+        /**
+         * Gets the SteelBlue default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.SteelBlue)) {
+                brush = (this.sBrushes.getValue(KnownColor.SteelBlue));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.SteelBlue);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Tan", {
+        /**
+         * Gets the Tan default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Tan)) {
+                brush = (this.sBrushes.getValue(KnownColor.Tan));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Tan);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Teal", {
+        /**
+         * Gets the Teal default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Teal)) {
+                brush = (this.sBrushes.getValue(KnownColor.Teal));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Teal);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Thistle", {
+        /**
+         * Gets the Thistle default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Thistle)) {
+                brush = (this.sBrushes.getValue(KnownColor.Thistle));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Thistle);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Tomato", {
+        /**
+         * Gets the Tomato default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Tomato)) {
+                brush = (this.sBrushes.getValue(KnownColor.Tomato));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Tomato);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Transparent", {
+        /**
+         * Gets the Transparent default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Transparent)) {
+                brush = (this.sBrushes.getValue(KnownColor.Transparent));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Transparent);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Turquoise", {
+        /**
+         * Gets the Turquoise default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Turquoise)) {
+                brush = (this.sBrushes.getValue(KnownColor.Turquoise));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Turquoise);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Violet", {
+        /**
+         * Gets the Violet default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Violet)) {
+                brush = (this.sBrushes.getValue(KnownColor.Violet));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Violet);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Wheat", {
+        /**
+         * Gets the Wheat default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Wheat)) {
+                brush = (this.sBrushes.getValue(KnownColor.Wheat));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Wheat);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "White", {
+        /**
+         * Gets the White default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.White)) {
+                brush = (this.sBrushes.getValue(KnownColor.White));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.White);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "WhiteSmoke", {
+        /**
+         * Gets the WhiteSmoke default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.WhiteSmoke)) {
+                brush = (this.sBrushes.getValue(KnownColor.WhiteSmoke));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.WhiteSmoke);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "Yellow", {
+        /**
+         * Gets the Yellow default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.Yellow)) {
+                brush = (this.sBrushes.getValue(KnownColor.Yellow));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.Yellow);
+            }
+            return brush;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBrushes, "YellowGreen", {
+        /**
+         * Gets the YellowGreen default brush.
+         * @public
+         */
+        get: function () {
+            var brush = null;
+            if (this.sBrushes.containsKey(KnownColor.YellowGreen)) {
+                brush = (this.sBrushes.getValue(KnownColor.YellowGreen));
+            }
+            if ((brush == null)) {
+                brush = this.getBrush(KnownColor.YellowGreen);
+            }
+            return brush;
         },
         enumerable: true,
         configurable: true
     });
     /**
-     * `Initialize Bounds` Initialize the bounds value of the template.
-     * @private
+     * Get the brush.
      */
-    PdfPageTemplateElement.prototype.InitiateBounds = function (arg1, arg2, arg3, arg4, arg5) {
-        this.x = arg1;
-        this.y = arg2;
-        this.pdfTemplate = new PdfTemplate(arg3, arg4);
-        // this.graphics.colorSpace = this.page.document.colorSpace;
+    PdfBrushes.getBrush = function (colorName) {
+        var pdfColor = this.getColorValue(colorName);
+        var brush = new PdfSolidBrush(pdfColor);
+        this.sBrushes.setValue(colorName, brush);
+        return brush;
     };
     /**
-     * `Updates Dock` property if template is used as header/footer.
-     * @private
+     * Get the color value.
+     * @param colorName The KnownColor name.
      */
-    PdfPageTemplateElement.prototype.updateDocking = function (type) {
-        if (type !== exports.TemplateType.None) {
-            switch (type) {
-                case exports.TemplateType.Top:
-                    this.dock = exports.PdfDockStyle.Top;
-                    break;
-                case exports.TemplateType.Bottom:
-                    this.dock = exports.PdfDockStyle.Bottom;
-                    break;
-                case exports.TemplateType.Left:
-                    this.dock = exports.PdfDockStyle.Left;
-                    break;
-                case exports.TemplateType.Right:
-                    this.dock = exports.PdfDockStyle.Right;
-                    break;
-            }
-            this.resetAlignment();
+    /* tslint:disable */
+    PdfBrushes.getColorValue = function (colorName) {
+        var color = new PdfColor();
+        switch (colorName) {
+            case KnownColor.Transparent:
+                color = new PdfColor(0, 255, 255, 255);
+                break;
+            case KnownColor.AliceBlue:
+                color = new PdfColor(255, 240, 248, 255);
+                break;
+            case KnownColor.AntiqueWhite:
+                color = new PdfColor(255, 250, 235, 215);
+                break;
+            case KnownColor.Aqua:
+                color = new PdfColor(255, 0, 255, 255);
+                break;
+            case KnownColor.Aquamarine:
+                color = new PdfColor(255, 127, 255, 212);
+                break;
+            case KnownColor.Azure:
+                color = new PdfColor(255, 240, 255, 255);
+                break;
+            case KnownColor.Beige:
+                color = new PdfColor(255, 245, 245, 220);
+                break;
+            case KnownColor.Bisque:
+                color = new PdfColor(255, 255, 228, 196);
+                break;
+            case KnownColor.Black:
+                color = new PdfColor(255, 0, 0, 0);
+                break;
+            case KnownColor.BlanchedAlmond:
+                color = new PdfColor(255, 255, 235, 205);
+                break;
+            case KnownColor.Blue:
+                color = new PdfColor(255, 0, 0, 255);
+                break;
+            case KnownColor.BlueViolet:
+                color = new PdfColor(255, 138, 43, 226);
+                break;
+            case KnownColor.Brown:
+                color = new PdfColor(255, 165, 42, 42);
+                break;
+            case KnownColor.BurlyWood:
+                color = new PdfColor(255, 222, 184, 135);
+                break;
+            case KnownColor.CadetBlue:
+                color = new PdfColor(255, 95, 158, 160);
+                break;
+            case KnownColor.Chartreuse:
+                color = new PdfColor(255, 127, 255, 0);
+                break;
+            case KnownColor.Chocolate:
+                color = new PdfColor(255, 210, 105, 30);
+                break;
+            case KnownColor.Coral:
+                color = new PdfColor(255, 255, 127, 80);
+                break;
+            case KnownColor.CornflowerBlue:
+                color = new PdfColor(255, 100, 149, 237);
+                break;
+            case KnownColor.Cornsilk:
+                color = new PdfColor(255, 255, 248, 220);
+                break;
+            case KnownColor.Crimson:
+                color = new PdfColor(255, 220, 20, 60);
+                break;
+            case KnownColor.Cyan:
+                color = new PdfColor(255, 0, 255, 255);
+                break;
+            case KnownColor.DarkBlue:
+                color = new PdfColor(255, 0, 0, 139);
+                break;
+            case KnownColor.DarkCyan:
+                color = new PdfColor(255, 0, 139, 139);
+                break;
+            case KnownColor.DarkGoldenrod:
+                color = new PdfColor(255, 184, 134, 11);
+                break;
+            case KnownColor.DarkGray:
+                color = new PdfColor(255, 169, 169, 169);
+                break;
+            case KnownColor.DarkGreen:
+                color = new PdfColor(255, 0, 100, 0);
+                break;
+            case KnownColor.DarkKhaki:
+                color = new PdfColor(255, 189, 183, 107);
+                break;
+            case KnownColor.DarkMagenta:
+                color = new PdfColor(255, 139, 0, 139);
+                break;
+            case KnownColor.DarkOliveGreen:
+                color = new PdfColor(255, 85, 107, 47);
+                break;
+            case KnownColor.DarkOrange:
+                color = new PdfColor(255, 255, 140, 0);
+                break;
+            case KnownColor.DarkOrchid:
+                color = new PdfColor(255, 153, 50, 204);
+                break;
+            case KnownColor.DarkRed:
+                color = new PdfColor(255, 139, 0, 0);
+                break;
+            case KnownColor.DarkSalmon:
+                color = new PdfColor(255, 233, 150, 122);
+                break;
+            case KnownColor.DarkSeaGreen:
+                color = new PdfColor(255, 143, 188, 139);
+                break;
+            case KnownColor.DarkSlateBlue:
+                color = new PdfColor(255, 72, 61, 139);
+                break;
+            case KnownColor.DarkSlateGray:
+                color = new PdfColor(255, 47, 79, 79);
+                break;
+            case KnownColor.DarkTurquoise:
+                color = new PdfColor(255, 0, 206, 209);
+                break;
+            case KnownColor.DarkViolet:
+                color = new PdfColor(255, 148, 0, 211);
+                break;
+            case KnownColor.DeepPink:
+                color = new PdfColor(255, 255, 20, 147);
+                break;
+            case KnownColor.DeepSkyBlue:
+                color = new PdfColor(255, 0, 191, 255);
+                break;
+            case KnownColor.DimGray:
+                color = new PdfColor(255, 105, 105, 105);
+                break;
+            case KnownColor.DodgerBlue:
+                color = new PdfColor(255, 30, 144, 255);
+                break;
+            case KnownColor.Firebrick:
+                color = new PdfColor(255, 178, 34, 34);
+                break;
+            case KnownColor.FloralWhite:
+                color = new PdfColor(255, 255, 250, 240);
+                break;
+            case KnownColor.ForestGreen:
+                color = new PdfColor(255, 34, 139, 34);
+                break;
+            case KnownColor.Fuchsia:
+                color = new PdfColor(255, 255, 0, 255);
+                break;
+            case KnownColor.Gainsboro:
+                color = new PdfColor(255, 220, 220, 220);
+                break;
+            case KnownColor.GhostWhite:
+                color = new PdfColor(255, 248, 248, 255);
+                break;
+            case KnownColor.Gold:
+                color = new PdfColor(255, 255, 215, 0);
+                break;
+            case KnownColor.Goldenrod:
+                color = new PdfColor(255, 218, 165, 32);
+                break;
+            case KnownColor.Gray:
+                color = new PdfColor(255, 128, 128, 128);
+                break;
+            case KnownColor.Green:
+                color = new PdfColor(255, 0, 128, 0);
+                break;
+            case KnownColor.GreenYellow:
+                color = new PdfColor(255, 173, 255, 47);
+                break;
+            case KnownColor.Honeydew:
+                color = new PdfColor(255, 240, 255, 240);
+                break;
+            case KnownColor.HotPink:
+                color = new PdfColor(255, 255, 105, 180);
+                break;
+            case KnownColor.IndianRed:
+                color = new PdfColor(255, 205, 92, 92);
+                break;
+            case KnownColor.Indigo:
+                color = new PdfColor(255, 75, 0, 130);
+                break;
+            case KnownColor.Ivory:
+                color = new PdfColor(255, 255, 255, 240);
+                break;
+            case KnownColor.Khaki:
+                color = new PdfColor(255, 240, 230, 140);
+                break;
+            case KnownColor.Lavender:
+                color = new PdfColor(255, 230, 230, 250);
+                break;
+            case KnownColor.LavenderBlush:
+                color = new PdfColor(255, 255, 240, 245);
+                break;
+            case KnownColor.LawnGreen:
+                color = new PdfColor(255, 124, 252, 0);
+                break;
+            case KnownColor.LemonChiffon:
+                color = new PdfColor(255, 255, 250, 205);
+                break;
+            case KnownColor.LightBlue:
+                color = new PdfColor(255, 173, 216, 230);
+                break;
+            case KnownColor.LightCoral:
+                color = new PdfColor(255, 240, 128, 128);
+                break;
+            case KnownColor.LightCyan:
+                color = new PdfColor(255, 224, 255, 255);
+                break;
+            case KnownColor.LightGoldenrodYellow:
+                color = new PdfColor(255, 250, 250, 210);
+                break;
+            case KnownColor.LightGreen:
+                color = new PdfColor(255, 144, 238, 144);
+                break;
+            case KnownColor.LightGray:
+                color = new PdfColor(255, 211, 211, 211);
+                break;
+            case KnownColor.LightPink:
+                color = new PdfColor(255, 255, 182, 193);
+                break;
+            case KnownColor.LightSalmon:
+                color = new PdfColor(255, 255, 160, 122);
+                break;
+            case KnownColor.LightSeaGreen:
+                color = new PdfColor(255, 32, 178, 170);
+                break;
+            case KnownColor.LightSkyBlue:
+                color = new PdfColor(255, 135, 206, 250);
+                break;
+            case KnownColor.LightSlateGray:
+                color = new PdfColor(255, 119, 136, 153);
+                break;
+            case KnownColor.LightSteelBlue:
+                color = new PdfColor(255, 176, 196, 222);
+                break;
+            case KnownColor.LightYellow:
+                color = new PdfColor(255, 255, 255, 224);
+                break;
+            case KnownColor.Lime:
+                color = new PdfColor(255, 0, 255, 0);
+                break;
+            case KnownColor.LimeGreen:
+                color = new PdfColor(255, 50, 205, 50);
+                break;
+            case KnownColor.Linen:
+                color = new PdfColor(255, 250, 240, 230);
+                break;
+            case KnownColor.Magenta:
+                color = new PdfColor(255, 255, 0, 255);
+                break;
+            case KnownColor.Maroon:
+                color = new PdfColor(255, 128, 0, 0);
+                break;
+            case KnownColor.MediumAquamarine:
+                color = new PdfColor(255, 102, 205, 170);
+                break;
+            case KnownColor.MediumBlue:
+                color = new PdfColor(255, 0, 0, 205);
+                break;
+            case KnownColor.MediumOrchid:
+                color = new PdfColor(255, 186, 85, 211);
+                break;
+            case KnownColor.MediumPurple:
+                color = new PdfColor(255, 147, 112, 219);
+                break;
+            case KnownColor.MediumSeaGreen:
+                color = new PdfColor(255, 60, 179, 113);
+                break;
+            case KnownColor.MediumSlateBlue:
+                color = new PdfColor(255, 123, 104, 238);
+                break;
+            case KnownColor.MediumSpringGreen:
+                color = new PdfColor(255, 0, 250, 154);
+                break;
+            case KnownColor.MediumTurquoise:
+                color = new PdfColor(255, 72, 209, 204);
+                break;
+            case KnownColor.MediumVioletRed:
+                color = new PdfColor(255, 199, 21, 133);
+                break;
+            case KnownColor.MidnightBlue:
+                color = new PdfColor(255, 25, 25, 112);
+                break;
+            case KnownColor.MintCream:
+                color = new PdfColor(255, 245, 255, 250);
+                break;
+            case KnownColor.MistyRose:
+                color = new PdfColor(255, 255, 228, 225);
+                break;
+            case KnownColor.Moccasin:
+                color = new PdfColor(255, 255, 228, 181);
+                break;
+            case KnownColor.NavajoWhite:
+                color = new PdfColor(255, 255, 222, 173);
+                break;
+            case KnownColor.Navy:
+                color = new PdfColor(255, 0, 0, 128);
+                break;
+            case KnownColor.OldLace:
+                color = new PdfColor(255, 253, 245, 230);
+                break;
+            case KnownColor.Olive:
+                color = new PdfColor(255, 128, 128, 0);
+                break;
+            case KnownColor.OliveDrab:
+                color = new PdfColor(255, 107, 142, 35);
+                break;
+            case KnownColor.Orange:
+                color = new PdfColor(255, 255, 165, 0);
+                break;
+            case KnownColor.OrangeRed:
+                color = new PdfColor(255, 255, 69, 0);
+                break;
+            case KnownColor.Orchid:
+                color = new PdfColor(255, 218, 112, 214);
+                break;
+            case KnownColor.PaleGoldenrod:
+                color = new PdfColor(255, 238, 232, 170);
+                break;
+            case KnownColor.PaleGreen:
+                color = new PdfColor(255, 152, 251, 152);
+                break;
+            case KnownColor.PaleTurquoise:
+                color = new PdfColor(255, 175, 238, 238);
+                break;
+            case KnownColor.PaleVioletRed:
+                color = new PdfColor(255, 219, 112, 147);
+                break;
+            case KnownColor.PapayaWhip:
+                color = new PdfColor(255, 255, 239, 213);
+                break;
+            case KnownColor.PeachPuff:
+                color = new PdfColor(255, 255, 218, 185);
+                break;
+            case KnownColor.Peru:
+                color = new PdfColor(255, 205, 133, 63);
+                break;
+            case KnownColor.Pink:
+                color = new PdfColor(255, 255, 192, 203);
+                break;
+            case KnownColor.Plum:
+                color = new PdfColor(255, 221, 160, 221);
+                break;
+            case KnownColor.PowderBlue:
+                color = new PdfColor(255, 176, 224, 230);
+                break;
+            case KnownColor.Purple:
+                color = new PdfColor(255, 128, 0, 128);
+                break;
+            case KnownColor.Red:
+                color = new PdfColor(255, 255, 0, 0);
+                break;
+            case KnownColor.RosyBrown:
+                color = new PdfColor(255, 188, 143, 143);
+                break;
+            case KnownColor.RoyalBlue:
+                color = new PdfColor(255, 65, 105, 225);
+                break;
+            case KnownColor.SaddleBrown:
+                color = new PdfColor(255, 139, 69, 19);
+                break;
+            case KnownColor.Salmon:
+                color = new PdfColor(255, 250, 128, 114);
+                break;
+            case KnownColor.SandyBrown:
+                color = new PdfColor(255, 244, 164, 96);
+                break;
+            case KnownColor.SeaGreen:
+                color = new PdfColor(255, 46, 139, 87);
+                break;
+            case KnownColor.SeaShell:
+                color = new PdfColor(255, 255, 245, 238);
+                break;
+            case KnownColor.Sienna:
+                color = new PdfColor(255, 160, 82, 45);
+                break;
+            case KnownColor.Silver:
+                color = new PdfColor(255, 192, 192, 192);
+                break;
+            case KnownColor.SkyBlue:
+                color = new PdfColor(255, 135, 206, 235);
+                break;
+            case KnownColor.SlateBlue:
+                color = new PdfColor(255, 106, 90, 205);
+                break;
+            case KnownColor.SlateGray:
+                color = new PdfColor(255, 112, 128, 144);
+                break;
+            case KnownColor.Snow:
+                color = new PdfColor(255, 255, 250, 250);
+                break;
+            case KnownColor.SpringGreen:
+                color = new PdfColor(255, 0, 255, 127);
+                break;
+            case KnownColor.SteelBlue:
+                color = new PdfColor(255, 70, 130, 180);
+                break;
+            case KnownColor.Tan:
+                color = new PdfColor(255, 210, 180, 140);
+                break;
+            case KnownColor.Teal:
+                color = new PdfColor(255, 0, 128, 128);
+                break;
+            case KnownColor.Thistle:
+                color = new PdfColor(255, 216, 191, 216);
+                break;
+            case KnownColor.Tomato:
+                color = new PdfColor(255, 255, 99, 71);
+                break;
+            case KnownColor.Turquoise:
+                color = new PdfColor(255, 64, 224, 208);
+                break;
+            case KnownColor.Violet:
+                color = new PdfColor(255, 238, 130, 238);
+                break;
+            case KnownColor.Wheat:
+                color = new PdfColor(255, 245, 222, 179);
+                break;
+            case KnownColor.White:
+                color = new PdfColor(255, 255, 255, 255);
+                break;
+            case KnownColor.WhiteSmoke:
+                color = new PdfColor(255, 245, 245, 245);
+                break;
+            case KnownColor.Yellow:
+                color = new PdfColor(255, 255, 255, 0);
+                break;
+            case KnownColor.YellowGreen:
+                color = new PdfColor(255, 154, 205, 50);
+                break;
         }
+        return color;
     };
+    //Static Fields
     /**
-     * `Resets alignment` of the template.
-     * @private
+     * Local variable to store the brushes.
      */
-    PdfPageTemplateElement.prototype.resetAlignment = function () {
-        this.alignment = exports.PdfAlignmentStyle.None;
-    };
-    /**
-     * `Sets alignment` of the template.
-     * @private
-     */
-    PdfPageTemplateElement.prototype.setAlignment = function (alignment) {
-        if (this.dock === exports.PdfDockStyle.None) {
-            this.alignmentStyle = alignment;
-        }
-        else {
-            // Template is docked and alignment has been changed.
-            var canBeSet = false;
-            switch (this.dock) {
-                case exports.PdfDockStyle.Left:
-                    canBeSet = (alignment === exports.PdfAlignmentStyle.TopLeft || alignment === exports.PdfAlignmentStyle.MiddleLeft ||
-                        alignment === exports.PdfAlignmentStyle.BottomLeft || alignment === exports.PdfAlignmentStyle.None);
-                    break;
-                case exports.PdfDockStyle.Top:
-                    canBeSet = (alignment === exports.PdfAlignmentStyle.TopLeft || alignment === exports.PdfAlignmentStyle.TopCenter ||
-                        alignment === exports.PdfAlignmentStyle.TopRight || alignment === exports.PdfAlignmentStyle.None);
-                    break;
-                case exports.PdfDockStyle.Right:
-                    canBeSet = (alignment === exports.PdfAlignmentStyle.TopRight || alignment === exports.PdfAlignmentStyle.MiddleRight ||
-                        alignment === exports.PdfAlignmentStyle.BottomRight || alignment === exports.PdfAlignmentStyle.None);
-                    break;
-                case exports.PdfDockStyle.Bottom:
-                    canBeSet = (alignment === exports.PdfAlignmentStyle.BottomLeft || alignment === exports.PdfAlignmentStyle.BottomCenter
-                        || alignment === exports.PdfAlignmentStyle.BottomRight || alignment === exports.PdfAlignmentStyle.None);
-                    break;
-                case exports.PdfDockStyle.Fill:
-                    canBeSet = (alignment === exports.PdfAlignmentStyle.MiddleCenter || alignment === exports.PdfAlignmentStyle.None);
-                    break;
-            }
-            if (canBeSet) {
-                this.alignmentStyle = alignment;
-            }
-        }
-    };
-    /**
-     * Draws the template.
-     * @private
-     */
-    PdfPageTemplateElement.prototype.draw = function (layer, document) {
-        var page = layer.page;
-        var bounds = this.calculateBounds(page, document);
-        if (bounds.x === -0) {
-            bounds.x = 0;
-        }
-        layer.graphics.drawPdfTemplate(this.template, new PointF(bounds.x, bounds.y), new SizeF(bounds.width, bounds.height));
-    };
-    /**
-     * Calculates bounds of the page template.
-     * @private
-     */
-    PdfPageTemplateElement.prototype.calculateBounds = function (page, document) {
-        var result = this.bounds;
-        if (this.alignmentStyle !== exports.PdfAlignmentStyle.None) {
-            result = this.getAlignmentBounds(page, document);
-        }
-        else if (this.dockStyle !== exports.PdfDockStyle.None) {
-            result = this.getDockBounds(page, document);
-        }
-        return result;
-    };
-    /**
-     * Calculates bounds according to the alignment.
-     * @private
-     */
-    PdfPageTemplateElement.prototype.getAlignmentBounds = function (page, document) {
-        var result = this.bounds;
-        if (this.type === exports.TemplateType.None) {
-            result = this.getSimpleAlignmentBounds(page, document);
-        }
-        else {
-            result = this.getTemplateAlignmentBounds(page, document);
-        }
-        return result;
-    };
-    /**
-     * Calculates bounds according to the alignment.
-     * @private
-     */
-    PdfPageTemplateElement.prototype.getSimpleAlignmentBounds = function (page, document) {
-        var bounds = this.bounds;
-        var pdfSection = page.section;
-        var actualBounds = pdfSection.getActualBounds(document, page, false);
-        var x = this.x;
-        var y = this.y;
-        switch (this.alignmentStyle) {
-            case exports.PdfAlignmentStyle.TopLeft:
-                x = 0;
-                y = 0;
-                break;
-            case exports.PdfAlignmentStyle.TopCenter:
-                x = (actualBounds.width - this.width) / 2;
-                y = 0;
-                break;
-            case exports.PdfAlignmentStyle.TopRight:
-                x = actualBounds.width - this.width;
-                y = 0;
-                break;
-            case exports.PdfAlignmentStyle.MiddleLeft:
-                x = 0;
-                y = (actualBounds.height - this.height) / 2;
-                break;
-            case exports.PdfAlignmentStyle.MiddleCenter:
-                x = (actualBounds.width - this.width) / 2;
-                y = (actualBounds.height - this.height) / 2;
-                break;
-            case exports.PdfAlignmentStyle.MiddleRight:
-                x = actualBounds.width - this.width;
-                y = (actualBounds.height - this.height) / 2;
-                break;
-            case exports.PdfAlignmentStyle.BottomLeft:
-                x = 0;
-                y = actualBounds.height - this.height;
-                break;
-            case exports.PdfAlignmentStyle.BottomCenter:
-                x = (actualBounds.width - this.width) / 2;
-                y = actualBounds.height - this.height;
-                break;
-            case exports.PdfAlignmentStyle.BottomRight:
-                x = actualBounds.width - this.width;
-                y = actualBounds.height - this.height;
-                break;
-        }
-        bounds.x = x;
-        bounds.y = y;
-        return bounds;
-    };
-    /**
-     * Calculates bounds according to the alignment.
-     * @private
-     */
-    PdfPageTemplateElement.prototype.getTemplateAlignmentBounds = function (page, document) {
-        var result = this.bounds;
-        var section = page.section;
-        var actualBounds = section.getActualBounds(document, page, false);
-        var x = this.x;
-        var y = this.y;
-        switch (this.alignmentStyle) {
-            case exports.PdfAlignmentStyle.TopLeft:
-                if (this.type === exports.TemplateType.Left) {
-                    x = -actualBounds.x;
-                    y = 0;
-                }
-                else if (this.type === exports.TemplateType.Top) {
-                    x = -actualBounds.x;
-                    y = -actualBounds.y;
-                }
-                break;
-            case exports.PdfAlignmentStyle.TopCenter:
-                x = (actualBounds.width - this.width) / 2;
-                y = -actualBounds.y;
-                break;
-            case exports.PdfAlignmentStyle.TopRight:
-                if (this.type === exports.TemplateType.Right) {
-                    x = actualBounds.width + section.getRightIndentWidth(document, page, false) - this.width;
-                    y = 0;
-                }
-                else if (this.type === exports.TemplateType.Top) {
-                    x = actualBounds.width + section.getRightIndentWidth(document, page, false) - this.width;
-                    y = -actualBounds.y;
-                }
-                break;
-            case exports.PdfAlignmentStyle.MiddleLeft:
-                x = -actualBounds.x;
-                y = (actualBounds.height - this.height) / 2;
-                break;
-            case exports.PdfAlignmentStyle.MiddleCenter:
-                x = (actualBounds.width - this.width) / 2;
-                y = (actualBounds.height - this.height) / 2;
-                break;
-            case exports.PdfAlignmentStyle.MiddleRight:
-                x = actualBounds.width + section.getRightIndentWidth(document, page, false) - this.width;
-                y = (actualBounds.height - this.height) / 2;
-                break;
-            case exports.PdfAlignmentStyle.BottomLeft:
-                if (this.type === exports.TemplateType.Left) {
-                    x = -actualBounds.x;
-                    y = actualBounds.height - this.height;
-                }
-                else if (this.type === exports.TemplateType.Bottom) {
-                    x = -actualBounds.x;
-                    y = actualBounds.height + section.getBottomIndentHeight(document, page, false) - this.height;
-                }
-                break;
-            case exports.PdfAlignmentStyle.BottomCenter:
-                x = (actualBounds.width - this.width) / 2;
-                y = actualBounds.height + section.getBottomIndentHeight(document, page, false) - this.height;
-                break;
-            case exports.PdfAlignmentStyle.BottomRight:
-                if (this.type === exports.TemplateType.Right) {
-                    x = actualBounds.width + section.getRightIndentWidth(document, page, false) - this.width;
-                    y = actualBounds.height - this.height;
-                }
-                else if (this.type === exports.TemplateType.Bottom) {
-                    x = actualBounds.width + section.getRightIndentWidth(document, page, false) - this.width;
-                    y = actualBounds.height + section.getBottomIndentHeight(document, page, false) - this.height;
-                }
-                break;
-        }
-        result.x = x;
-        result.y = y;
-        return result;
-    };
-    /**
-     * Calculates bounds according to the docking.
-     * @private
-     */
-    PdfPageTemplateElement.prototype.getDockBounds = function (page, document) {
-        var result = this.bounds;
-        if (this.type === exports.TemplateType.None) {
-            result = this.getSimpleDockBounds(page, document);
-        }
-        else {
-            result = this.getTemplateDockBounds(page, document);
-        }
-        return result;
-    };
-    /**
-     * Calculates bounds according to the docking.
-     * @private
-     */
-    PdfPageTemplateElement.prototype.getSimpleDockBounds = function (page, document) {
-        var result = this.bounds;
-        var section = page.section;
-        var actualBounds = section.getActualBounds(document, page, false);
-        var x = this.x;
-        var y = this.y;
-        var width = this.width;
-        var height = this.height;
-        switch (this.dockStyle) {
-            case exports.PdfDockStyle.Left:
-                x = 0;
-                y = 0;
-                width = this.width;
-                height = actualBounds.height;
-                break;
-            case exports.PdfDockStyle.Top:
-                x = 0;
-                y = 0;
-                width = actualBounds.width;
-                height = this.height;
-                break;
-            case exports.PdfDockStyle.Right:
-                x = actualBounds.width - this.width;
-                y = 0;
-                width = this.width;
-                height = actualBounds.height;
-                break;
-            case exports.PdfDockStyle.Bottom:
-                x = 0;
-                y = actualBounds.height - this.height;
-                width = actualBounds.width;
-                height = this.height;
-                break;
-            case exports.PdfDockStyle.Fill:
-                x = 0;
-                x = 0;
-                width = actualBounds.width;
-                height = actualBounds.height;
-                break;
-        }
-        result = new RectangleF(x, y, width, height);
-        return result;
-    };
-    /**
-     * Calculates template bounds basing on docking if template is a page template.
-     * @private
-     */
-    PdfPageTemplateElement.prototype.getTemplateDockBounds = function (page, document) {
-        var result = this.bounds;
-        var section = page.section;
-        var actualBounds = section.getActualBounds(document, page, false);
-        var actualSize = section.pageSettings.getActualSize();
-        var x = this.x;
-        var y = this.y;
-        var width = this.width;
-        var height = this.height;
-        switch (this.dockStyle) {
-            case exports.PdfDockStyle.Left:
-                x = -actualBounds.x;
-                y = 0;
-                width = this.width;
-                height = actualBounds.height;
-                break;
-            case exports.PdfDockStyle.Top:
-                x = -actualBounds.x;
-                y = -actualBounds.y;
-                width = actualSize.width;
-                height = this.height;
-                if (actualBounds.height < 0) {
-                    y = -actualBounds.y + actualSize.height;
-                }
-                break;
-            case exports.PdfDockStyle.Right:
-                x = actualBounds.width + section.getRightIndentWidth(document, page, false) - this.width;
-                y = 0;
-                width = this.width;
-                height = actualBounds.height;
-                break;
-            case exports.PdfDockStyle.Bottom:
-                x = -actualBounds.x;
-                y = actualBounds.height + section.getBottomIndentHeight(document, page, false) - this.height;
-                width = actualSize.width;
-                height = this.height;
-                if (actualBounds.height < 0) {
-                    y -= actualSize.height;
-                }
-                break;
-            case exports.PdfDockStyle.Fill:
-                x = 0;
-                x = 0;
-                width = actualBounds.width;
-                height = actualBounds.height;
-                break;
-        }
-        result = new RectangleF(x, y, width, height);
-        return result;
-    };
-    return PdfPageTemplateElement;
+    PdfBrushes.sBrushes = new Dictionary();
+    return PdfBrushes;
 }());
+
+/**
+ * PdfBlend.ts class for EJ2-PDF
+ */
+/**
+ * `PdfBlend` Represents the blend color space
+ * @private
+ */
+var PdfBlend = /** @class */ (function () {
+    function PdfBlend(count) {
+        //Constants
+        /**
+         * precision of the GCD calculations.
+         * @private
+         */
+        this.precision = 1000;
+        //
+    }
+    Object.defineProperty(PdfBlend.prototype, "factors", {
+        //Properties
+        /**
+         * Gets or sets the array of factor to the blend.
+         * @public
+         */
+        get: function () {
+            return this.mFactors;
+        },
+        set: function (value) {
+            if ((value == null)) {
+                throw new Error('ArgumentNullException : Factors');
+            }
+            this.mFactors = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBlend.prototype, "positions", {
+        /**
+         * 'positions' Gets or sets the array of positions
+         * @public
+         */
+        get: function () {
+            return this.mPositions;
+        },
+        set: function (value) {
+            var positionarray = value;
+            for (var i = 0; i < positionarray.length; i++) {
+                if (((positionarray[i] < 0) || (positionarray[i] > 1))) {
+                    positionarray[i] = 0;
+                }
+            }
+            this.mPositions = positionarray;
+            this.mPositions = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBlend.prototype, "count", {
+        /**
+         * Gets the number of elements that specify the blend.
+         * @protected
+         */
+        get: function () {
+            return this.mCount;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    //Implementation
+    /**
+     * Generates a correct color blend.
+     * @param colours The colours.
+     * @param colorSpace The color space.
+     */
+    PdfBlend.prototype.generateColorBlend = function (colours, colorSpace) {
+        if ((colours == null)) {
+            throw new Error('ArgumentNullException : colours');
+        }
+        if ((this.positions == null)) {
+            this.positions = [0];
+        }
+        var cBlend = new PdfColorBlend(this.count);
+        var positions = this.positions;
+        var clrs = null;
+        if ((positions.length === 1)) {
+            positions = [3];
+            positions[0] = 0;
+            positions[1] = this.positions[0];
+            positions[2] = 1;
+            /* tslint:disable */
+            clrs = new Array(3);
+            clrs[0] = colours[0];
+            clrs[1] = colours[0];
+            clrs[2] = colours[1];
+        }
+        else {
+            var c1 = colours[0];
+            var c2 = colours[1];
+            /* tslint:disable */
+            clrs = new Array(this.count);
+            var i = 0;
+            var count = this.count;
+            for (i = 0; i < count; ++i) {
+                clrs[i] = this.interpolate(this.mFactors[i], c1, c2, colorSpace);
+            }
+        }
+        cBlend.positions = positions;
+        cBlend.colors = clrs;
+        return cBlend;
+    };
+    /**
+     * 'clonePdfBlend' Clones this instance.
+     * @public
+     */
+    PdfBlend.prototype.clonePdfBlend = function () {
+        var blend = this;
+        if ((this.mFactors != null)) {
+            blend.factors = (this.mFactors);
+        }
+        if ((this.positions != null)) {
+            blend.positions = (this.positions);
+        }
+        return blend;
+    };
+    PdfBlend.prototype.gcd = function (u, v) {
+        if (typeof u === 'number' && typeof v === 'number' && typeof v !== 'undefined') {
+            if (((u < 0) || (u > 1))) {
+                throw new Error('ArgumentOutOfRangeException : u');
+            }
+            if (((v < 0) || (v > 1))) {
+                throw new Error('ArgumentOutOfRangeException : v');
+            }
+            var iU = (Math.max(1, (u * this.precision)));
+            var iV = (Math.max(1, (v * this.precision)));
+            var iResult = this.gcdInt(iU, iV);
+            var result = ((iResult) / this.precision);
+            return result;
+        }
+        else {
+            var values = u;
+            if ((values == null)) {
+                throw new Error('ArgumentNullException : values');
+            }
+            if ((values.length < 1)) {
+                throw new Error('ArgumentException : Not enough values in the array. - values');
+            }
+            var gcd = values[0];
+            if ((values.length > 1)) {
+                var count = values.length;
+                for (var i = 1; i < count; ++i) {
+                    gcd = this.gcd(values[i], gcd);
+                    if ((gcd === (1 / this.precision))) {
+                        break;
+                    }
+                }
+            }
+            return gcd;
+        }
+    };
+    /**
+     * Calculate the GCD int of the specified values.
+     * @param u The u.
+     * @param v The v.
+     */
+    PdfBlend.prototype.gcdInt = function (u, v) {
+        if ((u <= 0)) {
+            throw new Error('ArgumentOutOfRangeException' + u + 'The arguments cannot be less or equal to zero.');
+        }
+        if ((v <= 0)) {
+            throw new Error('ArgumentOutOfRangeException' + v + 'The arguments cannot be less or equal to zero.');
+        }
+        if (((u === 1) || (v === 1))) {
+            return 1;
+        }
+        var shift = 0;
+        while (this.isEven(u, v)) {
+            ++shift;
+            u >>= 1;
+            v >>= 1;
+        }
+        while (((u & 1) <= 0)) {
+            u >>= 1;
+        }
+        do {
+            while ((v & 1) <= 0) {
+                v >>= 1;
+            }
+            if (u > v) {
+                var t = v;
+                v = u;
+                u = t;
+            }
+            v = v - u;
+        } while (v !== 0);
+        return (u << shift);
+    };
+    PdfBlend.prototype.isEven = function (arg1, arg2) {
+        if (typeof arg2 === 'number' && typeof arg2 !== 'undefined') {
+            var result = true;
+            result = (result && ((arg1 & 1) <= 0)); //  Is u even?
+            result = (result && ((arg2 & 1) <= 0)); //  Is v even?
+            return result;
+        }
+        else {
+            return ((arg1 & 1) <= 0);
+        }
+    };
+    PdfBlend.prototype.interpolate = function (t, color1, color2, colorSpace) {
+        if (color1 instanceof PdfColor) {
+            var color = new PdfColor();
+            switch (colorSpace) {
+                case exports.PdfColorSpace.Rgb:
+                    var red = (this.interpolate(t, color1.red, color2.red));
+                    var green = (this.interpolate(t, color1.green, color2.green));
+                    var blue = (this.interpolate(t, color1.blue, color2.blue));
+                    color = new PdfColor(red, green, blue);
+                    break;
+                case exports.PdfColorSpace.GrayScale:
+                    var gray = (this.interpolate(t, color1.gray, color2.gray));
+                    color = new PdfColor(gray);
+                    break;
+                case exports.PdfColorSpace.Cmyk:
+                    var cyan = (this.interpolate(t, color1.c, color2.c));
+                    var magenta = (this.interpolate(t, color1.m, color2.m));
+                    var yellow = (this.interpolate(t, color1.y, color2.y));
+                    var black = (this.interpolate(t, color1.k, color2.k));
+                    color = new PdfColor(cyan, magenta, yellow, black);
+                    break;
+            }
+            return color;
+        }
+        else {
+            var t0 = 0;
+            var t1 = 1;
+            var result = 0;
+            if ((t === t0)) {
+                result = color1;
+            }
+            else if ((t === t1)) {
+                result = color2;
+            }
+            else {
+                result = (color1 + ((t - t0) * ((color2 - color1) / (t1 - t0))));
+            }
+            return result;
+        }
+    };
+    return PdfBlend;
+}());
+
+var __extends$29 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+/**
+ * PdfColorBlend.ts class for EJ2-PDF
+ */
+/**
+ * `PdfColorBlend` Represents the arrays of colors and positions used for
+ *  interpolating color blending in a multicolor gradient.
+ * @private
+ */
+var PdfColorBlend = /** @class */ (function (_super) {
+    __extends$29(PdfColorBlend, _super);
+    function PdfColorBlend(count) {
+        var _this = _super.call(this) || this;
+        if (typeof count === 'number') {
+            _this = _super.call(this, count) || this;
+        }
+        return _this;
+    }
+    Object.defineProperty(PdfColorBlend.prototype, "colors", {
+        //Properties
+        /**
+         * Gets or sets the array of colors.
+         * @public
+         */
+        get: function () {
+            return this.mcolors;
+        },
+        set: function (value) {
+            if ((value == null)) {
+                throw new Error('ArgumentNullException : Colors');
+            }
+            this.mcolors = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    //Implementation
+    /**
+     * Gets the function.
+     * @param colorSpace The color space.
+     * @public
+     */
+    PdfColorBlend.prototype.getFunction = function (colorSpace) {
+        var domain = [0, 1];
+        var colourComponents = this.getColorComponentsCount(colorSpace);
+        var maxComponentValue = this.getMaxComponentValue(colorSpace);
+        var range = this.setRange(colourComponents, maxComponentValue);
+        var func = null;
+        if ((this.mbrush == null && typeof this.mbrush === 'undefined')) {
+            var sizes = [1];
+            var samplesCount = void 0;
+            var step = 1;
+            if (this.positions.length === 2) {
+                samplesCount = 2;
+            }
+            else {
+                var positions = this.positions;
+                var intervals = this.getIntervals(positions);
+                var gcd = this.gcd(intervals);
+                step = gcd;
+                samplesCount = (((1 / gcd)) + 1);
+            }
+            sizes[0] = samplesCount;
+            var samples = this.getSamplesValues(colorSpace, samplesCount, maxComponentValue, step);
+            func = new PdfSampledFunction(domain, range, sizes, samples);
+            return func;
+        }
+        return func;
+    };
+    /**
+     * 'cloneColorBlend' Clones this instance.
+     * @public
+     */
+    PdfColorBlend.prototype.cloneColorBlend = function () {
+        var cBlend = this;
+        if ((this.mcolors != null && typeof this.mcolors !== 'undefined')) {
+            cBlend.colors = (this.mcolors);
+        }
+        if ((this.positions != null && typeof this.positions !== 'undefined')) {
+            cBlend.positions = (this.positions);
+        }
+        return cBlend;
+    };
+    /**
+     * Sets the range.
+     * @param colourComponents The colour components.
+     * @param maxValue The max value.
+     */
+    PdfColorBlend.prototype.setRange = function (colourComponents, maxValue) {
+        var range = [(colourComponents * 2)];
+        for (var i = 0; (i < colourComponents); ++i) {
+            range[(i * 2)] = 0;
+            range[((i * 2) + 1)] = 1;
+        }
+        return range;
+    };
+    /**
+     * Calculates the color components count according to colour space.
+     * @param colorSpace The color space.
+     */
+    PdfColorBlend.prototype.getColorComponentsCount = function (colorSpace) {
+        var count = 0;
+        switch (colorSpace) {
+            case exports.PdfColorSpace.Rgb:
+                count = 3;
+                break;
+            case exports.PdfColorSpace.Cmyk:
+                count = 4;
+                break;
+            case exports.PdfColorSpace.GrayScale:
+                count = 1;
+                break;
+            default:
+                throw new Error('ArgumentException - Unsupported color space: ' + colorSpace + ' colorSpace');
+        }
+        return count;
+    };
+    /**
+     * Gets samples values for specified colour space.
+     * @param colorSpace The color space.
+     * @param sampleCount The sample count.
+     * @param maxComponentValue The max component value.
+     * @param step The step.
+     */
+    PdfColorBlend.prototype.getSamplesValues = function (colorSpace, sampleCount, maxComponentValue, step) {
+        var values;
+        switch (colorSpace) {
+            case exports.PdfColorSpace.GrayScale:
+                values = this.getGrayscaleSamples(sampleCount, maxComponentValue, step);
+                break;
+            case exports.PdfColorSpace.Cmyk:
+                values = this.getCmykSamples(sampleCount, maxComponentValue, step);
+                break;
+            case exports.PdfColorSpace.Rgb:
+                values = this.getRgbSamples(sampleCount, maxComponentValue, step);
+                break;
+            default:
+                throw new Error('ArgumentException - Unsupported color space: ' + colorSpace + ' colorSpace');
+        }
+        return values;
+    };
+    /**
+     * Gets the grayscale samples.
+     * @param sampleCount The sample count.
+     * @param maxComponentValue The max component value.
+     * @param step The step.
+     */
+    PdfColorBlend.prototype.getGrayscaleSamples = function (sampleCount, maxComponentValue, step) {
+        var values = [(sampleCount * 2)];
+        for (var i = 0; (i < sampleCount); ++i) {
+            var color = this.getNextColor(i, step, exports.PdfColorSpace.GrayScale);
+            
+        }
+        return values;
+    };
+    /**
+     * Gets the RGB samples.
+     * @param sampleCount The sample count.
+     * @param maxComponentValue The max component value.
+     * @param step The step.
+     */
+    PdfColorBlend.prototype.getRgbSamples = function (sampleCount, maxComponentValue, step) {
+        var values = [(sampleCount * 3)];
+        for (var i = 0; (i < sampleCount); ++i) {
+            var color = this.getNextColor(i, step, exports.PdfColorSpace.Rgb);
+            var index = (i * 3);
+            values[index] = color.r;
+            values[(index + 1)] = color.g;
+            values[(index + 2)] = color.b;
+        }
+        return values;
+    };
+    /**
+     * Gets the CMYK samples.
+     * @param sampleCount The sample count.
+     * @param maxComponentValue The max component value.
+     * @param step The step.
+     */
+    PdfColorBlend.prototype.getCmykSamples = function (sampleCount, maxComponentValue, step) {
+        var values = [(sampleCount * 4)];
+        for (var i = 0; (i < sampleCount); i++) {
+            var color = this.getNextColor(i, step, exports.PdfColorSpace.Cmyk);
+            var index = (i * 4);
+            values[index] = ((color.c * maxComponentValue));
+            values[(index + 1)] = ((color.m * maxComponentValue));
+            values[(index + 2)] = ((color.y * maxComponentValue));
+            values[(index + 3)] = ((color.k * maxComponentValue));
+        }
+        return values;
+    };
+    /**
+     * Calculates the color that should be at the specified index.
+     * @param index The index.
+     * @param step The step.
+     * @param colorSpace The color space.
+     */
+    PdfColorBlend.prototype.getNextColor = function (index, step, colorSpace) {
+        var position = (step * index);
+        var indexHi;
+        var indexLow;
+        var result = this.getIndices(position, indexLow, indexHi);
+        indexLow = result.indexLow;
+        indexHi = result.indexHi;
+        var color;
+        if (indexLow === indexHi) {
+            color = this.mcolors[indexLow];
+        }
+        else {
+            var positionLow = this.positions[indexLow];
+            var positionHi = this.positions[indexHi];
+            var colorLow = this.mcolors[indexLow];
+            var colorHi = this.mcolors[indexHi];
+            var t = ((position - positionLow) / (positionHi - positionLow));
+            color = this.interpolate(t, colorLow, colorHi, colorSpace);
+        }
+        return color;
+    };
+    /**
+     * Gets the indices.
+     * @param position The position.
+     * @param indexLow The index low.
+     * @param indexHi The index hi.
+     */
+    PdfColorBlend.prototype.getIndices = function (position, indexLow, indexHi) {
+        var positions = this.positions;
+        indexLow = 0;
+        indexHi = 0;
+        for (var i = 0; (i < this.mcolors.length); ++i) {
+            var currPos = positions[i];
+            if ((currPos === position)) {
+                indexHi = i;
+                indexLow = i;
+                break;
+            }
+            else if ((currPos > position)) {
+                indexHi = i;
+                break;
+            }
+            indexLow = i;
+            indexHi = i;
+        }
+        return { indexLow: indexLow, indexHi: indexHi };
+    };
+    /**
+     * Calculates the max component value.
+     * @param colorSpace The color space.
+     */
+    PdfColorBlend.prototype.getMaxComponentValue = function (colorSpace) {
+        var result = 0;
+        switch (colorSpace) {
+            case exports.PdfColorSpace.Cmyk:
+            case exports.PdfColorSpace.Rgb:
+                result = 255;
+                break;
+            case exports.PdfColorSpace.GrayScale:
+                result = 65535;
+                break;
+            default:
+                throw new Error('ArgumentException - Unsupported color space: ' + colorSpace + 'colorSpace');
+        }
+        return result;
+    };
+    /**
+     * Gets an intervals array from the positions array.
+     * @param positions The positions array.
+     */
+    PdfColorBlend.prototype.getIntervals = function (positions) {
+        var count = positions.length;
+        var intervals = [(count - 1)];
+        var prev = positions[0];
+        for (var i = 1; (i < count); ++i) {
+            var v = positions[i];
+            intervals[(i - 1)] = (v - prev);
+            prev = v;
+        }
+        return intervals;
+    };
+    return PdfColorBlend;
+}(PdfBlend));
+
+var __extends$28 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+/**
+ * PdfLinearGradientBrush.ts class for EJ2-PDF
+ */
+/**
+ * `PdfLinearGradientBrush` Implements linear gradient brush by using PDF axial shading pattern.
+ * @private
+ */
+var PdfLinearGradientBrush = /** @class */ (function (_super) {
+    __extends$28(PdfLinearGradientBrush, _super);
+    /**
+     * Initializes a new instance of the `PdfLinearGradientBrush` class.
+     * @public
+     */
+    /* tslint:disable-next-line:max-line-length */
+    function PdfLinearGradientBrush(arg1, arg2, arg3, arg4) {
+        var _this = _super.call(this, new PdfDictionary()) || this;
+        /**
+         * Local variable to store the dictionary properties.
+         * @private
+         */
+        _this.mDictionaryProperties = new DictionaryProperties();
+        if (arg1 instanceof PointF && arg2 instanceof PointF && arg3 instanceof PdfColor && arg4 instanceof PdfColor) {
+            _this.initialize(arg3, arg4);
+            _this.mPointStart = arg1;
+            _this.mPointEnd = arg2;
+            _this.setPoints(_this.mPointStart, _this.mPointEnd);
+        }
+        else if (arg1 instanceof Rectangle) {
+            _this.initialize(arg2, arg3);
+            /* tslint:disable-next-line:max-line-length */
+            if ((arg4 === PdfLinearGradientMode.BackwardDiagonal || arg4 === PdfLinearGradientMode.ForwardDiagonal || arg4 === PdfLinearGradientMode.Horizontal || arg4 === PdfLinearGradientMode.Vertical)) {
+                _this.mBoundaries = arg1;
+                switch (arg4) {
+                    case PdfLinearGradientMode.BackwardDiagonal:
+                        _this.mPointStart = new PointF(arg1.right, arg1.top);
+                        _this.mPointEnd = new PointF(arg1.left, arg1.bottom);
+                        break;
+                    case PdfLinearGradientMode.ForwardDiagonal:
+                        _this.mPointStart = new PointF(arg1.left, arg1.top);
+                        _this.mPointEnd = new PointF(arg1.right, arg1.bottom);
+                        break;
+                    case PdfLinearGradientMode.Horizontal:
+                        _this.mPointStart = new PointF(arg1.left, arg1.top);
+                        _this.mPointEnd = new PointF(arg1.right, arg1.top);
+                        break;
+                    case PdfLinearGradientMode.Vertical:
+                        _this.mPointStart = new PointF(arg1.left, arg1.top);
+                        _this.mPointEnd = new PointF(arg1.left, arg1.bottom);
+                        break;
+                    default:
+                        throw new Error('ArgumentException -- Unsupported linear gradient mode: ' + arg4 + ' mode');
+                }
+                _this.setPoints(_this.mPointStart, _this.mPointEnd);
+            }
+            else if (typeof arg4 === 'number' && typeof arg4 !== 'undefined') {
+                _this.mBoundaries = arg1;
+                arg4 = arg4 % 360;
+                if ((arg4 === 0)) {
+                    _this.mPointStart = new PointF(arg1.left, arg1.top);
+                    _this.mPointEnd = new PointF(arg1.right, arg1.top);
+                }
+                else if ((arg4 === 90)) {
+                    _this.mPointStart = new PointF(arg1.left, arg1.top);
+                    _this.mPointEnd = new PointF(arg1.left, arg1.bottom);
+                }
+                else if ((arg4 === 180)) {
+                    _this.mPointEnd = new PointF(arg1.left, arg1.top);
+                    _this.mPointStart = new PointF(arg1.right, arg1.top);
+                }
+                else if ((arg4 === 270)) {
+                    _this.mPointEnd = new PointF(arg1.left, arg1.top);
+                    _this.mPointStart = new PointF(arg1.left, arg1.bottom);
+                }
+                else {
+                    var d2r = (Math.PI / 180);
+                    var radAngle = (arg4 * d2r);
+                    var k = Math.tan(radAngle);
+                    var x = (_this.mBoundaries.left
+                        + ((_this.mBoundaries.right - _this.mBoundaries.left) / 2));
+                    var y = (_this.mBoundaries.top
+                        + ((_this.mBoundaries.bottom - _this.mBoundaries.top) / 2));
+                    var centre = new PointF(x, y);
+                    x = (_this.mBoundaries.width / (2 * (Math.cos(radAngle))));
+                    y = ((k * x));
+                    x = (x + centre.x);
+                    y = (y + centre.y);
+                    var p1 = new PointF(x, y);
+                    var cp1 = _this.subPoints(p1, centre);
+                    //  P1 - P0
+                    var p = _this.choosePoint(arg4);
+                    var coef = (_this.mulPoints(_this.subPoints(p, centre), cp1)
+                        / _this.mulPoints(cp1, cp1));
+                    _this.mPointEnd = _this.addPoints(centre, _this.mulPoint(cp1, coef));
+                    //  Parametric line equation.
+                    _this.mPointStart = _this.addPoints(centre, _this.mulPoint(cp1, (coef * -1)));
+                }
+                _this.setPoints(_this.mPointEnd, _this.mPointStart);
+            }
+        }
+        return _this;
+    }
+    /**
+     * Initializes a new instance of the `PdfLinearGradientBrush` class.
+     * @param color1 The starting color of the gradient.
+     * @param color2 The end color of the gradient.
+     */
+    PdfLinearGradientBrush.prototype.initialize = function (color1, color2) {
+        this.mColours = [color1, color2];
+        this.mColourBlend = new PdfColorBlend(2);
+        this.mColourBlend.positions = [0, 1];
+        this.mColourBlend.colors = this.mColours;
+        this.initShading();
+    };
+    Object.defineProperty(PdfLinearGradientBrush.prototype, "blend", {
+        //Properties
+        /**
+         * Gets or sets a PdfBlend that specifies positions
+         * and factors that define a custom falloff for the gradient.
+         * @public
+         */
+        get: function () {
+            return this.mBlend;
+        },
+        set: function (value) {
+            if ((value == null)) {
+                throw new Error('ArgumentNullException : Blend');
+            }
+            if ((this.mColours == null)) {
+                throw new Error('NotSupportedException : There is no starting and ending colours specified.');
+            }
+            this.mBlend = value;
+            //  TODO: generate correct colour blend.
+            this.mColourBlend = this.mBlend.generateColorBlend(this.mColours, this.colorSpace);
+            this.resetFunction();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfLinearGradientBrush.prototype, "interpolationColors", {
+        /**
+         * Gets or sets a ColorBlend that defines a multicolor linear gradient.
+         * @public
+         */
+        get: function () {
+            return this.mColourBlend;
+        },
+        set: function (value) {
+            if ((value == null)) {
+                throw new Error('ArgumentNullException : InterpolationColors');
+            }
+            this.mBlend = null;
+            this.mColours = null;
+            this.mColourBlend = value;
+            this.resetFunction();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfLinearGradientBrush.prototype, "linearColors", {
+        /**
+         * Gets or sets the starting and ending colors of the gradient.
+         * @public
+         */
+        get: function () {
+            return this.mColours;
+        },
+        set: function (value) {
+            if ((value == null)) {
+                throw new Error('ArgumentNullException : LinearColors');
+            }
+            if ((value.length < 2)) {
+                throw new Error('ArgumentException : The array is too small - LinearColors');
+            }
+            if ((this.mColours == null && typeof this.mColours === 'undefined')) {
+                this.mColours = [value[0], value[1]];
+            }
+            else {
+                this.mColours[0] = value[0];
+                this.mColours[1] = value[1];
+            }
+            if ((this.mBlend == null && typeof this.mBlend === 'undefined')) {
+                //  Set correct colour blend.
+                this.mColourBlend = new PdfColorBlend(2);
+                this.mColourBlend.colors = this.mColours;
+                this.mColourBlend.positions = [0, 1];
+            }
+            else {
+                this.mColourBlend = this.mBlend.generateColorBlend(this.mColours, this.colorSpace);
+            }
+            this.resetFunction();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfLinearGradientBrush.prototype, "rectangle", {
+        /**
+         * Gets a rectangular region that defines the boundaries of the gradient.
+         * @public
+         */
+        get: function () {
+            return this.mBoundaries;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfLinearGradientBrush.prototype, "extend", {
+        /**
+         * Gets or sets the value indicating whether the gradient should extend starting and ending points.
+         * @public
+         */
+        get: function () {
+            var result = PdfExtend.None;
+            var extend = (this.shading.items.getValue(this.mDictionaryProperties.extend));
+            if ((extend != null)) {
+                var extStart = (extend.items(0));
+                var extEnd = (extend.items(1));
+                if (extStart.value) {
+                    result = (result | PdfExtend.Start);
+                }
+                if (extEnd.value) {
+                    result = (result | PdfExtend.End);
+                }
+            }
+            return result;
+        },
+        set: function (value) {
+            var extend = (this.shading.items.getValue(this.mDictionaryProperties.extend));
+            var extStart;
+            var extEnd;
+            if ((extend == null)) {
+                extStart = new PdfBoolean(false);
+                extEnd = new PdfBoolean(false);
+                extend = new PdfArray();
+                extend.add(extStart);
+                extend.add(extEnd);
+                this.shading.items.setValue(this.mDictionaryProperties.extend, extend);
+            }
+            else {
+                extStart = (extend.items(0));
+                extEnd = (extend.items(1));
+            }
+            // extStart.value = ((value && PdfExtend.Start) > 0);
+            // extEnd.value = ((value && PdfExtend.End) > 0);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    //Implementation
+    /**
+     * Adds two points to each other.
+     * @param point1 The point1.
+     * @param point2 The point2.
+     */
+    PdfLinearGradientBrush.prototype.addPoints = function (point1, point2) {
+        var x = (point1.x + point2.x);
+        var y = (point1.y + point2.y);
+        var result = new PointF(x, y);
+        return result;
+    };
+    /**
+     * Subs the second point from the first one.
+     * @param point1 The point1.
+     * @param point2 The point2.
+     */
+    PdfLinearGradientBrush.prototype.subPoints = function (point1, point2) {
+        var x = (point1.x - point2.x);
+        var y = (point1.y - point2.y);
+        var result = new PointF(x, y);
+        return result;
+    };
+    /**
+     * Makes scalar multiplication of two points.
+     * @param point1 The point1.
+     * @param point2 The point2.
+     */
+    PdfLinearGradientBrush.prototype.mulPoints = function (point1, point2) {
+        var result = ((point1.x * point2.x) + (point1.y * point2.y));
+        return result;
+    };
+    /**
+     * Multiplies the point by the value specified.
+     * @param point The point1.
+     * @param value The value.
+     */
+    PdfLinearGradientBrush.prototype.mulPoint = function (point, value) {
+        point.x = (point.x * value);
+        point.y = (point.y * value);
+        return point;
+    };
+    /**
+     * Choose the point according to the angle.
+     * @param angle The angle.
+     */
+    PdfLinearGradientBrush.prototype.choosePoint = function (angle) {
+        var point = new PointF(0, 0);
+        //  Choose the correct point.
+        if ((angle < 90) && (angle > 0)) {
+            point = new PointF(this.mBoundaries.right, this.mBoundaries.bottom);
+        }
+        else if ((angle < 180) && (angle > 90)) {
+            point = new PointF(this.mBoundaries.left, this.mBoundaries.bottom);
+        }
+        else if ((angle < 270) && (angle > 180)) {
+            point = new PointF(this.mBoundaries.left, this.mBoundaries.top);
+        }
+        else if (angle > 270) {
+            point = new PointF(this.mBoundaries.right, this.mBoundaries.top);
+        }
+        else {
+            throw new Error('PdfException - Internal error.');
+        }
+        return point;
+    };
+    /**
+     * Sets the start and end points.
+     * @param point1 The point1.
+     * @param point2 The point2.
+     */
+    PdfLinearGradientBrush.prototype.setPoints = function (point1, point2) {
+        var points = new PdfArray();
+        points.add(new PdfNumber(point1.x));
+        points.add(new PdfNumber(this.updateY(point1.y)));
+        points.add(new PdfNumber(point2.x));
+        points.add(new PdfNumber(this.updateY(point2.y)));
+        this.shading.items.setValue(this.mDictionaryProperties.coords, points);
+    };
+    /**
+     * Updates y co-ordinate.
+     * @param y Y co-ordinate..
+     */
+    PdfLinearGradientBrush.prototype.updateY = function (y) {
+        if (y !== 0) {
+            return -y;
+        }
+        else {
+            return y;
+        }
+    };
+    //Overrides
+    /**
+     * Initializes the shading dictionary.
+     * @private
+     */
+    PdfLinearGradientBrush.prototype.initShading = function () {
+        this.colorSpace = exports.PdfColorSpace.Rgb;
+        this.function = this.mColourBlend.getFunction(this.colorSpace);
+        this.shading.items.setValue(this.mDictionaryProperties.shadingType, new PdfNumber((ShadingType.Axial)));
+    };
+    //Overrides
+    /**
+     * Creates a new copy of a brush.
+     * @public
+     */
+    PdfLinearGradientBrush.prototype.clone = function () {
+        var brush = this;
+        brush.resetPatternDictionary(new PdfDictionary(this.patternDictionary));
+        brush.shading = new PdfDictionary();
+        brush.initShading();
+        brush.setPoints(brush.mPointStart, brush.mPointEnd);
+        if (brush !== null && brush instanceof PdfLinearGradientBrush) {
+            if ((this.matrix != null && typeof this.matrix !== 'undefined')) {
+                brush.matrix = this.matrix.clone();
+            }
+        }
+        if ((this.mColours != null && typeof this.mColours !== 'undefined')) {
+            brush.mColours = (this.mColours);
+        }
+        if ((this.blend != null && typeof this.blend !== 'undefined')) {
+            brush.blend = this.blend.clonePdfBlend();
+        }
+        else if ((this.interpolationColors != null && typeof this.interpolationColors !== 'undefined')) {
+            brush.interpolationColors = this.interpolationColors.cloneColorBlend();
+        }
+        brush.extend = this.extend;
+        this.cloneBackgroundValue(brush);
+        this.cloneAntiAliasingValue(brush);
+        return brush;
+    };
+    /**
+     * Resets the function.
+     * @public
+     */
+    PdfLinearGradientBrush.prototype.resetFunction = function () {
+        this.function = this.mColourBlend.getFunction(this.colorSpace);
+    };
+    return PdfLinearGradientBrush;
+}(PdfGradientBrush));
+
+var __extends$30 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+/**
+ * PdfRadialGradientBrush.ts class for EJ2-PDF
+ */
+/**
+ * `PdfRadialGradientBrush` Represent radial gradient brush.
+ * @private
+ */
+var PdfRadialGradientBrush = /** @class */ (function (_super) {
+    __extends$30(PdfRadialGradientBrush, _super);
+    //Constructor
+    /**
+     * Initializes a new instance of the `PdfRadialGradientBrush` class.
+     * @public
+     */
+    /* tslint:disable-next-line:max-line-length */
+    function PdfRadialGradientBrush(centerStart, radiusStart, centerEnd, radiusEnd, colorStart, colorEnd) {
+        var _this = _super.call(this, new PdfDictionary()) || this;
+        /**
+         * Local varaible to store the dictionary properties.
+         */
+        _this.mDictionaryProperties = new DictionaryProperties();
+        _this.initialize(colorStart, colorEnd);
+        if (radiusStart < 0) {
+            throw new Error('ArgumentOutOfRangeException : radiusStart - The radius cannot be less then zero.');
+        }
+        if (radiusEnd < 0) {
+            throw new Error('ArgumentOutOfRangeException : radiusEnd - The radius cannpt be less then zero.');
+        }
+        _this.mPointEnd = centerEnd;
+        _this.mPointStart = centerStart;
+        _this.mRadiusStart = radiusStart;
+        _this.mRadiusEnd = radiusEnd;
+        _this.setPoints(_this.mPointStart, _this.mPointEnd, _this.mRadiusStart, _this.mRadiusEnd);
+        return _this;
+    }
+    /**
+     * Initializes a new instance of the `PdfRadialGradientBrush` class.
+     * @param color1 The color1.
+     * @param color2 The color2.
+     */
+    PdfRadialGradientBrush.prototype.initialize = function (color1, color2) {
+        this.mColour = [color1, color2];
+        this.mColourBlends = new PdfColorBlend(2);
+        this.mColourBlends.positions = [0, 1];
+        this.mColourBlends.colors = this.mColour;
+        this.initShading();
+    };
+    Object.defineProperty(PdfRadialGradientBrush.prototype, "blend", {
+        //Properties
+        /**
+         * Gets or sets a PdfBlend that specifies positions and factors that define a custom falloff for the gradient.
+         * @public
+         */
+        get: function () {
+            return this.mBlend;
+        },
+        set: function (value) {
+            if ((value == null)) {
+                throw new Error('ArgumentNullException : Blend');
+            }
+            if ((this.mColour == null && typeof this.mColour === 'undefined')) {
+                throw new Error('NotSupportedException : There is no starting and ending colours specified.');
+            }
+            this.mBlend = value;
+            this.mColourBlends = this.mBlend.generateColorBlend(this.mColour, this.colorSpace);
+            this.resetFunction();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfRadialGradientBrush.prototype, "interpolationColors", {
+        /**
+         * Gets or sets a ColorBlend that defines a multicolor radial gradient.
+         * @public
+         */
+        get: function () {
+            return this.mColourBlends;
+        },
+        set: function (value) {
+            if (value == null) {
+                throw new Error('ArgumentNullException : InterpolationColors');
+            }
+            this.mBlend = null;
+            this.mColour = null;
+            this.mColourBlends = value;
+            this.resetFunction();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfRadialGradientBrush.prototype, "linearColors", {
+        /**
+         * Gets or sets the starting and ending colors of the radial gradient.
+         * @public
+         */
+        get: function () {
+            return this.mColour;
+        },
+        set: function (value) {
+            if ((value == null)) {
+                throw new Error('ArgumentNullException : radial LinearColors');
+            }
+            if ((value.length < 2)) {
+                throw new Error('ArgumentException : The array is too small LinearColors');
+            }
+            if ((this.mColour == null && typeof this.mColour === 'undefined')) {
+                this.mColour = [value[0], value[1]];
+            }
+            else {
+                this.mColour[0] = value[0];
+                this.mColour[1] = value[1];
+            }
+            if ((this.mBlend == null && typeof this.mBlend === 'undefined')) {
+                //  Set correct colour blend.
+                this.mColourBlends = new PdfColorBlend(2);
+                this.mColourBlends.colors = this.mColour;
+                this.mColourBlends.positions = [0, 1];
+            }
+            else {
+                this.mColourBlends = this.mBlend.generateColorBlend(this.mColour, this.colorSpace);
+            }
+            this.resetFunction();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfRadialGradientBrush.prototype, "rectangle", {
+        /**
+         * Gets or sets the rectangle.
+         * @public
+         */
+        get: function () {
+            return this.mBoundaries;
+        },
+        set: function (value) {
+            this.mBoundaries = value;
+            this.bBox = PdfArray.fromRectangle(value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfRadialGradientBrush.prototype, "extend", {
+        /**
+         * Gets or sets the value indicating whether the gradient
+         *  should extend starting and ending points.
+         * @public
+         */
+        get: function () {
+            var result1 = PdfExtend.None;
+            var extend1 = (this.shading.items.getValue(this.mDictionaryProperties.extend));
+            if (extend1 !== null && typeof extend1 !== 'undefined') {
+                var extStart = (extend1.items(0));
+                var extEnd = (extend1.items(1));
+                if (extStart.value) {
+                    result1 = (result1 | PdfExtend.Start);
+                }
+                if (extEnd.value) {
+                    result1 = (result1 | PdfExtend.End);
+                }
+            }
+            return result1;
+        },
+        set: function (value) {
+            var extend = (this.shading.items.getValue(this.mDictionaryProperties.extend));
+            var extStart;
+            var extEnd1;
+            if (extend == null && typeof extend === 'undefined') {
+                extStart = new PdfBoolean(false);
+                extEnd1 = new PdfBoolean(false);
+                extend = new PdfArray();
+                extend.add(extStart);
+                extend.add(extEnd1);
+                this.shading.items.setValue(this.mDictionaryProperties.extend, extend);
+            }
+            else {
+                extStart = (extend.items(0));
+                extEnd1 = (extend.items(1));
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    //Implementation
+    /**
+     * Sets the points.
+     * @param pointStart The point start.
+     * @param pointEnd The point end.
+     * @param radiusStart The radius start.
+     * @param radiusEnd The radius end.
+     */
+    PdfRadialGradientBrush.prototype.setPoints = function (pointStart, pointEnd, radiusStart, radiusEnd) {
+        var points = new PdfArray();
+        points.add(new PdfNumber(pointStart.x));
+        points.add(new PdfNumber(this.updateY(pointStart.y)));
+        points.add(new PdfNumber(radiusStart));
+        points.add(new PdfNumber(pointEnd.x));
+        points.add(new PdfNumber(this.updateY(pointEnd.y)));
+        if ((radiusStart !== radiusEnd)) {
+            points.add(new PdfNumber(radiusEnd));
+        }
+        else {
+            points.add(new PdfNumber(0));
+        }
+        this.shading.items.setValue(this.mDictionaryProperties.coords, points);
+    };
+    /**
+     * Update y co-ordinate.
+     * @param y Y co-ordinate.
+     */
+    PdfRadialGradientBrush.prototype.updateY = function (y) {
+        if (y !== 0) {
+            return -y;
+        }
+        else {
+            return y;
+        }
+    };
+    /**
+     * Initializess the shading dictionary.
+     * @private
+     */
+    PdfRadialGradientBrush.prototype.initShading = function () {
+        this.colorSpace = exports.PdfColorSpace.Rgb;
+        this.function = this.mColourBlends.getFunction(this.colorSpace);
+        this.shading.items.setValue(this.mDictionaryProperties.shadingType, new PdfNumber((ShadingType.Radial)));
+    };
+    //Overrides
+    /**
+     * Creates a new copy of a brush.
+     * @public
+     */
+    PdfRadialGradientBrush.prototype.clone = function () {
+        var rBrush = this;
+        rBrush.resetPatternDictionary(new PdfDictionary(this.patternDictionary));
+        rBrush.shading = new PdfDictionary();
+        rBrush.initShading();
+        rBrush.setPoints(this.mPointStart, this.mPointEnd, this.mRadiusStart, this.mRadiusEnd);
+        if (rBrush instanceof PdfRadialGradientBrush) {
+            if ((this.matrix !== null && typeof this.matrix !== 'undefined')) {
+                rBrush.matrix = this.matrix.clone();
+            }
+        }
+        if ((this.mColour !== null && typeof this.mColour !== 'undefined')) {
+            rBrush.mColour = (this.mColour);
+        }
+        if ((this.blend !== null && typeof this.blend !== 'undefined')) {
+            rBrush.blend = this.blend.clonePdfBlend();
+        }
+        else if ((this.interpolationColors !== null && typeof this.interpolationColors !== 'undefined')) {
+            rBrush.interpolationColors = this.interpolationColors.cloneColorBlend();
+        }
+        rBrush.extend = this.extend;
+        this.cloneBackgroundValue(rBrush);
+        this.cloneAntiAliasingValue(rBrush);
+        return rBrush;
+    };
+    /**
+     * Resets the function.
+     * @public
+     */
+    PdfRadialGradientBrush.prototype.resetFunction = function () {
+        this.function = this.mColourBlends.getFunction(this.colorSpace);
+    };
+    return PdfRadialGradientBrush;
+}(PdfGradientBrush));
 
 /**
  * public Enum for `PdfBorderOverlapStyle`.
@@ -23746,7 +28737,7 @@ var PdfPageTemplateElement = /** @class */ (function () {
     PdfBorderOverlapStyle[PdfBorderOverlapStyle["Inside"] = 1] = "Inside";
 })(exports.PdfBorderOverlapStyle || (exports.PdfBorderOverlapStyle = {}));
 
-var __extends$26 = (undefined && undefined.__extends) || (function () {
+var __extends$38 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -23842,7 +28833,7 @@ var PdfGridStyleBase = /** @class */ (function () {
  * `PdfGridStyle` class provides customization of the appearance for the 'PdfGrid'.
  */
 var PdfGridStyle = /** @class */ (function (_super) {
-    __extends$26(PdfGridStyle, _super);
+    __extends$38(PdfGridStyle, _super);
     //constructor
     /**
      * Initialize a new instance for `PdfGridStyle` class.
@@ -23944,7 +28935,7 @@ var PdfGridStyle = /** @class */ (function (_super) {
  * `PdfGridCellStyle` class provides customization of the appearance for the 'PdfGridCell'.
  */
 var PdfGridCellStyle = /** @class */ (function (_super) {
-    __extends$26(PdfGridCellStyle, _super);
+    __extends$38(PdfGridCellStyle, _super);
     /**
      * Initializes a new instance of the `PdfGridCellStyle` class.
      * @private
@@ -24808,7 +29799,9 @@ var PdfGridCell = /** @class */ (function () {
             pen.lineCap = exports.PdfLineCap.Square;
         }
         // SetTransparency(ref graphics, pen);
-        graphics.drawLine(pen, p1, p2);
+        if (pen.width !== 0) {
+            graphics.drawLine(pen, p1, p2);
+        }
         p1 = new PointF(bounds.x + bounds.width, bounds.y);
         p2 = new PointF(bounds.x + bounds.width, bounds.y + bounds.height);
         pen = this.cellStyle.borders.right;
@@ -24819,25 +29812,31 @@ var PdfGridCell = /** @class */ (function () {
         if (this.cellStyle.borders.right.dashStyle === exports.PdfDashStyle.Solid) {
             pen.lineCap = exports.PdfLineCap.Square;
         }
-        graphics.drawLine(pen, p1, p2);
+        if (pen.width !== 0) {
+            graphics.drawLine(pen, p1, p2);
+        }
         p1 = new PointF(bounds.x, bounds.y);
         p2 = new PointF(bounds.x + bounds.width, bounds.y);
         pen = this.cellStyle.borders.top;
         if (this.cellStyle.borders.top.dashStyle === exports.PdfDashStyle.Solid) {
             pen.lineCap = exports.PdfLineCap.Square;
         }
-        graphics.drawLine(pen, p1, p2);
+        if (pen.width !== 0) {
+            graphics.drawLine(pen, p1, p2);
+        }
         p1 = new PointF(bounds.x + bounds.width, bounds.y + bounds.height);
         p2 = new PointF(bounds.x, bounds.y + bounds.height);
         pen = this.cellStyle.borders.bottom;
-        // if ((bounds.y + bounds.height) > (graphics.clientSize.height - (pen.width / 2))) {
-        //     p1 = new PointF((bounds.x + bounds.width), (graphics.clientSize.height - (pen.width / 2)));
-        //     p2 = new PointF(bounds.x, (graphics.clientSize.height - (pen.width / 2)));
-        // }
+        if ((bounds.y + bounds.height) > (graphics.clientSize.height - (pen.width / 2))) {
+            p1 = new PointF((bounds.x + bounds.width), (graphics.clientSize.height - (pen.width / 2)));
+            p2 = new PointF(bounds.x, (graphics.clientSize.height - (pen.width / 2)));
+        }
         if (this.cellStyle.borders.bottom.dashStyle === exports.PdfDashStyle.Solid) {
             pen.lineCap = exports.PdfLineCap.Square;
         }
-        graphics.drawLine(pen, p1, p2);
+        if (pen.width !== 0) {
+            graphics.drawLine(pen, p1, p2);
+        }
     };
     // private setTransparency(graphics : PdfGraphics, pen : PdfPen) : void {
     //     let alpha : number = (pen.color.a / 255)as number;
@@ -25950,7 +30949,7 @@ var PdfGridHeaderCollection = /** @class */ (function () {
     return PdfGridHeaderCollection;
 }());
 
-var __extends$28 = (undefined && undefined.__extends) || (function () {
+var __extends$37 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -25967,7 +30966,7 @@ var __extends$28 = (undefined && undefined.__extends) || (function () {
  * PdfGrid.ts class for EJ2-PDF
  */
 var PdfGrid = /** @class */ (function (_super) {
-    __extends$28(PdfGrid, _super);
+    __extends$37(PdfGrid, _super);
     //constructor
     /**
      * Initialize a new instance for `PdfGrid` class.
@@ -26677,7 +31676,7 @@ var PdfGrid = /** @class */ (function (_super) {
     return PdfGrid;
 }(PdfLayoutElement));
 
-var __extends$27 = (undefined && undefined.__extends) || (function () {
+var __extends$36 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -26695,7 +31694,7 @@ var __extends$27 = (undefined && undefined.__extends) || (function () {
  *
  */
 var PdfGridLayouter = /** @class */ (function (_super) {
-    __extends$27(PdfGridLayouter, _super);
+    __extends$36(PdfGridLayouter, _super);
     //constructor
     /**
      * Initialize a new instance for `PdfGrid` class.
@@ -26846,9 +31845,7 @@ var PdfGridLayouter = /** @class */ (function (_super) {
         if (this.currentPage !== null) {
             var pageHeight = this.currentPage.getClientSize().height;
             var pageWidth = this.currentPage.getClientSize().width;
-            //if (pageHeight > pageWidth) {
             this.currentPageBounds = this.currentPage.getClientSize();
-            //}
         }
         else {
             throw Error('Can not set page as null');
@@ -26986,15 +31983,6 @@ var PdfGridLayouter = /** @class */ (function (_super) {
             //Draw Headers.
             for (var i_1 = 0; i_1 < this.Grid.headers.count; i_1++) {
                 var row = this.Grid.headers.getHeader(i_1);
-                if (row.style.border != null && ((row.style.border.left != null && row.style.border.left.width !== 1)
-                    || (row.style.border.top != null && row.style.border.top.width !== 1))) {
-                    var headerX = row.style.border.left.width / 2;
-                    var headerY = row.style.border.top.width / 2;
-                    if (this.currentBounds.x === PdfBorders.default.right.width / 2 && this.currentBounds.y === PdfBorders.default.right.width / 2) {
-                        var headerBound = new RectangleF(headerX, headerY, this.currentBounds.width, this.currentBounds.height);
-                        this.currentBounds = headerBound;
-                    }
-                }
                 var headerHeight = this.currentBounds.y;
                 // RowLayoutResult
                 var headerResult = this.drawRow(row);
@@ -27016,14 +32004,6 @@ var PdfGridLayouter = /** @class */ (function (_super) {
             //Draw row by row with the specified cell range.
             for (var j = 0; j < this.Grid.rows.count; j++) {
                 var row = this.Grid.rows.getRow(j);
-                if (row.style.border != null && ((row.style.border.left != null && row.style.border.left.width !== 1)
-                    || (row.style.border.top != null && row.style.border.top.width !== 1))) {
-                    var x = row.style.border.left.width / 2;
-                    if (this.currentBounds.x === PdfBorders.default.right.width / 2) {
-                        var rowBound = new RectangleF(x, this.currentBounds.y, this.currentBounds.width, this.currentBounds.height);
-                        this.currentBounds = rowBound;
-                    }
-                }
                 i++;
                 this.currentRowIndex = i - 1;
                 var originalHeight = this.currentBounds.y;
@@ -28019,7 +32999,7 @@ var PdfGridLayouter = /** @class */ (function (_super) {
  */
 //Internal declaration
 var PdfGridLayoutResult = /** @class */ (function (_super) {
-    __extends$27(PdfGridLayoutResult, _super);
+    __extends$36(PdfGridLayoutResult, _super);
     /**
      * Constructor
      * @private
@@ -28033,7 +33013,7 @@ var PdfGridLayoutResult = /** @class */ (function (_super) {
  * `PdfGridLayoutFormat` class represents a flexible grid that consists of columns and rows.
  */
 var PdfGridLayoutFormat = /** @class */ (function (_super) {
-    __extends$27(PdfGridLayoutFormat, _super);
+    __extends$36(PdfGridLayoutFormat, _super);
     /**
      * Initializes a new instance of the `PdfGridLayoutFormat` class.
      * @private
@@ -28115,7 +33095,7 @@ var GridCellEventArgs = /** @class */ (function () {
     return GridCellEventArgs;
 }());
 var PdfGridBeginCellDrawEventArgs = /** @class */ (function (_super) {
-    __extends$27(PdfGridBeginCellDrawEventArgs, _super);
+    __extends$36(PdfGridBeginCellDrawEventArgs, _super);
     // Constructors
     /**
      * Initializes a new instance of the `StartCellLayoutEventArgs` class.
@@ -28158,7 +33138,7 @@ var PdfGridBeginCellDrawEventArgs = /** @class */ (function (_super) {
     return PdfGridBeginCellDrawEventArgs;
 }(GridCellEventArgs));
 var PdfGridEndCellDrawEventArgs = /** @class */ (function (_super) {
-    __extends$27(PdfGridEndCellDrawEventArgs, _super);
+    __extends$36(PdfGridEndCellDrawEventArgs, _super);
     // Constructors
     /**
      * Initializes a new instance of the `PdfGridEndCellLayoutEventArgs` class.
@@ -28204,7 +33184,7 @@ var PdfCancelEventArgs = /** @class */ (function () {
     return PdfCancelEventArgs;
 }());
 var BeginPageLayoutEventArgs = /** @class */ (function (_super) {
-    __extends$27(BeginPageLayoutEventArgs, _super);
+    __extends$36(BeginPageLayoutEventArgs, _super);
     // Constructors
     /**
      * Initializes a new instance of the `BeginPageLayoutEventArgs` class with the specified rectangle and page.
@@ -28248,7 +33228,7 @@ var BeginPageLayoutEventArgs = /** @class */ (function (_super) {
  * `EndPageLayoutEventArgs` class is alternate for end page layout events.
  */
 var EndPageLayoutEventArgs = /** @class */ (function (_super) {
-    __extends$27(EndPageLayoutEventArgs, _super);
+    __extends$36(EndPageLayoutEventArgs, _super);
     // Constructors
     /**
      * Initializes a new instance of the `EndPageLayoutEventArgs` class. with the specified 'PdfLayoutResult'.
@@ -28291,7 +33271,7 @@ var EndPageLayoutEventArgs = /** @class */ (function (_super) {
  * `PdfGridBeginPageLayoutEventArgs` class is alternate for begin page layout events.
  */
 var PdfGridBeginPageLayoutEventArgs = /** @class */ (function (_super) {
-    __extends$27(PdfGridBeginPageLayoutEventArgs, _super);
+    __extends$36(PdfGridBeginPageLayoutEventArgs, _super);
     // Constructors
     /**
      * Initialize a new instance of `PdfGridBeginPageLayoutEventArgs` class.
@@ -28320,7 +33300,7 @@ var PdfGridBeginPageLayoutEventArgs = /** @class */ (function (_super) {
  * `PdfGridEndPageLayoutEventArgs` class is alternate for begin page layout events.
  */
 var PdfGridEndPageLayoutEventArgs = /** @class */ (function (_super) {
-    __extends$27(PdfGridEndPageLayoutEventArgs, _super);
+    __extends$36(PdfGridEndPageLayoutEventArgs, _super);
     // Constructors
     /**
      * Initialize a new instance of `PdfGridEndPageLayoutEventArgs` class.
@@ -28371,6 +33351,2026 @@ var RowLayoutResult = /** @class */ (function () {
     return RowLayoutResult;
 }());
 
+var __extends$35 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+/**
+ * ShapeLayouter.ts class for EJ2-PDF
+ * @private
+ */
+/**
+ * ShapeLayouter class.
+ * @private
+ */
+var ShapeLayouter = /** @class */ (function (_super) {
+    __extends$35(ShapeLayouter, _super);
+    // Constructors
+    /**
+     * Initializes a new instance of the `ShapeLayouter` class.
+     * @private
+     */
+    function ShapeLayouter(element) {
+        var _this = _super.call(this, element) || this;
+        // Fields
+        /**
+         * Initializes the object to store `older form elements` of previous page.
+         * @default 0
+         * @private
+         */
+        _this.olderPdfForm = 0;
+        /**
+         * The `bounds` of the shape element.
+         * * @default new RectangleF()
+         * @private
+         */
+        _this.shapeBounds = new RectangleF();
+        /**
+         * Total Page size of the web page.
+         * * @default 0
+         * @private
+         */
+        _this.totalPageSize = 0;
+        return _this;
+    }
+    Object.defineProperty(ShapeLayouter.prototype, "element", {
+        // Properties
+        /**
+         * Gets shape element.
+         * @private
+         */
+        get: function () {
+            return this.elements;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    // Implementation
+    /**
+     * Layouts the element.
+     * @private
+     */
+    ShapeLayouter.prototype.layoutInternal = function (param) {
+        var currentPage = param.page;
+        var currentBounds = param.bounds;
+        var shapeLayoutBounds = this.element.getBounds();
+        shapeLayoutBounds.x = 0;
+        shapeLayoutBounds.y = 0;
+        /* tslint:disable */
+        var isEmpty = (this.shapeBounds.x === this.shapeBounds.y && this.shapeBounds.y === this.shapeBounds.width && this.shapeBounds.width === this.shapeBounds.height && this.shapeBounds.height === 0) ? true : false;
+        /* tslint:enable */
+        if ((this.isPdfGrid) && (!(isEmpty))) {
+            shapeLayoutBounds = this.shapeBounds;
+        }
+        var result = null;
+        var pageResult = new ShapeLayoutResult();
+        pageResult.page = currentPage;
+        /*tslint:disable:no-constant-condition */
+        while (true) {
+            // Raise event.
+            var result1 = this.raiseBeforePageLayout(currentPage, currentBounds);
+            currentBounds = result1.currentBounds;
+            var endArgs = null;
+            if (!result1.cancel) {
+                pageResult = this.layoutOnPage(currentPage, currentBounds, shapeLayoutBounds, param);
+                // Raise event.
+                endArgs = this.raiseEndPageLayout(pageResult);
+                result1.cancel = (endArgs === null) ? false : endArgs.cancel;
+            }
+            if (!pageResult.end && !result1.cancel) {
+                currentBounds = this.getPaginateBounds(param);
+                shapeLayoutBounds = this.getNextShapeBounds(shapeLayoutBounds, pageResult);
+                currentPage = (endArgs === null || endArgs.nextPage === null) ?
+                    this.getNextPage(currentPage) : endArgs.nextPage;
+                if (this.isPdfGrid) {
+                    result = this.getLayoutResult(pageResult);
+                    break;
+                }
+            }
+            else {
+                result = this.getLayoutResult(pageResult);
+                break;
+            }
+        }
+        return result;
+    };
+    /**
+     * Raises BeforePageLayout event.
+     * @private
+     */
+    ShapeLayouter.prototype.raiseBeforePageLayout = function (currentPage, currentBounds) {
+        var cancel = false;
+        if (this.element.raiseBeginPageLayout) {
+            var args = new BeginPageLayoutEventArgs(currentBounds, currentPage);
+            this.element.onBeginPageLayout(args);
+            cancel = args.cancel;
+            currentBounds = args.bounds;
+        }
+        return { currentBounds: currentBounds, cancel: cancel };
+    };
+    /**
+     * Raises PageLayout event if needed.
+     * @private
+     */
+    ShapeLayouter.prototype.raiseEndPageLayout = function (pageResult) {
+        var args = null;
+        if (this.element.raiseEndPageLayout) {
+            var res = this.getLayoutResult(pageResult);
+            args = new EndPageLayoutEventArgs(res);
+            this.element.onEndPageLayout(args);
+        }
+        return args;
+    };
+    /**
+     * Creates layout result.
+     * @private
+     */
+    ShapeLayouter.prototype.getLayoutResult = function (pageResult) {
+        var result = new PdfLayoutResult(pageResult.page, pageResult.bounds);
+        return result;
+    };
+    /**
+     * Calculates the next active shape bounds.
+     * @private
+     */
+    ShapeLayouter.prototype.getNextShapeBounds = function (shapeLayoutBounds, pageResult) {
+        var layoutedBounds = pageResult.bounds;
+        shapeLayoutBounds.y = (shapeLayoutBounds.y + layoutedBounds.height);
+        shapeLayoutBounds.height = (shapeLayoutBounds.height - layoutedBounds.height);
+        return shapeLayoutBounds;
+    };
+    /**
+     * Layouts the element on the current page.
+     * @private
+     */
+    ShapeLayouter.prototype.layoutOnPage = function (currentPage, curBounds, sBounds, param) {
+        var result = new ShapeLayoutResult();
+        curBounds = this.checkCorrectCurrentBounds(currentPage, curBounds, param);
+        var fitToPage = this.fitsToBounds(curBounds, sBounds);
+        var canDraw = !((param.format.break === exports.PdfLayoutBreakType.FitElement)
+            && (!fitToPage && (currentPage === param.page)));
+        var shapeFinished = false;
+        if (canDraw) {
+            var drawRectangle = this.getDrawBounds(curBounds, sBounds);
+            this.drawShape(currentPage.graphics, curBounds, drawRectangle);
+            result.bounds = this.getPageResultBounds(curBounds, sBounds);
+            shapeFinished = ((curBounds.height) >= (sBounds.height));
+        }
+        result.end = (shapeFinished || (param.format.layout === exports.PdfLayoutType.OnePage));
+        result.page = currentPage;
+        return result;
+    };
+    /**
+     * Returns Rectangle for element drawing on the page.
+     * @private
+     */
+    ShapeLayouter.prototype.getDrawBounds = function (currentBounds, shapeLayoutBounds) {
+        var result = currentBounds;
+        result.y = (result.y - shapeLayoutBounds.y);
+        result.height = (result.height + shapeLayoutBounds.y);
+        return result;
+    };
+    /**
+     * Draws the shape.
+     * @private
+     */
+    ShapeLayouter.prototype.drawShape = function (g, currentBounds, drawRectangle) {
+        var gState = g.save();
+        try {
+            g.setClip(currentBounds);
+            this.element.drawGraphicsHelper(g, new PointF(drawRectangle.x, drawRectangle.y));
+        }
+        finally {
+            g.restore(gState);
+        }
+    };
+    /**
+     * Corrects current bounds on the page.
+     * @protected
+     */
+    ShapeLayouter.prototype.checkCorrectCurrentBounds = function (currentPage, curBounds, param) {
+        var pageSize = currentPage.graphics.clientSize;
+        curBounds.width = (curBounds.width > 0) ? curBounds.width : (pageSize.width - curBounds.x);
+        curBounds.height = (curBounds.height > 0) ? curBounds.height : (pageSize.height - curBounds.y);
+        if (this.isPdfGrid) {
+            curBounds.height = (curBounds.height - this.bottomCellPadding);
+        }
+        return curBounds;
+    };
+    /**
+     * Calculates bounds where the shape was layout on the page.
+     * @private
+     */
+    ShapeLayouter.prototype.getPageResultBounds = function (currentBounds, shapeLayoutBounds) {
+        var result = currentBounds;
+        result.height = Math.min(result.height, shapeLayoutBounds.height);
+        return result;
+    };
+    /**
+     * Checks whether shape rectangle fits to the lay outing bounds.
+     * @private
+     */
+    ShapeLayouter.prototype.fitsToBounds = function (currentBounds, shapeLayoutBounds) {
+        var fits = (shapeLayoutBounds.height <= currentBounds.height);
+        return fits;
+    };
+    /**
+     * Initializes the offset `index`.
+     * * @default 0
+     * @private
+     */
+    ShapeLayouter.index = 0;
+    /**
+     * Initializes the `difference in page height`.
+     * * @default 0
+     * @private
+     */
+    ShapeLayouter.splitDiff = 0;
+    /**
+     * Determines the `end of Vertical offset` values.
+     * * @default false
+     * @private
+     */
+    ShapeLayouter.last = false;
+    /**
+     * Determines the document link annotation `border width`.
+     * * @default 0
+     * @private
+     */
+    ShapeLayouter.borderWidth = 0;
+    return ShapeLayouter;
+}(ElementLayouter));
+/**
+ * Contains lay outing result settings.
+ * @private
+ */
+var ShapeLayoutResult = /** @class */ (function () {
+    function ShapeLayoutResult() {
+    }
+    return ShapeLayoutResult;
+}());
+
+var __extends$34 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+/**
+ * Base class for the main shapes.
+ * @private
+ */
+var PdfShapeElement = /** @class */ (function (_super) {
+    __extends$34(PdfShapeElement, _super);
+    function PdfShapeElement() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    // methods
+    /**
+     * Gets the bounds.
+     * @private
+     */
+    PdfShapeElement.prototype.getBounds = function () {
+        var rect = this.getBoundsInternal();
+        return rect;
+    };
+    /**
+     * `drawGraphicsHelper` the graphics.
+     * @public
+     */
+    PdfShapeElement.prototype.drawGraphicsHelper = function (graphics, location) {
+        if ((graphics == null)) {
+            throw new Error('ArgumentNullException :graphics');
+        }
+        this.drawShapeHelper(graphics, location.x, location.y);
+    };
+    /**
+     * `drawShapeHelper` the graphics.
+     * @private
+     */
+    PdfShapeElement.prototype.drawShapeHelper = function (graphics, x, y) {
+        var bNeedSave = (x !== 0.5 || y !== 0.5);
+        var gState = null;
+        // Translate co-ordinates.
+        if (bNeedSave) {
+            // Save state.
+            gState = graphics.save();
+            graphics.translateTransform(x, y);
+        }
+        this.drawInternal(graphics);
+        if (bNeedSave) {
+            // Restore state.
+            graphics.restore(gState);
+        }
+    };
+    /**
+     * Layouts the element.
+     * @private
+     */
+    PdfShapeElement.prototype.layout = function (param) {
+        var layouter = new ShapeLayouter(this);
+        var result = layouter.layout(param);
+        return result;
+    };
+    return PdfShapeElement;
+}(PdfLayoutElement));
+
+var __extends$33 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+/**
+ * PdfDrawElement.ts class for EJ2-PDF
+ */
+/**
+ * Represents a base class for all page graphics elements.
+ */
+var PdfDrawElement = /** @class */ (function (_super) {
+    __extends$33(PdfDrawElement, _super);
+    /**
+     * Initializes a new instance of the `PdfDrawElement` class.
+     * @protected
+     */
+    function PdfDrawElement(pen) {
+        var _this = _super.call(this) || this;
+        if (typeof pen !== 'undefined') {
+            _this.mpen = pen;
+        }
+        return _this;
+    }
+    Object.defineProperty(PdfDrawElement.prototype, "pen", {
+        // Properties
+        /**
+         * Gets or sets a pen that will be used to draw the element.
+         * @public
+         */
+        get: function () {
+            return this.mpen;
+        },
+        set: function (value) {
+            this.mpen = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return PdfDrawElement;
+}(PdfShapeElement));
+
+var __extends$32 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+/**
+ * PdfFillElement.ts class for EJ2-PDF
+ */
+/**
+ * Represents a base class for all page graphics elements.
+ */
+var PdfFillElement = /** @class */ (function (_super) {
+    __extends$32(PdfFillElement, _super);
+    /**
+     * Initializes a new instance of the `PdfFillElement` class.
+     * @protected
+     */
+    function PdfFillElement(arg1, arg2) {
+        var _this = _super.call(this) || this;
+        // Fields
+        /**
+         * Internal variable to store pen.
+         * @private
+         */
+        _this.mbrush = null;
+        if (typeof arg1 === 'undefined') {
+            //
+        }
+        else if (arg1 instanceof PdfPen) {
+            _this = _super.call(this, arg1) || this;
+        }
+        else {
+            _this.mbrush = arg2;
+        }
+        return _this;
+    }
+    Object.defineProperty(PdfFillElement.prototype, "brush", {
+        // Properties
+        /**
+         * Gets or sets a brush of the element.
+         * @public
+         */
+        get: function () {
+            return this.mbrush;
+        },
+        set: function (value) {
+            this.mbrush = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    // Implementation
+    /**
+     * Gets the pen. If both pen and brush are not explicitly defined, default pen will be used.
+     * @protected
+     */
+    PdfFillElement.prototype.obtainPen = function () {
+        return ((this.mbrush == null) && (this.pen == null)) ? new PdfPen(new PdfColor(0, 0, 0)) : this.pen;
+    };
+    return PdfFillElement;
+}(PdfDrawElement));
+
+var __extends$31 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+/**
+ * Path.ts class for EJ2-PDF
+ */
+/**
+ * `PdfPath` class Implements graphics path, which is a sequence of primitive graphics elements.
+ * @private
+ */
+var PdfPath = /** @class */ (function (_super) {
+    __extends$31(PdfPath, _super);
+    /**
+     * Initializes a new instance of the `PdfPath` class.
+     * @public
+     */
+    /* tslint:disable-next-line:max-line-length */
+    function PdfPath(arg1, arg2, arg3, arg4) {
+        var _this = _super.call(this) || this;
+        // Fields
+        /**
+         * Local variable to store the points.
+         * @private
+         */
+        _this.mpoints = null;
+        /**
+         * Local variable to store the path Types.
+         * @private
+         */
+        _this.mpathTypes = null;
+        /**
+         * Local variable to store the Start Figure.
+         * @private
+         */
+        _this.mStartFigure = true;
+        /**
+         * Local variable to store the fill Mode.
+         * @private
+         */
+        _this.mfillMode = exports.PdfFillMode.Alternate;
+        /**
+         * Local variable to store the Beziers.
+         * @private
+         */
+        _this.isBeziers3 = false;
+        /**
+         * Local variable to store the xps.
+         * @private
+         */
+        _this.isXps = false;
+        if (typeof arg1 === 'undefined') {
+            //
+        }
+        else if (arg1 instanceof PdfPen) {
+            _this = _super.call(this, arg1) || this;
+            if (arg2 instanceof PdfBrush) {
+                _this = _super.call(this, arg1, arg2) || this;
+                _this.fillMode = arg3;
+            }
+            else if (arg2 !== null && typeof arg2 !== 'undefined' && arg3 !== null && typeof arg3 !== 'undefined') {
+                _this.addPath(arg2, arg3);
+            }
+        }
+        else if (arg1 instanceof PdfBrush) {
+            _this = _super.call(this, arg1) || this;
+            if (arg2 !== null && typeof arg2 !== 'undefined') {
+                _this.fillMode = arg2;
+            }
+            if (arg3 !== null && typeof arg3 !== 'undefined' && arg4 !== null && typeof arg4 !== 'undefined') {
+                _this.addPath(arg3, arg4);
+            }
+        }
+        else {
+            _this.addPath(arg1, arg2);
+        }
+        return _this;
+    }
+    Object.defineProperty(PdfPath.prototype, "fillMode", {
+        // Properties
+        /**
+         * Gets or sets the fill mode.
+         * @public
+         */
+        get: function () {
+            return this.mfillMode;
+        },
+        set: function (value) {
+            this.mfillMode = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfPath.prototype, "pathPoints", {
+        /**
+         * Gets the path points.
+         * @public
+         */
+        get: function () {
+            return this.points;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfPath.prototype, "pathTypes", {
+        /**
+         * Gets the path point types.
+         * @public
+         */
+        get: function () {
+            return this.types;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfPath.prototype, "pointCount", {
+        /**
+         * Gets the point count.
+         * @public
+         */
+        get: function () {
+            var count = 0;
+            if ((this.mpoints != null)) {
+                count = this.mpoints.length;
+            }
+            return count;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfPath.prototype, "lastPoint", {
+        /**
+         * Gets the last points.
+         * @public
+         */
+        get: function () {
+            return this.getLastPoint();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfPath.prototype, "points", {
+        /**
+         * Gets the points list.
+         * @private
+         */
+        get: function () {
+            if ((this.mpoints == null)) {
+                this.mpoints = [];
+            }
+            return this.mpoints;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfPath.prototype, "types", {
+        /**
+         * Gets the types.
+         * @private
+         */
+        get: function () {
+            if ((this.mpathTypes == null)) {
+                this.mpathTypes = [];
+            }
+            return this.mpathTypes;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    PdfPath.prototype.draw = function (arg1, arg2, arg3, arg4) {
+        if (arg2 instanceof PointF && typeof arg2.width === 'undefined' && typeof arg3 === 'undefined') {
+            return this.drawHelper(arg1, arg2.x, arg2.y);
+        }
+        else if (arg2 instanceof RectangleF && typeof arg2.width !== 'undefined' && typeof arg3 === 'undefined') {
+            return this.drawHelper(arg1, arg2, null);
+        }
+        else if (typeof arg2 === 'number' && typeof arg3 === 'number' && typeof arg4 === 'undefined') {
+            return this.drawHelper(arg1, arg2, arg3, null);
+        }
+        else if (arg2 instanceof PointF && arg3 instanceof PdfLayoutFormat) {
+            return this.drawHelper(arg1, arg2.x, arg2.y, arg3);
+        }
+        else if (typeof arg2 === 'number' && (arg4 instanceof PdfLayoutFormat || arg4 == null) && typeof arg3 === 'number') {
+            var widthValue = (arg1.graphics.clientSize.width - arg2);
+            var layoutRect = new RectangleF(arg2, arg3, widthValue, 0);
+            return this.drawHelper(arg1, layoutRect, arg4);
+        }
+        else if (arg2 instanceof RectangleF && arg3 instanceof PdfLayoutFormat) {
+            return this.drawHelper(arg1, arg2, arg3);
+        }
+        else {
+            return this.drawHelper(arg1, arg2, arg3);
+        }
+    };
+    PdfPath.prototype.addArc = function (arg1, arg2, arg3, arg4, arg5, arg6) {
+        if (arg1 instanceof RectangleF) {
+            this.addArc(arg1.x, arg1.y, arg1.width, arg1.height, arg2, arg3);
+        }
+        else {
+            var points = this.getBezierArcPoints(arg1, arg2, (arg2 + arg3), (arg2 + arg4), arg5, arg6);
+            for (var i = 0; i < points.length; i = i + 8) {
+                /* tslint:disable-next-line:max-line-length */
+                var point = [points[i], points[i + 1], points[i + 2], points[i + 3], points[i + 4], points[i + 5], points[i + 6], points[i + 7]];
+                this.addPoints(point, exports.PathPointType.Bezier3);
+            }
+        }
+    };
+    /* tslint:disable-next-line:max-line-length */
+    PdfPath.prototype.addBezier = function (arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) {
+        if (arg1 instanceof PointF && arg2 instanceof PointF && arg3 instanceof PointF && arg4 instanceof PointF) {
+            this.addBezier(arg1.x, arg1.y, arg2.x, arg2.y, arg3.x, arg3.y, arg4.x, arg4.y);
+        }
+        else {
+            var points = [];
+            points.push(arg1);
+            points.push(arg2);
+            points.push(arg3);
+            points.push(arg4);
+            points.push(arg5);
+            points.push(arg6);
+            points.push(arg7);
+            points.push(arg8);
+            this.addPoints(points, exports.PathPointType.Bezier3);
+        }
+    };
+    PdfPath.prototype.addEllipse = function (arg1, arg2, arg3, arg4) {
+        if (arg1 instanceof RectangleF) {
+            this.addEllipse(arg1.x, arg1.y, arg1.width, arg1.height);
+        }
+        else {
+            this.startFigure();
+            this.addArc(arg1, arg2, arg3, arg4, 0, 360);
+            this.closeFigure();
+        }
+    };
+    PdfPath.prototype.addLine = function (arg1, arg2, arg3, arg4) {
+        if (arg1 instanceof PointF && arg2 instanceof PointF) {
+            this.addLine(arg1.x, arg1.y, arg2.x, arg2.y);
+        }
+        else {
+            var points = [];
+            points.push(arg1);
+            points.push(arg2);
+            points.push(arg3);
+            points.push(arg4);
+            this.addPoints(points, exports.PathPointType.Line);
+        }
+    };
+    PdfPath.prototype.addPath = function (arg1, arg2) {
+        if (arg1 instanceof PdfPath) {
+            this.addPath(arg1.pathPoints, arg1.pathTypes);
+        }
+        else {
+            if ((arg1 == null)) {
+                throw new Error('ArgumentNullException:pathPoints');
+            }
+            if ((arg2 == null)) {
+                throw new Error('ArgumentNullException:pathTypes');
+            }
+            var count = arg1.length;
+            if ((count !== arg2.length)) {
+                throw new Error('The argument arrays should be of equal length.');
+            }
+        }
+    };
+    PdfPath.prototype.addPie = function (arg1, arg2, arg3, arg4, arg5, arg6) {
+        if (arg1 instanceof RectangleF) {
+            this.addPie(arg1.x, arg1.y, arg1.width, arg1.height, arg2, arg3);
+        }
+        else {
+            this.startFigure();
+            this.addArc(arg1, arg2, arg3, arg4, arg5, arg6);
+            this.addPoint(new PointF((arg1 + (arg3 / 2)), (arg2 + (arg4 / 2))), exports.PathPointType.Line);
+            this.closeFigure();
+        }
+    };
+    /**
+     * `add a polygon` specified by points.
+     * @param points The points of the polygon
+     */
+    PdfPath.prototype.addPolygon = function (points) {
+        var count = (points.length * 2);
+        var p = [];
+        this.startFigure();
+        for (var i = 0; i < points.length; i++) {
+            p.push(points[i].x);
+            p.push(points[i].y);
+        }
+        this.addPoints(p, exports.PathPointType.Line);
+        this.closeFigure();
+    };
+    PdfPath.prototype.addRectangle = function (arg1, y, width, height) {
+        if (arg1 instanceof RectangleF) {
+            this.addRectangle(arg1.x, arg1.y, arg1.width, arg1.height);
+        }
+        else {
+            var points = [];
+            this.startFigure();
+            points.push(arg1);
+            points.push(y);
+            points.push((arg1 + width));
+            points.push(y);
+            points.push((arg1 + width));
+            points.push((y + height));
+            points.push(arg1);
+            points.push((y + height));
+            this.addPoints(points, exports.PathPointType.Line);
+            this.closeFigure();
+        }
+    };
+    /**
+     * Starts a new figure.
+     * @public
+     */
+    PdfPath.prototype.startFigure = function () {
+        this.mStartFigure = true;
+    };
+    /**
+     * Closed all non-closed figures.
+     * @public
+     */
+    PdfPath.prototype.closeAllFigures = function () {
+        var startPath = this.pathPoints[0];
+        for (var i = 0; i < this.mpathTypes.length; i++) {
+            var pt = ((this.types[i]));
+            var flag = false;
+            if (((i !== 0) && (pt === exports.PathPointType.Start))) {
+                this.closeFigure((i - 1));
+                flag = true;
+            }
+            else if (((i === (this.mpathTypes.length - 1)) && (!flag && this.isXps))) {
+                if ((startPath.x === this.pathPoints[i].y)) {
+                    this.closeFigure(i);
+                }
+            }
+        }
+    };
+    /**
+     * Gets the last point.
+     * @public
+     */
+    PdfPath.prototype.getLastPoint = function () {
+        var lastPoint = new PointF(0, 0);
+        var count = this.pointCount;
+        if (((count > 0) && (this.mpoints != null))) {
+            lastPoint.x = this.mpoints[(count - 1)].x;
+            lastPoint.y = this.mpoints[(count - 1)].y;
+        }
+        return lastPoint;
+    };
+    /**
+     * Gets the bezier points for arc constructing.
+     * @public
+     */
+    PdfPath.prototype.getBezierArcPoints = function (x1, y1, x2, y2, s1, e1) {
+        if ((x1 > x2)) {
+            var tmp = void 0;
+            tmp = x1;
+            x1 = x2;
+            x2 = tmp;
+        }
+        if ((y2 > y1)) {
+            var tmp = void 0;
+            tmp = y1;
+            y1 = y2;
+            y2 = tmp;
+        }
+        var fragAngle;
+        var numFragments;
+        if ((Math.abs(e1) <= 90)) {
+            fragAngle = e1;
+            numFragments = 1;
+        }
+        else {
+            numFragments = (Math.ceil((Math.abs(e1) / 90)));
+            fragAngle = (e1 / numFragments);
+        }
+        var xcen = ((x1 + x2) / 2);
+        var ycen = ((y1 + y2) / 2);
+        var rx = ((x2 - x1) / 2);
+        var ry = ((y2 - y1) / 2);
+        var halfAng = ((fragAngle * (Math.PI / 360)));
+        var kappa = (Math.abs(4.0 / 3.0 * (1.0 - Math.cos(halfAng)) / Math.sin(halfAng)));
+        var pointList = [];
+        for (var i = 0; (i < numFragments); i++) {
+            var theta0 = (((s1 + (i * fragAngle)) * (Math.PI / 180)));
+            var theta1 = (((s1 + ((i + 1) * fragAngle)) * (Math.PI / 180)));
+            var cos0 = (Math.cos(theta0));
+            var cos1 = (Math.cos(theta1));
+            var sin0 = (Math.sin(theta0));
+            var sin1 = (Math.sin(theta1));
+            if ((fragAngle > 0)) {
+                /* tslint:disable-next-line:max-line-length */
+                pointList.push((xcen + (rx * cos0)), (ycen - (ry * sin0)), (xcen + (rx * (cos0 - (kappa * sin0)))), (ycen - (ry * (sin0 + (kappa * cos0)))), (xcen + (rx * (cos1 + (kappa * sin1)))), (ycen - (ry * (sin1 - (kappa * cos1)))), (xcen + (rx * cos1)), (ycen - (ry * sin1)));
+            }
+            else {
+                /* tslint:disable-next-line:max-line-length */
+                pointList.push((xcen + (rx * cos0)), (ycen - (ry * sin0)), (xcen + (rx * (cos0 + (kappa * sin0)))), (ycen - (ry * (sin0 - (kappa * cos0)))), (xcen + (rx * (cos1 - (kappa * sin1)))), (ycen - (ry * (sin1 + (kappa * cos1)))), (xcen + (rx * cos1)), (ycen - (ry * sin1)));
+            }
+        }
+        return pointList;
+    };
+    /**
+     * `getBoundsInternal` Returns a rectangle that bounds this element.
+     * @public
+     */
+    PdfPath.prototype.getBoundsInternal = function () {
+        var points = this.pathPoints;
+        var bounds = new RectangleF(0, 0, 0, 0);
+        if ((points.length > 0)) {
+            var xmin = points[0].x;
+            var xmax = points[0].x;
+            var ymin = points[0].y;
+            var ymax = points[0].y;
+            for (var i = 1; i < points.length; i++) {
+                var point = points[i];
+                xmin = Math.min(point.x, xmin);
+                xmax = Math.max(point.x, xmax);
+                ymin = Math.min(point.y, ymin);
+                ymax = Math.max(point.y, ymax);
+            }
+            bounds = new RectangleF(xmin, ymin, (xmax - xmin), (ymax - ymin));
+        }
+        return bounds;
+    };
+    /**
+     * `drawInternal` Draws an element on the Graphics.
+     * @param graphics Graphics context where the element should be printed.
+     * @public
+     */
+    PdfPath.prototype.drawInternal = function (graphics) {
+        if ((graphics == null)) {
+            throw new Error('ArgumentNullException :graphics');
+        }
+        graphics.drawPath(this.obtainPen(), this.brush, this);
+    };
+    PdfPath.prototype.addPoints = function (points, pointType, startIndex, endIndex) {
+        if (typeof startIndex === 'undefined' && typeof endIndex === 'undefined') {
+            this.addPoints(points, pointType, 0, points.length);
+        }
+        else {
+            for (var i = startIndex; i < endIndex; i++) {
+                var point = new PointF(points[i], points[(i + 1)]);
+                if ((i === startIndex)) {
+                    if (((this.pointCount <= 0) || this.mStartFigure)) {
+                        this.addPoint(point, exports.PathPointType.Start);
+                        this.mStartFigure = false;
+                    }
+                    else if (((point.x !== this.lastPoint.x) && (point.y !== this.lastPoint.y) && !this.isBeziers3)) {
+                        this.addPoint(point, exports.PathPointType.Line);
+                    }
+                    else if ((point.x !== this.lastPoint.x) && (point.y !== this.lastPoint.y)) {
+                        this.addPoint(point, exports.PathPointType.Bezier3);
+                    }
+                }
+                else {
+                    this.addPoint(point, pointType);
+                }
+                i++;
+            }
+        }
+    };
+    /**
+     * `add a point` Adds the point and its type
+     * @param points The points.
+     * @param pointType Type of the points.
+     * @private
+     */
+    PdfPath.prototype.addPoint = function (point, pointType) {
+        this.points.push(point);
+        this.types.push((pointType));
+    };
+    PdfPath.prototype.closeFigure = function (index) {
+        if (typeof index === 'undefined') {
+            if ((this.pointCount > 0)) {
+                this.closeFigure(this.pointCount - 1);
+            }
+            this.startFigure();
+        }
+        else {
+            if ((index < 0)) {
+                throw new Error('IndexOutOfRangeException()');
+            }
+            var pt = ((this.types[index]));
+            pt = (pt | exports.PathPointType.CloseSubpath);
+            this.types[index] = (pt);
+        }
+    };
+    return PdfPath;
+}(PdfFillElement));
+
+var __extends$41 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+/**
+ * `PdfRectangleArea` class Implements graphics rectangle area, which is a sequence of primitive graphics elements.
+ * @private
+ */
+var PdfRectangleArea = /** @class */ (function (_super) {
+    __extends$41(PdfRectangleArea, _super);
+    /* tslint:disable-next-line:max-line-length */
+    function PdfRectangleArea(arg1, arg2, arg3, arg4, arg5, arg6) {
+        var _this = _super.call(this) || this;
+        //Fields
+        /**
+         * public variable to store the rectangle.
+         * @public
+         */
+        _this.bounds = new RectangleF(0, 0, 0, 0);
+        if (typeof arg1 === 'undefined') {
+            //
+        }
+        else if (arg1 instanceof PdfPen) {
+            _this = _super.call(this, arg1, arg2) || this;
+            if (arg3 instanceof RectangleF) {
+                _this.bounds = arg3;
+            }
+            else {
+                _this.bounds = new RectangleF(arg3, arg4, arg5, arg6);
+            }
+        }
+        else if (arg1 instanceof RectangleF) {
+            _this.bounds = arg1;
+        }
+        else {
+            _this.bounds = new RectangleF(arg1, arg2, arg3, arg4);
+        }
+        return _this;
+    }
+    Object.defineProperty(PdfRectangleArea.prototype, "x", {
+        //Properties
+        /**
+         * Gets or sets the X co-ordinate of the upper-left corner of this the element.
+         * @public
+         */
+        get: function () {
+            return this.bounds.x;
+        },
+        set: function (value) {
+            this.bounds.x = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfRectangleArea.prototype, "y", {
+        /**
+         * Gets or sets the Y co-ordinate of the upper-left corner of this the element.
+         * @public
+         */
+        get: function () {
+            return this.bounds.y;
+        },
+        set: function (value) {
+            this.bounds.y = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfRectangleArea.prototype, "width", {
+        /**
+         * Gets or sets the width of this element.
+         * @public
+         */
+        get: function () {
+            return this.bounds.width;
+        },
+        set: function (value) {
+            this.bounds.width = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfRectangleArea.prototype, "height", {
+        /**
+         * Gets or sets the height of this element.
+         * @public
+         */
+        get: function () {
+            return this.bounds.height;
+        },
+        set: function (value) {
+            this.bounds.height = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    //Implementation
+    PdfRectangleArea.prototype.getBoundsInternal = function () {
+        return this.bounds;
+    };
+    return PdfRectangleArea;
+}(PdfFillElement));
+
+var __extends$40 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+/**
+ * `PdfEllipsePart` class Implements graphics ellipse part, which is a sequence of primitive graphics elements.
+ * @private
+ */
+var PdfEllipsePart = /** @class */ (function (_super) {
+    __extends$40(PdfEllipsePart, _super);
+    /* tslint:disable-next-line:max-line-length */
+    function PdfEllipsePart(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) {
+        var _this = _super.call(this) || this;
+        // Fields
+        /**
+         * public variable to store the start angle.
+         * @public
+         */
+        _this.startAngle = 0;
+        /**
+         * public variable to store the sweep angle.
+         * @public
+         */
+        _this.sweepAngle = 0;
+        if (typeof arg1 === 'undefined') {
+            //
+        }
+        else if (arg1 instanceof RectangleF && typeof arg2 !== 'undefined' && typeof arg3 !== 'undefined') {
+            _this = _super.call(this, arg1) || this;
+            _this.startAngle = arg2;
+            _this.sweepAngle = arg3;
+        }
+        else if (arg1 instanceof PdfPen) {
+            if (arg3 instanceof RectangleF) {
+                _this = _super.call(this, arg1, arg2, arg3) || this;
+                _this.startAngle = arg4;
+                _this.sweepAngle = arg5;
+            }
+            else {
+                _this = _super.call(this, arg1, arg2, arg3, arg4, arg5, arg6) || this;
+                _this.startAngle = arg7;
+                _this.sweepAngle = arg8;
+            }
+        }
+        else {
+            _this = _super.call(this, arg1, arg2, arg3, arg4) || this;
+            _this.startAngle = arg5;
+            _this.sweepAngle = arg6;
+        }
+        return _this;
+    }
+    return PdfEllipsePart;
+}(PdfRectangleArea));
+
+var __extends$39 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+/**
+ * arc.ts class for EJ2-PDF
+ */
+/**
+ * `PdfArc` class Implements graphics arc, which is a sequence of primitive graphics elements.
+ * @private
+ */
+var PdfArc = /** @class */ (function (_super) {
+    __extends$39(PdfArc, _super);
+    /* tslint:disable-next-line:max-line-length */
+    function PdfArc(arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
+        var _this = this;
+        if (typeof arg1 === 'undefined') {
+            _this = _super.call(this) || this;
+        }
+        else if (arg1 instanceof RectangleF) {
+            _this = _super.call(this, arg1, arg2, arg3) || this;
+        }
+        else if (arg1 instanceof PdfPen) {
+            if (arg2 instanceof RectangleF) {
+                _this = _super.call(this, arg1, null, arg2, arg3, arg4) || this;
+            }
+            else if (typeof arg6 === 'undefined' && typeof arg7 === 'undefined') {
+                _this = _super.call(this, arg1, null, 0, 0, arg2, arg3, arg4, arg5) || this;
+            }
+            else if (typeof arg6 !== 'undefined' && typeof arg7 !== 'undefined') {
+                _this = _super.call(this, arg1, null, arg2, arg3, arg4, arg5, arg6, arg7) || this;
+            }
+        }
+        else if (typeof arg1 !== 'undefined' && typeof arg5 === 'undefined' && typeof arg6 === 'undefined') {
+            _this = _super.call(this, 0, 0, arg1, arg2, arg3, arg4) || this;
+        }
+        else if (typeof arg1 !== 'undefined' && typeof arg5 !== 'undefined' && typeof arg6 !== 'undefined') {
+            _this = _super.call(this, arg1, arg2, arg3, arg4, arg5, arg6) || this;
+        }
+        return _this;
+    }
+    PdfArc.prototype.draw = function (argu1, arg2, arg3, arg4) {
+        if (arg2 instanceof PointF && typeof arg2.width === 'undefined' && typeof arg3 === 'undefined') {
+            return this.drawHelper(argu1, arg2.x, arg2.y);
+        }
+        else if (arg2 instanceof RectangleF && typeof arg2.width !== 'undefined' && typeof arg3 === 'undefined') {
+            return this.drawHelper(argu1, arg2, null);
+        }
+        else if (typeof arg2 === 'number' && typeof arg3 === 'number' && typeof arg4 === 'undefined') {
+            return this.drawHelper(argu1, arg2, arg3, null);
+        }
+        else if (arg2 instanceof PointF && arg3 instanceof PdfLayoutFormat) {
+            return this.drawHelper(argu1, arg2.x, arg2.y, arg3);
+        }
+        else if (typeof arg2 === 'number' && (arg4 instanceof PdfLayoutFormat || arg4 == null) && typeof arg3 === 'number') {
+            var widthValue = (argu1.graphics.clientSize.width - arg2);
+            var layoutRect = new RectangleF(arg2, arg3, widthValue, 0);
+            return this.drawHelper(argu1, layoutRect, arg4);
+        }
+        else {
+            return this.drawHelper(argu1, arg2, arg3);
+        }
+    };
+    // Implementation
+    /**
+     * `drawInternal` Draws an element on the Graphics.
+     * @param graphics Graphics context where the element should be printed.
+     *
+     */
+    PdfArc.prototype.drawInternal = function (graphics) {
+        if ((graphics == null)) {
+            throw new Error('ArgumentNullException : graphics');
+        }
+        graphics.drawArc(this.obtainPen(), this.bounds, this.startAngle, this.sweepAngle);
+    };
+    return PdfArc;
+}(PdfEllipsePart));
+
+var __extends$42 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+/**
+ * PdfTrueTypeFont.ts class for EJ2-PDF
+ */
+//https://www.giftofspeed.com/base64-encoder/
+var PdfTrueTypeFont = /** @class */ (function (_super) {
+    __extends$42(PdfTrueTypeFont, _super);
+    function PdfTrueTypeFont(base64String, size, style) {
+        var _this = _super.call(this, size) || this;
+        /**
+         * Indicates whether the font is embedded or not.
+         * @private
+         */
+        _this.isEmbedFont = false;
+        /**
+         * Indicates whether the font is unicoded or not.
+         * @private
+         */
+        _this.isUnicode = true;
+        if (style !== undefined) {
+            _this.createFontInternal(base64String, style);
+        }
+        else {
+            _this.createFontInternal(base64String, exports.PdfFontStyle.Regular);
+        }
+        return _this;
+    }
+    PdfTrueTypeFont.prototype.equalsToFont = function (font) {
+        var result = false;
+        //let result : boolean = this.fontInternal.equalsToFont(font);
+        return result;
+    };
+    PdfTrueTypeFont.prototype.getLineWidth = function (line, format) {
+        var width = 0;
+        if (format !== null && format.textDirection !== exports.PdfTextDirection.None) {
+            var returnValue = this.getUnicodeLineWidth(line, /*out*/ width, format);
+            width = returnValue.width;
+        }
+        else {
+            width = this.fontInternal.getLineWidth(line);
+        }
+        var size = this.metrics.getSize(format);
+        width *= (PdfFont.charSizeMultiplier * size);
+        width = this.applyFormatSettings(line, format, width);
+        return width;
+    };
+    /**
+     * Returns width of the char.
+     */
+    PdfTrueTypeFont.prototype.getCharWidth = function (charCode, format) {
+        var codeWidth = this.fontInternal.getCharWidth(charCode);
+        var size = this.metrics.getSize(format);
+        codeWidth *= (0.001 * size);
+        return codeWidth;
+    };
+    //Implementation
+    PdfTrueTypeFont.prototype.createFontInternal = function (base64String, style) {
+        this.fontInternal = new UnicodeTrueTypeFont(base64String, this.size);
+        this.calculateStyle(style);
+        this.initializeInternals();
+    };
+    PdfTrueTypeFont.prototype.calculateStyle = function (style) {
+        var iStyle = this.fontInternal.ttfMetrics.macStyle;
+        if ((style & exports.PdfFontStyle.Underline) !== 0) {
+            iStyle |= exports.PdfFontStyle.Underline;
+        }
+        if ((style & exports.PdfFontStyle.Strikeout) !== 0) {
+            iStyle |= exports.PdfFontStyle.Strikeout;
+        }
+        this.setStyle(iStyle);
+    };
+    PdfTrueTypeFont.prototype.initializeInternals = function () {
+        var equalFont = null;
+        if (PdfDocument.enableCache) {
+            // Search for the similar fonts.
+            equalFont = PdfDocument.cache.search(this);
+        }
+        var internals = null;
+        // There is not equal font in the cache.
+        if (equalFont !== null && equalFont !== undefined) {
+            // Get the settings from the cached font.
+            internals = equalFont.getInternals();
+            var metrics = equalFont.metrics;
+            metrics = metrics.clone();
+            metrics.size = this.size;
+            this.metrics = metrics;
+            this.fontInternal = equalFont.fontInternal;
+        }
+        else {
+            if (equalFont == null) {
+                if (this.fontInternal instanceof UnicodeTrueTypeFont) {
+                    this.fontInternal.isEmbed = this.isEmbedFont;
+                }
+                this.fontInternal.createInternals();
+                internals = this.fontInternal.getInternals();
+                this.metrics = this.fontInternal.metrics;
+            }
+        }
+        this.metrics.isUnicodeFont = true;
+        this.setInternals(internals);
+        //this.ttfReader = (this.fontInternal as UnicodeTrueTypeFont).ttfReader;
+    };
+    /**
+     * Stores used symbols.
+     */
+    PdfTrueTypeFont.prototype.setSymbols = function (text) {
+        var internalFont = this.fontInternal;
+        if (internalFont != null) {
+            internalFont.setSymbols(text);
+        }
+    };
+    Object.defineProperty(PdfTrueTypeFont.prototype, "Unicode", {
+        /**
+         * Property
+         *
+         */
+        get: function () {
+            return this.isUnicode;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    // public get Font() : UnicodeTrueTypeFont {
+    //     return this.fontInternal as UnicodeTrueTypeFont;
+    // }
+    PdfTrueTypeFont.prototype.getUnicodeLineWidth = function (line, /*out*/ width, format) {
+        // if (line == null) {
+        //     throw new Error('ArgumentNullException : line');
+        // }
+        width = 0;
+        var glyphIndices = null;
+        var rtlRender = new RtlRenderer();
+        /* tslint:disable-next-line:max-line-length */
+        var result = rtlRender.getGlyphIndex(line, this, (format.textDirection === exports.PdfTextDirection.RightToLeft) ? true : false, /*out*/ glyphIndices, true);
+        var resultGlyph = result.success;
+        glyphIndices = result.glyphs;
+        if (resultGlyph && glyphIndices !== null) {
+            var ttfReader = this.fontInternal.ttfReader;
+            for (var i = 0, len = glyphIndices.length; i < len; i++) {
+                var glyphIndex = glyphIndices[i];
+                var glyph = ttfReader.getGlyph(glyphIndex);
+                if (glyph !== null && typeof glyph !== 'undefined') {
+                    width += glyph.width;
+                }
+            }
+        }
+        return { success: resultGlyph, width: width };
+    };
+    return PdfTrueTypeFont;
+}(PdfFont));
+
+/**
+ * PdfPageTemplateElement.ts class for EJ2-Pdf
+ */
+/**
+ * Describes a `page template` object that can be used as header/footer, watermark or stamp.
+ */
+var PdfPageTemplateElement = /** @class */ (function () {
+    /* tslint:disable */
+    function PdfPageTemplateElement(arg1, arg2, arg3, arg4, arg5) {
+        if (arg1 instanceof RectangleF && typeof arg2 === 'undefined') {
+            this.InitiateBounds(arg1.x, arg1.y, arg1.width, arg1.height, null);
+        }
+        else if (arg1 instanceof RectangleF && arg2 instanceof PdfPage && typeof arg3 === 'undefined') {
+            this.InitiateBounds(arg1.x, arg1.y, arg1.width, arg1.height, arg2);
+        }
+        else if (arg1 instanceof PointF && arg2 instanceof SizeF && typeof arg3 === 'undefined') {
+            this.InitiateBounds(arg1.x, arg1.y, arg2.width, arg2.height, null);
+        }
+        else if (arg1 instanceof PointF && arg2 instanceof SizeF && arg3 instanceof PdfPage && typeof arg4 === 'undefined') {
+            this.InitiateBounds(arg1.x, arg1.y, arg2.width, arg2.height, arg3);
+        }
+        else if (arg1 instanceof SizeF && typeof arg2 === 'undefined') {
+            this.InitiateBounds(0, 0, arg1.width, arg1.height, null);
+        }
+        else if (typeof arg1 === 'number' && typeof arg2 === 'number' && typeof arg3 === 'undefined') {
+            this.InitiateBounds(0, 0, arg1, arg2, null);
+        }
+        else if (typeof arg1 === 'number' && typeof arg2 === 'number' && arg3 instanceof PdfPage && typeof arg4 === 'undefined') {
+            this.InitiateBounds(0, 0, arg1, arg2, arg3);
+        }
+        else if (typeof arg1 === 'number' && typeof arg2 === 'number' && typeof arg3 === 'number' && typeof arg4 === 'number' && typeof arg5 === 'undefined') {
+            this.InitiateBounds(arg1, arg2, arg3, arg4, null);
+        }
+        else {
+            this.InitiateBounds(arg1, arg2, arg3, arg4, null);
+            // this.graphics.colorSpace = this.page.document.colorSpace;
+        }
+        /* tslint:enable */
+    }
+    Object.defineProperty(PdfPageTemplateElement.prototype, "dock", {
+        // Properties
+        /**
+         * Gets or sets the `dock style` of the page template element.
+         * @private
+         */
+        get: function () {
+            return this.dockStyle;
+        },
+        set: function (value) {
+            // if (this.dockStyle !== value && this.Type === TemplateType.None) {
+            this.dockStyle = value;
+            // Reset alignment.
+            this.resetAlignment();
+            // }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfPageTemplateElement.prototype, "alignment", {
+        /**
+         * Gets or sets `alignment` of the page template element.
+         * @private
+         */
+        get: function () {
+            return this.alignmentStyle;
+        },
+        set: function (value) {
+            // if (this.alignmentStyle !== value) {
+            this.setAlignment(value);
+            // }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfPageTemplateElement.prototype, "foreground", {
+        /**
+         * Indicates whether the page template is located `in front of the page layers or behind of it`.
+         * @private
+         */
+        get: function () {
+            return this.isForeground;
+        },
+        set: function (value) {
+            // if (this.foreground !== value) {
+            this.isForeground = value;
+            // }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfPageTemplateElement.prototype, "background", {
+        /**
+         * Indicates whether the page template is located `behind of the page layers or in front of it`.
+         * @private
+         */
+        get: function () {
+            return !this.isForeground;
+        },
+        set: function (value) {
+            this.isForeground = !value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfPageTemplateElement.prototype, "location", {
+        /**
+         * Gets or sets `location` of the page template element.
+         * @private
+         */
+        get: function () {
+            return this.currentLocation;
+        },
+        set: function (value) {
+            if (this.type === exports.TemplateType.None) {
+                this.currentLocation = value;
+            }
+            else {
+                //
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfPageTemplateElement.prototype, "x", {
+        /**
+         * Gets or sets `X` co-ordinate of the template element on the page.
+         * @private
+         */
+        get: function () {
+            var value = (typeof this.currentLocation !== 'undefined') ? this.currentLocation.x : 0;
+            return value;
+        },
+        set: function (value) {
+            if (this.type === exports.TemplateType.None) {
+                this.currentLocation.x = value;
+            }
+            else {
+                //
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfPageTemplateElement.prototype, "y", {
+        /**
+         * Gets or sets `Y` co-ordinate of the template element on the page.
+         * @private
+         */
+        get: function () {
+            var value = (typeof this.currentLocation !== 'undefined') ? this.currentLocation.y : 0;
+            return value;
+        },
+        set: function (value) {
+            if (this.type === exports.TemplateType.None) {
+                this.currentLocation.y = value;
+            }
+            else {
+                //
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfPageTemplateElement.prototype, "size", {
+        /**
+         * Gets or sets `size` of the page template element.
+         * @private
+         */
+        get: function () {
+            return this.template.size;
+        },
+        set: function (value) {
+            if (this.type === exports.TemplateType.None) {
+                this.template.reset(value);
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfPageTemplateElement.prototype, "width", {
+        /**
+         * Gets or sets `width` of the page template element.
+         * @private
+         */
+        get: function () {
+            return this.template.width;
+        },
+        set: function (value) {
+            if (this.template.width !== value && this.type === exports.TemplateType.None) {
+                var size = this.template.size;
+                size.width = value;
+                this.template.reset(size);
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfPageTemplateElement.prototype, "height", {
+        /**
+         * Gets or sets `height` of the page template element.
+         * @private
+         */
+        get: function () {
+            return this.template.height;
+        },
+        set: function (value) {
+            if (this.template.height !== value && this.type === exports.TemplateType.None) {
+                var size = this.template.size;
+                size.height = value;
+                this.template.reset(size);
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfPageTemplateElement.prototype, "graphics", {
+        /**
+         * Gets `graphics` context of the page template element.
+         * @private
+         */
+        get: function () {
+            return this.template.graphics;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfPageTemplateElement.prototype, "template", {
+        /**
+         * Gets Pdf `template` object.
+         * @private
+         */
+        get: function () {
+            // if (typeof this.pdfTemplate === 'undefined' || this.pdfTemplate == null) {
+            //     this.pdfTemplate = new PdfTemplate(this.size);
+            // }
+            return this.pdfTemplate;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfPageTemplateElement.prototype, "type", {
+        /**
+         * Gets or sets `type` of the usage of this page template.
+         * @private
+         */
+        get: function () {
+            return this.templateType;
+        },
+        set: function (value) {
+            this.updateDocking(value);
+            this.templateType = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfPageTemplateElement.prototype, "bounds", {
+        /**
+         * Gets or sets `bounds` of the page template.
+         * @public
+         */
+        get: function () {
+            return new RectangleF(new PointF(this.x, this.y), this.size);
+        },
+        set: function (value) {
+            if (this.type === exports.TemplateType.None) {
+                this.location = new PointF(value.x, value.y);
+                this.size = new SizeF(value.width, value.height);
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * `Initialize Bounds` Initialize the bounds value of the template.
+     * @private
+     */
+    PdfPageTemplateElement.prototype.InitiateBounds = function (arg1, arg2, arg3, arg4, arg5) {
+        this.x = arg1;
+        this.y = arg2;
+        this.pdfTemplate = new PdfTemplate(arg3, arg4);
+        // this.graphics.colorSpace = this.page.document.colorSpace;
+    };
+    /**
+     * `Updates Dock` property if template is used as header/footer.
+     * @private
+     */
+    PdfPageTemplateElement.prototype.updateDocking = function (type) {
+        if (type !== exports.TemplateType.None) {
+            switch (type) {
+                case exports.TemplateType.Top:
+                    this.dock = exports.PdfDockStyle.Top;
+                    break;
+                case exports.TemplateType.Bottom:
+                    this.dock = exports.PdfDockStyle.Bottom;
+                    break;
+                case exports.TemplateType.Left:
+                    this.dock = exports.PdfDockStyle.Left;
+                    break;
+                case exports.TemplateType.Right:
+                    this.dock = exports.PdfDockStyle.Right;
+                    break;
+            }
+            this.resetAlignment();
+        }
+    };
+    /**
+     * `Resets alignment` of the template.
+     * @private
+     */
+    PdfPageTemplateElement.prototype.resetAlignment = function () {
+        this.alignment = exports.PdfAlignmentStyle.None;
+    };
+    /**
+     * `Sets alignment` of the template.
+     * @private
+     */
+    PdfPageTemplateElement.prototype.setAlignment = function (alignment) {
+        if (this.dock === exports.PdfDockStyle.None) {
+            this.alignmentStyle = alignment;
+        }
+        else {
+            // Template is docked and alignment has been changed.
+            var canBeSet = false;
+            switch (this.dock) {
+                case exports.PdfDockStyle.Left:
+                    canBeSet = (alignment === exports.PdfAlignmentStyle.TopLeft || alignment === exports.PdfAlignmentStyle.MiddleLeft ||
+                        alignment === exports.PdfAlignmentStyle.BottomLeft || alignment === exports.PdfAlignmentStyle.None);
+                    break;
+                case exports.PdfDockStyle.Top:
+                    canBeSet = (alignment === exports.PdfAlignmentStyle.TopLeft || alignment === exports.PdfAlignmentStyle.TopCenter ||
+                        alignment === exports.PdfAlignmentStyle.TopRight || alignment === exports.PdfAlignmentStyle.None);
+                    break;
+                case exports.PdfDockStyle.Right:
+                    canBeSet = (alignment === exports.PdfAlignmentStyle.TopRight || alignment === exports.PdfAlignmentStyle.MiddleRight ||
+                        alignment === exports.PdfAlignmentStyle.BottomRight || alignment === exports.PdfAlignmentStyle.None);
+                    break;
+                case exports.PdfDockStyle.Bottom:
+                    canBeSet = (alignment === exports.PdfAlignmentStyle.BottomLeft || alignment === exports.PdfAlignmentStyle.BottomCenter
+                        || alignment === exports.PdfAlignmentStyle.BottomRight || alignment === exports.PdfAlignmentStyle.None);
+                    break;
+                case exports.PdfDockStyle.Fill:
+                    canBeSet = (alignment === exports.PdfAlignmentStyle.MiddleCenter || alignment === exports.PdfAlignmentStyle.None);
+                    break;
+            }
+            if (canBeSet) {
+                this.alignmentStyle = alignment;
+            }
+        }
+    };
+    /**
+     * Draws the template.
+     * @private
+     */
+    PdfPageTemplateElement.prototype.draw = function (layer, document) {
+        var page = layer.page;
+        var bounds = this.calculateBounds(page, document);
+        if (bounds.x === -0) {
+            bounds.x = 0;
+        }
+        layer.graphics.drawPdfTemplate(this.template, new PointF(bounds.x, bounds.y), new SizeF(bounds.width, bounds.height));
+    };
+    /**
+     * Calculates bounds of the page template.
+     * @private
+     */
+    PdfPageTemplateElement.prototype.calculateBounds = function (page, document) {
+        var result = this.bounds;
+        if (this.alignmentStyle !== exports.PdfAlignmentStyle.None) {
+            result = this.getAlignmentBounds(page, document);
+        }
+        else if (this.dockStyle !== exports.PdfDockStyle.None) {
+            result = this.getDockBounds(page, document);
+        }
+        return result;
+    };
+    /**
+     * Calculates bounds according to the alignment.
+     * @private
+     */
+    PdfPageTemplateElement.prototype.getAlignmentBounds = function (page, document) {
+        var result = this.bounds;
+        if (this.type === exports.TemplateType.None) {
+            result = this.getSimpleAlignmentBounds(page, document);
+        }
+        else {
+            result = this.getTemplateAlignmentBounds(page, document);
+        }
+        return result;
+    };
+    /**
+     * Calculates bounds according to the alignment.
+     * @private
+     */
+    PdfPageTemplateElement.prototype.getSimpleAlignmentBounds = function (page, document) {
+        var bounds = this.bounds;
+        var pdfSection = page.section;
+        var actualBounds = pdfSection.getActualBounds(document, page, false);
+        var x = this.x;
+        var y = this.y;
+        switch (this.alignmentStyle) {
+            case exports.PdfAlignmentStyle.TopLeft:
+                x = 0;
+                y = 0;
+                break;
+            case exports.PdfAlignmentStyle.TopCenter:
+                x = (actualBounds.width - this.width) / 2;
+                y = 0;
+                break;
+            case exports.PdfAlignmentStyle.TopRight:
+                x = actualBounds.width - this.width;
+                y = 0;
+                break;
+            case exports.PdfAlignmentStyle.MiddleLeft:
+                x = 0;
+                y = (actualBounds.height - this.height) / 2;
+                break;
+            case exports.PdfAlignmentStyle.MiddleCenter:
+                x = (actualBounds.width - this.width) / 2;
+                y = (actualBounds.height - this.height) / 2;
+                break;
+            case exports.PdfAlignmentStyle.MiddleRight:
+                x = actualBounds.width - this.width;
+                y = (actualBounds.height - this.height) / 2;
+                break;
+            case exports.PdfAlignmentStyle.BottomLeft:
+                x = 0;
+                y = actualBounds.height - this.height;
+                break;
+            case exports.PdfAlignmentStyle.BottomCenter:
+                x = (actualBounds.width - this.width) / 2;
+                y = actualBounds.height - this.height;
+                break;
+            case exports.PdfAlignmentStyle.BottomRight:
+                x = actualBounds.width - this.width;
+                y = actualBounds.height - this.height;
+                break;
+        }
+        bounds.x = x;
+        bounds.y = y;
+        return bounds;
+    };
+    /**
+     * Calculates bounds according to the alignment.
+     * @private
+     */
+    PdfPageTemplateElement.prototype.getTemplateAlignmentBounds = function (page, document) {
+        var result = this.bounds;
+        var section = page.section;
+        var actualBounds = section.getActualBounds(document, page, false);
+        var x = this.x;
+        var y = this.y;
+        switch (this.alignmentStyle) {
+            case exports.PdfAlignmentStyle.TopLeft:
+                if (this.type === exports.TemplateType.Left) {
+                    x = -actualBounds.x;
+                    y = 0;
+                }
+                else if (this.type === exports.TemplateType.Top) {
+                    x = -actualBounds.x;
+                    y = -actualBounds.y;
+                }
+                break;
+            case exports.PdfAlignmentStyle.TopCenter:
+                x = (actualBounds.width - this.width) / 2;
+                y = -actualBounds.y;
+                break;
+            case exports.PdfAlignmentStyle.TopRight:
+                if (this.type === exports.TemplateType.Right) {
+                    x = actualBounds.width + section.getRightIndentWidth(document, page, false) - this.width;
+                    y = 0;
+                }
+                else if (this.type === exports.TemplateType.Top) {
+                    x = actualBounds.width + section.getRightIndentWidth(document, page, false) - this.width;
+                    y = -actualBounds.y;
+                }
+                break;
+            case exports.PdfAlignmentStyle.MiddleLeft:
+                x = -actualBounds.x;
+                y = (actualBounds.height - this.height) / 2;
+                break;
+            case exports.PdfAlignmentStyle.MiddleCenter:
+                x = (actualBounds.width - this.width) / 2;
+                y = (actualBounds.height - this.height) / 2;
+                break;
+            case exports.PdfAlignmentStyle.MiddleRight:
+                x = actualBounds.width + section.getRightIndentWidth(document, page, false) - this.width;
+                y = (actualBounds.height - this.height) / 2;
+                break;
+            case exports.PdfAlignmentStyle.BottomLeft:
+                if (this.type === exports.TemplateType.Left) {
+                    x = -actualBounds.x;
+                    y = actualBounds.height - this.height;
+                }
+                else if (this.type === exports.TemplateType.Bottom) {
+                    x = -actualBounds.x;
+                    y = actualBounds.height + section.getBottomIndentHeight(document, page, false) - this.height;
+                }
+                break;
+            case exports.PdfAlignmentStyle.BottomCenter:
+                x = (actualBounds.width - this.width) / 2;
+                y = actualBounds.height + section.getBottomIndentHeight(document, page, false) - this.height;
+                break;
+            case exports.PdfAlignmentStyle.BottomRight:
+                if (this.type === exports.TemplateType.Right) {
+                    x = actualBounds.width + section.getRightIndentWidth(document, page, false) - this.width;
+                    y = actualBounds.height - this.height;
+                }
+                else if (this.type === exports.TemplateType.Bottom) {
+                    x = actualBounds.width + section.getRightIndentWidth(document, page, false) - this.width;
+                    y = actualBounds.height + section.getBottomIndentHeight(document, page, false) - this.height;
+                }
+                break;
+        }
+        result.x = x;
+        result.y = y;
+        return result;
+    };
+    /**
+     * Calculates bounds according to the docking.
+     * @private
+     */
+    PdfPageTemplateElement.prototype.getDockBounds = function (page, document) {
+        var result = this.bounds;
+        if (this.type === exports.TemplateType.None) {
+            result = this.getSimpleDockBounds(page, document);
+        }
+        else {
+            result = this.getTemplateDockBounds(page, document);
+        }
+        return result;
+    };
+    /**
+     * Calculates bounds according to the docking.
+     * @private
+     */
+    PdfPageTemplateElement.prototype.getSimpleDockBounds = function (page, document) {
+        var result = this.bounds;
+        var section = page.section;
+        var actualBounds = section.getActualBounds(document, page, false);
+        var x = this.x;
+        var y = this.y;
+        var width = this.width;
+        var height = this.height;
+        switch (this.dockStyle) {
+            case exports.PdfDockStyle.Left:
+                x = 0;
+                y = 0;
+                width = this.width;
+                height = actualBounds.height;
+                break;
+            case exports.PdfDockStyle.Top:
+                x = 0;
+                y = 0;
+                width = actualBounds.width;
+                height = this.height;
+                break;
+            case exports.PdfDockStyle.Right:
+                x = actualBounds.width - this.width;
+                y = 0;
+                width = this.width;
+                height = actualBounds.height;
+                break;
+            case exports.PdfDockStyle.Bottom:
+                x = 0;
+                y = actualBounds.height - this.height;
+                width = actualBounds.width;
+                height = this.height;
+                break;
+            case exports.PdfDockStyle.Fill:
+                x = 0;
+                x = 0;
+                width = actualBounds.width;
+                height = actualBounds.height;
+                break;
+        }
+        result = new RectangleF(x, y, width, height);
+        return result;
+    };
+    /**
+     * Calculates template bounds basing on docking if template is a page template.
+     * @private
+     */
+    PdfPageTemplateElement.prototype.getTemplateDockBounds = function (page, document) {
+        var result = this.bounds;
+        var section = page.section;
+        var actualBounds = section.getActualBounds(document, page, false);
+        var actualSize = section.pageSettings.getActualSize();
+        var x = this.x;
+        var y = this.y;
+        var width = this.width;
+        var height = this.height;
+        switch (this.dockStyle) {
+            case exports.PdfDockStyle.Left:
+                x = -actualBounds.x;
+                y = 0;
+                width = this.width;
+                height = actualBounds.height;
+                break;
+            case exports.PdfDockStyle.Top:
+                x = -actualBounds.x;
+                y = -actualBounds.y;
+                width = actualSize.width;
+                height = this.height;
+                if (actualBounds.height < 0) {
+                    y = -actualBounds.y + actualSize.height;
+                }
+                break;
+            case exports.PdfDockStyle.Right:
+                x = actualBounds.width + section.getRightIndentWidth(document, page, false) - this.width;
+                y = 0;
+                width = this.width;
+                height = actualBounds.height;
+                break;
+            case exports.PdfDockStyle.Bottom:
+                x = -actualBounds.x;
+                y = actualBounds.height + section.getBottomIndentHeight(document, page, false) - this.height;
+                width = actualSize.width;
+                height = this.height;
+                if (actualBounds.height < 0) {
+                    y -= actualSize.height;
+                }
+                break;
+            case exports.PdfDockStyle.Fill:
+                x = 0;
+                x = 0;
+                width = actualBounds.width;
+                height = actualBounds.height;
+                break;
+        }
+        result = new RectangleF(x, y, width, height);
+        return result;
+    };
+    return PdfPageTemplateElement;
+}());
+
 /**
  * Pdf all modules
  * @hidden
@@ -28401,6 +35401,8 @@ exports.Rectangle = Rectangle;
 exports.PdfCacheCollection = PdfCacheCollection;
 exports.PdfCollection = PdfCollection;
 exports.PdfDestination = PdfDestination;
+exports.PdfFunction = PdfFunction;
+exports.PdfSampledFunction = PdfSampledFunction;
 exports.ProcedureSets = ProcedureSets;
 exports.PdfColor = PdfColor;
 exports.PdfGraphics = PdfGraphics;
@@ -28413,9 +35415,18 @@ exports.Guid = Guid;
 exports.PdfTransformationMatrix = PdfTransformationMatrix;
 exports.Matrix = Matrix;
 exports.PdfBrush = PdfBrush;
+exports.PdfBrushes = PdfBrushes;
 exports.PdfSolidBrush = PdfSolidBrush;
+exports.PdfLinearGradientBrush = PdfLinearGradientBrush;
+exports.PdfRadialGradientBrush = PdfRadialGradientBrush;
+exports.PdfTilingBrush = PdfTilingBrush;
+exports.PdfGradientBrush = PdfGradientBrush;
+exports.PdfColorBlend = PdfColorBlend;
+exports.PdfBlend = PdfBlend;
 exports.PdfTemplate = PdfTemplate;
 exports.PdfLayoutElement = PdfLayoutElement;
+exports.PdfPath = PdfPath;
+exports.PdfArc = PdfArc;
 exports.PdfTextElement = PdfTextElement;
 exports.ElementLayouter = ElementLayouter;
 exports.PdfLayoutFormat = PdfLayoutFormat;

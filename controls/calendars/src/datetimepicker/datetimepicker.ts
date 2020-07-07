@@ -444,6 +444,13 @@ export class DateTimePicker extends DatePicker {
      */
     @Property('Short')
     public dayHeaderFormat: DayHeaderFormats;
+    /**
+     * By default, the popup opens while clicking on the datetimepicker icon.
+     * If you want to open the popup while focusing the datetime input then specify its value as true.
+     * @default false
+     */
+    @Property(false)
+    public openOnFocus : boolean;
     /** 
      * Triggers when popup is opened.
      * @event 
@@ -956,6 +963,9 @@ export class DateTimePicker extends DatePicker {
                 this.isPreventBlur = ((document.activeElement === this.inputElement) && (Browser.isIE || Browser.info.name === 'edge')
                     && target === this.popupObject.element);
             }
+        }
+        if (this.openOnFocus) {
+            this.show();
         }
     }
     private isTimePopupOpen(): boolean {

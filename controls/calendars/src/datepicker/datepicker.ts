@@ -341,6 +341,14 @@ export class DatePicker extends Calendar implements IInput {
     @Property(null)
     public serverTimezoneOffset: number;
 
+    /**
+     * By default, the popup opens while clicking on the datepicker icon.
+     * If you want to open the popup while focusing the date input then specify its value as true.
+     * @default false
+     */
+    @Property(false)
+    public openOnFocus : boolean;
+
     /** 
      * Triggers when the popup is opened.
      * @event
@@ -907,6 +915,9 @@ export class DatePicker extends Calendar implements IInput {
         this.isDateIconClicked = false;
         this.trigger('focus', focusArguments);
         this.updateIconState();
+        if (this.openOnFocus) {
+            this.show();
+        }
     }
     private inputHandler(e: MouseEvent): void {
         this.isPopupClicked = false;

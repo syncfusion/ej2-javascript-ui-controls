@@ -1089,3 +1089,36 @@ export let noExtensionSuccess: any = {
     "error": null,
     "details": null
 }
+
+export let ascendingData: any = {
+
+    "cwd": { "path": null, "action": null, "newName": null, "names": null, "name": "Files", "size": 0, "previousName": null, "dateModified": "2019-09-17T15:20:03.0795592+05:30", "dateCreated": "2019-09-17T14:54:40.0589732+05:30", "hasChild": true, "isFile": false, "type": "", "id": null, "filterPath": "", "filterId": null, "targetPath": null, "renameFiles": null, "uploadFiles": null, "caseSensitive": false, "searchString": null, "showHiddenItems": false, "data": null, "targetData": null, "permission": null },
+    "files": [
+        { "path": null, "action": null, "newName": null, "names": null, "name": "Apple", "size": 0, "previousName": null, "dateModified": "2019-09-17T14:54:45.8898912+05:30", "dateCreated": "2019-09-17T14:54:45.8898912+05:30", "hasChild": false, "isFile": false, "type": "", "id": null, "filterPath": "\\", "filterId": null, "targetPath": null, "renameFiles": null, "uploadFiles": null, "caseSensitive": false, "searchString": null, "showHiddenItems": false, "data": null, "targetData": null, "permission": null },
+        { "path": null, "action": null, "newName": null, "names": null, "name": "Music", "size": 102182, "previousName": null, "dateModified": "2019-07-22T15:05:29.1993566+05:30", "dateCreated": "2019-09-17T14:55:06.2893577+05:30", "hasChild": false, "isFile": true, "type": ".png", "id": null, "filterPath": "\\", "filterId": null, "targetPath": null, "renameFiles": null, "uploadFiles": null, "caseSensitive": false, "searchString": null, "showHiddenItems": false, "data": null, "targetData": null, "permission": null },
+        { "path": null, "action": null, "newName": null, "names": null, "name": "Videos", "size": 0, "previousName": null, "dateModified": "2019-09-17T10:50:44.9921206+05:30", "dateCreated": "2019-09-17T14:55:06.2873602+05:30", "hasChild": false, "isFile": true, "type": "", "id": null, "filterPath": "\\", "filterId": null, "targetPath": null, "renameFiles": null, "uploadFiles": null, "caseSensitive": false, "searchString": null, "showHiddenItems": false, "data": null, "targetData": null, "permission": null }
+    ],
+    "error": null,
+    "details": null
+}
+
+export let descendingData: any = {
+    "cwd": { "path": null, "action": null, "newName": null, "names": null, "name": "Files", "size": 0, "previousName": null, "dateModified": "2019-09-17T15:20:03.0795592+05:30", "dateCreated": "2019-09-17T14:54:40.0589732+05:30", "hasChild": true, "isFile": false, "type": "", "id": null, "filterPath": "", "filterId": null, "targetPath": null, "renameFiles": null, "uploadFiles": null, "caseSensitive": false, "searchString": null, "showHiddenItems": false, "data": null, "targetData": null, "permission": null },
+    "files": [
+        { "path": null, "action": null, "newName": null, "names": null, "name": "Videos", "size": 0, "previousName": null, "dateModified": "2019-09-17T14:54:45.8898912+05:30", "dateCreated": "2019-09-17T14:54:45.8898912+05:30", "hasChild": false, "isFile": false, "type": "", "id": null, "filterPath": "\\", "filterId": null, "targetPath": null, "renameFiles": null, "uploadFiles": null, "caseSensitive": false, "searchString": null, "showHiddenItems": false, "data": null, "targetData": null, "permission": null },
+        { "path": null, "action": null, "newName": null, "names": null, "name": "Music", "size": 102182, "previousName": null, "dateModified": "2019-07-22T15:05:29.1993566+05:30", "dateCreated": "2019-09-17T14:55:06.2893577+05:30", "hasChild": false, "isFile": true, "type": ".png", "id": null, "filterPath": "\\", "filterId": null, "targetPath": null, "renameFiles": null, "uploadFiles": null, "caseSensitive": false, "searchString": null, "showHiddenItems": false, "data": null, "targetData": null, "permission": null },
+        { "path": null, "action": null, "newName": null, "names": null, "name": "Apple", "size": 0, "previousName": null, "dateModified": "2019-09-17T10:50:44.9921206+05:30", "dateCreated": "2019-09-17T14:55:06.2873602+05:30", "hasChild": false, "isFile": true, "type": "", "id": null, "filterPath": "\\", "filterId": null, "targetPath": null, "renameFiles": null, "uploadFiles": null, "caseSensitive": false, "searchString": null, "showHiddenItems": false, "data": null, "targetData": null, "permission": null }
+    ],
+    "error": null,
+    "details": null
+}
+export let noSorting: any = {
+    "cwd": { "path": null, "action": null, "newName": null, "names": null, "name": "Files", "size": 0, "previousName": null, "dateModified": "2019-09-17T15:20:03.0795592+05:30", "dateCreated": "2019-09-17T14:54:40.0589732+05:30", "hasChild": true, "isFile": false, "type": "", "id": null, "filterPath": "", "filterId": null, "targetPath": null, "renameFiles": null, "uploadFiles": null, "caseSensitive": false, "searchString": null, "showHiddenItems": false, "data": null, "targetData": null, "permission": null },
+    "files": [
+        { "path": null, "action": null, "newName": null, "names": null, "name": "Music", "size": 0, "previousName": null, "dateModified": "2019-09-17T14:54:45.8898912+05:30", "dateCreated": "2019-09-17T14:54:45.8898912+05:30", "hasChild": false, "isFile": false, "type": "", "id": null, "filterPath": "\\", "filterId": null, "targetPath": null, "renameFiles": null, "uploadFiles": null, "caseSensitive": false, "searchString": null, "showHiddenItems": false, "data": null, "targetData": null, "permission": null },
+        { "path": null, "action": null, "newName": null, "names": null, "name": "Videos", "size": 102182, "previousName": null, "dateModified": "2019-07-22T15:05:29.1993566+05:30", "dateCreated": "2019-09-17T14:55:06.2893577+05:30", "hasChild": false, "isFile": true, "type": ".png", "id": null, "filterPath": "\\", "filterId": null, "targetPath": null, "renameFiles": null, "uploadFiles": null, "caseSensitive": false, "searchString": null, "showHiddenItems": false, "data": null, "targetData": null, "permission": null },
+        { "path": null, "action": null, "newName": null, "names": null, "name": "Apple", "size": 0, "previousName": null, "dateModified": "2019-09-17T10:50:44.9921206+05:30", "dateCreated": "2019-09-17T14:55:06.2873602+05:30", "hasChild": false, "isFile": true, "type": "", "id": null, "filterPath": "\\", "filterId": null, "targetPath": null, "renameFiles": null, "uploadFiles": null, "caseSensitive": false, "searchString": null, "showHiddenItems": false, "data": null, "targetData": null, "permission": null }
+    ],
+    "error": null,
+    "details": null
+}

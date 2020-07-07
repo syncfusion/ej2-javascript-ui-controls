@@ -1,6 +1,7 @@
 import { Column, NotifyArgs, SentinelType } from '@syncfusion/ej2-grids';
 import { Offsets, VirtualInfo, ServiceLocator, IGrid, IModelGenerator } from '@syncfusion/ej2-grids';
 import { VirtualContentRenderer } from '@syncfusion/ej2-grids';
+import { RowPosition } from '../enum';
 import { InterSectionObserver } from '@syncfusion/ej2-grids';
 import { TreeVirtualRowModelGenerator } from '../renderer/virtual-row-model-generator';
 import * as events from '../base/constant';
@@ -9,6 +10,17 @@ import { DataManager } from '@syncfusion/ej2-data';
 /**
  * Content renderer for TreeGrid
  */
+
+interface EditArgs {
+  data?: Object;
+  requestType?: string;
+  previousData?: Object;
+  selectedRow?: Number;
+  type?: string;
+  promise?: Promise<Object>;
+  row?: Element;
+}
+
 
 export class VirtualTreeContentRenderer extends VirtualContentRenderer {
     public getModelGenerator(): IModelGenerator<Column> {
@@ -23,6 +35,10 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
     private observers: TreeInterSectionObserver;
     private translateY: number = 0;
     private maxiPage: number = 0;
+    private rowPosition: RowPosition;
+    private addRowIndex: number;
+    private ariaRowIndex: number;
+    private recordAdded: boolean = false;
     /** @hidden */
     public startIndex: number = -1;
     private endIndex: number = -1;
@@ -31,6 +47,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
     private fn: Function;
     private preTranslate: number = 0;
     private isRemoteExpand: boolean = false;
+    private previousInfo: VirtualInfo;
     public getRowByIndex(index: number) : Element {
       return this.parent.getDataRows().filter((e: HTMLElement) => parseInt(e.getAttribute('aria-rowindex'), 0) === index)[0];
     }
@@ -47,7 +64,24 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
         this.isExpandCollapse = true;
       }
     }
-    private indexModifier(args: {startIndex: number, endIndex: number}) : void {
+    private indexModifier(args: {startIndex: number, endIndex: number, count: number}) : void {
+      let content: HTMLElement = this.parent.getContent().querySelector('.e-content');
+      if (this.recordAdded && this.startIndex > -1 && this.endIndex > -1) {
+        if (this.endIndex > args.count - this.parent.pageSettings.pageSize) {
+          let nextSetResIndex: number = ~~(content.scrollTop / this.parent.getRowHeight());
+          let lastIndex: number = nextSetResIndex + this.parent.getRows().length;
+          if (lastIndex > args.count) {
+            lastIndex = nextSetResIndex +
+            (args.count - nextSetResIndex);
+          }
+          this.startIndex = lastIndex - this.parent.getRows().length;
+          this.endIndex = lastIndex;
+        } else {
+          this.startIndex += 1;
+          this.endIndex += 1;
+        }
+        this.recordAdded = false;
+      }
       args.startIndex = this.startIndex;
       args.endIndex = this.endIndex;
     }
@@ -61,6 +95,13 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
                 this.parent.off('content-ready', this.fn);
               };
               this.parent.on('content-ready', this.fn, this);
+              this.parent.addEventListener(events.actionComplete, this.onActionComplete.bind(this));
+              this.parent[action]('virtual-scroll-edit-action-begin', this.beginEdit, this);
+              this.parent[action]('virtual-scroll-add-action-begin', this.beginAdd, this);
+              this.parent[action]('virtual-scroll-edit-success', this.virtualEditSuccess, this);
+              this.parent[action]('edit-reset', this.resetIseditValue, this);
+              this.parent[action]('get-virtual-data', this.getData, this);
+              this.parent[action]('virtual-scroll-edit-cancel', this.cancelEdit, this);
             } else {
               super.eventListener('on');
             }
@@ -102,6 +143,87 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
             } else {
               return super.getTranslateY(sTop, cHeight, info, isOnenter);
             }
+    }
+
+    private beginEdit(e: { data: Object, index: number }): void {
+      let selector: string = '.e-row[aria-rowindex="' + e.index + '"]';
+      let index: number = (this.parent.getContent().querySelector(selector) as HTMLTableRowElement).rowIndex;
+      let rowData: Object = this.parent.getCurrentViewRecords()[index];
+      e.data = rowData;
+    }
+
+    private beginAdd(args: { startEdit: boolean }): void {
+      let addAction: string = 'addActionBegin'; let isAdd: string = 'isAdd';
+      let addArgs: { newRowPosition: RowPosition, addRowIndex: number, ariaRowIndex: number }
+      = { newRowPosition: this.rowPosition, addRowIndex: this.addRowIndex, ariaRowIndex: this.ariaRowIndex };
+      this.parent.notify('get-row-position', addArgs);
+      this.rowPosition = addArgs.newRowPosition;
+      this.addRowIndex = addArgs.addRowIndex;
+      this.ariaRowIndex = addArgs.ariaRowIndex;
+      let rows: HTMLTableRowElement[] = <HTMLTableRowElement[]>this.parent.getRows();
+      let firstAriaIndex: number = rows.length ? +rows[0].getAttribute('aria-rowindex') : 0;
+      let lastAriaIndex: number = rows.length ? +rows[rows.length - 1].getAttribute('aria-rowindex') : 0;
+      let withInRange: boolean = this.parent.selectedRowIndex >= firstAriaIndex && this.parent.selectedRowIndex <= lastAriaIndex;
+      if (!(this.rowPosition === 'Top' || this.rowPosition === 'Bottom')) {
+        this[isAdd] = true;
+      }
+      if (this.rowPosition === 'Top' || this.rowPosition === 'Bottom' ||
+          ((!this.addRowIndex || this.addRowIndex === -1) && (this.parent.selectedRowIndex === -1 || !withInRange))) {
+        super[addAction](args);
+      }
+    }
+
+    private restoreEditState(): void {
+      let restoreEdit: string = 'restoreEdit';
+      super[restoreEdit]();
+    }
+
+    private resetIseditValue(): void {
+      let resetIsEdit: string = 'resetIsedit'; let isAdd: string = 'isAdd';
+      this.parent.notify('reset-edit-props', {});
+      if ((this.rowPosition === 'Top' || this.rowPosition === 'Bottom') && this[isAdd]) {
+        super[resetIsEdit]();
+      }
+    }
+
+    private virtualEditSuccess(args?: EditArgs): void {
+      let isAdd: string = 'isAdd';
+      let content: HTMLElement = this.parent.getContent().querySelector('.e-content');
+      if (this[isAdd] && content.querySelector('.e-addedrow')) {
+        this.recordAdded = true;
+      }
+    }
+
+    private cancelEdit(args: { data: Object }): void {
+      let editCancel: string = 'editCancel';
+      super[editCancel](args);
+    }
+
+    private restoreNewRow(): void {
+      let isAdd: string = 'isAdd';
+      let content: HTMLElement = this.parent.getContent().querySelector('.e-content');
+      if (this[isAdd] && !content.querySelector('.e-addedrow')) {
+        this.parent.isEdit = false;
+        this.parent.addRecord();
+      }
+    }
+
+    private getData(data: { virtualData: Object, isAdd: boolean, isCancel: boolean }): void {
+      let getVirtualData: string = 'getVirtualData';
+      super[getVirtualData](data);
+    }
+
+    private onActionComplete(args: NotifyArgs): void {
+      if (args.requestType === 'add') {
+        let addArgs: { newRowPosition: RowPosition, addRowIndex: number, ariaRowIndex: number }
+        = { newRowPosition: this.rowPosition, addRowIndex: this.addRowIndex, ariaRowIndex: this.ariaRowIndex };
+        this.parent.notify('get-row-position', addArgs);
+        this.rowPosition = addArgs.newRowPosition;
+        this.addRowIndex = addArgs.addRowIndex;
+        this.ariaRowIndex = addArgs.ariaRowIndex;
+      }
+      let actionComplete: string = 'actionComplete';
+      super[actionComplete](args);
     }
 
     public scrollListeners(scrollArgs: ScrollArg) : void {
@@ -151,11 +273,18 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
         }
         this.startIndex = lastIndex - this.parent.getRows().length;
         this.endIndex = lastIndex;
-        this.translateY = this.getTranslateY(scrollArgs.offset.top, content.getBoundingClientRect().height);
+        if (scrollArgs.offset.top > (this.parent.getRowHeight() * this.totalRecords)) {
+          this.translateY = this.getTranslateY(scrollArgs.offset.top, content.getBoundingClientRect().height);
+        } else {
+          this.translateY = scrollArgs.offset.top;
+        }
       }
       if ((downScroll && (scrollArgs.offset.top < (this.parent.getRowHeight() * this.totalRecords)))
           || (upScroll)) {
         let viewInfo: VirtualInfo = getValue('getInfoFromView', this).apply(this, [scrollArgs.direction, info, scrollArgs.offset]);
+        this.previousInfo = viewInfo;
+        let page: number = viewInfo.loadNext && !viewInfo.loadSelf ? viewInfo.nextInfo.page : viewInfo.page;
+        this.parent.setProperties({ pageSettings: { currentPage: page } }, true);
         if (viewInfo.event === 'refresh-virtual-block') {
           this.parent.refresh();
         } else {
@@ -186,7 +315,22 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
         } else {
           this.isExpandCollapse = false;
         }
-        setValue('prevInfo', info, this);
+        setValue('prevInfo', this.previousInfo ? this.previousInfo : info, this);
+        let focusCell: string = 'focusCell'; let restoreAdd: string = 'restoreAdd';
+        super[focusCell](e);
+        let isAdd: string = 'isAdd';
+        if (this[isAdd] && !this.parent.getContent().querySelector('.e-content').querySelector('.e-addedrow')) {
+          if (!(this.rowPosition === 'Top' || this.rowPosition === 'Bottom')) {
+            if (this.ariaRowIndex >= this.startIndex) {
+              this.restoreNewRow();
+            } else if (this.addRowIndex && this.addRowIndex > -1) {
+              this[isAdd] = false;
+              this.parent.isEdit = false;
+            }
+          }
+        }
+        this.restoreEditState();
+        super[restoreAdd]();
       }
     }
 
@@ -196,6 +340,12 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
       this.parent.off('content-ready', this.fn);
       this.parent.off(events.virtualActionArgs, this.virtualOtherAction);
       this.parent.off(events.indexModifier, this.indexModifier);
+      this.parent.off('virtual-scroll-edit-action-begin', this.beginEdit);
+      this.parent.off('virtual-scroll-add-action-begin', this.beginAdd);
+      this.parent.off('virtual-scroll-edit-success', this.virtualEditSuccess);
+      this.parent.off('edit-reset', this.resetIseditValue);
+      this.parent.off('get-virtual-data', this.getData);
+      this.parent.off('virtual-scroll-edit-cancel', this.cancelEdit);
     }
 
   }

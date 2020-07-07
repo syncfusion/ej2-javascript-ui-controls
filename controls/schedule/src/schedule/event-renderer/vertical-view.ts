@@ -20,15 +20,15 @@ export class VerticalEvent extends EventBase {
     private allDayEvents: Object[] = [];
     private slotCount: number = this.parent.activeViewOptions.timeScale.slotCount;
     private interval: number = this.parent.activeViewOptions.timeScale.interval;
-    private allDayLevel: number = 0;
+    public allDayLevel: number = 0;
     private startHour: Date = this.parent.activeView.getStartHour();
     private endHour: Date = this.parent.activeView.getEndHour();
     private element: HTMLElement;
-    private allDayElement: Element[];
+    public allDayElement: Element[];
     private animation: Animation;
     public fields: EventFieldsMapping;
-    private cellHeight: number;
-    private resources: TdData[];
+    public cellHeight: number;
+    public resources: TdData[];
     /**
      * Constructor for vertical view
      */
@@ -43,7 +43,21 @@ export class VerticalEvent extends EventBase {
     public renderAppointments(): void {
         let wrapperElements: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.BLOCK_APPOINTMENT_CLASS +
             ',.' + cls.APPOINTMENT_CLASS + ',.' + cls.ROW_COUNT_WRAPPER_CLASS));
-        wrapperElements.forEach((element: HTMLElement) => remove(element));
+        let isDragging: boolean = (this.parent.crudModule && this.parent.crudModule.crudObj.isCrudAction) ? true : false;
+        for (let wrapper of wrapperElements) {
+            if (isDragging && !(wrapper.classList.contains(cls.ALLDAY_APPOINTMENT_CLASS) ||
+                wrapper.classList.contains(cls.ROW_COUNT_WRAPPER_CLASS))) {
+                let groupIndex: number = parseInt(wrapper.getAttribute('data-group-index'), 10);
+                for (let j: number = 0, len: number = this.parent.crudModule.crudObj.sourceEvent.length; j < len; j++) {
+                    if (groupIndex === this.parent.crudModule.crudObj.sourceEvent[j].groupIndex ||
+                        groupIndex === this.parent.crudModule.crudObj.targetEvent[j].groupIndex) {
+                        remove(wrapper);
+                    }
+                }
+            } else {
+                remove(wrapper);
+            }
+        }
         if (!this.element.querySelector('.' + cls.WORK_CELLS_CLASS)) {
             return;
         }
@@ -61,15 +75,17 @@ export class VerticalEvent extends EventBase {
         this.processBlockEvents();
         this.renderEvents('normalEvents');
         if (this.allDayEvents.length > 0) {
-            this.allDayEvents = this.allDayEvents.filter((item: { [key: string]: Object }, index: number, arr: Object[]) => {
-                return index === arr.map((item: { [key: string]: Object }) => item.Guid).indexOf(item.Guid);
-            });
+            this.allDayEvents = this.allDayEvents.filter((item: { [key: string]: Object }, index: number, arr: Object[]) =>
+                index === arr.map((item: { [key: string]: Object }) => item.Guid).indexOf(item.Guid));
             removeClass(this.allDayElement, cls.ALLDAY_ROW_ANIMATE_CLASS);
-            this.slots.push(this.parent.activeView.renderDates.map((date: Date) => { return +date; }));
+            this.slots.push(this.parent.activeView.renderDates.map((date: Date) => +date));
             this.renderEvents('allDayEvents');
         }
         this.parent.notify(events.contentReady, {});
         addClass(this.allDayElement, cls.ALLDAY_ROW_ANIMATE_CLASS);
+        if (isDragging) {
+            this.parent.crudModule.crudObj.isCrudAction = false;
+        }
     }
 
     public initializeValues(): void {
@@ -79,7 +95,9 @@ export class VerticalEvent extends EventBase {
         this.cellHeight = parseFloat(this.element.querySelector('.e-content-wrap tbody tr').getBoundingClientRect().height.toFixed(2));
         this.dateRender[0] = this.parent.activeView.renderDates;
         if (this.parent.activeViewOptions.group.resources.length > 0) {
-            this.resources.forEach((resource: TdData, index: number) => this.dateRender[index] = resource.renderDates);
+            for (let i: number = 0, len: number = this.resources.length; i < len; i++) {
+                this.dateRender[i] = this.resources[i].renderDates;
+            }
         }
     }
 
@@ -159,7 +177,15 @@ export class VerticalEvent extends EventBase {
         let eventCollection: Object[] = (eventType === 'allDayEvents') ? this.sortByDateTime(this.allDayEvents) : undefined;
         let resources: number[] = this.getResourceList();
         let dateCount: number = 0;
+        let isRender: boolean;
         for (let resource of resources) {
+            isRender = true;
+            if (this.parent.crudModule && this.parent.crudModule.crudObj.isCrudAction && eventType !== 'allDayEvents') {
+                if (this.parent.crudModule.crudObj.sourceEvent.filter((data: TdData) => data.groupIndex === resource).length === 0 &&
+                    this.parent.crudModule.crudObj.targetEvent.filter((data: TdData) => data.groupIndex === resource).length === 0) {
+                    isRender = false;
+                }
+            }
             this.slots = [];
             let renderDates: Date[] = this.dateRender[resource];
             let renderedDate: Date[] = this.getRenderedDates(renderDates) || renderDates;
@@ -170,26 +196,34 @@ export class VerticalEvent extends EventBase {
                 let startDate: Date = new Date(renderDates[day].getTime());
                 let endDate: Date = util.addDays(renderDates[day], 1);
                 let filterEvents: Object[] = this.filterEvents(startDate, endDate, eventCollection, this.resources[resource]);
-                for (let event of filterEvents) {
-                    if (this.parent.resourceBase) {
-                        this.setValues(event as { [key: string]: Object }, resource);
+                if (isRender) {
+                    for (let event of filterEvents) {
+                        if (this.parent.resourceBase) {
+                            this.setValues(event as { [key: string]: Object }, resource);
+                        }
+                        if (eventType === 'allDayEvents') {
+                            this.renderAllDayEvents(<{ [key: string]: Object }>event, day, resource, dateCount);
+                        } else {
+                            if (this.isAllDayAppointment(<{ [key: string]: Object }>event)) {
+                                this.allDayEvents.push(extend({}, event, null, true));
+                            } else {
+                                if (this.parent.eventSettings.enableMaxHeight) {
+                                    if (this.getOverlapIndex(<{ [key: string]: Object }>event, day, false, resource) > 0) {
+                                        continue;
+                                    }
+                                }
+                                this.renderNormalEvents(<{ [key: string]: Object }>event, day, resource, dateCount);
+                            }
+                        }
+                        this.cssClass = null;
+                        this.groupOrder = null;
                     }
-                    if (eventType === 'allDayEvents') {
-                        this.renderAllDayEvents(<{ [key: string]: Object }>event, day, resource, dateCount);
-                    } else {
+                } else {
+                    for (let event of filterEvents) {
                         if (this.isAllDayAppointment(<{ [key: string]: Object }>event)) {
                             this.allDayEvents.push(extend({}, event, null, true));
-                        } else {
-                            if (this.parent.eventSettings.enableMaxHeight) {
-                                if (this.getOverlapIndex(<{ [key: string]: Object }>event, day, false, resource) > 0) {
-                                    continue;
-                                }
-                            }
-                            this.renderNormalEvents(<{ [key: string]: Object }>event, day, resource, dateCount);
                         }
                     }
-                    this.cssClass = null;
-                    this.groupOrder = null;
                 }
                 dateCount += 1;
             }
@@ -371,7 +405,8 @@ export class VerticalEvent extends EventBase {
         return event;
     }
 
-    private renderAllDayEvents(eventObj: { [key: string]: Object }, dayIndex: number, resource: number, dayCount: number): void {
+    public renderAllDayEvents
+        (eventObj: { [key: string]: Object }, dayIndex: number, resource: number, dayCount: number, inline?: boolean): void {
         let currentDates: Date[] = this.getRenderedDates(this.dateRender[resource]) || this.dateRender[resource];
         if (this.parent.activeViewOptions.group.byDate) {
             this.slots[0] = [this.dateRender[resource][dayIndex].getTime()];
@@ -415,7 +450,12 @@ export class VerticalEvent extends EventBase {
                 let wIndex: number = this.parent.activeViewOptions.group.byDate ? (this.resources.length * dayIndex) + resource : dayCount;
                 let eventWrapper: Element = this.element.querySelector('.' + cls.ALLDAY_APPOINTMENT_WRAPPER_CLASS +
                     ':nth-child(' + (wIndex + 1) + ')');
-                let appointmentElement: HTMLElement = this.createAppointmentElement(eventObj, true, record.data, resource);
+                let appointmentElement: HTMLElement;
+                if (inline) {
+                    appointmentElement = this.parent.inlineModule.createInlineAppointmentElement(eventObj);
+                } else {
+                    appointmentElement = this.createAppointmentElement(eventObj, true, record.data, resource);
+                }
                 addClass([appointmentElement], cls.ALLDAY_APPOINTMENT_CLASS);
                 let args: EventRenderedArgs = { data: eventObj, element: appointmentElement, cancel: false };
                 this.parent.trigger(events.eventRendered, args, (eventArgs: EventRenderedArgs) => {
@@ -442,7 +482,8 @@ export class VerticalEvent extends EventBase {
         }
     }
 
-    private renderNormalEvents(eventObj: { [key: string]: Object }, dayIndex: number, resource: number, dayCount: number): void {
+    public renderNormalEvents
+        (eventObj: { [key: string]: Object }, dayIndex: number, resource: number, dayCount: number, inline?: boolean): void {
         let record: { [key: string]: Object } = this.isSpannedEvent(eventObj, dayIndex, resource);
         let eStart: Date = record[this.fields.startTime] as Date;
         let eEnd: Date = record[this.fields.endTime] as Date;
@@ -478,7 +519,12 @@ export class VerticalEvent extends EventBase {
                 this.renderedEvents[resource] = [];
             }
             this.renderedEvents[resource].push(extend({}, record, null, true));
-            let appointmentElement: HTMLElement = this.createAppointmentElement(eventObj, false, record.isSpanned, resource);
+            let appointmentElement: HTMLElement;
+            if (inline) {
+                appointmentElement = this.parent.inlineModule.createInlineAppointmentElement(eventObj);
+            } else {
+                appointmentElement = this.createAppointmentElement(eventObj, false, record.isSpanned, resource);
+            }
             setStyleAttribute(appointmentElement, {
                 'width': (this.parent.eventSettings.enableMaxHeight ? '100%' : tempData.appWidth),
                 'height': appHeight + 'px', 'top': topValue + 'px'
@@ -511,7 +557,7 @@ export class VerticalEvent extends EventBase {
             util.getStartEndHours(util.resetTime(this.dateRender[resource][day]), this.startHour, this.endHour);
         let startHour: Date = startEndHours.startHour;
         let diffInMinutes: number = ((date.getHours() - startHour.getHours()) * 60) + (date.getMinutes() - startHour.getMinutes());
-        return (this.parent.activeViewOptions.timeScale.enable) ? ((diffInMinutes * this.cellHeight * this.slotCount) / this.interval) : 0;
+        return (diffInMinutes * this.cellHeight * this.slotCount) / this.interval;
     }
 
     private getOverlapIndex(record: { [key: string]: Object }, day: number, isAllDay: boolean, resource: number): number {

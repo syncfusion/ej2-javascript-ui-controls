@@ -10420,15 +10420,18 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         var uploadFiles = this.getFilesInArray(files);
         var eventArgs = {
             customFormData: [],
-            currentRequest: null
+            currentRequest: null,
+            cancel: false
         };
         this.trigger('beforeUpload', eventArgs, function (eventArgs) {
-            if (isBlazor()) {
-                _this.currentRequestHeader = eventArgs.currentRequest ? eventArgs.currentRequest : _this.currentRequestHeader;
-                _this.customFormDatas = (eventArgs.customFormData && eventArgs.customFormData.length > 0) ?
-                    eventArgs.customFormData : _this.customFormDatas;
+            if (!eventArgs.cancel) {
+                if (isBlazor()) {
+                    _this.currentRequestHeader = eventArgs.currentRequest ? eventArgs.currentRequest : _this.currentRequestHeader;
+                    _this.customFormDatas = (eventArgs.customFormData && eventArgs.customFormData.length > 0) ?
+                        eventArgs.customFormData : _this.customFormDatas;
+                }
+                _this.uploadFiles(uploadFiles, custom);
             }
-            _this.uploadFiles(uploadFiles, custom);
         });
     };
     Uploader.prototype.getFilesInArray = function (files) {

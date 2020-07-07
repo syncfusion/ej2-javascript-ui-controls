@@ -445,7 +445,7 @@ export class WorkbookNumberFormat {
 
 /**
  * To Get the number built-in format code from the number format type.
- * @param {NumberFormatType} type - Specifies the type of the number formatting. 
+ * @param {string} type - Specifies the type of the number formatting. 
  */
 export function getFormatFromType(type: NumberFormatType): string {
     let code: string = 'General';

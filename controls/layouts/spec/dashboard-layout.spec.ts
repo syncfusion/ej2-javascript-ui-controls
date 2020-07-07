@@ -373,7 +373,7 @@ describe('GridLayout', () => {
                 columns: 5,
                 enableHtmlSanitizer: false,
                 panels: panelData
-                
+
             });
             gridLayOut.appendTo('#gridlayout');
             var ele = document.body;
@@ -391,7 +391,7 @@ describe('GridLayout', () => {
                 columns: 5,
                 enableHtmlSanitizer: true,
                 panels: panelData
-                
+
             });
             gridLayOut.appendTo('#gridlayout');
             var ele = document.body;
@@ -4064,17 +4064,17 @@ describe('GridLayout', () => {
                     col: 3
                 }
                 ],
-                resizeStart: function(args): void{
+                resizeStart: function (args): void {
                     expect(args.event).toBe(null);
                     expect(args.element.id).toBe("two");
                     expect(args.isInteracted).toBe(false);
                 },
-                resizeStop: function(args): void{
+                resizeStop: function (args): void {
                     expect(args.event).toBe(null);
                     expect(args.element.id).toBe("two");
                     expect(args.isInteracted).toBe(false);
                 },
-                change: function(args): void{
+                change: function (args): void {
                     expect(args.changedPanels.length).toBe(3);
                     expect(args.isInteracted).toBe(false);
                 }
@@ -4409,7 +4409,7 @@ describe('GridLayout', () => {
                     content: ("#template2")
                 }
                 ],
-                change: function(args: ChangeEventArgs): void{
+                change: function (args: ChangeEventArgs): void {
                     expect(args.removedPanels[0].id).toBe("two");
                     expect(args.addedPanels.length).toBe(0);
                     expect(args.changedPanels.length).toBe(1);
@@ -7204,7 +7204,6 @@ describe('GridLayout', () => {
             EventHandler.trigger(<any>(document), 'mouseup', mouseup);
         });
     });
-
     it('Swapping test cases top to bottom', () => {
         let ele: HTMLElement = createElement('div', { id: 'gridlayout' });
         let parentEle: HTMLElement = createElement('div', { id: 'container' });
@@ -7313,11 +7312,11 @@ describe('GridLayout', () => {
             columns: 6,
             cellSpacing: [5, 5],
             panels: [
-                { 'id':"one" , 'sizeX': 6, 'sizeY': 2, 'row': 0, 'col': 0 },
-                { 'id':"two" ,'sizeX': 4, 'sizeY': 3, 'row': 2, 'col': 4 },
-                { 'id':"three" ,'sizeX': 2, 'sizeY': 3, 'row': 2, 'col': 4 },
-                { 'id':"four" ,'sizeX': 4, 'sizeY': 3, 'row': 5, 'col': 4 },
-                { 'id':"five" ,'sizeX': 2, 'sizeY': 3, 'row': 5, 'col': 4 },
+                { 'id': "one", 'sizeX': 6, 'sizeY': 2, 'row': 0, 'col': 0 },
+                { 'id': "two", 'sizeX': 4, 'sizeY': 3, 'row': 2, 'col': 4 },
+                { 'id': "three", 'sizeX': 2, 'sizeY': 3, 'row': 2, 'col': 4 },
+                { 'id': "four", 'sizeX': 4, 'sizeY': 3, 'row': 5, 'col': 4 },
+                { 'id': "five", 'sizeX': 2, 'sizeY': 3, 'row': 5, 'col': 4 },
             ]
         });
         gridLayOut.appendTo('#gridlayout');
@@ -7372,11 +7371,11 @@ describe('GridLayout', () => {
             columns: 6,
             cellSpacing: [5, 5],
             panels: [
-                { 'id':"one" , 'sizeX': 6, 'sizeY': 2, 'row': 0, 'col': 0 },
-                { 'id':"two" ,'sizeX': 4, 'sizeY': 3, 'row': 2, 'col': 4 },
-                { 'id':"three" ,'sizeX': 2, 'sizeY': 3, 'row': 2, 'col': 4 },
-                { 'id':"four" ,'sizeX': 4, 'sizeY': 3, 'row': 5, 'col': 4 },
-                { 'id':"five" ,'sizeX': 2, 'sizeY': 3, 'row': 5, 'col': 4 },
+                { 'id': "one", 'sizeX': 6, 'sizeY': 2, 'row': 0, 'col': 0 },
+                { 'id': "two", 'sizeX': 4, 'sizeY': 3, 'row': 2, 'col': 4 },
+                { 'id': "three", 'sizeX': 2, 'sizeY': 3, 'row': 2, 'col': 4 },
+                { 'id': "four", 'sizeX': 4, 'sizeY': 3, 'row': 5, 'col': 4 },
+                { 'id': "five", 'sizeX': 2, 'sizeY': 3, 'row': 5, 'col': 4 },
             ]
         });
         gridLayOut.appendTo('#gridlayout');
@@ -7398,7 +7397,7 @@ describe('GridLayout', () => {
         mousemove = setMouseCordinates(mousemove, 50, 300);
         EventHandler.trigger(<any>(document), 'mousemove', mousemove);
         mousemove = setMouseCordinates(mousemove, 55, 320);
-        EventHandler.trigger(<any>(document), 'mousemove', mousemove);        
+        EventHandler.trigger(<any>(document), 'mousemove', mousemove);
         expect((<any>gridLayOut).getCellInstance('one').row == 3).toBe(true);
         expect((<any>gridLayOut).getCellInstance('one').col == 0).toBe(true);
         expect((<any>gridLayOut).getCellInstance('two').row == 0).toBe(true);

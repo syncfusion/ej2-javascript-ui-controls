@@ -208,7 +208,7 @@ export interface ListBoxModel extends DropDownBaseModel{
     /**
      * Accepts the template and assigns it to the list content of the ListBox component
      * when the data fetch request from the remote server fails.
-     * @default 'Request failed'
+     * @default 'Request Failed'
      * @private
      */
     actionFailureTemplate?: string;

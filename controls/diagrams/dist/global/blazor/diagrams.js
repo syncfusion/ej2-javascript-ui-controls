@@ -9671,6 +9671,9 @@ var UserHandle = /** @class */ (function (_super) {
     __decorate$11([
         sf.base.Property(false)
     ], UserHandle.prototype, "disableConnectors", void 0);
+    __decorate$11([
+        sf.base.Property('')
+    ], UserHandle.prototype, "template", void 0);
     return UserHandle;
 }(sf.base.ChildProperty));
 
@@ -14333,18 +14336,18 @@ function getUserHandlePosition(selectorItem, handle, transform) {
         switch (handle.side) {
             case 'Top':
                 point.x += left + bounds.width * offset;
-                point.y += top - size;
+                point.y += top - (size / 2 + 12.5);
                 break;
             case 'Bottom':
                 point.x += left + offset * bounds.width;
-                point.y += top + wrapper.actualSize.height + size;
+                point.y += top + wrapper.actualSize.height + (size / 2 + 12.5);
                 break;
             case 'Left':
-                point.x += left - size;
+                point.x += left - (size / 2 + 12.5);
                 point.y += top + offset * bounds.height;
                 break;
             case 'Right':
-                point.x += left + wrapper.actualSize.width + size;
+                point.x += left + wrapper.actualSize.width + (size / 2 + 12.5);
                 point.y += top + offset * bounds.height;
                 break;
         }
@@ -15187,6 +15190,7 @@ function getULMClassifierShapes(content, node, diagram) {
     }, true);
     diagram.initObject(newObj);
     diagram.nodes.push(newObj);
+    diagram.UpdateBlazorDiagramModel(newObj, 'Node');
     node.children.push(newObj.id);
     getClassNodes(node, diagram, classifier, textWrap);
     getClassMembers(node, diagram, classifier, textWrap);
@@ -15232,6 +15236,7 @@ function getClassNodes(node, diagram, classifier, textWrap) {
                     }, true);
                     diagram.initObject(temp);
                     diagram.nodes.push(temp);
+                    diagram.UpdateBlazorDiagramModel(temp, 'Node');
                     node.children.push(temp.id);
                     memberText = '';
                     if (members.isSeparator && (i !== member.length - 1)) {
@@ -15286,6 +15291,7 @@ function getClassNodes(node, diagram, classifier, textWrap) {
                     }, true);
                     diagram.initObject(temp);
                     diagram.nodes.push(temp);
+                    diagram.UpdateBlazorDiagramModel(temp, 'Node');
                     node.children.push(temp.id);
                     attributeText = '';
                     if (attribute.isSeparator && (i !== attributes.length - 1)) {
@@ -15358,6 +15364,7 @@ function getClassMembers(node, diagram, classifier, textWrap) {
                 }, true);
                 diagram.initObject(temp);
                 diagram.nodes.push(temp);
+                diagram.UpdateBlazorDiagramModel(temp, 'Node');
                 node.children.push(temp.id);
                 methodText = '';
                 if (method.isSeparator && (i !== methods.length - 1)) {
@@ -17632,6 +17639,17 @@ function getAdornerLayer(diagramId) {
     adornerLayer = diagramAdornerSvg.getElementById(diagramId + '_diagramAdorner');
     return adornerLayer;
 }
+/**
+ * @private
+ */
+function getUserHandleLayer(diagramId) {
+    var adornerLayer = null;
+    var diagramUserHandleLayer = getDiagramElement(diagramId);
+    var elementcoll;
+    elementcoll = diagramUserHandleLayer.getElementsByClassName('e-userHandle-layer');
+    adornerLayer = elementcoll[0];
+    return adornerLayer;
+}
 /** @private */
 function getDiagramLayer(diagramId) {
     var diagramLayer;
@@ -17958,6 +17976,49 @@ function getTemplateContent(annotationcontent, annotation, annotationTemplate) {
         annotationcontent.content = annotation.template;
     }
     return annotationcontent;
+}
+/** @private */
+function createUserHandleTemplates(userHandleTemplate, template, selectedItems) {
+    var userHandleFn;
+    var handle;
+    var compiledString;
+    var i;
+    var div;
+    if (userHandleTemplate && template) {
+        userHandleFn = templateCompiler(userHandleTemplate);
+        for (var _i = 0, _a = selectedItems.userHandles; _i < _a.length; _i++) {
+            handle = _a[_i];
+            if (userHandleFn) {
+                compiledString = userHandleFn(cloneObject(handle), undefined, 'template', undefined, undefined, false);
+                for (i = 0; i < compiledString.length; i++) {
+                    var attr = {
+                        'style': 'height: 100%; width: 100%; pointer-events: all',
+                        'id': handle.name + '_template_hiddenUserHandle'
+                    };
+                    div = createHtmlElement('div', attr);
+                    div.appendChild(compiledString[i]);
+                }
+                template[0].appendChild(div);
+            }
+        }
+    }
+    else if (sf.base.isBlazor()) {
+        var content = 'diagramsf_userHandle_template';
+        var a = void 0;
+        for (var _b = 0, _c = selectedItems.userHandles; _b < _c.length; _b++) {
+            handle = _c[_b];
+            compiledString = sf.base.compile(handle.content);
+            for (i = 0, a = compiledString(cloneBlazorObject(handle), null, null, content); i < a.length; i++) {
+                var attr = {
+                    'style': 'height: 100%; width: 100%; pointer-events: all',
+                    'id': handle.name + '_template_hiddenUserHandle'
+                };
+                div = createHtmlElement('div', attr);
+                div.appendChild(a[i]);
+            }
+            template[0].appendChild(div);
+        }
+    }
 }
 
 /**
@@ -20236,19 +20297,20 @@ var DiagramRenderer = /** @class */ (function () {
         this.svgRenderer.drawRectangle(canvas, options, this.diagramId, undefined, true, parentSvg);
     };
     /**   @private  */
-    DiagramRenderer.prototype.renderUserHandler = function (selectorItem, canvas, transform) {
+    DiagramRenderer.prototype.renderUserHandler = function (selectorItem, canvas, transform, diagramUserHandlelayer) {
         var wrapper = selectorItem.wrapper;
         var canDraw$$1;
         for (var _i = 0, _a = selectorItem.userHandles; _i < _a.length; _i++) {
             var obj = _a[_i];
             canDraw$$1 = true;
-            if (obj.disableConnectors && selectorItem.connectors.length > 0) {
+            if ((obj.disableConnectors && selectorItem.connectors.length > 0) ||
+                (obj.disableNodes && selectorItem.nodes.length > 0)) {
                 canDraw$$1 = false;
             }
-            if (obj.disableNodes && selectorItem.nodes.length > 0) {
-                canDraw$$1 = false;
+            var div = document.getElementById(obj.name + '_template_hiddenUserHandle');
+            if (div) {
+                obj.template = (div.childNodes[0]).cloneNode(true);
             }
-            var element = new PathElement();
             var newPoint = void 0;
             newPoint = getUserHandlePosition(selectorItem, obj, transform);
             newPoint.x = (newPoint.x + transform.tx) * transform.scale;
@@ -20257,7 +20319,7 @@ var DiagramRenderer = /** @class */ (function () {
                 obj.visible = (selectorItem.constraints & exports.SelectorConstraints.UserHandle) ? true : false;
             }
             if (canDraw$$1) {
-                if (obj.content === '' && obj.source === '') {
+                if (obj.pathData) {
                     var data = obj.pathData ? obj.pathData : obj.content;
                     var option = this.getBaseAttributes(wrapper);
                     option.id = obj.name + '_userhandle';
@@ -20284,22 +20346,19 @@ var DiagramRenderer = /** @class */ (function () {
                     pathSize = measurePath(newData);
                     var options = {
                         x: newPoint.x - pathSize.width / 2,
-                        y: newPoint.y - pathSize.height / 2,
-                        angle: 0, id: '',
-                        class: 'e-diagram-userhandle-path',
-                        fill: obj.pathColor, stroke: obj.backgroundColor, strokeWidth: 0.5, dashArray: '', data: newData,
+                        y: newPoint.y - pathSize.height / 2, angle: 0, id: '',
+                        class: 'e-diagram-userhandle-path', fill: obj.pathColor,
+                        stroke: obj.backgroundColor, strokeWidth: 0.5, dashArray: '', data: newData,
                         width: obj.size - pathPading, height: obj.size - pathPading, pivotX: 0, pivotY: 0, opacity: 1, visible: obj.visible
                     };
                     this.svgRenderer.drawPath(canvas, options, this.diagramId, undefined, undefined, { 'aria-label': obj.name + 'user handle' });
                 }
-                else if (obj.content !== '') {
+                else if (obj.content) {
                     var handleContent = void 0;
                     handleContent = new DiagramNativeElement(obj.name, this.diagramId);
                     handleContent.content = obj.content;
                     handleContent.offsetX = newPoint.x;
                     handleContent.offsetY = newPoint.y;
-                    handleContent.height = obj.size;
-                    handleContent.width = obj.size;
                     handleContent.id = obj.name + '_shape';
                     handleContent.horizontalAlignment = 'Center';
                     handleContent.verticalAlignment = 'Center';
@@ -20311,22 +20370,35 @@ var DiagramRenderer = /** @class */ (function () {
                     handleContent.arrange(handleContent.desiredSize);
                     this.svgRenderer.drawNativeContent(handleContent, canvas, obj.size, obj.size, this.adornerSvgLayer);
                 }
-                else {
-                    var element_1 = new ImageElement();
-                    var options = this.getBaseAttributes(element_1, transform);
+                else if (obj.source) {
+                    var element = new ImageElement();
+                    var options = this.getBaseAttributes(element, transform);
                     options.width = obj.size;
                     options.height = obj.size;
                     options.x = newPoint.x - (obj.size / 2);
                     options.y = newPoint.y - (obj.size / 2);
                     options.sourceWidth = obj.size;
                     options.sourceHeight = obj.size;
-                    options.alignment = element_1.imageAlign;
+                    options.alignment = element.imageAlign;
                     options.source = obj.source;
-                    options.scale = element_1.imageScale;
+                    options.scale = element.imageScale;
                     options.visible = obj.visible;
                     options.description = obj.name || 'User handle';
                     options.id = obj.name + '_';
                     this.renderer.drawImage(canvas, options, this.adornerSvgLayer, false);
+                }
+                else {
+                    var templateContent = void 0;
+                    templateContent = new DiagramHtmlElement(obj.name, this.diagramId);
+                    templateContent.offsetX = newPoint.x;
+                    templateContent.offsetY = newPoint.y;
+                    templateContent.id = obj.name + '_shape';
+                    templateContent.visible = obj.visible;
+                    templateContent.relativeMode = 'Object';
+                    templateContent.template = obj.template;
+                    templateContent.measure(new Size(obj.size, obj.size));
+                    templateContent.arrange(templateContent.desiredSize);
+                    this.svgRenderer.drawHTMLContent(templateContent, diagramUserHandlelayer, undefined, true, undefined);
                 }
             }
         }
@@ -22888,16 +22960,15 @@ var ConnectTool = /** @class */ (function (_super) {
     /**   @private  */
     ConnectTool.prototype.mouseUp = function (args) {
         return __awaiter$1(this, void 0, void 0, function () {
-            var trigger, temparg, connector, nodeEndId, portEndId, connector, nodeEndId, portEndId, arg, oldValues, connector, targetPortName, targetNodeNode, target, arg, trigger, obj, entry, obj, entry;
+            var trigger, temparg, nodeEndId, portEndId, connector, nodeEndId, portEndId, arg, oldValues, connector, targetPortName, targetNodeNode, target, arg, trigger, obj, entry, obj, entry;
             return __generator$1(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         if (!sf.base.isBlazor()) return [3 /*break*/, 2];
                         trigger = exports.DiagramEvent.connectionChange;
                         temparg = void 0;
-                        if (!this.tempArgs) return [3 /*break*/, 2];
+                        if (!(this.tempArgs && this.oldConnector)) return [3 /*break*/, 2];
                         this.tempArgs.state = 'Changed';
-                        connector = args.source.connectors[0];
                         nodeEndId = this.endPoint === 'ConnectorSourceEnd' ? 'sourceID' : 'targetID';
                         portEndId = this.endPoint === 'ConnectorSourceEnd' ? 'sourcePortID' : 'targetPortID';
                         this.tempArgs.oldValue = this.endPoint === 'ConnectorSourceEnd' ?
@@ -23954,6 +24025,7 @@ var ConnectorDrawingTool = /** @class */ (function (_super) {
     };
     /**   @private  */
     ConnectorDrawingTool.prototype.mouseMove = function (args) {
+        this.commandHandler.enableServerDataBinding(false);
         if (this.inAction) {
             var connector = {
                 sourcePoint: this.currentPosition, targetPoint: this.currentPosition,
@@ -23964,9 +24036,7 @@ var ConnectorDrawingTool = /** @class */ (function (_super) {
             args.source = this.drawingObject;
             if ((args.target || (args.actualObject && args.sourceWrapper && checkPort(args.actualObject, args.sourceWrapper)))
                 && (this.endPoint !== 'ConnectorTargetEnd' || (canInConnect(args.target)))) {
-                this.commandHandler.diagram.allowServerDataBinding = false;
                 this.commandHandler.connect(this.endPoint, args);
-                this.commandHandler.diagram.allowServerDataBinding = true;
             }
             this.endPoint = 'ConnectorTargetEnd';
         }
@@ -23977,12 +24047,14 @@ var ConnectorDrawingTool = /** @class */ (function (_super) {
             }
         }
         _super.prototype.mouseMove.call(this, args);
+        this.commandHandler.enableServerDataBinding(true);
         return !this.blocked;
     };
     /**   @private  */
     ConnectorDrawingTool.prototype.mouseUp = function (args) {
         return __awaiter$1(this, void 0, void 0, function () {
             return __generator$1(this, function (_a) {
+                this.commandHandler.enableServerDataBinding(false);
                 this.checkPropertyValue();
                 if (this.drawingObject && this.drawingObject instanceof Connector) {
                     this.commandHandler.addObjectToDiagram(this.drawingObject);
@@ -23990,6 +24062,7 @@ var ConnectorDrawingTool = /** @class */ (function (_super) {
                 }
                 this.commandHandler.updateBlazorSelector();
                 this.inAction = false;
+                this.commandHandler.enableServerDataBinding(true);
                 _super.prototype.mouseUp.call(this, args);
                 return [2 /*return*/];
             });
@@ -25936,7 +26009,13 @@ var DiagramEventHandler = /** @class */ (function () {
             }
             this.diagram.currentDrawingObject = undefined;
             var selector = this.diagram.selectedItems;
-            if (!this.inAction && selector.wrapper && selector.userHandles.length > 0) {
+            var disbleRenderSelector = false;
+            if (this.commandHandler.isUserHandle(this.currentPosition)) {
+                if (this.isForeignObject(evt.target)) {
+                    disbleRenderSelector = true;
+                }
+            }
+            if (!this.inAction && selector.wrapper && selector.userHandles.length > 0 && !disbleRenderSelector) {
                 this.diagram.renderSelector(true);
             }
             if (!this.inAction && !this.diagram.currentSymbol && this.eventArgs) {
@@ -26291,11 +26370,13 @@ var DiagramEventHandler = /** @class */ (function () {
         var label = this.diagram.activeLabel;
         args.target = this.diagram.element.id + '_editBox';
         var node = this.diagram.nameTable[label.parentId];
-        args.text = document.getElementById(this.diagram.element.id + '_editBox').value;
-        for (var i = 0; i < node.annotations.length; i++) {
-            if (node.annotations[i].id === label.id) {
-                args.label = node.annotations[i];
-                break;
+        if (document.getElementById(this.diagram.element.id + '_editBox')) {
+            args.text = document.getElementById(this.diagram.element.id + '_editBox').value;
+            for (var i = 0; i < node.annotations.length; i++) {
+                if (node.annotations[i].id === label.id) {
+                    args.label = node.annotations[i];
+                    break;
+                }
             }
         }
     };
@@ -27101,9 +27182,12 @@ var DiagramEventHandler = /** @class */ (function () {
             var highlighter = adornerSvg.getElementById(adornerSvg.id + '_stack_highlighter');
             if (highlighter) {
                 var index = node.wrapper.children.indexOf(target.wrapper) + 1;
+                this.diagram.enableServerDataBinding(false);
                 var temp = new Node(this.diagram, 'nodes', {
-                    style: { fill: node.style.fill,
-                        strokeColor: (node.style.strokeColor === 'black') ? '#ffffff00' : node.style.strokeColor },
+                    style: {
+                        fill: node.style.fill,
+                        strokeColor: (node.style.strokeColor === 'black') ? '#ffffff00' : node.style.strokeColor
+                    },
                     annotations: target.annotations, verticalAlignment: 'Stretch', horizontalAlignment: 'Stretch',
                     constraints: (exports.NodeConstraints.Default | exports.NodeConstraints.HideThumbs) & ~(exports.NodeConstraints.Rotate | exports.NodeConstraints.Drag | exports.NodeConstraints.Resize),
                     minHeight: 25
@@ -27119,6 +27203,7 @@ var DiagramEventHandler = /** @class */ (function () {
                     sourceIndex: node.wrapper.children.indexOf(temp.wrapper), source: temp,
                     target: undefined, targetIndex: undefined
                 };
+                this.diagram.enableServerDataBinding(true);
                 this.diagram.add(temp);
                 this.diagram.updateConnectorEdges(node);
                 this.diagram.clearSelection();
@@ -28180,18 +28265,19 @@ var CommandHandler = /** @class */ (function () {
             this.diagram.refreshDiagramLayer();
         }
     };
-    CommandHandler.prototype.UpdateBlazorDiagramModelLayers = function (layer) {
+    CommandHandler.prototype.UpdateBlazorDiagramModelLayers = function (layer, isRemove) {
         var blazorInterop = 'sfBlazor';
         var updatedModel = cloneBlazorObject(layer);
         var blazor = 'Blazor';
         if (window && window[blazor]) {
-            var obj = { 'methodName': 'UpdateBlazorDiagramModelLayers', 'diagramobj': JSON.stringify(updatedModel) };
+            var obj = { 'methodName': 'UpdateBlazorDiagramModelLayers',
+                'diagramobj': JSON.stringify(updatedModel), 'isRemove': isRemove };
             window[blazorInterop].updateBlazorProperties(obj, this.diagram);
         }
     };
     /** @private */
-    CommandHandler.prototype.addLayer = function (layer, objects, isClone) {
-        if (isClone === void 0) { isClone = false; }
+    CommandHandler.prototype.addLayer = function (layer, objects, isServerUpdate) {
+        if (isServerUpdate === void 0) { isServerUpdate = true; }
         layer.id = layer.id || randomId();
         layer.zIndex = this.diagram.layers.length;
         this.diagram.enableServerDataBinding(false);
@@ -28200,8 +28286,8 @@ var CommandHandler = /** @class */ (function () {
         layer.objectZIndex = -1;
         layer.zIndexTable = {};
         this.diagram.layers.push(layer);
-        if (isClone) {
-            this.UpdateBlazorDiagramModelLayers(layer);
+        if (isServerUpdate) {
+            this.UpdateBlazorDiagramModelLayers(layer, false);
         }
         this.diagram.layerZIndexTable[layer.zIndex] = layer.id;
         this.diagram.activeLayer = layer;
@@ -28234,7 +28320,8 @@ var CommandHandler = /** @class */ (function () {
         return undefined;
     };
     /** @private */
-    CommandHandler.prototype.removeLayer = function (layerId) {
+    CommandHandler.prototype.removeLayer = function (layerId, isServerUpdate) {
+        if (isServerUpdate === void 0) { isServerUpdate = true; }
         var layers = this.getLayer(layerId);
         if (layers) {
             var index = this.diagram.layers.indexOf(layers);
@@ -28247,6 +28334,9 @@ var CommandHandler = /** @class */ (function () {
                         this.diagram.activeLayer = this.diagram.layers[this.diagram.layers.length - 1];
                     }
                 }
+            }
+            if (isServerUpdate) {
+                this.UpdateBlazorDiagramModelLayers(this.diagram.layers[index], true);
             }
             delete this.diagram.layerZIndexTable[layers.zIndex];
             this.diagram.layers.splice(index, 1);
@@ -29207,7 +29297,10 @@ var CommandHandler = /** @class */ (function () {
     /** @private */
     CommandHandler.prototype.labelSelect = function (obj, textWrapper) {
         var selectorModel = (this.diagram.selectedItems);
+        var isEnableServerDatabind = this.diagram.allowServerDataBinding;
+        this.diagram.allowServerDataBinding = false;
         selectorModel.nodes = selectorModel.connectors = [];
+        this.diagram.allowServerDataBinding = isEnableServerDatabind;
         if (obj instanceof Node) {
             selectorModel.nodes[0] = obj;
         }
@@ -29868,10 +29961,11 @@ var CommandHandler = /** @class */ (function () {
     /** @private */
     CommandHandler.prototype.clearSelection = function (triggerAction, isTriggered) {
         return __awaiter$2(this, void 0, void 0, function () {
-            var selectormodel, arrayNodes, arg, blazarArgs, selectNodes;
+            var enableServerDataBinding, selectormodel, arrayNodes, arg, blazarArgs, selectNodes;
             return __generator$2(this, function (_a) {
                 switch (_a.label) {
                     case 0:
+                        enableServerDataBinding = this.diagram.allowServerDataBinding;
                         this.diagram.enableServerDataBinding(false);
                         if (!hasSelection(this.diagram)) return [3 /*break*/, 4];
                         selectormodel = this.diagram.selectedItems;
@@ -29932,7 +30026,7 @@ var CommandHandler = /** @class */ (function () {
                         _a.label = 3;
                     case 3:
                         this.updateBlazorSelector();
-                        this.diagram.enableServerDataBinding(true);
+                        this.diagram.enableServerDataBinding(enableServerDataBinding);
                         _a.label = 4;
                     case 4: return [2 /*return*/];
                 }
@@ -33969,6 +34063,8 @@ var Diagram = /** @class */ (function (_super) {
             }
         }
         this.initCommands();
+        var hiddenUserHandleTemplate = document.getElementsByClassName(this.element.id + '_hiddenUserHandleTemplate');
+        createUserHandleTemplates(this.userHandleTemplate, hiddenUserHandleTemplate, this.selectedItems);
         this.updateTemplate();
         this.isLoading = false;
         this.renderComplete();
@@ -34000,6 +34096,11 @@ var Diagram = /** @class */ (function (_super) {
                 sf.base.updateBlazorTemplate('diagramsf_annotation_template', 'AnnotationTemplate', this, false);
             }
         }
+        for (var i = 0; i < this.selectedItems.userHandles.length; i++) {
+            {
+                sf.base.updateBlazorTemplate('diagramsf_userHandle_template', 'UserHandleTemplate', this, false);
+            }
+        }
     };
     Diagram.prototype.resetTemplate = function () {
         var htmlNode;
@@ -34019,6 +34120,11 @@ var Diagram = /** @class */ (function (_super) {
             path = this.connectors[i].annotations[0];
             if (path && path.annotationType === 'Template') {
                 sf.base.resetBlazorTemplate('diagramsf_annotation_template', 'AnnotationTemplate');
+            }
+        }
+        for (var i = 0; i < this.selectedItems.userHandles.length; i++) {
+            {
+                sf.base.updateBlazorTemplate('diagramsf_userHandle_template', 'UserHandleTemplate', this, false);
             }
         }
     };
@@ -34420,6 +34526,12 @@ var Diagram = /** @class */ (function (_super) {
         this.commandHandler.addLayer(layer, layerObject);
     };
     /**
+     *  @private
+     */
+    Diagram.prototype.addDiagramLayer = function (layer, layerObject) {
+        this.commandHandler.addLayer(layer, layerObject, false);
+    };
+    /**
      * remove the layer from diagram
      * @param {string} layerId - define the id of the layer
      * @deprecated
@@ -34428,9 +34540,14 @@ var Diagram = /** @class */ (function (_super) {
         this.commandHandler.removeLayer(layerId);
     };
     /**
+     *  @private
+     */
+    Diagram.prototype.removeDiagramLayer = function (layerId) {
+        this.commandHandler.removeLayer(layerId, false);
+    };
+    /**
      * move objects from the layer to another layer from diagram
      * @param {string[]} objects - define the objects id of string array
-     * @blazorArgsType objects|List<string>
      */
     Diagram.prototype.moveObjects = function (objects, targetLayer) {
         var oldValues = cloneObject(this.layers);
@@ -34511,7 +34628,6 @@ var Diagram = /** @class */ (function (_super) {
     };
     /**
      * gets the node or connector having the given name
-     * @deprecated
      */
     Diagram.prototype.getObject = function (name) {
         return this.nameTable[name];
@@ -34800,7 +34916,6 @@ var Diagram = /** @class */ (function (_super) {
      * @param {NodeModel[] | ConnectorModel[]}objects - Defines the collection of objects, from which the object has to be found.
      * @param {Actions} action - Defines the action, using which the relevant object has to be found.
      * @param {boolean} inAction - Defines the active state of the action.
-     * @deprecated
      */
     Diagram.prototype.findObjectUnderMouse = function (objects, action, inAction) {
         return this.eventHandler.findObjectUnderMouse(objects, action, inAction);
@@ -34810,7 +34925,6 @@ var Diagram = /** @class */ (function (_super) {
      * @param {NodeModel[] | ConnectorModel[]} objects - Defines the collection of objects, from which the object has to be found.
      * @param {Actions} action - Defines the action, using which the relevant object has to be found.
      * @param {boolean} inAction - Defines the active state of the action.
-     * @deprecated
      */
     Diagram.prototype.findTargetObjectUnderMouse = function (objects, action, inAction, position, source) {
         return this.eventHandler.findTargetUnderMouse(objects, action, inAction, position, source);
@@ -34820,7 +34934,6 @@ var Diagram = /** @class */ (function (_super) {
      * @param {IElement} obj - Defines the object, the child element of which has to be found
      * @param {PointModel} position - Defines the position, the child element under which has to be found
      * @param {number} padding - Defines the padding, the child element under which has to be found
-     * @deprecated
      */
     Diagram.prototype.findElementUnderMouse = function (obj, position, padding) {
         return this.eventHandler.findElementUnderMouse(obj, position, padding);
@@ -34838,7 +34951,6 @@ var Diagram = /** @class */ (function (_super) {
     /**
      * Returns the tool that handles the given action
      * @param {string} action - Defines the action that is going to be performed
-     * @deprecated
      */
     Diagram.prototype.getTool = function (action) {
         var tool;
@@ -35327,7 +35439,7 @@ var Diagram = /** @class */ (function (_super) {
      * Adds the given diagram object to the group.
      * @param {NodeModel} Group - defines where the diagram object to be added.
      * @param {string | NodeModel | ConnectorModel} Child - defines the diagram object to be added to the group
-     * @blazorArgsType group|DiagramNode
+     * @blazorArgsType obj|DiagramNode
      */
     Diagram.prototype.addChildToGroup = function (group, child) {
         this.addChild(group, child);
@@ -35375,7 +35487,6 @@ var Diagram = /** @class */ (function (_super) {
      * Adds the given connector to diagram control
      * @param {ConnectorModel} obj - Defines the connector that has to be added to diagram
      * @blazorArgsType obj|DiagramConnector
-     * @blazorType DiagramConnector
      */
     Diagram.prototype.addConnector = function (obj) {
         return this.add(obj);
@@ -35440,6 +35551,9 @@ var Diagram = /** @class */ (function (_super) {
             window[blazorInterop].updateBlazorProperties(dgmObj, this);
         }
     };
+    /**
+     * @private
+     */
     Diagram.prototype.UpdateBlazorDiagramModel = function (obj, objectType, removalIndex, annotationNodeIndex) {
         var blazorInterop = 'sfBlazor';
         var updatedModel = cloneBlazorObject(obj);
@@ -36539,7 +36653,7 @@ var Diagram = /** @class */ (function (_super) {
     };
     /**
      * Add ports at the run time
-     * @blazorArgsType obj|DiagramNode, ports|ObservableCollection<DiagramPort>
+     * @blazorArgsType obj|DiagramNode
      */
     Diagram.prototype.addPorts = function (obj, ports) {
         this.protectPropertyChange(true);
@@ -36589,14 +36703,12 @@ var Diagram = /** @class */ (function (_super) {
     };
     /**
      * Add labels in node at the run time in the blazor platform
-     * @blazorArgsType obj|DiagramNode,labels|ObservableCollection<DiagramNodeAnnotation>
      */
     Diagram.prototype.addNodeLabels = function (obj, labels) {
         this.addLabels(obj, labels);
     };
     /**
      * Add labels in connector at the run time in the blazor platform
-     * @blazorArgsType obj|DiagramConnector , labels|ObservableCollection<DiagramConnectorAnnotation>
      */
     Diagram.prototype.addConnectorLabels = function (obj, labels) {
         this.addLabels(obj, labels);
@@ -36664,7 +36776,6 @@ var Diagram = /** @class */ (function (_super) {
     };
     /**
      * Add dynamic Lanes to swimLane at runtime
-     * @deprecated
      */
     Diagram.prototype.addLanes = function (node, lane, index) {
         node = this.nameTable[node.id] || node;
@@ -36678,7 +36789,6 @@ var Diagram = /** @class */ (function (_super) {
     };
     /**
      * Add a phase to a swimLane at runtime
-     * @deprecated
      */
     Diagram.prototype.addPhases = function (node, phases) {
         node = this.nameTable[node.id] || node;
@@ -36689,7 +36799,6 @@ var Diagram = /** @class */ (function (_super) {
     };
     /**
      * Remove dynamic Lanes to swimLane at runtime
-     * @deprecated
      */
     Diagram.prototype.removeLane = function (node, lane) {
         removeLane(this, undefined, node, lane);
@@ -36697,7 +36806,6 @@ var Diagram = /** @class */ (function (_super) {
     };
     /**
      * Remove a phase to a swimLane at runtime
-     * @deprecated
      */
     Diagram.prototype.removePhase = function (node, phase) {
         removePhase(this, undefined, node, phase);
@@ -36797,7 +36905,6 @@ var Diagram = /** @class */ (function (_super) {
     };
     /**
      * Remove Ports at the run time
-     * @blazorArgsType obj|DiagramNode,ports|ObservableCollection<DiagramPort>
      */
     Diagram.prototype.removePorts = function (obj, ports) {
         obj = this.nameTable[obj.id] || obj;
@@ -36887,6 +36994,15 @@ var Diagram = /** @class */ (function (_super) {
         });
     };
     
+    Diagram.prototype.renderHiddenUserHandleTemplateLayer = function (bounds) {
+        var element;
+        var attributes = {
+            'class': this.element.id + '_hiddenUserHandleTemplate',
+            'style': 'width:' + bounds.width + 'px; height:' + bounds.height + 'px;' + 'visibility:hidden ;  overflow: hidden;'
+        };
+        element = createHtmlElement('div', attributes);
+        this.element.appendChild(element);
+    };
     Diagram.prototype.renderBackgroundLayer = function (bounds, commonStyle) {
         var bgLayer = this.createSvg(this.element.id + '_backgroundLayer_svg', bounds.width, bounds.height);
         applyStyleAgainstCsp(bgLayer, commonStyle);
@@ -36966,12 +37082,19 @@ var Diagram = /** @class */ (function (_super) {
         this.renderPortsExpandLayer(bounds, commonStyle);
         this.renderNativeLayer(bounds, commonStyle);
         this.renderAdornerLayer(bounds, commonStyle);
+        this.renderHiddenUserHandleTemplateLayer(bounds);
     };
     Diagram.prototype.renderAdornerLayer = function (bounds, commonStyle) {
         var divElement = createHtmlElement('div', {
             'id': this.element.id + '_diagramAdornerLayer',
             'style': 'width:' + bounds.width + 'px;height:' + bounds.height + 'px;' + commonStyle
         });
+        var element = createHtmlElement('div', {
+            'id': this.element.id + '_diagramUserHandleLayer',
+            'style': 'width:' + bounds.width + 'px;height:' + bounds.height + 'px;' + commonStyle
+        });
+        element.setAttribute('class', 'e-userHandle-layer');
+        divElement.appendChild(element);
         var svgAdornerSvg = this.createSvg(this.element.id + '_diagramAdorner_svg', bounds.width, bounds.height);
         svgAdornerSvg.setAttribute('class', 'e-adorner-layer');
         svgAdornerSvg.style['pointer-events'] = 'none';
@@ -38442,6 +38565,11 @@ var Diagram = /** @class */ (function (_super) {
                 (this.constraints & exports.DiagramConstraints.Virtualization)) ? this.scroller.viewPortHeight : height;
             diagramLayer.setAttribute('width', (factor * w).toString());
             diagramLayer.setAttribute('height', (factor * h).toString());
+            var hiddenUserHandleTemplate = document.getElementById(this.element.id + '_diagramUserHandleLayer');
+            if (hiddenUserHandleTemplate) {
+                hiddenUserHandleTemplate.style.width = width + 'px';
+                hiddenUserHandleTemplate.style.height = height + 'px';
+            }
             var attr = { 'width': width.toString(), 'height': height.toString() };
             this.diagramLayerDiv.style.width = width + 'px';
             this.diagramLayerDiv.style.height = height + 'px';
@@ -38701,6 +38829,8 @@ var Diagram = /** @class */ (function (_super) {
             var bounds = this.spatialSearch.getPageBounds();
             var selectorElement = void 0;
             selectorElement = getSelectorElement(this.element.id);
+            var diagramUserHandlelayer = void 0;
+            diagramUserHandlelayer = getUserHandleLayer(this.element.id);
             selectorModel.thumbsConstraints = exports.ThumbsConstraints.Default;
             if (selectorModel.annotation) {
                 this.updateThumbConstraints([selectorModel.annotation], selectorModel);
@@ -38738,7 +38868,7 @@ var Diagram = /** @class */ (function (_super) {
                 this.diagramRenderer.renderResizeHandle(selectorModel.wrapper, selectorElement, selectorModel.thumbsConstraints, this.scroller.currentZoom, selectorModel.constraints, this.scroller.transform, undefined, canMove(selectorModel));
             }
             if (!(selectorModel.annotation) && !this.currentSymbol) {
-                this.diagramRenderer.renderUserHandler(selectorModel, selectorElement, this.scroller.transform);
+                this.diagramRenderer.renderUserHandler(selectorModel, selectorElement, this.scroller.transform, diagramUserHandlelayer);
             }
         }
         this.commandHandler.updateBlazorSelector();
@@ -38771,6 +38901,8 @@ var Diagram = /** @class */ (function (_super) {
                 selector.offsetY = selector.wrapper.offsetY;
                 var selectorEle = void 0;
                 selectorEle = getSelectorElement(this.element.id);
+                var diagramUserHandlelayer = void 0;
+                diagramUserHandlelayer = getUserHandleLayer(this.element.id);
                 var canHideResizers = this.eventHandler.canHideResizers();
                 selector.thumbsConstraints = exports.ThumbsConstraints.Default;
                 if (selector.annotation) {
@@ -38781,7 +38913,7 @@ var Diagram = /** @class */ (function (_super) {
                     this.updateThumbConstraints(selector.connectors, selector, true);
                 }
                 if ((this.selectedItems.constraints & exports.SelectorConstraints.UserHandle) && (!(selector.annotation)) && !this.currentSymbol) {
-                    this.diagramRenderer.renderUserHandler(selector, selectorEle, this.scroller.transform);
+                    this.diagramRenderer.renderUserHandler(selector, selectorEle, this.scroller.transform, diagramUserHandlelayer);
                 }
                 if (selector.annotation) {
                     this.renderSelectorForAnnotation(selector, selectorEle);
@@ -38868,9 +39000,14 @@ var Diagram = /** @class */ (function (_super) {
             this.clearHighlighter();
             var childNodes = getSelectorElement(this.element.id).childNodes;
             var child = void 0;
-            for (var i = childNodes.length; i > 0; i--) {
-                child = childNodes[i - 1];
+            for (var i_3 = childNodes.length; i_3 > 0; i_3--) {
+                child = childNodes[i_3 - 1];
                 child.parentNode.removeChild(child);
+            }
+            var templates = getUserHandleLayer(this.element.id).childNodes;
+            var i = void 0;
+            for (i = templates.length; i > 0; i--) {
+                templates[i - 1].parentNode.removeChild(templates[i - 1]);
             }
         }
         else {
@@ -38937,12 +39074,18 @@ var Diagram = /** @class */ (function (_super) {
     /* tslint:disable */
     Diagram.prototype.endEdit = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var textArea, text, element, node, annotation, args, bpmnAnnotation, textWrapper, deleteNode, annotation_1, clonedObject, selectedNode, swimLaneNode, laneHeader, phaseHeader, collection, j;
+            var oldValues, changedvalues, annotations, textArea, text, element, node, annotation, args, bpmnAnnotation, textWrapper, annotation_1, index, deleteNode, index, changesAnnotation, nodeIndex, oldnodes, newnodes, clonedObject, selectedNode, swimLaneNode, laneHeader, phaseHeader, collection, j;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         if (!(this.diagramActions & exports.DiagramAction.TextEdit)) return [3 /*break*/, 9];
+                        oldValues = void 0;
+                        changedvalues = void 0;
+                        annotations = {};
                         this.enableServerDataBinding(false);
+                        if (sf.base.isBlazor()) {
+                            this.canEnableBlazorObject = true;
+                        }
                         textArea = document.getElementById(this.element.id + '_editBox');
                         if (!((sf.base.isBlazor() && textArea) || !sf.base.isBlazor())) return [3 /*break*/, 9];
                         text = textArea.value;
@@ -38981,6 +39124,20 @@ var Diagram = /** @class */ (function (_super) {
                     case 4:
                         if (!!bpmnAnnotation) return [3 /*break*/, 8];
                         node = this.nameTable[this.activeLabel.parentId];
+                        annotation_1 = findAnnotation(node, this.activeLabel.id);
+                        if (annotation_1 && !(annotation_1 instanceof Text$1)) {
+                            index = findObjectIndex(node, annotation_1.id, true);
+                            annotations[index] = { content: annotation_1.content };
+                            oldValues = { annotations: annotations };
+                        }
+                        else {
+                            if (sf.base.isBlazor() && (node.shape).type === "Text") {
+                                oldValues = { shape: { textContent: node.shape.content } };
+                            }
+                            else {
+                                oldValues = { shape: { content: node.shape.content } };
+                            }
+                        }
                         deleteNode = this.eventHandler.isAddTextNode(node, true);
                         if (!(!deleteNode && (element.textContent !== text || text !== this.activeLabel.text))) return [3 /*break*/, 7];
                         if (!sf.base.isBlazor()) return [3 /*break*/, 6];
@@ -38995,7 +39152,6 @@ var Diagram = /** @class */ (function (_super) {
                         if (!textWrapper) {
                             textWrapper = this.getWrapper(node.wrapper, this.activeLabel.id);
                         }
-                        annotation_1 = findAnnotation(node, this.activeLabel.id);
                         if (annotation_1.content !== text && !args.cancel) {
                             if (node.parentId && this.nameTable[node.parentId].shape.type === 'UmlClassifier'
                                 && text.indexOf('+') === -1 && text.indexOf('-') === -1 && text.indexOf('#') === -1
@@ -39005,11 +39161,41 @@ var Diagram = /** @class */ (function (_super) {
                             if (node.isLane || node.isPhase) {
                                 this.protectPropertyChange(true);
                             }
+                            if (!(annotation_1 instanceof Text$1)) {
+                                index = findObjectIndex(node, annotation_1.id, true);
+                                changesAnnotation = {};
+                                changesAnnotation[index] = { content: text };
+                                changedvalues = { annotations: changesAnnotation };
+                            }
+                            else {
+                                if (sf.base.isBlazor() && (node.shape).type === "Text") {
+                                    changedvalues = { shape: { textContent: text } };
+                                }
+                                else {
+                                    changedvalues = { shape: { content: text } };
+                                }
+                            }
+                            nodeIndex = this.getIndex(node, node.id);
+                            if (nodeIndex) {
+                                oldnodes = {};
+                                oldnodes[nodeIndex] = oldValues;
+                                newnodes = {};
+                                newnodes[nodeIndex] = changedvalues;
+                                if (getObjectType(node) === Node) {
+                                    this.onPropertyChanged({ nodes: newnodes }, { nodes: oldnodes });
+                                }
+                                else {
+                                    this.onPropertyChanged({ connectors: newnodes }, { connectors: oldnodes });
+                                }
+                            }
+                            this.protectPropertyChange(true);
                             if (sf.base.isBlazor() && (node.shape).type === "Text") {
                                 node.shape.textContent = text;
                             }
-                            annotation_1.content = text;
-                            this.dataBind();
+                            else {
+                                annotation_1.content = text;
+                            }
+                            this.protectPropertyChange(false);
                             this.updateSelector();
                             if (node.isLane || node.isPhase) {
                                 this.protectPropertyChange(false);
@@ -39062,6 +39248,9 @@ var Diagram = /** @class */ (function (_super) {
                         }
                         this.activeLabel = { id: '', parentId: '', isGroup: false, text: undefined };
                         this.commandHandler.getBlazorOldValues();
+                        if (sf.base.isBlazor()) {
+                            this.canEnableBlazorObject = false;
+                        }
                         this.enableServerDataBinding(true);
                         _a.label = 9;
                     case 9: return [2 /*return*/];
@@ -39069,6 +39258,16 @@ var Diagram = /** @class */ (function (_super) {
             });
         });
     };
+    Diagram.prototype.getIndex = function (node, id) {
+        var collection = (getObjectType(node) === Node) ? this.nodes : this.connectors;
+        for (var i = 0; i < collection.length; i++) {
+            if (collection[i].id.toString() === id.toString()) {
+                return i.toString();
+            }
+        }
+        return null;
+    };
+    
     /* tslint:enable */
     Diagram.prototype.getBlazorTextEditArgs = function (args) {
         var element = getObjectType(args.element) === Connector ? { connector: cloneBlazorObject(args.element) }
@@ -39707,10 +39906,10 @@ var Diagram = /** @class */ (function (_super) {
                     this.updateConnectorEdges(actualObject);
                     if (actualObject.id !== 'helper' && !(this.diagramActions & exports.DiagramAction.ToolAction)) {
                         var objects_2 = this.spatialSearch.findObjects(actualObject.wrapper.outerBounds);
-                        for (var i_3 = 0; i_3 < objects_2.length; i_3++) {
-                            var object = objects_2[i_3];
+                        for (var i_4 = 0; i_4 < objects_2.length; i_4++) {
+                            var object = objects_2[i_4];
                             if (object instanceof Connector) {
-                                this.connectorPropertyChange(objects_2[i_3], {}, {
+                                this.connectorPropertyChange(objects_2[i_4], {}, {
                                     sourceID: object.sourceID,
                                     targetID: object.targetID,
                                     sourcePortID: object.sourcePortID,
@@ -41077,7 +41276,6 @@ var Diagram = /** @class */ (function (_super) {
     };
     /**
      * moves the node or connector forward within given layer
-     * @deprecated
      */
     Diagram.prototype.moveObjectsUp = function (node, currentLayer) {
         var targetLayer;
@@ -41095,21 +41293,18 @@ var Diagram = /** @class */ (function (_super) {
     };
     /**
      * Inserts newly added element into the database
-     * @deprecated
      */
     Diagram.prototype.insertData = function (node) {
         return this.crudOperation(node, 'create', this.getNewUpdateNodes('New'));
     };
     /**
      * updates the user defined element properties into the existing database
-     * @deprecated
      */
     Diagram.prototype.updateData = function (node) {
         return this.crudOperation(node, 'update', this.getNewUpdateNodes('Update'));
     };
     /**
      * Removes the user deleted element from the existing database
-     * @deprecated
      */
     Diagram.prototype.removeData = function (node) {
         return this.crudOperation(node, 'destroy', this.getDeletedNodes());
@@ -41279,6 +41474,9 @@ var Diagram = /** @class */ (function (_super) {
     __decorate([
         sf.base.Property()
     ], Diagram.prototype, "annotationTemplate", void 0);
+    __decorate([
+        sf.base.Property()
+    ], Diagram.prototype, "userHandleTemplate", void 0);
     __decorate([
         sf.base.Property()
     ], Diagram.prototype, "getNodeDefaults", void 0);
@@ -54008,7 +54206,7 @@ var SymbolPalette = /** @class */ (function (_super) {
         }
     };
     /**
-     * Add particular palettes to symbol palette at runtime
+     * Add particular palettes to symbol palette at runtime.
      * @param { PaletteModel } palettes - Defines the collection of palettes to be added
      * @blazorArgsType palettes|System.Collections.ObjectModel.ObservableCollection<SymbolPalettePalette>
      */
@@ -54041,8 +54239,8 @@ var SymbolPalette = /** @class */ (function (_super) {
         }
     };
     /**
-     * Add particular palettes to symbol palette at runtime
-     * @param { PaletteModel } palettes - Defines the collection of palettes to be added
+     * Remove particular palettes to symbol palette at runtime
+     * @param {string[]} palettes - Defines the collection of palettes to be remove
      * @blazorArgsType palettes|string[]
      */
     SymbolPalette.prototype.removePalettes = function (palettes) {
@@ -54267,6 +54465,11 @@ var SymbolPalette = /** @class */ (function (_super) {
             var getSymbolInfo = getFunction(this.getSymbolInfo);
             if (getSymbolInfo) {
                 symbolInfo = getSymbolInfo(symbol);
+            }
+            else if (sf.base.isBlazor()) {
+                symbolInfo.fit = this.symbolInfo.fit;
+                symbolInfo.width = this.symbolInfo.width;
+                symbolInfo.height = this.symbolInfo.height;
             }
             symbolInfo = symbolInfo || this.symbolInfo || {};
             if (symbol.shape && symbol.shape.isPhase) {
@@ -55081,7 +55284,7 @@ var SymbolPalette = /** @class */ (function (_super) {
         sf.base.Property()
     ], SymbolPalette.prototype, "getSymbolInfo", void 0);
     __decorate$25([
-        sf.base.Property()
+        sf.base.Property({ fit: true })
     ], SymbolPalette.prototype, "symbolInfo", void 0);
     __decorate$25([
         sf.base.Property()
@@ -56384,6 +56587,10 @@ exports.Overview = Overview;
 return exports;
 
 });
+sfBlazor.modules["diagram"] = "diagrams.Diagram";
+sfBlazor.modules["symbolpalette"] = "diagrams.SymbolPalette";
+sfBlazor.modules["overview"] = "diagrams.Overview";
+
 sfBlazor.loadDependencies(sfBlazor.dependencyJson.diagrams, () => {
     sf.diagrams = sf.diagrams({});
 });

@@ -784,7 +784,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                         if (line.indexOf('</b>') > -1 || ((isBoldTag && j === len - 1 && k === 0) && (isHeader || this.isWrap))) {
                             fontWeight = 'Normal'; labelColor = this.themeStyle.tooltipLightLabel;
                         }
-                        (tspanElement).textContent = line = line.replace(/<[a-zA-Z\/](.|\n)*?>/g, '');
+                        let isRtlText: boolean = /[\u0590-\u07FF\u200F\u202B\u202E\uFB1D-\uFDFD\uFE70-\uFEFC]/.test(line);
+                        (tspanElement).textContent = line = line.replace(/<[a-zA-Z\/](.|\n)*?>/g, isRtlText ? '\u200E' : '');
                         subWidth += measureText(line, font).width;
                         if (tspanStyle !== '') {
                             tspanElement.setAttribute('style', tspanStyle);

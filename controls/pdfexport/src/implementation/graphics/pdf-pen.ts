@@ -313,6 +313,10 @@ export class PdfPen {
      */
     private setBrush(brush : PdfBrush) : void {
         let sBrush : PdfSolidBrush = brush as PdfSolidBrush;
+        if ((sBrush != null && sBrush instanceof PdfSolidBrush)) {
+            this.color = sBrush.color;
+            this.pdfBrush = sBrush;
+        }
         this.color = sBrush.color;
         this.pdfBrush = sBrush;
     }

@@ -1,11 +1,11 @@
 import { Browser, setStyleAttribute as setBaseStyleAttribute, getComponent } from '@syncfusion/ej2-base';
-import { StyleType, CollaborativeEditArgs, CellSaveEventArgs, ICellRenderer, IAriaOptions, IOffset } from './index';
+import { StyleType, CollaborativeEditArgs, CellSaveEventArgs, ICellRenderer, IAriaOptions, IOffset, clearViewer } from './index';
 import { Spreadsheet } from '../base/index';
-import { SheetModel, getRowsHeight, getColumnsWidth, getSwapRange, CellModel, CellStyleModel } from '../../workbook/index';
+import { SheetModel, getRowsHeight, getColumnsWidth, getSwapRange, CellModel, CellStyleModel, clearCells } from '../../workbook/index';
 import { RangeModel, getRangeIndexes, Workbook, wrap, setRowHeight, insertModel, InsertDeleteModelArgs } from '../../workbook/index';
 import { BeforeSortEventArgs, SortEventArgs, initiateSort, getIndexesFromAddress, getRowHeight, setMerge } from '../../workbook/index';
-import { ValidationModel, setValidation, removeValidation } from '../../workbook/index';
-import { removeSheetTab, rowHeightChanged, replace } from './event';
+import { ValidationModel, setValidation, removeValidation, clearCFRule, setCFRule, ConditionalFormatModel } from '../../workbook/index';
+import { removeSheetTab, rowHeightChanged, replace } from './index';
 
 /**
  * The function used to update Dom using requestAnimationFrame.
@@ -55,30 +55,6 @@ export function getScrollBarWidth(): number {
     result = (htmlDivNode.offsetWidth - htmlDivNode.clientWidth) | 0;
     document.body.removeChild(htmlDivNode);
     return scrollAreaWidth = result;
-}
-
-let classes: string[] = ['e-ribbon', 'e-formula-bar-panel', 'e-sheet-tab-panel', 'e-header-toolbar'];
-
-/** @hidden */
-export function getSiblingsHeight(element: HTMLElement, classList: string[] = classes): number {
-    let previous: number = getHeightFromDirection(element, 'previous', classList);
-    let next: number = getHeightFromDirection(element, 'next', classList);
-    return previous + next;
-}
-
-function getHeightFromDirection(element: HTMLElement, direction: string, classList: string[]): number {
-    // tslint:disable-next-line:no-any
-    let sibling: HTMLElement = (element as any)[direction + 'ElementSibling'];
-    let result: number = 0;
-    while (sibling) {
-        if (classList.some((value: string) => sibling.classList.contains(value))) {
-            result += sibling.offsetHeight;
-        }
-        // tslint:disable-next-line:no-any
-        sibling = (sibling as any)[direction + 'ElementSibling'];
-    }
-
-    return result;
 }
 
 /**
@@ -134,14 +110,8 @@ export function getCellPosition(
     let i: number;
     let top: number = offset.top.size;
     let left: number = offset.left.size;
-    for (i = indexes[0]; i < offset.top.idx; i++) {
-        top -= getRowsHeight(sheet, i);
-    }
     for (i = offset.top.idx; i < indexes[0]; i++) {
         top += getRowsHeight(sheet, i);
-    }
-    for (i = indexes[1]; i < offset.left.idx; i++) {
-        left -= getColumnsWidth(sheet, i);
     }
     for (i = offset.left.idx; i < indexes[1]; i++) {
         left += getColumnsWidth(sheet, i);
@@ -582,7 +552,7 @@ export function setWidthAndHeight(trgt: HTMLElement, value: number, isCol: boole
  * @hidden 
  */
 export function findMaxValue(table: HTMLElement, text: HTMLElement[], isCol: boolean, parent: Spreadsheet): number {
-    let myTableDiv: HTMLElement = parent.createElement('div', { className: parent.element.className });
+    let myTableDiv: HTMLElement = parent.createElement('div', { className: parent.element.className, styles: 'display: block' });
     let myTable: HTMLElement = parent.createElement('table', {
         className: table.className + 'e-resizetable',
         styles: 'width: auto;height: auto'
@@ -734,6 +704,29 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
             options.eventArgs.isAction = false;
             spreadsheet.notify(setMerge, options.eventArgs);
             break;
+        case 'clear':
+            spreadsheet.notify(clearViewer, { options: options.eventArgs, isPublic: true });
+            break;
+        case 'conditionalFormat':
+            if (isRedo) {
+                let conditionalFormat: ConditionalFormatModel = {
+                    type: eventArgs.type, cFColor: eventArgs.cFColor, value: eventArgs.value,
+                    range: eventArgs.range
+                };
+                spreadsheet.notify(setCFRule, { conditionalFormat: conditionalFormat });
+            } else {
+                spreadsheet.notify(clearCFRule, { range: eventArgs.range });
+            }
+            break;
+        case 'clearCF':
+            if (isRedo) {
+                spreadsheet.notify(clearCFRule, { range: eventArgs.selectedRange });
+            } else {
+                spreadsheet.notify(clearCells, {
+                    conditionalFormats: eventArgs.cFormats,
+                    oldRange: eventArgs.oldRange, selectedRange: eventArgs.selectedRange
+                });
+            }
     }
 }
 

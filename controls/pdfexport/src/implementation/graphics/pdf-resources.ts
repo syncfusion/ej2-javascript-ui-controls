@@ -18,6 +18,8 @@ import { PdfTransparency } from './pdf-transparency';
 import { PdfBitmap } from './../graphics/images/pdf-bitmap';
 import { PdfImage } from './../graphics/images/pdf-image';
 import { PdfStream } from './../primitives/pdf-stream';
+import { PdfGradientBrush } from './brushes/pdf-gradient-brush';
+import { PdfTilingBrush } from './brushes/pdf-tiling-brush';
 /**
  * `PdfResources` class used to set resource contents like font, image.
  * @private
@@ -95,6 +97,8 @@ export class PdfResources extends PdfDictionary {
             if (obj instanceof PdfFont) {
                 this.add(obj, name);
             } else if (obj instanceof PdfTemplate) {
+                this.add(obj, name);
+            } else if (obj instanceof PdfGradientBrush || obj instanceof PdfTilingBrush) {
                 this.add(obj, name);
             } else if (obj instanceof PdfTransparency) {
                 this.add(obj, name);
@@ -212,17 +216,18 @@ export class PdfResources extends PdfDictionary {
             }
             xobjects.items.setValue(arg2.value, new PdfReferenceHolder((<IPdfWrapper>arg1).element));
         } else if (arg1 instanceof PdfBrush) {
-            // let savable : IPdfPrimitive = (arg1 as IPdfWrapper).Element;
-            // if (savable != null)
-            // {
-            //     let pattern : PdfDictionary = this.Items.getValue(this.dictionaryProperties.pattern) as PdfDictionary;
-            //     // Create a new pattern dictionary.
-            //     if (pattern == null) {
-            //         pattern = new PdfDictionary();
-            //         this.Items.setValue(this.dictionaryProperties.pattern, pattern);
-            //     }
-            //     pattern.Items.setValue(name, new PdfReferenceHolder(savable));
-            // }
+            if (arg1 instanceof PdfGradientBrush || arg1 instanceof PdfTilingBrush) {
+                let savable : IPdfPrimitive = (arg1 as IPdfWrapper).element;
+                if (savable != null) {
+                    let pattern : PdfDictionary = this.items.getValue(this.dictionaryProperties.pattern) as PdfDictionary;
+                    // Create a new pattern dictionary.
+                    if (pattern == null) {
+                        pattern = new PdfDictionary();
+                        this.items.setValue(this.dictionaryProperties.pattern, pattern);
+                    }
+                    pattern.items.setValue(arg2.value, new PdfReferenceHolder(savable));
+                }
+            }
         } else if (arg1 instanceof PdfTransparency) {
             let savable : IPdfPrimitive = (arg1 as IPdfWrapper).element;
             let transDic : PdfDictionary = null;

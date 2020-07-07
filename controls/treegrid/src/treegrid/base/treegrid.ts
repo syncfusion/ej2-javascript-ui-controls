@@ -6,7 +6,7 @@ import { BeforeBatchSaveArgs, BeforeBatchAddArgs, BatchDeleteArgs, BeforeBatchDe
 import { GridModel, ColumnQueryModeType, HeaderCellInfoEventArgs, EditSettingsModel as GridEditModel } from '@syncfusion/ej2-grids';
 import {RowDragEventArgs, RowDropEventArgs, RowDropSettingsModel, RowDropSettings, ReturnType, getUid } from '@syncfusion/ej2-grids';
 import { ActionEventArgs } from'@syncfusion/ej2-grids';
-import { DetailDataBoundEventArgs, Row, ClipMode}  from '@syncfusion/ej2-grids';
+import { DetailDataBoundEventArgs, Row, ClipMode, ColumnChooser}  from '@syncfusion/ej2-grids';
 import { SearchEventArgs, AddEventArgs, EditEventArgs, DeleteEventArgs}  from '@syncfusion/ej2-grids';
 import { SaveEventArgs, CellSaveArgs, BatchAddArgs, BatchCancelArgs,  BeginEditArgs, CellEditArgs}  from '@syncfusion/ej2-grids';
 import { FilterSettings } from '../models/filter-settings';
@@ -1548,7 +1548,6 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       return modules;
     }
     public extendRequiredModules(modules: ModuleDeclaration[]): void {
-
       if (this.allowRowDragAndDrop) {
         modules.push({
           member: 'rowDragAndDrop',
@@ -1655,15 +1654,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     }
     this.clipboardModule = this.grid.clipboardModule = new TreeClipboard(this);
   }
- public updateSelectionProperty(): void {
-  if (!isBlazor()) {
-    this.selectedRowIndex = this.grid.selectedRowIndex;
-  } else if (isBlazor() && this.isServerRendered) {
-    this.allowServerDataBinding = false;
-    this.setProperties({ selectedRowIndex: this.grid.selectedRowIndex}, true);
-    this.allowServerDataBinding = true;
-  }
- }
+
   private gridRendered(args: { grid: Grid, id: string }, fn: Function): void {
     if (args.id === this.element.id + '_gridcontrol') {
         this.grid = args.grid;
@@ -1690,10 +1681,6 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     }
     this.wireEvents();
     this.afterGridRender();
-    let updateColTypeObj: string = 'updateColTypeObj';
-    if (!isNullOrUndefined(this.grid.editModule)) {
-      this.grid.editModule[updateColTypeObj]();
-    }
     let processModel: string = 'processModel';
     this.grid[processModel]();
     gridObserver.off('component-rendered', this.gridRendered);
@@ -1781,13 +1768,13 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     this.grid.enableHover = this.enableHover;
     this.grid.enableAutoFill = this.enableAutoFill;
     this.grid.allowRowDragAndDrop = this.allowRowDragAndDrop;
-    this.grid.showColumnChooser = this.showColumnChooser;
     this.grid.rowDropSettings = getActualProperties(this.rowDropSettings);
     this.grid.rowHeight = this.rowHeight;
     this.grid.gridLines = this.gridLines;
     this.grid.allowSelection = this.allowSelection;
     this.grid.toolbar = getActualProperties(this.getGridToolbar());
     this.grid.toolbarTemplate = this.toolbarTemplate;
+    this.grid.showColumnChooser = this.showColumnChooser;
     this.grid.filterSettings = getActualProperties(this.filterSettings);
     this.grid.selectionSettings = getActualProperties(this.selectionSettings);
     this.grid.sortSettings = getActualProperties(this.sortSettings);
@@ -1814,6 +1801,22 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
   }
   private bindGridEvents(): void {
     let treeGrid: TreeGrid = this;
+    this.grid.rowSelecting = this.triggerEvents.bind(this);
+    this.grid.rowSelected = (args: RowDeselectEventArgs): void => {
+      if (!isBlazor()) {
+        this.selectedRowIndex = this.grid.selectedRowIndex;
+      } else if (isBlazor() && this.isServerRendered) {
+        this.allowServerDataBinding = false;
+        this.setProperties({ selectedRowIndex: this.grid.selectedRowIndex}, true);
+        this.allowServerDataBinding = true;
+      }
+      treeGrid.notify(events.rowSelected, args);
+      this.trigger(events.rowSelected, args);
+    };
+    this.grid.rowDeselected = (args: RowDeselectEventArgs): void => {
+      this.selectedRowIndex = this.grid.selectedRowIndex;
+      this.trigger(events.rowDeselected, args);
+    };
     this.grid.resizeStop = (args: ResizeArgs): void => {
       this.updateColumnModel(); this.trigger(events.resizeStop, args);
     };
@@ -1828,25 +1831,18 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     this.grid.checkBoxChange = (args?: CheckBoxChangeEventArgs): void => {
       this.trigger(events.checkboxChange, args);
     };
-    this.grid.cellSelected = (args: CellSelectEventArgs): void => {
-      let cellSelectedArgs: Object;
-      if (isBlazor() && this.isServerRendered) {
-        cellSelectedArgs = { data: args.data, cellIndex: args.cellIndex };
-        this.trigger('cellSelected', cellSelectedArgs);
-      } else {
-        this.trigger('cellSelected', args);
-      }
-    };
     this.grid.pdfExportComplete = this.triggerEvents.bind(this);
     this.grid.excelExportComplete = this.triggerEvents.bind(this);
     this.grid.excelHeaderQueryCellInfo = this.triggerEvents.bind(this);
     this.grid.pdfHeaderQueryCellInfo = this.triggerEvents.bind(this);
     this.grid.dataSourceChanged = this.triggerEvents.bind(this);
     this.grid.recordDoubleClick = this.triggerEvents.bind(this);
+    this.grid.rowDeselecting = this.triggerEvents.bind(this);
     this.grid.cellDeselected = this.triggerEvents.bind(this);
     this.grid.cellDeselecting = this.triggerEvents.bind(this);
     this.grid.columnMenuOpen = this.triggerEvents.bind(this);
     this.grid.columnMenuClick = this.triggerEvents.bind(this);
+    this.grid.cellSelected = this.triggerEvents.bind(this);
     this.grid.headerCellInfo = this.triggerEvents.bind(this);
     this.grid.resizeStart = this.triggerEvents.bind(this);
     this.grid.resizing = this.triggerEvents.bind(this);
@@ -1868,44 +1864,12 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     };
     this.grid.printComplete = this.triggerEvents.bind(this);
     this.grid.actionFailure = this.triggerEvents.bind(this);
-    this.extendedGridRowSelectEvents();
     this.extendedGridDataBoundEvent();
     this.extendedGridEvents();
     this.extendedGridActionEvents();
     this.extendedGridEditEvents();
-    this.extendedGridBatchEvents();
     this.bindGridDragEvents();
     this.bindCallBackEvents();
-  }
-  private extendedGridRowSelectEvents(): void {
-    let treeGrid: TreeGrid = this;
-    this.grid.rowSelecting = (args: RowSelectingEventArgs): void => {
-      if ( isNullOrUndefined(args.target) || !(args.target.classList.contains('e-treegridexpand') ||
-      args.target.classList.contains('e-treegridcollapse'))) {
-        treeGrid.notify(events.rowSelecting, args);
-        this.trigger(events.rowSelecting, args);
-      } else {
-        args.cancel = true;
-      }
-    };
-    this.grid.rowSelected = (args: RowDeselectEventArgs): void => {
-      this.updateSelectionProperty();
-      treeGrid.notify(events.rowSelected, args);
-      this.trigger(events.rowSelected, args);
-    };
-    this.grid.rowDeselected = (args: RowDeselectEventArgs): void => {
-      this.updateSelectionProperty();
-      this.trigger(events.rowDeselected, args);
-    };
-    this.grid.rowDeselecting = (args: RowDeselectEventArgs): void => {
-      if ( isNullOrUndefined(args.target) || !(args.target.classList.contains('e-treegridexpand') ||
-      args.target.classList.contains('e-treegridcollapse'))) {
-        treeGrid.notify(events.rowDeselecting, args);
-        this.trigger(events.rowDeselecting, args);
-      } else {
-        args.cancel = true;
-      }
-    };
   }
   private extendedGridDataBoundEvent(): void {
     let treeGrid: TreeGrid = this;
@@ -2054,25 +2018,11 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
         this.notify(events.cellEdit, args);
         return promise;
     };
-  }
-
-  private extendedGridBatchEvents(): void {
-    let beforeBatchSave: Function;
-    if (isBlazor() && this.isServerRendered) {
-      if (!isNullOrUndefined(this.grid.beforeBatchSave)) {
-        beforeBatchSave = this.grid.beforeBatchSave;
-      }
-    }
     this.grid.batchAdd = (args: BatchAddArgs): void => {
       this.trigger(events.batchAdd, args);
       this.notify(events.batchAdd, args);
     };
     this.grid.beforeBatchSave = (args: BeforeBatchSaveArgs): void => {
-      if (isBlazor() && this.isServerRendered) {
-        if (beforeBatchSave && typeof beforeBatchSave === 'function') {
-          beforeBatchSave.apply(this, [args]);
-        }
-      }
       this.trigger(events.beforeBatchSave, args);
       this.notify(events.beforeBatchSave, args);
     };
@@ -2561,8 +2511,6 @@ private getGridEditSettings(): GridEditModel {
           break;
         case 'frozenRows':
           this.grid.frozenRows = this.frozenRows; break;
-        case 'showColumnChooser':
-          this.grid.showColumnChooser = this.showColumnChooser; break;
         case 'frozenColumns':
           this.grid.frozenColumns = this.frozenColumns; break;
         case 'rowHeight':
@@ -2604,6 +2552,8 @@ private getGridEditSettings(): GridEditModel {
           this.refresh(); break;
         case 'contextMenuItems':
           this.grid.contextMenuItems = this.getContextMenu(); break;
+        case 'showColumnChooser':
+          this.grid.showColumnChooser = this.showColumnChooser; break;
         case 'detailTemplate':
           this.grid.detailTemplate = getActualProperties(this.detailTemplate); break;
         case 'columnMenuItems':
@@ -2781,9 +2731,9 @@ private getGridEditSettings(): GridEditModel {
      */
     public updateRow(index: number, data: Object): void {
       if (this.grid.editModule) {
-        let griddata: Object = this.grid.getCurrentViewRecords()[index];
-        extend(griddata, data);
-        this.grid.editModule.updateRow(index, griddata);
+          let griddata: Object = this.grid.getCurrentViewRecords()[index];
+          extend(griddata, data);
+          this.grid.editModule.updateRow(index, griddata);
       }
   }
 
@@ -2841,6 +2791,18 @@ private getGridEditSettings(): GridEditModel {
     }
   }
 
+  /** 
+   * Column chooser can be displayed on screen by given position(X and Y axis). 
+   * @param  {number} X - Defines the X axis.
+   * @param  {number} Y - Defines the Y axis. 
+   * @return {void}
+   */
+  public openColumnChooser(x?: number, y?: number): void {
+    if (this.columnChooserModule) {
+          this.columnChooserModule.openColumnChooser(x, y);
+    }
+  }
+
   /**
    * Delete any visible row by TR element.
    * @param {HTMLTableRowElement} tr - Defines the table row element.
@@ -2876,33 +2838,32 @@ private getGridEditSettings(): GridEditModel {
      *  @param {string| number} key - Specifies the PrimaryKey value of dataSource.
      *  @param {Object} rowData - To update new data for the particular row.
      */
-    public setRowData(key: string | number, rowData?: object): void {
-    let currentRecords: ITreeData[] = this.getCurrentViewRecords();
-    let primaryKey: string = this.grid.getPrimaryKeyFieldNames()[0];
-    let level: number = 0;
-    let record: ITreeData = {};
-    currentRecords.some((value: ITreeData, i: number, e: ITreeData[]) => {
-      if (value[primaryKey] === key) {
-        record = value;
-        return true;
-      } else {
-        return false;
-      }
-    });
-    level = record.level;
-    let data: ITreeData = rowData;
-    data.level = level;
-    data.index = record.index;
-    data.childRecords = record.childRecords;
-    data.taskData = record.taskData;
-    data.uniqueID = record.uniqueID;
-    data.parentItem = record.parentItem;
-    data.checkboxState = record.checkboxState;
-    data.hasChildRecords = record.hasChildRecords;
-    data.parentUniqueID = record.parentUniqueID;
-    data.expanded = record.expanded;
-    this.grid.setRowData(key, data);
-  }
+    public setRowData(key: string | number, rowData?: ITreeData): void {
+        let currentRecords: ITreeData[] = this.getCurrentViewRecords();
+        let primaryKey: string = this.grid.getPrimaryKeyFieldNames()[0];
+        let level: number = 0;
+        let record: ITreeData = {};
+        currentRecords.some((value: ITreeData, i: number, e: ITreeData[]) => {
+           if (value[primaryKey] === key) {
+               record = value;
+               return true;
+           } else {
+               return false;
+               }
+               });
+        level = record.level;
+        rowData.level = level;
+        rowData.index = record.index;
+        rowData.childRecords = record.childRecords;
+        rowData.taskData = record.taskData;
+        rowData.uniqueID = record.uniqueID;
+        rowData.parentItem = record.parentItem;
+        rowData.checkboxState = record.checkboxState;
+        rowData.hasChildRecords = record.hasChildRecords;
+        rowData.parentUniqueID = record.parentUniqueID;
+        rowData.expanded = record.expanded;
+        this.grid.setRowData(key, rowData);
+        }
 
     /** 
      * Navigates to the specified target page. 
@@ -3132,16 +3093,10 @@ private getGridEditSettings(): GridEditModel {
   }
 
   private updateTreeGridModel() : void {
-    if (isBlazor() && this.isServerRendered) {
-      this.allowServerDataBinding = false;
-    }
-    this.setProperties({ filterSettings: getObject('properties', this.grid.filterSettings) }, true);
-    this.setProperties({ pageSettings: getObject('properties', this.grid.pageSettings) }, true);
-    this.setProperties({ searchSettings: getObject('properties', this.grid.searchSettings) }, true);
-    this.setProperties({ sortSettings: getObject('properties', this.grid.sortSettings) }, true);
-    if (isBlazor() && this.isServerRendered) {
-     this.allowServerDataBinding = true;
-    }
+     this.setProperties({ filterSettings: getObject('properties', this.grid.filterSettings) }, true);
+     this.setProperties({ pageSettings: getObject('properties', this.grid.pageSettings) }, true);
+     this.setProperties({ searchSettings: getObject('properties', this.grid.searchSettings) }, true);
+     this.setProperties({ sortSettings: getObject('properties', this.grid.sortSettings) }, true);
   }
 
     /**
@@ -3468,6 +3423,11 @@ private getGridEditSettings(): GridEditModel {
       });
       if (rows.length) {
         action === 'collapse' ? this.collapseRow(rows[0]) :  this.expandRow(rows[0]);
+      } else {
+        let isExpandCollapseall : boolean = this.enableCollapseAll;
+        this.setProperties({enableCollapseAll: true }, true);
+        this.grid.pagerModule.goToPage(1);
+        this.setProperties({enableCollapseAll: isExpandCollapseall }, true);
       }
     } else {
         for (let i: number = 0; i < rows.length; i++) {
@@ -3954,6 +3914,12 @@ private getGridEditSettings(): GridEditModel {
   public reorderRows(fromIndexes: number[], toIndex: number, position: string): void {
     this.rowDragAndDropModule.reorderRows(fromIndexes, toIndex, position);
   }
+
+  /**
+   * `columnchooserModule` is used to dynamically show or hide the TreeGrid columns.
+   * @hidden
+   */
+  public columnChooserModule: ColumnChooser;
 
   /**
    * The `toolbarModule` is used to manipulate ToolBar items and its action in the TreeGrid.

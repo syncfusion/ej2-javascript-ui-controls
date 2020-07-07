@@ -1,4 +1,4 @@
-import { Animation, Base, ChildProperty, Complex, Component, Draggable, Event, EventHandler, NotifyPropertyChanges, Property, SanitizeHtmlHelper, Touch, addClass, append, attributes, blazorTemplates, closest, compareElementParent, compile, detach, extend, formatUnit, getComponent, getUniqueID, getValue, isBlazor, isNullOrUndefined, isVisible, merge, prepend, remove, removeClass, resetBlazorTemplate, rippleEffect, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Base, ChildProperty, Complex, Component, Draggable, Event, EventHandler, NotifyPropertyChanges, Property, SanitizeHtmlHelper, Touch, addClass, append, attributes, blazorTemplates, closest, compareElementParent, compile, debounce, detach, extend, formatUnit, getComponent, getUniqueID, getValue, isBlazor, isNullOrUndefined, isVisible, merge, prepend, remove, removeClass, resetBlazorTemplate, rippleEffect, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 
@@ -356,7 +356,12 @@ var ListBase;
             var hdr = 'isHeader';
             grpItem[curFields.text] = ds[j].key;
             grpItem[hdr] = true;
-            grpItem.id = 'group-list-item-' + (ds[j].key ?
+            var newtext = curFields.text;
+            if (newtext === 'id') {
+                newtext = 'text';
+                grpItem[newtext] = ds[j].key;
+            }
+            grpItem._id = 'group-list-item-' + (ds[j].key ?
                 ds[j].key.toString().trim() : 'undefined');
             grpItem.items = itemObj;
             dataSource.push(grpItem);
@@ -701,7 +706,8 @@ var ListBase;
         if (typeof item !== 'string' && typeof item !== 'number') {
             dataSource = item;
             text = fieldData[fields.text] || '';
-            uID = fieldData[fields.id];
+            // tslint:disable-next-line
+            uID = (isNullOrUndefined(fieldData['_id'])) ? fieldData[fields.id] : fieldData['_id'];
             grpLI = (item.hasOwnProperty('isHeader') && item.isHeader)
                 ? true : false;
         }
@@ -953,9 +959,13 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
      * Constructor for creating the widget
      */
     function ListView(options, element) {
-        var _this_1 = _super.call(this, options, element) || this;
-        _this_1.itemReRender = false;
-        return _this_1;
+        var _this = _super.call(this, options, element) || this;
+        _this.itemReRender = false;
+        _this.previousSelectedItems = [];
+        _this.hiddenItems = [];
+        _this.enabledItems = [];
+        _this.disabledItems = [];
+        return _this;
     }
     /**
      * @private
@@ -1019,7 +1029,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'showCheckBox':
                 case 'checkBoxPosition':
-                    if (!isBlazor() || !this.isServerRendered || this.enableVirtualization) {
+                    if (!isBlazor() || !this.isServerRendered) {
                         if (this.enableVirtualization) {
                             this.virtualizationModule.reRenderUiVirtualization();
                         }
@@ -1041,7 +1051,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'sortOrder':
                 case 'showIcon':
-                    if (isBlazor() && this.isServerRendered && !this.enableVirtualization) {
+                    if (isBlazor() && this.isServerRendered) {
                         // tslint:disable
                         this.interopAdaptor.invokeMethodAsync('ItemSorting');
                         //tslint:enable
@@ -1102,7 +1112,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
     };
     // Support Component Functions
     ListView.prototype.header = function (text, showBack) {
-        if (isBlazor() && this.isServerRendered && !this.enableVirtualization) {
+        if (isBlazor() && this.isServerRendered) {
             var args = { HeaderText: text, BackButton: showBack };
             // tslint:disable
             this.interopAdaptor.invokeMethodAsync('HeaderTitle', args);
@@ -1168,7 +1178,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
     };
     // Animation Related Functions
     ListView.prototype.switchView = function (fromView, toView, reverse) {
-        var _this_1 = this;
+        var _this = this;
         if (fromView && toView) {
             var fPos_1 = fromView.style.position;
             var overflow_1 = (this.element.style.overflow !== 'hidden') ? this.element.style.overflow : '';
@@ -1192,7 +1202,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
                 timingFunction: this.animation.easing,
                 end: function (model) {
                     fromView.style.display = 'none';
-                    _this_1.element.style.overflow = overflow_1;
+                    _this.element.style.overflow = overflow_1;
                     fromView.style.position = fPos_1;
                     fromView.classList.remove('e-view');
                 }
@@ -1203,7 +1213,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
                 duration: duration,
                 timingFunction: this.animation.easing,
                 end: function () {
-                    _this_1.trigger('actionComplete');
+                    _this.trigger('actionComplete');
                 }
             });
             this.curUL = toView;
@@ -1227,7 +1237,34 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         };
         this.initialization();
     };
+    ListView.prototype.updateLiELementHeight = function () {
+        var liContainer = this.element.querySelector('#virtualUlContainer');
+        if (liContainer.children[0]) {
+            this.liElementHeight = liContainer.children[0].getBoundingClientRect().height;
+            // tslint:disable
+            this.interopAdaptor.invokeMethodAsync('LiElementHeight', this.liElementHeight);
+            // tslint:enable
+        }
+    };
     ListView.prototype.initialization = function () {
+        if (isBlazor() && this.isServerRendered && this.enableVirtualization) {
+            var ulContainer = this.element.querySelector('#virtualUlContainer');
+            if (ulContainer !== null) {
+                if (this.height === '') {
+                    // tslint:disable
+                    this.interopAdaptor.invokeMethodAsync('SetComponentHeight', window.innerHeight);
+                    // tslint:enable
+                    this.isWindow = true;
+                    ulContainer.scrollIntoView();
+                }
+                if (ulContainer.children[0]) {
+                    this.liElementHeight = ulContainer.children[0].getBoundingClientRect().height;
+                    // tslint:disable
+                    this.interopAdaptor.invokeMethodAsync('LiElementHeight', this.liElementHeight);
+                    // tslint:enable
+                }
+            }
+        }
         this.curDSLevel = [];
         this.animateOptions = {};
         this.curViewDS = [];
@@ -1282,7 +1319,8 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
                 args.item.firstElementChild.appendChild(checkboxElement);
             }
             this.currentLiElements.push(args.item);
-            this.checkBoxPosition == "Left" ? this.virtualCheckBox = args.item.firstElementChild.children[0] : this.virtualCheckBox = args.item.firstElementChild.lastElementChild;
+            this.checkBoxPosition === 'Left' ? this.virtualCheckBox = args.item.firstElementChild.children[0] :
+                this.virtualCheckBox = args.item.firstElementChild.lastElementChild;
         }
     };
     ListView.prototype.checkInternally = function (args, checkboxElement) {
@@ -1448,8 +1486,45 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
                 this.setSelectLI(li, e);
             }
             if (e.target.closest('li')) {
-                if (e.target.closest('li').classList.contains('e-has-child') && !e.target.parentElement.classList.contains('e-listview-checkbox')) {
+                if (e.target.closest('li').classList.contains('e-has-child') &&
+                    !e.target.parentElement.classList.contains('e-listview-checkbox')) {
                     e.target.closest('li').classList.add(classNames.disable);
+                }
+            }
+        }
+        if (isBlazor() && this.isServerRendered && this.enableVirtualization) {
+            var ulElementContainer = this.element.querySelector('#virtualUlContainer');
+            if (ulElementContainer.querySelector('.e-active')) {
+                // tslint:disable-next-line:no-any
+                var selectedElements = ulElementContainer.querySelectorAll('.e-active');
+                // tslint:enable-next-line:no-any
+                if (this.showCheckBox) {
+                    for (var i = 0; i < selectedElements.length; i++) {
+                        // tslint:disable-next-line:no-any
+                        if (!this.previousSelectedItems.includes(selectedElements[i].getAttribute('data-uid'))) {
+                            this.previousSelectedItems.push(selectedElements[i].getAttribute('data-uid'));
+                        }
+                        // tslint:enable-next-line:no-any
+                    }
+                }
+                else {
+                    this.previousSelectedItems[0] = (ulElementContainer.querySelector('.e-active').getAttribute('data-uid'));
+                }
+            }
+            if (ulElementContainer.querySelector('.e-focused')) {
+                // tslint:disable-next-line:no-any
+                var focusElement = ulElementContainer.querySelector('.e-focused');
+                // tslint:enable-next-line:no-any
+                if (!focusElement.classList.contains('e-active')) {
+                    var focusElementId = focusElement.getAttribute('data-uid');
+                    // tslint:disable-next-line:no-any
+                    if (this.previousSelectedItems.includes(focusElementId)) {
+                        var selectedElement1 = this.previousSelectedItems.slice(0, this.previousSelectedItems.indexOf(focusElementId));
+                        var selectedElement2 = this.previousSelectedItems.
+                            slice(this.previousSelectedItems.indexOf(focusElementId) + 1, this.previousSelectedItems.length);
+                        this.previousSelectedItems = selectedElement1.concat(selectedElement2);
+                    }
+                    // tslint:enable-next-line:no-any
                 }
             }
         }
@@ -1530,7 +1605,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         return siblingLI;
     };
     ListView.prototype.arrowKeyHandler = function (e, prev) {
-        var _this_1 = this;
+        var _this = this;
         e.preventDefault();
         if (Object.keys(this.dataSource).length && this.curUL) {
             var siblingLI = this.onArrowKeyDown(e, prev);
@@ -1564,8 +1639,8 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
             }
             else if (this.enableVirtualization && prev && this.virtualizationModule.uiFirstIndex) {
                 this.onUIScrolled = function () {
-                    _this_1.onArrowKeyDown(e, prev);
-                    _this_1.onUIScrolled = undefined;
+                    _this.onArrowKeyDown(e, prev);
+                    _this.onUIScrolled = undefined;
                 };
                 heightDiff = this.virtualizationModule.listItemHeight;
                 this.isWindow ? window.scroll(0, pageYOffset - heightDiff) :
@@ -1647,7 +1722,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         }
     };
     ListView.prototype.swipeActionHandler = function (e) {
-        if (e.swipeDirection === 'Right' && e.velocity > swipeVelocity && e.originalEvent.type == "touchend") {
+        if (e.swipeDirection === 'Right' && e.velocity > swipeVelocity && e.originalEvent.type === 'touchend') {
             if (this.showCheckBox && this.curDSLevel[this.curDSLevel.length - 1]) {
                 this.uncheckAllItems();
             }
@@ -1851,30 +1926,30 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         return this.findItemFromDS(curDS, fields);
     };
     ListView.prototype.findItemFromDS = function (dataSource, fields, parent) {
-        var _this_1 = this;
+        var _this = this;
         var resultJSON;
         if (dataSource && dataSource.length && fields) {
             dataSource.some(function (data) {
-                var fieldData = getFieldValues(data, _this_1.listBaseOption.fields);
+                var fieldData = getFieldValues(data, _this.listBaseOption.fields);
                 //(!(fid) || id === fid) && (!(ftext) || text === ftext) && (!!fid || !!ftext)
-                if ((fields[_this_1.fields.id] || fields[_this_1.fields.text]) &&
-                    (!fields[_this_1.fields.id] || (!isNullOrUndefined(fieldData[_this_1.fields.id]) &&
-                        fieldData[_this_1.fields.id].toString()) === fields[_this_1.fields.id].toString()) &&
-                    (!fields[_this_1.fields.text] || fieldData[_this_1.fields.text] === fields[_this_1.fields.text])) {
+                if ((fields[_this.fields.id] || fields[_this.fields.text]) &&
+                    (!fields[_this.fields.id] || (!isNullOrUndefined(fieldData[_this.fields.id]) &&
+                        fieldData[_this.fields.id].toString()) === fields[_this.fields.id].toString()) &&
+                    (!fields[_this.fields.text] || fieldData[_this.fields.text] === fields[_this.fields.text])) {
                     resultJSON = (parent ? dataSource : data);
                 }
                 else if (typeof data !== 'object' && dataSource.indexOf(data) !== -1) {
                     resultJSON = (parent ? dataSource : data);
                 }
-                else if (!isNullOrUndefined(fields[_this_1.fields.id]) && isNullOrUndefined(fieldData[_this_1.fields.id])) {
-                    var li = _this_1.element.querySelector('[data-uid="'
-                        + fields[_this_1.fields.id] + '"]');
-                    if (li && li.innerText.trim() === fieldData[_this_1.fields.text]) {
+                else if (!isNullOrUndefined(fields[_this.fields.id]) && isNullOrUndefined(fieldData[_this.fields.id])) {
+                    var li = _this.element.querySelector('[data-uid="'
+                        + fields[_this.fields.id] + '"]');
+                    if (li && li.innerText.trim() === fieldData[_this.fields.text]) {
                         resultJSON = data;
                     }
                 }
-                else if (fieldData.hasOwnProperty(_this_1.fields.child) && fieldData[_this_1.fields.child].length) {
-                    resultJSON = _this_1.findItemFromDS(fieldData[_this_1.fields.child], fields, parent);
+                else if (fieldData.hasOwnProperty(_this.fields.child) && fieldData[_this.fields.child].length) {
+                    resultJSON = _this.findItemFromDS(fieldData[_this.fields.child], fields, parent);
                 }
                 return !!resultJSON;
             });
@@ -1925,25 +2000,25 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         return this.curUL.classList.contains('.e-animate');
     };
     ListView.prototype.setLocalData = function () {
-        var _this_1 = this;
-        this.trigger('actionBegin');
         var _this = this;
+        this.trigger('actionBegin');
+        var listViewComponent = this;
         if (this.dataSource instanceof DataManager) {
             this.dataSource.executeQuery(this.getQuery()).then(function (e) {
-                if (_this_1.isDestroyed) {
+                if (_this.isDestroyed) {
                     return;
                 }
-                _this_1.localData = e.result;
-                if (_this.enableVirtualization || !_this_1.isServerRendered || (!isBlazor())) {
-                    _this.removeElement(_this.contentContainer);
+                _this.localData = e.result;
+                if (!_this.isServerRendered || (!isBlazor())) {
+                    listViewComponent.removeElement(listViewComponent.contentContainer);
                 }
-                _this_1.renderList();
-                _this_1.trigger('actionComplete', e);
+                _this.renderList();
+                _this.trigger('actionComplete', e);
             }).catch(function (e) {
-                if (_this_1.isDestroyed) {
+                if (_this.isDestroyed) {
                     return;
                 }
-                _this_1.trigger('actionFailure', e);
+                _this.trigger('actionFailure', e);
             });
         }
         else if (!this.dataSource || !this.dataSource.length) {
@@ -2041,6 +2116,88 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
             // tslint:enable
         }
     };
+    ListView.prototype.removeActiveClass = function () {
+        var _this = this;
+        var listViewComponent = this;
+        setTimeout(function () {
+            for (var i = 0; i < _this.element.querySelector('#virtualUlContainer').childElementCount; i++) {
+                var selectedElement = _this.element.querySelector('#virtualUlContainer').children[i];
+                var elementIndex = void 0;
+                var hiddenElementIndex = void 0;
+                if (listViewComponent.showCheckBox) {
+                    if (listViewComponent.previousSelectedItems.length > 0) {
+                        for (var j = 0; j < listViewComponent.previousSelectedItems.length; j++) {
+                            if (selectedElement.getAttribute('data-uid') === listViewComponent.previousSelectedItems[j]) {
+                                selectedElement.classList.add('e-active');
+                                selectedElement.setAttribute('aria-selected', 'true');
+                                if (selectedElement.querySelector('.e-frame.e-icons')) {
+                                    selectedElement.querySelector('.e-frame.e-icons').classList.add('e-check');
+                                }
+                                elementIndex = i;
+                            }
+                            else {
+                                if (elementIndex !== i) {
+                                    selectedElement.classList.remove('e-active');
+                                    selectedElement.removeAttribute('aria-selected');
+                                    if (selectedElement.querySelector('.e-check')) {
+                                        selectedElement.querySelector('.e-check').classList.remove('e-check');
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        selectedElement.classList.remove('e-active');
+                        selectedElement.removeAttribute('aria-selected');
+                        if (selectedElement.querySelector('.e-check')) {
+                            selectedElement.querySelector('.e-check').classList.remove('e-check');
+                        }
+                    }
+                }
+                else {
+                    if (selectedElement.getAttribute('data-uid') === listViewComponent.previousSelectedItems[0]) {
+                        selectedElement.classList.add('e-active');
+                        selectedElement.setAttribute('aria-selected', 'true');
+                    }
+                    else {
+                        selectedElement.classList.remove('e-active');
+                        selectedElement.removeAttribute('aria-selected');
+                    }
+                }
+                if (listViewComponent.hiddenItems.length > 0) {
+                    for (var k = 0; k < listViewComponent.hiddenItems.length; k++) {
+                        if (selectedElement.getAttribute('data-uid') === listViewComponent.previousSelectedItems[k]) {
+                            selectedElement.style.display = 'none';
+                            hiddenElementIndex = i;
+                        }
+                        else {
+                            if (hiddenElementIndex !== i) {
+                                selectedElement.style.display = null;
+                            }
+                        }
+                    }
+                }
+                if (listViewComponent.enabledItems.length > 0) {
+                    for (var x = 0; x < listViewComponent.enabledItems.length; x++) {
+                        if (selectedElement.getAttribute('data-uid') === listViewComponent.enabledItems[x]) {
+                            if (selectedElement.classList.contains('e-disabled')) {
+                                selectedElement.classList.remove('e-disabled');
+                            }
+                        }
+                    }
+                }
+                if (listViewComponent.disabledItems.length > 0) {
+                    for (var y = 0; y < listViewComponent.disabledItems.length; y++) {
+                        if (selectedElement.getAttribute('data-uid') === listViewComponent.disabledItems[y]) {
+                            if (!selectedElement.classList.contains('e-disabled')) {
+                                selectedElement.classList.add('e-disabled');
+                            }
+                        }
+                    }
+                }
+            }
+        }, 200);
+    };
     ListView.prototype.renderingNestedList = function () {
         var ul = closest(this.liElement.parentNode, '.' + classNames.parentItem);
         var ctrlId = this.element.id;
@@ -2059,7 +2216,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
             this.setViewDataSource(this.getSubDS());
             if (!ele) {
                 var data = this.curViewDS;
-                if (isBlazor() && this.isServerRendered && !this.enableVirtualization) {
+                if (isBlazor() && this.isServerRendered) {
                     // tslint:disable
                     this.interopAdaptor.invokeMethodAsync('ListChildDataSource', data);
                     // tslint:enable
@@ -2093,13 +2250,15 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         if (!isBlazor() || !this.isServerRendered || this.enableVirtualization) {
             if (this.enableVirtualization) {
                 if (Object.keys(this.dataSource).length) {
-                    if ((this.template || this.groupTemplate) && !this.virtualizationModule.isNgTemplate()) {
-                        this.listBaseOption.template = null;
-                        this.listBaseOption.groupTemplate = null;
-                        this.listBaseOption.itemCreated = this.virtualizationModule.createUIItem.bind(this.virtualizationModule);
+                    if (!(isBlazor() && this.isServerRendered)) {
+                        if ((this.template || this.groupTemplate) && !this.virtualizationModule.isNgTemplate()) {
+                            this.listBaseOption.template = null;
+                            this.listBaseOption.groupTemplate = null;
+                            this.listBaseOption.itemCreated = this.virtualizationModule.createUIItem.bind(this.virtualizationModule);
+                        }
                     }
-                    this.virtualizationModule.uiVirtualization();
                 }
+                this.virtualizationModule.uiVirtualization();
             }
             else {
                 this.createList();
@@ -2123,7 +2282,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
      * Initializes the ListView component rendering.
      */
     ListView.prototype.render = function () {
-        if (!isBlazor() || !this.isServerRendered || this.enableVirtualization) {
+        if (!isBlazor() || !this.isServerRendered) {
             this.element.classList.add(classNames.root);
             attributes(this.element, { role: 'list', tabindex: '0' });
             this.setCSSClass();
@@ -2192,7 +2351,12 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
             toUL = this.curUL;
         }
         else {
-            toUL = toUL.parentElement;
+            if (isBlazor() && this.isServerRendered && this.enableVirtualization) {
+                toUL = toUL.parentElement.parentElement.parentElement;
+            }
+            else {
+                toUL = toUL.parentElement;
+            }
         }
         var fieldData = getFieldValues(this.curDSJSON, this.listBaseOption.fields);
         var text = fieldData[this.fields.text];
@@ -2644,7 +2808,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         }
     };
     ListView.prototype.removeItemFromList = function (obj, listDataSource) {
-        var _this_1 = this;
+        var _this = this;
         var curViewDS = this.curViewDS;
         var fields = obj instanceof Element ? this.getElementUID(obj) : obj;
         var dataSource;
@@ -2673,7 +2837,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
             }
             // tslint:disable-next-line:no-any
             var foundData = (dataSource.length - 1) <= 0
-                ? this.findParent(this.localData, this.fields.id, function (value) { return value === data_1[_this_1.fields.id]; }, null) : null;
+                ? this.findParent(this.localData, this.fields.id, function (value) { return value === data_1[_this.fields.id]; }, null) : null;
             var dsIndex = dataSource.indexOf(data_1);
             dataSource.splice(dsIndex, 1);
             this.setViewDataSource(listDataSource);
@@ -2835,6 +2999,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
 
 var Virtualization = /** @__PURE__ @class */ (function () {
     function Virtualization(instance) {
+        this.elementDifference = 0;
         this.listViewInstance = instance;
     }
     /**
@@ -2851,10 +3016,12 @@ var Virtualization = /** @__PURE__ @class */ (function () {
     Virtualization.prototype.uiVirtualization = function () {
         var curViewDS = this.listViewInstance.curViewDS;
         var firstDs = curViewDS.slice(0, 1);
-        this.listViewInstance.ulElement = this.listViewInstance.curUL = ListBase.createList(this.listViewInstance.createElement, firstDs, this.listViewInstance.listBaseOption);
-        this.listViewInstance.contentContainer = this.listViewInstance.createElement('div', { className: classNames.content });
-        this.listViewInstance.element.appendChild(this.listViewInstance.contentContainer);
-        this.listViewInstance.contentContainer.appendChild(this.listViewInstance.ulElement);
+        if (!(isBlazor() || this.listViewInstance.isServerRendered)) {
+            this.listViewInstance.ulElement = this.listViewInstance.curUL = ListBase.createList(this.listViewInstance.createElement, firstDs, this.listViewInstance.listBaseOption);
+            this.listViewInstance.contentContainer = this.listViewInstance.createElement('div', { className: classNames.content });
+            this.listViewInstance.element.appendChild(this.listViewInstance.contentContainer);
+            this.listViewInstance.contentContainer.appendChild(this.listViewInstance.ulElement);
+        }
         this.listItemHeight = this.listViewInstance.ulElement.firstElementChild.getBoundingClientRect().height;
         this.expectedDomItemCount = this.ValidateItemCount(10000);
         this.domItemCount = this.ValidateItemCount(Object.keys(this.listViewInstance.curViewDS).length);
@@ -2862,34 +3029,78 @@ var Virtualization = /** @__PURE__ @class */ (function () {
         this.uiLastIndex = this.domItemCount - 1;
         this.wireScrollEvent(false);
         var otherDs = curViewDS.slice(1, this.domItemCount);
-        var listItems = ListBase.createListItemFromJson(this.listViewInstance.createElement, otherDs, this.listViewInstance.listBaseOption);
-        append(listItems, this.listViewInstance.ulElement);
-        this.listViewInstance.liCollection = this.listViewInstance.curUL.querySelectorAll('li');
-        this.topElement = this.listViewInstance.createElement('div');
-        this.listViewInstance.ulElement.insertBefore(this.topElement, this.listViewInstance.ulElement.firstElementChild);
-        this.bottomElement = this.listViewInstance.createElement('div');
-        this.listViewInstance.ulElement.insertBefore(this.bottomElement, null);
-        this.totalHeight = (Object.keys(curViewDS).length * this.listItemHeight) - (this.domItemCount * this.listItemHeight);
-        this.topElement.style.height = 0 + 'px';
-        this.bottomElement.style.height = this.totalHeight + 'px';
-        this.topElementHeight = 0;
-        this.bottomElementHeight = this.totalHeight;
+        if (!(isBlazor() || this.listViewInstance.isServerRendered)) {
+            var listItems = ListBase.createListItemFromJson(this.listViewInstance.createElement, otherDs, this.listViewInstance.listBaseOption);
+            append(listItems, this.listViewInstance.ulElement);
+            this.listViewInstance.liCollection = this.listViewInstance.curUL.querySelectorAll('li');
+            this.topElement = this.listViewInstance.createElement('div');
+            this.listViewInstance.ulElement.insertBefore(this.topElement, this.listViewInstance.ulElement.firstElementChild);
+            this.bottomElement = this.listViewInstance.createElement('div');
+            this.listViewInstance.ulElement.insertBefore(this.bottomElement, null);
+            this.totalHeight = (Object.keys(curViewDS).length * this.listItemHeight) - (this.domItemCount * this.listItemHeight);
+            this.topElement.style.height = 0 + 'px';
+            this.bottomElement.style.height = this.totalHeight + 'px';
+            this.topElementHeight = 0;
+            this.bottomElementHeight = this.totalHeight;
+        }
+        else {
+            this.listViewInstance.contentContainer = this.listViewInstance.element.querySelector('.e-content');
+            this.listViewInstance.liCollection = this.listViewInstance.curUL.querySelectorAll('li');
+        }
         this.listDiff = 0;
         this.uiIndicesInitialization();
     };
     Virtualization.prototype.wireScrollEvent = function (destroy) {
         if (!destroy) {
-            if (this.listViewInstance.isWindow) {
-                this.onVirtualScroll = this.onVirtualUiScroll.bind(this);
-                window.addEventListener('scroll', this.onVirtualScroll);
+            if (!(isBlazor() && this.listViewInstance.isServerRendered)) {
+                if (this.listViewInstance.isWindow) {
+                    this.onVirtualScroll = this.onVirtualUiScroll.bind(this);
+                    window.addEventListener('scroll', this.onVirtualScroll);
+                }
+                else {
+                    EventHandler.add(this.listViewInstance.element, 'scroll', this.onVirtualUiScroll, this);
+                }
             }
             else {
-                EventHandler.add(this.listViewInstance.element, 'scroll', this.onVirtualUiScroll, this);
+                if (this.listViewInstance.isWindow) {
+                    // tslint:disable-next-line:no-any
+                    this.onVirtualScroll = debounce(this.onVirtualUiScroll.bind(this), 350);
+                    // tslint:enable-next-line:no-any      
+                    this.updateUl = this.updateUlContainer.bind(this);
+                    window.addEventListener('scroll', this.onVirtualScroll);
+                    window.addEventListener('scroll', this.updateUl);
+                }
+                else {
+                    EventHandler.add(this.listViewInstance.element, 'scroll', debounce(this.onVirtualUiScroll, 350), this);
+                    EventHandler.add(this.listViewInstance.element, 'scroll', this.updateUlContainer, this);
+                }
             }
         }
         else {
             this.listViewInstance.isWindow ? window.removeEventListener('scroll', this.onVirtualScroll) :
                 EventHandler.remove(this.listViewInstance.element, 'scroll', this.onVirtualUiScroll);
+            this.listViewInstance.isWindow ? window.removeEventListener('scroll', this.updateUl) :
+                EventHandler.remove(this.listViewInstance.element, 'scroll', this.updateUlContainer);
+        }
+    };
+    Virtualization.prototype.updateUlContainer = function (e) {
+        var listDiff;
+        if (this.listViewInstance.isWindow) {
+            // tslint:disable-next-line:no-any
+            listDiff = Math.round(e.target.documentElement.scrollTop / this.listViewInstance.liElementHeight) - 2;
+            // tslint:enable-next-line:no-any  
+        }
+        else {
+            // tslint:disable-next-line:no-any
+            listDiff = Math.round(e.target.scrollTop / this.listViewInstance.liElementHeight) - 2;
+            // tslint:enable-next-line:no-any  
+        }
+        var virtualElementContainer = this.listViewInstance.ulElement.children[0].children[0];
+        if (((listDiff - 1) * this.listViewInstance.liElementHeight) < 0) {
+            virtualElementContainer.style.top = '0px';
+        }
+        else {
+            virtualElementContainer.style.top = (listDiff) * this.listViewInstance.liElementHeight + 'px';
         }
     };
     Virtualization.prototype.ValidateItemCount = function (dataSourceLength) {
@@ -2916,17 +3127,23 @@ var Virtualization = /** @__PURE__ @class */ (function () {
         if (this.isNgTemplate()) {
             var items = this.listViewInstance.element.querySelectorAll('.' + classNames.listItem);
             for (var index = 0; index < items.length; index++) {
-                items[index].context = this.listViewInstance.viewContainerRef._embeddedViews[index].context;
+                items[index].context = this.listViewInstance.viewContainerRef.get(index).context;
             }
         }
     };
     Virtualization.prototype.refreshItemHeight = function () {
         if (this.listViewInstance.curViewDS.length) {
             var curViewDS = this.listViewInstance.curViewDS;
-            this.listItemHeight = this.topElement.nextSibling.getBoundingClientRect().height;
-            this.totalHeight = (Object.keys(curViewDS).length * this.listItemHeight) - (this.domItemCount * this.listItemHeight);
-            this.bottomElementHeight = this.totalHeight;
-            this.bottomElement.style.height = this.totalHeight + 'px';
+            if (isBlazor() && this.listViewInstance.isServerRendered) {
+                this.listViewInstance.ulElement.children[0].style.height =
+                    (this.listViewInstance.liElementHeight * (Object.keys(curViewDS).length)) + 'px';
+            }
+            else {
+                this.listItemHeight = this.topElement.nextSibling.getBoundingClientRect().height;
+                this.totalHeight = (Object.keys(curViewDS).length * this.listItemHeight) - (this.domItemCount * this.listItemHeight);
+                this.bottomElementHeight = this.totalHeight;
+                this.bottomElement.style.height = this.totalHeight + 'px';
+            }
         }
     };
     Virtualization.prototype.getscrollerHeight = function (startingHeight) {
@@ -2934,7 +3151,7 @@ var Virtualization = /** @__PURE__ @class */ (function () {
             (pageYOffset - startingHeight)) : ((this.listViewInstance.element.scrollTop - startingHeight) <= 0) ? 0 :
             (this.listViewInstance.element.scrollTop - startingHeight);
     };
-    Virtualization.prototype.onVirtualUiScroll = function () {
+    Virtualization.prototype.onVirtualUiScroll = function (e) {
         var _a;
         var startingHeight;
         if (this.listViewInstance.isWindow) {
@@ -2950,25 +3167,52 @@ var Virtualization = /** @__PURE__ @class */ (function () {
         this.bottomElementHeight = this.totalHeight - this.topElementHeight;
         _a = scroll <= this.totalHeight ?
             [this.topElementHeight, this.bottomElementHeight] : [this.totalHeight, 0], this.topElementHeight = _a[0], this.bottomElementHeight = _a[1];
-        if (this.topElementHeight !== parseFloat(this.topElement.style.height)) {
-            this.topElement.style.height = this.topElementHeight + 'px';
-            this.bottomElement.style.height = this.bottomElementHeight + 'px';
-            if (scroll > this.scrollPosition) {
-                var listDiff = Math.round(((this.topElementHeight / this.listItemHeight) - this.listDiff));
-                if (listDiff > (this.expectedDomItemCount + 5)) {
-                    this.onLongScroll(listDiff, true);
-                }
-                else {
-                    this.onNormalScroll(listDiff, true);
+        if (isBlazor() && this.listViewInstance.isServerRendered) {
+            var listDiff = void 0;
+            if (!isNullOrUndefined(this.listViewInstance.liElementHeight)) {
+                var ulContainer = this.listViewInstance.element.querySelector('#virtualUlContainer');
+                if (ulContainer.children[0]) {
+                    this.listViewInstance.liElementHeight = ulContainer.children[0].getBoundingClientRect().height;
                 }
             }
+            if (this.listViewInstance.isWindow) {
+                listDiff = Math.round(document.documentElement.scrollTop / this.listViewInstance.liElementHeight);
+            }
             else {
-                var listDiff = Math.round((this.listDiff - (this.topElementHeight / this.listItemHeight)));
-                if (listDiff > (this.expectedDomItemCount + 5)) {
-                    this.onLongScroll(listDiff, false);
+                // tslint:disable-next-line:no-any
+                listDiff = Math.round(e.target.scrollTop / this.listViewInstance.liElementHeight);
+                // tslint:enable-next-line:no-any
+            }
+            if ((listDiff - 2) - this.elementDifference >= 3 || (listDiff - 2) - this.elementDifference <= -1) {
+                var args = { listDiff: listDiff - 2, selectedItems: this.listViewInstance.previousSelectedItems };
+                this.listViewInstance.interopAdaptor.invokeMethodAsync('VirtalScrolling', args);
+                if (this.listViewInstance.ulElement.querySelector('.e-focused')) {
+                    this.listViewInstance.ulElement.querySelector('.e-focused').classList.remove('e-focused');
+                }
+                this.elementDifference = listDiff - 2;
+            }
+        }
+        else {
+            if (this.topElementHeight !== parseFloat(this.topElement.style.height)) {
+                this.topElement.style.height = this.topElementHeight + 'px';
+                this.bottomElement.style.height = this.bottomElementHeight + 'px';
+                if (scroll > this.scrollPosition) {
+                    var listDiff = Math.round(((this.topElementHeight / this.listItemHeight) - this.listDiff));
+                    if (listDiff > (this.expectedDomItemCount + 5)) {
+                        this.onLongScroll(listDiff, true);
+                    }
+                    else {
+                        this.onNormalScroll(listDiff, true);
+                    }
                 }
                 else {
-                    this.onNormalScroll(listDiff, false);
+                    var listDiff = Math.round((this.listDiff - (this.topElementHeight / this.listItemHeight)));
+                    if (listDiff > (this.expectedDomItemCount + 5)) {
+                        this.onLongScroll(listDiff, false);
+                    }
+                    else {
+                        this.onNormalScroll(listDiff, false);
+                    }
                 }
             }
             this.listDiff = Math.round(this.topElementHeight / this.listItemHeight);
@@ -3156,6 +3400,14 @@ var Virtualization = /** @__PURE__ @class */ (function () {
                 }
             }
             else {
+                if (isBlazor() && this.listViewInstance.isServerRendered) {
+                    var scrollDiff = Math.round(this.listViewInstance.element.scrollTop /
+                        this.listViewInstance.liElementHeight) - 2;
+                    if (scrollDiff < 0) {
+                        scrollDiff = 0;
+                    }
+                    this.activeIndex += scrollDiff;
+                }
                 var curViewDS_2 = this.listViewInstance.curViewDS;
                 var text = this.listViewInstance.fields.text;
                 if (this.listViewInstance.showCheckBox) {
@@ -3248,35 +3500,117 @@ var Virtualization = /** @__PURE__ @class */ (function () {
             this.listViewInstance.removeSelect();
             this.activeIndex = undefined;
         }
+        if (isBlazor() && this.listViewInstance.isServerRendered) {
+            // tslint:disable-next-line:no-any
+            var elementId = resutJSON.data[this.listViewInstance.fields.id];
+            // tslint:enable-next-line:no-any
+            if (this.listViewInstance.showCheckBox) {
+                if (!this.listViewInstance.previousSelectedItems.includes(elementId)) {
+                    this.listViewInstance.previousSelectedItems.push(elementId);
+                }
+                else {
+                    var indexPosition = this.listViewInstance.previousSelectedItems.indexOf(elementId);
+                    if (indexPosition > -1) {
+                        this.listViewInstance.previousSelectedItems.splice(indexPosition, 1);
+                    }
+                }
+            }
+            else {
+                this.listViewInstance.previousSelectedItems[0] = elementId;
+            }
+            this.listViewInstance.removeActiveClass();
+        }
     };
     Virtualization.prototype.enableItem = function (obj) {
         var resutJSON = this.findDSAndIndexFromId(this.listViewInstance.curViewDS, obj);
-        if (Object.keys(resutJSON).length) {
-            this.uiIndices.disabledItemIndices.splice(this.uiIndices.disabledItemIndices.indexOf(resutJSON.index), 1);
+        if (isBlazor() && this.listViewInstance.isServerRendered) {
+            var itemId = resutJSON.data[this.listViewInstance.fields.id];
+            if (!this.listViewInstance.enabledItems.includes(itemId)) {
+                this.listViewInstance.enabledItems.push(itemId);
+                this.listViewInstance.removeActiveClass();
+            }
+            if (this.listViewInstance.disabledItems.includes(itemId)) {
+                var indexPosition = this.listViewInstance.disabledItems.indexOf(itemId);
+                if (indexPosition > -1) {
+                    this.listViewInstance.disabledItems.splice(indexPosition, 1);
+                }
+            }
+        }
+        else {
+            if (Object.keys(resutJSON).length) {
+                this.uiIndices.disabledItemIndices.splice(this.uiIndices.disabledItemIndices.indexOf(resutJSON.index), 1);
+            }
         }
     };
     Virtualization.prototype.disableItem = function (obj) {
         var resutJSON = this.findDSAndIndexFromId(this.listViewInstance.curViewDS, obj);
-        if (Object.keys(resutJSON).length && this.uiIndices.disabledItemIndices.indexOf(resutJSON.index) === -1) {
-            this.uiIndices.disabledItemIndices.push(resutJSON.index);
+        if (isBlazor() && this.listViewInstance.isServerRendered) {
+            var liElementId = resutJSON.data[this.listViewInstance.fields.id];
+            if (!this.listViewInstance.disabledItems.includes(liElementId)) {
+                this.listViewInstance.disabledItems.push(liElementId);
+                this.listViewInstance.removeActiveClass();
+            }
+            if (this.listViewInstance.enabledItems.includes(liElementId)) {
+                var indexPosition = this.listViewInstance.enabledItems.indexOf(liElementId);
+                if (indexPosition > -1) {
+                    this.listViewInstance.enabledItems.splice(indexPosition, 1);
+                }
+            }
+        }
+        else {
+            if (Object.keys(resutJSON).length && this.uiIndices.disabledItemIndices.indexOf(resutJSON.index) === -1) {
+                this.uiIndices.disabledItemIndices.push(resutJSON.index);
+            }
         }
     };
     Virtualization.prototype.showItem = function (obj) {
         var resutJSON = this.findDSAndIndexFromId(this.listViewInstance.curViewDS, obj);
-        if (Object.keys(resutJSON).length) {
-            this.uiIndices.hiddenItemIndices.splice(this.uiIndices.hiddenItemIndices.indexOf(resutJSON.index), 1);
+        if (isBlazor() && this.listViewInstance.isServerRendered) {
+            // tslint:disable-next-line:no-any
+            var hiddenElementId = resutJSON.data[this.listViewInstance.fields.id];
+            // tslint:enable-next-line:no-any
+            if (this.listViewInstance.hiddenItems.includes(hiddenElementId)) {
+                var indexPosition = this.listViewInstance.hiddenItems.indexOf(hiddenElementId);
+                if (indexPosition > -1) {
+                    this.listViewInstance.previousSelectedItems.splice(indexPosition, 1);
+                    this.listViewInstance.removeActiveClass();
+                }
+            }
+        }
+        else {
+            if (Object.keys(resutJSON).length) {
+                this.uiIndices.hiddenItemIndices.splice(this.uiIndices.hiddenItemIndices.indexOf(resutJSON.index), 1);
+            }
         }
     };
     Virtualization.prototype.hideItem = function (obj) {
         var resutJSON = this.findDSAndIndexFromId(this.listViewInstance.curViewDS, obj);
-        if (Object.keys(resutJSON).length && this.uiIndices.hiddenItemIndices.indexOf(resutJSON.index) === -1) {
-            this.uiIndices.hiddenItemIndices.push(resutJSON.index);
+        if (isBlazor() && this.listViewInstance.isServerRendered) {
+            // tslint:disable-next-line:no-any
+            var elementId = resutJSON.data[this.listViewInstance.fields.id];
+            // tslint:enable-next-line:no-any
+            if (!this.listViewInstance.hiddenItems.includes(elementId)) {
+                this.listViewInstance.hiddenItems.push(elementId);
+                this.listViewInstance.removeActiveClass();
+            }
+        }
+        else {
+            if (Object.keys(resutJSON).length && this.uiIndices.hiddenItemIndices.indexOf(resutJSON.index) === -1) {
+                this.uiIndices.hiddenItemIndices.push(resutJSON.index);
+            }
         }
     };
     Virtualization.prototype.removeItem = function (obj) {
         var dataSource;
         var curViewDS = this.listViewInstance.curViewDS;
         var resutJSON = this.findDSAndIndexFromId(curViewDS, obj);
+        if (isBlazor() && this.listViewInstance.isServerRendered) {
+            if (resutJSON.index !== undefined) {
+                // tslint:disable
+                this.listViewInstance.interopAdaptor.invokeMethodAsync('RemoveItemPosition', resutJSON.index);
+                // tslint:enable
+            }
+        }
         if (Object.keys(resutJSON).length) {
             dataSource = resutJSON.data;
             if (curViewDS[resutJSON.index - 1] &&
@@ -3287,7 +3621,9 @@ var Virtualization = /** @__PURE__ @class */ (function () {
                 this.removeUiItem(resutJSON.index - 1);
             }
             else {
-                this.removeUiItem(resutJSON.index);
+                if (!(isBlazor() && this.listViewInstance.isServerRendered)) {
+                    this.removeUiItem(resutJSON.index);
+                }
             }
         }
         var listDataSource = this.listViewInstance.dataSource instanceof DataManager
@@ -3302,6 +3638,12 @@ var Virtualization = /** @__PURE__ @class */ (function () {
             this.listViewInstance.curUL.querySelectorAll('li');
     };
     Virtualization.prototype.setCheckboxLI = function (li, e) {
+        if (isBlazor() && this.listViewInstance.isServerRendered) {
+            this.uiFirstIndex = Math.round(this.listViewInstance.element.scrollTop / 36) - 4;
+            if (this.uiFirstIndex < 0) {
+                this.uiFirstIndex = 0;
+            }
+        }
         var index = Array.prototype.indexOf.call(this.listViewInstance.curUL.querySelectorAll('li'), li) + this.uiFirstIndex;
         this.activeIndex = Array.prototype.indexOf.call(this.listViewInstance.curUL.querySelectorAll('li'), li) + this.uiFirstIndex;
         if (li.classList.contains(classNames.selected)) {

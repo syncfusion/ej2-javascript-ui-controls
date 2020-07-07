@@ -16,3 +16,4 @@ export * from './legend/legend';
 export * from './model/image-export';
 export * from './model/pdf-export';
 export * from './model/print';
+export * from './axes/gradient';

@@ -1,6 +1,6 @@
 import { Workbook, Cell, getSheetNameFromAddress, getSheetIndex, getSheet } from '../base/index';
 import { getCellAddress, getIndexesFromAddress, getColumnHeaderText, updateSheetFromDataSource, checkDateFormat } from '../common/index';
-import { queryCellInfo, CellInfoEventArgs, CellStyleModel } from '../common/index';
+import { queryCellInfo, CellInfoEventArgs, CellStyleModel, cFDelete } from '../common/index';
 import { SheetModel, RowModel, CellModel, getRow, getCell, isHiddenRow, isHiddenCol, getMaxSheetId, getSheetNameCount } from './index';
 import { isUndefined, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { setCell } from './cell';
@@ -205,6 +205,7 @@ export function clearRange(context: Workbook, address: string, sheetIdx: number,
         eCIdx = range[3];
         for (sCIdx; sCIdx <= eCIdx; sCIdx++) {
             let cell: CellModel = getCell(sRIdx, sCIdx, sheet);
+            context.notify( cFDelete, { rowIdx: sRIdx, colIdx: sCIdx } );
             if (!isNullOrUndefined(cell) && valueOnly) {
                 delete cell.value;
                 if (!isNullOrUndefined(cell.formula)) {

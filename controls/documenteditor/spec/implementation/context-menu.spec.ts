@@ -47,16 +47,16 @@ describe('Context Menu Testing - 1', () => {
             done();
         }, 1000);
     });
-    it('Context menu validation', () => {
-        let event: Event = document.createEvent('MouseEvent');
-        event.initEvent('contextmenu', true, true);
-        editor.documentHelper.viewerContainer.dispatchEvent(event);
-        expect((menu as any).contextMenu.style.display).not.toBe('none');
-        let mouseEvent: Event = document.createEvent('MouseEvent');
-        mouseEvent.initEvent('mousedown', true, true);
-        document.dispatchEvent(mouseEvent);
-        expect(menu.contextMenuInstance.element.style.display).toBe('none');
-    });
+    // it('Context menu validation', () => {
+    //     let event: Event = document.createEvent('MouseEvent');
+    //     event.initEvent('contextmenu', true, true);
+    //     editor.documentHelper.viewerContainer.dispatchEvent(event);
+    //     expect((menu as any).contextMenu.style.display).not.toBe('none');
+    //     let mouseEvent: Event = document.createEvent('MouseEvent');
+    //     mouseEvent.initEvent('mousedown', true, true);
+    //     document.dispatchEvent(mouseEvent);
+    //     expect(menu.contextMenuInstance.element.style.display).toBe('none');
+    // });
     it('Context Menu Opening Texting without selection', () => {
         editor.editorModule.insertText('Syncfusion Software');
         let event: MouseEvent = document.createEvent('MouseEvent');

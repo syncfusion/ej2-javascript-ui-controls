@@ -15402,7 +15402,7 @@ class Print {
     hideColGroup(colGroups, depth) {
         for (let i = 0; i < colGroups.length; i++) {
             for (let j = 0; j < depth; j++) {
-                colGroups[i].childNodes[j].style.display = 'none';
+                colGroups[i].children[j].style.display = 'none';
             }
         }
     }
@@ -21541,7 +21541,9 @@ class Filter {
             }
             if (e.target.classList.contains('e-list-item')) {
                 let inputId = document.querySelector('.e-popup-open').getAttribute('id').replace('_popup', '');
-                closest(document.getElementById(inputId), 'div').querySelector('.e-filtertext').focus();
+                if (inputId.indexOf('grid-column') !== -1) {
+                    closest(document.getElementById(inputId), 'div').querySelector('.e-filtertext').focus();
+                }
             }
         }
         if (this.filterSettings.mode === 'Immediate' || this.parent.filterSettings.type === 'Menu' ||
@@ -26017,7 +26019,11 @@ class VirtualContentRenderer extends ContentRender {
         super.renderTable();
         this.virtualEle.table = this.getTable();
         this.virtualEle.content = this.content = this.getPanel().querySelector('.e-content');
-        this.virtualEle.renderWrapper(this.parent.height);
+        let minHeight = this.parent.height;
+        if (this.parent.getFrozenColumns() && this.parent.height.toString().indexOf('%') < 0) {
+            minHeight = parseInt(this.parent.height, 10) - getScrollBarWidth();
+        }
+        this.virtualEle.renderWrapper(minHeight);
         this.virtualEle.renderPlaceHolder();
         if (!this.parent.getFrozenColumns()) {
             this.virtualEle.wrapper.style.position = 'absolute';
@@ -26487,13 +26493,17 @@ class VirtualContentRenderer extends ContentRender {
         let width = this.parent.enableColumnVirtualization ?
             this.getColumnOffset(this.parent.columns.length + this.parent.groupSettings.columns.length - 1) + 'px' : '100%';
         if (this.parent.getFrozenColumns()) {
+            let virtualHeightTemp = (this.parent.pageSettings.currentPage === 1 && Object.keys(this.offsets).length <= 2) ?
+                this.offsets[1] : this.offsets[this.getTotalBlocks() - 2];
+            let scrollableElementHeight = this.parent.getMovableVirtualContent().clientHeight;
+            virtualHeightTemp = virtualHeightTemp > scrollableElementHeight ? virtualHeightTemp : 0;
             let fTblWidth = this.parent.enableColumnVirtualization ? 'auto' : width;
             this.virtualEle.placeholder = this.parent.getFrozenVirtualContent().querySelector('.e-virtualtrack');
             // To overcome the white space issue in last page (instead of position absolute)
-            this.virtualEle.setVirtualHeight(this.offsets[this.getTotalBlocks() - 2], fTblWidth);
+            this.virtualEle.setVirtualHeight(virtualHeightTemp, fTblWidth);
             this.virtualEle.placeholder = this.parent.getMovableVirtualContent().querySelector('.e-virtualtrack');
             // To overcome the white space issue in last page (instead of position absolute)
-            this.virtualEle.setVirtualHeight(this.offsets[this.getTotalBlocks() - 2], width);
+            this.virtualEle.setVirtualHeight(virtualHeightTemp, width);
         }
         else {
             let virtualHeight = (isBlazor() && this.parent.isServerRendered && this.parent.groupSettings.columns.length && height)
@@ -28587,7 +28597,7 @@ class NormalEdit {
         }
         let gObj = this.parent;
         let args = extend(this.args, {
-            requestType: 'cancel', type: actionBegin, data: this.previousData, selectedRow: gObj.selectedRowIndex
+            requestType: 'cancel', type: actionBegin, cancel: false, data: this.previousData, selectedRow: gObj.selectedRowIndex
         });
         gObj.notify(virtualScrollEditCancel, args);
         this.blazorTemplate();
@@ -32253,6 +32263,7 @@ class ExcelExport {
             this.workSheet.push(sheet);
             this.book.worksheets = this.workSheet;
             this.book.styles = this.styles;
+            gObj.notify('finalPageSetup', this.book);
             if (!isMultipleExport) {
                 if (this.isCsvExport) {
                     if (isBlazor() && gObj.isServerRendered) {
@@ -32528,7 +32539,7 @@ class ExcelExport {
                 childGridObj.beforeDataBound = this.childGridCell(excelRow, childGridObj, excelExportProperties, row);
                 childGridObj.appendTo(element);
             }
-            gObj.notify(exportRowDataBound, { rowObj: row, type: 'excel' });
+            gObj.notify(exportRowDataBound, { rowObj: row, type: 'excel', excelRows: excelRows });
         }
         return startIndex;
     }

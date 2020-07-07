@@ -530,10 +530,6 @@ describe('Grouping bar sort icon deferupdate', () => {
             done();
         }, 1000);
     });
-    it('Country -> descending _result', () => {
-        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('United States');
-    });
 
     it('memory leak', () => {
         profile.sample();

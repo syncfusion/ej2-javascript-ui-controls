@@ -604,6 +604,15 @@ export interface SignatureSelectEventArgs extends BaseEventArgs {
      */
     signature: object;
 }
+/**
+ * This event arguments provides the necessary information about mouse leave event.
+ */
+export interface AnnotationMouseLeaveEventArgs extends BaseEventArgs {
+    /**
+     * Defines the page number in which the mouse over annotation object is rendered.
+     */
+    pageIndex: number;
+}
 
 /**
  * This event arguments provides the necessary information about annotation mouseover event.
@@ -767,21 +776,33 @@ export interface TextSelectionEndEventArgs extends BaseEventArgs {
  */
 export interface ImportStartEventArgs extends BaseEventArgs {
     /**
-     * json Data to be imported into PdfViewer.
+     * json annotation Data to be imported into PdfViewer.
      */
     // tslint:disable-next-line
     importData: any;
+    /**
+     * json form field data to be imported into PdfViewer.
+     */
+    // tslint:disable-next-line
+    formFieldData: any;
+
 }
 
 /**
  * This event arguments provides the necessary information about export annotations start event.
  */
 export interface ExportStartEventArgs extends BaseEventArgs {
-    /**
-     * Specifies the loaded document annotation details.
+    /** 
+     * specifies the annotation data exported from the loaded document.
      */
     // tslint:disable-next-line
     exportData: any;
+    /**
+     * Specifies the form field data exported from the loaded document..
+     */
+    // tslint:disable-next-line
+    formFieldData: any;
+
 }
 
 /**
@@ -789,10 +810,16 @@ export interface ExportStartEventArgs extends BaseEventArgs {
  */
 export interface ImportSuccessEventArgs extends BaseEventArgs {
     /**
-     * Specified the data to be imported in loaded document.
+     * Specifies the annotation data to be imported in loaded document.
      */
     // tslint:disable-next-line
     importData: any;
+    /**
+     * Specifies the form field data to be imported in loaded document.
+     */
+    // tslint:disable-next-line
+    formFieldData: any;
+
 }
 
 /**
@@ -800,7 +827,7 @@ export interface ImportSuccessEventArgs extends BaseEventArgs {
  */
 export interface ExportSuccessEventArgs extends BaseEventArgs {
     /**
-     * Specifies the data exported from the loaded documents.
+     * Specifies the annotation data exported from the loaded documents.
      */
     // tslint:disable-next-line
     exportData: any;
@@ -808,6 +835,12 @@ export interface ExportSuccessEventArgs extends BaseEventArgs {
      * Specifies the exported annotations json file name.
      */
     fileName: string;
+    /**
+     * Specifies the form field data exported from the loaded documents.
+     */
+    // tslint:disable-next-line
+    formFieldData: any;
+
 }
 
 /**
@@ -815,7 +848,7 @@ export interface ExportSuccessEventArgs extends BaseEventArgs {
  */
 export interface ImportFailureEventArgs extends BaseEventArgs {
     /**
-     * Document name to be loaded into PdfViewer
+     * specifies the annotation data to be imported in loaded document.
      */
     // tslint:disable-next-line
     importData: any;
@@ -823,6 +856,12 @@ export interface ImportFailureEventArgs extends BaseEventArgs {
      * Error details for import annotations.
      */
     errorDetails: string;
+    /**
+     * specifies the form field data to be imported in loaded document.
+     */
+    // tslint:disable-next-line
+    formFieldData: any;
+
 }
 
 /**
@@ -830,7 +869,7 @@ export interface ImportFailureEventArgs extends BaseEventArgs {
  */
 export interface ExportFailureEventArgs extends BaseEventArgs {
     /**
-     * Document name to be loaded into PdfViewer
+     * specifies the annotation data to be exported from the loaded document.
      */
     // tslint:disable-next-line
     exportData: any;
@@ -838,6 +877,12 @@ export interface ExportFailureEventArgs extends BaseEventArgs {
      * Error details for export annotations.
      */
     errorDetails: string;
+    /**
+     * specifies the form field data to be exported from the loaded document.
+     */
+    // tslint:disable-next-line
+    formFieldData: any;
+
 }
 
 /**

@@ -124,8 +124,8 @@ export class ConnectorLineEdit {
                     predecessor = predecessorsCollection[predecessorCount];
                     let from: string = 'from'; let to: string = 'to';
                     this.removeConnectorLineById('parent' + predecessor[from] + 'child' + predecessor[to]);
-                    parentGanttRecord = this.parent.getRecordByID(predecessor[from]);
-                    childGanttRecord = this.parent.getRecordByID(predecessor[to]);
+                    parentGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor[from]);
+                    childGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor[to]);
                     if ((parentGanttRecord && parentGanttRecord.expanded === true) ||
                         (childGanttRecord && childGanttRecord.expanded === true)) {
                         connectorObj =
@@ -154,6 +154,7 @@ export class ConnectorLineEdit {
      */
     public refreshEditedRecordConnectorLine(editedRecord: IGanttData[]): void {
         this.removePreviousConnectorLines(this.parent.previousRecords);
+        this.parent.connectorLineModule.expandedRecords = this.parent.getExpandedRecords(this.parent.currentViewData);
         let editedConnectorLineString: string;
         editedConnectorLineString = this.getEditedConnectorLineString(editedRecord);
         this.parent.connectorLineModule.dependencyViewContainer.innerHTML =
@@ -231,10 +232,10 @@ export class ConnectorLineEdit {
                 let currentIdArray: string[] = [];
                 if (visitedIdArray.indexOf(currentId) === -1) {
                     //Predecessor id not in records collection
-                    if (isNullOrUndefined(this.parent.getRecordByID(currentId))) {
+                    if (isNullOrUndefined(this.parent.connectorLineModule.getRecordByID(currentId))) {
                         return false;
                     }
-                    currentRecord = this.parent.getRecordByID(currentId).ganttProperties;
+                    currentRecord = this.parent.connectorLineModule.getRecordByID(currentId).ganttProperties;
 
                     if (!isNullOrUndefined(currentRecord.predecessor) && currentRecord.predecessor.length > 0) {
                         currentRecord.predecessor.forEach((value: IPredecessor) => {
@@ -269,7 +270,8 @@ export class ConnectorLineEdit {
      */
     public validatePredecessorRelation(ganttRecord: IGanttData, predecessorString: string): boolean {
         let flag: boolean = true;
-        let recordId: string = ganttRecord.ganttProperties.rowUniqueID;
+        let recordId: string = this.parent.viewType === 'ResourceView' ? ganttRecord.ganttProperties.taskId
+            : ganttRecord.ganttProperties.rowUniqueID;
         let predecessorIdArray: string[];
         let currentId: string;
         if (!isNullOrUndefined(predecessorString) && predecessorString.length > 0) {
@@ -306,10 +308,10 @@ export class ConnectorLineEdit {
                     let currentRecord: ITaskData;
                     if (visitedIdArray.indexOf(currentId) === -1) {
                         //Predecessor id not in records collection
-                        if (isNullOrUndefined(this.parent.getRecordByID(currentId.toString()))) {
+                        if (isNullOrUndefined(this.parent.connectorLineModule.getRecordByID(currentId.toString()))) {
                             return false;
                         }
-                        currentRecord = this.parent.getRecordByID(currentId.toString()).ganttProperties;
+                        currentRecord = this.parent.connectorLineModule.getRecordByID(currentId.toString()).ganttProperties;
                         //  let currentPredecessor='';
                         if (!isNullOrUndefined(currentRecord.predecessor) && currentRecord.predecessor.length > 0) {
                             currentRecord.predecessor.forEach((value: IPredecessor, index: number) => {
@@ -518,7 +520,7 @@ export class ConnectorLineEdit {
         let validPredecessor: IPredecessor[] = this.parent.predecessorModule.getValidPredecessor(record);
         for (let i: number = 0; i < validPredecessor.length; i++) {
             let predecessor: IPredecessor = validPredecessor[i];
-            let parentTask: IGanttData = this.parent.getRecordByID(predecessor.from);
+            let parentTask: IGanttData = this.parent.connectorLineModule.getRecordByID(predecessor.from);
             let offset: number;
             if (isScheduledTask(parentTask.ganttProperties) && isScheduledTask(record.ganttProperties)) {
                 let tempStartDate: Date;
@@ -587,7 +589,7 @@ export class ConnectorLineEdit {
             extend([], [], ganttRecord.ganttProperties.predecessor, true) as IPredecessor[];
         let preLength: number = predecessor.length;
         for (let i: number = 0; i < preLength; i++) {
-            let parentGanttRecord: IGanttData = this.parent.getRecordByID(predecessor[i].from);
+            let parentGanttRecord: IGanttData = this.parent.connectorLineModule.getRecordByID(predecessor[i].from);
             let parentPredecessor: IPredecessor[] =
                 extend([], [], parentGanttRecord.ganttProperties.predecessor, true) as IPredecessor[];
             let index: number = getIndex(predecessor[i], 'from', prevPredecessor, 'to');
@@ -685,7 +687,7 @@ export class ConnectorLineEdit {
             ganttTaskData.endDate :
             this.dateValidateModule.getEndDate(startDate, ganttTaskData.duration, ganttTaskData.durationUnit, ganttTaskData, false);
         for (let i: number = 0; i < predecessor.length; i++) {
-            parentGanttRecord = this.parent.getRecordByID(predecessor[i].from);
+            parentGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor[i].from);
             let violationType: string = null;
             if (predecessor[i].type === 'FS') {
                 if (ganttTaskData.startDate < startDate) {
@@ -746,7 +748,7 @@ export class ConnectorLineEdit {
             let prevPredecessor: IPredecessor[] = prevData.ganttProperties.predecessor;
             if (!isNullOrUndefined(prevPredecessor)) {
                 for (let p: number = 0; p < prevPredecessor.length; p++) {
-                    let parentGanttRecord: IGanttData = this.parent.getRecordByID(prevPredecessor[p].from);
+                    let parentGanttRecord: IGanttData = this.parent.connectorLineModule.getRecordByID(prevPredecessor[p].from);
                     if (parentGanttRecord === data) {
                         data.ganttProperties.predecessor.push(prevPredecessor[p]);
                     } else {
@@ -762,7 +764,7 @@ export class ConnectorLineEdit {
             }
             if (!isNullOrUndefined(newPredecessor)) {
                 for (let n: number = 0; n < newPredecessor.length; n++) {
-                    let parentGanttRecord: IGanttData = this.parent.getRecordByID(newPredecessor[n].from);
+                    let parentGanttRecord: IGanttData = this.parent.connectorLineModule.getRecordByID(newPredecessor[n].from);
                     let parentPredecessor: IPredecessor[] =
                         extend([], [], parentGanttRecord.ganttProperties.predecessor, true) as IPredecessor[];
                     parentPredecessor.push(newPredecessor[n]);
@@ -781,7 +783,7 @@ export class ConnectorLineEdit {
     public removePredecessorByIndex(childRecord: IGanttData, index: number): void {
         let childPredecessor: IPredecessor[] = childRecord.ganttProperties.predecessor;
         let predecessor: IPredecessor = childPredecessor.splice(index, 1) as IPredecessor;
-        let parentRecord: IGanttData = this.parent.getRecordByID(predecessor[0].from);
+        let parentRecord: IGanttData = this.parent.connectorLineModule.getRecordByID(predecessor[0].from);
         let parentPredecessor: IPredecessor[] = parentRecord.ganttProperties.predecessor;
         let parentIndex: number = getIndex(predecessor[0], 'from', parentPredecessor, 'to');
         parentPredecessor.splice(parentIndex, 1);

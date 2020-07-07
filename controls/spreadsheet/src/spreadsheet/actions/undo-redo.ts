@@ -5,7 +5,8 @@ import { BeforeActionData, PreviousCellDetails, CollaborativeEditArgs, setUndoRe
 import { selectRange, clearUndoRedoCollection } from '../common/index';
 import { getRangeFromAddress, getRangeIndexes, BeforeCellFormatArgs, getSheet, workbookEditOperation } from '../../workbook/index';
 import { getCell, setCell, CellModel, BeforeSortEventArgs, getSheetIndex, wrapEvent, getSheetIndexFromId } from '../../workbook/index';
-import { SheetModel, MergeArgs, setMerge } from '../../workbook/index';
+import { SheetModel, MergeArgs, setMerge, getRangeAddress } from '../../workbook/index';
+import { addClass } from '@syncfusion/ej2-base';
 
 /**
  * UndoRedo module allows to perform undo redo functionalities.
@@ -36,7 +37,7 @@ export class UndoRedo {
             case 'clipboard':
                 let copiedInfo: { [key: string]: Object } = eventArgs.copiedInfo;
                 address = getRangeIndexes(getRangeFromAddress(eventArgs.pastedRange));
-                if (copiedInfo && copiedInfo.isCut) {
+                if (copiedInfo.isCut) {
                     cutCellDetails = this.getCellDetails(
                         copiedInfo.range as number[], getSheet(this.parent, getSheetIndexFromId(this.parent, <number>copiedInfo.sId)));
                 }
@@ -55,6 +56,9 @@ export class UndoRedo {
                 break;
             case 'beforeReplace':
                 address = this.parent.getAddressInfo(eventArgs.address).indices;
+                break;
+            case 'beforeClear':
+                address = getRangeIndexes(eventArgs.range);
                 break;
         }
         cells = this.getCellDetails(address, sheet);
@@ -102,6 +106,14 @@ export class UndoRedo {
                     undoRedoArgs.eventArgs.merge = !undoRedoArgs.eventArgs.merge;
                     updateAction(undoRedoArgs, this.parent);
                     break;
+                case 'clear':
+                    undoRedoArgs = this.performOperation(undoRedoArgs);
+                    break;
+                case 'conditionalFormat':
+                    updateAction(undoRedoArgs, this.parent, !args.isUndo);
+                    break;
+                case 'clearCF':
+                        updateAction(undoRedoArgs, this.parent, !args.isUndo);
             }
             args.isUndo ? this.redoCollection.push(undoRedoArgs) : this.undoCollection.push(undoRedoArgs);
             if (this.undoCollection.length > this.undoRedoStep) {
@@ -122,7 +134,7 @@ export class UndoRedo {
 
     private updateUndoRedoCollection(options: { args: CollaborativeEditArgs, isPublic?: boolean }): void {
         let actionList: string[] = ['clipboard', 'format', 'sorting', 'cellSave', 'resize', 'resizeToFit', 'wrap', 'hideShow', 'replace',
-        'validation', 'merge'];
+        'validation', 'merge', 'clear', 'conditionalFormat', 'clearCF'];
         if ((options.args.action === 'insert' || options.args.action === 'delete') && options.args.eventArgs.modelType !== 'Sheet') {
             actionList.push(options.args.action);
         }
@@ -132,7 +144,8 @@ export class UndoRedo {
         }
         let eventArgs: UndoRedoEventArgs = options.args.eventArgs;
         if (action === 'clipboard' || action === 'sorting' || action === 'format' || action === 'cellSave' ||
-        action === 'wrap' || action === 'replace' || action === 'validation') {
+        action === 'wrap' || action === 'replace' || action === 'validation' || action === 'clear' || action === 'conditionalFormat' ||
+        action === 'clearCF') {
             let beforeActionDetails: { beforeDetails: BeforeActionData } = { beforeDetails: { cellDetails: [] } };
             this.parent.notify(getBeforeActionData, beforeActionDetails);
             eventArgs.beforeActionData = beforeActionDetails.beforeDetails;
@@ -233,7 +246,7 @@ export class UndoRedo {
                 cells.push({
                     rowIndex: i, colIndex: j, format: cell ? cell.format : null,
                     style: cell ? cell.style : null, value: cell ? cell.value : '', formula: cell ? cell.formula : '',
-                    wrap: cell && cell.wrap
+                    wrap: cell && cell.wrap, rowSpan: cell && cell.rowSpan, colSpan: cell && cell.colSpan, hyperlink: cell && cell.hyperlink
                 });
             }
         }
@@ -243,11 +256,13 @@ export class UndoRedo {
     private updateCellDetails(
         cells: PreviousCellDetails[], sheet: SheetModel, range: number[], isRefresh: boolean, args?: CollaborativeEditArgs): void {
         let len: number = cells.length;
+        let cellElem: HTMLElement;
         for (let i: number = 0; i < len; i++) {
             setCell(cells[i].rowIndex, cells[i].colIndex, sheet, {
                 value: cells[i].value, format: cells[i].format,
                 style: cells[i].style, formula: cells[i].formula,
-                wrap: cells[i].wrap
+                wrap: cells[i].wrap, rowSpan: cells[i].rowSpan,
+                colSpan: cells[i].colSpan, hyperlink: cells[i].hyperlink
             });
             if (cells[i].formula) {
                 this.parent.notify(
@@ -262,6 +277,16 @@ export class UndoRedo {
                     range: [cells[i].rowIndex, cells[i].colIndex, cells[i].rowIndex,
                     cells[i].colIndex], wrap: false, sheet: sheet
                 });
+            }
+            if (args && cells[i].hyperlink && args.action === 'clear') {
+                args.eventArgs.range = sheet.name + '!' + getRangeAddress([cells[i].rowIndex, cells[i].colIndex, cells[i].rowIndex,
+                cells[i].colIndex]);
+                cellElem = this.parent.getCell(cells[i].rowIndex, cells[i].colIndex);
+                if (args.eventArgs.type === 'Clear All' || args.eventArgs.type === 'Clear Hyperlinks') {
+                    this.parent.addHyperlink(cells[i].hyperlink, args.eventArgs.range);
+                } else if (args.eventArgs.type === 'Clear Formats') {
+                    addClass(cellElem.querySelectorAll('.e-hyperlink'), 'e-hyperlink-style');
+                }
             }
         }
         if (isRefresh) {

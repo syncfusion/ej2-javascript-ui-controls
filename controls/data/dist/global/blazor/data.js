@@ -5119,7 +5119,8 @@ exports.DataUtil = DataUtil;
 return exports;
 
 });
+sfBlazor.libs.push("data")
 sfBlazor.loadDependencies(["base"], () => {
     sf.data = sf.data({});
-    sfBlazor.initBlazorAdaptor();
+        sfBlazor.initBlazorAdaptor();
 });

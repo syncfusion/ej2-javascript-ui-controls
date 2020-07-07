@@ -3,7 +3,7 @@ import { WSectionFormat } from '../format/section-format';
 import { WCharacterFormat } from '../format/character-format';
 import { WListFormat } from '../format/list-format';
 import { WListLevel } from '../list/list-level';
-import { Editor, EditorHistory, Selection } from '../index';
+import { Editor, EditorHistory, Selection, Revision } from '../index';
 import { ModifiedLevel, RowHistoryFormat, TableHistoryInfo, EditRangeInfo } from './history-helper';
 import {
     IWidget, BlockWidget,
@@ -41,6 +41,14 @@ export class BaseHistoryInfo {
     private endPositionIn: string;
     private currentPropertyIndex: number;
     private ignoredWord: string;
+    /**
+     * @private
+     */
+    public lastElementRevision: ElementBox;
+    /**
+     * @private
+     */
+    public endRevisionLogicalIndex: string;
     //Properties
     //gets owner control
     /**
@@ -261,6 +269,15 @@ export class BaseHistoryInfo {
             let isForward: boolean = TextPosition.isForwardSelection(this.insertPosition, this.endPosition);
             let insertTextPosition: TextPosition = sel.getTextPosBasedOnLogicalIndex(isForward ? this.insertPosition : this.endPosition);
             let endTextPosition: TextPosition = sel.getTextPosBasedOnLogicalIndex(isForward ? this.endPosition : this.insertPosition);
+            if (this.lastElementRevision && this.editorHistory.isUndoing) {
+                if (isNullOrUndefined(this.endRevisionLogicalIndex)) {
+                    this.updateEndRevisionInfo();
+                }
+            }
+            if (this.action === 'ClearRevisions') {
+                this.undoRevisionForElements(insertTextPosition, endTextPosition, deletedNodes[deletedNodes.length - 1] as string);
+                deletedNodes = [];
+            }
             if (insertTextPosition.isAtSamePosition(endTextPosition)) {
                 sel.selectContent(insertTextPosition, true);
             } else {
@@ -280,16 +297,29 @@ export class BaseHistoryInfo {
             this.selectionStart = this.insertPosition; this.insertPosition = undefined; this.selectionEnd = this.endPosition;
             this.endPosition = undefined;
             let isRemoveContent: boolean = false;
+            if (this.endRevisionLogicalIndex && deletedNodes.length > 0) {
+                // tslint:disable-next-line:max-line-length      
+                if (this.editorHistory.isUndoing || (this.editorHistory.isRedoing && insertTextPosition.isAtSamePosition(endTextPosition))) {
+                    let currentPosition: TextPosition = sel.getTextPosBasedOnLogicalIndex(this.endRevisionLogicalIndex);
+                    sel.selectPosition(insertTextPosition, currentPosition);
+                }
+                if (this.editorHistory.isUndoing) {
+                this.owner.editor.deleteSelectedContents(sel, true);
+                }
+            }
             if (!insertTextPosition.isAtSamePosition(endTextPosition)) {
                 isRemoveContent = this.action === 'BackSpace' || this.action === 'Delete' || this.action === 'ClearCells'
                     || this.action === 'DeleteCells';
+                // tslint:disable-next-line:max-line-length
+                let skipDelete: boolean = (deletedNodes.length > 0 && this.action === 'ParaMarkTrack') || this.action === 'ClearRevisions'  || this.action === 'AcceptTOC';
                 if (!(isRemoveContent) && this.action !== 'MergeCells' && this.action !== 'InsertRowAbove'
                     && this.action !== 'InsertRowBelow' && this.action !== 'InsertColumnLeft'
                     && this.action !== 'InsertColumnRight' && this.action !== 'Borders'
                     && this.action !== 'DeleteTable' && this.action !== 'DeleteColumn' && this.action !== 'DeleteRow') {
                     sel.end.setPositionInternal(endTextPosition);
-                    if (!this.owner.selection.isEmpty) {
-                        if (this.editorHistory.isRedoing) {
+                    if (!this.owner.selection.isEmpty && !skipDelete) {
+                        if (this.editorHistory.isRedoing && this.action !== 'Accept Change' && this.action !== 'ParaMarkTrack' &&
+                            this.action !== 'ParaMarkReject' && this.action !== 'RemoveRowTrack') {
                             this.owner.editorModule.removeSelectedContents(sel);
                         } else {
                             this.owner.editorModule.deleteSelectedContents(sel, true);
@@ -302,6 +332,7 @@ export class BaseHistoryInfo {
                 }
             }
             let isRedoAction: boolean = this.editorHistory.isRedoing && !isRemoveContent;
+            isRemoveContent = this.lastElementRevision ? false : isRemoveContent;
             this.revertModifiedNodes(deletedNodes, isRedoAction, isForwardSelection ? start : end, start === end);
             if (isRemoveContent) {
                 this.removeContent(insertTextPosition, endTextPosition);
@@ -309,10 +340,16 @@ export class BaseHistoryInfo {
             //this.owner.editorModule.reLayout(this.documentHelper.selection);
         }
         let isSelectionChanged: boolean = false;
-        if ((this.editorHistory.isUndoing && isNullOrUndefined(this.editorHistory.currentHistoryInfo)) ||
+        let updateSelection: boolean = false;
+        // tslint:disable-next-line:max-line-length
+        if (!isNullOrUndefined(this.editorHistory.currentHistoryInfo) && (this.editorHistory.currentHistoryInfo.action === 'Reject All' || this.editorHistory.currentHistoryInfo.action === 'Accept All')) {
+            updateSelection = true;
+        }
+        // tslint:disable-next-line:max-line-length
+        if (((this.editorHistory.isUndoing || this.endRevisionLogicalIndex || this.action === 'RemoveRowTrack' || updateSelection) && isNullOrUndefined(this.editorHistory.currentHistoryInfo) || updateSelection) ||
             ((this.action === 'InsertRowAbove' || this.action === 'Borders' || this.action === 'InsertRowBelow'
                 || this.action === 'InsertColumnLeft'
-                || this.action === 'InsertColumnRight') && (this.editorHistory.isRedoing
+                || this.action === 'InsertColumnRight' || this.action === 'Accept Change') && (this.editorHistory.isRedoing
                     || this.editorHistory.currentHistoryInfo.action === 'Paste'))) {
             selectionStartTextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(start);
             selectionEndTextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(end);
@@ -356,15 +393,44 @@ export class BaseHistoryInfo {
                 && insertTextPosition.paragraph.containerWidget instanceof TableCellWidget
                 && endTextPosition.paragraph.containerWidget instanceof TableCellWidget
                 && !isNullOrUndefined(insertTextPosition.paragraph.bodyWidget)) ||
-                 (!isNullOrUndefined(insertTextPosition.paragraph.containerWidget)
+            (!isNullOrUndefined(insertTextPosition.paragraph.containerWidget)
                 && !isNullOrUndefined(endTextPosition.paragraph.containerWidget)
                 && insertTextPosition.paragraph.containerWidget instanceof TextFrame
                 && endTextPosition.paragraph.containerWidget instanceof TextFrame)) {
             //Removes if any empty paragraph is added while delete.
             this.owner.selection.selectRange(insertTextPosition, endTextPosition);
-            let isDelete: boolean = (this.action === 'BackSpace') ? true : false;
+            let isDelete: boolean = (this.action === 'BackSpace' || this.action === 'RemoveRowTrack') ? true : false;
             this.owner.editorModule.deleteSelectedContents(this.owner.selection, isDelete);
         }
+    }
+    /**
+     * @private
+     */
+    public updateEndRevisionInfo(): void {
+        this.lastElementRevision = this.checkAdjacentNodeForMarkedRevision(this.lastElementRevision);
+        let currentRevision: TextPosition = this.retrieveEndPosition(this.lastElementRevision);
+        let blockInfo: ParagraphInfo = this.owner.selection.getParagraphInfo(currentRevision);
+        this.endRevisionLogicalIndex = this.owner.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+        this.lastElementRevision.isMarkedForRevision = false;
+    }
+    private retrieveEndPosition(elementBox: ElementBox): TextPosition {
+        let endPosition: TextPosition = new TextPosition(this.owner);
+        let offset: number = elementBox.line.getOffset(elementBox, 0) + elementBox.length;
+        endPosition.setPositionFromLine(elementBox.line, offset);
+        return endPosition;
+    }
+    /**
+     * Method to retrieve exact spitted node which is marked as last available element.
+     * @param elementBox 
+     */
+    private checkAdjacentNodeForMarkedRevision(elementBox: ElementBox): ElementBox {
+        let nextItem: ElementBox = elementBox.nextNode;
+        let markedNode: ElementBox;
+        while (!isNullOrUndefined(nextItem) && nextItem.isMarkedForRevision) {
+            markedNode = nextItem;
+            nextItem = nextItem.nextNode;
+        }
+        return !isNullOrUndefined(markedNode) ? markedNode : elementBox;
     }
 
     private revertModifiedProperties(start: TextPosition, end: TextPosition): void {
@@ -426,6 +492,9 @@ export class BaseHistoryInfo {
             case 'TableFixedColumnWidth':
                 editor.autoFitTable('FixedColumnWidth');
                 break;
+            case 'RemoveRowTrack':
+                this.owner.selection.handleAcceptReject(true);
+                break;
         }
     }
     /**
@@ -447,12 +516,12 @@ export class BaseHistoryInfo {
             }
         }
         if (deletedNodes.length > 0) {
-            if ((this.editorHistory.isUndoing && (this.action === 'DeleteCells' || this.action === 'DeleteColumn'
-                || this.action === 'DeleteRow' || this.action === 'MergeCells'))
+            if ((this.editorHistory.isUndoing && (this.action === 'RemoveRowTrack' || this.action === 'DeleteCells' ||
+                this.action === 'DeleteColumn' || this.action === 'DeleteRow' || this.action === 'MergeCells'))
                 || (this.action === 'InsertRowAbove' || this.action === 'InsertRowBelow' || this.action === 'InsertColumnLeft'
                     || this.action === 'ClearCells' || this.action === 'InsertColumnRight' || this.action === 'Borders' ||
                     this.action === 'TableAutoFitToContents' || this.action === 'TableAutoFitToWindow' ||
-                    this.action === 'TableFixedColumnWidth')) {
+                    this.action === 'TableFixedColumnWidth' || this.action === 'RemoveRowTrack')) {
                 let insertIndex: string = this.selectionStart;
                 let block: BlockWidget = this.owner.editorModule.getBlock({ index: insertIndex }).node as BlockWidget;
                 let lastNode: IWidget = deletedNodes[deletedNodes.length - 1];
@@ -460,6 +529,8 @@ export class BaseHistoryInfo {
                     && lastNode instanceof TableWidget) {
                     if (block instanceof ParagraphWidget && !block.isInsideTable) {
                         block = block.previousRenderedWidget as BlockWidget;
+                    } else if (block instanceof ParagraphWidget && block.isInsideTable) {
+                        block = block.associatedCell.ownerTable;
                     }
                     block = block.combineWidget(this.viewer) as BlockWidget;
                     this.owner.editorModule.insertTableInternal(block as TableWidget, lastNode as TableWidget, false);
@@ -481,6 +552,9 @@ export class BaseHistoryInfo {
                     }
                     if (lastNode instanceof ParagraphWidget && this.owner.selection.start.offset > 0) {
                         this.owner.editorModule.insertNewParagraphWidget(lastNode, true);
+                        if (lastNode.characterFormat.removedIds.length > 0) {
+                            this.owner.editor.constructRevisionFromID(lastNode.characterFormat, undefined);
+                        }
                         deletedNodes.splice(deletedNodes.indexOf(lastNode), 1);
                         if (isNullOrUndefined(block)) {
                             // tslint:disable-next-line:max-line-length
@@ -531,6 +605,9 @@ export class BaseHistoryInfo {
                         && this.owner.selection.start.offset === this.owner.selection.getLineLength(this.owner.selection.start.paragraph.lastChild as LineWidget)) {
                         let editor: Editor = this.owner.editorModule;
                         editor.insertNewParagraphWidget(firstNode as ParagraphWidget, false);
+                        if (firstNode.characterFormat.removedIds.length > 0) {
+                            this.owner.editor.constructRevisionFromID(firstNode.characterFormat, undefined);
+                        }
                         deletedNodes.splice(deletedNodes.indexOf(firstNode), 1);
                         //Removes the intermediate empty paragraph instance.
                         if (this.action !== 'Paste') {
@@ -577,11 +654,90 @@ export class BaseHistoryInfo {
                 } else {
                     this.owner.editorModule.insertBlock(node);
                 }
+            } else if (node instanceof WCharacterFormat) {
+                let insertIndex: string = this.selectionStart;
+                let wiget: BlockWidget = this.owner.editorModule.getBlock({ index: insertIndex }).node as BlockWidget;
+                if (wiget instanceof ParagraphWidget) {
+                    if (node.removedIds.length > 0) {
+                        wiget.characterFormat.removedIds = node.removedIds.slice();
+                        this.owner.editor.constructRevisionFromID(wiget.characterFormat, true);
+                    } else if (wiget.characterFormat.revisions.length > 0) {
+                        wiget.characterFormat = node.cloneFormat();
+                    }
+                }
             } else if (node instanceof BodyWidget) {
                 this.owner.editorModule.insertSection(this.owner.selection, false);
+            } else if (typeof(node) === 'string' && this.action === 'AcceptTOC') {
+                let insertIndex: string = this.selectionStart;
+                let widget: BlockWidget = this.owner.editorModule.getBlock({ index: insertIndex }).node as BlockWidget;
+                let endWidget: BlockWidget = this.owner.editorModule.getBlock({ index: this.selectionEnd }).node as BlockWidget;
+                let currentRevision: Revision = this.owner.documentHelper.revisionsInternal.get(node);
+                if (this.editorHistory.isUndoing) {
+                    while (widget instanceof ParagraphWidget && widget !== endWidget) {
+                        this.owner.editor.insertRevisionForBlock(widget, currentRevision.revisionType, true, currentRevision);
+                        // tslint:disable-next-line:max-line-length
+                        widget = this.documentHelper.selection.getNextParagraphBlock(widget.getSplitWidgets().pop() as BlockWidget);
+                    }
+                    // tslint:disable-next-line:max-line-length
+                    this.owner.editor.insertRevisionForBlock(endWidget as ParagraphWidget, currentRevision.revisionType, true, currentRevision);
+                } else {
+                    while (currentRevision.range.length > 0) {
+                        let item: ElementBox = currentRevision.range[0] as ElementBox;
+                        let revisionIndex: number = item.revisions.indexOf(currentRevision);
+                        if (revisionIndex >= 0) {
+                            item.revisions.splice(revisionIndex, 1);
+                            let rangeIndex: number = currentRevision.range.indexOf(item);
+                            currentRevision.range.splice(rangeIndex, 1);
+                        }
+                        if (currentRevision.range.length === 0) {
+                            this.owner.revisions.remove(currentRevision);
+                        }
+                    }
+                }
+                this.owner.editor.addRemovedNodes(currentRevision.revisionID);
             }
         }
         deletedNodes = [];
+    }
+    /**
+     * @private
+     */
+    public undoRevisionForElements(start: TextPosition, end: TextPosition, id: string): void {
+        let currentPara: ParagraphWidget = start.paragraph;
+        let endPara: ParagraphWidget = end.paragraph;
+        let currentRevision: Revision = this.documentHelper.revisionsInternal.get(id);
+        let startoffset: number =  this.owner.selection.getParagraphInfo(start).offset;
+        let endoffset: number = this.owner.selection.getParagraphInfo(end).offset;
+        let isSamePara: boolean = start.paragraph === end.paragraph;
+        if (this.editorHistory.isUndoing) {
+            while (currentPara !== endPara) {
+                this.owner.editor.applyRevisionForCurrentPara(currentPara, startoffset, currentPara.getLength(), id, true);
+                currentPara = this.documentHelper.selection.getNextParagraphBlock(currentPara.getSplitWidgets().pop() as BlockWidget);
+                if (currentPara !== endPara) {
+                    startoffset = 0;
+                }
+            }
+            if (currentPara === endPara) {
+                if (!isSamePara) {
+                startoffset = 0;
+                }
+                this.owner.editor.applyRevisionForCurrentPara(currentPara, startoffset, endoffset, id, false);
+            }
+        } else {
+            while (currentRevision.range.length > 0) {
+                let item: ElementBox = currentRevision.range[0] as ElementBox;
+                let revisionIndex: number = item.revisions.indexOf(currentRevision);
+                if (revisionIndex >= 0) {
+                    item.revisions.splice(revisionIndex, 1);
+                    let rangeIndex: number = currentRevision.range.indexOf(item);
+                    currentRevision.range.splice(rangeIndex, 1);
+                }
+                if (currentRevision.range.length === 0) {
+                    this.owner.revisions.remove(currentRevision);
+                }
+            }
+        }
+        this.removedNodes.push(id);
     }
 
     private revertResizing(): void {

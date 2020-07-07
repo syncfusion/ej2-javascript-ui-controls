@@ -39,7 +39,7 @@ export type SpinnerType = 'Material' | 'Fabric'| 'Bootstrap' | 'HighContrast' | 
   * @param args
   * @private
   */
-  export function blazorSpinner(action: string, options: CreateArgs, target: string, type: string): void {
+  export function Spinner(action: string, options: CreateArgs, target: string, type: string): void {
     switch (action) {
         case 'Create':
             let element: HTMLElement = <HTMLElement>document.querySelector(options.target as string) as HTMLElement;
@@ -70,6 +70,9 @@ export type SpinnerType = 'Material' | 'Fabric'| 'Bootstrap' | 'HighContrast' | 
   */
 
 export function createSpinner ( args: SpinnerArgs, internalCreateElement ?: createElementParams): void {
+    if (!args.target) {
+        return;
+    }
     let radius: number;
     let makeElement: createElementParams = !isNullOrUndefined(internalCreateElement) ? internalCreateElement : createElement;
     let container: { wrap: HTMLElement, inner_wrap: HTMLElement } = create_spinner_container(args.target, makeElement);
@@ -468,29 +471,34 @@ export function showSpinner(container: HTMLElement): void {
 }
 
 function showHideSpinner(container: HTMLElement, isHide: boolean): void {
-    let spinnerWrap: HTMLElement = container.classList.contains(CLS_SPINWRAP) ? container :
-    container.querySelector('.' + CLS_SPINWRAP) as HTMLElement;
-    let inner: HTMLElement = spinnerWrap.querySelector('.' + CLS_SPININWRAP) as HTMLElement;
-    let spinCheck: boolean;
-    spinCheck = isHide ? !spinnerWrap.classList.contains(CLS_SPINTEMPLATE) && !spinnerWrap.classList.contains(CLS_HIDESPIN) :
-    !spinnerWrap.classList.contains(CLS_SPINTEMPLATE) && !spinnerWrap.classList.contains(CLS_SHOWSPIN);
-    if (spinCheck) {
-      let svgEle: SVGSVGElement = spinnerWrap.querySelector('svg') as SVGSVGElement;
-      if (isNullOrUndefined(svgEle)) {
-        return; }
-      let id: string  = svgEle.getAttribute('id');
-      globalTimeOut[id].isAnimate = !isHide;
-      switch (globalTimeOut[id].type) {
-        case 'Material':
-            isHide ? clearTimeout(globalTimeOut[id].timeOut) : startMatAnimate(inner, id, globalTimeOut[id].radius);
-            break;
-        case 'Bootstrap':
-            isHide ? clearTimeout(globalTimeOut[id].timeOut) : animateBootstrap(inner);
-            break;
-      }
+    let spinnerWrap: HTMLElement;
+    if (container) {
+        spinnerWrap = container.classList.contains(CLS_SPINWRAP) ? container :
+        container.querySelector('.' + CLS_SPINWRAP) as HTMLElement;
     }
-    isHide ? classList(spinnerWrap, [CLS_HIDESPIN], [CLS_SHOWSPIN]) : classList(spinnerWrap, [CLS_SHOWSPIN], [CLS_HIDESPIN]);
-    container = null;
+    if (container && spinnerWrap) {
+        let inner: HTMLElement = spinnerWrap.querySelector('.' + CLS_SPININWRAP) as HTMLElement;
+        let spinCheck: boolean;
+        spinCheck = isHide ? !spinnerWrap.classList.contains(CLS_SPINTEMPLATE) && !spinnerWrap.classList.contains(CLS_HIDESPIN) :
+        !spinnerWrap.classList.contains(CLS_SPINTEMPLATE) && !spinnerWrap.classList.contains(CLS_SHOWSPIN);
+        if (spinCheck) {
+        let svgEle: SVGSVGElement = spinnerWrap.querySelector('svg') as SVGSVGElement;
+        if (isNullOrUndefined(svgEle)) {
+            return; }
+        let id: string  = svgEle.getAttribute('id');
+        globalTimeOut[id].isAnimate = !isHide;
+        switch (globalTimeOut[id].type) {
+            case 'Material':
+                isHide ? clearTimeout(globalTimeOut[id].timeOut) : startMatAnimate(inner, id, globalTimeOut[id].radius);
+                break;
+            case 'Bootstrap':
+                isHide ? clearTimeout(globalTimeOut[id].timeOut) : animateBootstrap(inner);
+                break;
+        }
+        }
+        isHide ? classList(spinnerWrap, [CLS_HIDESPIN], [CLS_SHOWSPIN]) : classList(spinnerWrap, [CLS_SHOWSPIN], [CLS_HIDESPIN]);
+        container = null;
+    }
 }
 /**
  * Function to hide the Spinner.

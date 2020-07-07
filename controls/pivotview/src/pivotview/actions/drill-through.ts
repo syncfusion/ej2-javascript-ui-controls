@@ -143,6 +143,26 @@ export class DrillThrough {
         }
     }
 
+    /* tslint:disable:typedef no-any */
+    private frameData(eventArgs: DrillThroughEventArgs): DrillThroughEventArgs {
+        let keyPos: number = 0;
+        let dataPos: number = 0;
+        let data: any = [];
+        while (dataPos < eventArgs.rawData.length) {
+            let framedHeader: any = {};
+            while (keyPos < eventArgs.gridColumns.length) {
+                framedHeader[eventArgs.gridColumns[keyPos].field] =
+                    eventArgs.rawData[dataPos][this.parent.engineModule.fieldKeys[eventArgs.gridColumns[keyPos].field] as any];
+                keyPos++;
+            }
+            data.push(framedHeader);
+            dataPos++;
+            keyPos = 0;
+        }
+        eventArgs.rawData = data;
+        return eventArgs;
+    }
+
     private triggerDialog(valueCaption: string, aggType: string, rawData: IDataSet[], pivotValue: IAxisSet, element: Element): void {
         let valuetText: string = aggType === 'CalculatedField' ? valueCaption.toString() : aggType !== '' ?
             (this.parent.localeObj.getConstant(aggType) + ' ' + this.parent.localeObj.getConstant('of') + ' ' + valueCaption) :
@@ -156,6 +176,9 @@ export class DrillThrough {
             value: valuetText + '(' + pivotValue.formattedText + ')',
             gridColumns: this.drillThroughDialog.frameGridColumns(rawData)
         };
+        if (this.parent.dataSourceSettings.type === 'CSV') {
+            eventArgs = this.frameData(eventArgs);
+        }
         let drillThrough: DrillThrough = this;
         let gridColumns: ColumnModel[] = eventArgs.gridColumns;
         this.parent.trigger(events.drillThrough, eventArgs, (observedArgs: DrillThroughEventArgs) => {

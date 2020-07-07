@@ -331,7 +331,12 @@ export function getName(parent: IFileManager, data: Object): string {
 
 export function getSortedData(parent: IFileManager, items: Object[]): Object[] {
     if (items.length === 0) { return items; }
-    let query: Query = new Query().sortBy(parent.sortBy, parent.sortOrder.toLowerCase(), true).group('isFile');
+    let query: Query ;
+    if (parent.sortOrder !== 'None') {
+        query = new Query().sortBy(parent.sortBy, parent.sortOrder.toLowerCase(), true).group('isFile');
+    } else {
+        query = new Query().group('isFile');
+    }
     let lists: Object[] = new DataManager(items).executeLocal(query);
     return getValue('records', lists);
 }
@@ -417,7 +422,7 @@ export function getCssClass(parent: IFileManager, css: string): string {
 
 export function sortbyClickHandler(parent: IFileManager, args: MenuEventArgs): void {
     let tick: boolean;
-    if (args.item.id.indexOf('ascending') !== -1 || args.item.id.indexOf('descending') !== -1) {
+    if (args.item.id.indexOf('ascending') !== -1 || args.item.id.indexOf('descending') !== -1 || args.item.id.indexOf('none') !== -1) {
         tick = true;
     } else {
         tick = false;
@@ -453,6 +458,9 @@ export function getSortField(id: string): string {
             break;
         case 'descending':
             field = 'Descending';
+            break;
+        case 'none':
+            field = 'None';
             break;
     }
     return field;
@@ -908,7 +916,7 @@ export function uploadItem(parent: IFileManager): void {
         createDeniedDialog(parent, details, events.permissionUpload);
     } else {
         let eleId: string = '#' + parent.element.id + CLS.UPLOAD_ID;
-        let uploadEle: HTMLElement = <HTMLElement>select(eleId, parent.element);
+        let uploadEle: HTMLElement = document.querySelector(eleId);
         uploadEle.click();
     }
 }

@@ -103,6 +103,29 @@
     width: 100%;
   }
 
+  .e-de-cmt-avatar {
+    align-items: center;
+    display: flex;
+    width: 90%;
+  }
+
+  .e-de-ff-cmt-avatar {
+    align-items: center;
+    border-radius: 50%;
+    color: $de-avatar-clr;
+    display: flex;
+    font-size: 12px;
+    height: 24px;
+    justify-content: center;
+    letter-spacing: 0;
+    line-height: 12px;
+    opacity: 100%;
+    user-select: none;
+    width: 24px;
+    z-index: 1;
+  }
+
+
   .e-de-ff-drpdwn-listview {
     margin-right: 12px;
     width: 100%;
@@ -2441,17 +2464,7 @@
   //Comment Implementation
   .e-de-cmt-pane {
     background-color: inherit;
-    border-left: 1px solid $de-op-border-clr;
     color: $de-cmt-pant-content-font;
-    width: 264px;
-  }
-
-  .e-de-cp-close {
-    background-color: inherit;
-    border: none;
-    float: right;
-    position: relative;
-    top: -7px;
   }
 
   .e-de-cp-whole-header {
@@ -2488,18 +2501,229 @@
     padding-left: 6px;
   }
 
+  .e-de-tc-outer {
+    border-bottom: 1px solid #D8D8D8;
+  }
+
+  .e-de-tc-pane {
+    color: $de-cmt-pant-content-font;
+  }
+
+  .e-de-trckchanges-inner {
+    cursor: default;
+    margin-left: 7.5px;
+    padding-left: 8px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    padding-right: 16px;
+    padding-bottom: 8px;
+  }
+  
+  .e-de-trckchanges-inner:hover {
+    border-left: 2px solid $de-cmt-selection;
+    cursor: default;
+    margin-left: 7.5px;
+    padding-left: 6px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    padding-right: 16px;
+    padding-bottom: 8px;
+  }
+
+  .e-de-trckchanges-inner.e-de-trckchanges-inner-select {
+    border-left: 3px solid $de-cmt-selection;
+    cursor: default;
+    margin-left: 7.5px;
+    padding-left: 5px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    padding-right: 16px;
+    padding-bottom: 8px;
+  }
+  
+  .e-de-tc-no-chng {
+    font-size: 14px;
+    opacity: 65%;
+    margin: 60px 0;
+    text-align: center;
+  }
+
+  .e-toolbar-item.e-de-track-toolbar-overlay.e-template.e-overlay
+  {
+    opacity: 1;
+    font-weight: 400;
+    font-size: 13px;
+  }
+
+  .e-de-track-pane-drop-btn {
+    padding-left: 0px;
+    padding-right: 0px;
+    padding-top: 5px;
+    font-size: 13px;
+    font-weight: normal;
+  }
+
+  .e-tc-btn-bg-clr.e-btn:not(:hover):not(.e-active) {
+    background-color: inherit;
+    border-color: transparent;
+    color: inherit;
+  }
+
+  .e-tc-nvgte.e-icon-btn {
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  .e-de-track-span-user {
+    display: inline-flex;
+    overflow: hidden;
+    width: 110px;
+  }
+
+  .e-de-track-span-view {
+    display: inline-flex;
+    overflow: hidden;
+    width: 50px;
+  }
+
+  .e-btn.e-outline.e-de-track-accept-button {
+    border-color: #4D841E;
+    background-color: transparent;
+    color: #4D841E;
+    padding: 5px $de-tc-btn-padding;
+    text-transform: initial;
+    width: 66px;
+  }
+
+  .e-btn.e-outline.e-de-track-accept-button:hover {
+    border-color: transparent;
+    background-color: #4D841E;
+    color: #fff;
+    padding: 5px $de-tc-btn-padding;
+    text-transform: initial;
+    width: 66px;
+  }
+
+  .e-btn.e-outline.e-de-track-reject-button {
+    border-color: #D74113;
+    background-color: transparent;
+    color: #D74113;
+    padding: 5px 6px;
+    margin-left: 8px;
+    text-transform: initial;
+    width: 64px;
+  }
+
+  .e-btn.e-outline.e-de-track-reject-button:hover {
+    border-color: transparent;
+    background-color: #D74113;
+    color: #fff;
+    padding: 5px 6px;
+    margin-left: 8px;
+    text-transform: initial;
+    width: 64px;
+  }
+
+  .e-de-track-chngs-count {
+    font-size : 12px;
+    margin-left: 6px;
+    opacity: .87;
+    padding-top: 7px;
+    white-space: nowrap;
+  }
+
+  .e-de-track-insert {
+    color: #4D841E;
+    font-size: 13px;
+    opacity: 100%;
+  }
+
+  .e-de-track-delete {
+    color: #D74113;
+    font-size: 13px;
+    opacity: 100%;
+  }
+
+  .e-de-track-toolbar {
+    border-bottom: 1px solid #D8D8D8;
+    border-top: 1px solid #D8D8D8;
+    padding-bottom: $de-tc-tlbr-padding-btm;
+  }
+
+  .e-de-track-date {
+    font-size : 13px;
+    margin-top: 4px;
+    opacity: .67;
+  }
+
+  .e-de-track-usernme-div {
+    justify-content: space-between;
+    padding-top: 8px;
+  }
+
+  .e-de-track-user-nme {
+    font-size: 13px;
+    font-weight: 500;
+    padding-left: 8px;
+  }
+
+  .e-de-track-chngs-text {
+    line-height: 19.5px;
+    overflow: hidden;
+    word-wrap: break-word;
+    text-overflow: ellipsis;
+    font-size: 13px;
+    min-height: 20px;
+    padding-top: 8px;
+    margin-bottom: 16px;
+  }
+
+  .e-de-track-chng-table {
+    border-collapse: collapse;
+    border-spacing: 0px;
+    height: 20px;
+    opacity: 70%;
+    width: 100%;
+  }
+
+  .e-de-tc-tble-cell {
+    border: 1px solid;
+  }
+
+  .e-de-tc-shrink-img {
+    height: 30px;
+    margin: 0 4px;
+    vertical-align: middle;
+    width: 50px;
+  }
+
+  .e-de-tc-field {
+    background-color: rgb(206, 205, 205);
+    margin: 0 2px;
+  }
+
+  .e-de-tc-pmark {
+    font-size: 14px;
+    font-family: Roboto-Regular;
+    font-weight: 600;
+    color: rgb(1, 22, 119);
+    margin: 0 2px;
+  }
+
   .e-de-cmt-sub-container:not(.e-de-cmt-selection):not(.e-de-cmt-reply):hover {
     border-left: 2px solid $de-cmt-selection;
     padding-left: 7px;
   }
 
   .e-de-cmt-author {
-      margin-bottom: 8px;
+    align-items: center;
+    margin-bottom: 8px;
   }
 
   .e-de-cmt-author-name {
     font-size: 13px;
     font-weight: 500;
+    padding-left:8px;
     width: 90%;
   }
 
@@ -2597,14 +2821,6 @@
     }
   }
 
-  .e-de-cmt-pane.e-de-cmt-protection {
-
-    .e-de-cmt-rply-view, .e-de-cmt-resolve-btn, .e-de-cp-option {
-      display: none;
-    }
-
-  }
-
   .e-de-cmt-sub-container.e-de-cmt-resolved.e-de-cmt-selection {
     border-left: 3px solid $de-cmt-selection-rslv;
   }
@@ -2665,10 +2881,6 @@
   }
 
   .e-rtl {
-    .e-de-cp-close {
-      float: left;
-    }
-
     .e-de-cmt-pane { 
       border-left: none;
       border-right: 1px solid $de-op-border-clr;
@@ -2735,10 +2947,6 @@
       height: 56px;
       padding: 16px;
       padding-right: 8px;
-    }
-
-    .e-de-cp-close {
-      margin-top: -3px;
     }
 
     .e-rtl {

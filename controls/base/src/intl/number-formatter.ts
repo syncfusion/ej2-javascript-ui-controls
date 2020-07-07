@@ -71,14 +71,14 @@ export class NumberFormat {
         let dependable: base.Dependables = base.getDependables(cldr, culture, '', true);
         let numObject: Object = dependable.numericObject;
         dOptions.numberMapper = isBlazor() ? extend({}, numObject) :
-         parser.getNumberMapper(dependable.parserObject, parser.getNumberingSystem(cldr), true);
+            parser.getNumberMapper(dependable.parserObject, parser.getNumberingSystem(cldr), true);
         dOptions.currencySymbol = isBlazor() ? getValue('currencySymbol', numObject) : base.getCurrencySymbol(
             dependable.numericObject, fOptions.currency || defaultCurrencyCode, option.altSymbol);
         /* tslint:disable no-any */
         dOptions.percentSymbol = isBlazor() ? getValue('numberSymbols.percentSign', numObject) :
-         (<any>dOptions).numberMapper.numberSymbols[percentSign];
+            (<any>dOptions).numberMapper.numberSymbols[percentSign];
         dOptions.minusSymbol = isBlazor() ? getValue('numberSymbols.minusSign', numObject) :
-         (<any>dOptions).numberMapper.numberSymbols[minusSign];
+            (<any>dOptions).numberMapper.numberSymbols[minusSign];
         let symbols: any = dOptions.numberMapper.numberSymbols;
         if ((option.format) && !(base.formatRegex.test(option.format))) {
             cOptions = base.customFormat(option.format, dOptions, dependable.numericObject);
@@ -110,8 +110,11 @@ export class NumberFormat {
                     fOptions.groupData = this.getGroupingDetails(split[0]);
                 }
             } else {
-                cOptions.nData = getValue(fOptions.type + 'nData', numObject);
-                cOptions.pData = getValue(fOptions.type + 'pData', numObject);
+                cOptions.nData = extend({}, {}, getValue(fOptions.type + 'nData', numObject));
+                cOptions.pData = extend({}, {}, getValue(fOptions.type + 'pData', numObject));
+                if (fOptions.type === 'currency' && option.currency) {
+                    base.replaceBlazorCurrency([cOptions.pData, cOptions.nData], dOptions.currencySymbol, option.currency);
+                }
             }
             let minFrac: boolean = isUndefined(fOptions.minimumFractionDigits);
             if (minFrac) {

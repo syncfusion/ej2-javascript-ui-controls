@@ -309,6 +309,8 @@ const ROOT_POPUP = 'e-fe-popup';
 /** @hidden */
 const MOBILE = 'e-fe-mobile';
 /** @hidden */
+const MOB_POPUP = 'e-fe-popup e-fe-mobile';
+/** @hidden */
 const MULTI_SELECT = 'e-fe-m-select';
 /** @hidden */
 const FILTER = 'e-fe-m-filter';
@@ -937,7 +939,13 @@ function getSortedData(parent, items) {
     if (items.length === 0) {
         return items;
     }
-    let query = new Query().sortBy(parent.sortBy, parent.sortOrder.toLowerCase(), true).group('isFile');
+    let query;
+    if (parent.sortOrder !== 'None') {
+        query = new Query().sortBy(parent.sortBy, parent.sortOrder.toLowerCase(), true).group('isFile');
+    }
+    else {
+        query = new Query().group('isFile');
+    }
     let lists = new DataManager(items).executeLocal(query);
     return getValue('records', lists);
 }
@@ -1018,7 +1026,7 @@ function getCssClass(parent, css) {
 }
 function sortbyClickHandler(parent, args) {
     let tick;
-    if (args.item.id.indexOf('ascending') !== -1 || args.item.id.indexOf('descending') !== -1) {
+    if (args.item.id.indexOf('ascending') !== -1 || args.item.id.indexOf('descending') !== -1 || args.item.id.indexOf('none') !== -1) {
         tick = true;
     }
     else {
@@ -1056,6 +1064,9 @@ function getSortField(id) {
             break;
         case 'descending':
             field = 'Descending';
+            break;
+        case 'none':
+            field = 'None';
             break;
     }
     return field;
@@ -1508,7 +1519,7 @@ function uploadItem(parent) {
     }
     else {
         let eleId = '#' + parent.element.id + UPLOAD_ID;
-        let uploadEle = select(eleId, parent.element);
+        let uploadEle = document.querySelector(eleId);
         uploadEle.click();
     }
 }
@@ -1976,7 +1987,8 @@ function createDialog(parent, text, e, details, replaceItems) {
             visible: true,
             allowDragging: true,
             isModal: true,
-            target: '#' + parent.element.id,
+            target: parent.popupTarget ? parent.popupTarget : '#' + parent.element.id,
+            cssClass: getCssClass(parent, parent.isMobile ? MOB_POPUP : ROOT_POPUP),
             width: '350px',
             open: options.open,
             close: options.close,
@@ -2005,7 +2017,8 @@ function createExtDialog(parent, text, replaceItems, newPath) {
             closeOnEscape: true,
             allowDragging: true,
             animationSettings: { effect: 'None' },
-            target: '#' + parent.element.id,
+            target: parent.popupTarget ? parent.popupTarget : '#' + parent.element.id,
+            cssClass: getCssClass(parent, parent.isMobile ? MOB_POPUP : ROOT_POPUP),
             enableRtl: parent.enableRtl,
             showCloseIcon: true,
             isModal: true,
@@ -2644,7 +2657,8 @@ function createImageDialog(parent, header, imageUrl) {
             isModal: true,
             width: '350px',
             height: '350px',
-            target: '#' + parent.element.id,
+            target: parent.popupTarget ? parent.popupTarget : '#' + parent.element.id,
+            cssClass: getCssClass(parent, parent.isMobile ? MOB_POPUP : ROOT_POPUP),
             locale: parent.locale,
             enableResize: true,
             allowDragging: true,
@@ -4945,6 +4959,11 @@ class ContextMenu$2 {
                         /* istanbul ignore next */
                         sortbyClickHandler(this.parent, args);
                         break;
+                    /* istanbul ignore next */
+                    case 'none':
+                        /* istanbul ignore next */
+                        sortbyClickHandler(this.parent, args);
+                        break;
                     // tslint:disable-next-line
                     /* istanbul ignore next */
                     case 'largeiconsview':
@@ -5069,6 +5088,10 @@ class ContextMenu$2 {
                             {
                                 id: this.getMenuId('Descending'), text: getLocaleText(this.parent, 'Descending'),
                                 iconCss: this.parent.sortOrder === 'Descending' ? TB_OPTION_TICK : null
+                            },
+                            {
+                                id: this.getMenuId('None'), text: getLocaleText(this.parent, 'None'),
+                                iconCss: this.parent.sortOrder === 'None' ? TB_OPTION_TICK : null
                             }
                         ]
                     };
@@ -5159,6 +5182,7 @@ let defaultLocale = {
     'Permission': 'Permission',
     'Ascending': 'Ascending',
     'Descending': 'Descending',
+    'None': 'None',
     'View-LargeIcons': 'Large icons',
     'View-Details': 'Details',
     'Search': 'Search',
@@ -5243,7 +5267,6 @@ let FileManager = FileManager_1 = class FileManager extends Component {
         this.uploadItem = [];
         this.deleteRecords = [];
         this.isFile = false;
-        this.sortOrder = 'Ascending';
         this.sortBy = 'name';
         this.isCut = false;
         this.isSearchCut = false;
@@ -5539,7 +5562,8 @@ let FileManager = FileManager_1 = class FileManager extends Component {
             visible: false,
             isModal: true,
             width: '350px',
-            target: '#' + this.element.id,
+            target: this.popupTarget ? this.popupTarget : '#' + this.element.id,
+            cssClass: getCssClass(this, this.isMobile ? MOB_POPUP : ROOT_POPUP),
             locale: this.locale,
             allowDragging: true,
             position: { X: 'center', Y: 'center' },
@@ -5944,6 +5968,24 @@ let FileManager = FileManager_1 = class FileManager extends Component {
                     setStyleAttribute(this.element, { 'width': width });
                     this.notify(modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
                     break;
+                case 'sortOrder':
+                    refresh(this);
+                    this.notify(sortByChange, {});
+                    break;
+                case 'popupTarget':
+                    if (this.uploadDialogObj) {
+                        this.uploadDialogObj.target = newProp.popupTarget;
+                    }
+                    if (this.dialogObj) {
+                        this.dialogObj.target = newProp.popupTarget;
+                    }
+                    if (this.extDialogObj) {
+                        this.extDialogObj.target = newProp.popupTarget;
+                    }
+                    if (this.viewerObj) {
+                        this.viewerObj.target = newProp.popupTarget;
+                    }
+                    break;
             }
         }
     }
@@ -6259,6 +6301,9 @@ __decorate$8([
     Property('/')
 ], FileManager.prototype, "path", void 0);
 __decorate$8([
+    Property(null)
+], FileManager.prototype, "popupTarget", void 0);
+__decorate$8([
     Complex({}, SearchSettings)
 ], FileManager.prototype, "searchSettings", void 0);
 __decorate$8([
@@ -6276,6 +6321,9 @@ __decorate$8([
 __decorate$8([
     Property(true)
 ], FileManager.prototype, "showThumbnail", void 0);
+__decorate$8([
+    Property('Ascending')
+], FileManager.prototype, "sortOrder", void 0);
 __decorate$8([
     Complex({}, ToolbarSettings)
 ], FileManager.prototype, "toolbarSettings", void 0);
@@ -6506,7 +6554,8 @@ class Toolbar$1 {
                 { id: this.getPupupId('date'), text: getLocaleText(this.parent, 'DateModified') },
                 { separator: true },
                 { id: this.getPupupId('ascending'), text: getLocaleText(this.parent, 'Ascending'), iconCss: TB_OPTION_TICK },
-                { id: this.getPupupId('descending'), text: getLocaleText(this.parent, 'Descending'), }
+                { id: this.getPupupId('descending'), text: getLocaleText(this.parent, 'Descending'), },
+                { id: this.getPupupId('none'), text: getLocaleText(this.parent, 'None'), }
             ];
             this.buttonObj = new DropDownButton({
                 items: items, cssClass: getCssClass(this.parent, ROOT_POPUP),
@@ -6577,6 +6626,9 @@ class Toolbar$1 {
                 }
                 else if (items[itemCount].id === this.getPupupId('descending')) {
                     items[itemCount].iconCss = this.parent.sortOrder === 'Descending' ? TB_OPTION_TICK : '';
+                }
+                else if (items[itemCount].id === this.getPupupId('none')) {
+                    items[itemCount].iconCss = this.parent.sortOrder === 'None' ? TB_OPTION_TICK : '';
                 }
             }
         }
@@ -7659,7 +7711,9 @@ class DetailsView {
                 sortSettings = [];
             }
             else {
-                sortSettings = [{ direction: this.parent.sortOrder, field: this.parent.sortBy }];
+                if (this.parent.sortOrder !== 'None') {
+                    sortSettings = [{ direction: this.parent.sortOrder, field: this.parent.sortBy }];
+                }
             }
             this.gridObj = new Grid({
                 dataSource: items,
@@ -7994,7 +8048,12 @@ class DetailsView {
         }
     }
     onSortColumn() {
-        this.gridObj.sortModule.sortColumn(this.parent.sortBy, this.parent.sortOrder);
+        if (this.parent.sortOrder !== 'None') {
+            this.gridObj.sortModule.sortColumn(this.parent.sortBy, this.parent.sortOrder);
+        }
+        else {
+            this.gridObj.dataSource = getSortedData(this.parent, this.gridObj.dataSource);
+        }
     }
     onPropertyChanged(e) {
         if (e.module !== this.getModuleName() && e.module !== 'common') {
@@ -8178,7 +8237,9 @@ class DetailsView {
             }
             this.adjustHeight();
             if (this.gridObj.sortSettings.columns.length > 0 && this.gridObj.sortSettings.columns[0].field !== this.parent.sortBy) {
-                this.gridObj.sortColumn(this.parent.sortBy, this.parent.sortOrder);
+                if (this.parent.sortOrder !== 'None') {
+                    this.gridObj.sortColumn(this.parent.sortBy, this.parent.sortOrder);
+                }
             }
         }
     }
@@ -8201,7 +8262,12 @@ class DetailsView {
         if (columnData[len - 1].field && (columnData[len - 1].field === 'filterPath')) {
             /* istanbul ignore next */
             if (this.gridObj.sortSettings.columns[0].field === 'filterPath') {
-                this.gridObj.sortColumn('name', this.parent.sortOrder);
+                if (this.parent.sortOrder !== 'None') {
+                    this.gridObj.sortColumn('name', this.parent.sortOrder);
+                }
+                else {
+                    this.gridObj.dataSource = getSortedData(this.parent, this.gridObj.dataSource);
+                }
                 this.parent.notify(sortByChange, {});
             }
             this.gridObj.columns.pop();
@@ -9302,5 +9368,5 @@ class DetailsView {
  * File Manager all modules
  */
 
-export { AjaxSettings, toolbarItems, ToolbarSettings, SearchSettings, columnArray, DetailsViewSettings, fileItems, folderItems, layoutItems, ContextMenuSettings, NavigationPaneSettings, UploadSettings, Column, TOOLBAR_ID, LAYOUT_ID, NAVIGATION_ID, TREE_ID, GRID_ID, LARGEICON_ID, DIALOG_ID, ALT_DIALOG_ID, IMG_DIALOG_ID, EXTN_DIALOG_ID, UPLOAD_DIALOG_ID, RETRY_DIALOG_ID, CONTEXT_MENU_ID, SORTBY_ID, VIEW_ID, SPLITTER_ID, CONTENT_ID, BREADCRUMBBAR_ID, UPLOAD_ID, RETRY_ID, SEARCH_ID, ROOT, CONTROL, CHECK_SELECT, ROOT_POPUP, MOBILE, MULTI_SELECT, FILTER, LAYOUT, NAVIGATION, LAYOUT_CONTENT, LARGE_ICONS, TB_ITEM, LIST_ITEM, LIST_TEXT, LIST_PARENT, TB_OPTION_TICK, TB_OPTION_DOT, BLUR, ACTIVE, HOVER, FOCUS, FOCUSED, CHECK, FRAME, CB_WRAP, ROW, ROWCELL, EMPTY, EMPTY_CONTENT, EMPTY_INNER_CONTENT, CLONE, DROP_FOLDER, DROP_FILE, FOLDER, ICON_IMAGE, ICON_MUSIC, ICON_VIDEO, LARGE_ICON, LARGE_EMPTY_FOLDER, LARGE_EMPTY_FOLDER_TWO, LARGE_ICON_FOLDER, SELECTED_ITEMS, TEXT_CONTENT, GRID_HEADER, TEMPLATE_CELL, TREE_VIEW, MENU_ITEM, MENU_ICON, SUBMENU_ICON, GRID_VIEW, ICON_VIEW, ICON_OPEN, ICON_UPLOAD, ICON_CUT, ICON_COPY, ICON_PASTE, ICON_DELETE, ICON_RENAME, ICON_NEWFOLDER, ICON_DETAILS, ICON_SHORTBY, ICON_REFRESH, ICON_SELECTALL, ICON_DOWNLOAD, ICON_OPTIONS, ICON_GRID, ICON_LARGE, ICON_BREADCRUMB, ICON_CLEAR, ICON_DROP_IN, ICON_DROP_OUT, ICON_NO_DROP, ICONS, DETAILS_LABEL, ERROR_CONTENT, STATUS, BREADCRUMBS, RTL, DISPLAY_NONE, COLLAPSED, FULLROW, ICON_COLLAPSIBLE, SPLIT_BAR, HEADER_CHECK, OVERLAY, VALUE, isFile, modelChanged, initialEnd, finalizeEnd, createEnd, filterEnd, beforeDelete, pathDrag, deleteInit, deleteEnd, refreshEnd, resizeEnd, splitterResize, pathChanged, destroy, beforeRequest, upload, skipUpload, afterRequest, download, layoutRefresh, actionFailure, search, openInit, openEnd, selectionChanged, selectAllInit, clearAllInit, clearPathInit, layoutChange, sortByChange, nodeExpand, detailsInit, menuItemData, renameInit, renameEndParent, renameEnd, showPaste, hidePaste, selectedData, cutCopyInit, pasteInit, pasteEnd, cutEnd, hideLayout, updateTreeSelection, treeSelect, sortColumn, pathColumn, searchTextChange, beforeDownload, downloadInit, dropInit, dragEnd, dropPath, dragHelper, dragging, updateSelectionData, methodCall, permissionRead, permissionEdit, permissionEditContents, permissionCopy, permissionUpload, permissionDownload, FileManager, Toolbar$1 as Toolbar, BreadCrumbBar, NavigationPane, DetailsView, LargeIconsView, createDialog, createExtDialog, createImageDialog, ContextMenu$2 as ContextMenu };
+export { AjaxSettings, toolbarItems, ToolbarSettings, SearchSettings, columnArray, DetailsViewSettings, fileItems, folderItems, layoutItems, ContextMenuSettings, NavigationPaneSettings, UploadSettings, Column, TOOLBAR_ID, LAYOUT_ID, NAVIGATION_ID, TREE_ID, GRID_ID, LARGEICON_ID, DIALOG_ID, ALT_DIALOG_ID, IMG_DIALOG_ID, EXTN_DIALOG_ID, UPLOAD_DIALOG_ID, RETRY_DIALOG_ID, CONTEXT_MENU_ID, SORTBY_ID, VIEW_ID, SPLITTER_ID, CONTENT_ID, BREADCRUMBBAR_ID, UPLOAD_ID, RETRY_ID, SEARCH_ID, ROOT, CONTROL, CHECK_SELECT, ROOT_POPUP, MOBILE, MOB_POPUP, MULTI_SELECT, FILTER, LAYOUT, NAVIGATION, LAYOUT_CONTENT, LARGE_ICONS, TB_ITEM, LIST_ITEM, LIST_TEXT, LIST_PARENT, TB_OPTION_TICK, TB_OPTION_DOT, BLUR, ACTIVE, HOVER, FOCUS, FOCUSED, CHECK, FRAME, CB_WRAP, ROW, ROWCELL, EMPTY, EMPTY_CONTENT, EMPTY_INNER_CONTENT, CLONE, DROP_FOLDER, DROP_FILE, FOLDER, ICON_IMAGE, ICON_MUSIC, ICON_VIDEO, LARGE_ICON, LARGE_EMPTY_FOLDER, LARGE_EMPTY_FOLDER_TWO, LARGE_ICON_FOLDER, SELECTED_ITEMS, TEXT_CONTENT, GRID_HEADER, TEMPLATE_CELL, TREE_VIEW, MENU_ITEM, MENU_ICON, SUBMENU_ICON, GRID_VIEW, ICON_VIEW, ICON_OPEN, ICON_UPLOAD, ICON_CUT, ICON_COPY, ICON_PASTE, ICON_DELETE, ICON_RENAME, ICON_NEWFOLDER, ICON_DETAILS, ICON_SHORTBY, ICON_REFRESH, ICON_SELECTALL, ICON_DOWNLOAD, ICON_OPTIONS, ICON_GRID, ICON_LARGE, ICON_BREADCRUMB, ICON_CLEAR, ICON_DROP_IN, ICON_DROP_OUT, ICON_NO_DROP, ICONS, DETAILS_LABEL, ERROR_CONTENT, STATUS, BREADCRUMBS, RTL, DISPLAY_NONE, COLLAPSED, FULLROW, ICON_COLLAPSIBLE, SPLIT_BAR, HEADER_CHECK, OVERLAY, VALUE, isFile, modelChanged, initialEnd, finalizeEnd, createEnd, filterEnd, beforeDelete, pathDrag, deleteInit, deleteEnd, refreshEnd, resizeEnd, splitterResize, pathChanged, destroy, beforeRequest, upload, skipUpload, afterRequest, download, layoutRefresh, actionFailure, search, openInit, openEnd, selectionChanged, selectAllInit, clearAllInit, clearPathInit, layoutChange, sortByChange, nodeExpand, detailsInit, menuItemData, renameInit, renameEndParent, renameEnd, showPaste, hidePaste, selectedData, cutCopyInit, pasteInit, pasteEnd, cutEnd, hideLayout, updateTreeSelection, treeSelect, sortColumn, pathColumn, searchTextChange, beforeDownload, downloadInit, dropInit, dragEnd, dropPath, dragHelper, dragging, updateSelectionData, methodCall, permissionRead, permissionEdit, permissionEditContents, permissionCopy, permissionUpload, permissionDownload, FileManager, Toolbar$1 as Toolbar, BreadCrumbBar, NavigationPane, DetailsView, LargeIconsView, createDialog, createExtDialog, createImageDialog, ContextMenu$2 as ContextMenu };
 //# sourceMappingURL=ej2-filemanager.es2015.js.map

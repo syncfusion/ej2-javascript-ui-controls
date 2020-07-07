@@ -1,5 +1,5 @@
 import { Draggable, formatUnit, createElement, isNullOrUndefined, addClass, closest, MouseEventArgs } from '@syncfusion/ej2-base';
-import { removeClass, classList, remove, BlazorDragEventArgs } from '@syncfusion/ej2-base';
+import { removeClass, classList, remove, BlazorDragEventArgs, Browser, EventHandler } from '@syncfusion/ej2-base';
 import { Kanban } from '../base/kanban';
 import { DragArgs, EJ2Instance, DragEdges, DragEventArgs } from '../base/interface';
 import * as cls from '../base/css-constant';
@@ -21,7 +21,7 @@ export class DragAndDrop {
     constructor(parent: Kanban) {
         this.parent = parent;
         this.dragObj = {
-            element: null, cloneElement: null,
+            element: null, cloneElement: null, instance: null,
             targetClone: null, draggedClone: null, targetCloneMulti: null,
             selectedCards: [], pageX: 0, pageY: 0, navigationInterval: null, cardDetails: [], modifiedData: []
         };
@@ -30,7 +30,7 @@ export class DragAndDrop {
     }
 
     public wireDragEvents(element: HTMLElement): void {
-        new Draggable(element, {
+        this.dragObj.instance = new Draggable(element, {
             clone: true,
             enableTapHold: this.parent.isAdaptive as boolean,
             enableTailMode: true,
@@ -42,6 +42,10 @@ export class DragAndDrop {
             enableAutoScroll: false,
             helper: this.dragHelper.bind(this),
         });
+        if (!(this.dragObj.instance.enableTapHold && Browser.isDevice && Browser.isTouch)) {
+            // tslint:disable-next-line:no-any
+            EventHandler.remove(element, 'touchstart', (this.dragObj.instance as any).initialize);
+        }
     }
 
     private dragHelper(e: { [key: string]: MouseEventArgs }): HTMLElement {
@@ -61,6 +65,7 @@ export class DragAndDrop {
             className: cls.DROPPED_CLONE_CLASS,
             styles: 'width:' + formatUnit(this.dragObj.element.offsetWidth) + ';height:' + formatUnit(this.dragObj.element.offsetHeight)
         });
+        this.dragObj.modifiedData = [];
         return this.dragObj.cloneElement;
     }
 
@@ -80,10 +85,12 @@ export class DragAndDrop {
         this.parent.trigger(events.dragStart, dragArgs, (dragEventArgs: DragEventArgs & BlazorDragEventArgs) => {
             if (dragEventArgs.cancel) {
                 this.removeElement(this.dragObj.cloneElement);
-                this.dragObj = {
-                    element: null, cloneElement: null,
-                    targetClone: null, draggedClone: null, targetCloneMulti: null
-                };
+                this.dragObj.instance.intDestroy(e);
+                this.dragObj.element = null;
+                this.dragObj.targetClone = null;
+                this.dragObj.draggedClone = null;
+                this.dragObj.cloneElement = null;
+                this.dragObj.targetCloneMulti = null;
                 return;
             }
             if (this.parent.isBlazorRender()) {
@@ -134,9 +141,20 @@ export class DragAndDrop {
             let isDrag: boolean = (targetKey === this.getColumnKey(closest(this.dragObj.draggedClone, '.' + cls.CONTENT_CELLS_CLASS)))
                 ? true : false;
             if (keys.length === 1 || isDrag) {
-                if (target.classList.contains(cls.CARD_CLASS)) {
-                    let insertClone: InsertPosition = (isNullOrUndefined(target.previousElementSibling) && (this.dragObj.pageY -
-                        (this.parent.element.offsetTop + target.offsetTop)) < (target.offsetHeight / 2)) ? 'beforebegin' : 'afterend';
+                if (target.classList.contains(cls.CARD_CLASS) || target.classList.contains(cls.DRAGGED_CLONE_CLASS)) {
+                    let element: Element = target.classList.contains(cls.DRAGGED_CLONE_CLASS) ?
+                        (target.previousElementSibling.classList.contains(cls.DRAGGED_CARD_CLASS) ? null : target.previousElementSibling)
+                        : target.previousElementSibling;
+                    let insertClone: InsertPosition = 'afterend';
+                    if (isNullOrUndefined(element)) {
+                        let pageY: number = target.classList.contains(cls.DRAGGED_CLONE_CLASS) ? (this.dragObj.pageY / 2) :
+                            this.dragObj.pageY;
+                        let height: number = target.classList.contains(cls.DRAGGED_CLONE_CLASS) ? target.offsetHeight :
+                            (target.offsetHeight / 2);
+                        if ((pageY - (this.parent.element.getBoundingClientRect().top + target.offsetTop)) < height) {
+                            insertClone = 'beforebegin';
+                        }
+                    }
                     target.insertAdjacentElement(insertClone, this.dragObj.targetClone);
                 } else if (target.classList.contains(cls.CONTENT_CELLS_CLASS) && !closest(target, '.' + cls.SWIMLANE_ROW_CLASS)) {
                     target.querySelector('.' + cls.CARD_WRAPPER_CLASS).appendChild(this.dragObj.targetClone);
@@ -270,7 +288,7 @@ export class DragAndDrop {
                     this.updateDroppedData(element, cardStatus, contentCell);
                 });
             }
-            if (this.parent.cardSettings.priority) {
+            if (this.parent.sortSettings.field && this.parent.sortSettings.sortBy === 'Index') {
                 this.changeOrder(this.dragObj.modifiedData);
             }
         }
@@ -324,26 +342,32 @@ export class DragAndDrop {
         this.dragObj.modifiedData.push(crudData);
     }
 
-    private changeOrder(modifiedData: { [key: string]: Object }[]): void {
-        let prevEle: boolean = false;
-        let element: Element = this.dragObj.targetClone.previousElementSibling;
+    private changeOrder(modifieddata: { [key: string]: object }[]): void {
+        let prevele: boolean = false;
+        let element: Element = this.parent.sortSettings.direction === 'Ascending' ?
+            this.dragObj.targetClone.previousElementSibling : this.dragObj.targetClone.nextElementSibling;
         if (element && !element.classList.contains(cls.DRAGGED_CARD_CLASS) && !element.classList.contains(cls.CLONED_CARD_CLASS)
             && !element.classList.contains(cls.DRAGGED_CLONE_CLASS)) {
-            prevEle = true;
-        } else if (this.dragObj.targetClone.nextElementSibling) {
+            prevele = true;
+        } else if (this.dragObj.targetClone.nextElementSibling && this.parent.sortSettings.direction === 'Ascending') {
             element = this.dragObj.targetClone.nextElementSibling;
+        } else if (this.dragObj.targetClone.previousElementSibling && this.parent.sortSettings.direction === 'Descending') {
+            element = this.dragObj.targetClone.previousElementSibling;
         } else {
             return;
         }
         let obj: { [key: string]: Object } = this.parent.getCardDetails(element);
-        let index: number = (obj as { [key: string]: Object })[this.parent.cardSettings.priority] as number;
-        modifiedData.forEach((data: { [key: string]: Object }): void => {
-            if (prevEle) {
-                data[this.parent.cardSettings.priority] = ++index;
-            } else if (index !== 1 && index <= data[this.parent.cardSettings.priority]) {
-                data[this.parent.cardSettings.priority] = --index;
-            } else if (index === 1) {
-                data[this.parent.cardSettings.priority] = 1;
+        let keyIndex: number = (obj as { [key: string]: Object })[this.parent.sortSettings.field] as number;
+        if (modifieddata.length > 1 && this.parent.sortSettings.direction === 'Descending') {
+            modifieddata = modifieddata.reverse();
+        }
+        modifieddata.forEach((data: { [key: string]: Object }, index: number): void => {
+            if (prevele) {
+                data[this.parent.sortSettings.field] = ++keyIndex;
+            } else if (keyIndex !== 1 && index <= data[this.parent.sortSettings.field]) {
+                data[this.parent.sortSettings.field] = --keyIndex;
+            } else if (keyIndex === 1) {
+                data[this.parent.sortSettings.field] = index + 1;
             }
         });
     }

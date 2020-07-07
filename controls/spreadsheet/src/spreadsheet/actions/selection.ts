@@ -1,5 +1,5 @@
 import { Spreadsheet } from '../base/index';
-import { contentLoaded, mouseDown, virtualContentLoaded, cellNavigate, getUpdateUsingRaf, IOffset } from '../common/index';
+import { contentLoaded, mouseDown, virtualContentLoaded, cellNavigate, getUpdateUsingRaf, IOffset, showAggregate } from '../common/index';
 import { SheetModel, getColumnsWidth, updateSelectedRange, getColumnWidth, mergedRange, activeCellMergedRange } from '../../workbook/index';
 import { getRowHeight, isSingleCell, activeCellChanged, CellModel, MergeArgs } from '../../workbook/index';
 import { EventHandler, addClass, removeClass, isNullOrUndefined, Browser, closest } from '@syncfusion/ej2-base';
@@ -131,6 +131,12 @@ export class Selection {
 
     private mouseDownHandler(e: MouseEvent & TouchEvent): void {
         if (!this.parent.isEdit) {
+            let overlayElem: HTMLElement = document.getElementById(this.parent.element.id + '_overlay');
+            if ((e.target as HTMLElement).className.indexOf('e-ss-overlay') > -1) {
+                return;
+            } else if (overlayElem) {
+                overlayElem.classList.remove('e-ss-overlay-active');
+            }
             if (this.parent.getActiveSheet().isProtected && !this.parent.getActiveSheet().protectSettings.selectCells) {
                 return;
             }
@@ -177,14 +183,11 @@ export class Selection {
                         this.startCell = [0, 0];
                         this.selectRangeByIdx([].concat(this.startCell, [sheet.rowCount - 1, sheet.colCount - 1]), e);
                     } else if (!(e.target as Element).classList.contains('e-main-content')) {
-                        let triggerCellChange: boolean = this.isRowSelected || this.isColSelected;
-                        this.isRowSelected = false; this.isColSelected = false;
                         if (!e.shiftKey || mode === 'Single') {
                             this.startCell = [rowIdx, colIdx];
                         }
                         this.selectRangeByIdx(
-                            [].concat(this.startCell ? this.startCell : getCellIndexes(sheet.activeCell), [rowIdx, colIdx]), e, null, null,
-                            null, null, triggerCellChange);
+                            [].concat(this.startCell ? this.startCell : getCellIndexes(sheet.activeCell), [rowIdx, colIdx]), e);
                     }
                     if (this.parent.isMobileView()) {
                         this.parent.element.classList.add('e-mobile-focused');
@@ -208,11 +211,13 @@ export class Selection {
         let prevIndex: number[] = getRangeIndexes(sheet.selectedRange);
         let mergeArgs: MergeArgs = { range: [rowIdx, colIdx, rowIdx, colIdx] };
         this.parent.notify(activeCellMergedRange, mergeArgs);
+        if (mergeArgs.range[2] === prevIndex[2] && mergeArgs.range[3] === prevIndex[3]) { return; }
         let isScrollDown: boolean = clientY > clientRect.bottom && rowIdx < sheet.rowCount;
         let isScrollUp: boolean = clientY < clientRect.top && rowIdx >= 0 && !this.isColSelected;
         let isScrollRight: boolean = clientX > clientRect.right && colIdx < sheet.colCount;
         let isScrollLeft: boolean = clientX < clientRect.left && colIdx >= 0 && !this.isRowSelected;
         this.clearInterval();
+        if (!this.isColSelected && !this.isRowSelected) { prevIndex = getCellIndexes(sheet.activeCell); }
         if (isScrollDown || isScrollUp || isScrollRight || isScrollLeft) {
             this.scrollInterval = setInterval(() => {
                 if ((isScrollDown || isScrollUp) && !this.isColSelected) {
@@ -231,13 +236,10 @@ export class Selection {
                     }
                     cont.scrollLeft += (isScrollRight ? 1 : -1) * getColumnWidth(sheet, colIdx);
                 }
-                if (!this.isColSelected && !this.isRowSelected) { prevIndex = getCellIndexes(sheet.activeCell); }
                 this.selectRangeByIdx([].concat(prevIndex[0], prevIndex[1], [rowIdx, colIdx]), e);
                 // tslint:disable-next-line
             }, 100);
         } else {
-            if (mergeArgs.range[2] === prevIndex[2] && mergeArgs.range[3] === prevIndex[3]) { return; }
-            if (!this.isColSelected && !this.isRowSelected) { prevIndex = getCellIndexes(sheet.activeCell); }
             this.selectRangeByIdx([].concat(prevIndex[0], prevIndex[1], [rowIdx, colIdx]), e);
         }
     }
@@ -251,6 +253,7 @@ export class Selection {
                 this.getColIdxFromClientX(getClientX(this.touchEvt)) === colIdx)) {
             this.mouseDownHandler(e);
         }
+        this.parent.trigger('select', { range: this.parent.getActiveSheet().selectedRange });
         document.removeEventListener(getMoveEvent().split(' ')[0], this.mouseMoveEvt);
         if (!Browser.isPointer) {
             document.removeEventListener(getMoveEvent().split(' ')[1], this.mouseMoveEvt);
@@ -329,7 +332,7 @@ export class Selection {
 
     private selectRangeByIdx(
         range: number[], e?: MouseEvent, isScrollRefresh?: boolean,
-        isActCellChanged?: boolean, isInit?: boolean, skipChecking?: boolean, triggerCellChange?: boolean): void {
+        isActCellChanged?: boolean, isInit?: boolean, skipChecking?: boolean): void {
         let ele: HTMLElement = this.getSelectionElement();
         let sheet: SheetModel = this.parent.getActiveSheet();
         let mergeArgs: MergeArgs = { range: range, isActiveCell: false, skipChecking: skipChecking };
@@ -350,11 +353,11 @@ export class Selection {
         this.UpdateRowColSelected(range);
         this.highlightHdr(range);
         if (!isScrollRefresh && !(e && (e.type === 'mousemove' || isTouchMove(e)))) {
-            this.updateActiveCell(isActCellChanged ? getRangeIndexes(sheet.activeCell) : range, isInit, triggerCellChange);
+            this.updateActiveCell(isActCellChanged ? getRangeIndexes(sheet.activeCell) : range, isInit);
         }
         if (isNullOrUndefined(e)) { e = <MouseEvent>{ type: 'mousedown' }; }
         this.parent.notify(selectionComplete, e);
-        this.parent.trigger('select', { range: this.parent.getActiveSheet().selectedRange });
+        this.parent.notify(showAggregate, {});
     }
 
     private UpdateRowColSelected(indexes: number[]): void {
@@ -363,7 +366,7 @@ export class Selection {
         this.isColSelected = (indexes[0] === 0 && indexes[2] === sheet.rowCount - 1);
     }
 
-    private updateActiveCell(range: number[], isInit?: boolean, triggerEvent?: boolean): void {
+    private updateActiveCell(range: number[], isInit?: boolean): void {
         let sheet: SheetModel = this.parent.getActiveSheet();
         let topLeftIdx: number[] = getRangeIndexes(sheet.topLeftCell); let rowIdx: number; let colIdx: number; let cell: CellModel;
         if (this.isColSelected) {
@@ -379,11 +382,10 @@ export class Selection {
         if (sheet.activeCell !== getCellAddress(range[0], range[1]) || isInit) {
             sheet.activeCell = getCellAddress(range[0], range[1]);
             locateElem(this.getActiveCell(), range, sheet, this.parent.enableRtl, this.getOffset(range[2], range[3]));
-            triggerEvent = true;
+            this.parent.notify(activeCellChanged, null);
         } else {
             locateElem(this.getActiveCell(), range, sheet, this.parent.enableRtl, this.getOffset(range[2], range[3]));
         }
-        if (triggerEvent) { this.parent.notify(activeCellChanged, null); }
     }
 
     private getOffset(rowIdx: number, colIdx: number): { left: IOffset, top: IOffset } {
@@ -423,7 +425,7 @@ export class Selection {
             if (isColRefresh) {
                 colHdr = [].slice.call(this.parent.getColumnHeaderContent().querySelectorAll('th')).slice(swapRange[1], swapRange[3] + 1);
             }
-            if (sheet.isProtected && !sheet.protectSettings.selectCells)  {
+            if (sheet.isProtected && !sheet.protectSettings.selectCells) {
                 removeClass([].concat(rowHdr, colHdr), 'e-highlight');
             } else {
                 addClass([].concat(rowHdr, colHdr), 'e-highlight');

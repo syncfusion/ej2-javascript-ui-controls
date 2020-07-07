@@ -6,7 +6,8 @@ import { NavigationPane } from '../../../src/file-manager/layout/navigation-pane
 import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { createElement } from '@syncfusion/ej2-base';
-import { toolbarItems, toolbarItems1, data1, data16, data17, dataHidden, idData1, idData2, idData4 } from '../data';
+import { BeforePopupOpenCloseEventArgs } from '../../../src/file-manager/base/interface';
+import { toolbarItems, toolbarItems1, data1, data16, data17, dataHidden, idData1, idData2, idData4, noSorting, ascendingData, descendingData, singleSelectionDetails, data2, getMultipleDetails } from '../data';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
 
@@ -1062,6 +1063,252 @@ describe('FileManager control LargeIcons view', () => {
                 expect(li[4].getAttribute('aria-selected')).not.toEqual('true');
                 done();
             }, 400);
+        });
+
+        it('for sorting', (done) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(ascendingData)
+            });
+            setTimeout(function () {
+                expect(document.getElementById('file_largeicons').querySelectorAll('.e-list-text').length).toEqual(3);
+                expect(document.getElementById('file_largeicons').querySelectorAll('.e-list-text')[0].textContent).toBe('Apple');
+                expect(document.getElementById('file_largeicons').querySelectorAll('.e-list-text')[1].textContent).toBe('Music');
+                feObj.sortOrder = 'Descending';
+                feObj.dataBind();
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(descendingData)
+                });
+                setTimeout(function () {
+                    expect(document.getElementById('file_largeicons').querySelectorAll('.e-list-text')[0].textContent).toBe('Videos');
+                    expect(document.getElementById('file_largeicons').querySelectorAll('.e-list-text')[2].textContent).toBe('Apple');
+                    feObj.sortOrder = 'None';
+                    feObj.dataBind();
+                    this.request = jasmine.Ajax.requests.mostRecent();
+                    this.request.respondWith({
+                        status: 200,
+                        responseText: JSON.stringify(noSorting)
+                    });
+                    setTimeout(function () {
+                        expect(document.getElementById('file_largeicons').querySelectorAll('.e-list-text')[0].textContent).toBe('Music');
+                        expect(document.getElementById('file_largeicons').querySelectorAll('.e-list-text')[1].textContent).toBe('Videos');
+                        done();
+                    }, 500);
+                }, 500);
+            });
+        });
+    });
+    describe('popupTarget property change testing', () => {
+        let mouseEventArgs: any, tapEvent: any;
+        let feObj: FileManager;
+        let ele: HTMLElement;
+        let target: any;
+        let j:number=0;
+        let name: string = null;
+        let dblclickevent: any;
+        let originalTimeout: any;
+        beforeEach((done) => {
+           j= 0; name = null;
+            jasmine.Ajax.install();
+            ele = createElement('div', { id: 'file' });
+            document.body.appendChild(ele);
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+                beforePopupOpen: (args: BeforePopupOpenCloseEventArgs) => {
+                    expect(args.popupName).toBe(name);
+                    target = args.popupModule.target;
+                    j++;
+                },
+                rootAliasName: "My Drive"
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
+            mouseEventArgs = {
+                preventDefault: (): void => { },
+                stopImmediatePropagation: (): void => { },
+                target: null,
+                type: null,
+                shiftKey: false,
+                ctrlKey: false,
+                originalEvent: { target: null }
+            };
+            dblclickevent = new MouseEvent('dblclick', {
+                'view': window,
+                'bubbles': true,
+                'cancelable': true
+            });
+            tapEvent = {
+                originalEvent: mouseEventArgs,
+                tapCount: 1
+            };
+            setTimeout(function () {
+                let menuObj: any = (document.getElementById(feObj.element.id + '_contextmenu') as any).ej2_instances[0];
+                menuObj.animationSettings = { effect: 'None' };
+                menuObj.dataBind();
+                done();
+            }, 500);
+        });
+        afterEach(() => {
+            jasmine.Ajax.uninstall();
+            if (feObj) feObj.destroy();
+            ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        });
+        it('for create folder', () => {
+            name = 'Create Folder';
+            feObj.popupTarget = "BODY";
+            feObj.dataBind();
+            let item1: any = document.getElementById('file_tb_newfolder');
+            item1.click();
+            expect(target).toBe('BODY');
+            expect(target).not.toBe(feObj.element);
+            item1 = document.getElementById('file_dialog').querySelector('.e-dlg-closeicon-btn');
+            item1.click();
+            feObj.popupTarget = feObj.element;
+            feObj.dataBind();
+            let item: any = document.getElementById('file_tb_newfolder');
+            item.click();
+            expect(target).not.toBe('BODY');
+            expect(target).toBe(feObj.element);
+            item = document.getElementById('file_dialog').querySelector('.e-dlg-closeicon-btn');
+            item.click();
+        });
+
+        it('for Rename', () => {
+            feObj.selectedItems = ['Food']
+            name = 'Rename';
+            feObj.popupTarget = 'BODY';
+            feObj.dataBind();
+            let item1: any = document.getElementById('file_tb_rename');
+            item1.click();
+            item1 = document.getElementById('file_dialog').querySelector('.e-dlg-closeicon-btn');
+            item1.click();
+            expect(target).toBe('BODY');
+            expect(target).not.toBe(feObj.element);
+            feObj.popupTarget = feObj.element;
+            feObj.dataBind();
+            let item: any = document.getElementById('file_tb_rename');
+            item.click();
+            item = document.getElementById('file_dialog').querySelector('.e-dlg-closeicon-btn');
+            item.click();
+            expect(target).not.toBe('BODY');
+            expect(target).toBe(feObj.element);
+        });
+
+        it('for Delete', () => {
+            feObj.selectedItems = ['Food']
+            name = 'Delete';
+            feObj.popupTarget = 'BODY';
+            feObj.dataBind();
+            let item1: any = document.getElementById('file_tb_delete');
+            item1.click();
+            item1 = document.getElementById('file_dialog').querySelector('.e-dlg-closeicon-btn');
+            item1.click();
+            expect(target).toBe('BODY');
+            expect(target).not.toBe(feObj.element);
+            feObj.popupTarget = feObj.element;
+            feObj.dataBind();
+            let item: any = document.getElementById('file_tb_delete');
+            item.click();
+            item = document.getElementById('file_dialog').querySelector('.e-dlg-closeicon-btn');
+            item.click();
+            expect(target).not.toBe('BODY');
+            expect(target).toBe(feObj.element);
+        });
+
+        it('for details', (done: Function) => {
+            name = 'File Details';
+            let Li: any = document.getElementById('file_largeicons').querySelectorAll('li')[1].querySelector('.e-frame.e-icons');
+            mouseEventArgs.target = Li;
+            tapEvent.tapCount = 1;
+            (<any>feObj.largeiconsviewModule).clickObj.tap(tapEvent);
+            feObj.popupTarget = 'BODY';
+            feObj.dataBind();
+            let items: any = document.getElementById('file_tb_details');
+            items.click();
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(singleSelectionDetails)
+            });
+            setTimeout(function () {
+                expect(document.getElementById('file_dialog_title').textContent).toBe('Documents');
+                expect((<any>document.querySelectorAll('.e-fe-value')[0]).textContent).toBe('Folder');
+                let item: any = document.getElementById('file_dialog').querySelector('.e-dlg-closeicon-btn');
+                item.click();
+                expect(j).toBe(1);
+                expect(target).toBe('BODY');
+                expect(target).not.toBe(feObj.element);
+                done();
+            }, 500);
+        });
+        it('for Extension', () => {
+            name = 'Rename'
+            feObj.popupTarget = 'BODY';
+            feObj.dataBind();
+            let Li: any = document.getElementById('file_largeicons').querySelectorAll('li')[4].querySelector('.e-frame.e-icons');
+            mouseEventArgs.target = Li;
+            tapEvent.tapCount = 1;
+            (<any>feObj.largeiconsviewModule).clickObj.tap(tapEvent);
+            let items: any = document.getElementsByClassName('e-fe-rename');
+            items[0].click();
+            let ntr: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-text');
+            expect(ntr.length).toEqual(5);
+            expect(ntr[4].textContent).toBe("1.png");
+            (<HTMLInputElement>document.getElementById('rename')).value = "1.pnga";
+            name = 'Extension Change';
+            (<HTMLElement>document.getElementById('file_dialog').querySelectorAll('.e-btn')[1]).click();
+            let item: any = document.getElementById('file_extn_dialog').querySelector('.e-dlg-closeicon-btn');
+            item.click();
+            name = 'Rename'
+            item = document.getElementById('file_dialog').querySelector('.e-dlg-closeicon-btn');
+            item.click();
+            expect(j).toBe(2);
+            expect(target).toBe('BODY');
+            expect(target).not.toBe(feObj.element);
+        });
+
+        it('for Error', (done) => {
+            name = 'Error';
+            feObj.popupTarget = 'BODY';
+            feObj.dataBind();
+            let item: any = document.getElementById('file_tb_refresh');
+            item.click();
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data2)
+            });
+            setTimeout(function () {
+                item = document.getElementById('file_dialog').querySelector('.e-dlg-closeicon-btn');
+                item.click();
+                expect(j).toBe(1);
+                expect(target).toBe('BODY');
+                expect(target).not.toBe(feObj.element);
+                done();
+            }, 500);
         });
     });
 });

@@ -43,7 +43,7 @@ import { IPrintEventArgs } from '../chart/model/chart-interface';
 import { Alignment, ExportType, SelectionPattern } from '../common/utils/enum';
 import { getTitle } from '../common/utils/helper';
 import {Index} from '../common/model/base';
-import { IThemeStyle } from '../index';
+import { IThemeStyle } from '../chart/model/chart-interface';
 import { IAccResizeEventArgs } from './model/pie-interface';
 import { DataManager } from '@syncfusion/ej2-data';
 import { Export } from '../chart/print-export/export';
@@ -390,6 +390,13 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
      */
     @Property(true)
     public enableExport: boolean;
+
+    /**
+     * To enable export feature in blazor chart.
+     * @default false
+     */
+    @Property(false)
+    public allowExport: boolean;
 
     /**
      * Triggers after accumulation chart loaded.
@@ -1483,7 +1490,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
                 args: [this]
             });
         }
-        if (this.enableExport) {
+        if (this.enableExport || this.allowExport) {
             modules.push({
                 member: 'Export',
                 args: [this]

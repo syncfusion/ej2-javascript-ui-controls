@@ -119,7 +119,11 @@ export type ShapeLayerType =
     /**
      * Specifies the map layer as google static map.
      */
-    'GoogleStaticMap';
+    'GoogleStaticMap' |
+    /**
+     * Specifies the map layer as google map.
+     */
+     'Google';
 /**
  * Defines the type of the layer in maps.
  */

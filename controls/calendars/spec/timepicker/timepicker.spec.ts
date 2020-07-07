@@ -3872,5 +3872,34 @@ describe('TimePicker', () => {
             expect(timepicker.inputWrapper.container.classList.contains('e-input-focus')).toBe(false);
         });
     });
+    describe('popup open while focus the component',function(){
+        let timePicker:any;
+        let FocusEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            stopPropagation: (): void => { /** No Code */ },
+            keyConfigure: 'tab',
+            altKey: false,
+        };
+        beforeEach(function(){
+            let element: HTMLElement = createElement('input',{id:'time'});
+            document.body.appendChild(element);
+        });
+        afterEach(function(){
+            if(timePicker){
+                timePicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('check the popup open',function(){
+            timePicker = new TimePicker({
+                openOnFocus:true
+            });
+            timePicker.appendTo('#time');
+            timePicker.element.focus();
+            FocusEventArgs.keyConfigure = 'tab';
+            timePicker.inputFocusHandler(FocusEventArgs);
+            expect((timePicker.popupObj) !== null).toBe(true);
+        });
+    });
 });
 

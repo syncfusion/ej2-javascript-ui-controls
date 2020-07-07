@@ -5,9 +5,17 @@
 
     .e-kanban-table {
       .e-header-cells {
+        background-color: $kanban-column-bg-color;
+
         .e-header-text,
         .e-item-count {
           color: $kanban-default-font;
+        }
+
+        .e-limits {
+          @if $kanban-skin == 'highcontrast' {
+            color: $kanban-border-hover-color;
+          }
         }
 
         .e-column-expand,
@@ -64,6 +72,21 @@
               border: 1px solid $kanban-dragged-clone-border-color;
             }
           }
+
+          .e-card-header {
+            color: $kanban-default-font;
+          }
+
+          .e-card-content {
+            color: $kanban-content-font;
+          }
+
+          .e-card-tag {
+            &.e-card-label {
+              background-color: $kanban-tags-bg-color;
+              color: $kanban-tags-color;
+            }
+          }
         }
 
         .e-target-multi-clone {
@@ -81,6 +104,16 @@
               border-color: $kanban-dropped-clone-border-color;
             }
           }
+        }
+      }
+    }
+  }
+
+  #{&}.e-kanban-dialog {
+    .e-kanban-form-wrapper table {
+      textarea {
+        @if $kanban-skin == 'highcontrast' {
+          background-color: $kanban-bg-color;
         }
       }
     }

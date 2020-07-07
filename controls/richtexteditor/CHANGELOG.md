@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 18.2.44 (2020-07-07)
+
+### RichTextEditor
+
+#### New Features
+
+- `#271295` - Provided public methods `showInlineToolbar` and `hideInlineToolbar` to show and hide the inline toolbars in the Rich Text Editor.
+
+#### Bug Fixes
+
+- The issue with "Rich Text Editor data binding not working in Source Code view" has been resolved.
+
+## 18.1.57 (2020-06-16)
+
 ### RichTextEditor
 
 #### Bug Fixes
@@ -34,7 +48,7 @@
 
 #### Bug Fixes
 
-- `#F152908` - The issue sublist remains after deleting the parent list element in the Rich Text Editor has been resolved.
+- `#F152908` - The issue sub list remains after deleting the parent list element in the Rich Text Editor has been resolved.
 
 ## 18.1.48 (2020-05-05)
 

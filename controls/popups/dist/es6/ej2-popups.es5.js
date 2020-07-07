@@ -652,10 +652,10 @@ var Popup = /** @__PURE__ @class */ (function (_super) {
         else {
             var win = window;
             var windowView = {
-                top: win.pageYOffset,
-                left: win.pageXOffset,
-                right: win.pageXOffset + win.outerWidth,
-                bottom: win.pageYOffset + win.outerHeight
+                top: win.scrollY,
+                left: win.scrollX,
+                right: win.scrollX + win.outerWidth,
+                bottom: win.scrollY + win.outerHeight
             };
             var off = calculatePosition(relateToElement);
             var ele = {
@@ -1830,14 +1830,14 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
                 if (!isNullOrUndefined(this.btnObj)) {
                     buttonObj = this.btnObj[this.btnObj.length - 1];
                 }
+                if (!isNullOrUndefined(buttonObj) && document.activeElement === buttonObj.element && !event.shiftKey) {
+                    event.preventDefault();
+                    this.focusableElements(this.element).focus();
+                }
                 if ((isNullOrUndefined(this.btnObj)) && (!isNullOrUndefined(this.ftrTemplateContent))) {
                     var value = 'input,select,textarea,button,a,[contenteditable="true"],[tabindex]';
                     var items = this.ftrTemplateContent.querySelectorAll(value);
                     buttonObj = { element: items[items.length - 1] };
-                }
-                if (!isNullOrUndefined(buttonObj) && document.activeElement === buttonObj.element && !event.shiftKey) {
-                    event.preventDefault();
-                    this.focusableElements(this.element).focus();
                 }
                 if (document.activeElement === this.focusableElements(this.element) && event.shiftKey) {
                     event.preventDefault();
@@ -2833,14 +2833,12 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         if (this.preventVisibility) {
             var eventArgs = isBlazor() ? {
                 cancel: false,
-                isInteraction: event ? true : false,
                 isInteracted: event ? true : false,
                 element: this.element,
                 container: this.isModal ? this.dlgContainer : this.element,
                 event: event
             } : {
                 cancel: false,
-                isInteraction: event ? true : false,
                 isInteracted: event ? true : false,
                 element: this.element,
                 target: this.target,
@@ -4493,7 +4491,7 @@ var CLS_SPINTEMPLATE = 'e-spin-template';
  * @param args
  * @private
  */
-function blazorSpinner(action, options, target, type) {
+function Spinner(action, options, target, type) {
     switch (action) {
         case 'Create':
             var element = document.querySelector(options.target);
@@ -4522,6 +4520,9 @@ function blazorSpinner(action, options, target, type) {
  * @private
  */
 function createSpinner(args, internalCreateElement) {
+    if (!args.target) {
+        return;
+    }
     var radius;
     var makeElement = !isNullOrUndefined(internalCreateElement) ? internalCreateElement : createElement;
     var container = create_spinner_container(args.target, makeElement);
@@ -4901,30 +4902,35 @@ function showSpinner(container) {
     container = null;
 }
 function showHideSpinner(container, isHide) {
-    var spinnerWrap = container.classList.contains(CLS_SPINWRAP) ? container :
-        container.querySelector('.' + CLS_SPINWRAP);
-    var inner = spinnerWrap.querySelector('.' + CLS_SPININWRAP);
-    var spinCheck;
-    spinCheck = isHide ? !spinnerWrap.classList.contains(CLS_SPINTEMPLATE) && !spinnerWrap.classList.contains(CLS_HIDESPIN) :
-        !spinnerWrap.classList.contains(CLS_SPINTEMPLATE) && !spinnerWrap.classList.contains(CLS_SHOWSPIN);
-    if (spinCheck) {
-        var svgEle = spinnerWrap.querySelector('svg');
-        if (isNullOrUndefined(svgEle)) {
-            return;
-        }
-        var id = svgEle.getAttribute('id');
-        globalTimeOut[id].isAnimate = !isHide;
-        switch (globalTimeOut[id].type) {
-            case 'Material':
-                isHide ? clearTimeout(globalTimeOut[id].timeOut) : startMatAnimate(inner, id, globalTimeOut[id].radius);
-                break;
-            case 'Bootstrap':
-                isHide ? clearTimeout(globalTimeOut[id].timeOut) : animateBootstrap(inner);
-                break;
-        }
+    var spinnerWrap;
+    if (container) {
+        spinnerWrap = container.classList.contains(CLS_SPINWRAP) ? container :
+            container.querySelector('.' + CLS_SPINWRAP);
     }
-    isHide ? classList(spinnerWrap, [CLS_HIDESPIN], [CLS_SHOWSPIN]) : classList(spinnerWrap, [CLS_SHOWSPIN], [CLS_HIDESPIN]);
-    container = null;
+    if (container && spinnerWrap) {
+        var inner = spinnerWrap.querySelector('.' + CLS_SPININWRAP);
+        var spinCheck = void 0;
+        spinCheck = isHide ? !spinnerWrap.classList.contains(CLS_SPINTEMPLATE) && !spinnerWrap.classList.contains(CLS_HIDESPIN) :
+            !spinnerWrap.classList.contains(CLS_SPINTEMPLATE) && !spinnerWrap.classList.contains(CLS_SHOWSPIN);
+        if (spinCheck) {
+            var svgEle = spinnerWrap.querySelector('svg');
+            if (isNullOrUndefined(svgEle)) {
+                return;
+            }
+            var id = svgEle.getAttribute('id');
+            globalTimeOut[id].isAnimate = !isHide;
+            switch (globalTimeOut[id].type) {
+                case 'Material':
+                    isHide ? clearTimeout(globalTimeOut[id].timeOut) : startMatAnimate(inner, id, globalTimeOut[id].radius);
+                    break;
+                case 'Bootstrap':
+                    isHide ? clearTimeout(globalTimeOut[id].timeOut) : animateBootstrap(inner);
+                    break;
+            }
+        }
+        isHide ? classList(spinnerWrap, [CLS_HIDESPIN], [CLS_SHOWSPIN]) : classList(spinnerWrap, [CLS_SHOWSPIN], [CLS_HIDESPIN]);
+        container = null;
+    }
 }
 /**
  * Function to hide the Spinner.
@@ -4998,5 +5004,5 @@ function replaceTheme(container, theme, cssClass, makeEle) {
  * Popup Components
  */
 
-export { PositionData, Popup, getScrollableParent, getZindexPartial, getMaxZindex, calculateRelativeBasedPosition, calculatePosition, fit, isCollide, flip, ButtonProps, AnimationSettings, Dialog, DialogUtility, Animation$1 as Animation, Tooltip, blazorSpinner, createSpinner, showSpinner, hideSpinner, setSpinner };
+export { PositionData, Popup, getScrollableParent, getZindexPartial, getMaxZindex, calculateRelativeBasedPosition, calculatePosition, fit, isCollide, flip, ButtonProps, AnimationSettings, Dialog, DialogUtility, Animation$1 as Animation, Tooltip, Spinner, createSpinner, showSpinner, hideSpinner, setSpinner };
 //# sourceMappingURL=ej2-popups.es5.js.map

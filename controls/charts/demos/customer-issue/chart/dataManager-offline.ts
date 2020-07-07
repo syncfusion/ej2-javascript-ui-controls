@@ -4,10 +4,10 @@
  */
 
 import {
-    Chart, Tooltip, Legend, Category, AreaSeries, LineSeries, Selection, ColumnSeries, Zoom
+    Chart, Tooltip, Legend, Category, AreaSeries, LineSeries, Selection, ColumnSeries, ChartModel
 } from '../../../src/index';
 import { DataManager, Query, ODataV4Adaptor } from '@syncfusion/ej2-data';
-Chart.Inject(Tooltip, Legend, Category, AreaSeries, LineSeries, Selection, ColumnSeries, Tooltip, Zoom);
+Chart.Inject(Tooltip, Legend, Category, AreaSeries, LineSeries, Selection, ColumnSeries);
 
 let query: Query = new Query().where('Freight', 'equal', 6.40, false);
 let data: DataManager = new DataManager({
@@ -49,19 +49,3 @@ document.getElementById('query').addEventListener(
         'click', () => {
             chartOptionsDirect.series[0].query = new Query().where('Freight', 'equal', 32.38, false);
         });
-
-    let tooltipChart: Chart = new Chart({
-        primaryXAxis: { valueType: 'Category'},
-        series: [
-            { dataSource: [
-                { x: 'CHN', y: 17 },
-                { x: 'USA', y: 19 },
-                { x: 'IDN', y: 29 },
-                { x: 'JAP', y: 13 },
-                { x: 'BRZ', y: 24 }
-            ], type: 'Line', xName: 'x', yName: 'y', marker: { visible: true }}
-        ],
-        tooltip: { enable: true },
-        title: 'Tooltip doesnot appears after zooming and hovering on same point',
-        zoomSettings: {enableMouseWheelZooming: true }
-    }, '#tooltip')

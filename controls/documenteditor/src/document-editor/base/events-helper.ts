@@ -167,6 +167,31 @@ export interface BeforeOpenCloseCustomContentMenuEventArgs {
      */
     ids: string[];
 }
+/**
+ * This event args provides the necessary information about comment delete.
+ */
+export interface CommentDeleteEventArgs {
+    /**
+     * Comment author.
+     */
+    author: string;
+    /**
+     * Specifies whether the event is canceled or not.
+     */
+    cancel: boolean;
+}
+/**
+ * This event args provides the necessary information about track change.
+ */
+export interface TrackChangeEventArgs {
+    /**
+     * Specifies whether the track changes enabled or not.
+     */
+    isTrackChangesEnabled: boolean;
+}
+
+
+
 
 /**
  * This event arguments provides the necessary information about onBeforePane switch.

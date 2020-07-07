@@ -1,4 +1,4 @@
-import { Property, ChildProperty } from '@syncfusion/ej2-base';import { SortType } from '../base/type';
+import { Property, ChildProperty } from '@syncfusion/ej2-base';import { SortDirection } from '../base/type';
 
 /**
  * Interface for a class SwimlaneSettings
@@ -48,6 +48,6 @@ export interface SwimlaneSettingsModel {
      * * Descending
      * @default 'Ascending'
      */
-    sortBy?: SortType;
+    sortDirection?: SortDirection;
 
 }

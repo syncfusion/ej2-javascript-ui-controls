@@ -8310,6 +8310,10 @@ exports.DataMatrix = DataMatrix;
 return exports;
 
 });
+sfBlazor.modules["barcodegenerator"] = "barcodegenerator.BarcodeGenerator";
+sfBlazor.modules["qrcodegenerator"] = "barcodegenerator.QRCodeGenerator";
+sfBlazor.modules["datamatrixgenerator"] = "barcodegenerator.DataMatrixGenerator";
+
 sfBlazor.loadDependencies(sfBlazor.dependencyJson.barcodegenerator, () => {
     sf.barcodegenerator = sf.barcodegenerator({});
 });

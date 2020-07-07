@@ -4,7 +4,7 @@ import { Font, Border } from '../model/base';
 import { FontModel, BorderModel } from '../model/base-model';
 import { RangeModel, PointerModel, LabelModel, TickModel, LineModel } from './axis-model';
 import { Point, Placement, MarkerType, Position} from '../utils/enum';
-
+import { LinearGradientModel, RadialGradientModel} from '../axes/gradient-model';
 
 /** Sets and gets the options for customizing the axis line in linear gauge. */
 
@@ -107,6 +107,21 @@ export class Range extends ChildProperty<Range> {
      */
     @Property(0)
     public end: number;
+
+    /**
+     * Sets and gets the properties to render a linear gradient for the range.
+     * If both linear and radial gradient is set, then the linear gradient will be rendered in the range.
+     * @default null
+     */
+    @Property(null)
+    public linearGradient: LinearGradientModel;
+
+    /**
+     * Sets and gets the properties to render a radial gradient for the range.
+     * @default null
+     */
+    @Property(null)
+    public radialGradient: RadialGradientModel;
 
     /**
      * Sets and gets the position to place the ranges in the axis.
@@ -223,6 +238,21 @@ export class Pointer extends ChildProperty<Pointer> {
      */
     @Property('Marker')
     public type: Point;
+
+    /**
+     * Sets and gets the properties to render a linear gradient for the pointer.
+     * If both linear and radial gradient is set, then the linear gradient will be rendered in the pointer.
+     * @default null
+     */
+    @Property(null)
+    public linearGradient: LinearGradientModel;
+
+    /**
+     * Sets and gets the properties to render a radial gradient for the pointer.
+     * @default null
+     */
+    @Property(null)
+    public radialGradient: RadialGradientModel;
 
     /**
      * Sets and gets the value of the pointer in axis.

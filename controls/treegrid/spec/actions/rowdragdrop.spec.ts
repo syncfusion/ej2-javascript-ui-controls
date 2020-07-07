@@ -1,6 +1,6 @@
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { createGrid, destroy } from '../base/treegridutil.spec';
-import { sampleData, projectData2, unorederedData} from '../base/datasource.spec';
+import { sampleData, projectData2, unorederedData } from '../base/datasource.spec';
 import { getObject } from '@syncfusion/ej2-grids';
 import { EmitType } from '@syncfusion/ej2-base';
 import { RowDD } from '../../src/treegrid/actions/rowdragdrop';
@@ -404,6 +404,7 @@ describe('Treegrid Row Reorder', () => {
       destroy(TreeGridObj);
     });
   });
+  
   describe('Parent node disappearing on unordered list of data', () => {
     let TreeGridObj: TreeGrid;
     beforeAll((done: Function) => {

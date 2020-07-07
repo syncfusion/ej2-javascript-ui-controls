@@ -58,8 +58,13 @@ function calculateSize(maps) {
     var parentWidth = maps.element.parentElement.clientWidth;
     var containerElementWidth = stringToNumber(maps.element.style.width, containerWidth);
     var containerElementHeight = stringToNumber(maps.element.style.height, containerWidth);
-    maps.availableSize = new Size(stringToNumber(maps.width, containerWidth) || containerWidth || containerElementWidth || 600, stringToNumber(maps.height, containerHeight) || containerHeight || containerElementHeight || (maps.isDevice ?
-        Math.min(window.innerWidth, window.innerHeight) : 450));
+    if (maps.width === '0px' || maps.width === '0%' || maps.height === '0%' || maps.height === '0px') {
+        maps.availableSize = new Size(0, 0);
+    }
+    else {
+        maps.availableSize = new Size(stringToNumber(maps.width, containerWidth) || containerWidth || containerElementWidth || 600, stringToNumber(maps.height, containerHeight) || containerHeight || containerElementHeight || (maps.isDevice ?
+            Math.min(window.innerWidth, window.innerHeight) : 450));
+    }
 }
 /**
  * Method to create svg for maps.
@@ -72,6 +77,10 @@ function createSvg(maps) {
         width: maps.availableSize.width,
         height: maps.availableSize.height
     });
+    if (maps.width === '0px' || maps.width === '0%' || maps.height === '0%' || maps.height === '0px') {
+        maps.svgObject.setAttribute('height', '0');
+        maps.svgObject.setAttribute('width', '0');
+    }
 }
 function getMousePosition(pageX, pageY, element) {
     var elementRect = element.getBoundingClientRect();
@@ -300,7 +309,12 @@ function measureText(text, font) {
     }
     measureObject.innerHTML = text;
     measureObject.style.position = 'absolute';
-    measureObject.style.fontSize = font.size;
+    if (typeof (font.size) === 'number') {
+        measureObject.style.fontSize = (font.size) + 'px';
+    }
+    else {
+        measureObject.style.fontSize = font.size;
+    }
     measureObject.style.fontWeight = font.fontWeight;
     measureObject.style.fontStyle = font.fontStyle;
     measureObject.style.fontFamily = font.fontFamily;
@@ -1895,9 +1909,9 @@ function getTargetElement(layerIndex, name, enable, map) {
 function createStyle(id, className, eventArgs) {
     return createElement('style', {
         id: id, innerHTML: '.' + className + '{fill:'
-            + eventArgs.fill + ';' + 'opacity:' + eventArgs.opacity.toString() + ';' +
-            'stroke-width:' + eventArgs.border.width.toString() + ';' +
-            'stroke:' + eventArgs.border.color + ';' + '}'
+            + eventArgs['fill'] + ';' + 'opacity:' + (eventArgs['opacity']).toString() + ';' +
+            'stroke-width:' + (eventArgs['border']['width']).toString() + ';' +
+            'stroke:' + eventArgs['border']['color'] + ';' + '}'
     });
 }
 /**
@@ -1906,9 +1920,9 @@ function createStyle(id, className, eventArgs) {
 function customizeStyle(id, className, eventArgs) {
     var styleEle = getElement(id);
     styleEle.innerHTML = '.' + className + '{fill:'
-        + eventArgs.fill + ';' + 'opacity:' + eventArgs.opacity.toString() + ';' +
-        'stroke-width:' + eventArgs.border.width.toString() + ';' +
-        'stroke:' + eventArgs.border.color + '}';
+        + eventArgs['fill'] + ';' + 'opacity:' + (eventArgs['opacity']).toString() + ';' +
+        'stroke-width:' + (eventArgs['border']['width']).toString() + ';' +
+        'stroke:' + eventArgs['border']['color'] + '}';
 }
 /**
  * Function to trigger itemSelection event for legend selection and public method
@@ -2467,6 +2481,20 @@ function calculateZoomLevel(minLat, maxLat, minLong, maxLong, mapWidth, mapHeigh
         compareZoomFactor(scaleFactor, maps);
     }
     return scaleFactor;
+}
+// tslint:disable:no-any
+function processResult(e) {
+    var dataValue;
+    var resultValue = !isNullOrUndefined(e['result']) ? e['result'] : e['actual'];
+    if (isNullOrUndefined(resultValue.length)) {
+        if (!isNullOrUndefined(resultValue['Items'])) {
+            dataValue = resultValue['Items'];
+        }
+    }
+    else {
+        dataValue = resultValue;
+    }
+    return dataValue;
 }
 
 /**
@@ -3118,6 +3146,22 @@ var ColorMappingSettings = /** @__PURE__ @class */ (function (_super) {
     return ColorMappingSettings;
 }(ChildProperty));
 /**
+ * To configure the initial marker shape selection settings
+ */
+var InitialMarkerSelectionSettings = /** @__PURE__ @class */ (function (_super) {
+    __extends$2(InitialMarkerSelectionSettings, _super);
+    function InitialMarkerSelectionSettings() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$1([
+        Property(null)
+    ], InitialMarkerSelectionSettings.prototype, "latitude", void 0);
+    __decorate$1([
+        Property(null)
+    ], InitialMarkerSelectionSettings.prototype, "longitude", void 0);
+    return InitialMarkerSelectionSettings;
+}(ChildProperty));
+/**
  * Sets and gets the shapes that is selected initially on rendering the maps.
  */
 var InitialShapeSelectionSettings = /** @__PURE__ @class */ (function (_super) {
@@ -3238,6 +3282,9 @@ var BubbleSettings = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Property([])
     ], BubbleSettings.prototype, "dataSource", void 0);
+    __decorate$1([
+        Property()
+    ], BubbleSettings.prototype, "query", void 0);
     __decorate$1([
         Property(1000)
     ], BubbleSettings.prototype, "animationDuration", void 0);
@@ -3659,6 +3706,9 @@ var MarkerBase = /** @__PURE__ @class */ (function (_super) {
         Property([])
     ], MarkerBase.prototype, "dataSource", void 0);
     __decorate$1([
+        Property()
+    ], MarkerBase.prototype, "query", void 0);
+    __decorate$1([
         Complex({}, TooltipSettings)
     ], MarkerBase.prototype, "tooltipSettings", void 0);
     __decorate$1([
@@ -3679,6 +3729,9 @@ var MarkerBase = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Property(null)
     ], MarkerBase.prototype, "longitudeValuePath", void 0);
+    __decorate$1([
+        Collection([], InitialMarkerSelectionSettings)
+    ], MarkerBase.prototype, "initialMarkerSelection", void 0);
     return MarkerBase;
 }(ChildProperty));
 var MarkerSettings = /** @__PURE__ @class */ (function (_super) {
@@ -3874,6 +3927,12 @@ var Marker = /** @__PURE__ @class */ (function () {
                 if (_this.maps.isBlazor) {
                     var maps = eventArgs.maps, marker_1 = eventArgs.marker, blazorEventArgs = __rest$1(eventArgs, ["maps", "marker"]);
                     eventArgs = blazorEventArgs;
+                    markerSettings.longitudeValuePath = !isNullOrUndefined(markerSettings.longitudeValuePath) ?
+                        markerSettings.longitudeValuePath : !isNullOrUndefined(data['Longitude']) ? 'Longitude' :
+                        !isNullOrUndefined(data['longitude']) ? 'longitude' : null;
+                    markerSettings.latitudeValuePath = !isNullOrUndefined(markerSettings.latitudeValuePath) ?
+                        markerSettings.latitudeValuePath : !isNullOrUndefined(data['Latitude']) ? 'Latitude' :
+                        !isNullOrUndefined(data['latitude']) ? 'latitude' : null;
                 }
                 _this.maps.trigger('markerRendering', eventArgs, function (MarkerArgs) {
                     if (markerSettings.colorValuePath !== eventArgs.colorValuePath) {
@@ -3882,18 +3941,16 @@ var Marker = /** @__PURE__ @class */ (function () {
                     if (markerSettings.shapeValuePath !== eventArgs.shapeValuePath) {
                         eventArgs = markerShapeChoose(eventArgs, data);
                     }
-                    var lng = (!isNullOrUndefined(data[markerSettings.longitudeValuePath])) ?
-                        Number(getValueFromObject(data, markerSettings.longitudeValuePath)) : parseFloat(data['longitude']);
-                    var lat = (!isNullOrUndefined(data[markerSettings.latitudeValuePath])) ?
-                        Number(getValueFromObject(data, markerSettings.latitudeValuePath)) : parseFloat(data['latitude']);
+                    var lng = (!isNullOrUndefined(markerSettings.longitudeValuePath)) ?
+                        Number(getValueFromObject(data, markerSettings.longitudeValuePath)) : !isNullOrUndefined(data['longitude']) ?
+                        parseFloat(data['longitude']) : !isNullOrUndefined(data['Longitude']) ? parseFloat(data['Longitude']) : 0;
+                    var lat = (!isNullOrUndefined(markerSettings.latitudeValuePath)) ?
+                        Number(getValueFromObject(data, markerSettings.latitudeValuePath)) : !isNullOrUndefined(data['latitude']) ?
+                        parseFloat(data['latitude']) : !isNullOrUndefined(data['Latitude']) ? parseFloat(data['Latitude']) : 0;
                     if (_this.maps.isBlazor) {
                         var data1 = {};
                         var text = [];
                         var j = 0;
-                        if (data == {} || isNullOrUndefined(data['latitude']) || isNullOrUndefined(data['longitude'])) {
-                            lat = (data['latitude'] && !isNullOrUndefined(data['latitude'])) ? data['latitude'] : 0;
-                            lng = (data['longitude'] && !isNullOrUndefined(data['longitude'])) ? data['longitude'] : 0;
-                        }
                         for (var i = 0; i < Object.keys(data).length; i++) {
                             if (Object.keys(data)[i].toLowerCase() !== 'latitude' && Object.keys(data)[i].toLowerCase() !== 'longitude'
                                 && Object.keys(data)[i].toLowerCase() !== 'name' && Object.keys(data)[i].toLowerCase() !== 'blazortemplateid'
@@ -3994,8 +4051,10 @@ var Marker = /** @__PURE__ @class */ (function () {
                     Array.prototype.forEach.call(currentLayer.markerSettings, function (markerSetting, markerIndex) {
                         var markerData = markerSetting.dataSource;
                         Array.prototype.forEach.call(markerData, function (data, dataIndex) {
-                            var latitude = !isNullOrUndefined(data['latitude']) ? parseFloat(data['latitude']) : null;
-                            var longitude = !isNullOrUndefined(data['longitude']) ? parseFloat(data['longitude']) : null;
+                            var latitude = !isNullOrUndefined(data['latitude']) ? parseFloat(data['latitude']) :
+                                !isNullOrUndefined(data['Latitude']) ? parseFloat(data['Latitude']) : null;
+                            var longitude = !isNullOrUndefined(data['longitude']) ? parseFloat(data['longitude']) :
+                                !isNullOrUndefined(data['Longitude']) ? parseFloat(data['Longitude']) : null;
                             minLong_1 = isNullOrUndefined(minLong_1) && dataIndex === 0 ?
                                 longitude : minLong_1;
                             maxLat_1 = isNullOrUndefined(maxLat_1) && dataIndex === 0 ?
@@ -4722,7 +4781,7 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
         else {
             this.clipRectElement = this.mapObject.renderer.drawClipPath(new RectOption(this.mapObject.element.id + '_MapArea_ClipRect', 'transparent', { width: 1, color: 'Gray' }, 1, {
                 x: this.mapObject.isTileMap ? 0 : areaRect.x, y: this.mapObject.isTileMap ? 0 : areaRect.y,
-                width: areaRect.width, height: areaRect.height
+                width: areaRect.width, height: (areaRect.height < 0) ? 0 : areaRect.height
             }));
         }
         this.layerGroup.appendChild(this.clipRectElement);
@@ -4931,7 +4990,8 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
     //tslint:disable:max-func-body-length
     LayerPanel.prototype.bubbleCalculation = function (bubbleSettings, range) {
         if (bubbleSettings.dataSource != null && bubbleSettings != null) {
-            for (var i = 0; i < bubbleSettings.dataSource.length; i++) {
+            var bubbleDataSource = bubbleSettings.dataSource;
+            for (var i = 0; i < bubbleDataSource.length; i++) {
                 var bubbledata = (!isNullOrUndefined(bubbleSettings.valuePath)) ? ((bubbleSettings.valuePath.indexOf('.') > -1) ?
                     Number(getValueFromObject(bubbleSettings.dataSource[i], bubbleSettings.valuePath)) :
                     parseFloat(bubbleSettings.dataSource[i][bubbleSettings.valuePath])) :
@@ -5168,7 +5228,8 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
                 });
                 var range = { min: 0, max: 0 };
                 this_2.bubbleCalculation(bubble_1, range);
-                bubble_1.dataSource.map(function (bubbleData, i) {
+                var bubbleDataSource = bubble_1.dataSource;
+                bubbleDataSource.map(function (bubbleData, i) {
                     _this.renderBubble(_this.currentLayer, bubbleData, colors[i % colors.length], range, j, i, bubbleG, layerIndex, bubble_1);
                 });
                 this_2.groupElements.push(bubbleG);
@@ -5891,388 +5952,6 @@ var Annotations = /** @__PURE__ @class */ (function () {
     return Annotations;
 }());
 
-/**
- * This module enables the print functionality in maps.
- * @hidden
- */
-var Print = /** @__PURE__ @class */ (function () {
-    /**
-     * Constructor for Maps
-     * @param control
-     */
-    function Print(control) {
-        this.control = control;
-    }
-    /**
-     * To print the Maps
-     * @param elements
-     * @private
-     */
-    Print.prototype.print = function (elements) {
-        var _this = this;
-        this.printWindow = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
-        this.printWindow.moveTo(0, 0);
-        this.printWindow.resizeTo(screen.availWidth, screen.availHeight);
-        var argsData = {
-            cancel: false, htmlContent: this.getHTMLContent(elements), name: beforePrint
-        };
-        this.control.trigger('beforePrint', argsData, function (beforePrintArgs) {
-            if (!argsData.cancel) {
-                print(argsData.htmlContent, _this.printWindow);
-            }
-        });
-    };
-    /**
-     * To get the html string of the Maps
-     * @param elements
-     * @private
-     */
-    Print.prototype.getHTMLContent = function (elements) {
-        var div = createElement('div');
-        if (elements) {
-            if (elements instanceof Array) {
-                Array.prototype.forEach.call(elements, function (value) {
-                    div.appendChild(getElement(value).cloneNode(true));
-                });
-            }
-            else if (elements instanceof Element) {
-                div.appendChild(elements.cloneNode(true));
-            }
-            else {
-                div.appendChild(getElement(elements).cloneNode(true));
-            }
-        }
-        else {
-            div.appendChild(this.control.element.cloneNode(true));
-        }
-        return div;
-    };
-    /**
-     * Get module name.
-     */
-    Print.prototype.getModuleName = function () {
-        return 'Print';
-    };
-    /**
-     * To destroy the print.
-     * @return {void}
-     * @private
-     */
-    Print.prototype.destroy = function (maps) {
-        /**
-         * Destroy method performed here
-         */
-    };
-    return Print;
-}());
-
-/**
- * This module enables the export to PDF functionality in Maps control.
- * @hidden
- */
-var PdfExport = /** @__PURE__ @class */ (function () {
-    /**
-     * Constructor for Maps
-     * @param control
-     */
-    function PdfExport(control) {
-        this.control = control;
-    }
-    /**
-     * To export the file as image/svg format
-     * @param type
-     * @param fileName
-     * @private
-     */
-    PdfExport.prototype.export = function (type, fileName, allowDownload, orientation) {
-        var _this = this;
-        // tslint:disable-next-line:max-func-body-length
-        var promise = new Promise(function (resolve, reject) {
-            var canvasElement = createElement('canvas', {
-                id: 'ej2-canvas',
-                attrs: {
-                    'width': _this.control.availableSize.width.toString(),
-                    'height': _this.control.availableSize.height.toString()
-                }
-            });
-            orientation = isNullOrUndefined(orientation) ? PdfPageOrientation.Landscape : orientation;
-            var svgParent = document.getElementById(_this.control.element.id + '_Tile_SVG_Parent');
-            var svgData;
-            var url = window.URL.createObjectURL(new Blob(type === 'SVG' ? [svgData] :
-                [(new XMLSerializer()).serializeToString(_this.control.svgObject)], { type: 'image/svg+xml' }));
-            var pdfDocument = new PdfDocument();
-            var image = new Image();
-            var ctx = canvasElement.getContext('2d');
-            if (!_this.control.isTileMap) {
-                image.onload = (function () {
-                    ctx.drawImage(image, 0, 0);
-                    window.URL.revokeObjectURL(url);
-                    if (type === 'PDF') {
-                        var imageString = canvasElement.toDataURL('image/jpeg').replace('image/jpeg', 'image/octet-stream');
-                        pdfDocument.pageSettings.orientation = orientation;
-                        imageString = imageString.slice(imageString.indexOf(',') + 1);
-                        pdfDocument.pages.add().graphics.drawImage(new PdfBitmap(imageString), 0, 0, (_this.control.availableSize.width - 60), _this.control.availableSize.height);
-                        if (allowDownload) {
-                            pdfDocument.save(fileName + '.pdf');
-                            pdfDocument.destroy();
-                        }
-                        else {
-                            resolve(null);
-                        }
-                    }
-                });
-                image.src = url;
-            }
-            else {
-                var xHttp = new XMLHttpRequest();
-                var tileLength_1 = _this.control.mapLayerPanel.tiles.length;
-                var _loop_1 = function (i) {
-                    var tile = document.getElementById('tile_' + (i - 1));
-                    var tileImg = new Image();
-                    tileImg.crossOrigin = 'Anonymous';
-                    ctx.fillStyle = _this.control.background ? _this.control.background : '#FFFFFF';
-                    ctx.fillRect(0, 0, _this.control.availableSize.width, _this.control.availableSize.height);
-                    ctx.font = _this.control.titleSettings.textStyle.size + ' Arial';
-                    ctx.fillStyle = document.getElementById(_this.control.element.id + '_Map_title').getAttribute('fill');
-                    ctx.fillText(_this.control.titleSettings.text, parseFloat(document.getElementById(_this.control.element.id + '_Map_title').getAttribute('x')), parseFloat(document.getElementById(_this.control.element.id + '_Map_title').getAttribute('y')));
-                    tileImg.onload = (function () {
-                        if (i === 0 || i === tileLength_1 + 1) {
-                            if (i === 0) {
-                                ctx.setTransform(1, 0, 0, 1, 0, 0);
-                                ctx.rect(0, parseFloat(svgParent.style.top), parseFloat(svgParent.style.width), parseFloat(svgParent.style.height));
-                                ctx.clip();
-                            }
-                            else {
-                                ctx.setTransform(1, 0, 0, 1, parseFloat(svgParent.style.left), parseFloat(svgParent.style.top));
-                            }
-                        }
-                        else {
-                            ctx.setTransform(1, 0, 0, 1, parseFloat(tile.style.left) + 10, parseFloat(tile.style.top) +
-                                (parseFloat(document.getElementById(_this.control.element.id + '_tile_parent').style.top)));
-                        }
-                        ctx.drawImage(tileImg, 0, 0);
-                        if (i === tileLength_1 + 1) {
-                            if (type === 'PDF') {
-                                localStorage.setItem('saved-image-example', canvasElement.toDataURL('image/jpeg'));
-                                var x = localStorage.getItem('saved-image-example');
-                                pdfDocument.pageSettings.orientation = orientation;
-                                x = x.slice(x.indexOf(',') + 1);
-                                pdfDocument.pages.add().graphics.drawImage(new PdfBitmap(x), 0, 0, (_this.control.availableSize.width - 60), _this.control.availableSize.height);
-                                if (allowDownload) {
-                                    pdfDocument.save(fileName + '.pdf');
-                                    pdfDocument.destroy();
-                                }
-                                else {
-                                    resolve(null);
-                                }
-                            }
-                        }
-                    });
-                    if (i === 0 || i === tileLength_1 + 1) {
-                        if (i === 0) {
-                            tileImg.src = url;
-                        }
-                        else {
-                            setTimeout(function () {
-                                tileImg.src = window.URL.createObjectURL(new Blob([(new XMLSerializer()).serializeToString(document.getElementById(_this.control.element.id + '_Tile_SVG'))], { type: 'image/svg+xml' }));
-                                // tslint:disable-next-line:align
-                            }, 300);
-                        }
-                    }
-                    else {
-                        xHttp.open('GET', tile.children[0].getAttribute('src'), true);
-                        xHttp.send();
-                        tileImg.src = tile.children[0].getAttribute('src');
-                    }
-                };
-                for (var i = 0; i <= tileLength_1 + 1; i++) {
-                    _loop_1(i);
-                }
-            }
-        });
-        return promise;
-    };
-    /**
-     * Get module name.
-     */
-    PdfExport.prototype.getModuleName = function () {
-        return 'PdfExport';
-    };
-    /**
-     * To destroy the PdfExports.
-     * @return {void}
-     * @private
-     */
-    PdfExport.prototype.destroy = function (maps) {
-        /**
-         * Destroy method performed here
-         */
-    };
-    return PdfExport;
-}());
-
-/**
- * This module enables the export to Image functionality in Maps control.
- * @hidden
- */
-var ImageExport = /** @__PURE__ @class */ (function () {
-    /**
-     * Constructor for Maps
-     * @param control
-     */
-    function ImageExport(control) {
-        this.control = control;
-    }
-    /**
-     * To export the file as image/svg format
-     * @param type
-     * @param fileName
-     * @private
-     */
-    ImageExport.prototype.export = function (type, fileName, allowDownload) {
-        var _this = this;
-        // tslint:disable-next-line:max-func-body-length
-        var promise = new Promise(function (resolve, reject) {
-            var imageCanvasElement = createElement('canvas', {
-                id: 'ej2-canvas',
-                attrs: {
-                    'width': _this.control.availableSize.width.toString(),
-                    'height': _this.control.availableSize.height.toString()
-                }
-            });
-            var isDownload = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
-            var toolbarEle = document.getElementById(_this.control.element.id + '_ToolBar');
-            var svgParent = document.getElementById(_this.control.element.id + '_Tile_SVG_Parent');
-            var svgDataElement;
-            if (!_this.control.isTileMap) {
-                svgDataElement = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
-                    _this.control.svgObject.outerHTML + '</svg>';
-            }
-            else {
-                var tileSvg = document.getElementById(_this.control.element.id + '_Tile_SVG');
-                svgDataElement = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
-                    _this.control.svgObject.outerHTML + tileSvg.outerHTML + '</svg>';
-            }
-            var url = window.URL.createObjectURL(new Blob(type === 'SVG' ? [svgDataElement] :
-                [(new XMLSerializer()).serializeToString(_this.control.svgObject)], { type: 'image/svg+xml' }));
-            if (type === 'SVG') {
-                if (allowDownload) {
-                    triggerDownload(fileName, type, url, isDownload);
-                }
-                else {
-                    resolve(null);
-                }
-            }
-            else {
-                var image_1 = new Image();
-                var ctxt_1 = imageCanvasElement.getContext('2d');
-                if (!_this.control.isTileMap) {
-                    image_1.onload = (function () {
-                        ctxt_1.drawImage(image_1, 0, 0);
-                        window.URL.revokeObjectURL(url);
-                        if (allowDownload) {
-                            triggerDownload(fileName, type, imageCanvasElement.toDataURL('image/png').replace('image/png', 'image/octet-stream'), isDownload);
-                        }
-                        else {
-                            if (type === 'PNG') {
-                                resolve(imageCanvasElement.toDataURL('image/png'));
-                            }
-                            else if (type === 'JPEG') {
-                                resolve(imageCanvasElement.toDataURL('image/jpeg'));
-                            }
-                        }
-                    });
-                    image_1.src = url;
-                }
-                else {
-                    var imgxHttp = new XMLHttpRequest();
-                    var imgTileLength_1 = _this.control.mapLayerPanel.tiles.length;
-                    var _loop_1 = function (i) {
-                        var tile = document.getElementById('tile_' + (i - 1));
-                        var exportTileImg = new Image();
-                        exportTileImg.crossOrigin = 'Anonymous';
-                        ctxt_1.fillStyle = _this.control.background ? _this.control.background : '#FFFFFF';
-                        ctxt_1.fillRect(0, 0, _this.control.availableSize.width, _this.control.availableSize.height);
-                        ctxt_1.font = _this.control.titleSettings.textStyle.size + ' Arial';
-                        ctxt_1.fillStyle = document.getElementById(_this.control.element.id + '_Map_title').getAttribute('fill');
-                        ctxt_1.fillText(_this.control.titleSettings.text, parseFloat(document.getElementById(_this.control.element.id + '_Map_title').getAttribute('x')), parseFloat(document.getElementById(_this.control.element.id + '_Map_title').getAttribute('y')));
-                        exportTileImg.onload = (function () {
-                            if (i === 0 || i === imgTileLength_1 + 1) {
-                                if (i === 0) {
-                                    ctxt_1.setTransform(1, 0, 0, 1, 0, 0);
-                                    ctxt_1.rect(0, parseFloat(svgParent.style.top), parseFloat(svgParent.style.width), parseFloat(svgParent.style.height));
-                                    ctxt_1.clip();
-                                }
-                                else {
-                                    ctxt_1.setTransform(1, 0, 0, 1, parseFloat(svgParent.style.left), parseFloat(svgParent.style.top));
-                                }
-                            }
-                            else {
-                                ctxt_1.setTransform(1, 0, 0, 1, parseFloat(tile.style.left) + 10, parseFloat(tile.style.top) +
-                                    (parseFloat(document.getElementById(_this.control.element.id + '_tile_parent').style.top)));
-                            }
-                            ctxt_1.drawImage(exportTileImg, 0, 0);
-                            if (i === imgTileLength_1 + 1) {
-                                localStorage.setItem('local-canvasImage', imageCanvasElement.toDataURL('image/png'));
-                                var localBase64 = localStorage.getItem('local-canvasImage');
-                                if (allowDownload) {
-                                    triggerDownload(fileName, type, localBase64, isDownload);
-                                    localStorage.removeItem('local-canvasImage');
-                                }
-                                else {
-                                    if (type === 'PNG') {
-                                        resolve(localBase64);
-                                    }
-                                    else if (type === 'JPEG') {
-                                        resolve(imageCanvasElement.toDataURL('image/jpeg'));
-                                    }
-                                }
-                            }
-                        });
-                        if (i === 0 || i === imgTileLength_1 + 1) {
-                            if (i === 0) {
-                                exportTileImg.src = url;
-                            }
-                            else {
-                                setTimeout(function () {
-                                    exportTileImg.src = window.URL.createObjectURL(new Blob([(new XMLSerializer()).serializeToString(document.getElementById(_this.control.element.id + '_Tile_SVG'))], { type: 'image/svg+xml' }));
-                                    // tslint:disable-next-line:align
-                                }, 300);
-                            }
-                        }
-                        else {
-                            imgxHttp.open('GET', tile.children[0].getAttribute('src'), true);
-                            imgxHttp.send();
-                            exportTileImg.src = tile.children[0].getAttribute('src');
-                        }
-                    };
-                    for (var i = 0; i <= imgTileLength_1 + 1; i++) {
-                        _loop_1(i);
-                    }
-                }
-            }
-        });
-        return promise;
-    };
-    /**
-     * Get module name.
-     */
-    ImageExport.prototype.getModuleName = function () {
-        return 'ImageExport';
-    };
-    /**
-     * To destroy the ImageExport.
-     * @return {void}
-     * @private
-     */
-    ImageExport.prototype.destroy = function (maps) {
-        /**
-         * Destroy method performed here
-         */
-    };
-    return ImageExport;
-}());
-
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -6317,6 +5996,10 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
          * @private
          */
         _this.isTileMap = false;
+        /**
+         * Resize the map
+         */
+        _this.isResize = false;
         /** @private */
         _this.baseSize = new Size(0, 0);
         /** @public */
@@ -6390,7 +6073,6 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         setValue('mergePersistData', _this.mergePersistMapsData, _this);
         return _this;
     }
-    Maps_1 = Maps;
     Object.defineProperty(Maps.prototype, "isShapeSelected", {
         /**
          * Specifies whether the shape is selected in the maps or not..
@@ -6440,14 +6122,6 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
     Maps.prototype.preRender = function () {
         this.isDevice = Browser.isDevice;
         this.isBlazor = isBlazor();
-        if (!this.isBlazor) {
-            this.allowPrint = true;
-            this.allowImageExport = true;
-            this.allowPdfExport = true;
-            Maps_1.Inject(Print);
-            Maps_1.Inject(PdfExport);
-            Maps_1.Inject(ImageExport);
-        }
         this.initPrivateVariable();
         this.allowServerDataBinding = false;
         this.unWireEVents();
@@ -6481,7 +6155,7 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
             if (layer.shapeData instanceof DataManager) {
                 _this.serverProcess['request']++;
                 dataModule = layer.shapeData;
-                queryModule = layer.query instanceof Query ? layer.query : new Query();
+                queryModule = layer.query instanceof Query ? layer.query : _this.isBlazor ? (new Query().requiresCount()) : new Query();
                 var dataManager = dataModule.executeQuery(queryModule);
                 dataManager.then(function (e) {
                     _this.processResponseJsonData('DataManager', e, layer, 'ShapeData');
@@ -6490,6 +6164,49 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
             else if (layer.shapeData instanceof MapAjax || layer.shapeData) {
                 if (!isNullOrUndefined(layer.shapeData['dataOptions'])) {
                     _this.processAjaxRequest(layer, layer.shapeData, 'ShapeData');
+                }
+            }
+            if (layer.dataSource instanceof DataManager) {
+                _this.serverProcess['request']++;
+                dataModule = layer.dataSource;
+                queryModule = layer.query instanceof Query ? layer.query : _this.isBlazor ? (new Query().requiresCount()) : new Query();
+                var dataManager = dataModule.executeQuery(queryModule);
+                dataManager.then(function (e) {
+                    layer.dataSource = processResult(e);
+                });
+            }
+            if (layer.markerSettings.length > 0) {
+                var _loop_1 = function (i) {
+                    if (layer.markerSettings[i].dataSource instanceof DataManager) {
+                        _this.serverProcess['request']++;
+                        dataModule = layer.markerSettings[i].dataSource;
+                        queryModule = layer.markerSettings[i].query instanceof Query ? layer.markerSettings[i].query : _this.isBlazor ?
+                            (new Query().requiresCount()) : new Query();
+                        var dataManager = dataModule.executeQuery(queryModule);
+                        dataManager.then(function (e) {
+                            layer.markerSettings[i].dataSource = processResult(e);
+                        });
+                    }
+                };
+                for (var i = 0; i < layer.markerSettings.length; i++) {
+                    _loop_1(i);
+                }
+            }
+            if (layer.bubbleSettings.length > 0) {
+                var _loop_2 = function (i) {
+                    if (layer.bubbleSettings[i].dataSource instanceof DataManager) {
+                        _this.serverProcess['request']++;
+                        dataModule = layer.bubbleSettings[i].dataSource;
+                        queryModule = layer.bubbleSettings[i].query instanceof Query ? layer.bubbleSettings[i].query : _this.isBlazor ?
+                            (new Query().requiresCount()) : new Query();
+                        var dataManager = dataModule.executeQuery(queryModule);
+                        dataManager.then(function (e) {
+                            layer.bubbleSettings[i].dataSource = processResult(e);
+                        });
+                    }
+                };
+                for (var i = 0; i < layer.bubbleSettings.length; i++) {
+                    _loop_2(i);
                 }
             }
             if (layer.dataSource instanceof MapAjax || !isNullOrUndefined(layer.dataSource['dataOptions'])) {
@@ -6523,12 +6240,10 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         this.serverProcess['response']++;
         if (processType) {
             if (dataType === 'ShapeData') {
-                layer.shapeData = (processType === 'DataManager') ? !isNullOrUndefined(data['result']) ? data['result'] : data['actual'] :
-                    JSON.parse(data);
+                layer.shapeData = (processType === 'DataManager') ? processResult(data) : JSON.parse(data);
             }
             else {
-                layer.dataSource = (processType === 'DataManager') ? !isNullOrUndefined(data['result']) ? data['result'] : data['actual'] :
-                    JSON.parse('[' + data + ']')[0];
+                layer.dataSource = (processType === 'DataManager') ? processResult(data) : JSON.parse('[' + data + ']')[0];
             }
         }
         if (!isNullOrUndefined(processType) && this.serverProcess['request'] === this.serverProcess['response']) {
@@ -6550,6 +6265,7 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
             this.renderMap();
         }
     };
+    /* tslint:disable:max-func-body-length */
     Maps.prototype.renderMap = function () {
         if (this.legendModule && this.legendSettings.visible) {
             if (!this.isTileMap) {
@@ -6585,6 +6301,15 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
                 this.layers[i].selectionSettings.enableMultiSelect = checkSelection;
                 if (i === this.layers.length - 1) {
                     this.checkInitialRender = false;
+                }
+            }
+            for (var k = 0; k < this.layers[i].markerSettings.length; k++) {
+                if (this.layers[i].markerSettings[k].selectionSettings && this.layers[i].markerSettings[k].selectionSettings.enable
+                    && this.layers[i].markerSettings[k].initialMarkerSelection.length > 0) {
+                    var markerSelectionValues = this.layers[i].markerSettings[k].initialMarkerSelection;
+                    for (var j = 0; j < markerSelectionValues.length; j++) {
+                        this.markerInitialSelection(i, k, this.layers[i].markerSettings[k], markerSelectionValues[j].latitude, markerSelectionValues[j].longitude);
+                    }
                 }
             }
         }
@@ -6635,10 +6360,59 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         this.arrangeTemplate();
         var blazor = this.isBlazor ? this.blazorTemplates() : null;
         if (this.annotationsModule) {
-            this.annotationsModule.renderAnnotationElements();
+            if (this.width !== '0px' && this.height !== '0px' && this.width !== '0%' && this.height !== '0%') {
+                this.annotationsModule.renderAnnotationElements();
+            }
         }
         this.zoomingChange();
-        this.trigger(loaded, this.isBlazor ? {} : { maps: this });
+        this.trigger(loaded, this.isBlazor ? { isResized: this.isResize } : { maps: this, isResized: this.isResize });
+        this.isResize = false;
+    };
+    /**
+     * @private
+     * To apply color to the initial selected marker
+     */
+    Maps.prototype.markerSelection = function (selectionSettings, map, targetElement, data) {
+        var border = {
+            color: selectionSettings.border.color,
+            width: selectionSettings.border.width / map.scale
+        };
+        var markerSelectionProperties = {
+            opacity: selectionSettings.opacity,
+            fill: selectionSettings.fill,
+            border: border,
+            target: targetElement.id,
+            cancel: false,
+            data: data,
+            maps: map
+        };
+        if (!getElement('MarkerselectionMap')) {
+            document.body.appendChild(createStyle('MarkerselectionMap', 'MarkerselectionMapStyle', markerSelectionProperties));
+        }
+        else {
+            customizeStyle('MarkerselectionMap', 'MarkerselectionMapStyle', markerSelectionProperties);
+        }
+        if (this.selectedMarkerElementId.length === 0 || selectionSettings.enableMultiSelect) {
+            targetElement.setAttribute('class', 'MarkerselectionMapStyle');
+        }
+    };
+    /**
+     * @private
+     * initial selection of marker
+     *
+     */
+    Maps.prototype.markerInitialSelection = function (layerIndex, markerIndex, markerSettings, latitude, longitude) {
+        var selectionSettings = markerSettings.selectionSettings;
+        if (selectionSettings.enable) {
+            for (var i = 0; i < markerSettings.dataSource['length']; i++) {
+                var data = markerSettings.dataSource[i];
+                if (data['latitude'] === latitude && data['longitude'] === longitude) {
+                    var targetId = this.element.id + '_' + 'LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex +
+                        '_dataIndex_' + i;
+                    this.markerSelection(selectionSettings, this, getElement(targetId), data);
+                }
+            }
+        }
     };
     /**
      * To append blazor templates
@@ -6774,7 +6548,10 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         var mainLayer = this.layersCollection[0];
         var padding = 0;
         if (mainLayer.isBaseLayer && (mainLayer.layerType === 'OSM' || mainLayer.layerType === 'Bing' ||
-            mainLayer.layerType === 'GoogleStaticMap')) {
+            mainLayer.layerType === 'GoogleStaticMap' || mainLayer.layerType === 'Google')) {
+            if (mainLayer.layerType === 'Google') {
+                mainLayer.urlTemplate = 'https://mt1.google.com/vt/lyrs=m@129&hl=en&x=tileX&y=tileY&z=level';
+            }
             removeElement(this.element.id + '_tile_parent');
             removeElement(this.element.id + '_tiles');
             removeElement('animated_tiles');
@@ -7142,6 +6919,9 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         var page = this.legendModule.currentPage;
         var legendIndex = event.target.id.split('_Index_')[1];
         var collection;
+        page = this.legendModule.totalPages.length <= this.legendModule.currentPage
+            ? this.legendModule.totalPages.length - 1 : this.legendModule.currentPage < 0 ?
+            0 : this.legendModule.currentPage;
         var count = this.legendModule.totalPages.length !== 0 ?
             this.legendModule.totalPages[page]['Collection'].length : this.legendModule.totalPages.length;
         for (var i = 0; i < count; i++) {
@@ -7160,6 +6940,12 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
     };
     Maps.prototype.titleTooltip = function (event, x, y, isTouch) {
         var targetId = event.target.id;
+        if (targetId === (this.element.id + '_LegendTitle') && (event.target.textContent.indexOf('...') === -1)) {
+            showTooltip(this.legendSettings.title.text, this.legendSettings.titleStyle.size, x, y, this.element.offsetWidth, this.element.offsetHeight, this.element.id + '_EJ2_LegendTitle_Tooltip', getElement(this.element.id + '_Secondary_Element'), isTouch);
+        }
+        else {
+            removeElement(this.element.id + '_EJ2_LegendTitle_Tooltip');
+        }
         if ((targetId === (this.element.id + '_Map_title')) && (event.target.textContent.indexOf('...') > -1)) {
             showTooltip(this.titleSettings.text, this.titleSettings.textStyle.size, x, y, this.element.offsetWidth, this.element.offsetHeight, this.element.id + '_EJ2_Title_Tooltip', getElement(this.element.id + '_Secondary_Element'), isTouch);
         }
@@ -7175,6 +6961,7 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
      */
     Maps.prototype.mapsOnResize = function (e) {
         var _this = this;
+        this.isResize = true;
         var args = {
             name: resize,
             previousSize: this.availableSize,
@@ -7489,6 +7276,9 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         this.zoomLabelPositions = [];
         this.mouseDownEvent = { x: null, y: null };
         this.mouseClickEvent = { x: null, y: null };
+        if (document.getElementById('mapsmeasuretext')) {
+            document.getElementById('mapsmeasuretext').remove();
+        }
         this.removeSvg();
         _super.prototype.destroy.call(this);
     };
@@ -7564,7 +7354,12 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
             if (newProp.layers && isMarker) {
                 removeElement(this.element.id + '_Markers_Group');
                 if (this.isTileMap) {
-                    this.mapLayerPanel.renderTileLayer(this.mapLayerPanel, this.layers['currentFactor'], (this.layers.length - 1));
+                    if (this.isBlazor) {
+                        this.render();
+                    }
+                    else {
+                        this.mapLayerPanel.renderTileLayer(this.mapLayerPanel, this.layers['currentFactor'], (this.layers.length - 1));
+                    }
                 }
                 else {
                     this.render();
@@ -7890,7 +7685,6 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         var long = 360 * x1;
         return { latitude: lat, longitude: long };
     };
-    var Maps_1;
     __decorate([
         Property(null)
     ], Maps.prototype, "background", void 0);
@@ -8050,7 +7844,7 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Event()
     ], Maps.prototype, "pan", void 0);
-    Maps = Maps_1 = __decorate([
+    Maps = __decorate([
         NotifyPropertyChanges
     ], Maps);
     return Maps;
@@ -8207,11 +8001,12 @@ var Bubble = /** @__PURE__ @class */ (function () {
                 else {
                     translate = getTranslate(_this.maps, layer, animate$$1);
                 }
+                var bubbleDataSource = bubbleSettings.dataSource;
                 var scale = translate['scale'];
                 var transPoint = translate['location'];
                 var position = new MapLocation((_this.maps.isTileMap ? (eventArgs.cx) : ((eventArgs.cx + transPoint.x) * scale)), (_this.maps.isTileMap ? (eventArgs.cy) : ((eventArgs.cy + transPoint.y) * scale)));
                 bubbleElement.setAttribute('transform', 'translate( ' + (position.x) + ' ' + (position.y) + ' )');
-                var bubble = (bubbleSettings.dataSource.length - 1) === dataIndex ? 'bubble' : null;
+                var bubble = (bubbleDataSource.length - 1) === dataIndex ? 'bubble' : null;
                 if (bubbleSettings.bubbleType === 'Square') {
                     position.x += radius;
                     position.y += radius * (_this.maps.projectionType === 'Mercator' ? 1 : -1);
@@ -9276,8 +9071,8 @@ var Legend = /** @__PURE__ @class */ (function () {
                     this.renderLegendBorder();
                 }
                 legendElement.appendChild(drawSymbol(shapeLocation, shape, shapeSize, collection['ImageSrc'], renderOptions_1));
-                if (collection['Rect']['width'] > this.legendBorderRect.width) {
-                    var legendRectSize = collection['Rect']['x'] + collection['Rect']['width'];
+                var legendRectSize = collection['Rect']['x'] + collection['Rect']['width'];
+                if (legendRectSize > this.legendBorderRect.width) {
                     var trimmedText = this.legendTextTrim(this.legendBorderRect.width, legendText, legend.textStyle, legendRectSize);
                     legendText = trimmedText;
                 }
@@ -11066,9 +10861,13 @@ var Selection = /** @__PURE__ @class */ (function () {
                     var layetElement = getElementByID(_this.maps.element.id + '_Layer_Collections');
                     if (!_this.selectionsettings.enableMultiSelect &&
                         layetElement.getElementsByClassName(_this.selectionType + 'selectionMapStyle').length > 0) {
-                        var ele = layetElement.getElementsByClassName(_this.selectionType + 'selectionMapStyle')[0];
-                        removeClass(ele);
-                        _this.removedSelectionList(ele);
+                        var eleCount = layetElement.getElementsByClassName(_this.selectionType + 'selectionMapStyle').length;
+                        var ele = void 0;
+                        for (var k = 0; k < eleCount; k++) {
+                            ele = layetElement.getElementsByClassName(_this.selectionType + 'selectionMapStyle')[0];
+                            removeClass(ele);
+                            _this.removedSelectionList(ele);
+                        }
                         if (_this.selectionType === 'Shape') {
                             _this.maps.shapeSelectionItem = [];
                             var selectionLength = _this.maps.selectedElementId.length;
@@ -11889,6 +11688,18 @@ var Zoom = /** @__PURE__ @class */ (function () {
                             if (!isNullOrUndefined(currentEle)) {
                                 for (var k = 0; k < currentEle.childElementCount; k++) {
                                     this.markerTranslate(currentEle.childNodes[k], factor, x, y, scale, 'Marker', animate$$1);
+                                    var layerIndex_1 = parseInt(currentEle.childNodes[k]['id'].split('_LayerIndex_')[1].split('_')[0], 10);
+                                    var dataIndex = parseInt(currentEle.childNodes[k]['id'].split('_dataIndex_')[1].split('_')[0], 10);
+                                    var markerIndex = parseInt(currentEle.childNodes[k]['id'].split('_MarkerIndex_')[1].split('_')[0], 10);
+                                    var markerSelectionValues = this.currentLayer.markerSettings[markerIndex].dataSource[dataIndex];
+                                    for (var x_1 = 0; x_1 < this.currentLayer.markerSettings[markerIndex].initialMarkerSelection.length; x_1++) {
+                                        if (this.currentLayer.markerSettings[markerIndex].initialMarkerSelection[x_1]['latitude'] ===
+                                            markerSelectionValues['latitude'] ||
+                                            this.currentLayer.markerSettings[markerIndex].initialMarkerSelection[x_1]['longitude'] ===
+                                                markerSelectionValues['longitude']) {
+                                            this.maps.markerSelection(this.currentLayer.markerSettings[markerIndex].selectionSettings, this.maps, currentEle.children[k], this.currentLayer.markerSettings[markerIndex].dataSource[dataIndex]);
+                                        }
+                                    }
                                     if (!this.maps.isTileMap && this.currentLayer.animationDuration > 0) {
                                         markerStyle = 'visibility:hidden';
                                         currentEle.setAttribute('style', markerStyle);
@@ -11912,13 +11723,13 @@ var Zoom = /** @__PURE__ @class */ (function () {
                                             removeElement(this.maps.element.id + '_mapsTooltip');
                                         }
                                         else {
-                                            var x_1 = parseFloat(tooltipElement.getAttribute('transform').split('(')[1].split(')')[0].split(' ')[1]);
+                                            var x_2 = parseFloat(tooltipElement.getAttribute('transform').split('(')[1].split(')')[0].split(' ')[1]);
                                             var y_1 = parseFloat(tooltipElement.getAttribute('transform').split('(')[1].split(')')[0].split(' ')[2]);
                                             if (this.maps.isTileMap) {
-                                                x_1 += +getElement(this.maps.element.id + '_tile_parent')['style']['left'].split('px')[0];
+                                                x_2 += +getElement(this.maps.element.id + '_tile_parent')['style']['left'].split('px')[0];
                                                 y_1 += +getElement(this.maps.element.id + '_tile_parent')['style']['top'].split('px')[0];
                                             }
-                                            mapsTooltip.svgTooltip.location.x = x_1;
+                                            mapsTooltip.svgTooltip.location.x = x_2;
                                             mapsTooltip.svgTooltip.location.y = y_1;
                                             mapsTooltip.svgTooltip.enableAnimation = false;
                                         }
@@ -12044,6 +11855,14 @@ var Zoom = /** @__PURE__ @class */ (function () {
                 if (_this.maps.isBlazor) {
                     var maps = eventArgs.maps, marker_1 = eventArgs.marker, blazorEventArgs = __rest$7(eventArgs, ["maps", "marker"]);
                     eventArgs = blazorEventArgs;
+                    var latitudeValue = 'Latitude';
+                    var longitudeValue = 'Longitude';
+                    markerSettings.longitudeValuePath = !isNullOrUndefined(markerSettings.longitudeValuePath) ?
+                        markerSettings.longitudeValuePath : !isNullOrUndefined(data['Longitude']) ? longitudeValue :
+                        !isNullOrUndefined(data['longitude']) ? 'longitude' : null;
+                    markerSettings.latitudeValuePath = !isNullOrUndefined(markerSettings.latitudeValuePath) ?
+                        markerSettings.latitudeValuePath : !isNullOrUndefined(data['Latitude']) ? latitudeValue :
+                        !isNullOrUndefined(data['latitude']) ? 'latitude' : null;
                 }
                 _this.maps.trigger('markerRendering', eventArgs, function (MarkerArgs) {
                     if (markerSettings.shapeValuePath !== eventArgs.shapeValuePath) {
@@ -12053,9 +11872,11 @@ var Zoom = /** @__PURE__ @class */ (function () {
                         eventArgs = markerColorChoose(eventArgs, data);
                     }
                     var lati = (!isNullOrUndefined(markerSettings.latitudeValuePath)) ?
-                        Number(getValueFromObject(data, markerSettings.latitudeValuePath)) : parseFloat(data['latitude']);
+                        Number(getValueFromObject(data, markerSettings.latitudeValuePath)) : !isNullOrUndefined(data['latitude']) ?
+                        parseFloat(data['latitude']) : !isNullOrUndefined(data['Latitude']) ? data['Latitude'] : 0;
                     var long = (!isNullOrUndefined(markerSettings.longitudeValuePath)) ?
-                        Number(getValueFromObject(data, markerSettings.longitudeValuePath)) : parseFloat(data['longitude']);
+                        Number(getValueFromObject(data, markerSettings.longitudeValuePath)) : !isNullOrUndefined(data['longitude']) ?
+                        parseFloat(data['longitude']) : !isNullOrUndefined(data['Longitude']) ? data['Longitude'] : 0;
                     if (_this.maps.isBlazor) {
                         var data1 = {};
                         var j = 0;
@@ -12070,10 +11891,6 @@ var Zoom = /** @__PURE__ @class */ (function () {
                             }
                         }
                         data['text'] = data1['text'];
-                        if (data == {} || isNullOrUndefined(data['latitude']) || isNullOrUndefined(data['longitude'])) {
-                            lati = (data['latitude'] && !isNullOrUndefined(data['latitude'])) ? data['latitude'] : 0;
-                            long = (data['longitude'] && !isNullOrUndefined(data['longitude'])) ? data['longitude'] : 0;
-                        }
                     }
                     var offset = markerSettings.offset;
                     if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(long) && !isNullOrUndefined(lati)) {
@@ -12172,9 +11989,9 @@ var Zoom = /** @__PURE__ @class */ (function () {
                     var templateOffset = element.getBoundingClientRect();
                     var layerOffset = layerEle.getBoundingClientRect();
                     var elementOffset = element.parentElement.getBoundingClientRect();
-                    var x_2 = ((labelX) + (layerOffset.left - elementOffset.left) - (templateOffset.width / 2));
+                    var x_3 = ((labelX) + (layerOffset.left - elementOffset.left) - (templateOffset.width / 2));
                     var y_2 = ((labelY) + (layerOffset.top - elementOffset.top) - (templateOffset.height / 2));
-                    element.style.left = x_2 + 'px';
+                    element.style.left = x_3 + 'px';
                     element.style.top = y_2 + 'px';
                 }
                 else {
@@ -12285,20 +12102,16 @@ var Zoom = /** @__PURE__ @class */ (function () {
         var layer = this.maps.layersCollection[layerIndex];
         var marker$$1 = layer.markerSettings[markerIndex];
         if (!isNullOrUndefined(marker$$1) && !isNullOrUndefined(marker$$1.dataSource) && !isNullOrUndefined(marker$$1.dataSource[dataIndex])) {
-            var lng = (!isNullOrUndefined(marker$$1.longitudeValuePath)) ?
-                Number(getValueFromObject(marker$$1.dataSource[dataIndex], marker$$1.longitudeValuePath)) :
-                parseFloat(marker$$1.dataSource[dataIndex]['longitude']);
-            var lat = (!isNullOrUndefined(marker$$1.latitudeValuePath)) ?
-                Number(getValueFromObject(marker$$1.dataSource[dataIndex], marker$$1.latitudeValuePath)) :
-                parseFloat(marker$$1.dataSource[dataIndex]['latitude']);
             if (this.maps.isBlazor) {
+                marker$$1.longitudeValuePath = !isNullOrUndefined(marker$$1.longitudeValuePath) ?
+                    marker$$1.longitudeValuePath : !isNullOrUndefined(marker$$1.dataSource[dataIndex]['Longitude']) ? 'Longitude' :
+                    !isNullOrUndefined(marker$$1.dataSource[dataIndex]['longitude']) ? 'longitude' : null;
+                marker$$1.latitudeValuePath = !isNullOrUndefined(marker$$1.latitudeValuePath) ?
+                    marker$$1.latitudeValuePath : !isNullOrUndefined(marker$$1.dataSource[dataIndex]['Latitude']) ? 'Latitude' :
+                    !isNullOrUndefined(marker$$1.dataSource[dataIndex]['latitude']) ? 'latitude' : null;
                 var data1 = {};
                 var j = 0;
                 var text = [];
-                if (isNullOrUndefined(marker$$1.dataSource[dataIndex]['latitude']) || isNullOrUndefined(marker$$1.dataSource[dataIndex]['longitude'])) {
-                    lat = (marker$$1.dataSource[dataIndex]['latitude'] && !isNullOrUndefined(marker$$1.dataSource[dataIndex]['latitude'])) ? marker$$1.dataSource[dataIndex]['latitude'] : 0;
-                    lng = (marker$$1.dataSource[dataIndex]['longitude'] && !isNullOrUndefined(marker$$1.dataSource[dataIndex]['longitude'])) ? marker$$1.dataSource[dataIndex]['longitude'] : 0;
-                }
                 for (var i = 0; i < Object.keys(marker$$1.dataSource[dataIndex]).length; i++) {
                     if (Object.keys(marker$$1.dataSource[dataIndex])[i].toLowerCase() !== 'text' && Object.keys(marker$$1.dataSource[dataIndex])[i].toLowerCase() !== 'longitude'
                         && Object.keys(marker$$1.dataSource[dataIndex])[i].toLowerCase() !== 'latitude' && Object.keys(marker$$1.dataSource[dataIndex])[i].toLowerCase() !== 'blazortemplateid'
@@ -12310,6 +12123,14 @@ var Zoom = /** @__PURE__ @class */ (function () {
                 }
                 marker$$1.dataSource[dataIndex]['text'] = data1['text'];
             }
+            var lng = (!isNullOrUndefined(marker$$1.longitudeValuePath)) ?
+                Number(getValueFromObject(marker$$1.dataSource[dataIndex], marker$$1.longitudeValuePath)) :
+                !isNullOrUndefined(marker$$1.dataSource[dataIndex]['longitude']) ? parseFloat(marker$$1.dataSource[dataIndex]['longitude']) :
+                    !isNullOrUndefined(marker$$1.dataSource[dataIndex]['Latitude']) ? parseFloat(marker$$1.dataSource[dataIndex]['Latitude']) : 0;
+            var lat = (!isNullOrUndefined(marker$$1.latitudeValuePath)) ?
+                Number(getValueFromObject(marker$$1.dataSource[dataIndex], marker$$1.latitudeValuePath)) :
+                !isNullOrUndefined(marker$$1.dataSource[dataIndex]['latitude']) ? parseFloat(marker$$1.dataSource[dataIndex]['latitude']) :
+                    !isNullOrUndefined(marker$$1.dataSource[dataIndex]['Latitude']) ? parseFloat(marker$$1.dataSource[dataIndex]['Latitude']) : 0;
             var duration = this.currentLayer.animationDuration;
             var location_2 = (this.maps.isTileMap) ? convertTileLatLongToPoint(new Point(lng, lat), this.maps.tileZoomLevel, this.maps.tileTranslatePoint, true) : convertGeoToPoint(lat, lng, factor, layer, this.maps);
             if (this.maps.isTileMap) {
@@ -12464,7 +12285,8 @@ var Zoom = /** @__PURE__ @class */ (function () {
         zoomFactor = (type === 'ZoomOut') ? (Math.round(zoomFactor) === 1 ? 1 : zoomFactor) : zoomFactor;
         zoomFactor = (type === 'Reset') ? 1 : (Math.round(zoomFactor) === 0) ? 1 : zoomFactor;
         zoomFactor = (minZoom > zoomFactor && type === 'ZoomIn') ? minZoom + 1 : zoomFactor;
-        if ((!map.isTileMap) && (type === 'ZoomIn' ? zoomFactor >= minZoom && zoomFactor <= maxZoom : zoomFactor >= minZoom)) {
+        if ((!map.isTileMap) && (type === 'ZoomIn' ? zoomFactor >= minZoom && zoomFactor <= maxZoom : zoomFactor >= minZoom
+            || map.isReset)) {
             var min = map.baseMapRectBounds['min'];
             var max = map.baseMapRectBounds['max'];
             var mapWidth = Math.abs(max['x'] - min['x']);
@@ -12482,8 +12304,8 @@ var Zoom = /** @__PURE__ @class */ (function () {
             this.triggerZoomEvent(prevTilePoint, prevLevel, type);
             this.applyTransform(true);
         }
-        else if ((map.isTileMap) && (zoomFactor >= minZoom && zoomFactor <= maxZoom)) {
-            var tileZoomFactor = zoomFactor;
+        else if ((map.isTileMap) && ((zoomFactor >= minZoom && zoomFactor <= maxZoom) || map.isReset)) {
+            var tileZoomFactor = prevLevel < minZoom && !map.isReset ? minZoom : zoomFactor;
             map.scale = Math.pow(2, tileZoomFactor - 1);
             map.tileZoomLevel = tileZoomFactor;
             var position = { x: map.availableSize.width / 2, y: map.availableSize.height / 2 };
@@ -12646,6 +12468,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
      */
     Zoom.prototype.performZoomingByToolBar = function (type) {
         var map = this.maps;
+        map.isReset = false;
         switch (type.toLowerCase()) {
             case 'zoom':
                 this.panColor = this.fillColor;
@@ -13077,6 +12900,388 @@ var Zoom = /** @__PURE__ @class */ (function () {
 }());
 
 /**
+ * This module enables the print functionality in maps.
+ * @hidden
+ */
+var Print = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for Maps
+     * @param control
+     */
+    function Print(control) {
+        this.control = control;
+    }
+    /**
+     * To print the Maps
+     * @param elements
+     * @private
+     */
+    Print.prototype.print = function (elements) {
+        var _this = this;
+        this.printWindow = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
+        this.printWindow.moveTo(0, 0);
+        this.printWindow.resizeTo(screen.availWidth, screen.availHeight);
+        var argsData = {
+            cancel: false, htmlContent: this.getHTMLContent(elements), name: beforePrint
+        };
+        this.control.trigger('beforePrint', argsData, function (beforePrintArgs) {
+            if (!argsData.cancel) {
+                print(argsData.htmlContent, _this.printWindow);
+            }
+        });
+    };
+    /**
+     * To get the html string of the Maps
+     * @param elements
+     * @private
+     */
+    Print.prototype.getHTMLContent = function (elements) {
+        var div = createElement('div');
+        if (elements) {
+            if (elements instanceof Array) {
+                Array.prototype.forEach.call(elements, function (value) {
+                    div.appendChild(getElement(value).cloneNode(true));
+                });
+            }
+            else if (elements instanceof Element) {
+                div.appendChild(elements.cloneNode(true));
+            }
+            else {
+                div.appendChild(getElement(elements).cloneNode(true));
+            }
+        }
+        else {
+            div.appendChild(this.control.element.cloneNode(true));
+        }
+        return div;
+    };
+    /**
+     * Get module name.
+     */
+    Print.prototype.getModuleName = function () {
+        return 'Print';
+    };
+    /**
+     * To destroy the print.
+     * @return {void}
+     * @private
+     */
+    Print.prototype.destroy = function (maps) {
+        /**
+         * Destroy method performed here
+         */
+    };
+    return Print;
+}());
+
+/**
+ * This module enables the export to Image functionality in Maps control.
+ * @hidden
+ */
+var ImageExport = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for Maps
+     * @param control
+     */
+    function ImageExport(control) {
+        this.control = control;
+    }
+    /**
+     * To export the file as image/svg format
+     * @param type
+     * @param fileName
+     * @private
+     */
+    ImageExport.prototype.export = function (type, fileName, allowDownload) {
+        var _this = this;
+        // tslint:disable-next-line:max-func-body-length
+        var promise = new Promise(function (resolve, reject) {
+            var imageCanvasElement = createElement('canvas', {
+                id: 'ej2-canvas',
+                attrs: {
+                    'width': _this.control.availableSize.width.toString(),
+                    'height': _this.control.availableSize.height.toString()
+                }
+            });
+            var isDownload = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
+            var toolbarEle = document.getElementById(_this.control.element.id + '_ToolBar');
+            var svgParent = document.getElementById(_this.control.element.id + '_Tile_SVG_Parent');
+            var svgDataElement;
+            if (!_this.control.isTileMap) {
+                svgDataElement = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
+                    _this.control.svgObject.outerHTML + '</svg>';
+            }
+            else {
+                var tileSvg = document.getElementById(_this.control.element.id + '_Tile_SVG');
+                svgDataElement = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
+                    _this.control.svgObject.outerHTML + tileSvg.outerHTML + '</svg>';
+            }
+            var url = window.URL.createObjectURL(new Blob(type === 'SVG' ? [svgDataElement] :
+                [(new XMLSerializer()).serializeToString(_this.control.svgObject)], { type: 'image/svg+xml' }));
+            if (type === 'SVG') {
+                if (allowDownload) {
+                    triggerDownload(fileName, type, url, isDownload);
+                }
+                else {
+                    resolve(null);
+                }
+            }
+            else {
+                var image_1 = new Image();
+                var ctxt_1 = imageCanvasElement.getContext('2d');
+                if (!_this.control.isTileMap) {
+                    image_1.onload = (function () {
+                        ctxt_1.drawImage(image_1, 0, 0);
+                        window.URL.revokeObjectURL(url);
+                        if (allowDownload) {
+                            triggerDownload(fileName, type, imageCanvasElement.toDataURL('image/png').replace('image/png', 'image/octet-stream'), isDownload);
+                        }
+                        else {
+                            if (type === 'PNG') {
+                                resolve(imageCanvasElement.toDataURL('image/png'));
+                            }
+                            else if (type === 'JPEG') {
+                                resolve(imageCanvasElement.toDataURL('image/jpeg'));
+                            }
+                        }
+                    });
+                    image_1.src = url;
+                }
+                else {
+                    var imgxHttp = new XMLHttpRequest();
+                    var imgTileLength_1 = _this.control.mapLayerPanel.tiles.length;
+                    var _loop_1 = function (i) {
+                        var tile = document.getElementById('tile_' + (i - 1));
+                        var exportTileImg = new Image();
+                        exportTileImg.crossOrigin = 'Anonymous';
+                        ctxt_1.fillStyle = _this.control.background ? _this.control.background : '#FFFFFF';
+                        ctxt_1.fillRect(0, 0, _this.control.availableSize.width, _this.control.availableSize.height);
+                        ctxt_1.font = _this.control.titleSettings.textStyle.size + ' Arial';
+                        ctxt_1.fillStyle = document.getElementById(_this.control.element.id + '_Map_title').getAttribute('fill');
+                        ctxt_1.fillText(_this.control.titleSettings.text, parseFloat(document.getElementById(_this.control.element.id + '_Map_title').getAttribute('x')), parseFloat(document.getElementById(_this.control.element.id + '_Map_title').getAttribute('y')));
+                        exportTileImg.onload = (function () {
+                            if (i === 0 || i === imgTileLength_1 + 1) {
+                                if (i === 0) {
+                                    ctxt_1.setTransform(1, 0, 0, 1, 0, 0);
+                                    ctxt_1.rect(0, parseFloat(svgParent.style.top), parseFloat(svgParent.style.width), parseFloat(svgParent.style.height));
+                                    ctxt_1.clip();
+                                }
+                                else {
+                                    ctxt_1.setTransform(1, 0, 0, 1, parseFloat(svgParent.style.left), parseFloat(svgParent.style.top));
+                                }
+                            }
+                            else {
+                                ctxt_1.setTransform(1, 0, 0, 1, parseFloat(tile.style.left) + 10, parseFloat(tile.style.top) +
+                                    (parseFloat(document.getElementById(_this.control.element.id + '_tile_parent').style.top)));
+                            }
+                            ctxt_1.drawImage(exportTileImg, 0, 0);
+                            if (i === imgTileLength_1 + 1) {
+                                localStorage.setItem('local-canvasImage', imageCanvasElement.toDataURL('image/png'));
+                                var localBase64 = localStorage.getItem('local-canvasImage');
+                                if (allowDownload) {
+                                    triggerDownload(fileName, type, localBase64, isDownload);
+                                    localStorage.removeItem('local-canvasImage');
+                                }
+                                else {
+                                    if (type === 'PNG') {
+                                        resolve(localBase64);
+                                    }
+                                    else if (type === 'JPEG') {
+                                        resolve(imageCanvasElement.toDataURL('image/jpeg'));
+                                    }
+                                }
+                            }
+                        });
+                        if (i === 0 || i === imgTileLength_1 + 1) {
+                            if (i === 0) {
+                                exportTileImg.src = url;
+                            }
+                            else {
+                                setTimeout(function () {
+                                    exportTileImg.src = window.URL.createObjectURL(new Blob([(new XMLSerializer()).serializeToString(document.getElementById(_this.control.element.id + '_Tile_SVG'))], { type: 'image/svg+xml' }));
+                                    // tslint:disable-next-line:align
+                                }, 300);
+                            }
+                        }
+                        else {
+                            imgxHttp.open('GET', tile.children[0].getAttribute('src'), true);
+                            imgxHttp.send();
+                            exportTileImg.src = tile.children[0].getAttribute('src');
+                        }
+                    };
+                    for (var i = 0; i <= imgTileLength_1 + 1; i++) {
+                        _loop_1(i);
+                    }
+                }
+            }
+        });
+        return promise;
+    };
+    /**
+     * Get module name.
+     */
+    ImageExport.prototype.getModuleName = function () {
+        return 'ImageExport';
+    };
+    /**
+     * To destroy the ImageExport.
+     * @return {void}
+     * @private
+     */
+    ImageExport.prototype.destroy = function (maps) {
+        /**
+         * Destroy method performed here
+         */
+    };
+    return ImageExport;
+}());
+
+/**
+ * This module enables the export to PDF functionality in Maps control.
+ * @hidden
+ */
+var PdfExport = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for Maps
+     * @param control
+     */
+    function PdfExport(control) {
+        this.control = control;
+    }
+    /**
+     * To export the file as image/svg format
+     * @param type
+     * @param fileName
+     * @private
+     */
+    PdfExport.prototype.export = function (type, fileName, allowDownload, orientation) {
+        var _this = this;
+        // tslint:disable-next-line:max-func-body-length
+        var promise = new Promise(function (resolve, reject) {
+            var canvasElement = createElement('canvas', {
+                id: 'ej2-canvas',
+                attrs: {
+                    'width': _this.control.availableSize.width.toString(),
+                    'height': _this.control.availableSize.height.toString()
+                }
+            });
+            orientation = isNullOrUndefined(orientation) ? PdfPageOrientation.Landscape : orientation;
+            var svgParent = document.getElementById(_this.control.element.id + '_Tile_SVG_Parent');
+            var svgData;
+            var url = window.URL.createObjectURL(new Blob(type === 'SVG' ? [svgData] :
+                [(new XMLSerializer()).serializeToString(_this.control.svgObject)], { type: 'image/svg+xml' }));
+            var pdfDocument = new PdfDocument();
+            var image = new Image();
+            var ctx = canvasElement.getContext('2d');
+            if (!_this.control.isTileMap) {
+                image.onload = (function () {
+                    ctx.drawImage(image, 0, 0);
+                    window.URL.revokeObjectURL(url);
+                    if (type === 'PDF') {
+                        var imageString = canvasElement.toDataURL('image/jpeg').replace('image/jpeg', 'image/octet-stream');
+                        pdfDocument.pageSettings.orientation = orientation;
+                        imageString = imageString.slice(imageString.indexOf(',') + 1);
+                        pdfDocument.pages.add().graphics.drawImage(new PdfBitmap(imageString), 0, 0, (_this.control.availableSize.width - 60), _this.control.availableSize.height);
+                        if (allowDownload) {
+                            pdfDocument.save(fileName + '.pdf');
+                            pdfDocument.destroy();
+                        }
+                        else {
+                            resolve(null);
+                        }
+                    }
+                });
+                image.src = url;
+            }
+            else {
+                var xHttp = new XMLHttpRequest();
+                var tileLength_1 = _this.control.mapLayerPanel.tiles.length;
+                var _loop_1 = function (i) {
+                    var tile = document.getElementById('tile_' + (i - 1));
+                    var tileImg = new Image();
+                    tileImg.crossOrigin = 'Anonymous';
+                    ctx.fillStyle = _this.control.background ? _this.control.background : '#FFFFFF';
+                    ctx.fillRect(0, 0, _this.control.availableSize.width, _this.control.availableSize.height);
+                    ctx.font = _this.control.titleSettings.textStyle.size + ' Arial';
+                    ctx.fillStyle = document.getElementById(_this.control.element.id + '_Map_title').getAttribute('fill');
+                    ctx.fillText(_this.control.titleSettings.text, parseFloat(document.getElementById(_this.control.element.id + '_Map_title').getAttribute('x')), parseFloat(document.getElementById(_this.control.element.id + '_Map_title').getAttribute('y')));
+                    tileImg.onload = (function () {
+                        if (i === 0 || i === tileLength_1 + 1) {
+                            if (i === 0) {
+                                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                                ctx.rect(0, parseFloat(svgParent.style.top), parseFloat(svgParent.style.width), parseFloat(svgParent.style.height));
+                                ctx.clip();
+                            }
+                            else {
+                                ctx.setTransform(1, 0, 0, 1, parseFloat(svgParent.style.left), parseFloat(svgParent.style.top));
+                            }
+                        }
+                        else {
+                            ctx.setTransform(1, 0, 0, 1, parseFloat(tile.style.left) + 10, parseFloat(tile.style.top) +
+                                (parseFloat(document.getElementById(_this.control.element.id + '_tile_parent').style.top)));
+                        }
+                        ctx.drawImage(tileImg, 0, 0);
+                        if (i === tileLength_1 + 1) {
+                            if (type === 'PDF') {
+                                localStorage.setItem('saved-image-example', canvasElement.toDataURL('image/jpeg'));
+                                var x = localStorage.getItem('saved-image-example');
+                                pdfDocument.pageSettings.orientation = orientation;
+                                x = x.slice(x.indexOf(',') + 1);
+                                pdfDocument.pages.add().graphics.drawImage(new PdfBitmap(x), 0, 0, (_this.control.availableSize.width - 60), _this.control.availableSize.height);
+                                if (allowDownload) {
+                                    pdfDocument.save(fileName + '.pdf');
+                                    pdfDocument.destroy();
+                                }
+                                else {
+                                    resolve(null);
+                                }
+                            }
+                        }
+                    });
+                    if (i === 0 || i === tileLength_1 + 1) {
+                        if (i === 0) {
+                            tileImg.src = url;
+                        }
+                        else {
+                            setTimeout(function () {
+                                tileImg.src = window.URL.createObjectURL(new Blob([(new XMLSerializer()).serializeToString(document.getElementById(_this.control.element.id + '_Tile_SVG'))], { type: 'image/svg+xml' }));
+                                // tslint:disable-next-line:align
+                            }, 300);
+                        }
+                    }
+                    else {
+                        xHttp.open('GET', tile.children[0].getAttribute('src'), true);
+                        xHttp.send();
+                        tileImg.src = tile.children[0].getAttribute('src');
+                    }
+                };
+                for (var i = 0; i <= tileLength_1 + 1; i++) {
+                    _loop_1(i);
+                }
+            }
+        });
+        return promise;
+    };
+    /**
+     * Get module name.
+     */
+    PdfExport.prototype.getModuleName = function () {
+        return 'PdfExport';
+    };
+    /**
+     * To destroy the PdfExports.
+     * @return {void}
+     * @private
+     */
+    PdfExport.prototype.destroy = function (maps) {
+        /**
+         * Destroy method performed here
+         */
+    };
+    return PdfExport;
+}());
+
+/**
  * export all modules from maps component
  */
 
@@ -13084,5 +13289,5 @@ var Zoom = /** @__PURE__ @class */ (function () {
  * exporting all modules from maps index
  */
 
-export { Maps, load, loaded, click, rightClick, doubleClick, resize, tooltipRender, shapeSelected, shapeHighlight, mousemove, mouseup, mousedown, layerRendering, shapeRendering, markerRendering, markerClusterRendering, markerClick, markerClusterClick, markerMouseMove, markerClusterMouseMove, dataLabelRendering, bubbleRendering, bubbleClick, bubbleMouseMove, animationComplete, legendRendering, annotationRendering, itemSelection, itemHighlight, beforePrint, zoomIn, zoomOut, pan, Annotation, Arrow, Font, Border, CenterPosition, TooltipSettings, Margin, ConnectorLineSettings, MarkerClusterSettings, MarkerClusterData, ColorMappingSettings, InitialShapeSelectionSettings, SelectionSettings, HighlightSettings, NavigationLineSettings, BubbleSettings, CommonTitleSettings, SubTitleSettings, TitleSettings, ZoomSettings, ToggleLegendSettings, LegendSettings, DataLabelSettings, ShapeSettings, MarkerBase, MarkerSettings, LayerSettings, Tile, MapsAreaSettings, Size, stringToNumber, calculateSize, createSvg, getMousePosition, degreesToRadians, radiansToDegrees, convertGeoToPoint, convertTileLatLongToPoint, xToCoordinate, yToCoordinate, aitoff, roundTo, sinci, acos, calculateBound, triggerDownload, Point, MinMax, GeoLocation, measureText, TextOption, PathOption, ColorValue, RectOption, CircleOption, PolygonOption, PolylineOption, LineOption, Line, MapLocation, Rect, PatternOptions, renderTextElement, convertElement, formatValue, convertStringToValue, convertElementFromLabel, drawSymbols, getValueFromObject, markerColorChoose, markerShapeChoose, clusterTemplate, mergeSeparateCluster, clusterSeparate, marker, markerTemplate, maintainSelection, maintainStyleClass, appendShape, drawCircle, drawRectangle, drawPath, drawPolygon, drawPolyline, drawLine, calculateShapes, drawDiamond, drawTriangle, drawCross, drawHorizontalLine, drawVerticalLine, drawStar, drawBalloon, drawPattern, getFieldData, checkShapeDataFields, checkPropertyPath, filter, getRatioOfBubble, findMidPointOfPolygon, isCustomPath, textTrim, findPosition, removeElement, calculateCenterFromPixel, getTranslate, getZoomTranslate, fixInitialScaleForTile, getElementByID, Internalize, getTemplateFunction, getElement, getShapeData, triggerShapeEvent, getElementsByClassName, querySelector, getTargetElement, createStyle, customizeStyle, triggerItemSelectionEvent, removeClass, elementAnimate, timeout, showTooltip, wordWrap, createTooltip, drawSymbol, renderLegendShape, getElementOffset, changeBorderWidth, changeNavaigationLineWidth, targetTouches, calculateScale, getDistance, getTouches, getTouchCenter, sum, zoomAnimate, animate, MapAjax, smoothTranslate, compareZoomFactor, calculateZoomLevel, LayerPanel, Bubble, BingMap, Marker, ColorMapping, DataLabel, NavigationLine, Legend, Highlight, Selection, MapsTooltip, Zoom, Annotations, Print, ImageExport, PdfExport };
+export { Maps, load, loaded, click, rightClick, doubleClick, resize, tooltipRender, shapeSelected, shapeHighlight, mousemove, mouseup, mousedown, layerRendering, shapeRendering, markerRendering, markerClusterRendering, markerClick, markerClusterClick, markerMouseMove, markerClusterMouseMove, dataLabelRendering, bubbleRendering, bubbleClick, bubbleMouseMove, animationComplete, legendRendering, annotationRendering, itemSelection, itemHighlight, beforePrint, zoomIn, zoomOut, pan, Annotation, Arrow, Font, Border, CenterPosition, TooltipSettings, Margin, ConnectorLineSettings, MarkerClusterSettings, MarkerClusterData, ColorMappingSettings, InitialMarkerSelectionSettings, InitialShapeSelectionSettings, SelectionSettings, HighlightSettings, NavigationLineSettings, BubbleSettings, CommonTitleSettings, SubTitleSettings, TitleSettings, ZoomSettings, ToggleLegendSettings, LegendSettings, DataLabelSettings, ShapeSettings, MarkerBase, MarkerSettings, LayerSettings, Tile, MapsAreaSettings, Size, stringToNumber, calculateSize, createSvg, getMousePosition, degreesToRadians, radiansToDegrees, convertGeoToPoint, convertTileLatLongToPoint, xToCoordinate, yToCoordinate, aitoff, roundTo, sinci, acos, calculateBound, triggerDownload, Point, MinMax, GeoLocation, measureText, TextOption, PathOption, ColorValue, RectOption, CircleOption, PolygonOption, PolylineOption, LineOption, Line, MapLocation, Rect, PatternOptions, renderTextElement, convertElement, formatValue, convertStringToValue, convertElementFromLabel, drawSymbols, getValueFromObject, markerColorChoose, markerShapeChoose, clusterTemplate, mergeSeparateCluster, clusterSeparate, marker, markerTemplate, maintainSelection, maintainStyleClass, appendShape, drawCircle, drawRectangle, drawPath, drawPolygon, drawPolyline, drawLine, calculateShapes, drawDiamond, drawTriangle, drawCross, drawHorizontalLine, drawVerticalLine, drawStar, drawBalloon, drawPattern, getFieldData, checkShapeDataFields, checkPropertyPath, filter, getRatioOfBubble, findMidPointOfPolygon, isCustomPath, textTrim, findPosition, removeElement, calculateCenterFromPixel, getTranslate, getZoomTranslate, fixInitialScaleForTile, getElementByID, Internalize, getTemplateFunction, getElement, getShapeData, triggerShapeEvent, getElementsByClassName, querySelector, getTargetElement, createStyle, customizeStyle, triggerItemSelectionEvent, removeClass, elementAnimate, timeout, showTooltip, wordWrap, createTooltip, drawSymbol, renderLegendShape, getElementOffset, changeBorderWidth, changeNavaigationLineWidth, targetTouches, calculateScale, getDistance, getTouches, getTouchCenter, sum, zoomAnimate, animate, MapAjax, smoothTranslate, compareZoomFactor, calculateZoomLevel, processResult, LayerPanel, Bubble, BingMap, Marker, ColorMapping, DataLabel, NavigationLine, Legend, Highlight, Selection, MapsTooltip, Zoom, Annotations, Print, ImageExport, PdfExport };
 //# sourceMappingURL=ej2-maps.es5.js.map

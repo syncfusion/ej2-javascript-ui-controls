@@ -4,6 +4,7 @@ import { PointerModel, CapModel, NeedleTailModel, AnnotationModel } from './axis
 import { Font, Border } from '../model/base';
 import { Position, PointerRangePosition, PointerType, GaugeDirection, HiddenLabel, GaugeShape} from '../utils/enum';
 import { FontModel, BorderModel } from '../model/base-model';
+import { LinearGradientModel, RadialGradientModel } from './gradient-model';
 import { Size, Rect, VisibleLabels } from '../utils/helper';
 import { Theme } from '../model/theme';
 
@@ -208,6 +209,21 @@ export class Range extends ChildProperty<Range> {
     @Property(0)
     public offset: number | string;
 
+    /**
+     * Sets and gets the properties to render a linear gradient for the range. 
+     * If both linear and radial gradient is set, then the linear gradient will be rendered in the range.
+     * @default null
+     */
+    @Property(null)
+    public linearGradient: LinearGradientModel;
+
+    /**
+     * Sets and gets the properties to render a radial gradient for the range.
+     * @default null
+     */
+    @Property(null)
+    public radialGradient: RadialGradientModel;
+
     /** @private */
     public currentRadius: number;
     /** @private */
@@ -307,6 +323,23 @@ export class Cap extends ChildProperty<Cap> {
     public color: string;
 
     /**
+     * Sets and gets the properties to render a linear gradient for the cap of the needle pointer. 
+     * If both linear and radial gradient is set, then the linear gradient will be rendered in the cap.
+     * @default null
+     */
+
+    @Property(null)
+    public linearGradient: LinearGradientModel;
+
+    /**
+     * Sets and gets the properties to render a radial gradient for cap of the needle pointer.
+     * @default null
+     */
+
+    @Property(null)
+    public radialGradient: RadialGradientModel;
+
+    /**
      * Sets and gets the border of the pointer cap in the circular gauge component.
      */
 
@@ -352,6 +385,23 @@ export class NeedleTail extends ChildProperty<NeedleTail> {
 
     @Property('0%')
     public length: string;
+
+    /**
+     * Sets and gets the properties to render a linear gradient for the tail of the needle pointer. 
+     * If both linear and radial gradient is set, then the linear gradient will be rendered in the needle tail.
+     * @default null
+     */
+
+    @Property(null)
+    public linearGradient: LinearGradientModel;
+
+    /**
+     * Sets and gets the properties to render a radial gradient for tail of the needle pointer.
+     * @default null
+     */
+
+    @Property(null)
+    public radialGradient: RadialGradientModel;
 
 }
 
@@ -613,7 +663,22 @@ export class Pointer extends ChildProperty<Pointer> {
     @Property(null)
     public needleEndWidth: number;
 
+    /**
+     * Sets and gets the properties to render a linear gradient for the pointer.
+     * If both linear and radial gradient is set, then the linear gradient will be rendered in the pointer.
+     * @default null
+     */
 
+    @Property(null)
+    public linearGradient: LinearGradientModel;
+
+    /**
+     * Sets and gets the properties to render a radial gradient for pointer.
+     * @default null
+     */
+
+    @Property(null)
+    public radialGradient: RadialGradientModel;
 }
 
 /**

@@ -1450,6 +1450,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                 isClose = true;
             }
             if (!isClose) {
+                var liElem_1 = e && e.target && this.getLI(e.target);
                 item_1 = this.navIdx.length ? this.getItem(this.navIdx) : null;
                 items_1 = item_1 ? item_1.items : this.items;
                 beforeCloseArgs = { element: ul_1, parentItem: item_1, items: items_1, event: e, cancel: false };
@@ -1464,6 +1465,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                             popupEle = closest(ul_1, '.' + POPUP);
                             if (_this.hamburgerMode) {
                                 popupEle.parentElement.style.minHeight = '';
+                                closest(ul_1, '.e-menu-item').setAttribute('aria-expanded', 'false');
                             }
                             _this.unWireKeyboardEvent(popupEle);
                             _this.destroyScrollObj(getInstance(popupEle.children[0], VScroll), popupEle.children[0]);
@@ -1484,7 +1486,6 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                     var closedLi;
                     var trgtLi;
                     var trgtpopUp = _this.getWrapper() && _this.getUlByNavIdx();
-                    var liElem = e && e.target && _this.getLI(e.target);
                     if (_this.isCMenu) {
                         if (_this.canOpen(e.target)) {
                             _this.openMenu(null, null, _this.pageY, _this.pageX, e);
@@ -1494,9 +1495,9 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                     if (_this.isMenu && trgtpopUp && popupId.length) {
                         trgtliId = new RegExp('(.*)-ej2menu-' + _this.element.id + '-popup').exec(popupId)[1];
                         closedLi = trgtpopUp.querySelector('[id="' + trgtliId + '"]');
-                        trgtLi = (liElem && trgtpopUp.querySelector('[id="' + liElem.id + '"]'));
+                        trgtLi = (liElem_1 && trgtpopUp.querySelector('[id="' + liElem_1.id + '"]'));
                     }
-                    var submenus = liElem && liElem.querySelectorAll('.e-menu-item');
+                    var submenus = liElem_1 && liElem_1.querySelectorAll('.e-menu-item');
                     if (isOpen && _this.hamburgerMode && ulIndex && !(submenus.length)) {
                         _this.afterCloseMenu(e);
                     }
@@ -1527,10 +1528,23 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                             if (sli_1) {
                                 sli_1.setAttribute('aria-expanded', 'false');
                                 sli_1.classList.remove(SELECTED);
-                                if (liElem) {
+                                if (liElem_1) {
                                     sli_1.classList.add(FOCUSED);
                                     sli_1.focus();
                                 }
+                            }
+                            if (!isOpen && _this.hamburgerMode && liElem_1 && liElem_1.getAttribute('aria-expanded') === 'false' &&
+                                liElem_1.getAttribute('aria-haspopup') === 'true') {
+                                if (closest(liElem_1, '.e-menu-parent.e-control')) {
+                                    _this.navIdx = [];
+                                }
+                                else {
+                                    _this.navIdx.pop();
+                                }
+                                _this.navIdx.push(_this.cliIdx);
+                                var item_2 = _this.getItem(_this.navIdx);
+                                liElem_1.setAttribute('aria-expanded', 'true');
+                                _this.openMenu(liElem_1, item_2, -1, -1, e);
                             }
                         }
                     }
@@ -1734,6 +1748,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
             element: ul, items: items, parentItem: item, event: e, cancel: false, top: top, left: left
         };
         var menuType = type;
+        var collide;
         this.trigger('beforeOpen', eventArgs, function (observedOpenArgs) {
             switch (menuType) {
                 case 'menu':
@@ -1747,7 +1762,6 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                         _this.addScrolling(_this.popupWrapper, _this.uList, 'vscroll', _this.popupWrapper.offsetHeight, _this.uList.offsetHeight);
                         _this.checkScrollOffset(e);
                     }
-                    var collide = void 0;
                     if (!_this.hamburgerMode && !_this.left && !_this.top) {
                         _this.popupObj.refreshPosition(_this.lItem, true);
                         _this.left = parseInt(_this.popupWrapper.style.left, 10);
@@ -1794,6 +1808,9 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                         _this.popupObj.destroy();
                         detach(_this.popupWrapper);
                     }
+                    else if (ul.className.indexOf('e-ul') > -1) {
+                        detach(ul);
+                    }
                     _this.navIdx.pop();
                 }
                 else {
@@ -1824,6 +1841,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
             if (_this.keyType === 'right') {
                 var cul = _this.getUlByNavIdx();
                 li.classList.remove(FOCUSED);
+                var index = void 0;
                 if (_this.isMenu && _this.navIdx.length === 1) {
                     _this.removeLIStateByClass([SELECTED], [_this.getWrapper()]);
                 }
@@ -1834,7 +1852,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                 }
                 li.focus();
                 cul = _this.getUlByNavIdx();
-                var index = _this.isValidLI(cul.children[0], 0, _this.action);
+                index = _this.isValidLI(cul.children[0], 0, _this.action);
                 cul.children[index].classList.add(FOCUSED);
                 cul.children[index].focus();
             }
@@ -2188,7 +2206,9 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                                 this.isClosed = true;
                                 this.keyType = 'click';
                                 this.closeMenu(culIdx + 1, e);
-                                this.setLISelected(cli);
+                                if (this.showItemOnClick) {
+                                    this.setLISelected(cli);
+                                }
                             }
                         }
                         if (!this.isClosed) {
@@ -2234,9 +2254,11 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                 if (e.type === 'mouseover' || (Browser.isDevice && this.isMenu)) {
                     this.setLISelected(this.cli);
                 }
-                this.cli.setAttribute('aria-expanded', 'true');
-                this.navIdx.push(this.cliIdx);
-                this.openMenu(this.cli, item, null, null, e);
+                if (!this.hamburgerMode || (this.hamburgerMode && this.cli.getAttribute('aria-expanded') === 'false')) {
+                    this.cli.setAttribute('aria-expanded', 'true');
+                    this.navIdx.push(this.cliIdx);
+                    this.openMenu(this.cli, item, null, null, e);
+                }
             }
             else {
                 if (e.type !== 'mouseover') {
@@ -2947,13 +2969,13 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
         Property(false)
     ], MenuBase.prototype, "enableHtmlSanitizer", void 0);
     __decorate$2([
-        Complex({}, FieldSettings)
+        Complex({ itemId: "id", text: "text", parentId: "parentId", iconCss: "iconCss", url: "url", separator: "separator", children: "items" }, FieldSettings)
     ], MenuBase.prototype, "fields", void 0);
     __decorate$2([
         Collection([], MenuItem)
     ], MenuBase.prototype, "items", void 0);
     __decorate$2([
-        Complex({}, MenuAnimationSettings)
+        Complex({ duration: 400, easing: 'ease', effect: 'SlideDown' }, MenuAnimationSettings)
     ], MenuBase.prototype, "animationSettings", void 0);
     MenuBase = __decorate$2([
         NotifyPropertyChanges
@@ -5362,9 +5384,6 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         if (this.enableRtl) {
             this.add(this.element, CLS_RTL$3);
         }
-        if (!this.enablePersistence || isNullOrUndefined(this.expandedItems)) {
-            this.expandedItems = [];
-        }
     };
     Accordion.prototype.add = function (ele, val) {
         ele.classList.add(val);
@@ -5399,8 +5418,8 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         if (isNullOrUndefined(this.initExpand)) {
             this.initExpand = [];
         }
-        if (this.expandedItems.length > 0) {
-            this.initExpand = this.expandedItems;
+        if (this.expandedIndices.length > 0) {
+            this.initExpand = this.expandedIndices;
         }
         attributes(this.element, ariaAttr);
         if (this.expandMode === 'Single') {
@@ -5986,8 +6005,10 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
     };
     Accordion.prototype.expandedItemsPush = function (item) {
         var index = this.getIndexByItem(item);
-        if (this.expandedItems.indexOf(index) === -1) {
-            this.expandedItems.push(index);
+        if (this.expandedIndices.indexOf(index) === -1) {
+            var temp = [].slice.call(this.expandedIndices);
+            temp.push(index);
+            this.setProperties({ expandedIndices: temp }, true);
         }
     };
     Accordion.prototype.getIndexByItem = function (item) {
@@ -6006,7 +6027,9 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
     };
     Accordion.prototype.expandedItemsPop = function (item) {
         var index = this.getIndexByItem(item);
-        this.expandedItems.splice(this.expandedItems.indexOf(index), 1);
+        var temp = [].slice.call(this.expandedIndices);
+        temp.splice(temp.indexOf(index), 1);
+        this.setProperties({ expandedIndices: temp }, true);
     };
     Accordion.prototype.collapse = function (trgt) {
         var _this = this;
@@ -6154,7 +6177,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
                 EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'focus', _this.focusIn, _this);
                 EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'blur', _this.focusOut, _this);
                 _this.itemAttribUpdate();
-                _this.expandedItems = [];
+                _this.expandedIndices = [];
                 _this.expandedItemRefresh(ele);
                 if (addItem && addItem.expanded) {
                     _this.expandItem(true, itemIndex);
@@ -6188,7 +6211,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         detach(ele);
         items.splice(index, 1);
         this.itemAttribUpdate();
-        this.expandedItems = [];
+        this.expandedIndices = [];
         this.expandedItemRefresh(this.element);
     };
     /**
@@ -6375,7 +6398,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Accordion.prototype.getPersistData = function () {
-        var keyEntity = ['expandedItems'];
+        var keyEntity = ['expandedIndices'];
         return this.addOnPersist(keyEntity);
     };
     /**
@@ -6431,6 +6454,10 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
                     }
                     break;
                 case 'dataSource':
+                case 'expandedIndices':
+                    if (this.expandedIndices === null) {
+                        this.expandedIndices = [];
+                    }
                     isRefresh = true;
                     break;
                 case 'headerTemplate':
@@ -6453,7 +6480,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
                 case 'expandMode':
                     if (newProp.expandMode === 'Single') {
                         this.element.setAttribute('aria-multiselectable', 'false');
-                        if (this.expandedItems.length > 1) {
+                        if (this.expandedIndices.length > 1) {
                             this.expandItem(false);
                         }
                     }
@@ -6464,6 +6491,10 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
             }
         }
         if (isRefresh && !this.isServerRendered) {
+            this.initExpand = [];
+            if (this.expandedIndices.length > 0) {
+                this.initExpand = this.expandedIndices;
+            }
             this.destroyItems();
             this.renderItems();
             this.initItemExpand();
@@ -6487,6 +6518,9 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
     __decorate$4([
         Property('auto')
     ], Accordion.prototype, "height", void 0);
+    __decorate$4([
+        Property([])
+    ], Accordion.prototype, "expandedIndices", void 0);
     __decorate$4([
         Property('Multiple')
     ], Accordion.prototype, "expandMode", void 0);
@@ -6897,7 +6931,7 @@ var Menu = /** @__PURE__ @class */ (function (_super) {
         Property(false)
     ], Menu.prototype, "enableHtmlSanitizer", void 0);
     __decorate$6([
-        Complex({}, FieldSettings)
+        Complex({ itemId: "id", text: "text", parentId: "parentId", iconCss: "iconCss", url: "url", separator: "separator", children: "items" }, FieldSettings)
     ], Menu.prototype, "fields", void 0);
     Menu = __decorate$6([
         NotifyPropertyChanges
@@ -7132,14 +7166,8 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         if (!this.isServerRendered) {
             _super.prototype.refresh.call(this);
         }
-        else if (this.isServerRendered) {
-            if (this.tbObj) {
-                this.tbObj.refreshOverflow();
-                this.refreshActiveBorder();
-            }
-            if (this.loadOn !== 'Dynamic') {
-                this.setActiveBorder();
-            }
+        else if (this.isServerRendered && this.loadOn !== 'Dynamic') {
+            this.setActiveBorder();
         }
     };
     /**
@@ -8111,6 +8139,9 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
     Tab.prototype.swipeHandler = function (e) {
         if (e.velocity < 3 && isNullOrUndefined(e.originalEvent.changedTouches)) {
             return;
+        }
+        if (e.originalEvent) {
+            e.originalEvent.stopPropagation();
         }
         this.isSwipeed = true;
         if (e.swipeDirection === 'Right' && this.selectedItem !== 0) {

@@ -207,7 +207,7 @@ public isRemote(): boolean {
     } else {
       if (!(this.parent.dataSource[adaptorName] === 'BlazorAdaptor' && !this.parent[clientRender]) && !this.parent.loadChildOnDemand) {
         for (let rec: number = 0; rec < records.length; rec++) {
-            if (isNullOrUndefined(records[rec].index)) {
+          if (isNullOrUndefined(records[rec].index)) {
                 records[rec].taskData = extend({}, records[rec]);
                 records[rec].uniqueID = getUid(this.parent.element.id + '_data_');
                 setValue('uniqueIDCollection.' + records[rec].uniqueID, records[rec], this.parent);
@@ -218,8 +218,8 @@ public isRemote(): boolean {
                 }
                 records[rec].checkboxState = 'uncheck';
             }
-        }
-      } else {
+          }
+        } else {
         if (!isNullOrUndefined(records)) {
           this.convertToFlatData(records);
         }
@@ -529,7 +529,8 @@ public isRemote(): boolean {
       results = <ITreeData[]>this.dataResults.result;
       count = isCountRequired(this.parent) ? getValue('count', this.parent.dataSource)
               : this.dataResults.count;
-    } else if (this.parent.enableVirtualization && (!isExport || exportType === 'CurrentPage')) {
+    } else if (this.parent.enableVirtualization && (!isExport || exportType === 'CurrentPage')
+              && getValue('requestType', args) !== 'save') {
       this.parent.notify(events.pagingActions, {result: results, count: count, actionArgs: getValue('actionArgs', args)});
       results = <ITreeData[]>this.dataResults.result;
       count = this.dataResults.count;

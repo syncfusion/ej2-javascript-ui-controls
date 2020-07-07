@@ -689,6 +689,15 @@ Operators.evenOdd = '*';
  * @private
  */
 Operators.setMiterLimit = 'M';
+/**
+ * Same as SC, but also supports Pattern, Separation, DeviceN, and ICCBased color spaces. For non-stroking operations.
+ * @public
+ */
+Operators.setColorAndPattern = 'scn';
+/**
+ * Same as SC, but also supports Pattern, Separation, DeviceN, and ICCBased color spaces. For stroking.
+ */
+Operators.setColorAndPatternStroking = 'SCN';
 
 /**
  * dictionaryProperties.ts class for EJ2-PDF
@@ -1117,6 +1126,91 @@ class DictionaryProperties {
          * @private
          */
         this.descendantFonts = 'DescendantFonts';
+        /**
+         * Specifies the value of 'background'.
+         * @private
+         */
+        this.background = 'Background';
+        /**
+         * Specifies the value of 'shading'.
+         * @private
+         */
+        this.shading = 'Shading';
+        /**
+         * Specifies the value of 'matrix'.
+         * @private
+         */
+        this.matrix = 'Matrix';
+        /**
+         * Specifies the value of 'antiAlias'.
+         * @private
+         */
+        this.antiAlias = 'AntiAlias';
+        /**
+         * Specifies the value of 'function'.
+         * @private
+         */
+        this.function = 'Function';
+        /**
+         * Specifies the value of 'extend'.
+         * @private
+         */
+        this.extend = 'Extend';
+        /**
+         * Specifies the value of 'shadingType'.
+         * @private
+         */
+        this.shadingType = 'ShadingType';
+        /**
+         * Specifies the value of 'coords'.
+         * @private
+         */
+        this.coords = 'Coords';
+        /**
+         * Specifies the value of 'domain'.
+         * @private
+         */
+        this.domain = 'Domain';
+        /**
+         * Specifies the value of 'range'.
+         * @private
+         */
+        this.range = 'Range';
+        /**
+         * Specifies the value of 'functionType'.
+         * @private
+         */
+        this.functionType = 'FunctionType';
+        /**
+         * Specifies the value of 'bitsPerSample'.
+         * @private
+         */
+        this.bitsPerSample = 'BitsPerSample';
+        /**
+         * Specifies the value of 'patternType'.
+         * @private
+         */
+        this.patternType = 'PatternType';
+        /**
+         * Specifies the value of 'paintType'.
+         * @private
+         */
+        this.paintType = 'PaintType';
+        /**
+         * Specifies the value of 'tilingType'.
+         * @private
+         */
+        this.tilingType = 'TilingType';
+        /**
+         * Specifies the value of 'xStep'.
+         * @private
+         */
+        this.xStep = 'XStep';
+        /**
+         * Specifies the value of 'yStep'.
+         * @private
+         */
+        this.yStep = 'YStep';
         //
     }
 }
@@ -3435,6 +3529,25 @@ class PdfColor {
             this.grayColor = color1.gray;
             this.alpha = color1.alpha;
             this.filled = (this.alpha !== 0);
+            /* tslint:disable-next-line:max-line-length */
+        }
+        else if (typeof color1 === 'number' && typeof color2 === 'undefined' && typeof color3 === 'undefined' && typeof color4 === 'undefined') {
+            if (color1 < 0) {
+                color1 = 0;
+            }
+            if (color1 > 1) {
+                color1 = 1;
+            }
+            this.redColor = color1 * PdfColor.maxColourChannelValue;
+            this.greenColor = color1 * PdfColor.maxColourChannelValue;
+            this.blueColor = color1 * PdfColor.maxColourChannelValue;
+            this.cyanColor = color1;
+            this.magentaColor = color1;
+            this.yellowColor = color1;
+            this.blackColor = color1;
+            this.grayColor = color1;
+            this.alpha = PdfColor.maxColourChannelValue;
+            this.filled = true;
         }
         else if (typeof color4 === 'undefined') {
             this.assignRGB(color1, color2, color3);
@@ -3531,6 +3644,86 @@ class PdfColor {
         return (this.b / PdfColor.maxColourChannelValue);
     }
     /**
+     * Gets or sets `Cyan` channel value.
+     * @private
+     */
+    get c() {
+        return this.cyanColor;
+    }
+    set c(value) {
+        if (value < 0) {
+            this.cyanColor = 0;
+        }
+        else if (value > 1) {
+            this.cyanColor = 1;
+        }
+        else {
+            this.cyanColor = value;
+        }
+        this.assignRGB(this.cyanColor, this.magentaColor, this.yellowColor, this.blackColor);
+        this.filled = true;
+    }
+    /**
+     * Gets or sets `Black` channel value.
+     * @private
+     */
+    get k() {
+        return this.blackColor;
+    }
+    set k(value) {
+        if ((value < 0)) {
+            this.blackColor = 0;
+        }
+        else if ((value > 1)) {
+            this.blackColor = 1;
+        }
+        else {
+            this.blackColor = value;
+        }
+        this.assignRGB(this.cyanColor, this.magentaColor, this.yellowColor, this.blackColor);
+        this.filled = true;
+    }
+    /**
+     * Gets or sets `Magenta` channel value.
+     * @private
+     */
+    get m() {
+        return this.magentaColor;
+    }
+    set m(value) {
+        if ((value < 0)) {
+            this.magentaColor = 0;
+        }
+        else if ((value > 1)) {
+            this.magentaColor = 1;
+        }
+        else {
+            this.magentaColor = value;
+        }
+        this.assignRGB(this.cyanColor, this.magentaColor, this.yellowColor, this.blackColor);
+        this.filled = true;
+    }
+    /**
+     * Gets or sets `Yellow` channel value.
+     * @private
+     */
+    get y() {
+        return this.yellowColor;
+    }
+    set y(value) {
+        if ((value < 0)) {
+            this.yellowColor = 0;
+        }
+        else if ((value > 1)) {
+            this.yellowColor = 1;
+        }
+        else {
+            this.yellowColor = value;
+        }
+        this.assignRGB(this.cyanColor, this.magentaColor, this.yellowColor, this.blackColor);
+        this.filled = true;
+    }
+    /**
      *  Gets or sets `Green` channel value.
      * @private
      */
@@ -3606,7 +3799,40 @@ class PdfColor {
         if (this.isEmpty) {
             return '';
         }
-        return this.rgbToString(stroke);
+        let str = '';
+        switch (colorSpace) {
+            case PdfColorSpace.Rgb:
+                str = this.rgbToString(stroke);
+                break;
+            case PdfColorSpace.GrayScale:
+                str = this.grayScaleToString(stroke);
+                break;
+            case PdfColorSpace.Cmyk:
+                str = this.cmykToString(stroke);
+                break;
+        }
+        return str;
+    }
+    /**
+     * Sets `GrayScale` color.
+     * @private
+     */
+    grayScaleToString(ifStroking) {
+        let gray = this.gray;
+        let colour = '';
+        let obj = null;
+        /* tslint:disable-next-line:max-line-length */
+        obj = (ifStroking) ? PdfColor.grayStringsSroke.containsKey(gray) ? PdfColor.grayStringsSroke.getValue(gray) : null : PdfColor.grayStringsFill.containsKey(gray) ? PdfColor.grayStringsFill.getValue(gray) : null;
+        if (obj == null) {
+            if (ifStroking) {
+                colour = gray.toString() + ' G';
+                PdfColor.grayStringsSroke.setValue(gray, colour);
+            }
+        }
+        else {
+            colour = obj.toString();
+        }
+        return colour + Operators.newLine;
     }
     /**
      * Sets `RGB` color.
@@ -3642,6 +3868,19 @@ class PdfColor {
         }
         return colour + Operators.newLine;
     }
+    /***
+     * Sets `CMYK` color.
+     * @private
+     */
+    cmykToString(ifStroking) {
+        let cyan = this.c;
+        let magenta = this.m;
+        let yellow = this.y;
+        let black = this.b;
+        let colour = '';
+        colour = cyan.toString() + ' ' + magenta.toString() + ' ' + yellow.toString() + ' ' + black.toString() + ' K';
+        return colour + Operators.newLine;
+    }
     /**
      * Converts `colour to a PDF array`.
      * @private
@@ -3654,8 +3893,6 @@ class PdfColor {
                 array.add(new PdfNumber(this.green));
                 array.add(new PdfNumber(this.blue));
                 break;
-            default:
-                throw new Error('NotSupportedException : Unsupported colour space.');
         }
         return array;
     }
@@ -3825,6 +4062,10 @@ class PdfBrush {
      */
     constructor() {
         //
+    }
+    //IClonable implementation
+    clone() {
+        return this;
     }
 }
 
@@ -7675,6 +7916,40 @@ class PdfStreamWriter {
     get document() {
         return null;
     }
+    /* tslint:disable-next-line:max-line-length */
+    appendBezierSegment(arg1, arg2, arg3, arg4, arg5, arg6) {
+        if (arg1 instanceof PointF && arg2 instanceof PointF && arg3 instanceof PointF) {
+            this.writePoint(arg1.x, arg1.y);
+            this.writePoint(arg2.x, arg2.y);
+            this.writePoint(arg3.x, arg3.y);
+        }
+        else {
+            this.writePoint(arg1, arg2);
+            this.writePoint(arg3, arg4);
+            this.writePoint(arg5, arg6);
+        }
+        this.writeOperator(Operators.appendbeziercurve);
+    }
+    setColourWithPattern(colours, patternName, forStroking) {
+        if ((colours != null)) {
+            let count = colours.length;
+            let i = 0;
+            for (i = 0; i < count; ++i) {
+                this.stream.write(colours[i].toString());
+                this.stream.write(Operators.whiteSpace);
+            }
+        }
+        if ((patternName != null)) {
+            this.stream.write(patternName.toString());
+            this.stream.write(Operators.whiteSpace);
+        }
+        if (forStroking) {
+            this.writeOperator(Operators.setColorAndPatternStroking);
+        }
+        else {
+            this.writeOperator(Operators.setColorAndPattern);
+        }
+    }
 }
 
 /**
@@ -7926,6 +8201,10 @@ class PdfPen {
      */
     setBrush(brush) {
         let sBrush = brush;
+        if ((sBrush != null && sBrush instanceof PdfSolidBrush)) {
+            this.color = sBrush.color;
+            this.pdfBrush = sBrush;
+        }
         this.color = sBrush.color;
         this.pdfBrush = sBrush;
     }
@@ -13248,6 +13527,991 @@ class RtlRenderer {
 }
 
 /**
+ * public Enum for `PdfLayoutType`.
+ * @private
+ */
+var PdfLayoutType;
+(function (PdfLayoutType) {
+    /**
+     * Specifies the type of `Paginate`.
+     * @private
+     */
+    PdfLayoutType[PdfLayoutType["Paginate"] = 0] = "Paginate";
+    /**
+     * Specifies the type of `OnePage`.
+     * @private
+     */
+    PdfLayoutType[PdfLayoutType["OnePage"] = 1] = "OnePage";
+})(PdfLayoutType || (PdfLayoutType = {}));
+/**
+ * public Enum for `PdfLayoutBreakType`.
+ * @private
+ */
+var PdfLayoutBreakType;
+(function (PdfLayoutBreakType) {
+    /**
+     * Specifies the type of `FitPage`.
+     * @private
+     */
+    PdfLayoutBreakType[PdfLayoutBreakType["FitPage"] = 0] = "FitPage";
+    /**
+     * Specifies the type of `FitElement`.
+     * @private
+     */
+    PdfLayoutBreakType[PdfLayoutBreakType["FitElement"] = 1] = "FitElement";
+    /**
+     * Specifies the type of `FitColumnsToPage`.
+     * @private
+     */
+    PdfLayoutBreakType[PdfLayoutBreakType["FitColumnsToPage"] = 2] = "FitColumnsToPage";
+})(PdfLayoutBreakType || (PdfLayoutBreakType = {}));
+var PathPointType;
+(function (PathPointType) {
+    /**
+     * Specifies the path point type of `Start`.
+     * @private
+     */
+    PathPointType[PathPointType["Start"] = 0] = "Start";
+    /**
+     * Specifies the path point type of `Line`.
+     * @private
+     */
+    PathPointType[PathPointType["Line"] = 1] = "Line";
+    /**
+     * Specifies the path point type of `Bezier3`.
+     * @private
+     */
+    PathPointType[PathPointType["Bezier3"] = 3] = "Bezier3";
+    /**
+     * Specifies the path point type of `Bezier`.
+     * @private
+     */
+    PathPointType[PathPointType["Bezier"] = 3] = "Bezier";
+    /**
+     * Specifies the path point type of `PathTypeMask`.
+     * @private
+     */
+    PathPointType[PathPointType["PathTypeMask"] = 7] = "PathTypeMask";
+    /**
+     * Specifies the path point type of `DashMode`.
+     * @private
+     */
+    PathPointType[PathPointType["DashMode"] = 16] = "DashMode";
+    /**
+     * Specifies the path point type of `PathMarker`.
+     * @private
+     */
+    PathPointType[PathPointType["PathMarker"] = 32] = "PathMarker";
+    /**
+     * Specifies the path point type of `CloseSubpath`.
+     * @private
+     */
+    PathPointType[PathPointType["CloseSubpath"] = 128] = "CloseSubpath";
+})(PathPointType || (PathPointType = {}));
+
+/**
+ * `PdfGradientBrush` class provides objects used to fill the interiors of graphical shapes such as rectangles,
+ * ellipses, pies, polygons, and paths.
+ * @private
+ */
+class PdfGradientBrush extends PdfBrush {
+    //Constructor
+    /**
+     * Initializes a new instance of the `PdfGradientBrush` class.
+     * @public
+     */
+    /* tslint:disable-next-line:max-line-length */
+    constructor(shading) {
+        super();
+        // Fields
+        /**
+         * Local variable to store the background color.
+         * @private
+         */
+        this.mbackground = new PdfColor(255, 255, 255);
+        /**
+         * Local variable to store the stroking color.
+         * @private
+         */
+        this.mbStroking = false;
+        /**
+         * Local variable to store the function.
+         * @private
+         */
+        this.mfunction = null;
+        /**
+         * Local variable to store the DictionaryProperties.
+         * @private
+         */
+        this.dictionaryProperties = new DictionaryProperties();
+        this.mpatternDictionary = new PdfDictionary();
+        this.mpatternDictionary.items.setValue(this.dictionaryProperties.type, new PdfName(this.dictionaryProperties.pattern));
+        this.mpatternDictionary.items.setValue(this.dictionaryProperties.patternType, new PdfNumber(2));
+        this.shading = shading;
+        this.colorSpace = PdfColorSpace.Rgb;
+    }
+    //Properties
+    /**
+     * Gets or sets the background color of the brush.
+     * @public
+     */
+    get background() {
+        return this.mbackground;
+    }
+    set background(value) {
+        this.mbackground = value;
+        let sh = this.shading;
+        if (value.isEmpty) {
+            sh.remove(this.dictionaryProperties.background);
+        }
+        else {
+            sh.items.setValue(this.dictionaryProperties.background, value.toArray(this.colorSpace));
+        }
+    }
+    /**
+     * Gets or sets a value indicating whether use anti aliasing algorithm.
+     * @public
+     */
+    get antiAlias() {
+        let sh = this.shading;
+        let aa = (sh.items.getValue(this.dictionaryProperties.antiAlias));
+        return aa.value;
+    }
+    set antiAlias(value) {
+        let sh = this.shading;
+        let aa = (sh.items.getValue(this.dictionaryProperties.antiAlias));
+        if ((aa == null && typeof aa === 'undefined')) {
+            aa = new PdfBoolean(value);
+            sh.items.setValue(this.dictionaryProperties.antiAlias, aa);
+        }
+        else {
+            aa.value = value;
+        }
+    }
+    /**
+     * Gets or sets the function of the brush.
+     * @protected
+     */
+    get function() {
+        return this.mfunction;
+    }
+    set function(value) {
+        this.mfunction = value;
+        if (value != null && typeof value !== 'undefined') {
+            this.shading.items.setValue(this.dictionaryProperties.function, new PdfReferenceHolder(this.mfunction));
+        }
+        else {
+            this.shading.remove(this.dictionaryProperties.function);
+        }
+    }
+    /**
+     * Gets or sets the boundary box of the brush.
+     * @protected
+     */
+    get bBox() {
+        let sh = this.shading;
+        let box = (sh.items.getValue(this.dictionaryProperties.bBox));
+        return box;
+    }
+    set bBox(value) {
+        let sh = this.shading;
+        if (value == null && typeof value === 'undefined') {
+            sh.remove(this.dictionaryProperties.bBox);
+        }
+        else {
+            sh.items.setValue(this.dictionaryProperties.bBox, value);
+        }
+    }
+    /**
+     * Gets or sets the color space of the brush.
+     * @public
+     */
+    get colorSpace() {
+        return this.mcolorSpace;
+    }
+    set colorSpace(value) {
+        let colorSpace = this.shading.items.getValue(this.dictionaryProperties.colorSpace);
+        if ((value !== this.mcolorSpace) || (colorSpace == null)) {
+            this.mcolorSpace = value;
+            let csValue = this.colorSpaceToDeviceName(value);
+            this.shading.items.setValue(this.dictionaryProperties.colorSpace, new PdfName(csValue));
+        }
+    }
+    /**
+     * Gets or sets a value indicating whether this PdfGradientBrush is stroking.
+     * @public
+     */
+    get stroking() {
+        return this.mbStroking;
+    }
+    set stroking(value) {
+        this.mbStroking = value;
+    }
+    /**
+     * Gets the pattern dictionary.
+     * @protected
+     */
+    get patternDictionary() {
+        if (this.mpatternDictionary == null) {
+            this.mpatternDictionary = new PdfDictionary();
+        }
+        return this.mpatternDictionary;
+    }
+    /**
+     * Gets or sets the shading dictionary.
+     * @protected
+     */
+    get shading() {
+        return this.mshading;
+    }
+    set shading(value) {
+        if (value == null) {
+            throw new Error('ArgumentNullException : Shading');
+        }
+        if (value !== this.mshading) {
+            this.mshading = value;
+            this.patternDictionary.items.setValue(this.dictionaryProperties.shading, new PdfReferenceHolder(this.mshading));
+        }
+    }
+    /**
+     * Gets or sets the transformation matrix.
+     * @public
+     */
+    get matrix() {
+        return this.mmatrix;
+    }
+    set matrix(value) {
+        if (value == null) {
+            throw new Error('ArgumentNullException : Matrix');
+        }
+        if (value !== this.mmatrix) {
+            this.mmatrix = value.clone();
+            let m = new PdfArray(this.mmatrix.matrix.elements);
+            this.mpatternDictionary.items.setValue(this.dictionaryProperties.matrix, m);
+        }
+    }
+    //Overrides
+    /**
+     * Monitors the changes of the brush and modify PDF state respectfully.
+     * @param brush The brush.
+     * @param streamWriter The stream writer.
+     * @param getResources The get resources delegate.
+     * @param saveChanges if set to true the changes should be saved anyway.
+     * @param currentColorSpace The current color space.
+     */
+    /* tslint:disable-next-line:max-line-length */
+    monitorChanges(brush, streamWriter, getResources, saveChanges, currentColorSpace) {
+        let diff = false;
+        if (brush instanceof PdfGradientBrush) {
+            if ((this.colorSpace !== currentColorSpace)) {
+                this.colorSpace = currentColorSpace;
+                this.resetFunction();
+            }
+            //  Set the /Pattern colour space.
+            streamWriter.setColorSpace('Pattern', this.mbStroking);
+            //  Set the pattern for non-stroking operations.
+            let resources = getResources.getResources();
+            let name = resources.getName(this);
+            streamWriter.setColourWithPattern(null, name, this.mbStroking);
+            diff = true;
+        }
+        return diff;
+    }
+    /**
+     * Resets the changes, which were made by the brush.
+     * In other words resets the state to the initial one.
+     * @param streamWriter The stream writer.
+     */
+    resetChanges(streamWriter) {
+        //  Unable reset.
+    }
+    //Implementation
+    /**
+     * Converts colorspace enum to a PDF name.
+     * @param colorSpace The color space enum value.
+     */
+    colorSpaceToDeviceName(colorSpace) {
+        let result;
+        switch (colorSpace) {
+            case PdfColorSpace.Rgb:
+                result = 'DeviceRGB';
+                break;
+        }
+        return result;
+    }
+    /**
+     * Resets the pattern dictionary.
+     * @param dictionary A new pattern dictionary.
+     */
+    resetPatternDictionary(dictionary) {
+        this.mpatternDictionary = dictionary;
+    }
+    /**
+     * Clones the anti aliasing value.
+     * @param brush The brush.
+     */
+    cloneAntiAliasingValue(brush) {
+        if ((brush == null)) {
+            throw new Error('ArgumentNullException : brush');
+        }
+        let sh = this.shading;
+        let aa = (sh.items.getValue(this.dictionaryProperties.antiAlias));
+        if ((aa != null)) {
+            brush.shading.items.setValue(this.dictionaryProperties.antiAlias, new PdfBoolean(aa.value));
+        }
+    }
+    /**
+     * Clones the background value.
+     * @param brush The brush.
+     */
+    cloneBackgroundValue(brush) {
+        let background = this.background;
+        if (!background.isEmpty) {
+            brush.background = background;
+        }
+    }
+    /* tslint:enable */
+    // IPdfWrapper Members
+    /**
+     * Gets the `element`.
+     * @private
+     */
+    get element() {
+        return this.patternDictionary;
+    }
+}
+
+/**
+ * PdfTemplate.ts class for EJ2-PDF
+ */
+/**
+ * Represents `Pdf Template` object.
+ * @private
+ */
+class PdfTemplate {
+    constructor(arg1, arg2) {
+        /**
+         * Initialize an instance for `DictionaryProperties` class.
+         * @private
+         * @hidden
+         */
+        this.dictionaryProperties = new DictionaryProperties();
+        /**
+         * Checks whether the transformation 'is performed'.
+         * @default true
+         * @private
+         */
+        this.writeTransformation = true;
+        if (typeof arg1 === 'undefined') {
+            //
+        }
+        else if (arg1 instanceof SizeF && typeof arg2 === 'undefined') {
+            this.content = new PdfStream();
+            let tempSize = new SizeF(arg1.width, arg1.height);
+            this.setSize(tempSize);
+            this.initialize();
+        }
+        else {
+            this.content = new PdfStream();
+            this.setSize(new SizeF(arg1, arg2));
+            this.initialize();
+        }
+    }
+    //Properties
+    /**
+     * Gets the size of the 'PdfTemplate'.
+     */
+    get size() {
+        return this.templateSize;
+    }
+    /**
+     * Gets the width of the 'PdfTemplate'.
+     */
+    get width() {
+        return this.size.width;
+    }
+    /**
+     * Gets the height of the 'PdfTemplate'.
+     */
+    get height() {
+        return this.size.height;
+    }
+    /**
+     * Gets the `graphics` of the 'PdfTemplate'.
+     */
+    get graphics() {
+        if (this.pdfGraphics == null || typeof this.pdfGraphics === 'undefined') {
+            let gr = new GetResourceEventHandler(this);
+            let g = new PdfGraphics(this.size, gr, this.content);
+            this.pdfGraphics = g;
+            // if(this.writeTransformation) {
+            // Transform co-ordinates to Top/Left.
+            this.pdfGraphics.initializeCoordinates();
+            // }
+        }
+        return this.pdfGraphics;
+    }
+    /**
+     * Gets the resources and modifies the template dictionary.
+     * @private
+     */
+    getResources() {
+        if (this.resources == null) {
+            this.resources = new PdfResources();
+            this.content.items.setValue(this.dictionaryProperties.resources, this.resources);
+        }
+        return this.resources;
+    }
+    // Public methods
+    /**
+     * `Initialize` the type and subtype of the template.
+     * @private
+     */
+    initialize() {
+        this.addType();
+        this.addSubType();
+    }
+    /**
+     * `Adds type key`.
+     * @private
+     */
+    addType() {
+        let value = new PdfName(this.dictionaryProperties.xObject);
+        this.content.items.setValue(this.dictionaryProperties.type, value);
+    }
+    /**
+     * `Adds SubType key`.
+     * @private
+     */
+    addSubType() {
+        let value = new PdfName(this.dictionaryProperties.form);
+        this.content.items.setValue(this.dictionaryProperties.subtype, value);
+    }
+    reset(size) {
+        if (typeof size === 'undefined') {
+            if (this.resources != null) {
+                this.resources = null;
+                this.content.remove(this.dictionaryProperties.resources);
+            }
+            if (this.graphics != null) {
+                this.graphics.reset(this.size);
+            }
+        }
+        else {
+            this.setSize(size);
+            this.reset();
+        }
+    }
+    /**
+     * `Set the size` of the 'PdfTemplate'.
+     * @private
+     */
+    setSize(size) {
+        let rect = new RectangleF(new PointF(0, 0), size);
+        let val = PdfArray.fromRectangle(rect);
+        this.content.items.setValue(this.dictionaryProperties.bBox, val);
+        this.templateSize = size;
+    }
+    // /**
+    //  * Returns the value of current graphics.
+    //  * @private
+    //  */
+    // public GetGraphics(g : PdfGraphics) : PdfGraphics {
+    //     if (this.graphics == null || typeof this.graphics === 'undefined') {
+    //         this.graphics = g;
+    //         this.graphics.Size = this.Size;
+    //         this.graphics.StreamWriter = new PdfStreamWriter(this.content)
+    //         this.graphics.Initialize();
+    //         if(this.writeTransformation) {
+    //             this.graphics.InitializeCoordinates();
+    //         }
+    //     }
+    //     return this.graphics;
+    // }
+    // IPdfWrapper Members
+    /**
+     * Gets the `content stream` of 'PdfTemplate' class.
+     * @private
+     */
+    get element() {
+        return this.content;
+    }
+}
+
+/**
+ * PdfResources.ts class for EJ2-PDF
+ */
+/**
+ * `PdfResources` class used to set resource contents like font, image.
+ * @private
+ */
+class PdfResources extends PdfDictionary {
+    constructor(baseDictionary) {
+        super(baseDictionary);
+        /**
+         * Dictionary for the `properties names`.
+         * @private
+         */
+        this.properties = new PdfDictionary();
+    }
+    //Properties
+    /**
+     * Gets the `font names`.
+     * @private
+     */
+    get names() {
+        return this.getNames();
+    }
+    /**
+     * Get or set the `page document`.
+     * @private
+     */
+    get document() {
+        return this.pdfDocument;
+    }
+    set document(value) {
+        this.pdfDocument = value;
+    }
+    //Public Methods
+    /**
+     * `Generates name` for the object and adds to the resource if the object is new.
+     * @private
+     */
+    getName(obj) {
+        let primitive = obj.element;
+        let name = null;
+        if (this.names.containsKey(primitive)) {
+            name = this.names.getValue(primitive);
+        }
+        // Object is new.
+        if (name == null) {
+            let sName = this.generateName();
+            name = new PdfName(sName);
+            this.names.setValue(primitive, name);
+            if (obj instanceof PdfFont) {
+                this.add(obj, name);
+            }
+            else if (obj instanceof PdfTemplate) {
+                this.add(obj, name);
+            }
+            else if (obj instanceof PdfGradientBrush || obj instanceof PdfTilingBrush) {
+                this.add(obj, name);
+            }
+            else if (obj instanceof PdfTransparency) {
+                this.add(obj, name);
+            }
+            else if (obj instanceof PdfImage || obj instanceof PdfBitmap) {
+                this.add(obj, name);
+            }
+        }
+        return name;
+    }
+    /**
+     * Gets `resource names` to font dictionaries.
+     * @private
+     */
+    getNames() {
+        if (this.pdfNames == null) {
+            this.pdfNames = new TemporaryDictionary();
+        }
+        let fonts = this.items.getValue(this.dictionaryProperties.font);
+        if (fonts != null) {
+            let dictionary = fonts;
+            dictionary = PdfCrossTable.dereference(fonts);
+        }
+        return this.pdfNames;
+    }
+    /**
+     * Add `RequireProcedureSet` into procset array.
+     * @private
+     */
+    requireProcedureSet(procedureSetName) {
+        if (procedureSetName == null) {
+            throw new Error('ArgumentNullException:procedureSetName');
+        }
+        let procSets = this.items.getValue(this.dictionaryProperties.procset);
+        if (procSets == null) {
+            procSets = new PdfArray();
+            this.items.setValue(this.dictionaryProperties.procset, procSets);
+        }
+        let name = new PdfName(procedureSetName);
+        if (!procSets.contains(name)) {
+            procSets.add(name);
+        }
+    }
+    //Helper Methods
+    /**
+     * `Remove font` from array.
+     * @private
+     */
+    removeFont(name) {
+        let key = null;
+        let keys = this.pdfNames.keys();
+        for (let index = 0; index < this.pdfNames.size(); index++) {
+            if (this.pdfNames.getValue(keys[index]) === new PdfName(name)) {
+                key = keys[index];
+                break;
+            }
+        }
+        if (key != null) {
+            this.pdfNames.remove(key);
+        }
+    }
+    /**
+     * Generates `Unique string name`.
+     * @private
+     */
+    generateName() {
+        let name = Guid.getNewGuidString();
+        return name;
+    }
+    add(arg1, arg2) {
+        if (arg1 instanceof PdfFont) {
+            let dictionary = null;
+            let fonts = this.items.getValue(this.dictionaryProperties.font);
+            if (fonts != null) {
+                dictionary = fonts;
+                dictionary = fonts;
+            }
+            else {
+                dictionary = new PdfDictionary();
+                this.items.setValue(this.dictionaryProperties.font, dictionary);
+            }
+            dictionary.items.setValue(arg2.value, new PdfReferenceHolder(arg1.element));
+        }
+        else if (arg1 instanceof PdfTemplate) {
+            let xobjects;
+            xobjects = this.items.getValue(this.dictionaryProperties.xObject);
+            // Create fonts dictionary.
+            if (xobjects == null) {
+                xobjects = new PdfDictionary();
+                this.items.setValue(this.dictionaryProperties.xObject, xobjects);
+            }
+            xobjects.items.setValue(arg2.value, new PdfReferenceHolder(arg1.element));
+        }
+        else if (arg1 instanceof PdfBrush) {
+            if (arg1 instanceof PdfGradientBrush || arg1 instanceof PdfTilingBrush) {
+                let savable = arg1.element;
+                if (savable != null) {
+                    let pattern = this.items.getValue(this.dictionaryProperties.pattern);
+                    // Create a new pattern dictionary.
+                    if (pattern == null) {
+                        pattern = new PdfDictionary();
+                        this.items.setValue(this.dictionaryProperties.pattern, pattern);
+                    }
+                    pattern.items.setValue(arg2.value, new PdfReferenceHolder(savable));
+                }
+            }
+        }
+        else if (arg1 instanceof PdfTransparency) {
+            let savable = arg1.element;
+            let transDic = null;
+            transDic = this.items.getValue(this.dictionaryProperties.extGState);
+            // Create a new pattern dictionary.
+            if (transDic == null) {
+                transDic = new PdfDictionary();
+                this.items.setValue(this.dictionaryProperties.extGState, transDic);
+            }
+            transDic.items.setValue(arg2.value, new PdfReferenceHolder(savable));
+        }
+        else {
+            /* tslint:disable */
+            let xobjects = this.Dictionary.items.getValue(this.dictionaryProperties.xObject);
+            let parentXObjects;
+            if (typeof this.pdfDocument !== 'undefined') {
+                parentXObjects = this.pdfDocument.sections.element.items.getValue(this.dictionaryProperties.resources).items.getValue(this.dictionaryProperties.xObject);
+            }
+            let values = this.Dictionary.items.values();
+            let hasSameImageStream = false;
+            let oldReference;
+            if (typeof this.pdfDocument !== 'undefined' && (typeof parentXObjects === undefined || parentXObjects == null)) {
+                parentXObjects = new PdfDictionary();
+                this.pdfDocument.sections.element.items.getValue(this.dictionaryProperties.resources).items.setValue(this.dictionaryProperties.xObject, parentXObjects);
+            }
+            else if (typeof this.pdfDocument !== 'undefined') {
+                let values = parentXObjects.items.values();
+                for (let i = 0; i < values.length; i++) {
+                    if (typeof values[i] !== 'undefined' && typeof values[i].element !== 'undefined') {
+                        if (values[i].element.data[0] === arg1.element.data[0]) {
+                            oldReference = values[i];
+                            hasSameImageStream = true;
+                        }
+                    }
+                }
+            }
+            if (xobjects == null) {
+                xobjects = new PdfDictionary();
+                this.Dictionary.items.setValue(this.dictionaryProperties.xObject, xobjects);
+            }
+            if (hasSameImageStream && typeof oldReference !== 'undefined') {
+                xobjects.items.setValue(arg2.value, oldReference);
+            }
+            else {
+                let reference = new PdfReferenceHolder(arg1.element);
+                xobjects.items.setValue(arg2.value, reference);
+                if (typeof this.pdfDocument !== 'undefined') {
+                    parentXObjects.items.setValue(arg2.value, reference);
+                }
+            }
+            /* tslint:enable */
+        }
+    }
+}
+/* tslint:disable */
+/**
+ * Used to create new guid for resources.
+ * @private
+ */
+class Guid {
+    /**
+     * Generate `new GUID`.
+     * @private
+     */
+    static getNewGuidString() {
+        return 'aaaaaaaa-aaaa-4aaa-baaa-aaaaaaaaaaaa'.replace(/[ab]/g, (c) => {
+            let random = Math.random() * 16 | 0;
+            let result = c === 'a' ? random : (random & 0x3 | 0x8);
+            return result.toString(16);
+        });
+    }
+}
+/* tslint:enable */
+
+/**
+ * `PdfTilingBrush` Implements a colored tiling brush.
+ */
+class PdfTilingBrush extends PdfBrush {
+    /**
+     * Initializes a new instance of the `PdfTilingBrush` class.
+     * @public
+     */
+    constructor(arg1, arg2) {
+        super();
+        /**
+         * Local variable to store Stroking.
+         * @private
+         */
+        this.mStroking = false;
+        /**
+         * Local variable to store the tile start location.
+         * @private
+         */
+        this.mLocation = new PointF(0, 0);
+        /**
+         * Local variable to store the dictionary properties.
+         * @private
+         */
+        this.mDictionaryProperties = new DictionaryProperties();
+        let rect = null;
+        if (arg1 instanceof Rectangle) {
+            rect = arg1;
+        }
+        else if (arg1 instanceof SizeF) {
+            rect = new Rectangle(0, 0, arg1.width, arg1.height);
+        }
+        if (arg2 !== null && arg2 instanceof PdfPage) {
+            this.mPage = arg2;
+        }
+        this.brushStream = new PdfStream();
+        this.mResources = new PdfResources();
+        this.brushStream.items.setValue(this.mDictionaryProperties.resources, this.mResources);
+        this.setBox(rect);
+        this.setObligatoryFields();
+        if (arg2 !== null && arg2 instanceof PdfPage) {
+            this.mPage = arg2;
+            this.graphics.colorSpace = arg2.document.colorSpace;
+        }
+    }
+    /**
+     * Initializes a new instance of the `PdfTilingBrush` class.
+     * @private
+     * @param rectangle The size of the smallest brush cell.
+     * @param page The Current Page Object.
+     * @param location The Tile start location.
+     * @param matrix The matrix.
+     */
+    initialize(rectangle, page, location, matrix) {
+        this.mPage = page;
+        this.mLocation = location;
+        this.mTransformationMatrix = matrix;
+        this.tempBrushStream = this.brushStream;
+        this.brushStream = new PdfStream();
+        let tempResource = new PdfResources();
+        this.brushStream.items.setValue(this.mDictionaryProperties.resources, tempResource);
+        this.setBox(rectangle);
+        this.setObligatoryFields();
+        return this;
+    }
+    //Properties
+    /**
+     * Location representing the start position of the tiles.
+     * @public
+     */
+    get location() {
+        return this.mLocation;
+    }
+    set location(value) {
+        this.mLocation = value;
+    }
+    /**
+     * Sets the obligatory fields.
+     * @private
+     */
+    setObligatoryFields() {
+        this.brushStream.items.setValue(this.mDictionaryProperties.patternType, new PdfNumber(1));
+        //  Tiling brush.
+        this.brushStream.items.setValue(this.mDictionaryProperties.paintType, new PdfNumber(1));
+        //  Coloured.
+        this.brushStream.items.setValue(this.mDictionaryProperties.tilingType, new PdfNumber(1));
+        //  Constant spacing.
+        this.brushStream.items.setValue(this.mDictionaryProperties.xStep, new PdfNumber((this.mBox.right - this.mBox.left)));
+        this.brushStream.items.setValue(this.mDictionaryProperties.yStep, new PdfNumber((this.mBox.bottom - this.mBox.top)));
+        if ((this.mPage != null) && (this.mLocation != null)) {
+            if ((this.mTransformationMatrix == null && typeof this.mTransformationMatrix === 'undefined')) {
+                // Transform the tile origin to fit the location
+                let tileTransform = (this.mPage.size.height % this.rectangle.size.height) - (this.mLocation.y);
+                /* tslint:disable-next-line:max-line-length */
+                this.brushStream.items.setValue(this.mDictionaryProperties.matrix, new PdfArray([1, 0, 0, 1, this.mLocation.x, tileTransform]));
+            }
+            else {
+                let tileTransform = 0;
+                // Transform the tile origin to fit the location
+                let elements = this.mTransformationMatrix.matrix.elements;
+                if ((this.mPage.size.height > this.rectangle.size.height)) {
+                    tileTransform = (this.mTransformationMatrix.matrix.offsetY
+                        - (this.mPage.size.height % this.rectangle.size.height));
+                }
+                else {
+                    tileTransform = ((this.mPage.size.height % this.rectangle.size.height) + this.mTransformationMatrix.matrix.offsetY);
+                }
+                this.brushStream.items.setValue(this.mDictionaryProperties.matrix, new PdfArray([
+                    elements[0], elements[1], elements[2], elements[3], elements[4], tileTransform
+                ]));
+            }
+        }
+    }
+    /**
+     * Sets the BBox coordinates.
+     * @private
+     */
+    setBox(box) {
+        this.mBox = box;
+        let rect = new RectangleF(this.mBox.left, this.mBox.top, this.mBox.right, this.mBox.bottom);
+        this.brushStream.items.setValue(this.mDictionaryProperties.bBox, PdfArray.fromRectangle(rect));
+    }
+    //Properties
+    /**
+     * Gets the boundary box of the smallest brush cell.
+     * @public
+     */
+    get rectangle() {
+        return this.mBox;
+    }
+    /**
+     * Gets the size of the smallest brush cell.
+     * @public
+     */
+    get size() {
+        return this.mBox.size;
+    }
+    /**
+     * Gets Graphics context of the brush.
+     */
+    get graphics() {
+        if ((this.mGraphics == null && typeof this.mGraphics === 'undefined')) {
+            let gr = new GetResourceEventHandler(this);
+            let g = new PdfGraphics(this.size, gr, this.brushStream);
+            this.mGraphics = g;
+            this.mResources = this.getResources();
+            this.mGraphics.initializeCoordinates();
+        }
+        return this.mGraphics;
+    }
+    /**
+     * Gets the resources and modifies the template dictionary.
+     * @public
+     */
+    getResources() {
+        return this.mResources;
+    }
+    /**
+     * Gets or sets a value indicating whether this PdfTilingBrush
+     * is used for stroking operations.
+     */
+    get stroking() {
+        return this.mStroking;
+    }
+    set stroking(value) {
+        this.mStroking = value;
+    }
+    //PdfBrush methods
+    /**
+     * Creates a new copy of a brush.
+     * @public
+     */
+    clone() {
+        let brush = this.initialize(this.rectangle, this.mPage, this.location, this.mTransformationMatrix);
+        if ((this.mTransformationMatrix != null) && (this.mTransformationMatrix.matrix != null)) {
+            /* tslint:disable-next-line:max-line-length */
+            brush.brushStream.items.setValue(this.mDictionaryProperties.matrix, new PdfArray(this.mTransformationMatrix.matrix.elements));
+        }
+        brush.brushStream.data = this.tempBrushStream.data;
+        brush.mResources = new PdfResources(this.mResources);
+        brush.brushStream.items.setValue(this.mDictionaryProperties.resources, brush.mResources);
+        return brush;
+    }
+    /**
+     * Monitors the changes of the brush and modify PDF state respectfully.
+     * @param brush The brush
+     * @param streamWriter The stream writer
+     * @param getResources The get resources delegate.
+     * @param saveChanges if set to true the changes should be saved anyway.
+     * @param currentColorSpace The current color space.
+     */
+    /* tslint:disable-next-line:max-line-length */
+    monitorChanges(brush, streamWriter, getResources, saveChanges, currentColorSpace) {
+        let diff = false;
+        if (brush !== this) {
+            //  Set the Pattern colour space.
+            streamWriter.setColorSpace('Pattern', this.mStroking);
+            //  Set the pattern for non-stroking operations.
+            let resources1 = getResources.getResources();
+            let name1 = resources1.getName(this);
+            streamWriter.setColourWithPattern(null, name1, this.mStroking);
+            diff = true;
+        }
+        else if (brush instanceof PdfTilingBrush) {
+            //  Set the /Pattern colour space.
+            streamWriter.setColorSpace('Pattern', this.mStroking);
+            //  Set the pattern for non-stroking operations.
+            let resources = getResources.getResources();
+            let name = resources.getName(this);
+            streamWriter.setColourWithPattern(null, name, this.mStroking);
+            diff = true;
+        }
+        return diff;
+    }
+    /**
+     * Resets the changes, which were made by the brush.
+     * In other words resets the state to the initial one.
+     * @param streamWriter The stream writer.
+     */
+    resetChanges(streamWriter) {
+        //  We shouldn't do anything to reset changes.
+        //  All changes will be reset automatically by setting a new colour space.
+    }
+    /* tslint:enable */
+    // IPdfWrapper Members
+    /**
+     * Gets the `element`.
+     * @public
+     */
+    get element() {
+        return this.brushStream;
+    }
+}
+
+/**
  * PdfGraphics.ts class for EJ2-PDF
  */
 /**
@@ -13649,6 +14913,22 @@ class PdfGraphics {
             let temparg4 = arg4;
             let temparg5 = arg5;
             let temparg6 = arg6;
+            if ((arg2 instanceof PdfTilingBrush)) {
+                this.bCSInitialized = false;
+                let xOffset = (this.matrix.matrix.offsetX + temparg3);
+                let yOffset;
+                if (((this.layer != null) && (this.layer.page != null))) {
+                    yOffset = ((this.layer.page.size.height - this.matrix.matrix.offsetY) + temparg4);
+                }
+                else {
+                    yOffset = ((this.clientSize.height - this.matrix.matrix.offsetY) + temparg4);
+                }
+                (arg2).location = new PointF(xOffset, yOffset);
+                (arg2).graphics.colorSpace = this.colorSpace;
+            }
+            else if ((arg2 instanceof PdfGradientBrush)) {
+                arg2.colorSpace = this.colorSpace;
+            }
             if (arg2 instanceof PdfSolidBrush && arg2.color.isEmpty) {
                 arg2 = null;
             }
@@ -13656,13 +14936,13 @@ class PdfGraphics {
             let temparg2 = arg2;
             this.stateControl(temparg1, temparg2, null);
             this.streamWriter.appendRectangle(temparg3, temparg4, temparg5, temparg6);
-            this.drawPath(temparg1, temparg2, false);
+            this.drawPathHelper(temparg1, temparg2, false);
         }
     }
-    drawPath(arg1, arg2, arg3, arg4) {
+    drawPathHelper(arg1, arg2, arg3, arg4) {
         if (typeof arg3 === 'boolean') {
             let temparg3 = arg3;
-            this.drawPath(arg1, arg2, PdfFillMode.Winding, temparg3);
+            this.drawPathHelper(arg1, arg2, PdfFillMode.Winding, temparg3);
         }
         else {
             let temparg3 = arg3;
@@ -13871,6 +15151,14 @@ class PdfGraphics {
      * @private
      */
     applyStringSettings(font, pen, brush, format, bounds) {
+        if (brush instanceof PdfTilingBrush) {
+            this.bCSInitialized = false;
+            brush.graphics.colorSpace = this.colorSpace;
+        }
+        else if ((brush instanceof PdfGradientBrush)) {
+            this.bCSInitialized = false;
+            brush.colorSpace = this.colorSpace;
+        }
         let tm = this.getTextRenderingMode(pen, brush, format);
         this.stateControl(pen, brush, font, format);
         this.pdfStreamWriter.beginText();
@@ -14336,6 +15624,14 @@ class PdfGraphics {
             this.stateControl(pen, brush, font, null);
         }
         else {
+            if (brush instanceof PdfGradientBrush) {
+                this.bCSInitialized = false;
+                brush.colorSpace = this.colorSpace;
+            }
+            if (brush instanceof PdfTilingBrush) {
+                this.bCSInitialized = false;
+                brush.graphics.colorSpace = this.colorSpace;
+            }
             let saveState = false;
             if (brush !== null) {
                 if (typeof this.pageLayer !== 'undefined' && this.pageLayer != null) {
@@ -14369,9 +15665,16 @@ class PdfGraphics {
     initCurrentColorSpace(colorspace) {
         let re = this.getResources.getResources();
         if (!this.bCSInitialized) {
-            this.pdfStreamWriter.setColorSpace('Device' + this.currentColorSpaces[this.currentColorSpace], true);
-            this.pdfStreamWriter.setColorSpace('Device' + this.currentColorSpaces[this.currentColorSpace], false);
-            this.bCSInitialized = true;
+            if (this.currentColorSpace != PdfColorSpace.GrayScale) {
+                this.pdfStreamWriter.setColorSpace('Device' + this.currentColorSpaces[this.currentColorSpace], true);
+                this.pdfStreamWriter.setColorSpace('Device' + this.currentColorSpaces[this.currentColorSpace], false);
+                this.bCSInitialized = true;
+            }
+            else {
+                this.pdfStreamWriter.setColorSpace('DeviceGray', true);
+                this.pdfStreamWriter.setColorSpace('DeviceGray', false);
+                this.bCSInitialized = true;
+            }
         }
     }
     /**
@@ -14381,7 +15684,6 @@ class PdfGraphics {
     penControl(pen, saveState) {
         if (pen != null) {
             this.currentPen = pen;
-            this.colorSpace = PdfColorSpace.Rgb;
             /* tslint:disable */
             pen.monitorChanges(this.currentPen, this.pdfStreamWriter, this.getResources, saveState, this.colorSpace, this.matrix.clone());
             /* tslint:enable */
@@ -14393,10 +15695,20 @@ class PdfGraphics {
      * @private
      */
     brushControl(brush, saveState) {
-        if (brush != null) {
-            this.currentBrush = brush;
-            /* tslint:disable */
-            brush.monitorChanges(this.currentBrush, this.pdfStreamWriter, this.getResources, saveState, this.colorSpace);
+        if (brush != null && typeof brush !== 'undefined') {
+            let b = brush.clone();
+            let lgb = b;
+            if (lgb !== null && typeof lgb !== 'undefined' && !(brush instanceof PdfSolidBrush) && !(brush instanceof PdfTilingBrush)) {
+                let m = lgb.matrix;
+                let matrix = this.matrix.clone();
+                if ((m != null)) {
+                    m.multiply(matrix);
+                    matrix = m;
+                }
+                lgb.matrix = matrix;
+            }
+            this.currentBrush = lgb;
+            b.monitorChanges(this.currentBrush, this.pdfStreamWriter, this.getResources, saveState, this.colorSpace);
             /* tslint:enable */
             this.currentBrush = brush;
             brush = null;
@@ -14690,6 +16002,192 @@ class PdfGraphics {
         this.previousTextRenderingMode = state.textRenderingMode;
         this.pdfStreamWriter.restoreGraphicsState();
         return state;
+    }
+    /* tslint:enable */
+    /**
+     * `Draws the specified path`, using its original physical size, at the location specified by a coordinate pair.
+     * ```typescript
+     * // create a new PDF document.
+     * let document : PdfDocument = new PdfDocument();
+     * // add a page to the document.
+     * let page1 : PdfPage = document.pages.add();
+     * //Create new PDF path.
+     * let path : PdfPath = new PdfPath();
+     * //Add line path points.
+     * path.addLine(new PointF(10, 100), new PointF(10, 200));
+     * path.addLine(new PointF(100, 100), new PointF(100, 200));
+     * path.addLine(new PointF(100, 200), new PointF(55, 150));
+     * // set pen
+     * let pen : PdfPen = new PdfPen(new PdfColor(255, 0, 0));
+     * // set brush
+     * let brush : PdfSolidBrush = new PdfSolidBrush(new PdfColor(0, 0, 0));
+     * // draw the path
+     * page1.graphics.drawPath(pen, brush, path);
+     * //
+     * // save the document.
+     * document.save('output.pdf');
+     * // destroy the document
+     * document.destroy();
+     * ```
+     * @param pen Color of the text.
+     * @param brush Color of the text.
+     * @param path Draw path.
+     */
+    drawPath(pen, brush, path) {
+        if (brush instanceof PdfTilingBrush) {
+            this.bCSInitialized = false;
+            brush.graphics.colorSpace = this.colorSpace;
+        }
+        else if (brush instanceof PdfGradientBrush) {
+            this.bCSInitialized = false;
+            brush.colorSpace = this.colorSpace;
+        }
+        this.stateControl(pen, brush, null);
+        this.buildUpPath(path.pathPoints, path.pathTypes);
+        this.drawPathHelper(pen, brush, path.fillMode, false);
+    }
+    /* tslint:disable-next-line:max-line-length */
+    drawArc(arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
+        if (arg2 instanceof RectangleF) {
+            this.drawArc(arg1, arg2.x, arg2.y, arg2.width, arg2.height, arg3, arg4);
+        }
+        else {
+            if ((arg7 !== 0)) {
+                this.stateControl(arg1, null, null);
+                this.constructArcPath(arg2, arg3, (arg2 + arg4), (arg3 + arg5), arg6, arg7);
+                this.drawPathHelper(arg1, null, false);
+            }
+        }
+    }
+    /**
+     * Builds up the path.
+     * @private
+     */
+    buildUpPath(arg1, arg2) {
+        let cnt = arg1.length;
+        for (let i = 0; i < cnt; ++i) {
+            let typeValue = 0;
+            let point = arg1[i];
+            switch (((arg2[i] & (PdfGraphics.pathTypesValuesMask)))) {
+                case PathPointType.Start:
+                    this.pdfStreamWriter.beginPath(point.x, point.y);
+                    break;
+                case PathPointType.Bezier3:
+                    let p2 = new PointF(0, 0);
+                    let p3 = new PointF(0, 0);
+                    let result1 = this.getBezierPoints(arg1, arg2, i, p2, p3);
+                    this.pdfStreamWriter.appendBezierSegment(point, result1.p2, result1.p3);
+                    i = result1.i;
+                    break;
+                case PathPointType.Line:
+                    this.pdfStreamWriter.appendLineSegment(point);
+                    break;
+                default:
+                    throw new Error('ArithmeticException - Incorrect path formation.');
+            }
+            typeValue = arg2[i];
+            this.checkFlags(typeValue);
+        }
+    }
+    /**
+     * Gets the bezier points from respective arrays.
+     * @private
+     */
+    /* tslint:disable-next-line:max-line-length */
+    getBezierPoints(points, types, i, p2, p3) {
+        ++i;
+        if ((((types[i] & PdfGraphics.pathTypesValuesMask)) === PathPointType.Bezier3)) {
+            p2 = points[i];
+            ++i;
+            if ((((types[i] & PdfGraphics.pathTypesValuesMask)) === PathPointType.Bezier3)) {
+                p3 = points[i];
+            }
+            else {
+                throw new Error('ArgumentException : errorMsg');
+            }
+        }
+        else {
+            throw new Error('ArgumentException : errorMsg');
+        }
+        return { i: i, p2: p2, p3: p3 };
+    }
+    /**
+     * Checks path point type flags.
+     * @private
+     */
+    checkFlags(type) {
+        if ((((type & (PathPointType.CloseSubpath))) === PathPointType.CloseSubpath)) {
+            this.pdfStreamWriter.closePath();
+        }
+    }
+    /**
+     * Constructs the arc path using Bezier curves.
+     * @private
+     */
+    constructArcPath(x1, y1, x2, y2, startAng, sweepAngle) {
+        let points = this.getBezierArc(x1, y1, x2, y2, startAng, sweepAngle);
+        if ((points.length === 0)) {
+            return;
+        }
+        let pt = [points[0], points[1], points[2], points[3], points[4], points[5], points[6], points[7]];
+        this.pdfStreamWriter.beginPath(pt[0], pt[1]);
+        let i = 0;
+        for (i = 0; i < points.length; i = i + 8) {
+            pt = [points[i], points[i + 1], points[i + 2], points[i + 3], points[i + 4], points[i + 5], points[i + 6], points[i + 7]];
+            this.pdfStreamWriter.appendBezierSegment(pt[2], pt[3], pt[4], pt[5], pt[6], pt[7]);
+        }
+    }
+    /**
+     * Gets the bezier points for arc constructing.
+     * @private
+     */
+    getBezierArc(numX1, numY1, numX2, numY2, s1, e1) {
+        if ((numX1 > numX2)) {
+            let tmp;
+            tmp = numX1;
+            numX1 = numX2;
+            numX2 = tmp;
+        }
+        if ((numY2 > numY1)) {
+            let tmp;
+            tmp = numY1;
+            numY1 = numY2;
+            numY2 = tmp;
+        }
+        let fragAngle1;
+        let numFragments;
+        if ((Math.abs(e1) <= 90)) {
+            fragAngle1 = e1;
+            numFragments = 1;
+        }
+        else {
+            numFragments = (Math.ceil((Math.abs(e1) / 90)));
+            fragAngle1 = (e1 / numFragments);
+        }
+        let xcen = ((numX1 + numX2) / 2);
+        let ycen = ((numY1 + numY2) / 2);
+        let rx = ((numX2 - numX1) / 2);
+        let ry = ((numY2 - numY1) / 2);
+        let halfAng = ((fragAngle1 * (Math.PI / 360)));
+        let kappa = (Math.abs(4.0 / 3.0 * (1.0 - Math.cos(halfAng)) / Math.sin(halfAng)));
+        let pointsList = [];
+        for (let i = 0; (i < numFragments); i++) {
+            let thetaValue0 = (((s1 + (i * fragAngle1)) * (Math.PI / 180)));
+            let thetaValue1 = (((s1 + ((i + 1) * fragAngle1)) * (Math.PI / 180)));
+            let cos0 = (Math.cos(thetaValue0));
+            let cos1 = (Math.cos(thetaValue1));
+            let sin0 = (Math.sin(thetaValue0));
+            let sin1 = (Math.sin(thetaValue1));
+            if ((fragAngle1 > 0)) {
+                /* tslint:disable-next-line:max-line-length */
+                pointsList.push((xcen + (rx * cos0)), (ycen - (ry * sin0)), (xcen + (rx * (cos0 - (kappa * sin0)))), (ycen - (ry * (sin0 + (kappa * cos0)))), (xcen + (rx * (cos1 + (kappa * sin1)))), (ycen - (ry * (sin1 - (kappa * cos1)))), (xcen + (rx * cos1)), (ycen - (ry * sin1)));
+            }
+            else {
+                /* tslint:disable-next-line:max-line-length */
+                pointsList.push((xcen + (rx * cos0)), (ycen - (ry * sin0)), (xcen + (rx * (cos0 + (kappa * sin0)))), (ycen - (ry * (sin0 - (kappa * cos0)))), (xcen + (rx * (cos1 - (kappa * sin1)))), (ycen - (ry * (sin1 + (kappa * cos1)))), (xcen + (rx * cos1)), (ycen - (ry * sin1)));
+            }
+        }
+        return pointsList;
     }
 }
 // Constants
@@ -15385,398 +16883,6 @@ class PdfPageLayerCollection extends PdfCollection {
         return index;
     }
 }
-
-/**
- * PdfTemplate.ts class for EJ2-PDF
- */
-/**
- * Represents `Pdf Template` object.
- * @private
- */
-class PdfTemplate {
-    constructor(arg1, arg2) {
-        /**
-         * Initialize an instance for `DictionaryProperties` class.
-         * @private
-         * @hidden
-         */
-        this.dictionaryProperties = new DictionaryProperties();
-        /**
-         * Checks whether the transformation 'is performed'.
-         * @default true
-         * @private
-         */
-        this.writeTransformation = true;
-        if (typeof arg1 === 'undefined') {
-            //
-        }
-        else if (arg1 instanceof SizeF && typeof arg2 === 'undefined') {
-            this.content = new PdfStream();
-            let tempSize = new SizeF(arg1.width, arg1.height);
-            this.setSize(tempSize);
-            this.initialize();
-        }
-        else {
-            this.content = new PdfStream();
-            this.setSize(new SizeF(arg1, arg2));
-            this.initialize();
-        }
-    }
-    //Properties
-    /**
-     * Gets the size of the 'PdfTemplate'.
-     */
-    get size() {
-        return this.templateSize;
-    }
-    /**
-     * Gets the width of the 'PdfTemplate'.
-     */
-    get width() {
-        return this.size.width;
-    }
-    /**
-     * Gets the height of the 'PdfTemplate'.
-     */
-    get height() {
-        return this.size.height;
-    }
-    /**
-     * Gets the `graphics` of the 'PdfTemplate'.
-     */
-    get graphics() {
-        if (this.pdfGraphics == null || typeof this.pdfGraphics === 'undefined') {
-            let gr = new GetResourceEventHandler(this);
-            let g = new PdfGraphics(this.size, gr, this.content);
-            this.pdfGraphics = g;
-            // if(this.writeTransformation) {
-            // Transform co-ordinates to Top/Left.
-            this.pdfGraphics.initializeCoordinates();
-            // }
-        }
-        return this.pdfGraphics;
-    }
-    /**
-     * Gets the resources and modifies the template dictionary.
-     * @private
-     */
-    getResources() {
-        if (this.resources == null) {
-            this.resources = new PdfResources();
-            this.content.items.setValue(this.dictionaryProperties.resources, this.resources);
-        }
-        return this.resources;
-    }
-    // Public methods
-    /**
-     * `Initialize` the type and subtype of the template.
-     * @private
-     */
-    initialize() {
-        this.addType();
-        this.addSubType();
-    }
-    /**
-     * `Adds type key`.
-     * @private
-     */
-    addType() {
-        let value = new PdfName(this.dictionaryProperties.xObject);
-        this.content.items.setValue(this.dictionaryProperties.type, value);
-    }
-    /**
-     * `Adds SubType key`.
-     * @private
-     */
-    addSubType() {
-        let value = new PdfName(this.dictionaryProperties.form);
-        this.content.items.setValue(this.dictionaryProperties.subtype, value);
-    }
-    reset(size) {
-        if (typeof size === 'undefined') {
-            if (this.resources != null) {
-                this.resources = null;
-                this.content.remove(this.dictionaryProperties.resources);
-            }
-            if (this.graphics != null) {
-                this.graphics.reset(this.size);
-            }
-        }
-        else {
-            this.setSize(size);
-            this.reset();
-        }
-    }
-    /**
-     * `Set the size` of the 'PdfTemplate'.
-     * @private
-     */
-    setSize(size) {
-        let rect = new RectangleF(new PointF(0, 0), size);
-        let val = PdfArray.fromRectangle(rect);
-        this.content.items.setValue(this.dictionaryProperties.bBox, val);
-        this.templateSize = size;
-    }
-    // /**
-    //  * Returns the value of current graphics.
-    //  * @private
-    //  */
-    // public GetGraphics(g : PdfGraphics) : PdfGraphics {
-    //     if (this.graphics == null || typeof this.graphics === 'undefined') {
-    //         this.graphics = g;
-    //         this.graphics.Size = this.Size;
-    //         this.graphics.StreamWriter = new PdfStreamWriter(this.content)
-    //         this.graphics.Initialize();
-    //         if(this.writeTransformation) {
-    //             this.graphics.InitializeCoordinates();
-    //         }
-    //     }
-    //     return this.graphics;
-    // }
-    // IPdfWrapper Members
-    /**
-     * Gets the `content stream` of 'PdfTemplate' class.
-     * @private
-     */
-    get element() {
-        return this.content;
-    }
-}
-
-/**
- * PdfResources.ts class for EJ2-PDF
- */
-/**
- * `PdfResources` class used to set resource contents like font, image.
- * @private
- */
-class PdfResources extends PdfDictionary {
-    constructor(baseDictionary) {
-        super(baseDictionary);
-        /**
-         * Dictionary for the `properties names`.
-         * @private
-         */
-        this.properties = new PdfDictionary();
-    }
-    //Properties
-    /**
-     * Gets the `font names`.
-     * @private
-     */
-    get names() {
-        return this.getNames();
-    }
-    /**
-     * Get or set the `page document`.
-     * @private
-     */
-    get document() {
-        return this.pdfDocument;
-    }
-    set document(value) {
-        this.pdfDocument = value;
-    }
-    //Public Methods
-    /**
-     * `Generates name` for the object and adds to the resource if the object is new.
-     * @private
-     */
-    getName(obj) {
-        let primitive = obj.element;
-        let name = null;
-        if (this.names.containsKey(primitive)) {
-            name = this.names.getValue(primitive);
-        }
-        // Object is new.
-        if (name == null) {
-            let sName = this.generateName();
-            name = new PdfName(sName);
-            this.names.setValue(primitive, name);
-            if (obj instanceof PdfFont) {
-                this.add(obj, name);
-            }
-            else if (obj instanceof PdfTemplate) {
-                this.add(obj, name);
-            }
-            else if (obj instanceof PdfTransparency) {
-                this.add(obj, name);
-            }
-            else if (obj instanceof PdfImage || obj instanceof PdfBitmap) {
-                this.add(obj, name);
-            }
-        }
-        return name;
-    }
-    /**
-     * Gets `resource names` to font dictionaries.
-     * @private
-     */
-    getNames() {
-        if (this.pdfNames == null) {
-            this.pdfNames = new TemporaryDictionary();
-        }
-        let fonts = this.items.getValue(this.dictionaryProperties.font);
-        if (fonts != null) {
-            let dictionary = fonts;
-            dictionary = PdfCrossTable.dereference(fonts);
-        }
-        return this.pdfNames;
-    }
-    /**
-     * Add `RequireProcedureSet` into procset array.
-     * @private
-     */
-    requireProcedureSet(procedureSetName) {
-        if (procedureSetName == null) {
-            throw new Error('ArgumentNullException:procedureSetName');
-        }
-        let procSets = this.items.getValue(this.dictionaryProperties.procset);
-        if (procSets == null) {
-            procSets = new PdfArray();
-            this.items.setValue(this.dictionaryProperties.procset, procSets);
-        }
-        let name = new PdfName(procedureSetName);
-        if (!procSets.contains(name)) {
-            procSets.add(name);
-        }
-    }
-    //Helper Methods
-    /**
-     * `Remove font` from array.
-     * @private
-     */
-    removeFont(name) {
-        let key = null;
-        let keys = this.pdfNames.keys();
-        for (let index = 0; index < this.pdfNames.size(); index++) {
-            if (this.pdfNames.getValue(keys[index]) === new PdfName(name)) {
-                key = keys[index];
-                break;
-            }
-        }
-        if (key != null) {
-            this.pdfNames.remove(key);
-        }
-    }
-    /**
-     * Generates `Unique string name`.
-     * @private
-     */
-    generateName() {
-        let name = Guid.getNewGuidString();
-        return name;
-    }
-    add(arg1, arg2) {
-        if (arg1 instanceof PdfFont) {
-            let dictionary = null;
-            let fonts = this.items.getValue(this.dictionaryProperties.font);
-            if (fonts != null) {
-                dictionary = fonts;
-                dictionary = fonts;
-            }
-            else {
-                dictionary = new PdfDictionary();
-                this.items.setValue(this.dictionaryProperties.font, dictionary);
-            }
-            dictionary.items.setValue(arg2.value, new PdfReferenceHolder(arg1.element));
-        }
-        else if (arg1 instanceof PdfTemplate) {
-            let xobjects;
-            xobjects = this.items.getValue(this.dictionaryProperties.xObject);
-            // Create fonts dictionary.
-            if (xobjects == null) {
-                xobjects = new PdfDictionary();
-                this.items.setValue(this.dictionaryProperties.xObject, xobjects);
-            }
-            xobjects.items.setValue(arg2.value, new PdfReferenceHolder(arg1.element));
-        }
-        else if (arg1 instanceof PdfBrush) {
-            // let savable : IPdfPrimitive = (arg1 as IPdfWrapper).Element;
-            // if (savable != null)
-            // {
-            //     let pattern : PdfDictionary = this.Items.getValue(this.dictionaryProperties.pattern) as PdfDictionary;
-            //     // Create a new pattern dictionary.
-            //     if (pattern == null) {
-            //         pattern = new PdfDictionary();
-            //         this.Items.setValue(this.dictionaryProperties.pattern, pattern);
-            //     }
-            //     pattern.Items.setValue(name, new PdfReferenceHolder(savable));
-            // }
-        }
-        else if (arg1 instanceof PdfTransparency) {
-            let savable = arg1.element;
-            let transDic = null;
-            transDic = this.items.getValue(this.dictionaryProperties.extGState);
-            // Create a new pattern dictionary.
-            if (transDic == null) {
-                transDic = new PdfDictionary();
-                this.items.setValue(this.dictionaryProperties.extGState, transDic);
-            }
-            transDic.items.setValue(arg2.value, new PdfReferenceHolder(savable));
-        }
-        else {
-            /* tslint:disable */
-            let xobjects = this.Dictionary.items.getValue(this.dictionaryProperties.xObject);
-            let parentXObjects;
-            if (typeof this.pdfDocument !== 'undefined') {
-                parentXObjects = this.pdfDocument.sections.element.items.getValue(this.dictionaryProperties.resources).items.getValue(this.dictionaryProperties.xObject);
-            }
-            let values = this.Dictionary.items.values();
-            let hasSameImageStream = false;
-            let oldReference;
-            if (typeof this.pdfDocument !== 'undefined' && (typeof parentXObjects === undefined || parentXObjects == null)) {
-                parentXObjects = new PdfDictionary();
-                this.pdfDocument.sections.element.items.getValue(this.dictionaryProperties.resources).items.setValue(this.dictionaryProperties.xObject, parentXObjects);
-            }
-            else if (typeof this.pdfDocument !== 'undefined') {
-                let values = parentXObjects.items.values();
-                for (let i = 0; i < values.length; i++) {
-                    if (typeof values[i] !== 'undefined' && typeof values[i].element !== 'undefined') {
-                        if (values[i].element.data[0] === arg1.element.data[0]) {
-                            oldReference = values[i];
-                            hasSameImageStream = true;
-                        }
-                    }
-                }
-            }
-            if (xobjects == null) {
-                xobjects = new PdfDictionary();
-                this.Dictionary.items.setValue(this.dictionaryProperties.xObject, xobjects);
-            }
-            if (hasSameImageStream && typeof oldReference !== 'undefined') {
-                xobjects.items.setValue(arg2.value, oldReference);
-            }
-            else {
-                let reference = new PdfReferenceHolder(arg1.element);
-                xobjects.items.setValue(arg2.value, reference);
-                if (typeof this.pdfDocument !== 'undefined') {
-                    parentXObjects.items.setValue(arg2.value, reference);
-                }
-            }
-            /* tslint:enable */
-        }
-    }
-}
-/* tslint:disable */
-/**
- * Used to create new guid for resources.
- * @private
- */
-class Guid {
-    /**
-     * Generate `new GUID`.
-     * @private
-     */
-    static getNewGuidString() {
-        return 'aaaaaaaa-aaaa-4aaa-baaa-aaaaaaaaaaaa'.replace(/[ab]/g, (c) => {
-            let random = Math.random() * 16 | 0;
-            let result = c === 'a' ? random : (random & 0x3 | 0x8);
-            return result.toString(16);
-        });
-    }
-}
-/* tslint:enable */
 
 /**
  * The abstract base class for all pages,
@@ -19054,6 +20160,14 @@ class ElementLayouter {
         let nextPage = section.add();
         return nextPage;
     }
+    getPaginateBounds(param) {
+        if ((param == null)) {
+            throw new Error('ArgumentNullException : param');
+        }
+        let result = param.format.usePaginateBounds ? param.format.paginateBounds
+            : new RectangleF(param.bounds.x, 0, param.bounds.width, param.bounds.height);
+        return result;
+    }
 }
 class PdfLayoutFormat {
     // Properties
@@ -19442,46 +20556,6 @@ class PdfLayoutElement {
         }
     }
 }
-
-/**
- * public Enum for `PdfLayoutType`.
- * @private
- */
-var PdfLayoutType;
-(function (PdfLayoutType) {
-    /**
-     * Specifies the type of `Paginate`.
-     * @private
-     */
-    PdfLayoutType[PdfLayoutType["Paginate"] = 0] = "Paginate";
-    /**
-     * Specifies the type of `OnePage`.
-     * @private
-     */
-    PdfLayoutType[PdfLayoutType["OnePage"] = 1] = "OnePage";
-})(PdfLayoutType || (PdfLayoutType = {}));
-/**
- * public Enum for `PdfLayoutBreakType`.
- * @private
- */
-var PdfLayoutBreakType;
-(function (PdfLayoutBreakType) {
-    /**
-     * Specifies the type of `FitPage`.
-     * @private
-     */
-    PdfLayoutBreakType[PdfLayoutBreakType["FitPage"] = 0] = "FitPage";
-    /**
-     * Specifies the type of `FitElement`.
-     * @private
-     */
-    PdfLayoutBreakType[PdfLayoutBreakType["FitElement"] = 1] = "FitElement";
-    /**
-     * Specifies the type of `FitColumnsToPage`.
-     * @private
-     */
-    PdfLayoutBreakType[PdfLayoutBreakType["FitColumnsToPage"] = 2] = "FitColumnsToPage";
-})(PdfLayoutBreakType || (PdfLayoutBreakType = {}));
 
 /**
  * TextLayouter.ts class for EJ2-PDF
@@ -20872,724 +21946,3901 @@ class PdfDestination {
     }
 }
 
-/**
- * PdfTrueTypeFont.ts class for EJ2-PDF
- */
-//https://www.giftofspeed.com/base64-encoder/
-class PdfTrueTypeFont extends PdfFont {
-    constructor(base64String, size, style) {
-        super(size);
+class PdfFunction {
+    //Constructor
+    /**
+     * Initializes a new instance of the `PdfFunction` class.
+     * @public
+     */
+    constructor(dictionary) {
+        //Field
         /**
-         * Indicates whether the font is embedded or not.
+         * Internal variable to store dictionary.
          * @private
          */
-        this.isEmbedFont = false;
+        this.mDictionary = null;
         /**
-         * Indicates whether the font is unicoded or not.
+         * Local variable to store the dictionary properties.
          * @private
          */
-        this.isUnicode = true;
-        if (style !== undefined) {
-            this.createFontInternal(base64String, style);
-        }
-        else {
-            this.createFontInternal(base64String, PdfFontStyle.Regular);
-        }
+        this.mDictionaryProperties = new DictionaryProperties();
+        this.mDictionary = dictionary;
     }
-    equalsToFont(font) {
-        let result = false;
-        //let result : boolean = this.fontInternal.equalsToFont(font);
-        return result;
+    //Properties
+    /**
+     * Gets or sets the domain of the function.
+     * @public
+     */
+    get domain() {
+        let domain = this.mDictionary.items.getValue(this.mDictionaryProperties.domain);
+        return domain;
     }
-    getLineWidth(line, format) {
-        let width = 0;
-        if (format !== null && format.textDirection !== PdfTextDirection.None) {
-            let returnValue = this.getUnicodeLineWidth(line, /*out*/ width, format);
-            width = returnValue.width;
-        }
-        else {
-            width = this.fontInternal.getLineWidth(line);
-        }
-        let size = this.metrics.getSize(format);
-        width *= (PdfFont.charSizeMultiplier * size);
-        width = this.applyFormatSettings(line, format, width);
-        return width;
+    set domain(value) {
+        this.mDictionary.items.setValue(this.mDictionaryProperties.domain, value);
     }
     /**
-     * Returns width of the char.
+     * Gets or sets the range.
+     * @public
      */
-    getCharWidth(charCode, format) {
-        let codeWidth = this.fontInternal.getCharWidth(charCode);
-        let size = this.metrics.getSize(format);
-        codeWidth *= (0.001 * size);
-        return codeWidth;
+    get range() {
+        let range = (this.mDictionary.items.getValue(this.mDictionaryProperties.range));
+        return range;
     }
-    //Implementation
-    createFontInternal(base64String, style) {
-        this.fontInternal = new UnicodeTrueTypeFont(base64String, this.size);
-        this.calculateStyle(style);
-        this.initializeInternals();
-    }
-    calculateStyle(style) {
-        let iStyle = this.fontInternal.ttfMetrics.macStyle;
-        if ((style & PdfFontStyle.Underline) !== 0) {
-            iStyle |= PdfFontStyle.Underline;
-        }
-        if ((style & PdfFontStyle.Strikeout) !== 0) {
-            iStyle |= PdfFontStyle.Strikeout;
-        }
-        this.setStyle(iStyle);
-    }
-    initializeInternals() {
-        let equalFont = null;
-        if (PdfDocument.enableCache) {
-            // Search for the similar fonts.
-            equalFont = PdfDocument.cache.search(this);
-        }
-        let internals = null;
-        // There is not equal font in the cache.
-        if (equalFont !== null && equalFont !== undefined) {
-            // Get the settings from the cached font.
-            internals = equalFont.getInternals();
-            let metrics = equalFont.metrics;
-            metrics = metrics.clone();
-            metrics.size = this.size;
-            this.metrics = metrics;
-            this.fontInternal = equalFont.fontInternal;
-        }
-        else {
-            if (equalFont == null) {
-                if (this.fontInternal instanceof UnicodeTrueTypeFont) {
-                    this.fontInternal.isEmbed = this.isEmbedFont;
-                }
-                this.fontInternal.createInternals();
-                internals = this.fontInternal.getInternals();
-                this.metrics = this.fontInternal.metrics;
-            }
-        }
-        this.metrics.isUnicodeFont = true;
-        this.setInternals(internals);
-        //this.ttfReader = (this.fontInternal as UnicodeTrueTypeFont).ttfReader;
+    set range(value) {
+        this.mDictionary.items.setValue(this.mDictionaryProperties.range, value);
     }
     /**
-     * Stores used symbols.
+     * Gets the dictionary.
      */
-    setSymbols(text) {
-        let internalFont = this.fontInternal;
-        if (internalFont != null) {
-            internalFont.setSymbols(text);
-        }
+    get dictionary() {
+        return this.mDictionary;
     }
+    //IPdfWrapper Members
     /**
-     * Property
-     *
+     * Gets the element.
      */
-    get Unicode() {
-        return this.isUnicode;
-    }
-    // public get Font() : UnicodeTrueTypeFont {
-    //     return this.fontInternal as UnicodeTrueTypeFont;
-    // }
-    getUnicodeLineWidth(line, /*out*/ width, format) {
-        // if (line == null) {
-        //     throw new Error('ArgumentNullException : line');
-        // }
-        width = 0;
-        let glyphIndices = null;
-        let rtlRender = new RtlRenderer();
-        /* tslint:disable-next-line:max-line-length */
-        let result = rtlRender.getGlyphIndex(line, this, (format.textDirection === PdfTextDirection.RightToLeft) ? true : false, /*out*/ glyphIndices, true);
-        let resultGlyph = result.success;
-        glyphIndices = result.glyphs;
-        if (resultGlyph && glyphIndices !== null) {
-            let ttfReader = this.fontInternal.ttfReader;
-            for (let i = 0, len = glyphIndices.length; i < len; i++) {
-                let glyphIndex = glyphIndices[i];
-                let glyph = ttfReader.getGlyph(glyphIndex);
-                if (glyph !== null && typeof glyph !== 'undefined') {
-                    width += glyph.width;
-                }
-            }
-        }
-        return { success: resultGlyph, width: width };
+    get element() {
+        return this.mDictionary;
     }
 }
 
 /**
- * PdfPageTemplateElement.ts class for EJ2-Pdf
+ * PdfSampledFunction.ts class for EJ2-PDF
+ * Implements PDF Sampled Function.
  */
-/**
- * Describes a `page template` object that can be used as header/footer, watermark or stamp.
- */
-class PdfPageTemplateElement {
-    // Properties
+class PdfSampledFunction extends PdfFunction {
     /**
-     * Gets or sets the `dock style` of the page template element.
-     * @private
-     */
-    get dock() {
-        return this.dockStyle;
-    }
-    set dock(value) {
-        // if (this.dockStyle !== value && this.Type === TemplateType.None) {
-        this.dockStyle = value;
-        // Reset alignment.
-        this.resetAlignment();
-        // }
-    }
-    /**
-     * Gets or sets `alignment` of the page template element.
-     * @private
-     */
-    get alignment() {
-        return this.alignmentStyle;
-    }
-    set alignment(value) {
-        // if (this.alignmentStyle !== value) {
-        this.setAlignment(value);
-        // }
-    }
-    /**
-     * Indicates whether the page template is located `in front of the page layers or behind of it`.
-     * @private
-     */
-    get foreground() {
-        return this.isForeground;
-    }
-    set foreground(value) {
-        // if (this.foreground !== value) {
-        this.isForeground = value;
-        // }
-    }
-    /**
-     * Indicates whether the page template is located `behind of the page layers or in front of it`.
-     * @private
-     */
-    get background() {
-        return !this.isForeground;
-    }
-    set background(value) {
-        this.isForeground = !value;
-    }
-    /**
-     * Gets or sets `location` of the page template element.
-     * @private
-     */
-    get location() {
-        return this.currentLocation;
-    }
-    set location(value) {
-        if (this.type === TemplateType.None) {
-            this.currentLocation = value;
-        }
-        else {
-            //
-        }
-    }
-    /**
-     * Gets or sets `X` co-ordinate of the template element on the page.
-     * @private
-     */
-    get x() {
-        let value = (typeof this.currentLocation !== 'undefined') ? this.currentLocation.x : 0;
-        return value;
-    }
-    set x(value) {
-        if (this.type === TemplateType.None) {
-            this.currentLocation.x = value;
-        }
-        else {
-            //
-        }
-    }
-    /**
-     * Gets or sets `Y` co-ordinate of the template element on the page.
-     * @private
-     */
-    get y() {
-        let value = (typeof this.currentLocation !== 'undefined') ? this.currentLocation.y : 0;
-        return value;
-    }
-    set y(value) {
-        if (this.type === TemplateType.None) {
-            this.currentLocation.y = value;
-        }
-        else {
-            //
-        }
-    }
-    /**
-     * Gets or sets `size` of the page template element.
-     * @private
-     */
-    get size() {
-        return this.template.size;
-    }
-    set size(value) {
-        if (this.type === TemplateType.None) {
-            this.template.reset(value);
-        }
-    }
-    /**
-     * Gets or sets `width` of the page template element.
-     * @private
-     */
-    get width() {
-        return this.template.width;
-    }
-    set width(value) {
-        if (this.template.width !== value && this.type === TemplateType.None) {
-            let size = this.template.size;
-            size.width = value;
-            this.template.reset(size);
-        }
-    }
-    /**
-     * Gets or sets `height` of the page template element.
-     * @private
-     */
-    get height() {
-        return this.template.height;
-    }
-    set height(value) {
-        if (this.template.height !== value && this.type === TemplateType.None) {
-            let size = this.template.size;
-            size.height = value;
-            this.template.reset(size);
-        }
-    }
-    /**
-     * Gets `graphics` context of the page template element.
-     * @private
-     */
-    get graphics() {
-        return this.template.graphics;
-    }
-    /**
-     * Gets Pdf `template` object.
-     * @private
-     */
-    get template() {
-        // if (typeof this.pdfTemplate === 'undefined' || this.pdfTemplate == null) {
-        //     this.pdfTemplate = new PdfTemplate(this.size);
-        // }
-        return this.pdfTemplate;
-    }
-    /**
-     * Gets or sets `type` of the usage of this page template.
-     * @private
-     */
-    get type() {
-        return this.templateType;
-    }
-    set type(value) {
-        this.updateDocking(value);
-        this.templateType = value;
-    }
-    /**
-     * Gets or sets `bounds` of the page template.
+     * Initializes a new instance of the `PdfSampledFunction` class.
      * @public
      */
-    get bounds() {
-        return new RectangleF(new PointF(this.x, this.y), this.size);
-    }
-    set bounds(value) {
-        if (this.type === TemplateType.None) {
-            this.location = new PointF(value.x, value.y);
-            this.size = new SizeF(value.width, value.height);
+    constructor(domain, range, sizes, samples) {
+        super(new PdfStream());
+        if (typeof domain === 'undefined') {
+            this.dictionary.items.setValue(this.mDictionaryProperties.functionType, new PdfNumber(0));
+        }
+        else {
+            this.dictionary.items.setValue(this.mDictionaryProperties.functionType, new PdfNumber(0));
+            this.checkParams(domain, range, sizes, samples);
+            this.setDomainAndRange(domain, range);
+            this.setSizeAndValues(sizes, samples);
         }
     }
+    // Helper methods
+    /**
+     * Checks the input parameters.
+     */
+    checkParams(domain, range, sizes, samples) {
+        let rLength = range.length;
+        let dLength = domain.length;
+        let sLength = samples.length;
+        
+    }
+    /**
+     * Sets the domain and range.
+     */
+    setDomainAndRange(domain, range) {
+        this.domain = new PdfArray(domain);
+        this.range = new PdfArray(range);
+    }
+    /**
+     * Sets the size and values.
+     */
+    setSizeAndValues(sizes, samples) {
+        let s = (this.dictionary);
+        this.dictionary.items.setValue(this.mDictionaryProperties.size, new PdfArray(sizes));
+        this.dictionary.items.setValue(this.mDictionaryProperties.bitsPerSample, new PdfNumber(8));
+        s.writeBytes(samples);
+    }
+}
+
+/**
+ * Specifies the constant values specifying whether to extend the shading
+ * beyond the starting and ending points of the axis.
+ */
+var PdfExtend;
+(function (PdfExtend) {
+    /**
+     * Do not extend any point.
+     */
+    PdfExtend[PdfExtend["None"] = 0] = "None";
+    /**
+     * Extend start point.
+     */
+    PdfExtend[PdfExtend["Start"] = 1] = "Start";
+    /**
+     * Extend end point.
+     */
+    PdfExtend[PdfExtend["End"] = 2] = "End";
+    /**
+     * Extend both start and end points.
+     */
+    PdfExtend[PdfExtend["Both"] = 3] = "Both";
+})(PdfExtend || (PdfExtend = {}));
+/**
+ * Specifies the gradient direction of the linear gradient brush.
+ */
+var PdfLinearGradientMode;
+(function (PdfLinearGradientMode) {
+    /**
+     * Specifies a gradient from upper right to lower left.
+     */
+    PdfLinearGradientMode[PdfLinearGradientMode["BackwardDiagonal"] = 0] = "BackwardDiagonal";
+    /**
+     * Specifies a gradient from upper left to lower right.
+     */
+    PdfLinearGradientMode[PdfLinearGradientMode["ForwardDiagonal"] = 1] = "ForwardDiagonal";
+    /**
+     * Specifies a gradient from left to right.
+     */
+    PdfLinearGradientMode[PdfLinearGradientMode["Horizontal"] = 2] = "Horizontal";
+    /**
+     * Specifies a gradient from top to bottom.
+     */
+    PdfLinearGradientMode[PdfLinearGradientMode["Vertical"] = 3] = "Vertical";
+})(PdfLinearGradientMode || (PdfLinearGradientMode = {}));
+/**
+ * Shading type constants.
+ */
+var ShadingType;
+(function (ShadingType) {
+    /**
+     * Function-based shading.
+     */
+    ShadingType[ShadingType["Function"] = 1] = "Function";
+    /**
+     * Axial shading.
+     */
+    ShadingType[ShadingType["Axial"] = 2] = "Axial";
+    /**
+     * Radial shading.
+     */
+    ShadingType[ShadingType["Radial"] = 3] = "Radial";
+})(ShadingType || (ShadingType = {}));
+var KnownColor;
+(function (KnownColor) {
+    KnownColor[KnownColor["ActiveBorder"] = 1] = "ActiveBorder";
+    KnownColor[KnownColor["ActiveCaption"] = 2] = "ActiveCaption";
+    KnownColor[KnownColor["ActiveCaptionText"] = 3] = "ActiveCaptionText";
+    KnownColor[KnownColor["AppWorkspace"] = 4] = "AppWorkspace";
+    KnownColor[KnownColor["Control"] = 5] = "Control";
+    KnownColor[KnownColor["ControlDark"] = 6] = "ControlDark";
+    KnownColor[KnownColor["ControlDarkDark"] = 7] = "ControlDarkDark";
+    KnownColor[KnownColor["ControlLight"] = 8] = "ControlLight";
+    KnownColor[KnownColor["ControlLightLight"] = 9] = "ControlLightLight";
+    KnownColor[KnownColor["ControlText"] = 10] = "ControlText";
+    KnownColor[KnownColor["Desktop"] = 11] = "Desktop";
+    KnownColor[KnownColor["GrayText"] = 12] = "GrayText";
+    KnownColor[KnownColor["Highlight"] = 13] = "Highlight";
+    KnownColor[KnownColor["HighlightText"] = 14] = "HighlightText";
+    KnownColor[KnownColor["HotTrack"] = 15] = "HotTrack";
+    KnownColor[KnownColor["InactiveBorder"] = 16] = "InactiveBorder";
+    KnownColor[KnownColor["InactiveCaption"] = 17] = "InactiveCaption";
+    KnownColor[KnownColor["InactiveCaptionText"] = 18] = "InactiveCaptionText";
+    KnownColor[KnownColor["Info"] = 19] = "Info";
+    KnownColor[KnownColor["InfoText"] = 20] = "InfoText";
+    KnownColor[KnownColor["Menu"] = 21] = "Menu";
+    KnownColor[KnownColor["MenuText"] = 22] = "MenuText";
+    KnownColor[KnownColor["ScrollBar"] = 23] = "ScrollBar";
+    KnownColor[KnownColor["Window"] = 24] = "Window";
+    KnownColor[KnownColor["WindowFrame"] = 25] = "WindowFrame";
+    KnownColor[KnownColor["WindowText"] = 26] = "WindowText";
+    KnownColor[KnownColor["Transparent"] = 27] = "Transparent";
+    KnownColor[KnownColor["AliceBlue"] = 28] = "AliceBlue";
+    KnownColor[KnownColor["AntiqueWhite"] = 29] = "AntiqueWhite";
+    KnownColor[KnownColor["Aqua"] = 30] = "Aqua";
+    KnownColor[KnownColor["Aquamarine"] = 31] = "Aquamarine";
+    KnownColor[KnownColor["Azure"] = 32] = "Azure";
+    KnownColor[KnownColor["Beige"] = 33] = "Beige";
+    KnownColor[KnownColor["Bisque"] = 34] = "Bisque";
+    KnownColor[KnownColor["Black"] = 35] = "Black";
+    KnownColor[KnownColor["BlanchedAlmond"] = 36] = "BlanchedAlmond";
+    KnownColor[KnownColor["Blue"] = 37] = "Blue";
+    KnownColor[KnownColor["BlueViolet"] = 38] = "BlueViolet";
+    KnownColor[KnownColor["Brown"] = 39] = "Brown";
+    KnownColor[KnownColor["BurlyWood"] = 40] = "BurlyWood";
+    KnownColor[KnownColor["CadetBlue"] = 41] = "CadetBlue";
+    KnownColor[KnownColor["Chartreuse"] = 42] = "Chartreuse";
+    KnownColor[KnownColor["Chocolate"] = 43] = "Chocolate";
+    KnownColor[KnownColor["Coral"] = 44] = "Coral";
+    KnownColor[KnownColor["CornflowerBlue"] = 45] = "CornflowerBlue";
+    KnownColor[KnownColor["Cornsilk"] = 46] = "Cornsilk";
+    KnownColor[KnownColor["Crimson"] = 47] = "Crimson";
+    KnownColor[KnownColor["Cyan"] = 48] = "Cyan";
+    KnownColor[KnownColor["DarkBlue"] = 49] = "DarkBlue";
+    KnownColor[KnownColor["DarkCyan"] = 50] = "DarkCyan";
+    KnownColor[KnownColor["DarkGoldenrod"] = 51] = "DarkGoldenrod";
+    KnownColor[KnownColor["DarkGray"] = 52] = "DarkGray";
+    KnownColor[KnownColor["DarkGreen"] = 53] = "DarkGreen";
+    KnownColor[KnownColor["DarkKhaki"] = 54] = "DarkKhaki";
+    KnownColor[KnownColor["DarkMagenta"] = 55] = "DarkMagenta";
+    KnownColor[KnownColor["DarkOliveGreen"] = 56] = "DarkOliveGreen";
+    KnownColor[KnownColor["DarkOrange"] = 57] = "DarkOrange";
+    KnownColor[KnownColor["DarkOrchid"] = 58] = "DarkOrchid";
+    KnownColor[KnownColor["DarkRed"] = 59] = "DarkRed";
+    KnownColor[KnownColor["DarkSalmon"] = 60] = "DarkSalmon";
+    KnownColor[KnownColor["DarkSeaGreen"] = 61] = "DarkSeaGreen";
+    KnownColor[KnownColor["DarkSlateBlue"] = 62] = "DarkSlateBlue";
+    KnownColor[KnownColor["DarkSlateGray"] = 63] = "DarkSlateGray";
+    KnownColor[KnownColor["DarkTurquoise"] = 64] = "DarkTurquoise";
+    KnownColor[KnownColor["DarkViolet"] = 65] = "DarkViolet";
+    KnownColor[KnownColor["DeepPink"] = 66] = "DeepPink";
+    KnownColor[KnownColor["DeepSkyBlue"] = 67] = "DeepSkyBlue";
+    KnownColor[KnownColor["DimGray"] = 68] = "DimGray";
+    KnownColor[KnownColor["DodgerBlue"] = 69] = "DodgerBlue";
+    KnownColor[KnownColor["Firebrick"] = 70] = "Firebrick";
+    KnownColor[KnownColor["FloralWhite"] = 71] = "FloralWhite";
+    KnownColor[KnownColor["ForestGreen"] = 72] = "ForestGreen";
+    KnownColor[KnownColor["Fuchsia"] = 73] = "Fuchsia";
+    KnownColor[KnownColor["Gainsboro"] = 74] = "Gainsboro";
+    KnownColor[KnownColor["GhostWhite"] = 75] = "GhostWhite";
+    KnownColor[KnownColor["Gold"] = 76] = "Gold";
+    KnownColor[KnownColor["Goldenrod"] = 77] = "Goldenrod";
+    KnownColor[KnownColor["Gray"] = 78] = "Gray";
+    KnownColor[KnownColor["Green"] = 79] = "Green";
+    KnownColor[KnownColor["GreenYellow"] = 80] = "GreenYellow";
+    KnownColor[KnownColor["Honeydew"] = 81] = "Honeydew";
+    KnownColor[KnownColor["HotPink"] = 82] = "HotPink";
+    KnownColor[KnownColor["IndianRed"] = 83] = "IndianRed";
+    KnownColor[KnownColor["Indigo"] = 84] = "Indigo";
+    KnownColor[KnownColor["Ivory"] = 85] = "Ivory";
+    KnownColor[KnownColor["Khaki"] = 86] = "Khaki";
+    KnownColor[KnownColor["Lavender"] = 87] = "Lavender";
+    KnownColor[KnownColor["LavenderBlush"] = 88] = "LavenderBlush";
+    KnownColor[KnownColor["LawnGreen"] = 89] = "LawnGreen";
+    KnownColor[KnownColor["LemonChiffon"] = 90] = "LemonChiffon";
+    KnownColor[KnownColor["LightBlue"] = 91] = "LightBlue";
+    KnownColor[KnownColor["LightCoral"] = 92] = "LightCoral";
+    KnownColor[KnownColor["LightCyan"] = 93] = "LightCyan";
+    KnownColor[KnownColor["LightGoldenrodYellow"] = 94] = "LightGoldenrodYellow";
+    KnownColor[KnownColor["LightGray"] = 95] = "LightGray";
+    KnownColor[KnownColor["LightGreen"] = 96] = "LightGreen";
+    KnownColor[KnownColor["LightPink"] = 97] = "LightPink";
+    KnownColor[KnownColor["LightSalmon"] = 98] = "LightSalmon";
+    KnownColor[KnownColor["LightSeaGreen"] = 99] = "LightSeaGreen";
+    KnownColor[KnownColor["LightSkyBlue"] = 100] = "LightSkyBlue";
+    KnownColor[KnownColor["LightSlateGray"] = 101] = "LightSlateGray";
+    KnownColor[KnownColor["LightSteelBlue"] = 102] = "LightSteelBlue";
+    KnownColor[KnownColor["LightYellow"] = 103] = "LightYellow";
+    KnownColor[KnownColor["Lime"] = 104] = "Lime";
+    KnownColor[KnownColor["LimeGreen"] = 105] = "LimeGreen";
+    KnownColor[KnownColor["Linen"] = 106] = "Linen";
+    KnownColor[KnownColor["Magenta"] = 107] = "Magenta";
+    KnownColor[KnownColor["Maroon"] = 108] = "Maroon";
+    KnownColor[KnownColor["MediumAquamarine"] = 109] = "MediumAquamarine";
+    KnownColor[KnownColor["MediumBlue"] = 110] = "MediumBlue";
+    KnownColor[KnownColor["MediumOrchid"] = 111] = "MediumOrchid";
+    KnownColor[KnownColor["MediumPurple"] = 112] = "MediumPurple";
+    KnownColor[KnownColor["MediumSeaGreen"] = 113] = "MediumSeaGreen";
+    KnownColor[KnownColor["MediumSlateBlue"] = 114] = "MediumSlateBlue";
+    KnownColor[KnownColor["MediumSpringGreen"] = 115] = "MediumSpringGreen";
+    KnownColor[KnownColor["MediumTurquoise"] = 116] = "MediumTurquoise";
+    KnownColor[KnownColor["MediumVioletRed"] = 117] = "MediumVioletRed";
+    KnownColor[KnownColor["MidnightBlue"] = 118] = "MidnightBlue";
+    KnownColor[KnownColor["MintCream"] = 119] = "MintCream";
+    KnownColor[KnownColor["MistyRose"] = 120] = "MistyRose";
+    KnownColor[KnownColor["Moccasin"] = 121] = "Moccasin";
+    KnownColor[KnownColor["NavajoWhite"] = 122] = "NavajoWhite";
+    KnownColor[KnownColor["Navy"] = 123] = "Navy";
+    KnownColor[KnownColor["OldLace"] = 124] = "OldLace";
+    KnownColor[KnownColor["Olive"] = 125] = "Olive";
+    KnownColor[KnownColor["OliveDrab"] = 126] = "OliveDrab";
+    KnownColor[KnownColor["Orange"] = 127] = "Orange";
+    KnownColor[KnownColor["OrangeRed"] = 128] = "OrangeRed";
+    KnownColor[KnownColor["Orchid"] = 129] = "Orchid";
+    KnownColor[KnownColor["PaleGoldenrod"] = 130] = "PaleGoldenrod";
+    KnownColor[KnownColor["PaleGreen"] = 131] = "PaleGreen";
+    KnownColor[KnownColor["PaleTurquoise"] = 132] = "PaleTurquoise";
+    KnownColor[KnownColor["PaleVioletRed"] = 133] = "PaleVioletRed";
+    KnownColor[KnownColor["PapayaWhip"] = 134] = "PapayaWhip";
+    KnownColor[KnownColor["PeachPuff"] = 135] = "PeachPuff";
+    KnownColor[KnownColor["Peru"] = 136] = "Peru";
+    KnownColor[KnownColor["Pink"] = 137] = "Pink";
+    KnownColor[KnownColor["Plum"] = 138] = "Plum";
+    KnownColor[KnownColor["PowderBlue"] = 139] = "PowderBlue";
+    KnownColor[KnownColor["Purple"] = 140] = "Purple";
+    KnownColor[KnownColor["Red"] = 141] = "Red";
+    KnownColor[KnownColor["RosyBrown"] = 142] = "RosyBrown";
+    KnownColor[KnownColor["RoyalBlue"] = 143] = "RoyalBlue";
+    KnownColor[KnownColor["SaddleBrown"] = 144] = "SaddleBrown";
+    KnownColor[KnownColor["Salmon"] = 145] = "Salmon";
+    KnownColor[KnownColor["SandyBrown"] = 146] = "SandyBrown";
+    KnownColor[KnownColor["SeaGreen"] = 147] = "SeaGreen";
+    KnownColor[KnownColor["SeaShell"] = 148] = "SeaShell";
+    KnownColor[KnownColor["Sienna"] = 149] = "Sienna";
+    KnownColor[KnownColor["Silver"] = 150] = "Silver";
+    KnownColor[KnownColor["SkyBlue"] = 151] = "SkyBlue";
+    KnownColor[KnownColor["SlateBlue"] = 152] = "SlateBlue";
+    KnownColor[KnownColor["SlateGray"] = 153] = "SlateGray";
+    KnownColor[KnownColor["Snow"] = 154] = "Snow";
+    KnownColor[KnownColor["SpringGreen"] = 155] = "SpringGreen";
+    KnownColor[KnownColor["SteelBlue"] = 156] = "SteelBlue";
+    KnownColor[KnownColor["Tan"] = 157] = "Tan";
+    KnownColor[KnownColor["Teal"] = 158] = "Teal";
+    KnownColor[KnownColor["Thistle"] = 159] = "Thistle";
+    KnownColor[KnownColor["Tomato"] = 160] = "Tomato";
+    KnownColor[KnownColor["Turquoise"] = 161] = "Turquoise";
+    KnownColor[KnownColor["Violet"] = 162] = "Violet";
+    KnownColor[KnownColor["Wheat"] = 163] = "Wheat";
+    KnownColor[KnownColor["White"] = 164] = "White";
+    KnownColor[KnownColor["WhiteSmoke"] = 165] = "WhiteSmoke";
+    KnownColor[KnownColor["Yellow"] = 166] = "Yellow";
+    KnownColor[KnownColor["YellowGreen"] = 167] = "YellowGreen";
+    KnownColor[KnownColor["ButtonFace"] = 168] = "ButtonFace";
+    KnownColor[KnownColor["ButtonHighlight"] = 169] = "ButtonHighlight";
+    KnownColor[KnownColor["ButtonShadow"] = 170] = "ButtonShadow";
+    KnownColor[KnownColor["GradientActiveCaption"] = 171] = "GradientActiveCaption";
+    KnownColor[KnownColor["GradientInactiveCaption"] = 172] = "GradientInactiveCaption";
+    KnownColor[KnownColor["MenuBar"] = 173] = "MenuBar";
+    KnownColor[KnownColor["MenuHighlight"] = 174] = "MenuHighlight";
+})(KnownColor || (KnownColor = {}));
+
+/**
+ * PdfBrushes.ts class for EJ2-PDF
+ */
+/**
+ * `PdfBrushes` class provides objects used to fill the interiors of graphical shapes such as rectangles,
+ * ellipses, pies, polygons, and paths.
+ * @private
+ */
+class PdfBrushes {
+    //Static Properties
+    /**
+     * Gets the AliceBlue brush.
+     * @public
+     */
+    static get AliceBlue() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.AliceBlue)) {
+            brush = (this.sBrushes.getValue(KnownColor.AliceBlue));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.AliceBlue);
+        }
+        return brush;
+    }
+    /**
+     * Gets the antique white brush.
+     * @public
+     */
+    static get AntiqueWhite() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.AntiqueWhite)) {
+            brush = (this.sBrushes.getValue(KnownColor.AntiqueWhite));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.AntiqueWhite);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Aqua default brush.
+     * @public
+     */
+    static get Aqua() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Aqua)) {
+            brush = (this.sBrushes.getValue(KnownColor.Aqua));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Aqua);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Aquamarine default brush.
+     * @public
+     */
+    static get Aquamarine() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Aquamarine)) {
+            brush = (this.sBrushes.getValue(KnownColor.Aquamarine));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Aquamarine);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Azure default brush.
+     * @public
+     */
+    static get Azure() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Azure)) {
+            brush = (this.sBrushes.getValue(KnownColor.Azure));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Azure);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Beige default brush.
+     * @public
+     */
+    static get Beige() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Beige)) {
+            brush = (this.sBrushes.getValue(KnownColor.Beige));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Beige);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Bisque default brush.
+     * @public
+     */
+    static get Bisque() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Bisque)) {
+            brush = (this.sBrushes.getValue(KnownColor.Bisque));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Bisque);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Black default brush.
+     * @public
+     */
+    static get Black() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Black)) {
+            brush = (this.sBrushes.getValue(KnownColor.Black));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Black);
+        }
+        return brush;
+    }
+    /**
+     * Gets the BlanchedAlmond default brush.
+     * @public
+     */
+    static get BlanchedAlmond() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.BlanchedAlmond)) {
+            brush = (this.sBrushes.getValue(KnownColor.BlanchedAlmond));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.BlanchedAlmond);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Blue default brush.
+     * @public
+     */
+    static get Blue() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Blue)) {
+            brush = (this.sBrushes.getValue(KnownColor.Blue));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Blue);
+        }
+        return brush;
+    }
+    /**
+     * Gets the BlueViolet default brush.
+     * @public
+     */
+    static get BlueViolet() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.BlueViolet)) {
+            brush = (this.sBrushes.getValue(KnownColor.BlueViolet));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.BlueViolet);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Brown default brush.
+     * @public
+     */
+    static get Brown() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Brown)) {
+            brush = (this.sBrushes.getValue(KnownColor.Brown));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Brown);
+        }
+        return brush;
+    }
+    /**
+     * Gets the BurlyWood default brush.
+     * @public
+     */
+    static get BurlyWood() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.BurlyWood)) {
+            brush = (this.sBrushes.getValue(KnownColor.BurlyWood));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.BurlyWood);
+        }
+        return brush;
+    }
+    /**
+     * Gets the CadetBlue default brush.
+     * @public
+     */
+    static get CadetBlue() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.CadetBlue)) {
+            brush = (this.sBrushes.getValue(KnownColor.CadetBlue));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.CadetBlue);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Chartreuse default brush.
+     * @public
+     */
+    static get Chartreuse() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Chartreuse)) {
+            brush = (this.sBrushes.getValue(KnownColor.Chartreuse));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Chartreuse);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Chocolate default brush.
+     * @public
+     */
+    static get Chocolate() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Chocolate)) {
+            brush = (this.sBrushes.getValue(KnownColor.Chocolate));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Chocolate);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Coral default brush.
+     * @public
+     */
+    static get Coral() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Coral)) {
+            brush = (this.sBrushes.getValue(KnownColor.Coral));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Coral);
+        }
+        return brush;
+    }
+    /**
+     * Gets the CornflowerBlue default brush.
+     * @public
+     */
+    static get CornflowerBlue() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.CornflowerBlue)) {
+            brush = (this.sBrushes.getValue(KnownColor.CornflowerBlue));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.CornflowerBlue);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Corn silk default brush.
+     * @public
+     */
+    static get Cornsilk() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Cornsilk)) {
+            brush = (this.sBrushes.getValue(KnownColor.Cornsilk));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Cornsilk);
+        }
+        return brush;
+    }
+    /**
+     *  Gets the Crimson default brush.
+     * @public
+     */
+    static get Crimson() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Crimson)) {
+            brush = (this.sBrushes.getValue(KnownColor.Crimson));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Crimson);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Cyan default brush.
+     * @public
+     */
+    static get Cyan() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Cyan)) {
+            brush = (this.sBrushes.getValue(KnownColor.Cyan));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Cyan);
+        }
+        return brush;
+    }
+    /**
+     * Gets the DarkBlue default brush.
+     * @public
+     */
+    static get DarkBlue() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.DarkBlue)) {
+            brush = (this.sBrushes.getValue(KnownColor.DarkBlue));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.DarkBlue);
+        }
+        return brush;
+    }
+    /**
+     * Gets the DarkCyan default brush.
+     * @public
+     */
+    static get DarkCyan() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.DarkCyan)) {
+            brush = (this.sBrushes.getValue(KnownColor.DarkCyan));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.DarkCyan);
+        }
+        return brush;
+    }
+    /**
+     * Gets the DarkGoldenrod default brush.
+     * @public
+     */
+    static get DarkGoldenrod() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.DarkGoldenrod)) {
+            brush = (this.sBrushes.getValue(KnownColor.DarkGoldenrod));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.DarkGoldenrod);
+        }
+        return brush;
+    }
+    /**
+     * Gets the DarkGray default brush.
+     * @public
+     */
+    static get DarkGray() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.DarkGray)) {
+            brush = (this.sBrushes.getValue(KnownColor.DarkGray));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.DarkGray);
+        }
+        return brush;
+    }
+    /**
+     * Gets the DarkGreen default brush.
+     * @public
+     */
+    static get DarkGreen() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.DarkGreen)) {
+            brush = (this.sBrushes.getValue(KnownColor.DarkGreen));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.DarkGreen);
+        }
+        return brush;
+    }
+    /**
+     * Gets the DarkKhaki default brush.
+     * @public
+     */
+    static get DarkKhaki() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.DarkKhaki)) {
+            brush = (this.sBrushes.getValue(KnownColor.DarkKhaki));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.DarkKhaki);
+        }
+        return brush;
+    }
+    /**
+     * Gets the DarkMagenta default brush.
+     * @public
+     */
+    static get DarkMagenta() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.DarkMagenta)) {
+            brush = (this.sBrushes.getValue(KnownColor.DarkMagenta));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.DarkMagenta);
+        }
+        return brush;
+    }
+    /**
+     * Gets the DarkOliveGreen default brush.
+     * @public
+     */
+    static get DarkOliveGreen() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.DarkOliveGreen)) {
+            brush = (this.sBrushes.getValue(KnownColor.DarkOliveGreen));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.DarkOliveGreen);
+        }
+        return brush;
+    }
+    /**
+     * Gets the DarkOrange default brush.
+     * @public
+     */
+    static get DarkOrange() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.DarkOrange)) {
+            brush = (this.sBrushes.getValue(KnownColor.DarkOrange));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.DarkOrange);
+        }
+        return brush;
+    }
+    /**
+     * Gets the DarkOrchid default brush.
+     * @public
+     */
+    static get DarkOrchid() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.DarkOrchid)) {
+            brush = (this.sBrushes.getValue(KnownColor.DarkOrchid));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.DarkOrchid);
+        }
+        return brush;
+    }
+    /**
+     * Gets the DarkRed default brush.
+     * @public
+     */
+    static get DarkRed() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.DarkRed)) {
+            brush = (this.sBrushes.getValue(KnownColor.DarkRed));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.DarkRed);
+        }
+        return brush;
+    }
+    /**
+     * Gets the DarkSalmon default brush.
+     * @public
+     */
+    static get DarkSalmon() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.DarkSalmon)) {
+            brush = (this.sBrushes.getValue(KnownColor.DarkSalmon));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.DarkSalmon);
+        }
+        return brush;
+    }
+    /**
+     * Gets the DarkSeaGreen default brush.
+     * @public
+     */
+    static get DarkSeaGreen() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.DarkSeaGreen)) {
+            brush = (this.sBrushes.getValue(KnownColor.DarkSeaGreen));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.DarkSeaGreen);
+        }
+        return brush;
+    }
+    /**
+     * Gets the DarkSlateBlue default brush.
+     * @public
+     */
+    static get DarkSlateBlue() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.DarkSlateBlue)) {
+            brush = (this.sBrushes.getValue(KnownColor.DarkSlateBlue));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.DarkSlateBlue);
+        }
+        return brush;
+    }
+    /**
+     * Gets the DarkSlateGray default brush.
+     * @public
+     */
+    static get DarkSlateGray() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.DarkSlateGray)) {
+            brush = (this.sBrushes.getValue(KnownColor.DarkSlateGray));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.DarkSlateGray);
+        }
+        return brush;
+    }
+    /**
+     * Gets the DarkTurquoise default brush.
+     * @public
+     */
+    static get DarkTurquoise() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.DarkTurquoise)) {
+            brush = (this.sBrushes.getValue(KnownColor.DarkTurquoise));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.DarkTurquoise);
+        }
+        return brush;
+    }
+    /**
+     * Gets the DarkViolet default brush.
+     * @public
+     */
+    static get DarkViolet() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.DarkViolet)) {
+            brush = (this.sBrushes.getValue(KnownColor.DarkViolet));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.DarkViolet);
+        }
+        return brush;
+    }
+    /**
+     * Gets the DeepPink default brush.
+     * @public
+     */
+    static get DeepPink() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.DeepPink)) {
+            brush = (this.sBrushes.getValue(KnownColor.DeepPink));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.DeepPink);
+        }
+        return brush;
+    }
+    /**
+     * Gets the DeepSkyBlue default brush.
+     * @public
+     */
+    static get DeepSkyBlue() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.DeepSkyBlue)) {
+            brush = (this.sBrushes.getValue(KnownColor.DeepSkyBlue));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.DeepSkyBlue);
+        }
+        return brush;
+    }
+    /**
+     * Gets the DimGray default brush.
+     * @public
+     */
+    static get DimGray() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.DimGray)) {
+            brush = (this.sBrushes.getValue(KnownColor.DimGray));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.DimGray);
+        }
+        return brush;
+    }
+    /**
+     * Gets the DodgerBlue default brush.
+     * @public
+     */
+    static get DodgerBlue() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.DodgerBlue)) {
+            brush = (this.sBrushes.getValue(KnownColor.DodgerBlue));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.DodgerBlue);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Firebrick default brush.
+     * @public
+     */
+    static get Firebrick() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Firebrick)) {
+            brush = (this.sBrushes.getValue(KnownColor.Firebrick));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Firebrick);
+        }
+        return brush;
+    }
+    /**
+     * Gets the FloralWhite default brush.
+     * @public
+     */
+    static get FloralWhite() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.FloralWhite)) {
+            brush = (this.sBrushes.getValue(KnownColor.FloralWhite));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.FloralWhite);
+        }
+        return brush;
+    }
+    /**
+     * Gets the ForestGreen default brush.
+     * @public
+     */
+    static get ForestGreen() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.ForestGreen)) {
+            brush = (this.sBrushes.getValue(KnownColor.ForestGreen));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.ForestGreen);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Fuchsia default brush.
+     * @public
+     */
+    static get Fuchsia() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Fuchsia)) {
+            brush = (this.sBrushes.getValue(KnownColor.Fuchsia));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Fuchsia);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Gainsborough default brush.
+     * @public
+     */
+    static get Gainsboro() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Gainsboro)) {
+            brush = (this.sBrushes.getValue(KnownColor.Gainsboro));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Gainsboro);
+        }
+        return brush;
+    }
+    /**
+     * Gets the GhostWhite default brush.
+     * @public
+     */
+    static get GhostWhite() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.GhostWhite)) {
+            brush = (this.sBrushes.getValue(KnownColor.GhostWhite));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.GhostWhite);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Gold default brush.
+     * @public
+     */
+    static get Gold() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Gold)) {
+            brush = (this.sBrushes.getValue(KnownColor.Gold));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Gold);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Goldenrod default brush.
+     * @public
+     */
+    static get Goldenrod() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Goldenrod)) {
+            brush = (this.sBrushes.getValue(KnownColor.Goldenrod));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Goldenrod);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Gray default brush.
+     * @public
+     */
+    static get Gray() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Gray)) {
+            brush = (this.sBrushes.getValue(KnownColor.Gray));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Gray);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Green default brush.
+     * @public
+     */
+    static get Green() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Green)) {
+            brush = (this.sBrushes.getValue(KnownColor.Green));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Green);
+        }
+        return brush;
+    }
+    /**
+     * Gets the GreenYellow default brush.
+     * @public
+     */
+    static get GreenYellow() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.GreenYellow)) {
+            brush = (this.sBrushes.getValue(KnownColor.GreenYellow));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.GreenYellow);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Honeydew default brush.
+     * @public
+     */
+    static get Honeydew() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Honeydew)) {
+            brush = (this.sBrushes.getValue(KnownColor.Honeydew));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Honeydew);
+        }
+        return brush;
+    }
+    /**
+     * Gets the HotPink default brush.
+     * @public
+     */
+    static get HotPink() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.HotPink)) {
+            brush = (this.sBrushes.getValue(KnownColor.HotPink));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.HotPink);
+        }
+        return brush;
+    }
+    /**
+     * Gets the IndianRed default brush.
+     * @public
+     */
+    static get IndianRed() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.IndianRed)) {
+            brush = (this.sBrushes.getValue(KnownColor.IndianRed));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.IndianRed);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Indigo default brush.
+     * @public
+     */
+    static get Indigo() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Indigo)) {
+            brush = (this.sBrushes.getValue(KnownColor.Indigo));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Indigo);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Ivory default brush.
+     * @public
+     */
+    static get Ivory() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Ivory)) {
+            brush = (this.sBrushes.getValue(KnownColor.Ivory));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Ivory);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Khaki default brush.
+     * @public
+     */
+    static get Khaki() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Khaki)) {
+            brush = (this.sBrushes.getValue(KnownColor.Khaki));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Khaki);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Lavender default brush.
+     * @public
+     */
+    static get Lavender() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Lavender)) {
+            brush = (this.sBrushes.getValue(KnownColor.Lavender));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Lavender);
+        }
+        return brush;
+    }
+    /**
+     * Gets the LavenderBlush default brush.
+     * @public
+     */
+    static get LavenderBlush() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.LavenderBlush)) {
+            brush = (this.sBrushes.getValue(KnownColor.LavenderBlush));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.LavenderBlush);
+        }
+        return brush;
+    }
+    /**
+     * Gets the LawnGreen default brush.
+     * @public
+     */
+    static get LawnGreen() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.LawnGreen)) {
+            brush = (this.sBrushes.getValue(KnownColor.LawnGreen));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.LawnGreen);
+        }
+        return brush;
+    }
+    /**
+     * Gets the LemonChiffon default brush.
+     * @public
+     */
+    static get LemonChiffon() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.LemonChiffon)) {
+            brush = (this.sBrushes.getValue(KnownColor.LemonChiffon));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.LemonChiffon);
+        }
+        return brush;
+    }
+    /**
+     * Gets the LightBlue default brush.
+     * @public
+     */
+    static get LightBlue() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.LightBlue)) {
+            brush = (this.sBrushes.getValue(KnownColor.LightBlue));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.LightBlue);
+        }
+        return brush;
+    }
+    /**
+     * Gets the LightCoral default brush.
+     * @public
+     */
+    static get LightCoral() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.LightCoral)) {
+            brush = (this.sBrushes.getValue(KnownColor.LightCoral));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.LightCoral);
+        }
+        return brush;
+    }
+    /**
+     * Gets the LightCyan default brush.
+     * @public
+     */
+    static get LightCyan() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.LightCyan)) {
+            brush = (this.sBrushes.getValue(KnownColor.LightCyan));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.LightCyan);
+        }
+        return brush;
+    }
+    /**
+     * Gets the LightGoldenrodYellow default brush.
+     * @public
+     */
+    static get LightGoldenrodYellow() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.LightGoldenrodYellow)) {
+            brush = (this.sBrushes.getValue(KnownColor.LightGoldenrodYellow));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.LightGoldenrodYellow);
+        }
+        return brush;
+    }
+    /**
+     * Gets the LightGray default brush.
+     * @public
+     */
+    static get LightGray() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.LightGray)) {
+            brush = (this.sBrushes.getValue(KnownColor.LightGray));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.LightGray);
+        }
+        return brush;
+    }
+    /**
+     * Gets the LightGreen default brush.
+     * @public
+     */
+    static get LightGreen() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.LightGreen)) {
+            brush = (this.sBrushes.getValue(KnownColor.LightGreen));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.LightGreen);
+        }
+        return brush;
+    }
+    /**
+     * Gets the LightPink default brush.
+     * @public
+     */
+    static get LightPink() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.LightPink)) {
+            brush = (this.sBrushes.getValue(KnownColor.LightPink));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.LightPink);
+        }
+        return brush;
+    }
+    /**
+     * Gets the LightSalmon default brush.
+     * @public
+     */
+    static get LightSalmon() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.LightSalmon)) {
+            brush = (this.sBrushes.getValue(KnownColor.LightSalmon));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.LightSalmon);
+        }
+        return brush;
+    }
+    /**
+     * Gets the LightSeaGreen default brush.
+     * @public
+     */
+    static get LightSeaGreen() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.LightSeaGreen)) {
+            brush = (this.sBrushes.getValue(KnownColor.LightSeaGreen));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.LightSeaGreen);
+        }
+        return brush;
+    }
+    /**
+     * Gets the LightSkyBlue default brush.
+     * @public
+     */
+    static get LightSkyBlue() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.LightSkyBlue)) {
+            brush = (this.sBrushes.getValue(KnownColor.LightSkyBlue));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.LightSkyBlue);
+        }
+        return brush;
+    }
+    /**
+     * Gets the LightSlateGray default brush.
+     * @public
+     */
+    static get LightSlateGray() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.LightSlateGray)) {
+            brush = (this.sBrushes.getValue(KnownColor.LightSlateGray));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.LightSlateGray);
+        }
+        return brush;
+    }
+    /**
+     * Gets the LightSteelBlue default brush.
+     * @public
+     */
+    static get LightSteelBlue() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.LightSteelBlue)) {
+            brush = (this.sBrushes.getValue(KnownColor.LightSteelBlue));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.LightSteelBlue);
+        }
+        return brush;
+    }
+    /**
+     * Gets the LightYellow default brush.
+     * @public
+     */
+    static get LightYellow() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.LightYellow)) {
+            brush = (this.sBrushes.getValue(KnownColor.LightYellow));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.LightYellow);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Lime default brush.
+     * @public
+     */
+    static get Lime() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Lime)) {
+            brush = (this.sBrushes.getValue(KnownColor.Lime));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Lime);
+        }
+        return brush;
+    }
+    /**
+     * Gets the LimeGreen default brush.
+     * @public
+     */
+    static get LimeGreen() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.LimeGreen)) {
+            brush = (this.sBrushes.getValue(KnownColor.LimeGreen));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.LimeGreen);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Linen default brush.
+     * @public
+     */
+    static get Linen() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Linen)) {
+            brush = (this.sBrushes.getValue(KnownColor.Linen));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Linen);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Magenta default brush.
+     * @public
+     */
+    static get Magenta() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Magenta)) {
+            brush = (this.sBrushes.getValue(KnownColor.Magenta));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Magenta);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Maroon default brush.
+     * @public
+     */
+    static get Maroon() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Maroon)) {
+            brush = (this.sBrushes.getValue(KnownColor.Maroon));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Maroon);
+        }
+        return brush;
+    }
+    /**
+     * Gets the MediumAquamarine default brush.
+     * @public
+     */
+    static get MediumAquamarine() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.MediumAquamarine)) {
+            brush = (this.sBrushes.getValue(KnownColor.MediumAquamarine));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.MediumAquamarine);
+        }
+        return brush;
+    }
+    /**
+     * Gets the MediumBlue default brush.
+     * @public
+     */
+    static get MediumBlue() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.MediumBlue)) {
+            brush = (this.sBrushes.getValue(KnownColor.MediumBlue));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.MediumBlue);
+        }
+        return brush;
+    }
+    /**
+     * Gets the MediumOrchid default brush.
+     * @public
+     */
+    static get MediumOrchid() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.MediumOrchid)) {
+            brush = (this.sBrushes.getValue(KnownColor.MediumOrchid));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.MediumOrchid);
+        }
+        return brush;
+    }
+    /**
+     * Gets the MediumPurple default brush.
+     * @public
+     */
+    static get MediumPurple() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.MediumPurple)) {
+            brush = (this.sBrushes.getValue(KnownColor.MediumPurple));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.MediumPurple);
+        }
+        return brush;
+    }
+    /**
+     * Gets the MediumSeaGreen default brush.
+     * @public
+     */
+    static get MediumSeaGreen() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.MediumSeaGreen)) {
+            brush = (this.sBrushes.getValue(KnownColor.MediumSeaGreen));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.MediumSeaGreen);
+        }
+        return brush;
+    }
+    /**
+     * Gets the MediumSlateBlue default brush.
+     * @public
+     */
+    static get MediumSlateBlue() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.MediumSlateBlue)) {
+            brush = (this.sBrushes.getValue(KnownColor.MediumSlateBlue));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.MediumSlateBlue);
+        }
+        return brush;
+    }
+    /**
+     * Gets the MediumSpringGreen default brush.
+     * @public
+     */
+    static get MediumSpringGreen() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.MediumSpringGreen)) {
+            brush = (this.sBrushes.getValue(KnownColor.MediumSpringGreen));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.MediumSpringGreen);
+        }
+        return brush;
+    }
+    /**
+     * Gets the MediumTurquoise default brush.
+     * @public
+     */
+    static get MediumTurquoise() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.MediumTurquoise)) {
+            brush = (this.sBrushes.getValue(KnownColor.MediumTurquoise));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.MediumTurquoise);
+        }
+        return brush;
+    }
+    /**
+     * Gets the MediumVioletRed default brush.
+     * @public
+     */
+    static get MediumVioletRed() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.MediumVioletRed)) {
+            brush = (this.sBrushes.getValue(KnownColor.MediumVioletRed));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.MediumVioletRed);
+        }
+        return brush;
+    }
+    /**
+     * Gets the MidnightBlue default brush.
+     * @public
+     */
+    static get MidnightBlue() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.MidnightBlue)) {
+            brush = (this.sBrushes.getValue(KnownColor.MidnightBlue));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.MidnightBlue);
+        }
+        return brush;
+    }
+    /**
+     * Gets the MintCream default brush.
+     * @public
+     */
+    static get MintCream() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.MintCream)) {
+            brush = (this.sBrushes.getValue(KnownColor.MintCream));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.MintCream);
+        }
+        return brush;
+    }
+    /**
+     * Gets the MistyRose default brush.
+     * @public
+     */
+    static get MistyRose() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.MistyRose)) {
+            brush = (this.sBrushes.getValue(KnownColor.MistyRose));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.MistyRose);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Moccasin default brush.
+     * @public
+     */
+    static get Moccasin() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Moccasin)) {
+            brush = (this.sBrushes.getValue(KnownColor.Moccasin));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Moccasin);
+        }
+        return brush;
+    }
+    /**
+     * Gets the NavajoWhite default brush.
+     * @public
+     */
+    static get NavajoWhite() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.NavajoWhite)) {
+            brush = (this.sBrushes.getValue(KnownColor.NavajoWhite));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.NavajoWhite);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Navy default brush.
+     * @public
+     */
+    static get Navy() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Navy)) {
+            brush = (this.sBrushes.getValue(KnownColor.Navy));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Navy);
+        }
+        return brush;
+    }
+    /**
+     * Gets the OldLace default brush.
+     * @public
+     */
+    static get OldLace() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.OldLace)) {
+            brush = (this.sBrushes.getValue(KnownColor.OldLace));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.OldLace);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Olive default brush.
+     * @public
+     */
+    static get Olive() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Olive)) {
+            brush = (this.sBrushes.getValue(KnownColor.Olive));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Olive);
+        }
+        return brush;
+    }
+    /**
+     * Gets the OliveDrab default brush.
+     * @public
+     */
+    static get OliveDrab() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.OliveDrab)) {
+            brush = (this.sBrushes.getValue(KnownColor.OliveDrab));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.OliveDrab);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Orange default brush.
+     * @public
+     */
+    static get Orange() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Orange)) {
+            brush = (this.sBrushes.getValue(KnownColor.Orange));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Orange);
+        }
+        return brush;
+    }
+    /**
+     * Gets the OrangeRed default brush.
+     * @public
+     */
+    static get OrangeRed() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.OrangeRed)) {
+            brush = (this.sBrushes.getValue(KnownColor.OrangeRed));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.OrangeRed);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Orchid default brush.
+     * @public
+     */
+    static get Orchid() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Orchid)) {
+            brush = (this.sBrushes.getValue(KnownColor.Orchid));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Orchid);
+        }
+        return brush;
+    }
+    /**
+     * Gets the PaleGoldenrod default brush.
+     * @public
+     */
+    static get PaleGoldenrod() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.PaleGoldenrod)) {
+            brush = (this.sBrushes.getValue(KnownColor.PaleGoldenrod));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.PaleGoldenrod);
+        }
+        return brush;
+    }
+    /**
+     * Gets the PaleGreen default brush.
+     * @public
+     */
+    static get PaleGreen() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.PaleGreen)) {
+            brush = (this.sBrushes.getValue(KnownColor.PaleGreen));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.PaleGreen);
+        }
+        return brush;
+    }
+    /**
+     * Gets the PaleTurquoise default brush.
+     * @public
+     */
+    static get PaleTurquoise() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.PaleTurquoise)) {
+            brush = (this.sBrushes.getValue(KnownColor.PaleTurquoise));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.PaleTurquoise);
+        }
+        return brush;
+    }
+    /**
+     * Gets the PaleVioletRed default brush.
+     * @public
+     */
+    static get PaleVioletRed() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.PaleVioletRed)) {
+            brush = (this.sBrushes.getValue(KnownColor.PaleVioletRed));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.PaleVioletRed);
+        }
+        return brush;
+    }
+    /**
+     * Gets the PapayaWhip default brush.
+     * @public
+     */
+    static get PapayaWhip() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.PapayaWhip)) {
+            brush = (this.sBrushes.getValue(KnownColor.PapayaWhip));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.PapayaWhip);
+        }
+        return brush;
+    }
+    /**
+     * Gets the PeachPuff default brush.
+     * @public
+     */
+    static get PeachPuff() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.PeachPuff)) {
+            brush = (this.sBrushes.getValue(KnownColor.PeachPuff));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.PeachPuff);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Peru default brush.
+     * @public
+     */
+    static get Peru() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Peru)) {
+            brush = (this.sBrushes.getValue(KnownColor.Peru));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Peru);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Pink default brush.
+     * @public
+     */
+    static get Pink() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Pink)) {
+            brush = (this.sBrushes.getValue(KnownColor.Pink));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Pink);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Plum default brush.
+     * @public
+     */
+    static get Plum() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Plum)) {
+            brush = (this.sBrushes.getValue(KnownColor.Plum));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Plum);
+        }
+        return brush;
+    }
+    /**
+     * Gets the PowderBlue default brush.
+     * @public
+     */
+    static get PowderBlue() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.PowderBlue)) {
+            brush = (this.sBrushes.getValue(KnownColor.PowderBlue));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.PowderBlue);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Purple default brush.
+     * @public
+     */
+    static get Purple() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Purple)) {
+            brush = (this.sBrushes.getValue(KnownColor.Purple));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Purple);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Red default brush.
+     * @public
+     */
+    static get Red() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Red)) {
+            brush = (this.sBrushes.getValue(KnownColor.Red));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Red);
+        }
+        return brush;
+    }
+    /**
+     * Gets the RosyBrown default brush.
+     * @public
+     */
+    static get RosyBrown() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.RosyBrown)) {
+            brush = (this.sBrushes.getValue(KnownColor.RosyBrown));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.RosyBrown);
+        }
+        return brush;
+    }
+    /**
+     * Gets the RoyalBlue default brush.
+     * @public
+     */
+    static get RoyalBlue() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.RoyalBlue)) {
+            brush = (this.sBrushes.getValue(KnownColor.RoyalBlue));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.RoyalBlue);
+        }
+        return brush;
+    }
+    /**
+     * Gets the SaddleBrown default brush.
+     * @public
+     */
+    static get SaddleBrown() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.SaddleBrown)) {
+            brush = (this.sBrushes.getValue(KnownColor.SaddleBrown));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.SaddleBrown);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Salmon default brush.
+     * @public
+     */
+    static get Salmon() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Salmon)) {
+            brush = (this.sBrushes.getValue(KnownColor.Salmon));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Salmon);
+        }
+        return brush;
+    }
+    /**
+     * Gets the SandyBrown default brush.
+     * @public
+     */
+    static get SandyBrown() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.SandyBrown)) {
+            brush = (this.sBrushes.getValue(KnownColor.SandyBrown));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.SandyBrown);
+        }
+        return brush;
+    }
+    /**
+     * Gets the SeaGreen default brush.
+     * @public
+     */
+    static get SeaGreen() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.SeaGreen)) {
+            brush = (this.sBrushes.getValue(KnownColor.SeaGreen));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.SeaGreen);
+        }
+        return brush;
+    }
+    /**
+     * Gets the SeaShell default brush.
+     * @public
+     */
+    static get SeaShell() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.SeaShell)) {
+            brush = (this.sBrushes.getValue(KnownColor.SeaShell));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.SeaShell);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Sienna default brush.
+     * @public
+     */
+    static get Sienna() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Sienna)) {
+            brush = (this.sBrushes.getValue(KnownColor.Sienna));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Sienna);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Silver default brush.
+     * @public
+     */
+    static get Silver() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Silver)) {
+            brush = (this.sBrushes.getValue(KnownColor.Silver));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Silver);
+        }
+        return brush;
+    }
+    /**
+     * Gets the SkyBlue default brush.
+     * @public
+     */
+    static get SkyBlue() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.SkyBlue)) {
+            brush = (this.sBrushes.getValue(KnownColor.SkyBlue));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.SkyBlue);
+        }
+        return brush;
+    }
+    /**
+     * Gets the SlateBlue default brush.
+     * @public
+     */
+    static get SlateBlue() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.SlateBlue)) {
+            brush = (this.sBrushes.getValue(KnownColor.SlateBlue));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.SlateBlue);
+        }
+        return brush;
+    }
+    /**
+     * Gets the SlateGray default brush.
+     * @public
+     */
+    static get SlateGray() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.SlateGray)) {
+            brush = (this.sBrushes.getValue(KnownColor.SlateGray));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.SlateGray);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Snow default brush.
+     * @public
+     */
+    static get Snow() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Snow)) {
+            brush = (this.sBrushes.getValue(KnownColor.Snow));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Snow);
+        }
+        return brush;
+    }
+    /**
+     * Gets the SpringGreen default brush.
+     * @public
+     */
+    static get SpringGreen() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.SpringGreen)) {
+            brush = (this.sBrushes.getValue(KnownColor.SpringGreen));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.SpringGreen);
+        }
+        return brush;
+    }
+    /**
+     * Gets the SteelBlue default brush.
+     * @public
+     */
+    static get SteelBlue() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.SteelBlue)) {
+            brush = (this.sBrushes.getValue(KnownColor.SteelBlue));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.SteelBlue);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Tan default brush.
+     * @public
+     */
+    static get Tan() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Tan)) {
+            brush = (this.sBrushes.getValue(KnownColor.Tan));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Tan);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Teal default brush.
+     * @public
+     */
+    static get Teal() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Teal)) {
+            brush = (this.sBrushes.getValue(KnownColor.Teal));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Teal);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Thistle default brush.
+     * @public
+     */
+    static get Thistle() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Thistle)) {
+            brush = (this.sBrushes.getValue(KnownColor.Thistle));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Thistle);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Tomato default brush.
+     * @public
+     */
+    static get Tomato() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Tomato)) {
+            brush = (this.sBrushes.getValue(KnownColor.Tomato));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Tomato);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Transparent default brush.
+     * @public
+     */
+    static get Transparent() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Transparent)) {
+            brush = (this.sBrushes.getValue(KnownColor.Transparent));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Transparent);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Turquoise default brush.
+     * @public
+     */
+    static get Turquoise() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Turquoise)) {
+            brush = (this.sBrushes.getValue(KnownColor.Turquoise));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Turquoise);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Violet default brush.
+     * @public
+     */
+    static get Violet() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Violet)) {
+            brush = (this.sBrushes.getValue(KnownColor.Violet));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Violet);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Wheat default brush.
+     * @public
+     */
+    static get Wheat() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Wheat)) {
+            brush = (this.sBrushes.getValue(KnownColor.Wheat));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Wheat);
+        }
+        return brush;
+    }
+    /**
+     * Gets the White default brush.
+     * @public
+     */
+    static get White() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.White)) {
+            brush = (this.sBrushes.getValue(KnownColor.White));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.White);
+        }
+        return brush;
+    }
+    /**
+     * Gets the WhiteSmoke default brush.
+     * @public
+     */
+    static get WhiteSmoke() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.WhiteSmoke)) {
+            brush = (this.sBrushes.getValue(KnownColor.WhiteSmoke));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.WhiteSmoke);
+        }
+        return brush;
+    }
+    /**
+     * Gets the Yellow default brush.
+     * @public
+     */
+    static get Yellow() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.Yellow)) {
+            brush = (this.sBrushes.getValue(KnownColor.Yellow));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.Yellow);
+        }
+        return brush;
+    }
+    /**
+     * Gets the YellowGreen default brush.
+     * @public
+     */
+    static get YellowGreen() {
+        let brush = null;
+        if (this.sBrushes.containsKey(KnownColor.YellowGreen)) {
+            brush = (this.sBrushes.getValue(KnownColor.YellowGreen));
+        }
+        if ((brush == null)) {
+            brush = this.getBrush(KnownColor.YellowGreen);
+        }
+        return brush;
+    }
+    /**
+     * Get the brush.
+     */
+    static getBrush(colorName) {
+        let pdfColor = this.getColorValue(colorName);
+        let brush = new PdfSolidBrush(pdfColor);
+        this.sBrushes.setValue(colorName, brush);
+        return brush;
+    }
+    /**
+     * Get the color value.
+     * @param colorName The KnownColor name.
+     */
     /* tslint:disable */
-    constructor(arg1, arg2, arg3, arg4, arg5) {
-        if (arg1 instanceof RectangleF && typeof arg2 === 'undefined') {
-            this.InitiateBounds(arg1.x, arg1.y, arg1.width, arg1.height, null);
+    static getColorValue(colorName) {
+        let color = new PdfColor();
+        switch (colorName) {
+            case KnownColor.Transparent:
+                color = new PdfColor(0, 255, 255, 255);
+                break;
+            case KnownColor.AliceBlue:
+                color = new PdfColor(255, 240, 248, 255);
+                break;
+            case KnownColor.AntiqueWhite:
+                color = new PdfColor(255, 250, 235, 215);
+                break;
+            case KnownColor.Aqua:
+                color = new PdfColor(255, 0, 255, 255);
+                break;
+            case KnownColor.Aquamarine:
+                color = new PdfColor(255, 127, 255, 212);
+                break;
+            case KnownColor.Azure:
+                color = new PdfColor(255, 240, 255, 255);
+                break;
+            case KnownColor.Beige:
+                color = new PdfColor(255, 245, 245, 220);
+                break;
+            case KnownColor.Bisque:
+                color = new PdfColor(255, 255, 228, 196);
+                break;
+            case KnownColor.Black:
+                color = new PdfColor(255, 0, 0, 0);
+                break;
+            case KnownColor.BlanchedAlmond:
+                color = new PdfColor(255, 255, 235, 205);
+                break;
+            case KnownColor.Blue:
+                color = new PdfColor(255, 0, 0, 255);
+                break;
+            case KnownColor.BlueViolet:
+                color = new PdfColor(255, 138, 43, 226);
+                break;
+            case KnownColor.Brown:
+                color = new PdfColor(255, 165, 42, 42);
+                break;
+            case KnownColor.BurlyWood:
+                color = new PdfColor(255, 222, 184, 135);
+                break;
+            case KnownColor.CadetBlue:
+                color = new PdfColor(255, 95, 158, 160);
+                break;
+            case KnownColor.Chartreuse:
+                color = new PdfColor(255, 127, 255, 0);
+                break;
+            case KnownColor.Chocolate:
+                color = new PdfColor(255, 210, 105, 30);
+                break;
+            case KnownColor.Coral:
+                color = new PdfColor(255, 255, 127, 80);
+                break;
+            case KnownColor.CornflowerBlue:
+                color = new PdfColor(255, 100, 149, 237);
+                break;
+            case KnownColor.Cornsilk:
+                color = new PdfColor(255, 255, 248, 220);
+                break;
+            case KnownColor.Crimson:
+                color = new PdfColor(255, 220, 20, 60);
+                break;
+            case KnownColor.Cyan:
+                color = new PdfColor(255, 0, 255, 255);
+                break;
+            case KnownColor.DarkBlue:
+                color = new PdfColor(255, 0, 0, 139);
+                break;
+            case KnownColor.DarkCyan:
+                color = new PdfColor(255, 0, 139, 139);
+                break;
+            case KnownColor.DarkGoldenrod:
+                color = new PdfColor(255, 184, 134, 11);
+                break;
+            case KnownColor.DarkGray:
+                color = new PdfColor(255, 169, 169, 169);
+                break;
+            case KnownColor.DarkGreen:
+                color = new PdfColor(255, 0, 100, 0);
+                break;
+            case KnownColor.DarkKhaki:
+                color = new PdfColor(255, 189, 183, 107);
+                break;
+            case KnownColor.DarkMagenta:
+                color = new PdfColor(255, 139, 0, 139);
+                break;
+            case KnownColor.DarkOliveGreen:
+                color = new PdfColor(255, 85, 107, 47);
+                break;
+            case KnownColor.DarkOrange:
+                color = new PdfColor(255, 255, 140, 0);
+                break;
+            case KnownColor.DarkOrchid:
+                color = new PdfColor(255, 153, 50, 204);
+                break;
+            case KnownColor.DarkRed:
+                color = new PdfColor(255, 139, 0, 0);
+                break;
+            case KnownColor.DarkSalmon:
+                color = new PdfColor(255, 233, 150, 122);
+                break;
+            case KnownColor.DarkSeaGreen:
+                color = new PdfColor(255, 143, 188, 139);
+                break;
+            case KnownColor.DarkSlateBlue:
+                color = new PdfColor(255, 72, 61, 139);
+                break;
+            case KnownColor.DarkSlateGray:
+                color = new PdfColor(255, 47, 79, 79);
+                break;
+            case KnownColor.DarkTurquoise:
+                color = new PdfColor(255, 0, 206, 209);
+                break;
+            case KnownColor.DarkViolet:
+                color = new PdfColor(255, 148, 0, 211);
+                break;
+            case KnownColor.DeepPink:
+                color = new PdfColor(255, 255, 20, 147);
+                break;
+            case KnownColor.DeepSkyBlue:
+                color = new PdfColor(255, 0, 191, 255);
+                break;
+            case KnownColor.DimGray:
+                color = new PdfColor(255, 105, 105, 105);
+                break;
+            case KnownColor.DodgerBlue:
+                color = new PdfColor(255, 30, 144, 255);
+                break;
+            case KnownColor.Firebrick:
+                color = new PdfColor(255, 178, 34, 34);
+                break;
+            case KnownColor.FloralWhite:
+                color = new PdfColor(255, 255, 250, 240);
+                break;
+            case KnownColor.ForestGreen:
+                color = new PdfColor(255, 34, 139, 34);
+                break;
+            case KnownColor.Fuchsia:
+                color = new PdfColor(255, 255, 0, 255);
+                break;
+            case KnownColor.Gainsboro:
+                color = new PdfColor(255, 220, 220, 220);
+                break;
+            case KnownColor.GhostWhite:
+                color = new PdfColor(255, 248, 248, 255);
+                break;
+            case KnownColor.Gold:
+                color = new PdfColor(255, 255, 215, 0);
+                break;
+            case KnownColor.Goldenrod:
+                color = new PdfColor(255, 218, 165, 32);
+                break;
+            case KnownColor.Gray:
+                color = new PdfColor(255, 128, 128, 128);
+                break;
+            case KnownColor.Green:
+                color = new PdfColor(255, 0, 128, 0);
+                break;
+            case KnownColor.GreenYellow:
+                color = new PdfColor(255, 173, 255, 47);
+                break;
+            case KnownColor.Honeydew:
+                color = new PdfColor(255, 240, 255, 240);
+                break;
+            case KnownColor.HotPink:
+                color = new PdfColor(255, 255, 105, 180);
+                break;
+            case KnownColor.IndianRed:
+                color = new PdfColor(255, 205, 92, 92);
+                break;
+            case KnownColor.Indigo:
+                color = new PdfColor(255, 75, 0, 130);
+                break;
+            case KnownColor.Ivory:
+                color = new PdfColor(255, 255, 255, 240);
+                break;
+            case KnownColor.Khaki:
+                color = new PdfColor(255, 240, 230, 140);
+                break;
+            case KnownColor.Lavender:
+                color = new PdfColor(255, 230, 230, 250);
+                break;
+            case KnownColor.LavenderBlush:
+                color = new PdfColor(255, 255, 240, 245);
+                break;
+            case KnownColor.LawnGreen:
+                color = new PdfColor(255, 124, 252, 0);
+                break;
+            case KnownColor.LemonChiffon:
+                color = new PdfColor(255, 255, 250, 205);
+                break;
+            case KnownColor.LightBlue:
+                color = new PdfColor(255, 173, 216, 230);
+                break;
+            case KnownColor.LightCoral:
+                color = new PdfColor(255, 240, 128, 128);
+                break;
+            case KnownColor.LightCyan:
+                color = new PdfColor(255, 224, 255, 255);
+                break;
+            case KnownColor.LightGoldenrodYellow:
+                color = new PdfColor(255, 250, 250, 210);
+                break;
+            case KnownColor.LightGreen:
+                color = new PdfColor(255, 144, 238, 144);
+                break;
+            case KnownColor.LightGray:
+                color = new PdfColor(255, 211, 211, 211);
+                break;
+            case KnownColor.LightPink:
+                color = new PdfColor(255, 255, 182, 193);
+                break;
+            case KnownColor.LightSalmon:
+                color = new PdfColor(255, 255, 160, 122);
+                break;
+            case KnownColor.LightSeaGreen:
+                color = new PdfColor(255, 32, 178, 170);
+                break;
+            case KnownColor.LightSkyBlue:
+                color = new PdfColor(255, 135, 206, 250);
+                break;
+            case KnownColor.LightSlateGray:
+                color = new PdfColor(255, 119, 136, 153);
+                break;
+            case KnownColor.LightSteelBlue:
+                color = new PdfColor(255, 176, 196, 222);
+                break;
+            case KnownColor.LightYellow:
+                color = new PdfColor(255, 255, 255, 224);
+                break;
+            case KnownColor.Lime:
+                color = new PdfColor(255, 0, 255, 0);
+                break;
+            case KnownColor.LimeGreen:
+                color = new PdfColor(255, 50, 205, 50);
+                break;
+            case KnownColor.Linen:
+                color = new PdfColor(255, 250, 240, 230);
+                break;
+            case KnownColor.Magenta:
+                color = new PdfColor(255, 255, 0, 255);
+                break;
+            case KnownColor.Maroon:
+                color = new PdfColor(255, 128, 0, 0);
+                break;
+            case KnownColor.MediumAquamarine:
+                color = new PdfColor(255, 102, 205, 170);
+                break;
+            case KnownColor.MediumBlue:
+                color = new PdfColor(255, 0, 0, 205);
+                break;
+            case KnownColor.MediumOrchid:
+                color = new PdfColor(255, 186, 85, 211);
+                break;
+            case KnownColor.MediumPurple:
+                color = new PdfColor(255, 147, 112, 219);
+                break;
+            case KnownColor.MediumSeaGreen:
+                color = new PdfColor(255, 60, 179, 113);
+                break;
+            case KnownColor.MediumSlateBlue:
+                color = new PdfColor(255, 123, 104, 238);
+                break;
+            case KnownColor.MediumSpringGreen:
+                color = new PdfColor(255, 0, 250, 154);
+                break;
+            case KnownColor.MediumTurquoise:
+                color = new PdfColor(255, 72, 209, 204);
+                break;
+            case KnownColor.MediumVioletRed:
+                color = new PdfColor(255, 199, 21, 133);
+                break;
+            case KnownColor.MidnightBlue:
+                color = new PdfColor(255, 25, 25, 112);
+                break;
+            case KnownColor.MintCream:
+                color = new PdfColor(255, 245, 255, 250);
+                break;
+            case KnownColor.MistyRose:
+                color = new PdfColor(255, 255, 228, 225);
+                break;
+            case KnownColor.Moccasin:
+                color = new PdfColor(255, 255, 228, 181);
+                break;
+            case KnownColor.NavajoWhite:
+                color = new PdfColor(255, 255, 222, 173);
+                break;
+            case KnownColor.Navy:
+                color = new PdfColor(255, 0, 0, 128);
+                break;
+            case KnownColor.OldLace:
+                color = new PdfColor(255, 253, 245, 230);
+                break;
+            case KnownColor.Olive:
+                color = new PdfColor(255, 128, 128, 0);
+                break;
+            case KnownColor.OliveDrab:
+                color = new PdfColor(255, 107, 142, 35);
+                break;
+            case KnownColor.Orange:
+                color = new PdfColor(255, 255, 165, 0);
+                break;
+            case KnownColor.OrangeRed:
+                color = new PdfColor(255, 255, 69, 0);
+                break;
+            case KnownColor.Orchid:
+                color = new PdfColor(255, 218, 112, 214);
+                break;
+            case KnownColor.PaleGoldenrod:
+                color = new PdfColor(255, 238, 232, 170);
+                break;
+            case KnownColor.PaleGreen:
+                color = new PdfColor(255, 152, 251, 152);
+                break;
+            case KnownColor.PaleTurquoise:
+                color = new PdfColor(255, 175, 238, 238);
+                break;
+            case KnownColor.PaleVioletRed:
+                color = new PdfColor(255, 219, 112, 147);
+                break;
+            case KnownColor.PapayaWhip:
+                color = new PdfColor(255, 255, 239, 213);
+                break;
+            case KnownColor.PeachPuff:
+                color = new PdfColor(255, 255, 218, 185);
+                break;
+            case KnownColor.Peru:
+                color = new PdfColor(255, 205, 133, 63);
+                break;
+            case KnownColor.Pink:
+                color = new PdfColor(255, 255, 192, 203);
+                break;
+            case KnownColor.Plum:
+                color = new PdfColor(255, 221, 160, 221);
+                break;
+            case KnownColor.PowderBlue:
+                color = new PdfColor(255, 176, 224, 230);
+                break;
+            case KnownColor.Purple:
+                color = new PdfColor(255, 128, 0, 128);
+                break;
+            case KnownColor.Red:
+                color = new PdfColor(255, 255, 0, 0);
+                break;
+            case KnownColor.RosyBrown:
+                color = new PdfColor(255, 188, 143, 143);
+                break;
+            case KnownColor.RoyalBlue:
+                color = new PdfColor(255, 65, 105, 225);
+                break;
+            case KnownColor.SaddleBrown:
+                color = new PdfColor(255, 139, 69, 19);
+                break;
+            case KnownColor.Salmon:
+                color = new PdfColor(255, 250, 128, 114);
+                break;
+            case KnownColor.SandyBrown:
+                color = new PdfColor(255, 244, 164, 96);
+                break;
+            case KnownColor.SeaGreen:
+                color = new PdfColor(255, 46, 139, 87);
+                break;
+            case KnownColor.SeaShell:
+                color = new PdfColor(255, 255, 245, 238);
+                break;
+            case KnownColor.Sienna:
+                color = new PdfColor(255, 160, 82, 45);
+                break;
+            case KnownColor.Silver:
+                color = new PdfColor(255, 192, 192, 192);
+                break;
+            case KnownColor.SkyBlue:
+                color = new PdfColor(255, 135, 206, 235);
+                break;
+            case KnownColor.SlateBlue:
+                color = new PdfColor(255, 106, 90, 205);
+                break;
+            case KnownColor.SlateGray:
+                color = new PdfColor(255, 112, 128, 144);
+                break;
+            case KnownColor.Snow:
+                color = new PdfColor(255, 255, 250, 250);
+                break;
+            case KnownColor.SpringGreen:
+                color = new PdfColor(255, 0, 255, 127);
+                break;
+            case KnownColor.SteelBlue:
+                color = new PdfColor(255, 70, 130, 180);
+                break;
+            case KnownColor.Tan:
+                color = new PdfColor(255, 210, 180, 140);
+                break;
+            case KnownColor.Teal:
+                color = new PdfColor(255, 0, 128, 128);
+                break;
+            case KnownColor.Thistle:
+                color = new PdfColor(255, 216, 191, 216);
+                break;
+            case KnownColor.Tomato:
+                color = new PdfColor(255, 255, 99, 71);
+                break;
+            case KnownColor.Turquoise:
+                color = new PdfColor(255, 64, 224, 208);
+                break;
+            case KnownColor.Violet:
+                color = new PdfColor(255, 238, 130, 238);
+                break;
+            case KnownColor.Wheat:
+                color = new PdfColor(255, 245, 222, 179);
+                break;
+            case KnownColor.White:
+                color = new PdfColor(255, 255, 255, 255);
+                break;
+            case KnownColor.WhiteSmoke:
+                color = new PdfColor(255, 245, 245, 245);
+                break;
+            case KnownColor.Yellow:
+                color = new PdfColor(255, 255, 255, 0);
+                break;
+            case KnownColor.YellowGreen:
+                color = new PdfColor(255, 154, 205, 50);
+                break;
         }
-        else if (arg1 instanceof RectangleF && arg2 instanceof PdfPage && typeof arg3 === 'undefined') {
-            this.InitiateBounds(arg1.x, arg1.y, arg1.width, arg1.height, arg2);
+        return color;
+    }
+}
+//Static Fields
+/**
+ * Local variable to store the brushes.
+ */
+PdfBrushes.sBrushes = new Dictionary();
+
+/**
+ * PdfBlend.ts class for EJ2-PDF
+ */
+/**
+ * `PdfBlend` Represents the blend color space
+ * @private
+ */
+class PdfBlend {
+    constructor(count) {
+        //Constants
+        /**
+         * precision of the GCD calculations.
+         * @private
+         */
+        this.precision = 1000;
+        //
+    }
+    //Properties
+    /**
+     * Gets or sets the array of factor to the blend.
+     * @public
+     */
+    get factors() {
+        return this.mFactors;
+    }
+    set factors(value) {
+        if ((value == null)) {
+            throw new Error('ArgumentNullException : Factors');
         }
-        else if (arg1 instanceof PointF && arg2 instanceof SizeF && typeof arg3 === 'undefined') {
-            this.InitiateBounds(arg1.x, arg1.y, arg2.width, arg2.height, null);
+        this.mFactors = value;
+    }
+    /**
+     * 'positions' Gets or sets the array of positions
+     * @public
+     */
+    get positions() {
+        return this.mPositions;
+    }
+    set positions(value) {
+        let positionarray = value;
+        for (let i = 0; i < positionarray.length; i++) {
+            if (((positionarray[i] < 0) || (positionarray[i] > 1))) {
+                positionarray[i] = 0;
+            }
         }
-        else if (arg1 instanceof PointF && arg2 instanceof SizeF && arg3 instanceof PdfPage && typeof arg4 === 'undefined') {
-            this.InitiateBounds(arg1.x, arg1.y, arg2.width, arg2.height, arg3);
+        this.mPositions = positionarray;
+        this.mPositions = value;
+    }
+    /**
+     * Gets the number of elements that specify the blend.
+     * @protected
+     */
+    get count() {
+        return this.mCount;
+    }
+    //Implementation
+    /**
+     * Generates a correct color blend.
+     * @param colours The colours.
+     * @param colorSpace The color space.
+     */
+    generateColorBlend(colours, colorSpace) {
+        if ((colours == null)) {
+            throw new Error('ArgumentNullException : colours');
         }
-        else if (arg1 instanceof SizeF && typeof arg2 === 'undefined') {
-            this.InitiateBounds(0, 0, arg1.width, arg1.height, null);
+        if ((this.positions == null)) {
+            this.positions = [0];
         }
-        else if (typeof arg1 === 'number' && typeof arg2 === 'number' && typeof arg3 === 'undefined') {
-            this.InitiateBounds(0, 0, arg1, arg2, null);
-        }
-        else if (typeof arg1 === 'number' && typeof arg2 === 'number' && arg3 instanceof PdfPage && typeof arg4 === 'undefined') {
-            this.InitiateBounds(0, 0, arg1, arg2, arg3);
-        }
-        else if (typeof arg1 === 'number' && typeof arg2 === 'number' && typeof arg3 === 'number' && typeof arg4 === 'number' && typeof arg5 === 'undefined') {
-            this.InitiateBounds(arg1, arg2, arg3, arg4, null);
+        let cBlend = new PdfColorBlend(this.count);
+        let positions = this.positions;
+        let clrs = null;
+        if ((positions.length === 1)) {
+            positions = [3];
+            positions[0] = 0;
+            positions[1] = this.positions[0];
+            positions[2] = 1;
+            /* tslint:disable */
+            clrs = new Array(3);
+            clrs[0] = colours[0];
+            clrs[1] = colours[0];
+            clrs[2] = colours[1];
         }
         else {
-            this.InitiateBounds(arg1, arg2, arg3, arg4, null);
-            // this.graphics.colorSpace = this.page.document.colorSpace;
+            let c1 = colours[0];
+            let c2 = colours[1];
+            /* tslint:disable */
+            clrs = new Array(this.count);
+            let i = 0;
+            let count = this.count;
+            for (i = 0; i < count; ++i) {
+                clrs[i] = this.interpolate(this.mFactors[i], c1, c2, colorSpace);
+            }
         }
-        /* tslint:enable */
+        cBlend.positions = positions;
+        cBlend.colors = clrs;
+        return cBlend;
     }
     /**
-     * `Initialize Bounds` Initialize the bounds value of the template.
-     * @private
+     * 'clonePdfBlend' Clones this instance.
+     * @public
      */
-    InitiateBounds(arg1, arg2, arg3, arg4, arg5) {
-        this.x = arg1;
-        this.y = arg2;
-        this.pdfTemplate = new PdfTemplate(arg3, arg4);
-        // this.graphics.colorSpace = this.page.document.colorSpace;
+    clonePdfBlend() {
+        let blend = this;
+        if ((this.mFactors != null)) {
+            blend.factors = (this.mFactors);
+        }
+        if ((this.positions != null)) {
+            blend.positions = (this.positions);
+        }
+        return blend;
+    }
+    gcd(u, v) {
+        if (typeof u === 'number' && typeof v === 'number' && typeof v !== 'undefined') {
+            if (((u < 0) || (u > 1))) {
+                throw new Error('ArgumentOutOfRangeException : u');
+            }
+            if (((v < 0) || (v > 1))) {
+                throw new Error('ArgumentOutOfRangeException : v');
+            }
+            let iU = (Math.max(1, (u * this.precision)));
+            let iV = (Math.max(1, (v * this.precision)));
+            let iResult = this.gcdInt(iU, iV);
+            let result = ((iResult) / this.precision);
+            return result;
+        }
+        else {
+            let values = u;
+            if ((values == null)) {
+                throw new Error('ArgumentNullException : values');
+            }
+            if ((values.length < 1)) {
+                throw new Error('ArgumentException : Not enough values in the array. - values');
+            }
+            let gcd = values[0];
+            if ((values.length > 1)) {
+                let count = values.length;
+                for (let i = 1; i < count; ++i) {
+                    gcd = this.gcd(values[i], gcd);
+                    if ((gcd === (1 / this.precision))) {
+                        break;
+                    }
+                }
+            }
+            return gcd;
+        }
     }
     /**
-     * `Updates Dock` property if template is used as header/footer.
-     * @private
+     * Calculate the GCD int of the specified values.
+     * @param u The u.
+     * @param v The v.
      */
-    updateDocking(type) {
-        if (type !== TemplateType.None) {
-            switch (type) {
-                case TemplateType.Top:
-                    this.dock = PdfDockStyle.Top;
+    gcdInt(u, v) {
+        if ((u <= 0)) {
+            throw new Error('ArgumentOutOfRangeException' + u + 'The arguments cannot be less or equal to zero.');
+        }
+        if ((v <= 0)) {
+            throw new Error('ArgumentOutOfRangeException' + v + 'The arguments cannot be less or equal to zero.');
+        }
+        if (((u === 1) || (v === 1))) {
+            return 1;
+        }
+        let shift = 0;
+        while (this.isEven(u, v)) {
+            ++shift;
+            u >>= 1;
+            v >>= 1;
+        }
+        while (((u & 1) <= 0)) {
+            u >>= 1;
+        }
+        do {
+            while ((v & 1) <= 0) {
+                v >>= 1;
+            }
+            if (u > v) {
+                let t = v;
+                v = u;
+                u = t;
+            }
+            v = v - u;
+        } while (v !== 0);
+        return (u << shift);
+    }
+    isEven(arg1, arg2) {
+        if (typeof arg2 === 'number' && typeof arg2 !== 'undefined') {
+            let result = true;
+            result = (result && ((arg1 & 1) <= 0)); //  Is u even?
+            result = (result && ((arg2 & 1) <= 0)); //  Is v even?
+            return result;
+        }
+        else {
+            return ((arg1 & 1) <= 0);
+        }
+    }
+    interpolate(t, color1, color2, colorSpace) {
+        if (color1 instanceof PdfColor) {
+            let color = new PdfColor();
+            switch (colorSpace) {
+                case PdfColorSpace.Rgb:
+                    let red = (this.interpolate(t, color1.red, color2.red));
+                    let green = (this.interpolate(t, color1.green, color2.green));
+                    let blue = (this.interpolate(t, color1.blue, color2.blue));
+                    color = new PdfColor(red, green, blue);
                     break;
-                case TemplateType.Bottom:
-                    this.dock = PdfDockStyle.Bottom;
+                case PdfColorSpace.GrayScale:
+                    let gray = (this.interpolate(t, color1.gray, color2.gray));
+                    color = new PdfColor(gray);
                     break;
-                case TemplateType.Left:
-                    this.dock = PdfDockStyle.Left;
-                    break;
-                case TemplateType.Right:
-                    this.dock = PdfDockStyle.Right;
+                case PdfColorSpace.Cmyk:
+                    let cyan = (this.interpolate(t, color1.c, color2.c));
+                    let magenta = (this.interpolate(t, color1.m, color2.m));
+                    let yellow = (this.interpolate(t, color1.y, color2.y));
+                    let black = (this.interpolate(t, color1.k, color2.k));
+                    color = new PdfColor(cyan, magenta, yellow, black);
                     break;
             }
-            this.resetAlignment();
-        }
-    }
-    /**
-     * `Resets alignment` of the template.
-     * @private
-     */
-    resetAlignment() {
-        this.alignment = PdfAlignmentStyle.None;
-    }
-    /**
-     * `Sets alignment` of the template.
-     * @private
-     */
-    setAlignment(alignment) {
-        if (this.dock === PdfDockStyle.None) {
-            this.alignmentStyle = alignment;
+            return color;
         }
         else {
-            // Template is docked and alignment has been changed.
-            let canBeSet = false;
-            switch (this.dock) {
-                case PdfDockStyle.Left:
-                    canBeSet = (alignment === PdfAlignmentStyle.TopLeft || alignment === PdfAlignmentStyle.MiddleLeft ||
-                        alignment === PdfAlignmentStyle.BottomLeft || alignment === PdfAlignmentStyle.None);
-                    break;
-                case PdfDockStyle.Top:
-                    canBeSet = (alignment === PdfAlignmentStyle.TopLeft || alignment === PdfAlignmentStyle.TopCenter ||
-                        alignment === PdfAlignmentStyle.TopRight || alignment === PdfAlignmentStyle.None);
-                    break;
-                case PdfDockStyle.Right:
-                    canBeSet = (alignment === PdfAlignmentStyle.TopRight || alignment === PdfAlignmentStyle.MiddleRight ||
-                        alignment === PdfAlignmentStyle.BottomRight || alignment === PdfAlignmentStyle.None);
-                    break;
-                case PdfDockStyle.Bottom:
-                    canBeSet = (alignment === PdfAlignmentStyle.BottomLeft || alignment === PdfAlignmentStyle.BottomCenter
-                        || alignment === PdfAlignmentStyle.BottomRight || alignment === PdfAlignmentStyle.None);
-                    break;
-                case PdfDockStyle.Fill:
-                    canBeSet = (alignment === PdfAlignmentStyle.MiddleCenter || alignment === PdfAlignmentStyle.None);
-                    break;
+            let t0 = 0;
+            let t1 = 1;
+            let result = 0;
+            if ((t === t0)) {
+                result = color1;
             }
-            if (canBeSet) {
-                this.alignmentStyle = alignment;
+            else if ((t === t1)) {
+                result = color2;
+            }
+            else {
+                result = (color1 + ((t - t0) * ((color2 - color1) / (t1 - t0))));
+            }
+            return result;
+        }
+    }
+}
+
+/**
+ * PdfColorBlend.ts class for EJ2-PDF
+ */
+/**
+ * `PdfColorBlend` Represents the arrays of colors and positions used for
+ *  interpolating color blending in a multicolor gradient.
+ * @private
+ */
+class PdfColorBlend extends PdfBlend {
+    constructor(count) {
+        super();
+        if (typeof count === 'number') {
+            super(count);
+        }
+    }
+    //Properties
+    /**
+     * Gets or sets the array of colors.
+     * @public
+     */
+    get colors() {
+        return this.mcolors;
+    }
+    set colors(value) {
+        if ((value == null)) {
+            throw new Error('ArgumentNullException : Colors');
+        }
+        this.mcolors = value;
+    }
+    //Implementation
+    /**
+     * Gets the function.
+     * @param colorSpace The color space.
+     * @public
+     */
+    getFunction(colorSpace) {
+        let domain = [0, 1];
+        let colourComponents = this.getColorComponentsCount(colorSpace);
+        let maxComponentValue = this.getMaxComponentValue(colorSpace);
+        let range = this.setRange(colourComponents, maxComponentValue);
+        let func = null;
+        if ((this.mbrush == null && typeof this.mbrush === 'undefined')) {
+            let sizes = [1];
+            let samplesCount;
+            let step = 1;
+            if (this.positions.length === 2) {
+                samplesCount = 2;
+            }
+            else {
+                let positions = this.positions;
+                let intervals = this.getIntervals(positions);
+                let gcd = this.gcd(intervals);
+                step = gcd;
+                samplesCount = (((1 / gcd)) + 1);
+            }
+            sizes[0] = samplesCount;
+            let samples = this.getSamplesValues(colorSpace, samplesCount, maxComponentValue, step);
+            func = new PdfSampledFunction(domain, range, sizes, samples);
+            return func;
+        }
+        return func;
+    }
+    /**
+     * 'cloneColorBlend' Clones this instance.
+     * @public
+     */
+    cloneColorBlend() {
+        let cBlend = this;
+        if ((this.mcolors != null && typeof this.mcolors !== 'undefined')) {
+            cBlend.colors = (this.mcolors);
+        }
+        if ((this.positions != null && typeof this.positions !== 'undefined')) {
+            cBlend.positions = (this.positions);
+        }
+        return cBlend;
+    }
+    /**
+     * Sets the range.
+     * @param colourComponents The colour components.
+     * @param maxValue The max value.
+     */
+    setRange(colourComponents, maxValue) {
+        let range = [(colourComponents * 2)];
+        for (let i = 0; (i < colourComponents); ++i) {
+            range[(i * 2)] = 0;
+            range[((i * 2) + 1)] = 1;
+        }
+        return range;
+    }
+    /**
+     * Calculates the color components count according to colour space.
+     * @param colorSpace The color space.
+     */
+    getColorComponentsCount(colorSpace) {
+        let count = 0;
+        switch (colorSpace) {
+            case PdfColorSpace.Rgb:
+                count = 3;
+                break;
+            case PdfColorSpace.Cmyk:
+                count = 4;
+                break;
+            case PdfColorSpace.GrayScale:
+                count = 1;
+                break;
+            default:
+                throw new Error('ArgumentException - Unsupported color space: ' + colorSpace + ' colorSpace');
+        }
+        return count;
+    }
+    /**
+     * Gets samples values for specified colour space.
+     * @param colorSpace The color space.
+     * @param sampleCount The sample count.
+     * @param maxComponentValue The max component value.
+     * @param step The step.
+     */
+    getSamplesValues(colorSpace, sampleCount, maxComponentValue, step) {
+        let values;
+        switch (colorSpace) {
+            case PdfColorSpace.GrayScale:
+                values = this.getGrayscaleSamples(sampleCount, maxComponentValue, step);
+                break;
+            case PdfColorSpace.Cmyk:
+                values = this.getCmykSamples(sampleCount, maxComponentValue, step);
+                break;
+            case PdfColorSpace.Rgb:
+                values = this.getRgbSamples(sampleCount, maxComponentValue, step);
+                break;
+            default:
+                throw new Error('ArgumentException - Unsupported color space: ' + colorSpace + ' colorSpace');
+        }
+        return values;
+    }
+    /**
+     * Gets the grayscale samples.
+     * @param sampleCount The sample count.
+     * @param maxComponentValue The max component value.
+     * @param step The step.
+     */
+    getGrayscaleSamples(sampleCount, maxComponentValue, step) {
+        let values = [(sampleCount * 2)];
+        for (let i = 0; (i < sampleCount); ++i) {
+            let color = this.getNextColor(i, step, PdfColorSpace.GrayScale);
+            
+        }
+        return values;
+    }
+    /**
+     * Gets the RGB samples.
+     * @param sampleCount The sample count.
+     * @param maxComponentValue The max component value.
+     * @param step The step.
+     */
+    getRgbSamples(sampleCount, maxComponentValue, step) {
+        let values = [(sampleCount * 3)];
+        for (let i = 0; (i < sampleCount); ++i) {
+            let color = this.getNextColor(i, step, PdfColorSpace.Rgb);
+            let index = (i * 3);
+            values[index] = color.r;
+            values[(index + 1)] = color.g;
+            values[(index + 2)] = color.b;
+        }
+        return values;
+    }
+    /**
+     * Gets the CMYK samples.
+     * @param sampleCount The sample count.
+     * @param maxComponentValue The max component value.
+     * @param step The step.
+     */
+    getCmykSamples(sampleCount, maxComponentValue, step) {
+        let values = [(sampleCount * 4)];
+        for (let i = 0; (i < sampleCount); i++) {
+            let color = this.getNextColor(i, step, PdfColorSpace.Cmyk);
+            let index = (i * 4);
+            values[index] = ((color.c * maxComponentValue));
+            values[(index + 1)] = ((color.m * maxComponentValue));
+            values[(index + 2)] = ((color.y * maxComponentValue));
+            values[(index + 3)] = ((color.k * maxComponentValue));
+        }
+        return values;
+    }
+    /**
+     * Calculates the color that should be at the specified index.
+     * @param index The index.
+     * @param step The step.
+     * @param colorSpace The color space.
+     */
+    getNextColor(index, step, colorSpace) {
+        let position = (step * index);
+        let indexHi;
+        let indexLow;
+        let result = this.getIndices(position, indexLow, indexHi);
+        indexLow = result.indexLow;
+        indexHi = result.indexHi;
+        let color;
+        if (indexLow === indexHi) {
+            color = this.mcolors[indexLow];
+        }
+        else {
+            let positionLow = this.positions[indexLow];
+            let positionHi = this.positions[indexHi];
+            let colorLow = this.mcolors[indexLow];
+            let colorHi = this.mcolors[indexHi];
+            let t = ((position - positionLow) / (positionHi - positionLow));
+            color = this.interpolate(t, colorLow, colorHi, colorSpace);
+        }
+        return color;
+    }
+    /**
+     * Gets the indices.
+     * @param position The position.
+     * @param indexLow The index low.
+     * @param indexHi The index hi.
+     */
+    getIndices(position, indexLow, indexHi) {
+        let positions = this.positions;
+        indexLow = 0;
+        indexHi = 0;
+        for (let i = 0; (i < this.mcolors.length); ++i) {
+            let currPos = positions[i];
+            if ((currPos === position)) {
+                indexHi = i;
+                indexLow = i;
+                break;
+            }
+            else if ((currPos > position)) {
+                indexHi = i;
+                break;
+            }
+            indexLow = i;
+            indexHi = i;
+        }
+        return { indexLow: indexLow, indexHi: indexHi };
+    }
+    /**
+     * Calculates the max component value.
+     * @param colorSpace The color space.
+     */
+    getMaxComponentValue(colorSpace) {
+        let result = 0;
+        switch (colorSpace) {
+            case PdfColorSpace.Cmyk:
+            case PdfColorSpace.Rgb:
+                result = 255;
+                break;
+            case PdfColorSpace.GrayScale:
+                result = 65535;
+                break;
+            default:
+                throw new Error('ArgumentException - Unsupported color space: ' + colorSpace + 'colorSpace');
+        }
+        return result;
+    }
+    /**
+     * Gets an intervals array from the positions array.
+     * @param positions The positions array.
+     */
+    getIntervals(positions) {
+        let count = positions.length;
+        let intervals = [(count - 1)];
+        let prev = positions[0];
+        for (let i = 1; (i < count); ++i) {
+            let v = positions[i];
+            intervals[(i - 1)] = (v - prev);
+            prev = v;
+        }
+        return intervals;
+    }
+}
+
+/**
+ * PdfLinearGradientBrush.ts class for EJ2-PDF
+ */
+/**
+ * `PdfLinearGradientBrush` Implements linear gradient brush by using PDF axial shading pattern.
+ * @private
+ */
+class PdfLinearGradientBrush extends PdfGradientBrush {
+    /**
+     * Initializes a new instance of the `PdfLinearGradientBrush` class.
+     * @public
+     */
+    /* tslint:disable-next-line:max-line-length */
+    constructor(arg1, arg2, arg3, arg4) {
+        super(new PdfDictionary());
+        /**
+         * Local variable to store the dictionary properties.
+         * @private
+         */
+        this.mDictionaryProperties = new DictionaryProperties();
+        if (arg1 instanceof PointF && arg2 instanceof PointF && arg3 instanceof PdfColor && arg4 instanceof PdfColor) {
+            this.initialize(arg3, arg4);
+            this.mPointStart = arg1;
+            this.mPointEnd = arg2;
+            this.setPoints(this.mPointStart, this.mPointEnd);
+        }
+        else if (arg1 instanceof Rectangle) {
+            this.initialize(arg2, arg3);
+            /* tslint:disable-next-line:max-line-length */
+            if ((arg4 === PdfLinearGradientMode.BackwardDiagonal || arg4 === PdfLinearGradientMode.ForwardDiagonal || arg4 === PdfLinearGradientMode.Horizontal || arg4 === PdfLinearGradientMode.Vertical)) {
+                this.mBoundaries = arg1;
+                switch (arg4) {
+                    case PdfLinearGradientMode.BackwardDiagonal:
+                        this.mPointStart = new PointF(arg1.right, arg1.top);
+                        this.mPointEnd = new PointF(arg1.left, arg1.bottom);
+                        break;
+                    case PdfLinearGradientMode.ForwardDiagonal:
+                        this.mPointStart = new PointF(arg1.left, arg1.top);
+                        this.mPointEnd = new PointF(arg1.right, arg1.bottom);
+                        break;
+                    case PdfLinearGradientMode.Horizontal:
+                        this.mPointStart = new PointF(arg1.left, arg1.top);
+                        this.mPointEnd = new PointF(arg1.right, arg1.top);
+                        break;
+                    case PdfLinearGradientMode.Vertical:
+                        this.mPointStart = new PointF(arg1.left, arg1.top);
+                        this.mPointEnd = new PointF(arg1.left, arg1.bottom);
+                        break;
+                    default:
+                        throw new Error('ArgumentException -- Unsupported linear gradient mode: ' + arg4 + ' mode');
+                }
+                this.setPoints(this.mPointStart, this.mPointEnd);
+            }
+            else if (typeof arg4 === 'number' && typeof arg4 !== 'undefined') {
+                this.mBoundaries = arg1;
+                arg4 = arg4 % 360;
+                if ((arg4 === 0)) {
+                    this.mPointStart = new PointF(arg1.left, arg1.top);
+                    this.mPointEnd = new PointF(arg1.right, arg1.top);
+                }
+                else if ((arg4 === 90)) {
+                    this.mPointStart = new PointF(arg1.left, arg1.top);
+                    this.mPointEnd = new PointF(arg1.left, arg1.bottom);
+                }
+                else if ((arg4 === 180)) {
+                    this.mPointEnd = new PointF(arg1.left, arg1.top);
+                    this.mPointStart = new PointF(arg1.right, arg1.top);
+                }
+                else if ((arg4 === 270)) {
+                    this.mPointEnd = new PointF(arg1.left, arg1.top);
+                    this.mPointStart = new PointF(arg1.left, arg1.bottom);
+                }
+                else {
+                    let d2r = (Math.PI / 180);
+                    let radAngle = (arg4 * d2r);
+                    let k = Math.tan(radAngle);
+                    let x = (this.mBoundaries.left
+                        + ((this.mBoundaries.right - this.mBoundaries.left) / 2));
+                    let y = (this.mBoundaries.top
+                        + ((this.mBoundaries.bottom - this.mBoundaries.top) / 2));
+                    let centre = new PointF(x, y);
+                    x = (this.mBoundaries.width / (2 * (Math.cos(radAngle))));
+                    y = ((k * x));
+                    x = (x + centre.x);
+                    y = (y + centre.y);
+                    let p1 = new PointF(x, y);
+                    let cp1 = this.subPoints(p1, centre);
+                    //  P1 - P0
+                    let p = this.choosePoint(arg4);
+                    let coef = (this.mulPoints(this.subPoints(p, centre), cp1)
+                        / this.mulPoints(cp1, cp1));
+                    this.mPointEnd = this.addPoints(centre, this.mulPoint(cp1, coef));
+                    //  Parametric line equation.
+                    this.mPointStart = this.addPoints(centre, this.mulPoint(cp1, (coef * -1)));
+                }
+                this.setPoints(this.mPointEnd, this.mPointStart);
             }
         }
     }
     /**
-     * Draws the template.
-     * @private
+     * Initializes a new instance of the `PdfLinearGradientBrush` class.
+     * @param color1 The starting color of the gradient.
+     * @param color2 The end color of the gradient.
      */
-    draw(layer, document) {
-        let page = layer.page;
-        let bounds = this.calculateBounds(page, document);
-        if (bounds.x === -0) {
-            bounds.x = 0;
+    initialize(color1, color2) {
+        this.mColours = [color1, color2];
+        this.mColourBlend = new PdfColorBlend(2);
+        this.mColourBlend.positions = [0, 1];
+        this.mColourBlend.colors = this.mColours;
+        this.initShading();
+    }
+    //Properties
+    /**
+     * Gets or sets a PdfBlend that specifies positions
+     * and factors that define a custom falloff for the gradient.
+     * @public
+     */
+    get blend() {
+        return this.mBlend;
+    }
+    set blend(value) {
+        if ((value == null)) {
+            throw new Error('ArgumentNullException : Blend');
         }
-        layer.graphics.drawPdfTemplate(this.template, new PointF(bounds.x, bounds.y), new SizeF(bounds.width, bounds.height));
+        if ((this.mColours == null)) {
+            throw new Error('NotSupportedException : There is no starting and ending colours specified.');
+        }
+        this.mBlend = value;
+        //  TODO: generate correct colour blend.
+        this.mColourBlend = this.mBlend.generateColorBlend(this.mColours, this.colorSpace);
+        this.resetFunction();
     }
     /**
-     * Calculates bounds of the page template.
-     * @private
+     * Gets or sets a ColorBlend that defines a multicolor linear gradient.
+     * @public
      */
-    calculateBounds(page, document) {
-        let result = this.bounds;
-        if (this.alignmentStyle !== PdfAlignmentStyle.None) {
-            result = this.getAlignmentBounds(page, document);
+    get interpolationColors() {
+        return this.mColourBlend;
+    }
+    set interpolationColors(value) {
+        if ((value == null)) {
+            throw new Error('ArgumentNullException : InterpolationColors');
         }
-        else if (this.dockStyle !== PdfDockStyle.None) {
-            result = this.getDockBounds(page, document);
-        }
-        return result;
+        this.mBlend = null;
+        this.mColours = null;
+        this.mColourBlend = value;
+        this.resetFunction();
     }
     /**
-     * Calculates bounds according to the alignment.
-     * @private
+     * Gets or sets the starting and ending colors of the gradient.
+     * @public
      */
-    getAlignmentBounds(page, document) {
-        let result = this.bounds;
-        if (this.type === TemplateType.None) {
-            result = this.getSimpleAlignmentBounds(page, document);
+    get linearColors() {
+        return this.mColours;
+    }
+    set linearColors(value) {
+        if ((value == null)) {
+            throw new Error('ArgumentNullException : LinearColors');
+        }
+        if ((value.length < 2)) {
+            throw new Error('ArgumentException : The array is too small - LinearColors');
+        }
+        if ((this.mColours == null && typeof this.mColours === 'undefined')) {
+            this.mColours = [value[0], value[1]];
         }
         else {
-            result = this.getTemplateAlignmentBounds(page, document);
+            this.mColours[0] = value[0];
+            this.mColours[1] = value[1];
         }
-        return result;
-    }
-    /**
-     * Calculates bounds according to the alignment.
-     * @private
-     */
-    getSimpleAlignmentBounds(page, document) {
-        let bounds = this.bounds;
-        let pdfSection = page.section;
-        let actualBounds = pdfSection.getActualBounds(document, page, false);
-        let x = this.x;
-        let y = this.y;
-        switch (this.alignmentStyle) {
-            case PdfAlignmentStyle.TopLeft:
-                x = 0;
-                y = 0;
-                break;
-            case PdfAlignmentStyle.TopCenter:
-                x = (actualBounds.width - this.width) / 2;
-                y = 0;
-                break;
-            case PdfAlignmentStyle.TopRight:
-                x = actualBounds.width - this.width;
-                y = 0;
-                break;
-            case PdfAlignmentStyle.MiddleLeft:
-                x = 0;
-                y = (actualBounds.height - this.height) / 2;
-                break;
-            case PdfAlignmentStyle.MiddleCenter:
-                x = (actualBounds.width - this.width) / 2;
-                y = (actualBounds.height - this.height) / 2;
-                break;
-            case PdfAlignmentStyle.MiddleRight:
-                x = actualBounds.width - this.width;
-                y = (actualBounds.height - this.height) / 2;
-                break;
-            case PdfAlignmentStyle.BottomLeft:
-                x = 0;
-                y = actualBounds.height - this.height;
-                break;
-            case PdfAlignmentStyle.BottomCenter:
-                x = (actualBounds.width - this.width) / 2;
-                y = actualBounds.height - this.height;
-                break;
-            case PdfAlignmentStyle.BottomRight:
-                x = actualBounds.width - this.width;
-                y = actualBounds.height - this.height;
-                break;
-        }
-        bounds.x = x;
-        bounds.y = y;
-        return bounds;
-    }
-    /**
-     * Calculates bounds according to the alignment.
-     * @private
-     */
-    getTemplateAlignmentBounds(page, document) {
-        let result = this.bounds;
-        let section = page.section;
-        let actualBounds = section.getActualBounds(document, page, false);
-        let x = this.x;
-        let y = this.y;
-        switch (this.alignmentStyle) {
-            case PdfAlignmentStyle.TopLeft:
-                if (this.type === TemplateType.Left) {
-                    x = -actualBounds.x;
-                    y = 0;
-                }
-                else if (this.type === TemplateType.Top) {
-                    x = -actualBounds.x;
-                    y = -actualBounds.y;
-                }
-                break;
-            case PdfAlignmentStyle.TopCenter:
-                x = (actualBounds.width - this.width) / 2;
-                y = -actualBounds.y;
-                break;
-            case PdfAlignmentStyle.TopRight:
-                if (this.type === TemplateType.Right) {
-                    x = actualBounds.width + section.getRightIndentWidth(document, page, false) - this.width;
-                    y = 0;
-                }
-                else if (this.type === TemplateType.Top) {
-                    x = actualBounds.width + section.getRightIndentWidth(document, page, false) - this.width;
-                    y = -actualBounds.y;
-                }
-                break;
-            case PdfAlignmentStyle.MiddleLeft:
-                x = -actualBounds.x;
-                y = (actualBounds.height - this.height) / 2;
-                break;
-            case PdfAlignmentStyle.MiddleCenter:
-                x = (actualBounds.width - this.width) / 2;
-                y = (actualBounds.height - this.height) / 2;
-                break;
-            case PdfAlignmentStyle.MiddleRight:
-                x = actualBounds.width + section.getRightIndentWidth(document, page, false) - this.width;
-                y = (actualBounds.height - this.height) / 2;
-                break;
-            case PdfAlignmentStyle.BottomLeft:
-                if (this.type === TemplateType.Left) {
-                    x = -actualBounds.x;
-                    y = actualBounds.height - this.height;
-                }
-                else if (this.type === TemplateType.Bottom) {
-                    x = -actualBounds.x;
-                    y = actualBounds.height + section.getBottomIndentHeight(document, page, false) - this.height;
-                }
-                break;
-            case PdfAlignmentStyle.BottomCenter:
-                x = (actualBounds.width - this.width) / 2;
-                y = actualBounds.height + section.getBottomIndentHeight(document, page, false) - this.height;
-                break;
-            case PdfAlignmentStyle.BottomRight:
-                if (this.type === TemplateType.Right) {
-                    x = actualBounds.width + section.getRightIndentWidth(document, page, false) - this.width;
-                    y = actualBounds.height - this.height;
-                }
-                else if (this.type === TemplateType.Bottom) {
-                    x = actualBounds.width + section.getRightIndentWidth(document, page, false) - this.width;
-                    y = actualBounds.height + section.getBottomIndentHeight(document, page, false) - this.height;
-                }
-                break;
-        }
-        result.x = x;
-        result.y = y;
-        return result;
-    }
-    /**
-     * Calculates bounds according to the docking.
-     * @private
-     */
-    getDockBounds(page, document) {
-        let result = this.bounds;
-        if (this.type === TemplateType.None) {
-            result = this.getSimpleDockBounds(page, document);
+        if ((this.mBlend == null && typeof this.mBlend === 'undefined')) {
+            //  Set correct colour blend.
+            this.mColourBlend = new PdfColorBlend(2);
+            this.mColourBlend.colors = this.mColours;
+            this.mColourBlend.positions = [0, 1];
         }
         else {
-            result = this.getTemplateDockBounds(page, document);
+            this.mColourBlend = this.mBlend.generateColorBlend(this.mColours, this.colorSpace);
+        }
+        this.resetFunction();
+    }
+    /**
+     * Gets a rectangular region that defines the boundaries of the gradient.
+     * @public
+     */
+    get rectangle() {
+        return this.mBoundaries;
+    }
+    /**
+     * Gets or sets the value indicating whether the gradient should extend starting and ending points.
+     * @public
+     */
+    get extend() {
+        let result = PdfExtend.None;
+        let extend = (this.shading.items.getValue(this.mDictionaryProperties.extend));
+        if ((extend != null)) {
+            let extStart = (extend.items(0));
+            let extEnd = (extend.items(1));
+            if (extStart.value) {
+                result = (result | PdfExtend.Start);
+            }
+            if (extEnd.value) {
+                result = (result | PdfExtend.End);
+            }
         }
         return result;
     }
-    /**
-     * Calculates bounds according to the docking.
-     * @private
-     */
-    getSimpleDockBounds(page, document) {
-        let result = this.bounds;
-        let section = page.section;
-        let actualBounds = section.getActualBounds(document, page, false);
-        let x = this.x;
-        let y = this.y;
-        let width = this.width;
-        let height = this.height;
-        switch (this.dockStyle) {
-            case PdfDockStyle.Left:
-                x = 0;
-                y = 0;
-                width = this.width;
-                height = actualBounds.height;
-                break;
-            case PdfDockStyle.Top:
-                x = 0;
-                y = 0;
-                width = actualBounds.width;
-                height = this.height;
-                break;
-            case PdfDockStyle.Right:
-                x = actualBounds.width - this.width;
-                y = 0;
-                width = this.width;
-                height = actualBounds.height;
-                break;
-            case PdfDockStyle.Bottom:
-                x = 0;
-                y = actualBounds.height - this.height;
-                width = actualBounds.width;
-                height = this.height;
-                break;
-            case PdfDockStyle.Fill:
-                x = 0;
-                x = 0;
-                width = actualBounds.width;
-                height = actualBounds.height;
-                break;
+    set extend(value) {
+        let extend = (this.shading.items.getValue(this.mDictionaryProperties.extend));
+        let extStart;
+        let extEnd;
+        if ((extend == null)) {
+            extStart = new PdfBoolean(false);
+            extEnd = new PdfBoolean(false);
+            extend = new PdfArray();
+            extend.add(extStart);
+            extend.add(extEnd);
+            this.shading.items.setValue(this.mDictionaryProperties.extend, extend);
         }
-        result = new RectangleF(x, y, width, height);
+        else {
+            extStart = (extend.items(0));
+            extEnd = (extend.items(1));
+        }
+        // extStart.value = ((value && PdfExtend.Start) > 0);
+        // extEnd.value = ((value && PdfExtend.End) > 0);
+    }
+    //Implementation
+    /**
+     * Adds two points to each other.
+     * @param point1 The point1.
+     * @param point2 The point2.
+     */
+    addPoints(point1, point2) {
+        let x = (point1.x + point2.x);
+        let y = (point1.y + point2.y);
+        let result = new PointF(x, y);
         return result;
     }
     /**
-     * Calculates template bounds basing on docking if template is a page template.
+     * Subs the second point from the first one.
+     * @param point1 The point1.
+     * @param point2 The point2.
+     */
+    subPoints(point1, point2) {
+        let x = (point1.x - point2.x);
+        let y = (point1.y - point2.y);
+        let result = new PointF(x, y);
+        return result;
+    }
+    /**
+     * Makes scalar multiplication of two points.
+     * @param point1 The point1.
+     * @param point2 The point2.
+     */
+    mulPoints(point1, point2) {
+        let result = ((point1.x * point2.x) + (point1.y * point2.y));
+        return result;
+    }
+    /**
+     * Multiplies the point by the value specified.
+     * @param point The point1.
+     * @param value The value.
+     */
+    mulPoint(point, value) {
+        point.x = (point.x * value);
+        point.y = (point.y * value);
+        return point;
+    }
+    /**
+     * Choose the point according to the angle.
+     * @param angle The angle.
+     */
+    choosePoint(angle) {
+        let point = new PointF(0, 0);
+        //  Choose the correct point.
+        if ((angle < 90) && (angle > 0)) {
+            point = new PointF(this.mBoundaries.right, this.mBoundaries.bottom);
+        }
+        else if ((angle < 180) && (angle > 90)) {
+            point = new PointF(this.mBoundaries.left, this.mBoundaries.bottom);
+        }
+        else if ((angle < 270) && (angle > 180)) {
+            point = new PointF(this.mBoundaries.left, this.mBoundaries.top);
+        }
+        else if (angle > 270) {
+            point = new PointF(this.mBoundaries.right, this.mBoundaries.top);
+        }
+        else {
+            throw new Error('PdfException - Internal error.');
+        }
+        return point;
+    }
+    /**
+     * Sets the start and end points.
+     * @param point1 The point1.
+     * @param point2 The point2.
+     */
+    setPoints(point1, point2) {
+        let points = new PdfArray();
+        points.add(new PdfNumber(point1.x));
+        points.add(new PdfNumber(this.updateY(point1.y)));
+        points.add(new PdfNumber(point2.x));
+        points.add(new PdfNumber(this.updateY(point2.y)));
+        this.shading.items.setValue(this.mDictionaryProperties.coords, points);
+    }
+    /**
+     * Updates y co-ordinate.
+     * @param y Y co-ordinate..
+     */
+    updateY(y) {
+        if (y !== 0) {
+            return -y;
+        }
+        else {
+            return y;
+        }
+    }
+    //Overrides
+    /**
+     * Initializes the shading dictionary.
      * @private
      */
-    getTemplateDockBounds(page, document) {
-        let result = this.bounds;
-        let section = page.section;
-        let actualBounds = section.getActualBounds(document, page, false);
-        let actualSize = section.pageSettings.getActualSize();
-        let x = this.x;
-        let y = this.y;
-        let width = this.width;
-        let height = this.height;
-        switch (this.dockStyle) {
-            case PdfDockStyle.Left:
-                x = -actualBounds.x;
-                y = 0;
-                width = this.width;
-                height = actualBounds.height;
-                break;
-            case PdfDockStyle.Top:
-                x = -actualBounds.x;
-                y = -actualBounds.y;
-                width = actualSize.width;
-                height = this.height;
-                if (actualBounds.height < 0) {
-                    y = -actualBounds.y + actualSize.height;
-                }
-                break;
-            case PdfDockStyle.Right:
-                x = actualBounds.width + section.getRightIndentWidth(document, page, false) - this.width;
-                y = 0;
-                width = this.width;
-                height = actualBounds.height;
-                break;
-            case PdfDockStyle.Bottom:
-                x = -actualBounds.x;
-                y = actualBounds.height + section.getBottomIndentHeight(document, page, false) - this.height;
-                width = actualSize.width;
-                height = this.height;
-                if (actualBounds.height < 0) {
-                    y -= actualSize.height;
-                }
-                break;
-            case PdfDockStyle.Fill:
-                x = 0;
-                x = 0;
-                width = actualBounds.width;
-                height = actualBounds.height;
-                break;
+    initShading() {
+        this.colorSpace = PdfColorSpace.Rgb;
+        this.function = this.mColourBlend.getFunction(this.colorSpace);
+        this.shading.items.setValue(this.mDictionaryProperties.shadingType, new PdfNumber((ShadingType.Axial)));
+    }
+    //Overrides
+    /**
+     * Creates a new copy of a brush.
+     * @public
+     */
+    clone() {
+        let brush = this;
+        brush.resetPatternDictionary(new PdfDictionary(this.patternDictionary));
+        brush.shading = new PdfDictionary();
+        brush.initShading();
+        brush.setPoints(brush.mPointStart, brush.mPointEnd);
+        if (brush !== null && brush instanceof PdfLinearGradientBrush) {
+            if ((this.matrix != null && typeof this.matrix !== 'undefined')) {
+                brush.matrix = this.matrix.clone();
+            }
         }
-        result = new RectangleF(x, y, width, height);
-        return result;
+        if ((this.mColours != null && typeof this.mColours !== 'undefined')) {
+            brush.mColours = (this.mColours);
+        }
+        if ((this.blend != null && typeof this.blend !== 'undefined')) {
+            brush.blend = this.blend.clonePdfBlend();
+        }
+        else if ((this.interpolationColors != null && typeof this.interpolationColors !== 'undefined')) {
+            brush.interpolationColors = this.interpolationColors.cloneColorBlend();
+        }
+        brush.extend = this.extend;
+        this.cloneBackgroundValue(brush);
+        this.cloneAntiAliasingValue(brush);
+        return brush;
+    }
+    /**
+     * Resets the function.
+     * @public
+     */
+    resetFunction() {
+        this.function = this.mColourBlend.getFunction(this.colorSpace);
+    }
+}
+
+/**
+ * PdfRadialGradientBrush.ts class for EJ2-PDF
+ */
+/**
+ * `PdfRadialGradientBrush` Represent radial gradient brush.
+ * @private
+ */
+class PdfRadialGradientBrush extends PdfGradientBrush {
+    //Constructor
+    /**
+     * Initializes a new instance of the `PdfRadialGradientBrush` class.
+     * @public
+     */
+    /* tslint:disable-next-line:max-line-length */
+    constructor(centerStart, radiusStart, centerEnd, radiusEnd, colorStart, colorEnd) {
+        super(new PdfDictionary());
+        /**
+         * Local varaible to store the dictionary properties.
+         */
+        this.mDictionaryProperties = new DictionaryProperties();
+        this.initialize(colorStart, colorEnd);
+        if (radiusStart < 0) {
+            throw new Error('ArgumentOutOfRangeException : radiusStart - The radius cannot be less then zero.');
+        }
+        if (radiusEnd < 0) {
+            throw new Error('ArgumentOutOfRangeException : radiusEnd - The radius cannpt be less then zero.');
+        }
+        this.mPointEnd = centerEnd;
+        this.mPointStart = centerStart;
+        this.mRadiusStart = radiusStart;
+        this.mRadiusEnd = radiusEnd;
+        this.setPoints(this.mPointStart, this.mPointEnd, this.mRadiusStart, this.mRadiusEnd);
+    }
+    /**
+     * Initializes a new instance of the `PdfRadialGradientBrush` class.
+     * @param color1 The color1.
+     * @param color2 The color2.
+     */
+    initialize(color1, color2) {
+        this.mColour = [color1, color2];
+        this.mColourBlends = new PdfColorBlend(2);
+        this.mColourBlends.positions = [0, 1];
+        this.mColourBlends.colors = this.mColour;
+        this.initShading();
+    }
+    //Properties
+    /**
+     * Gets or sets a PdfBlend that specifies positions and factors that define a custom falloff for the gradient.
+     * @public
+     */
+    get blend() {
+        return this.mBlend;
+    }
+    set blend(value) {
+        if ((value == null)) {
+            throw new Error('ArgumentNullException : Blend');
+        }
+        if ((this.mColour == null && typeof this.mColour === 'undefined')) {
+            throw new Error('NotSupportedException : There is no starting and ending colours specified.');
+        }
+        this.mBlend = value;
+        this.mColourBlends = this.mBlend.generateColorBlend(this.mColour, this.colorSpace);
+        this.resetFunction();
+    }
+    /**
+     * Gets or sets a ColorBlend that defines a multicolor radial gradient.
+     * @public
+     */
+    get interpolationColors() {
+        return this.mColourBlends;
+    }
+    set interpolationColors(value) {
+        if (value == null) {
+            throw new Error('ArgumentNullException : InterpolationColors');
+        }
+        this.mBlend = null;
+        this.mColour = null;
+        this.mColourBlends = value;
+        this.resetFunction();
+    }
+    /**
+     * Gets or sets the starting and ending colors of the radial gradient.
+     * @public
+     */
+    get linearColors() {
+        return this.mColour;
+    }
+    set linearColors(value) {
+        if ((value == null)) {
+            throw new Error('ArgumentNullException : radial LinearColors');
+        }
+        if ((value.length < 2)) {
+            throw new Error('ArgumentException : The array is too small LinearColors');
+        }
+        if ((this.mColour == null && typeof this.mColour === 'undefined')) {
+            this.mColour = [value[0], value[1]];
+        }
+        else {
+            this.mColour[0] = value[0];
+            this.mColour[1] = value[1];
+        }
+        if ((this.mBlend == null && typeof this.mBlend === 'undefined')) {
+            //  Set correct colour blend.
+            this.mColourBlends = new PdfColorBlend(2);
+            this.mColourBlends.colors = this.mColour;
+            this.mColourBlends.positions = [0, 1];
+        }
+        else {
+            this.mColourBlends = this.mBlend.generateColorBlend(this.mColour, this.colorSpace);
+        }
+        this.resetFunction();
+    }
+    /**
+     * Gets or sets the rectangle.
+     * @public
+     */
+    get rectangle() {
+        return this.mBoundaries;
+    }
+    set rectangle(value) {
+        this.mBoundaries = value;
+        this.bBox = PdfArray.fromRectangle(value);
+    }
+    /**
+     * Gets or sets the value indicating whether the gradient
+     *  should extend starting and ending points.
+     * @public
+     */
+    get extend() {
+        let result1 = PdfExtend.None;
+        let extend1 = (this.shading.items.getValue(this.mDictionaryProperties.extend));
+        if (extend1 !== null && typeof extend1 !== 'undefined') {
+            let extStart = (extend1.items(0));
+            let extEnd = (extend1.items(1));
+            if (extStart.value) {
+                result1 = (result1 | PdfExtend.Start);
+            }
+            if (extEnd.value) {
+                result1 = (result1 | PdfExtend.End);
+            }
+        }
+        return result1;
+    }
+    set extend(value) {
+        let extend = (this.shading.items.getValue(this.mDictionaryProperties.extend));
+        let extStart;
+        let extEnd1;
+        if (extend == null && typeof extend === 'undefined') {
+            extStart = new PdfBoolean(false);
+            extEnd1 = new PdfBoolean(false);
+            extend = new PdfArray();
+            extend.add(extStart);
+            extend.add(extEnd1);
+            this.shading.items.setValue(this.mDictionaryProperties.extend, extend);
+        }
+        else {
+            extStart = (extend.items(0));
+            extEnd1 = (extend.items(1));
+        }
+    }
+    //Implementation
+    /**
+     * Sets the points.
+     * @param pointStart The point start.
+     * @param pointEnd The point end.
+     * @param radiusStart The radius start.
+     * @param radiusEnd The radius end.
+     */
+    setPoints(pointStart, pointEnd, radiusStart, radiusEnd) {
+        let points = new PdfArray();
+        points.add(new PdfNumber(pointStart.x));
+        points.add(new PdfNumber(this.updateY(pointStart.y)));
+        points.add(new PdfNumber(radiusStart));
+        points.add(new PdfNumber(pointEnd.x));
+        points.add(new PdfNumber(this.updateY(pointEnd.y)));
+        if ((radiusStart !== radiusEnd)) {
+            points.add(new PdfNumber(radiusEnd));
+        }
+        else {
+            points.add(new PdfNumber(0));
+        }
+        this.shading.items.setValue(this.mDictionaryProperties.coords, points);
+    }
+    /**
+     * Update y co-ordinate.
+     * @param y Y co-ordinate.
+     */
+    updateY(y) {
+        if (y !== 0) {
+            return -y;
+        }
+        else {
+            return y;
+        }
+    }
+    /**
+     * Initializess the shading dictionary.
+     * @private
+     */
+    initShading() {
+        this.colorSpace = PdfColorSpace.Rgb;
+        this.function = this.mColourBlends.getFunction(this.colorSpace);
+        this.shading.items.setValue(this.mDictionaryProperties.shadingType, new PdfNumber((ShadingType.Radial)));
+    }
+    //Overrides
+    /**
+     * Creates a new copy of a brush.
+     * @public
+     */
+    clone() {
+        let rBrush = this;
+        rBrush.resetPatternDictionary(new PdfDictionary(this.patternDictionary));
+        rBrush.shading = new PdfDictionary();
+        rBrush.initShading();
+        rBrush.setPoints(this.mPointStart, this.mPointEnd, this.mRadiusStart, this.mRadiusEnd);
+        if (rBrush instanceof PdfRadialGradientBrush) {
+            if ((this.matrix !== null && typeof this.matrix !== 'undefined')) {
+                rBrush.matrix = this.matrix.clone();
+            }
+        }
+        if ((this.mColour !== null && typeof this.mColour !== 'undefined')) {
+            rBrush.mColour = (this.mColour);
+        }
+        if ((this.blend !== null && typeof this.blend !== 'undefined')) {
+            rBrush.blend = this.blend.clonePdfBlend();
+        }
+        else if ((this.interpolationColors !== null && typeof this.interpolationColors !== 'undefined')) {
+            rBrush.interpolationColors = this.interpolationColors.cloneColorBlend();
+        }
+        rBrush.extend = this.extend;
+        this.cloneBackgroundValue(rBrush);
+        this.cloneAntiAliasingValue(rBrush);
+        return rBrush;
+    }
+    /**
+     * Resets the function.
+     * @public
+     */
+    resetFunction() {
+        this.function = this.mColourBlends.getFunction(this.colorSpace);
     }
 }
 
@@ -22518,7 +26769,9 @@ class PdfGridCell {
             pen.lineCap = PdfLineCap.Square;
         }
         // SetTransparency(ref graphics, pen);
-        graphics.drawLine(pen, p1, p2);
+        if (pen.width !== 0) {
+            graphics.drawLine(pen, p1, p2);
+        }
         p1 = new PointF(bounds.x + bounds.width, bounds.y);
         p2 = new PointF(bounds.x + bounds.width, bounds.y + bounds.height);
         pen = this.cellStyle.borders.right;
@@ -22529,25 +26782,31 @@ class PdfGridCell {
         if (this.cellStyle.borders.right.dashStyle === PdfDashStyle.Solid) {
             pen.lineCap = PdfLineCap.Square;
         }
-        graphics.drawLine(pen, p1, p2);
+        if (pen.width !== 0) {
+            graphics.drawLine(pen, p1, p2);
+        }
         p1 = new PointF(bounds.x, bounds.y);
         p2 = new PointF(bounds.x + bounds.width, bounds.y);
         pen = this.cellStyle.borders.top;
         if (this.cellStyle.borders.top.dashStyle === PdfDashStyle.Solid) {
             pen.lineCap = PdfLineCap.Square;
         }
-        graphics.drawLine(pen, p1, p2);
+        if (pen.width !== 0) {
+            graphics.drawLine(pen, p1, p2);
+        }
         p1 = new PointF(bounds.x + bounds.width, bounds.y + bounds.height);
         p2 = new PointF(bounds.x, bounds.y + bounds.height);
         pen = this.cellStyle.borders.bottom;
-        // if ((bounds.y + bounds.height) > (graphics.clientSize.height - (pen.width / 2))) {
-        //     p1 = new PointF((bounds.x + bounds.width), (graphics.clientSize.height - (pen.width / 2)));
-        //     p2 = new PointF(bounds.x, (graphics.clientSize.height - (pen.width / 2)));
-        // }
+        if ((bounds.y + bounds.height) > (graphics.clientSize.height - (pen.width / 2))) {
+            p1 = new PointF((bounds.x + bounds.width), (graphics.clientSize.height - (pen.width / 2)));
+            p2 = new PointF(bounds.x, (graphics.clientSize.height - (pen.width / 2)));
+        }
         if (this.cellStyle.borders.bottom.dashStyle === PdfDashStyle.Solid) {
             pen.lineCap = PdfLineCap.Square;
         }
-        graphics.drawLine(pen, p1, p2);
+        if (pen.width !== 0) {
+            graphics.drawLine(pen, p1, p2);
+        }
     }
     // private setTransparency(graphics : PdfGraphics, pen : PdfPen) : void {
     //     let alpha : number = (pen.color.a / 255)as number;
@@ -24373,9 +28632,7 @@ class PdfGridLayouter extends ElementLayouter {
         if (this.currentPage !== null) {
             let pageHeight = this.currentPage.getClientSize().height;
             let pageWidth = this.currentPage.getClientSize().width;
-            //if (pageHeight > pageWidth) {
             this.currentPageBounds = this.currentPage.getClientSize();
-            //}
         }
         else {
             throw Error('Can not set page as null');
@@ -24513,15 +28770,6 @@ class PdfGridLayouter extends ElementLayouter {
             //Draw Headers.
             for (let i = 0; i < this.Grid.headers.count; i++) {
                 let row = this.Grid.headers.getHeader(i);
-                if (row.style.border != null && ((row.style.border.left != null && row.style.border.left.width !== 1)
-                    || (row.style.border.top != null && row.style.border.top.width !== 1))) {
-                    let headerX = row.style.border.left.width / 2;
-                    let headerY = row.style.border.top.width / 2;
-                    if (this.currentBounds.x === PdfBorders.default.right.width / 2 && this.currentBounds.y === PdfBorders.default.right.width / 2) {
-                        let headerBound = new RectangleF(headerX, headerY, this.currentBounds.width, this.currentBounds.height);
-                        this.currentBounds = headerBound;
-                    }
-                }
                 let headerHeight = this.currentBounds.y;
                 // RowLayoutResult
                 let headerResult = this.drawRow(row);
@@ -24543,14 +28791,6 @@ class PdfGridLayouter extends ElementLayouter {
             //Draw row by row with the specified cell range.
             for (let j = 0; j < this.Grid.rows.count; j++) {
                 let row = this.Grid.rows.getRow(j);
-                if (row.style.border != null && ((row.style.border.left != null && row.style.border.left.width !== 1)
-                    || (row.style.border.top != null && row.style.border.top.width !== 1))) {
-                    let x = row.style.border.left.width / 2;
-                    if (this.currentBounds.x === PdfBorders.default.right.width / 2) {
-                        let rowBound = new RectangleF(x, this.currentBounds.y, this.currentBounds.width, this.currentBounds.height);
-                        this.currentBounds = rowBound;
-                    }
-                }
                 i++;
                 this.currentRowIndex = i - 1;
                 let originalHeight = this.currentBounds.y;
@@ -25807,9 +30047,1762 @@ class RowLayoutResult {
 }
 
 /**
+ * ShapeLayouter.ts class for EJ2-PDF
+ * @private
+ */
+/**
+ * ShapeLayouter class.
+ * @private
+ */
+class ShapeLayouter extends ElementLayouter {
+    // Constructors
+    /**
+     * Initializes a new instance of the `ShapeLayouter` class.
+     * @private
+     */
+    constructor(element) {
+        super(element);
+        // Fields
+        /**
+         * Initializes the object to store `older form elements` of previous page.
+         * @default 0
+         * @private
+         */
+        this.olderPdfForm = 0;
+        /**
+         * The `bounds` of the shape element.
+         * * @default new RectangleF()
+         * @private
+         */
+        this.shapeBounds = new RectangleF();
+        /**
+         * Total Page size of the web page.
+         * * @default 0
+         * @private
+         */
+        this.totalPageSize = 0;
+    }
+    // Properties
+    /**
+     * Gets shape element.
+     * @private
+     */
+    get element() {
+        return this.elements;
+    }
+    // Implementation
+    /**
+     * Layouts the element.
+     * @private
+     */
+    layoutInternal(param) {
+        let currentPage = param.page;
+        let currentBounds = param.bounds;
+        let shapeLayoutBounds = this.element.getBounds();
+        shapeLayoutBounds.x = 0;
+        shapeLayoutBounds.y = 0;
+        /* tslint:disable */
+        let isEmpty = (this.shapeBounds.x === this.shapeBounds.y && this.shapeBounds.y === this.shapeBounds.width && this.shapeBounds.width === this.shapeBounds.height && this.shapeBounds.height === 0) ? true : false;
+        /* tslint:enable */
+        if ((this.isPdfGrid) && (!(isEmpty))) {
+            shapeLayoutBounds = this.shapeBounds;
+        }
+        let result = null;
+        let pageResult = new ShapeLayoutResult();
+        pageResult.page = currentPage;
+        /*tslint:disable:no-constant-condition */
+        while (true) {
+            // Raise event.
+            let result1 = this.raiseBeforePageLayout(currentPage, currentBounds);
+            currentBounds = result1.currentBounds;
+            let endArgs = null;
+            if (!result1.cancel) {
+                pageResult = this.layoutOnPage(currentPage, currentBounds, shapeLayoutBounds, param);
+                // Raise event.
+                endArgs = this.raiseEndPageLayout(pageResult);
+                result1.cancel = (endArgs === null) ? false : endArgs.cancel;
+            }
+            if (!pageResult.end && !result1.cancel) {
+                currentBounds = this.getPaginateBounds(param);
+                shapeLayoutBounds = this.getNextShapeBounds(shapeLayoutBounds, pageResult);
+                currentPage = (endArgs === null || endArgs.nextPage === null) ?
+                    this.getNextPage(currentPage) : endArgs.nextPage;
+                if (this.isPdfGrid) {
+                    result = this.getLayoutResult(pageResult);
+                    break;
+                }
+            }
+            else {
+                result = this.getLayoutResult(pageResult);
+                break;
+            }
+        }
+        return result;
+    }
+    /**
+     * Raises BeforePageLayout event.
+     * @private
+     */
+    raiseBeforePageLayout(currentPage, currentBounds) {
+        let cancel = false;
+        if (this.element.raiseBeginPageLayout) {
+            let args = new BeginPageLayoutEventArgs(currentBounds, currentPage);
+            this.element.onBeginPageLayout(args);
+            cancel = args.cancel;
+            currentBounds = args.bounds;
+        }
+        return { currentBounds: currentBounds, cancel: cancel };
+    }
+    /**
+     * Raises PageLayout event if needed.
+     * @private
+     */
+    raiseEndPageLayout(pageResult) {
+        let args = null;
+        if (this.element.raiseEndPageLayout) {
+            let res = this.getLayoutResult(pageResult);
+            args = new EndPageLayoutEventArgs(res);
+            this.element.onEndPageLayout(args);
+        }
+        return args;
+    }
+    /**
+     * Creates layout result.
+     * @private
+     */
+    getLayoutResult(pageResult) {
+        let result = new PdfLayoutResult(pageResult.page, pageResult.bounds);
+        return result;
+    }
+    /**
+     * Calculates the next active shape bounds.
+     * @private
+     */
+    getNextShapeBounds(shapeLayoutBounds, pageResult) {
+        let layoutedBounds = pageResult.bounds;
+        shapeLayoutBounds.y = (shapeLayoutBounds.y + layoutedBounds.height);
+        shapeLayoutBounds.height = (shapeLayoutBounds.height - layoutedBounds.height);
+        return shapeLayoutBounds;
+    }
+    /**
+     * Layouts the element on the current page.
+     * @private
+     */
+    layoutOnPage(currentPage, curBounds, sBounds, param) {
+        let result = new ShapeLayoutResult();
+        curBounds = this.checkCorrectCurrentBounds(currentPage, curBounds, param);
+        let fitToPage = this.fitsToBounds(curBounds, sBounds);
+        let canDraw = !((param.format.break === PdfLayoutBreakType.FitElement)
+            && (!fitToPage && (currentPage === param.page)));
+        let shapeFinished = false;
+        if (canDraw) {
+            let drawRectangle = this.getDrawBounds(curBounds, sBounds);
+            this.drawShape(currentPage.graphics, curBounds, drawRectangle);
+            result.bounds = this.getPageResultBounds(curBounds, sBounds);
+            shapeFinished = ((curBounds.height) >= (sBounds.height));
+        }
+        result.end = (shapeFinished || (param.format.layout === PdfLayoutType.OnePage));
+        result.page = currentPage;
+        return result;
+    }
+    /**
+     * Returns Rectangle for element drawing on the page.
+     * @private
+     */
+    getDrawBounds(currentBounds, shapeLayoutBounds) {
+        let result = currentBounds;
+        result.y = (result.y - shapeLayoutBounds.y);
+        result.height = (result.height + shapeLayoutBounds.y);
+        return result;
+    }
+    /**
+     * Draws the shape.
+     * @private
+     */
+    drawShape(g, currentBounds, drawRectangle) {
+        let gState = g.save();
+        try {
+            g.setClip(currentBounds);
+            this.element.drawGraphicsHelper(g, new PointF(drawRectangle.x, drawRectangle.y));
+        }
+        finally {
+            g.restore(gState);
+        }
+    }
+    /**
+     * Corrects current bounds on the page.
+     * @protected
+     */
+    checkCorrectCurrentBounds(currentPage, curBounds, param) {
+        let pageSize = currentPage.graphics.clientSize;
+        curBounds.width = (curBounds.width > 0) ? curBounds.width : (pageSize.width - curBounds.x);
+        curBounds.height = (curBounds.height > 0) ? curBounds.height : (pageSize.height - curBounds.y);
+        if (this.isPdfGrid) {
+            curBounds.height = (curBounds.height - this.bottomCellPadding);
+        }
+        return curBounds;
+    }
+    /**
+     * Calculates bounds where the shape was layout on the page.
+     * @private
+     */
+    getPageResultBounds(currentBounds, shapeLayoutBounds) {
+        let result = currentBounds;
+        result.height = Math.min(result.height, shapeLayoutBounds.height);
+        return result;
+    }
+    /**
+     * Checks whether shape rectangle fits to the lay outing bounds.
+     * @private
+     */
+    fitsToBounds(currentBounds, shapeLayoutBounds) {
+        let fits = (shapeLayoutBounds.height <= currentBounds.height);
+        return fits;
+    }
+}
+/**
+ * Initializes the offset `index`.
+ * * @default 0
+ * @private
+ */
+ShapeLayouter.index = 0;
+/**
+ * Initializes the `difference in page height`.
+ * * @default 0
+ * @private
+ */
+ShapeLayouter.splitDiff = 0;
+/**
+ * Determines the `end of Vertical offset` values.
+ * * @default false
+ * @private
+ */
+ShapeLayouter.last = false;
+/**
+ * Determines the document link annotation `border width`.
+ * * @default 0
+ * @private
+ */
+ShapeLayouter.borderWidth = 0;
+/**
+ * Contains lay outing result settings.
+ * @private
+ */
+class ShapeLayoutResult {
+}
+
+/**
+ * Base class for the main shapes.
+ * @private
+ */
+class PdfShapeElement extends PdfLayoutElement {
+    // methods
+    /**
+     * Gets the bounds.
+     * @private
+     */
+    getBounds() {
+        let rect = this.getBoundsInternal();
+        return rect;
+    }
+    /**
+     * `drawGraphicsHelper` the graphics.
+     * @public
+     */
+    drawGraphicsHelper(graphics, location) {
+        if ((graphics == null)) {
+            throw new Error('ArgumentNullException :graphics');
+        }
+        this.drawShapeHelper(graphics, location.x, location.y);
+    }
+    /**
+     * `drawShapeHelper` the graphics.
+     * @private
+     */
+    drawShapeHelper(graphics, x, y) {
+        let bNeedSave = (x !== 0.5 || y !== 0.5);
+        let gState = null;
+        // Translate co-ordinates.
+        if (bNeedSave) {
+            // Save state.
+            gState = graphics.save();
+            graphics.translateTransform(x, y);
+        }
+        this.drawInternal(graphics);
+        if (bNeedSave) {
+            // Restore state.
+            graphics.restore(gState);
+        }
+    }
+    /**
+     * Layouts the element.
+     * @private
+     */
+    layout(param) {
+        let layouter = new ShapeLayouter(this);
+        let result = layouter.layout(param);
+        return result;
+    }
+}
+
+/**
+ * PdfDrawElement.ts class for EJ2-PDF
+ */
+/**
+ * Represents a base class for all page graphics elements.
+ */
+class PdfDrawElement extends PdfShapeElement {
+    /**
+     * Initializes a new instance of the `PdfDrawElement` class.
+     * @protected
+     */
+    constructor(pen) {
+        super();
+        if (typeof pen !== 'undefined') {
+            this.mpen = pen;
+        }
+    }
+    // Properties
+    /**
+     * Gets or sets a pen that will be used to draw the element.
+     * @public
+     */
+    get pen() {
+        return this.mpen;
+    }
+    set pen(value) {
+        this.mpen = value;
+    }
+}
+
+/**
+ * PdfFillElement.ts class for EJ2-PDF
+ */
+/**
+ * Represents a base class for all page graphics elements.
+ */
+class PdfFillElement extends PdfDrawElement {
+    /**
+     * Initializes a new instance of the `PdfFillElement` class.
+     * @protected
+     */
+    constructor(arg1, arg2) {
+        super();
+        // Fields
+        /**
+         * Internal variable to store pen.
+         * @private
+         */
+        this.mbrush = null;
+        if (typeof arg1 === 'undefined') {
+            //
+        }
+        else if (arg1 instanceof PdfPen) {
+            super(arg1);
+        }
+        else {
+            this.mbrush = arg2;
+        }
+    }
+    // Properties
+    /**
+     * Gets or sets a brush of the element.
+     * @public
+     */
+    get brush() {
+        return this.mbrush;
+    }
+    set brush(value) {
+        this.mbrush = value;
+    }
+    // Implementation
+    /**
+     * Gets the pen. If both pen and brush are not explicitly defined, default pen will be used.
+     * @protected
+     */
+    obtainPen() {
+        return ((this.mbrush == null) && (this.pen == null)) ? new PdfPen(new PdfColor(0, 0, 0)) : this.pen;
+    }
+}
+
+/**
+ * Path.ts class for EJ2-PDF
+ */
+/**
+ * `PdfPath` class Implements graphics path, which is a sequence of primitive graphics elements.
+ * @private
+ */
+class PdfPath extends PdfFillElement {
+    /**
+     * Initializes a new instance of the `PdfPath` class.
+     * @public
+     */
+    /* tslint:disable-next-line:max-line-length */
+    constructor(arg1, arg2, arg3, arg4) {
+        super();
+        // Fields
+        /**
+         * Local variable to store the points.
+         * @private
+         */
+        this.mpoints = null;
+        /**
+         * Local variable to store the path Types.
+         * @private
+         */
+        this.mpathTypes = null;
+        /**
+         * Local variable to store the Start Figure.
+         * @private
+         */
+        this.mStartFigure = true;
+        /**
+         * Local variable to store the fill Mode.
+         * @private
+         */
+        this.mfillMode = PdfFillMode.Alternate;
+        /**
+         * Local variable to store the Beziers.
+         * @private
+         */
+        this.isBeziers3 = false;
+        /**
+         * Local variable to store the xps.
+         * @private
+         */
+        this.isXps = false;
+        if (typeof arg1 === 'undefined') {
+            //
+        }
+        else if (arg1 instanceof PdfPen) {
+            super(arg1);
+            if (arg2 instanceof PdfBrush) {
+                super(arg1, arg2);
+                this.fillMode = arg3;
+            }
+            else if (arg2 !== null && typeof arg2 !== 'undefined' && arg3 !== null && typeof arg3 !== 'undefined') {
+                this.addPath(arg2, arg3);
+            }
+        }
+        else if (arg1 instanceof PdfBrush) {
+            super(arg1);
+            if (arg2 !== null && typeof arg2 !== 'undefined') {
+                this.fillMode = arg2;
+            }
+            if (arg3 !== null && typeof arg3 !== 'undefined' && arg4 !== null && typeof arg4 !== 'undefined') {
+                this.addPath(arg3, arg4);
+            }
+        }
+        else {
+            this.addPath(arg1, arg2);
+        }
+    }
+    // Properties
+    /**
+     * Gets or sets the fill mode.
+     * @public
+     */
+    get fillMode() {
+        return this.mfillMode;
+    }
+    set fillMode(value) {
+        this.mfillMode = value;
+    }
+    /**
+     * Gets the path points.
+     * @public
+     */
+    get pathPoints() {
+        return this.points;
+    }
+    /**
+     * Gets the path point types.
+     * @public
+     */
+    get pathTypes() {
+        return this.types;
+    }
+    /**
+     * Gets the point count.
+     * @public
+     */
+    get pointCount() {
+        let count = 0;
+        if ((this.mpoints != null)) {
+            count = this.mpoints.length;
+        }
+        return count;
+    }
+    /**
+     * Gets the last points.
+     * @public
+     */
+    get lastPoint() {
+        return this.getLastPoint();
+    }
+    /**
+     * Gets the points list.
+     * @private
+     */
+    get points() {
+        if ((this.mpoints == null)) {
+            this.mpoints = [];
+        }
+        return this.mpoints;
+    }
+    /**
+     * Gets the types.
+     * @private
+     */
+    get types() {
+        if ((this.mpathTypes == null)) {
+            this.mpathTypes = [];
+        }
+        return this.mpathTypes;
+    }
+    draw(arg1, arg2, arg3, arg4) {
+        if (arg2 instanceof PointF && typeof arg2.width === 'undefined' && typeof arg3 === 'undefined') {
+            return this.drawHelper(arg1, arg2.x, arg2.y);
+        }
+        else if (arg2 instanceof RectangleF && typeof arg2.width !== 'undefined' && typeof arg3 === 'undefined') {
+            return this.drawHelper(arg1, arg2, null);
+        }
+        else if (typeof arg2 === 'number' && typeof arg3 === 'number' && typeof arg4 === 'undefined') {
+            return this.drawHelper(arg1, arg2, arg3, null);
+        }
+        else if (arg2 instanceof PointF && arg3 instanceof PdfLayoutFormat) {
+            return this.drawHelper(arg1, arg2.x, arg2.y, arg3);
+        }
+        else if (typeof arg2 === 'number' && (arg4 instanceof PdfLayoutFormat || arg4 == null) && typeof arg3 === 'number') {
+            let widthValue = (arg1.graphics.clientSize.width - arg2);
+            let layoutRect = new RectangleF(arg2, arg3, widthValue, 0);
+            return this.drawHelper(arg1, layoutRect, arg4);
+        }
+        else if (arg2 instanceof RectangleF && arg3 instanceof PdfLayoutFormat) {
+            return this.drawHelper(arg1, arg2, arg3);
+        }
+        else {
+            return this.drawHelper(arg1, arg2, arg3);
+        }
+    }
+    addArc(arg1, arg2, arg3, arg4, arg5, arg6) {
+        if (arg1 instanceof RectangleF) {
+            this.addArc(arg1.x, arg1.y, arg1.width, arg1.height, arg2, arg3);
+        }
+        else {
+            let points = this.getBezierArcPoints(arg1, arg2, (arg2 + arg3), (arg2 + arg4), arg5, arg6);
+            for (let i = 0; i < points.length; i = i + 8) {
+                /* tslint:disable-next-line:max-line-length */
+                let point = [points[i], points[i + 1], points[i + 2], points[i + 3], points[i + 4], points[i + 5], points[i + 6], points[i + 7]];
+                this.addPoints(point, PathPointType.Bezier3);
+            }
+        }
+    }
+    /* tslint:disable-next-line:max-line-length */
+    addBezier(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) {
+        if (arg1 instanceof PointF && arg2 instanceof PointF && arg3 instanceof PointF && arg4 instanceof PointF) {
+            this.addBezier(arg1.x, arg1.y, arg2.x, arg2.y, arg3.x, arg3.y, arg4.x, arg4.y);
+        }
+        else {
+            let points = [];
+            points.push(arg1);
+            points.push(arg2);
+            points.push(arg3);
+            points.push(arg4);
+            points.push(arg5);
+            points.push(arg6);
+            points.push(arg7);
+            points.push(arg8);
+            this.addPoints(points, PathPointType.Bezier3);
+        }
+    }
+    addEllipse(arg1, arg2, arg3, arg4) {
+        if (arg1 instanceof RectangleF) {
+            this.addEllipse(arg1.x, arg1.y, arg1.width, arg1.height);
+        }
+        else {
+            this.startFigure();
+            this.addArc(arg1, arg2, arg3, arg4, 0, 360);
+            this.closeFigure();
+        }
+    }
+    addLine(arg1, arg2, arg3, arg4) {
+        if (arg1 instanceof PointF && arg2 instanceof PointF) {
+            this.addLine(arg1.x, arg1.y, arg2.x, arg2.y);
+        }
+        else {
+            let points = [];
+            points.push(arg1);
+            points.push(arg2);
+            points.push(arg3);
+            points.push(arg4);
+            this.addPoints(points, PathPointType.Line);
+        }
+    }
+    addPath(arg1, arg2) {
+        if (arg1 instanceof PdfPath) {
+            this.addPath(arg1.pathPoints, arg1.pathTypes);
+        }
+        else {
+            if ((arg1 == null)) {
+                throw new Error('ArgumentNullException:pathPoints');
+            }
+            if ((arg2 == null)) {
+                throw new Error('ArgumentNullException:pathTypes');
+            }
+            let count = arg1.length;
+            if ((count !== arg2.length)) {
+                throw new Error('The argument arrays should be of equal length.');
+            }
+        }
+    }
+    addPie(arg1, arg2, arg3, arg4, arg5, arg6) {
+        if (arg1 instanceof RectangleF) {
+            this.addPie(arg1.x, arg1.y, arg1.width, arg1.height, arg2, arg3);
+        }
+        else {
+            this.startFigure();
+            this.addArc(arg1, arg2, arg3, arg4, arg5, arg6);
+            this.addPoint(new PointF((arg1 + (arg3 / 2)), (arg2 + (arg4 / 2))), PathPointType.Line);
+            this.closeFigure();
+        }
+    }
+    /**
+     * `add a polygon` specified by points.
+     * @param points The points of the polygon
+     */
+    addPolygon(points) {
+        let count = (points.length * 2);
+        let p = [];
+        this.startFigure();
+        for (let i = 0; i < points.length; i++) {
+            p.push(points[i].x);
+            p.push(points[i].y);
+        }
+        this.addPoints(p, PathPointType.Line);
+        this.closeFigure();
+    }
+    addRectangle(arg1, y, width, height) {
+        if (arg1 instanceof RectangleF) {
+            this.addRectangle(arg1.x, arg1.y, arg1.width, arg1.height);
+        }
+        else {
+            let points = [];
+            this.startFigure();
+            points.push(arg1);
+            points.push(y);
+            points.push((arg1 + width));
+            points.push(y);
+            points.push((arg1 + width));
+            points.push((y + height));
+            points.push(arg1);
+            points.push((y + height));
+            this.addPoints(points, PathPointType.Line);
+            this.closeFigure();
+        }
+    }
+    /**
+     * Starts a new figure.
+     * @public
+     */
+    startFigure() {
+        this.mStartFigure = true;
+    }
+    /**
+     * Closed all non-closed figures.
+     * @public
+     */
+    closeAllFigures() {
+        let startPath = this.pathPoints[0];
+        for (let i = 0; i < this.mpathTypes.length; i++) {
+            let pt = ((this.types[i]));
+            let flag = false;
+            if (((i !== 0) && (pt === PathPointType.Start))) {
+                this.closeFigure((i - 1));
+                flag = true;
+            }
+            else if (((i === (this.mpathTypes.length - 1)) && (!flag && this.isXps))) {
+                if ((startPath.x === this.pathPoints[i].y)) {
+                    this.closeFigure(i);
+                }
+            }
+        }
+    }
+    /**
+     * Gets the last point.
+     * @public
+     */
+    getLastPoint() {
+        let lastPoint = new PointF(0, 0);
+        let count = this.pointCount;
+        if (((count > 0) && (this.mpoints != null))) {
+            lastPoint.x = this.mpoints[(count - 1)].x;
+            lastPoint.y = this.mpoints[(count - 1)].y;
+        }
+        return lastPoint;
+    }
+    /**
+     * Gets the bezier points for arc constructing.
+     * @public
+     */
+    getBezierArcPoints(x1, y1, x2, y2, s1, e1) {
+        if ((x1 > x2)) {
+            let tmp;
+            tmp = x1;
+            x1 = x2;
+            x2 = tmp;
+        }
+        if ((y2 > y1)) {
+            let tmp;
+            tmp = y1;
+            y1 = y2;
+            y2 = tmp;
+        }
+        let fragAngle;
+        let numFragments;
+        if ((Math.abs(e1) <= 90)) {
+            fragAngle = e1;
+            numFragments = 1;
+        }
+        else {
+            numFragments = (Math.ceil((Math.abs(e1) / 90)));
+            fragAngle = (e1 / numFragments);
+        }
+        let xcen = ((x1 + x2) / 2);
+        let ycen = ((y1 + y2) / 2);
+        let rx = ((x2 - x1) / 2);
+        let ry = ((y2 - y1) / 2);
+        let halfAng = ((fragAngle * (Math.PI / 360)));
+        let kappa = (Math.abs(4.0 / 3.0 * (1.0 - Math.cos(halfAng)) / Math.sin(halfAng)));
+        let pointList = [];
+        for (let i = 0; (i < numFragments); i++) {
+            let theta0 = (((s1 + (i * fragAngle)) * (Math.PI / 180)));
+            let theta1 = (((s1 + ((i + 1) * fragAngle)) * (Math.PI / 180)));
+            let cos0 = (Math.cos(theta0));
+            let cos1 = (Math.cos(theta1));
+            let sin0 = (Math.sin(theta0));
+            let sin1 = (Math.sin(theta1));
+            if ((fragAngle > 0)) {
+                /* tslint:disable-next-line:max-line-length */
+                pointList.push((xcen + (rx * cos0)), (ycen - (ry * sin0)), (xcen + (rx * (cos0 - (kappa * sin0)))), (ycen - (ry * (sin0 + (kappa * cos0)))), (xcen + (rx * (cos1 + (kappa * sin1)))), (ycen - (ry * (sin1 - (kappa * cos1)))), (xcen + (rx * cos1)), (ycen - (ry * sin1)));
+            }
+            else {
+                /* tslint:disable-next-line:max-line-length */
+                pointList.push((xcen + (rx * cos0)), (ycen - (ry * sin0)), (xcen + (rx * (cos0 + (kappa * sin0)))), (ycen - (ry * (sin0 - (kappa * cos0)))), (xcen + (rx * (cos1 - (kappa * sin1)))), (ycen - (ry * (sin1 + (kappa * cos1)))), (xcen + (rx * cos1)), (ycen - (ry * sin1)));
+            }
+        }
+        return pointList;
+    }
+    /**
+     * `getBoundsInternal` Returns a rectangle that bounds this element.
+     * @public
+     */
+    getBoundsInternal() {
+        let points = this.pathPoints;
+        let bounds = new RectangleF(0, 0, 0, 0);
+        if ((points.length > 0)) {
+            let xmin = points[0].x;
+            let xmax = points[0].x;
+            let ymin = points[0].y;
+            let ymax = points[0].y;
+            for (let i = 1; i < points.length; i++) {
+                let point = points[i];
+                xmin = Math.min(point.x, xmin);
+                xmax = Math.max(point.x, xmax);
+                ymin = Math.min(point.y, ymin);
+                ymax = Math.max(point.y, ymax);
+            }
+            bounds = new RectangleF(xmin, ymin, (xmax - xmin), (ymax - ymin));
+        }
+        return bounds;
+    }
+    /**
+     * `drawInternal` Draws an element on the Graphics.
+     * @param graphics Graphics context where the element should be printed.
+     * @public
+     */
+    drawInternal(graphics) {
+        if ((graphics == null)) {
+            throw new Error('ArgumentNullException :graphics');
+        }
+        graphics.drawPath(this.obtainPen(), this.brush, this);
+    }
+    addPoints(points, pointType, startIndex, endIndex) {
+        if (typeof startIndex === 'undefined' && typeof endIndex === 'undefined') {
+            this.addPoints(points, pointType, 0, points.length);
+        }
+        else {
+            for (let i = startIndex; i < endIndex; i++) {
+                let point = new PointF(points[i], points[(i + 1)]);
+                if ((i === startIndex)) {
+                    if (((this.pointCount <= 0) || this.mStartFigure)) {
+                        this.addPoint(point, PathPointType.Start);
+                        this.mStartFigure = false;
+                    }
+                    else if (((point.x !== this.lastPoint.x) && (point.y !== this.lastPoint.y) && !this.isBeziers3)) {
+                        this.addPoint(point, PathPointType.Line);
+                    }
+                    else if ((point.x !== this.lastPoint.x) && (point.y !== this.lastPoint.y)) {
+                        this.addPoint(point, PathPointType.Bezier3);
+                    }
+                }
+                else {
+                    this.addPoint(point, pointType);
+                }
+                i++;
+            }
+        }
+    }
+    /**
+     * `add a point` Adds the point and its type
+     * @param points The points.
+     * @param pointType Type of the points.
+     * @private
+     */
+    addPoint(point, pointType) {
+        this.points.push(point);
+        this.types.push((pointType));
+    }
+    closeFigure(index) {
+        if (typeof index === 'undefined') {
+            if ((this.pointCount > 0)) {
+                this.closeFigure(this.pointCount - 1);
+            }
+            this.startFigure();
+        }
+        else {
+            if ((index < 0)) {
+                throw new Error('IndexOutOfRangeException()');
+            }
+            let pt = ((this.types[index]));
+            pt = (pt | PathPointType.CloseSubpath);
+            this.types[index] = (pt);
+        }
+    }
+}
+
+/**
+ * `PdfRectangleArea` class Implements graphics rectangle area, which is a sequence of primitive graphics elements.
+ * @private
+ */
+class PdfRectangleArea extends PdfFillElement {
+    /* tslint:disable-next-line:max-line-length */
+    constructor(arg1, arg2, arg3, arg4, arg5, arg6) {
+        super();
+        //Fields
+        /**
+         * public variable to store the rectangle.
+         * @public
+         */
+        this.bounds = new RectangleF(0, 0, 0, 0);
+        if (typeof arg1 === 'undefined') {
+            //
+        }
+        else if (arg1 instanceof PdfPen) {
+            super(arg1, arg2);
+            if (arg3 instanceof RectangleF) {
+                this.bounds = arg3;
+            }
+            else {
+                this.bounds = new RectangleF(arg3, arg4, arg5, arg6);
+            }
+        }
+        else if (arg1 instanceof RectangleF) {
+            this.bounds = arg1;
+        }
+        else {
+            this.bounds = new RectangleF(arg1, arg2, arg3, arg4);
+        }
+    }
+    //Properties
+    /**
+     * Gets or sets the X co-ordinate of the upper-left corner of this the element.
+     * @public
+     */
+    get x() {
+        return this.bounds.x;
+    }
+    set x(value) {
+        this.bounds.x = value;
+    }
+    /**
+     * Gets or sets the Y co-ordinate of the upper-left corner of this the element.
+     * @public
+     */
+    get y() {
+        return this.bounds.y;
+    }
+    set y(value) {
+        this.bounds.y = value;
+    }
+    /**
+     * Gets or sets the width of this element.
+     * @public
+     */
+    get width() {
+        return this.bounds.width;
+    }
+    set width(value) {
+        this.bounds.width = value;
+    }
+    /**
+     * Gets or sets the height of this element.
+     * @public
+     */
+    get height() {
+        return this.bounds.height;
+    }
+    set height(value) {
+        this.bounds.height = value;
+    }
+    //Implementation
+    getBoundsInternal() {
+        return this.bounds;
+    }
+}
+
+/**
+ * `PdfEllipsePart` class Implements graphics ellipse part, which is a sequence of primitive graphics elements.
+ * @private
+ */
+class PdfEllipsePart extends PdfRectangleArea {
+    /* tslint:disable-next-line:max-line-length */
+    constructor(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) {
+        super();
+        // Fields
+        /**
+         * public variable to store the start angle.
+         * @public
+         */
+        this.startAngle = 0;
+        /**
+         * public variable to store the sweep angle.
+         * @public
+         */
+        this.sweepAngle = 0;
+        if (typeof arg1 === 'undefined') {
+            //
+        }
+        else if (arg1 instanceof RectangleF && typeof arg2 !== 'undefined' && typeof arg3 !== 'undefined') {
+            super(arg1);
+            this.startAngle = arg2;
+            this.sweepAngle = arg3;
+        }
+        else if (arg1 instanceof PdfPen) {
+            if (arg3 instanceof RectangleF) {
+                super(arg1, arg2, arg3);
+                this.startAngle = arg4;
+                this.sweepAngle = arg5;
+            }
+            else {
+                super(arg1, arg2, arg3, arg4, arg5, arg6);
+                this.startAngle = arg7;
+                this.sweepAngle = arg8;
+            }
+        }
+        else {
+            super(arg1, arg2, arg3, arg4);
+            this.startAngle = arg5;
+            this.sweepAngle = arg6;
+        }
+    }
+}
+
+/**
+ * arc.ts class for EJ2-PDF
+ */
+/**
+ * `PdfArc` class Implements graphics arc, which is a sequence of primitive graphics elements.
+ * @private
+ */
+class PdfArc extends PdfEllipsePart {
+    /* tslint:disable-next-line:max-line-length */
+    constructor(arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
+        if (typeof arg1 === 'undefined') {
+            super();
+        }
+        else if (arg1 instanceof RectangleF) {
+            super(arg1, arg2, arg3);
+        }
+        else if (arg1 instanceof PdfPen) {
+            if (arg2 instanceof RectangleF) {
+                super(arg1, null, arg2, arg3, arg4);
+            }
+            else if (typeof arg6 === 'undefined' && typeof arg7 === 'undefined') {
+                super(arg1, null, 0, 0, arg2, arg3, arg4, arg5);
+            }
+            else if (typeof arg6 !== 'undefined' && typeof arg7 !== 'undefined') {
+                super(arg1, null, arg2, arg3, arg4, arg5, arg6, arg7);
+            }
+        }
+        else if (typeof arg1 !== 'undefined' && typeof arg5 === 'undefined' && typeof arg6 === 'undefined') {
+            super(0, 0, arg1, arg2, arg3, arg4);
+        }
+        else if (typeof arg1 !== 'undefined' && typeof arg5 !== 'undefined' && typeof arg6 !== 'undefined') {
+            super(arg1, arg2, arg3, arg4, arg5, arg6);
+        }
+    }
+    draw(argu1, arg2, arg3, arg4) {
+        if (arg2 instanceof PointF && typeof arg2.width === 'undefined' && typeof arg3 === 'undefined') {
+            return this.drawHelper(argu1, arg2.x, arg2.y);
+        }
+        else if (arg2 instanceof RectangleF && typeof arg2.width !== 'undefined' && typeof arg3 === 'undefined') {
+            return this.drawHelper(argu1, arg2, null);
+        }
+        else if (typeof arg2 === 'number' && typeof arg3 === 'number' && typeof arg4 === 'undefined') {
+            return this.drawHelper(argu1, arg2, arg3, null);
+        }
+        else if (arg2 instanceof PointF && arg3 instanceof PdfLayoutFormat) {
+            return this.drawHelper(argu1, arg2.x, arg2.y, arg3);
+        }
+        else if (typeof arg2 === 'number' && (arg4 instanceof PdfLayoutFormat || arg4 == null) && typeof arg3 === 'number') {
+            let widthValue = (argu1.graphics.clientSize.width - arg2);
+            let layoutRect = new RectangleF(arg2, arg3, widthValue, 0);
+            return this.drawHelper(argu1, layoutRect, arg4);
+        }
+        else {
+            return this.drawHelper(argu1, arg2, arg3);
+        }
+    }
+    // Implementation
+    /**
+     * `drawInternal` Draws an element on the Graphics.
+     * @param graphics Graphics context where the element should be printed.
+     *
+     */
+    drawInternal(graphics) {
+        if ((graphics == null)) {
+            throw new Error('ArgumentNullException : graphics');
+        }
+        graphics.drawArc(this.obtainPen(), this.bounds, this.startAngle, this.sweepAngle);
+    }
+}
+
+/**
+ * PdfTrueTypeFont.ts class for EJ2-PDF
+ */
+//https://www.giftofspeed.com/base64-encoder/
+class PdfTrueTypeFont extends PdfFont {
+    constructor(base64String, size, style) {
+        super(size);
+        /**
+         * Indicates whether the font is embedded or not.
+         * @private
+         */
+        this.isEmbedFont = false;
+        /**
+         * Indicates whether the font is unicoded or not.
+         * @private
+         */
+        this.isUnicode = true;
+        if (style !== undefined) {
+            this.createFontInternal(base64String, style);
+        }
+        else {
+            this.createFontInternal(base64String, PdfFontStyle.Regular);
+        }
+    }
+    equalsToFont(font) {
+        let result = false;
+        //let result : boolean = this.fontInternal.equalsToFont(font);
+        return result;
+    }
+    getLineWidth(line, format) {
+        let width = 0;
+        if (format !== null && format.textDirection !== PdfTextDirection.None) {
+            let returnValue = this.getUnicodeLineWidth(line, /*out*/ width, format);
+            width = returnValue.width;
+        }
+        else {
+            width = this.fontInternal.getLineWidth(line);
+        }
+        let size = this.metrics.getSize(format);
+        width *= (PdfFont.charSizeMultiplier * size);
+        width = this.applyFormatSettings(line, format, width);
+        return width;
+    }
+    /**
+     * Returns width of the char.
+     */
+    getCharWidth(charCode, format) {
+        let codeWidth = this.fontInternal.getCharWidth(charCode);
+        let size = this.metrics.getSize(format);
+        codeWidth *= (0.001 * size);
+        return codeWidth;
+    }
+    //Implementation
+    createFontInternal(base64String, style) {
+        this.fontInternal = new UnicodeTrueTypeFont(base64String, this.size);
+        this.calculateStyle(style);
+        this.initializeInternals();
+    }
+    calculateStyle(style) {
+        let iStyle = this.fontInternal.ttfMetrics.macStyle;
+        if ((style & PdfFontStyle.Underline) !== 0) {
+            iStyle |= PdfFontStyle.Underline;
+        }
+        if ((style & PdfFontStyle.Strikeout) !== 0) {
+            iStyle |= PdfFontStyle.Strikeout;
+        }
+        this.setStyle(iStyle);
+    }
+    initializeInternals() {
+        let equalFont = null;
+        if (PdfDocument.enableCache) {
+            // Search for the similar fonts.
+            equalFont = PdfDocument.cache.search(this);
+        }
+        let internals = null;
+        // There is not equal font in the cache.
+        if (equalFont !== null && equalFont !== undefined) {
+            // Get the settings from the cached font.
+            internals = equalFont.getInternals();
+            let metrics = equalFont.metrics;
+            metrics = metrics.clone();
+            metrics.size = this.size;
+            this.metrics = metrics;
+            this.fontInternal = equalFont.fontInternal;
+        }
+        else {
+            if (equalFont == null) {
+                if (this.fontInternal instanceof UnicodeTrueTypeFont) {
+                    this.fontInternal.isEmbed = this.isEmbedFont;
+                }
+                this.fontInternal.createInternals();
+                internals = this.fontInternal.getInternals();
+                this.metrics = this.fontInternal.metrics;
+            }
+        }
+        this.metrics.isUnicodeFont = true;
+        this.setInternals(internals);
+        //this.ttfReader = (this.fontInternal as UnicodeTrueTypeFont).ttfReader;
+    }
+    /**
+     * Stores used symbols.
+     */
+    setSymbols(text) {
+        let internalFont = this.fontInternal;
+        if (internalFont != null) {
+            internalFont.setSymbols(text);
+        }
+    }
+    /**
+     * Property
+     *
+     */
+    get Unicode() {
+        return this.isUnicode;
+    }
+    // public get Font() : UnicodeTrueTypeFont {
+    //     return this.fontInternal as UnicodeTrueTypeFont;
+    // }
+    getUnicodeLineWidth(line, /*out*/ width, format) {
+        // if (line == null) {
+        //     throw new Error('ArgumentNullException : line');
+        // }
+        width = 0;
+        let glyphIndices = null;
+        let rtlRender = new RtlRenderer();
+        /* tslint:disable-next-line:max-line-length */
+        let result = rtlRender.getGlyphIndex(line, this, (format.textDirection === PdfTextDirection.RightToLeft) ? true : false, /*out*/ glyphIndices, true);
+        let resultGlyph = result.success;
+        glyphIndices = result.glyphs;
+        if (resultGlyph && glyphIndices !== null) {
+            let ttfReader = this.fontInternal.ttfReader;
+            for (let i = 0, len = glyphIndices.length; i < len; i++) {
+                let glyphIndex = glyphIndices[i];
+                let glyph = ttfReader.getGlyph(glyphIndex);
+                if (glyph !== null && typeof glyph !== 'undefined') {
+                    width += glyph.width;
+                }
+            }
+        }
+        return { success: resultGlyph, width: width };
+    }
+}
+
+/**
+ * PdfPageTemplateElement.ts class for EJ2-Pdf
+ */
+/**
+ * Describes a `page template` object that can be used as header/footer, watermark or stamp.
+ */
+class PdfPageTemplateElement {
+    // Properties
+    /**
+     * Gets or sets the `dock style` of the page template element.
+     * @private
+     */
+    get dock() {
+        return this.dockStyle;
+    }
+    set dock(value) {
+        // if (this.dockStyle !== value && this.Type === TemplateType.None) {
+        this.dockStyle = value;
+        // Reset alignment.
+        this.resetAlignment();
+        // }
+    }
+    /**
+     * Gets or sets `alignment` of the page template element.
+     * @private
+     */
+    get alignment() {
+        return this.alignmentStyle;
+    }
+    set alignment(value) {
+        // if (this.alignmentStyle !== value) {
+        this.setAlignment(value);
+        // }
+    }
+    /**
+     * Indicates whether the page template is located `in front of the page layers or behind of it`.
+     * @private
+     */
+    get foreground() {
+        return this.isForeground;
+    }
+    set foreground(value) {
+        // if (this.foreground !== value) {
+        this.isForeground = value;
+        // }
+    }
+    /**
+     * Indicates whether the page template is located `behind of the page layers or in front of it`.
+     * @private
+     */
+    get background() {
+        return !this.isForeground;
+    }
+    set background(value) {
+        this.isForeground = !value;
+    }
+    /**
+     * Gets or sets `location` of the page template element.
+     * @private
+     */
+    get location() {
+        return this.currentLocation;
+    }
+    set location(value) {
+        if (this.type === TemplateType.None) {
+            this.currentLocation = value;
+        }
+        else {
+            //
+        }
+    }
+    /**
+     * Gets or sets `X` co-ordinate of the template element on the page.
+     * @private
+     */
+    get x() {
+        let value = (typeof this.currentLocation !== 'undefined') ? this.currentLocation.x : 0;
+        return value;
+    }
+    set x(value) {
+        if (this.type === TemplateType.None) {
+            this.currentLocation.x = value;
+        }
+        else {
+            //
+        }
+    }
+    /**
+     * Gets or sets `Y` co-ordinate of the template element on the page.
+     * @private
+     */
+    get y() {
+        let value = (typeof this.currentLocation !== 'undefined') ? this.currentLocation.y : 0;
+        return value;
+    }
+    set y(value) {
+        if (this.type === TemplateType.None) {
+            this.currentLocation.y = value;
+        }
+        else {
+            //
+        }
+    }
+    /**
+     * Gets or sets `size` of the page template element.
+     * @private
+     */
+    get size() {
+        return this.template.size;
+    }
+    set size(value) {
+        if (this.type === TemplateType.None) {
+            this.template.reset(value);
+        }
+    }
+    /**
+     * Gets or sets `width` of the page template element.
+     * @private
+     */
+    get width() {
+        return this.template.width;
+    }
+    set width(value) {
+        if (this.template.width !== value && this.type === TemplateType.None) {
+            let size = this.template.size;
+            size.width = value;
+            this.template.reset(size);
+        }
+    }
+    /**
+     * Gets or sets `height` of the page template element.
+     * @private
+     */
+    get height() {
+        return this.template.height;
+    }
+    set height(value) {
+        if (this.template.height !== value && this.type === TemplateType.None) {
+            let size = this.template.size;
+            size.height = value;
+            this.template.reset(size);
+        }
+    }
+    /**
+     * Gets `graphics` context of the page template element.
+     * @private
+     */
+    get graphics() {
+        return this.template.graphics;
+    }
+    /**
+     * Gets Pdf `template` object.
+     * @private
+     */
+    get template() {
+        // if (typeof this.pdfTemplate === 'undefined' || this.pdfTemplate == null) {
+        //     this.pdfTemplate = new PdfTemplate(this.size);
+        // }
+        return this.pdfTemplate;
+    }
+    /**
+     * Gets or sets `type` of the usage of this page template.
+     * @private
+     */
+    get type() {
+        return this.templateType;
+    }
+    set type(value) {
+        this.updateDocking(value);
+        this.templateType = value;
+    }
+    /**
+     * Gets or sets `bounds` of the page template.
+     * @public
+     */
+    get bounds() {
+        return new RectangleF(new PointF(this.x, this.y), this.size);
+    }
+    set bounds(value) {
+        if (this.type === TemplateType.None) {
+            this.location = new PointF(value.x, value.y);
+            this.size = new SizeF(value.width, value.height);
+        }
+    }
+    /* tslint:disable */
+    constructor(arg1, arg2, arg3, arg4, arg5) {
+        if (arg1 instanceof RectangleF && typeof arg2 === 'undefined') {
+            this.InitiateBounds(arg1.x, arg1.y, arg1.width, arg1.height, null);
+        }
+        else if (arg1 instanceof RectangleF && arg2 instanceof PdfPage && typeof arg3 === 'undefined') {
+            this.InitiateBounds(arg1.x, arg1.y, arg1.width, arg1.height, arg2);
+        }
+        else if (arg1 instanceof PointF && arg2 instanceof SizeF && typeof arg3 === 'undefined') {
+            this.InitiateBounds(arg1.x, arg1.y, arg2.width, arg2.height, null);
+        }
+        else if (arg1 instanceof PointF && arg2 instanceof SizeF && arg3 instanceof PdfPage && typeof arg4 === 'undefined') {
+            this.InitiateBounds(arg1.x, arg1.y, arg2.width, arg2.height, arg3);
+        }
+        else if (arg1 instanceof SizeF && typeof arg2 === 'undefined') {
+            this.InitiateBounds(0, 0, arg1.width, arg1.height, null);
+        }
+        else if (typeof arg1 === 'number' && typeof arg2 === 'number' && typeof arg3 === 'undefined') {
+            this.InitiateBounds(0, 0, arg1, arg2, null);
+        }
+        else if (typeof arg1 === 'number' && typeof arg2 === 'number' && arg3 instanceof PdfPage && typeof arg4 === 'undefined') {
+            this.InitiateBounds(0, 0, arg1, arg2, arg3);
+        }
+        else if (typeof arg1 === 'number' && typeof arg2 === 'number' && typeof arg3 === 'number' && typeof arg4 === 'number' && typeof arg5 === 'undefined') {
+            this.InitiateBounds(arg1, arg2, arg3, arg4, null);
+        }
+        else {
+            this.InitiateBounds(arg1, arg2, arg3, arg4, null);
+            // this.graphics.colorSpace = this.page.document.colorSpace;
+        }
+        /* tslint:enable */
+    }
+    /**
+     * `Initialize Bounds` Initialize the bounds value of the template.
+     * @private
+     */
+    InitiateBounds(arg1, arg2, arg3, arg4, arg5) {
+        this.x = arg1;
+        this.y = arg2;
+        this.pdfTemplate = new PdfTemplate(arg3, arg4);
+        // this.graphics.colorSpace = this.page.document.colorSpace;
+    }
+    /**
+     * `Updates Dock` property if template is used as header/footer.
+     * @private
+     */
+    updateDocking(type) {
+        if (type !== TemplateType.None) {
+            switch (type) {
+                case TemplateType.Top:
+                    this.dock = PdfDockStyle.Top;
+                    break;
+                case TemplateType.Bottom:
+                    this.dock = PdfDockStyle.Bottom;
+                    break;
+                case TemplateType.Left:
+                    this.dock = PdfDockStyle.Left;
+                    break;
+                case TemplateType.Right:
+                    this.dock = PdfDockStyle.Right;
+                    break;
+            }
+            this.resetAlignment();
+        }
+    }
+    /**
+     * `Resets alignment` of the template.
+     * @private
+     */
+    resetAlignment() {
+        this.alignment = PdfAlignmentStyle.None;
+    }
+    /**
+     * `Sets alignment` of the template.
+     * @private
+     */
+    setAlignment(alignment) {
+        if (this.dock === PdfDockStyle.None) {
+            this.alignmentStyle = alignment;
+        }
+        else {
+            // Template is docked and alignment has been changed.
+            let canBeSet = false;
+            switch (this.dock) {
+                case PdfDockStyle.Left:
+                    canBeSet = (alignment === PdfAlignmentStyle.TopLeft || alignment === PdfAlignmentStyle.MiddleLeft ||
+                        alignment === PdfAlignmentStyle.BottomLeft || alignment === PdfAlignmentStyle.None);
+                    break;
+                case PdfDockStyle.Top:
+                    canBeSet = (alignment === PdfAlignmentStyle.TopLeft || alignment === PdfAlignmentStyle.TopCenter ||
+                        alignment === PdfAlignmentStyle.TopRight || alignment === PdfAlignmentStyle.None);
+                    break;
+                case PdfDockStyle.Right:
+                    canBeSet = (alignment === PdfAlignmentStyle.TopRight || alignment === PdfAlignmentStyle.MiddleRight ||
+                        alignment === PdfAlignmentStyle.BottomRight || alignment === PdfAlignmentStyle.None);
+                    break;
+                case PdfDockStyle.Bottom:
+                    canBeSet = (alignment === PdfAlignmentStyle.BottomLeft || alignment === PdfAlignmentStyle.BottomCenter
+                        || alignment === PdfAlignmentStyle.BottomRight || alignment === PdfAlignmentStyle.None);
+                    break;
+                case PdfDockStyle.Fill:
+                    canBeSet = (alignment === PdfAlignmentStyle.MiddleCenter || alignment === PdfAlignmentStyle.None);
+                    break;
+            }
+            if (canBeSet) {
+                this.alignmentStyle = alignment;
+            }
+        }
+    }
+    /**
+     * Draws the template.
+     * @private
+     */
+    draw(layer, document) {
+        let page = layer.page;
+        let bounds = this.calculateBounds(page, document);
+        if (bounds.x === -0) {
+            bounds.x = 0;
+        }
+        layer.graphics.drawPdfTemplate(this.template, new PointF(bounds.x, bounds.y), new SizeF(bounds.width, bounds.height));
+    }
+    /**
+     * Calculates bounds of the page template.
+     * @private
+     */
+    calculateBounds(page, document) {
+        let result = this.bounds;
+        if (this.alignmentStyle !== PdfAlignmentStyle.None) {
+            result = this.getAlignmentBounds(page, document);
+        }
+        else if (this.dockStyle !== PdfDockStyle.None) {
+            result = this.getDockBounds(page, document);
+        }
+        return result;
+    }
+    /**
+     * Calculates bounds according to the alignment.
+     * @private
+     */
+    getAlignmentBounds(page, document) {
+        let result = this.bounds;
+        if (this.type === TemplateType.None) {
+            result = this.getSimpleAlignmentBounds(page, document);
+        }
+        else {
+            result = this.getTemplateAlignmentBounds(page, document);
+        }
+        return result;
+    }
+    /**
+     * Calculates bounds according to the alignment.
+     * @private
+     */
+    getSimpleAlignmentBounds(page, document) {
+        let bounds = this.bounds;
+        let pdfSection = page.section;
+        let actualBounds = pdfSection.getActualBounds(document, page, false);
+        let x = this.x;
+        let y = this.y;
+        switch (this.alignmentStyle) {
+            case PdfAlignmentStyle.TopLeft:
+                x = 0;
+                y = 0;
+                break;
+            case PdfAlignmentStyle.TopCenter:
+                x = (actualBounds.width - this.width) / 2;
+                y = 0;
+                break;
+            case PdfAlignmentStyle.TopRight:
+                x = actualBounds.width - this.width;
+                y = 0;
+                break;
+            case PdfAlignmentStyle.MiddleLeft:
+                x = 0;
+                y = (actualBounds.height - this.height) / 2;
+                break;
+            case PdfAlignmentStyle.MiddleCenter:
+                x = (actualBounds.width - this.width) / 2;
+                y = (actualBounds.height - this.height) / 2;
+                break;
+            case PdfAlignmentStyle.MiddleRight:
+                x = actualBounds.width - this.width;
+                y = (actualBounds.height - this.height) / 2;
+                break;
+            case PdfAlignmentStyle.BottomLeft:
+                x = 0;
+                y = actualBounds.height - this.height;
+                break;
+            case PdfAlignmentStyle.BottomCenter:
+                x = (actualBounds.width - this.width) / 2;
+                y = actualBounds.height - this.height;
+                break;
+            case PdfAlignmentStyle.BottomRight:
+                x = actualBounds.width - this.width;
+                y = actualBounds.height - this.height;
+                break;
+        }
+        bounds.x = x;
+        bounds.y = y;
+        return bounds;
+    }
+    /**
+     * Calculates bounds according to the alignment.
+     * @private
+     */
+    getTemplateAlignmentBounds(page, document) {
+        let result = this.bounds;
+        let section = page.section;
+        let actualBounds = section.getActualBounds(document, page, false);
+        let x = this.x;
+        let y = this.y;
+        switch (this.alignmentStyle) {
+            case PdfAlignmentStyle.TopLeft:
+                if (this.type === TemplateType.Left) {
+                    x = -actualBounds.x;
+                    y = 0;
+                }
+                else if (this.type === TemplateType.Top) {
+                    x = -actualBounds.x;
+                    y = -actualBounds.y;
+                }
+                break;
+            case PdfAlignmentStyle.TopCenter:
+                x = (actualBounds.width - this.width) / 2;
+                y = -actualBounds.y;
+                break;
+            case PdfAlignmentStyle.TopRight:
+                if (this.type === TemplateType.Right) {
+                    x = actualBounds.width + section.getRightIndentWidth(document, page, false) - this.width;
+                    y = 0;
+                }
+                else if (this.type === TemplateType.Top) {
+                    x = actualBounds.width + section.getRightIndentWidth(document, page, false) - this.width;
+                    y = -actualBounds.y;
+                }
+                break;
+            case PdfAlignmentStyle.MiddleLeft:
+                x = -actualBounds.x;
+                y = (actualBounds.height - this.height) / 2;
+                break;
+            case PdfAlignmentStyle.MiddleCenter:
+                x = (actualBounds.width - this.width) / 2;
+                y = (actualBounds.height - this.height) / 2;
+                break;
+            case PdfAlignmentStyle.MiddleRight:
+                x = actualBounds.width + section.getRightIndentWidth(document, page, false) - this.width;
+                y = (actualBounds.height - this.height) / 2;
+                break;
+            case PdfAlignmentStyle.BottomLeft:
+                if (this.type === TemplateType.Left) {
+                    x = -actualBounds.x;
+                    y = actualBounds.height - this.height;
+                }
+                else if (this.type === TemplateType.Bottom) {
+                    x = -actualBounds.x;
+                    y = actualBounds.height + section.getBottomIndentHeight(document, page, false) - this.height;
+                }
+                break;
+            case PdfAlignmentStyle.BottomCenter:
+                x = (actualBounds.width - this.width) / 2;
+                y = actualBounds.height + section.getBottomIndentHeight(document, page, false) - this.height;
+                break;
+            case PdfAlignmentStyle.BottomRight:
+                if (this.type === TemplateType.Right) {
+                    x = actualBounds.width + section.getRightIndentWidth(document, page, false) - this.width;
+                    y = actualBounds.height - this.height;
+                }
+                else if (this.type === TemplateType.Bottom) {
+                    x = actualBounds.width + section.getRightIndentWidth(document, page, false) - this.width;
+                    y = actualBounds.height + section.getBottomIndentHeight(document, page, false) - this.height;
+                }
+                break;
+        }
+        result.x = x;
+        result.y = y;
+        return result;
+    }
+    /**
+     * Calculates bounds according to the docking.
+     * @private
+     */
+    getDockBounds(page, document) {
+        let result = this.bounds;
+        if (this.type === TemplateType.None) {
+            result = this.getSimpleDockBounds(page, document);
+        }
+        else {
+            result = this.getTemplateDockBounds(page, document);
+        }
+        return result;
+    }
+    /**
+     * Calculates bounds according to the docking.
+     * @private
+     */
+    getSimpleDockBounds(page, document) {
+        let result = this.bounds;
+        let section = page.section;
+        let actualBounds = section.getActualBounds(document, page, false);
+        let x = this.x;
+        let y = this.y;
+        let width = this.width;
+        let height = this.height;
+        switch (this.dockStyle) {
+            case PdfDockStyle.Left:
+                x = 0;
+                y = 0;
+                width = this.width;
+                height = actualBounds.height;
+                break;
+            case PdfDockStyle.Top:
+                x = 0;
+                y = 0;
+                width = actualBounds.width;
+                height = this.height;
+                break;
+            case PdfDockStyle.Right:
+                x = actualBounds.width - this.width;
+                y = 0;
+                width = this.width;
+                height = actualBounds.height;
+                break;
+            case PdfDockStyle.Bottom:
+                x = 0;
+                y = actualBounds.height - this.height;
+                width = actualBounds.width;
+                height = this.height;
+                break;
+            case PdfDockStyle.Fill:
+                x = 0;
+                x = 0;
+                width = actualBounds.width;
+                height = actualBounds.height;
+                break;
+        }
+        result = new RectangleF(x, y, width, height);
+        return result;
+    }
+    /**
+     * Calculates template bounds basing on docking if template is a page template.
+     * @private
+     */
+    getTemplateDockBounds(page, document) {
+        let result = this.bounds;
+        let section = page.section;
+        let actualBounds = section.getActualBounds(document, page, false);
+        let actualSize = section.pageSettings.getActualSize();
+        let x = this.x;
+        let y = this.y;
+        let width = this.width;
+        let height = this.height;
+        switch (this.dockStyle) {
+            case PdfDockStyle.Left:
+                x = -actualBounds.x;
+                y = 0;
+                width = this.width;
+                height = actualBounds.height;
+                break;
+            case PdfDockStyle.Top:
+                x = -actualBounds.x;
+                y = -actualBounds.y;
+                width = actualSize.width;
+                height = this.height;
+                if (actualBounds.height < 0) {
+                    y = -actualBounds.y + actualSize.height;
+                }
+                break;
+            case PdfDockStyle.Right:
+                x = actualBounds.width + section.getRightIndentWidth(document, page, false) - this.width;
+                y = 0;
+                width = this.width;
+                height = actualBounds.height;
+                break;
+            case PdfDockStyle.Bottom:
+                x = -actualBounds.x;
+                y = actualBounds.height + section.getBottomIndentHeight(document, page, false) - this.height;
+                width = actualSize.width;
+                height = this.height;
+                if (actualBounds.height < 0) {
+                    y -= actualSize.height;
+                }
+                break;
+            case PdfDockStyle.Fill:
+                x = 0;
+                x = 0;
+                width = actualBounds.width;
+                height = actualBounds.height;
+                break;
+        }
+        result = new RectangleF(x, y, width, height);
+        return result;
+    }
+}
+
+/**
  * Pdf all modules
  * @hidden
  */
 
-export { PdfAction, PdfUriAction, PdfActionLinkAnnotation, PdfAnnotation, PdfAnnotationCollection, PdfDocumentLinkAnnotation, PdfLinkAnnotation, PdfTextWebLink, PdfUriAnnotation, Dictionary, defaultToString, PdfCatalog, PdfDocument, PdfDocumentBase, PdfDocumentTemplate, PdfPageNumberField, PdfCompositeField, PdfPageCountField, PointF, SizeF, RectangleF, Rectangle, PdfCacheCollection, PdfCollection, PdfDestination, PdfDestinationMode, ProcedureSets, PdfHorizontalAlignment, PdfVerticalAlignment, PdfTextAlignment, TextRenderingMode, PdfLineJoin, PdfLineCap, PdfDashStyle, PdfFillMode, PdfColorSpace, PdfBlendMode, PdfGraphicsUnit, PdfGridImagePosition, PdfTextDirection, PdfColor, PdfGraphics, GetResourceEventHandler, PdfGraphicsState, PdfMargins, PdfPen, PdfResources, Guid, PdfTransformationMatrix, Matrix, PdfBrush, PdfSolidBrush, PdfTemplate, PdfLayoutElement, PdfTextElement, ElementLayouter, PdfLayoutFormat, PdfLayoutParams, PdfLayoutResult, TextLayouter, TextPageLayoutResult, PdfTextLayoutResult, PdfLayoutType, PdfLayoutBreakType, PdfFontStyle, PdfFontFamily, PdfFontType, PdfWordWrapType, PdfSubSuperScript, FontEncoding, TtfCmapFormat, TtfCmapEncoding, TtfPlatformID, TtfMicrosoftEncodingID, TtfMacintoshEncodingID, FontDescriptorFlags, TtfCompositeGlyphFlags, PdfFont, PdfFontMetrics, WidthTable, StandardWidthTable, PdfStandardFont, PdfStandardFontMetricsFactory, PdfStringFormat, PdfStringLayouter, PdfStringLayoutResult, LineInfo, LineType, StringTokenizer, PdfTrueTypeFont, RtlRenderer, ArabicShapeRenderer, ArabicShape, Bidi, RtlCharacters, ByteArray, ImageFormat, ImageDecoder, PdfBitmap, PdfImage, PdfTransparency, ObjectStatus, ObjectType, PdfCrossTable, RegisteredObject, DictionaryProperties, PdfMainObjectCollection, ObjectInfo, Operators, PdfStreamWriter, PdfWriter, PdfPageOrientation, PdfPageRotateAngle, PdfNumberStyle, PdfDockStyle, PdfAlignmentStyle, TemplateType, PageAddedEventArgs, PdfDocumentPageCollection, PdfPage, PdfPageBase, PdfPageLayer, PdfPageLayerCollection, PdfPageSettings, PdfPageSize, PdfPageTemplateElement, PdfSection, PageSettingsState, PdfSectionCollection, PdfSectionPageCollection, PdfSectionTemplate, PdfArray, PdfDictionary, SaveSectionCollectionEventHandler, SaveDescendantFontEventHandler, SaveFontDictionaryEventHandler, SaveAnnotationEventHandler, SaveSectionEventHandler, SaveTemplateEventHandler, PdfName, PdfNumber, PdfReference, PdfReferenceHolder, PdfStream, SaveCmapEventHandler, SaveFontProgramEventHandler, InternalEnum, PdfString, PdfGridStyleBase, PdfGridStyle, PdfGridCellStyle, PdfGridRowStyle, PdfHorizontalOverflowType, PdfBorders, PdfPaddings, PdfBorderOverlapStyle, PdfGridLayouter, PdfGridLayoutResult, PdfGridLayoutFormat, GridCellEventArgs, PdfGridBeginCellDrawEventArgs, PdfGridEndCellDrawEventArgs, PdfCancelEventArgs, BeginPageLayoutEventArgs, EndPageLayoutEventArgs, PdfGridBeginPageLayoutEventArgs, PdfGridEndPageLayoutEventArgs, RowLayoutResult, PdfGrid, PdfGridColumn, PdfGridColumnCollection, PdfGridRow, PdfGridRowCollection, PdfGridHeaderCollection, PdfGridCell, PdfGridCellCollection };
+export { PdfAction, PdfUriAction, PdfActionLinkAnnotation, PdfAnnotation, PdfAnnotationCollection, PdfDocumentLinkAnnotation, PdfLinkAnnotation, PdfTextWebLink, PdfUriAnnotation, Dictionary, defaultToString, PdfCatalog, PdfDocument, PdfDocumentBase, PdfDocumentTemplate, PdfPageNumberField, PdfCompositeField, PdfPageCountField, PointF, SizeF, RectangleF, Rectangle, PdfCacheCollection, PdfCollection, PdfDestination, PdfFunction, PdfSampledFunction, PdfDestinationMode, ProcedureSets, PdfHorizontalAlignment, PdfVerticalAlignment, PdfTextAlignment, TextRenderingMode, PdfLineJoin, PdfLineCap, PdfDashStyle, PdfFillMode, PdfColorSpace, PdfBlendMode, PdfGraphicsUnit, PdfGridImagePosition, PdfTextDirection, PdfColor, PdfGraphics, GetResourceEventHandler, PdfGraphicsState, PdfMargins, PdfPen, PdfResources, Guid, PdfTransformationMatrix, Matrix, PdfBrush, PdfBrushes, PdfSolidBrush, PdfLinearGradientBrush, PdfRadialGradientBrush, PdfTilingBrush, PdfGradientBrush, PdfColorBlend, PdfBlend, PdfTemplate, PdfLayoutElement, PdfPath, PdfArc, PdfTextElement, ElementLayouter, PdfLayoutFormat, PdfLayoutParams, PdfLayoutResult, TextLayouter, TextPageLayoutResult, PdfTextLayoutResult, PdfLayoutType, PdfLayoutBreakType, PathPointType, PdfFontStyle, PdfFontFamily, PdfFontType, PdfWordWrapType, PdfSubSuperScript, FontEncoding, TtfCmapFormat, TtfCmapEncoding, TtfPlatformID, TtfMicrosoftEncodingID, TtfMacintoshEncodingID, FontDescriptorFlags, TtfCompositeGlyphFlags, PdfFont, PdfFontMetrics, WidthTable, StandardWidthTable, PdfStandardFont, PdfStandardFontMetricsFactory, PdfStringFormat, PdfStringLayouter, PdfStringLayoutResult, LineInfo, LineType, StringTokenizer, PdfTrueTypeFont, RtlRenderer, ArabicShapeRenderer, ArabicShape, Bidi, RtlCharacters, ByteArray, ImageFormat, ImageDecoder, PdfBitmap, PdfImage, PdfTransparency, ObjectStatus, ObjectType, PdfCrossTable, RegisteredObject, DictionaryProperties, PdfMainObjectCollection, ObjectInfo, Operators, PdfStreamWriter, PdfWriter, PdfPageOrientation, PdfPageRotateAngle, PdfNumberStyle, PdfDockStyle, PdfAlignmentStyle, TemplateType, PageAddedEventArgs, PdfDocumentPageCollection, PdfPage, PdfPageBase, PdfPageLayer, PdfPageLayerCollection, PdfPageSettings, PdfPageSize, PdfPageTemplateElement, PdfSection, PageSettingsState, PdfSectionCollection, PdfSectionPageCollection, PdfSectionTemplate, PdfArray, PdfDictionary, SaveSectionCollectionEventHandler, SaveDescendantFontEventHandler, SaveFontDictionaryEventHandler, SaveAnnotationEventHandler, SaveSectionEventHandler, SaveTemplateEventHandler, PdfName, PdfNumber, PdfReference, PdfReferenceHolder, PdfStream, SaveCmapEventHandler, SaveFontProgramEventHandler, InternalEnum, PdfString, PdfGridStyleBase, PdfGridStyle, PdfGridCellStyle, PdfGridRowStyle, PdfHorizontalOverflowType, PdfBorders, PdfPaddings, PdfBorderOverlapStyle, PdfGridLayouter, PdfGridLayoutResult, PdfGridLayoutFormat, GridCellEventArgs, PdfGridBeginCellDrawEventArgs, PdfGridEndCellDrawEventArgs, PdfCancelEventArgs, BeginPageLayoutEventArgs, EndPageLayoutEventArgs, PdfGridBeginPageLayoutEventArgs, PdfGridEndPageLayoutEventArgs, RowLayoutResult, PdfGrid, PdfGridColumn, PdfGridColumnCollection, PdfGridRow, PdfGridRowCollection, PdfGridHeaderCollection, PdfGridCell, PdfGridCellCollection };
 //# sourceMappingURL=ej2-pdf-export.es2015.js.map

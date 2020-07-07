@@ -346,7 +346,12 @@ export class Magnification {
             if (this.pdfViewer.toolbarModule) {
                 this.pdfViewer.toolbarModule.updateZoomButtons();
             }
-            this.pdfViewer.fireZoomChange();
+            if (!this.isInitialLoading) {
+                if (this.previousZoomFactor !== this.zoomFactor) {
+                    this.pdfViewer.zoomValue = this.zoomFactor * 100;
+                    this.pdfViewer.fireZoomChange();
+                }
+            }
         }
         if (this.pdfViewer.toolbarModule) {
             this.pdfViewer.toolbarModule.updateZoomPercentage(this.zoomFactor);
@@ -715,6 +720,11 @@ export class Magnification {
     }
 
     private resizeCanvas(pageNumber: number): void {
+        if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.inkAnnotationModule) {
+            // tslint:disable-next-line
+            let currentPageNumber: number = parseInt(this.pdfViewer.annotationModule.inkAnnotationModule.currentPageNumber);
+            this.pdfViewer.annotationModule.inkAnnotationModule.drawInkAnnotation(currentPageNumber);
+        }
         let lowerPageValue: number = pageNumber - 3;
         let higherPageValue: number = pageNumber + 3;
         if (this.pdfViewerBase.isMinimumZoom) {

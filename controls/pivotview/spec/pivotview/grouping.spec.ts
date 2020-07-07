@@ -68,7 +68,7 @@ describe('Group By Date feature', () => {
                 expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="0"]')[0].textContent).toBe('1970');
                 (pivotGridObj.element.querySelector('.e-firstcell') as HTMLInputElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Check single value header', (done: Function) => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -77,7 +77,7 @@ describe('Group By Date feature', () => {
                 expect((pivotGridObj.element.querySelector('.e-firstcell') as HTMLInputElement).innerText.trim() === 'Balance').toBeTruthy();
                 (pivotGridObj.element.querySelector('.e-firstcell') as HTMLInputElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Check date groups after value sorting', (done: Function) => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -85,7 +85,7 @@ describe('Group By Date feature', () => {
                 expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="0"]')[0].textContent).toBe('1970');
                 expect((pivotGridObj.element.querySelector('.e-firstcell') as HTMLInputElement).innerText.trim() === 'Balance').toBeTruthy();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Check group settings update using on proptery', (done: Function) => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -94,7 +94,7 @@ describe('Group By Date feature', () => {
                 // expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="0"]')[0].textContent).toBe('1970');
                 expect((pivotGridObj.element.querySelector('.e-firstcell') as HTMLInputElement).innerText.trim() === 'Balance').toBeTruthy();
                 done();
-            }, 1000);
+            }, 2000);
         });
     });
     describe(' -  Initial Rendering with range', () => {
@@ -137,7 +137,7 @@ describe('Group By Date feature', () => {
                 expect(pivotGridObj.element.querySelectorAll('th[aria-colindex="1"]')[0].textContent).toBe('25-29');
                 (pivotGridObj.element.querySelector('.e-firstcell') as HTMLInputElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Check single value header', (done: Function) => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -147,7 +147,7 @@ describe('Group By Date feature', () => {
                 expect((pivotGridObj.element.querySelector('.e-firstcell') as HTMLInputElement).innerText.trim() === 'Balance').toBeTruthy();
                 (pivotGridObj.element.querySelector('.e-firstcell') as HTMLInputElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Check date groups after value sorting', (done: Function) => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -156,7 +156,7 @@ describe('Group By Date feature', () => {
                 expect(pivotGridObj.element.querySelectorAll('th[aria-colindex="1"]')[0].textContent).toBe('25-29');
                 expect((pivotGridObj.element.querySelector('.e-firstcell') as HTMLInputElement).innerText.trim() === 'Balance').toBeTruthy();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Check group settings update using on proptery', (done: Function) => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -165,7 +165,7 @@ describe('Group By Date feature', () => {
                 // expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="0"]')[0].textContent).toBe('1970');
                 expect((pivotGridObj.element.querySelector('.e-firstcell') as HTMLInputElement).innerText.trim() === 'Balance').toBeTruthy();
                 done();
-            }, 1000);
+            }, 2000);
         });
     });
     describe(' -  Initial Rendering with range - PivotChart', () => {
@@ -211,7 +211,7 @@ describe('Group By Date feature', () => {
             setTimeout(() => {
                 expect(document.getElementById('PivotGrid_chart_Series_0_Point_0').getAttribute('aria-label')).toBe('1975:4');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Group settings with chart - Days and Months on values', (done: Function) => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -220,7 +220,7 @@ describe('Group By Date feature', () => {
             setTimeout(() => {
                 expect(document.getElementById('PivotGrid_chart_Series_0_Point_0').getAttribute('aria-label')).toBe('1975:4');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Group settings with chart - Days, Months and Quarters on values', (done: Function) => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -229,14 +229,14 @@ describe('Group By Date feature', () => {
             setTimeout(() => {
                 expect(document.getElementById('PivotGrid_chart_Series_0_Point_0').getAttribute('aria-label')).toBe('1975:4');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Group settings with chart - Days, Months, Quarters and Years on values', (done: Function) => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             pivotGridObj.dataSourceSettings.rows = [];
             pivotGridObj.dataSourceSettings.values = [{ name: 'date' }, { name: 'date_date_group_months' }, { name: 'date_date_group_years' }, { name: 'date_date_group_quarters' }];
             setTimeout(() => {
-                expect(document.getElementById('PivotGrid_chart_Series_0_Point_0').getAttribute('aria-label')).toBe('Grand Total:102');
+                expect(document.getElementById('PivotGrid_chart_Series_0_Point_0').getAttribute('aria-label')).toBe('Grand Total:67');
                 done();
             }, 2000);
         });
@@ -281,7 +281,7 @@ describe('Group By Date feature', () => {
                 expect(pivotGridObj.element.querySelectorAll('th[aria-colindex="1"]')[0].textContent).toBe('25-29');
                 (pivotGridObj.element.querySelector('.e-firstcell') as HTMLInputElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Check single value header', (done: Function) => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -291,7 +291,7 @@ describe('Group By Date feature', () => {
                 expect((pivotGridObj.element.querySelector('.e-firstcell') as HTMLInputElement).innerText.trim() === 'Balance').toBeTruthy();
                 (pivotGridObj.element.querySelector('.e-firstcell') as HTMLInputElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Check date groups after value sorting', (done: Function) => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -300,7 +300,7 @@ describe('Group By Date feature', () => {
                 expect(pivotGridObj.element.querySelectorAll('th[aria-colindex="1"]')[0].textContent).toBe('25-29');
                 expect((pivotGridObj.element.querySelector('.e-firstcell') as HTMLInputElement).innerText.trim() === 'Balance').toBeTruthy();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Check group settings update using on proptery', (done: Function) => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -309,7 +309,7 @@ describe('Group By Date feature', () => {
                 // expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="0"]')[0].textContent).toBe('1970');
                 expect((pivotGridObj.element.querySelector('.e-firstcell') as HTMLInputElement).innerText.trim() === 'Balance').toBeTruthy();
                 done();
-            }, 1000);
+            }, 2000);
         });
     });
     describe('- Editing - normal', () => {
@@ -395,7 +395,7 @@ describe('Group By Date feature', () => {
                 document.querySelectorAll('.e-drillthrough-grid .e-tbar-btn')[3].dispatchEvent(click);
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('click female-quantity', (done: Function) => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -409,7 +409,7 @@ describe('Group By Date feature', () => {
                 document.querySelectorAll('.e-drillthrough-grid .e-tbar-btn')[3].dispatchEvent(click);
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
     });
     describe('- Grouping Bar with injected Module - ', () => {
@@ -491,7 +491,7 @@ describe('Group By Date feature', () => {
                 let filterDialog: Dialog = pivotGridObj.pivotCommon.filterDialog.dialogPopUp;
                 expect(filterDialog.element.classList.contains('e-popup-open')).toBe(true);
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('check all nodes on filter popup', () => {
             let treeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.allMemberSelect;
@@ -526,7 +526,7 @@ describe('Group By Date feature', () => {
                 pivotButton = (pivotGridObj.element.querySelector('.e-filters').querySelector('.e-pivot-button') as HTMLElement);
                 expect(pivotButton).toBeNull();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('check drag and drop pivot button', (done: Function) => {
             pivotGridObj.onFieldDropped = function (args: FieldDroppedEventArgs) {
@@ -562,7 +562,7 @@ describe('Group By Date feature', () => {
                 expect(pivotButton.length).toEqual(2);
                 expect((pivotButton[1].querySelector('.e-content') as HTMLElement).innerText).toEqual("droppedButton");
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('destroy common event handlers', () => {
             pivotGridObj.commonModule.destroy();
@@ -656,7 +656,7 @@ describe('Group By Date feature', () => {
                 let filterDialog: Dialog = pivotGridObj.pivotCommon.filterDialog.dialogPopUp;
                 expect(filterDialog.element.classList.contains('e-popup-open')).toBe(true);
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('check all nodes on filter popup', () => {
             let treeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.allMemberSelect;
@@ -691,7 +691,7 @@ describe('Group By Date feature', () => {
                 pivotButton = (pivotGridObj.element.querySelector('.e-filters').querySelector('.e-pivot-button') as HTMLElement);
                 expect(pivotButton).toBeNull();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('check drag and drop pivot button', (done: Function) => {
             pivotGridObj.onFieldDropped = function (args: FieldDroppedEventArgs) {
@@ -721,7 +721,7 @@ describe('Group By Date feature', () => {
                 expect(pivotButton.length).toEqual(2);
                 expect((pivotButton[1].querySelector('.e-content') as HTMLElement).innerText).toEqual("droppedButton");
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('set rtl property', (done: Function) => {
             pivotGridObj.enableRtl = true;
@@ -729,7 +729,7 @@ describe('Group By Date feature', () => {
             setTimeout(() => {
                 expect(pivotGridObj.element.classList.contains('e-rtl')).toBeTruthy;
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('remove rtl property', (done: Function) => {
             pivotGridObj.enableRtl = false;
@@ -737,7 +737,7 @@ describe('Group By Date feature', () => {
             setTimeout(() => {
                 expect(pivotGridObj.element.classList.contains('e-rtl')).not.toBeTruthy;
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('destroy common event handlers', () => {
             pivotGridObj.commonModule.destroy();
@@ -816,7 +816,7 @@ describe('Grouping feature in UI', () => {
             setTimeout(() => {
                 expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="0"]')[0].textContent).toBe('Airways');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('contextmenu in row header', () => {
             pivotGridObj.lastCellClicked = document.querySelector('.e-rowsheader');
@@ -827,7 +827,7 @@ describe('Grouping feature in UI', () => {
             setTimeout(() => {
                 expect(document.querySelector('#PivotGrid_grid_cmenu')).toBeTruthy();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Perform group option for false statement', (done: Function) => {
             (document.querySelector('#' + pivotGridObj.element.id + '_custom_group') as HTMLElement).click();
@@ -835,7 +835,7 @@ describe('Grouping feature in UI', () => {
                 expect(document.querySelector('.e-pivot-error-dialog')).toBeTruthy();
                 (document.querySelector('.e-pivot-error-dialog').querySelector('.e-ok-btn') as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Perform ungroup option', (done: Function) => {
             expect(document.querySelector('.e-pivot-error-dialog') == null).toBeTruthy();
@@ -846,7 +846,7 @@ describe('Grouping feature in UI', () => {
                 expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="0"]')[3].textContent).toBe('Jet');
                 expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="0"]')[3].querySelector('.e-expand')).toBeTruthy();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Expand All', (done: Function) => {
             pivotGridObj.dataSourceSettings.expandAll = true;
@@ -859,7 +859,7 @@ describe('Grouping feature in UI', () => {
                 expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="0"]')[8].querySelector('.e-collapse')).toBeTruthy();
                 expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="0"]')[9].textContent).toBe('Jet');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Create new group from selction Jet keyboard ctrl + mouse click', function (done) {
             document.querySelector('[aria-colindex="0"][index="10"]').dispatchEvent(ctrlClick);
@@ -867,7 +867,7 @@ describe('Grouping feature in UI', () => {
                 expect(args.selectedCellsInfo[0].rowHeaders).toBe('Jet');
                 document.querySelector('[aria-colindex="0"][index="4"]').dispatchEvent(ctrlClick);
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Flight keyboard ctrl + mouse click', function (done) {
             expect(args.selectedCellsInfo[0].rowHeaders).toBe('Flight');
@@ -876,13 +876,13 @@ describe('Grouping feature in UI', () => {
                 let cell: HTMLElement = document.querySelector('[aria-colindex="0"][index="4"]');
                 util.triggerMouseEvent(cell, 'contextmenu');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Context menu in selected headers', (done: Function) => {
             setTimeout(() => {
                 expect(document.querySelector('#PivotGrid_grid_cmenu')).toBeTruthy();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Perform group option for selected headers', (done: Function) => {
             (document.querySelector('#' + pivotGridObj.element.id + '_custom_group') as HTMLElement).click();
@@ -890,14 +890,14 @@ describe('Grouping feature in UI', () => {
                 expect(document.querySelector('.e-group-field-settings')).toBeTruthy();
                 expect(document.querySelector('.e-group-field-settings').querySelector('.e-group-caption-text').getAttribute('value')).toBe('Category3');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Update without group name for false statement', (done: Function) => {
             (document.querySelector('.e-group-field-settings').querySelector('.e-ok-btn') as HTMLElement).click();
             setTimeout(() => {
                 expect(document.querySelector('.e-group-field-settings')).toBeTruthy();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Assign new group name for selected headers', (done: Function) => {
             let input1: MaskedTextBox = getInstance(document.querySelector('#' + pivotGridObj.element.id + 'group_input_option') as HTMLElement, MaskedTextBox) as MaskedTextBox;
@@ -907,7 +907,7 @@ describe('Grouping feature in UI', () => {
                 expect(input1.value).toBe('Airways');
                 (document.querySelector('.e-group-field-settings').querySelector('.e-ok-btn') as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Check updated new group selected headers in table', (done: Function) => {
             expect(document.querySelector('.e-group-field-settings') == null).toBeTruthy();
@@ -918,7 +918,7 @@ describe('Grouping feature in UI', () => {
                 expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="0"]')[3].textContent).toBe('Jet');
                 expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="0"]')[4].textContent).toBe('Jet');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Context menu in column header for number grouping', (done: Function) => {
             expect(pivotGridObj.element.querySelectorAll('th[aria-colindex="1"]')[0].textContent).toBe('25-29');
@@ -928,7 +928,7 @@ describe('Grouping feature in UI', () => {
             setTimeout(() => {
                 expect(document.querySelector('#PivotGrid_grid_cmenu')).toBeTruthy();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Perform group option', (done: Function) => {
             (document.querySelector('#' + pivotGridObj.element.id + '_custom_group') as HTMLElement).click();
@@ -936,7 +936,7 @@ describe('Grouping feature in UI', () => {
                 expect(document.querySelector('.e-group-field-settings')).toBeTruthy();
                 expect(document.querySelector('.e-group-field-settings').querySelector('.e-group_interval_input').getAttribute('value')).toBe('5');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Change grouping interval to 10', (done: Function) => {
             let option1: CheckBox = getInstance(document.querySelector('#' + pivotGridObj.element.id + 'group_start_option') as HTMLElement, CheckBox) as CheckBox;
@@ -950,7 +950,7 @@ describe('Grouping feature in UI', () => {
                 expect(option1.checked).toBe(false);
                 (document.querySelector('.e-group-field-settings').querySelector('.e-ok-btn') as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Check updated number grouping in table', (done: Function) => {
             expect(document.querySelector('.e-group-field-settings') == null).toBeTruthy();
@@ -960,7 +960,7 @@ describe('Grouping feature in UI', () => {
                 let cell: HTMLElement = pivotGridObj.element.querySelectorAll('td[aria-colindex="0"]')[9] as HTMLElement;
                 util.triggerMouseEvent(cell, 'contextmenu');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Perform ungrouping custom groups', (done: Function) => {
             expect(document.querySelector('#PivotGrid_grid_cmenu')).toBeTruthy();
@@ -972,7 +972,7 @@ describe('Grouping feature in UI', () => {
                 let cell: HTMLElement = document.querySelector('.e-columnsheader');
                 util.triggerMouseEvent(cell, 'contextmenu');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Perform ungrouping the number groups', (done: Function) => {
             expect(document.querySelector('#PivotGrid_grid_cmenu')).toBeTruthy();
@@ -980,7 +980,7 @@ describe('Grouping feature in UI', () => {
             setTimeout(() => {
                 expect(pivotGridObj.element.querySelectorAll('th[aria-colindex="1"]')[0].textContent).toBe('20');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Create new group from selction 20 keyboard shift + mouse click', function (done) {
             document.querySelectorAll('th[aria-colindex="1"]')[0].dispatchEvent(shiftClick);
@@ -988,7 +988,7 @@ describe('Grouping feature in UI', () => {
                 expect(args.selectedCellsInfo[0].columnHeaders).toBe('20');
                 document.querySelectorAll('th[aria-colindex="11"]')[0].dispatchEvent(shiftClick);
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('25 keyboard shift + mouse click', function (done) {
             expect(args.selectedCellsInfo[5].columnHeaders).toBe('25');
@@ -997,7 +997,7 @@ describe('Grouping feature in UI', () => {
                 let cell: HTMLElement = document.querySelectorAll('th[aria-colindex="1"]')[0] as HTMLElement;
                 util.triggerMouseEvent(cell, 'contextmenu');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Perform group option for selected headers', (done: Function) => {
             expect(document.querySelector('#PivotGrid_grid_cmenu')).toBeTruthy();
@@ -1006,7 +1006,7 @@ describe('Grouping feature in UI', () => {
                 expect(document.querySelector('.e-group-field-settings')).toBeTruthy();
                 expect(document.querySelector('.e-group-field-settings').querySelector('.e-group-caption-text').getAttribute('value')).toBe('age2');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Assign new group name for selected headers', (done: Function) => {
             let input1: MaskedTextBox = getInstance(document.querySelector('#' + pivotGridObj.element.id + 'group_input_option') as HTMLElement, MaskedTextBox) as MaskedTextBox;
@@ -1016,14 +1016,14 @@ describe('Grouping feature in UI', () => {
                 expect(input1.value).toBe('.Check');
                 (document.querySelector('.e-group-field-settings').querySelector('.e-ok-btn') as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Check updated new group selected headers in table', (done: Function) => {
             expect(document.querySelector('.e-group-field-settings') == null).toBeTruthy();
             setTimeout(() => {
                 expect(pivotGridObj.element.querySelectorAll('th[aria-colindex="1"]')[0].textContent).toBe('.Check');
                 done();
-            }, 1000);
+            }, 2000);
         });
     });
 
@@ -1151,7 +1151,7 @@ describe('Grouping feature in UI', () => {
                 expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="0"]')[0].textContent).toBe('Airways');
                 (pivotGridObj.element.querySelector('.e-firstcell') as HTMLInputElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Check single value header', (done: Function) => {
             setTimeout(() => {
@@ -1159,7 +1159,7 @@ describe('Grouping feature in UI', () => {
                 expect((pivotGridObj.element.querySelector('.e-firstcell') as HTMLInputElement).innerText.trim() === 'Balance').toBeTruthy();
                 (pivotGridObj.element.querySelector('.e-firstcell') as HTMLInputElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('check sorting order field', () => {
             expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="0"]')[0].textContent).toBe('Bike');
@@ -1188,7 +1188,7 @@ describe('Grouping feature in UI', () => {
                 let filterDialog: Dialog = pivotGridObj.pivotCommon.filterDialog.dialogPopUp;
                 expect(filterDialog.element.classList.contains('e-popup-open')).toBe(true);
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('check all nodes on filter popup', () => {
             let treeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.allMemberSelect;
@@ -1222,7 +1222,7 @@ describe('Grouping feature in UI', () => {
                 pivotButton = (pivotGridObj.element.querySelector('.e-filters').querySelector('.e-pivot-button') as HTMLElement);
                 expect(pivotButton).toBeTruthy();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('check drag and drop pivot button', (done: Function) => {
             let filterAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-filters');
@@ -1254,7 +1254,7 @@ describe('Grouping feature in UI', () => {
                 expect(pivotButton.length).toEqual(2);
                 expect((pivotButton[1].id)).toBe("date_date_group_years");
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('contextmenu in row header', () => {
             pivotGridObj.lastCellClicked = document.querySelector('.e-rowsheader');
@@ -1266,7 +1266,7 @@ describe('Grouping feature in UI', () => {
             setTimeout(() => {
                 expect(document.querySelector('#PivotGrid_grid_cmenu')).toBeTruthy();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Perform group option for false statement', (done: Function) => {
             (document.querySelector('#' + pivotGridObj.element.id + '_custom_group') as HTMLElement).click();
@@ -1274,7 +1274,7 @@ describe('Grouping feature in UI', () => {
                 expect(document.querySelector('.e-pivot-error-dialog')).toBeTruthy();
                 (document.querySelector('.e-pivot-error-dialog').querySelector('.e-ok-btn') as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Perform ungroup option', (done: Function) => {
             expect(document.querySelector('.e-pivot-error-dialog') == null).toBeTruthy();
@@ -1285,7 +1285,7 @@ describe('Grouping feature in UI', () => {
                 expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="0"]')[3].textContent).toBe('Jet');
                 expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="0"]')[3].querySelector('.e-expand')).toBeTruthy();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('check pivot button maintenance', () => {
             let pivotButton: HTMLElement[] =
@@ -1293,26 +1293,13 @@ describe('Grouping feature in UI', () => {
             expect(pivotButton.length).toEqual(2);
             expect(pivotButton[0].id).toBe('date');
         });
-        it('Expand All', (done: Function) => {
-            pivotGridObj.dataSourceSettings.expandAll = true;
-            (document.querySelector('#' + pivotGridObj.element.id + '_custom_ungroup') as HTMLElement).click();
-            setTimeout(() => {
-                expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="0"]')[2].textContent).toBe('Flight');
-                expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="0"]')[2].querySelector('.e-collapse')).toBeTruthy();
-                expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="0"]')[3].textContent).toBe('Flight');
-                expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="0"]')[8].textContent).toBe('Jet');
-                expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="0"]')[8].querySelector('.e-collapse')).toBeTruthy();
-                expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="0"]')[9].textContent).toBe('Jet');
-                done();
-            }, 1000);
-        });
         it('Create new group from selction Jet keyboard ctrl + mouse click', function (done) {
             document.querySelector('[aria-colindex="0"][index="10"]').dispatchEvent(ctrlClick);
             setTimeout(function () {
                 expect(args.selectedCellsInfo[0].rowHeaders).toBe('Jet');
                 document.querySelector('[aria-colindex="0"][index="4"]').dispatchEvent(ctrlClick);
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Flight keyboard ctrl + mouse click', function (done) {
             expect(args.selectedCellsInfo[0].rowHeaders).toBe('Flight');
@@ -1321,13 +1308,13 @@ describe('Grouping feature in UI', () => {
                 let cell: HTMLElement = document.querySelector('[aria-colindex="0"][index="4"]');
                 util.triggerMouseEvent(cell, 'contextmenu');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Context menu in selected headers', (done: Function) => {
             setTimeout(() => {
                 expect(document.querySelector('#PivotGrid_grid_cmenu')).toBeTruthy();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Perform group option for selected headers', (done: Function) => {
             (document.querySelector('#' + pivotGridObj.element.id + '_custom_group') as HTMLElement).click();
@@ -1335,14 +1322,14 @@ describe('Grouping feature in UI', () => {
                 expect(document.querySelector('.e-group-field-settings')).toBeTruthy();
                 expect(document.querySelector('.e-group-field-settings').querySelector('.e-group-caption-text').getAttribute('value')).toBe('Category3');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Update without group name for false statement', (done: Function) => {
             (document.querySelector('.e-group-field-settings').querySelector('.e-ok-btn') as HTMLElement).click();
             setTimeout(() => {
                 expect(document.querySelector('.e-group-field-settings')).toBeTruthy();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Assign new group name for selected headers', (done: Function) => {
             let input1: MaskedTextBox = getInstance(document.querySelector('#' + pivotGridObj.element.id + 'group_input_option') as HTMLElement, MaskedTextBox) as MaskedTextBox;
@@ -1352,7 +1339,7 @@ describe('Grouping feature in UI', () => {
                 expect(input1.value).toBe('Airways');
                 (document.querySelector('.e-group-field-settings').querySelector('.e-ok-btn') as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Check updated new group selected headers in table', (done: Function) => {
             expect(document.querySelector('.e-group-field-settings') == null).toBeTruthy();
@@ -1363,7 +1350,7 @@ describe('Grouping feature in UI', () => {
                 expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="0"]')[3].textContent).toBe('Jet');
                 expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="0"]')[4].textContent).toBe('Jet');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('check pivot button maintenance', () => {
             let pivotButton: HTMLElement[] =
@@ -1379,7 +1366,7 @@ describe('Grouping feature in UI', () => {
             setTimeout(() => {
                 expect(document.querySelector('#PivotGrid_grid_cmenu')).toBeTruthy();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Perform group option', (done: Function) => {
             (document.querySelector('#' + pivotGridObj.element.id + '_custom_group') as HTMLElement).click();
@@ -1387,7 +1374,7 @@ describe('Grouping feature in UI', () => {
                 expect(document.querySelector('.e-group-field-settings')).toBeTruthy();
                 expect(document.querySelector('.e-group-field-settings').querySelector('.e-group_interval_input').getAttribute('value')).toBe('5');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Change grouping interval to 10', (done: Function) => {
             let option1: CheckBox = getInstance(document.querySelector('#' + pivotGridObj.element.id + 'group_start_option') as HTMLElement, CheckBox) as CheckBox;
@@ -1401,7 +1388,7 @@ describe('Grouping feature in UI', () => {
                 expect(option1.checked).toBe(false);
                 (document.querySelector('.e-group-field-settings').querySelector('.e-ok-btn') as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Check updated number grouping in table', (done: Function) => {
             expect(document.querySelector('.e-group-field-settings') == null).toBeTruthy();
@@ -1411,7 +1398,7 @@ describe('Grouping feature in UI', () => {
                 let cell: HTMLElement = pivotGridObj.element.querySelectorAll('td[aria-colindex="0"]')[9] as HTMLElement;
                 util.triggerMouseEvent(cell, 'contextmenu');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('check pivot button maintenance', () => {
             let pivotButton: HTMLElement[] =
@@ -1429,7 +1416,7 @@ describe('Grouping feature in UI', () => {
                 let cell: HTMLElement = document.querySelector('.e-columnsheader');
                 util.triggerMouseEvent(cell, 'contextmenu');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Perform ungrouping the number groups', (done: Function) => {
             expect(document.querySelector('#PivotGrid_grid_cmenu')).toBeTruthy();
@@ -1438,7 +1425,7 @@ describe('Grouping feature in UI', () => {
                 expect(pivotGridObj.element.querySelectorAll('th[aria-colindex="1"]')[0].textContent).toBe('20');
                 pivotGridObj.enableValueSorting = false;
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Create new group from selction 20 keyboard shift + mouse click', function (done) {
             document.querySelectorAll('th[aria-colindex="1"]')[0].dispatchEvent(shiftClick);
@@ -1446,7 +1433,7 @@ describe('Grouping feature in UI', () => {
                 expect(args.selectedCellsInfo[0].columnHeaders).toBe('20');
                 document.querySelectorAll('th[aria-colindex="11"]')[0].dispatchEvent(shiftClick);
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('25 keyboard shift + mouse click', function (done) {
             expect(args.selectedCellsInfo[5].columnHeaders).toBe('25');
@@ -1455,7 +1442,7 @@ describe('Grouping feature in UI', () => {
                 let cell: HTMLElement = document.querySelectorAll('th[aria-colindex="1"]')[0] as HTMLElement;
                 util.triggerMouseEvent(cell, 'contextmenu');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Perform group option for selected headers', (done: Function) => {
             expect(document.querySelector('#PivotGrid_grid_cmenu')).toBeTruthy();
@@ -1464,7 +1451,7 @@ describe('Grouping feature in UI', () => {
                 expect(document.querySelector('.e-group-field-settings')).toBeTruthy();
                 expect(document.querySelector('.e-group-field-settings').querySelector('.e-group-caption-text').getAttribute('value')).toBe('age2');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Assign new group name for selected headers', (done: Function) => {
             let input1: MaskedTextBox = getInstance(document.querySelector('#' + pivotGridObj.element.id + 'group_input_option') as HTMLElement, MaskedTextBox) as MaskedTextBox;
@@ -1474,14 +1461,14 @@ describe('Grouping feature in UI', () => {
                 expect(input1.value).toBe('.Check');
                 (document.querySelector('.e-group-field-settings').querySelector('.e-ok-btn') as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Check updated new group selected headers in table', (done: Function) => {
             expect(document.querySelector('.e-group-field-settings') == null).toBeTruthy();
             setTimeout(() => {
                 expect(pivotGridObj.element.querySelectorAll('th[aria-colindex="1"]')[0].textContent).toBe('.Check');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('check drag and drop pivot button from column to filter axis', (done: Function) => {
             let columnAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-columns');
@@ -1514,7 +1501,7 @@ describe('Grouping feature in UI', () => {
                 expect(pivotButton.length).toEqual(3);
                 expect((pivotButton[2].id)).toBe("age_custom_group");
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('click 20-balance for editing', (done: Function) => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -1527,7 +1514,7 @@ describe('Grouping feature in UI', () => {
                 document.querySelectorAll('.e-drillthrough-grid .e-tbar-btn')[3].dispatchEvent(click);
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('check pivot button maintenance', () => {
             let pivotButton: HTMLElement[] =
@@ -1566,7 +1553,7 @@ describe('Grouping feature in UI', () => {
                 expect(pivotButton.length).toEqual(4);
                 expect((pivotButton[3].id)).toBe("product");
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('check drag and drop pivot button from filter to row axis', (done: Function) => {
             let filterAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-filters');
@@ -1599,7 +1586,7 @@ describe('Grouping feature in UI', () => {
                 expect(pivotButton.length).toEqual(1);
                 expect((pivotButton[0].id)).toBe("date");
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Context menu in row header for date grouping', (done: Function) => {
             expect(pivotGridObj.element.querySelector('.e-rowsheader').textContent).toBe('Out of Range');
@@ -1609,7 +1596,7 @@ describe('Grouping feature in UI', () => {
             setTimeout(() => {
                 expect(document.querySelector('#PivotGrid_grid_cmenu')).toBeTruthy();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Perform group option', (done: Function) => {
             (document.querySelector('#' + pivotGridObj.element.id + '_custom_group') as HTMLElement).click();
@@ -1617,7 +1604,7 @@ describe('Grouping feature in UI', () => {
                 expect(document.querySelector('.e-group-field-settings')).toBeTruthy();
                 expect(document.querySelector('.e-group-field-settings').querySelector('.e-multi-select-wrapper').querySelector('.e-delim-view.e-delim-values').textContent).toBe('Years, Quarters');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Change grouping interval to Months', (done: Function) => {
             let option1: CheckBox = getInstance(document.querySelector('#' + pivotGridObj.element.id + 'group_start_option') as HTMLElement, CheckBox) as CheckBox;
@@ -1630,14 +1617,14 @@ describe('Grouping feature in UI', () => {
                 expect(option1.checked).toBe(false);
                 (document.querySelector('.e-group-field-settings').querySelector('.e-ok-btn') as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Check updated number grouping in table', (done: Function) => {
             setTimeout(() => {
                 expect(document.querySelector('.e-group-field-settings') == null).toBeTruthy();
                 expect(pivotGridObj.element.querySelector('.e-rowsheader').textContent).toBe('Jan');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('check pivot button maintenance', () => {
             let pivotButton: HTMLElement[] =
@@ -1654,22 +1641,13 @@ describe('Grouping feature in UI', () => {
             let cell: HTMLElement = pivotGridObj.element.querySelector('.e-rowsheader');
             util.triggerMouseEvent(cell, 'contextmenu');
         });
-        it('Perform ungrouping the number groups', (done: Function) => {
-            expect(document.querySelector('#PivotGrid_grid_cmenu')).toBeTruthy();
-            (document.querySelector('#' + pivotGridObj.element.id + '_custom_ungroup') as HTMLElement).click();
-            setTimeout(() => {
-                expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="0"]')[0].textContent).toBe('20/01/1970-10:54 AM');
-                pivotGridObj.enableValueSorting = false;
-                done();
-            }, 1000);
-        });
         it('Create new group from selction 20/01/1970-10:54 AM keyboard shift + mouse click', function (done) {
             pivotGridObj.element.querySelector('.e-rowsheader').dispatchEvent(shiftClick);
             setTimeout(function () {
                 expect(args.selectedCellsInfo[0].rowHeaders).toBe('20/01/1970-10:54 AM');
                 document.querySelector('td[aria-colindex="0"][index="420"]').dispatchEvent(shiftClick);
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('01/01/2018-09:50 AM keyboard shift + mouse click', function (done) {
             expect(args.selectedCellsInfo[416].rowHeaders).toBe('01/01/2018-09:50 AM');
@@ -1678,7 +1656,7 @@ describe('Grouping feature in UI', () => {
                 let cell: HTMLElement = pivotGridObj.element.querySelector('.e-rowsheader');
                 util.triggerMouseEvent(cell, 'contextmenu');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Perform group option for selected headers', (done: Function) => {
             expect(document.querySelector('#PivotGrid_grid_cmenu')).toBeTruthy();
@@ -1687,7 +1665,7 @@ describe('Grouping feature in UI', () => {
                 expect(document.querySelector('.e-group-field-settings')).toBeTruthy();
                 expect(document.querySelector('.e-group-field-settings').querySelector('.e-group-caption-text').getAttribute('value')).toBe('TimeLine2');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Assign new group name for selected headers', (done: Function) => {
             let input1: MaskedTextBox = getInstance(document.querySelector('#' + pivotGridObj.element.id + 'group_input_option') as HTMLElement, MaskedTextBox) as MaskedTextBox;
@@ -1697,14 +1675,14 @@ describe('Grouping feature in UI', () => {
                 expect(input1.value).toBe('.Check');
                 (document.querySelector('.e-group-field-settings').querySelector('.e-ok-btn') as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Check updated new group selected headers in table', (done: Function) => {
             expect(document.querySelector('.e-group-field-settings') == null).toBeTruthy();
             setTimeout(() => {
                 expect(pivotGridObj.element.querySelector('.e-rowsheader').textContent).toBe('.Check');
                 done();
-            }, 1000);
+            }, 2000);
         });
     });
 

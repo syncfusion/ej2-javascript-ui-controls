@@ -2,7 +2,7 @@ import {
     PdfViewer, PdfViewerBase
 } from '../..';
 import { PointModel } from '@syncfusion/ej2-drawings';
-import { PdfAnnotationBaseModel } from '../../diagram/pdf-annotation-model';
+import { PdfAnnotationBaseModel } from '../drawing/pdf-annotation-model';
 
 
 /**

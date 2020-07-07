@@ -219,9 +219,9 @@ export class DropDownFormFieldDialog {
         if (inline instanceof FieldElementBox) {
             this.fieldBegin = inline;
             this.dropDownInstance = inline.formFieldData as DropDownFormField;
-            if (this.dropDownInstance.dropDownItems.length > 0) {
+            if (this.dropDownInstance.dropdownItems.length > 0) {
                 let index: number = this.dropDownInstance.selectedIndex;
-                this.currentSelectedItem = this.dropDownInstance.dropDownItems[index];
+                this.currentSelectedItem = this.dropDownInstance.dropdownItems[index];
             }
             if (this.dropDownInstance.enabled) {
                 this.dropDownEnable.checked = true;
@@ -238,7 +238,7 @@ export class DropDownFormFieldDialog {
             } else {
                 (this.bookmarkInput as HTMLInputElement).value = '';
             }
-            this.dropDownItems = this.dropDownInstance.dropDownItems.slice();
+            this.dropDownItems = this.dropDownInstance.dropdownItems.slice();
             this.updateList();
         }
     }
@@ -368,7 +368,7 @@ export class DropDownFormFieldDialog {
      */
     public insertDropDownField = (): void => {
         let dropDownField: DropDownFormField = new DropDownFormField();
-        dropDownField.dropDownItems = this.dropDownItems;
+        dropDownField.dropdownItems = this.dropDownItems;
         dropDownField.selectedIndex = 0;
         dropDownField.name = this.bookmarkInput.value;
         dropDownField.helpText = this.tooltipInput.value;

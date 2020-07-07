@@ -108,8 +108,8 @@ export class KanbanDialog {
                 { key: this.parent.keyField, type: 'DropDown' },
                 { key: this.parent.cardSettings.contentField, type: 'TextArea' }
             ];
-            if (this.parent.cardSettings.priority) {
-                fields.splice(fields.length - 1, 0, { key: this.parent.cardSettings.priority, type: 'Numeric' });
+            if (this.parent.sortSettings.sortBy !== 'DataSourceOrder') {
+                fields.splice(fields.length - 1, 0, { key: this.parent.sortSettings.field, type: 'TextBox' });
             }
             if (this.parent.swimlaneSettings.keyField) {
                 fields.splice(fields.length - 1, 0, { key: this.parent.swimlaneSettings.keyField, type: 'DropDown' });

@@ -410,6 +410,11 @@ export class ContextMenu {
                         /* istanbul ignore next */
                         sortbyClickHandler(this.parent, args);
                         break;
+                /* istanbul ignore next */
+                    case 'none':
+                        /* istanbul ignore next */
+                        sortbyClickHandler(this.parent, args);
+                        break;
                     // tslint:disable-next-line
                     /* istanbul ignore next */
                     case 'largeiconsview':
@@ -505,17 +510,13 @@ export class ContextMenu {
                     item = { id: itemId, text: itemText, iconCss: CLS.ICON_PASTE };
                     break;
                 case 'Delete':
-                    item = { id: itemId, text: itemText, iconCss: CLS.ICON_DELETE };
-                    break;
+                    item = { id: itemId, text: itemText, iconCss: CLS.ICON_DELETE }; break;
                 case 'Rename':
-                    item = { id: itemId, text: itemText, iconCss: CLS.ICON_RENAME };
-                    break;
+                    item = { id: itemId, text: itemText, iconCss: CLS.ICON_RENAME }; break;
                 case 'NewFolder':
-                    item = { id: itemId, text: itemText, iconCss: CLS.ICON_NEWFOLDER };
-                    break;
+                    item = { id: itemId, text: itemText, iconCss: CLS.ICON_NEWFOLDER }; break;
                 case 'Details':
-                    item = { id: itemId, text: itemText, iconCss: CLS.ICON_DETAILS };
-                    break;
+                    item = { id: itemId, text: itemText, iconCss: CLS.ICON_DETAILS }; break;
                 case 'SortBy':
                     item = {
                         id: itemId, text: itemText, iconCss: CLS.ICON_SHORTBY,
@@ -540,6 +541,10 @@ export class ContextMenu {
                             {
                                 id: this.getMenuId('Descending'), text: getLocaleText(this.parent, 'Descending'),
                                 iconCss: this.parent.sortOrder === 'Descending' ? CLS.TB_OPTION_TICK : null
+                            },
+                            {
+                                id: this.getMenuId('None'), text: getLocaleText(this.parent, 'None'),
+                                iconCss: this.parent.sortOrder === 'None' ? CLS.TB_OPTION_TICK : null
                             }
                         ]
                     };

@@ -12,7 +12,7 @@ import * as EVENTS from './../../common/constant';
 import { ServiceLocator } from '../services/service-locator';
 import { RenderType } from '../base/enum';
 import { DialogRenderer } from '../renderer/dialog-renderer';
-import { Uploader, MetaData, UploadingEventArgs, SelectedEventArgs } from '@syncfusion/ej2-inputs';
+import { Uploader, MetaData, UploadingEventArgs, SelectedEventArgs, FileInfo, BeforeUploadEventArgs } from '@syncfusion/ej2-inputs';
 import * as classes from '../base/classes';
 import { IHtmlFormatterCallBack } from '../../common';
 import { sanitizeHelper, convertToBlob } from '../base/util';
@@ -255,7 +255,8 @@ export class PasteCleanup {
       addClass([popupObj.element], [classes.CLS_POPUP_OPEN, classes.CLS_RTE_UPLOAD_POPUP]);
       let timeOut: number = fileList.size > 1000000 ? 300 : 100;
       setTimeout(() => { this.refreshPopup(imgElem as HTMLElement, popupObj); }, timeOut);
-
+      let rawFile: FileInfo[];
+      let beforeUploadArgs: BeforeUploadEventArgs;
       let uploadObj: Uploader = new Uploader({
         asyncSettings: {
             saveUrl: this.parent.insertImageSettings.saveUrl
@@ -266,9 +267,23 @@ export class PasteCleanup {
         success: (e: object) => {
           setTimeout(() => { this.popupClose(popupObj, uploadObj, imgElem, e); }, 900); },
         uploading: (e: UploadingEventArgs) => {
+          if (!this.parent.isServerRendered) {
             this.parent.trigger(events.imageUploading, e);
             this.parent.inputElement.contentEditable = 'false';
+          }
         },
+        beforeUpload: (args: BeforeUploadEventArgs) => {
+          if (this.parent.isServerRendered) {
+              args.cancel = true;
+              beforeUploadArgs = JSON.parse(JSON.stringify(args));
+              this.parent.trigger(events.imageUploading, beforeUploadArgs, (beforeUploadArgs: BeforeUploadEventArgs) => {
+                  if (beforeUploadArgs.cancel) { return; }
+                  /* tslint:disable */
+                  (this.uploadObj as any).uploadFiles(rawFile, null);
+                  /* tslint:enable */
+              });
+          }
+       },
         failure: (e: Object) => {
           setTimeout(() => { this.uploadFailure(imgElem, uploadObj, popupObj, e); }, 900);
         },
@@ -282,6 +297,9 @@ export class PasteCleanup {
         },
         selected: (e: SelectedEventArgs) => {
           e.cancel  = true;
+          if (this.parent.isServerRendered) {
+            rawFile = e.filesData;
+        }
         },
         removing: () => {
           this.parent.inputElement.contentEditable = 'true';

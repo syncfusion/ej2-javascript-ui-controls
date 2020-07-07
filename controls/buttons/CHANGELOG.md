@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## 18.2.44 (2020-07-07)
+
 ### Chips
 
 #### Bug Fixes

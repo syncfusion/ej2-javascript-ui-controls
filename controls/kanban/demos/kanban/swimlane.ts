@@ -1,9 +1,8 @@
 import { Kanban, KanbanModel } from '../../src/kanban/index';
 import { ChangeEventArgs, CheckBox } from '@syncfusion/ej2-buttons';
 import { DropDownList, ChangeEventArgs as DropDownChangeArgs } from '@syncfusion/ej2-dropdowns';
-import { SortType } from '../../src/kanban/base/type';
+import { SortDirection } from '../../src/kanban/base/type';
 import '../../node_modules/es6-promise/dist/es6-promise';
-
 /**
  * kanban sample
  */
@@ -177,6 +176,6 @@ function onChange(args: ChangeEventArgs): void {
     }
 }
 function changeSortOrder(args: DropDownChangeArgs): void {
-    let soryBy: SortType = args.itemData.value as SortType;
-    kanbanObj.swimlaneSettings.sortBy = soryBy;
+    let sortDirection: SortDirection = args.itemData.value as SortDirection;
+    kanbanObj.swimlaneSettings.sortDirection = sortDirection;
 }

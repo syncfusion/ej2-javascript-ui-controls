@@ -1,4 +1,4 @@
-import { Collection, Event, NotifyPropertyChanges, detach, Property, EventHandler, EmitType } from '@syncfusion/ej2-base';import { addClass, INotifyPropertyChanged, getUniqueID, rippleEffect } from '@syncfusion/ej2-base';import { attributes, Component, closest, select, KeyboardEventArgs, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { classList, remove, removeClass, isBlazor, Observer } from '@syncfusion/ej2-base';import { Button, buttonObserver } from '@syncfusion/ej2-buttons';import { Popup } from '@syncfusion/ej2-popups';import { MenuEventArgs, BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs } from './../common/common';import { getModel, SplitButtonIconPosition, Item } from './../common/common';import { ItemModel } from './../common/common-model';
+import { Collection, Event, NotifyPropertyChanges, detach, Property, EventHandler, EmitType } from '@syncfusion/ej2-base';import { addClass, INotifyPropertyChanged, getUniqueID, rippleEffect } from '@syncfusion/ej2-base';import { attributes, Component, closest, select, KeyboardEventArgs, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { classList, remove, removeClass } from '@syncfusion/ej2-base';import { Button } from '@syncfusion/ej2-buttons';import { Popup } from '@syncfusion/ej2-popups';import { MenuEventArgs, BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs, upDownKeyHandler } from './../common/common';import { getModel, SplitButtonIconPosition, Item } from './../common/common';import { ItemModel } from './../common/common-model';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -61,49 +61,42 @@ export interface DropDownButtonModel extends ComponentModel{
     /**
      * Triggers while rendering each Popup item of DropDownButton.
      * @event
-     * @blazorProperty 'OnItemRender'
      */
     beforeItemRender?: EmitType<MenuEventArgs>;
 
     /**
      * Triggers before opening the DropDownButton popup.
      * @event
-     * @blazorProperty 'OnOpen'
      */
     beforeOpen?: EmitType<BeforeOpenCloseMenuEventArgs>;
 
     /**
      * Triggers before closing the DropDownButton popup.
      * @event
-     * @blazorProperty 'OnClose'
      */
     beforeClose?: EmitType<BeforeOpenCloseMenuEventArgs>;
 
     /**
      * Triggers while closing the DropDownButton popup.
      * @event
-     * @blazorProperty 'Closed'
      */
     close?: EmitType<OpenCloseMenuEventArgs>;
 
     /**
      * Triggers while opening the DropDownButton popup.
      * @event
-     * @blazorProperty 'Opened'
      */
     open?: EmitType<OpenCloseMenuEventArgs>;
 
     /**
      * Triggers while selecting action item in DropDownButton popup.
      * @event
-     * @blazorProperty 'ItemSelected'
      */
     select?: EmitType<MenuEventArgs>;
 
     /**
      * Triggers once the component rendering is completed.
      * @event
-     * @blazorProperty 'Created'
      */
     created?: EmitType<Event>;
 

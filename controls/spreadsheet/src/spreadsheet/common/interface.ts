@@ -1,8 +1,9 @@
-import { CellModel, BeforeSortEventArgs, SheetModel, RowModel, ColumnModel, ModelType, CellInfoEventArgs } from './../../workbook/index';
-import { ValidationType, ValidationOperator, MergeArgs } from './../../workbook/index';
+import { CellModel, BeforeSortEventArgs, SheetModel, RowModel, ColumnModel, ModelType } from './../../workbook/index';
+import { ValidationType, ValidationOperator, MergeArgs, HyperlinkModel, TopBottom } from './../../workbook/index';
 import { RefreshType } from './index';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { BaseEventArgs, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import  { DataBar, ColorScale, IconSet, CellInfoEventArgs, CFColor, HighlightCell } from './../../workbook/index';
 
 
 /**
@@ -287,6 +288,9 @@ export interface PreviousCellDetails {
     value: string;
     formula: string;
     wrap: boolean;
+    rowSpan: number;
+    colSpan: number;
+    hyperlink: string | HyperlinkModel;
 }
 
 export interface BeforePasteEventArgs {
@@ -349,5 +353,17 @@ export interface CellValidationEventArgs {
     value2?: string;
     ignoreBlank?: boolean;
     inCellDropDown?: boolean;
+    cancel: boolean;
+}
+
+/**
+ * CFormattingEventArgs
+ * @hidden
+ */
+export interface CFormattingEventArgs {
+    range?: string;
+    type?: HighlightCell | TopBottom | DataBar | ColorScale | IconSet;
+    cFColor?: CFColor;
+    value?: string;
     cancel: boolean;
 }

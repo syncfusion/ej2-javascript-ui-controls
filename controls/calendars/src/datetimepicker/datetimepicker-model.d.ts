@@ -366,6 +366,13 @@ export interface DateTimePickerModel extends DatePickerModel{
     dayHeaderFormat?: DayHeaderFormats;
 
     /**
+     * By default, the popup opens while clicking on the datetimepicker icon.
+     * If you want to open the popup while focusing the datetime input then specify its value as true.
+     * @default false
+     */
+    openOnFocus?: boolean;
+
+    /**
      * Triggers when popup is opened.
      * @event 
      * @blazorProperty 'OnOpen'

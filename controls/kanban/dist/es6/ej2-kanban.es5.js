@@ -181,7 +181,7 @@ var SwimlaneSettings = /** @__PURE__ @class */ (function (_super) {
     ], SwimlaneSettings.prototype, "template", void 0);
     __decorate$1([
         Property('Ascending')
-    ], SwimlaneSettings.prototype, "sortBy", void 0);
+    ], SwimlaneSettings.prototype, "sortDirection", void 0);
     return SwimlaneSettings;
 }(ChildProperty));
 
@@ -223,10 +223,16 @@ var CardSettings = /** @__PURE__ @class */ (function (_super) {
     ], CardSettings.prototype, "contentField", void 0);
     __decorate$2([
         Property()
-    ], CardSettings.prototype, "template", void 0);
+    ], CardSettings.prototype, "tagsField", void 0);
     __decorate$2([
         Property()
-    ], CardSettings.prototype, "priority", void 0);
+    ], CardSettings.prototype, "grabberField", void 0);
+    __decorate$2([
+        Property()
+    ], CardSettings.prototype, "footerCssField", void 0);
+    __decorate$2([
+        Property()
+    ], CardSettings.prototype, "template", void 0);
     __decorate$2([
         Property('Single')
     ], CardSettings.prototype, "selectionType", void 0);
@@ -389,8 +395,6 @@ var HEADER_TABLE_CLASS = 'e-header-table';
 /** @hidden */
 var HEADER_CELLS_CLASS = 'e-header-cells';
 /** @hidden */
-var HEADER_BOTTOM_CLASS = 'e-header-bottom';
-/** @hidden */
 var HEADER_WRAP_CLASS = 'e-header-wrap';
 /** @hidden */
 var HEADER_TITLE_CLASS = 'e-header-title';
@@ -438,6 +442,18 @@ var CARD_CONTENT_CLASS = 'e-card-content';
 var CARD_HEADER_TEXT_CLASS = 'e-card-header-caption';
 /** @hidden */
 var CARD_HEADER_TITLE_CLASS = 'e-card-header-title';
+/** @hidden */
+var CARD_TAGS_CLASS = 'e-card-tags';
+/** @hidden */
+var CARD_TAG_CLASS = 'e-card-tag';
+/** @hidden */
+var CARD_COLOR_CLASS = 'e-card-color';
+/** @hidden */
+var CARD_LABEL_CLASS = 'e-card-label';
+/** @hidden */
+var CARD_FOOTER_CLASS = 'e-card-footer';
+/** @hidden */
+var CARD_FOOTER_CSS_CLASS = 'e-card-footer-css';
 /** @hidden */
 var COLUMN_EXPAND_CLASS = 'e-column-expand';
 /** @hidden */
@@ -595,11 +611,13 @@ var Action = /** @__PURE__ @class */ (function () {
             newData[this.parent.cardSettings.headerField] = Math.max.apply(Math, this.parent.kanbanData.map(function (obj) { return parseInt(obj[_this.parent.cardSettings.headerField], 10); })) + 1;
         }
         newData[this.parent.keyField] = closest(target, '.' + CONTENT_CELLS_CLASS).getAttribute('data-key');
-        if (this.parent.cardSettings.priority) {
-            newData[this.parent.cardSettings.priority] = 1;
+        if (this.parent.sortSettings.sortBy === 'Index') {
+            newData[this.parent.sortSettings.field] = 1;
             if (closest(target, '.' + CONTENT_CELLS_CLASS).querySelector('.' + CARD_CLASS)) {
-                var data = this.parent.getCardDetails(target.nextElementSibling.firstElementChild);
-                newData[this.parent.cardSettings.priority] = data[this.parent.cardSettings.priority] + 1;
+                var card = this.parent.sortSettings.direction === 'Ascending' ?
+                    target.nextElementSibling.lastElementChild : target.nextElementSibling.firstElementChild;
+                var data = this.parent.getCardDetails(card);
+                newData[this.parent.sortSettings.field] = data[this.parent.sortSettings.field] + 1;
             }
         }
         if (this.parent.kanbanData.length !== 0 && this.parent.swimlaneSettings.keyField &&
@@ -934,14 +952,14 @@ var Crud = /** @__PURE__ @class */ (function () {
                 _this.parent.showSpinner();
                 var promise = null;
                 var modifiedData = [];
-                if (_this.parent.cardSettings.priority) {
+                if (_this.parent.sortSettings.field && _this.parent.sortSettings.sortBy === 'Index') {
                     cardData instanceof Array ? modifiedData = cardData : modifiedData.push(cardData);
                     if (!_this.parent.isBlazorRender()) {
                         modifiedData = _this.priorityOrder(modifiedData, addArgs);
                     }
                 }
                 var addedRecords = (cardData instanceof Array) ? cardData : [cardData];
-                var changedRecords = _this.parent.cardSettings.priority ? modifiedData : [];
+                var changedRecords = (_this.parent.sortSettings.field && _this.parent.sortSettings.sortBy === 'Index') ? modifiedData : [];
                 var editParms = { addedRecords: addedRecords, changedRecords: changedRecords, deletedRecords: [] };
                 if (cardData instanceof Array || modifiedData.length > 0) {
                     if (!_this.parent.isBlazorRender()) {
@@ -981,7 +999,7 @@ var Crud = /** @__PURE__ @class */ (function () {
             if (!updateArgs.cancel) {
                 _this.parent.showSpinner();
                 var promise = null;
-                if (_this.parent.cardSettings.priority) {
+                if (_this.parent.sortSettings.field && _this.parent.sortSettings.sortBy === 'Index') {
                     var modifiedData = [];
                     cardData instanceof Array ? modifiedData = cardData : modifiedData.push(cardData);
                     if (!_this.parent.isBlazorRender()) {
@@ -1076,29 +1094,35 @@ var Crud = /** @__PURE__ @class */ (function () {
         var _loop_1 = function (columnKey) {
             var keyData = cardData.filter(function (cardObj) { return cardObj[_this.parent.keyField] === columnKey; });
             columnAllDatas = this_1.parent.getColumnData(columnKey);
+            if (this_1.parent.sortSettings.direction === 'Descending') {
+                columnAllDatas = this_1.removeData(columnAllDatas, keyData);
+            }
             var customOrder = 1;
             var initialOrder = void 0;
             for (var _i = 0, _a = keyData; _i < _a.length; _i++) {
                 var data = _a[_i];
                 var order = void 0;
-                if (data[this_1.parent.cardSettings.priority]) {
-                    order = data[this_1.parent.cardSettings.priority];
+                if (data[this_1.parent.sortSettings.field]) {
+                    order = data[this_1.parent.sortSettings.field];
                 }
                 else {
                     if (customOrder === 1) {
-                        initialOrder = columnAllDatas.slice(-1)[0][this_1.parent.cardSettings.priority];
+                        initialOrder = columnAllDatas.slice(-1)[0][this_1.parent.sortSettings.field];
                     }
-                    order = data[this_1.parent.cardSettings.priority] = (customOrder > 1 ? initialOrder :
-                        columnAllDatas.slice(-1)[0][this_1.parent.cardSettings.priority]) + customOrder;
+                    order = data[this_1.parent.sortSettings.field] = (customOrder > 1 ? initialOrder :
+                        columnAllDatas.slice(-1)[0][this_1.parent.sortSettings.field]) + customOrder;
                     customOrder++;
                 }
                 if (this_1.parent.swimlaneSettings.keyField) {
                     var swimlaneDatas = this_1.parent.getSwimlaneData(data[this_1.parent.swimlaneSettings.keyField]);
                     columnAllDatas = this_1.parent.getColumnData(columnKey, swimlaneDatas);
+                    if (this_1.parent.sortSettings.direction === 'Descending') {
+                        columnAllDatas = this_1.removeData(columnAllDatas, keyData);
+                    }
                 }
                 var count = [];
                 for (var j = 0; j < columnAllDatas.length; j++) {
-                    if (columnAllDatas[j][this_1.parent.cardSettings.priority] === order) {
+                    if (columnAllDatas[j][this_1.parent.sortSettings.field] === order) {
                         count.push(j + 1);
                         break;
                     }
@@ -1107,13 +1131,22 @@ var Crud = /** @__PURE__ @class */ (function () {
                     finalData.push(data);
                 }
                 var finalCardsId = finalData.map(function (obj) { return obj[_this.parent.cardSettings.headerField]; });
-                for (var i = count[0]; i <= columnAllDatas.length; i++) {
-                    var dataObj = columnAllDatas[i - 1];
-                    var index = cardsId.indexOf(dataObj[this_1.parent.cardSettings.headerField]);
-                    if (index === -1 && order >= dataObj[this_1.parent.cardSettings.priority]) {
-                        dataObj[this_1.parent.cardSettings.priority] = ++order;
-                        var isData = finalCardsId.indexOf(dataObj[this_1.parent.cardSettings.headerField]);
-                        (isData === -1) ? finalData.push(dataObj) : finalData[isData] = dataObj;
+                if (this_1.parent.sortSettings.direction === 'Ascending') {
+                    for (var i = count[0]; i <= columnAllDatas.length; i++) {
+                        var dataObj = columnAllDatas[i - 1];
+                        var index = cardsId.indexOf(dataObj[this_1.parent.cardSettings.headerField]);
+                        if (index === -1 && order >= dataObj[this_1.parent.sortSettings.field]) {
+                            dataObj[this_1.parent.sortSettings.field] = ++order;
+                            var isData = finalCardsId.indexOf(dataObj[this_1.parent.cardSettings.headerField]);
+                            (isData === -1) ? finalData.push(dataObj) : finalData[isData] = dataObj;
+                        }
+                    }
+                }
+                else {
+                    for (var i = count[0]; i > 0; i--) {
+                        var dataObj = columnAllDatas[i - 1];
+                        dataObj[this_1.parent.sortSettings.field] = ++order;
+                        finalData.push(dataObj);
                     }
                 }
             }
@@ -1124,6 +1157,14 @@ var Crud = /** @__PURE__ @class */ (function () {
             _loop_1(columnKey);
         }
         return finalData;
+    };
+    Crud.prototype.removeData = function (columnAllDatas, keyData) {
+        keyData.map(function (cardObj) {
+            if (columnAllDatas.indexOf(cardObj) !== -1) {
+                columnAllDatas.splice(columnAllDatas.indexOf(cardObj), 1);
+            }
+        });
+        return columnAllDatas;
     };
     return Crud;
 }());
@@ -1140,7 +1181,7 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
     function DragAndDrop(parent) {
         this.parent = parent;
         this.dragObj = {
-            element: null, cloneElement: null,
+            element: null, cloneElement: null, instance: null,
             targetClone: null, draggedClone: null, targetCloneMulti: null,
             selectedCards: [], pageX: 0, pageY: 0, navigationInterval: null, cardDetails: [], modifiedData: []
         };
@@ -1148,7 +1189,7 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
         this.isDragging = false;
     }
     DragAndDrop.prototype.wireDragEvents = function (element) {
-        new Draggable(element, {
+        this.dragObj.instance = new Draggable(element, {
             clone: true,
             enableTapHold: this.parent.isAdaptive,
             enableTailMode: true,
@@ -1160,6 +1201,10 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
             enableAutoScroll: false,
             helper: this.dragHelper.bind(this),
         });
+        if (!(this.dragObj.instance.enableTapHold && Browser.isDevice && Browser.isTouch)) {
+            // tslint:disable-next-line:no-any
+            EventHandler.remove(element, 'touchstart', this.dragObj.instance.initialize);
+        }
     };
     DragAndDrop.prototype.dragHelper = function (e) {
         if (this.parent.isAdaptive && this.parent.touchModule.mobilePopup &&
@@ -1180,6 +1225,7 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
             className: DROPPED_CLONE_CLASS,
             styles: 'width:' + formatUnit(this.dragObj.element.offsetWidth) + ';height:' + formatUnit(this.dragObj.element.offsetHeight)
         });
+        this.dragObj.modifiedData = [];
         return this.dragObj.cloneElement;
     };
     DragAndDrop.prototype.dragStart = function (e) {
@@ -1200,10 +1246,12 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
         this.parent.trigger(dragStart, dragArgs, function (dragEventArgs) {
             if (dragEventArgs.cancel) {
                 _this.removeElement(_this.dragObj.cloneElement);
-                _this.dragObj = {
-                    element: null, cloneElement: null,
-                    targetClone: null, draggedClone: null, targetCloneMulti: null
-                };
+                _this.dragObj.instance.intDestroy(e);
+                _this.dragObj.element = null;
+                _this.dragObj.targetClone = null;
+                _this.dragObj.draggedClone = null;
+                _this.dragObj.cloneElement = null;
+                _this.dragObj.targetCloneMulti = null;
                 return;
             }
             if (_this.parent.isBlazorRender()) {
@@ -1254,9 +1302,20 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
             var isDrag = (targetKey === this.getColumnKey(closest(this.dragObj.draggedClone, '.' + CONTENT_CELLS_CLASS)))
                 ? true : false;
             if (keys.length === 1 || isDrag) {
-                if (target.classList.contains(CARD_CLASS)) {
-                    var insertClone = (isNullOrUndefined(target.previousElementSibling) && (this.dragObj.pageY -
-                        (this.parent.element.offsetTop + target.offsetTop)) < (target.offsetHeight / 2)) ? 'beforebegin' : 'afterend';
+                if (target.classList.contains(CARD_CLASS) || target.classList.contains(DRAGGED_CLONE_CLASS)) {
+                    var element = target.classList.contains(DRAGGED_CLONE_CLASS) ?
+                        (target.previousElementSibling.classList.contains(DRAGGED_CARD_CLASS) ? null : target.previousElementSibling)
+                        : target.previousElementSibling;
+                    var insertClone = 'afterend';
+                    if (isNullOrUndefined(element)) {
+                        var pageY = target.classList.contains(DRAGGED_CLONE_CLASS) ? (this.dragObj.pageY / 2) :
+                            this.dragObj.pageY;
+                        var height = target.classList.contains(DRAGGED_CLONE_CLASS) ? target.offsetHeight :
+                            (target.offsetHeight / 2);
+                        if ((pageY - (this.parent.element.getBoundingClientRect().top + target.offsetTop)) < height) {
+                            insertClone = 'beforebegin';
+                        }
+                    }
                     target.insertAdjacentElement(insertClone, this.dragObj.targetClone);
                 }
                 else if (target.classList.contains(CONTENT_CELLS_CLASS) && !closest(target, '.' + SWIMLANE_ROW_CLASS)) {
@@ -1395,7 +1454,7 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
                     _this.updateDroppedData(element, cardStatus_1, contentCell);
                 });
             }
-            if (this.parent.cardSettings.priority) {
+            if (this.parent.sortSettings.field && this.parent.sortSettings.sortBy === 'Index') {
                 this.changeOrder(this.dragObj.modifiedData);
             }
         }
@@ -1448,31 +1507,38 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
         }
         this.dragObj.modifiedData.push(crudData);
     };
-    DragAndDrop.prototype.changeOrder = function (modifiedData) {
+    DragAndDrop.prototype.changeOrder = function (modifieddata) {
         var _this = this;
-        var prevEle = false;
-        var element = this.dragObj.targetClone.previousElementSibling;
+        var prevele = false;
+        var element = this.parent.sortSettings.direction === 'Ascending' ?
+            this.dragObj.targetClone.previousElementSibling : this.dragObj.targetClone.nextElementSibling;
         if (element && !element.classList.contains(DRAGGED_CARD_CLASS) && !element.classList.contains(CLONED_CARD_CLASS)
             && !element.classList.contains(DRAGGED_CLONE_CLASS)) {
-            prevEle = true;
+            prevele = true;
         }
-        else if (this.dragObj.targetClone.nextElementSibling) {
+        else if (this.dragObj.targetClone.nextElementSibling && this.parent.sortSettings.direction === 'Ascending') {
             element = this.dragObj.targetClone.nextElementSibling;
+        }
+        else if (this.dragObj.targetClone.previousElementSibling && this.parent.sortSettings.direction === 'Descending') {
+            element = this.dragObj.targetClone.previousElementSibling;
         }
         else {
             return;
         }
         var obj = this.parent.getCardDetails(element);
-        var index = obj[this.parent.cardSettings.priority];
-        modifiedData.forEach(function (data) {
-            if (prevEle) {
-                data[_this.parent.cardSettings.priority] = ++index;
+        var keyIndex = obj[this.parent.sortSettings.field];
+        if (modifieddata.length > 1 && this.parent.sortSettings.direction === 'Descending') {
+            modifieddata = modifieddata.reverse();
+        }
+        modifieddata.forEach(function (data, index) {
+            if (prevele) {
+                data[_this.parent.sortSettings.field] = ++keyIndex;
             }
-            else if (index !== 1 && index <= data[_this.parent.cardSettings.priority]) {
-                data[_this.parent.cardSettings.priority] = --index;
+            else if (keyIndex !== 1 && index <= data[_this.parent.sortSettings.field]) {
+                data[_this.parent.sortSettings.field] = --keyIndex;
             }
-            else if (index === 1) {
-                data[_this.parent.cardSettings.priority] = 1;
+            else if (keyIndex === 1) {
+                data[_this.parent.sortSettings.field] = index + 1;
             }
         });
     };
@@ -1701,8 +1767,8 @@ var KanbanDialog = /** @__PURE__ @class */ (function () {
                 { key: this.parent.keyField, type: 'DropDown' },
                 { key: this.parent.cardSettings.contentField, type: 'TextArea' }
             ];
-            if (this.parent.cardSettings.priority) {
-                fields.splice(fields.length - 1, 0, { key: this.parent.cardSettings.priority, type: 'Numeric' });
+            if (this.parent.sortSettings.sortBy !== 'DataSourceOrder') {
+                fields.splice(fields.length - 1, 0, { key: this.parent.sortSettings.field, type: 'TextBox' });
             }
             if (this.parent.swimlaneSettings.keyField) {
                 fields.splice(fields.length - 1, 0, { key: this.parent.swimlaneSettings.keyField, type: 'DropDown' });
@@ -2644,9 +2710,6 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
                     className: index === -1 ? HEADER_CELLS_CLASS : HEADER_CELLS_CLASS + ' ' + COLLAPSED_CLASS,
                     attrs: { 'data-role': 'kanban-column', 'data-key': column.keyField }
                 });
-                if (this_1.parent.kanbanData.length !== 0 && this_1.parent.swimlaneSettings.keyField && !this_1.parent.isAdaptive) {
-                    th_1.classList.add(HEADER_BOTTOM_CLASS);
-                }
                 var classList$$1 = [];
                 if (column.allowToggle) {
                     classList$$1.push(HEADER_ROW_TOGGLE_CLASS);
@@ -2744,7 +2807,9 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
                     });
                     if (column.allowToggle && !column.isExpanded || index !== -1) {
                         addClass([td], COLLAPSED_CLASS);
-                        td.appendChild(createElement('div', { className: COLLAPSE_HEADER_TEXT_CLASS, innerHTML: column.headerText }));
+                        var text = (column.showItemCount ? '[' +
+                            this_2.getColumnData(column.keyField, this_2.swimlaneData[row.keyField]).length + '] ' : '') + column.headerText;
+                        td.appendChild(createElement('div', { className: COLLAPSE_HEADER_TEXT_CLASS, innerHTML: text }));
                         td.setAttribute('aria-expanded', 'false');
                     }
                     if (column.showAddButton) {
@@ -2889,6 +2954,33 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
                                 innerHTML: data[_this.parent.cardSettings.contentField] || ''
                             });
                             cardElement.appendChild(cardContent);
+                            if (_this.parent.cardSettings.tagsField && data[_this.parent.cardSettings.tagsField]) {
+                                var cardTags = createElement('div', { className: CARD_TAGS_CLASS });
+                                var tags = data[_this.parent.cardSettings.tagsField].toString().split(',');
+                                for (var _i = 0, tags_1 = tags; _i < tags_1.length; _i++) {
+                                    var tag = tags_1[_i];
+                                    cardTags.appendChild(createElement('div', {
+                                        className: CARD_TAG_CLASS + ' ' + CARD_LABEL_CLASS,
+                                        innerHTML: tag
+                                    }));
+                                }
+                                cardElement.appendChild(cardTags);
+                            }
+                            if (_this.parent.cardSettings.grabberField && data[_this.parent.cardSettings.grabberField]) {
+                                addClass([cardElement], CARD_COLOR_CLASS);
+                                cardElement.style.borderLeftColor = data[_this.parent.cardSettings.grabberField];
+                            }
+                            if (_this.parent.cardSettings.footerCssField) {
+                                var cardFields = createElement('div', { className: CARD_FOOTER_CLASS });
+                                var keys = data[_this.parent.cardSettings.footerCssField].split(',');
+                                for (var _a = 0, keys_1 = keys; _a < keys_1.length; _a++) {
+                                    var key = keys_1[_a];
+                                    cardFields.appendChild(createElement('div', {
+                                        className: key.trim() + ' ' + CARD_FOOTER_CSS_CLASS
+                                    }));
+                                }
+                                cardElement.appendChild(cardFields);
+                            }
                         }
                         var args = { data: data, element: cardElement, cancel: false };
                         _this.parent.trigger(cardRendered, args, function (cardArgs) {
@@ -2960,7 +3052,7 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
                 var second = secondRow.textField.toLowerCase();
                 return (first > second) ? 1 : ((second > first) ? -1 : 0);
             });
-            if (this.parent.swimlaneSettings.sortBy === 'Descending') {
+            if (this.parent.swimlaneSettings.sortDirection === 'Descending') {
                 kanbanRows.reverse();
             }
             kanbanRows.forEach(function (row) {
@@ -3142,10 +3234,57 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
             var key = columnKeys_1[_i];
             _loop_5(key);
         }
-        if (this.parent.cardSettings.priority) {
-            cardData = cardData.sort(function (data1, data2) {
-                return parseInt(data1[_this.parent.cardSettings.priority], 10) - parseInt(data2[_this.parent.cardSettings.priority], 10);
-            });
+        this.sortCategory(cardData);
+        return cardData;
+    };
+    LayoutRender.prototype.sortCategory = function (cardData) {
+        var key;
+        var direction = this.parent.sortSettings.direction;
+        switch (this.parent.sortSettings.sortBy) {
+            case 'DataSourceOrder':
+                if (direction === 'Descending') {
+                    cardData.reverse();
+                }
+                break;
+            case 'Custom':
+            case 'Index':
+                if (this.parent.sortSettings.field) {
+                    key = this.parent.sortSettings.field;
+                    if (this.parent.sortSettings.sortBy === 'Custom') {
+                        direction = this.parent.sortSettings.direction;
+                    }
+                    this.sortOrder(key, direction, cardData);
+                }
+                break;
+        }
+        return cardData;
+    };
+    LayoutRender.prototype.sortOrder = function (key, direction, cardData) {
+        var isNumeric;
+        if (this.parent.kanbanData.length > 0) {
+            isNumeric = typeof this.parent.kanbanData[0][key] === 'number';
+        }
+        else {
+            isNumeric = true;
+        }
+        if (!isNumeric && this.parent.sortSettings.sortBy === 'Index') {
+            return cardData;
+        }
+        var first;
+        var second;
+        cardData = cardData.sort(function (firstData, secondData) {
+            if (!isNumeric) {
+                first = firstData[key].toLowerCase();
+                second = secondData[key].toLowerCase();
+            }
+            else {
+                first = firstData[key];
+                second = secondData[key];
+            }
+            return (first > second) ? 1 : ((second > first) ? -1 : 0);
+        });
+        if (direction === 'Descending') {
+            cardData.reverse();
         }
         return cardData;
     };
@@ -3235,9 +3374,7 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
     };
     LayoutRender.prototype.wireDragEvent = function () {
         if (this.parent.allowDragAndDrop) {
-            this.parent.element.querySelectorAll('.' + CARD_CLASS).forEach(function (card) {
-                card.classList.add(DRAGGABLE_CLASS);
-            });
+            addClass(this.parent.element.querySelectorAll('.' + CARD_CLASS), DRAGGABLE_CLASS);
             this.parent.dragAndDropModule.wireDragEvents(this.parent.element.querySelector('.' + CONTENT_CLASS));
         }
     };
@@ -3275,6 +3412,46 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
     };
     return LayoutRender;
 }(MobileLayout));
+
+var __extends$7 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * @deprecated
+ * Holds the configuration of sort settings in kanban board.
+ */
+var SortSettings = /** @__PURE__ @class */ (function (_super) {
+    __extends$7(SortSettings, _super);
+    function SortSettings() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$6([
+        Property('DataSourceOrder')
+    ], SortSettings.prototype, "sortBy", void 0);
+    __decorate$6([
+        Property()
+    ], SortSettings.prototype, "field", void 0);
+    __decorate$6([
+        Property('Ascending')
+    ], SortSettings.prototype, "direction", void 0);
+    return SortSettings;
+}(ChildProperty));
 
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -3498,6 +3675,9 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
                         this.notifyChange();
                     }
                     break;
+                case 'sortSettings':
+                    this.notify(dataReady, { processedData: this.kanbanData });
+                    break;
                 default:
                     break;
             }
@@ -3512,7 +3692,7 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
                 case 'showEmptyRow':
                 case 'showItemCount':
                 case 'template':
-                case 'sortBy':
+                case 'sortDirection':
                     if (!this.isBlazorRender()) {
                         this.notify(dataReady, { processedData: this.kanbanData });
                     }
@@ -3531,6 +3711,9 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
                 case 'headerField':
                 case 'contentField':
                 case 'template':
+                case 'tagsField':
+                case 'grabberField':
+                case 'footerCssField':
                     if (!this.isBlazorRender()) {
                         this.layoutModule.refreshCards();
                     }
@@ -3845,6 +4028,9 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Complex({}, CardSettings)
     ], Kanban.prototype, "cardSettings", void 0);
+    __decorate([
+        Complex({}, SortSettings)
+    ], Kanban.prototype, "sortSettings", void 0);
     __decorate([
         Complex({}, DialogSettings)
     ], Kanban.prototype, "dialogSettings", void 0);

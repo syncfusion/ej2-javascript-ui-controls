@@ -241,7 +241,6 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
   private trgtEle: HTEle;
   private ctrlTem: HTEle;
   private keyModule: KeyboardEvents;
-  private expandedItems: number[];
   private initExpand: number[];
   private isNested: Boolean;
   private isDestroy: Boolean;
@@ -307,6 +306,12 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
    */
   @Property('auto')
   public height: string | number;
+  /**
+   * Specifies the expanded items at initial load.
+   * @default []
+   */
+  @Property([])
+  public expandedIndices: number[];
   /**
    * Specifies the options to expand single or multiple panel at a time.
    * The possible values are:
@@ -420,9 +425,6 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
     if (this.enableRtl) {
       this.add(this.element, CLS_RTL);
     }
-    if (!this.enablePersistence || isNOU(this.expandedItems)) {
-      this.expandedItems = [];
-    }
   }
   private add(ele: HTEle, val: Str): void {
     ele.classList.add(val);
@@ -456,8 +458,8 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
     if (isNOU(this.initExpand)) {
       this.initExpand = [];
     }
-    if (this.expandedItems.length > 0) {
-      this.initExpand = this.expandedItems;
+    if (this.expandedIndices.length > 0) {
+      this.initExpand = this.expandedIndices;
     }
     attributes(this.element, ariaAttr);
     if (this.expandMode === 'Single') {
@@ -1013,8 +1015,10 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
   }
   private expandedItemsPush(item: HTEle): void {
     let index: number = this.getIndexByItem(item);
-    if (this.expandedItems.indexOf(index) === -1) {
-      this.expandedItems.push(index);
+    if (this.expandedIndices.indexOf(index) === -1) {
+      let temp: number[] = [].slice.call(this.expandedIndices);
+      temp.push(index);
+      this.setProperties({ expandedIndices: temp }, true);
     }
   }
   private getIndexByItem(item: HTEle): number {
@@ -1031,7 +1035,9 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
   }
   private expandedItemsPop(item: HTEle): void {
     let index: number = this.getIndexByItem(item);
-    this.expandedItems.splice(this.expandedItems.indexOf(index), 1);
+    let temp: number[] = [].slice.call(this.expandedIndices);
+    temp.splice(temp.indexOf(index), 1);
+    this.setProperties({ expandedIndices: temp }, true);
   }
   private collapse(trgt: HTEle): void {
     let eventArgs: ExpandEventArgs;
@@ -1170,7 +1176,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'focus', this.focusIn, this);
         EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'blur', this.focusOut, this);
         this.itemAttribUpdate();
-        this.expandedItems = [];
+        this.expandedIndices = [];
         this.expandedItemRefresh(ele);
         if (addItem && (addItem as AccordionItemModel).expanded) {
           this.expandItem(true, itemIndex);
@@ -1201,7 +1207,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
     detach(ele);
     items.splice(index, 1);
     this.itemAttribUpdate();
-    this.expandedItems = [];
+    this.expandedIndices = [];
     this.expandedItemRefresh(this.element);
   }
   /**
@@ -1370,7 +1376,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
     }
   }
   protected getPersistData(): string {
-    let keyEntity: string[] = ['expandedItems'];
+    let keyEntity: string[] = ['expandedIndices'];
     return this.addOnPersist(keyEntity);
   }
   /**
@@ -1422,6 +1428,10 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
           }
           break;
         case 'dataSource':
+        case 'expandedIndices':
+          if (this.expandedIndices === null) {
+            this.expandedIndices = [];
+          }
           isRefresh = true;
           break;
         case 'headerTemplate':
@@ -1444,7 +1454,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         case 'expandMode':
           if (newProp.expandMode === 'Single') {
             this.element.setAttribute('aria-multiselectable', 'false');
-            if (this.expandedItems.length > 1) {
+            if (this.expandedIndices.length > 1) {
               this.expandItem(false);
             }
           } else {
@@ -1454,6 +1464,10 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
       }
     }
     if (isRefresh && !this.isServerRendered) {
+      this.initExpand = [];
+      if (this.expandedIndices.length > 0) {
+        this.initExpand = this.expandedIndices;
+      }
       this.destroyItems();
       this.renderItems();
       this.initItemExpand();

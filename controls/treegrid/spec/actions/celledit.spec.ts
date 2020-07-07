@@ -778,7 +778,7 @@ describe('checkbox retained after cell edit and cancel', () => {
     });
   });
 
-describe('checkbox not rendered  after cell edit and cancel with drag and drop', () => {
+  describe('checkbox not rendered  after cell edit and cancel with drag and drop', () => {
     let gridObj: TreeGrid;
     beforeAll((done: Function) => {
       gridObj = createGrid(
@@ -806,7 +806,6 @@ describe('checkbox not rendered  after cell edit and cancel with drag and drop',
         'bubbles': true,
         'cancelable': true
       });
-      debugger
       gridObj.getCellFromIndex(2, 1).dispatchEvent(click);
       gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = 'test2';
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_cancel' } });
@@ -816,6 +815,7 @@ describe('checkbox not rendered  after cell edit and cancel with drag and drop',
       destroy(gridObj);
     });
   });
+
   it('memory leak', () => {
     profile.sample();
     let average: any = inMB(profile.averageChange)

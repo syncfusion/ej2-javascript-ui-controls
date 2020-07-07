@@ -45,6 +45,18 @@
         content: '\e31d';
       }
 
+      & .e-icon-year::before {
+        content: '\ea8e';
+      }
+
+      & .e-icon-timeline-year-vertical::before {
+        content: '\e423';
+      }
+
+      & .e-icon-timeline-year-horizontal::before {
+        content: '\e422';
+      }
+
       & .e-icon-timeline-day::before {
         content: '\ea85';
       }

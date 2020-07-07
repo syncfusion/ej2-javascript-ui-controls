@@ -124,11 +124,27 @@ export class Selection {
     }
     private rowDeselected(args: RowDeselectEventArgs): void {
         let rowIndexes: string = 'rowIndexes';
-        let index: number[] = [];
+        let index: number[] | number;
+        let isContains: boolean;
         if (this.multipleIndexes.length !== 0) {
             index = this.multipleIndexes;
         } else {
-            index = args[rowIndexes] || args.rowIndex;
+            if (this.isMultiCtrlRequest) {
+                index = args.rowIndex;
+            } else {
+                if (!isNullOrUndefined(args.rowIndexes)) {
+                    for (let i: number = 0; i < args.rowIndexes.length; i++) {
+                        if (args.rowIndexes[i] === args.rowIndex) {
+                            isContains = true;
+                        }
+                    }
+                    if (isContains) {
+                        index = args.rowIndexes;
+                    }
+                 } else {
+                     index = args.rowIndex;
+                 }
+            }
         }
         this.removeClass(index);
         this.selectedRowIndexes = extend([], this.getSelectedRowIndexes(), [], true) as number[];

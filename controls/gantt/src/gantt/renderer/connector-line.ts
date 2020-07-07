@@ -13,7 +13,12 @@ export class ConnectorLine {
     private lineColor: string;
     private lineStroke: number;
     public tooltipTable: HTMLElement;
+    /**
+     * @hidden 
+     */
+    public expandedRecords: IGanttData[];
     constructor(ganttObj?: Gantt) {
+        this.expandedRecords = [];
         this.parent = ganttObj;
         this.dependencyViewContainer =
             createElement('div', { className: cls.dependencyViewContainer });
@@ -58,7 +63,7 @@ export class ConnectorLine {
     public createConnectorLineObject(parentGanttData: IGanttData, childGanttData: IGanttData, predecessor: IPredecessor):
         IConnectorLineObject {
         let connectorObj: IConnectorLineObject = {} as IConnectorLineObject;
-        let updatedRecords: IGanttData[] = this.parent.getExpandedRecords(this.parent.currentViewData);
+        let updatedRecords: IGanttData[] = this.expandedRecords;
         let parentIndex: number = updatedRecords.indexOf(parentGanttData);
         let childIndex: number = updatedRecords.indexOf(childGanttData);
         let parentGanttRecord: ITaskData = parentGanttData.ganttProperties;
@@ -81,7 +86,9 @@ export class ConnectorLine {
             connectorObj.childIndex = childIndex;
             connectorObj.rowHeight = this.parent.rowHeight;
             connectorObj.type = predecessor.type;
-            connectorObj.connectorLineId = 'parent' + parentGanttRecord.rowUniqueID + 'child' + childGanttRecord.rowUniqueID;
+            let parentId: string = this.parent.viewType === 'ResourceView' ? parentGanttRecord.taskId : parentGanttRecord.rowUniqueID;
+            let childId: string = this.parent.viewType === 'ResourceView' ? childGanttRecord.taskId : childGanttRecord.rowUniqueID;
+            connectorObj.connectorLineId = 'parent' + parentId + 'child' + childId;
             connectorObj.milestoneParent = parentGanttRecord.isMilestone ? true : false;
             connectorObj.milestoneChild = childGanttRecord.isMilestone ? true : false;
             if (isNullOrUndefined(isScheduledTask(parentGanttRecord)) || isNullOrUndefined(isScheduledTask(childGanttRecord))) {
@@ -879,5 +886,16 @@ export class ConnectorLine {
             value = fromName + ' ' + start + ' to ' + toName + ' ' + finish;
         }
         return value;
+    }
+    /**
+     * To get the record based on the predecessor value 
+     * @private
+     */
+    public getRecordByID(id: string): IGanttData {
+        if (isNullOrUndefined(id)) {
+            return null;
+        }
+        return this.parent.viewType === 'ResourceView' ? this.parent.flatData[this.parent.getTaskIds().indexOf('T' + id.toString())] :
+            this.parent.flatData[this.parent.ids.indexOf(id.toString())];
     }
 }

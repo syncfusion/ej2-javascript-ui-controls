@@ -1,6 +1,6 @@
 import { Toolbar as tool, ClickEventArgs, MenuItemModel, Menu } from '@syncfusion/ej2-navigations';
 import { ItemModel, BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';
-import { remove, createElement, formatUnit, isBlazor, getInstance, addClass, removeClass } from '@syncfusion/ej2-base';
+import { remove, createElement, formatUnit, isBlazor, getInstance, addClass, removeClass, closest } from '@syncfusion/ej2-base';
 import * as events from '../../common/base/constant';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { SaveReportArgs, FetchReportArgs, LoadReportArgs, RemoveReportArgs, RenameReportArgs, ToolbarArgs } from '../base/interface';
@@ -13,6 +13,8 @@ import { Deferred } from '@syncfusion/ej2-data';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import { PivotUtil } from '../../base/util';
+import { ChartSettingsModel } from '../../pivotview/model/chartsettings-model';
+import { OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 
 /**
  * Module for Toolbar
@@ -23,6 +25,8 @@ export class Toolbar {
     public action: string;
     /** @hidden */
     public toolbar: tool;
+    /** @hidden */
+    public isMultiAxisChange: boolean = false;
 
     private parent: PivotView;
     private dialog: Dialog;
@@ -39,6 +43,8 @@ export class Toolbar {
     private chartTypesDialog: Dialog;
     private newArgs: ClickEventArgs;
     private renameText: string;
+    private showLableState: boolean;
+    private chartLableState: boolean;
 
     constructor(parent: PivotView) {
         this.parent = parent;
@@ -179,6 +185,7 @@ export class Toolbar {
                     items.push({
                         template: '<ul id="' + this.parent.element.id + 'chart_menu"></ul>',
                         id: this.parent.element.id + 'chartmenu', cssClass: validTypes ? cls.MENU_DISABLE : ''
+
                     });
                     break;
                 case 'MDX':
@@ -236,7 +243,8 @@ export class Toolbar {
                     break;
             }
         }
-        if (this.parent.showFieldList && toolbar.indexOf('FieldList') === -1 && (this.parent.element.querySelector('#' + this.parent.element.id + '_PivotFieldList') as HTMLElement).style.display === 'none') {
+        if (this.parent.showFieldList && toolbar.indexOf('FieldList') === -1 && (this.parent.element.querySelector('#' + this.parent.element.id + '_PivotFieldList') as HTMLElement) &&
+            (this.parent.element.querySelector('#' + this.parent.element.id + '_PivotFieldList') as HTMLElement).style.display === 'none') {
             (this.parent.element.querySelector('#' + this.parent.element.id + '_PivotFieldList') as HTMLElement).style.display = 'block';
         }
         let toolbarArgs: ToolbarArgs = { customToolbar: items };
@@ -768,6 +776,10 @@ export class Toolbar {
                 text: this.parent.localeObj.getConstant('multipleAxes'),
                 id: this.parent.element.id + '_' + 'multipleAxes'
             });
+            menuItems.push({
+                text: this.parent.localeObj.getConstant('showLegend'),
+                id: this.parent.element.id + '_' + 'showLegend'
+            });
             let menu: MenuItemModel[] = [{
                 iconCss: cls.TOOLBAR_CHART + ' ' + cls.ICON,
                 items: toDisable ? [] : menuItems,
@@ -780,6 +792,9 @@ export class Toolbar {
                     items: menu, enableRtl: this.parent.enableRtl,
                     select: this.menuItemClick.bind(this),
                     beforeOpen: this.whitespaceRemove.bind(this),
+                    onClose: (args: OpenCloseMenuEventArgs) => {
+                        this.focusToolBar();
+                    },
                     beforeItemRender: this.multipleAxesCheckbox.bind(this)
                 });
             this.chartMenu.isStringTemplate = true;
@@ -830,7 +845,10 @@ export class Toolbar {
             this.exportMenu = new Menu(
                 {
                     items: menu, enableRtl: this.parent.enableRtl,
-                    select: this.menuItemClick.bind(this), beforeOpen: this.updateExportMenu.bind(this)
+                    select: this.menuItemClick.bind(this), beforeOpen: this.updateExportMenu.bind(this),
+                    onClose: (args: OpenCloseMenuEventArgs) => {
+                        this.focusToolBar();
+                    }
                 });
             this.exportMenu.isStringTemplate = true;
             this.exportMenu.appendTo('#' + this.parent.element.id + 'export_menu');
@@ -864,7 +882,10 @@ export class Toolbar {
             this.subTotalMenu = new Menu(
                 {
                     items: menu, enableRtl: this.parent.enableRtl,
-                    select: this.menuItemClick.bind(this), beforeOpen: this.updateSubtotalSelection.bind(this)
+                    select: this.menuItemClick.bind(this), beforeOpen: this.updateSubtotalSelection.bind(this),
+                    onClose: (args: OpenCloseMenuEventArgs) => {
+                        this.focusToolBar();
+                    }
                 });
             this.subTotalMenu.isStringTemplate = true;
             this.subTotalMenu.appendTo('#' + this.parent.element.id + 'subtotal_menu');
@@ -898,7 +919,10 @@ export class Toolbar {
             this.grandTotalMenu = new Menu(
                 {
                     items: menu, enableRtl: this.parent.enableRtl,
-                    select: this.menuItemClick.bind(this), beforeOpen: this.updateGrandtotalSelection.bind(this)
+                    select: this.menuItemClick.bind(this), beforeOpen: this.updateGrandtotalSelection.bind(this),
+                    onClose: (args: OpenCloseMenuEventArgs) => {
+                        this.focusToolBar();
+                    }
                 });
             this.grandTotalMenu.isStringTemplate = true;
             this.grandTotalMenu.appendTo('#' + this.parent.element.id + 'grandtotal_menu');
@@ -960,8 +984,7 @@ export class Toolbar {
         for (let element of itemElements) {
             if (element.querySelector('button')) {
                 element.querySelector('button').setAttribute('tabindex', '0');
-            }
-            else if (element.querySelector('.e-menu.e-menu-parent')) {
+            } else if (element.querySelector('.e-menu.e-menu-parent')) {
                 element.querySelector('.e-menu.e-menu-parent').setAttribute('tabindex', '-1');
                 if (element.querySelector('.e-menu-item.e-menu-caret-icon')) {
                     element.querySelector('.e-menu-item.e-menu-caret-icon').setAttribute('tabindex', '0');
@@ -985,20 +1008,56 @@ export class Toolbar {
             this.parent.element.appendChild(inputCheckbox);
             let checkbox: CheckBox = new CheckBox({
                 label: this.parent.localeObj.getConstant('multipleAxes'),
+                cssClass: 'e-multipleAxes',
                 checked: this.parent.chartSettings.enableMultiAxis,
                 enableRtl: this.parent.enableRtl
             });
             args.element.innerText = '';
             checkbox.appendTo('#' + this.parent.element.id + '_' + 'checkBox');
-            let checkboxObj: HTMLElement = this.parent.element.querySelector('.e-checkbox-wrapper');
+            if ((['Pie', 'Funnel', 'Pyramid', 'Doughnut'].indexOf(this.parent.chartSettings.chartSeries.type) > -1) &&
+                !args.element.classList.contains(cls.MENU_DISABLE)) {
+                args.element.classList.add(cls.MENU_DISABLE);
+                checkbox.disabled = true;
+            } else if ((['Pie', 'Funnel', 'Pyramid', 'Doughnut'].indexOf(this.parent.chartSettings.chartSeries.type) < 0) &&
+                args.element.classList.contains(cls.MENU_DISABLE)) {
+                args.element.classList.remove(cls.MENU_DISABLE);
+                checkbox.disabled = false;
+            }
+            let checkboxObj: HTMLElement = this.parent.element.querySelector('.e-checkbox-wrapper.e-multipleAxes');
+            args.element.appendChild(checkboxObj);
+        } else if (this.parent.element.id + '_' + 'showLegend' === args.element.id) {
+            let inputCheckbox: HTMLElement = createElement('input', {
+                id: this.parent.element.id + '_' + 'showLegendCheckBox'
+            });
+            inputCheckbox.style.display = 'none';
+            this.parent.element.appendChild(inputCheckbox);
+            let checkbox: CheckBox = new CheckBox({
+                label: this.parent.localeObj.getConstant('showLegend'),
+                checked: this.getLableState(this.parent.chartSettings.chartSeries.type),
+                cssClass: 'e-showLegend',
+                enableRtl: this.parent.enableRtl
+            });
+            args.element.innerText = '';
+            checkbox.appendTo('#' + this.parent.element.id + '_' + 'showLegendCheckBox');
+            let checkboxObj: HTMLElement = this.parent.element.querySelector('.e-checkbox-wrapper.e-showLegend');
             args.element.appendChild(checkboxObj);
         }
     }
 
+    private getLableState(type: string): boolean {
+        let chartSettings: ChartSettingsModel = JSON.parse(this.parent.getPersistData()).chartSettings;
+        if (chartSettings && chartSettings.legendSettings && chartSettings.legendSettings.visible !== undefined) {
+            this.showLableState = chartSettings.legendSettings.visible;
+        } else {
+            this.showLableState = ['Pie', 'Funnel', 'Pyramid', 'Doughnut'].indexOf(this.parent.chartSettings.chartSeries.type) > -1 ?
+                false : true;
+        }
+        return this.showLableState;
+    }
     private getAllChartItems(): string[] {
         return ['Line', 'Column', 'Area', 'Bar', 'StackingColumn', 'StackingArea', 'StackingBar', 'StepLine', 'StepArea',
             'SplineArea', 'Scatter', 'Spline', 'StackingColumn100', 'StackingBar100', 'StackingArea100', 'Bubble', 'Pareto',
-            'Polar', 'Radar'];
+            'Polar', 'Radar', 'Pie', 'Pyramid', 'Funnel', 'Doughnut'] as ChartSeriesType[];
     }
     private updateExportMenu(args: BeforeOpenCloseMenuEventArgs): void {
         let items: HTMLElement[] = [].slice.call(args.element.querySelectorAll('li'));
@@ -1097,7 +1156,8 @@ export class Toolbar {
         let type: string;
         if (this.getAllChartItems().indexOf(args.item.id.split(this.parent.element.id + '_')[1]) > -1 ||
             (args.item.id.split(this.parent.element.id + '_')[1] === 'ChartMoreOption') ||
-            (args.item.id.split(this.parent.element.id + '_')[1] === 'multipleAxes')) {
+            (args.item.id.split(this.parent.element.id + '_')[1] === 'multipleAxes') ||
+            (args.item.id.split(this.parent.element.id + '_')[1] === 'showLegend')) {
             type = args.item.id.split(this.parent.element.id + '_')[1];
         }
         /* tslint:disable:max-line-length */
@@ -1259,10 +1319,21 @@ export class Toolbar {
                     if (type === 'ChartMoreOption') {
                         this.createChartTypeDialog();
                     } else if (type === 'multipleAxes') {
+                        if (this.parent.chartSettings.enableScrollOnMultiAxis) {
+                            this.isMultiAxisChange = true;
+                        }
                         this.parent.chartSettings.enableMultiAxis = !this.parent.chartSettings.enableMultiAxis;
                         this.updateChartType(this.parent.chartSettings.chartSeries.type, true);
                     } else if (this.getAllChartItems().indexOf(type) > -1) {
                         this.updateChartType(type as ChartSeriesType, false);
+                    } else if (type === 'showLegend') {
+                        this.parent.chart.legendSettings.visible = !this.showLableState;
+                        if (this.parent.chartSettings.legendSettings) {
+                            this.parent.chartSettings.legendSettings.visible = !this.showLableState;
+                        } else {
+                            this.parent.setProperties({ chartSettings: { legendSettings: { visible: !this.showLableState } } }, true);
+                        }
+                        this.updateChartType(this.parent.chartSettings.chartSeries.type, true);
                     }
                 }
                 if (isBlazor() && this.parent.element.querySelector('.e-toggle-field-list') && this.parent.toolbar.indexOf('FieldList') !== -1) {
@@ -1335,13 +1406,23 @@ export class Toolbar {
         /* tslint:disable-next-line:max-line-length */
         let chartType: ChartSeriesType = (getInstance('#' + this.parent.element.id + '_ChartTypeOption', DropDownList) as DropDownList).value as ChartSeriesType;
         let checked: boolean = (getInstance('#' + this.parent.element.id + '_DialogMultipleAxis', CheckBox) as CheckBox).checked;
+        let checkedShow: boolean = (getInstance('#' + this.parent.element.id + '_DialogShowLabel', CheckBox) as CheckBox).checked;
+        this.parent.chart.legendSettings.visible = checkedShow;
+        if (this.chartLableState) {
+            this.parent.chart.legendSettings.visible = checkedShow;
+            if (this.parent.chartSettings.legendSettings) {
+                this.parent.chartSettings.legendSettings.visible = checkedShow;
+            } else {
+                this.parent.setProperties({ chartSettings: { legendSettings: { visible: checkedShow } } }, true);
+            }
+        }
         this.updateChartType(chartType, false);
         this.parent.chartSettings.enableMultiAxis = checked;
         this.chartTypesDialog.close();
     }
     private updateChartType(type: ChartSeriesType, isMultiAxis: boolean): void {
         if (this.getAllChartItems().indexOf(type) > -1) {
-            if (this.parent.grid && this.parent.chart) {
+            if (this.parent.chart) {
                 this.parent.currentView = 'Chart';
                 this.parent.setProperties({ displayOption: { primary: 'Chart' } }, true);
                 /* tslint:disable:max-line-length */
@@ -1374,6 +1455,7 @@ export class Toolbar {
             fields: { value: 'value', text: 'text' },
             value: this.parent.chartSettings.chartSeries.type ? this.parent.chartSettings.chartSeries.type : this.getValidChartType()[0],
             width: '100%',
+            change: this.changeDropDown.bind(this)
         });
         optionWrapper.isStringTemplate = true;
         optionWrapper.appendTo(dropOptionDiv);
@@ -1383,15 +1465,52 @@ export class Toolbar {
             attrs: { 'type': 'checkbox' }
         }) as HTMLInputElement;
         mainWrapper.appendChild(checkboxWrap);
+        let labelCheckboxWrap: HTMLInputElement = createElement('input', {
+            id: this.parent.element.id + '_DialogShowLabel',
+            attrs: { 'type': 'checkbox' }
+        }) as HTMLInputElement;
+        mainWrapper.appendChild(labelCheckboxWrap);
         return mainWrapper;
     }
+    private changeDropDown(args: ChangeEventArgs): void {
+        let chartSettings: ChartSettingsModel = JSON.parse(this.parent.getPersistData()).chartSettings;
+        if (!(chartSettings && chartSettings.legendSettings && chartSettings.legendSettings.visible !== undefined)) {
+            let checked: boolean = ['Pie', 'Funnel', 'Pyramid', 'Doughnut'].indexOf(args.value.toString()) > -1 ?
+                false : true;
+            (getInstance('#' + this.parent.element.id + '_DialogShowLabel', CheckBox) as CheckBox).checked = checked;
+        }
+        if (['Pie', 'Funnel', 'Pyramid', 'Doughnut'].indexOf(args.value.toString()) > -1) {
+            (getInstance('#' + this.parent.element.id + '_DialogMultipleAxis', CheckBox) as CheckBox).disabled = true;
+        } else {
+            (getInstance('#' + this.parent.element.id + '_DialogMultipleAxis', CheckBox) as CheckBox).disabled = false;
+        }
+    }
+
     private beforeOpen(): void {
         let checkbox: CheckBox = new CheckBox({
             label: this.parent.localeObj.getConstant('multipleAxes'),
+            cssClass: 'e-dialog-multiple-axis',
             checked: this.parent.chartSettings.enableMultiAxis ? this.parent.chartSettings.enableMultiAxis : false,
             enableRtl: this.parent.enableRtl,
         });
+        let checkbox1: CheckBox = new CheckBox({
+            label: this.parent.localeObj.getConstant('showLegend'),
+            checked: this.getLableState(this.parent.chartSettings.chartSeries.type),
+            change: () => { this.chartLableState = true; },
+            cssClass: 'e-dialog-show-legend',
+            enableRtl: this.parent.enableRtl,
+        });
+        checkbox1.appendTo(this.chartTypesDialog.element.querySelector('#' + this.parent.element.id + '_DialogShowLabel') as HTMLElement);
         checkbox.appendTo(this.chartTypesDialog.element.querySelector('#' + this.parent.element.id + '_DialogMultipleAxis') as HTMLElement);
+        if (['Pie', 'Funnel', 'Pyramid', 'Doughnut'].indexOf(this.parent.chartSettings.chartSeries.type) > -1) {
+            checkbox.disabled = true;
+        }
+        let chartSettings: ChartSettingsModel = JSON.parse(this.parent.getPersistData()).chartSettings;
+        if (chartSettings && chartSettings.legendSettings && chartSettings.legendSettings.visible !== undefined) {
+            this.chartLableState = true;
+        } else {
+            this.chartLableState = false;
+        }
     }
     /**
      * To refresh the toolbar 
@@ -1452,6 +1571,14 @@ export class Toolbar {
         }
         if (document.querySelector('#' + this.parent.element.id + 'pivot-toolbar')) {
             remove(document.querySelector('#' + this.parent.element.id + 'pivot-toolbar'));
+        }
+    }
+
+    private focusToolBar(): void {
+        removeClass(document.querySelector('.' + cls.GRID_TOOLBAR).querySelectorAll('.e-menu-item.e-focused'), 'e-focused');
+        removeClass(document.querySelector('.' + cls.GRID_TOOLBAR).querySelectorAll('.e-menu-item.e-selected'), 'e-selected');
+        if (document.querySelector('.e-toolbar-items')) {
+            addClass([document.querySelector('.e-toolbar-items')], 'e-focused');
         }
     }
 }

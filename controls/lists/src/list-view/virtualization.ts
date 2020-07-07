@@ -1,5 +1,6 @@
 import { ListView, ItemCreatedArgs, classNames, Fields, UISelectedItem } from './list-view';
 import { EventHandler, append, isNullOrUndefined, detach, removeClass, addClass, compile, formatUnit } from '@syncfusion/ej2-base';
+import { isBlazor, debounce } from '@syncfusion/ej2-base';
 import { ListBase } from '../common/list-base';
 import { DataManager } from '@syncfusion/ej2-data';
 
@@ -26,6 +27,7 @@ export class Virtualization {
     private expectedDomItemCount: number;
     private scrollPosition: number;
     private onVirtualScroll: EventListener;
+    private updateUl: EventListener;
     private checkListWrapper: Node;
     private iconCssWrapper: Node;
     public uiFirstIndex: number;
@@ -36,6 +38,7 @@ export class Virtualization {
     private activeIndex: number;
     private uiIndices: { [key: string]: number[] };
     private listDiff: number;
+    private elementDifference: number = 0;
 
     /**
      * For internal use only.
@@ -52,11 +55,13 @@ export class Virtualization {
     public uiVirtualization(): void {
         let curViewDS: { [key: string]: Object; }[] = this.listViewInstance.curViewDS as { [key: string]: Object; }[];
         let firstDs: { [key: string]: Object; }[] = curViewDS.slice(0, 1);
-        this.listViewInstance.ulElement = this.listViewInstance.curUL = ListBase.createList(
+        if (!(isBlazor() || this.listViewInstance.isServerRendered)) {
+            this.listViewInstance.ulElement = this.listViewInstance.curUL = ListBase.createList(
             this.listViewInstance.createElement, firstDs, this.listViewInstance.listBaseOption);
-        this.listViewInstance.contentContainer = this.listViewInstance.createElement('div', { className: classNames.content });
-        this.listViewInstance.element.appendChild(this.listViewInstance.contentContainer);
-        this.listViewInstance.contentContainer.appendChild(this.listViewInstance.ulElement);
+            this.listViewInstance.contentContainer = this.listViewInstance.createElement('div', { className: classNames.content });
+            this.listViewInstance.element.appendChild(this.listViewInstance.contentContainer);
+            this.listViewInstance.contentContainer.appendChild(this.listViewInstance.ulElement);
+        }
         this.listItemHeight = this.listViewInstance.ulElement.firstElementChild.getBoundingClientRect().height;
         this.expectedDomItemCount = this.ValidateItemCount(10000);
         this.domItemCount = this.ValidateItemCount(Object.keys(this.listViewInstance.curViewDS).length);
@@ -64,36 +69,78 @@ export class Virtualization {
         this.uiLastIndex = this.domItemCount - 1;
         this.wireScrollEvent(false);
         let otherDs: { [key: string]: Object; }[] = curViewDS.slice(1, this.domItemCount);
-        let listItems: HTMLElement[] = ListBase.createListItemFromJson(
+        if (!(isBlazor() || this.listViewInstance.isServerRendered)) {
+            let listItems: HTMLElement[] = ListBase.createListItemFromJson(
             this.listViewInstance.createElement, otherDs, this.listViewInstance.listBaseOption);
-        append(listItems, this.listViewInstance.ulElement);
-        this.listViewInstance.liCollection = <HTMLElement[] & NodeListOf<HTMLLIElement>>this.listViewInstance.curUL.querySelectorAll('li');
-        this.topElement = this.listViewInstance.createElement('div');
-        this.listViewInstance.ulElement.insertBefore(this.topElement, this.listViewInstance.ulElement.firstElementChild);
-        this.bottomElement = this.listViewInstance.createElement('div');
-        this.listViewInstance.ulElement.insertBefore(this.bottomElement, null);
-        this.totalHeight = (Object.keys(curViewDS).length * this.listItemHeight) - (this.domItemCount * this.listItemHeight);
-        this.topElement.style.height = 0 + 'px';
-        this.bottomElement.style.height = this.totalHeight + 'px';
-        this.topElementHeight = 0;
-        this.bottomElementHeight = this.totalHeight;
+            append(listItems, this.listViewInstance.ulElement);
+            this.listViewInstance.liCollection = <HTMLElement[] & NodeListOf<HTMLLIElement>>
+            this.listViewInstance.curUL.querySelectorAll('li');
+            this.topElement = this.listViewInstance.createElement('div');
+            this.listViewInstance.ulElement.insertBefore(this.topElement, this.listViewInstance.ulElement.firstElementChild);
+            this.bottomElement = this.listViewInstance.createElement('div');
+            this.listViewInstance.ulElement.insertBefore(this.bottomElement, null);
+            this.totalHeight = (Object.keys(curViewDS).length * this.listItemHeight) - (this.domItemCount * this.listItemHeight);
+            this.topElement.style.height = 0 + 'px';
+            this.bottomElement.style.height = this.totalHeight + 'px';
+            this.topElementHeight = 0;
+            this.bottomElementHeight = this.totalHeight;
+        } else {
+            this.listViewInstance.contentContainer = this.listViewInstance.element.querySelector('.e-content');
+            this.listViewInstance.liCollection = <HTMLElement[] & NodeListOf<HTMLLIElement>>
+            this.listViewInstance.curUL.querySelectorAll('li');
+        }
         this.listDiff = 0;
         this.uiIndicesInitialization();
     }
 
     private wireScrollEvent(destroy: boolean): void {
         if (!destroy) {
-            if (this.listViewInstance.isWindow) {
-                this.onVirtualScroll = this.onVirtualUiScroll.bind(this);
-                window.addEventListener('scroll', this.onVirtualScroll);
+            if (!(isBlazor() && this.listViewInstance.isServerRendered)) {
+                if (this.listViewInstance.isWindow) {
+                    this.onVirtualScroll = this.onVirtualUiScroll.bind(this);
+                    window.addEventListener('scroll', this.onVirtualScroll);
+                } else {
+                    EventHandler.add(this.listViewInstance.element, 'scroll', this.onVirtualUiScroll, this);
+                }
             } else {
-                EventHandler.add(this.listViewInstance.element, 'scroll', this.onVirtualUiScroll, this);
+                if (this.listViewInstance.isWindow) {
+                    // tslint:disable-next-line:no-any
+                    this.onVirtualScroll = (debounce as any)(this.onVirtualUiScroll.bind(this), 350);
+                     // tslint:enable-next-line:no-any      
+                    this.updateUl = this.updateUlContainer.bind(this);
+                    window.addEventListener('scroll', this.onVirtualScroll);
+                    window.addEventListener('scroll', this.updateUl);
+                } else {
+                    EventHandler.add(this.listViewInstance.element, 'scroll', debounce(this.onVirtualUiScroll, 350), this);
+                    EventHandler.add(this.listViewInstance.element, 'scroll', this.updateUlContainer, this);
+                }
             }
         } else {
             this.listViewInstance.isWindow ? window.removeEventListener('scroll', this.onVirtualScroll) :
                 EventHandler.remove(this.listViewInstance.element, 'scroll', this.onVirtualUiScroll);
+            this.listViewInstance.isWindow ? window.removeEventListener('scroll', this.updateUl) :
+                EventHandler.remove(this.listViewInstance.element, 'scroll', this.updateUlContainer);
         }
 
+    }
+
+    private updateUlContainer(e: Event): void {
+        let listDiff: number;
+        if (this.listViewInstance.isWindow) {
+            // tslint:disable-next-line:no-any
+            listDiff = Math.round((e as any).target.documentElement.scrollTop / this.listViewInstance.liElementHeight) - 2;
+            // tslint:enable-next-line:no-any  
+        } else {
+            // tslint:disable-next-line:no-any
+            listDiff = Math.round((e as any).target.scrollTop / this.listViewInstance.liElementHeight) - 2;
+            // tslint:enable-next-line:no-any  
+        }
+        let virtualElementContainer: HTMLElement = this.listViewInstance.ulElement.children[0].children[0];
+        if (((listDiff - 1) * this.listViewInstance.liElementHeight) < 0) {
+            virtualElementContainer.style.top = '0px';
+        } else {
+            virtualElementContainer.style.top = (listDiff) * this.listViewInstance.liElementHeight + 'px';
+        }
     }
 
     private ValidateItemCount(dataSourceLength: number): number {
@@ -121,7 +168,7 @@ export class Virtualization {
         if (this.isNgTemplate()) {
             let items: ElementContext[] = this.listViewInstance.element.querySelectorAll('.' + classNames.listItem);
             for (let index: number = 0; index < items.length; index++) {
-                items[index].context = this.listViewInstance.viewContainerRef._embeddedViews[index].context;
+                items[index].context = this.listViewInstance.viewContainerRef.get(index).context;
             }
         }
     }
@@ -129,10 +176,15 @@ export class Virtualization {
     public refreshItemHeight(): void {
         if (this.listViewInstance.curViewDS.length) {
             let curViewDS: { [key: string]: Object; }[] = this.listViewInstance.curViewDS as { [key: string]: Object; }[];
-            this.listItemHeight = (this.topElement.nextSibling as HTMLElement).getBoundingClientRect().height;
-            this.totalHeight = (Object.keys(curViewDS).length * this.listItemHeight) - (this.domItemCount * this.listItemHeight);
-            this.bottomElementHeight = this.totalHeight;
-            this.bottomElement.style.height = this.totalHeight + 'px';
+            if (isBlazor() && this.listViewInstance.isServerRendered) {
+                this.listViewInstance.ulElement.children[0].style.height =
+                (this.listViewInstance.liElementHeight * (Object.keys(curViewDS).length)) + 'px';
+            } else {
+                this.listItemHeight = (this.topElement.nextSibling as HTMLElement).getBoundingClientRect().height;
+                this.totalHeight = (Object.keys(curViewDS).length * this.listItemHeight) - (this.domItemCount * this.listItemHeight);
+                this.bottomElementHeight = this.totalHeight;
+                this.bottomElement.style.height = this.totalHeight + 'px';
+            }
         }
     }
 
@@ -142,7 +194,7 @@ export class Virtualization {
                 (this.listViewInstance.element.scrollTop - startingHeight);
     }
 
-    private onVirtualUiScroll(): void {
+    private onVirtualUiScroll(e: Event): void {
         let startingHeight: number;
         if (this.listViewInstance.isWindow) {
             startingHeight = this.listViewInstance.ulElement.getBoundingClientRect().top -
@@ -155,23 +207,48 @@ export class Virtualization {
         this.topElementHeight = this.listItemHeight * Math.floor(scroll / this.listItemHeight);
         this.bottomElementHeight = this.totalHeight - this.topElementHeight;
         [this.topElementHeight, this.bottomElementHeight] = scroll <= this.totalHeight ?
-            [this.topElementHeight, this.bottomElementHeight] : [this.totalHeight, 0];
-        if (this.topElementHeight !== parseFloat(this.topElement.style.height)) {
-            this.topElement.style.height = this.topElementHeight + 'px';
-            this.bottomElement.style.height = this.bottomElementHeight + 'px';
-            if (scroll > this.scrollPosition) {
-                let listDiff: number = Math.round(((this.topElementHeight / this.listItemHeight) - this.listDiff));
-                if (listDiff > (this.expectedDomItemCount + 5)) {
-                    this.onLongScroll(listDiff, true);
-                } else {
-                    this.onNormalScroll(listDiff, true);
+        [this.topElementHeight, this.bottomElementHeight] : [this.totalHeight, 0];
+        if (isBlazor() && this.listViewInstance.isServerRendered) {
+            let listDiff: number;
+            if (!isNullOrUndefined(this.listViewInstance.liElementHeight)) {
+                let ulContainer: Element = this.listViewInstance.element.querySelector('#virtualUlContainer');
+                if (ulContainer.children[0]) {
+                    this.listViewInstance.liElementHeight = ulContainer.children[0].getBoundingClientRect().height;
                 }
+            }
+            if (this.listViewInstance.isWindow) {
+                listDiff = Math.round(document.documentElement.scrollTop / this.listViewInstance.liElementHeight);
             } else {
-                let listDiff: number = Math.round((this.listDiff - (this.topElementHeight / this.listItemHeight)));
-                if (listDiff > (this.expectedDomItemCount + 5)) {
-                    this.onLongScroll(listDiff, false);
+                // tslint:disable-next-line:no-any
+                listDiff = Math.round((e.target as any).scrollTop / this.listViewInstance.liElementHeight);
+                // tslint:enable-next-line:no-any
+            }
+            if ((listDiff - 2) - this.elementDifference >= 3 || (listDiff - 2) - this.elementDifference <= -1) {
+                let args: object = { listDiff: listDiff - 2, selectedItems: this.listViewInstance.previousSelectedItems };
+                this.listViewInstance.interopAdaptor.invokeMethodAsync('VirtalScrolling', args);
+                if (this.listViewInstance.ulElement.querySelector('.e-focused')) {
+                    this.listViewInstance.ulElement.querySelector('.e-focused').classList.remove('e-focused');
+                }
+                this.elementDifference = listDiff - 2;
+            }
+        } else {
+            if (this.topElementHeight !== parseFloat(this.topElement.style.height)) {
+                this.topElement.style.height = this.topElementHeight + 'px';
+                this.bottomElement.style.height = this.bottomElementHeight + 'px';
+                if (scroll > this.scrollPosition) {
+                    let listDiff: number = Math.round(((this.topElementHeight / this.listItemHeight) - this.listDiff));
+                    if (listDiff > (this.expectedDomItemCount + 5)) {
+                        this.onLongScroll(listDiff, true);
+                    } else {
+                        this.onNormalScroll(listDiff, true);
+                    }
                 } else {
-                    this.onNormalScroll(listDiff, false);
+                    let listDiff: number = Math.round((this.listDiff - (this.topElementHeight / this.listItemHeight)));
+                    if (listDiff > (this.expectedDomItemCount + 5)) {
+                        this.onLongScroll(listDiff, false);
+                    } else {
+                        this.onNormalScroll(listDiff, false);
+                    }
                 }
             }
             this.listDiff = Math.round(this.topElementHeight / this.listItemHeight);
@@ -355,6 +432,12 @@ export class Virtualization {
                     };
                 }
             } else {
+                if (isBlazor() && this.listViewInstance.isServerRendered) {
+                    let scrollDiff: number = Math.round(this.listViewInstance.element.scrollTop /
+                         this.listViewInstance.liElementHeight) - 2;
+                    if (scrollDiff < 0) { scrollDiff = 0; }
+                    this.activeIndex += scrollDiff;
+                }
                 let curViewDS: { [key: string]: Object | string }[] = this.listViewInstance.curViewDS as { [key: string]: Object; }[];
                 let text: string = this.listViewInstance.fields.text;
                 if (this.listViewInstance.showCheckBox) {
@@ -441,33 +524,102 @@ export class Virtualization {
             this.listViewInstance.removeSelect();
             this.activeIndex = undefined;
         }
+        if (isBlazor() && this.listViewInstance.isServerRendered) {
+            // tslint:disable-next-line:no-any
+            let elementId: string = (resutJSON as any).data[this.listViewInstance.fields.id];
+            // tslint:enable-next-line:no-any
+            if (this.listViewInstance.showCheckBox) {
+                if (!this.listViewInstance.previousSelectedItems.includes(elementId)) {
+                    this.listViewInstance.previousSelectedItems.push(elementId);
+                } else {
+                    let indexPosition: number = this.listViewInstance.previousSelectedItems.indexOf(elementId);
+                    if (indexPosition > -1) {
+                        this.listViewInstance.previousSelectedItems.splice(indexPosition, 1);
+                    }
+                }
+            } else {
+                this.listViewInstance.previousSelectedItems[0] = elementId;
+            }
+            this.listViewInstance.removeActiveClass();
+        }
     }
 
     public enableItem(obj: Fields | HTMLElement | Element): void {
         let resutJSON: { [key: string]: Object | number } = this.findDSAndIndexFromId(this.listViewInstance.curViewDS, obj);
-        if (Object.keys(resutJSON).length) {
-            this.uiIndices.disabledItemIndices.splice(this.uiIndices.disabledItemIndices.indexOf(resutJSON.index as number), 1);
+        if (isBlazor() && this.listViewInstance.isServerRendered) {
+            let itemId: number = (resutJSON as any).data[this.listViewInstance.fields.id];
+            if (!this.listViewInstance.enabledItems.includes(itemId)) {
+                this.listViewInstance.enabledItems.push(itemId);
+                this.listViewInstance.removeActiveClass();
+            }
+            if (this.listViewInstance.disabledItems.includes(itemId)) {
+                let indexPosition: number = this.listViewInstance.disabledItems.indexOf(itemId);
+                if (indexPosition > -1) {
+                    this.listViewInstance.disabledItems.splice(indexPosition, 1);
+                }
+            }
+        } else {
+            if (Object.keys(resutJSON).length) {
+                this.uiIndices.disabledItemIndices.splice(this.uiIndices.disabledItemIndices.indexOf(resutJSON.index as number), 1);
+            }
         }
     }
 
     public disableItem(obj: Fields | HTMLElement | Element): void {
         let resutJSON: { [key: string]: Object | number } = this.findDSAndIndexFromId(this.listViewInstance.curViewDS, obj);
-        if (Object.keys(resutJSON).length && this.uiIndices.disabledItemIndices.indexOf(resutJSON.index as number) === -1) {
-            this.uiIndices.disabledItemIndices.push(resutJSON.index as number);
+        if (isBlazor() && this.listViewInstance.isServerRendered) {
+            let liElementId: number = (resutJSON as any).data[this.listViewInstance.fields.id];
+            if (!this.listViewInstance.disabledItems.includes(liElementId)) {
+                this.listViewInstance.disabledItems.push(liElementId);
+                this.listViewInstance.removeActiveClass();
+            }
+            if (this.listViewInstance.enabledItems.includes(liElementId)) {
+                let indexPosition: number = this.listViewInstance.enabledItems.indexOf(liElementId);
+                if (indexPosition > -1) {
+                    this.listViewInstance.enabledItems.splice(indexPosition, 1);
+                }
+            }
+        } else {
+            if (Object.keys(resutJSON).length && this.uiIndices.disabledItemIndices.indexOf(resutJSON.index as number) === -1) {
+                this.uiIndices.disabledItemIndices.push(resutJSON.index as number);
+            }
         }
     }
-
     public showItem(obj: Fields | HTMLElement | Element): void {
         let resutJSON: { [key: string]: Object | number } = this.findDSAndIndexFromId(this.listViewInstance.curViewDS, obj);
-        if (Object.keys(resutJSON).length) {
-            this.uiIndices.hiddenItemIndices.splice(this.uiIndices.hiddenItemIndices.indexOf(resutJSON.index as number), 1);
+        if (isBlazor() && this.listViewInstance.isServerRendered) {
+            // tslint:disable-next-line:no-any
+            let hiddenElementId: string = (resutJSON as any).data[this.listViewInstance.fields.id];
+            // tslint:enable-next-line:no-any
+            if (this.listViewInstance.hiddenItems.includes(hiddenElementId)) {
+                let indexPosition: number = this.listViewInstance.hiddenItems.indexOf(hiddenElementId);
+                if (indexPosition > -1) {
+                    this.listViewInstance.previousSelectedItems.splice(indexPosition, 1);
+                    this.listViewInstance.removeActiveClass();
+                }
+            }
+        } else {
+            if (Object.keys(resutJSON).length) {
+                this.uiIndices.hiddenItemIndices.splice(this.uiIndices.hiddenItemIndices.indexOf(resutJSON.index as number), 1);
+            }
         }
     }
 
     public hideItem(obj: Fields | HTMLElement | Element): void {
         let resutJSON: { [key: string]: Object | number } = this.findDSAndIndexFromId(this.listViewInstance.curViewDS, obj);
-        if (Object.keys(resutJSON).length && this.uiIndices.hiddenItemIndices.indexOf(resutJSON.index as number) === -1) {
-            this.uiIndices.hiddenItemIndices.push(resutJSON.index as number);
+        if (isBlazor() && this.listViewInstance.isServerRendered) {
+            // tslint:disable-next-line:no-any
+            let elementId: string = (resutJSON as any).data[this.listViewInstance.fields.id];
+            // tslint:enable-next-line:no-any
+            if (!this.listViewInstance.hiddenItems.includes(elementId)) {
+                this.listViewInstance.hiddenItems.push(elementId);
+                this.listViewInstance.removeActiveClass();
+            }
+
+        } else {
+            if (Object.keys(resutJSON).length && this.uiIndices.hiddenItemIndices.indexOf(resutJSON.index as number) === -1) {
+                this.uiIndices.hiddenItemIndices.push(resutJSON.index as number);
+            }
         }
     }
 
@@ -475,6 +627,13 @@ export class Virtualization {
         let dataSource: DataSource;
         const curViewDS: DataSource[] = this.listViewInstance.curViewDS;
         let resutJSON: { [key: string]: Object | number } = this.findDSAndIndexFromId(curViewDS, obj);
+        if (isBlazor() && this.listViewInstance.isServerRendered) {
+            if (resutJSON.index !== undefined) {
+                // tslint:disable
+                this.listViewInstance.interopAdaptor.invokeMethodAsync('RemoveItemPosition', resutJSON.index);
+                // tslint:enable
+            }
+        }
         if (Object.keys(resutJSON).length) {
             dataSource = resutJSON.data as DataSource;
             if (curViewDS[(resutJSON.index as number) - 1] &&
@@ -484,7 +643,9 @@ export class Virtualization {
                 this.removeUiItem((resutJSON.index as number) - 1);
                 this.removeUiItem((resutJSON.index as number) - 1);
             } else {
-                this.removeUiItem((resutJSON.index as number));
+                if (!(isBlazor() && this.listViewInstance.isServerRendered)) {
+                    this.removeUiItem((resutJSON.index as number));
+                }
             }
         }
         const listDataSource: DataSource[] = this.listViewInstance.dataSource instanceof DataManager
@@ -495,11 +656,17 @@ export class Virtualization {
             this.listViewInstance.setViewDataSource(listDataSource);
         }
         // recollect all the list item into collection
+
         this.listViewInstance.liCollection =
             <HTMLElement[] & NodeListOf<HTMLLIElement>>this.listViewInstance.curUL.querySelectorAll('li');
+
     }
 
     public setCheckboxLI(li: HTMLElement | Element, e?: MouseEvent | KeyboardEvent | FocusEvent): void {
+        if (isBlazor() && this.listViewInstance.isServerRendered) {
+            this.uiFirstIndex = Math.round(this.listViewInstance.element.scrollTop / 36) - 4;
+            if (this.uiFirstIndex < 0) { this.uiFirstIndex = 0; }
+        }
         let index: number = Array.prototype.indexOf.call(this.listViewInstance.curUL.querySelectorAll('li'), li) + this.uiFirstIndex;
         this.activeIndex = Array.prototype.indexOf.call(this.listViewInstance.curUL.querySelectorAll('li'), li) + this.uiFirstIndex;
         if (li.classList.contains(classNames.selected)) {

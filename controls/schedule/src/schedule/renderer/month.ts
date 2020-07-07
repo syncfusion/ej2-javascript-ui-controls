@@ -2,12 +2,12 @@ import { EventHandler, formatUnit, isNullOrUndefined, isBlazor } from '@syncfusi
 import { createElement, remove, addClass, append, prepend } from '@syncfusion/ej2-base';
 import { IRenderer, TdData, RenderCellEventArgs, CellTemplateArgs, NotifyEventArgs, CellClickEventArgs } from '../base/interface';
 import { Schedule } from '../base/schedule';
+import { View } from '../base/type';
 import { ViewBase } from './view-base';
+import { MonthEvent } from '../event-renderer/month';
 import * as util from '../base/util';
 import * as event from '../base/constant';
 import * as cls from '../base/css-constant';
-import { MonthEvent } from '../event-renderer/month';
-import { View } from '../base/type';
 
 /**
  * month view
@@ -78,6 +78,9 @@ export class Month extends ViewBase implements IRenderer {
         // tslint:enable:no-any
         this.setColWidth(content);
         if (args.scrollPosition) {
+            if (leftPanel) {
+                leftPanel.scrollTop = args.scrollPosition.top as number;
+            }
             content.scrollTop = args.scrollPosition.top as number;
             content.scrollLeft = args.scrollPosition.left as number;
         } else {
@@ -148,6 +151,9 @@ export class Month extends ViewBase implements IRenderer {
         let contentBody: Element = this.element.querySelector('.' + cls.CONTENT_TABLE_CLASS + ' tbody');
         EventHandler.clearEvents(contentBody);
         this.wireCellEvents(contentBody);
+        if (this.parent.virtualScrollModule) {
+            this.parent.virtualScrollModule.setTranslateValue();
+        }
         let wrap: Element = this.element.querySelector('.' + cls.CONTENT_WRAP_CLASS);
         EventHandler.clearEvents(wrap);
         EventHandler.add(wrap, 'scroll', this.onContentScroll, this);
@@ -162,7 +168,8 @@ export class Month extends ViewBase implements IRenderer {
         this.dayNameFormat = this.getDayNameFormat();
         if (this.parent.isServerRenderer()) {
             this.colLevels = this.generateColumnLevels();
-            if (this.parent.activeView.isTimelineView() && this.parent.resourceBase && !this.parent.uiStateValues.isGroupAdaptive) {
+            if (this.parent.activeView.isTimelineView() && this.parent.resourceBase &&
+                this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
                 this.parent.resourceBase.setRenderedResources();
             }
             return;

@@ -877,7 +877,9 @@ export class DropDownList extends DropDownBase implements IInput {
 
     protected removeHover(): void {
         if (this.list) {
-            let hoveredItem: Element[] = <NodeListOf<Element> & Element[]>this.list.querySelectorAll('.' + dropDownBaseClasses.hover);
+            let hoveredItem: Element[] = (this.isServerBlazor && this.popupObj && this.popupObj.element) ?
+                <NodeListOf<Element> & Element[]>this.popupObj.element.querySelectorAll('.' + dropDownBaseClasses.hover) :
+                <NodeListOf<Element> & Element[]>this.list.querySelectorAll('.' + dropDownBaseClasses.hover);
             if (hoveredItem && hoveredItem.length) {
                 removeClass(hoveredItem, dropDownBaseClasses.hover);
             }
@@ -2035,7 +2037,7 @@ export class DropDownList extends DropDownBase implements IInput {
     }
     private updateServerPopup(popupEle : HTMLElement): void {
         if (this.isServerBlazor) {
-            if (popupEle && popupEle.querySelector('li')) { removeClass([this.list], ['e-nodata']); }
+            if (popupEle && popupEle.querySelector('li')) { removeClass([popupEle.querySelector('.e-content')], ['e-nodata']); }
             this.initial = false;
             popupEle.removeAttribute('style');
         }
@@ -2585,7 +2587,7 @@ export class DropDownList extends DropDownBase implements IInput {
                             if (this.liCollections && this.liCollections.length === 100 &&
                                 this.getModuleName() === 'autocomplete' && this.listData.length > 100) {
                                 this.setSelectionData(newProp.text, oldProp.text, 'text');
-                            } else { this.setOldText(oldProp.text); }
+                            } else if (!this.isServerBlazor) { this.setOldText(oldProp.text); }
                         }
                         this.updateInputFields();
                     }
@@ -2602,7 +2604,7 @@ export class DropDownList extends DropDownBase implements IInput {
                             if (this.liCollections && this.liCollections.length === 100 &&
                                 this.getModuleName() === 'autocomplete' && this.listData.length > 100) {
                                 this.setSelectionData(newProp.value, oldProp.value, 'value');
-                            } else { this.setOldValue(oldProp.value); }
+                            } else if (!this.isServerBlazor) { this.setOldValue(oldProp.value); }
                         }
                         this.updateInputFields();
                     }
@@ -2612,13 +2614,13 @@ export class DropDownList extends DropDownBase implements IInput {
                         if (this.dataSource instanceof DataManager) { this.initRemoteRender = true; }
                         this.renderList();
                     }
-                    if (!this.initRemoteRender) {
+                    if (!this.initRemoteRender && this.liCollections) {
                         let element: Element = this.liCollections[newProp.index] as Element;
                         if (!this.checkValidLi(element)) {
                             if (this.liCollections && this.liCollections.length === 100 &&
                                 this.getModuleName() === 'autocomplete' && this.listData.length > 100) {
                                 this.setSelectionData(newProp.index, oldProp.index, 'index');
-                            } else { this.index = oldProp.index; }
+                            } else if (!this.isServerBlazor) { this.index = oldProp.index; }
                         }
                         this.updateInputFields();
                     }
@@ -2730,7 +2732,9 @@ export class DropDownList extends DropDownBase implements IInput {
         if (!this.isServerBlazor) {
             this.invokeRenderPopup();
         }
-        if (this.isServerBlazor && !isNullOrUndefined(this.list) && (this.getModuleName() === 'dropdownlist' || !this.isFiltering())) {
+        let popupHolderEle: Element | boolean = !this.isFiltering() || document.querySelector('#' + this.element.id + '_popup_holder');
+        let isDropdownComp: boolean = this.getModuleName() === 'dropdownlist' || !this.isFiltering();
+        if (this.isServerBlazor && popupHolderEle && !isNullOrUndefined(this.list) && isDropdownComp) {
             this.invokeRenderPopup();
         }
     }
@@ -2800,6 +2804,11 @@ export class DropDownList extends DropDownBase implements IInput {
     private updateclientItemData(data: { [key: string]: Object }[] | string[] | boolean[] | number[]): void {
         this.listData = data;
     }
+    private initValueItemData(selectData: string | number | boolean | { [key: string]: Object }): void {
+        this.itemData = selectData;
+        this.previousValue = this.value;
+        this.initial = false;
+    }
     private serverUpdateListElement(data: { [key: string]: Object }[] | string[] | boolean[] | number[], popupEle: HTMLElement): void {
         this.listData = data;
         if (this.ulElement) {
@@ -2832,8 +2841,9 @@ export class DropDownList extends DropDownBase implements IInput {
         }
         this.closePopup();
         let dataItem: { [key: string]: string } = this.getItemData();
+        let isSelectVal: boolean = this.isServerBlazor ? !isNullOrUndefined(this.value) : !isNullOrUndefined(this.selectedLI);
         if (this.inputElement.value.trim() === '' && !this.isInteracted && (this.isSelectCustom ||
-            !isNullOrUndefined(this.selectedLI) && this.inputElement.value !== dataItem.text)) {
+            isSelectVal && this.inputElement.value !== dataItem.text)) {
             this.isSelectCustom = false;
             this.clearAll(e);
         }

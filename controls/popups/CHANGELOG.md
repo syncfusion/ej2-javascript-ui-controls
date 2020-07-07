@@ -2,27 +2,19 @@
 
 ## [Unreleased]
 
+## 18.2.44 (2020-07-07)
+
 ### Dialog
 
 #### Bug Fixes
 
 - `#278841` -  The issue  with "user interaction to parent application through keyboard(tab key) when modal dialog rendering with footer template" has been resolved.
 
-### Popup
-
-#### Bug Fixes
-
-- `#278055`, `#F154458`, `#278546`, `#278549`, `#278944`, `#F154458` - The issue with "popup closed when scroll action is performed" has been resolved.
-
-## 18.1.56 (2020-06-09)
-
 ### Tooltip
 
 #### Bug Fixes
 
 - `#154807` - Tooltip not opening more than once when target specified has been resolved.
-
-## 18.1.55 (2020-06-02)
 
 ### Dialog
 
@@ -37,32 +29,6 @@
 #### Bug Fixes
 
 - `#275330` - The issue with tooltip position misalignment has been resolved.
-
-## 18.1.46 (2020-04-28)
-
-### Dialog
-
-#### Bug Fixes
-
-- `#269987` - Resolved the dialog target is not working properly when updating the target property dynamically.
-
-## 18.1.44 (2020-04-14)
-
-### Tooltip
-
-#### Bug Fixes
-
-- `#272201` - The issue with tooltip popup element not hide properly has been resolved.
-
-## 18.1.43 (2020-04-07)
-
-### Dialog
-
-#### Bug Fixes
-
-- `#269536` -  The issue with the resize icon not positioned properly when dialog rendered without `min-height` was resolved.
-
-- `#269654` -  The issue with the `resizing` event not working properly when more than two dialogs are rendered on the same page was resolved.
 
 ## 18.1.36-beta (2020-03-19)
 

@@ -24,17 +24,32 @@ export interface CardSettingsModel {
     contentField?: string;
 
     /**
+     * Defines the card content labels
+     * @deprecated
+     * @default null
+     */
+    tagsField?: string;
+
+    /**
+     * Defines the card color
+     * @deprecated
+     * @default null
+     */
+    grabberField?: string;
+
+    /**
+     * Defines the card icons
+     * @deprecated
+     * @default null
+     */
+    footerCssField?: string;
+
+    /**
      * Defines the card template
      * @default null
      * @deprecated
      */
     template?: string;
-
-    /**
-     * Defines the card order
-     * @default null
-     */
-    priority?: string;
 
     /**
      * It defines the card selection type, which accepts either of the following values.

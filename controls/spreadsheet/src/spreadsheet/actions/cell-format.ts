@@ -1,7 +1,9 @@
-import { Spreadsheet } from '../../spreadsheet/index';
+import { Spreadsheet, ICellRenderer, clearViewer, beginAction } from '../../spreadsheet/index';
 import { rowHeightChanged, setRowEleHeight, setMaxHgt, getTextHeight, getMaxHgt, getLines, initialLoad } from '../common/index';
-import { CellFormatArgs, getRowHeight, applyCellFormat, CellStyleModel, CellStyleExtendedModel, CellModel } from '../../workbook/index';
-import { SheetModel, isHiddenRow, getCell, getColumnWidth } from '../../workbook/index';
+import { CellFormatArgs, getRowHeight, applyCellFormat, CellStyleModel, CellStyleExtendedModel, CellModel} from '../../workbook/index';
+import { SheetModel, isHiddenRow, getCell, getColumnWidth, getRangeIndexes, getSheetIndex } from '../../workbook/index';
+import {  wrapEvent, getRangeAddress, ClearOptions,  clear } from '../../workbook/index';
+import { removeClass } from '@syncfusion/ej2-base';
 /**
  * CellFormat module allows to format the cell styles.
  */
@@ -168,13 +170,63 @@ export class CellFormat {
         return size === 'thin' ? 1 : (size === 'medium' ? 2 : (size === 'thick' ? 3 :
             (parseInt(size, 10) ? parseInt(size, 10) : 1)));
     }
+    private clearObj(args: { options: ClearOptions, isPublic: boolean }): void {
+        let options: ClearOptions = args.options;
+        let range: string = options.range ? (options.range.indexOf('!') > 0) ? options.range.split('!')[1] : options.range.split('!')[0]
+            : this.parent.getActiveSheet().selectedRange;
+        let sheetIndex: number = (options.range && options.range.indexOf('!') > 0) ?
+            getSheetIndex(this.parent, options.range.split('!')[0]) : this.parent.activeSheetIndex;
+        let rangeIdx: number[] = getRangeIndexes(range);
+        let sheet: SheetModel = this.parent.sheets[sheetIndex];
+        let sRIdx: number = rangeIdx[0];
+        let eRIdx: number = rangeIdx[2];
+        let sCIdx: number;
+        let eCIdx: number;
+        let eventArgs: object = { range: range, type: options.type, requestType: 'clear', sheetIndex: sheetIndex };
+        if (!args.isPublic) {
+            this.parent.notify(beginAction, { action: 'beforeClear', eventArgs: eventArgs });
+        }
+        if (options.type === 'Clear Formats' || options.type === 'Clear All') {
+            for (sRIdx; sRIdx <= eRIdx; sRIdx++) {
+                sCIdx = rangeIdx[1];
+                eCIdx = rangeIdx[3];
+                for (sCIdx; sCIdx <= eCIdx; sCIdx++) {
+                    let cell: CellModel = getCell(sRIdx, sCIdx, sheet);
+                    let cellElem: HTMLElement = this.parent.getCell(sRIdx, sCIdx);
+                    if (cell) {
+                        if (cell.wrap) {
+                            this.parent.notify(wrapEvent, { range: [sRIdx, sCIdx, sRIdx, sCIdx], wrap: false, sheet: sheet });
+                        }
+                        if (cell.hyperlink) {
+                            removeClass(cellElem.querySelectorAll('.e-hyperlink'), 'e-hyperlink-style');
+                            if (options.type === 'Clear All') {
+                                this.parent.removeHyperlink(getRangeAddress([sRIdx, sCIdx, sRIdx, sCIdx]));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (options.type === 'Clear Hyperlinks') {
+            this.parent.removeHyperlink(range);
+        }
+        this.parent.notify(clear, { range: sheet.name + '!' + range, type: options.type });
+        this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(getRangeIndexes(range));
+        if (!args.isPublic) {
+            eventArgs = { range: sheet.name + '!' + range, type: options.type, sheetIndex: sheetIndex };
+            this.parent.notify('actionComplete', { eventArgs: eventArgs, action: 'clear' });
+        }
+    }
+
     private addEventListener(): void {
         this.parent.on(applyCellFormat, this.applyCellFormat, this);
+        this.parent.on(clearViewer, this.clearObj, this);
     }
     private removeEventListener(): void {
         if (!this.parent.isDestroyed) {
             this.parent.off(initialLoad, this.addEventListener);
             this.parent.off(applyCellFormat, this.applyCellFormat);
+            this.parent.off(clearViewer, this.clearObj);
         }
     }
     /**

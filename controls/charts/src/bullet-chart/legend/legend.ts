@@ -3,7 +3,8 @@
  */
 import { Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { LegendOptions, BaseLegend } from '../../common/legend/legend';
-import { Chart, LegendShape } from '../../chart';
+import { LegendShape } from '../../chart/utils/enum';
+import { Chart } from '../../chart/chart';
 import { Range } from '../model/bullet-base';
 import { LegendSettingsModel } from '../../common/legend/legend-model';
 import { textTrim, ChartLocation} from '../../common/utils/helper';

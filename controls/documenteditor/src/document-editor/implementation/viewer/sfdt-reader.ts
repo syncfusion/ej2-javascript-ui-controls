@@ -18,6 +18,7 @@ import {
 import { HelperMethods } from '../editor/editor-helper';
 import { Dictionary } from '../../base/dictionary';
 import { ChartComponent } from '@syncfusion/ej2-office-chart';
+import { Revision } from '../track-changes/track-changes';
 /** 
  * @private
  */
@@ -28,6 +29,7 @@ export class SfdtReader {
     private commentStarts: Dictionary<string, CommentCharacterElementBox> = undefined;
     private commentEnds: Dictionary<string, CommentCharacterElementBox> = undefined;
     private commentsCollection: Dictionary<string, CommentElementBox> = undefined;
+    private revisionCollection: Dictionary<string, Revision> = undefined;
     private isPageBreakInsideTable: boolean = false;
     private editableRanges: Dictionary<string, EditRangeStartElementBox>;
     private isParseHeader: boolean = false;
@@ -54,6 +56,7 @@ export class SfdtReader {
         this.commentStarts = new Dictionary<string, CommentCharacterElementBox>();
         this.commentEnds = new Dictionary<string, CommentCharacterElementBox>();
         this.commentsCollection = new Dictionary<string, CommentElementBox>();
+        this.revisionCollection = new Dictionary<string, Revision>();
         let sections: BodyWidget[] = [];
         let jsonObject: any = json;
         jsonObject = (jsonObject instanceof Object) ? jsonObject : JSON.parse(jsonObject);
@@ -66,6 +69,10 @@ export class SfdtReader {
         this.parseDocumentProtection(jsonObject);
         if (!isNullOrUndefined(jsonObject.defaultTabWidth)) {
             this.documentHelper.defaultTabWidth = jsonObject.defaultTabWidth;
+        }
+        if (!isNullOrUndefined(jsonObject.trackChanges)) {
+            this.documentHelper.owner.showRevisions = jsonObject.trackChanges;
+            this.documentHelper.owner.enableTrackChanges = jsonObject.trackChanges;
         }
         if (!isNullOrUndefined(jsonObject.dontUseHTMLParagraphAutoSpacing)) {
             this.documentHelper.dontUseHtmlParagraphAutoSpacing = jsonObject.dontUseHTMLParagraphAutoSpacing;
@@ -84,6 +91,9 @@ export class SfdtReader {
         }
         if (!isNullOrUndefined(jsonObject.comments)) {
             this.parseComments(jsonObject, this.documentHelper.comments);
+        }
+        if (!isNullOrUndefined(jsonObject.revisions)) {
+            this.parseRevisions(jsonObject, this.viewer.owner.revisionsInternal.changes);
         }
         if (!isNullOrUndefined(jsonObject.sections)) {
             this.parseSections(jsonObject.sections, sections);
@@ -111,6 +121,41 @@ export class SfdtReader {
         for (let i: number = 0; i < data.styles.length; i++) {
             if (isNullOrUndefined(this.documentHelper.styles.findByName(data.styles[i].name))) {
                 this.parseStyle(data, data.styles[i], styles);
+            }
+        }
+    }
+    private parseRevisions(data: any, revisions: Revision[]): void {
+        for (let i: number = 0; i < data.revisions.length; i++) {
+            let revisionData: any = data.revisions[i];
+            if (!isNullOrUndefined(revisionData.revisionId)) {
+                let revision: Revision = this.parseRevision(revisionData);
+                this.revisionCollection.add(revisionData.revisionId, revision);
+                revisions.push(revision);
+            }
+        }
+        this.documentHelper.revisionsInternal = this.revisionCollection;
+    }
+    private parseRevision(data: any): Revision {
+        if (!isNullOrUndefined(data)) {
+            let revision: Revision = new Revision(this.viewer.owner, data.author, data.date);
+            revision.revisionID = data.revisionId;
+            revision.revisionType = data.revisionType;
+            return revision;
+        } else {
+            return undefined;
+        }
+    }
+    private checkAndApplyRevision(inline: any, item: any): void {
+        if (!isNullOrUndefined(inline.revisionIds) && inline.revisionIds.length > 0) {
+            for (let i: number = 0; i < inline.revisionIds.length; i++) {
+                let id: string = inline.revisionIds[i];
+                if (this.revisionCollection.containsKey(id)) {
+                    let revision: Revision = this.revisionCollection.get(id);
+                    if (!(item instanceof WParagraphFormat)) {
+                        revision.range.push(item);
+                    }
+                    item.revisions.push(revision);
+                }
             }
         }
     }
@@ -526,6 +571,7 @@ export class SfdtReader {
                 this.applyCharacterStyle(inline, textElement);
                 textElement.text = inline.text;
                 textElement.line = lineWidget;
+                this.checkAndApplyRevision(inline, textElement);
                 lineWidget.children.push(textElement);
                 hasValidElmts = true;
             } else if (inline.hasOwnProperty('chartType')) {
@@ -560,6 +606,7 @@ export class SfdtReader {
                 image.isMetaFile = data[i].isMetaFile;
                 image.characterFormat = new WCharacterFormat(image);
                 image.line = lineWidget;
+                this.checkAndApplyRevision(inline, image);
                 lineWidget.children.push(image);
                 let imageString: string = HelperMethods.formatClippedString(inline.imageString).formatClippedString;
                 let isValidImage: boolean = this.validateImageUrl(imageString);
@@ -595,7 +642,7 @@ export class SfdtReader {
                         (formFieldData as CheckBoxFormField).checked = inline.formFieldData.checkBox.checked;
                     } else {
                         formFieldData = new DropDownFormField();
-                        (formFieldData as DropDownFormField).dropDownItems = inline.formFieldData.dropDownList.dropDownItems;
+                        (formFieldData as DropDownFormField).dropdownItems = inline.formFieldData.dropDownList.dropDownItems;
                         (formFieldData as DropDownFormField).selectedIndex = inline.formFieldData.dropDownList.selectedIndex;
                     }
                     formFieldData.name = inline.formFieldData.name;
@@ -606,6 +653,7 @@ export class SfdtReader {
                     this.documentHelper.formFields.push(fieldBegin);
                 }
                 this.documentHelper.fieldStacks.push(fieldBegin);
+                this.checkAndApplyRevision(inline, fieldBegin);
                 fieldBegin.line = lineWidget;
                 this.documentHelper.fields.push(fieldBegin);
                 lineWidget.children.push(fieldBegin);
@@ -632,6 +680,7 @@ export class SfdtReader {
                     field = new FieldElementBox(1);
                     this.parseCharacterFormat(inline.characterFormat, field.characterFormat, writeInlineFormat);
                     this.applyCharacterStyle(inline, field);
+                    this.checkAndApplyRevision(inline, field);
                     //For Field End Updated begin and separator.                                      
                     if (this.documentHelper.fieldStacks.length > 0) {
                         field.fieldBegin = this.documentHelper.fieldStacks[this.documentHelper.fieldStacks.length - 1];
@@ -1085,6 +1134,9 @@ export class SfdtReader {
             if (!isNullOrUndefined(sourceFormat.leftIndent)) {
                 rowFormat.leftIndent = sourceFormat.leftIndent;
             }
+            if (!isNullOrUndefined(sourceFormat.revisionIds) && sourceFormat.revisionIds.length > 0) {
+                this.checkAndApplyRevision(sourceFormat, rowFormat);
+            }
             this.parseBorders(sourceFormat.borders, rowFormat.borders);
         }
     }
@@ -1185,6 +1237,9 @@ export class SfdtReader {
             }
             if (!isNullOrUndefined(sourceFormat.italicBidi)) {
                 characterFormat.italicBidi = sourceFormat.italicBidi;
+            }
+            if (!isNullOrUndefined(sourceFormat.revisionIds) && sourceFormat.revisionIds.length > 0) {
+                this.checkAndApplyRevision(sourceFormat, characterFormat);
             }
         }
     }

@@ -187,8 +187,6 @@ const rowSelected = 'rowSelected';
 /** @hidden */
 const checkboxChange = 'checkboxChange';
 /** @hidden */
-const rowDeselecting = 'rowDeselecting';
-/** @hidden */
 const rowDeselected = 'rowDeselected';
 /** @hidden */
 const toolbarClick = 'toolbarClick';
@@ -1864,7 +1862,8 @@ class DataManipulation {
             count = isCountRequired(this.parent) ? getValue('count', this.parent.dataSource)
                 : this.dataResults.count;
         }
-        else if (this.parent.enableVirtualization && (!isExport || exportType === 'CurrentPage')) {
+        else if (this.parent.enableVirtualization && (!isExport || exportType === 'CurrentPage')
+            && getValue('requestType', args) !== 'save') {
             this.parent.notify(pagingActions, { result: results, count: count, actionArgs: getValue('actionArgs', args) });
             results = this.dataResults.result;
             count = this.dataResults.count;
@@ -2627,16 +2626,6 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         }
         this.clipboardModule = this.grid.clipboardModule = new TreeClipboard(this);
     }
-    updateSelectionProperty() {
-        if (!isBlazor()) {
-            this.selectedRowIndex = this.grid.selectedRowIndex;
-        }
-        else if (isBlazor() && this.isServerRendered) {
-            this.allowServerDataBinding = false;
-            this.setProperties({ selectedRowIndex: this.grid.selectedRowIndex }, true);
-            this.allowServerDataBinding = true;
-        }
-    }
     gridRendered(args, fn) {
         if (args.id === this.element.id + '_gridcontrol') {
             this.grid = args.grid;
@@ -2665,10 +2654,6 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         }
         this.wireEvents();
         this.afterGridRender();
-        let updateColTypeObj = 'updateColTypeObj';
-        if (!isNullOrUndefined(this.grid.editModule)) {
-            this.grid.editModule[updateColTypeObj]();
-        }
         let processModel = 'processModel';
         this.grid[processModel]();
         gridObserver.off('component-rendered', this.gridRendered);
@@ -2759,13 +2744,13 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         this.grid.enableHover = this.enableHover;
         this.grid.enableAutoFill = this.enableAutoFill;
         this.grid.allowRowDragAndDrop = this.allowRowDragAndDrop;
-        this.grid.showColumnChooser = this.showColumnChooser;
         this.grid.rowDropSettings = getActualProperties(this.rowDropSettings);
         this.grid.rowHeight = this.rowHeight;
         this.grid.gridLines = this.gridLines;
         this.grid.allowSelection = this.allowSelection;
         this.grid.toolbar = getActualProperties(this.getGridToolbar());
         this.grid.toolbarTemplate = this.toolbarTemplate;
+        this.grid.showColumnChooser = this.showColumnChooser;
         this.grid.filterSettings = getActualProperties(this.filterSettings);
         this.grid.selectionSettings = getActualProperties(this.selectionSettings);
         this.grid.sortSettings = getActualProperties(this.sortSettings);
@@ -2792,6 +2777,23 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
     }
     bindGridEvents() {
         let treeGrid = this;
+        this.grid.rowSelecting = this.triggerEvents.bind(this);
+        this.grid.rowSelected = (args) => {
+            if (!isBlazor()) {
+                this.selectedRowIndex = this.grid.selectedRowIndex;
+            }
+            else if (isBlazor() && this.isServerRendered) {
+                this.allowServerDataBinding = false;
+                this.setProperties({ selectedRowIndex: this.grid.selectedRowIndex }, true);
+                this.allowServerDataBinding = true;
+            }
+            treeGrid.notify(rowSelected, args);
+            this.trigger(rowSelected, args);
+        };
+        this.grid.rowDeselected = (args) => {
+            this.selectedRowIndex = this.grid.selectedRowIndex;
+            this.trigger(rowDeselected, args);
+        };
         this.grid.resizeStop = (args) => {
             this.updateColumnModel();
             this.trigger(resizeStop, args);
@@ -2807,26 +2809,18 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         this.grid.checkBoxChange = (args) => {
             this.trigger(checkboxChange, args);
         };
-        this.grid.cellSelected = (args) => {
-            let cellSelectedArgs;
-            if (isBlazor() && this.isServerRendered) {
-                cellSelectedArgs = { data: args.data, cellIndex: args.cellIndex };
-                this.trigger('cellSelected', cellSelectedArgs);
-            }
-            else {
-                this.trigger('cellSelected', args);
-            }
-        };
         this.grid.pdfExportComplete = this.triggerEvents.bind(this);
         this.grid.excelExportComplete = this.triggerEvents.bind(this);
         this.grid.excelHeaderQueryCellInfo = this.triggerEvents.bind(this);
         this.grid.pdfHeaderQueryCellInfo = this.triggerEvents.bind(this);
         this.grid.dataSourceChanged = this.triggerEvents.bind(this);
         this.grid.recordDoubleClick = this.triggerEvents.bind(this);
+        this.grid.rowDeselecting = this.triggerEvents.bind(this);
         this.grid.cellDeselected = this.triggerEvents.bind(this);
         this.grid.cellDeselecting = this.triggerEvents.bind(this);
         this.grid.columnMenuOpen = this.triggerEvents.bind(this);
         this.grid.columnMenuClick = this.triggerEvents.bind(this);
+        this.grid.cellSelected = this.triggerEvents.bind(this);
         this.grid.headerCellInfo = this.triggerEvents.bind(this);
         this.grid.resizeStart = this.triggerEvents.bind(this);
         this.grid.resizing = this.triggerEvents.bind(this);
@@ -2848,46 +2842,12 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         };
         this.grid.printComplete = this.triggerEvents.bind(this);
         this.grid.actionFailure = this.triggerEvents.bind(this);
-        this.extendedGridRowSelectEvents();
         this.extendedGridDataBoundEvent();
         this.extendedGridEvents();
         this.extendedGridActionEvents();
         this.extendedGridEditEvents();
-        this.extendedGridBatchEvents();
         this.bindGridDragEvents();
         this.bindCallBackEvents();
-    }
-    extendedGridRowSelectEvents() {
-        let treeGrid = this;
-        this.grid.rowSelecting = (args) => {
-            if (isNullOrUndefined(args.target) || !(args.target.classList.contains('e-treegridexpand') ||
-                args.target.classList.contains('e-treegridcollapse'))) {
-                treeGrid.notify(rowSelecting, args);
-                this.trigger(rowSelecting, args);
-            }
-            else {
-                args.cancel = true;
-            }
-        };
-        this.grid.rowSelected = (args) => {
-            this.updateSelectionProperty();
-            treeGrid.notify(rowSelected, args);
-            this.trigger(rowSelected, args);
-        };
-        this.grid.rowDeselected = (args) => {
-            this.updateSelectionProperty();
-            this.trigger(rowDeselected, args);
-        };
-        this.grid.rowDeselecting = (args) => {
-            if (isNullOrUndefined(args.target) || !(args.target.classList.contains('e-treegridexpand') ||
-                args.target.classList.contains('e-treegridcollapse'))) {
-                treeGrid.notify(rowDeselecting, args);
-                this.trigger(rowDeselecting, args);
-            }
-            else {
-                args.cancel = true;
-            }
-        };
     }
     extendedGridDataBoundEvent() {
         let treeGrid = this;
@@ -3041,24 +3001,11 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
             this.notify(cellEdit, args);
             return promise;
         };
-    }
-    extendedGridBatchEvents() {
-        let beforeBatchSave$$1;
-        if (isBlazor() && this.isServerRendered) {
-            if (!isNullOrUndefined(this.grid.beforeBatchSave)) {
-                beforeBatchSave$$1 = this.grid.beforeBatchSave;
-            }
-        }
         this.grid.batchAdd = (args) => {
             this.trigger(batchAdd, args);
             this.notify(batchAdd, args);
         };
         this.grid.beforeBatchSave = (args) => {
-            if (isBlazor() && this.isServerRendered) {
-                if (beforeBatchSave$$1 && typeof beforeBatchSave$$1 === 'function') {
-                    beforeBatchSave$$1.apply(this, [args]);
-                }
-            }
             this.trigger(beforeBatchSave, args);
             this.notify(beforeBatchSave, args);
         };
@@ -3565,9 +3512,6 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
                 case 'frozenRows':
                     this.grid.frozenRows = this.frozenRows;
                     break;
-                case 'showColumnChooser':
-                    this.grid.showColumnChooser = this.showColumnChooser;
-                    break;
                 case 'frozenColumns':
                     this.grid.frozenColumns = this.frozenColumns;
                     break;
@@ -3625,6 +3569,9 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
                     break;
                 case 'contextMenuItems':
                     this.grid.contextMenuItems = this.getContextMenu();
+                    break;
+                case 'showColumnChooser':
+                    this.grid.showColumnChooser = this.showColumnChooser;
                     break;
                 case 'detailTemplate':
                     this.grid.detailTemplate = getActualProperties(this.detailTemplate);
@@ -3852,6 +3799,17 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         }
     }
     /**
+     * Column chooser can be displayed on screen by given position(X and Y axis).
+     * @param  {number} X - Defines the X axis.
+     * @param  {number} Y - Defines the Y axis.
+     * @return {void}
+     */
+    openColumnChooser(x, y) {
+        if (this.columnChooserModule) {
+            this.columnChooserModule.openColumnChooser(x, y);
+        }
+    }
+    /**
      * Delete any visible row by TR element.
      * @param {HTMLTableRowElement} tr - Defines the table row element.
      */
@@ -3898,18 +3856,17 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
             }
         });
         level = record.level;
-        let data = rowData;
-        data.level = level;
-        data.index = record.index;
-        data.childRecords = record.childRecords;
-        data.taskData = record.taskData;
-        data.uniqueID = record.uniqueID;
-        data.parentItem = record.parentItem;
-        data.checkboxState = record.checkboxState;
-        data.hasChildRecords = record.hasChildRecords;
-        data.parentUniqueID = record.parentUniqueID;
-        data.expanded = record.expanded;
-        this.grid.setRowData(key, data);
+        rowData.level = level;
+        rowData.index = record.index;
+        rowData.childRecords = record.childRecords;
+        rowData.taskData = record.taskData;
+        rowData.uniqueID = record.uniqueID;
+        rowData.parentItem = record.parentItem;
+        rowData.checkboxState = record.checkboxState;
+        rowData.hasChildRecords = record.hasChildRecords;
+        rowData.parentUniqueID = record.parentUniqueID;
+        rowData.expanded = record.expanded;
+        this.grid.setRowData(key, rowData);
     }
     /**
      * Navigates to the specified target page.
@@ -4123,16 +4080,10 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         this.grid[persist2].apply(this, [storedColumn, columns]);
     }
     updateTreeGridModel() {
-        if (isBlazor() && this.isServerRendered) {
-            this.allowServerDataBinding = false;
-        }
         this.setProperties({ filterSettings: getObject('properties', this.grid.filterSettings) }, true);
         this.setProperties({ pageSettings: getObject('properties', this.grid.pageSettings) }, true);
         this.setProperties({ searchSettings: getObject('properties', this.grid.searchSettings) }, true);
         this.setProperties({ sortSettings: getObject('properties', this.grid.sortSettings) }, true);
-        if (isBlazor() && this.isServerRendered) {
-            this.allowServerDataBinding = true;
-        }
     }
     /**
      * Gets the content table of the TreeGrid.
@@ -4445,6 +4396,12 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
             });
             if (rows.length) {
                 action === 'collapse' ? this.collapseRow(rows[0]) : this.expandRow(rows[0]);
+            }
+            else {
+                let isExpandCollapseall = this.enableCollapseAll;
+                this.setProperties({ enableCollapseAll: true }, true);
+                this.grid.pagerModule.goToPage(1);
+                this.setProperties({ enableCollapseAll: isExpandCollapseall }, true);
             }
         }
         else {
@@ -5435,7 +5392,7 @@ function editAction(details, control, isSelfReference, addRowIndex, selectedInde
                                     || (!isNullOrUndefined(batchChanges) && batchChanges[changedRecords].length === 0))
                                     || keys[j] === columnName)) {
                                     let editedData = getParentData(control, modifiedData[k].uniqueID);
-                                    editedData.taskData[keys[j]] = treeData[i][keys[j]] = modifiedData[k][keys[j]];
+                                    editedData.taskData[keys[j]] = editedData[keys[j]] = treeData[i][keys[j]] = modifiedData[k][keys[j]];
                                 }
                             }
                         }
@@ -5598,6 +5555,9 @@ function updateParentRow(key, record, action, control, isSelfReference, child) {
             return;
         } });
         record = currentRecords[index];
+        if (control.enableVirtualization && isNullOrUndefined(record) && !isNullOrUndefined(child)) {
+            record = getValue('uniqueIDCollection.' + child.parentUniqueID, control);
+        }
         record.hasChildRecords = false;
         if (action === 'add' || action === 'batchsave') {
             record.expanded = true;
@@ -5653,12 +5613,14 @@ function updateParentRow(key, record, action, control, isSelfReference, child) {
         if (control.frozenRows || control.getFrozenColumns()) {
             movableRow = control.getMovableRowByIndex(index);
         }
-        control.renderModule.cellRender({
-            data: record, cell: row.cells[control.treeColumnIndex] ? row.cells[control.treeColumnIndex]
-                : movableRow.cells[control.treeColumnIndex - control.frozenColumns],
-            column: control.grid.getColumns()[control.treeColumnIndex],
-            requestType: action
-        });
+        if (!control.enableVirtualization && !isNullOrUndefined(row) || !isNullOrUndefined(movableRow)) {
+            control.renderModule.cellRender({
+                data: record, cell: row.cells[control.treeColumnIndex] ? row.cells[control.treeColumnIndex]
+                    : movableRow.cells[control.treeColumnIndex - control.frozenColumns],
+                column: control.grid.getColumns()[control.treeColumnIndex],
+                requestType: action
+            });
+        }
     }
 }
 
@@ -6963,6 +6925,8 @@ class ExcelExport$1 {
     addEventListener() {
         this.parent.on('updateResults', this.updateExcelResultModel, this);
         this.parent.on('excelCellInfo', this.excelQueryCellInfo, this);
+        this.parent.grid.on('export-RowDataBound', this.exportRowDataBound, this);
+        this.parent.grid.on('finalPageSetup', this.finalPageSetup, this);
     }
     /**
      * To destroy the Excel Export
@@ -6981,6 +6945,8 @@ class ExcelExport$1 {
         }
         this.parent.off('updateResults', this.updateExcelResultModel);
         this.parent.off('excelCellInfo', this.excelQueryCellInfo);
+        this.parent.grid.off('export-RowDataBound', this.exportRowDataBound);
+        this.parent.grid.off('finalPageSetup', this.finalPageSetup);
     }
     updateExcelResultModel(returnResult) {
         this.dataResults = returnResult;
@@ -7077,6 +7043,25 @@ class ExcelExport$1 {
         }
         this.parent.notify('updateResults', args);
         this.parent.trigger('excelQueryCellInfo', args);
+    }
+    exportRowDataBound(excelRow) {
+        if (excelRow.type === 'excel') {
+            let excelrowobj = excelRow.rowObj.data;
+            let filtercolumnlength = this.parent.grid.filterSettings.columns.length;
+            if (excelrowobj.parentItem && getParentData(this.parent, excelrowobj.parentItem.uniqueID, Boolean(filtercolumnlength))) {
+                let rowlength = excelRow.excelRows.length;
+                let rowlevel = excelrowobj.level;
+                excelRow.excelRows[rowlength - 1].grouping = { outlineLevel: rowlevel, isCollapsed: false };
+            }
+        }
+    }
+    /* tslint:disable-next-line:max-func-body-length */
+    finalPageSetup(/* tslint:disable-next-line:no-any */ workbook) {
+        for (let i = 0; i < workbook.worksheets.length; i++) {
+            if (workbook.worksheets[i].rows) {
+                workbook.worksheets[i].pageSetup = { isSummaryRowBelow: false };
+            }
+        }
     }
     isLocal() {
         return !isRemoteData(this.parent) && isOffline(this.parent);
@@ -8122,6 +8107,12 @@ class BatchEdit {
         }
     }
     beforeBatchAdd(e) {
+        let isTabLastRow = 'isTabLastRow';
+        if (this.parent.editSettings.mode === 'Cell' && this.parent.editModule[isTabLastRow]) {
+            e.cancel = true;
+            this.parent.editModule[isTabLastRow] = false;
+            return;
+        }
         this.selectedIndex = this.parent.grid.selectedRowIndex;
         this.addRowIndex = this.parent.grid.selectedRowIndex > -1 ? this.parent.grid.selectedRowIndex : 0;
         this.addRowRecord = this.parent.getSelectedRecords()[0];
@@ -8456,6 +8447,7 @@ class Edit$1 {
     constructor(parent) {
         this.addedRecords = 'addedRecords';
         this.deletedRecords = 'deletedRecords';
+        this.prevAriaRowIndex = '-1';
         Grid.Inject(Edit);
         this.parent = parent;
         this.isSelfReference = !isNullOrUndefined(parent.parentIdMapping);
@@ -8493,9 +8485,16 @@ class Edit$1 {
         // this.parent.on(events.beforeDataBound, this.beforeDataBound, this);
         this.parent.grid.on(beforeStartEdit, this.beforeStartEdit, this);
         this.parent.grid.on(beforeBatchCancel, this.beforeBatchCancel, this);
+        this.parent.grid.on('reset-edit-props', this.resetIsOnBatch, this);
+        this.parent.grid.on('get-row-position', this.getRowPosition, this);
     }
     gridDblClick(e) {
         this.doubleClickTarget = e.target;
+    }
+    getRowPosition(addArgs) {
+        addArgs.newRowPosition = this.parent.editSettings.newRowPosition;
+        addArgs.addRowIndex = this.addRowIndex;
+        addArgs.ariaRowIndex = +this.prevAriaRowIndex;
     }
     beforeStartEdit(args) {
         this.parent.trigger(actionBegin, args);
@@ -8528,6 +8527,8 @@ class Edit$1 {
         this.parent.grid.off(beforeStartEdit, this.beforeStartEdit);
         this.parent.grid.off(beforeBatchCancel, this.beforeBatchCancel);
         this.parent.grid.off('dblclick', this.gridDblClick);
+        this.parent.grid.off('reset-edit-props', this.resetIsOnBatch);
+        this.parent.grid.off('get-row-position', this.getRowPosition);
         //this.parent.grid.off('click', this.gridSingleClick);
     }
     /**
@@ -8584,6 +8585,11 @@ class Edit$1 {
             target.classList.contains('e-treegridcollapse')) && this.parent.editSettings.allowEditOnDblClick) {
             this.isOnBatch = true;
             this.parent.grid.setProperties({ selectedRowIndex: args.rowIndex }, true);
+            if (this.parent.enableVirtualization) {
+                let tr = parentsUntil(args.target, 'e-row');
+                this.prevAriaRowIndex = tr.getAttribute('aria-rowindex');
+                tr.setAttribute('aria-rowindex', tr.rowIndex + '');
+            }
             this.updateGridEditMode('Batch');
         }
     }
@@ -8592,6 +8598,12 @@ class Edit$1 {
         let updateMethod = getObject('updateEditObj', this.parent.grid.editModule);
         updateMethod.apply(this.parent.grid.editModule);
         this.parent.grid.isEdit = false;
+    }
+    resetIsOnBatch() {
+        if (this.parent.enableVirtualization && this.parent.editSettings.mode === 'Cell') {
+            this.isOnBatch = false;
+            this.updateGridEditMode('Normal');
+        }
     }
     keyPressed(args) {
         if (this.isOnBatch || (this.parent.editSettings.mode === 'Cell' && isBlazor() && this.parent.isServerRendered)) {
@@ -8611,6 +8623,10 @@ class Edit$1 {
         let promise = 'promise';
         let prom = args[promise];
         delete args[promise];
+        if (this.parent.enableVirtualization && !isNullOrUndefined(this.prevAriaRowIndex)) {
+            args.row.setAttribute('aria-rowindex', this.prevAriaRowIndex);
+            this.prevAriaRowIndex = undefined;
+        }
         if (this.keyPress !== 'enter') {
             this.parent.trigger(cellEdit, args, (celleditArgs) => {
                 if (!celleditArgs.cancel && this.parent.editSettings.mode === 'Cell') {
@@ -8710,6 +8726,9 @@ class Edit$1 {
             row = this.parent.grid.getRows()[row.rowIndex];
             this.parent.trigger(actionBegin, arg);
             if (!arg.cancel) {
+                if ((row.rowIndex === this.parent.getCurrentViewRecords().length - 1) && this.keyPress === 'tab') {
+                    this.isTabLastRow = true;
+                }
                 this.blazorTemplates(args);
                 this.updateCell(args, rowIndex);
                 if (this.parent.grid.aggregateModule) {
@@ -8860,13 +8879,16 @@ class Edit$1 {
             }
         }
         let rows = this.parent.grid.getDataRows();
+        let firstAriaIndex = rows.length ? +rows[0].getAttribute('aria-rowindex') : 0;
+        let lastAriaIndex = rows.length ? +rows[rows.length - 1].getAttribute('aria-rowindex') : 0;
+        let withinRange = this.selectedIndex >= firstAriaIndex && this.selectedIndex <= lastAriaIndex;
+        let isVirtualization = this.parent.enableVirtualization && this.addRowIndex > -1 && this.prevAriaRowIndex !== '-1';
         if (this.parent.editSettings.mode !== 'Dialog') {
             if (this.parent.editSettings.newRowPosition === 'Above') {
                 position = 'before';
             }
-            else if ((this.parent.editSettings.newRowPosition === 'Below' ||
-                this.parent.editSettings.newRowPosition === 'Child')
-                && this.selectedIndex > -1) {
+            else if ((this.parent.editSettings.newRowPosition === 'Below' || this.parent.editSettings.newRowPosition === 'Child')
+                && (this.selectedIndex > -1 || isVirtualization) && withinRange) {
                 position = 'after';
                 if (!isNullOrUndefined(records[index]) && records[index].expanded) {
                     if (this.parent.editSettings.mode === 'Batch' && (this.parent.getBatchChanges()[this.addedRecords].length > 1
@@ -8882,8 +8904,9 @@ class Edit$1 {
                     }
                 }
             }
-            if (this.selectedIndex > -1 && (index || (this.parent.editSettings.newRowPosition === 'Child'
-                || this.parent.editSettings.newRowPosition === 'Below'))) {
+            if ((this.selectedIndex > -1 || isVirtualization) && withinRange
+                && (index || (this.parent.editSettings.newRowPosition === 'Child'
+                    || this.parent.editSettings.newRowPosition === 'Below'))) {
                 if (index >= rows.length) {
                     index = rows.length - 2;
                 }
@@ -8910,6 +8933,9 @@ class Edit$1 {
                         errors[i].remove();
                     }
                     setValue('errorRules', [], this.parent.grid.editModule.formObj);
+                }
+                if (isVirtualization) {
+                    this.prevAriaRowIndex = '-1';
                 }
                 focussedElement.focus();
             }
@@ -8961,7 +8987,29 @@ class Edit$1 {
         }
         if (args.requestType === 'add') {
             this.selectedIndex = this.parent.grid.selectedRowIndex;
-            this.addRowIndex = this.parent.grid.selectedRowIndex > -1 ? this.parent.grid.selectedRowIndex : 0;
+            if (this.parent.enableVirtualization) {
+                let selector = '.e-row[aria-rowindex="' + this.selectedIndex + '"]';
+                let row;
+                if (this.selectedIndex > -1 && this.parent.editSettings.newRowPosition !== 'Top' &&
+                    this.parent.editSettings.newRowPosition !== 'Bottom') {
+                    this.prevAriaRowIndex = this.selectedIndex.toString();
+                    row = this.parent.getContent().querySelector(selector);
+                    this.addRowIndex = row ? row.rowIndex : 0;
+                }
+                else {
+                    if (this.prevAriaRowIndex && this.prevAriaRowIndex !== '-1') {
+                        selector = '.e-row[aria-rowindex="' + this.prevAriaRowIndex + '"]';
+                        row = this.parent.getContent().querySelector(selector);
+                        this.addRowIndex = row ? row.rowIndex : 0;
+                    }
+                    else {
+                        this.addRowIndex = 0;
+                    }
+                }
+            }
+            else {
+                this.addRowIndex = this.parent.grid.selectedRowIndex > -1 ? this.parent.grid.selectedRowIndex : 0;
+            }
             this.addRowRecord = this.parent.getSelectedRecords()[0];
         }
         args = this.beginAddEdit(args);
@@ -8991,14 +9039,18 @@ class Edit$1 {
             let index = this.addRowIndex;
             value.uniqueID = getUid(this.parent.element.id + '_data_');
             setValue('uniqueIDCollection.' + value.uniqueID, value, this.parent);
-            let level;
+            let level = 0;
             let dataIndex;
             let idMapping;
             let parentUniqueID;
             let parentItem;
             let parentIdMapping;
+            let isVirtualization = this.parent.enableVirtualization && this.addRowIndex > -1 && this.prevAriaRowIndex !== '-1';
+            let rows = this.parent.getRows();
+            let firstAriaIndex = rows.length ? +rows[0].getAttribute('aria-rowindex') : 0;
+            let lastAriaIndex = rows.length ? +rows[rows.length - 1].getAttribute('aria-rowindex') : 0;
+            let withinRange = this.selectedIndex >= firstAriaIndex && this.selectedIndex <= lastAriaIndex;
             if (currentData.length) {
-                level = currentData[this.addRowIndex].level;
                 dataIndex = currentData[this.addRowIndex].index;
                 idMapping = currentData[this.addRowIndex][this.parent.idMapping];
                 parentIdMapping = currentData[this.addRowIndex][this.parent.parentIdMapping];
@@ -9008,6 +9060,7 @@ class Edit$1 {
                 parentItem = currentData[this.addRowIndex].parentItem;
             }
             if (this.parent.editSettings.newRowPosition !== 'Top' && currentData.length) {
+                level = currentData[this.addRowIndex].level;
                 if (this.parent.editSettings.newRowPosition === 'Above') {
                     position = 'before';
                     index = currentData[this.addRowIndex].index;
@@ -9020,7 +9073,7 @@ class Edit$1 {
                 }
                 else if (this.parent.editSettings.newRowPosition === 'Child') {
                     position = 'after';
-                    if (this.selectedIndex > -1) {
+                    if ((this.selectedIndex > -1 || isVirtualization) && withinRange) {
                         value.parentItem = extend({}, currentData[this.addRowIndex]);
                         value.parentUniqueID = value.parentItem.uniqueID;
                         delete value.parentItem.childRecords;
@@ -9028,8 +9081,8 @@ class Edit$1 {
                     }
                     let childRecordCount1 = findChildrenRecords(currentData[this.addRowIndex]).length;
                     let currentDataIndex1 = currentData[this.addRowIndex].index;
-                    index = (childRecordCount1 > 0) ? (currentDataIndex1 + childRecordCount1) : (currentDataIndex1);
                     value.level = level + 1;
+                    index = (childRecordCount1 > 0) ? (currentDataIndex1 + childRecordCount1) : (currentDataIndex1);
                     if (this.isSelfReference) {
                         value.taskData[this.parent.parentIdMapping] = value[this.parent.parentIdMapping] = idMapping;
                         if (!isNullOrUndefined(value.parentItem)) {
@@ -9038,7 +9091,7 @@ class Edit$1 {
                     }
                 }
                 if (this.parent.editSettings.newRowPosition === 'Above' || this.parent.editSettings.newRowPosition === 'Below') {
-                    if (this.selectedIndex > -1 && level) {
+                    if ((this.selectedIndex > -1 || isVirtualization) && level && withinRange) {
                         value.parentUniqueID = parentUniqueID;
                         value.parentItem = extend({}, parentItem);
                         delete value.parentItem.childRecords;
@@ -9052,7 +9105,7 @@ class Edit$1 {
                         }
                     }
                 }
-                if (position != null && this.selectedIndex > -1) {
+                if (position != null && (this.selectedIndex > -1 || isVirtualization) && withinRange) {
                     args.index = position === 'before' ? index : index + 1;
                 }
                 if (this.parent.editSettings.newRowPosition === 'Bottom') {
@@ -9292,15 +9345,13 @@ class DetailRow$1 {
     }
 }
 
-/**
- * Content renderer for TreeGrid
- */
 class VirtualTreeContentRenderer extends VirtualContentRenderer {
     constructor(parent, locator) {
         super(parent, locator);
         this.isExpandCollapse = false;
         this.translateY = 0;
         this.maxiPage = 0;
+        this.recordAdded = false;
         /** @hidden */
         this.startIndex = -1;
         this.endIndex = -1;
@@ -9329,6 +9380,24 @@ class VirtualTreeContentRenderer extends VirtualContentRenderer {
         }
     }
     indexModifier(args) {
+        let content = this.parent.getContent().querySelector('.e-content');
+        if (this.recordAdded && this.startIndex > -1 && this.endIndex > -1) {
+            if (this.endIndex > args.count - this.parent.pageSettings.pageSize) {
+                let nextSetResIndex = ~~(content.scrollTop / this.parent.getRowHeight());
+                let lastIndex = nextSetResIndex + this.parent.getRows().length;
+                if (lastIndex > args.count) {
+                    lastIndex = nextSetResIndex +
+                        (args.count - nextSetResIndex);
+                }
+                this.startIndex = lastIndex - this.parent.getRows().length;
+                this.endIndex = lastIndex;
+            }
+            else {
+                this.startIndex += 1;
+                this.endIndex += 1;
+            }
+            this.recordAdded = false;
+        }
         args.startIndex = this.startIndex;
         args.endIndex = this.endIndex;
     }
@@ -9342,6 +9411,13 @@ class VirtualTreeContentRenderer extends VirtualContentRenderer {
                 this.parent.off('content-ready', this.fn);
             };
             this.parent.on('content-ready', this.fn, this);
+            this.parent.addEventListener(actionComplete, this.onActionComplete.bind(this));
+            this.parent[action]('virtual-scroll-edit-action-begin', this.beginEdit, this);
+            this.parent[action]('virtual-scroll-add-action-begin', this.beginAdd, this);
+            this.parent[action]('virtual-scroll-edit-success', this.virtualEditSuccess, this);
+            this.parent[action]('edit-reset', this.resetIseditValue, this);
+            this.parent[action]('get-virtual-data', this.getData, this);
+            this.parent[action]('virtual-scroll-edit-cancel', this.cancelEdit, this);
         }
         else {
             super.eventListener('on');
@@ -9385,6 +9461,78 @@ class VirtualTreeContentRenderer extends VirtualContentRenderer {
         else {
             return super.getTranslateY(sTop, cHeight, info, isOnenter);
         }
+    }
+    beginEdit(e) {
+        let selector = '.e-row[aria-rowindex="' + e.index + '"]';
+        let index = this.parent.getContent().querySelector(selector).rowIndex;
+        let rowData = this.parent.getCurrentViewRecords()[index];
+        e.data = rowData;
+    }
+    beginAdd(args) {
+        let addAction = 'addActionBegin';
+        let isAdd = 'isAdd';
+        let addArgs = { newRowPosition: this.rowPosition, addRowIndex: this.addRowIndex, ariaRowIndex: this.ariaRowIndex };
+        this.parent.notify('get-row-position', addArgs);
+        this.rowPosition = addArgs.newRowPosition;
+        this.addRowIndex = addArgs.addRowIndex;
+        this.ariaRowIndex = addArgs.ariaRowIndex;
+        let rows = this.parent.getRows();
+        let firstAriaIndex = rows.length ? +rows[0].getAttribute('aria-rowindex') : 0;
+        let lastAriaIndex = rows.length ? +rows[rows.length - 1].getAttribute('aria-rowindex') : 0;
+        let withInRange = this.parent.selectedRowIndex >= firstAriaIndex && this.parent.selectedRowIndex <= lastAriaIndex;
+        if (!(this.rowPosition === 'Top' || this.rowPosition === 'Bottom')) {
+            this[isAdd] = true;
+        }
+        if (this.rowPosition === 'Top' || this.rowPosition === 'Bottom' ||
+            ((!this.addRowIndex || this.addRowIndex === -1) && (this.parent.selectedRowIndex === -1 || !withInRange))) {
+            super[addAction](args);
+        }
+    }
+    restoreEditState() {
+        let restoreEdit = 'restoreEdit';
+        super[restoreEdit]();
+    }
+    resetIseditValue() {
+        let resetIsEdit = 'resetIsedit';
+        let isAdd = 'isAdd';
+        this.parent.notify('reset-edit-props', {});
+        if ((this.rowPosition === 'Top' || this.rowPosition === 'Bottom') && this[isAdd]) {
+            super[resetIsEdit]();
+        }
+    }
+    virtualEditSuccess(args) {
+        let isAdd = 'isAdd';
+        let content = this.parent.getContent().querySelector('.e-content');
+        if (this[isAdd] && content.querySelector('.e-addedrow')) {
+            this.recordAdded = true;
+        }
+    }
+    cancelEdit(args) {
+        let editCancel = 'editCancel';
+        super[editCancel](args);
+    }
+    restoreNewRow() {
+        let isAdd = 'isAdd';
+        let content = this.parent.getContent().querySelector('.e-content');
+        if (this[isAdd] && !content.querySelector('.e-addedrow')) {
+            this.parent.isEdit = false;
+            this.parent.addRecord();
+        }
+    }
+    getData(data) {
+        let getVirtualData = 'getVirtualData';
+        super[getVirtualData](data);
+    }
+    onActionComplete(args) {
+        if (args.requestType === 'add') {
+            let addArgs = { newRowPosition: this.rowPosition, addRowIndex: this.addRowIndex, ariaRowIndex: this.ariaRowIndex };
+            this.parent.notify('get-row-position', addArgs);
+            this.rowPosition = addArgs.newRowPosition;
+            this.addRowIndex = addArgs.addRowIndex;
+            this.ariaRowIndex = addArgs.ariaRowIndex;
+        }
+        let actionComplete$$1 = 'actionComplete';
+        super[actionComplete$$1](args);
     }
     scrollListeners(scrollArgs) {
         let info = scrollArgs.sentinel;
@@ -9435,11 +9583,19 @@ class VirtualTreeContentRenderer extends VirtualContentRenderer {
             }
             this.startIndex = lastIndex - this.parent.getRows().length;
             this.endIndex = lastIndex;
-            this.translateY = this.getTranslateY(scrollArgs.offset.top, content.getBoundingClientRect().height);
+            if (scrollArgs.offset.top > (this.parent.getRowHeight() * this.totalRecords)) {
+                this.translateY = this.getTranslateY(scrollArgs.offset.top, content.getBoundingClientRect().height);
+            }
+            else {
+                this.translateY = scrollArgs.offset.top;
+            }
         }
         if ((downScroll && (scrollArgs.offset.top < (this.parent.getRowHeight() * this.totalRecords)))
             || (upScroll)) {
             let viewInfo = getValue('getInfoFromView', this).apply(this, [scrollArgs.direction, info, scrollArgs.offset]);
+            this.previousInfo = viewInfo;
+            let page = viewInfo.loadNext && !viewInfo.loadSelf ? viewInfo.nextInfo.page : viewInfo.page;
+            this.parent.setProperties({ pageSettings: { currentPage: page } }, true);
             if (viewInfo.event === 'refresh-virtual-block') {
                 this.parent.refresh();
             }
@@ -9473,7 +9629,24 @@ class VirtualTreeContentRenderer extends VirtualContentRenderer {
             else {
                 this.isExpandCollapse = false;
             }
-            setValue('prevInfo', info, this);
+            setValue('prevInfo', this.previousInfo ? this.previousInfo : info, this);
+            let focusCell = 'focusCell';
+            let restoreAdd = 'restoreAdd';
+            super[focusCell](e);
+            let isAdd = 'isAdd';
+            if (this[isAdd] && !this.parent.getContent().querySelector('.e-content').querySelector('.e-addedrow')) {
+                if (!(this.rowPosition === 'Top' || this.rowPosition === 'Bottom')) {
+                    if (this.ariaRowIndex >= this.startIndex) {
+                        this.restoreNewRow();
+                    }
+                    else if (this.addRowIndex && this.addRowIndex > -1) {
+                        this[isAdd] = false;
+                        this.parent.isEdit = false;
+                    }
+                }
+            }
+            this.restoreEditState();
+            super[restoreAdd]();
         }
     }
     removeEventListener() {
@@ -9484,6 +9657,12 @@ class VirtualTreeContentRenderer extends VirtualContentRenderer {
         this.parent.off('content-ready', this.fn);
         this.parent.off(virtualActionArgs, this.virtualOtherAction);
         this.parent.off(indexModifier, this.indexModifier);
+        this.parent.off('virtual-scroll-edit-action-begin', this.beginEdit);
+        this.parent.off('virtual-scroll-add-action-begin', this.beginAdd);
+        this.parent.off('virtual-scroll-edit-success', this.virtualEditSuccess);
+        this.parent.off('edit-reset', this.resetIseditValue);
+        this.parent.off('get-virtual-data', this.getData);
+        this.parent.off('virtual-scroll-edit-cancel', this.cancelEdit);
     }
 }
 class TreeInterSectionObserver extends InterSectionObserver {
@@ -9612,7 +9791,7 @@ class VirtualScroll$1 {
         });
         this.visualData = visualData;
         this.parent.grid.notify(dataListener, { data: visualData });
-        let counts = { startIndex: -1, endIndex: -1 };
+        let counts = { startIndex: -1, endIndex: -1, count: pageingDetails.count };
         this.parent.grid.notify(indexModifier, counts);
         let startIndex = counts.startIndex;
         let endIndex = counts.endIndex;
@@ -9789,6 +9968,20 @@ class ColumnChooser$1 {
         Grid.Inject(ColumnChooser);
         this.parent = parent;
     }
+    /**
+     * Column chooser can be displayed on screen by given position(X and Y axis).
+     * @param  {number} X - Defines the X axis.
+     * @param  {number} Y - Defines the Y axis.
+     * @return {void}
+     */
+    openColumnChooser(X, Y) {
+        return this.parent.grid.columnChooserModule.openColumnChooser(X, Y);
+    }
+    /**
+     * Destroys the openColumnChooser.
+     * @method destroy
+     * @return {void}
+     */
     destroy() {
         //this.parent.grid.ColumnChooserModule.destroy();
     }
@@ -9813,5 +10006,5 @@ class ColumnChooser$1 {
  * Export TreeGrid component
  */
 
-export { TreeGrid, load, rowDataBound, dataBound, queryCellInfo, beforeDataBound, actionBegin, dataStateChange, actionComplete, rowSelecting, rowSelected, checkboxChange, rowDeselecting, rowDeselected, toolbarClick, beforeExcelExport, beforePdfExport, resizeStop, expanded, expanding, collapsed, collapsing, remoteExpand, localPagedExpandCollapse, pagingActions, printGridInit, contextMenuOpen, contextMenuClick, beforeCopy, beforePaste, savePreviousRowPosition, crudAction, beginEdit, beginAdd, recordDoubleClick, cellSave, cellSaved, cellEdit, batchDelete, batchCancel, batchAdd, beforeBatchDelete, beforeBatchAdd, beforeBatchSave, batchSave, keyPressed, updateData, doubleTap, virtualColumnIndex, virtualActionArgs, dataListener, indexModifier, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, detailDataBound, rowDrag, rowDragStartHelper, rowDrop, rowDragStart, rowsAdd, rowsRemove, rowdraging, rowDropped, DataManipulation, Reorder$1 as Reorder, Resize$1 as Resize, RowDD$1 as RowDD, Column, EditSettings, Predicate$1 as Predicate, FilterSettings, PageSettings, SearchSettings, SelectionSettings, AggregateColumn, AggregateRow, SortDescriptor, SortSettings, RowDropSettings$1 as RowDropSettings, Render, TreeVirtualRowModelGenerator, isRemoteData, isCountRequired, isCheckboxcolumn, isFilterChildHierarchy, findParentRecords, getExpandStatus, findChildrenRecords, isOffline, extendArray, getPlainData, getParentData, ToolbarItem, ContextMenuItems, Filter$1 as Filter, ExcelExport$1 as ExcelExport, PdfExport$1 as PdfExport, Page$1 as Page, Toolbar$1 as Toolbar, Aggregate$1 as Aggregate, Sort$1 as Sort, TreeClipboard, ColumnMenu$1 as ColumnMenu, ContextMenu$1 as ContextMenu, Edit$1 as Edit, CommandColumn$1 as CommandColumn, Selection, DetailRow$1 as DetailRow, VirtualScroll$1 as VirtualScroll, TreeVirtual, Freeze$1 as Freeze, ColumnChooser$1 as ColumnChooser };
+export { TreeGrid, load, rowDataBound, dataBound, queryCellInfo, beforeDataBound, actionBegin, dataStateChange, actionComplete, rowSelecting, rowSelected, checkboxChange, rowDeselected, toolbarClick, beforeExcelExport, beforePdfExport, resizeStop, expanded, expanding, collapsed, collapsing, remoteExpand, localPagedExpandCollapse, pagingActions, printGridInit, contextMenuOpen, contextMenuClick, beforeCopy, beforePaste, savePreviousRowPosition, crudAction, beginEdit, beginAdd, recordDoubleClick, cellSave, cellSaved, cellEdit, batchDelete, batchCancel, batchAdd, beforeBatchDelete, beforeBatchAdd, beforeBatchSave, batchSave, keyPressed, updateData, doubleTap, virtualColumnIndex, virtualActionArgs, dataListener, indexModifier, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, detailDataBound, rowDrag, rowDragStartHelper, rowDrop, rowDragStart, rowsAdd, rowsRemove, rowdraging, rowDropped, DataManipulation, Reorder$1 as Reorder, Resize$1 as Resize, RowDD$1 as RowDD, Column, EditSettings, Predicate$1 as Predicate, FilterSettings, PageSettings, SearchSettings, SelectionSettings, AggregateColumn, AggregateRow, SortDescriptor, SortSettings, RowDropSettings$1 as RowDropSettings, Render, TreeVirtualRowModelGenerator, isRemoteData, isCountRequired, isCheckboxcolumn, isFilterChildHierarchy, findParentRecords, getExpandStatus, findChildrenRecords, isOffline, extendArray, getPlainData, getParentData, ToolbarItem, ContextMenuItems, Filter$1 as Filter, ExcelExport$1 as ExcelExport, PdfExport$1 as PdfExport, Page$1 as Page, Toolbar$1 as Toolbar, Aggregate$1 as Aggregate, Sort$1 as Sort, TreeClipboard, ColumnMenu$1 as ColumnMenu, ContextMenu$1 as ContextMenu, Edit$1 as Edit, CommandColumn$1 as CommandColumn, Selection, DetailRow$1 as DetailRow, VirtualScroll$1 as VirtualScroll, TreeVirtual, Freeze$1 as Freeze, ColumnChooser$1 as ColumnChooser };
 //# sourceMappingURL=ej2-treegrid.es2015.js.map

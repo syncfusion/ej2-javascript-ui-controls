@@ -271,6 +271,138 @@
     }
   }
 
+  .e-clear-ddb {
+    & .e-clear-icon {
+      &::before {
+        content: '\eb80';
+      }
+    }
+  }
+
+  .e-cf-ddb {
+    & .e-conditionalformatting-icon {
+      &::before {
+        content: '\e401';
+      }
+    }
+  }
+
+  .e-cf-menu {
+    & .e-hlcellrules {
+      &::before {
+        content: '\e402';
+      }
+    }
+
+    & .e-topbottomrules {
+      &::before {
+        content: '\e403';
+      }
+    }
+
+    & .e-databars {
+      &::before {
+        content: '\e404';
+      }
+    }
+
+    & .e-colorscales {
+      &::before {
+        content: '\e405';
+      }
+    }
+
+    & .e-iconsets {
+      &::before {
+        content: '\e406';
+      }
+    }
+
+    & .e-clearrules {
+      &::before {
+        content: '\e407';
+      }
+    }
+
+    & .e-greaterthan {
+      &::before {
+        content: '\e409';
+      }
+    }
+
+    & .e-lessthan {
+      &::before {
+        content: '\e410';
+       }
+    }
+
+    & .e-between {
+      &::before {
+        content: '\e411';
+       }
+    }
+
+    & .e-equalto {
+      &::before {
+        content: '\e412';
+      }
+    }
+
+    & .e-textcontains {
+      &::before {
+        content: '\e413';
+      }
+    }
+
+    & .e-adateoccuring {
+      &::before {
+        content: '\e414';
+      }
+    }
+
+    & .e-top10items {
+      &::before {
+        content: '\e403';
+      }
+    }
+
+    & .e-top10 {
+      &::before {
+        content: '\e415';
+      }
+    }
+
+    & .e-bottom10items {
+      &::before {
+        content: '\e416';
+      }
+    }
+
+    & .e-bottom10 {
+      &::before {
+        content: '\e417';
+      }
+    }
+
+    & .e-aboveaverage {
+      &::before {
+        content: '\e418';
+      }
+    }
+
+    & .e-belowaverage {
+      &::before {
+        content: '\e419';
+      }
+    }
+
+    & .e-duplicate {
+      &::before {
+        content: '\e420';
+      }
+    }
+  }
+
   .e-menu-wrapper.e-file-menu {
     & .e-new {
       &::before {

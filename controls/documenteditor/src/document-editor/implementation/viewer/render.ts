@@ -13,10 +13,11 @@ import { BaselineAlignment, HighlightColor, Underline, Strikethrough, TabLeader 
 import { Layout } from './layout';
 import { LayoutViewer, PageLayoutViewer, WebLayoutViewer, DocumentHelper } from './viewer';
 // tslint:disable-next-line:max-line-length
-import { HelperMethods, ErrorInfo, Point, SpecialCharacterInfo, SpaceCharacterInfo, WordSpellInfo } from '../editor/editor-helper';
+import { HelperMethods, ErrorInfo, Point, SpecialCharacterInfo, SpaceCharacterInfo, WordSpellInfo, RevisionInfo } from '../editor/editor-helper';
 import { SearchWidgetInfo } from '../index';
 import { SelectionWidgetInfo } from '../selection';
 import { SpellChecker } from '../spell-check/spell-checker';
+import { Revision } from '../track-changes/track-changes';
 
 /** 
  * @private
@@ -605,7 +606,7 @@ export class Renderer {
             }
             if (height < lineWidget.children[i].height + lineWidget.children[i].margin.top) {
                 height = lineWidget.children[i].margin.top + lineWidget.children[i].height;
-                lineHeight = lineWidget.children[i].height / 20;
+                lineHeight = (lineWidget.children[i] instanceof ImageElementBox) ? 0.9 : lineWidget.children[i].height / 20;
             }
         }
         return height - 2 * lineHeight;
@@ -699,7 +700,9 @@ export class Renderer {
             // tslint:disable-next-line:max-line-length
             this.pageContext.fillRect(this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width), this.getScaledValue(elementBox.height));
         }
-        let color: string = format.fontColor;
+        let revisionInfo: RevisionInfo[] = this.checkRevisionType(elementBox);
+        // tslint:disable-next-line:max-line-length
+        let color: string = revisionInfo.length > 0 ? this.getRevisionColor(revisionInfo) : format.fontColor;
         this.pageContext.textBaseline = 'alphabetic';
         let bold: string = '';
         let italic: string = '';
@@ -754,12 +757,17 @@ export class Renderer {
                 this.handleChangeDetectedElements(elementBox, underlineY, left, top, format.baselineAlignment);
             }
         }
-        if (format.underline !== 'None' && !isNullOrUndefined(format.underline)) {
+        let currentInfo: RevisionInfo = this.getRevisionType(revisionInfo, true);
+        // tslint:disable-next-line:max-line-length
+        if (format.underline !== 'None' && !isNullOrUndefined(format.underline) || (!isNullOrUndefined(currentInfo) && (currentInfo.type === 'Insertion' || currentInfo.type === 'MoveTo' ))) {
             // tslint:disable-next-line:max-line-length
-            this.renderUnderline(elementBox, left, top, underlineY, color, format.underline, format.baselineAlignment);
+            this.renderUnderline(elementBox, left, top, underlineY, color, format.underline, format.baselineAlignment, currentInfo);
         }
-        if (format.strikethrough !== 'None' && !isNullOrUndefined(format.strikethrough)) {
-            this.renderStrikeThrough(elementBox, left, top, format.strikethrough, color, format.baselineAlignment);
+        currentInfo = this.getRevisionType(revisionInfo, false);
+        // tslint:disable-next-line:max-line-length
+        if (format.strikethrough !== 'None' && !isNullOrUndefined(format.strikethrough) || (!isNullOrUndefined(currentInfo) && (currentInfo.type === 'Deletion' || currentInfo.type === 'MoveFrom'))) {
+            // tslint:disable-next-line:max-line-length
+            this.renderStrikeThrough(elementBox, left, top, format.strikethrough, color, format.baselineAlignment, currentInfo);
         }
         if (isHeightType) {
             this.pageContext.restore();
@@ -1006,11 +1014,12 @@ export class Renderer {
      * @param {BaselineAlignment} baselineAlignment 
      */
     // tslint:disable-next-line:max-line-length
-    private renderUnderline(elementBox: ElementBox, left: number, top: number, underlineY: number, color: string, underline: Underline, baselineAlignment: BaselineAlignment): void {
+    private renderUnderline(elementBox: ElementBox, left: number, top: number, underlineY: number, color: string, underline: Underline, baselineAlignment: BaselineAlignment, revisionInfo?: RevisionInfo): void {
         let renderedHeight: number = elementBox.height / (baselineAlignment === 'Normal' ? 1 : 1.5);
         let topMargin: number = elementBox.margin.top;
         let underlineHeight: number = renderedHeight / 20;
         let y: number = 0;
+        let lineHeight: number = renderedHeight / 20;
         if (baselineAlignment === 'Subscript' || elementBox instanceof ListTextElementBox) {
             y = (renderedHeight - 2 * underlineHeight) + top;
             topMargin += elementBox.height - renderedHeight;
@@ -1018,8 +1027,22 @@ export class Renderer {
         } else {
             y = underlineY + top;
         }
+        let lineCount: number = 0;
+        if (!isNullOrUndefined(revisionInfo)) {
+            underline = (revisionInfo.type === 'MoveTo') ? 'Double' : 'Single';
+        }
+        if (underline === 'Double') {
+            y -= lineHeight;
+        }
+        if (elementBox instanceof ImageElementBox) {
+            underlineHeight = 0.9;
+        }
+        while (lineCount < (underline === 'Double' ? 2 : 1)) {
+            lineCount++;
         // tslint:disable-next-line:max-line-length
         this.pageContext.fillRect(this.getScaledValue(left + elementBox.margin.left, 1), this.getScaledValue(y, 2), this.getScaledValue(elementBox.width), this.getScaledValue(underlineHeight));
+        y += 2 * lineHeight;
+        }
     }
     /**
      * Renders strike through.
@@ -1031,7 +1054,7 @@ export class Renderer {
      * @param {BaselineAlignment} baselineAlignment 
      */
     // tslint:disable-next-line:max-line-length
-    private renderStrikeThrough(elementBox: ElementBox, left: number, top: number, strikethrough: Strikethrough, color: string, baselineAlignment: BaselineAlignment): void {
+    private renderStrikeThrough(elementBox: ElementBox, left: number, top: number, strikethrough: Strikethrough, color: string, baselineAlignment: BaselineAlignment, revisionInfo?: RevisionInfo): void {
         let renderedHeight: number = elementBox.height / (baselineAlignment === 'Normal' ? 1 : 1.5);
         let topMargin: number = elementBox.margin.top;
         if (baselineAlignment === 'Subscript') {
@@ -1041,6 +1064,12 @@ export class Renderer {
         let lineHeight: number = renderedHeight / 20;
         let y: number = (renderedHeight / 2) + (0.5 * lineHeight);
         let lineCount: number = 0;
+        if (!isNullOrUndefined(revisionInfo)) {
+            strikethrough = (revisionInfo.type === 'Deletion') ? 'SingleStrike' : 'DoubleStrike';
+        }
+        if (elementBox instanceof ImageElementBox) {
+            lineHeight = 0.9;
+        }
         if (strikethrough === 'DoubleStrike') {
             y -= lineHeight;
         }
@@ -1062,7 +1091,8 @@ export class Renderer {
     private renderImageElementBox(elementBox: ImageElementBox, left: number, top: number, underlineY: number): void {
         let topMargin: number = elementBox.margin.top;
         let leftMargin: number = elementBox.margin.left;
-        let color: string = 'black';
+        let revisionInfo: RevisionInfo[] = this.checkRevisionType(elementBox);
+        let color: string = revisionInfo.length > 0 ? this.getRevisionColor(revisionInfo) : 'black';
         this.pageContext.textBaseline = 'top';
         let widgetWidth: number = 0;
         let isClipped: boolean = false;
@@ -1104,6 +1134,19 @@ export class Renderer {
                 // tslint:disable-next-line:max-line-length
                 this.pageContext.drawImage(elementBox.element, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width), this.getScaledValue(elementBox.height));
             }
+        }
+        this.pageContext.fillStyle = HelperMethods.getColor(color);
+        let currentRevision: RevisionInfo = this.getRevisionType(revisionInfo, false); 
+        // tslint:disable-next-line:max-line-length
+        if (!isNullOrUndefined(currentRevision) && (currentRevision.type === 'Deletion' || currentRevision.type === 'MoveFrom')) {
+            // tslint:disable-next-line:max-line-length
+            this.renderStrikeThrough(elementBox, left, top, 'SingleStrike', color, 'Normal', currentRevision);
+        }
+        currentRevision = this.getRevisionType(revisionInfo, true); 
+        // tslint:disable-next-line:max-line-length
+        if (!isNullOrUndefined(currentRevision) && (currentRevision.type === 'Insertion' || currentRevision.type === 'MoveTo')) {
+            let y: number = this.getUnderlineYPosition(elementBox.line);
+            this.renderUnderline(elementBox, left, top, y, color, 'Single', 'Normal');
         }
         if (isClipped) {
             this.pageContext.restore();
@@ -1285,6 +1328,10 @@ export class Renderer {
         let topMargin: number = cellWidget.topMargin ? HelperMethods.convertPointToPixel(cellWidget.topMargin) : 0;
         let top: number = cellWidget.y - topMargin;
         let width: number = cellWidget.width + leftMargin + cellWidget.margin.right - lineWidth;
+        if(cellWidget.ownerRow.rowFormat.revisions.length > 0) {
+            let revision: Revision = cellWidget.ownerRow.rowFormat.revisions[cellWidget.ownerRow.rowFormat.revisions.length -1]; 
+            bgColor = (revision.revisionType === 'Insertion') ? '#e1f2fa' : '#fce6f4';
+        }
         this.pageContext.beginPath();
         if (bgColor !== 'empty') {
             this.pageContext.fillStyle = HelperMethods.getColor(bgColor);
@@ -1341,6 +1388,50 @@ export class Renderer {
         }
         let x: number = value * this.documentHelper.zoomFactor;
         return x + (type === 1 ? this.pageLeft : (type === 2 ? this.pageTop : 0));
+    }
+    private checkRevisionType(elementBox: ElementBox): RevisionInfo[] {
+        let revisions: RevisionInfo[] = [];
+        let count: number = elementBox.revisions.length
+        for (let i: number = 0 ; i < count; i++) {
+            let currentRevision: Revision = elementBox.revisions[i];
+            let color: string = this.documentHelper.authors.get(currentRevision.author);
+            revisions.push({ 'type': currentRevision.revisionType, 'color': color });
+        }
+        return revisions
+    }
+    private getRevisionColor(revisionInfo: RevisionInfo[]): string {
+        if (revisionInfo.length === 1) {
+            return revisionInfo[0].color;
+        }
+        
+        for (let i = 0; i < revisionInfo.length; i++) {
+              if(revisionInfo[i].type === 'Deletion' || revisionInfo[i].type === 'MoveFrom') {
+               return revisionInfo[i].color;
+              }
+        }
+        return undefined;
+
+    }
+    private getRevisionType(revisionInfo: RevisionInfo[], checkInsert: boolean): RevisionInfo {
+        if(revisionInfo.length === 0) {
+            return undefined;
+        }
+        for(let i: number = 0; i < revisionInfo.length; i++) {
+            let type: RevisionInfo = undefined;
+            if(checkInsert && (revisionInfo[i].type === 'Insertion' || revisionInfo[i].type === 'MoveTo')) {
+                type = revisionInfo[i];
+                this.pageContext.fillStyle = HelperMethods.getColor(type.color);
+                revisionInfo.splice(i, 1);
+                return type;
+            }
+            if (!checkInsert && (revisionInfo[i].type === 'Deletion' || revisionInfo[i].type === 'MoveFrom')) {
+                type = revisionInfo[i];
+                this.pageContext.fillStyle = HelperMethods.getColor(type.color);
+                revisionInfo.splice(i, 1);
+                return type;
+            }
+        }
+        return undefined;
     }
     /**
      * Destroys the internal objects which is maintained.

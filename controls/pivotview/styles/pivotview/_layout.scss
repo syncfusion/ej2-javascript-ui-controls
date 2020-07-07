@@ -22,7 +22,6 @@
       .e-footer-content {
         border-radius: $pivotgrid-default-border-radius;
       }
-
       .e-dlg-header-content {
         border: 0;
         font-weight: normal;
@@ -36,7 +35,11 @@
 
         .e-clear-filter-button {
           float: left;
-          margin: 0;
+          margin-left: -10px;
+
+          @if($pivotgrid-skin == 'bootstrap4') or ($pivotgrid-skin == 'bootstrap') or ($pivotgrid-skin == 'bootstrap-dark') or ($pivotgrid-skin == 'material-dark') or ($pivotgrid-skin == 'material') {
+            margin: 0;
+          }            
 
           &.e-disable {
             display: none;
@@ -367,6 +370,10 @@
         .e-footer-content {
           .e-clear-filter-button {
             float: right;
+            margin-right: -10px;
+            @if($pivotgrid-skin == 'bootstrap4') or ($pivotgrid-skin == 'bootstrap') or ($pivotgrid-skin == 'bootstrap-dark') or ($pivotgrid-skin == 'material-dark') or ($pivotgrid-skin == 'material') {
+              margin: 0;
+            }  
           }
         }
       }
@@ -439,6 +446,10 @@
     .e-pivotchart-type-dialog {
       max-width: 350px;
 
+      .e-dlg-content {
+        overflow: visible;
+      }
+
       .e-chart-type-option-wrapper,
       .e-chart-type-option-text {
         padding-bottom: 20px;
@@ -450,6 +461,11 @@
         .e-input-group.e-control-wrapper {
           padding: 1px;
         }
+      }
+
+      .e-dialog-multiple-axis,
+      .e-dialog-show-legend {
+        width: 50%;
       }
 
       .e-icons.e-frame {
@@ -524,6 +540,20 @@
             }
           }
         }
+
+        ul .e-menu-item.e-focused {
+          @if ($pivotgrid-skin == 'bootstrap4') {
+            background-color: #6c757d;
+            border-radius: 4px;
+        }
+
+        .e-menu-icon,
+        .e-icons{
+          @if ($pivotgrid-skin == 'bootstrap4') {
+            color:#ffffff;
+          }
+        }
+      }
       }
 
       .e-toolbar-item.e-template {

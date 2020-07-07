@@ -1,5 +1,5 @@
 window.sf = window.sf || {};
-window.sf.lineargauge = (function (exports) {
+var sflineargauge = (function (exports) {
 'use strict';
 
 var __extends$1 = (undefined && undefined.__extends) || (function () {
@@ -315,6 +315,12 @@ var Range = /** @class */ (function (_super) {
         sf.base.Property(0)
     ], Range.prototype, "end", void 0);
     __decorate$2([
+        sf.base.Property(null)
+    ], Range.prototype, "linearGradient", void 0);
+    __decorate$2([
+        sf.base.Property(null)
+    ], Range.prototype, "radialGradient", void 0);
+    __decorate$2([
         sf.base.Property('Outside')
     ], Range.prototype, "position", void 0);
     __decorate$2([
@@ -378,6 +384,12 @@ var Pointer = /** @class */ (function (_super) {
     __decorate$2([
         sf.base.Property('Marker')
     ], Pointer.prototype, "type", void 0);
+    __decorate$2([
+        sf.base.Property(null)
+    ], Pointer.prototype, "linearGradient", void 0);
+    __decorate$2([
+        sf.base.Property(null)
+    ], Pointer.prototype, "radialGradient", void 0);
     __decorate$2([
         sf.base.Property(null)
     ], Pointer.prototype, "value", void 0);
@@ -1467,6 +1479,7 @@ var AxisRenderer = /** @class */ (function (_super) {
                 pointesGroup.appendChild(pointerClipRectGroup);
             }
         }
+        this.gauge.gradientCount = 0;
         axisObject.appendChild(pointesGroup);
     };
     AxisRenderer.prototype.drawMarkerPointer = function (axis, axisIndex, pointer, pointerIndex, parentElement) {
@@ -1474,6 +1487,10 @@ var AxisRenderer = /** @class */ (function (_super) {
         var pointerID = this.gauge.element.id + '_AxisIndex_' + axisIndex + '_' + pointer.type + 'Pointer' + '_' + pointerIndex;
         var transform = 'translate( 0, 0 )';
         var pointerElement;
+        var gradientMarkerColor;
+        if (this.gauge.gradientModule) {
+            gradientMarkerColor = this.gauge.gradientModule.getGradientColorString(pointer);
+        }
         if (getElement(pointerID) && getElement(pointerID).childElementCount > 0) {
             sf.base.remove(getElement(pointerID));
         }
@@ -1487,7 +1504,7 @@ var AxisRenderer = /** @class */ (function (_super) {
                 (((pointer.position === 'Inside' && !axis.opposedPosition) || (pointer.position === 'Outside' && axis.opposedPosition)) &&
                     pointer.markerType === 'InvertedTriangle' ? 'Triangle' : pointer.markerType));
         }
-        options = new PathOption(pointerID, pointerColor, pointer.border.width, pointer.border.color, pointer.opacity, null, null, transform);
+        options = new PathOption(pointerID, (gradientMarkerColor) ? gradientMarkerColor : pointerColor, pointer.border.width, pointer.border.color, pointer.opacity, null, null, transform);
         options = calculateShapes(pointer.bounds, shapeBasedOnPosition, new Size(pointer.width, pointer.height), pointer.imageUrl, options, this.gauge.orientation, axis, pointer);
         pointerElement = ((pointer.markerType === 'Circle' ? this.gauge.renderer.drawCircle(options)
             : (pointer.markerType === 'Image') ? this.gauge.renderer.drawImage(options) :
@@ -1508,17 +1525,22 @@ var AxisRenderer = /** @class */ (function (_super) {
         var box;
         var size = new Size(this.gauge.availableSize.width, this.gauge.availableSize.height);
         var pointerID = this.gauge.element.id + '_AxisIndex_' + axisIndex + '_' + pointer.type + 'Pointer' + '_' + pointerIndex;
+        var gradientBarColor;
+        if (this.gauge.gradientModule) {
+            gradientBarColor = this.gauge.gradientModule.getGradientColorString(pointer);
+        }
         if (getElement(pointerID) && getElement(pointerID).childElementCount > 0) {
             sf.base.remove(getElement(pointerID));
         }
         if (this.gauge.container.type === 'Normal') {
-            rectOptions = new RectOption(pointerID, pointer.color || this.gauge.themeStyle.pointerColor, pointer.border, pointer.opacity, pointer.bounds, null, null);
+            rectOptions = new RectOption(pointerID, (gradientBarColor) ?
+                gradientBarColor : pointer.color || this.gauge.themeStyle.pointerColor, pointer.border, pointer.opacity, pointer.bounds, null, null);
             box = pointer.bounds;
             pointerElement = this.gauge.renderer.drawRectangle(rectOptions);
         }
         else {
             path = getBox(pointer.bounds, this.gauge.container.type, this.gauge.orientation, new Size(pointer.bounds.width, pointer.bounds.height), 'bar', this.gauge.container.width, axis, pointer.roundedCornerRadius);
-            options = new PathOption(pointerID, pointer.color || this.gauge.themeStyle.pointerColor, pointer.border.width, pointer.border.color, pointer.opacity, null, path);
+            options = new PathOption(pointerID, (gradientBarColor) ? gradientBarColor : pointer.color || this.gauge.themeStyle.pointerColor, pointer.border.width, pointer.border.color, pointer.opacity, null, path);
             pointerElement = this.gauge.renderer.drawPath(options);
             box = getPathToRect(pointerElement.cloneNode(true), size, this.gauge.element);
         }
@@ -1939,11 +1961,15 @@ var AxisLayoutPanel = /** @class */ (function () {
         var width;
         var height;
         var position;
+        var gradientRangeColor;
         var startWidth;
         var endWidth;
         var colors;
         for (var i = 0; i < axis.ranges.length; i++) {
             range = axis.ranges[i];
+            if (this.gauge.gradientModule) {
+                gradientRangeColor = this.gauge.gradientModule.getGradientColorString(range);
+            }
             if (range.offset.length > 0) {
                 range.currentOffset = stringToNumber(range.offset, (this.gauge.orientation === 'Horizontal' ?
                     this.gauge.availableSize.height / 2 : this.gauge.availableSize.width / 2));
@@ -1960,7 +1986,8 @@ var AxisLayoutPanel = /** @class */ (function () {
                 startWidth = range.startWidth;
                 endWidth = range.endWidth;
                 colors = this.gauge.rangePalettes.length ? this.gauge.rangePalettes : getRangePalette();
-                range.interior = range.color ? range.color : colors[i % colors.length];
+                range.interior = (gradientRangeColor) ? gradientRangeColor :
+                    (range.color) ? range.color : colors[i % colors.length];
                 if (this.gauge.orientation === 'Vertical') {
                     pointX = line.x + (range.currentOffset) + (position === 'Cross' ? startWidth / 2 :
                         (position === 'Outside' || position === 'Auto') ?
@@ -2429,7 +2456,7 @@ var GaugeTooltip = /** @class */ (function () {
             enableAnimation: args.tooltip.enableAnimation,
             fill: fill || gauge.themeStyle.tooltipFillColor,
             availableSize: gauge.availableSize,
-            areaBounds: new Rect(areaRect.left, tooltipPos === 'Bottom' ? location.y : areaRect.top, tooltipPos === 'Right' ? Math.abs(areaRect.left - location.x) : areaRect.width, areaRect.height),
+            areaBounds: new Rect((this.gauge.orientation === 'Vertical') ? areaRect.left : location.x, (this.gauge.orientation === 'Vertical') ? location.y : (tooltipPos === 'Bottom') ? location.y : areaRect.top, tooltipPos === 'Right' ? Math.abs(areaRect.left - location.x) : areaRect.width, areaRect.height),
             textStyle: args.tooltip.textStyle,
             border: tooltipBorder,
             theme: args.gauge.theme,
@@ -2619,238 +2646,222 @@ function getThemeStyle(theme) {
     return style;
 }
 
+var __extends$5 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 /**
- * Represent the print and export for gauge.
+ * Specified the color information for the gradient in the linear gauge.
+ */
+var ColorStop = /** @class */ (function (_super) {
+    __extends$5(ColorStop, _super);
+    function ColorStop() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        sf.base.Property('#000000')
+    ], ColorStop.prototype, "color", void 0);
+    __decorate$3([
+        sf.base.Property(1)
+    ], ColorStop.prototype, "opacity", void 0);
+    __decorate$3([
+        sf.base.Property('0%')
+    ], ColorStop.prototype, "offset", void 0);
+    __decorate$3([
+        sf.base.Property('')
+    ], ColorStop.prototype, "style", void 0);
+    return ColorStop;
+}(sf.base.ChildProperty));
+/**
+ * Specifies the position in percentage from which the radial gradient must be applied.
+ */
+var GradientPosition = /** @class */ (function (_super) {
+    __extends$5(GradientPosition, _super);
+    function GradientPosition() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        sf.base.Property('0%')
+    ], GradientPosition.prototype, "x", void 0);
+    __decorate$3([
+        sf.base.Property('0%')
+    ], GradientPosition.prototype, "y", void 0);
+    return GradientPosition;
+}(sf.base.ChildProperty));
+/**
+ * This specifies the properties of the linear gradient colors for the linear gauge.
+ */
+var LinearGradient = /** @class */ (function (_super) {
+    __extends$5(LinearGradient, _super);
+    function LinearGradient() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        sf.base.Property('0%')
+    ], LinearGradient.prototype, "startValue", void 0);
+    __decorate$3([
+        sf.base.Property('100%')
+    ], LinearGradient.prototype, "endValue", void 0);
+    __decorate$3([
+        sf.base.Collection([{ color: '#000000', opacity: 1, offset: '0%', style: '' }], ColorStop)
+    ], LinearGradient.prototype, "colorStop", void 0);
+    return LinearGradient;
+}(sf.base.ChildProperty));
+/**
+ * This specifies the properties of the radial gradient colors for the linear gauge.
+ */
+var RadialGradient = /** @class */ (function (_super) {
+    __extends$5(RadialGradient, _super);
+    function RadialGradient() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        sf.base.Property('0%')
+    ], RadialGradient.prototype, "radius", void 0);
+    __decorate$3([
+        sf.base.Complex({ x: '0%', y: '0%' }, GradientPosition)
+    ], RadialGradient.prototype, "outerPosition", void 0);
+    __decorate$3([
+        sf.base.Complex({ x: '0%', y: '0%' }, GradientPosition)
+    ], RadialGradient.prototype, "innerPosition", void 0);
+    __decorate$3([
+        sf.base.Collection([{ color: '#000000', opacity: 1, offset: '0%', style: '' }], ColorStop)
+    ], RadialGradient.prototype, "colorStop", void 0);
+    return RadialGradient;
+}(sf.base.ChildProperty));
+/**
+ * To get the gradient support for pointers and ranges in the linear gauge.
  * @hidden
  */
-var Print = /** @class */ (function () {
-    /**
-     * Constructor for gauge
-     * @param control
-     */
-    function Print(control) {
-        this.control = control;
+var Gradient = /** @class */ (function () {
+    function Gradient(control) {
+        this.gauge = control;
     }
     /**
-     * To print the gauge
-     * @param elements
+     * To get the linear gradient string.
      * @private
      */
-    Print.prototype.print = function (elements) {
-        var _this = this;
-        this.printWindow = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
-        this.printWindow.moveTo(0, 0);
-        this.printWindow.resizeTo(screen.availWidth, screen.availHeight);
-        var argsData = {
-            cancel: false, htmlContent: this.getHTMLContent(elements), name: beforePrint
+    Gradient.prototype.getLinearGradientColor = function (element) {
+        var render = new sf.svgbase.SvgRenderer('');
+        var colorStop = element.linearGradient.colorStop;
+        var colors = this.getGradientColor(colorStop);
+        var name = '_' + this.gauge.svgObject.id + '_' + this.gauge.gradientCount + '_' + 'linearGradient';
+        var gradientPosition = {
+            id: name,
+            x1: (element.linearGradient.startValue.indexOf('%') === -1 ?
+                element.linearGradient.startValue :
+                parseFloat(element.linearGradient.startValue).toString()) + '%',
+            x2: (element.linearGradient.endValue.indexOf('%') === -1 ?
+                element.linearGradient.endValue :
+                parseFloat(element.linearGradient.endValue).toString()) + '%',
+            y1: '0' + '%',
+            y2: '0' + '%'
         };
-        this.control.trigger('beforePrint', argsData, function (beforePrintArgs) {
-            if (!argsData.cancel) {
-                sf.base.print(argsData.htmlContent, _this.printWindow);
-            }
-        });
+        var def = render.drawGradient('linearGradient', gradientPosition, colors);
+        this.gauge.svgObject.appendChild(def);
+        return 'url(#' + name + ')';
     };
     /**
-     * To get the html string of the gauge
-     * @param elements
+     * To get the radial gradient string.
      * @private
      */
-    Print.prototype.getHTMLContent = function (elements) {
-        var div = sf.base.createElement('div');
-        if (elements) {
-            if (elements instanceof Array) {
-                elements.forEach(function (value) {
-                    div.appendChild(getElement(value).cloneNode(true));
-                });
-            }
-            else if (elements instanceof Element) {
-                div.appendChild(elements.cloneNode(true));
+    Gradient.prototype.getRadialGradientColor = function (element) {
+        var render = new sf.svgbase.SvgRenderer('');
+        var colorStop = element.radialGradient.colorStop;
+        var colors = this.getGradientColor(colorStop);
+        var name = '_' + this.gauge.svgObject.id + '_' + this.gauge.gradientCount + '_' + 'radialGradient';
+        var gradientPosition = {
+            id: name,
+            r: (element.radialGradient.radius.indexOf('%') === -1 ?
+                element.radialGradient.radius :
+                parseFloat(element.radialGradient.radius).toString()) + '%',
+            cx: (element.radialGradient.outerPosition.x.indexOf('%') === -1 ?
+                element.radialGradient.outerPosition.x :
+                parseFloat(element.radialGradient.outerPosition.x).toString()) + '%',
+            cy: (element.radialGradient.outerPosition.y.indexOf('%') === -1 ?
+                element.radialGradient.outerPosition.y :
+                parseFloat(element.radialGradient.outerPosition.y).toString()) + '%',
+            fx: (element.radialGradient.innerPosition.x.indexOf('%') === -1 ?
+                element.radialGradient.innerPosition.y :
+                parseFloat(element.radialGradient.innerPosition.x).toString()) + '%',
+            fy: (element.radialGradient.innerPosition.y.indexOf('%') === -1 ?
+                element.radialGradient.innerPosition.y :
+                parseFloat(element.radialGradient.innerPosition.y).toString()) + '%',
+        };
+        var def = render.drawGradient('radialGradient', gradientPosition, colors);
+        this.gauge.svgObject.appendChild(def);
+        return 'url(#' + name + ')';
+    };
+    /**
+     * To get the color, offset, opacity and style.
+     * @private
+     */
+    Gradient.prototype.getGradientColor = function (colorStop) {
+        var colors = [];
+        var length = colorStop.length;
+        for (var j = 0; j < length; j++) {
+            var color = {
+                color: colorStop[j].color,
+                colorStop: colorStop[j].offset,
+                opacity: (colorStop[j].opacity) ? (colorStop[j].opacity).toString() : '1',
+                style: colorStop[j].style
+            };
+            colors.push(color);
+        }
+        return colors;
+    };
+    /**
+     * To get the gradient color string.
+     * @private
+     */
+    Gradient.prototype.getGradientColorString = function (element) {
+        var gradientColor;
+        if ((element.linearGradient || element.radialGradient)) {
+            if (element.linearGradient) {
+                gradientColor = this.getLinearGradientColor(element);
             }
             else {
-                div.appendChild(getElement(elements).cloneNode(true));
+                gradientColor = this.getRadialGradientColor(element);
             }
+            this.gauge.gradientCount += 1;
         }
         else {
-            div.appendChild(this.control.element.cloneNode(true));
+            return null;
         }
-        return div;
+        return gradientColor;
     };
     /**
      * Get module name.
      */
-    Print.prototype.getModuleName = function () {
-        return 'Print';
+    Gradient.prototype.getModuleName = function () {
+        return 'Gradient';
     };
     /**
-     * To destroy the print.
+     * To destroy the gradient.
      * @return {void}
      * @private
      */
-    Print.prototype.destroy = function (control) {
+    Gradient.prototype.destroy = function (control) {
         /**
          * Destroy method performed here
          */
     };
-    return Print;
-}());
-
-/**
- * Represent the print and export for gauge.
- * @hidden
- */
-var PdfExport = /** @class */ (function () {
-    /**
-     * Constructor for gauge
-     * @param control
-     */
-    function PdfExport(control) {
-        this.control = control;
-    }
-    /**
-     * To export the file as pdf format
-     * @param type
-     * @param fileName
-     * @private
-     */
-    PdfExport.prototype.export = function (type, fileName, orientation, allowDownload) {
-        var _this = this;
-        var promise = new Promise(function (resolve, reject) {
-            var canvasElement = sf.base.createElement('canvas', {
-                id: 'ej2-canvas',
-                attrs: {
-                    'width': _this.control.availableSize.width.toString(),
-                    'height': _this.control.availableSize.height.toString()
-                }
-            });
-            orientation = sf.base.isNullOrUndefined(orientation) ? sf.pdfexport.PdfPageOrientation.Landscape : orientation;
-            var svgData = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
-                _this.control.svgObject.outerHTML +
-                '</svg>';
-            var url = window.URL.createObjectURL(new Blob(type === 'SVG' ? [svgData] :
-                [(new XMLSerializer()).serializeToString(_this.control.svgObject)], { type: 'image/svg+xml' }));
-            var image = new Image();
-            var context = canvasElement.getContext('2d');
-            image.onload = (function () {
-                context.drawImage(image, 0, 0);
-                window.URL.revokeObjectURL(url);
-                var document = new sf.pdfexport.PdfDocument();
-                var imageString = canvasElement.toDataURL('image/jpeg').replace('image/jpeg', 'image/octet-stream');
-                document.pageSettings.orientation = orientation;
-                imageString = imageString.slice(imageString.indexOf(',') + 1);
-                document.pages.add().graphics.drawImage(new sf.pdfexport.PdfBitmap(imageString), 0, 0, (_this.control.availableSize.width - 60), _this.control.availableSize.height);
-                if (allowDownload) {
-                    document.save(fileName + '.pdf');
-                    document.destroy();
-                }
-                else {
-                    resolve(null);
-                }
-            });
-            image.src = url;
-        });
-        return promise;
-    };
-    /**
-     * Get module name.
-     */
-    PdfExport.prototype.getModuleName = function () {
-        return 'PdfExport';
-    };
-    /**
-     * To destroy the PdfExport.
-     * @return {void}
-     * @private
-     */
-    PdfExport.prototype.destroy = function (control) {
-        /**
-         * Destroy method performed here
-         */
-    };
-    return PdfExport;
-}());
-
-/**
- * Represent the print and export for gauge.
- * @hidden
- */
-var ImageExport = /** @class */ (function () {
-    /**
-     * Constructor for gauge
-     * @param control
-     */
-    function ImageExport(control) {
-        this.control = control;
-    }
-    /**
-     * To export the file as image/svg format
-     * @param type
-     * @param fileName
-     * @private
-     */
-    ImageExport.prototype.export = function (type, fileName, allowDownload) {
-        var _this = this;
-        var promise = new Promise(function (resolve, reject) {
-            var element = sf.base.createElement('canvas', {
-                id: 'ej2-canvas',
-                attrs: {
-                    'width': _this.control.availableSize.width.toString(),
-                    'height': _this.control.availableSize.height.toString()
-                }
-            });
-            var isDownload = !(sf.base.Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
-            var svgData = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
-                _this.control.svgObject.outerHTML +
-                '</svg>';
-            var url = window.URL.createObjectURL(new Blob(type === 'SVG' ? [svgData] :
-                [(new XMLSerializer()).serializeToString(_this.control.svgObject)], { type: 'image/svg+xml' }));
-            if (type === 'SVG') {
-                if (allowDownload) {
-                    triggerDownload(fileName, type, url, isDownload);
-                }
-                else {
-                    resolve(null);
-                }
-            }
-            else {
-                var image_1 = new Image();
-                var context_1 = element.getContext('2d');
-                image_1.onload = (function () {
-                    context_1.drawImage(image_1, 0, 0);
-                    window.URL.revokeObjectURL(url);
-                    if (allowDownload) {
-                        triggerDownload(fileName, type, element.toDataURL('image/png').replace('image/png', 'image/octet-stream'), isDownload);
-                    }
-                    else {
-                        if (type === 'JPEG') {
-                            resolve(element.toDataURL('image/jpeg'));
-                        }
-                        else if (type === 'PNG') {
-                            resolve(element.toDataURL('image/png'));
-                        }
-                    }
-                });
-                image_1.src = url;
-            }
-        });
-        return promise;
-    };
-    /**
-     * Get module name.
-     */
-    ImageExport.prototype.getModuleName = function () {
-        return 'ImageExport';
-    };
-    /**
-     * To destroy the ImageExport.
-     * @return {void}
-     * @private
-     */
-    ImageExport.prototype.destroy = function (control) {
-        /**
-         * Destroy method performed here
-         */
-    };
-    return ImageExport;
+    return Gradient;
 }());
 
 var __extends = (undefined && undefined.__extends) || (function () {
@@ -2900,6 +2911,11 @@ var LinearGauge = /** @class */ (function (_super) {
      */
     function LinearGauge(options, element) {
         var _this = _super.call(this, options, element) || this;
+        /**
+         * Specifies the gradient count of the linear gauge.
+         * @private
+         */
+        _this.gradientCount = 0;
         /** @private */
         _this.isDrag = false;
         /** @private */
@@ -2912,20 +2928,11 @@ var LinearGauge = /** @class */ (function (_super) {
         _this.gaugeResized = false;
         return _this;
     }
-    LinearGauge_1 = LinearGauge;
     /**
      * Initialize the preRender method.
      */
     LinearGauge.prototype.preRender = function () {
         this.isBlazor = sf.base.isBlazor();
-        if (!this.isBlazor) {
-            this.allowPrint = true;
-            this.allowImageExport = true;
-            this.allowPdfExport = true;
-            LinearGauge_1.Inject(Print);
-            LinearGauge_1.Inject(PdfExport);
-            LinearGauge_1.Inject(ImageExport);
-        }
         this.unWireEvents();
         this.trigger(load, { gauge: !this.isBlazor ? this : null });
         this.initPrivateVariable();
@@ -3716,6 +3723,10 @@ var LinearGauge = /** @class */ (function (_super) {
                 args: [this]
             });
         }
+        modules.push({
+            member: 'Gradient',
+            args: [this, Gradient]
+        });
         return modules;
     };
     /**
@@ -3785,7 +3796,6 @@ var LinearGauge = /** @class */ (function (_super) {
             this.renderAxisElements();
         }
     };
-    var LinearGauge_1;
     __decorate([
         sf.base.Property(null)
     ], LinearGauge.prototype, "width", void 0);
@@ -3897,21 +3907,251 @@ var LinearGauge = /** @class */ (function (_super) {
     __decorate([
         sf.base.Event()
     ], LinearGauge.prototype, "beforePrint", void 0);
-    LinearGauge = LinearGauge_1 = __decorate([
+    LinearGauge = __decorate([
         sf.base.NotifyPropertyChanges
     ], LinearGauge);
     return LinearGauge;
 }(sf.base.Component));
 
 /**
+ * Represent the print and export for gauge.
+ * @hidden
+ */
+var Print = /** @class */ (function () {
+    /**
+     * Constructor for gauge
+     * @param control
+     */
+    function Print(control) {
+        this.control = control;
+    }
+    /**
+     * To print the gauge
+     * @param elements
+     * @private
+     */
+    Print.prototype.print = function (elements) {
+        var _this = this;
+        this.printWindow = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
+        this.printWindow.moveTo(0, 0);
+        this.printWindow.resizeTo(screen.availWidth, screen.availHeight);
+        var argsData = {
+            cancel: false, htmlContent: this.getHTMLContent(elements), name: beforePrint
+        };
+        this.control.trigger('beforePrint', argsData, function (beforePrintArgs) {
+            if (!argsData.cancel) {
+                sf.base.print(argsData.htmlContent, _this.printWindow);
+            }
+        });
+    };
+    /**
+     * To get the html string of the gauge
+     * @param elements
+     * @private
+     */
+    Print.prototype.getHTMLContent = function (elements) {
+        var div = sf.base.createElement('div');
+        if (elements) {
+            if (elements instanceof Array) {
+                elements.forEach(function (value) {
+                    div.appendChild(getElement(value).cloneNode(true));
+                });
+            }
+            else if (elements instanceof Element) {
+                div.appendChild(elements.cloneNode(true));
+            }
+            else {
+                div.appendChild(getElement(elements).cloneNode(true));
+            }
+        }
+        else {
+            div.appendChild(this.control.element.cloneNode(true));
+        }
+        return div;
+    };
+    /**
+     * Get module name.
+     */
+    Print.prototype.getModuleName = function () {
+        return 'Print';
+    };
+    /**
+     * To destroy the print.
+     * @return {void}
+     * @private
+     */
+    Print.prototype.destroy = function (control) {
+        /**
+         * Destroy method performed here
+         */
+    };
+    return Print;
+}());
+
+/**
+ * Represent the print and export for gauge.
+ * @hidden
+ */
+var ImageExport = /** @class */ (function () {
+    /**
+     * Constructor for gauge
+     * @param control
+     */
+    function ImageExport(control) {
+        this.control = control;
+    }
+    /**
+     * To export the file as image/svg format
+     * @param type
+     * @param fileName
+     * @private
+     */
+    ImageExport.prototype.export = function (type, fileName, allowDownload) {
+        var _this = this;
+        var promise = new Promise(function (resolve, reject) {
+            var element = sf.base.createElement('canvas', {
+                id: 'ej2-canvas',
+                attrs: {
+                    'width': _this.control.availableSize.width.toString(),
+                    'height': _this.control.availableSize.height.toString()
+                }
+            });
+            var isDownload = !(sf.base.Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
+            var svgData = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
+                _this.control.svgObject.outerHTML +
+                '</svg>';
+            var url = window.URL.createObjectURL(new Blob(type === 'SVG' ? [svgData] :
+                [(new XMLSerializer()).serializeToString(_this.control.svgObject)], { type: 'image/svg+xml' }));
+            if (type === 'SVG') {
+                if (allowDownload) {
+                    triggerDownload(fileName, type, url, isDownload);
+                }
+                else {
+                    resolve(null);
+                }
+            }
+            else {
+                var image_1 = new Image();
+                var context_1 = element.getContext('2d');
+                image_1.onload = (function () {
+                    context_1.drawImage(image_1, 0, 0);
+                    window.URL.revokeObjectURL(url);
+                    if (allowDownload) {
+                        triggerDownload(fileName, type, element.toDataURL('image/png').replace('image/png', 'image/octet-stream'), isDownload);
+                    }
+                    else {
+                        if (type === 'JPEG') {
+                            resolve(element.toDataURL('image/jpeg'));
+                        }
+                        else if (type === 'PNG') {
+                            resolve(element.toDataURL('image/png'));
+                        }
+                    }
+                });
+                image_1.src = url;
+            }
+        });
+        return promise;
+    };
+    /**
+     * Get module name.
+     */
+    ImageExport.prototype.getModuleName = function () {
+        return 'ImageExport';
+    };
+    /**
+     * To destroy the ImageExport.
+     * @return {void}
+     * @private
+     */
+    ImageExport.prototype.destroy = function (control) {
+        /**
+         * Destroy method performed here
+         */
+    };
+    return ImageExport;
+}());
+
+/**
+ * Represent the print and export for gauge.
+ * @hidden
+ */
+var PdfExport = /** @class */ (function () {
+    /**
+     * Constructor for gauge
+     * @param control
+     */
+    function PdfExport(control) {
+        this.control = control;
+    }
+    /**
+     * To export the file as pdf format
+     * @param type
+     * @param fileName
+     * @private
+     */
+    PdfExport.prototype.export = function (type, fileName, orientation, allowDownload) {
+        var _this = this;
+        var promise = new Promise(function (resolve, reject) {
+            var canvasElement = sf.base.createElement('canvas', {
+                id: 'ej2-canvas',
+                attrs: {
+                    'width': _this.control.availableSize.width.toString(),
+                    'height': _this.control.availableSize.height.toString()
+                }
+            });
+            orientation = sf.base.isNullOrUndefined(orientation) ? sf.pdfexport.PdfPageOrientation.Landscape : orientation;
+            var svgData = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
+                _this.control.svgObject.outerHTML +
+                '</svg>';
+            var url = window.URL.createObjectURL(new Blob(type === 'SVG' ? [svgData] :
+                [(new XMLSerializer()).serializeToString(_this.control.svgObject)], { type: 'image/svg+xml' }));
+            var image = new Image();
+            var context = canvasElement.getContext('2d');
+            image.onload = (function () {
+                context.drawImage(image, 0, 0);
+                window.URL.revokeObjectURL(url);
+                var document = new sf.pdfexport.PdfDocument();
+                var imageString = canvasElement.toDataURL('image/jpeg').replace('image/jpeg', 'image/octet-stream');
+                document.pageSettings.orientation = orientation;
+                imageString = imageString.slice(imageString.indexOf(',') + 1);
+                document.pages.add().graphics.drawImage(new sf.pdfexport.PdfBitmap(imageString), 0, 0, (_this.control.availableSize.width - 60), _this.control.availableSize.height);
+                if (allowDownload) {
+                    document.save(fileName + '.pdf');
+                    document.destroy();
+                }
+                else {
+                    resolve(null);
+                }
+            });
+            image.src = url;
+        });
+        return promise;
+    };
+    /**
+     * Get module name.
+     */
+    PdfExport.prototype.getModuleName = function () {
+        return 'PdfExport';
+    };
+    /**
+     * To destroy the PdfExport.
+     * @return {void}
+     * @private
+     */
+    PdfExport.prototype.destroy = function (control) {
+        /**
+         * Destroy method performed here
+         */
+    };
+    return PdfExport;
+}());
+
+/**
  * Linear gauge component exported items
  */
 
-/**
- * LinearGauge component exported.
- */
-
-LinearGauge.Inject(GaugeTooltip, Annotations, Print, PdfExport, ImageExport);
+LinearGauge.Inject(GaugeTooltip, Annotations, Print, PdfExport, ImageExport, Gradient);
 
 exports.LinearGauge = LinearGauge;
 exports.Font = Font;
@@ -3967,10 +4207,16 @@ exports.GaugeTooltip = GaugeTooltip;
 exports.Print = Print;
 exports.ImageExport = ImageExport;
 exports.PdfExport = PdfExport;
+exports.ColorStop = ColorStop;
+exports.GradientPosition = GradientPosition;
+exports.LinearGradient = LinearGradient;
+exports.RadialGradient = RadialGradient;
+exports.Gradient = Gradient;
 
 return exports;
 
 });
+sfBlazor.modules["lineargauge"] = "lineargauge.LinearGauge";
 sfBlazor.loadDependencies(sfBlazor.dependencyJson.lineargauge, () => {
-    sf.lineargauge = sf.lineargauge({});
+    sf.lineargauge = sf.base.extend({}, sf.lineargauge, sflineargauge({}));
 });

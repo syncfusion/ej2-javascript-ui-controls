@@ -62,7 +62,7 @@ export class Circular {
         );
         circularTrack = progress.renderer.drawPath(option);
         progress.trackWidth = (<SVGPathElement>circularTrack).getTotalLength();
-        if (progress.segmentCount > 1 && !progress.trackSegmentDisable && !progress.enablePieProgress && !this.isRange) {
+        if (progress.segmentCount > 1 && !progress.enableProgressSegments && !progress.enablePieProgress && !this.isRange) {
             progress.segmentSize = progress.calculateSegmentSize(progress.trackWidth, strokeWidth);
             circularTrack.setAttribute('stroke-dasharray', progress.segmentSize);
         }
@@ -94,7 +94,7 @@ export class Circular {
         radius = (radius === null) ? 0 : radius;
         progress.previousTotalEnd = progressEnd = progress.calculateProgressRange(progress.argsData.value);
         progressEndAngle = (progress.startAngle + ((progress.enableRtl) ? -progressEnd : progressEnd)) % 360;
-        progress.previousEndAngle = endAngle = ((progress.isIndeterminate && !progress.trackSegmentDisable) ? (progress.startAngle + (
+        progress.previousEndAngle = endAngle = ((progress.isIndeterminate && !progress.enableProgressSegments) ? (progress.startAngle + (
             (progress.enableRtl) ? -progress.totalAngle : progress.totalAngle)) % 360 : progressEndAngle
         );
         progressTotalAngle = (progressEnd - progress.startAngle) % 360;
@@ -115,8 +115,8 @@ export class Circular {
         }
         if (progress.argsData.value !== null) {
             if (progress.segmentColor.length !== 0 && !progress.isIndeterminate && !progress.enablePieProgress) {
-                totalAngle = (!progress.trackSegmentDisable) ? progress.totalAngle : progressTotalAngle;
-                segmentWidth = (!progress.trackSegmentDisable) ? progress.trackWidth : progress.progressWidth;
+                totalAngle = (!progress.enableProgressSegments) ? progress.totalAngle : progressTotalAngle;
+                segmentWidth = (!progress.enableProgressSegments) ? progress.trackWidth : progress.progressWidth;
                 circularProgress = this.segment.createCircularSegment(
                     progress, '_CircularProgressSegment', this.centerX, this.centerY, radius, progress.argsData.value,
                     progress.themeStyle.progressOpacity, thickness, totalAngle, segmentWidth
@@ -157,7 +157,7 @@ export class Circular {
                     );
                 }
                 if (progress.isIndeterminate) {
-                    if (progress.trackSegmentDisable) {
+                    if (progress.enableProgressSegments) {
                         linearClipPath.setAttribute('d', getPathArc(
                             this.centerX, this.centerY, radius + (thickness / 2), progress.startAngle,
                             this.trackEndAngle, progress.enableRtl, true)
@@ -165,8 +165,8 @@ export class Circular {
                     }
                     circularProgress.setAttribute('style', 'clip-path:url(#' + progress.element.id + '_clippath)');
                     this.animation.doCircularIndeterminate(
-                        (!progress.trackSegmentDisable) ? linearClipPath : circularProgress, progress, startAngle,
-                        progressEndAngle, this.centerX, this.centerY, radius, thickness
+                        (!progress.enableProgressSegments) ? linearClipPath : circularProgress, progress, startAngle,
+                        progressEndAngle, this.centerX, this.centerY, radius, thickness, linearClipPath
                     );
                 }
             }
@@ -202,8 +202,8 @@ export class Circular {
             progress.themeStyle.bufferOpacity, '0', circularPath
         );
         if (progress.segmentColor.length !== 0 && !progress.isIndeterminate && !progress.enablePieProgress && !this.isRange) {
-            totalAngle = (!progress.trackSegmentDisable) ? progress.totalAngle : progressTotalAngle;
-            segmentWidth = (!progress.trackSegmentDisable) ? progress.trackWidth : progress.progressWidth;
+            totalAngle = (!progress.enableProgressSegments) ? progress.totalAngle : progressTotalAngle;
+            segmentWidth = (!progress.enableProgressSegments) ? progress.trackWidth : progress.progressWidth;
             circularBuffer = this.segment.createCircularSegment(
                 progress, '_CircularBufferSegment', this.centerX, this.centerY, radius,
                 progress.secondaryProgress, progress.themeStyle.bufferOpacity, strokeWidth, totalAngle, segmentWidth
@@ -281,9 +281,10 @@ export class Circular {
         let activeClip: Element;
         let option: PathOption;
         let progress: ProgressBar = this.progress;
+        let thickness: number = strokeWidth + 1;
         if (!refresh) {
             option = new PathOption(
-                progress.element.id + '_CircularActiveProgress', 'none', strokeWidth, '#ffffff', 0.5, '0', circularPath
+                progress.element.id + '_CircularActiveProgress', 'none', thickness, '#ffffff', 0.5, '0', circularPath
             );
             circularActive = progress.renderer.drawPath(option);
         } else {
@@ -302,8 +303,7 @@ export class Circular {
         progressGroup.appendChild(progress.clipPath);
         this.animation.doCircularAnimation(
             this.centerX, this.centerY, radius, endAngle, totalEnd, activeClip, progress,
-            (progress.progressThickness || progress.themeStyle.circularProgressThickness),
-            0, null, null, circularActive
+            thickness, 0, null, null, circularActive
         );
     }
 
@@ -313,13 +313,13 @@ export class Circular {
         let rDiff: number;
         let progressSegment: number;
         rDiff = parseInt(progress.radius, 10) - parseInt(progress.innerRadius, 10);
-        if (rDiff !== 0 && !progress.trackSegmentDisable) {
+        if (rDiff !== 0 && !progress.enableProgressSegments) {
             progressSegment = progress.trackWidth + (
                 (rDiff < 0) ? (progress.trackWidth * Math.abs(rDiff)) / parseInt(progress.radius, 10) :
                     -(progress.trackWidth * Math.abs(rDiff)) / parseInt(progress.radius, 10)
             );
             validSegment = progress.calculateSegmentSize(progressSegment, thickness);
-        } else if (progress.trackSegmentDisable) {
+        } else if (progress.enableProgressSegments) {
             validSegment = progress.calculateSegmentSize(progress.progressWidth, thickness);
         } else {
             validSegment = progress.segmentSize;

@@ -444,9 +444,8 @@ export class ConnectTool extends ToolBase {
         if (isBlazor()) {
             let trigger: DiagramEvent = DiagramEvent.connectionChange;
             let temparg: IBlazorConnectionChangeEventArgs;
-            if (this.tempArgs) {
+            if (this.tempArgs && this.oldConnector) {
                 this.tempArgs.state = 'Changed';
-                let connector: ConnectorModel = (args.source as SelectorModel).connectors[0];
                 let nodeEndId: string = this.endPoint === 'ConnectorSourceEnd' ? 'sourceID' : 'targetID';
                 let portEndId: string = this.endPoint === 'ConnectorSourceEnd' ? 'sourcePortID' : 'targetPortID';
                 this.tempArgs.oldValue = this.endPoint === 'ConnectorSourceEnd' ?
@@ -1509,6 +1508,7 @@ export class ConnectorDrawingTool extends ConnectTool {
 
     /**   @private  */
     public mouseMove(args: MouseEventArgs): boolean {
+        this.commandHandler.enableServerDataBinding(false);
         if (this.inAction) {
             let connector: ConnectorModel = {
                 sourcePoint: this.currentPosition, targetPoint: this.currentPosition,
@@ -1517,11 +1517,9 @@ export class ConnectorDrawingTool extends ConnectTool {
                 this.drawingObject = this.commandHandler.drawObject(connector as Connector);
             }
             args.source = this.drawingObject;
-            if ((args.target || (args.actualObject&&args.sourceWrapper && checkPort(args.actualObject, args.sourceWrapper)))
+            if ((args.target || (args.actualObject && args.sourceWrapper && checkPort(args.actualObject, args.sourceWrapper)))
                 && (this.endPoint !== 'ConnectorTargetEnd' || (canInConnect(args.target as NodeModel)))) {
-                this.commandHandler.diagram.allowServerDataBinding = false;
                 this.commandHandler.connect(this.endPoint, args);
-                this.commandHandler.diagram.allowServerDataBinding = true;
             }
             this.endPoint = 'ConnectorTargetEnd';
         }
@@ -1532,12 +1530,14 @@ export class ConnectorDrawingTool extends ConnectTool {
             }
         }
         super.mouseMove(args);
+        this.commandHandler.enableServerDataBinding(true);
         return !this.blocked;
 
     }
 
     /**   @private  */
     public async mouseUp(args: MouseEventArgs): Promise<void> {
+        this.commandHandler.enableServerDataBinding(false);
         this.checkPropertyValue();
         if (this.drawingObject && this.drawingObject instanceof Connector) {
             this.commandHandler.addObjectToDiagram(this.drawingObject);
@@ -1545,6 +1545,7 @@ export class ConnectorDrawingTool extends ConnectTool {
         }
         this.commandHandler.updateBlazorSelector();
         this.inAction = false;
+        this.commandHandler.enableServerDataBinding(true);
         super.mouseUp(args);
     }
 

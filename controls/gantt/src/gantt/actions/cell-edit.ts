@@ -1,4 +1,4 @@
-import { isNullOrUndefined as isNOU, isUndefined as isU, getValue, isBlazor, getElement, extend } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, getValue, isBlazor, getElement, extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
 import { ITaskData, ITaskbarEditedEventArgs, IGanttData, CellEditArgs } from '../base/interface';
 import { ColumnModel } from '../models/column';
@@ -39,6 +39,10 @@ export class CellEdit {
         let data: IGanttData = args.rowData;
         let field: string = args.columnName;
         let taskSettings: TaskFieldsModel = this.parent.taskFields;
+        if (this.parent.readOnly) {
+            args.cancel = true;
+            return;
+        }
         if (this.parent.editSettings.mode === 'Dialog') {
             args.cancel = true;
             return;
@@ -91,6 +95,9 @@ export class CellEdit {
                 tabObj.selectedItem = index;
             }
         }
+        if (field === taskSettings.notes && this.parent.showInlineNotes === true) {
+            this.isCellEdit = true;
+        }
     }
     private isValueChange(args: object, field: string): boolean {
         let data: IGanttData = getValue('data', args);
@@ -122,10 +129,10 @@ export class CellEdit {
         editedArgs.action = 'CellEditing';
         editedArgs.data = this.parent.getTaskByUniqueID(data.uniqueID);
         let previousValue: object = getValue('previousData', args);
-        let tempEditedValue: boolean = column.editType === 'stringedit' &&
-         column.field === 'Duration' ? data[column.field] !== '' : !isU(data[column.field]);
-        let editedValue: object = this.parent.allowUnscheduledTasks ? data[column.field] : tempEditedValue ? data[column.field] :
-            previousValue;
+        let editedValue: object = this.parent.allowUnscheduledTasks ? data[column.field] : ((isNullOrUndefined(data[column.field])
+            || data[column.field] === '') && (this.parent.taskFields.duration === column.field ||
+            this.parent.taskFields.startDate === column.field || this.parent.taskFields.endDate === column.field)) ? previousValue
+            : data[column.field];
         if (!isNOU(data)) {
             data[column.field] = previousValue;
             editedArgs.data[column.field] = previousValue;
@@ -140,7 +147,7 @@ export class CellEdit {
             } else if (column.field === this.parent.taskFields.duration) {
                 this.durationEdited(editedArgs);
             } else if (column.field === this.parent.taskFields.resourceInfo) {
-                this.resourceEdited(editedArgs, editedObj, data, true);
+                this.resourceEdited(editedArgs, editedObj, data);
             } else if (column.field === this.parent.taskFields.progress) {
                 this.progressEdited(editedArgs);
             } else if (column.field === this.parent.taskFields.baselineStartDate
@@ -401,7 +408,7 @@ export class CellEdit {
      * @param args 
      * @param editedObj 
      */
-    private resourceEdited(args: ITaskbarEditedEventArgs, editedObj: Object, previousData: IGanttData, isResourceEdited?: boolean): void {
+    private resourceEdited(args: ITaskbarEditedEventArgs, editedObj: Object, previousData: IGanttData): void {
         let resourceSettings: ResourceFieldsModel = this.parent.resourceFields;
         let editedResourceId: string[] = editedObj[this.parent.taskFields.resourceInfo];
         if (editedResourceId) {
@@ -438,7 +445,11 @@ export class CellEdit {
             args.data.ganttProperties.resourceInfo = editedResources;
             this.parent.dataOperation.updateMappingData(args.data, 'resourceInfo');
             this.parent.editModule.updateResourceRelatedFields(args.data, 'resource');
-            this.updateEditedRecord(args, isResourceEdited, previousResource);
+            if (this.parent.viewType === 'ResourceView') {
+                this.parent.editModule.dialogModule.isResourceUpdate = true;
+                this.parent.editModule.dialogModule.previousResource =  previousResource;
+            }
+            this.updateEditedRecord(args);
         }
     }
     /**
@@ -492,12 +503,8 @@ export class CellEdit {
      * To start method save action with edited cell value
      * @param args 
      */
-    private updateEditedRecord(args: ITaskbarEditedEventArgs, isResourceEdited?: boolean, previousResources?: Object[]): void {
-        if (this.parent.viewType === 'ResourceView') {
-            this.parent.editModule.updateRsourceRecords(args, isResourceEdited, previousResources);
-        } else {
-            this.parent.editModule.initiateUpdateAction(args);
-        }
+    private updateEditedRecord(args: ITaskbarEditedEventArgs): void {
+        this.parent.editModule.initiateUpdateAction(args);
     }
     /**
      * To remove all public private properties

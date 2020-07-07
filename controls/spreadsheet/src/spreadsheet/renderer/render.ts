@@ -1,4 +1,4 @@
-import { initialLoad, ribbon, formulaBar, IRenderer, beforeVirtualContentLoaded, getSiblingsHeight, setAriaOptions } from '../common/index';
+import { initialLoad, ribbon, formulaBar, IRenderer, beforeVirtualContentLoaded, setAriaOptions } from '../common/index';
 import { SheetRender, RowRenderer, CellRenderer } from './index';
 import { Spreadsheet } from '../base/index';
 import { remove } from '@syncfusion/ej2-base';
@@ -155,16 +155,12 @@ export class Render {
      * Used to set sheet panel size.
      */
     public setSheetPanelSize(): void {
-        let panel: HTMLElement = document.getElementById(this.parent.element.id + '_sheet_panel');
-        let offset: ClientRect = this.parent.element.getBoundingClientRect();
+        let offset: ClientRect = document.getElementById(this.parent.element.id + '_sheet_panel').getBoundingClientRect();
         let height: number;
         if (this.parent.height === 'auto') {
-            panel.style.height = '260px';
             height = 230;
         } else {
-            height = offset.height - getSiblingsHeight(panel);
-            panel.style.height = `${height}px`;
-            height -= 32;
+            height = offset.height - 32;
         }
         this.parent.viewport.height = height;
         this.parent.viewport.width = offset.width - 32;

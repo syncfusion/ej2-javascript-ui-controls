@@ -1,5 +1,6 @@
-import { IPivotValues, IDataOptions, IFieldOptions, IFilter, ISort, IFormatSettings, ICalculatedFieldSettings, IAuthenticationInfo } from './engine';
+import { IPivotValues, IDataOptions, IFieldOptions, IFilter, ISort, IFormatSettings } from './engine';
 import { IDrillOptions, IValueSortSettings, IGroupSettings, IConditionalFormatSettings, ICustomGroups, FieldItemInfo } from './engine';
+import { ICalculatedFieldSettings, IAuthenticationInfo } from './engine';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { PivotView, PivotViewModel } from '../pivotview';
 import { PivotFieldList, PivotFieldListModel } from '../pivotfieldlist';
@@ -16,7 +17,8 @@ export class PivotUtil {
     public static getType(value: Date): string {
         let val: string;
         val = (value && value.getDay) ? (value.getHours() > 0 || value.getMinutes() > 0 ||
-            value.getSeconds() > 0 || value.getMilliseconds() > 0 ? 'datetime' : 'date') : typeof (value);
+            value.getSeconds() > 0 || value.getMilliseconds() > 0 ? 'datetime' : 'date') : !isNaN(Number(value)) ?
+                'number' : typeof (value);
         return val;
     }
 
@@ -134,6 +136,7 @@ export class PivotUtil {
 
     public static getClonedDataSourceSettings(dataSourceSettings: IDataOptions): IDataOptions {
         let clonesDataSource: IDataOptions = this.getDefinedObj({
+            type: dataSourceSettings.type,
             catalog: dataSourceSettings.catalog,
             cube: dataSourceSettings.cube,
             providerType: dataSourceSettings.providerType,
@@ -156,6 +159,7 @@ export class PivotUtil {
             valueAxis: dataSourceSettings.valueAxis,
             formatSettings: this.cloneFormatSettings(dataSourceSettings.formatSettings),
             calculatedFieldSettings: this.cloneCalculatedFieldSettings(dataSourceSettings.calculatedFieldSettings),
+            fieldMapping: this.cloneFieldSettings(dataSourceSettings.fieldMapping),
             showSubTotals: dataSourceSettings.showSubTotals,
             showRowSubTotals: dataSourceSettings.showRowSubTotals,
             showColumnSubTotals: dataSourceSettings.showColumnSubTotals,
@@ -179,6 +183,7 @@ export class PivotUtil {
         if (control) {
             this.setPivotProperties(control, {
                 dataSourceSettings: this.getDefinedObj({
+                    type: dataSourceSettings.type,
                     catalog: dataSourceSettings.catalog,
                     cube: dataSourceSettings.cube,
                     providerType: dataSourceSettings.providerType,
@@ -201,6 +206,7 @@ export class PivotUtil {
                     valueAxis: dataSourceSettings.valueAxis,
                     formatSettings: dataSourceSettings.formatSettings,
                     calculatedFieldSettings: dataSourceSettings.calculatedFieldSettings,
+                    fieldMapping: dataSourceSettings.fieldMapping,
                     showSubTotals: dataSourceSettings.showSubTotals,
                     showRowSubTotals: dataSourceSettings.showRowSubTotals,
                     showColumnSubTotals: dataSourceSettings.showColumnSubTotals,
@@ -237,6 +243,7 @@ export class PivotUtil {
                     showNoDataItems: set.showNoDataItems,
                     showSubTotals: set.showSubTotals,
                     type: set.type,
+                    dataType: set.dataType,
                     showFilterIcon: set.showFilterIcon,
                     showSortIcon: set.showSortIcon,
                     showRemoveIcon: set.showRemoveIcon,
@@ -517,8 +524,8 @@ export class PivotUtil {
                     let axes: string[] = ['rows', 'columns', 'values', 'filters'];
                     /* tslint:disable:no-any */
                     for (let i: number = 0; i < newAxesProp.length; i++) {
-                        let oldAxis: string[] = Object.keys((oldProp.dataSourceSettings as any)[newAxesProp[i]]);
-                        let newAxis: string[] = Object.keys((newProp.dataSourceSettings as any)[newAxesProp[i]]);
+                        let oldAxis: string[] = (newAxesProp[i] in oldProp.dataSourceSettings && !isNullOrUndefined((oldProp.dataSourceSettings as any)[newAxesProp[i]])) ? Object.keys((oldProp.dataSourceSettings as any)[newAxesProp[i]]) : [];
+                        let newAxis: string[] = (newAxesProp[i] in newProp.dataSourceSettings && !isNullOrUndefined((newProp.dataSourceSettings as any)[newAxesProp[i]])) ? Object.keys((newProp.dataSourceSettings as any)[newAxesProp[i]]) : [];
                         if (axes.indexOf(newAxesProp[i]) !== -1 && axes.indexOf(oldAxesProp[i]) !== -1 &&
                             oldAxis && newAxis && newAxis.length > 0 && oldAxis.length === newAxis.length) {
                             /* tslint:disable-next-line:max-line-length */

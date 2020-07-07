@@ -16,6 +16,7 @@ export * from './renderer/day';
 export * from './renderer/week';
 export * from './renderer/work-week';
 export * from './renderer/month';
+export * from './renderer/year';
 export * from './renderer/agenda';
 export * from './renderer/month-agenda';
 export * from './renderer/timeline-view';

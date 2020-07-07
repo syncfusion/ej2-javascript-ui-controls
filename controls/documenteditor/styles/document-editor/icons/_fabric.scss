@@ -114,6 +114,16 @@
     font-family: 'e-icons';
   }
 
+  .e-de-acceptchange::before {
+    content: '\e19f';
+    font-family: 'e-icons';
+  }
+
+  .e-de-rejectchange::before {
+    content: '\e204';
+    font-family: 'e-icons';
+  }
+
   .e-de-table-properties-alignment:hover {
     border-color: $de-table-align-hover-color;
   }

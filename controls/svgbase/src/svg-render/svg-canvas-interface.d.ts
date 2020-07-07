@@ -346,4 +346,12 @@ export interface GradientColor {
      * Specifies the colorstop value of the gradient
      */
     colorStop?: string;
+    /**
+     * Specifies the opacity value of the gradient
+     */
+    opacity?: string;
+     /**
+     * Specifies the style for the gradient
+     */
+    style?: string;    
 }

@@ -397,7 +397,8 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         this.valueWrap.classList.remove(LOAD);
     };
     InPlaceEditor.prototype.renderValue = function (val) {
-        this.enableHtmlSanitizer && this.type !== 'RTE' ? this.valueEle.innerText = val : this.valueEle.innerHTML = val;
+        this.enableHtmlSanitizer && this.type !== 'RTE' && this.type !== 'MultiSelect' ? this.valueEle.innerText = val :
+            this.valueEle.innerHTML = val;
         if (this.type === 'Color') {
             setStyleAttribute(this.valueEle, { 'color': val });
         }
@@ -795,7 +796,9 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         }
         if (this.editableOn !== 'EditIconClick') {
             var titleConstant = (this.editableOn === 'DblClick') ? 'editAreaDoubleClick' : 'editAreaClick';
-            this.valueWrap.parentElement.setAttribute('title', this.getLocale(localeConstant[this.editableOn], titleConstant));
+            if (!isNullOrUndefined(this.valueWrap.parentElement)) {
+                this.valueWrap.parentElement.setAttribute('title', this.getLocale(localeConstant[this.editableOn], titleConstant));
+            }
         }
     };
     InPlaceEditor.prototype.destroyComponents = function () {
@@ -1310,9 +1313,6 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
      */
     InPlaceEditor.prototype.destroy = function () {
         var _this = this;
-        if (this.isDestroyed) {
-            return;
-        }
         this.removeEditor(isBlazor());
         if (this.isExtModule) {
             this.notify(destroy, {});
@@ -1327,9 +1327,6 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         }
         if (!(isBlazor() && this.isServerRendered)) {
             _super.prototype.destroy.call(this);
-        }
-        else {
-            this.isDestroyed = true;
         }
     };
     /**

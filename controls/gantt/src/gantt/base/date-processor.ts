@@ -666,9 +666,11 @@ export class DateProcessor {
         }
         return holidayDates;
     }
-
+    /**
+     * @private
+     */
     /*Check given date is on holidays*/
-    private isOnHolidayOrWeekEnd(date: Date, checkWeekEnd: boolean): boolean {
+    public isOnHolidayOrWeekEnd(date: Date, checkWeekEnd: boolean): boolean {
         checkWeekEnd = !isNullOrUndefined(checkWeekEnd) ? checkWeekEnd : this.parent.includeWeekend;
         if (!checkWeekEnd && this.parent.nonWorkingDayIndex.indexOf(date.getDay()) !== -1) {
             return true;

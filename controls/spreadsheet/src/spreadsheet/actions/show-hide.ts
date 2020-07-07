@@ -399,7 +399,7 @@ export class ShowHide {
                                 refCell.previousElementSibling.classList.remove('e-hide-start');
                             }
                             hRow.insertBefore(cellRenderer.renderColHeader(idx), refCell);
-                            if (index === modelLen && !isHiddenCol(sheet, indexes[index] + 1)) {
+                            if (index === modelLen) {
                                 refCell.classList.remove('e-hide-end');
                             }
                         }

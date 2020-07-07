@@ -616,6 +616,16 @@ describe('Vertical View Event Render Module', () => {
             util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-delete'), 'click');
             expect(quickDialog.classList).toContain('e-popup-close');
         });
+
+        it('CRUD multiple event delete actions checking', (done: Function) => {
+            let data: { [key: string]: Object }[] = [resourceData[0], resourceData[3]] as { [key: string]: Object }[];
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(7);
+                done();
+            };
+            expect(schObj.eventsData.length).toEqual(9);
+            schObj.deleteEvent(data);
+        });
     });
 
     describe('Vertical view resource grouping appointment rendering allowGroupEdit', () => {

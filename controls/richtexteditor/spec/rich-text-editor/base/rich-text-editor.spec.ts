@@ -186,6 +186,16 @@ describe('RTE base module', () => {
             let str = rteObj.getSelectedHtml();
             expect(rteObj.value === str).toBe(true);
         });
+        it('show inline quick toolbar public method', () => {
+            rteObj.value = '<p>RTE sample content</p><p id="p2">This is a sample content used in the RTE test cases</p><ol><li>list samples</li></ol>';
+            rteObj.inlineMode.enable = true;
+            rteObj.dataBind();
+            let start = rteObj.inputElement.querySelector('#p2');
+            setCursorPoint(document, start.childNodes[0] as Element, 5);
+            rteObj.showInlineToolbar();
+            expect(document.querySelector('.e-rte-inline-popup')).not.toBe(null);
+            rteObj.hideInlineToolbar();
+        });
         /*it('executeCommand', () => {
             rteObj.focus();
             var img = document.createElement('img');
@@ -4061,5 +4071,52 @@ describe('Check destroy method', () => {
             destroy(rteObj);
         });
     });
-    
+    describe('RTE - Edited changes are not reflect using value after typed value', () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['SourceCode']
+                },
+                value: `<div><p>First p node-0</p></div>`,
+                placeholder: 'Type something',
+                autoSaveOnIdle: true
+            });
+            rteObj.saveInterval = 10;
+            rteObj.dataBind();
+            done();
+        });
+        it("AutoSave the value in interval time", (done) => {
+            rteObj.focusIn();
+            (rteObj as any).inputElement.innerHTML = `<div><p>First p node-1</p></div>`;
+            expect(rteObj.value !== '<div><p>First p node-1</p></div>').toBe(true);
+            keyboardEventArgs.ctrlKey = false;
+            keyboardEventArgs.shiftKey = false;
+            keyboardEventArgs.action = 'enter';
+            keyboardEventArgs.which = 13;
+            (rteObj as any).keyUp(keyboardEventArgs);
+            setTimeout(() => {
+                expect(rteObj.value === '<div><p>First p node-1</p></div>').toBe(true);
+                (rteObj as any).inputElement.innerHTML = `<div><p>First p node-2</p></div>`;
+                expect(rteObj.value !== '<div><p>First p node-2</p></div>').toBe(true);
+                (rteObj as any).keyUp(keyboardEventArgs);
+                setTimeout(() => {
+                    expect(rteObj.value === '<div><p>First p node-2</p></div>').toBe(true);
+                    done();
+                }, 400);
+            }, 400);
+        });
+        it(" Clear the setInterval at component blur", (done) => {
+            rteObj.focusOut();
+            (rteObj as any).inputElement.innerHTML = `<div><p>First p node-1</p></div>`;
+            expect(rteObj.value !== '<div><p>First p node-1</p></div>').toBe(true);
+            setTimeout(() => {
+                expect(rteObj.value === '<div><p>First p node-1</p></div>').toBe(false);
+                done();
+            }, 110);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
 });

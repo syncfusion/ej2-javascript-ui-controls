@@ -13,7 +13,7 @@ import { ConnectorType } from '../../accumulation-chart/model/enum';
 import { CornerRadius } from '../../common/model/base';
 import { TextOverflow, Alignment, Regions, Units, Position, FlagType } from '../../common/utils/enum';
 import { Theme } from '../../common/model/theme';
-import { AnimationModel, CornerRadiusModel, EmptyPointSettingsModel, ConnectorModel } from '../../index';
+import { AnimationModel, CornerRadiusModel, EmptyPointSettingsModel, ConnectorModel } from '../../chart/index';
 import {  StockChartBorderModel, StockChartConnectorModel, StockChartStripLineSettingsModel, StockSeriesModel } from './base-model';
 import { StockChartFontModel } from './base-model';
 

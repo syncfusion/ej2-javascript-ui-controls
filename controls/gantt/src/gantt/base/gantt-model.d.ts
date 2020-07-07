@@ -191,8 +191,10 @@ export interface GanttModel extends ComponentModel{
      * * ZoomIn: ZoomIn the Gantt control.
      * * ZoomOut: ZoomOut the Gantt control.
      * * ZoomToFit: Display the all tasks within the viewable Gantt chart.
-     * * ExcelExport: To export in Excel format
-     * * CsvExport : To export in CSV format
+     * * ExcelExport: To export in Excel format.
+     * * CsvExport : To export in CSV format.    
+     * * Indent: To indent a task to one level.
+     * * Outdent: To outdent a task from one level.
      * @default null
      */
     toolbar?: (ToolbarItem | string | ItemModel)[];
@@ -433,6 +435,12 @@ export interface GanttModel extends ComponentModel{
     allowReordering?: boolean;
 
     /**
+     * If `readOnly` is set to true, Gantt cannot be edited.      
+     * @default false
+     */
+    readOnly?: boolean;
+
+    /**
      * If `allowResizing` is set to true, Gantt columns can be resized.      
      * @default false
      */
@@ -464,6 +472,18 @@ export interface GanttModel extends ComponentModel{
      */
 
     validateManualTasksOnLinking?: boolean;
+
+    /**
+     * It enables to render the child taskbar on parent row for resource view Gantt.
+     * @default false
+     */
+    enableMultiTaskbar?: boolean;
+
+    /**
+     * It enables to render the overallocation container for resource view Gantt.
+     * @default false
+     */
+    showOverAllocation?: boolean;
 
     /**
      * Specifies task schedule mode for a project.

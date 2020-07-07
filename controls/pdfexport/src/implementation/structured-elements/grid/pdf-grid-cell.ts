@@ -699,8 +699,9 @@ export class PdfGridCell {
             pen.lineCap = PdfLineCap.Square;
         }
         // SetTransparency(ref graphics, pen);
-        graphics.drawLine(pen, p1, p2);
-
+        if (pen.width !== 0) {
+            graphics.drawLine(pen, p1, p2);
+        }
         p1 = new PointF(bounds.x + bounds.width, bounds.y);
         p2 = new PointF(bounds.x + bounds.width, bounds.y + bounds.height);
         pen = this.cellStyle.borders.right;
@@ -711,29 +712,32 @@ export class PdfGridCell {
         if (this.cellStyle.borders.right.dashStyle === PdfDashStyle.Solid) {
             pen.lineCap = PdfLineCap.Square;
         }
-        graphics.drawLine(pen, p1, p2);
-
+        if (pen.width !== 0) {
+            graphics.drawLine(pen, p1, p2);
+        }
         p1 = new PointF(bounds.x, bounds.y);
         p2 = new PointF(bounds.x + bounds.width, bounds.y);
         pen = this.cellStyle.borders.top;
         if (this.cellStyle.borders.top.dashStyle === PdfDashStyle.Solid) {
             pen.lineCap = PdfLineCap.Square;
         }
-        graphics.drawLine(pen, p1, p2);
-
+        if (pen.width !== 0) {
+            graphics.drawLine(pen, p1, p2);
+        }
         p1 = new PointF(bounds.x + bounds.width, bounds.y + bounds.height);
         p2 = new PointF(bounds.x, bounds.y + bounds.height);
         pen = this.cellStyle.borders.bottom;
-        // if ((bounds.y + bounds.height) > (graphics.clientSize.height - (pen.width / 2))) {
-        //     p1 = new PointF((bounds.x + bounds.width), (graphics.clientSize.height - (pen.width / 2)));
-        //     p2 = new PointF(bounds.x, (graphics.clientSize.height - (pen.width / 2)));
-        // }
+        if ((bounds.y + bounds.height) > (graphics.clientSize.height - (pen.width / 2))) {
+            p1 = new PointF((bounds.x + bounds.width), (graphics.clientSize.height - (pen.width / 2)));
+            p2 = new PointF(bounds.x, (graphics.clientSize.height - (pen.width / 2)));
+        }
         if (this.cellStyle.borders.bottom.dashStyle === PdfDashStyle.Solid) {
             pen.lineCap = PdfLineCap.Square;
         }
-        graphics.drawLine(pen, p1, p2);
+        if (pen.width !== 0) {
+            graphics.drawLine(pen, p1, p2);
+        }
     }
-
     // private setTransparency(graphics : PdfGraphics, pen : PdfPen) : void {
     //     let alpha : number = (pen.color.a / 255)as number;
     //     graphics.save();

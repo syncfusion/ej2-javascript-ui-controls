@@ -827,4 +827,3 @@ export function triggerDownload(fileName: string, type: ExportType, url: string,
             cancelable: true
         }));
         }
-

@@ -93,202 +93,202 @@ describe('Pivot Grid Toolbar', () => {
                 done();
             }, 1000);
         });
-        it('Save Report Dialog', (done: Function) => {
-            expect(window.getComputedStyle(document.querySelector('.e-pivotview-report-dialog')).display === 'none').toBeTruthy();
-            (pivotGridObj.element.querySelector('.e-pivot-toolbar .e-save-report') as HTMLElement).click();
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(() => {
-                expect(window.getComputedStyle(document.querySelector('.e-pivotview-report-dialog')).display !== 'none').toBeTruthy();
-                (document.querySelectorAll('.e-pivotview-report-dialog .e-btn')[2] as HTMLElement).click();
-                done();
-            }, 1000);
-        });
-        it('Save Report Dialog - Cancel', (done: Function) => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(() => {
-                expect(window.getComputedStyle(document.querySelector('.e-pivotview-report-dialog')).display === 'none').toBeTruthy();
-                (document.querySelector('.e-pivot-toolbar .e-save-report') as HTMLElement).click();
-                done();
-            }, 1000);
-        });
-        it('Save Report Dialog - OK', (done: Function) => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(() => {
-                expect(window.getComputedStyle(document.querySelector('.e-pivotview-report-dialog')).display !== 'none').toBeTruthy();
-                (document.querySelectorAll('.e-pivotview-report-dialog .e-btn')[1] as HTMLElement).click();
-                done();
-            }, 1000);
-        });
-        it('Save Report', (done: Function) => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(() => {
-                expect(window.getComputedStyle(document.querySelector('.e-pivotview-report-dialog')).display !== 'none').toBeTruthy();
-                (document.querySelector('.e-pivotview-report-input') as HTMLInputElement).value = "Report1";
-                (document.querySelectorAll('.e-pivotview-report-dialog .e-btn')[1] as HTMLElement).click();
-                (document.querySelector('.e-pivot-toolbar .e-save-report') as HTMLElement).click();
-                done();
-            }, 1000);
-        });
-        it('Save Report', (done: Function) => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(() => {
-                expect(window.getComputedStyle(document.querySelector('.e-pivotview-report-dialog')).display === 'none').toBeTruthy();
-                (document.querySelector('.e-pivot-toolbar .e-saveas-report') as HTMLElement).click();
-                done();
-            }, 1000);
-        });
-        it('Save As Report Dialog', (done: Function) => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(() => {
-                expect(window.getComputedStyle(document.querySelector('.e-pivotview-report-dialog')).display !== 'none').toBeTruthy();
-                (document.querySelectorAll('.e-pivotview-report-dialog .e-btn')[2] as HTMLElement).click();
-                done();
-            }, 1000);
-        });
-        it('Save As Report Dialog - Cancel', (done: Function) => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(() => {
-                expect(window.getComputedStyle(document.querySelector('.e-pivotview-report-dialog')).display === 'none').toBeTruthy();
-                (document.querySelector('.e-pivot-toolbar .e-saveas-report') as HTMLElement).click();
-                done();
-            }, 1000);
-        });
-        it('Save As Report Dialog - OK', (done: Function) => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(() => {
-                expect(window.getComputedStyle(document.querySelector('.e-pivotview-report-dialog')).display !== 'none').toBeTruthy();
-                (document.querySelectorAll('.e-pivotview-report-dialog .e-btn')[1] as HTMLElement).click();
-                done();
-            }, 1000);
-        });
-        it('Save As Report', (done: Function) => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(() => {
-                expect(window.getComputedStyle(document.querySelector('.e-pivotview-report-dialog')).display !== 'none').toBeTruthy();
-                (document.querySelector('.e-pivotview-report-input') as HTMLInputElement).value = "Report2";
-                (document.querySelectorAll('.e-pivotview-report-dialog .e-btn')[1] as HTMLElement).click();
-                (pivotGridObj.toolbarModule as any).action = 'Load';
-                (document.querySelector('.e-pivot-toolbar .e-rename-report') as HTMLElement).click();
-                done();
-            }, 1000);
-        });
-        it('Rename Report Dialog', (done: Function) => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(() => {
-                expect(window.getComputedStyle(document.querySelector('.e-pivotview-report-dialog')).display !== 'none').toBeTruthy();
-                (document.querySelectorAll('.e-pivotview-report-dialog .e-btn')[2] as HTMLElement).click();
-                done();
-            }, 1000);
-        });
-        it('Rename Report Dialog - Cancel', (done: Function) => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(() => {
-                expect(window.getComputedStyle(document.querySelector('.e-pivotview-report-dialog')).display === 'none').toBeTruthy();
-                (document.querySelector('.e-pivot-toolbar .e-rename-report') as HTMLElement).click();
-                done();
-            }, 1000);
-        });
-        it('Rename Report Dialog - OK', (done: Function) => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(() => {
-                expect(window.getComputedStyle(document.querySelector('.e-pivotview-report-dialog')).display !== 'none').toBeTruthy();
-                (document.querySelector('.e-pivotview-report-input') as HTMLInputElement).value = "";
-                (document.querySelectorAll('.e-pivotview-report-dialog .e-btn')[1] as HTMLElement).click();
-                done();
-            }, 1000);
-        });
-        it('Rename Report', (done: Function) => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(() => {
-                expect(window.getComputedStyle(document.querySelector('.e-pivotview-report-dialog')).display !== 'none').toBeTruthy();
-                (document.querySelector('.e-pivotview-report-input') as HTMLInputElement).value = "ReportRenamed";
-                (document.querySelectorAll('.e-pivotview-report-dialog .e-btn')[1] as HTMLElement).click();
-                (document.querySelector('.e-pivot-toolbar .e-remove-report') as HTMLElement).click();
-                done();
-            }, 2000);
-        });
-        it('Remove Report Dialog', (done: Function) => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(() => {
-                expect(window.getComputedStyle(document.querySelector('.e-pivot-error-dialog')).display !== 'none').toBeTruthy();
-                (document.querySelectorAll('.e-pivot-error-dialog .e-btn')[2] as HTMLElement).click();
-                done();
-            }, 2000);
-        });
-        it('Remove Report Dialog', (done: Function) => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(() => {
-                (document.querySelector('.e-pivot-toolbar .e-remove-report') as HTMLElement).click();
-                done();
-            }, 2000);
-        });
-        it('Remove Report Dialog - Cancel', (done: Function) => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(() => {
-                expect(window.getComputedStyle(document.querySelector('.e-pivot-error-dialog')).display !== 'none').toBeTruthy();
-                (document.querySelectorAll('.e-pivot-error-dialog .e-btn')[1] as HTMLElement).click();
-                done();
-            }, 2000);
-        });
-        it('Remove Report Dialog - Cancel', (done: Function) => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(() => {
-                (document.querySelector('.e-pivot-toolbar .e-toolbar-fieldlist') as HTMLElement).click();
-                done();
-            }, 2000);
-        });
-        it('Fieldlist', (done: Function) => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(() => {
-                //expect(window.getComputedStyle(document.querySelector('.e-pivotfieldlist-wrapper')).display !== 'none').toBeTruthy();
-                (document.querySelector('.e-pivotfieldlist-wrapper .e-cancel-btn') as HTMLElement).click();
-                (document.querySelector('.e-pivot-toolbar .e-toolbar-formatting') as HTMLElement).click();
-                done();
-            }, 2000);
-        });
-        it('Conditional Formatting', (done: Function) => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(() => {
-                expect(window.getComputedStyle(document.querySelector('.e-pivot-formatting-dialog')).display !== 'none').toBeTruthy();
-                (document.querySelector('.e-collapse') as HTMLElement).click();
-                (document.querySelector('.e-pivot-formatting-dialog .e-format-cancel-button') as HTMLElement).click();
-                (document.querySelector('.e-pivot-toolbar .e-new-report') as HTMLElement).click();
-                done();
-            }, 1000);
-        });
-        it('New Report', (done: Function) => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(() => {
-                expect(window.getComputedStyle(document.querySelector('.e-pivot-error-dialog')).display !== 'none').toBeTruthy();
-                (document.querySelectorAll('.e-pivot-error-dialog .e-btn')[2] as HTMLElement).click();
-                done();
-            }, 1000);
-        });
-        it('New Report', (done: Function) => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(() => {
-                //expect(window.getComputedStyle(document.querySelector('.e-pivot-error-dialog')).display === 'none').toBeTruthy();
-                (document.querySelector('.e-pivot-toolbar .e-remove-report') as HTMLElement).click();
-                done();
-            }, 1000);
-        });
-        it('Remove - Empty Report', (done: Function) => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(() => {
-                //expect(window.getComputedStyle(document.querySelectorAll('.e-pivot-error-dialog')[1]).display !== 'none').toBeTruthy();
-                (document.querySelectorAll('.e-pivot-error-dialog .e-btn')[4] as HTMLElement).click();
-                (document.querySelector('.e-pivot-toolbar .e-rename-report') as HTMLElement).click();
-                done();
-            }, 1000);
-        });
-        it('Remove - Rename Report', (done: Function) => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(() => {
-                //expect(window.getComputedStyle(document.querySelectorAll('.e-pivot-error-dialog')[1]).display !== 'none').toBeTruthy();
-                (document.querySelectorAll('.e-pivot-error-dialog .e-btn')[4] as HTMLElement).click();
-                done();
-            }, 1000);
-        });
+        // it('Save Report Dialog', (done: Function) => {
+        //     expect(window.getComputedStyle(document.querySelector('.e-pivotview-report-dialog')).display === 'none').toBeTruthy();
+        //     (pivotGridObj.element.querySelector('.e-pivot-toolbar .e-save-report') as HTMLElement).click();
+        //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        //     setTimeout(() => {
+        //         expect(window.getComputedStyle(document.querySelector('.e-pivotview-report-dialog')).display !== 'none').toBeTruthy();
+        //         (document.querySelectorAll('.e-pivotview-report-dialog .e-btn')[2] as HTMLElement).click();
+        //         done();
+        //     }, 1000);
+        // });
+        // it('Save Report Dialog - Cancel', (done: Function) => {
+        //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        //     setTimeout(() => {
+        //         expect(window.getComputedStyle(document.querySelector('.e-pivotview-report-dialog')).display === 'none').toBeTruthy();
+        //         (document.querySelector('.e-pivot-toolbar .e-save-report') as HTMLElement).click();
+        //         done();
+        //     }, 1000);
+        // });
+        // it('Save Report Dialog - OK', (done: Function) => {
+        //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        //     setTimeout(() => {
+        //         expect(window.getComputedStyle(document.querySelector('.e-pivotview-report-dialog')).display !== 'none').toBeTruthy();
+        //         (document.querySelectorAll('.e-pivotview-report-dialog .e-btn')[1] as HTMLElement).click();
+        //         done();
+        //     }, 1000);
+        // });
+        // it('Save Report', (done: Function) => {
+        //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        //     setTimeout(() => {
+        //         expect(window.getComputedStyle(document.querySelector('.e-pivotview-report-dialog')).display !== 'none').toBeTruthy();
+        //         (document.querySelector('.e-pivotview-report-input') as HTMLInputElement).value = "Report1";
+        //         (document.querySelectorAll('.e-pivotview-report-dialog .e-btn')[1] as HTMLElement).click();
+        //         (document.querySelector('.e-pivot-toolbar .e-save-report') as HTMLElement).click();
+        //         done();
+        //     }, 1000);
+        // });
+        // it('Save Report', (done: Function) => {
+        //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        //     setTimeout(() => {
+        //         expect(window.getComputedStyle(document.querySelector('.e-pivotview-report-dialog')).display === 'none').toBeTruthy();
+        //         (document.querySelector('.e-pivot-toolbar .e-saveas-report') as HTMLElement).click();
+        //         done();
+        //     }, 1000);
+        // });
+        // it('Save As Report Dialog', (done: Function) => {
+        //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        //     setTimeout(() => {
+        //         expect(window.getComputedStyle(document.querySelector('.e-pivotview-report-dialog')).display !== 'none').toBeTruthy();
+        //         (document.querySelectorAll('.e-pivotview-report-dialog .e-btn')[2] as HTMLElement).click();
+        //         done();
+        //     }, 1000);
+        // });
+        // it('Save As Report Dialog - Cancel', (done: Function) => {
+        //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        //     setTimeout(() => {
+        //         expect(window.getComputedStyle(document.querySelector('.e-pivotview-report-dialog')).display === 'none').toBeTruthy();
+        //         (document.querySelector('.e-pivot-toolbar .e-saveas-report') as HTMLElement).click();
+        //         done();
+        //     }, 1000);
+        // });
+        // it('Save As Report Dialog - OK', (done: Function) => {
+        //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        //     setTimeout(() => {
+        //         expect(window.getComputedStyle(document.querySelector('.e-pivotview-report-dialog')).display !== 'none').toBeTruthy();
+        //         (document.querySelectorAll('.e-pivotview-report-dialog .e-btn')[1] as HTMLElement).click();
+        //         done();
+        //     }, 1000);
+        // });
+        // it('Save As Report', (done: Function) => {
+        //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        //     setTimeout(() => {
+        //         expect(window.getComputedStyle(document.querySelector('.e-pivotview-report-dialog')).display !== 'none').toBeTruthy();
+        //         (document.querySelector('.e-pivotview-report-input') as HTMLInputElement).value = "Report2";
+        //         (document.querySelectorAll('.e-pivotview-report-dialog .e-btn')[1] as HTMLElement).click();
+        //         (pivotGridObj.toolbarModule as any).action = 'Load';
+        //         (document.querySelector('.e-pivot-toolbar .e-rename-report') as HTMLElement).click();
+        //         done();
+        //     }, 1000);
+        // });
+        // it('Rename Report Dialog', (done: Function) => {
+        //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        //     setTimeout(() => {
+        //         expect(window.getComputedStyle(document.querySelector('.e-pivotview-report-dialog')).display !== 'none').toBeTruthy();
+        //         (document.querySelectorAll('.e-pivotview-report-dialog .e-btn')[2] as HTMLElement).click();
+        //         done();
+        //     }, 1000);
+        // });
+        // it('Rename Report Dialog - Cancel', (done: Function) => {
+        //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        //     setTimeout(() => {
+        //         expect(window.getComputedStyle(document.querySelector('.e-pivotview-report-dialog')).display === 'none').toBeTruthy();
+        //         (document.querySelector('.e-pivot-toolbar .e-rename-report') as HTMLElement).click();
+        //         done();
+        //     }, 1000);
+        // });
+        // it('Rename Report Dialog - OK', (done: Function) => {
+        //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        //     setTimeout(() => {
+        //         expect(window.getComputedStyle(document.querySelector('.e-pivotview-report-dialog')).display !== 'none').toBeTruthy();
+        //         (document.querySelector('.e-pivotview-report-input') as HTMLInputElement).value = "";
+        //         (document.querySelectorAll('.e-pivotview-report-dialog .e-btn')[1] as HTMLElement).click();
+        //         done();
+        //     }, 1000);
+        // });
+        // it('Rename Report', (done: Function) => {
+        //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        //     setTimeout(() => {
+        //         expect(window.getComputedStyle(document.querySelector('.e-pivotview-report-dialog')).display !== 'none').toBeTruthy();
+        //         (document.querySelector('.e-pivotview-report-input') as HTMLInputElement).value = "ReportRenamed";
+        //         (document.querySelectorAll('.e-pivotview-report-dialog .e-btn')[1] as HTMLElement).click();
+        //         (document.querySelector('.e-pivot-toolbar .e-remove-report') as HTMLElement).click();
+        //         done();
+        //     }, 2000);
+        // });
+        // it('Remove Report Dialog', (done: Function) => {
+        //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        //     setTimeout(() => {
+        //         expect(window.getComputedStyle(document.querySelector('.e-pivot-error-dialog')).display !== 'none').toBeTruthy();
+        //         (document.querySelectorAll('.e-pivot-error-dialog .e-btn')[2] as HTMLElement).click();
+        //         done();
+        //     }, 2000);
+        // });
+        // it('Remove Report Dialog', (done: Function) => {
+        //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        //     setTimeout(() => {
+        //         (document.querySelector('.e-pivot-toolbar .e-remove-report') as HTMLElement).click();
+        //         done();
+        //     }, 2000);
+        // });
+        // it('Remove Report Dialog - Cancel', (done: Function) => {
+        //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        //     setTimeout(() => {
+        //         expect(window.getComputedStyle(document.querySelector('.e-pivot-error-dialog')).display !== 'none').toBeTruthy();
+        //         (document.querySelectorAll('.e-pivot-error-dialog .e-btn')[1] as HTMLElement).click();
+        //         done();
+        //     }, 2000);
+        // });
+        // it('Remove Report Dialog - Cancel', (done: Function) => {
+        //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        //     setTimeout(() => {
+        //         (document.querySelector('.e-pivot-toolbar .e-toolbar-fieldlist') as HTMLElement).click();
+        //         done();
+        //     }, 2000);
+        // });
+        // it('Fieldlist', (done: Function) => {
+        //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        //     setTimeout(() => {
+        //         //expect(window.getComputedStyle(document.querySelector('.e-pivotfieldlist-wrapper')).display !== 'none').toBeTruthy();
+        //         (document.querySelector('.e-pivotfieldlist-wrapper .e-cancel-btn') as HTMLElement).click();
+        //         (document.querySelector('.e-pivot-toolbar .e-toolbar-formatting') as HTMLElement).click();
+        //         done();
+        //     }, 2000);
+        // });
+        // it('Conditional Formatting', (done: Function) => {
+        //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        //     setTimeout(() => {
+        //         expect(window.getComputedStyle(document.querySelector('.e-pivot-formatting-dialog')).display !== 'none').toBeTruthy();
+        //         (document.querySelector('.e-collapse') as HTMLElement).click();
+        //         (document.querySelector('.e-pivot-formatting-dialog .e-format-cancel-button') as HTMLElement).click();
+        //         (document.querySelector('.e-pivot-toolbar .e-new-report') as HTMLElement).click();
+        //         done();
+        //     }, 1000);
+        // });
+        // it('New Report', (done: Function) => {
+        //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        //     setTimeout(() => {
+        //         expect(window.getComputedStyle(document.querySelector('.e-pivot-error-dialog')).display !== 'none').toBeTruthy();
+        //         (document.querySelectorAll('.e-pivot-error-dialog .e-btn')[2] as HTMLElement).click();
+        //         done();
+        //     }, 1000);
+        // });
+        // it('New Report', (done: Function) => {
+        //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        //     setTimeout(() => {
+        //         //expect(window.getComputedStyle(document.querySelector('.e-pivot-error-dialog')).display === 'none').toBeTruthy();
+        //         (document.querySelector('.e-pivot-toolbar .e-remove-report') as HTMLElement).click();
+        //         done();
+        //     }, 1000);
+        // });
+        // it('Remove - Empty Report', (done: Function) => {
+        //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        //     setTimeout(() => {
+        //         //expect(window.getComputedStyle(document.querySelectorAll('.e-pivot-error-dialog')[1]).display !== 'none').toBeTruthy();
+        //         (document.querySelectorAll('.e-pivot-error-dialog .e-btn')[4] as HTMLElement).click();
+        //         (document.querySelector('.e-pivot-toolbar .e-rename-report') as HTMLElement).click();
+        //         done();
+        //     }, 1000);
+        // });
+        // it('Remove - Rename Report', (done: Function) => {
+        //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        //     setTimeout(() => {
+        //         //expect(window.getComputedStyle(document.querySelectorAll('.e-pivot-error-dialog')[1]).display !== 'none').toBeTruthy();
+        //         (document.querySelectorAll('.e-pivot-error-dialog .e-btn')[4] as HTMLElement).click();
+        //         done();
+        //     }, 1000);
+        // });
         it('Export', (done: Function) => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {

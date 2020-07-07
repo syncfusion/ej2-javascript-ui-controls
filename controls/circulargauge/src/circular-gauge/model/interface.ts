@@ -378,3 +378,4 @@ export interface ILegendRegions {
      */
     index: number;
 }
+

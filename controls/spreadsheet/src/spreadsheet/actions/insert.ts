@@ -21,8 +21,7 @@ export class Insert {
         if (isAction) { this.parent.notify(beginAction, { eventArgs: args, action: 'insert' }); }
         switch (args.modelType) {
             case 'Sheet':
-                this.parent.notify(insertSheetTab, { startIdx: args.index, endIdx: args.index + (args.model.length - 1),
-                    isAction: isAction });
+                this.parent.notify(insertSheetTab, { startIdx: args.index, endIdx: args.index + (args.model.length - 1) });
                 this.parent.renderModule.refreshSheet();
                 this.parent.element.focus();
                 break;

@@ -191,49 +191,75 @@ export class ContextMenu {
         if (this.pdfViewer.contextMenuOption === 'None') {
             args.cancel = true;
         } else {
-            this.disableContextItems(args);
+            this.contextMenuItems(args);
         }
     }
-    private disableContextItems(args: BeforeOpenCloseMenuEventArgs): void {
-        if (this.pdfViewer.disableContextMenuItems && this.pdfViewer.disableContextMenuItems.length > 0) {
+    private contextMenuItems(args: BeforeOpenCloseMenuEventArgs): void {
+        if (this.pdfViewer.contextMenuSettings.contextMenuItems.length) {
             let hideMenuItems: string[] = [];
             let ul: HTMLElement = this.contextMenuObj.getRootElement();
-            for (let i: number = 0; i < this.pdfViewer.disableContextMenuItems.length; i++) {
-                let menuItem: string = ContextMenuItem[this.pdfViewer.disableContextMenuItems[i]];
-                switch (menuItem) {
-                    case 'Highlight':
-                        menuItem = 'Highlight context';
-                    break;
-                    case 'Underline':
-                        menuItem = 'Underline context';
-                    break;
-                    case 'Strikethrough':
-                        menuItem = 'Strikethrough context';
-                    break;
-                    case 'Delete':
-                        menuItem = 'Delete Context';
-                    break;
-                    case 'Scaleratio':
-                        menuItem = 'Scale Ratio';
-                    break;
-                    case 'Comment':
-                        this.pdfViewerBase.getElement('_context_menu_comment_separator').classList.add('e-menu-hide');
-                    break;
-                    case 'Properties':
-                        this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
-                        break;
-                }
-                let menuName: string =  this.pdfViewer.localeObj.getConstant(menuItem);
-                let index: number = this.copyContextMenu.map( (e: MenuItemModel) => { return e.text; }).indexOf(menuName);
-                if (!ul.children[index].classList.contains('e-menu-hide')) {
-                    hideMenuItems.push(menuName);
+            for (let j: number = 0; j < this.pdfViewer.contextMenuSettings.contextMenuItems.length; j++) {
+                for (let i: number = 0; i < this.copyContextMenu.length; i++) {
+                    let menuItem: string = this.copyContextMenu[i].text;
+                    switch (menuItem) {
+                        case 'Highlight':
+                            menuItem = 'Highlight context';
+                            break;
+                        case 'Underline':
+                            menuItem = 'Underline context';
+                            break;
+                        case 'Strike through':
+                            menuItem = 'Strikethrough context';
+                            break;
+                        case 'Delete':
+                            menuItem = 'Delete Context';
+                            break;
+                        case 'Scale Ratio':
+                            menuItem = 'Scale Ratio';
+                            break;
+                        case 'Comment':
+                            this.pdfViewerBase.getElement('_context_menu_comment_separator').classList.add('e-menu-hide');
+                            break;
+                        case 'Properties':
+                            this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
+                            break;
+                    }
+                    let menuName: string = this.pdfViewer.localeObj.getConstant(menuItem);
+                    if (menuName === 'Strike through') {
+                        menuName = 'Strikethrough';
+                    }
+                    if (menuName === 'Scale Ratio') {
+                        menuName = 'ScaleRatio';
+                    }
+                    if (j === 0 && menuName !== ContextMenuItem[this.pdfViewer.contextMenuSettings.contextMenuItems[j]]) {
+                        if (menuName === 'Strikethrough') {
+                            menuName = 'Strike through';
+                        }
+                        if (menuName === 'ScaleRatio') {
+                            menuName = 'Scale Ratio';
+                        }
+                        hideMenuItems.push(menuName);
+                    }
+                    if (j > 0 && menuName === ContextMenuItem[this.pdfViewer.contextMenuSettings.contextMenuItems[j]]) {
+                        if (menuName === 'Strikethrough') {
+                            menuName = 'Strike through';
+                        }
+                        if (menuName === 'ScaleRatio') {
+                            menuName = 'Scale Ratio';
+                        }
+                        for (let k: number = 0; k < hideMenuItems.length; k++) {
+                            if (hideMenuItems[k] === menuName) {
+                                hideMenuItems.splice(k, 1);
+                            }
+                        }
+                    }
                 }
             }
             this.contextMenuObj.hideItems(hideMenuItems);
             if (this.getEnabledItemCount(ul) === 0) {
                 args.cancel = true;
             }
-        }
+       }
     }
 
     private getEnabledItemCount(ul: HTMLElement): number {

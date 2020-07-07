@@ -89,7 +89,8 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
      * @default { itemId: "id", text: "text", parentId: "parentId", iconCss: "iconCss", url: "url", separator: "separator",
      * children: "items" }
      */
-    @Complex<FieldSettingsModel>({}, FieldSettings)
+	// tslint:disable-next-line
+    @Complex<FieldSettingsModel>({ itemId: "id", text: "text", parentId: "parentId", iconCss: "iconCss", url: "url", separator: "separator", children: "items" }, FieldSettings)
     public fields: FieldSettingsModel;
 
     /**

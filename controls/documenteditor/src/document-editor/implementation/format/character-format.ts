@@ -5,6 +5,7 @@ import { WUniqueFormat } from '../../base/unique-format';
 import { WUniqueFormats } from '../../base/unique-formats';
 import { WStyle, WParagraphStyle } from './style';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Revision } from '../track-changes/track-changes';
 /** 
  * @private
  */
@@ -14,6 +15,14 @@ export class WCharacterFormat {
     private static uniqueFormatType: number = 2;
     public ownerBase: Object = undefined;
     public baseCharStyle: WStyle = undefined;
+    /**
+     * @private
+     */
+    public removedIds: string[] = [];
+    /**
+     * @private
+     */
+    public revisions: Revision[] = [];
     get bold(): boolean {
         return this.getPropertyValue('bold') as boolean;
     }
@@ -345,6 +354,11 @@ export class WCharacterFormat {
         let format: WCharacterFormat = new WCharacterFormat(undefined);
         format.uniqueCharacterFormat = this.uniqueCharacterFormat;
         format.baseCharStyle = this.baseCharStyle;
+        if (this.revisions.length > 0) {
+        format.removedIds = Revision.cloneRevisions(this.revisions);
+        } else {
+            format.removedIds = this.removedIds.slice();
+        }
         return format;
     }
     /**
@@ -376,6 +390,11 @@ export class WCharacterFormat {
             if (!isNullOrUndefined(format.baseCharStyle)) {
                 this.baseCharStyle = format.baseCharStyle;
             }
+            if (format.revisions.length > 0) {
+                this.removedIds = Revision.cloneRevisions(format.revisions);
+             } else {
+                 this.removedIds = format.removedIds.slice();
+             }
         }
     }
 

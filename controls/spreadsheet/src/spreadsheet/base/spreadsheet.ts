@@ -3,10 +3,11 @@ import { Property, NotifyPropertyChanges, INotifyPropertyChanged, ModuleDeclarat
 import { addClass, removeClass, EmitType, Complex, formatUnit, L10n, isNullOrUndefined, Browser, EventHandler } from '@syncfusion/ej2-base';
 import { detach, select, closest } from '@syncfusion/ej2-base';
 import { MenuItemModel, BeforeOpenCloseMenuEventArgs, ItemModel } from '@syncfusion/ej2-navigations';
-import { initialLoad, mouseDown, spreadsheetDestroyed, keyUp, BeforeOpenEventArgs, hideShow, performUndoRedo } from '../common/index';
+import { initialLoad, mouseDown, spreadsheetDestroyed, keyUp, BeforeOpenEventArgs, clearViewer, removeSheetTab } from '../common/index';
+import { hideShow, performUndoRedo, overlay } from '../common/index';
 import { HideShowEventArgs, sheetNameUpdate, updateUndoRedoCollection, getUpdateUsingRaf, setAutoFit, created } from '../common/index';
 import { actionEvents, collaborativeUpdate, CollaborativeEditArgs, keyDown, enableFileMenuItems, hideToolbarItems } from '../common/index';
-import { getSiblingsHeight, ICellRenderer, colWidthChanged, rowHeightChanged, hideRibbonTabs, addFileMenuItems } from '../common/index';
+import { ICellRenderer, colWidthChanged, rowHeightChanged, hideRibbonTabs, addFileMenuItems } from '../common/index';
 import { defaultLocale, locale, setAriaOptions, setResize, updateToggleItem, initiateFilterUI, clearFilter } from '../common/index';
 import { CellEditEventArgs, CellSaveEventArgs, ribbon, formulaBar, sheetTabs, formulaOperation, addRibbonTabs } from '../common/index';
 import { addContextMenuItems, removeContextMenuItems, enableContextMenuItems, selectRange, addToolbarItems } from '../common/index';
@@ -16,13 +17,13 @@ import { Scroll, VirtualScroll, Edit, CellFormat, Selection, KeyboardNavigation,
 import { Clipboard, ShowHide, UndoRedo, SpreadsheetHyperlink, Resize, Insert, Delete, FindAndReplace, Merge } from '../actions/index';
 import { ProtectSheet } from '../actions/index';
 import { CellRenderEventArgs, IRenderer, IViewport, OpenOptions, MenuSelectEventArgs, click, hideFileMenuItems } from '../common/index';
-import { Dialog, ActionEvents } from '../services/index';
+import { Dialog, ActionEvents, Overlay } from '../services/index';
 import { ServiceLocator } from '../../workbook/services/index';
 import { SheetModel, getColumnsWidth, getSheetIndex, WorkbookHyperlink, HyperlinkModel, DefineNameModel } from './../../workbook/index';
 import { BeforeHyperlinkArgs, AfterHyperlinkArgs, getCellAddress, FindOptions, ValidationModel } from './../../workbook/common/index';
 import { activeCellChanged, BeforeCellFormatArgs, afterHyperlinkCreate, getColIndex, CellStyleModel } from './../../workbook/index';
 import { BeforeSaveEventArgs, SaveCompleteEventArgs, WorkbookInsert, WorkbookDelete, WorkbookMerge } from './../../workbook/index';
-import { getSheetNameFromAddress, DataBind, CellModel, beforeHyperlinkCreate, WorkbookFindAndReplace } from './../../workbook/index';
+import { getSheetNameFromAddress, DataBind, CellModel, beforeHyperlinkCreate } from './../../workbook/index';
 import { BeforeSortEventArgs, SortOptions, sortComplete, SortEventArgs } from './../../workbook/index';
 import { getSheetIndexFromId, WorkbookEdit, WorkbookOpen, WorkbookSave, WorkbookCellFormat, WorkbookSort } from './../../workbook/index';
 import { FilterOptions, FilterEventArgs, ProtectSettingsModel, findKeyUp } from './../../workbook/index';
@@ -31,7 +32,7 @@ import { SpreadsheetModel } from './spreadsheet-model';
 import { getRequiredModules, ScrollSettings, ScrollSettingsModel, SelectionSettingsModel, enableToolbarItems } from '../common/index';
 import { SelectionSettings, BeforeSelectEventArgs, SelectEventArgs, getStartEvent, enableRibbonTabs } from '../common/index';
 import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
-import { setRowHeight, getRowsHeight, getColumnWidth, getRowHeight } from './../../workbook/base/index';
+import { setRowHeight, getRowsHeight, getColumnWidth, getRowHeight, getSheetName } from './../../workbook/base/index';
 import { getRangeIndexes, getIndexesFromAddress, getCellIndexes, WorkbookNumberFormat, WorkbookFormula } from '../../workbook/index';
 import { RefreshValueArgs, Ribbon, FormulaBar, SheetTabs, Open, ContextMenu, Save, NumberFormat, Formula } from '../integrations/index';
 import { Sort, Filter } from '../integrations/index';
@@ -39,9 +40,9 @@ import { isNumber, getColumn, WorkbookFilter } from '../../workbook/index';
 import { PredicateModel } from '@syncfusion/ej2-grids';
 import { RibbonItemModel } from '../../ribbon/index';
 import { DataValidation } from '../actions/index';
-import { WorkbookDataValidation } from '../../workbook/actions/index';
-import { FindAllArgs, findAllValues } from './../../workbook/common/index';
-import { blankWorkbook } from '../common/index';
+import { WorkbookDataValidation, WorkbookConditionalFormat } from '../../workbook/actions/index';
+import { FindAllArgs, findAllValues, ClearOptions, ConditionalFormatModel } from './../../workbook/common/index';
+import { ConditionalFormatting } from '../actions/conditional-formatting';
 /**
  * Represents the Spreadsheet component. 
  * ```html
@@ -640,7 +641,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             Save, NumberFormat, CellFormat, Formula, WrapText, WorkbookEdit, WorkbookOpen, WorkbookSave, WorkbookCellFormat,
             WorkbookNumberFormat, WorkbookFormula, Sort, WorkbookSort, Resize, UndoRedo, WorkbookFilter, Filter, SpreadsheetHyperlink,
             WorkbookHyperlink, Insert, Delete, WorkbookInsert, WorkbookDelete, DataValidation, WorkbookDataValidation,
-            ProtectSheet, FindAndReplace, Merge, WorkbookMerge, WorkbookFindAndReplace
+            ProtectSheet, FindAndReplace, Merge, WorkbookMerge, ConditionalFormatting, WorkbookConditionalFormat
         );
         if (element) {
             this.appendTo(element);
@@ -712,7 +713,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         this.serviceLocator.register(locale, new L10n(this.getModuleName(), defaultLocale, this.locale));
         this.serviceLocator.register(dialog, new Dialog(this));
         this.serviceLocator.register(actionEvents, new ActionEvents(this));
-
+        this.serviceLocator.register(overlay, new Overlay(this));
     }
 
     /**
@@ -775,42 +776,18 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     public hideSpinner(): void {
         hideSpinner(this.element);
     }
-
-    /**
-     * To protect the particular sheet.
-     * @param {number | string} sheet - Specifies the sheet to protect.
-     * @param {ProtectSettingsModel} protectSettings - Specifies the protect sheet options.
-     * @default { selectCells: 'false', formatCells: 'false', formatRows: 'false', formatColumns:'false', insertLink:'false' }
-     * @return {void}
-     */
-    public protectSheet(sheet?: number | string, protectSettings?: ProtectSettingsModel): void {
-        if (typeof(sheet) === 'string') {
-            sheet = getSheetIndex(this, sheet);
-        }
-        if (sheet) {
-            this.sheets[sheet].isProtected = true;
-            this.sheets[sheet].protectSettings = protectSettings;
-        }
-        sheet = this.getActiveSheet().index;
-        this.getActiveSheet().isProtected = true;
-        super.protectSheet(sheet, protectSettings);
-    }
-
-    /**
-     * To unprotect the particular sheet.
-     * @param {number | string} sheet - Specifies the sheet to Unprotect.
-     * @return {void}
-     */
-    public unprotectSheet(sheet?: number | string): void {
-        if (typeof(sheet) === 'string') {
-            sheet = getSheetIndex(this, sheet);
-        }
-        if (sheet) {
-            this.sheets[sheet].isProtected = false;
+    public protectSheet(sheetIndex?: number | string, protectSettings?: ProtectSettingsModel): void {
+        if (typeof(sheetIndex) === 'string') {
+            sheetIndex = getSheetIndex(this, sheetIndex);
         } else {
-            this.getActiveSheet().isProtected = false;
+            if (sheetIndex) {
+                this.sheets[sheetIndex].isProtected = true;
+                this.sheets[sheetIndex].protectSettings = protectSettings;
+            }
+            sheetIndex = this.getActiveSheet().index;
+            this.getActiveSheet().isProtected = true;
         }
-        super.unprotectSheet(sheet);
+        super.protectSheet(sheetIndex, protectSettings);
     }
 
     /**
@@ -952,7 +929,6 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
 
     /**
      * Used to resize the Spreadsheet.
-     * @returns void
      */
     public resize(): void {
         this.renderModule.setSheetPanelSize();
@@ -1026,6 +1002,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @param {number} width
      * @param {number} colIndex
      * @param {number} sheetIndex
+     * {% codeBlock src='spreadsheet/setColWidth/index.md' %}{% endcodeBlock %}
      */
     public setColWidth(width: number | string = 64, colIndex: number = 0, sheetIndex?: number): void {
         let colThreshold: number = this.getThreshold('col');
@@ -1068,12 +1045,13 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
 
     /**
      * Set the height of row. 
-     * @param {number} height - Specifies height needs to be updated. If not specified, it will set the default height 20.
-     * @param {number} rowIndex - Specifies the row index. If not specified, it will consider the first row.
-     * @param {number} sheetIndex - Specifies the sheetIndex. If not specified, it will consider the active sheet.
+     * @param {number} height? - Specifies height needs to be updated. If not specified, it will set the default height 20.
+     * @param {number} rowIndex? - Specifies the row index. If not specified, it will consider the first row.
+     * @param {number} sheetIndex? - Specifies the sheetIndex. If not specified, it will consider the active sheet.
+     * {% codeBlock src='spreadsheet/setRowHeight/index.md' %}{% endcodeBlock %}
      */
     public setRowHeight(height: number | string = 20, rowIndex: number = 0, sheetIndex?: number): void {
-        let sheet: SheetModel = isNullOrUndefined(sheetIndex) ? this.getActiveSheet() : this.sheets[sheetIndex];
+        let sheet: SheetModel = isNullOrUndefined(sheetIndex) ? this.getActiveSheet() : this.sheets[sheetIndex - 1];
         if (sheet) {
             let mIndex: number = rowIndex;
             let rowHeight: string = (typeof height === 'number') ? height + 'px' : height;
@@ -1221,26 +1199,28 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             for (let colIdx: number = rangeIndexes[1]; colIdx <= rangeIndexes[3]; colIdx++) {
                 if (sheet && sheet.rows[rowIdx] && sheet.rows[rowIdx].cells[colIdx]) {
                     cellMod = sheet.rows[rowIdx].cells[colIdx];
-                    if (typeof (cellMod.hyperlink) === 'string') {
-                        cellMod.value = cellMod.value ? cellMod.value : cellMod.hyperlink;
-                    } else {
-                        cellMod.value = cellMod.value ? cellMod.value : cellMod.hyperlink.address;
-                    }
-                    delete (cellMod.hyperlink);
-                    if (sheet === this.getActiveSheet()) {
-                        let eleRowIdx: number;
-                        let eleColIdx: number;
-                        if (this.scrollSettings.enableVirtualization) {
-                            eleRowIdx = rowIdx - this.viewport.topIndex;
-                            eleColIdx = colIdx - this.viewport.leftIndex;
+                    if (isNullOrUndefined(cellMod)) {
+                        if (typeof (cellMod.hyperlink) === 'string') {
+                            cellMod.value = cellMod.value ? cellMod.value : cellMod.hyperlink;
+                        } else {
+                            cellMod.value = cellMod.value ? cellMod.value : cellMod.hyperlink.address;
                         }
-                        let cell: HTMLElement = this.element.getElementsByClassName('e-sheet-content')[0].
-                            getElementsByClassName('e-row')[eleRowIdx].getElementsByClassName('e-cell')[eleColIdx] as HTMLElement;
-                        if (cell.getElementsByClassName('e-hyperlink')[0]) {
-                            cell.innerText = cell.getElementsByClassName('e-hyperlink')[0].innerHTML;
+                        delete (cellMod.hyperlink);
+                        if (sheet === this.getActiveSheet()) {
+                            let eleRowIdx: number;
+                            let eleColIdx: number;
+                            if (this.scrollSettings.enableVirtualization) {
+                                eleRowIdx = rowIdx - this.viewport.topIndex;
+                                eleColIdx = colIdx - this.viewport.leftIndex;
+                            }
+                            let cell: HTMLElement = this.element.getElementsByClassName('e-sheet-content')[0].
+                                getElementsByClassName('e-row')[eleRowIdx].getElementsByClassName('e-cell')[eleColIdx] as HTMLElement;
+                            if (cell.getElementsByClassName('e-hyperlink')[0]) {
+                                cell.innerText = cell.getElementsByClassName('e-hyperlink')[0].innerHTML;
+                            }
                         }
-                    }
 
+                    }
                 }
             }
         }
@@ -1333,12 +1313,21 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         super.removeInvalidHighlight(range);
     }
 
-    /** @hidden */
-    public setPanelSize(): void {
-        if (this.height !== 'auto') {
-            let panel: HTMLElement = document.getElementById(this.element.id + '_sheet_panel');
-            panel.style.height = `${this.element.getBoundingClientRect().height - getSiblingsHeight(panel)}px`;
-        }
+    /**
+     * This method is used to add conditional formatting.
+     * @param {CFRulesModel} rules - specifies the conditional formatting rule.
+     */
+    public conditionalFormat(conditionalFormat: ConditionalFormatModel): void {
+        super.conditionalFormat(conditionalFormat);
+    }
+
+    /**
+     * This method is used for remove conditional formatting.
+     * @param {string} range - range that needs to be remove conditional formatting.
+     */
+    public clearConditionalFormat(range?: string): void {
+        range = range || this.getActiveSheet().selectedRange;
+        super.clearConditionalFormat(range);
     }
 
     /**
@@ -1353,55 +1342,33 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         }
     }
 
-    /**
-     * Used to hide/show the rows in spreadsheet.
-     * @param {number} startIndex - Specifies the start row index.
-     * @param {number} endIndex - Specifies the end row index.
-     * @param {boolean} hide - To hide/show the rows in specified range.
-     * @param {string | number} sheet - Specifies the sheet name or index. By default it sets to active sheet index.
-     * @returns void
-     */
-    public hideRow(startIndex: number, endIndex?: number, hide?: boolean, sheet?: string | number): void {
-        if (isNullOrUndefined(endIndex)) { endIndex = startIndex; }
-        if (isNullOrUndefined(hide)) { hide = true; }
-        sheet = getSheetIndex(this, sheet) || 0;
-        if (this.renderModule && sheet === this.activeSheetIndex) {
+    /** @hidden */
+    public hideRow(startIndex: number, endIndex: number = startIndex, hide: boolean = true): void {
+        if (this.renderModule) {
             this.notify(hideShow, <HideShowEventArgs>{ startIndex: startIndex, endIndex: endIndex, hide: hide });
         } else {
-            super.hideRow(startIndex, endIndex, hide, sheet);
+            super.hideRow(startIndex, endIndex, hide);
         }
     }
 
-    /**
-     * Used to hide/show the columns in spreadsheet.
-     * @param {number} startIndex - Specifies the start column index.
-     * @param {number} endIndex - Specifies the end column index.
-     * @param {boolean} hide - Set `true` / `false` to hide / show the columns.
-     * @param {string | number} sheet - Specifies the sheet name or index. By default it sets to active sheet index.
-     * @returns void
-     */
-    public hideColumn(startIndex: number, endIndex?: number, hide?: boolean, sheet?: string | number): void {
-        if (isNullOrUndefined(endIndex)) { endIndex = startIndex; }
-        if (isNullOrUndefined(hide)) { hide = true; }
-        sheet = getSheetIndex(this, sheet) || 0;
-        if (this.renderModule && sheet === this.activeSheetIndex) {
+    /** @hidden */
+    public hideColumn(startIndex: number, endIndex: number = startIndex, hide: boolean = true): void {
+        if (this.renderModule) {
             this.notify(hideShow, <HideShowEventArgs>{ startIndex: startIndex, endIndex: endIndex, hide: hide, isCol: true });
         } else {
-            super.hideColumn(startIndex, endIndex, hide, sheet);
+            super.hideColumn(startIndex, endIndex, hide);
         }
     }
 
     /**
-     * Used to refresh the spreadsheet.
-     * @param {boolean} isNew - Specifies `true` / `false` to create new workbook in spreadsheet.
-     * @returns void
+     * This method is used to Clear contents, formats and hyperlinks in spreadsheet.
+     *    * @param {ClearOptions} options - Options for clearing the content, formats and hyperlinks in spreadsheet.     
      */
-    public refresh(isNew?: boolean): void {
-        (isNew) ? this.notify(blankWorkbook, {}) : super.refresh();
+    public clear(options: ClearOptions): void {
+        this.notify(clearViewer, { options: options, isPublic: true });
     }
-
     /**
-     * Gets the row header div of the Spreadsheet.
+     * Gets the row header div of the Spreadsheet. 
      * @return {Element} 
      * @hidden
      */
@@ -1649,6 +1616,20 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         this.notify(updateUndoRedoCollection, { args: args, isPublic: true });
     }
 
+    // /**
+    //  * To delete the sheet in spreadsheet.
+    //  * @param {number} sheetIdx - Provide the sheet index.
+    //  */
+    // public deleteSheet(sheetIdx:number): void {
+    //     this.notify(removeSheetTab, {
+    //         index: sheetIdx,
+    //             isAction: true,
+    //             count: this.sheets.length - 1,
+    //             clicked: true,
+    //             sheetName:  getSheetName(this, sheetIdx)
+    //     });
+    // }
+
     /**
      * Adds the defined name to the Spreadsheet.
      * @param {DefineNameModel} definedName - Specifies the name.
@@ -1768,8 +1749,8 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     /**
      * To enable / disable file menu items.
      * @param {string[]} items - Items that needs to be enabled / disabled.
-     * @param {boolean} enable - Set `true` / `false` to enable / disable the menu items.
-     * @param {boolean} isUniqueId - Set `true` if the given file menu items `text` is a unique id.
+     * @param {boolean} enable? - Set `true` / `false` to enable / disable the menu items.
+     * @param {boolean} isUniqueId? - Set `true` if the given file menu items `text` is a unique id.
      * @returns void.
      */
     public enableFileMenuItems(items: string[], enable: boolean = true, isUniqueId?: boolean): void {
@@ -1779,8 +1760,8 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     /**
      * To show/hide the file menu items in Spreadsheet ribbon.
      * @param {string[]} items - Specifies the file menu items text which is to be show/hide.
-     * @param {boolean} hide - Set `true` / `false` to hide / show the file menu items.
-     * @param {boolean} isUniqueId - Set `true` if the given file menu items `text` is a unique id.
+     * @param {boolean} hide? - Set `true` / `false` to hide / show the file menu items.
+     * @param {boolean} isUniqueId? - Set `true` if the given file menu items `text` is a unique id.
      * @returns void.
      */
     public hideFileMenuItems(items: string[], hide: boolean = true, isUniqueId?: boolean): void {
@@ -1791,9 +1772,9 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * To add custom file menu items.
      * @param {MenuItemModel[]} items - Specifies the ribbon file menu items to be inserted.
      * @param {string} text - Specifies the existing file menu item text before / after which the new file menu items to be inserted.
-     * @param {boolean} insertAfter - Set `false` if the `items` need to be inserted before the `text`.
+     * @param {boolean} insertAfter? - Set `false` if the `items` need to be inserted before the `text`.
      * By default, `items` are added after the `text`.
-     * @param {boolean} isUniqueId - Set `true` if the given file menu items `text` is a unique id.
+     * @param {boolean} isUniqueId? - Set `true` if the given file menu items `text` is a unique id.
      * @returns void.
      */
     public addFileMenuItems(items: MenuItemModel[], text: string, insertAfter: boolean = true, isUniqueId?: boolean): void {
@@ -1803,7 +1784,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     /**
      * To show/hide the existing ribbon tabs.
      * @param {string[]} tabs - Specifies the tab header text which needs to be shown/hidden.
-     * @param {boolean} hide - Set `true` / `false` to hide / show the ribbon tabs.
+     * @param {boolean} hide? - Set `true` / `false` to hide / show the ribbon tabs.
      * @returns void.
      */
     public hideRibbonTabs(tabs: string[], hide: boolean = true): void {
@@ -1813,7 +1794,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     /**
      * To enable / disable the existing ribbon tabs.
      * @param {string[]} tabs - Specifies the tab header text which needs to be enabled / disabled.
-     * @param {boolean} enable - Set `true` / `false` to enable / disable the ribbon tabs.
+     * @param {boolean} enable? - Set `true` / `false` to enable / disable the ribbon tabs.
      * @returns void.
      */
     public enableRibbonTabs(tabs: string[], enable: boolean = true): void {
@@ -1823,7 +1804,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     /**
      * To add custom ribbon tabs.
      * @param {RibbonItemModel[]} items - Specifies the ribbon tab items to be inserted.
-     * @param {string} insertBefore - Specifies the existing ribbon header text before which the new tabs will be inserted.
+     * @param {string} insertBefore? - Specifies the existing ribbon header text before which the new tabs will be inserted.
      * If not specified, the new tabs will be inserted at the end.
      * @returns void.
      */
@@ -1834,9 +1815,9 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     /**
      * Enables or disables the specified ribbon toolbar items or all ribbon items.
      * @param {string} tab - Specifies the ribbon tab header text under which the toolbar items need to be enabled / disabled.
-     * @param {string[]} items - Specifies the toolbar item indexes / unique id's which needs to be enabled / disabled.
+     * @param {string[]} items? - Specifies the toolbar item indexes / unique id's which needs to be enabled / disabled.
      * If it is not specified the entire toolbar items will be enabled / disabled.
-     * @param  {boolean} enable - Boolean value that determines whether the toolbar items should be enabled or disabled.
+     * @param  {boolean} enable? - Boolean value that determines whether the toolbar items should be enabled or disabled.
      * @returns void.
      */
     public enableToolbarItems(tab: string, items?: number[] | string[], enable?: boolean): void {
@@ -1847,7 +1828,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * To show/hide the existing Spreadsheet ribbon toolbar items.
      * @param {string} tab - Specifies the ribbon tab header text under which the specified items needs to be hidden / shown.
      * @param {string[]} indexes - Specifies the toolbar indexes which needs to be shown/hidden from UI.
-     * @param {boolean} hide - Set `true` / `false` to hide / show the toolbar items.
+     * @param {boolean} hide? - Set `true` / `false` to hide / show the toolbar items.
      * @returns void.
      */
     public hideToolbarItems(tab: string, indexes: number[], hide: boolean = true): void {
@@ -1858,7 +1839,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * To add the custom items in Spreadsheet ribbon toolbar.
      * @param {string} tab - Specifies the ribbon tab header text under which the specified items will be inserted.
      * @param {ItemModel[]} items - Specifies the ribbon toolbar items that needs to be inserted.
-     * @param {number} index - Specifies the index text before which the new items will be inserted.
+     * @param {number} index? - Specifies the index text before which the new items will be inserted.
      * If not specified, the new items will be inserted at the end of the toolbar.
      * @returns void.
      */

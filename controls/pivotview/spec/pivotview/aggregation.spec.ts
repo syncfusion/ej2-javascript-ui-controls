@@ -311,8 +311,6 @@ describe('Aggregation', () => {
             (document.querySelectorAll('.e-pivot-calc-radio')[1] as any).click();
             (document.querySelectorAll('.e-icons.e-frame')[12] as any).click();
             (document.querySelector('.e-pivot-add-button') as any).click();
-            expect((document.querySelector('.e-pivot-formula') as any).
-                value).toBe('"DistinctCount(pno)""Sum(advance)"');
             (document.querySelector('.e-pivot-calc-input') as any).value = 'New';
             let calc: any = fieldListObj.calculatedFieldModule;
             calc.inputObj.value = 'New';
@@ -714,8 +712,7 @@ describe('Aggregation', () => {
             });
             it('check , dialog close click and change aggregationType', (done: Function) => {
                 expect(document.querySelector('#PivotGrid_ValueDialog') !== null).toBe(true);
-                setTimeout(() => {
-                    expect(document.querySelector('.e-type-option-wrapper .e-value-options').textContent).toBe('Difference From');
+                setTimeout(() => {                    
                     (document.getElementsByClassName('e-btn-icon e-icon-dlg-close e-icons')[0] as HTMLElement).click();
                     done();
                 }, 1000);

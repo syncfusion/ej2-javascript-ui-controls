@@ -1,4 +1,4 @@
-import { ChildProperty, extend, deleteObject, Property, BaseEventArgs } from '@syncfusion/ej2-base';
+import { ChildProperty, extend, deleteObject, Property, BaseEventArgs, addClass } from '@syncfusion/ej2-base';
 import { ItemModel } from './common-model';
 /**
  * Defines the icon position of Split Button.
@@ -18,6 +18,52 @@ export function getModel(props: Object, model: string[]): Object {
     }
     return obj as Object;
 }
+
+/** @hidden */
+export function upDownKeyHandler(ul: HTMLElement, keyCode: number): void {
+    let defaultIdx: number = keyCode === 40 ? 0 : ul.childElementCount - 1;
+    let liIdx: number = defaultIdx;
+    let li: Element;
+    let selectedLi: Element = ul.querySelector('.e-selected');
+    if (selectedLi) { selectedLi.classList.remove('e-selected'); }
+    for (let i: number = 0, len: number = ul.children.length; i < len; i++) {
+      if (ul.children[i].classList.contains('e-focused')) {
+        li = ul.children[i];
+        liIdx = i;
+        li.classList.remove('e-focused');
+        keyCode === 40 ? liIdx++ : liIdx--;
+        if (liIdx === (keyCode === 40 ? ul.childElementCount : -1)) {
+          liIdx = defaultIdx;
+        }
+      }
+    }
+    li = ul.children[liIdx];
+    liIdx = isValidLI(ul, li, liIdx, keyCode);
+    if (liIdx !== -1) {
+      addClass([ul.children[liIdx]], 'e-focused');
+      (ul.children[liIdx] as HTMLElement).focus();
+    }
+}
+
+function isValidLI(ul: HTMLElement, li: Element, index: number, keyCode: number, count: number = 0): number {
+    if (li.classList.contains('e-separator') || li.classList.contains('e-disabled')) {
+        if (index === (keyCode === 40 ? ul.childElementCount - 1 : 0)) {
+            index = keyCode === 40 ? 0 : ul.childElementCount - 1;
+        } else {
+            keyCode === 40 ? index++ : index--;
+        }
+    }
+    li = ul.children[index];
+    if (li.classList.contains('e-separator') || li.classList.contains('e-disabled')) {
+        count++;
+        if (count === ul.childElementCount) {
+            return index = -1;
+        }
+        index = isValidLI(ul, li, index, keyCode, count);
+    }
+    return index;
+}
+
 /**
  * Defines the items of Split Button/DropDownButton.
  */

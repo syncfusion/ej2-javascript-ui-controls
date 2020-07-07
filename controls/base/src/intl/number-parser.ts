@@ -68,8 +68,11 @@ export class NumberParser {
                 parseOptions.pData = base.getFormatData(split[0], true, '');
             }
         } else {
-            parseOptions.nData = getValue(parseOptions.type + 'nData', numbers);
-            parseOptions.pData = getValue(parseOptions.type + 'pData', numbers);
+            parseOptions.nData = extend({}, {}, getValue(parseOptions.type + 'nData', numbers));
+            parseOptions.pData = extend({}, {}, getValue(parseOptions.type + 'pData', numbers));
+            if (parseOptions.type === 'currency' && option.currency) {
+                base.replaceBlazorCurrency([parseOptions.pData, parseOptions.nData], getValue('currencySymbol', numbers), option.currency);
+            }
         }
 
         return (value: string): number => {

@@ -3,9 +3,10 @@ import { DocumentEditor } from '../../document-editor';
 import { CommentElementBox, CommentCharacterElementBox, ElementBox } from '../../implementation/viewer/page';
 import { DropDownButton, ItemModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { Button } from '@syncfusion/ej2-buttons';
-import { Toolbar } from '@syncfusion/ej2-navigations';
+import { Toolbar, TabItemModel, Tab, SelectEventArgs } from '@syncfusion/ej2-navigations';
 import { DialogUtility, Dialog } from '@syncfusion/ej2-popups';
-import { Dictionary } from '../../base/index';
+import { Dictionary, ReviewTabType, CommentDeleteEventArgs } from '../../base/index';
+import { HelperMethods } from '../editor/editor-helper';
 
 /**
  * @private
@@ -21,6 +22,13 @@ export class CommentReviewPane {
     public previousSelectedCommentInt: CommentElementBox;
     public isNewComment: boolean = false;
     private confirmDialog: Dialog;
+    public reviewTab: Tab;
+    public parentPaneElement: HTMLElement;
+    public element: HTMLElement;
+    /**
+     * @private
+     */
+    public selectedTab: number = 0;
 
     get previousSelectedComment(): CommentElementBox {
         return this.previousSelectedCommentInt;
@@ -55,24 +63,24 @@ export class CommentReviewPane {
         let localObj: L10n = new L10n('documenteditor', this.owner.defaultLocale);
         localObj.setLocale(this.owner.locale);
         this.initReviewPane(localObj);
-        this.reviewPane.style.display = 'none';
+        this.parentPaneElement.style.display = 'none';
     }
 
     /**
      * @private
      */
-    public showHidePane(show: boolean): void {
-        if (this.reviewPane) {
-            this.reviewPane.style.display = show ? 'block' : 'none';
-        }
-        if (show) {
-            let readOnly: boolean = this.owner.isReadOnly;
-            this.enableDisableToolbarItem();
-            if (readOnly) {
-                classList(this.commentPane.parent, ['e-de-cmt-protection'], []);
+    public showHidePane(show: boolean, tab: ReviewTabType): void {
+        if (this.parentPaneElement) {
+            this.updateTabHeaderWidth();
+            this.parentPaneElement.style.display = show ? 'block' : 'none';
+            if (tab === 'Changes') {
+                this.reviewTab.select(1);
             } else {
-                classList(this.commentPane.parent, [], ['e-de-cmt-protection']);
+                this.reviewTab.select(0);
             }
+        }
+        this.owner.trackChangesPane.updateTrackChanges(show);
+        if (show) {
             this.commentPane.updateHeight();
         }
         if (this.owner) {
@@ -80,36 +88,67 @@ export class CommentReviewPane {
         }
     }
 
+    private updateTabHeaderWidth(): void {
+        let reviewTabsEle: NodeListOf<Element> = this.reviewTab.getRootElement().getElementsByClassName('e-tab-wrap');
+        (reviewTabsEle[0] as HTMLElement).style.padding = '0 8px';
+        (reviewTabsEle[1] as HTMLElement).style.padding = '0 8px';
+    }
+
     public initReviewPane(localValue: L10n): void {
         let reviewContainer: HTMLElement = this.owner.documentHelper.optionsPaneContainer;
         reviewContainer.style.display = 'inline-flex';
-        reviewContainer.appendChild(this.initPaneHeader(localValue));
+        this.initPaneHeader(localValue);
+        reviewContainer.appendChild(this.addReviewTab(localValue));
         this.initCommentPane();
+    }
+    private addReviewTab(localValue: L10n): HTMLElement {
+        let commentHeader: HTMLElement = createElement('div', { innerHTML: localValue.getConstant('Comments') });
+        let changesHeader: HTMLElement = createElement('div', { innerHTML: localValue.getConstant('Changes') });
+        // tslint:disable-next-line:max-line-length
+        this.parentPaneElement = createElement('div', { styles: 'height:100%;overflow:auto;display:none', className: 'e-de-review-pane' });
+        this.element = createElement('div', { className: 'e-de-property-tab' });
+        // tslint:disable-next-line:max-line-length
+        let items: TabItemModel[] = [{ header: { text: commentHeader }, content: this.reviewPane }, { header: { text: changesHeader } }] as TabItemModel[];
+        this.reviewTab = new Tab({ items: items, selected: this.onTabSelection, animation: { previous: { effect: 'None' }, next: { effect: 'None' } } });
+        this.reviewTab.appendTo(this.element);
+        if (this.owner.enableRtl) {
+            this.reviewTab.enableRtl = true;
+        }
+        this.reviewTab.enablePersistence = true;
+        this.parentPaneElement.appendChild(this.element);
+
+        this.closeButton = createElement('button', {
+            className: 'e-de-close-icon e-btn e-flat e-icon-btn', id: 'close',
+            attrs: { type: 'button', style: 'position:absolute;top:6px;right:1px' }
+        }) as HTMLButtonElement;
+        this.closeButton.title = localValue.getConstant('Close');
+        let closeSpan: HTMLSpanElement = createElement('span', { className: 'e-de-op-close-icon e-de-close-icon e-btn-icon e-icons' });
+        this.closeButton.appendChild(closeSpan);
+        this.element.appendChild(this.closeButton);
+        this.closeButton.addEventListener('click', this.closePane.bind(this));
+
+        return this.parentPaneElement;
+    }
+
+    private onTabSelection = (arg: SelectEventArgs): void => {
+        this.selectedTab = arg.selectedIndex;
+        if (this.selectedTab === 1) {
+            this.owner.trackChangesPane.updateHeight();
+        } else {
+            this.commentPane.updateHeight();
+        }
+        this.owner.resize();
     }
 
     public initPaneHeader(localValue: L10n): HTMLElement {
         this.headerContainer = createElement('div');
-        this.reviewPane = createElement('div', { className: 'e-de-cmt-pane', styles: 'display:none' });
+        this.reviewPane = createElement('div', { className: 'e-de-cmt-pane' });
         if (this.owner.enableRtl) {
             classList(this.reviewPane, ['e-rtl'], []);
         }
-        let headerWholeDiv: HTMLElement = createElement('div', { className: 'e-de-cp-whole-header' });
-        let headerDiv1: HTMLElement = createElement('div', {
-            innerHTML: localValue.getConstant('Comments'), className: 'e-de-cp-header'
-        });
-        this.closeButton = createElement('button', {
-            className: 'e-de-cp-close e-de-close-icon e-btn e-flat e-icon-btn', id: 'close',
-            attrs: { type: 'button' }
-        }) as HTMLButtonElement;
-        this.closeButton.title = localValue.getConstant('Close');
-        headerWholeDiv.appendChild(this.closeButton);
-        headerWholeDiv.appendChild(headerDiv1);
-        let closeSpan: HTMLSpanElement = createElement('span', { className: 'e-de-op-close-icon e-de-close-icon e-btn-icon e-icons' });
-        this.closeButton.appendChild(closeSpan);
-        this.headerContainer.appendChild(headerWholeDiv);
         this.headerContainer.appendChild(this.initToolbar(localValue));
         this.reviewPane.appendChild(this.headerContainer);
-        this.closeButton.addEventListener('click', this.closePane.bind(this));
+        this.reviewPane.style.display = 'block';
         return this.reviewPane;
     }
 
@@ -148,6 +187,8 @@ export class CommentReviewPane {
         } else {
             this.owner.documentHelper.currentSelectedComment = undefined;
             this.owner.showComments = false;
+            this.owner.showRevisions = false;
+            this.owner.documentHelper.currentSelectedRevision = undefined;
         }
     }
 
@@ -268,9 +309,6 @@ export class CommentReviewPane {
             let enable: boolean = true;
             if (this.commentPane.isEditMode) {
                 enable = !this.commentPane.isEditMode;
-            }
-            if (this.owner.isReadOnly) {
-                enable = false;
             }
             let elements: NodeListOf<Element> = this.toolbar.element.querySelectorAll('.' + 'e-de-cmt-tbr');
             this.toolbar.enableItems(elements[0].parentElement.parentElement, enable);
@@ -419,7 +457,10 @@ export class CommentPane {
     }
 
     public updateHeight(): void {
-        this.commentPane.style.height = this.parent.clientHeight - this.parentPane.headerContainer.clientHeight + 'px';
+        // tslint:disable-next-line:max-line-length
+        let tabHeaderHeight: number = this.parentPane.reviewTab.getRootElement().getElementsByClassName('e-tab-header')[0].getBoundingClientRect().height;
+        // tslint:disable-next-line:max-line-length
+        this.commentPane.style.height = this.parentPane.parentPaneElement.clientHeight - this.parentPane.headerContainer.clientHeight - tabHeaderHeight + 'px';
     }
 
     public insertReply(replyComment: CommentElementBox): void {
@@ -649,6 +690,11 @@ export class CommentView {
         let commentUserInfo: HTMLElement = createElement('div', { className: 'e-de-cmt-author' });
         let userName: HTMLElement = createElement('div', { className: 'e-de-cmt-author-name' });
         userName.textContent = this.comment.author;
+        if (!isNullOrUndefined(this.comment.author)) {
+            commentUserInfo.style.display = 'flex';
+            this.owner.documentHelper.getAvatar(commentUserInfo, userName, this.comment, undefined);
+        }
+
         //if (this.comment.author === this.owner.currentUser) {
         this.menuBar = createElement('button', { className: 'e-de-cp-option', attrs: { type: 'button' } });
         let userOption: ItemModel[] = [{ text: localObj.getConstant('Edit') },
@@ -666,8 +712,6 @@ export class CommentView {
         menuItem.appendTo(this.menuBar);
         commentUserInfo.appendChild(this.menuBar);
         this.dropDownButton = menuItem;
-        //}
-        commentUserInfo.appendChild(userName);
         commentDiv.appendChild(commentUserInfo);
         this.commentView = commentDiv;
         this.parentElement.appendChild(commentDiv);
@@ -709,10 +753,8 @@ export class CommentView {
         this.textArea.addEventListener('keydown', this.updateTextAreaHeight.bind(this));
         this.textArea.addEventListener('keyup', this.enableDisablePostButton.bind(this));
         let editRegionFooter: HTMLElement = createElement('div', { className: 'e-de-cmt-action-button' });
-        let postButton: HTMLButtonElement = createElement('button', {
-            className: 'e-de-cmt-post-btn e-btn e-flat',
-            attrs: { type: 'button' }
-        }) as HTMLButtonElement;
+        //tslint:disable-next-line:max-line-length
+        let postButton: HTMLButtonElement = createElement('button', { className: 'e-de-cmt-post-btn e-btn e-flat', attrs: { type: 'button' } }) as HTMLButtonElement;
         //tslint:disable-next-line:max-line-length
         this.postButton = new Button({ cssClass: 'e-btn e-flat e-primary e-de-overlay', iconCss: 'e-de-cmt-post', disabled: true }, postButton);
         postButton.addEventListener('click', this.postComment.bind(this));
@@ -733,10 +775,7 @@ export class CommentView {
 
     private initDateView(): void {
         this.commentDate = createElement('div', { className: 'e-de-cmt-date' });
-        let modifiedDate: Date = new Date(this.comment.date);
-        let date: string = modifiedDate.toLocaleDateString([], { year: 'numeric', month: 'long', day: 'numeric' });
-        let time: string = modifiedDate.toLocaleTimeString([], { hour: 'numeric', minute: 'numeric' });
-        this.commentDate.innerText = date + ' ' + time;
+        this.commentDate.innerText = HelperMethods.getModifiedDate(this.comment.date);
         this.commentView.appendChild(this.commentDate);
     }
 
@@ -793,6 +832,7 @@ export class CommentView {
         let editRegionFooter: HTMLElement = createElement('div', { className: 'e-de-cmt-resolve-btn' });
         //tslint:disable-next-line:max-line-length
         let postButton: HTMLButtonElement = createElement('button', { className: 'e-de-cmt-post-btn e-btn e-flat', attrs: { type: 'button' } }) as HTMLButtonElement;
+        //tslint:disable-next-line:max-line-length
         this.reopenButton = new Button({ cssClass: 'e-btn e-flat', iconCss: 'e-de-cmt-reopen' }, postButton);
         postButton.title = localObj.getConstant('Reopen');
         postButton.addEventListener('click', this.reopenButtonClick.bind(this));
@@ -802,7 +842,7 @@ export class CommentView {
         }) as HTMLButtonElement;
         cancelButton.title = localObj.getConstant('Delete');
         this.deleteButton = new Button({ cssClass: 'e-btn e-flat', iconCss: 'e-de-cmt-delete' }, cancelButton);
-        cancelButton.addEventListener('click', this.deleteButtonClick.bind(this));
+        cancelButton.addEventListener('click', this.deleteComment.bind(this));
         editRegionFooter.appendChild(postButton);
         editRegionFooter.appendChild(cancelButton);
         this.parentElement.appendChild(editRegionFooter);
@@ -811,11 +851,14 @@ export class CommentView {
     private reopenButtonClick(): void {
         this.owner.editor.reopenComment(this.comment);
     }
-    private deleteButtonClick(): void {
+    private deleteComment(): void {
+        let eventArgs: CommentDeleteEventArgs = { author: this.comment.author, cancel: false };
+        this.owner.trigger('commentDelete', eventArgs);
+        if (eventArgs.cancel) {
+            return;
+        }
         this.owner.editorModule.deleteCommentInternal(this.comment);
     }
-
-
     private updateReplyTextAreaHeight(): void {
         setTimeout(() => {
             this.replyViewTextBox.style.height = 'auto';
@@ -878,9 +921,6 @@ export class CommentView {
         if (this.comment.isReply) {
             if (!this.commentPane.isEditMode && (!isNullOrUndefined(this.comment) && !this.comment.isResolved)) {
                 this.menuBar.style.display = 'block';
-            }
-            if (this.owner.isReadOnly) {
-                this.menuBar.style.display = 'none';
             }
         }
 
@@ -1033,7 +1073,7 @@ export class CommentView {
                 this.enableReplyView();
                 break;
             case localObj.getConstant('Delete'):
-                this.owner.editorModule.deleteCommentInternal(this.comment);
+                this.deleteComment();
                 break;
             case localObj.getConstant('Resolve'):
                 this.owner.editor.resolveComment(this.comment);

@@ -2,6 +2,7 @@
 @include export-module('ribbon-layout') {
   .e-ribbon {
     border: $ribbon-border;
+    position: relative;
 
     & .e-tab {
       @if $skin-name == 'highcontrast' {
@@ -80,10 +81,12 @@
 
     & .e-drop-icon {
       cursor: pointer;
-      float: right;
       font-family: 'e-icons';
       margin: $drop-icon-margin;
+      position: absolute;
+      right: 0;
       text-align: center;
+      top: 0;
       transform: rotate(180deg);
       transition: transform 300ms ease;
       width: 18px;

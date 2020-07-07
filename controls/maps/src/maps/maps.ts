@@ -8,10 +8,11 @@ import { ModuleDeclaration, updateBlazorTemplate, resetBlazorTemplate } from '@s
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { Size, createSvg, Point, removeElement, triggerShapeEvent, showTooltip, checkShapeDataFields } from './utils/helper';
 import { getElement, removeClass, getTranslate, triggerItemSelectionEvent, mergeSeparateCluster, customizeStyle } from './utils/helper';
+import { createStyle } from './utils/helper';
 import { ZoomSettings, LegendSettings, Tile } from './model/base';
 import { LayerSettings, TitleSettings, Border, Margin, MapsAreaSettings, Annotation, CenterPosition } from './model/base';
 import { ZoomSettingsModel, LegendSettingsModel, LayerSettingsModel, BubbleSettingsModel } from './model/base-model';
-import { MarkerSettingsModel, SelectionSettingsModel } from './model/base-model';
+import { MarkerSettingsModel, SelectionSettingsModel , InitialMarkerSelectionSettingsModel} from './model/base-model';
 import { TitleSettingsModel, BorderModel, MarginModel, CenterPositionModel, InitialShapeSelectionSettingsModel } from './model/base-model';
 import { MapsAreaSettingsModel, AnnotationModel } from './model/base-model';
 import { Bubble } from './layers/bubble';
@@ -34,7 +35,7 @@ import { IMarkerClusterClickEventArgs, IMarkerClusterMoveEventArgs, IMarkerClust
 import { ISelectionEventArgs, IShapeSelectedEventArgs, IMapPanEventArgs, IMapZoomEventArgs } from './model/interface';
 import { IBubbleRenderingEventArgs, IAnimationCompleteEventArgs, IPrintEventArgs, IThemeStyle } from './model/interface';
 import { LayerPanel } from './layers/layer-panel';
-import { GeoLocation, Rect, RectOption, measureText, getElementByID, MapAjax } from '../maps/utils/helper';
+import { GeoLocation, Rect, RectOption, measureText, getElementByID, MapAjax, processResult } from '../maps/utils/helper';
 import { findPosition, textTrim, TextOption, renderTextElement, convertGeoToPoint, calculateZoomLevel } from '../maps/utils/helper';
 import { Annotations } from '../maps/user-interaction/annotation';
 import { FontModel, DataLabel, MarkerSettings, IAnnotationRenderingEventArgs } from './index';
@@ -532,6 +533,11 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     private resizeTo: number;
 
     /**
+     * Resize the map
+     */
+    private isResize: boolean = false;
+
+    /**
      * @private
      * Stores the map area rect
      */
@@ -776,14 +782,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
         this.isDevice = Browser.isDevice;
         this.isBlazor = isBlazor();
-        if (!this.isBlazor) {
-            this.allowPrint = true;
-            this.allowImageExport = true;
-            this.allowPdfExport = true;
-            Maps.Inject(Print);
-            Maps.Inject(PdfExport);
-            Maps.Inject(ImageExport);
-        }
         this.initPrivateVariable();
         this.allowServerDataBinding = false;
         this.unWireEVents();
@@ -817,7 +815,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             if (layer.shapeData instanceof DataManager) {
                 this.serverProcess['request']++;
                 dataModule = layer.shapeData;
-                queryModule = layer.query instanceof Query ? layer.query : new Query();
+                queryModule = layer.query instanceof Query ? layer.query : this.isBlazor ? (new Query().requiresCount()) : new Query();
                 let dataManager: Promise<Object> = dataModule.executeQuery(queryModule);
                 dataManager.then((e: object) => {
                     this.processResponseJsonData('DataManager', e, layer, 'ShapeData');
@@ -826,7 +824,44 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 if (!isNullOrUndefined(layer.shapeData['dataOptions'])) {
                     this.processAjaxRequest(layer, layer.shapeData, 'ShapeData');
                 }
+              }
+            if (layer.dataSource instanceof DataManager) {
+                this.serverProcess['request']++;
+                dataModule = layer.dataSource as DataManager;
+                queryModule = layer.query instanceof Query ? layer.query : this.isBlazor ? (new Query().requiresCount()) : new Query();
+                let dataManager: Promise<Object> = dataModule.executeQuery(queryModule);
+                dataManager.then((e: object) => {
+                  layer.dataSource = processResult(e) as Object[];
+                });
             }
+            if (layer.markerSettings.length > 0) {
+                for (let i: number = 0; i < layer.markerSettings.length; i++) {
+                  if (layer.markerSettings[i].dataSource instanceof DataManager) {
+                    this.serverProcess['request']++;
+                    dataModule = layer.markerSettings[i].dataSource as DataManager;
+                    queryModule = layer.markerSettings[i].query instanceof Query ? layer.markerSettings[i].query : this.isBlazor ?
+                    (new Query().requiresCount()) : new Query();
+                    let dataManager: Promise<Object> = dataModule.executeQuery(queryModule);
+                    dataManager.then((e: object) => {
+                      layer.markerSettings[i].dataSource = processResult(e) as Object[];
+                    });
+                  }
+                }
+              }
+            if (layer.bubbleSettings.length > 0) {
+                for (let i: number = 0; i < layer.bubbleSettings.length; i++) {
+                  if (layer.bubbleSettings[i].dataSource instanceof DataManager) {
+                    this.serverProcess['request']++;
+                    dataModule = layer.bubbleSettings[i].dataSource as DataManager;
+                    queryModule = layer.bubbleSettings[i].query instanceof Query ? layer.bubbleSettings[i].query : this.isBlazor ?
+                    (new Query().requiresCount()) : new Query();
+                    let dataManager: Promise<Object> = dataModule.executeQuery(queryModule);
+                    dataManager.then((e: object) => {
+                      layer.bubbleSettings[i].dataSource = processResult(e) as Object[];
+                    });
+                  }
+                }
+              }
             if (layer.dataSource instanceof MapAjax || !isNullOrUndefined(layer.dataSource['dataOptions'])) {
                 this.processAjaxRequest(layer, layer.dataSource, 'DataSource');
             }
@@ -857,11 +892,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         this.serverProcess['response']++;
         if (processType) {
             if (dataType === 'ShapeData') {
-                layer.shapeData = (processType === 'DataManager') ? !isNullOrUndefined(data['result']) ? data['result'] : data['actual'] :
-                    JSON.parse(data as string);
+                layer.shapeData = (processType === 'DataManager') ? processResult((data as object)) : JSON.parse(data as string);
             } else {
-                layer.dataSource = (processType === 'DataManager') ? !isNullOrUndefined(data['result']) ? data['result'] : data['actual'] :
-                    JSON.parse('[' + data + ']')[0];
+                layer.dataSource = (processType === 'DataManager') ? processResult((data as object)) : JSON.parse('[' + data + ']')[0];
             }
         }
         if (!isNullOrUndefined(processType) && this.serverProcess['request'] === this.serverProcess['response']) {
@@ -883,6 +916,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         }
     }
 
+    /* tslint:disable:max-func-body-length */
     private renderMap(): void {
         if (this.legendModule && this.legendSettings.visible) {
             if (!this.isTileMap) {
@@ -905,8 +939,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         }
         this.mapLayerPanel.measureLayerPanel();
         this.element.appendChild(this.svgObject);
-
-
         for (let i: number = 0; i < this.layers.length; i++) {
             if (this.layers[i].selectionSettings && this.layers[i].selectionSettings.enable &&
                 this.layers[i].initialShapeSelection.length > 0 && this.checkInitialRender) {
@@ -919,8 +951,18 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 this.layers[i].selectionSettings.enableMultiSelect = checkSelection;
                 if (i === this.layers.length - 1) { this.checkInitialRender = false; }
             }
+            for (let k : number = 0; k < this.layers[i].markerSettings.length; k++) {
+                if (this.layers[i].markerSettings[k].selectionSettings && this.layers[i].markerSettings[k].selectionSettings.enable
+                    && this.layers[i].markerSettings[k].initialMarkerSelection.length > 0) {
+                        let markerSelectionValues : InitialMarkerSelectionSettingsModel[] =
+                        this.layers[i].markerSettings[k].initialMarkerSelection;
+                        for (let j : number = 0; j < markerSelectionValues.length; j++) {
+                            this.markerInitialSelection(i, k, this.layers[i].markerSettings[k], markerSelectionValues[j].latitude,
+                                                        markerSelectionValues[j].longitude);
+                        }
+                    }
+            }
         }
-
         if (!isNullOrUndefined(document.getElementById(this.element.id + '_tile_parent'))) {
             let svg: ClientRect = this.svgObject.getBoundingClientRect();
             let element: HTMLElement = document.getElementById(this.element.id);
@@ -971,15 +1013,67 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         let blazor: void = this.isBlazor ? this.blazorTemplates() : null;
 
         if (this.annotationsModule) {
-
-            this.annotationsModule.renderAnnotationElements();
-
+            if (this.width !== '0px' && this.height !== '0px' && this.width !== '0%' && this.height !== '0%') {
+                this.annotationsModule.renderAnnotationElements();
+            }
         }
 
         this.zoomingChange();
+        this.trigger(loaded, this.isBlazor ? { isResized: this.isResize } : { maps: this, isResized: this.isResize });
+        this.isResize = false;
+    }
 
-        this.trigger(loaded, this.isBlazor ? {} : { maps: this });
+    /**
+     * @private
+     * To apply color to the initial selected marker
+     */
+    public markerSelection(
+        selectionSettings : SelectionSettingsModel, map : Maps, targetElement : Element,
+        data : object
+    ) : void {
+        let border : BorderModel = {
+            color: selectionSettings.border.color,
+            width: selectionSettings.border.width / map.scale
+        };
+        let markerSelectionProperties : object = {
+            opacity: selectionSettings.opacity,
+            fill: selectionSettings.fill,
+            border: border,
+            target: targetElement.id,
+            cancel: false,
+            data: data,
+            maps: map
+        };
 
+        if (!getElement('MarkerselectionMap')) {
+            document.body.appendChild(createStyle('MarkerselectionMap', 'MarkerselectionMapStyle', markerSelectionProperties));
+        } else {
+            customizeStyle('MarkerselectionMap', 'MarkerselectionMapStyle', markerSelectionProperties);
+        }
+        if (this.selectedMarkerElementId.length === 0 || selectionSettings.enableMultiSelect) {
+            targetElement.setAttribute('class', 'MarkerselectionMapStyle');
+        }
+    }
+    /**
+     * @private
+     * initial selection of marker
+     *
+     */
+    public markerInitialSelection(
+        layerIndex : number, markerIndex : number, markerSettings : MarkerSettingsModel,
+        latitude : number, longitude : number
+    ): void {
+        let selectionSettings : SelectionSettingsModel = markerSettings.selectionSettings;
+        if (selectionSettings.enable) {
+            for (let i : number = 0; i < markerSettings.dataSource['length']; i++) {
+                let data: Object = markerSettings.dataSource[i];
+                if (data['latitude'] === latitude && data['longitude'] === longitude) {
+                    let targetId : string = this.element.id + '_' + 'LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex +
+                    '_dataIndex_' + i;
+                    this.markerSelection(selectionSettings, this, getElement(targetId), data);
+                }
+            }
+        }
     }
 
     /**
@@ -1124,7 +1218,10 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         let mainLayer: LayerSettings = this.layersCollection[0];
         let padding: number = 0;
         if (mainLayer.isBaseLayer && (mainLayer.layerType === 'OSM' || mainLayer.layerType === 'Bing' ||
-            mainLayer.layerType === 'GoogleStaticMap')) {
+            mainLayer.layerType === 'GoogleStaticMap' || mainLayer.layerType === 'Google')) {
+            if (mainLayer.layerType === 'Google') {
+                mainLayer.urlTemplate = 'https://mt1.google.com/vt/lyrs=m@129&hl=en&x=tileX&y=tileY&z=level';
+            }
             removeElement(this.element.id + '_tile_parent');
             removeElement(this.element.id + '_tiles');
             removeElement('animated_tiles');
@@ -1521,6 +1618,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         let legendText : string; let page : number = this.legendModule.currentPage;
         let legendIndex : string = (<HTMLElement>event.target).id.split('_Index_')[1];
         let collection : Object;
+        page = this.legendModule.totalPages.length <= this.legendModule.currentPage
+            ? this.legendModule.totalPages.length - 1 : this.legendModule.currentPage < 0 ?
+            0 : this.legendModule.currentPage;
         let count : number = this.legendModule.totalPages.length !== 0 ?
         this.legendModule.totalPages[page]['Collection'].length : this.legendModule.totalPages.length;
         for (let i : number = 0; i < count; i++) {
@@ -1543,6 +1643,15 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     private titleTooltip(event: Event, x: number, y: number, isTouch?: boolean): void {
         let targetId: string = (<HTMLElement>event.target).id;
+        if (targetId === (this.element.id + '_LegendTitle') && ((<HTMLElement>event.target).textContent.indexOf('...') === -1)) {
+            showTooltip(
+                this.legendSettings.title.text, this.legendSettings.titleStyle.size, x, y, this.element.offsetWidth,
+                this.element.offsetHeight, this.element.id + '_EJ2_LegendTitle_Tooltip',
+                getElement(this.element.id + '_Secondary_Element'), isTouch
+            );
+        } else {
+            removeElement(this.element.id + '_EJ2_LegendTitle_Tooltip');
+        }
         if ((targetId === (this.element.id + '_Map_title')) && ((<HTMLElement>event.target).textContent.indexOf('...') > -1)) {
             showTooltip(
                 this.titleSettings.text, this.titleSettings.textStyle.size, x, y, this.element.offsetWidth, this.element.offsetHeight,
@@ -1559,6 +1668,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @param e - Specifies the arguments of window resize event.
      */
     public mapsOnResize(e: Event): boolean {
+        this.isResize = true;
         let args: IResizeEventArgs = {
             name: resize,
             previousSize: this.availableSize,
@@ -1622,7 +1732,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * This method is used to perform panning by specifying the direction.    
+     * This method is used to perform panning by specifying the direction.
      * @param direction - Specifies the direction in which the panning is performed.
      * @param mouseLocation - Specifies the location of the mouse pointer in maps.
      */
@@ -1885,6 +1995,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
       this.zoomLabelPositions = [];
       this.mouseDownEvent = { x: null, y: null };
       this.mouseClickEvent = { x: null, y: null };
+      if (document.getElementById('mapsmeasuretext')) {
+        document.getElementById('mapsmeasuretext').remove();
+      }
       this.removeSvg();
       super.destroy();
     }
@@ -1958,7 +2071,11 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             if (newProp.layers && isMarker) {
                 removeElement(this.element.id + '_Markers_Group');
                 if (this.isTileMap) {
-                    this.mapLayerPanel.renderTileLayer(this.mapLayerPanel, this.layers['currentFactor'], (this.layers.length - 1));
+                    if (this.isBlazor) {
+                       this.render();
+                    } else {
+                        this.mapLayerPanel.renderTileLayer(this.mapLayerPanel, this.layers['currentFactor'], (this.layers.length - 1));
+                    }
                 } else {
                     this.render();
                 }

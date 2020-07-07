@@ -86,7 +86,7 @@ export class TextLayer {
      * @private
      */
     // tslint:disable-next-line
-    public resizeTextContents(pageNumber: number, textContents: any, textBounds: any, rotation: any): void {
+    public resizeTextContents(pageNumber: number, textContents: any, textBounds: any, rotation: any, isTextSearch?: boolean): void {
         let textLayer: HTMLElement = this.pdfViewerBase.getElement('_textLayer_' + pageNumber);
         let canvasElement: HTMLElement = this.pdfViewerBase.getElement('_pageCanvas_' + pageNumber);
         if (canvasElement) {
@@ -125,7 +125,9 @@ export class TextLayer {
             textLayer.parentElement.removeChild(textLayer);
         }
         if (this.pdfViewer.textSearch) {
-            this.pdfViewer.textSearch.resizeSearchElements(pageNumber);
+            if (!isTextSearch) {
+                this.pdfViewer.textSearch.resizeSearchElements(pageNumber);
+            }
         }
     }
 

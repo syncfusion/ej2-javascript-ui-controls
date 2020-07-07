@@ -2,6 +2,7 @@ import { Workbook, DataBind } from '../../workbook/index';
 import { WorkbookSave, WorkbookNumberFormat, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookFilter } from '../integrations/index';
 import { WorkbookEdit, WorkbookCellFormat, WorkbookHyperlink, WorkbookInsert, WorkbookDelete } from '../actions/index';
 import { WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookDataValidation, WorkbookMerge } from '../actions/index';
+import { WorkbookConditionalFormat } from '../actions/conditional-formatting';
 /**
  * Workbook all module.
  * @private
@@ -15,7 +16,7 @@ export class WorkbookAllModule {
         Workbook.Inject(
             DataBind, WorkbookSave, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit,
             WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookHyperlink, WorkbookFilter, WorkbookInsert, WorkbookDelete,
-            WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookDataValidation, WorkbookMerge);
+            WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookDataValidation, WorkbookMerge, WorkbookConditionalFormat);
     }
 
     /**

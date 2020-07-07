@@ -27,10 +27,12 @@ export class YearEvent extends TimelineEvent {
     public renderAppointments(): void {
         this.fields = this.parent.eventFields;
         let elementSelector: string = '.' + cls.APPOINTMENT_WRAPPER_CLASS + ',.' + cls.MORE_INDICATOR_CLASS;
-        let eventWrapper: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(elementSelector));
-        [].slice.call(eventWrapper).forEach((node: Element) => remove(node));
+        let eventWrappers: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(elementSelector));
+        for (let wrapper of eventWrappers) {
+            remove(wrapper);
+        }
         this.renderedEvents = [];
-        if (this.parent.currentView !== 'TimelineYear') {
+        if (this.parent.currentView === 'Year') {
             this.yearViewEvents();
         } else {
             this.removeCellHeight();
@@ -103,7 +105,11 @@ export class YearEvent extends TimelineEvent {
                 this.cellHeight = rowTd.offsetHeight;
                 let dayStart: Date = util.resetTime(new Date(monthStart.getTime()));
                 let dayEnd: Date = util.addDays(new Date(dayStart.getTime()), 1);
-                let dayEvents: Object[] = this.parent.eventBase.filterEvents(dayStart, dayEnd);
+                let resource: TdData;
+                if (this.parent.uiStateValues.isGroupAdaptive) {
+                    resource = this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex];
+                }
+                let dayEvents: Object[] = this.parent.eventBase.filterEvents(dayStart, dayEnd, undefined, resource);
                 for (let index: number = 0, count: number = dayEvents.length; index < count; index++) {
                     let eventData: { [key: string]: Object } = extend({}, dayEvents[index], null, true) as { [key: string]: Object };
                     let overlapIndex: number = this.getIndex(eventData[this.fields.startTime] as Date);
@@ -155,18 +161,18 @@ export class YearEvent extends TimelineEvent {
             [this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex]] : this.parent.resourceBase.lastResourceLevel;
         if (this.parent.activeViewOptions.orientation === 'Horizontal') {
             for (let month: number = 0; month < 12; month++) {
-                resources.forEach((resource: TdData, index: number) => {
+                for (let i: number = 0, len: number = resources.length; i < len; i++) {
                     this.renderedEvents = [];
-                    this.renderResourceEvent(wrapperCollection[index], resource, month, index);
-                });
+                    this.renderResourceEvent(wrapperCollection[i], resources[i], month, i);
+                }
             }
         } else {
-            resources.forEach((resource: TdData, index: number) => {
+            for (let i: number = 0, len: number = resources.length; i < len; i++) {
                 this.renderedEvents = [];
                 for (let month: number = 0; month < 12; month++) {
-                    this.renderResourceEvent(wrapperCollection[index], resource, month, index);
+                    this.renderResourceEvent(wrapperCollection[i], resources[i], month, i);
                 }
-            });
+            }
         }
     }
 
@@ -188,11 +194,11 @@ export class YearEvent extends TimelineEvent {
             let leftValue: number = (this.parent.activeViewOptions.orientation === 'Vertical') ?
                 month * this.cellWidth : index * this.cellWidth;
             if (this.parent.rowAutoHeight || this.cellHeight > availedHeight) {
-                this.renderEvent(eventWrapper, eventData, month, leftValue, null, index);
+                this.renderEvent(eventWrapper, eventData, month, leftValue, leftValue, index);
                 this.updateCellHeight(td, availedHeight);
             } else {
                 let moreIndex: number = this.parent.activeViewOptions.orientation === 'Horizontal' ? month : index;
-                this.renderMoreIndicatior(eventWrapper, eventDatas.length - a, monthStart, moreIndex, leftValue, index);
+                this.renderMoreIndicatior(eventWrapper, eventDatas.length - a, monthStart, moreIndex, leftValue, leftValue, index);
                 if (this.parent.activeViewOptions.orientation === 'Horizontal') {
                     for (let i: number = index; i < eventDatas.length; i++) {
                         let moreData: Object = extend({}, eventDatas[i], { Index: overlapIndex + i }, true);

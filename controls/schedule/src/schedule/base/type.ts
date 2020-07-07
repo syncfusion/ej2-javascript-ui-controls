@@ -5,7 +5,7 @@
 /**
  * An enum that denotes the view mode of the Scheduler.
  */
-export type View = 'Day' | 'Week' | 'WorkWeek' | 'Month' | 'Agenda' | 'MonthAgenda' | 'TimelineDay' | 'TimelineWeek' |
+export type View = 'Day' | 'Week' | 'WorkWeek' | 'Month' | 'Year' | 'Agenda' | 'MonthAgenda' | 'TimelineDay' | 'TimelineWeek' |
     'TimelineWorkWeek' | 'TimelineMonth' | 'TimelineYear';
 
 /**

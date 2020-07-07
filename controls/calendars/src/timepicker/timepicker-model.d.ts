@@ -219,6 +219,13 @@ export interface TimePickerModel extends ComponentModel{
     allowEdit?: boolean;
 
     /**
+     * By default, the popup opens while clicking on the timepicker icon.
+     * If you want to open the popup while focusing the time input then specify its value as true.
+     * @default false
+     */
+    openOnFocus?: boolean;
+
+    /**
      * Triggers when the value is changed.
      * @event  
      * @blazorProperty 'ValueChange'

@@ -1,4 +1,4 @@
-import { ChildProperty, Property } from '@syncfusion/ej2-base';import { TextAlignmentType, TimingFunction } from '../utils/enum';
+import { ChildProperty, Property } from '@syncfusion/ej2-base';import { TextAlignmentType } from '../utils/enum';
 
 /**
  * Interface for a class Margin
@@ -111,12 +111,6 @@ export interface AnimationModel {
      * @default 0
      */
     delay?: number;
-
-    /**
-     * timing-function
-     * @default 'Linear'
-     */
-    timing?: TimingFunction;
 
 }
 

@@ -171,7 +171,8 @@ export interface PivotFieldListModel extends ComponentModel{
     aggregateTypes?: AggregateTypes[];
 
     /**
-     * It allows any customization of Pivot Field List properties on initial rendering. Based on the changes, the pivot field list will be redered.
+     * It allows any customization of Pivot Field List properties on initial rendering.
+     * Based on the changes, the pivot field list will be redered.
      * @event
      * @blazorproperty 'OnLoad'
      */

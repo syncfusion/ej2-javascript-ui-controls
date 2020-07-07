@@ -91,7 +91,7 @@ export class CommandHandler {
     public isContainer: boolean = false;
     private state: TransactionState;
     /** @private */
-    public diagram: Diagram;
+    private  diagram: Diagram;
 
     private childTable: {} = {};
 
@@ -695,17 +695,18 @@ export class CommandHandler {
             this.diagram.refreshDiagramLayer();
         }
     }
-    private UpdateBlazorDiagramModelLayers(layer: Layer): void {
+    private UpdateBlazorDiagramModelLayers(layer: Layer, isRemove: boolean): void {
         let blazorInterop: string = 'sfBlazor';
         let updatedModel: object = cloneBlazorObject(layer);
         let blazor: string = 'Blazor';
         if (window && window[blazor]) {
-            let obj: object = { 'methodName': 'UpdateBlazorDiagramModelLayers', 'diagramobj': JSON.stringify(updatedModel) };
+            let obj: object = { 'methodName': 'UpdateBlazorDiagramModelLayers',
+                'diagramobj': JSON.stringify(updatedModel), 'isRemove': isRemove };
             window[blazorInterop].updateBlazorProperties(obj, this.diagram);
         }
     }
     /** @private */
-    public addLayer(layer: LayerModel, objects?: Object[], isClone: boolean = false): void {
+    public addLayer(layer: LayerModel, objects?: Object[], isServerUpdate: boolean = true): void {
         layer.id = layer.id || randomId();
         layer.zIndex = this.diagram.layers.length;
         this.diagram.enableServerDataBinding(false);
@@ -714,8 +715,8 @@ export class CommandHandler {
         (layer as Layer).objectZIndex = -1;
         (layer as Layer).zIndexTable = {};
         this.diagram.layers.push(layer);
-        if (isClone) {
-            this.UpdateBlazorDiagramModelLayers(layer as Layer);
+        if (isServerUpdate) {
+            this.UpdateBlazorDiagramModelLayers(layer as Layer, false);
         }
         this.diagram.layerZIndexTable[layer.zIndex] = layer.id;
         this.diagram.activeLayer = layer;
@@ -748,7 +749,7 @@ export class CommandHandler {
         return undefined;
     }
     /** @private */
-    public removeLayer(layerId: string): void {
+    public removeLayer(layerId: string, isServerUpdate: boolean = true): void {
         let layers: LayerModel = this.getLayer(layerId);
         if (layers) {
             let index: number = this.diagram.layers.indexOf(layers);
@@ -761,6 +762,9 @@ export class CommandHandler {
                         this.diagram.activeLayer = this.diagram.layers[this.diagram.layers.length - 1];
                     }
                 }
+            }
+            if (isServerUpdate) {
+                this.UpdateBlazorDiagramModelLayers(this.diagram.layers[index] as Layer, true);
             }
             delete this.diagram.layerZIndexTable[layers.zIndex];
             this.diagram.layers.splice(index, 1);
@@ -1715,7 +1719,10 @@ export class CommandHandler {
     /** @private */
     public labelSelect(obj: NodeModel | ConnectorModel, textWrapper: DiagramElement): void {
         let selectorModel: Selector = (this.diagram.selectedItems) as Selector;
+        let isEnableServerDatabind: boolean = this.diagram.allowServerDataBinding;
+        this.diagram.allowServerDataBinding = false;
         selectorModel.nodes = selectorModel.connectors = [];
+        this.diagram.allowServerDataBinding = isEnableServerDatabind;
         if (obj instanceof Node) {
             selectorModel.nodes[0] = obj as NodeModel;
         } else {
@@ -2391,6 +2398,7 @@ export class CommandHandler {
 
     /** @private */
     public async clearSelection(triggerAction?: boolean, isTriggered?: boolean): Promise<void> {
+        let enableServerDataBinding: boolean = this.diagram.allowServerDataBinding;
         this.diagram.enableServerDataBinding(false);
         if (hasSelection(this.diagram)) {
             let selectormodel: SelectorModel = this.diagram.selectedItems;
@@ -2450,7 +2458,7 @@ export class CommandHandler {
                 }
             }
             this.updateBlazorSelector();
-            this.diagram.enableServerDataBinding(true);
+            this.diagram.enableServerDataBinding(enableServerDataBinding);
         }
     }
 
@@ -3946,7 +3954,7 @@ export class CommandHandler {
             if (this.diagram.lineRoutingModule && this.diagram.constraints & DiagramConstraints.LineRouting) {
                 this.diagram.resetSegments();
             }
-        }        
+        }
         return objects;
     }
 

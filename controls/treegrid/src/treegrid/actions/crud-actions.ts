@@ -2,7 +2,7 @@
  * crud-actions.ts file
  */
 import { ITreeData } from '../base/interface';
-import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend, getValue } from '@syncfusion/ej2-base';
 import { TreeGrid } from '../base';
 import { DataManager } from '@syncfusion/ej2-data';
 import { extendArray, getPlainData, getParentData } from '../utils';
@@ -68,7 +68,7 @@ export function editAction(details: { value: ITreeData, action: string }, contro
                                     || (!isNullOrUndefined(batchChanges) && batchChanges[changedRecords].length === 0))
                                     || keys[j] === columnName)) {
                                     let editedData: ITreeData = getParentData(control, (<ITreeData>modifiedData[k]).uniqueID);
-                                    editedData.taskData[keys[j]] = treeData[i][keys[j]] = modifiedData[k][keys[j]];
+                                    editedData.taskData[keys[j]] = editedData[keys[j]] = treeData[i][keys[j]] = modifiedData[k][keys[j]];
                                 }
                             }
                         } else if (action === 'add' || action === 'batchsave') {
@@ -220,6 +220,9 @@ export function updateParentRow(key: string, record: ITreeData, action: string, 
         let index: number;
         currentRecords.map((e: ITreeData, i: number) => { if (e[key] === record[key]) { index = i; return; } });
         record = currentRecords[index];
+        if (control.enableVirtualization && isNullOrUndefined(record) && !isNullOrUndefined(child)) {
+            record = getValue('uniqueIDCollection.' + child.parentUniqueID, control);
+        }
         record.hasChildRecords = false;
         if (action === 'add' || action === 'batchsave') {
             record.expanded = true;
@@ -273,11 +276,13 @@ export function updateParentRow(key: string, record: ITreeData, action: string, 
         if (control.frozenRows || control.getFrozenColumns()) {
             movableRow = <HTMLTableRowElement>control.getMovableRowByIndex(index);
         }
-        control.renderModule.cellRender({
-            data: record, cell: row.cells[control.treeColumnIndex] ? row.cells[control.treeColumnIndex]
-                : movableRow.cells[control.treeColumnIndex - control.frozenColumns],
-            column: control.grid.getColumns()[control.treeColumnIndex],
-            requestType: action
-        });
+        if (!control.enableVirtualization && !isNullOrUndefined(row) || !isNullOrUndefined(movableRow)) {
+            control.renderModule.cellRender({
+                data: record, cell: row.cells[control.treeColumnIndex] ? row.cells[control.treeColumnIndex]
+                    : movableRow.cells[control.treeColumnIndex - control.frozenColumns],
+                column: control.grid.getColumns()[control.treeColumnIndex],
+                requestType: action
+            });
+        }
     }
 }

@@ -474,7 +474,7 @@ export class GanttTreeGrid {
                         '<span class="e-icons e-notes-info"></span></div>';
                 }
             } else {
-                column.disableHtmlEncode = true;
+                column.disableHtmlEncode = false;
             }
         } else if (taskSettings.baselineStartDate === column.field ||
             taskSettings.baselineEndDate === column.field) {

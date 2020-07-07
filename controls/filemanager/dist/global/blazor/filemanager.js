@@ -1,5 +1,5 @@
 window.sf = window.sf || {};
-window.sf.filemanager = (function (exports) {
+var sffilemanager = (function (exports) {
 'use strict';
 
 var __extends = (undefined && undefined.__extends) || (function () {
@@ -445,6 +445,8 @@ var CHECK_SELECT = 'e-fe-cb-select';
 var ROOT_POPUP = 'e-fe-popup';
 /** @hidden */
 var MOBILE = 'e-fe-mobile';
+/** @hidden */
+var MOB_POPUP = 'e-fe-popup e-fe-mobile';
 /** @hidden */
 var MULTI_SELECT = 'e-fe-m-select';
 /** @hidden */
@@ -1074,7 +1076,13 @@ function getSortedData(parent, items) {
     if (items.length === 0) {
         return items;
     }
-    var query = new sf.data.Query().sortBy(parent.sortBy, parent.sortOrder.toLowerCase(), true).group('isFile');
+    var query;
+    if (parent.sortOrder !== 'None') {
+        query = new sf.data.Query().sortBy(parent.sortBy, parent.sortOrder.toLowerCase(), true).group('isFile');
+    }
+    else {
+        query = new sf.data.Query().group('isFile');
+    }
     var lists = new sf.data.DataManager(items).executeLocal(query);
     return sf.base.getValue('records', lists);
 }
@@ -1155,7 +1163,7 @@ function getCssClass(parent, css) {
 }
 function sortbyClickHandler(parent, args) {
     var tick;
-    if (args.item.id.indexOf('ascending') !== -1 || args.item.id.indexOf('descending') !== -1) {
+    if (args.item.id.indexOf('ascending') !== -1 || args.item.id.indexOf('descending') !== -1 || args.item.id.indexOf('none') !== -1) {
         tick = true;
     }
     else {
@@ -1193,6 +1201,9 @@ function getSortField(id) {
             break;
         case 'descending':
             field = 'Descending';
+            break;
+        case 'none':
+            field = 'None';
             break;
     }
     return field;
@@ -1645,7 +1656,7 @@ function uploadItem(parent) {
     }
     else {
         var eleId = '#' + parent.element.id + UPLOAD_ID;
-        var uploadEle = sf.base.select(eleId, parent.element);
+        var uploadEle = document.querySelector(eleId);
         uploadEle.click();
     }
 }
@@ -2113,7 +2124,8 @@ function createDialog(parent, text, e, details, replaceItems) {
             visible: true,
             allowDragging: true,
             isModal: true,
-            target: '#' + parent.element.id,
+            target: parent.popupTarget ? parent.popupTarget : '#' + parent.element.id,
+            cssClass: getCssClass(parent, parent.isMobile ? MOB_POPUP : ROOT_POPUP),
             width: '350px',
             open: options.open,
             close: options.close,
@@ -2142,7 +2154,8 @@ function createExtDialog(parent, text, replaceItems, newPath) {
             closeOnEscape: true,
             allowDragging: true,
             animationSettings: { effect: 'None' },
-            target: '#' + parent.element.id,
+            target: parent.popupTarget ? parent.popupTarget : '#' + parent.element.id,
+            cssClass: getCssClass(parent, parent.isMobile ? MOB_POPUP : ROOT_POPUP),
             enableRtl: parent.enableRtl,
             showCloseIcon: true,
             isModal: true,
@@ -2784,7 +2797,8 @@ function createImageDialog(parent, header, imageUrl) {
             isModal: true,
             width: '350px',
             height: '350px',
-            target: '#' + parent.element.id,
+            target: parent.popupTarget ? parent.popupTarget : '#' + parent.element.id,
+            cssClass: getCssClass(parent, parent.isMobile ? MOB_POPUP : ROOT_POPUP),
             locale: parent.locale,
             enableResize: true,
             allowDragging: true,
@@ -5094,6 +5108,11 @@ var ContextMenu$2 = /** @class */ (function () {
                         /* istanbul ignore next */
                         sortbyClickHandler(_this.parent, args);
                         break;
+                    /* istanbul ignore next */
+                    case 'none':
+                        /* istanbul ignore next */
+                        sortbyClickHandler(_this.parent, args);
+                        break;
                     // tslint:disable-next-line
                     /* istanbul ignore next */
                     case 'largeiconsview':
@@ -5219,6 +5238,10 @@ var ContextMenu$2 = /** @class */ (function () {
                             {
                                 id: this.getMenuId('Descending'), text: getLocaleText(this.parent, 'Descending'),
                                 iconCss: this.parent.sortOrder === 'Descending' ? TB_OPTION_TICK : null
+                            },
+                            {
+                                id: this.getMenuId('None'), text: getLocaleText(this.parent, 'None'),
+                                iconCss: this.parent.sortOrder === 'None' ? TB_OPTION_TICK : null
                             }
                         ]
                     };
@@ -5310,6 +5333,7 @@ var defaultLocale = {
     'Permission': 'Permission',
     'Ascending': 'Ascending',
     'Descending': 'Descending',
+    'None': 'None',
     'View-LargeIcons': 'Large icons',
     'View-Details': 'Details',
     'Search': 'Search',
@@ -5407,7 +5431,6 @@ var FileManager = /** @class */ (function (_super) {
         _this.uploadItem = [];
         _this.deleteRecords = [];
         _this.isFile = false;
-        _this.sortOrder = 'Ascending';
         _this.sortBy = 'name';
         _this.isCut = false;
         _this.isSearchCut = false;
@@ -5705,7 +5728,8 @@ var FileManager = /** @class */ (function (_super) {
             visible: false,
             isModal: true,
             width: '350px',
-            target: '#' + this.element.id,
+            target: this.popupTarget ? this.popupTarget : '#' + this.element.id,
+            cssClass: getCssClass(this, this.isMobile ? MOB_POPUP : ROOT_POPUP),
             locale: this.locale,
             allowDragging: true,
             position: { X: 'center', Y: 'center' },
@@ -6111,6 +6135,24 @@ var FileManager = /** @class */ (function (_super) {
                     sf.base.setStyleAttribute(this.element, { 'width': width });
                     this.notify(modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
                     break;
+                case 'sortOrder':
+                    refresh(this);
+                    this.notify(sortByChange, {});
+                    break;
+                case 'popupTarget':
+                    if (this.uploadDialogObj) {
+                        this.uploadDialogObj.target = newProp.popupTarget;
+                    }
+                    if (this.dialogObj) {
+                        this.dialogObj.target = newProp.popupTarget;
+                    }
+                    if (this.extDialogObj) {
+                        this.extDialogObj.target = newProp.popupTarget;
+                    }
+                    if (this.viewerObj) {
+                        this.viewerObj.target = newProp.popupTarget;
+                    }
+                    break;
             }
         }
     };
@@ -6426,6 +6468,9 @@ var FileManager = /** @class */ (function (_super) {
         sf.base.Property('/')
     ], FileManager.prototype, "path", void 0);
     __decorate$8([
+        sf.base.Property(null)
+    ], FileManager.prototype, "popupTarget", void 0);
+    __decorate$8([
         sf.base.Complex({}, SearchSettings)
     ], FileManager.prototype, "searchSettings", void 0);
     __decorate$8([
@@ -6443,6 +6488,9 @@ var FileManager = /** @class */ (function (_super) {
     __decorate$8([
         sf.base.Property(true)
     ], FileManager.prototype, "showThumbnail", void 0);
+    __decorate$8([
+        sf.base.Property('Ascending')
+    ], FileManager.prototype, "sortOrder", void 0);
     __decorate$8([
         sf.base.Complex({}, ToolbarSettings)
     ], FileManager.prototype, "toolbarSettings", void 0);
@@ -6677,7 +6725,8 @@ var Toolbar$1 = /** @class */ (function () {
                 { id: this.getPupupId('date'), text: getLocaleText(this.parent, 'DateModified') },
                 { separator: true },
                 { id: this.getPupupId('ascending'), text: getLocaleText(this.parent, 'Ascending'), iconCss: TB_OPTION_TICK },
-                { id: this.getPupupId('descending'), text: getLocaleText(this.parent, 'Descending'), }
+                { id: this.getPupupId('descending'), text: getLocaleText(this.parent, 'Descending'), },
+                { id: this.getPupupId('none'), text: getLocaleText(this.parent, 'None'), }
             ];
             this.buttonObj = new sf.splitbuttons.DropDownButton({
                 items: items, cssClass: getCssClass(this.parent, ROOT_POPUP),
@@ -6751,6 +6800,9 @@ var Toolbar$1 = /** @class */ (function () {
                 }
                 else if (items[itemCount].id === this.getPupupId('descending')) {
                     items[itemCount].iconCss = this.parent.sortOrder === 'Descending' ? TB_OPTION_TICK : '';
+                }
+                else if (items[itemCount].id === this.getPupupId('none')) {
+                    items[itemCount].iconCss = this.parent.sortOrder === 'None' ? TB_OPTION_TICK : '';
                 }
             }
         }
@@ -7839,7 +7891,9 @@ var DetailsView = /** @class */ (function () {
                 sortSettings = [];
             }
             else {
-                sortSettings = [{ direction: this.parent.sortOrder, field: this.parent.sortBy }];
+                if (this.parent.sortOrder !== 'None') {
+                    sortSettings = [{ direction: this.parent.sortOrder, field: this.parent.sortBy }];
+                }
             }
             this.gridObj = new sf.grids.Grid({
                 dataSource: items,
@@ -8174,7 +8228,12 @@ var DetailsView = /** @class */ (function () {
         }
     };
     DetailsView.prototype.onSortColumn = function () {
-        this.gridObj.sortModule.sortColumn(this.parent.sortBy, this.parent.sortOrder);
+        if (this.parent.sortOrder !== 'None') {
+            this.gridObj.sortModule.sortColumn(this.parent.sortBy, this.parent.sortOrder);
+        }
+        else {
+            this.gridObj.dataSource = getSortedData(this.parent, this.gridObj.dataSource);
+        }
     };
     DetailsView.prototype.onPropertyChanged = function (e) {
         if (e.module !== this.getModuleName() && e.module !== 'common') {
@@ -8360,7 +8419,9 @@ var DetailsView = /** @class */ (function () {
             }
             this.adjustHeight();
             if (this.gridObj.sortSettings.columns.length > 0 && this.gridObj.sortSettings.columns[0].field !== this.parent.sortBy) {
-                this.gridObj.sortColumn(this.parent.sortBy, this.parent.sortOrder);
+                if (this.parent.sortOrder !== 'None') {
+                    this.gridObj.sortColumn(this.parent.sortBy, this.parent.sortOrder);
+                }
             }
         }
     };
@@ -8383,7 +8444,12 @@ var DetailsView = /** @class */ (function () {
         if (columnData[len - 1].field && (columnData[len - 1].field === 'filterPath')) {
             /* istanbul ignore next */
             if (this.gridObj.sortSettings.columns[0].field === 'filterPath') {
-                this.gridObj.sortColumn('name', this.parent.sortOrder);
+                if (this.parent.sortOrder !== 'None') {
+                    this.gridObj.sortColumn('name', this.parent.sortOrder);
+                }
+                else {
+                    this.gridObj.dataSource = getSortedData(this.parent, this.gridObj.dataSource);
+                }
                 this.parent.notify(sortByChange, {});
             }
             this.gridObj.columns.pop();
@@ -9482,10 +9548,6 @@ var DetailsView = /** @class */ (function () {
  * File Manager modules
  */
 
-/**
- * File Manager all modules
- */
-
 FileManager.Inject(DetailsView, NavigationPane, LargeIconsView, Toolbar$1, ContextMenu$2, BreadCrumbBar);
 
 exports.AjaxSettings = AjaxSettings;
@@ -9527,6 +9589,7 @@ exports.CONTROL = CONTROL;
 exports.CHECK_SELECT = CHECK_SELECT;
 exports.ROOT_POPUP = ROOT_POPUP;
 exports.MOBILE = MOBILE;
+exports.MOB_POPUP = MOB_POPUP;
 exports.MULTI_SELECT = MULTI_SELECT;
 exports.FILTER = FILTER;
 exports.LAYOUT = LAYOUT;
@@ -9687,6 +9750,7 @@ exports.ContextMenu = ContextMenu$2;
 return exports;
 
 });
+sfBlazor.modules["filemanager"] = "filemanager.FileManager";
 sfBlazor.loadDependencies(sfBlazor.dependencyJson.filemanager, () => {
-    sf.filemanager = sf.filemanager({});
+    sf.filemanager = sf.base.extend({}, sf.filemanager, sffilemanager({}));
 });

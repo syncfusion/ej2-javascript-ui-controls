@@ -1,13 +1,18 @@
 import { StockChart } from '../stock-chart';
-import { PeriodsModel, TechnicalIndicatorModel, titlePositionX, textElement, appendChildElement } from '../../index';
-import { AxisModel, RowModel, ExportType, TrendlineTypes, TrendlineModel, TechnicalIndicators, ChartSeriesType } from '../../index';
-import { getElement, StockSeriesModel, FontModel } from '../../index';
+import { PeriodsModel, FontModel } from '../../common/model/base-model';
+import { titlePositionX, textElement, appendChildElement, getElement } from '../../common/utils/helper';
+import { ExportType } from '../../common/utils/enum';
+import { TrendlineTypes, ChartSeriesType, TechnicalIndicators } from '../../chart/utils/enum';
+import { AxisModel, RowModel } from '../../chart/axis/axis-model';
+import { TechnicalIndicatorModel } from '../../chart/technical-indicators/technical-indicator-model';
+import { TrendlineModel  } from '../../chart/series/chart-series-model';
 import { DropDownButton, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { Button } from '@syncfusion/ej2-buttons';
 import { ItemModel } from '@syncfusion/ej2-navigations';
 import { Rect, TextOption, measureText, SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { remove } from '@syncfusion/ej2-base';
 import { StockSeries } from '../model/base';
+import { StockSeriesModel } from '../model/base-model';
 
 /**
  * Period selector for range navigator

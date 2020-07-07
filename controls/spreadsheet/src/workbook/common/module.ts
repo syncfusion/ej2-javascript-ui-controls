@@ -75,5 +75,8 @@ export function getWorkbookRequiredModules(context: Workbook, modules: ModuleDec
     if (context.allowMerge) {
         modules.push({ member: 'workbookmerge', args: [context] });
     }
+    if (context.allowDataValidation) {
+        modules.push({ member: 'workbookConditionalFormatting', args: [context] });
+    }
     return modules;
 }

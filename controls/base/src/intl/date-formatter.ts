@@ -4,7 +4,7 @@ import { IntlBase as base } from './intl-base';
 import { isUndefined, throwError, getValue, isBlazor } from '../util';
 import { HijriParser } from '../hijri-parser';
 import { isNullOrUndefined, extend } from '../util';
-const abbreviateRegexGlobal: RegExp = /\/MMMMM|MMMM|MMM|a|LLL|EEEEE|EEEE|E|K|cccc|ccc|WW|W|G+|z+/gi;
+const abbreviateRegexGlobal: RegExp = /\/MMMMM|MMMM|MMM|a|LLLL|LLL|EEEEE|EEEE|E|K|cccc|ccc|WW|W|G+|z+/gi;
 const standalone: string = 'stand-alone';
 const weekdayKey: string[] = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 export const basicPatterns: string[] = ['short', 'medium', 'long', 'full'];

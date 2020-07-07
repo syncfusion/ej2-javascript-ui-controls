@@ -15,7 +15,7 @@ import {
     SelectionRowFormat, SelectionSectionFormat, SelectionTableFormat, SelectionImageFormat
 } from './selection-format';
 import { TextSizeInfo } from '../viewer/text-helper';
-import { PageLayoutViewer, LayoutViewer, DocumentHelper, WebLayoutViewer, WListLevel, WList } from '../index';
+import { PageLayoutViewer, LayoutViewer, DocumentHelper, WebLayoutViewer, WListLevel, WList, WRowFormat } from '../index';
 import { isNullOrUndefined, createElement, L10n } from '@syncfusion/ej2-base';
 import { Dictionary } from '../../base/dictionary';
 import {
@@ -29,6 +29,7 @@ import { Popup } from '@syncfusion/ej2-popups';
 import { ContextType, RequestNavigateEventArgs } from '../../index';
 import { TextPosition, SelectionWidgetInfo, Hyperlink, ImageFormat } from './selection-helper';
 import { ItemModel, MenuEventArgs, DropDownButton } from '@syncfusion/ej2-splitbuttons';
+import { Revision } from '../track-changes/track-changes';
 /**
  * Selection 
  */
@@ -598,9 +599,11 @@ export class Selection {
     /**
      * Select the current field if selection is in field
      */
-    public selectField(): void {
-        if (this.isInField) {
-            let fieldStart: FieldElementBox = this.getHyperlinkField(true);
+    public selectField(fieldStart?: FieldElementBox): void {
+        if (this.isInField || !isNullOrUndefined(fieldStart)) {
+            if (isNullOrUndefined(fieldStart)) {
+                fieldStart = this.getHyperlinkField(true);
+            }
             this.selectFieldInternal(fieldStart);
         }
     }
@@ -1348,7 +1351,7 @@ export class Selection {
                 this.selectPrevNextFormField(true, formField);
             }
         }
-    }
+                }
     /**
      * Move to next paragraph
      * @private
@@ -1385,7 +1388,7 @@ export class Selection {
                 this.selectPrevNextFormField(false, formField);
             }
         }
-    }
+            }
     /**
      * Move to previous paragraph
      * @private
@@ -6265,6 +6268,13 @@ export class Selection {
                 return;
             }
         }
+        let currentRevision: Revision[] = this.getCurrentRevision();
+        if (currentRevision) {
+            this.owner.showRevisions = true;
+            this.owner.trackChangesPane.currentSelectedRevision = currentRevision[0];
+        } else if (!isNullOrUndefined(this.owner.trackChangesPane.currentSelectedRevision)) {
+            this.owner.trackChangesPane.currentSelectedRevision = undefined;
+        }
         if (this.start.paragraph.isInHeaderFooter) {
             let isInHeader: boolean = (this.start.paragraph.bodyWidget as HeaderFooterWidget).headerFooterType.indexOf('Header') !== -1;
             if (contextIsinTable) {
@@ -6289,6 +6299,186 @@ export class Selection {
             }
         }
     }
+    /* tslint:disable:no-any */
+    private addItemRevisions(currentItem: any, isFromAccept: boolean): void {
+        for (let i: number = 0; i < currentItem.revisions.length; i++) {
+            let currentRevision: Revision = currentItem.revisions[i];
+            this.selectRevision(currentRevision);
+            if (isFromAccept) {
+                currentRevision.accept();
+            } else {
+                currentRevision.reject();
+            }
+        }
+    }
+    /**
+     * @private
+     */
+    public hasRevisions(): boolean {
+        if (this.getCurrentRevision()) {
+            return true;
+        }
+        return false;
+    }
+
+    private getCurrentRevision(): Revision[] {
+        let start: TextPosition = this.start;
+        let end: TextPosition = this.end;
+        if (!this.isForward) {
+            start = this.end;
+            end = this.start;
+        }
+        let elementInfo: ElementInfo = start.currentWidget.getInline(start.offset, 0);
+        let currentElement: ElementBox = elementInfo.element;
+        let startPara: ParagraphWidget = start.paragraph;
+        let nextOffsetElement: ElementBox = start.currentWidget.getInline(start.offset + 1, 0).element;
+        let eleEndPosition: TextPosition;
+        if (currentElement && currentElement === nextOffsetElement) {
+            let offset: number = currentElement.line.getOffset(currentElement, (currentElement.length));
+            eleEndPosition = new TextPosition(this.owner);
+            eleEndPosition.setPositionParagraph(currentElement.line, offset);
+            if (end.offset === eleEndPosition.offset) {
+                return undefined;
+            }
+        }
+        if (nextOffsetElement !== currentElement) {
+            currentElement = nextOffsetElement;
+        }
+        if (!isNullOrUndefined(currentElement) && currentElement.revisions.length > 0) {
+            return currentElement.revisions;
+        }
+        if (startPara.isInsideTable) {
+            let cellWidget: TableCellWidget = startPara.associatedCell;
+            if (!isNullOrUndefined(cellWidget.ownerRow) && cellWidget.ownerRow.rowFormat.revisions.length > 0) {
+                return cellWidget.ownerRow.rowFormat.revisions;
+            }
+        }
+        if (end.offset > end.paragraph.getLength()) {
+            if (end.paragraph.characterFormat.revisions.length > 0) {
+                return end.paragraph.characterFormat.revisions;
+            }
+        }
+        return undefined;
+    }
+
+
+    private processLineRevisions(linewidget: LineWidget, isFromAccept: boolean): void {
+        for (let i: number = 0; i < linewidget.children.length; i++) {
+            let element: ElementBox = linewidget.children[i] as ElementBox;
+            if (element.revisions.length > 0) {
+                this.addItemRevisions(element, isFromAccept);
+            }
+        }
+    }
+    /**
+     * @private
+     * @param isFromAccept 
+     */
+    public handleAcceptReject(isFromAccept: boolean): void {
+        if (this.isEmpty) {
+            let elementInfo: ElementInfo = this.start.currentWidget.getInline((this.start.offset + 1), 0);
+            let currentElement: ElementBox = elementInfo.element;
+            let startPara: ParagraphWidget = this.start.paragraph;
+            if (!isNullOrUndefined(currentElement) && currentElement.revisions.length > 0) {
+                this.addItemRevisions(currentElement, isFromAccept);
+            }
+            if (startPara.isInsideTable) {
+                let cellWidget: TableCellWidget = startPara.associatedCell;
+                if (!isNullOrUndefined(cellWidget)) {
+                    if (cellWidget.ownerRow.rowFormat.revisions.length > 0) {
+                        this.addItemRevisions(cellWidget.ownerRow.rowFormat, isFromAccept);
+                    }
+                } else if (!startPara.isEmpty()) {
+                    for (let i: number = 0; i < cellWidget.childWidgets.length; i++) {
+                        let paraWidget: ParagraphWidget = cellWidget.childWidgets[i] as ParagraphWidget;
+                        for (let lineIndex: 0; lineIndex < paraWidget.childWidgets.length; lineIndex++) {
+                            let linewidget: LineWidget = paraWidget.childWidgets[lineIndex] as LineWidget;
+                            this.processLineRevisions(linewidget, isFromAccept);
+                        }
+                    }
+                }
+            }
+        } else {
+            let revisions: Revision[] = this.getselectedRevisionElements();
+            for (let i: number = 0; i < revisions.length; i++) {
+                this.acceptReject(revisions[i], isFromAccept);
+            }
+
+        }
+    }
+
+
+    private acceptReject(currentRevision: Revision, toAccept: boolean): void {
+        this.selectRevision(currentRevision);
+        if (toAccept) {
+            currentRevision.accept();
+        } else {
+            currentRevision.reject();
+        }
+    }
+
+    private getselectedRevisionElements(): Revision[] {
+        let revisionCollec: Revision[] = [];
+        let start: TextPosition = this.start;
+        let end: TextPosition = this.end;
+        if (!this.isForward) {
+            start = this.end;
+            end = this.start;
+        }
+        for (let i: number = 0; i < this.selectedWidgets.length; i++) {
+            let currentWidget: Widget = this.selectedWidgets.keys[i] as Widget;
+            if (currentWidget instanceof LineWidget) {
+                revisionCollec = this.getSelectedLineRevisions(currentWidget, start, end, revisionCollec);
+            } else if (currentWidget instanceof TableCellWidget) {
+                if (currentWidget.ownerRow.rowFormat.revisions.length > 0) {
+                    revisionCollec = this.addRevisionsCollec(currentWidget.ownerRow.rowFormat.revisions, revisionCollec);
+                }
+                for (let i: number = 0; i < currentWidget.childWidgets.length; i++) {
+                    let paraWidget: ParagraphWidget = currentWidget.childWidgets[i] as ParagraphWidget;
+                    for (let lineIndex: number = 0; lineIndex < paraWidget.childWidgets.length; lineIndex++) {
+                        let linewidget: LineWidget = paraWidget.childWidgets[lineIndex] as LineWidget;
+                        revisionCollec = this.getSelectedLineRevisions(linewidget, start, end, revisionCollec);
+                    }
+                }
+            }
+        }
+        return revisionCollec;
+    }
+
+    private getSelectedLineRevisions(currentWidget: LineWidget, start: TextPosition, end: TextPosition, elements: Revision[]): Revision[] {
+        if (currentWidget.paragraph.characterFormat.revisions.length > 0) {
+            elements = this.addRevisionsCollec(currentWidget.paragraph.characterFormat.revisions, elements);
+        }
+        for (let j: number = 0; j < currentWidget.children.length; j++) {
+            let currentElement: ElementBox = currentWidget.children[j];
+
+            let offset: number = currentElement.line.getOffset(currentElement, 0);
+            let eleStartPosition: TextPosition = new TextPosition(this.owner);
+            eleStartPosition.setPositionParagraph(currentElement.line, offset);
+
+            offset = currentElement.line.getOffset(currentElement, (currentElement.length));
+            let eleEndPosition: TextPosition = new TextPosition(this.owner);
+            eleEndPosition.setPositionParagraph(currentElement.line, offset);
+
+            if (((eleEndPosition.isExistAfter(start) && eleEndPosition.isExistBefore(end))
+                || (eleStartPosition.isExistAfter(start) && eleStartPosition.isExistBefore(end))
+                || eleStartPosition.isAtSamePosition(start)
+                || (start.isExistAfter(eleStartPosition) && end.isExistBefore(eleEndPosition))) && currentElement.revisions.length > 0) {
+                elements = this.addRevisionsCollec(currentElement.revisions, elements);
+            }
+        }
+        return elements;
+    }
+
+    private addRevisionsCollec(element: Revision[], revisCollec: Revision[]): Revision[] {
+        for (let i: number = 0; i < element.length; i++) {
+            if (revisCollec.indexOf(element[i]) === -1) {
+                revisCollec.push(element[i]);
+            }
+        }
+        return revisCollec;
+    }
+
     //Table Format retrieval starts
     /**
      * Retrieve selection table format
@@ -7578,8 +7768,10 @@ export class Selection {
     /**
      * @private
      */
-    public getFormFieldType(): FormFieldType {
-        let formField: FieldElementBox = this.getCurrentFormField();
+    public getFormFieldType(formField?: FieldElementBox): FormFieldType {
+        if (isNullOrUndefined(formField)) {
+            formField = this.getCurrentFormField();
+        }
         if (formField instanceof FieldElementBox) {
             if (formField.formFieldData instanceof TextFormField) {
                 return 'Text';
@@ -8253,6 +8445,17 @@ export class Selection {
                     break;
             }
         }
+        if (this.isFormField() && !(this.documentHelper.isDocumentProtected)) {
+            let formField: ElementBox = this.getCurrentFormField(true);
+            if (formField && (formField as FieldElementBox).formFieldData instanceof DropDownFormField) {
+                // tslint:disable-next-line:max-line-length
+                formField = (event.keyCode === 37 || event.keyCode === 38 || event.keyCode === 40) ? formField : formField.nextElement instanceof BookmarkElementBox ? formField.nextElement.reference : (formField as FieldElementBox).fieldEnd;
+                let index: number = event.keyCode === 39 ? 1 : 0 ;
+                let offset: number = formField.line.getOffset(formField, index);
+                let point: Point = this.getPhysicalPositionInternal(formField.line, offset, false);
+                this.selectInternal(formField.line, formField, index, point);
+            }
+        }
         if (!this.owner.isReadOnlyMode || this.isInlineFormFillMode()) {
             this.owner.editorModule.onKeyDownInternal(event, ctrl, shift, alt);
         } else if (this.documentHelper.isDocumentProtected && this.documentHelper.protectionType === 'FormFieldsOnly') {
@@ -8495,6 +8698,26 @@ export class Selection {
         let style: WStyle = (paragraph.paragraphFormat.baseStyle as WStyle);
         return (style !== undefined && (style.name.toLowerCase().indexOf('toc') !== -1));
     }
+    /**
+     * Return true if selection is in TOC
+     * @private
+     */
+    public isTOC(): boolean {
+        let info: ParagraphInfo = this.getParagraphInfo(this.start);
+        let para: ParagraphWidget = info.paragraph;
+        for (let i: number = 0; i < (para.childWidgets[0] as LineWidget).children.length; i++) {
+            let element: ElementBox = (para.childWidgets[0] as LineWidget).children[i];
+            if (element instanceof FieldElementBox) {
+                let fieldCode: string = this.owner.selection.getFieldCode(element);
+                if (fieldCode.match('TOC ') || fieldCode.match('Toc')) {
+                    return true;
+                }
+            } else {
+                continue;
+            }
+        }
+        return false;
+    }
 
     /**
      * @private
@@ -8597,6 +8820,42 @@ export class Selection {
         }
     }
     /**
+     * Navigate to previous revision in the document.
+     */
+    public navigatePreviousRevision(): void {
+        this.revisionNavigateInternal(false);
+    }
+    /**
+     * Navigate to next revision in the document.
+     */
+    public navigateNextRevision(): void {
+        this.revisionNavigateInternal(true);
+    }
+    /**
+     * Method to navigate revisions
+     */
+    private revisionNavigateInternal(next: boolean): void {
+        if (!this.documentHelper.currentSelectedRevisionInternal) {
+            if (this.documentHelper.owner.revisions.length === 0) {
+                return;
+            }
+            this.documentHelper.currentSelectedRevision = this.documentHelper.owner.revisions.get(0);
+        }
+        if (this.documentHelper.currentSelectedRevision) {
+            let revisions: Revision[] = this.documentHelper.owner.revisions.changes;
+            let revision: Revision = this.documentHelper.currentSelectedRevision;
+            let index: number = revisions.indexOf(revision);
+            if (next) {
+                revision = (index === (revisions.length - 1)) ? revisions[0] : revisions[index + 1];
+            } else {
+                revision = index === 0 ? revisions[revisions.length - 1] : revisions[index - 1];
+            }
+            this.documentHelper.currentSelectedRevision = revision;
+            this.selectRevision(revision);
+        }
+        this.owner.trackChangesPane.currentSelectedRevision = this.documentHelper.currentSelectedRevision;
+    }
+    /**
      * @private
      */
     public selectComment(comment: CommentElementBox): void {
@@ -8606,6 +8865,56 @@ export class Selection {
             this.selectPosition(startPosition, endPosition);
             if (this.owner.commentReviewPane) {
                 this.owner.commentReviewPane.selectComment(comment);
+            }
+        }
+    }
+    /**
+     * @private
+     * @param revision 
+     */
+    public selectRevision(revision: Revision): void {
+        if (!isNullOrUndefined(revision) && revision.range.length > 0) {
+            /* tslint:disable:no-any */
+            let firstElement: any = revision.range[0];
+            let lastElement: any = revision.range[revision.range.length - 1];
+            if (firstElement instanceof WRowFormat) {
+                let rowWidget: TableRowWidget = firstElement.ownerBase;
+                let firstCell: TableCellWidget = rowWidget.childWidgets[0] as TableCellWidget;
+                let lastCell: TableCellWidget = rowWidget.childWidgets[rowWidget.childWidgets.length - 1] as TableCellWidget;
+                let firstPara: ParagraphWidget = this.getFirstParagraph(firstCell);
+                let lastPara: ParagraphWidget = this.getLastParagraph(lastCell);
+                this.start.setPosition(firstPara.firstChild as LineWidget, true);
+                this.end.setPositionParagraph(lastPara.lastChild as LineWidget, (lastPara.lastChild as LineWidget).getEndOffset() + 1);
+                this.selectPosition(this.start, this.end);
+            } else if (firstElement && lastElement) {
+                let startPosition: TextPosition = new TextPosition(this.owner);
+                let offset: number = 0;
+                if (firstElement instanceof WCharacterFormat) {
+                    let currentPara: ParagraphWidget = firstElement.ownerBase as ParagraphWidget;
+                    offset = currentPara.getLength();
+                    startPosition.setPositionParagraph(currentPara.lastChild as LineWidget, offset);
+                } else {
+                    offset = firstElement.line.getOffset(firstElement, 0);
+                    startPosition.setPositionForLineWidget(firstElement.line, offset);
+                }
+                let endPosition: TextPosition = new TextPosition(this.owner);
+                if (lastElement instanceof WCharacterFormat) {
+                    let currentPara: ParagraphWidget = lastElement.ownerBase as ParagraphWidget;
+                    offset = currentPara.getLength();
+                    endPosition.setPositionParagraph(currentPara.lastChild as LineWidget, offset + 1);
+                } else {
+                    offset = lastElement.line.getOffset(lastElement, 0) + lastElement.length;
+                    if (this.isTOC()) {
+                        offset += 1;
+                    }
+                    endPosition.setPositionForLineWidget(lastElement.line, offset);
+                }
+                let curentPosition: TextPosition = startPosition.clone();
+                if (!startPosition.isExistBefore(endPosition)) {
+                    startPosition = endPosition;
+                    endPosition = curentPosition;
+                }
+                this.selectPosition(startPosition, endPosition);
             }
         }
     }

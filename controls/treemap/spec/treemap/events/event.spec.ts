@@ -333,6 +333,25 @@ describe('TreeMap component Spec', () => {
             };
             treemap.refresh();
         });
+        it('Checking with laoded event arg', (done: Function): void => {
+              treemap.loaded = (args: ILoadedEventArgs): void => {
+                args.isResized = false;
+                svg = document.getElementById('container_Legend_Group');
+                expect(svg !== null).toBe(true);
+                done();
+            };
+            treemap.refresh();
+        });
+        it('Checking with laoded event', (done: Function): void => {
+            treemap.loaded = (args: ILoadedEventArgs): void => {
+              args.isResized = true;
+              svg = document.getElementById('container_Legend_Group');
+              expect(svg !== null).toBe(true);
+              done();
+          };
+          treemap.refresh();
+      });
+
         it('Customize the header labels using item rendering event', (done: Function): void => {
             debugger
             treemap.itemRendering = (args: IItemRenderingEventArgs): void => {

@@ -14,23 +14,24 @@ const BLOCK_INDICATOR_HEIGHT: number = 18;
 export class TimelineEvent extends MonthEvent {
     private startHour: Date = this.parent.activeView.getStartHour();
     private endHour: Date = this.parent.activeView.getEndHour();
-    private slotCount: number = this.parent.activeViewOptions.timeScale.slotCount;
+    public slotCount: number = this.parent.activeViewOptions.timeScale.slotCount;
     private interval: number = this.parent.activeViewOptions.timeScale.interval;
     private day: number = 0;
-    private appContainers: HTMLElement[];
+    public eventContainers: HTMLElement[];
     private dayLength: number;
-    private slotsPerDay: number;
+    public slotsPerDay: number;
     private content: HTMLElement;
     private rowIndex: number = 0;
+    public inlineValue: boolean;
     /**
      * Constructor for timeline views
      */
     constructor(parent: Schedule, type: string) {
         super(parent);
         this.renderType = type;
-        this.appContainers = [].slice.call(this.element.querySelectorAll('.' + cls.APPOINTMENT_CONTAINER_CLASS));
-        this.dayLength = this.element.querySelectorAll('.' + cls.CONTENT_TABLE_CLASS + ' tbody tr').length === 0 ?
-            0 : this.element.querySelectorAll('.' + cls.CONTENT_TABLE_CLASS + ' tbody tr')[0].children.length;
+        this.eventContainers = [].slice.call(this.element.querySelectorAll('.' + cls.APPOINTMENT_CONTAINER_CLASS));
+        let tr: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.CONTENT_TABLE_CLASS + ' tbody tr'));
+        this.dayLength = tr.length === 0 ? 0 : tr[0].children.length;
         this.content = this.parent.element.querySelector('.' + cls.CONTENT_TABLE_CLASS) as HTMLElement;
     }
 
@@ -73,9 +74,24 @@ export class TimelineEvent extends MonthEvent {
         let resources: TdData[] = this.parent.uiStateValues.isGroupAdaptive ?
             [this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex]] :
             this.parent.resourceBase.renderedResources;
-        for (let i: number = 0; i < resources.length; i++) {
-            this.rowIndex = i;
-            this.renderEventsHandler(this.parent.activeView.renderDates, this.parent.activeViewOptions.workDays, resources[i]);
+        if (this.parent.crudModule && this.parent.crudModule.crudObj.isCrudAction) {
+            for (let i: number = 0, len: number = this.parent.crudModule.crudObj.sourceEvent.length; i < len; i++) {
+                let source: TdData = this.parent.crudModule.crudObj.sourceEvent[i];
+                this.rowIndex = source.groupIndex;
+                this.renderEventsHandler(this.parent.activeView.renderDates, this.parent.activeViewOptions.workDays, source);
+                if (this.parent.crudModule.crudObj.sourceEvent[i].groupIndex !==
+                    this.parent.crudModule.crudObj.targetEvent[i].groupIndex) {
+                    let target: TdData = this.parent.crudModule.crudObj.targetEvent[i];
+                    this.rowIndex = target.groupIndex;
+                    this.renderEventsHandler(this.parent.activeView.renderDates, this.parent.activeViewOptions.workDays, target);
+                }
+            }
+            this.parent.crudModule.crudObj.isCrudAction = false;
+        } else {
+            for (let i: number = 0; i < resources.length; i++) {
+                this.rowIndex = i;
+                this.renderEventsHandler(this.parent.activeView.renderDates, this.parent.activeViewOptions.workDays, resources[i]);
+            }
         }
     }
 
@@ -118,7 +134,12 @@ export class TimelineEvent extends MonthEvent {
             let height: number = ((overlapCount + 1) * (appHeight + EVENT_GAP)) + this.moreIndicatorHeight;
             let renderApp: boolean = this.maxOrIndicator ? overlapCount < 1 ? true : false : this.cellHeight > height;
             if (this.parent.rowAutoHeight || renderApp) {
-                let appointmentElement: HTMLElement = this.createAppointmentElement(event, resIndex);
+                let appointmentElement: HTMLElement;
+                if (isNullOrUndefined(this.inlineValue)) {
+                    appointmentElement = this.createAppointmentElement(event, resIndex);
+                } else {
+                    appointmentElement = this.parent.inlineModule.createInlineAppointmentElement();
+                }
                 this.applyResourceColor(appointmentElement, event, 'backgroundColor', this.groupOrder);
                 setStyleAttribute(appointmentElement, {
                     'width': appWidth + 'px', 'left': appLeft + 'px', 'right': appRight + 'px', 'top': appTop + 'px'
@@ -356,9 +377,9 @@ export class TimelineEvent extends MonthEvent {
 
     public getRowTop(resIndex: number): number {
         if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
-            let td: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' ' + 'tbody td[data-group-index="'
-                + resIndex.toString() + '"]') as HTMLElement;
-            return td.offsetTop;
+            return ((this.parent.activeViewOptions.group.resources.length > 1 || this.parent.virtualScrollModule ||
+                this.parent.rowAutoHeight) ? (<HTMLElement>this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS +
+                    ' ' + 'tbody td[data-group-index="' + resIndex.toString() + '"]')).offsetTop : this.cellHeight * resIndex);
         }
         return 0;
     }
@@ -366,7 +387,7 @@ export class TimelineEvent extends MonthEvent {
 
     public getCellTd(): HTMLElement {
         let wrapIndex: number = this.parent.uiStateValues.isGroupAdaptive ? 0 : this.rowIndex;
-        return this.appContainers[wrapIndex] as HTMLElement;
+        return this.eventContainers[wrapIndex] as HTMLElement;
     }
 
     public renderBlockIndicator(cellTd: HTMLElement, position: number, resIndex: number): void {

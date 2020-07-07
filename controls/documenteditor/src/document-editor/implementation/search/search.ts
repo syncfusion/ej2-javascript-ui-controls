@@ -41,6 +41,10 @@ export class Search {
     /**
      * @private
      */
+    public isRepalceTracking: boolean;
+    /**
+     * @private
+     */
     get viewer(): LayoutViewer {
         return this.owner.viewer;
     }
@@ -126,6 +130,16 @@ export class Search {
         }
         this.navigate(result);
         let endPosition: TextPosition = this.documentHelper.selection.start;
+        if (this.owner.enableTrackChanges && this.documentHelper.selection.start.currentWidget) {
+            let inline: ElementBox = undefined;
+            // tslint:disable-next-line:max-line-length
+            let inlineElement: ElementInfo = (this.documentHelper.selection.end.currentWidget as LineWidget).getInline(this.owner.selection.start.offset, 0);
+            inline = inlineElement.element as ElementBox;
+            if (inline.revisions.length > 0) {
+                this.isRepalceTracking = true;
+
+            }
+        }
         let index: number = results.indexOf(result);
         if (index < 0) {
             return 0;

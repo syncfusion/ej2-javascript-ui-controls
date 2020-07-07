@@ -63,6 +63,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     public clonedDataSource: DataSourceSettingsModel;
     /** @hidden */
     public clonedFieldList: IFieldListOptions | IOlapFieldListOptions;
+    /** @hidden */
+    public pivotChange: boolean = false;
 
     public isRequiredUpdate: boolean = true;
     /** @hidden */
@@ -107,8 +109,11 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     private staticPivotGridModule: PivotView;
     /** @hidden */
     private enableValueSorting: boolean = false;
+    private request: XMLHttpRequest;
+    private remoteData: string[][] | IDataSet[] = [];
     //Property Declarations
 
+    /* tslint:disable */
     /** 
      * Allows the following pivot report information such as rows, columns, values, filters, etc., that are used to render the pivot table and field list.
      * * `catalog`: Allows to set the database name of SSAS cube as string type that used to retrieve the data from the specified connection string. **Note: It is applicable only for OLAP data source.**
@@ -286,7 +291,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
 
     //Event Declarations
     /**
-     * It allows any customization of Pivot Field List properties on initial rendering. Based on the changes, the pivot field list will be redered.
+     * It allows any customization of Pivot Field List properties on initial rendering.
+     * Based on the changes, the pivot field list will be redered.
      * @event
      * @blazorproperty 'OnLoad'
      */
@@ -400,6 +406,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
      */
     @Event()
     public destroyed: EmitType<Object>;
+    /* tslint:enable */
 
     /**
      * Constructor for creating the widget
@@ -642,12 +649,52 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         return customProperties;
     }
 
+    /* tslint:disable */
     /**
      * Initialize the control rendering
      * @returns void
      * @private
      */
     public render(): void {
+        if (this.dataType === 'pivot' && this.dataSourceSettings.url && this.dataSourceSettings.url !== '') {
+            this.request = new XMLHttpRequest();
+            this.request.open("GET", this.dataSourceSettings.url, true);
+            this.request.withCredentials = false;
+            this.request.onreadystatechange = this.onReadyStateChange.bind(this);
+            this.request.setRequestHeader("Content-type", "text/plain");
+            this.request.send(null);
+        } else {
+            this.initialLoad();
+        }
+    }
+
+    private onReadyStateChange(): void {
+        if (this.request.readyState === XMLHttpRequest.DONE) {
+            let dataSource: string[][] | IDataSet[] = [];
+            if (this.dataSourceSettings.type === 'CSV') {
+                let jsonObject: string[] = this.request.responseText.split(/\r?\n|\r/);
+                for (let i: number = 0; i < jsonObject.length; i++) {
+                    if (!isNullOrUndefined(jsonObject[i]) && jsonObject[i] !== '') {
+                        (dataSource as string[][]).push(jsonObject[i].split(','));
+                    }
+                }
+            } else {
+                try {
+                    dataSource = JSON.parse(this.request.responseText);
+                } catch (error) {
+                    dataSource = [];
+                }
+            }
+            if (isBlazor() && dataSource.length > 0) {
+                this.remoteData = dataSource;
+            } else if (dataSource.length > 0) {
+                this.setProperties({ dataSourceSettings: { dataSource: dataSource } }, true);
+            }
+            this.initialLoad();
+        }
+    }
+
+    private initialLoad(): void {
         /* tslint:disable-next-line:max-line-length */
         this.trigger(events.load, { dataSourceSettings: isBlazor() ? PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings) : this.dataSourceSettings }, (observedArgs: LoadEventArgs) => {
             if (isBlazor()) {
@@ -787,6 +834,22 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     }
     /* tslint:disable */
     private initEngine(): void {
+        if (this.dataType === 'pivot') {
+            let data: any = !isNullOrUndefined(this.dataSourceSettings.dataSource) ? (this.dataSourceSettings.dataSource as IDataSet[])[0] :
+                !isNullOrUndefined(this.engineModule.data) ? (this.engineModule.data as IDataSet[])[0] : undefined;
+            if (data && this.pivotCommon) {
+                let isArray: boolean = Object.prototype.toString.call(data) == '[object Array]';
+                if (isArray && this.dataSourceSettings.type === 'JSON') {
+                    this.pivotCommon.errorDialog.createErrorDialog(
+                        this.localeObj.getConstant('error'), this.localeObj.getConstant('invalidJSON'));
+                    return;
+                } else if (!isArray && this.dataSourceSettings.type === 'CSV') {
+                    this.pivotCommon.errorDialog.createErrorDialog(
+                        this.localeObj.getConstant('error'), this.localeObj.getConstant('invalidCSV'));
+                    return;
+                }
+            }
+        }
         let args: EnginePopulatingEventArgs = {
             dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings)
         };
@@ -856,7 +919,12 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 }
                 this.initEngine();
             } else if (this.dataSourceSettings.dataSource instanceof DataManager) {
-                setTimeout(this.getData.bind(this), 100);
+                if (this.dataType === 'pivot' && this.remoteData.length > 0) {
+                    this.engineModule.data = this.remoteData;
+                    this.initEngine();
+                } else {
+                    setTimeout(this.getData.bind(this), 100);
+                }
             }
         } else if (isBlazor() && this.dataType === 'pivot' &&
             this.engineModule.data && this.engineModule.data.length > 0) {
@@ -1046,12 +1114,19 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                                 interopArguments['key'], args
                             ).then(
                                 (data: any) => {
-                                    pivot.pivotGridModule.updateBlazorData(data, pivot.pivotGridModule);
-                                    pivot.getFieldCaption(pivot.dataSourceSettings);
-                                    pivot.enginePopulatedEventMethod(pivot, isTreeViewRefresh, isOlapDataRefreshed);
-                                    if (pivot.calculatedFieldModule && pivot.calculatedFieldModule.isRequireUpdate) {
-                                        pivot.calculatedFieldModule.endDialog();
-                                        pivot.calculatedFieldModule.isRequireUpdate = false;
+                                    if (data === 0) {
+                                        this.pivotCommon.errorDialog.createErrorDialog(
+                                            this.localeObj.getConstant('error'), (pivot.dataSourceSettings.type === 'CSV' ?
+                                                this.localeObj.getConstant('invalidCSV') : this.localeObj.getConstant('invalidJSON')));
+                                        return;
+                                    } else {
+                                        pivot.pivotGridModule.updateBlazorData(data, pivot.pivotGridModule);
+                                        pivot.getFieldCaption(pivot.dataSourceSettings);
+                                        pivot.enginePopulatedEventMethod(pivot, isTreeViewRefresh, isOlapDataRefreshed);
+                                        if (pivot.calculatedFieldModule && pivot.calculatedFieldModule.isRequireUpdate) {
+                                            pivot.calculatedFieldModule.endDialog();
+                                            pivot.calculatedFieldModule.isRequireUpdate = false;
+                                        }
                                     }
                                 });
                         }
@@ -1062,9 +1137,16 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                             (pivot.pivotGridModule as any).interopAdaptor.invokeMethodAsync("PivotInteropMethod", 'renderEngine',
                                 { 'dataSourceSettings': dataArgs, 'customProperties': customProperties }).then(
                                     (data: any) => {
-                                        pivot.pivotGridModule.updateBlazorData(data, pivot.pivotGridModule);
-                                        pivot.getFieldCaption(pivot.dataSourceSettings);
-                                        pivot.enginePopulatedEventMethod(pivot, isTreeViewRefresh, isOlapDataRefreshed);
+                                        if (data === 0) {
+                                            this.pivotCommon.errorDialog.createErrorDialog(
+                                                this.localeObj.getConstant('error'), (pivot.dataSourceSettings.type === 'CSV' ?
+                                                    this.localeObj.getConstant('invalidCSV') : this.localeObj.getConstant('invalidJSON')));
+                                            return;
+                                        } else {
+                                            pivot.pivotGridModule.updateBlazorData(data, pivot.pivotGridModule);
+                                            pivot.getFieldCaption(pivot.dataSourceSettings);
+                                            pivot.enginePopulatedEventMethod(pivot, isTreeViewRefresh, isOlapDataRefreshed);
+                                        }
                                     });
                         } else {
                             pivot.engineModule.renderEngine(pivot.dataSourceSettings as IDataOptions, customProperties, pivot.getValueCellInfo.bind(pivot));
@@ -1095,7 +1177,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             pivotValues: pivot.dataType === 'pivot' ? pivot.engineModule.pivotValues : pivot.olapEngineModule.pivotValues
         };
         control.trigger(events.enginePopulated, eventArgs, (observedArgs: EnginePopulatedEventArgs) => {
-            let dataSource: IDataSet[] | DataManager = pivot.dataSourceSettings.dataSource;
+            let dataSource: IDataSet[] | DataManager | string[][] = pivot.dataSourceSettings.dataSource;
             if (isBlazor() && observedArgs.dataSourceSettings.dataSource instanceof Object) {
                 observedArgs.dataSourceSettings.dataSource = dataSource;
             }
@@ -1232,7 +1314,9 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             control.engineModule = this.engineModule;
             control.olapEngineModule = this.olapEngineModule;
             control.dataType = this.dataType;
-            control.pivotValues = this.dataType === 'olap' ? this.olapEngineModule.pivotValues : this.engineModule.pivotValues;
+            if (!this.pivotChange) {
+                control.pivotValues = this.dataType === 'olap' ? this.olapEngineModule.pivotValues : this.engineModule.pivotValues;
+            }
             let eventArgs: FieldListRefreshedEventArgs = {
                 dataSourceSettings: PivotUtil.getClonedDataSourceSettings(control.dataSourceSettings),
                 pivotValues: control.pivotValues

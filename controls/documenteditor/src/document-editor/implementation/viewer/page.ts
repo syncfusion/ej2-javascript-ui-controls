@@ -14,6 +14,7 @@ import { TextPosition } from '..';
 import { ChartComponent } from '@syncfusion/ej2-office-chart';
 import { TextHelper } from './text-helper';
 import { LayoutViewer, WebLayoutViewer, DocumentHelper } from './viewer';
+import { Revision } from '../track-changes/track-changes';
 /** 
  * @private
  */
@@ -3719,7 +3720,7 @@ export class LineWidget implements IWidget {
                     //     continue;
                     // }
                     // tslint:disable-next-line:max-line-length
-                    if (inlineElement instanceof TextElementBox && ((inlineElement as TextElementBox).text === ' ' && isInsert)) {
+                    if (inlineElement instanceof TextElementBox && ((inlineElement as TextElementBox).text === ' ' && inlineElement.revisions.length === 0 && isInsert)) {
                         let currentElement: ElementBox = this.getNextTextElement(this, i + 1);
                         inlineElement = !isNullOrUndefined(currentElement) ? currentElement : inlineElement;
                         indexInInline = isNullOrUndefined(currentElement) ? (offset - count) : 0;
@@ -3867,11 +3868,39 @@ export abstract class ElementBox {
     /**
      * @private
      */
+    public revisions: Revision[] = [];
+    /**
+     * @private
+     */
+    public canTrack: boolean = false;
+    /**
+     * @private
+     */
+    public removedIds: string[] = [];
+    /**
+     * @private
+     */
+    public isMarkedForRevision: boolean = false;
+
+    /**
+     * @private
+     */
     get isPageBreak(): boolean {
         if (this instanceof TextElementBox) {
             return this.text === '\f';
         }
         return false;
+    }
+    /**
+     * @private
+     * Method to indicate whether current element is trackable.
+     */
+    get isValidNodeForTracking(): boolean {
+        // tslint:disable-next-line:max-line-length
+        if (this instanceof BookmarkElementBox || this instanceof CommentCharacterElementBox || this instanceof EditRangeStartElementBox || this instanceof EditRangeEndElementBox) {
+            return false;
+        }
+        return true;
     }
     /**
      * @private
@@ -3914,6 +3943,19 @@ export abstract class ElementBox {
             //Links the field begin and separator for the current end.
             if (isNullOrUndefined(fieldEnd.fieldBegin)) {
                 this.linkFieldTraversingBackward(this.line, fieldEnd, fieldEnd);
+            }
+        }
+    }
+    /**
+     * @private
+     * Method to clear linked ranges in revision
+     */
+    public clearElementRevisions(): void {
+        let revisions: Revision[] = this.revisions;
+        for (let i: number = 0; i < revisions.length; i++) {
+            let currentRevision: Revision = revisions[i];
+            while (currentRevision.range.length > 0) {
+                revisions[i].unlinkRangeItem(currentRevision.range[0], currentRevision, undefined);
             }
         }
     }
@@ -4082,6 +4124,28 @@ export abstract class ElementBox {
     /**
      * @private
      */
+    get nextValidNodeForTracking(): ElementBox {
+        let elementBox: ElementBox = this;
+        //tslint:disable-next-line:max-line-length
+        while (!isNullOrUndefined(elementBox) && (elementBox instanceof BookmarkElementBox || elementBox instanceof CommentCharacterElementBox || elementBox instanceof EditRangeStartElementBox || elementBox instanceof EditRangeEndElementBox)) {
+            elementBox = elementBox.nextNode;
+        }
+        return elementBox;
+    }
+  /**
+   * @private
+   */
+    get previousValidNodeForTracking(): ElementBox {
+        let elementBox: ElementBox = this;
+        //tslint:disable-next-line:max-line-length
+        while (!isNullOrUndefined(elementBox) && (elementBox instanceof BookmarkElementBox || elementBox instanceof CommentCharacterElementBox || elementBox instanceof EditRangeStartElementBox || elementBox instanceof EditRangeEndElementBox)) {
+            elementBox = elementBox.previousNode;
+        }
+        return elementBox;
+    }
+    /**
+     * @private
+     */
     get previousNode(): ElementBox {
         let index: number = this.line.children.indexOf(this);
         let lineIndex: number = this.line.paragraph.childWidgets.indexOf(this.line);
@@ -4228,6 +4292,11 @@ export class FieldElementBox extends ElementBox {
         }
         field.width = this.width;
         field.height = this.height;
+        if (this.revisions.length > 0) {
+            field.removedIds = Revision.cloneRevisions(this.revisions);
+        } else {
+            field.removedIds = this.removedIds.slice();
+        }
         field.fieldCodeType = this.fieldCodeType;
         return field;
     }
@@ -4430,7 +4499,7 @@ export class DropDownFormField extends FormField {
     /**
      * @private
      */
-    public dropDownItems: string[] = [];
+    public dropdownItems: string[] = [];
     /**
      * @private
      */
@@ -4444,7 +4513,7 @@ export class DropDownFormField extends FormField {
         dropDown.enabled = this.enabled;
         dropDown.helpText = this.helpText;
         dropDown.statusText = this.statusText;
-        dropDown.dropDownItems = this.dropDownItems.slice();
+        dropDown.dropdownItems = this.dropdownItems.slice();
         dropDown.selectedIndex = this.selectedIndex;
         return dropDown;
     }
@@ -4454,7 +4523,7 @@ export class DropDownFormField extends FormField {
      */
     public getFormFieldInfo(): DropDownFormFieldInfo {
         let dropDownFormField: DropDownFormFieldInfo = {
-            dropDownItems: this.dropDownItems.slice(),
+            dropdownItems: this.dropdownItems.slice(),
             enabled: this.enabled,
             helpText: this.helpText
         };
@@ -4464,8 +4533,8 @@ export class DropDownFormField extends FormField {
      * @private
      */
     public copyFieldInfo(info: DropDownFormFieldInfo): void {
-        if (!isNullOrUndefined(info.dropDownItems)) {
-            this.dropDownItems = info.dropDownItems;
+        if (!isNullOrUndefined(info.dropdownItems)) {
+            this.dropdownItems = info.dropdownItems;
         }
         if (!isNullOrUndefined(info.enabled)) {
             this.enabled = info.enabled;
@@ -4524,6 +4593,11 @@ export class TextElementBox extends ElementBox {
             span.margin = this.margin.clone();
         }
         span.baselineOffset = this.baselineOffset;
+        if (this.revisions.length > 0) {
+            span.removedIds = Revision.cloneRevisions(this.revisions);
+        } else {
+            span.removedIds = this.removedIds.slice();
+        }
         span.width = this.width;
         span.height = this.height;
         return span;
@@ -4593,6 +4667,11 @@ export class FieldTextElementBox extends TextElementBox {
         if (this.margin) {
             span.margin = this.margin.clone();
         }
+        if (this.revisions.length > 0) {
+            span.removedIds = Revision.cloneRevisions(this.revisions);
+        } else {
+            span.removedIds = this.removedIds.slice();
+        }
         span.width = this.width;
         span.height = this.height;
         return span;
@@ -4635,6 +4714,11 @@ export class TabElementBox extends TextElementBox {
         }
         span.width = this.width;
         span.height = this.height;
+        if (this.revisions.length > 0) {
+            span.removedIds = Revision.cloneRevisions(this.revisions);
+        } else {
+            span.removedIds = this.removedIds.slice();
+        }
         return span;
     }
 }
@@ -5036,6 +5120,11 @@ export class ImageElementBox extends ShapeBase {
         image.height = this.height;
         if (this.margin) {
             image.margin = this.margin.clone();
+        }
+        if (this.revisions.length > 0) {
+            image.removedIds = Revision.cloneRevisions(this.revisions);
+        } else {
+            image.removedIds = this.removedIds.slice();
         }
         return image;
     }

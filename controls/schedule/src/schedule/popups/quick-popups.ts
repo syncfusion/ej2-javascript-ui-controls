@@ -30,6 +30,7 @@ export class QuickPopups {
     public morePopup: Popup;
     private fieldValidator: FieldValidator;
     private isCrudAction: boolean = false;
+    public lastEvent: Object;
 
     /**
      * Constructor for QuickPopups
@@ -335,7 +336,7 @@ export class QuickPopups {
         } else {
             for (let eventData of eventCollection) {
                 let eventText: string = (eventData[fields.subject] || this.parent.eventSettings.fields.subject.default) as string;
-                let appointmentEle: HTMLElement = createElement('div', {
+                let appointmentElement: HTMLElement = createElement('div', {
                     className: cls.APPOINTMENT_CLASS,
                     attrs: {
                         'data-id': '' + eventData[fields.id],
@@ -349,27 +350,27 @@ export class QuickPopups {
                     let tempId: string = this.parent.element.id + '_' + this.parent.activeViewOptions.eventTemplateName + 'eventTemplate';
                     let templateArgs: Object = util.addLocalOffsetToEvent(eventData, this.parent.eventFields);
                     templateElement = this.parent.getAppointmentTemplate()(templateArgs, this.parent, 'eventTemplate', tempId, false);
-                    append(templateElement, appointmentEle);
+                    append(templateElement, appointmentElement);
                 } else {
-                    appointmentEle.appendChild(createElement('div', { className: cls.SUBJECT_CLASS, innerHTML: eventText }));
+                    appointmentElement.appendChild(createElement('div', { className: cls.SUBJECT_CLASS, innerHTML: eventText }));
                 }
-                if (this.parent.activeViewOptions.group.resources.length > 0) {
-                    appointmentEle.setAttribute('data-group-index', groupIndex);
+                if (!isNullOrUndefined(groupIndex)) {
+                    appointmentElement.setAttribute('data-group-index', groupIndex);
                 }
                 if (!isNullOrUndefined(eventData[fields.recurrenceRule])) {
                     let iconClass: string = (eventData[fields.id] === eventData[fields.recurrenceID]) ?
                         cls.EVENT_RECURRENCE_ICON_CLASS : cls.EVENT_RECURRENCE_EDIT_ICON_CLASS;
-                    appointmentEle.appendChild(createElement('div', { className: cls.ICON + ' ' + iconClass }));
+                    appointmentElement.appendChild(createElement('div', { className: cls.ICON + ' ' + iconClass }));
                 }
                 let args: EventRenderedArgs = {
                     data: extend({}, eventData, null, true) as { [key: string]: Object },
-                    element: appointmentEle, cancel: false
+                    element: appointmentElement, cancel: false
                 };
                 this.parent.trigger(event.eventRendered, args, (eventArgs: EventRenderedArgs) => {
                     if (!eventArgs.cancel) {
-                        moreEventWrapperEle.appendChild(appointmentEle);
-                        this.parent.eventBase.wireAppointmentEvents(appointmentEle, eventData, this.parent.isAdaptive);
-                        this.parent.eventBase.applyResourceColor(appointmentEle, eventData, 'backgroundColor', groupOrder);
+                        moreEventWrapperEle.appendChild(appointmentElement);
+                        this.parent.eventBase.wireAppointmentEvents(appointmentElement, eventData, this.parent.isAdaptive);
+                        this.parent.eventBase.applyResourceColor(appointmentElement, eventData, 'backgroundColor', groupOrder);
                     }
                 });
             }
@@ -725,11 +726,11 @@ export class QuickPopups {
             let resourceData: { [key: string]: Object }[] = resourceCollection.dataSource as { [key: string]: Object }[];
             let resourceIndex: number = 0;
             let eventData: { [key: string]: Object } = args.event as { [key: string]: Object };
-            resourceData.forEach((resource: { [key: string]: Object }, index: number) => {
-                if (resource[resourceCollection.idField] === eventData[resourceCollection.field]) {
-                    resourceIndex = index;
+            for (let i: number = 0, len: number = resourceData.length; i < len; i++) {
+                if (resourceData[i][resourceCollection.idField] === eventData[resourceCollection.field]) {
+                    resourceIndex = i;
                 }
-            });
+            }
             resourceValue = resourceData[resourceIndex][resourceCollection.textField] as string;
         } else {
             if (type === 'event') {
@@ -1328,6 +1329,14 @@ export class QuickPopups {
         let target: Element = e.event.target as Element;
         let classNames: string = '.' + cls.POPUP_WRAPPER_CLASS + ',.' + cls.HEADER_CELLS_CLASS + ',.' + cls.ALLDAY_CELLS_CLASS +
             ',.' + cls.WORK_CELLS_CLASS + ',.' + cls.APPOINTMENT_CLASS + ',.e-popup';
+        let popupWrap: Element = this.parent.element.querySelector('.' + cls.POPUP_WRAPPER_CLASS);
+        if (popupWrap && popupWrap.childElementCount > 0 && !closest(target, classNames)) {
+            this.quickPopupHide();
+        }
+        let tar: Element = this.parent.element.querySelector('.' + cls.INLINE_SUBJECT_CLASS);
+        if (tar && tar !== target && this.parent.allowInline) {
+            this.parent.inlineModule.documentClick();
+        }
         if (closest(target, '.' + cls.APPOINTMENT_CLASS + ',.' + cls.HEADER_CELLS_CLASS)) {
             this.parent.removeNewEventElement();
         }
@@ -1362,12 +1371,12 @@ export class QuickPopups {
 
     private destroyButtons(): void {
         let buttonCollections: HTMLElement[] = [].slice.call(this.quickPopup.element.querySelectorAll('.e-control.e-btn'));
-        buttonCollections.forEach((button: HTMLElement) => {
+        for (let button of buttonCollections) {
             let instance: Button = (button as EJ2Instance).ej2_instances[0] as Button;
             if (instance) {
                 instance.destroy();
             }
-        });
+        }
     }
 
     public refreshQuickDialog(): void {
@@ -1379,23 +1388,23 @@ export class QuickPopups {
         this.renderQuickDialog();
     }
 
-    // public refreshQuickPopup(): void {
-    //     if (this.quickPopup.element) {
-    //         this.quickPopup.destroy();
-    //         remove(this.quickPopup.element);
-    //         this.quickPopup.element = null;
-    //     }
-    //     this.renderQuickPopup();
-    // }
+    public refreshQuickPopup(): void {
+        if (this.quickPopup.element) {
+            this.quickPopup.destroy();
+            remove(this.quickPopup.element);
+            this.quickPopup.element = null;
+        }
+        this.renderQuickPopup();
+    }
 
-    // public refreshMorePopup(): void {
-    //     if (this.morePopup.element) {
-    //         this.morePopup.destroy();
-    //         remove(this.morePopup.element);
-    //         this.morePopup.element = null;
-    //     }
-    //     this.renderMorePopup();
-    // }
+    public refreshMorePopup(): void {
+        if (this.morePopup.element) {
+            this.morePopup.destroy();
+            remove(this.morePopup.element);
+            this.morePopup.element = null;
+        }
+        this.renderMorePopup();
+    }
 
     public destroy(): void {
         if (this.quickPopup.element.querySelectorAll('.e-formvalidator').length) {

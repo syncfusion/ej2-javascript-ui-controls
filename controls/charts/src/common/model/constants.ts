@@ -33,8 +33,6 @@ export const axisMultiLabelRender : string = 'axisMultiLabelRender';
 /** @private */
 export const tooltipRender : string = 'tooltipRender';
 /** @private */
-export const sharedTooltipRender : string = 'sharedTooltipRender';
-/** @private */
 export const chartMouseMove : string = 'chartMouseMove';
 /** @private */
 export const chartMouseClick : string = 'chartMouseClick';

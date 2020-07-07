@@ -158,4 +158,7 @@ function pushBasicModules(context: Spreadsheet, modules: ModuleDeclaration[]): v
     if (context.allowMerge) {
         modules.push({ member: 'merge', args: [context] });
     }
+    if (context.allowConditionalFormat) {
+        modules.push({ member: 'conditionalFormatting', args: [context] });
+    }
 }

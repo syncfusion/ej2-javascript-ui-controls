@@ -395,6 +395,25 @@ export interface ColorMappingSettingsModel {
 }
 
 /**
+ * Interface for a class InitialMarkerSelectionSettings
+ */
+export interface InitialMarkerSelectionSettingsModel {
+
+    /**
+     * To initially select the marker latitude.
+     * @default null
+     */
+    latitude?: number;
+
+    /**
+     * To initially select the marker longitude
+     * @default null
+     */
+    longitude?: number;
+
+}
+
+/**
  * Interface for a class InitialShapeSelectionSettings
  */
 export interface InitialShapeSelectionSettingsModel {
@@ -563,11 +582,17 @@ export interface BubbleSettingsModel {
      * The data source must contain the size value of the bubble that can be bound to the bubble 
      * of the Maps using the valuePath property in the bubbleSettings.
      * The data source can contain data such as color, and the other information that can be bound to the bubble, and tooltip of the bubble.
-     * @isdatamanager false
      * @isObservable true
      * @default []
      */
-    dataSource?: object[];
+    dataSource?: Object[] | DataManager;
+
+    /**
+     * Sets and gets the query to select particular data from the bubble data. 
+     * This property is applicable only when the data source is created by data manager.
+     * @default null
+     */
+    query?: Query;
 
     /**
      * Sets and gets the duration for the animation for bubble in maps.
@@ -1262,11 +1287,17 @@ export interface MarkerBaseModel {
      * of the marker.
      * The data source can contain data such as color, shape, and other details that can be bound to the color, shape,
      * and tooltip of the marker.
-     * @isdatamanager false
      * @isObservable true
      * @default []
      */
-    dataSource?: Object[];
+    dataSource?: Object[] | DataManager;
+
+    /**
+     * Sets and gets the query to select particular data from the marker data. 
+     * This property is applicable only when the data source is created by data manager.
+     * @default null
+     */
+    query?: Query;
 
     /**
      * Sets and gets the options to customize the tooltip for the marker in maps.
@@ -1305,6 +1336,11 @@ export interface MarkerBaseModel {
      */
     longitudeValuePath?: string;
 
+    /**
+     * To select the shape at the rendering time.
+     */
+    initialMarkerSelection?: InitialMarkerSelectionSettingsModel[];
+
 }
 
 /**
@@ -1321,7 +1357,7 @@ export interface LayerSettingsModel {
 
     /**
      * Sets and gets the shape data for the maps to render.
-     * @isdatamanager false
+     * @isObservable true
      * @default null
      */
     shapeData?: Object | DataManager | MapAjax;
@@ -1341,7 +1377,6 @@ export interface LayerSettingsModel {
     /**
      * * Sets and gets the data source for the layer.
      * * The data source can contain data that can be bound to the tooltip, marker, and bubble.
-     * @isdatamanager false
      * @isObservable true
      * @default []
      */

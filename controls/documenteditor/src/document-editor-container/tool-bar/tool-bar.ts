@@ -5,8 +5,8 @@ import { DocumentEditorContainer } from '../document-editor-container';
 import { DropDownButton, DropDownButtonModel, MenuEventArgs, ItemModel } from '@syncfusion/ej2-splitbuttons';
 import { DocumentEditor } from '../../document-editor/document-editor';
 import { showSpinner, hideSpinner, DialogUtility } from '@syncfusion/ej2-popups';
-import { XmlHttpRequestHandler } from '../../document-editor/base/ajax-helper';
 import { ToolbarItem } from '../../document-editor/base';
+import { XmlHttpRequestHandler } from '../../document-editor/base/ajax-helper';
 import { CustomToolbarItemModel } from '../../document-editor/base/events-helper';
 
 const TOOLBAR_ID: string = '_toolbar';
@@ -21,6 +21,7 @@ const INSERT_TABLE_ID: string = '_table';
 const INSERT_LINK_ID: string = '_link';
 const BOOKMARK_ID: string = '_bookmark';
 const COMMENT_ID: string = '_comment';
+const TRACK_ID: string = '_track';
 const TABLE_OF_CONTENT_ID: string = '_toc';
 const HEADER_ID: string = '_header';
 const FOOTER_ID: string = '_footer';
@@ -189,7 +190,9 @@ export class Toolbar {
         if (this.toolbarItems.indexOf('LocalClipboard') >= 0) {
             this.toggleButton(id + CLIPBOARD_ID, this.container.enableLocalPaste);
         }
-
+        if (this.toolbarItems.indexOf('TrackChanges') >= 0) {
+            this.toggleButton(id + TRACK_ID, this.container.enableTrackChanges);
+        }
         if (this.toolbarItems.indexOf('RestrictEditing') >= 0) {
             this.toggleButton(id + RESTRICT_EDITING_ID, this.container.restrictEditing);
             // tslint:disable-next-line:max-line-length
@@ -331,9 +334,16 @@ export class Toolbar {
                         id: id + COMMENT_ID, text: locale.getConstant('Comments'), cssClass: className
                     });
                     break;
+                case 'TrackChanges':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-cnt-track',
+                        tooltipText: locale.getConstant('Track Changes'),
+                        id: id + TRACK_ID, text: this.onWrapText(locale.getConstant('TrackChanges')), cssClass: className
+                    });
+                    break;
                 case 'Image':
                     toolbarItems.push({
-                        tooltipText: locale.getConstant('Insert inline picture from a file'), id: id + INSERT_IMAGE_ID,
+                        tooltipText: locale.getConstant('Insert inline picture from a file.'), id: id + INSERT_IMAGE_ID,
                         text: locale.getConstant('Image'), cssClass: className + ' e-de-image-splitbutton e-de-image-focus'
                     });
                     break;
@@ -466,6 +476,9 @@ export class Toolbar {
             case id + COMMENT_ID:
                 this.documentEditor.editor.insertComment('');
                 break;
+            case id + TRACK_ID:
+                this.toggleTrackChangesInternal(args.item.id);
+                break;
             case id + HEADER_ID:
                 this.container.documentEditor.selection.goToHeader();
                 this.container.statusBar.toggleWebLayout();
@@ -516,6 +529,14 @@ export class Toolbar {
         } else {
             classList(element, [], ['e-btn-toggle']);
         }
+    }
+    private toggleTrackChangesInternal(id: string, enable?: boolean): void {
+        if (!isNullOrUndefined(enable)) {
+            this.container.enableTrackChanges = !enable;
+        }
+        this.container.enableTrackChanges = !this.container.enableTrackChanges;
+        this.container.documentEditor.showRevisions = this.container.enableTrackChanges;
+        this.toggleButton(id, this.container.enableTrackChanges);
     }
     private togglePropertiesPane(): void {
         this.container.showPropertiesPane = !this.container.showPropertiesPane;
@@ -623,6 +644,29 @@ export class Toolbar {
     }
     /**
      * @private
+     *
+     */
+    public toggleTrackChanges(enable: boolean): void {
+        let trackId: string = this.container.element.id + TOOLBAR_ID + TRACK_ID;
+        let element: HTMLElement = document.getElementById(trackId);
+        if (element) {
+            this.toggleTrackChangesInternal(trackId, enable);
+        }
+    }
+
+    // /**
+    //  * @private
+    //  */
+    // public enableDisableTrackChanges(enable: boolean): void {
+    //     let id: string = this.container.element.id + TOOLBAR_ID + TRACK_ID;
+    //     if (!isNullOrUndefined(this.documentEditor) && (this.documentEditor.isReadOnly ||
+    //         this.documentEditor.documentHelper.isDocumentProtected)) {
+    //         enable = false;
+    //     }
+    //     this.toggleTrackChanges(id, enable);
+    // }
+    /**
+     * @private
      */
     public enableDisableToolBarItem(enable: boolean, isProtectedContent: boolean): void {
         let id: string = this.container.element.id + TOOLBAR_ID;
@@ -638,7 +682,7 @@ export class Toolbar {
                     itemId !== id + INSERT_LINK_ID && itemId !== id + BOOKMARK_ID && itemId !== id + COMMENT_ID &&
                     itemId !== id + HEADER_ID && itemId !== id + TABLE_OF_CONTENT_ID && itemId !== id + FOOTER_ID &&
                     itemId !== id + PAGE_SET_UP_ID && itemId !== id + PAGE_NUMBER_ID && itemId !== id + INSERT_IMAGE_ID
-                    && itemId !== id + FORM_FIELDS_ID && itemId !== BREAK_ID) {
+                    && itemId !== id + FORM_FIELDS_ID && itemId !== BREAK_ID && itemId !== id + TRACK_ID) {
                     continue;
                 }
                 let element: HTMLElement = document.getElementById(item.id);

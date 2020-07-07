@@ -1600,18 +1600,18 @@ export function getUserHandlePosition(selectorItem: SelectorModel, handle: UserH
         switch (handle.side) {
             case 'Top':
                 point.x += left + bounds.width * offset;
-                point.y += top - size;
+                point.y += top - (size / 2 + 12.5);
                 break;
             case 'Bottom':
                 point.x += left + offset * bounds.width;
-                point.y += top + wrapper.actualSize.height + size;
+                point.y += top + wrapper.actualSize.height + (size / 2 + 12.5);
                 break;
             case 'Left':
-                point.x += left - size;
+                point.x += left - (size / 2 + 12.5);
                 point.y += top + offset * bounds.height;
                 break;
             case 'Right':
-                point.x += left + wrapper.actualSize.width + size;
+                point.x += left + wrapper.actualSize.width + (size / 2 + 12.5);
                 point.y += top + offset * bounds.height;
                 break;
         }

@@ -480,7 +480,7 @@ describe('Data Label checking for the pie doughnut series', () => {
     it('Pie series smart label with radius mapping(Datalabel outside)', (done: Function) => {
         accumulation.loaded = (args: IAccLoadedEventArgs): void => {
             let element: HTMLElement = document.getElementById('ej2container_datalabel_Series_0');
-            expect(element.childElementCount == 9).toBe(true);
+            expect(element.childElementCount == 10).toBe(true);
             done();
         };
         accumulation.series[0].dataLabel = {
@@ -494,7 +494,7 @@ describe('Data Label checking for the pie doughnut series', () => {
     it('Donut series smart label with radius mapping(Datalabel outside)', (done: Function) => {
         accumulation.loaded = (args: IAccLoadedEventArgs): void => {
             let element: HTMLElement = document.getElementById('ej2container_datalabel_Series_0');
-            expect(element.childElementCount == 9).toBe(true);
+            expect(element.childElementCount == 10).toBe(true);
             done();
         };
         accumulation.series[0].dataLabel = {

@@ -2,13 +2,17 @@
 
 ## [Unreleased]
 
-## 18.1.54 (2020-05-26)
+## 18.2.44 (2020-07-07)
 
 ### HeatMap
 
 #### Bug Fixes
 
 - `#277767` - Issue with get the exact position of mouse in cell click event has been fixed.
+
+## 18.1.54 (2020-05-26)
+
+### HeatMap
 
 #### Bug Fixes
 

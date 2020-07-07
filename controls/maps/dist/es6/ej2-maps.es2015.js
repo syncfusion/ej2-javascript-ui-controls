@@ -44,8 +44,13 @@ function calculateSize(maps) {
     let parentWidth = maps.element.parentElement.clientWidth;
     let containerElementWidth = stringToNumber(maps.element.style.width, containerWidth);
     let containerElementHeight = stringToNumber(maps.element.style.height, containerWidth);
-    maps.availableSize = new Size(stringToNumber(maps.width, containerWidth) || containerWidth || containerElementWidth || 600, stringToNumber(maps.height, containerHeight) || containerHeight || containerElementHeight || (maps.isDevice ?
-        Math.min(window.innerWidth, window.innerHeight) : 450));
+    if (maps.width === '0px' || maps.width === '0%' || maps.height === '0%' || maps.height === '0px') {
+        maps.availableSize = new Size(0, 0);
+    }
+    else {
+        maps.availableSize = new Size(stringToNumber(maps.width, containerWidth) || containerWidth || containerElementWidth || 600, stringToNumber(maps.height, containerHeight) || containerHeight || containerElementHeight || (maps.isDevice ?
+            Math.min(window.innerWidth, window.innerHeight) : 450));
+    }
 }
 /**
  * Method to create svg for maps.
@@ -58,6 +63,10 @@ function createSvg(maps) {
         width: maps.availableSize.width,
         height: maps.availableSize.height
     });
+    if (maps.width === '0px' || maps.width === '0%' || maps.height === '0%' || maps.height === '0px') {
+        maps.svgObject.setAttribute('height', '0');
+        maps.svgObject.setAttribute('width', '0');
+    }
 }
 function getMousePosition(pageX, pageY, element) {
     let elementRect = element.getBoundingClientRect();
@@ -283,7 +292,12 @@ function measureText(text, font) {
     }
     measureObject.innerHTML = text;
     measureObject.style.position = 'absolute';
-    measureObject.style.fontSize = font.size;
+    if (typeof (font.size) === 'number') {
+        measureObject.style.fontSize = (font.size) + 'px';
+    }
+    else {
+        measureObject.style.fontSize = font.size;
+    }
     measureObject.style.fontWeight = font.fontWeight;
     measureObject.style.fontStyle = font.fontStyle;
     measureObject.style.fontFamily = font.fontFamily;
@@ -1842,9 +1856,9 @@ function getTargetElement(layerIndex, name, enable, map) {
 function createStyle(id, className, eventArgs) {
     return createElement('style', {
         id: id, innerHTML: '.' + className + '{fill:'
-            + eventArgs.fill + ';' + 'opacity:' + eventArgs.opacity.toString() + ';' +
-            'stroke-width:' + eventArgs.border.width.toString() + ';' +
-            'stroke:' + eventArgs.border.color + ';' + '}'
+            + eventArgs['fill'] + ';' + 'opacity:' + (eventArgs['opacity']).toString() + ';' +
+            'stroke-width:' + (eventArgs['border']['width']).toString() + ';' +
+            'stroke:' + eventArgs['border']['color'] + ';' + '}'
     });
 }
 /**
@@ -1853,9 +1867,9 @@ function createStyle(id, className, eventArgs) {
 function customizeStyle(id, className, eventArgs) {
     let styleEle = getElement(id);
     styleEle.innerHTML = '.' + className + '{fill:'
-        + eventArgs.fill + ';' + 'opacity:' + eventArgs.opacity.toString() + ';' +
-        'stroke-width:' + eventArgs.border.width.toString() + ';' +
-        'stroke:' + eventArgs.border.color + '}';
+        + eventArgs['fill'] + ';' + 'opacity:' + (eventArgs['opacity']).toString() + ';' +
+        'stroke-width:' + (eventArgs['border']['width']).toString() + ';' +
+        'stroke:' + eventArgs['border']['color'] + '}';
 }
 /**
  * Function to trigger itemSelection event for legend selection and public method
@@ -2411,6 +2425,20 @@ function calculateZoomLevel(minLat, maxLat, minLong, maxLong, mapWidth, mapHeigh
         compareZoomFactor(scaleFactor, maps);
     }
     return scaleFactor;
+}
+// tslint:disable:no-any
+function processResult(e) {
+    let dataValue;
+    let resultValue = !isNullOrUndefined(e['result']) ? e['result'] : e['actual'];
+    if (isNullOrUndefined(resultValue.length)) {
+        if (!isNullOrUndefined(resultValue['Items'])) {
+            dataValue = resultValue['Items'];
+        }
+    }
+    else {
+        dataValue = resultValue;
+    }
+    return dataValue;
 }
 
 /**
@@ -2994,6 +3022,17 @@ __decorate$1([
     Property(true)
 ], ColorMappingSettings.prototype, "showLegend", void 0);
 /**
+ * To configure the initial marker shape selection settings
+ */
+class InitialMarkerSelectionSettings extends ChildProperty {
+}
+__decorate$1([
+    Property(null)
+], InitialMarkerSelectionSettings.prototype, "latitude", void 0);
+__decorate$1([
+    Property(null)
+], InitialMarkerSelectionSettings.prototype, "longitude", void 0);
+/**
  * Sets and gets the shapes that is selected initially on rendering the maps.
  */
 class InitialShapeSelectionSettings extends ChildProperty {
@@ -3091,6 +3130,9 @@ __decorate$1([
 __decorate$1([
     Property([])
 ], BubbleSettings.prototype, "dataSource", void 0);
+__decorate$1([
+    Property()
+], BubbleSettings.prototype, "query", void 0);
 __decorate$1([
     Property(1000)
 ], BubbleSettings.prototype, "animationDuration", void 0);
@@ -3467,6 +3509,9 @@ __decorate$1([
     Property([])
 ], MarkerBase.prototype, "dataSource", void 0);
 __decorate$1([
+    Property()
+], MarkerBase.prototype, "query", void 0);
+__decorate$1([
     Complex({}, TooltipSettings)
 ], MarkerBase.prototype, "tooltipSettings", void 0);
 __decorate$1([
@@ -3487,6 +3532,9 @@ __decorate$1([
 __decorate$1([
     Property(null)
 ], MarkerBase.prototype, "longitudeValuePath", void 0);
+__decorate$1([
+    Collection([], InitialMarkerSelectionSettings)
+], MarkerBase.prototype, "initialMarkerSelection", void 0);
 class MarkerSettings extends MarkerBase {
     // tslint:disable-next-line:no-any
     constructor(parent, propName, defaultValue, isArray) {
@@ -3663,6 +3711,12 @@ class Marker {
                 if (this.maps.isBlazor) {
                     const { maps, marker: marker$$1 } = eventArgs, blazorEventArgs = __rest$1(eventArgs, ["maps", "marker"]);
                     eventArgs = blazorEventArgs;
+                    markerSettings.longitudeValuePath = !isNullOrUndefined(markerSettings.longitudeValuePath) ?
+                        markerSettings.longitudeValuePath : !isNullOrUndefined(data['Longitude']) ? 'Longitude' :
+                        !isNullOrUndefined(data['longitude']) ? 'longitude' : null;
+                    markerSettings.latitudeValuePath = !isNullOrUndefined(markerSettings.latitudeValuePath) ?
+                        markerSettings.latitudeValuePath : !isNullOrUndefined(data['Latitude']) ? 'Latitude' :
+                        !isNullOrUndefined(data['latitude']) ? 'latitude' : null;
                 }
                 this.maps.trigger('markerRendering', eventArgs, (MarkerArgs) => {
                     if (markerSettings.colorValuePath !== eventArgs.colorValuePath) {
@@ -3671,18 +3725,16 @@ class Marker {
                     if (markerSettings.shapeValuePath !== eventArgs.shapeValuePath) {
                         eventArgs = markerShapeChoose(eventArgs, data);
                     }
-                    let lng = (!isNullOrUndefined(data[markerSettings.longitudeValuePath])) ?
-                        Number(getValueFromObject(data, markerSettings.longitudeValuePath)) : parseFloat(data['longitude']);
-                    let lat = (!isNullOrUndefined(data[markerSettings.latitudeValuePath])) ?
-                        Number(getValueFromObject(data, markerSettings.latitudeValuePath)) : parseFloat(data['latitude']);
+                    let lng = (!isNullOrUndefined(markerSettings.longitudeValuePath)) ?
+                        Number(getValueFromObject(data, markerSettings.longitudeValuePath)) : !isNullOrUndefined(data['longitude']) ?
+                        parseFloat(data['longitude']) : !isNullOrUndefined(data['Longitude']) ? parseFloat(data['Longitude']) : 0;
+                    let lat = (!isNullOrUndefined(markerSettings.latitudeValuePath)) ?
+                        Number(getValueFromObject(data, markerSettings.latitudeValuePath)) : !isNullOrUndefined(data['latitude']) ?
+                        parseFloat(data['latitude']) : !isNullOrUndefined(data['Latitude']) ? parseFloat(data['Latitude']) : 0;
                     if (this.maps.isBlazor) {
                         let data1 = {};
                         let text = [];
                         let j = 0;
-                        if (data == {} || isNullOrUndefined(data['latitude']) || isNullOrUndefined(data['longitude'])) {
-                            lat = (data['latitude'] && !isNullOrUndefined(data['latitude'])) ? data['latitude'] : 0;
-                            lng = (data['longitude'] && !isNullOrUndefined(data['longitude'])) ? data['longitude'] : 0;
-                        }
                         for (let i = 0; i < Object.keys(data).length; i++) {
                             if (Object.keys(data)[i].toLowerCase() !== 'latitude' && Object.keys(data)[i].toLowerCase() !== 'longitude'
                                 && Object.keys(data)[i].toLowerCase() !== 'name' && Object.keys(data)[i].toLowerCase() !== 'blazortemplateid'
@@ -3783,8 +3835,10 @@ class Marker {
                     Array.prototype.forEach.call(currentLayer.markerSettings, (markerSetting, markerIndex) => {
                         let markerData = markerSetting.dataSource;
                         Array.prototype.forEach.call(markerData, (data, dataIndex) => {
-                            let latitude = !isNullOrUndefined(data['latitude']) ? parseFloat(data['latitude']) : null;
-                            let longitude = !isNullOrUndefined(data['longitude']) ? parseFloat(data['longitude']) : null;
+                            let latitude = !isNullOrUndefined(data['latitude']) ? parseFloat(data['latitude']) :
+                                !isNullOrUndefined(data['Latitude']) ? parseFloat(data['Latitude']) : null;
+                            let longitude = !isNullOrUndefined(data['longitude']) ? parseFloat(data['longitude']) :
+                                !isNullOrUndefined(data['Longitude']) ? parseFloat(data['Longitude']) : null;
                             minLong = isNullOrUndefined(minLong) && dataIndex === 0 ?
                                 longitude : minLong;
                             maxLat = isNullOrUndefined(maxLat) && dataIndex === 0 ?
@@ -4505,7 +4559,7 @@ class LayerPanel {
         else {
             this.clipRectElement = this.mapObject.renderer.drawClipPath(new RectOption(this.mapObject.element.id + '_MapArea_ClipRect', 'transparent', { width: 1, color: 'Gray' }, 1, {
                 x: this.mapObject.isTileMap ? 0 : areaRect.x, y: this.mapObject.isTileMap ? 0 : areaRect.y,
-                width: areaRect.width, height: areaRect.height
+                width: areaRect.width, height: (areaRect.height < 0) ? 0 : areaRect.height
             }));
         }
         this.layerGroup.appendChild(this.clipRectElement);
@@ -4713,7 +4767,8 @@ class LayerPanel {
     //tslint:disable:max-func-body-length
     bubbleCalculation(bubbleSettings, range) {
         if (bubbleSettings.dataSource != null && bubbleSettings != null) {
-            for (let i = 0; i < bubbleSettings.dataSource.length; i++) {
+            let bubbleDataSource = bubbleSettings.dataSource;
+            for (let i = 0; i < bubbleDataSource.length; i++) {
                 let bubbledata = (!isNullOrUndefined(bubbleSettings.valuePath)) ? ((bubbleSettings.valuePath.indexOf('.') > -1) ?
                     Number(getValueFromObject(bubbleSettings.dataSource[i], bubbleSettings.valuePath)) :
                     parseFloat(bubbleSettings.dataSource[i][bubbleSettings.valuePath])) :
@@ -4944,7 +4999,8 @@ class LayerPanel {
                 });
                 let range = { min: 0, max: 0 };
                 this.bubbleCalculation(bubble, range);
-                bubble.dataSource.map((bubbleData, i) => {
+                let bubbleDataSource = bubble.dataSource;
+                bubbleDataSource.map((bubbleData, i) => {
                     this.renderBubble(this.currentLayer, bubbleData, colors[i % colors.length], range, j, i, bubbleG, layerIndex, bubble);
                 });
                 this.groupElements.push(bubbleG);
@@ -5651,383 +5707,12 @@ class Annotations {
     }
 }
 
-/**
- * This module enables the print functionality in maps.
- * @hidden
- */
-class Print {
-    /**
-     * Constructor for Maps
-     * @param control
-     */
-    constructor(control) {
-        this.control = control;
-    }
-    /**
-     * To print the Maps
-     * @param elements
-     * @private
-     */
-    print(elements) {
-        this.printWindow = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
-        this.printWindow.moveTo(0, 0);
-        this.printWindow.resizeTo(screen.availWidth, screen.availHeight);
-        let argsData = {
-            cancel: false, htmlContent: this.getHTMLContent(elements), name: beforePrint
-        };
-        this.control.trigger('beforePrint', argsData, (beforePrintArgs) => {
-            if (!argsData.cancel) {
-                print(argsData.htmlContent, this.printWindow);
-            }
-        });
-    }
-    /**
-     * To get the html string of the Maps
-     * @param elements
-     * @private
-     */
-    getHTMLContent(elements) {
-        let div = createElement('div');
-        if (elements) {
-            if (elements instanceof Array) {
-                Array.prototype.forEach.call(elements, (value) => {
-                    div.appendChild(getElement(value).cloneNode(true));
-                });
-            }
-            else if (elements instanceof Element) {
-                div.appendChild(elements.cloneNode(true));
-            }
-            else {
-                div.appendChild(getElement(elements).cloneNode(true));
-            }
-        }
-        else {
-            div.appendChild(this.control.element.cloneNode(true));
-        }
-        return div;
-    }
-    /**
-     * Get module name.
-     */
-    getModuleName() {
-        return 'Print';
-    }
-    /**
-     * To destroy the print.
-     * @return {void}
-     * @private
-     */
-    destroy(maps) {
-        /**
-         * Destroy method performed here
-         */
-    }
-}
-
-/**
- * This module enables the export to PDF functionality in Maps control.
- * @hidden
- */
-class PdfExport {
-    /**
-     * Constructor for Maps
-     * @param control
-     */
-    constructor(control) {
-        this.control = control;
-    }
-    /**
-     * To export the file as image/svg format
-     * @param type
-     * @param fileName
-     * @private
-     */
-    export(type, fileName, allowDownload, orientation) {
-        // tslint:disable-next-line:max-func-body-length
-        let promise = new Promise((resolve, reject) => {
-            let canvasElement = createElement('canvas', {
-                id: 'ej2-canvas',
-                attrs: {
-                    'width': this.control.availableSize.width.toString(),
-                    'height': this.control.availableSize.height.toString()
-                }
-            });
-            orientation = isNullOrUndefined(orientation) ? PdfPageOrientation.Landscape : orientation;
-            let svgParent = document.getElementById(this.control.element.id + '_Tile_SVG_Parent');
-            let svgData;
-            let url = window.URL.createObjectURL(new Blob(type === 'SVG' ? [svgData] :
-                [(new XMLSerializer()).serializeToString(this.control.svgObject)], { type: 'image/svg+xml' }));
-            let pdfDocument = new PdfDocument();
-            let image = new Image();
-            let ctx = canvasElement.getContext('2d');
-            if (!this.control.isTileMap) {
-                image.onload = (() => {
-                    ctx.drawImage(image, 0, 0);
-                    window.URL.revokeObjectURL(url);
-                    if (type === 'PDF') {
-                        let imageString = canvasElement.toDataURL('image/jpeg').replace('image/jpeg', 'image/octet-stream');
-                        pdfDocument.pageSettings.orientation = orientation;
-                        imageString = imageString.slice(imageString.indexOf(',') + 1);
-                        pdfDocument.pages.add().graphics.drawImage(new PdfBitmap(imageString), 0, 0, (this.control.availableSize.width - 60), this.control.availableSize.height);
-                        if (allowDownload) {
-                            pdfDocument.save(fileName + '.pdf');
-                            pdfDocument.destroy();
-                        }
-                        else {
-                            resolve(null);
-                        }
-                    }
-                });
-                image.src = url;
-            }
-            else {
-                let xHttp = new XMLHttpRequest();
-                let tileLength = this.control.mapLayerPanel.tiles.length;
-                for (let i = 0; i <= tileLength + 1; i++) {
-                    let tile = document.getElementById('tile_' + (i - 1));
-                    let tileImg = new Image();
-                    tileImg.crossOrigin = 'Anonymous';
-                    ctx.fillStyle = this.control.background ? this.control.background : '#FFFFFF';
-                    ctx.fillRect(0, 0, this.control.availableSize.width, this.control.availableSize.height);
-                    ctx.font = this.control.titleSettings.textStyle.size + ' Arial';
-                    ctx.fillStyle = document.getElementById(this.control.element.id + '_Map_title').getAttribute('fill');
-                    ctx.fillText(this.control.titleSettings.text, parseFloat(document.getElementById(this.control.element.id + '_Map_title').getAttribute('x')), parseFloat(document.getElementById(this.control.element.id + '_Map_title').getAttribute('y')));
-                    tileImg.onload = (() => {
-                        if (i === 0 || i === tileLength + 1) {
-                            if (i === 0) {
-                                ctx.setTransform(1, 0, 0, 1, 0, 0);
-                                ctx.rect(0, parseFloat(svgParent.style.top), parseFloat(svgParent.style.width), parseFloat(svgParent.style.height));
-                                ctx.clip();
-                            }
-                            else {
-                                ctx.setTransform(1, 0, 0, 1, parseFloat(svgParent.style.left), parseFloat(svgParent.style.top));
-                            }
-                        }
-                        else {
-                            ctx.setTransform(1, 0, 0, 1, parseFloat(tile.style.left) + 10, parseFloat(tile.style.top) +
-                                (parseFloat(document.getElementById(this.control.element.id + '_tile_parent').style.top)));
-                        }
-                        ctx.drawImage(tileImg, 0, 0);
-                        if (i === tileLength + 1) {
-                            if (type === 'PDF') {
-                                localStorage.setItem('saved-image-example', canvasElement.toDataURL('image/jpeg'));
-                                let x = localStorage.getItem('saved-image-example');
-                                pdfDocument.pageSettings.orientation = orientation;
-                                x = x.slice(x.indexOf(',') + 1);
-                                pdfDocument.pages.add().graphics.drawImage(new PdfBitmap(x), 0, 0, (this.control.availableSize.width - 60), this.control.availableSize.height);
-                                if (allowDownload) {
-                                    pdfDocument.save(fileName + '.pdf');
-                                    pdfDocument.destroy();
-                                }
-                                else {
-                                    resolve(null);
-                                }
-                            }
-                        }
-                    });
-                    if (i === 0 || i === tileLength + 1) {
-                        if (i === 0) {
-                            tileImg.src = url;
-                        }
-                        else {
-                            setTimeout(() => {
-                                tileImg.src = window.URL.createObjectURL(new Blob([(new XMLSerializer()).serializeToString(document.getElementById(this.control.element.id + '_Tile_SVG'))], { type: 'image/svg+xml' }));
-                                // tslint:disable-next-line:align
-                            }, 300);
-                        }
-                    }
-                    else {
-                        xHttp.open('GET', tile.children[0].getAttribute('src'), true);
-                        xHttp.send();
-                        tileImg.src = tile.children[0].getAttribute('src');
-                    }
-                }
-            }
-        });
-        return promise;
-    }
-    /**
-     * Get module name.
-     */
-    getModuleName() {
-        return 'PdfExport';
-    }
-    /**
-     * To destroy the PdfExports.
-     * @return {void}
-     * @private
-     */
-    destroy(maps) {
-        /**
-         * Destroy method performed here
-         */
-    }
-}
-
-/**
- * This module enables the export to Image functionality in Maps control.
- * @hidden
- */
-class ImageExport {
-    /**
-     * Constructor for Maps
-     * @param control
-     */
-    constructor(control) {
-        this.control = control;
-    }
-    /**
-     * To export the file as image/svg format
-     * @param type
-     * @param fileName
-     * @private
-     */
-    export(type, fileName, allowDownload) {
-        // tslint:disable-next-line:max-func-body-length
-        let promise = new Promise((resolve, reject) => {
-            let imageCanvasElement = createElement('canvas', {
-                id: 'ej2-canvas',
-                attrs: {
-                    'width': this.control.availableSize.width.toString(),
-                    'height': this.control.availableSize.height.toString()
-                }
-            });
-            let isDownload = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
-            let toolbarEle = document.getElementById(this.control.element.id + '_ToolBar');
-            let svgParent = document.getElementById(this.control.element.id + '_Tile_SVG_Parent');
-            let svgDataElement;
-            if (!this.control.isTileMap) {
-                svgDataElement = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
-                    this.control.svgObject.outerHTML + '</svg>';
-            }
-            else {
-                let tileSvg = document.getElementById(this.control.element.id + '_Tile_SVG');
-                svgDataElement = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
-                    this.control.svgObject.outerHTML + tileSvg.outerHTML + '</svg>';
-            }
-            let url = window.URL.createObjectURL(new Blob(type === 'SVG' ? [svgDataElement] :
-                [(new XMLSerializer()).serializeToString(this.control.svgObject)], { type: 'image/svg+xml' }));
-            if (type === 'SVG') {
-                if (allowDownload) {
-                    triggerDownload(fileName, type, url, isDownload);
-                }
-                else {
-                    resolve(null);
-                }
-            }
-            else {
-                let image = new Image();
-                let ctxt = imageCanvasElement.getContext('2d');
-                if (!this.control.isTileMap) {
-                    image.onload = (() => {
-                        ctxt.drawImage(image, 0, 0);
-                        window.URL.revokeObjectURL(url);
-                        if (allowDownload) {
-                            triggerDownload(fileName, type, imageCanvasElement.toDataURL('image/png').replace('image/png', 'image/octet-stream'), isDownload);
-                        }
-                        else {
-                            if (type === 'PNG') {
-                                resolve(imageCanvasElement.toDataURL('image/png'));
-                            }
-                            else if (type === 'JPEG') {
-                                resolve(imageCanvasElement.toDataURL('image/jpeg'));
-                            }
-                        }
-                    });
-                    image.src = url;
-                }
-                else {
-                    let imgxHttp = new XMLHttpRequest();
-                    let imgTileLength = this.control.mapLayerPanel.tiles.length;
-                    for (let i = 0; i <= imgTileLength + 1; i++) {
-                        let tile = document.getElementById('tile_' + (i - 1));
-                        let exportTileImg = new Image();
-                        exportTileImg.crossOrigin = 'Anonymous';
-                        ctxt.fillStyle = this.control.background ? this.control.background : '#FFFFFF';
-                        ctxt.fillRect(0, 0, this.control.availableSize.width, this.control.availableSize.height);
-                        ctxt.font = this.control.titleSettings.textStyle.size + ' Arial';
-                        ctxt.fillStyle = document.getElementById(this.control.element.id + '_Map_title').getAttribute('fill');
-                        ctxt.fillText(this.control.titleSettings.text, parseFloat(document.getElementById(this.control.element.id + '_Map_title').getAttribute('x')), parseFloat(document.getElementById(this.control.element.id + '_Map_title').getAttribute('y')));
-                        exportTileImg.onload = (() => {
-                            if (i === 0 || i === imgTileLength + 1) {
-                                if (i === 0) {
-                                    ctxt.setTransform(1, 0, 0, 1, 0, 0);
-                                    ctxt.rect(0, parseFloat(svgParent.style.top), parseFloat(svgParent.style.width), parseFloat(svgParent.style.height));
-                                    ctxt.clip();
-                                }
-                                else {
-                                    ctxt.setTransform(1, 0, 0, 1, parseFloat(svgParent.style.left), parseFloat(svgParent.style.top));
-                                }
-                            }
-                            else {
-                                ctxt.setTransform(1, 0, 0, 1, parseFloat(tile.style.left) + 10, parseFloat(tile.style.top) +
-                                    (parseFloat(document.getElementById(this.control.element.id + '_tile_parent').style.top)));
-                            }
-                            ctxt.drawImage(exportTileImg, 0, 0);
-                            if (i === imgTileLength + 1) {
-                                localStorage.setItem('local-canvasImage', imageCanvasElement.toDataURL('image/png'));
-                                let localBase64 = localStorage.getItem('local-canvasImage');
-                                if (allowDownload) {
-                                    triggerDownload(fileName, type, localBase64, isDownload);
-                                    localStorage.removeItem('local-canvasImage');
-                                }
-                                else {
-                                    if (type === 'PNG') {
-                                        resolve(localBase64);
-                                    }
-                                    else if (type === 'JPEG') {
-                                        resolve(imageCanvasElement.toDataURL('image/jpeg'));
-                                    }
-                                }
-                            }
-                        });
-                        if (i === 0 || i === imgTileLength + 1) {
-                            if (i === 0) {
-                                exportTileImg.src = url;
-                            }
-                            else {
-                                setTimeout(() => {
-                                    exportTileImg.src = window.URL.createObjectURL(new Blob([(new XMLSerializer()).serializeToString(document.getElementById(this.control.element.id + '_Tile_SVG'))], { type: 'image/svg+xml' }));
-                                    // tslint:disable-next-line:align
-                                }, 300);
-                            }
-                        }
-                        else {
-                            imgxHttp.open('GET', tile.children[0].getAttribute('src'), true);
-                            imgxHttp.send();
-                            exportTileImg.src = tile.children[0].getAttribute('src');
-                        }
-                    }
-                }
-            }
-        });
-        return promise;
-    }
-    /**
-     * Get module name.
-     */
-    getModuleName() {
-        return 'ImageExport';
-    }
-    /**
-     * To destroy the ImageExport.
-     * @return {void}
-     * @private
-     */
-    destroy(maps) {
-        /**
-         * Destroy method performed here
-         */
-    }
-}
-
 var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-var Maps_1;
 /**
  * Maps Component file
  */
@@ -6041,7 +5726,7 @@ var Maps_1;
  * </script>
  * ```
  */
-let Maps = Maps_1 = class Maps extends Component {
+let Maps = class Maps extends Component {
     /**
      * Constructor for creating the widget
      */
@@ -6052,6 +5737,10 @@ let Maps = Maps_1 = class Maps extends Component {
          * @private
          */
         this.isTileMap = false;
+        /**
+         * Resize the map
+         */
+        this.isResize = false;
         /** @private */
         this.baseSize = new Size(0, 0);
         /** @public */
@@ -6168,14 +5857,6 @@ let Maps = Maps_1 = class Maps extends Component {
     preRender() {
         this.isDevice = Browser.isDevice;
         this.isBlazor = isBlazor();
-        if (!this.isBlazor) {
-            this.allowPrint = true;
-            this.allowImageExport = true;
-            this.allowPdfExport = true;
-            Maps_1.Inject(Print);
-            Maps_1.Inject(PdfExport);
-            Maps_1.Inject(ImageExport);
-        }
         this.initPrivateVariable();
         this.allowServerDataBinding = false;
         this.unWireEVents();
@@ -6208,7 +5889,7 @@ let Maps = Maps_1 = class Maps extends Component {
             if (layer.shapeData instanceof DataManager) {
                 this.serverProcess['request']++;
                 dataModule = layer.shapeData;
-                queryModule = layer.query instanceof Query ? layer.query : new Query();
+                queryModule = layer.query instanceof Query ? layer.query : this.isBlazor ? (new Query().requiresCount()) : new Query();
                 let dataManager = dataModule.executeQuery(queryModule);
                 dataManager.then((e) => {
                     this.processResponseJsonData('DataManager', e, layer, 'ShapeData');
@@ -6217,6 +5898,43 @@ let Maps = Maps_1 = class Maps extends Component {
             else if (layer.shapeData instanceof MapAjax || layer.shapeData) {
                 if (!isNullOrUndefined(layer.shapeData['dataOptions'])) {
                     this.processAjaxRequest(layer, layer.shapeData, 'ShapeData');
+                }
+            }
+            if (layer.dataSource instanceof DataManager) {
+                this.serverProcess['request']++;
+                dataModule = layer.dataSource;
+                queryModule = layer.query instanceof Query ? layer.query : this.isBlazor ? (new Query().requiresCount()) : new Query();
+                let dataManager = dataModule.executeQuery(queryModule);
+                dataManager.then((e) => {
+                    layer.dataSource = processResult(e);
+                });
+            }
+            if (layer.markerSettings.length > 0) {
+                for (let i = 0; i < layer.markerSettings.length; i++) {
+                    if (layer.markerSettings[i].dataSource instanceof DataManager) {
+                        this.serverProcess['request']++;
+                        dataModule = layer.markerSettings[i].dataSource;
+                        queryModule = layer.markerSettings[i].query instanceof Query ? layer.markerSettings[i].query : this.isBlazor ?
+                            (new Query().requiresCount()) : new Query();
+                        let dataManager = dataModule.executeQuery(queryModule);
+                        dataManager.then((e) => {
+                            layer.markerSettings[i].dataSource = processResult(e);
+                        });
+                    }
+                }
+            }
+            if (layer.bubbleSettings.length > 0) {
+                for (let i = 0; i < layer.bubbleSettings.length; i++) {
+                    if (layer.bubbleSettings[i].dataSource instanceof DataManager) {
+                        this.serverProcess['request']++;
+                        dataModule = layer.bubbleSettings[i].dataSource;
+                        queryModule = layer.bubbleSettings[i].query instanceof Query ? layer.bubbleSettings[i].query : this.isBlazor ?
+                            (new Query().requiresCount()) : new Query();
+                        let dataManager = dataModule.executeQuery(queryModule);
+                        dataManager.then((e) => {
+                            layer.bubbleSettings[i].dataSource = processResult(e);
+                        });
+                    }
                 }
             }
             if (layer.dataSource instanceof MapAjax || !isNullOrUndefined(layer.dataSource['dataOptions'])) {
@@ -6249,12 +5967,10 @@ let Maps = Maps_1 = class Maps extends Component {
         this.serverProcess['response']++;
         if (processType) {
             if (dataType === 'ShapeData') {
-                layer.shapeData = (processType === 'DataManager') ? !isNullOrUndefined(data['result']) ? data['result'] : data['actual'] :
-                    JSON.parse(data);
+                layer.shapeData = (processType === 'DataManager') ? processResult(data) : JSON.parse(data);
             }
             else {
-                layer.dataSource = (processType === 'DataManager') ? !isNullOrUndefined(data['result']) ? data['result'] : data['actual'] :
-                    JSON.parse('[' + data + ']')[0];
+                layer.dataSource = (processType === 'DataManager') ? processResult(data) : JSON.parse('[' + data + ']')[0];
             }
         }
         if (!isNullOrUndefined(processType) && this.serverProcess['request'] === this.serverProcess['response']) {
@@ -6276,6 +5992,7 @@ let Maps = Maps_1 = class Maps extends Component {
             this.renderMap();
         }
     }
+    /* tslint:disable:max-func-body-length */
     renderMap() {
         if (this.legendModule && this.legendSettings.visible) {
             if (!this.isTileMap) {
@@ -6311,6 +6028,15 @@ let Maps = Maps_1 = class Maps extends Component {
                 this.layers[i].selectionSettings.enableMultiSelect = checkSelection;
                 if (i === this.layers.length - 1) {
                     this.checkInitialRender = false;
+                }
+            }
+            for (let k = 0; k < this.layers[i].markerSettings.length; k++) {
+                if (this.layers[i].markerSettings[k].selectionSettings && this.layers[i].markerSettings[k].selectionSettings.enable
+                    && this.layers[i].markerSettings[k].initialMarkerSelection.length > 0) {
+                    let markerSelectionValues = this.layers[i].markerSettings[k].initialMarkerSelection;
+                    for (let j = 0; j < markerSelectionValues.length; j++) {
+                        this.markerInitialSelection(i, k, this.layers[i].markerSettings[k], markerSelectionValues[j].latitude, markerSelectionValues[j].longitude);
+                    }
                 }
             }
         }
@@ -6361,10 +6087,59 @@ let Maps = Maps_1 = class Maps extends Component {
         this.arrangeTemplate();
         let blazor = this.isBlazor ? this.blazorTemplates() : null;
         if (this.annotationsModule) {
-            this.annotationsModule.renderAnnotationElements();
+            if (this.width !== '0px' && this.height !== '0px' && this.width !== '0%' && this.height !== '0%') {
+                this.annotationsModule.renderAnnotationElements();
+            }
         }
         this.zoomingChange();
-        this.trigger(loaded, this.isBlazor ? {} : { maps: this });
+        this.trigger(loaded, this.isBlazor ? { isResized: this.isResize } : { maps: this, isResized: this.isResize });
+        this.isResize = false;
+    }
+    /**
+     * @private
+     * To apply color to the initial selected marker
+     */
+    markerSelection(selectionSettings, map, targetElement, data) {
+        let border = {
+            color: selectionSettings.border.color,
+            width: selectionSettings.border.width / map.scale
+        };
+        let markerSelectionProperties = {
+            opacity: selectionSettings.opacity,
+            fill: selectionSettings.fill,
+            border: border,
+            target: targetElement.id,
+            cancel: false,
+            data: data,
+            maps: map
+        };
+        if (!getElement('MarkerselectionMap')) {
+            document.body.appendChild(createStyle('MarkerselectionMap', 'MarkerselectionMapStyle', markerSelectionProperties));
+        }
+        else {
+            customizeStyle('MarkerselectionMap', 'MarkerselectionMapStyle', markerSelectionProperties);
+        }
+        if (this.selectedMarkerElementId.length === 0 || selectionSettings.enableMultiSelect) {
+            targetElement.setAttribute('class', 'MarkerselectionMapStyle');
+        }
+    }
+    /**
+     * @private
+     * initial selection of marker
+     *
+     */
+    markerInitialSelection(layerIndex, markerIndex, markerSettings, latitude, longitude) {
+        let selectionSettings = markerSettings.selectionSettings;
+        if (selectionSettings.enable) {
+            for (let i = 0; i < markerSettings.dataSource['length']; i++) {
+                let data = markerSettings.dataSource[i];
+                if (data['latitude'] === latitude && data['longitude'] === longitude) {
+                    let targetId = this.element.id + '_' + 'LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex +
+                        '_dataIndex_' + i;
+                    this.markerSelection(selectionSettings, this, getElement(targetId), data);
+                }
+            }
+        }
     }
     /**
      * To append blazor templates
@@ -6500,7 +6275,10 @@ let Maps = Maps_1 = class Maps extends Component {
         let mainLayer = this.layersCollection[0];
         let padding = 0;
         if (mainLayer.isBaseLayer && (mainLayer.layerType === 'OSM' || mainLayer.layerType === 'Bing' ||
-            mainLayer.layerType === 'GoogleStaticMap')) {
+            mainLayer.layerType === 'GoogleStaticMap' || mainLayer.layerType === 'Google')) {
+            if (mainLayer.layerType === 'Google') {
+                mainLayer.urlTemplate = 'https://mt1.google.com/vt/lyrs=m@129&hl=en&x=tileX&y=tileY&z=level';
+            }
             removeElement(this.element.id + '_tile_parent');
             removeElement(this.element.id + '_tiles');
             removeElement('animated_tiles');
@@ -6866,6 +6644,9 @@ let Maps = Maps_1 = class Maps extends Component {
         let page = this.legendModule.currentPage;
         let legendIndex = event.target.id.split('_Index_')[1];
         let collection;
+        page = this.legendModule.totalPages.length <= this.legendModule.currentPage
+            ? this.legendModule.totalPages.length - 1 : this.legendModule.currentPage < 0 ?
+            0 : this.legendModule.currentPage;
         let count = this.legendModule.totalPages.length !== 0 ?
             this.legendModule.totalPages[page]['Collection'].length : this.legendModule.totalPages.length;
         for (let i = 0; i < count; i++) {
@@ -6884,6 +6665,12 @@ let Maps = Maps_1 = class Maps extends Component {
     }
     titleTooltip(event, x, y, isTouch) {
         let targetId = event.target.id;
+        if (targetId === (this.element.id + '_LegendTitle') && (event.target.textContent.indexOf('...') === -1)) {
+            showTooltip(this.legendSettings.title.text, this.legendSettings.titleStyle.size, x, y, this.element.offsetWidth, this.element.offsetHeight, this.element.id + '_EJ2_LegendTitle_Tooltip', getElement(this.element.id + '_Secondary_Element'), isTouch);
+        }
+        else {
+            removeElement(this.element.id + '_EJ2_LegendTitle_Tooltip');
+        }
         if ((targetId === (this.element.id + '_Map_title')) && (event.target.textContent.indexOf('...') > -1)) {
             showTooltip(this.titleSettings.text, this.titleSettings.textStyle.size, x, y, this.element.offsetWidth, this.element.offsetHeight, this.element.id + '_EJ2_Title_Tooltip', getElement(this.element.id + '_Secondary_Element'), isTouch);
         }
@@ -6898,6 +6685,7 @@ let Maps = Maps_1 = class Maps extends Component {
      * @param e - Specifies the arguments of window resize event.
      */
     mapsOnResize(e) {
+        this.isResize = true;
         let args = {
             name: resize,
             previousSize: this.availableSize,
@@ -7210,6 +6998,9 @@ let Maps = Maps_1 = class Maps extends Component {
         this.zoomLabelPositions = [];
         this.mouseDownEvent = { x: null, y: null };
         this.mouseClickEvent = { x: null, y: null };
+        if (document.getElementById('mapsmeasuretext')) {
+            document.getElementById('mapsmeasuretext').remove();
+        }
         this.removeSvg();
         super.destroy();
     }
@@ -7283,7 +7074,12 @@ let Maps = Maps_1 = class Maps extends Component {
             if (newProp.layers && isMarker) {
                 removeElement(this.element.id + '_Markers_Group');
                 if (this.isTileMap) {
-                    this.mapLayerPanel.renderTileLayer(this.mapLayerPanel, this.layers['currentFactor'], (this.layers.length - 1));
+                    if (this.isBlazor) {
+                        this.render();
+                    }
+                    else {
+                        this.mapLayerPanel.renderTileLayer(this.mapLayerPanel, this.layers['currentFactor'], (this.layers.length - 1));
+                    }
                 }
                 else {
                     this.render();
@@ -7757,7 +7553,7 @@ __decorate([
 __decorate([
     Event()
 ], Maps.prototype, "pan", void 0);
-Maps = Maps_1 = __decorate([
+Maps = __decorate([
     NotifyPropertyChanges
 ], Maps);
 
@@ -7911,11 +7707,12 @@ class Bubble {
                 else {
                     translate = getTranslate(this.maps, layer, animate$$1);
                 }
+                let bubbleDataSource = bubbleSettings.dataSource;
                 let scale = translate['scale'];
                 let transPoint = translate['location'];
                 let position = new MapLocation((this.maps.isTileMap ? (eventArgs.cx) : ((eventArgs.cx + transPoint.x) * scale)), (this.maps.isTileMap ? (eventArgs.cy) : ((eventArgs.cy + transPoint.y) * scale)));
                 bubbleElement.setAttribute('transform', 'translate( ' + (position.x) + ' ' + (position.y) + ' )');
-                let bubble = (bubbleSettings.dataSource.length - 1) === dataIndex ? 'bubble' : null;
+                let bubble = (bubbleDataSource.length - 1) === dataIndex ? 'bubble' : null;
                 if (bubbleSettings.bubbleType === 'Square') {
                     position.x += radius;
                     position.y += radius * (this.maps.projectionType === 'Mercator' ? 1 : -1);
@@ -8974,8 +8771,8 @@ class Legend {
                     this.renderLegendBorder();
                 }
                 legendElement.appendChild(drawSymbol(shapeLocation, shape, shapeSize, collection['ImageSrc'], renderOptions));
-                if (collection['Rect']['width'] > this.legendBorderRect.width) {
-                    let legendRectSize = collection['Rect']['x'] + collection['Rect']['width'];
+                let legendRectSize = collection['Rect']['x'] + collection['Rect']['width'];
+                if (legendRectSize > this.legendBorderRect.width) {
                     let trimmedText = this.legendTextTrim(this.legendBorderRect.width, legendText, legend.textStyle, legendRectSize);
                     legendText = trimmedText;
                 }
@@ -10746,9 +10543,13 @@ class Selection {
                     let layetElement = getElementByID(this.maps.element.id + '_Layer_Collections');
                     if (!this.selectionsettings.enableMultiSelect &&
                         layetElement.getElementsByClassName(this.selectionType + 'selectionMapStyle').length > 0) {
-                        let ele = layetElement.getElementsByClassName(this.selectionType + 'selectionMapStyle')[0];
-                        removeClass(ele);
-                        this.removedSelectionList(ele);
+                        let eleCount = layetElement.getElementsByClassName(this.selectionType + 'selectionMapStyle').length;
+                        let ele;
+                        for (let k = 0; k < eleCount; k++) {
+                            ele = layetElement.getElementsByClassName(this.selectionType + 'selectionMapStyle')[0];
+                            removeClass(ele);
+                            this.removedSelectionList(ele);
+                        }
                         if (this.selectionType === 'Shape') {
                             this.maps.shapeSelectionItem = [];
                             let selectionLength = this.maps.selectedElementId.length;
@@ -11563,6 +11364,18 @@ class Zoom {
                             if (!isNullOrUndefined(currentEle)) {
                                 for (let k = 0; k < currentEle.childElementCount; k++) {
                                     this.markerTranslate(currentEle.childNodes[k], factor, x, y, scale, 'Marker', animate$$1);
+                                    let layerIndex = parseInt(currentEle.childNodes[k]['id'].split('_LayerIndex_')[1].split('_')[0], 10);
+                                    let dataIndex = parseInt(currentEle.childNodes[k]['id'].split('_dataIndex_')[1].split('_')[0], 10);
+                                    let markerIndex = parseInt(currentEle.childNodes[k]['id'].split('_MarkerIndex_')[1].split('_')[0], 10);
+                                    let markerSelectionValues = this.currentLayer.markerSettings[markerIndex].dataSource[dataIndex];
+                                    for (let x = 0; x < this.currentLayer.markerSettings[markerIndex].initialMarkerSelection.length; x++) {
+                                        if (this.currentLayer.markerSettings[markerIndex].initialMarkerSelection[x]['latitude'] ===
+                                            markerSelectionValues['latitude'] ||
+                                            this.currentLayer.markerSettings[markerIndex].initialMarkerSelection[x]['longitude'] ===
+                                                markerSelectionValues['longitude']) {
+                                            this.maps.markerSelection(this.currentLayer.markerSettings[markerIndex].selectionSettings, this.maps, currentEle.children[k], this.currentLayer.markerSettings[markerIndex].dataSource[dataIndex]);
+                                        }
+                                    }
                                     if (!this.maps.isTileMap && this.currentLayer.animationDuration > 0) {
                                         markerStyle = 'visibility:hidden';
                                         currentEle.setAttribute('style', markerStyle);
@@ -11716,6 +11529,14 @@ class Zoom {
                 if (this.maps.isBlazor) {
                     const { maps, marker: marker$$1 } = eventArgs, blazorEventArgs = __rest$7(eventArgs, ["maps", "marker"]);
                     eventArgs = blazorEventArgs;
+                    let latitudeValue = 'Latitude';
+                    let longitudeValue = 'Longitude';
+                    markerSettings.longitudeValuePath = !isNullOrUndefined(markerSettings.longitudeValuePath) ?
+                        markerSettings.longitudeValuePath : !isNullOrUndefined(data['Longitude']) ? longitudeValue :
+                        !isNullOrUndefined(data['longitude']) ? 'longitude' : null;
+                    markerSettings.latitudeValuePath = !isNullOrUndefined(markerSettings.latitudeValuePath) ?
+                        markerSettings.latitudeValuePath : !isNullOrUndefined(data['Latitude']) ? latitudeValue :
+                        !isNullOrUndefined(data['latitude']) ? 'latitude' : null;
                 }
                 this.maps.trigger('markerRendering', eventArgs, (MarkerArgs) => {
                     if (markerSettings.shapeValuePath !== eventArgs.shapeValuePath) {
@@ -11725,9 +11546,11 @@ class Zoom {
                         eventArgs = markerColorChoose(eventArgs, data);
                     }
                     let lati = (!isNullOrUndefined(markerSettings.latitudeValuePath)) ?
-                        Number(getValueFromObject(data, markerSettings.latitudeValuePath)) : parseFloat(data['latitude']);
+                        Number(getValueFromObject(data, markerSettings.latitudeValuePath)) : !isNullOrUndefined(data['latitude']) ?
+                        parseFloat(data['latitude']) : !isNullOrUndefined(data['Latitude']) ? data['Latitude'] : 0;
                     let long = (!isNullOrUndefined(markerSettings.longitudeValuePath)) ?
-                        Number(getValueFromObject(data, markerSettings.longitudeValuePath)) : parseFloat(data['longitude']);
+                        Number(getValueFromObject(data, markerSettings.longitudeValuePath)) : !isNullOrUndefined(data['longitude']) ?
+                        parseFloat(data['longitude']) : !isNullOrUndefined(data['Longitude']) ? data['Longitude'] : 0;
                     if (this.maps.isBlazor) {
                         let data1 = {};
                         let j = 0;
@@ -11742,10 +11565,6 @@ class Zoom {
                             }
                         }
                         data['text'] = data1['text'];
-                        if (data == {} || isNullOrUndefined(data['latitude']) || isNullOrUndefined(data['longitude'])) {
-                            lati = (data['latitude'] && !isNullOrUndefined(data['latitude'])) ? data['latitude'] : 0;
-                            long = (data['longitude'] && !isNullOrUndefined(data['longitude'])) ? data['longitude'] : 0;
-                        }
                     }
                     let offset = markerSettings.offset;
                     if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(long) && !isNullOrUndefined(lati)) {
@@ -11955,20 +11774,16 @@ class Zoom {
         let layer = this.maps.layersCollection[layerIndex];
         let marker$$1 = layer.markerSettings[markerIndex];
         if (!isNullOrUndefined(marker$$1) && !isNullOrUndefined(marker$$1.dataSource) && !isNullOrUndefined(marker$$1.dataSource[dataIndex])) {
-            let lng = (!isNullOrUndefined(marker$$1.longitudeValuePath)) ?
-                Number(getValueFromObject(marker$$1.dataSource[dataIndex], marker$$1.longitudeValuePath)) :
-                parseFloat(marker$$1.dataSource[dataIndex]['longitude']);
-            let lat = (!isNullOrUndefined(marker$$1.latitudeValuePath)) ?
-                Number(getValueFromObject(marker$$1.dataSource[dataIndex], marker$$1.latitudeValuePath)) :
-                parseFloat(marker$$1.dataSource[dataIndex]['latitude']);
             if (this.maps.isBlazor) {
+                marker$$1.longitudeValuePath = !isNullOrUndefined(marker$$1.longitudeValuePath) ?
+                    marker$$1.longitudeValuePath : !isNullOrUndefined(marker$$1.dataSource[dataIndex]['Longitude']) ? 'Longitude' :
+                    !isNullOrUndefined(marker$$1.dataSource[dataIndex]['longitude']) ? 'longitude' : null;
+                marker$$1.latitudeValuePath = !isNullOrUndefined(marker$$1.latitudeValuePath) ?
+                    marker$$1.latitudeValuePath : !isNullOrUndefined(marker$$1.dataSource[dataIndex]['Latitude']) ? 'Latitude' :
+                    !isNullOrUndefined(marker$$1.dataSource[dataIndex]['latitude']) ? 'latitude' : null;
                 let data1 = {};
                 let j = 0;
                 let text = [];
-                if (isNullOrUndefined(marker$$1.dataSource[dataIndex]['latitude']) || isNullOrUndefined(marker$$1.dataSource[dataIndex]['longitude'])) {
-                    lat = (marker$$1.dataSource[dataIndex]['latitude'] && !isNullOrUndefined(marker$$1.dataSource[dataIndex]['latitude'])) ? marker$$1.dataSource[dataIndex]['latitude'] : 0;
-                    lng = (marker$$1.dataSource[dataIndex]['longitude'] && !isNullOrUndefined(marker$$1.dataSource[dataIndex]['longitude'])) ? marker$$1.dataSource[dataIndex]['longitude'] : 0;
-                }
                 for (let i = 0; i < Object.keys(marker$$1.dataSource[dataIndex]).length; i++) {
                     if (Object.keys(marker$$1.dataSource[dataIndex])[i].toLowerCase() !== 'text' && Object.keys(marker$$1.dataSource[dataIndex])[i].toLowerCase() !== 'longitude'
                         && Object.keys(marker$$1.dataSource[dataIndex])[i].toLowerCase() !== 'latitude' && Object.keys(marker$$1.dataSource[dataIndex])[i].toLowerCase() !== 'blazortemplateid'
@@ -11980,6 +11795,14 @@ class Zoom {
                 }
                 marker$$1.dataSource[dataIndex]['text'] = data1['text'];
             }
+            let lng = (!isNullOrUndefined(marker$$1.longitudeValuePath)) ?
+                Number(getValueFromObject(marker$$1.dataSource[dataIndex], marker$$1.longitudeValuePath)) :
+                !isNullOrUndefined(marker$$1.dataSource[dataIndex]['longitude']) ? parseFloat(marker$$1.dataSource[dataIndex]['longitude']) :
+                    !isNullOrUndefined(marker$$1.dataSource[dataIndex]['Latitude']) ? parseFloat(marker$$1.dataSource[dataIndex]['Latitude']) : 0;
+            let lat = (!isNullOrUndefined(marker$$1.latitudeValuePath)) ?
+                Number(getValueFromObject(marker$$1.dataSource[dataIndex], marker$$1.latitudeValuePath)) :
+                !isNullOrUndefined(marker$$1.dataSource[dataIndex]['latitude']) ? parseFloat(marker$$1.dataSource[dataIndex]['latitude']) :
+                    !isNullOrUndefined(marker$$1.dataSource[dataIndex]['Latitude']) ? parseFloat(marker$$1.dataSource[dataIndex]['Latitude']) : 0;
             let duration = this.currentLayer.animationDuration;
             let location = (this.maps.isTileMap) ? convertTileLatLongToPoint(new Point(lng, lat), this.maps.tileZoomLevel, this.maps.tileTranslatePoint, true) : convertGeoToPoint(lat, lng, factor, layer, this.maps);
             if (this.maps.isTileMap) {
@@ -12133,7 +11956,8 @@ class Zoom {
         zoomFactor = (type === 'ZoomOut') ? (Math.round(zoomFactor) === 1 ? 1 : zoomFactor) : zoomFactor;
         zoomFactor = (type === 'Reset') ? 1 : (Math.round(zoomFactor) === 0) ? 1 : zoomFactor;
         zoomFactor = (minZoom > zoomFactor && type === 'ZoomIn') ? minZoom + 1 : zoomFactor;
-        if ((!map.isTileMap) && (type === 'ZoomIn' ? zoomFactor >= minZoom && zoomFactor <= maxZoom : zoomFactor >= minZoom)) {
+        if ((!map.isTileMap) && (type === 'ZoomIn' ? zoomFactor >= minZoom && zoomFactor <= maxZoom : zoomFactor >= minZoom
+            || map.isReset)) {
             let min = map.baseMapRectBounds['min'];
             let max = map.baseMapRectBounds['max'];
             let mapWidth = Math.abs(max['x'] - min['x']);
@@ -12151,8 +11975,8 @@ class Zoom {
             this.triggerZoomEvent(prevTilePoint, prevLevel, type);
             this.applyTransform(true);
         }
-        else if ((map.isTileMap) && (zoomFactor >= minZoom && zoomFactor <= maxZoom)) {
-            let tileZoomFactor = zoomFactor;
+        else if ((map.isTileMap) && ((zoomFactor >= minZoom && zoomFactor <= maxZoom) || map.isReset)) {
+            let tileZoomFactor = prevLevel < minZoom && !map.isReset ? minZoom : zoomFactor;
             map.scale = Math.pow(2, tileZoomFactor - 1);
             map.tileZoomLevel = tileZoomFactor;
             let position = { x: map.availableSize.width / 2, y: map.availableSize.height / 2 };
@@ -12315,6 +12139,7 @@ class Zoom {
      */
     performZoomingByToolBar(type) {
         let map = this.maps;
+        map.isReset = false;
         switch (type.toLowerCase()) {
             case 'zoom':
                 this.panColor = this.fillColor;
@@ -12745,6 +12570,376 @@ class Zoom {
 }
 
 /**
+ * This module enables the print functionality in maps.
+ * @hidden
+ */
+class Print {
+    /**
+     * Constructor for Maps
+     * @param control
+     */
+    constructor(control) {
+        this.control = control;
+    }
+    /**
+     * To print the Maps
+     * @param elements
+     * @private
+     */
+    print(elements) {
+        this.printWindow = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
+        this.printWindow.moveTo(0, 0);
+        this.printWindow.resizeTo(screen.availWidth, screen.availHeight);
+        let argsData = {
+            cancel: false, htmlContent: this.getHTMLContent(elements), name: beforePrint
+        };
+        this.control.trigger('beforePrint', argsData, (beforePrintArgs) => {
+            if (!argsData.cancel) {
+                print(argsData.htmlContent, this.printWindow);
+            }
+        });
+    }
+    /**
+     * To get the html string of the Maps
+     * @param elements
+     * @private
+     */
+    getHTMLContent(elements) {
+        let div = createElement('div');
+        if (elements) {
+            if (elements instanceof Array) {
+                Array.prototype.forEach.call(elements, (value) => {
+                    div.appendChild(getElement(value).cloneNode(true));
+                });
+            }
+            else if (elements instanceof Element) {
+                div.appendChild(elements.cloneNode(true));
+            }
+            else {
+                div.appendChild(getElement(elements).cloneNode(true));
+            }
+        }
+        else {
+            div.appendChild(this.control.element.cloneNode(true));
+        }
+        return div;
+    }
+    /**
+     * Get module name.
+     */
+    getModuleName() {
+        return 'Print';
+    }
+    /**
+     * To destroy the print.
+     * @return {void}
+     * @private
+     */
+    destroy(maps) {
+        /**
+         * Destroy method performed here
+         */
+    }
+}
+
+/**
+ * This module enables the export to Image functionality in Maps control.
+ * @hidden
+ */
+class ImageExport {
+    /**
+     * Constructor for Maps
+     * @param control
+     */
+    constructor(control) {
+        this.control = control;
+    }
+    /**
+     * To export the file as image/svg format
+     * @param type
+     * @param fileName
+     * @private
+     */
+    export(type, fileName, allowDownload) {
+        // tslint:disable-next-line:max-func-body-length
+        let promise = new Promise((resolve, reject) => {
+            let imageCanvasElement = createElement('canvas', {
+                id: 'ej2-canvas',
+                attrs: {
+                    'width': this.control.availableSize.width.toString(),
+                    'height': this.control.availableSize.height.toString()
+                }
+            });
+            let isDownload = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
+            let toolbarEle = document.getElementById(this.control.element.id + '_ToolBar');
+            let svgParent = document.getElementById(this.control.element.id + '_Tile_SVG_Parent');
+            let svgDataElement;
+            if (!this.control.isTileMap) {
+                svgDataElement = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
+                    this.control.svgObject.outerHTML + '</svg>';
+            }
+            else {
+                let tileSvg = document.getElementById(this.control.element.id + '_Tile_SVG');
+                svgDataElement = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
+                    this.control.svgObject.outerHTML + tileSvg.outerHTML + '</svg>';
+            }
+            let url = window.URL.createObjectURL(new Blob(type === 'SVG' ? [svgDataElement] :
+                [(new XMLSerializer()).serializeToString(this.control.svgObject)], { type: 'image/svg+xml' }));
+            if (type === 'SVG') {
+                if (allowDownload) {
+                    triggerDownload(fileName, type, url, isDownload);
+                }
+                else {
+                    resolve(null);
+                }
+            }
+            else {
+                let image = new Image();
+                let ctxt = imageCanvasElement.getContext('2d');
+                if (!this.control.isTileMap) {
+                    image.onload = (() => {
+                        ctxt.drawImage(image, 0, 0);
+                        window.URL.revokeObjectURL(url);
+                        if (allowDownload) {
+                            triggerDownload(fileName, type, imageCanvasElement.toDataURL('image/png').replace('image/png', 'image/octet-stream'), isDownload);
+                        }
+                        else {
+                            if (type === 'PNG') {
+                                resolve(imageCanvasElement.toDataURL('image/png'));
+                            }
+                            else if (type === 'JPEG') {
+                                resolve(imageCanvasElement.toDataURL('image/jpeg'));
+                            }
+                        }
+                    });
+                    image.src = url;
+                }
+                else {
+                    let imgxHttp = new XMLHttpRequest();
+                    let imgTileLength = this.control.mapLayerPanel.tiles.length;
+                    for (let i = 0; i <= imgTileLength + 1; i++) {
+                        let tile = document.getElementById('tile_' + (i - 1));
+                        let exportTileImg = new Image();
+                        exportTileImg.crossOrigin = 'Anonymous';
+                        ctxt.fillStyle = this.control.background ? this.control.background : '#FFFFFF';
+                        ctxt.fillRect(0, 0, this.control.availableSize.width, this.control.availableSize.height);
+                        ctxt.font = this.control.titleSettings.textStyle.size + ' Arial';
+                        ctxt.fillStyle = document.getElementById(this.control.element.id + '_Map_title').getAttribute('fill');
+                        ctxt.fillText(this.control.titleSettings.text, parseFloat(document.getElementById(this.control.element.id + '_Map_title').getAttribute('x')), parseFloat(document.getElementById(this.control.element.id + '_Map_title').getAttribute('y')));
+                        exportTileImg.onload = (() => {
+                            if (i === 0 || i === imgTileLength + 1) {
+                                if (i === 0) {
+                                    ctxt.setTransform(1, 0, 0, 1, 0, 0);
+                                    ctxt.rect(0, parseFloat(svgParent.style.top), parseFloat(svgParent.style.width), parseFloat(svgParent.style.height));
+                                    ctxt.clip();
+                                }
+                                else {
+                                    ctxt.setTransform(1, 0, 0, 1, parseFloat(svgParent.style.left), parseFloat(svgParent.style.top));
+                                }
+                            }
+                            else {
+                                ctxt.setTransform(1, 0, 0, 1, parseFloat(tile.style.left) + 10, parseFloat(tile.style.top) +
+                                    (parseFloat(document.getElementById(this.control.element.id + '_tile_parent').style.top)));
+                            }
+                            ctxt.drawImage(exportTileImg, 0, 0);
+                            if (i === imgTileLength + 1) {
+                                localStorage.setItem('local-canvasImage', imageCanvasElement.toDataURL('image/png'));
+                                let localBase64 = localStorage.getItem('local-canvasImage');
+                                if (allowDownload) {
+                                    triggerDownload(fileName, type, localBase64, isDownload);
+                                    localStorage.removeItem('local-canvasImage');
+                                }
+                                else {
+                                    if (type === 'PNG') {
+                                        resolve(localBase64);
+                                    }
+                                    else if (type === 'JPEG') {
+                                        resolve(imageCanvasElement.toDataURL('image/jpeg'));
+                                    }
+                                }
+                            }
+                        });
+                        if (i === 0 || i === imgTileLength + 1) {
+                            if (i === 0) {
+                                exportTileImg.src = url;
+                            }
+                            else {
+                                setTimeout(() => {
+                                    exportTileImg.src = window.URL.createObjectURL(new Blob([(new XMLSerializer()).serializeToString(document.getElementById(this.control.element.id + '_Tile_SVG'))], { type: 'image/svg+xml' }));
+                                    // tslint:disable-next-line:align
+                                }, 300);
+                            }
+                        }
+                        else {
+                            imgxHttp.open('GET', tile.children[0].getAttribute('src'), true);
+                            imgxHttp.send();
+                            exportTileImg.src = tile.children[0].getAttribute('src');
+                        }
+                    }
+                }
+            }
+        });
+        return promise;
+    }
+    /**
+     * Get module name.
+     */
+    getModuleName() {
+        return 'ImageExport';
+    }
+    /**
+     * To destroy the ImageExport.
+     * @return {void}
+     * @private
+     */
+    destroy(maps) {
+        /**
+         * Destroy method performed here
+         */
+    }
+}
+
+/**
+ * This module enables the export to PDF functionality in Maps control.
+ * @hidden
+ */
+class PdfExport {
+    /**
+     * Constructor for Maps
+     * @param control
+     */
+    constructor(control) {
+        this.control = control;
+    }
+    /**
+     * To export the file as image/svg format
+     * @param type
+     * @param fileName
+     * @private
+     */
+    export(type, fileName, allowDownload, orientation) {
+        // tslint:disable-next-line:max-func-body-length
+        let promise = new Promise((resolve, reject) => {
+            let canvasElement = createElement('canvas', {
+                id: 'ej2-canvas',
+                attrs: {
+                    'width': this.control.availableSize.width.toString(),
+                    'height': this.control.availableSize.height.toString()
+                }
+            });
+            orientation = isNullOrUndefined(orientation) ? PdfPageOrientation.Landscape : orientation;
+            let svgParent = document.getElementById(this.control.element.id + '_Tile_SVG_Parent');
+            let svgData;
+            let url = window.URL.createObjectURL(new Blob(type === 'SVG' ? [svgData] :
+                [(new XMLSerializer()).serializeToString(this.control.svgObject)], { type: 'image/svg+xml' }));
+            let pdfDocument = new PdfDocument();
+            let image = new Image();
+            let ctx = canvasElement.getContext('2d');
+            if (!this.control.isTileMap) {
+                image.onload = (() => {
+                    ctx.drawImage(image, 0, 0);
+                    window.URL.revokeObjectURL(url);
+                    if (type === 'PDF') {
+                        let imageString = canvasElement.toDataURL('image/jpeg').replace('image/jpeg', 'image/octet-stream');
+                        pdfDocument.pageSettings.orientation = orientation;
+                        imageString = imageString.slice(imageString.indexOf(',') + 1);
+                        pdfDocument.pages.add().graphics.drawImage(new PdfBitmap(imageString), 0, 0, (this.control.availableSize.width - 60), this.control.availableSize.height);
+                        if (allowDownload) {
+                            pdfDocument.save(fileName + '.pdf');
+                            pdfDocument.destroy();
+                        }
+                        else {
+                            resolve(null);
+                        }
+                    }
+                });
+                image.src = url;
+            }
+            else {
+                let xHttp = new XMLHttpRequest();
+                let tileLength = this.control.mapLayerPanel.tiles.length;
+                for (let i = 0; i <= tileLength + 1; i++) {
+                    let tile = document.getElementById('tile_' + (i - 1));
+                    let tileImg = new Image();
+                    tileImg.crossOrigin = 'Anonymous';
+                    ctx.fillStyle = this.control.background ? this.control.background : '#FFFFFF';
+                    ctx.fillRect(0, 0, this.control.availableSize.width, this.control.availableSize.height);
+                    ctx.font = this.control.titleSettings.textStyle.size + ' Arial';
+                    ctx.fillStyle = document.getElementById(this.control.element.id + '_Map_title').getAttribute('fill');
+                    ctx.fillText(this.control.titleSettings.text, parseFloat(document.getElementById(this.control.element.id + '_Map_title').getAttribute('x')), parseFloat(document.getElementById(this.control.element.id + '_Map_title').getAttribute('y')));
+                    tileImg.onload = (() => {
+                        if (i === 0 || i === tileLength + 1) {
+                            if (i === 0) {
+                                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                                ctx.rect(0, parseFloat(svgParent.style.top), parseFloat(svgParent.style.width), parseFloat(svgParent.style.height));
+                                ctx.clip();
+                            }
+                            else {
+                                ctx.setTransform(1, 0, 0, 1, parseFloat(svgParent.style.left), parseFloat(svgParent.style.top));
+                            }
+                        }
+                        else {
+                            ctx.setTransform(1, 0, 0, 1, parseFloat(tile.style.left) + 10, parseFloat(tile.style.top) +
+                                (parseFloat(document.getElementById(this.control.element.id + '_tile_parent').style.top)));
+                        }
+                        ctx.drawImage(tileImg, 0, 0);
+                        if (i === tileLength + 1) {
+                            if (type === 'PDF') {
+                                localStorage.setItem('saved-image-example', canvasElement.toDataURL('image/jpeg'));
+                                let x = localStorage.getItem('saved-image-example');
+                                pdfDocument.pageSettings.orientation = orientation;
+                                x = x.slice(x.indexOf(',') + 1);
+                                pdfDocument.pages.add().graphics.drawImage(new PdfBitmap(x), 0, 0, (this.control.availableSize.width - 60), this.control.availableSize.height);
+                                if (allowDownload) {
+                                    pdfDocument.save(fileName + '.pdf');
+                                    pdfDocument.destroy();
+                                }
+                                else {
+                                    resolve(null);
+                                }
+                            }
+                        }
+                    });
+                    if (i === 0 || i === tileLength + 1) {
+                        if (i === 0) {
+                            tileImg.src = url;
+                        }
+                        else {
+                            setTimeout(() => {
+                                tileImg.src = window.URL.createObjectURL(new Blob([(new XMLSerializer()).serializeToString(document.getElementById(this.control.element.id + '_Tile_SVG'))], { type: 'image/svg+xml' }));
+                                // tslint:disable-next-line:align
+                            }, 300);
+                        }
+                    }
+                    else {
+                        xHttp.open('GET', tile.children[0].getAttribute('src'), true);
+                        xHttp.send();
+                        tileImg.src = tile.children[0].getAttribute('src');
+                    }
+                }
+            }
+        });
+        return promise;
+    }
+    /**
+     * Get module name.
+     */
+    getModuleName() {
+        return 'PdfExport';
+    }
+    /**
+     * To destroy the PdfExports.
+     * @return {void}
+     * @private
+     */
+    destroy(maps) {
+        /**
+         * Destroy method performed here
+         */
+    }
+}
+
+/**
  * export all modules from maps component
  */
 
@@ -12752,5 +12947,5 @@ class Zoom {
  * exporting all modules from maps index
  */
 
-export { Maps, load, loaded, click, rightClick, doubleClick, resize, tooltipRender, shapeSelected, shapeHighlight, mousemove, mouseup, mousedown, layerRendering, shapeRendering, markerRendering, markerClusterRendering, markerClick, markerClusterClick, markerMouseMove, markerClusterMouseMove, dataLabelRendering, bubbleRendering, bubbleClick, bubbleMouseMove, animationComplete, legendRendering, annotationRendering, itemSelection, itemHighlight, beforePrint, zoomIn, zoomOut, pan, Annotation, Arrow, Font, Border, CenterPosition, TooltipSettings, Margin, ConnectorLineSettings, MarkerClusterSettings, MarkerClusterData, ColorMappingSettings, InitialShapeSelectionSettings, SelectionSettings, HighlightSettings, NavigationLineSettings, BubbleSettings, CommonTitleSettings, SubTitleSettings, TitleSettings, ZoomSettings, ToggleLegendSettings, LegendSettings, DataLabelSettings, ShapeSettings, MarkerBase, MarkerSettings, LayerSettings, Tile, MapsAreaSettings, Size, stringToNumber, calculateSize, createSvg, getMousePosition, degreesToRadians, radiansToDegrees, convertGeoToPoint, convertTileLatLongToPoint, xToCoordinate, yToCoordinate, aitoff, roundTo, sinci, acos, calculateBound, triggerDownload, Point, MinMax, GeoLocation, measureText, TextOption, PathOption, ColorValue, RectOption, CircleOption, PolygonOption, PolylineOption, LineOption, Line, MapLocation, Rect, PatternOptions, renderTextElement, convertElement, formatValue, convertStringToValue, convertElementFromLabel, drawSymbols, getValueFromObject, markerColorChoose, markerShapeChoose, clusterTemplate, mergeSeparateCluster, clusterSeparate, marker, markerTemplate, maintainSelection, maintainStyleClass, appendShape, drawCircle, drawRectangle, drawPath, drawPolygon, drawPolyline, drawLine, calculateShapes, drawDiamond, drawTriangle, drawCross, drawHorizontalLine, drawVerticalLine, drawStar, drawBalloon, drawPattern, getFieldData, checkShapeDataFields, checkPropertyPath, filter, getRatioOfBubble, findMidPointOfPolygon, isCustomPath, textTrim, findPosition, removeElement, calculateCenterFromPixel, getTranslate, getZoomTranslate, fixInitialScaleForTile, getElementByID, Internalize, getTemplateFunction, getElement, getShapeData, triggerShapeEvent, getElementsByClassName, querySelector, getTargetElement, createStyle, customizeStyle, triggerItemSelectionEvent, removeClass, elementAnimate, timeout, showTooltip, wordWrap, createTooltip, drawSymbol, renderLegendShape, getElementOffset, changeBorderWidth, changeNavaigationLineWidth, targetTouches, calculateScale, getDistance, getTouches, getTouchCenter, sum, zoomAnimate, animate, MapAjax, smoothTranslate, compareZoomFactor, calculateZoomLevel, LayerPanel, Bubble, BingMap, Marker, ColorMapping, DataLabel, NavigationLine, Legend, Highlight, Selection, MapsTooltip, Zoom, Annotations, Print, ImageExport, PdfExport };
+export { Maps, load, loaded, click, rightClick, doubleClick, resize, tooltipRender, shapeSelected, shapeHighlight, mousemove, mouseup, mousedown, layerRendering, shapeRendering, markerRendering, markerClusterRendering, markerClick, markerClusterClick, markerMouseMove, markerClusterMouseMove, dataLabelRendering, bubbleRendering, bubbleClick, bubbleMouseMove, animationComplete, legendRendering, annotationRendering, itemSelection, itemHighlight, beforePrint, zoomIn, zoomOut, pan, Annotation, Arrow, Font, Border, CenterPosition, TooltipSettings, Margin, ConnectorLineSettings, MarkerClusterSettings, MarkerClusterData, ColorMappingSettings, InitialMarkerSelectionSettings, InitialShapeSelectionSettings, SelectionSettings, HighlightSettings, NavigationLineSettings, BubbleSettings, CommonTitleSettings, SubTitleSettings, TitleSettings, ZoomSettings, ToggleLegendSettings, LegendSettings, DataLabelSettings, ShapeSettings, MarkerBase, MarkerSettings, LayerSettings, Tile, MapsAreaSettings, Size, stringToNumber, calculateSize, createSvg, getMousePosition, degreesToRadians, radiansToDegrees, convertGeoToPoint, convertTileLatLongToPoint, xToCoordinate, yToCoordinate, aitoff, roundTo, sinci, acos, calculateBound, triggerDownload, Point, MinMax, GeoLocation, measureText, TextOption, PathOption, ColorValue, RectOption, CircleOption, PolygonOption, PolylineOption, LineOption, Line, MapLocation, Rect, PatternOptions, renderTextElement, convertElement, formatValue, convertStringToValue, convertElementFromLabel, drawSymbols, getValueFromObject, markerColorChoose, markerShapeChoose, clusterTemplate, mergeSeparateCluster, clusterSeparate, marker, markerTemplate, maintainSelection, maintainStyleClass, appendShape, drawCircle, drawRectangle, drawPath, drawPolygon, drawPolyline, drawLine, calculateShapes, drawDiamond, drawTriangle, drawCross, drawHorizontalLine, drawVerticalLine, drawStar, drawBalloon, drawPattern, getFieldData, checkShapeDataFields, checkPropertyPath, filter, getRatioOfBubble, findMidPointOfPolygon, isCustomPath, textTrim, findPosition, removeElement, calculateCenterFromPixel, getTranslate, getZoomTranslate, fixInitialScaleForTile, getElementByID, Internalize, getTemplateFunction, getElement, getShapeData, triggerShapeEvent, getElementsByClassName, querySelector, getTargetElement, createStyle, customizeStyle, triggerItemSelectionEvent, removeClass, elementAnimate, timeout, showTooltip, wordWrap, createTooltip, drawSymbol, renderLegendShape, getElementOffset, changeBorderWidth, changeNavaigationLineWidth, targetTouches, calculateScale, getDistance, getTouches, getTouchCenter, sum, zoomAnimate, animate, MapAjax, smoothTranslate, compareZoomFactor, calculateZoomLevel, processResult, LayerPanel, Bubble, BingMap, Marker, ColorMapping, DataLabel, NavigationLine, Legend, Highlight, Selection, MapsTooltip, Zoom, Annotations, Print, ImageExport, PdfExport };
 //# sourceMappingURL=ej2-maps.es2015.js.map

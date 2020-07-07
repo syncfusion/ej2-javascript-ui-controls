@@ -603,6 +603,168 @@ class ParserBase {
 ParserBase.nPair = 'numericPair';
 ParserBase.nRegex = 'numericRegex';
 ParserBase.numberingSystems = defaultNumberingSystem;
+/**
+ * @private
+ */
+const blazorCurrencyData = {
+    'DJF': 'Fdj',
+    'ERN': 'Nfk',
+    'ETB': 'Br',
+    'NAD': '$',
+    'ZAR': 'R',
+    'XAF': 'FCFA',
+    'GHS': 'GH₵',
+    'XDR': 'XDR',
+    'AED': 'د.إ.‏',
+    'BHD': 'د.ب.‏',
+    'DZD': 'د.ج.‏',
+    'EGP': 'ج.م.‏',
+    'ILS': '₪',
+    'IQD': 'د.ع.‏',
+    'JOD': 'د.ا.‏',
+    'KMF': 'CF',
+    'KWD': 'د.ك.‏',
+    'LBP': 'ل.ل.‏',
+    'LYD': 'د.ل.‏',
+    'MAD': 'د.م.‏',
+    'MRU': 'أ.م.',
+    'OMR': 'ر.ع.‏',
+    'QAR': 'ر.ق.‏',
+    'SAR': 'ر.س.‏',
+    'SDG': 'ج.س.',
+    'SOS': 'S',
+    'SSP': '£',
+    'SYP': 'ل.س.‏',
+    'TND': 'د.ت.‏',
+    'YER': 'ر.ي.‏',
+    'CLP': '$',
+    'INR': '₹',
+    'TZS': 'TSh',
+    'EUR': '€',
+    'AZN': '₼',
+    'RUB': '₽',
+    'BYN': 'Br',
+    'ZMW': 'K',
+    'BGN': 'лв.',
+    'NGN': '₦',
+    'XOF': 'CFA',
+    'BDT': '৳',
+    'CNY': '¥',
+    'BAM': 'КМ',
+    'UGX': 'USh',
+    'USD': '$',
+    'CZK': 'Kč',
+    'GBP': '£',
+    'DKK': 'kr.',
+    'KES': 'Ksh',
+    'CHF': 'CHF',
+    'MVR': 'ރ.',
+    'BTN': 'Nu.',
+    'XCD': 'EC$',
+    'AUD': '$',
+    'BBD': '$',
+    'BIF': 'FBu',
+    'BMD': '$',
+    'BSD': '$',
+    'BWP': 'P',
+    'BZD': '$',
+    'CAD': '$',
+    'NZD': '$',
+    'FJD': '$',
+    'FKP': '£',
+    'GIP': '£',
+    'GMD': 'D',
+    'GYD': '$',
+    'HKD': '$',
+    'IDR': 'Rp',
+    'JMD': '$',
+    'KYD': '$',
+    'LRD': '$',
+    'MGA': 'Ar',
+    'MOP': 'MOP$',
+    'MUR': 'Rs',
+    'MWK': 'MK',
+    'MYR': 'RM',
+    'PGK': 'K',
+    'PHP': '₱',
+    'PKR': 'Rs',
+    'RWF': 'RF',
+    'SBD': '$',
+    'SCR': 'SR',
+    'SEK': 'kr',
+    'SGD': '$',
+    'SHP': '£',
+    'SLL': 'Le',
+    'ANG': 'NAf.',
+    'SZL': 'E',
+    'TOP': 'T$',
+    'TTD': '$',
+    'VUV': 'VT',
+    'WST': 'WS$',
+    'ARS': '$',
+    'BOB': 'Bs',
+    'BRL': 'R$',
+    'COP': '$',
+    'CRC': '₡',
+    'CUP': '$',
+    'DOP': '$',
+    'GTQ': 'Q',
+    'HNL': 'L',
+    'MXN': '$',
+    'NIO': 'C$',
+    'PAB': 'B/.',
+    'PEN': 'S/',
+    'PYG': '₲',
+    'UYU': '$',
+    'VES': 'Bs.S',
+    'IRR': 'ريال',
+    'GNF': 'FG',
+    'CDF': 'FC',
+    'HTG': 'G',
+    'XPF': 'FCFP',
+    'HRK': 'kn',
+    'HUF': 'Ft',
+    'AMD': '֏',
+    'ISK': 'kr',
+    'JPY': '¥',
+    'GEL': '₾',
+    'CVE': '​',
+    'KZT': '₸',
+    'KHR': '៛',
+    'KPW': '₩',
+    'KRW': '₩',
+    'KGS': 'сом',
+    'AOA': 'Kz',
+    'LAK': '₭',
+    'MZN': 'MTn',
+    'MKD': 'ден',
+    'MNT': '₮',
+    'BND': '$',
+    'MMK': 'K',
+    'NOK': 'kr',
+    'NPR': 'रु',
+    'AWG': 'Afl.',
+    'SRD': '$',
+    'PLN': 'zł',
+    'AFN': '؋',
+    'STN': 'Db',
+    'MDL': 'L',
+    'RON': 'lei',
+    'UAH': '₴',
+    'LKR': 'රු.',
+    'ALL': 'Lekë',
+    'RSD': 'дин.',
+    'TJS': 'смн',
+    'THB': '฿',
+    'TMT': 'm.',
+    'TRY': '₺',
+    'UZS': 'сўм',
+    'VND': '₫',
+    'TWD': 'NT$'
+};
+function getBlazorCurrencySymbol(currencyCode) {
+    return getValue(currencyCode || '', blazorCurrencyData);
+}
 
 /***
  * Hijri parser
@@ -788,7 +950,7 @@ var HijriParser;
     HijriParser.toGregorian = toGregorian;
 })(HijriParser || (HijriParser = {}));
 
-const abbreviateRegexGlobal = /\/MMMMM|MMMM|MMM|a|LLL|EEEEE|EEEE|E|K|cccc|ccc|WW|W|G+|z+/gi;
+const abbreviateRegexGlobal = /\/MMMMM|MMMM|MMM|a|LLLL|LLL|EEEEE|EEEE|E|K|cccc|ccc|WW|W|G+|z+/gi;
 const standalone = 'stand-alone';
 const weekdayKey = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 
@@ -1132,8 +1294,11 @@ class NumberFormat {
                 }
             }
             else {
-                cOptions.nData = getValue(fOptions.type + 'nData', numObject);
-                cOptions.pData = getValue(fOptions.type + 'pData', numObject);
+                cOptions.nData = extend({}, {}, getValue(fOptions.type + 'nData', numObject));
+                cOptions.pData = extend({}, {}, getValue(fOptions.type + 'pData', numObject));
+                if (fOptions.type === 'currency' && option.currency) {
+                    IntlBase.replaceBlazorCurrency([cOptions.pData, cOptions.nData], dOptions.currencySymbol, option.currency);
+                }
             }
             let minFrac = isUndefined(fOptions.minimumFractionDigits);
             if (minFrac) {
@@ -1802,8 +1967,11 @@ class NumberParser {
             }
         }
         else {
-            parseOptions.nData = getValue(parseOptions.type + 'nData', numbers);
-            parseOptions.pData = getValue(parseOptions.type + 'pData', numbers);
+            parseOptions.nData = extend({}, {}, getValue(parseOptions.type + 'nData', numbers));
+            parseOptions.pData = extend({}, {}, getValue(parseOptions.type + 'pData', numbers));
+            if (parseOptions.type === 'currency' && option.currency) {
+                IntlBase.replaceBlazorCurrency([parseOptions.pData, parseOptions.nData], getValue('currencySymbol', numbers), option.currency);
+            }
         }
         return (value) => {
             return this.getParsedNumber(value, parseOptions, numOptions);
@@ -3393,6 +3561,22 @@ var IntlBase;
         return firstDayMapper[firstDay];
     }
     IntlBase.getWeekData = getWeekData;
+    /**
+     * @private
+     * @param pData
+     * @param aCurrency
+     * @param rCurrency
+     */
+    function replaceBlazorCurrency(pData, aCurrency, rCurrency) {
+        let iCurrency = getBlazorCurrencySymbol(rCurrency);
+        if (aCurrency !== iCurrency) {
+            for (let data of pData) {
+                data.nend = data.nend.replace(aCurrency, iCurrency);
+                data.nlead = data.nlead.replace(aCurrency, iCurrency);
+            }
+        }
+    }
+    IntlBase.replaceBlazorCurrency = replaceBlazorCurrency;
     /**
      * @private
      */

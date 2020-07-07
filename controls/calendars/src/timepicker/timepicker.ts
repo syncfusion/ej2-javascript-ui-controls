@@ -407,6 +407,13 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     @Property(true)
     public allowEdit: boolean;
     /**
+     * By default, the popup opens while clicking on the timepicker icon.
+     * If you want to open the popup while focusing the time input then specify its value as true.
+     * @default false
+     */
+    @Property(false)
+    public openOnFocus : boolean;
+    /**
      * Triggers when the value is changed.
      * @event  
      * @blazorProperty 'ValueChange'
@@ -2363,6 +2370,9 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         if (!this.readonly && !Browser.isDevice) { this.selectInputText(); }
         this.trigger('focus', focusArguments);
         this.clearIconState();
+        if (this.openOnFocus) {
+            this.show();
+        }
     }
     /**
      * Focused the TimePicker textbox element.

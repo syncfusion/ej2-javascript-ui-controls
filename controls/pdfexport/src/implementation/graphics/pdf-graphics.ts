@@ -41,6 +41,10 @@ import { TtfReader } from './fonts/ttf-reader';
 import { InternalEnum } from './../primitives/pdf-string';
 import { RtlRenderer } from './fonts/rtl-renderer';
 import { PdfTextDirection } from './enum';
+import { PathPointType } from './figures/enum';
+import { PdfPath } from './figures/path';
+import { PdfGradientBrush } from './../../implementation/graphics/brushes/pdf-gradient-brush';
+import { PdfTilingBrush } from './brushes/pdf-tiling-brush';
 /**
  * `PdfGraphics` class represents a graphics context of the objects.
  * It's used for performing all the graphics operations.
@@ -741,30 +745,44 @@ export class PdfGraphics {
             let temparg4 : number = arg4 as number;
             let temparg5 : number = arg5 as number;
             let temparg6 : number = arg6 as number;
-            if (arg2 instanceof PdfSolidBrush && (arg2 as PdfSolidBrush).color.isEmpty) {
+            if ((arg2 instanceof PdfTilingBrush)) {
+                this.bCSInitialized = false;
+                let xOffset: number = (this.matrix.matrix.offsetX + temparg3);
+                let yOffset: number;
+                if (((this.layer != null) && (this.layer.page != null))) {
+                    yOffset = ((this.layer.page.size.height - this.matrix.matrix.offsetY) + temparg4);
+                } else {
+                    yOffset = ((this.clientSize.height - this.matrix.matrix.offsetY) + temparg4);
+                }
+                (<PdfTilingBrush>(arg2)).location = new PointF(xOffset, yOffset);
+                (<PdfTilingBrush>(arg2)).graphics.colorSpace = this.colorSpace;
+            } else if ((arg2 instanceof PdfGradientBrush)) {
+                (arg2 as PdfGradientBrush).colorSpace = this.colorSpace;
+            }
+            if (arg2 instanceof PdfSolidBrush && (<PdfSolidBrush>arg2).color.isEmpty) {
                 arg2 = null;
             }
-            let temparg1 : PdfPen = arg1 as PdfPen;
-            let temparg2 : PdfBrush = arg2 as PdfBrush;
+            let temparg1 : PdfPen = <PdfPen>arg1;
+            let temparg2 : PdfBrush = <PdfBrush>arg2;
             this.stateControl(temparg1, temparg2, null);
             this.streamWriter.appendRectangle(temparg3, temparg4, temparg5, temparg6);
-            this.drawPath(temparg1, temparg2, false);
+            this.drawPathHelper(temparg1, temparg2, false);
         }
     }
     /**
      * `Draws the path`.
      * @private
      */
-    private drawPath(pen : PdfPen, brush : PdfBrush, needClosing : boolean) : void
+    private drawPathHelper(pen : PdfPen, brush : PdfBrush, needClosing : boolean) : void
     /**
      * `Draws the path`.
      * @private
      */
-    private drawPath(pen : PdfPen, brush : PdfBrush, fillMode : PdfFillMode, needClosing : boolean) : void
-    private drawPath(arg1 : PdfPen, arg2 : PdfBrush, arg3 : PdfFillMode|boolean, arg4 ?: boolean) : void {
+    private drawPathHelper(pen : PdfPen, brush : PdfBrush, fillMode : PdfFillMode, needClosing : boolean) : void
+    private drawPathHelper(arg1 : PdfPen, arg2 : PdfBrush, arg3 : PdfFillMode|boolean, arg4 ?: boolean) : void {
         if (typeof arg3 === 'boolean') {
             let temparg3 : boolean = arg3 as boolean;
-            this.drawPath(arg1, arg2, PdfFillMode.Winding, temparg3);
+            this.drawPathHelper(arg1, arg2, PdfFillMode.Winding, temparg3);
         } else {
             let temparg3 : PdfFillMode = arg3 as PdfFillMode;
             let temparg4 : boolean = arg4 as boolean;
@@ -782,6 +800,7 @@ export class PdfGraphics {
             }
         }
     }
+     /* tslint:disable */
     //DrawImage overloads
     /**
      * `Draws the specified image`, using its original physical size, at the location specified by a coordinate pair.
@@ -1051,6 +1070,13 @@ export class PdfGraphics {
      * @private
      */
     private applyStringSettings(font : PdfFont, pen : PdfPen, brush : PdfBrush, format : PdfStringFormat, bounds : RectangleF) : void {
+        if ( brush instanceof PdfTilingBrush) {
+            this.bCSInitialized = false;
+            (<PdfTilingBrush>brush).graphics.colorSpace = this.colorSpace;
+        } else if ((brush instanceof PdfGradientBrush)) {
+            this.bCSInitialized = false;
+            (<PdfGradientBrush>brush).colorSpace = this.colorSpace;
+        }
         let setLineWidth : boolean = false;
         let tm : TextRenderingMode = this.getTextRenderingMode(pen, brush, format);
         this.stateControl(pen, brush, font, format);
@@ -1514,9 +1540,17 @@ export class PdfGraphics {
         if (typeof format === 'undefined') {
             this.stateControl(pen, brush, font, null);
         } else {
+            if (brush instanceof PdfGradientBrush) {
+                this.bCSInitialized = false;
+                (<PdfGradientBrush>brush).colorSpace = this.colorSpace;
+            }
+            if (brush instanceof PdfTilingBrush) {
+                this.bCSInitialized = false;
+                (<PdfTilingBrush>brush).graphics.colorSpace =  this.colorSpace;
+            }
             let saveState : boolean = false;
             if (brush !== null) {
-                let solidBrush : PdfSolidBrush = brush as PdfSolidBrush;
+                let solidBrush : PdfSolidBrush = <PdfSolidBrush>brush;
                 if (typeof this.pageLayer !== 'undefined' && this.pageLayer != null) {
                     if (this.colorSpaceChanged === false) {
                         this.lastDocumentCS = (this.pageLayer.page as PdfPage).document.colorSpace;
@@ -1548,9 +1582,16 @@ export class PdfGraphics {
     private initCurrentColorSpace(colorspace : PdfColorSpace) : void {
         let re : PdfResources = this.getResources.getResources() as PdfResources;
         if (!this.bCSInitialized) {
-            this.pdfStreamWriter.setColorSpace('Device' + this.currentColorSpaces[this.currentColorSpace], true);
-            this.pdfStreamWriter.setColorSpace('Device' + this.currentColorSpaces[this.currentColorSpace], false);
-            this.bCSInitialized = true;
+            if (this.currentColorSpace != PdfColorSpace.GrayScale) {
+                this.pdfStreamWriter.setColorSpace('Device' + this.currentColorSpaces[this.currentColorSpace], true);
+                this.pdfStreamWriter.setColorSpace('Device' + this.currentColorSpaces[this.currentColorSpace], false);
+                this.bCSInitialized = true;
+            } else {
+                this.pdfStreamWriter.setColorSpace('DeviceGray' , true);
+                this.pdfStreamWriter.setColorSpace('DeviceGray' , false);
+                this.bCSInitialized = true;
+            }
+
         }
     }
     /**
@@ -1560,7 +1601,6 @@ export class PdfGraphics {
     private penControl(pen : PdfPen, saveState : boolean) : void {
         if (pen != null) {
             this.currentPen = pen;
-            this.colorSpace = PdfColorSpace.Rgb;
             /* tslint:disable */
             pen.monitorChanges(this.currentPen, this.pdfStreamWriter, this.getResources, saveState, this.colorSpace, this.matrix.clone());
             /* tslint:enable */
@@ -1572,10 +1612,22 @@ export class PdfGraphics {
      * @private
      */
     private brushControl(brush : PdfBrush, saveState : boolean) : void {
-        if (brush != null) {
-            this.currentBrush = brush;
+        if (brush != null && typeof brush !== 'undefined') {
+            let b : PdfBrush = brush.clone();
+            let lgb : PdfGradientBrush = <PdfGradientBrush>b;
+            if (lgb !== null && typeof lgb !== 'undefined' && !(brush instanceof PdfSolidBrush) && !(brush instanceof PdfTilingBrush)) {
+                let m: PdfTransformationMatrix = lgb.matrix;
+                let matrix: PdfTransformationMatrix = this.matrix.clone();
+                if ((m != null)) {
+                    m.multiply(matrix);
+                    matrix = m;
+                }
+                lgb.matrix = matrix;
+            }
+            this.currentBrush = lgb;
+            let br: PdfSolidBrush = (<PdfSolidBrush>(brush));
             /* tslint:disable */
-            brush.monitorChanges(this.currentBrush, this.pdfStreamWriter, this.getResources, saveState, this.colorSpace);
+            b.monitorChanges(this.currentBrush, this.pdfStreamWriter, this.getResources, saveState, this.colorSpace);
             /* tslint:enable */
             this.currentBrush = brush;
             brush = null;
@@ -1935,6 +1987,211 @@ export class PdfGraphics {
         this.pdfStreamWriter.restoreGraphicsState();
         return state;
     }
+    /* tslint:enable */
+    /**
+     * `Draws the specified path`, using its original physical size, at the location specified by a coordinate pair.
+     * ```typescript
+     * // create a new PDF document.
+     * let document : PdfDocument = new PdfDocument();
+     * // add a page to the document.
+     * let page1 : PdfPage = document.pages.add();
+     * //Create new PDF path.
+     * let path : PdfPath = new PdfPath();
+     * //Add line path points.
+     * path.addLine(new PointF(10, 100), new PointF(10, 200));
+     * path.addLine(new PointF(100, 100), new PointF(100, 200));
+     * path.addLine(new PointF(100, 200), new PointF(55, 150));
+     * // set pen
+     * let pen : PdfPen = new PdfPen(new PdfColor(255, 0, 0));
+     * // set brush
+     * let brush : PdfSolidBrush = new PdfSolidBrush(new PdfColor(0, 0, 0));
+     * // draw the path
+     * page1.graphics.drawPath(pen, brush, path);
+     * //
+     * // save the document.
+     * document.save('output.pdf');
+     * // destroy the document
+     * document.destroy();
+     * ```
+     * @param pen Color of the text.
+     * @param brush Color of the text.
+     * @param path Draw path.
+     */
+    public drawPath(pen: PdfPen, brush: PdfBrush, path: PdfPath) : void {
+        if (brush instanceof PdfTilingBrush) {
+            this.bCSInitialized = false;
+            (<PdfTilingBrush>brush).graphics.colorSpace = this.colorSpace;
+        } else if (brush instanceof PdfGradientBrush) {
+            this.bCSInitialized = false;
+            (<PdfGradientBrush>brush).colorSpace = this.colorSpace;
+        }
+        this.stateControl(pen, brush, null);
+        this.buildUpPath(path.pathPoints, path.pathTypes);
+        this.drawPathHelper(pen, brush, path.fillMode, false);
+    }
+    /* tslint:enable */
+    //drawArc overloads
+    /**
+     * `Draws the specified arc`, using its original physical size, at the location specified by a coordinate pair.
+     * ```typescript
+     * // create a new PDF document.
+     * let document : PdfDocument = new PdfDocument();
+     * // add a page to the document.
+     * let page1 : PdfPage = document.pages.add();
+     * let pen : PdfPen = new PdfPen(new PdfColor(255, 0, 0));
+     * // draw the path
+     * page1.graphics.drawArc(pen, 10, 10, 100, 200, 90, 270);
+     * // save the document.
+     * document.save('output.pdf');
+     * // destroy the document
+     * document.destroy();
+     * ```
+     * @param name Pen that determines the color, width, and style of the arc.
+     * @param rectangle RectangleF structure that defines the boundaries of the ellipse.
+     * @param startAngle Angle in degrees measured clockwise from the x-axis to the starting point of the arc.
+     * @param sweepAngle Angle in degrees measured clockwise from the startAngle parameter to ending point of the arc.
+     */
+   public drawArc(pen: PdfPen, rectangle: RectangleF, startAngle: number, sweepAngle: number) : void
+   public drawArc(pen: PdfPen, x: number, y: number, width: number, height: number, startAngle: number, sweepAngle: number) : void
+   /* tslint:disable-next-line:max-line-length */
+   public drawArc(arg1 : PdfPen, arg2 : number|RectangleF, arg3 ?: number, arg4 ?: number, arg5 ?: number, arg6 ?: number, arg7 ?: number) : void {
+       if (arg2 instanceof RectangleF) {
+           this.drawArc(arg1, arg2.x, arg2.y, arg2.width, arg2.height, arg3, arg4);
+       } else {
+           if ((arg7 !== 0)) {
+               this.stateControl(arg1, null, null);
+               this.constructArcPath(arg2, arg3, (arg2 + arg4), (arg3 + arg5), arg6, arg7);
+               this.drawPathHelper(arg1, null, false);
+           }
+       }
+   }
+    /**
+     * Builds up the path.
+     * @private
+     */
+    private buildUpPath(arg1 : PointF[], arg2 : number[]) : void {
+        let cnt : number = arg1.length;
+        for (let i : number = 0 ; i < cnt; ++i) {
+            let typeValue: number = 0;
+            let point: PointF = arg1[i];
+            switch ((<PathPointType>((arg2[i] & (<number>(PdfGraphics.pathTypesValuesMask)))))) {
+                case PathPointType.Start:
+                    this.pdfStreamWriter.beginPath(point.x, point.y);
+                    break;
+                case PathPointType.Bezier3:
+                    let p2 : PointF = new PointF(0, 0);
+                    let p3 : PointF = new PointF(0, 0);
+                    let result1 : { i: number, p2 : PointF, p3 : PointF } = this.getBezierPoints(arg1, arg2, i, p2, p3);
+                    this.pdfStreamWriter.appendBezierSegment(point, result1.p2, result1.p3);
+                    i = result1.i;
+                    break;
+                case PathPointType.Line:
+                    this.pdfStreamWriter.appendLineSegment(point);
+                    break;
+                default:
+                    throw new Error('ArithmeticException - Incorrect path formation.');
+            }
+            typeValue = arg2[i];
+            this.checkFlags(typeValue);
+        }
+    }
+    /**
+     * Gets the bezier points from respective arrays.
+     * @private
+     */
+    /* tslint:disable-next-line:max-line-length */
+    private getBezierPoints(points: PointF[], types: number[], i: number, p2: PointF, p3: PointF) : { i : number, p2 : PointF, p3 : PointF } {
+        let errorMsg: string = 'Malforming path.';
+        ++i;
+        if (((<PathPointType>((types[i] & PdfGraphics.pathTypesValuesMask))) === PathPointType.Bezier3)) {
+            p2 = points[i];
+            ++i;
+            if (((<PathPointType>((types[i] & PdfGraphics.pathTypesValuesMask))) === PathPointType.Bezier3)) {
+                p3 = points[i];
+            } else {
+                throw new Error ('ArgumentException : errorMsg');
+            }
+        } else {
+            throw new Error ('ArgumentException : errorMsg');
+        }
+        return { i : i, p2 : p2, p3 : p3 };
+    }
+    /**
+     * Checks path point type flags.
+     * @private
+     */
+    private checkFlags(type :  number) : void {
+        if (((<PathPointType>((type & (<number>(PathPointType.CloseSubpath))))) === PathPointType.CloseSubpath)) {
+            this.pdfStreamWriter.closePath();
+        }
+    }
+    /**
+     * Constructs the arc path using Bezier curves.
+     * @private 
+     */
+    private constructArcPath(x1: number, y1: number, x2: number, y2: number, startAng: number, sweepAngle: number) : void {
+        let points: number[] = this.getBezierArc(x1, y1, x2, y2, startAng, sweepAngle);
+        if ((points.length === 0)) {
+            return;
+        }
+        let pt: number[] = [points[0], points[1], points[2], points[3], points[4], points[5], points[6], points[7]];
+        this.pdfStreamWriter.beginPath(pt[0], pt[1]);
+        let i: number = 0;
+        for (i = 0 ; i < points.length; i = i + 8) {
+            pt = [ points[i], points[i + 1], points[i + 2], points[i + 3], points[i + 4], points[i + 5], points[i + 6], points[i + 7]];
+            this.pdfStreamWriter.appendBezierSegment(pt[2], pt[3], pt[4], pt[5], pt[6], pt[7]);
+        }
+    }
+    /**
+     * Gets the bezier points for arc constructing.
+     * @private
+     */
+    private getBezierArc(numX1: number, numY1: number, numX2: number, numY2: number, s1: number, e1: number): number[] {
+        if ((numX1 > numX2)) {
+            let tmp: number;
+            tmp = numX1;
+            numX1 = numX2;
+            numX2 = tmp;
+        }
+        if ((numY2 > numY1)) {
+            let tmp: number;
+            tmp = numY1;
+            numY1 = numY2;
+            numY2 = tmp;
+        }
+        let fragAngle1: number;
+        let numFragments: number;
+        if ((Math.abs(e1) <= 90)) {
+            fragAngle1 = e1;
+            numFragments = 1;
+        } else {
+            numFragments = (<number>(Math.ceil((Math.abs(e1) / 90))));
+            fragAngle1 = (e1 / numFragments);
+        }
+        let xcen: number = ((numX1 + numX2) / 2);
+        let ycen: number = ((numY1 + numY2) / 2);
+        let rx: number = ((numX2 - numX1) / 2);
+        let ry: number = ((numY2 - numY1) / 2);
+        let halfAng: number = (<number>((fragAngle1 * (Math.PI / 360))));
+        let kappa: number = (<number>(Math.abs(4.0 / 3.0 * (1.0 - Math.cos(halfAng)) / Math.sin(halfAng))));
+        let pointsList: number[] = [];
+        for (let i: number = 0; (i < numFragments); i++) {
+            let thetaValue0: number = (<number>(((s1 + (i * fragAngle1)) * (Math.PI / 180))));
+            let thetaValue1: number = (<number>(((s1 + ((i + 1) * fragAngle1)) * (Math.PI / 180))));
+            let cos0: number = (<number>(Math.cos(thetaValue0)));
+            let cos1: number = (<number>(Math.cos(thetaValue1)));
+            let sin0: number = (<number>(Math.sin(thetaValue0)));
+            let sin1: number = (<number>(Math.sin(thetaValue1)));
+            if ((fragAngle1 > 0)) {
+                /* tslint:disable-next-line:max-line-length */
+                pointsList.push((xcen  + (rx * cos0)), (ycen - (ry * sin0)), (xcen + (rx * (cos0 - (kappa * sin0)))), (ycen - (ry * (sin0 + (kappa * cos0)))), (xcen + (rx * (cos1 + (kappa * sin1)))), (ycen - (ry * (sin1 - (kappa * cos1)))), (xcen + (rx * cos1)), (ycen - (ry * sin1)));
+            } else {
+                /* tslint:disable-next-line:max-line-length */
+                pointsList.push((xcen + (rx * cos0)), (ycen - (ry * sin0)), (xcen + (rx * (cos0 + (kappa * sin0)))), (ycen - (ry * (sin0 - (kappa * cos0)))), (xcen + (rx * (cos1 - (kappa * sin1)))), (ycen - (ry * (sin1 + (kappa * cos1)))), (xcen + (rx * cos1)), (ycen - (ry * sin1)));
+            }
+        }
+        return pointsList;
+    }
 }
 /**
  * `GetResourceEventHandler` class is alternate for event handlers and delegates.
@@ -1954,13 +2211,13 @@ export class GetResourceEventHandler {
      * @hidden
      * @private
      */
-    public sender : PdfPageBase|PdfTemplate;
+    public sender : PdfPageBase|PdfTemplate|PdfTilingBrush;
     /**
      * Initialize instance of `GetResourceEventHandler` class.
      * Alternate for event handlers and delegates.
      * @private
      */
-    public constructor(sender : PdfPageBase|PdfTemplate) {
+    public constructor(sender : PdfPageBase|PdfTemplate|PdfTilingBrush) {
         this.sender = sender;
     }
 }

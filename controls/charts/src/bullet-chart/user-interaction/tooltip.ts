@@ -1,7 +1,7 @@
 import { BulletChart } from '../bullet-chart';
 import { compile as templateComplier, updateBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
 import { BulletLabelStyleModel } from '../model/bullet-base-model';
-import { stringToNumber } from '../../chart/index';
+import { stringToNumber } from '../../common/utils/helper';
 import { IBulletTooltipContent, IBulletchartTooltipEventArgs } from '../model/bullet-interface';
 import { tooltipRender } from '../../common/model/constants';
 import { BulletChartTheme } from '../utils/theme';

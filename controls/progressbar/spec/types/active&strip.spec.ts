@@ -153,7 +153,7 @@ describe('ProgressBar Control', () => {
             loaded = (args: Object): void => {
                 path = document.getElementById('container_Linearprogress');
                 stroke = path.getAttribute('stroke');
-                expect(stroke === '#127C0F' ).toBe(true);
+                expect(stroke === "#166600" ).toBe(true);
             };
             progress.value = 100;
             progress.role = 'Success';
@@ -164,7 +164,7 @@ describe('ProgressBar Control', () => {
             loaded = (args: Object): void => {
                 path = document.getElementById('container_Linearprogress');
                 stroke = path.getAttribute('stroke');
-                expect(stroke === '#C00000' ).toBe(true);
+                expect(stroke === "#b30900" ).toBe(true);
             };
             progress.value = 10;
             progress.role = 'Danger';
@@ -175,7 +175,7 @@ describe('ProgressBar Control', () => {
             loaded = (args: Object): void => {
                 path = document.getElementById('container_Linearprogress');
                 stroke = path.getAttribute('stroke');
-                expect(stroke === '#D83B01' ).toBe(true);
+                expect(stroke === "#944000" ).toBe(true);
             };
             progress.value = 50;
             progress.role = 'Warning';
@@ -186,7 +186,7 @@ describe('ProgressBar Control', () => {
             loaded = (args: Object): void => {
                 path = document.getElementById('container_Linearprogress');
                 stroke = path.getAttribute('stroke');
-                expect(stroke === '#0279D6' ).toBe(true);
+                expect(stroke === "#0056b3" ).toBe(true);
             };
             progress.value = 70;
             progress.role = 'Info';
@@ -290,7 +290,7 @@ describe('ProgressBar Control', () => {
             loaded = (args: Object): void => {
                 path = document.getElementById('container_Circularprogress');
                 stroke = path.getAttribute('stroke');
-                expect(stroke === '#127C0F' ).toBe(true);
+                expect(stroke === "#166600" ).toBe(true);
             };
             progress.value = 100;
             progress.role = 'Success';
@@ -301,7 +301,7 @@ describe('ProgressBar Control', () => {
             loaded = (args: Object): void => {
                 path = document.getElementById('container_Circularprogress');
                 stroke = path.getAttribute('stroke');
-                expect(stroke === '#C00000' ).toBe(true);
+                expect(stroke === "#b30900" ).toBe(true);
             };
             progress.value = 10;
             progress.role = 'Danger';
@@ -312,7 +312,7 @@ describe('ProgressBar Control', () => {
             loaded = (args: Object): void => {
                 path = document.getElementById('container_Circularprogress');
                 stroke = path.getAttribute('stroke');
-                expect(stroke === '#D83B01' ).toBe(true);
+                expect(stroke === "#944000" ).toBe(true);
             };
             progress.value = 50;
             progress.role = 'Warning';
@@ -323,7 +323,7 @@ describe('ProgressBar Control', () => {
             loaded = (args: Object): void => {
                 path = document.getElementById('container_Circularprogress');
                 stroke = path.getAttribute('stroke');
-                expect(stroke === '#0279D6' ).toBe(true);
+                expect(stroke === "#0056b3" ).toBe(true);
             };
             progress.value = 70;
             progress.role = 'Info';

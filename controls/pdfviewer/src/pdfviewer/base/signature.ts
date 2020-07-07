@@ -2,11 +2,12 @@ import { PdfViewer } from '../index';
 import { PdfViewerBase, IPageAnnotations } from '../index';
 import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Dialog } from '@syncfusion/ej2-popups';
-import { PdfAnnotationBaseModel } from '../../diagram/pdf-annotation-model';
-import { PdfAnnotationBase } from '../../diagram/pdf-annotation';
+import { PdfAnnotationBaseModel } from '../drawing/pdf-annotation-model';
+import { PdfAnnotationBase } from '../drawing/pdf-annotation';
 import { splitArrayCollection, processPathData, getPathString } from '@syncfusion/ej2-drawings';
 import { ColorPicker } from '@syncfusion/ej2-inputs';
-import { cloneObject } from '../../diagram/drawing-util';
+import { cloneObject } from '../drawing/drawing-util';
+import { CheckBox } from '@syncfusion/ej2-buttons';
 
 /**
  * @hidden
@@ -53,7 +54,16 @@ export class Signature {
      * @private
      */
     public signatureDialog: Dialog;
-
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public signaturecollection: any = [];
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public outputcollection: any = [];
     /**
      * @private
      */
@@ -128,6 +138,11 @@ export class Signature {
                 id: 'sign' + this.pdfViewerBase.signatureCount, bounds: { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight }, pageIndex: pageIndex, data: this.outputString,
                 shapeAnnotationType: 'HandWrittenSignature', opacity: opacity, strokeColor: strokeColor, thickness: thickness, signatureName: annotationName,
             };
+            // tslint:disable-next-line
+            let checkbox: any = document.getElementById('checkbox');
+            if (checkbox.checked) {
+                this.addSignatureCollection();
+            }
             this.hideSignaturePanel();
             this.pdfViewerBase.currentSignatureAnnot = annot;
             this.pdfViewerBase.isToolbarSignClicked = false;
@@ -177,15 +192,151 @@ export class Signature {
         canvas.addEventListener('touchmove', this.signaturePanelMouseMove.bind(this));
         canvas.addEventListener('touchend', this.signaturePanelMouseUp.bind(this));
         appearanceDiv.appendChild(canvas);
-        // // tslint:disable-next-line
-        // let input: any = document.createElement('input');
-        // input.type = 'checkbox';
-        // appearanceDiv.appendChild(input);
-        // // tslint:disable-next-line
-        // let checkBoxObj: any = new CheckBox({ label: 'Save signature', disabled: true, checked: false });
-        // checkBoxObj.appendTo(input);
+        // tslint:disable-next-line
+        let input: any = document.createElement('input');
+        input.type = 'checkbox';
+        input.id = 'checkbox';
+        appearanceDiv.appendChild(input);
+        // tslint:disable-next-line
+        let checkBoxObj: any = new CheckBox({ label: 'Save signature', disabled: false, checked: false });
+        checkBoxObj.appendTo(input);
         return appearanceDiv;
     }
+    private addSignatureCollection(): void {
+        let minimumX: number = -1;
+        let minimumY: number = -1;
+        let maximumX: number = -1;
+        let maximumY: number = -1;
+        //tslint:disable-next-line
+        let collectionData: any = processPathData(this.outputString);
+        // tslint:disable-next-line
+        for (let k = 0; k < collectionData.length; k++) {
+            //tslint:disable-next-line
+            let val = collectionData[k];
+            if (minimumX === -1) {
+                // tslint:disable-next-line
+                minimumX = (val['x']);
+                // tslint:disable-next-line
+                maximumX = (val['x']);
+                // tslint:disable-next-line
+                minimumY = (val['y']);
+                // tslint:disable-next-line
+                maximumY = (val['y']);
+            } else {
+                // tslint:disable-next-line
+                let point1 = (val['x']);
+                // tslint:disable-next-line
+                let point2 = (val['y']);
+                if (minimumX >= point1) {
+                    minimumX = point1;
+                }
+                if (minimumY >= point2) {
+                    minimumY = point2;
+                }
+                if (maximumX <= point1) {
+                    maximumX = point1;
+                }
+                if (maximumY <= point2) {
+                    maximumY = point2;
+                }
+            }
+        }
+        let newdifferenceX: number = maximumX - minimumX;
+        let newdifferenceY: number = maximumY - minimumY;
+        // tslint:disable-next-line
+        let newCanvas: any = document.createElement('canvas');
+        newCanvas.width = 100;
+        newCanvas.height = 100;
+        let differenceX: number = newdifferenceX / 100;
+        let differenceY: number = newdifferenceY / 100;
+        // tslint:disable-next-line
+        let context: any = newCanvas.getContext('2d');
+        context.beginPath();
+        for (let n: number = 0; n < collectionData.length; n++) {
+            // tslint:disable-next-line
+            let val: any = collectionData[n];
+            // tslint:disable-next-line
+            let point1: number = (val['x'] - minimumX) / differenceX;
+            // tslint:disable-next-line
+            let point2: number = (val['y'] - minimumY) / differenceY;
+            // tslint:disable-next-line
+            if (val['command'] === 'M') {
+                context.moveTo(point1, point2);
+                // tslint:disable-next-line
+            } else if (val['command'] === 'L') {
+                context.lineTo(point1, point2);
+            }
+        }
+        context.stroke();
+        context.closePath();
+        // tslint:disable-next-line
+        let imageString: any = newCanvas.toDataURL();
+        // tslint:disable-next-line
+        let signCollection: any = {};
+        signCollection['sign_' + this.pdfViewerBase.imageCount] = this.outputString;
+        this.outputcollection.push(signCollection);
+        // tslint:disable-next-line
+        let signature: any = {};
+        signature['sign_' + this.pdfViewerBase.imageCount] = imageString;
+        this.signaturecollection.push(signature);
+        this.pdfViewerBase.imageCount++;
+    }
+
+    /**
+     * @private
+     */
+    public RenderSavedSignature(): void {
+        this.pdfViewerBase.signatureCount++;
+        let zoomvalue: number = this.pdfViewerBase.getZoomFactor();
+        let annot: PdfAnnotationBaseModel;
+        if (this.pdfViewerBase.isAddedSignClicked) {
+            let annotationName: string = this.pdfViewer.annotation.createGUID();
+            this.pdfViewerBase.currentSignatureAnnot = null;
+            this.pdfViewerBase.isSignatureAdded = true;
+            let pageIndex: number = this.pdfViewerBase.currentPageNumber - 1;
+            let pageDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + pageIndex);
+            let currentLeft: number = 0;
+            let currentTop: number = 0;
+            // tslint:disable-next-line:max-line-length
+            let currentWidth: number = this.pdfViewer.handWrittenSignatureSettings.width ? this.pdfViewer.handWrittenSignatureSettings.width : 100;
+            // tslint:disable-next-line:max-line-length
+            let currentHeight: number = this.pdfViewer.handWrittenSignatureSettings.height ? this.pdfViewer.handWrittenSignatureSettings.height : 100;
+            // tslint:disable-next-line:max-line-length
+            let thickness: number = this.pdfViewer.handWrittenSignatureSettings.thickness ? this.pdfViewer.handWrittenSignatureSettings.thickness : 1;
+            // tslint:disable-next-line:max-line-length
+            let opacity: number = this.pdfViewer.handWrittenSignatureSettings.opacity ? this.pdfViewer.handWrittenSignatureSettings.opacity : 1;
+            // tslint:disable-next-line:max-line-length
+            let strokeColor: string = this.pdfViewer.handWrittenSignatureSettings.strokeColor ? this.pdfViewer.handWrittenSignatureSettings.strokeColor : '#000000';
+            currentLeft = ((parseFloat(pageDiv.style.width) / 2) - (currentWidth / 2)) / zoomvalue;
+            // tslint:disable-next-line:max-line-length
+            currentTop = ((parseFloat(pageDiv.style.height) / 2) - (currentHeight / 2)) / zoomvalue;
+            let keyString: string = '';
+            for (let collection: number = 0; collection < this.outputcollection.length; collection++) {
+                // tslint:disable-next-line
+                let collectionAddedsign: any = this.outputcollection[collection];
+                // tslint:disable-next-line
+                let eventTarget: HTMLElement = event.target as HTMLElement;
+                // tslint:disable-next-line:max-line-length
+                if (eventTarget && eventTarget.id === 'sign_' + collection || eventTarget && eventTarget.id === 'sign_border' + collection) {
+                    keyString = collectionAddedsign['sign_' + collection];
+                    break;
+                }
+            }
+            annot = {
+                // tslint:disable-next-line:max-line-length
+                id: 'sign' + this.pdfViewerBase.signatureCount, bounds: { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight }, pageIndex: pageIndex, data: keyString,
+                // tslint:disable-next-line:max-line-length
+                shapeAnnotationType: 'HandWrittenSignature', opacity: opacity, strokeColor: strokeColor, thickness: thickness, signatureName: annotationName,
+            };
+
+            this.pdfViewerBase.currentSignatureAnnot = annot;
+            this.pdfViewerBase.isAddedSignClicked = false;
+        } else {
+            this.pdfViewer.formFieldsModule.drawSignature();
+
+        }
+    }
+
     /**
      * @private
      */
@@ -339,6 +490,10 @@ export class Signature {
         }
         return JSON.stringify(annotations);
     }
+
+    /**
+     * @private
+     */
     // tslint:disable-next-line
     public getRgbCode(colorString: string): any {
         if (!colorString.match(/#([a-z0-9]+)/gi) && !colorString.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/)) {
@@ -486,7 +641,7 @@ export class Signature {
      */
     // tslint:disable-next-line
     public modifySignatureCollection(property: string, pageNumber: number, annotationBase: any, isSignatureEdited?: boolean): ISignAnnotation {
-        this.pdfViewerBase.isDocumentEdited = true;
+        this.pdfViewer.isDocumentEdited = true;
         let currentAnnotObject: ISignAnnotation = null;
         let pageAnnotations: ISignAnnotation[] = this.getAnnotations(pageNumber, null);
         if (pageAnnotations != null && annotationBase) {

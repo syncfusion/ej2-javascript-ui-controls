@@ -217,7 +217,7 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
      * @return {void}
      */
     public destroy(): void {
-        let expandCollapseElem: HTMLElement = this.tabObj.element.querySelector('.e-drop-icon');
+        let expandCollapseElem: HTMLElement = this.element.querySelector('.e-drop-icon');
         if (expandCollapseElem) {
             expandCollapseElem.removeEventListener('click', this.ribbonExpandCollapse.bind(this));
         }
@@ -324,16 +324,15 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
                 }
             },
             created: (): void => {
-                let collapseBtn: Element = this.createElement('span', { className: 'e-drop-icon e-icons' });
-                collapseBtn.addEventListener('click', this.ribbonExpandCollapse.bind(this));
-                let header: Element = this.tabObj.element.querySelector('.e-tab-header');
-                header.insertBefore(collapseBtn, header.getElementsByClassName('e-toolbar-items')[0]);
                 this.toolbarObj.refreshOverflow();
             }
         });
         this.element.appendChild(tabElement);
         this.tabObj.createElement = this.createElement;
         this.tabObj.appendTo(tabElement);
+        let collapseBtn: Element = this.createElement('span', { className: 'e-drop-icon e-icons' });
+        collapseBtn.addEventListener('click', this.ribbonExpandCollapse.bind(this));
+        this.element.appendChild(collapseBtn);
     }
 
     private ribbonExpandCollapse(e: MouseEvent): void {

@@ -225,6 +225,14 @@ export interface RichTextEditorModel extends ComponentModel{
     placeholder?: string;
 
     /**
+     * Enables or disables the auto-save option which performs the save action while in the idle state after typed content.
+     * If enabled, the Rich Text Editor will save the content on idle state with `saveInterval` property's value.
+     * The change event will be triggered if the content has changed from the last saved state.
+     * @default false.
+     */
+    autoSaveOnIdle?: boolean;
+
+    /**
      * The user interactions on the component are disabled, when set to true.
      * @default false.
      */

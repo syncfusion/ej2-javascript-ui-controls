@@ -160,7 +160,8 @@ export class Toolbar {
                 { id: this.getPupupId('date'), text: getLocaleText(this.parent, 'DateModified') },
                 { separator: true },
                 { id: this.getPupupId('ascending'), text: getLocaleText(this.parent, 'Ascending'), iconCss: CLS.TB_OPTION_TICK },
-                { id: this.getPupupId('descending'), text: getLocaleText(this.parent, 'Descending'), }
+                { id: this.getPupupId('descending'), text: getLocaleText(this.parent, 'Descending'), },
+                { id: this.getPupupId('none'), text: getLocaleText(this.parent, 'None'), }
             ];
             this.buttonObj = new DropDownButton({
                 items: items, cssClass: getCssClass(this.parent, CLS.ROOT_POPUP),
@@ -229,6 +230,8 @@ export class Toolbar {
                     items[itemCount].iconCss = this.parent.sortOrder === 'Ascending' ? CLS.TB_OPTION_TICK : '';
                 } else if (items[itemCount].id === this.getPupupId('descending')) {
                     items[itemCount].iconCss = this.parent.sortOrder === 'Descending' ? CLS.TB_OPTION_TICK : '';
+                } else if (items[itemCount].id === this.getPupupId('none')) {
+                    items[itemCount].iconCss = this.parent.sortOrder === 'None' ? CLS.TB_OPTION_TICK : '';
                 }
             }
         }

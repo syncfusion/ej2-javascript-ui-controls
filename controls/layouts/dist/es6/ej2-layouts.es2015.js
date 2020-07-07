@@ -1,4 +1,4 @@
-import { Browser, ChildProperty, Collection, Component, Draggable, Event, EventHandler, NotifyPropertyChanges, Property, SanitizeHtmlHelper, addClass, append, closest, compile, detach, extend, formatUnit, isBlazor, isNullOrUndefined, isUndefined, removeClass, select, selectAll, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Collection, Component, Draggable, Event, EventHandler, NotifyPropertyChanges, Property, SanitizeHtmlHelper, addClass, append, closest, compile, detach, extend, formatUnit, getValue, isBlazor, isNullOrUndefined, isUndefined, removeClass, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 
 var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -2243,6 +2243,7 @@ let DashboardLayout = class DashboardLayout extends Component {
         this.isBlazor = false;
         this.isInlineRendering = false;
         this.removeAllCalled = false;
+        setValue('mergePersistData', this.mergePersistPanelData, this);
     }
     /**
      * Initialize the event handler
@@ -4864,6 +4865,34 @@ let DashboardLayout = class DashboardLayout extends Component {
     getPersistData() {
         let keyEntity = ['panels'];
         return this.addOnPersist(keyEntity);
+    }
+    /* istanbul ignore next */
+    mergePersistPanelData(persistedData) {
+        let data = window.localStorage.getItem(this.getModuleName() + this.element.id);
+        if (!(isNullOrUndefined(data) || (data === '')) || !isNullOrUndefined(persistedData)) {
+            let dataObj = !isNullOrUndefined(persistedData) ? persistedData : JSON.parse(data);
+            let keys = Object.keys(dataObj);
+            this.isProtectedOnChange = true;
+            for (let key of keys) {
+                if ((typeof getValue(key, this) === 'object' && !isNullOrUndefined(getValue(key, this)))) {
+                    if (Array.isArray(getValue(key, this)) && key === 'panels') {
+                        this.mergePanels(dataObj[key], this[key]);
+                    }
+                }
+            }
+            this.isProtectedOnChange = false;
+        }
+    }
+    /* istanbul ignore next */
+    mergePanels(sortedPanels, panels) {
+        let storedColumns = sortedPanels;
+        for (let i = 0; i < storedColumns.length; i++) {
+            this.checkForIDValues(panels);
+            let localPanel = panels.filter((pan) => pan.id === storedColumns[i].id)[0];
+            if (!isNullOrUndefined(localPanel)) {
+                storedColumns[i] = extend(localPanel, storedColumns[i], {}, true);
+            }
+        }
     }
     /**
      * Returns the current module name.

@@ -161,7 +161,7 @@ __decorate$1([
 ], SwimlaneSettings.prototype, "template", void 0);
 __decorate$1([
     Property('Ascending')
-], SwimlaneSettings.prototype, "sortBy", void 0);
+], SwimlaneSettings.prototype, "sortDirection", void 0);
 
 var __decorate$2 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -185,10 +185,16 @@ __decorate$2([
 ], CardSettings.prototype, "contentField", void 0);
 __decorate$2([
     Property()
-], CardSettings.prototype, "template", void 0);
+], CardSettings.prototype, "tagsField", void 0);
 __decorate$2([
     Property()
-], CardSettings.prototype, "priority", void 0);
+], CardSettings.prototype, "grabberField", void 0);
+__decorate$2([
+    Property()
+], CardSettings.prototype, "footerCssField", void 0);
+__decorate$2([
+    Property()
+], CardSettings.prototype, "template", void 0);
 __decorate$2([
     Property('Single')
 ], CardSettings.prototype, "selectionType", void 0);
@@ -295,8 +301,6 @@ const HEADER_TABLE_CLASS = 'e-header-table';
 /** @hidden */
 const HEADER_CELLS_CLASS = 'e-header-cells';
 /** @hidden */
-const HEADER_BOTTOM_CLASS = 'e-header-bottom';
-/** @hidden */
 const HEADER_WRAP_CLASS = 'e-header-wrap';
 /** @hidden */
 const HEADER_TITLE_CLASS = 'e-header-title';
@@ -344,6 +348,18 @@ const CARD_CONTENT_CLASS = 'e-card-content';
 const CARD_HEADER_TEXT_CLASS = 'e-card-header-caption';
 /** @hidden */
 const CARD_HEADER_TITLE_CLASS = 'e-card-header-title';
+/** @hidden */
+const CARD_TAGS_CLASS = 'e-card-tags';
+/** @hidden */
+const CARD_TAG_CLASS = 'e-card-tag';
+/** @hidden */
+const CARD_COLOR_CLASS = 'e-card-color';
+/** @hidden */
+const CARD_LABEL_CLASS = 'e-card-label';
+/** @hidden */
+const CARD_FOOTER_CLASS = 'e-card-footer';
+/** @hidden */
+const CARD_FOOTER_CSS_CLASS = 'e-card-footer-css';
 /** @hidden */
 const COLUMN_EXPAND_CLASS = 'e-column-expand';
 /** @hidden */
@@ -500,11 +516,13 @@ class Action {
             newData[this.parent.cardSettings.headerField] = Math.max.apply(Math, this.parent.kanbanData.map((obj) => parseInt(obj[this.parent.cardSettings.headerField], 10))) + 1;
         }
         newData[this.parent.keyField] = closest(target, '.' + CONTENT_CELLS_CLASS).getAttribute('data-key');
-        if (this.parent.cardSettings.priority) {
-            newData[this.parent.cardSettings.priority] = 1;
+        if (this.parent.sortSettings.sortBy === 'Index') {
+            newData[this.parent.sortSettings.field] = 1;
             if (closest(target, '.' + CONTENT_CELLS_CLASS).querySelector('.' + CARD_CLASS)) {
-                let data = this.parent.getCardDetails(target.nextElementSibling.firstElementChild);
-                newData[this.parent.cardSettings.priority] = data[this.parent.cardSettings.priority] + 1;
+                let card = this.parent.sortSettings.direction === 'Ascending' ?
+                    target.nextElementSibling.lastElementChild : target.nextElementSibling.firstElementChild;
+                let data = this.parent.getCardDetails(card);
+                newData[this.parent.sortSettings.field] = data[this.parent.sortSettings.field] + 1;
             }
         }
         if (this.parent.kanbanData.length !== 0 && this.parent.swimlaneSettings.keyField &&
@@ -828,14 +846,14 @@ class Crud {
                 this.parent.showSpinner();
                 let promise = null;
                 let modifiedData = [];
-                if (this.parent.cardSettings.priority) {
+                if (this.parent.sortSettings.field && this.parent.sortSettings.sortBy === 'Index') {
                     cardData instanceof Array ? modifiedData = cardData : modifiedData.push(cardData);
                     if (!this.parent.isBlazorRender()) {
                         modifiedData = this.priorityOrder(modifiedData, addArgs);
                     }
                 }
                 let addedRecords = (cardData instanceof Array) ? cardData : [cardData];
-                let changedRecords = this.parent.cardSettings.priority ? modifiedData : [];
+                let changedRecords = (this.parent.sortSettings.field && this.parent.sortSettings.sortBy === 'Index') ? modifiedData : [];
                 let editParms = { addedRecords: addedRecords, changedRecords: changedRecords, deletedRecords: [] };
                 if (cardData instanceof Array || modifiedData.length > 0) {
                     if (!this.parent.isBlazorRender()) {
@@ -874,7 +892,7 @@ class Crud {
             if (!updateArgs.cancel) {
                 this.parent.showSpinner();
                 let promise = null;
-                if (this.parent.cardSettings.priority) {
+                if (this.parent.sortSettings.field && this.parent.sortSettings.sortBy === 'Index') {
                     let modifiedData = [];
                     cardData instanceof Array ? modifiedData = cardData : modifiedData.push(cardData);
                     if (!this.parent.isBlazorRender()) {
@@ -965,28 +983,34 @@ class Crud {
         for (let columnKey of modifiedKey) {
             let keyData = cardData.filter((cardObj) => cardObj[this.parent.keyField] === columnKey);
             columnAllDatas = this.parent.getColumnData(columnKey);
+            if (this.parent.sortSettings.direction === 'Descending') {
+                columnAllDatas = this.removeData(columnAllDatas, keyData);
+            }
             let customOrder = 1;
             let initialOrder;
             for (let data of keyData) {
                 let order;
-                if (data[this.parent.cardSettings.priority]) {
-                    order = data[this.parent.cardSettings.priority];
+                if (data[this.parent.sortSettings.field]) {
+                    order = data[this.parent.sortSettings.field];
                 }
                 else {
                     if (customOrder === 1) {
-                        initialOrder = columnAllDatas.slice(-1)[0][this.parent.cardSettings.priority];
+                        initialOrder = columnAllDatas.slice(-1)[0][this.parent.sortSettings.field];
                     }
-                    order = data[this.parent.cardSettings.priority] = (customOrder > 1 ? initialOrder :
-                        columnAllDatas.slice(-1)[0][this.parent.cardSettings.priority]) + customOrder;
+                    order = data[this.parent.sortSettings.field] = (customOrder > 1 ? initialOrder :
+                        columnAllDatas.slice(-1)[0][this.parent.sortSettings.field]) + customOrder;
                     customOrder++;
                 }
                 if (this.parent.swimlaneSettings.keyField) {
                     let swimlaneDatas = this.parent.getSwimlaneData(data[this.parent.swimlaneSettings.keyField]);
                     columnAllDatas = this.parent.getColumnData(columnKey, swimlaneDatas);
+                    if (this.parent.sortSettings.direction === 'Descending') {
+                        columnAllDatas = this.removeData(columnAllDatas, keyData);
+                    }
                 }
                 let count = [];
                 for (let j = 0; j < columnAllDatas.length; j++) {
-                    if (columnAllDatas[j][this.parent.cardSettings.priority] === order) {
+                    if (columnAllDatas[j][this.parent.sortSettings.field] === order) {
                         count.push(j + 1);
                         break;
                     }
@@ -995,18 +1019,35 @@ class Crud {
                     finalData.push(data);
                 }
                 let finalCardsId = finalData.map((obj) => obj[this.parent.cardSettings.headerField]);
-                for (let i = count[0]; i <= columnAllDatas.length; i++) {
-                    let dataObj = columnAllDatas[i - 1];
-                    let index = cardsId.indexOf(dataObj[this.parent.cardSettings.headerField]);
-                    if (index === -1 && order >= dataObj[this.parent.cardSettings.priority]) {
-                        dataObj[this.parent.cardSettings.priority] = ++order;
-                        let isData = finalCardsId.indexOf(dataObj[this.parent.cardSettings.headerField]);
-                        (isData === -1) ? finalData.push(dataObj) : finalData[isData] = dataObj;
+                if (this.parent.sortSettings.direction === 'Ascending') {
+                    for (let i = count[0]; i <= columnAllDatas.length; i++) {
+                        let dataObj = columnAllDatas[i - 1];
+                        let index = cardsId.indexOf(dataObj[this.parent.cardSettings.headerField]);
+                        if (index === -1 && order >= dataObj[this.parent.sortSettings.field]) {
+                            dataObj[this.parent.sortSettings.field] = ++order;
+                            let isData = finalCardsId.indexOf(dataObj[this.parent.cardSettings.headerField]);
+                            (isData === -1) ? finalData.push(dataObj) : finalData[isData] = dataObj;
+                        }
+                    }
+                }
+                else {
+                    for (let i = count[0]; i > 0; i--) {
+                        let dataObj = columnAllDatas[i - 1];
+                        dataObj[this.parent.sortSettings.field] = ++order;
+                        finalData.push(dataObj);
                     }
                 }
             }
         }
         return finalData;
+    }
+    removeData(columnAllDatas, keyData) {
+        keyData.map((cardObj) => {
+            if (columnAllDatas.indexOf(cardObj) !== -1) {
+                columnAllDatas.splice(columnAllDatas.indexOf(cardObj), 1);
+            }
+        });
+        return columnAllDatas;
     }
 }
 
@@ -1022,7 +1063,7 @@ class DragAndDrop {
     constructor(parent) {
         this.parent = parent;
         this.dragObj = {
-            element: null, cloneElement: null,
+            element: null, cloneElement: null, instance: null,
             targetClone: null, draggedClone: null, targetCloneMulti: null,
             selectedCards: [], pageX: 0, pageY: 0, navigationInterval: null, cardDetails: [], modifiedData: []
         };
@@ -1030,7 +1071,7 @@ class DragAndDrop {
         this.isDragging = false;
     }
     wireDragEvents(element) {
-        new Draggable(element, {
+        this.dragObj.instance = new Draggable(element, {
             clone: true,
             enableTapHold: this.parent.isAdaptive,
             enableTailMode: true,
@@ -1042,6 +1083,10 @@ class DragAndDrop {
             enableAutoScroll: false,
             helper: this.dragHelper.bind(this),
         });
+        if (!(this.dragObj.instance.enableTapHold && Browser.isDevice && Browser.isTouch)) {
+            // tslint:disable-next-line:no-any
+            EventHandler.remove(element, 'touchstart', this.dragObj.instance.initialize);
+        }
     }
     dragHelper(e) {
         if (this.parent.isAdaptive && this.parent.touchModule.mobilePopup &&
@@ -1062,6 +1107,7 @@ class DragAndDrop {
             className: DROPPED_CLONE_CLASS,
             styles: 'width:' + formatUnit(this.dragObj.element.offsetWidth) + ';height:' + formatUnit(this.dragObj.element.offsetHeight)
         });
+        this.dragObj.modifiedData = [];
         return this.dragObj.cloneElement;
     }
     dragStart(e) {
@@ -1081,10 +1127,12 @@ class DragAndDrop {
         this.parent.trigger(dragStart, dragArgs, (dragEventArgs) => {
             if (dragEventArgs.cancel) {
                 this.removeElement(this.dragObj.cloneElement);
-                this.dragObj = {
-                    element: null, cloneElement: null,
-                    targetClone: null, draggedClone: null, targetCloneMulti: null
-                };
+                this.dragObj.instance.intDestroy(e);
+                this.dragObj.element = null;
+                this.dragObj.targetClone = null;
+                this.dragObj.draggedClone = null;
+                this.dragObj.cloneElement = null;
+                this.dragObj.targetCloneMulti = null;
                 return;
             }
             if (this.parent.isBlazorRender()) {
@@ -1134,9 +1182,20 @@ class DragAndDrop {
             let isDrag = (targetKey === this.getColumnKey(closest(this.dragObj.draggedClone, '.' + CONTENT_CELLS_CLASS)))
                 ? true : false;
             if (keys.length === 1 || isDrag) {
-                if (target.classList.contains(CARD_CLASS)) {
-                    let insertClone = (isNullOrUndefined(target.previousElementSibling) && (this.dragObj.pageY -
-                        (this.parent.element.offsetTop + target.offsetTop)) < (target.offsetHeight / 2)) ? 'beforebegin' : 'afterend';
+                if (target.classList.contains(CARD_CLASS) || target.classList.contains(DRAGGED_CLONE_CLASS)) {
+                    let element = target.classList.contains(DRAGGED_CLONE_CLASS) ?
+                        (target.previousElementSibling.classList.contains(DRAGGED_CARD_CLASS) ? null : target.previousElementSibling)
+                        : target.previousElementSibling;
+                    let insertClone = 'afterend';
+                    if (isNullOrUndefined(element)) {
+                        let pageY = target.classList.contains(DRAGGED_CLONE_CLASS) ? (this.dragObj.pageY / 2) :
+                            this.dragObj.pageY;
+                        let height = target.classList.contains(DRAGGED_CLONE_CLASS) ? target.offsetHeight :
+                            (target.offsetHeight / 2);
+                        if ((pageY - (this.parent.element.getBoundingClientRect().top + target.offsetTop)) < height) {
+                            insertClone = 'beforebegin';
+                        }
+                    }
                     target.insertAdjacentElement(insertClone, this.dragObj.targetClone);
                 }
                 else if (target.classList.contains(CONTENT_CELLS_CLASS) && !closest(target, '.' + SWIMLANE_ROW_CLASS)) {
@@ -1273,7 +1332,7 @@ class DragAndDrop {
                     this.updateDroppedData(element, cardStatus, contentCell);
                 });
             }
-            if (this.parent.cardSettings.priority) {
+            if (this.parent.sortSettings.field && this.parent.sortSettings.sortBy === 'Index') {
                 this.changeOrder(this.dragObj.modifiedData);
             }
         }
@@ -1326,30 +1385,37 @@ class DragAndDrop {
         }
         this.dragObj.modifiedData.push(crudData);
     }
-    changeOrder(modifiedData) {
-        let prevEle = false;
-        let element = this.dragObj.targetClone.previousElementSibling;
+    changeOrder(modifieddata) {
+        let prevele = false;
+        let element = this.parent.sortSettings.direction === 'Ascending' ?
+            this.dragObj.targetClone.previousElementSibling : this.dragObj.targetClone.nextElementSibling;
         if (element && !element.classList.contains(DRAGGED_CARD_CLASS) && !element.classList.contains(CLONED_CARD_CLASS)
             && !element.classList.contains(DRAGGED_CLONE_CLASS)) {
-            prevEle = true;
+            prevele = true;
         }
-        else if (this.dragObj.targetClone.nextElementSibling) {
+        else if (this.dragObj.targetClone.nextElementSibling && this.parent.sortSettings.direction === 'Ascending') {
             element = this.dragObj.targetClone.nextElementSibling;
+        }
+        else if (this.dragObj.targetClone.previousElementSibling && this.parent.sortSettings.direction === 'Descending') {
+            element = this.dragObj.targetClone.previousElementSibling;
         }
         else {
             return;
         }
         let obj = this.parent.getCardDetails(element);
-        let index = obj[this.parent.cardSettings.priority];
-        modifiedData.forEach((data) => {
-            if (prevEle) {
-                data[this.parent.cardSettings.priority] = ++index;
+        let keyIndex = obj[this.parent.sortSettings.field];
+        if (modifieddata.length > 1 && this.parent.sortSettings.direction === 'Descending') {
+            modifieddata = modifieddata.reverse();
+        }
+        modifieddata.forEach((data, index) => {
+            if (prevele) {
+                data[this.parent.sortSettings.field] = ++keyIndex;
             }
-            else if (index !== 1 && index <= data[this.parent.cardSettings.priority]) {
-                data[this.parent.cardSettings.priority] = --index;
+            else if (keyIndex !== 1 && index <= data[this.parent.sortSettings.field]) {
+                data[this.parent.sortSettings.field] = --keyIndex;
             }
-            else if (index === 1) {
-                data[this.parent.cardSettings.priority] = 1;
+            else if (keyIndex === 1) {
+                data[this.parent.sortSettings.field] = index + 1;
             }
         });
     }
@@ -1574,8 +1640,8 @@ class KanbanDialog {
                 { key: this.parent.keyField, type: 'DropDown' },
                 { key: this.parent.cardSettings.contentField, type: 'TextArea' }
             ];
-            if (this.parent.cardSettings.priority) {
-                fields.splice(fields.length - 1, 0, { key: this.parent.cardSettings.priority, type: 'Numeric' });
+            if (this.parent.sortSettings.sortBy !== 'DataSourceOrder') {
+                fields.splice(fields.length - 1, 0, { key: this.parent.sortSettings.field, type: 'TextBox' });
             }
             if (this.parent.swimlaneSettings.keyField) {
                 fields.splice(fields.length - 1, 0, { key: this.parent.swimlaneSettings.keyField, type: 'DropDown' });
@@ -2490,9 +2556,6 @@ class LayoutRender extends MobileLayout {
                     className: index === -1 ? HEADER_CELLS_CLASS : HEADER_CELLS_CLASS + ' ' + COLLAPSED_CLASS,
                     attrs: { 'data-role': 'kanban-column', 'data-key': column.keyField }
                 });
-                if (this.parent.kanbanData.length !== 0 && this.parent.swimlaneSettings.keyField && !this.parent.isAdaptive) {
-                    th.classList.add(HEADER_BOTTOM_CLASS);
-                }
                 let classList$$1 = [];
                 if (column.allowToggle) {
                     classList$$1.push(HEADER_ROW_TOGGLE_CLASS);
@@ -2584,7 +2647,9 @@ class LayoutRender extends MobileLayout {
                     });
                     if (column.allowToggle && !column.isExpanded || index !== -1) {
                         addClass([td], COLLAPSED_CLASS);
-                        td.appendChild(createElement('div', { className: COLLAPSE_HEADER_TEXT_CLASS, innerHTML: column.headerText }));
+                        let text = (column.showItemCount ? '[' +
+                            this.getColumnData(column.keyField, this.swimlaneData[row.keyField]).length + '] ' : '') + column.headerText;
+                        td.appendChild(createElement('div', { className: COLLAPSE_HEADER_TEXT_CLASS, innerHTML: text }));
                         td.setAttribute('aria-expanded', 'false');
                     }
                     if (column.showAddButton) {
@@ -2723,6 +2788,31 @@ class LayoutRender extends MobileLayout {
                                 innerHTML: data[this.parent.cardSettings.contentField] || ''
                             });
                             cardElement.appendChild(cardContent);
+                            if (this.parent.cardSettings.tagsField && data[this.parent.cardSettings.tagsField]) {
+                                let cardTags = createElement('div', { className: CARD_TAGS_CLASS });
+                                let tags = data[this.parent.cardSettings.tagsField].toString().split(',');
+                                for (let tag of tags) {
+                                    cardTags.appendChild(createElement('div', {
+                                        className: CARD_TAG_CLASS + ' ' + CARD_LABEL_CLASS,
+                                        innerHTML: tag
+                                    }));
+                                }
+                                cardElement.appendChild(cardTags);
+                            }
+                            if (this.parent.cardSettings.grabberField && data[this.parent.cardSettings.grabberField]) {
+                                addClass([cardElement], CARD_COLOR_CLASS);
+                                cardElement.style.borderLeftColor = data[this.parent.cardSettings.grabberField];
+                            }
+                            if (this.parent.cardSettings.footerCssField) {
+                                let cardFields = createElement('div', { className: CARD_FOOTER_CLASS });
+                                let keys = data[this.parent.cardSettings.footerCssField].split(',');
+                                for (let key of keys) {
+                                    cardFields.appendChild(createElement('div', {
+                                        className: key.trim() + ' ' + CARD_FOOTER_CSS_CLASS
+                                    }));
+                                }
+                                cardElement.appendChild(cardFields);
+                            }
                         }
                         let args = { data: data, element: cardElement, cancel: false };
                         this.parent.trigger(cardRendered, args, (cardArgs) => {
@@ -2782,7 +2872,7 @@ class LayoutRender extends MobileLayout {
                 let second = secondRow.textField.toLowerCase();
                 return (first > second) ? 1 : ((second > first) ? -1 : 0);
             });
-            if (this.parent.swimlaneSettings.sortBy === 'Descending') {
+            if (this.parent.swimlaneSettings.sortDirection === 'Descending') {
                 kanbanRows.reverse();
             }
             kanbanRows.forEach((row) => {
@@ -2950,8 +3040,57 @@ class LayoutRender extends MobileLayout {
             let keyData = dataSource.filter((cardObj) => cardObj[this.parent.keyField] === key.trim());
             cardData = cardData.concat(keyData);
         }
-        if (this.parent.cardSettings.priority) {
-            cardData = cardData.sort((data1, data2) => parseInt(data1[this.parent.cardSettings.priority], 10) - parseInt(data2[this.parent.cardSettings.priority], 10));
+        this.sortCategory(cardData);
+        return cardData;
+    }
+    sortCategory(cardData) {
+        let key;
+        let direction = this.parent.sortSettings.direction;
+        switch (this.parent.sortSettings.sortBy) {
+            case 'DataSourceOrder':
+                if (direction === 'Descending') {
+                    cardData.reverse();
+                }
+                break;
+            case 'Custom':
+            case 'Index':
+                if (this.parent.sortSettings.field) {
+                    key = this.parent.sortSettings.field;
+                    if (this.parent.sortSettings.sortBy === 'Custom') {
+                        direction = this.parent.sortSettings.direction;
+                    }
+                    this.sortOrder(key, direction, cardData);
+                }
+                break;
+        }
+        return cardData;
+    }
+    sortOrder(key, direction, cardData) {
+        let isNumeric;
+        if (this.parent.kanbanData.length > 0) {
+            isNumeric = typeof this.parent.kanbanData[0][key] === 'number';
+        }
+        else {
+            isNumeric = true;
+        }
+        if (!isNumeric && this.parent.sortSettings.sortBy === 'Index') {
+            return cardData;
+        }
+        let first;
+        let second;
+        cardData = cardData.sort((firstData, secondData) => {
+            if (!isNumeric) {
+                first = firstData[key].toLowerCase();
+                second = secondData[key].toLowerCase();
+            }
+            else {
+                first = firstData[key];
+                second = secondData[key];
+            }
+            return (first > second) ? 1 : ((second > first) ? -1 : 0);
+        });
+        if (direction === 'Descending') {
+            cardData.reverse();
         }
         return cardData;
     }
@@ -3035,9 +3174,7 @@ class LayoutRender extends MobileLayout {
     }
     wireDragEvent() {
         if (this.parent.allowDragAndDrop) {
-            this.parent.element.querySelectorAll('.' + CARD_CLASS).forEach((card) => {
-                card.classList.add(DRAGGABLE_CLASS);
-            });
+            addClass(this.parent.element.querySelectorAll('.' + CARD_CLASS), DRAGGABLE_CLASS);
             this.parent.dragAndDropModule.wireDragEvents(this.parent.element.querySelector('.' + CONTENT_CLASS));
         }
     }
@@ -3074,6 +3211,28 @@ class LayoutRender extends MobileLayout {
         }
     }
 }
+
+var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * @deprecated
+ * Holds the configuration of sort settings in kanban board.
+ */
+class SortSettings extends ChildProperty {
+}
+__decorate$6([
+    Property('DataSourceOrder')
+], SortSettings.prototype, "sortBy", void 0);
+__decorate$6([
+    Property()
+], SortSettings.prototype, "field", void 0);
+__decorate$6([
+    Property('Ascending')
+], SortSettings.prototype, "direction", void 0);
 
 var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -3282,6 +3441,9 @@ let Kanban = class Kanban extends Component {
                         this.notifyChange();
                     }
                     break;
+                case 'sortSettings':
+                    this.notify(dataReady, { processedData: this.kanbanData });
+                    break;
                 default:
                     break;
             }
@@ -3295,7 +3457,7 @@ let Kanban = class Kanban extends Component {
                 case 'showEmptyRow':
                 case 'showItemCount':
                 case 'template':
-                case 'sortBy':
+                case 'sortDirection':
                     if (!this.isBlazorRender()) {
                         this.notify(dataReady, { processedData: this.kanbanData });
                     }
@@ -3313,6 +3475,9 @@ let Kanban = class Kanban extends Component {
                 case 'headerField':
                 case 'contentField':
                 case 'template':
+                case 'tagsField':
+                case 'grabberField':
+                case 'footerCssField':
                     if (!this.isBlazorRender()) {
                         this.layoutModule.refreshCards();
                     }
@@ -3625,6 +3790,9 @@ __decorate([
 __decorate([
     Complex({}, CardSettings)
 ], Kanban.prototype, "cardSettings", void 0);
+__decorate([
+    Complex({}, SortSettings)
+], Kanban.prototype, "sortSettings", void 0);
 __decorate([
     Complex({}, DialogSettings)
 ], Kanban.prototype, "dialogSettings", void 0);

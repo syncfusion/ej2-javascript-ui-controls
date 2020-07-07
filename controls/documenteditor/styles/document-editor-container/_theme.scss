@@ -628,6 +628,14 @@
     width: $de-text-pane-width;
   }
 
+  .e-de-review-pane {
+    border-left: 1px solid $de-op-border-clr;
+    height: 100%;
+    min-height: 200px;
+    overflow: auto;
+    width: $e-de-review-pane-width;
+  }
+
   .e-bigger {
     .e-de-cntr-pane-padding {
       padding: 16px;

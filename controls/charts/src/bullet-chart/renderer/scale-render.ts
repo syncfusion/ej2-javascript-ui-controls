@@ -2,7 +2,7 @@ import { BulletChart } from '../bullet-chart';
 import { DataManager } from '@syncfusion/ej2-data';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Rect, measureText, textElement, TextOption, Size, PathOption } from '@syncfusion/ej2-svg-base';
-import { RectOption, CircleOption } from '../../chart/index';
+import { RectOption, CircleOption } from '../../common/utils/helper';
 import { RangeModel } from '../model/bullet-base-model';
 import { IFeatureBarBounds } from '../model/bullet-interface';
 import { Animation, AnimationOptions } from '@syncfusion/ej2-base';

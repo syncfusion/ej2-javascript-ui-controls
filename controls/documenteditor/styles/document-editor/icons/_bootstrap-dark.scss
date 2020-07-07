@@ -110,6 +110,16 @@
     font-family: 'e-icons';
   }
 
+  .e-de-acceptchange::before {
+    content: '\e19f';
+    font-family: 'e-icons';
+  }
+
+  .e-de-rejectchange::before {
+    content: '\e204';
+    font-family: 'e-icons';
+  }
+
   .e-de-ctn-title-download::before {
     content: '\e603';
     font-family: 'e-icons';

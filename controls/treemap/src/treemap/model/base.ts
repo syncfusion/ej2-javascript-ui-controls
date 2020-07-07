@@ -563,9 +563,9 @@ export class SelectionSettings extends ChildProperty<SelectionSettings> {
     public enable: boolean;
     /**
      * Sets and gets the color of the selection when the leaf item is selected in the treemap component.
-     * @default 'null'
+     * @default null
      */
-    @Property('null')
+    @Property(null)
     public fill: string;
     /**
      * Sets and gets the opacity of the selection when the leaf item is selected in the treemap component.

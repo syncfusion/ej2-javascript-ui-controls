@@ -1,6 +1,6 @@
 import { PdfViewer, PdfViewerBase } from '../index';
 import { createElement } from '@syncfusion/ej2-base';
-import { LineTool, PolygonDrawingTool } from '../../diagram/tools';
+import { LineTool, PolygonDrawingTool } from '../drawing/tools';
 
 /**
  * The `LinkAnnotation` module is used to handle link annotation actions of PDF viewer.

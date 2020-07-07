@@ -1411,6 +1411,7 @@ exports.ChecksumCalculator = ChecksumCalculator;
 return exports;
 
 });
+sfBlazor.libs.push("compression")
 sfBlazor.loadDependencies(["fileutils"], () => {
     sf.compression = sf.compression({});
 });

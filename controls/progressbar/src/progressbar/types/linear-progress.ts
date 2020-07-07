@@ -32,41 +32,48 @@ export class Linear {
             this.progress.rangeColors[0].end !== null);
         thickness = (progress.trackThickness || progress.themeStyle.linearTrackThickness);
         stroke = (progress.argsData.trackColor || progress.themeStyle.linearTrackColor);
-        option = new PathOption(
-            progress.element.id + '_Lineartrack', 'none', thickness, stroke, progress.themeStyle.trackOpacity,
-            '0', progress.getPathLine(progress.progressRect.x, progress.progressRect.width, thickness)
-        );
-        linearTrack = progress.renderer.drawPath(option);
-        progress.trackWidth = (<SVGPathElement>linearTrack).getTotalLength();
-        if (progress.segmentCount > 1 && !this.isRange && !progress.trackSegmentDisable) {
-            progress.segmentSize = progress.calculateSegmentSize(progress.trackWidth, thickness);
-            linearTrack.setAttribute('stroke-dasharray', progress.segmentSize);
-        }
-        if (progress.cornerRadius === 'Round' && !this.isRange) {
-            linearTrack.setAttribute('stroke-linecap', 'round');
+        if (progress.cornerRadius === 'Round4px') {
+            if (progress.segmentCount > 1) {
+                linearTrack = this.createRoundCornerSegment('_LinearTrack_', stroke, thickness, true, 0, progress);
+            } else {
+                option = new PathOption(
+                    progress.element.id + '_Lineartrack', stroke, 0, 'none', progress.themeStyle.trackOpacity,
+                    '0', this.cornerRadius(progress.progressRect.x, progress.progressRect.y, progress.progressRect.width, thickness, 4, '')
+                );
+                linearTrack = progress.renderer.drawPath(option);
+            }
+        } else {
+            option = new PathOption(
+                progress.element.id + '_Lineartrack', 'none', thickness, stroke, progress.themeStyle.trackOpacity,
+                '0', progress.getPathLine(progress.progressRect.x, progress.progressRect.width, thickness)
+            );
+            linearTrack = progress.renderer.drawPath(option);
+            progress.trackWidth = (<SVGPathElement>linearTrack).getTotalLength();
+            if (progress.cornerRadius === 'Round' && !this.isRange) {
+                linearTrack.setAttribute('stroke-linecap', 'round');
+            }
+            if (progress.segmentCount > 1 && !this.isRange && !progress.enableProgressSegments) {
+                progress.segmentSize = progress.calculateSegmentSize(progress.trackWidth, thickness);
+                linearTrack.setAttribute('stroke-dasharray', progress.segmentSize);
+            }
         }
         linearTrackGroup.appendChild(linearTrack);
         progress.svgObject.appendChild(linearTrackGroup);
     }
 
     /** To render the linear progress  */
+    // tslint:disable-next-line:max-func-body-length
     public renderLinearProgress(refresh?: boolean, previousWidth: number = 0): void {
-        let progress: ProgressBar = this.progress;
-        let option: PathOption;
-        let linearProgress: Element;
-        let progressWidth: number;
-        let linearProgressWidth: number;
-        let clipPathLinear: Element;
-        let clipPathIndeterminate: Element;
-        let linearProgressGroup: Element;
-        let animationdelay: number;
-        let thickness: number;
-        let stroke: string;
-        let segmentWidth: number;
-        let strippedStroke: string;
+        let progress: ProgressBar = this.progress; let option: PathOption;
+        let linearProgress: Element; let progressWidth: number;
+        let linearProgressWidth: number; let clipPathLinear: Element;
+        let clipPathIndeterminate: Element; let linearProgressGroup: Element;
+        let animationdelay: number; let thickness: number;
+        let stroke: string; let segmentWidth: number;
+        let strippedStroke: string; let ismaximum: boolean = (progress.value === progress.maximum);
         progressWidth = progress.calculateProgressRange(progress.argsData.value);
         progress.previousWidth = linearProgressWidth = progress.progressRect.width *
-            ((progress.isIndeterminate && !progress.trackSegmentDisable) ? 1 : progressWidth);
+            ((progress.isIndeterminate && !progress.enableProgressSegments) ? 1 : progressWidth);
         if (!refresh) {
             linearProgressGroup = progress.renderer.createGroup({ 'id': progress.element.id + '_LinearProgressGroup' });
         } else {
@@ -74,38 +81,59 @@ export class Linear {
         }
         thickness = (progress.progressThickness || progress.themeStyle.linearProgressThickness);
         stroke = (!progress.isStriped) ? this.checkingLinearProgressColor() : 'url(#' + progress.element.id + '_LinearStriped)';
-        option = new PathOption(
-            progress.element.id + '_Linearprogress', 'none', thickness, stroke, progress.themeStyle.progressOpacity, '0',
-            progress.getPathLine(progress.progressRect.x, linearProgressWidth, thickness)
-        );
+        if (progress.cornerRadius === 'Round4px') {
+            option = new PathOption(
+                progress.element.id + '_Linearprogress', stroke, 0, 'none', progress.themeStyle.progressOpacity, '0',
+                this.cornerRadius(
+                    progress.progressRect.x, progress.progressRect.y, linearProgressWidth, thickness, 4,
+                    (ismaximum || progress.isIndeterminate) ? '' : 'start'
+                )
+            );
+        } else {
+            option = new PathOption(
+                progress.element.id + '_Linearprogress', 'none', thickness, stroke, progress.themeStyle.progressOpacity, '0',
+                progress.getPathLine(progress.progressRect.x, linearProgressWidth, thickness)
+            );
+        }
         progress.progressWidth = (<SVGPathElement>progress.renderer.drawPath(option)).getTotalLength();
-        progress.segmentSize = (!progress.trackSegmentDisable) ? progress.segmentSize :
+        progress.segmentSize = (!progress.enableProgressSegments) ? progress.segmentSize :
             progress.calculateSegmentSize(progress.progressWidth, thickness);
         if (progress.secondaryProgress !== null && !progress.isIndeterminate) {
             this.renderLinearBuffer(progress);
         }
         if (progress.argsData.value !== null) {
-            if (progress.segmentColor.length !== 0 && !progress.isIndeterminate && !this.isRange) {
-                segmentWidth = (!progress.trackSegmentDisable) ? progress.trackWidth : progress.progressWidth;
-                linearProgress = this.segment.createLinearSegment(
-                    progress, '_LinearProgressSegment', linearProgressWidth,
-                    progress.themeStyle.progressOpacity, thickness, segmentWidth
-                );
-            } else if (this.isRange && !progress.isIndeterminate) {
-                linearProgress = this.segment.createLinearRange(linearProgressWidth, progress);
-            } else {
-                if (!refresh) {
-                    linearProgress = progress.renderer.drawPath(option);
-                } else {
-                    linearProgress = getElement(progress.element.id + '_Linearprogress');
-                    linearProgress.setAttribute('d', progress.getPathLine(progress.progressRect.x, linearProgressWidth, thickness));
-                    linearProgress.setAttribute('stroke', stroke);
-                }
+            if (progress.cornerRadius === 'Round4px') {
                 if (progress.segmentCount > 1) {
-                    linearProgress.setAttribute('stroke-dasharray', progress.segmentSize);
+                    linearProgress = this.createRoundCornerSegment(
+                        '_Linearprogress_', stroke, thickness, false,
+                        linearProgressWidth, progress, progress.themeStyle.progressOpacity
+                    );
+                } else {
+                    linearProgress = progress.renderer.drawPath(option);
                 }
-                if (progress.cornerRadius === 'Round' && progressWidth) {
-                    linearProgress.setAttribute('stroke-linecap', 'round');
+            } else {
+                if (progress.segmentColor.length !== 0 && !progress.isIndeterminate && !this.isRange) {
+                    segmentWidth = (!progress.enableProgressSegments) ? progress.trackWidth : progress.progressWidth;
+                    linearProgress = this.segment.createLinearSegment(
+                        progress, '_LinearProgressSegment', linearProgressWidth,
+                        progress.themeStyle.progressOpacity, thickness, segmentWidth
+                    );
+                } else if (this.isRange && !progress.isIndeterminate) {
+                    linearProgress = this.segment.createLinearRange(linearProgressWidth, progress);
+                } else {
+                    if (!refresh) {
+                        linearProgress = progress.renderer.drawPath(option);
+                    } else {
+                        linearProgress = getElement(progress.element.id + '_Linearprogress');
+                        linearProgress.setAttribute('d', progress.getPathLine(progress.progressRect.x, linearProgressWidth, thickness));
+                        linearProgress.setAttribute('stroke', stroke);
+                    }
+                    if (progress.segmentCount > 1) {
+                        linearProgress.setAttribute('stroke-dasharray', progress.segmentSize);
+                    }
+                    if (progress.cornerRadius === 'Round' && progressWidth) {
+                        linearProgress.setAttribute('stroke-linecap', 'round');
+                    }
                 }
             }
             linearProgressGroup.appendChild(linearProgress);
@@ -122,23 +150,25 @@ export class Linear {
                 } else {
                     animationdelay = progress.animation.delay;
                 }
-                /** used for label animation delay */
                 this.delay = animationdelay;
-                clipPathLinear = progress.createClipPath(progress.clipPath, progressWidth, null, refresh, thickness, false);
+                clipPathLinear = progress.createClipPath(
+                    progress.clipPath, progressWidth, null, refresh, thickness, false,
+                    (progress.cornerRadius === 'Round4px' && ismaximum)
+                );
                 linearProgressGroup.appendChild(progress.clipPath);
                 linearProgress.setAttribute('style', 'clip-path:url(#' + progress.element.id + '_clippath)');
                 this.animation.doLinearAnimation(clipPathLinear, progress, animationdelay, refresh ? previousWidth : 0);
             }
             if (progress.isIndeterminate) {
                 clipPathIndeterminate = progress.createClipPath(
-                    progress.clipPath, (progress.trackSegmentDisable) ? 1 : progressWidth, null, refresh,
-                    thickness, progress.trackSegmentDisable
+                    progress.clipPath, (progress.enableProgressSegments) ? 1 : progressWidth, null, refresh,
+                    thickness, progress.enableProgressSegments
                 );
                 linearProgressGroup.appendChild(progress.clipPath);
                 linearProgress.setAttribute('style', 'clip-path:url(#' + progress.element.id + '_clippath)');
                 this.animation.doLinearIndeterminate(
-                    ((!progress.trackSegmentDisable) ? clipPathIndeterminate : linearProgress),
-                    linearProgressWidth, thickness, progress
+                    ((!progress.enableProgressSegments) ? clipPathIndeterminate : linearProgress),
+                    linearProgressWidth, thickness, progress, clipPathIndeterminate
                 );
             }
             progress.svgObject.appendChild(linearProgressGroup);
@@ -156,36 +186,56 @@ export class Linear {
         let thickness: number;
         let stroke: string;
         let segmentWidth: number;
+        let ismaximum: boolean = (progress.secondaryProgress === progress.maximum);
         secondaryProgressWidth = progress.calculateProgressRange(progress.secondaryProgress);
         this.bufferWidth = linearBufferWidth = progress.progressRect.width * secondaryProgressWidth;
         linearBufferGroup = progress.renderer.createGroup({ 'id': progress.element.id + '_LinearBufferGroup' });
         thickness = (progress.progressThickness || progress.themeStyle.linearProgressThickness);
         stroke = this.checkingLinearProgressColor();
-        option = new PathOption(
-            progress.element.id + '_Linearbuffer', 'none', thickness, stroke, progress.themeStyle.bufferOpacity, '0',
-            progress.getPathLine(
-                progress.progressRect.x, linearBufferWidth, thickness
-            )
-        );
-        if (progress.segmentColor.length !== 0 && !progress.isIndeterminate && !this.isRange) {
-            segmentWidth = (!progress.trackSegmentDisable) ? progress.trackWidth : progress.progressWidth;
-            linearBuffer = this.segment.createLinearSegment(
-                progress, '_LinearBufferSegment', linearBufferWidth, progress.themeStyle.bufferOpacity,
-                (progress.progressThickness || progress.themeStyle.linearProgressThickness), segmentWidth
-            );
-        } else {
-            linearBuffer = progress.renderer.drawPath(option);
-            if (progress.segmentCount > 1 && !this.isRange) {
-                linearBuffer.setAttribute('stroke-dasharray', progress.segmentSize);
+        if (progress.cornerRadius === 'Round4px') {
+            if (progress.segmentCount > 1) {
+                linearBuffer = this.createRoundCornerSegment(
+                    '_Linearbuffer_', stroke, thickness, false, linearBufferWidth,
+                    progress, progress.themeStyle.bufferOpacity
+                );
+            } else {
+                option = new PathOption(
+                    progress.element.id + '_Linearbuffer', stroke, 0, 'none', progress.themeStyle.bufferOpacity, '0',
+                    this.cornerRadius(
+                        progress.progressRect.x, progress.progressRect.y, linearBufferWidth,
+                        thickness, 4, (ismaximum) ? '' : 'start'
+                    )
+                );
+                linearBuffer = progress.renderer.drawPath(option);
             }
-            if (progress.cornerRadius === 'Round' && !this.isRange) {
-                linearBuffer.setAttribute('stroke-linecap', 'round');
+        } else {
+            option = new PathOption(
+                progress.element.id + '_Linearbuffer', 'none', thickness, stroke, progress.themeStyle.bufferOpacity, '0',
+                progress.getPathLine(
+                    progress.progressRect.x, linearBufferWidth, thickness
+                )
+            );
+            if (progress.segmentColor.length !== 0 && !progress.isIndeterminate && !this.isRange) {
+                segmentWidth = (!progress.enableProgressSegments) ? progress.trackWidth : progress.progressWidth;
+                linearBuffer = this.segment.createLinearSegment(
+                    progress, '_LinearBufferSegment', linearBufferWidth, progress.themeStyle.bufferOpacity,
+                    (progress.progressThickness || progress.themeStyle.linearProgressThickness), segmentWidth
+                );
+            } else {
+                linearBuffer = progress.renderer.drawPath(option);
+                if (progress.segmentCount > 1 && !this.isRange) {
+                    linearBuffer.setAttribute('stroke-dasharray', progress.segmentSize);
+                }
+                if (progress.cornerRadius === 'Round' && !this.isRange) {
+                    linearBuffer.setAttribute('stroke-linecap', 'round');
+                }
             }
         }
         linearBufferGroup.appendChild(linearBuffer);
         if (progress.animation.enable) {
             clipPathBuffer = progress.createClipPath(
-                progress.bufferClipPath, secondaryProgressWidth, null, false, thickness, false
+                progress.bufferClipPath, secondaryProgressWidth, null, false, thickness, false,
+                (progress.cornerRadius === 'Round4px' && ismaximum)
             );
             linearBufferGroup.appendChild(progress.bufferClipPath);
             linearBuffer.setAttribute('style', 'clip-path:url(#' + progress.element.id + '_clippathBuffer)');
@@ -213,6 +263,7 @@ export class Linear {
         let contrast: number;
         let clipPath: Element;
         let linearLabelGroup: Element;
+        let thickness: number = (this.progress.progressThickness || this.progress.themeStyle.linearProgressThickness);
         let padding: number = 5;
         let progress: ProgressBar = this.progress;
         let textAlignment: TextAlignmentType = progress.labelStyle.textAlignment;
@@ -256,7 +307,11 @@ export class Linear {
                     posX = defaultPos;
                 }
             }
-            posY = progress.progressRect.y + (progress.progressRect.height / 2) + (textSize.height / 4);
+            if (this.progress.cornerRadius === 'Round4px') {
+                posY = progress.progressRect.y + (thickness / 2) + (textSize.height / 4);
+            } else {
+                posY = progress.progressRect.y + (progress.progressRect.height / 2) + (textSize.height / 4);
+            }
             option = new TextOption(
                 progress.element.id + '_linearLabel', progress.labelStyle.size || progress.themeStyle.linearFontSize,
                 progress.labelStyle.fontStyle || progress.themeStyle.linearFontStyle,
@@ -288,21 +343,40 @@ export class Linear {
         let activeClip: Element;
         let progress: ProgressBar = this.progress;
         let option: PathOption;
-        if (!refresh) {
-            option = new PathOption(
-                progress.element.id + '_LinearActiveProgress', 'none', thickness,
-                '#ffffff', 0.5, '', progress.getPathLine(progress.progressRect.x, linearProgressWidth, thickness)
-            );
-            linearActive = progress.renderer.drawPath(option);
+        let ismaximum: boolean = (progress.value === progress.maximum);
+        if (progress.cornerRadius === 'Round4px') {
+            if (progress.segmentCount > 1) {
+                linearActive = this.createRoundCornerSegment(
+                    '_LinearActiveProgress_', '#ffffff', thickness, false,
+                    linearProgressWidth, progress, 0.5
+                );
+            } else {
+                option = new PathOption(
+                    progress.element.id + '_LinearActiveProgress', '#ffffff', 0, 'none', 0.5, '0',
+                    this.cornerRadius(
+                        progress.progressRect.x, progress.progressRect.y, linearProgressWidth,
+                        thickness, 4, ismaximum ? '' : 'start'
+                    )
+                );
+                linearActive = progress.renderer.drawPath(option);
+            }
         } else {
-            linearActive = getElement(progress.element.id + '_LinearActiveProgress');
-            linearActive.setAttribute('d', progress.getPathLine(progress.progressRect.x, linearProgressWidth, thickness));
-        }
-        if (progress.segmentCount > 1 && !this.isRange) {
-            linearActive.setAttribute('stroke-dasharray', progress.segmentSize);
-        }
-        if (progress.cornerRadius === 'Round' && progressWidth && !this.isRange) {
-            linearActive.setAttribute('stroke-linecap', 'round');
+            if (!refresh) {
+                option = new PathOption(
+                    progress.element.id + '_LinearActiveProgress', 'none', thickness,
+                    '#ffffff', 0.5, '', progress.getPathLine(progress.progressRect.x, linearProgressWidth, thickness)
+                );
+                linearActive = progress.renderer.drawPath(option);
+            } else {
+                linearActive = getElement(progress.element.id + '_LinearActiveProgress');
+                linearActive.setAttribute('d', progress.getPathLine(progress.progressRect.x, linearProgressWidth, thickness));
+            }
+            if (progress.segmentCount > 1 && !this.isRange) {
+                linearActive.setAttribute('stroke-dasharray', progress.segmentSize);
+            }
+            if (progress.cornerRadius === 'Round' && progressWidth && !this.isRange) {
+                linearActive.setAttribute('stroke-linecap', 'round');
+            }
         }
         activeClip = progress.createClipPath(progress.clipPath, progressWidth, null, refresh, thickness, false);
         linearActive.setAttribute('style', 'clip-path:url(#' + progress.element.id + '_clippath)');
@@ -315,7 +389,7 @@ export class Linear {
     private renderLinearStriped(color: string, group: Element, progress: ProgressBar): void {
         let defs: Element = progress.renderer.createDefs();
         let linearGradient: Element = document.createElementNS(svgLink, gradientType);
-        let stripWidth: number = 30;
+        let stripWidth: number = 14;
         let stop: Element;
         let gradOption: LinearGradient;
         let stopOption: StopElement[] = [];
@@ -325,7 +399,7 @@ export class Linear {
             spreadMethod: 'repeat', gradientUnits: 'userSpaceOnUse', gradientTransform: 'rotate(-45)'
         };
         stopOption = [{ offset: '50%', 'stop-color': color, 'stop-opacity': '1' },
-        { offset: '50%', 'stop-color': color, 'stop-opacity': '0.6' }];
+        { offset: '50%', 'stop-color': color, 'stop-opacity': '0.4' }];
         linearGradient = setAttributes(gradOption, linearGradient);
         for (let i: number = 0; i < stopOption.length; i++) {
             stop = document.createElementNS(svgLink, stopElement);
@@ -346,20 +420,117 @@ export class Linear {
         let role: ModeType = progress.role;
         switch (role) {
             case 'Success':
-            linearColor = progress.themeStyle.success;
+                linearColor = progress.themeStyle.success;
                 break;
             case 'Info':
-            linearColor = progress.themeStyle.info;
+                linearColor = progress.themeStyle.info;
                 break;
             case 'Warning':
-            linearColor = progress.themeStyle.warning;
+                linearColor = progress.themeStyle.warning;
                 break;
             case 'Danger':
-            linearColor = progress.themeStyle.danger;
+                linearColor = progress.themeStyle.danger;
                 break;
             default:
-            linearColor = (progress.argsData.progressColor || progress.themeStyle.linearProgressColor);
+                linearColor = (progress.argsData.progressColor || progress.themeStyle.linearProgressColor);
         }
         return linearColor;
+    }
+
+    /** Bootstrap 3 & Bootstrap 4 corner path */
+    private cornerRadius(x: number, y: number, width: number, height: number, radius: number, pathtype: string): string {
+        let path: string = '';
+        let endWidth: number = width;
+        let endRadius: number = radius;
+        switch (pathtype) {
+            case 'start':
+                path = 'M' + x + ',' + y + ' '
+                    + 'h' + (width) + ' '
+                    + 'v' + (height) + ' '
+                    + 'h' + (- width) + ' '
+                    + 'a' + radius + ',' + radius + ' 0 0 1 ' + -radius + ',' + -radius + ' '
+                    + 'v' + (2 * radius - height) + ' '
+                    + 'a' + radius + ',' + radius + ' 0 0 1 ' + radius + ',' + -radius + ' '
+                    + 'z';
+                break;
+            case 'end':
+                path = 'M' + x + ',' + y + ' '
+                    + 'h' + (endWidth - endRadius) + ' '
+                    + 'a' + endRadius + ',' + endRadius + ' 0 0 1 ' + endRadius + ',' + endRadius + ' '
+                    + 'v' + (height - 2 * endRadius) + ' '
+                    + 'a' + endRadius + ',' + endRadius + ' 0 0 1 ' + -endRadius + ',' + endRadius + ' '
+                    + 'h' + (radius - endWidth) + ' '
+                    + 'v' + (- height) + ' '
+                    + 'z';
+                break;
+            case 'none':
+                path = 'M' + x + ',' + y + ' '
+                    + 'h' + (width) + ' '
+                    + 'v' + (height) + ' '
+                    + 'h' + (- width) + ' '
+                    + 'v' + (- height) + ' '
+                    + 'z';
+                break;
+            default:
+                path = 'M' + x + ',' + y + ' '
+                    + 'h' + (width - radius) + ' '
+                    + 'a' + radius + ',' + radius + ' 0 0 1 ' + radius + ',' + radius + ' '
+                    + 'v' + (height - 2 * radius) + ' '
+                    + 'a' + radius + ',' + radius + ' 0 0 1 ' + -radius + ',' + radius + ' '
+                    + 'h' + (radius - width) + ' '
+                    + 'a' + radius + ',' + radius + ' 0 0 1 ' + -radius + ',' + -radius + ' '
+                    + 'v' + (2 * radius - height) + ' '
+                    + 'a' + radius + ',' + radius + ' 0 0 1 ' + radius + ',' + -radius + ' '
+                    + 'z';
+        }
+        return path;
+    }
+
+    /** Bootstrap 3 & Bootstrap 4 corner segment */
+    public createRoundCornerSegment(
+        id: string, stroke: string, thickness: number, isTrack: boolean,
+        progressWidth: number, progress: ProgressBar, opacity?: number
+    ): Element {
+        let locX: number = progress.progressRect.x;
+        let locY: number = progress.progressRect.y;
+        let width: number = progress.progressRect.width;
+        let option: PathOption;
+        let pathType: string;
+        let avlWidth: number;
+        let gapWidth: number = (progress.gapWidth || progress.themeStyle.linearGapWidth);
+        let segWidth: number = (width - ((progress.segmentCount - 1) * gapWidth)) / progress.segmentCount;
+        let segmentGroup: Element = progress.renderer.createGroup({ 'id': progress.element.id + id + 'SegmentGroup' });
+        let segmentPath: Element;
+        for (let i: number = 1; i <= progress.segmentCount; i++) {
+            if (i === 1 || i === progress.segmentCount) {
+                pathType = (i === 1) ? 'start' : 'end';
+            } else {
+                pathType = 'none';
+            }
+            if (isTrack) {
+                option = new PathOption(
+                    progress.element.id + id + i, stroke, 0, 'none', progress.themeStyle.trackOpacity,
+                    '0', this.cornerRadius(locX, locY, segWidth, thickness, 4, pathType)
+                );
+                segmentPath = progress.renderer.drawPath(option);
+                segmentGroup.appendChild(segmentPath);
+                locX += (segWidth + gapWidth);
+            } else {
+                avlWidth = (progressWidth < segWidth) ? progressWidth : segWidth;
+                option = new PathOption(
+                    progress.element.id + id + i, stroke, 0, 'none', opacity,
+                    '0', this.cornerRadius(locX, locY, avlWidth, thickness, 4, pathType)
+                );
+                segmentPath = progress.renderer.drawPath(option);
+                segmentGroup.appendChild(segmentPath);
+                locX += (segWidth + gapWidth);
+                progressWidth -= (segWidth + gapWidth);
+                if (progressWidth <= 0) {
+                    break;
+                }
+            }
+
+        }
+        return segmentGroup;
     }
 }

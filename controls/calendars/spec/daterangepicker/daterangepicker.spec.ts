@@ -9061,6 +9061,31 @@ describe('DateRangePicker', () => {
             expect(daterangepicker.inputWrapper.container.classList.contains('custom-class-two')).toBe(true);
         });   
     });
+    describe('popup open while focus the component',function(){
+        let dateRangePicker:any;
+        let keyEventArgs:any={
+            action:'tab'
+        };
+        beforeEach(function(){
+            let element: HTMLElement = createElement('input',{id:'daterange'});
+            document.body.appendChild(element);
+        });
+        afterEach(function(){
+            if(dateRangePicker){
+                dateRangePicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('check the popup open',function(){
+            dateRangePicker = new DateRangePicker({
+                openOnFocus:true
+            });
+            dateRangePicker.appendTo('#daterange');
+            keyEventArgs.action = 'tab';
+            dateRangePicker.inputHandler(keyEventArgs);
+            expect((dateRangePicker.popupObj) !== null).toBe(true);
+        });
+    });
 });
 interface CalendarElement {
     leftCalTitle: HTMLElement;

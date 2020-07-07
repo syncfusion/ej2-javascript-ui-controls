@@ -184,7 +184,17 @@ export class CommonKeyboardInteraction {
             /* tslint:disable-next-line:no-any */
             let dialogInstance: Dialog = ((<HTMLElement>closest(target, '.e-popup.e-popup-open')) as any).ej2_instances[0] as Dialog;
             if (dialogInstance && !dialogInstance.closeOnEscape) {
+                let button: string = dialogInstance.element.getAttribute('data-fieldName');
                 dialogInstance.hide();
+                if (this.parent.element) {
+                    let pivotButtons: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.e-pivot-button'));
+                    for (let item of pivotButtons) {
+                        if (item.getAttribute('data-uid') === button) {
+                            item.focus();
+                            break;
+                        }
+                    }
+                }
                 e.preventDefault();
                 return;
             }

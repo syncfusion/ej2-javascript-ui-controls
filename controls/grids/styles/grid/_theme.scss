@@ -474,6 +474,12 @@
         border-left-color: $grid-header-border-color;
       }
     }
+
+    &.sf-grid {
+      .e-gridfooter .e-summarycontent {
+        border-right: 0 $grid-header-border-color solid;
+      }
+    }
   }
 
   .e-tooltip-wrap.e-griderror,

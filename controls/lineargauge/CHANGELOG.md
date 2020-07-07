@@ -8,25 +8,17 @@
 
 ## [Unreleased]
 
-## 18.1.36-beta (2020-03-19)
-
-- Drag events for pointer drag will be triggered now.
-
-## 17.4.50 (2020-02-18)
+## 18.2.44 (2020-07-07)
 
 ### LinearGauge
+
+#### New Features
+
+- The gradient color support for the ranges and the pointers is now available in the linear gauge.
 
 #### Bug Fixes
 
-- Axis labels are rendering properly now in the cross position.
-
-## 17.4.47 (2020-02-05)
-
-### LinearGauge
-
-#### Breaking Changes
-
-- Previously, the `Offset` property in the Pointers and Ranges takes `number` values as input and now it supports `string` values too.
+- `#F154895` - The position of the tooltip will now be rendered properly when placed inside a HTML element.
 
 ## 17.2.28-beta (2019-06-27)
 

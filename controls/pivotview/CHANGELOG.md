@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 18.2.44 (2020-07-07)
+
+### Pivot Table
+
+#### New Features
+
+- `#233316`,`#234648`,`#247163` - The pivot chart in the Pivot Table now has these chart types: pie, doughnut, pyramid, and funnel.
+- In addition to JSON, the pivot table now supports CSV data sources, as well.
+
 ## 18.1.44 (2020-04-14)
 
 ### Pivot Table

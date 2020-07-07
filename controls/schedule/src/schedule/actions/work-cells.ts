@@ -1,6 +1,6 @@
 import { extend, closest, isNullOrUndefined, getElement, isBlazor, EventHandler } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
-import { CellClickEventArgs, HoverEventArgs } from '../base/interface';
+import { CellClickEventArgs, HoverEventArgs, InlineClickArgs } from '../base/interface';
 import { View } from '../base/type';
 import * as event from '../base/constant';
 import * as cls from '../base/css-constant';
@@ -64,7 +64,15 @@ export class WorkCellInteraction {
                     if (isWorkCell) {
                         this.parent.selectCell(target);
                     }
-                    this.parent.notify(event.cellClick, clickArgs);
+                    if (this.parent.allowInline) {
+                        let inlineArgs: InlineClickArgs = {
+                            element: clickArgs.element as HTMLElement,
+                            groupIndex: clickArgs.groupIndex, type: 'Cell'
+                        };
+                        this.parent.notify(event.inlineClick, inlineArgs);
+                    } else {
+                        this.parent.notify(event.cellClick, clickArgs);
+                    }
                 } else {
                     if (this.parent.quickPopup) {
                         this.parent.quickPopup.quickPopupHide();

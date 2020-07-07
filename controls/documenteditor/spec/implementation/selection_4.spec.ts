@@ -687,4 +687,16 @@ describe('Bookmark navigate API', () => {
         editor.editor.delete();
         expect(editor.selection.start.currentWidget.children.length).toBe(0);
     });
+    it('Navigate dropdown formfield validation', () => {
+        editor.openBlank();
+        editor.editor.insertFormField('DropDown');    
+        let keyEvent: any = {
+            keyCode: 37,
+            preventDefault: () => { return true; }
+        }
+        editor.selectionModule.onKeyDownInternal(keyEvent, false, false, false); 
+        expect(() => {  editor.selectionModule.onKeyDownInternal(keyEvent, false, false, false); }).not.toThrowError();
+        keyEvent.keyCode = 39;
+        expect(() => {  editor.selectionModule.onKeyDownInternal(keyEvent, false, false, false); }).not.toThrowError();
+    });
 });

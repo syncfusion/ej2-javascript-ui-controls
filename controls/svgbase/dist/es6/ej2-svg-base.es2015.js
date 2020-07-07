@@ -318,7 +318,10 @@ class SvgRenderer {
             let stop = document.createElementNS(this.svgLink, 'stop');
             stop.setAttribute('offset', colors[i].colorStop);
             stop.setAttribute('stop-color', colors[i].color);
-            stop.setAttribute('stop-opacity', '1');
+            stop.setAttribute('stop-opacity', colors[i].opacity ? (colors[i].opacity) : '1');
+            if (!isNullOrUndefined(colors[i].style)) {
+                stop.setAttribute('style', colors[i].style);
+            }
             gradient.appendChild(stop);
         }
         defs.appendChild(gradient);
@@ -1629,7 +1632,8 @@ let Tooltip = class Tooltip extends Component {
                             fontWeight = 'Normal';
                             labelColor = this.themeStyle.tooltipLightLabel;
                         }
-                        (tspanElement).textContent = line = line.replace(/<[a-zA-Z\/](.|\n)*?>/g, '');
+                        let isRtlText = /[\u0590-\u07FF\u200F\u202B\u202E\uFB1D-\uFDFD\uFE70-\uFEFC]/.test(line);
+                        (tspanElement).textContent = line = line.replace(/<[a-zA-Z\/](.|\n)*?>/g, isRtlText ? '\u200E' : '');
                         subWidth += measureText(line, font).width;
                         if (tspanStyle !== '') {
                             tspanElement.setAttribute('style', tspanStyle);

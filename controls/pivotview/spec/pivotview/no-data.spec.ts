@@ -404,7 +404,7 @@ describe(' - no data', () => {
                 expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('Alabama');
                 expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('state false', (done: Function) => {
             pivotGridObj.dataSourceSettings.rows = [{ name: 'Country', showNoDataItems: true }, { name: 'State', showNoDataItems: false }];
@@ -415,7 +415,7 @@ describe(' - no data', () => {
                 expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('Alberta');
                 expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('2100');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('include england', (done: Function) => {
             pivotGridObj.dataSourceSettings.filterSettings = [
@@ -430,7 +430,7 @@ describe(' - no data', () => {
                 expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[6] as HTMLElement).innerText).toBe('United Kingdom');
                 expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[6] as HTMLElement).innerText).toBe('1040');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('exclude england', (done: Function) => {
             pivotGridObj.dataSourceSettings.filterSettings = [
@@ -445,7 +445,7 @@ describe(' - no data', () => {
                 expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[6] as HTMLElement).innerText).toBe('Quebec');
                 expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[6] as HTMLElement).innerText).toBe('6400');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('state true', (done: Function) => {
             pivotGridObj.dataSourceSettings.rows = [{ name: 'Country', showNoDataItems: true }, { name: 'State', showNoDataItems: true }];
@@ -458,7 +458,7 @@ describe(' - no data', () => {
                 expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[6] as HTMLElement).innerText).toBe('Brunswick');
                 expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[6] as HTMLElement).innerText).toBe('6300');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('scroll bottom', (done: Function) => {
             document.querySelector('.e-movablecontent').scrollTop = 100;
@@ -471,7 +471,7 @@ describe(' - no data', () => {
                 expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[6] as HTMLElement).innerText).toBe('Brunswick');
                 expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[6] as HTMLElement).innerText).toBe('6300');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('scroll top', (done: Function) => {
             document.querySelector('.e-movablecontent').scrollTop = 0;
@@ -485,23 +485,7 @@ describe(' - no data', () => {
                 expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[6] as HTMLElement).innerText).toBe('6300');
                 pivotGridObj.scrollerBrowserLimit = 1000;
                 done();
-            }, 1000);
-        });
-        it('scroll both', (done: Function) => {
-            document.querySelector('.e-movablecontent').scrollTop = 1500;
-            document.querySelector('.e-movablecontent').scrollLeft = 1500;
-            document.querySelector('.e-movablecontent').dispatchEvent(scrollEvent);
-            document.querySelector('.e-movablecontent').dispatchEvent(upEvent);
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(() => {
-                expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('United States');
-                expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('33950');
-                expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('Alabama');
-                expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('3450');
-                expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[6] as HTMLElement).innerText).toBe('Brunswick');
-                expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[6] as HTMLElement).innerText).toBe('');
-                done();
-            }, 1000);
+            }, 2000);
         });
     });
 

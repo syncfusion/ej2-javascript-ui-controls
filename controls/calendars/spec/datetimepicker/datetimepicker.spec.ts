@@ -3275,4 +3275,29 @@ describe('invalid String', () => {
             expect(datetimepicker.inputWrapper.container.classList.contains('custom-class-two')).toBe(true);
         });   
     });
+    describe('popup open while focus the component',function(){
+        let dateTimePicker:any;
+        let keyEventArgs:any={
+            action:'tab'
+        };
+        beforeEach(function(){
+            let element: HTMLElement = createElement('input',{id:'datetime'});
+            document.body.appendChild(element);
+        });
+        afterEach(function(){
+            if(dateTimePicker){
+                dateTimePicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('check the popup open',function(){
+            dateTimePicker = new DateTimePicker({
+                openOnFocus:true
+            });
+            dateTimePicker.appendTo('#datetime');
+            keyEventArgs.action = 'tab';
+            dateTimePicker.inputKeyAction(keyEventArgs);
+            expect((dateTimePicker.popupObj) !== null).toBe(true);
+        });
+    });
 });

@@ -367,5 +367,3 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     @Property('Pointer')
     public type: string[];
 }
-
-

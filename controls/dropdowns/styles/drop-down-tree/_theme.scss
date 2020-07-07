@@ -4,7 +4,6 @@
 
     .e-chips {
       background-color: $ddt-chip-bg-color;
-      border-radius: $ddt-chip-radius;
 
       .e-chips-close::before {
         color: $ddt-chip-close;
@@ -16,6 +15,12 @@
 
       &:hover {
         background-color: $ddt-chip-hover-bg-color;
+
+        @if $ddt-skin-name == 'highcontrast' {
+          .e-chips-close::before {
+            color: $ddt-chip-hover-font-color;
+          }
+        }
 
         >.e-chipcontent {
           color: $ddt-chip-hover-font-color;
@@ -52,7 +57,7 @@
       }
 
       .e-selectall-parent {
-        border-bottom: 1px solid $ddt-popup-reorder-border;
+        border-bottom-color: $ddt-popup-reorder-border;
 
         .e-all-text {
           color: $ddt-select-all-font-color;

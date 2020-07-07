@@ -1,16 +1,19 @@
 /**
  * Cartesian chart renderer for financial chart
  */
-import { Chart, Series, getElement } from '../../index';
+import { Chart } from '../../chart/chart';
+import { Series } from '../../chart/series/chart-series';
 import { StockChart } from '../stock-chart';
 import { Size } from '@syncfusion/ej2-svg-base';
-import { IZoomCompleteEventArgs, Axis, VisibleRangeModel, IPointEventArgs, IZoomingEventArgs } from '../../chart/index';
+import { Axis, VisibleRangeModel } from '../../chart/axis/axis';
 import { remove, extend } from '@syncfusion/ej2-base';
 import { StockSeriesModel } from '../model/base-model';
-import { ITooltipRenderEventArgs, IAxisLabelRenderEventArgs, ISeriesRenderEventArgs } from '../../chart/model/chart-interface';
-import { MarginModel } from '../../chart';
+import { ITooltipRenderEventArgs, IAxisLabelRenderEventArgs, IZoomCompleteEventArgs } from '../../chart/model/chart-interface';
+import { ISeriesRenderEventArgs, IPointEventArgs, IZoomingEventArgs } from '../../chart/model/chart-interface';
 import { StockSeries } from '../model/base';
 import { onZooming } from '../../common/model/constants';
+import { getElement } from '../../common/utils/helper';
+import { MarginModel } from '../../common/model/base-model';
 
 interface Range {
     start: number;

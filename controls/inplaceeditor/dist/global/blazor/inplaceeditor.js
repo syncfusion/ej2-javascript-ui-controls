@@ -1,5 +1,5 @@
 window.sf = window.sf || {};
-window.sf.inplaceeditor = (function (exports) {
+var sfinplaceeditor = (function (exports) {
 'use strict';
 
 /**
@@ -392,7 +392,8 @@ var InPlaceEditor = /** @class */ (function (_super) {
         this.valueWrap.classList.remove(LOAD);
     };
     InPlaceEditor.prototype.renderValue = function (val) {
-        this.enableHtmlSanitizer && this.type !== 'RTE' ? this.valueEle.innerText = val : this.valueEle.innerHTML = val;
+        this.enableHtmlSanitizer && this.type !== 'RTE' && this.type !== 'MultiSelect' ? this.valueEle.innerText = val :
+            this.valueEle.innerHTML = val;
         if (this.type === 'Color') {
             sf.base.setStyleAttribute(this.valueEle, { 'color': val });
         }
@@ -790,7 +791,9 @@ var InPlaceEditor = /** @class */ (function (_super) {
         }
         if (this.editableOn !== 'EditIconClick') {
             var titleConstant = (this.editableOn === 'DblClick') ? 'editAreaDoubleClick' : 'editAreaClick';
-            this.valueWrap.parentElement.setAttribute('title', this.getLocale(localeConstant[this.editableOn], titleConstant));
+            if (!sf.base.isNullOrUndefined(this.valueWrap.parentElement)) {
+                this.valueWrap.parentElement.setAttribute('title', this.getLocale(localeConstant[this.editableOn], titleConstant));
+            }
         }
     };
     InPlaceEditor.prototype.destroyComponents = function () {
@@ -1305,9 +1308,6 @@ var InPlaceEditor = /** @class */ (function (_super) {
      */
     InPlaceEditor.prototype.destroy = function () {
         var _this = this;
-        if (this.isDestroyed) {
-            return;
-        }
         this.removeEditor(sf.base.isBlazor());
         if (this.isExtModule) {
             this.notify(destroy, {});
@@ -1322,9 +1322,6 @@ var InPlaceEditor = /** @class */ (function (_super) {
         }
         if (!(sf.base.isBlazor() && this.isServerRendered)) {
             _super.prototype.destroy.call(this);
-        }
-        else {
-            this.isDestroyed = true;
         }
     };
     /**
@@ -1975,10 +1972,6 @@ var TimePicker$1 = /** @class */ (function () {
  *
  */
 
-/**
- *
- */
-
 InPlaceEditor.Inject(AutoComplete$1, ColorPicker$1, ComboBox$1, DateRangePicker$1, MultiSelect$1, Rte, Slider$1, TimePicker$1);
 
 exports.parseValue = parseValue;
@@ -2037,6 +2030,7 @@ exports.TimePicker = TimePicker$1;
 return exports;
 
 });
+sfBlazor.modules["inplaceeditor"] = "inplaceeditor.InPlaceEditor";
 sfBlazor.loadDependencies(sfBlazor.dependencyJson.inplaceeditor, () => {
-    sf.inplaceeditor = sf.inplaceeditor({});
+    sf.inplaceeditor = sf.base.extend({}, sf.inplaceeditor, sfinplaceeditor({}));
 });

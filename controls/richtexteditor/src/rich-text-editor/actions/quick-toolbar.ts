@@ -122,14 +122,24 @@ export class QuickToolbar {
         }
     }
 
-    private showInlineQTBar(x: number, y: number, target: HTMLElement): void {
+    /**
+     * Method for showing the inline quick toolbar
+     * @hidden
+     * @deprecated
+     */
+    public showInlineQTBar(x: number, y: number, target: HTMLElement): void {
         if (this.parent.readonly) {
             return;
         }
         this.inlineQTBar.showPopup(x, y, target);
     }
 
-    private hideInlineQTBar(): void {
+    /**
+     * Method for hidding the inline quick toolbar
+     * @hidden
+     * @deprecated
+     */
+    public hideInlineQTBar(): void {
         if (this.inlineQTBar && !hasClass(this.inlineQTBar.element, 'e-popup-close')) { this.inlineQTBar.hidePopup(); }
     }
 

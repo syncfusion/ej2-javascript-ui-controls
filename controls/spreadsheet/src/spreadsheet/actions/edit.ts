@@ -9,6 +9,7 @@ import { getSheetNameFromAddress, getSheet } from '../../workbook/base/index';
 import { RefreshValueArgs } from '../integrations/index';
 import { CellEditEventArgs, CellSaveEventArgs, ICellRenderer, hasTemplate, editAlert } from '../common/index';
 import { getSwapRange, getCellIndexes } from '../../workbook/index';
+import { checkConditionalFormat } from '../common/event';
 
 /**
  * The `Protect-Sheet` module is used to handle the Protecting functionalities in Spreadsheet.
@@ -323,8 +324,9 @@ export class Edit {
         let actCell: number[] = getCellIndexes(sheet.activeCell);
         let cell: CellModel = getCell(actCell[0], actCell[1], sheet) || {};
         if (!sheet.isProtected || (cell.isLocked === false)) {
-            if (trgtElem.classList.contains('e-active-cell') || trgtElem.classList.contains('e-cell')
-                || closest(trgtElem, '.e-sheet-content')) {
+            if ((trgtElem.className.indexOf('e-ss-overlay') < 0) &&
+                (trgtElem.classList.contains('e-active-cell') || trgtElem.classList.contains('e-cell')
+                || closest(trgtElem, '.e-sheet-content'))) {
                 if (this.isEdit) {
                     this.endEdit();
                 } else {
@@ -473,6 +475,9 @@ export class Edit {
                 this.parent.notify(wrapEvent, { range: cellIndex, wrap: true, sheet: sheet });
             }
             if (tdRefresh) { this.parent.refreshNode(this.editCellData.element, eventArgs); }
+        }
+        if (this.parent.allowConditionalFormat) {
+            this.parent.notify(checkConditionalFormat, { rowIdx: cellIndex[0], colIdx: cellIndex[1], cell: cell });
         }
         return isValidate;
     }

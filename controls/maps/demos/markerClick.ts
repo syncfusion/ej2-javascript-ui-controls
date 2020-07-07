@@ -1,7 +1,7 @@
 /**
  * Marker sample
  */
-import { Maps, Marker, MapsTooltip, IMarkerClickEventArgs, ILoadEventArgs, MapsTheme, MapAjax } from '../src/index';
+import { Maps, Marker, MapsTooltip, IMarkerClickEventArgs, ILoadEventArgs, MapsTheme, MapAjax, ILoadedEventArgs, IResizeEventArgs } from '../src/index';
 import { topPopulation } from './MapData/MarkerLocation';
 import { world_Map } from './MapData/worldMap';
 Maps.Inject(Marker, MapsTooltip);
@@ -14,6 +14,14 @@ let maps: Maps = new Maps({
 			maps.refresh();
 			count++;
         }
+    },
+    loaded : (args: ILoadedEventArgs) => {
+      alert(args.isResized);
+      
+    },
+    resize: (args: IResizeEventArgs) => 
+    {
+       alert(args);
     },
     useGroupingSeparator: true,
     format: 'n',
@@ -53,3 +61,8 @@ let maps: Maps = new Maps({
     ]
 });
 maps.appendTo('#container');
+
+document.getElementById('addMarker').onclick = () => {
+   
+    maps.refresh(); 
+};

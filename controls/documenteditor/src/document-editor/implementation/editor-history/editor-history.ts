@@ -331,6 +331,9 @@ export class EditorHistory {
                 this.documentHelper.removeEmptyPages();
             }
         }
+        if (this.owner.showRevisions) {
+            this.owner.trackChangesPane.updateTrackChanges();
+        }
         selection.owner.isShiftingEnabled = false;
         selection.owner.isLayoutEnabled = true;
         // // selection.addMultipleSelectionRanges();

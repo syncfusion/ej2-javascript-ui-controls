@@ -15939,7 +15939,7 @@ var Print = /** @__PURE__ @class */ (function () {
     Print.prototype.hideColGroup = function (colGroups, depth) {
         for (var i = 0; i < colGroups.length; i++) {
             for (var j = 0; j < depth; j++) {
-                colGroups[i].childNodes[j].style.display = 'none';
+                colGroups[i].children[j].style.display = 'none';
             }
         }
     };
@@ -22201,7 +22201,9 @@ var Filter = /** @__PURE__ @class */ (function () {
             }
             if (e.target.classList.contains('e-list-item')) {
                 var inputId = document.querySelector('.e-popup-open').getAttribute('id').replace('_popup', '');
-                closest(document.getElementById(inputId), 'div').querySelector('.e-filtertext').focus();
+                if (inputId.indexOf('grid-column') !== -1) {
+                    closest(document.getElementById(inputId), 'div').querySelector('.e-filtertext').focus();
+                }
             }
         }
         if (this.filterSettings.mode === 'Immediate' || this.parent.filterSettings.type === 'Menu' ||
@@ -26776,7 +26778,11 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         _super.prototype.renderTable.call(this);
         this.virtualEle.table = this.getTable();
         this.virtualEle.content = this.content = this.getPanel().querySelector('.e-content');
-        this.virtualEle.renderWrapper(this.parent.height);
+        var minHeight = this.parent.height;
+        if (this.parent.getFrozenColumns() && this.parent.height.toString().indexOf('%') < 0) {
+            minHeight = parseInt(this.parent.height, 10) - getScrollBarWidth();
+        }
+        this.virtualEle.renderWrapper(minHeight);
         this.virtualEle.renderPlaceHolder();
         if (!this.parent.getFrozenColumns()) {
             this.virtualEle.wrapper.style.position = 'absolute';
@@ -27248,13 +27254,17 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         var width = this.parent.enableColumnVirtualization ?
             this.getColumnOffset(this.parent.columns.length + this.parent.groupSettings.columns.length - 1) + 'px' : '100%';
         if (this.parent.getFrozenColumns()) {
+            var virtualHeightTemp = (this.parent.pageSettings.currentPage === 1 && Object.keys(this.offsets).length <= 2) ?
+                this.offsets[1] : this.offsets[this.getTotalBlocks() - 2];
+            var scrollableElementHeight = this.parent.getMovableVirtualContent().clientHeight;
+            virtualHeightTemp = virtualHeightTemp > scrollableElementHeight ? virtualHeightTemp : 0;
             var fTblWidth = this.parent.enableColumnVirtualization ? 'auto' : width;
             this.virtualEle.placeholder = this.parent.getFrozenVirtualContent().querySelector('.e-virtualtrack');
             // To overcome the white space issue in last page (instead of position absolute)
-            this.virtualEle.setVirtualHeight(this.offsets[this.getTotalBlocks() - 2], fTblWidth);
+            this.virtualEle.setVirtualHeight(virtualHeightTemp, fTblWidth);
             this.virtualEle.placeholder = this.parent.getMovableVirtualContent().querySelector('.e-virtualtrack');
             // To overcome the white space issue in last page (instead of position absolute)
-            this.virtualEle.setVirtualHeight(this.offsets[this.getTotalBlocks() - 2], width);
+            this.virtualEle.setVirtualHeight(virtualHeightTemp, width);
         }
         else {
             var virtualHeight = (isBlazor() && this.parent.isServerRendered && this.parent.groupSettings.columns.length && height)
@@ -29383,7 +29393,7 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
         }
         var gObj = this.parent;
         var args = extend(this.args, {
-            requestType: 'cancel', type: actionBegin, data: this.previousData, selectedRow: gObj.selectedRowIndex
+            requestType: 'cancel', type: actionBegin, cancel: false, data: this.previousData, selectedRow: gObj.selectedRowIndex
         });
         gObj.notify(virtualScrollEditCancel, args);
         this.blazorTemplate();
@@ -33122,6 +33132,7 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
             _this.workSheet.push(sheet);
             _this.book.worksheets = _this.workSheet;
             _this.book.styles = _this.styles;
+            gObj.notify('finalPageSetup', _this.book);
             if (!isMultipleExport) {
                 if (_this.isCsvExport) {
                     if (isBlazor() && gObj.isServerRendered) {
@@ -33401,7 +33412,7 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
                 childGridObj.beforeDataBound = this.childGridCell(excelRow, childGridObj, excelExportProperties, row);
                 childGridObj.appendTo(element);
             }
-            gObj.notify(exportRowDataBound, { rowObj: row, type: 'excel' });
+            gObj.notify(exportRowDataBound, { rowObj: row, type: 'excel', excelRows: excelRows });
         }
         return startIndex;
     };

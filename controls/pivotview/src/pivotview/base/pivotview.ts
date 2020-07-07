@@ -55,7 +55,7 @@ import { Toolbar } from '../../common/popups/toolbar';
 import { PivotChart } from '../../pivotchart/index';
 import { ChartSettings } from '../model/chartsettings';
 import { ChartSettingsModel } from '../model/chartsettings-model';
-import { Chart, ITooltipRenderEventArgs, ILoadedEventArgs, IPointEventArgs } from '@syncfusion/ej2-charts';
+import { Chart, ITooltipRenderEventArgs, ILoadedEventArgs, IPointEventArgs, AccumulationChart } from '@syncfusion/ej2-charts';
 import { IResizeEventArgs, IAxisLabelRenderEventArgs, ExportType } from '@syncfusion/ej2-charts';
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import { ClickEventArgs, BeforeOpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
@@ -63,6 +63,7 @@ import { OlapEngine, IOlapCustomProperties, ITupInfo, IDrillInfo, IOlapField } f
 import { NumberFormatting } from '../../common/popups/formatting-dialog';
 import { Grouping } from '../../common/popups/grouping';
 
+/* tslint:disable */
 /** 
  * Allows a set of options for customizing the grouping bar UI with a variety of settings such as UI visibility to a specific view port, 
  * customizing the pivot button features such as filtering, sorting, changing aggregate types, removing any fields. 
@@ -375,7 +376,7 @@ export class DisplayOption extends ChildProperty<DisplayOption> {
     @Property('Table')
     public primary: Primary;
 }
-
+/* tslint:enable */
 /**
  * Represents the PivotView component.
  * ```html
@@ -400,7 +401,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     /** @hidden */
     public grid: Grid;
     /** @hidden */
-    public chart: Chart;
+    public chart: Chart | AccumulationChart;
     /** @hidden */
     public currentView: Primary;
     /** @hidden */
@@ -503,6 +504,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     private isMouseUp: boolean = false;
     private lastSelectedElement: HTMLElement;
     private fieldsType: IStringIndex = {};
+    private remoteData: string[][] | IDataSet[] = [];
     private defaultItems: { [key: string]: ContextMenuItemModel } = {};
     private isCellBoxMultiSelection: boolean = false;
     /** @hidden */
@@ -544,7 +546,10 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     private cellTemplateFn: Function;
     private tooltipTemplateFn: Function;
     private pivotRefresh: Function = Component.prototype.refresh;
+    private selectedRowIndex: number;
+    private request: XMLHttpRequest;
 
+    /* tslint:disable */
     //Property Declarations
 
     /**
@@ -1110,14 +1115,19 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      * * `Pareto`: Allows to display the pivot chart with pareto series.
      * * `Polar`: Allows to display the pivot chart with polar series.
      * * `Radar`: Allows to display the pivot chart with radar series.
+     * * `Pie`: Allows to display the pivot chart with pie series.
+     * * `Doughnut`: Allows to display the pivot chart with doughnut series.
+     * * `Funnel`: Allows to display the pivot chart with funnel series.
+     * * `Pyramid`: Allows to display the pivot chart with pyramid series.
      * 
-     * To use this option, the `showToolbar` property must be **true** along with toolbar option **Chart** to be set to the `toolbar` property.
+     * To use this option, the `showToolbar` property must be **true** along with toolbar option **Chart**
+     * to be set to the `toolbar` property.
      * @default ['Line', 'Column', 'Area', 'Bar', 'StackingColumn', 'StackingArea', 'StackingBar', 'StepLine', 'StepArea',
      * 'SplineArea', 'Scatter', 'Spline', 'StackingColumn100', 'StackingBar100', 'StackingArea100', 'Bubble', 'Pareto', 'Polar',
-     * 'Radar' ])
+     * 'Radar', 'Pie', 'Doughnut', 'Funnel', 'Pyramid' ])
      */
     /* tslint:disable-next-line:max-line-length */
-    @Property(['Column', 'Bar', 'Line', 'Area', 'Scatter', 'Polar', 'StackingColumn', 'StackingArea', 'StackingBar', 'StepLine', 'StepArea', 'SplineArea', 'Spline', 'StackingColumn100', 'StackingBar100', 'StackingArea100', 'Bubble', 'Pareto', 'Radar'])
+    @Property(['Column', 'Bar', 'Line', 'Area', 'Scatter', 'Polar', 'StackingColumn', 'StackingArea', 'StackingBar', 'StepLine', 'StepArea', 'SplineArea', 'Spline', 'StackingColumn100', 'StackingBar100', 'StackingArea100', 'Bubble', 'Pareto', 'Radar', 'Pie', 'Doughnut', 'Funnel', 'Pyramid'])
     public chartTypes: ChartSeriesType[];
 
     //Event Declarations
@@ -1336,7 +1346,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     public toolbarClick: EmitType<ClickEventArgs>;
 
     /**
-     * It allows any customization on the pivot table component properties on initial rendering. Based on the changes, pivot table will be redered.
+     * It allows any customization on the pivot table component properties on initial rendering.
+     * Based on the changes, pivot table will be redered.
      * @event
      * @blazorproperty 'OnLoad'
      */
@@ -1544,6 +1555,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     @Event()
     public fieldRemove: EmitType<FieldRemoveEventArgs>;
 
+    /* tslint:enable */
     /**
      * Constructor for creating the widget
      * @param  {PivotViewModel} options?
@@ -1790,6 +1802,10 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             removeConfirm: 'Are you sure you want to delete this report?',
             emptyReport: 'No reports found!!',
             bar: 'Bar',
+            pie: 'Pie',
+            funnel: 'Funnel',
+            doughnut: 'Doughnut',
+            pyramid: 'Pyramid',
             stackingcolumn: 'Stacked Column',
             stackingarea: 'Stacked Area',
             stackingbar: 'Stacked Bar',
@@ -1872,6 +1888,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             groupBy: 'Interval by',
             selectGroup: 'Select groups',
             multipleAxes: 'Multiple Axes',
+            showLegend: 'Show Legend',
+            exit: 'Exit',
             chartTypeSettings: 'Chart Type Settings',
             ChartType: 'Chart Type',
             yes: 'Yes',
@@ -1880,7 +1898,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             conditionalFormatingMenu: 'Conditional Formatting...',
             removeCalculatedField: 'Are you sure you want to delete this calculated field?',
             replaceConfirmBefore: 'A report named ',
-            replaceConfirmAfter: ' already exists. Do you want to replace it?'
+            replaceConfirmAfter: ' already exists. Do you want to replace it?',
+            invalidJSON: 'Invalid JSON data',
+            invalidCSV: 'Invalid CSV data'
         };
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
         this.renderContextMenu();
@@ -2180,12 +2200,57 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         }
     }
 
+    /* tslint:disable */
     /**
      * Initialize the control rendering
      * @returns void
      * @hidden
      */
     public render(): void {
+        this.loadData();
+    }
+
+    private loadData(): void {
+        if (this.dataType === 'pivot' && this.dataSourceSettings.url && this.dataSourceSettings.url !== '') {
+            this.request = new XMLHttpRequest();
+            this.request.open("GET", this.dataSourceSettings.url, true);
+            this.request.withCredentials = false;
+            this.request.onreadystatechange = this.onReadyStateChange.bind(this);
+            this.request.setRequestHeader("Content-type", "text/plain");
+            this.request.send(null);
+        } else {
+            this.initialLoad();
+        }
+    }
+    /* tslint:enable */
+
+    private onReadyStateChange(): void {
+        if (this.request.readyState === XMLHttpRequest.DONE) {
+            let dataSource: string[][] | IDataSet[] = [];
+            if (this.dataSourceSettings.type === 'CSV') {
+                let jsonObject: string[] = this.request.responseText.split(/\r?\n|\r/);
+                for (let i: number = 0; i < jsonObject.length; i++) {
+                    if (!isNullOrUndefined(jsonObject[i]) && jsonObject[i] !== '') {
+                        (dataSource as string[][]).push(jsonObject[i].split(','));
+                    }
+                }
+            } else {
+                try {
+                    dataSource = JSON.parse(this.request.responseText);
+                } catch (error) {
+                    dataSource = [];
+                }
+            }
+            if (isBlazor() && dataSource.length > 0) {
+                this.remoteData = dataSource;
+            } else if (dataSource.length > 0) {
+                this.setProperties({ dataSourceSettings: { dataSource: dataSource } }, true);
+            }
+            this.initialLoad();
+        }
+    }
+
+    private initialLoad(): void {
         this.cellTemplateFn = this.templateParser(this.cellTemplate);
         this.tooltipTemplateFn = this.templateParser(this.tooltipTemplate);
         if (this.spinnerTemplate) {
@@ -2283,7 +2348,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     }
 
     private mergePersistPivotData(): void {
-        let blazdataSource: IDataSet[] | DataManager;
+        let blazdataSource: IDataSet[] | DataManager | string[][];
         if (isBlazor()) {
             blazdataSource = this.dataSourceSettings.dataSource;
         }
@@ -2365,7 +2430,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     if (newProp.dataSourceSettings && Object.keys(newProp.dataSourceSettings).length === 1
                         && Object.keys(newProp.dataSourceSettings)[0] === 'dataSource') {
                         this.engineModule.fieldList = null;
-                        this.refreshData();
+                        this.showWaitingPopup();
+                        clearTimeout(this.timeOutObj);
+                        this.timeOutObj = setTimeout(this.refreshData.bind(this), 100);
                     } else {
                         if (PivotUtil.isButtonIconRefesh(prop, oldProp, newProp)) {
                             if (this.showGroupingBar && this.groupingBarModule) {
@@ -2384,7 +2451,17 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                                 }
                             }
                         } else {
-                            this.notify(events.initialLoad, {});
+                            this.remoteData = [];
+                            if (this.dataType === 'pivot' && this.dataSourceSettings.url && this.dataSourceSettings.url !== '' &&
+                                ('type' in newProp.dataSourceSettings || 'url' in newProp.dataSourceSettings)) {
+                                this.engineModule.fieldList = null;
+                                this.loadData();
+                            } else {
+                                if (newProp.dataSourceSettings && 'dataSource' in newProp.dataSourceSettings) {
+                                    this.engineModule.fieldList = null;
+                                }
+                                this.notify(events.initialLoad, {});
+                            }
                         }
                     }
                     break;
@@ -2437,7 +2514,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 case 'chartSettings':
                     if (this.showGroupingBar &&
                         this.groupingBarModule &&
-                        Object.keys(newProp.chartSettings).indexOf('enableMultiAxis') !== -1) {
+                        (Object.keys(newProp.chartSettings).indexOf('enableMultiAxis') !== -1 ||
+                            (newProp.chartSettings.chartSeries && Object.keys(newProp.chartSettings.chartSeries).indexOf('type') !== -1))) {
                         this.groupingBarModule.renderLayout();
                     }
                     this.chartModule.loadChart(this, this.chartSettings);
@@ -2618,14 +2696,17 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             if (this.showFieldList && this.element.querySelector('#' + this.element.id + '_PivotFieldList')) {
                 (this.element.querySelector('#' + this.element.id + '_PivotFieldList') as HTMLElement).style.display = 'none';
             }
+            if (this.toolbar && this.toolbar.indexOf('FieldList') !== -1 &&
+                this.showToolbar && this.element.querySelector('.e-toggle-field-list')) {
+                (this.element.querySelector('.e-toggle-field-list') as HTMLElement).style.display = 'none';
+            }
             if (this.toolbarModule && this.toolbarModule.action !== 'New' && this.toolbarModule.action !== 'Load'
                 && this.toolbarModule.action !== 'Remove') {
                 this.isModified = true;
             }
-            if (isBlazor() && !this.isInitialRendering) {
+            if (!this.isInitialRendering) {
                 this.isModified = false;
                 this.isInitialRendering = !this.isInitialRendering;
-
             }
             this.toolbarModule.action = '';
         }
@@ -3744,14 +3825,16 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     /** @hidden */
     public getGridWidthAsNumber(): number {
         let width: number;
+        let offsetWidth: number = this.element.offsetWidth ? this.element.offsetWidth :
+            this.element.getBoundingClientRect().width;
         if (isNaN(this.grid.width as number)) {
             if (this.grid.width.toString().indexOf('%') > -1) {
-                width = (parseFloat(this.grid.width.toString()) / 100) * this.element.offsetWidth;
+                width = (parseFloat(this.grid.width.toString()) / 100) * offsetWidth;
             } else if (this.grid.width.toString().indexOf('px') > -1) {
                 width = Number(this.grid.width.toString().split('px')[0]);
             }
             if (isNaN(width)) {
-                width = this.element.offsetWidth;
+                width = offsetWidth;
             }
         } else {
             width = Number(this.grid.width);
@@ -3856,15 +3939,21 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                         if (!observedArgs.cancel) {
                             this.applyColumnSelection(e, ele, colIndex, colIndex + (colSpan > 0 ? (colSpan - 1) : 0), rowIndex);
                         }
-                    } else {
-                        this.clearSelection(ele, e, colIndex, rowIndex);
+                    }
+                    else {
+                        this.clearSelection(ele, e, colIndex, rowIndex)
                     }
                     if (this.gridSettings.selectionSettings.mode !== 'Column' && !ele.classList.contains(cls.COLUMNSHEADER)) {
                         this.rowDeselect(ele, e, rowIndex, this.gridSettings.selectionSettings.mode, observedArgs);
                     }
-                    if (this.gridSettings.selectionSettings.type === 'Multiple' &&
-                        (this.gridSettings.selectionSettings.mode === 'Row' || this.gridSettings.selectionSettings.mode === 'Both') && !observedArgs.cancel) {
-                        this.applyRowSelection(0, rowIndex, e);
+                    if (this.gridSettings.selectionSettings.mode !== 'Column' && !observedArgs.cancel) {
+                        if (this.gridSettings.selectionSettings.type === "Multiple" ? (!e.ctrlKey && !e.shiftKey) : true && this.selectedRowIndex !== rowIndex) {
+                            this.selectedRowIndex = rowIndex;
+                            this.grid.selectionModule.selectRow(rowIndex - this.renderModule.rowStartPos)
+                        }
+                        else {
+                            this.selectedRowIndex = undefined;
+                        }
                     }
                 }
                 if (this.cellClick && observedArgs.isCellClick) {
@@ -3923,10 +4012,10 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 }
             } else if (this.gridSettings.selectionSettings.mode === 'Both') {
                 if (ele.classList.contains(cls.ROW_CELL_CLASS)) {
-                    for (let ele of [].slice.call(this.element.querySelectorAll('.' + cls.SELECTED_BGCOLOR))) {
-                        if (Number((ele as HTMLElement).getAttribute('index')) !== rowIndex) {
-                            removeClass([ele], [cls.CELL_ACTIVE_BGCOLOR, cls.SELECTED_BGCOLOR]);
-                        }
+                    for (let ele of [].slice.call(this.element.querySelectorAll('.' + cls.SELECTED_BGCOLOR + ', .' + cls.CELL_SELECTED_BGCOLOR))) {
+                        // if (Number((ele as HTMLElement).getAttribute('index')) !== rowIndex) {
+                        removeClass([ele], [cls.CELL_ACTIVE_BGCOLOR, cls.SELECTED_BGCOLOR, cls.CELL_SELECTED_BGCOLOR]);
+                        // }
                     }
                 } else {
                     removeClass(this.element.querySelectorAll('.' + cls.CELL_SELECTED_BGCOLOR), cls.CELL_SELECTED_BGCOLOR);
@@ -3936,9 +4025,10 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     }
 
     /** @hidden */
-    public applyRowSelection(colIndex: number, rowIndex: number, e: MouseEvent): void {
+    public applyRowSelection(colIndex: number, rowIndex: number, e: MouseEvent | KeyboardEvent): void {
         let pivotValue: IAxisSet = this.engineModule.pivotValues[rowIndex][colIndex] as IAxisSet;
-        if (!e.ctrlKey && !e.shiftKey && pivotValue && pivotValue.members && pivotValue.members.length > 0) {
+        if (!e.ctrlKey && !e.shiftKey && pivotValue && this.selectedRowIndex !== rowIndex) {
+            this.selectedRowIndex = rowIndex;
             let parentLevel: number = pivotValue.level;
             let rCount: number = rowIndex;
             do {
@@ -3956,6 +4046,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 _this.grid.selectionModule.selectRowsByRange(rowIndex -
                     _this.renderModule.rowStartPos, rCount - (1 + _this.renderModule.rowStartPos));
             }
+        } else {
+            this.selectedRowIndex = undefined;
         }
     }
 
@@ -4099,6 +4191,22 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     }
     /* tslint:disable */
     private initEngine(): void {
+        if (this.dataType === 'pivot') {
+            let data: any = !isNullOrUndefined(this.dataSourceSettings.dataSource) ? (this.dataSourceSettings.dataSource as IDataSet[])[0] :
+                !isNullOrUndefined(this.engineModule.data) ? (this.engineModule.data as IDataSet[])[0] : undefined;
+            if (data && this.pivotCommon) {
+                let isArray: boolean = Object.prototype.toString.call(data) == '[object Array]';
+                if (isArray && this.dataSourceSettings.type === 'JSON') {
+                    this.pivotCommon.errorDialog.createErrorDialog(
+                        this.localeObj.getConstant('error'), this.localeObj.getConstant('invalidJSON'));
+                    return;
+                } else if (!isArray && this.dataSourceSettings.type === 'CSV') {
+                    this.pivotCommon.errorDialog.createErrorDialog(
+                        this.localeObj.getConstant('error'), this.localeObj.getConstant('invalidCSV'));
+                    return;
+                }
+            }
+        }
         let args: EnginePopulatingEventArgs = {
             dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings)
         };
@@ -4135,9 +4243,16 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     (pivot as any).interopAdaptor.invokeMethodAsync('PivotInteropMethod', 'renderEngine',
                         { 'dataSourceSettings': datasourceSettings, 'customProperties': customArgs }).then(
                             (data: any) => {
-                                pivot.updateBlazorData(data, pivot);
-                                PivotUtil.setPivotProperties(pivot, { pivotValues: pivot.engineModule.pivotValues });
-                                pivot.enginePopulatedEventMethod('initEngine', pivot);
+                                if (data === 0) {
+                                    this.pivotCommon.errorDialog.createErrorDialog(
+                                        this.localeObj.getConstant('error'), (pivot.dataSourceSettings.type === 'CSV' ?
+                                            this.localeObj.getConstant('invalidCSV') : this.localeObj.getConstant('invalidJSON')));
+                                    return;
+                                } else {
+                                    pivot.updateBlazorData(data, pivot);
+                                    PivotUtil.setPivotProperties(pivot, { pivotValues: pivot.engineModule.pivotValues });
+                                    pivot.enginePopulatedEventMethod('initEngine', pivot);
+                                }
                             });
                 } else {
                     this.engineModule.renderEngine(this.dataSourceSettings as IDataOptions, customProperties, this.getValueCellInfo.bind(this));
@@ -4184,7 +4299,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     pivot.engineModule.pivotValues : pivot.pivotValues
             };
             pivot.trigger(events.enginePopulated, eventArgs, (observedArgs: EnginePopulatedEventArgs) => {
-                let dataSource: IDataSet[] | DataManager = pivot.dataSourceSettings.dataSource;
+                let dataSource: IDataSet[] | DataManager | string[][] = pivot.dataSourceSettings.dataSource;
                 if (isBlazor() && observedArgs.dataSourceSettings.dataSource instanceof Object) {
                     observedArgs.dataSourceSettings.dataSource = dataSource;
                 }
@@ -4304,12 +4419,13 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         if (this.displayOption.view !== 'Chart') {
             this.renderEmptyGrid();
         }
-        this.refreshData();
+        this.showWaitingPopup();
+        clearTimeout(this.timeOutObj);
+        this.timeOutObj = setTimeout(this.refreshData.bind(this), 100);
     }
 
     /** @hidden */
     public refreshData(): void {
-        this.showWaitingPopup();
         let pivot: PivotView = this;
         if (isBlazor()) {
             if (pivot.dataType === 'olap') {
@@ -4321,6 +4437,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                         }
                     }, true);
                     pivot.allowServerDataBinding = true;
+
                 }
             }
         }
@@ -4332,10 +4449,18 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     }
                     pivot.initEngine();
                 } else {
-                    setTimeout(pivot.getData.bind(pivot), 100);
+                    if (pivot.dataType === 'pivot' && pivot.remoteData.length > 0) {
+                        if (!this.element.querySelector('.e-spinner-pane')) {
+                            this.showWaitingPopup();
+                        }
+                        this.engineModule.data = pivot.remoteData;
+                        this.initEngine();
+                    } else {
+                        setTimeout(pivot.getData.bind(pivot), 100);
+                    }
                 }
             } else if ((this.dataSourceSettings.url !== '' && this.dataType === 'olap') ||
-                (pivot.dataSourceSettings.dataSource as IDataSet[]).length > 0) {
+                (pivot.dataSourceSettings.dataSource && (pivot.dataSourceSettings.dataSource as IDataSet[]).length > 0)) {
                 if (pivot.dataType === 'pivot') {
                     this.hideWaitingPopup();
                     pivot.engineModule.data = pivot.dataSourceSettings.dataSource;
@@ -4766,5 +4891,15 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         removeClass([this.element], cls.ROOT);
         removeClass([this.element], cls.RTL);
         removeClass([this.element], cls.DEVICE);
+    }
+
+    /**
+     * Method to open the number formatting dialog to set the format dynamically.
+     * @returns void
+     */
+    public showNumberFormattingDialog(): void {
+        if (this.allowNumberFormatting) {
+            this.numberFormattingModule.showNumberFormattingDialog();
+        }
     }
 }

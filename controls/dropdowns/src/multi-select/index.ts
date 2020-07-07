@@ -6,3 +6,4 @@ export * from './multi-select';
 export * from './multi-select-model';
 export * from './checkbox-selection';
 export * from './interface';
+export * from './float-label';

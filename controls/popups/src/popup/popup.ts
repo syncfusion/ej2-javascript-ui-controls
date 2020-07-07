@@ -386,10 +386,10 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
         }else {
             let win: Window = window;
             let windowView: ElementBounds = {
-                top : win.pageYOffset,
-                left : win.pageXOffset,
-                right : win.pageXOffset + win.outerWidth,
-                bottom : win.pageYOffset + win.outerHeight
+                top : win.scrollY,
+                left : win.scrollX,
+                right : win.scrollX + win.outerWidth,
+                bottom : win.scrollY + win.outerHeight
             };
             let off: OffsetPosition = calculatePosition(relateToElement);
             let ele: ElementBounds = {

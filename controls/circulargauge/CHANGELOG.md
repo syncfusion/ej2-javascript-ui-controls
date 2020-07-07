@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+## 18.2.44 (2020-07-07)
+
+### CircularGauge
+
+#### New Features
+
+- The gradient color support for the ranges and the pointers is now available in the circular gauge.
+
 ## 18.1.36-beta (2020-03-19)
 
 ### CircularGauge
@@ -37,7 +45,7 @@
 
 #### Bug Fixes
 
-- `#I238300` - The issue with animation in circular gauge and flickering has been resolved.
+- `#I238300` - The issue with animation in circular gauge and flickering has been resolved
 
 ## 17.1.50 (2019-06-04)
 

@@ -10,7 +10,10 @@ document.body.style.height = `${document.documentElement.clientHeight}px`;
 dataSource();
 let spreadsheet: Spreadsheet = new Spreadsheet({
     sheets: [{
-        ranges: [{ dataSource: virtualData }]
+        ranges: [{
+            dataSource: virtualData,
+            startCell: 'A1'
+        }]
     }]
 });
 spreadsheet.appendTo('#spreadsheet');

@@ -789,6 +789,9 @@ class DateProcessor {
         }
         return holidayDates;
     }
+    /**
+     * @private
+     */
     /*Check given date is on holidays*/
     isOnHolidayOrWeekEnd(date, checkWeekEnd) {
         checkWeekEnd = !isNullOrUndefined(checkWeekEnd) ? checkWeekEnd : this.parent.includeWeekend;
@@ -1369,8 +1372,31 @@ class TaskProcessor extends DateProcessor {
      */
     prepareDataSource(data) {
         this.prepareRecordCollection(data, 0);
+        // Method to maintain the shared task uniqueIds
+        if (this.parent.viewType === 'ResourceView') {
+            this.calculateSharedTaskUniqueIds();
+        }
         if (this.parent.taskFields.dependency && this.parent.predecessorModule) {
             this.parent.predecessorModule.ensurePredecessorCollection();
+        }
+    }
+    calculateSharedTaskUniqueIds() {
+        for (let i = 0; i < this.parent.getTaskIds().length; i++) {
+            let value = this.parent.getTaskIds()[i].match(/(\d+|[A-z]+)/g);
+            if (value[0] !== 'R') {
+                let sharedRecords = [];
+                let ids = [];
+                this.parent.flatData.filter((data) => {
+                    /* tslint:disable-next-line */
+                    if (data.ganttProperties.taskId.toString() === value[1] && data.level !== 0) {
+                        ids.push(data.ganttProperties.rowUniqueID);
+                        sharedRecords.push(data);
+                    }
+                });
+                for (let j = 0; j < sharedRecords.length; j++) {
+                    sharedRecords[j].ganttProperties.sharedTaskUniqueIds = ids;
+                }
+            }
         }
     }
     prepareRecordCollection(data, level, parentItem) {
@@ -1383,6 +1409,34 @@ class TaskProcessor extends DateProcessor {
             this.parent.flatData.push(ganttData);
             this.parent.setTaskIds(ganttData);
             let childData = tempData[this.parent.taskFields.child];
+            if (this.parent.viewType === 'ResourceView' && isNullOrUndefined(childData)
+                && isNullOrUndefined(ganttData.parentItem) && ganttData.level === 0) {
+                let ganttProp = ganttData.ganttProperties;
+                let parentData = ganttData;
+                this.parent.setRecordValue(ganttProp.isAutoSchedule ? 'startDate' : 'autoStartDate', null, parentData.ganttProperties, true);
+                this.parent.setRecordValue(ganttProp.isAutoSchedule ? 'endDate' : 'autoEndDate', null, parentData.ganttProperties, true);
+                let parentProgress = 0;
+                let parentProp = parentData.ganttProperties;
+                this.parent.setRecordValue('isMilestone', false, parentProp, true);
+                if (parentProp.isAutoSchedule) {
+                    this.calculateDuration(parentData);
+                }
+                this.updateWorkWithDuration(parentData);
+                let parentWork = parentProp.work;
+                this.parent.setRecordValue('work', parentWork, parentProp, true);
+                this.parent.setRecordValue('taskType', 'FixedDuration', parentProp, true);
+                this.updateMappingData(parentData, 'taskType');
+                this.parent.setRecordValue('progress', Math.floor(parentProgress), parentProp, true);
+                this.parent.setRecordValue('totalProgress', 0, parentProp, true);
+                this.parent.setRecordValue('totalDuration', 0, parentProp, true);
+                if (!parentProp.isAutoSchedule) {
+                    this.parent.setRecordValue('autoDuration', this.calculateAutoDuration(parentProp), parentProp, true);
+                    this.updateAutoWidthLeft(parentData);
+                }
+                this.resetDependency(parentData);
+                this.updateWidthLeft(parentData);
+                this.updateTaskData(parentData);
+            }
             if (!isNullOrUndefined(childData) && childData.length > 0) {
                 this.prepareRecordCollection(childData, ganttData.level + 1, ganttData);
             }
@@ -1445,18 +1499,7 @@ class TaskProcessor extends DateProcessor {
         }
         this.addCustomFieldValue(data, ganttData);
         this.parent.setRecordValue('isAutoSchedule', autoSchedule, ganttProperties, true);
-        if (!this.parent.isSameResourceAdd) {
-            this.parent.setRecordValue('resourceInfo', this.setResourceInfo(data), ganttProperties, true);
-        }
-        else {
-            let preProperties = getValue('ganttProperties.resourceInfo', data);
-            if (preProperties) {
-                this.parent.setRecordValue('resourceInfo', preProperties, ganttProperties, true);
-            }
-            else {
-                this.parent.setRecordValue('resourceInfo', this.setResourceInfo(data), ganttProperties, true);
-            }
-        }
+        this.parent.setRecordValue('resourceInfo', this.setResourceInfo(data), ganttProperties, true);
         this.parent.setRecordValue('isMilestone', false, ganttProperties, true);
         this.updateResourceName(ganttData);
         this.calculateScheduledValues(ganttData, data, isLoad);
@@ -1475,6 +1518,10 @@ class TaskProcessor extends DateProcessor {
         this.parent.setRecordValue('parentItem', this.getCloneParent(parentItem), ganttData);
         let parentUniqId = ganttData.parentItem ? ganttData.parentItem.uniqueID : null;
         this.parent.setRecordValue('parentUniqueID', parentUniqId, ganttData);
+        if (this.parent.viewType === 'ResourceView' && !isNullOrUndefined(taskSettings.parentID)
+            && !isNullOrUndefined(ganttData.parentItem)) {
+            this.parent.setRecordValue('parentId', ganttData.parentItem.taskId, ganttProperties, true);
+        }
         this.parent.setRecordValue('level', level, ganttData);
         this.parent.setRecordValue('uniqueID', getUid(this.parent.element.id + '_data_'), ganttData);
         this.parent.setRecordValue('uniqueID', ganttData.uniqueID, ganttProperties, true);
@@ -1524,6 +1571,7 @@ class TaskProcessor extends DateProcessor {
             let uniqueId = ganttData.uniqueID.replace(this.parent.element.id + '_data_', '');
             this.parent.setRecordValue('rowUniqueID', uniqueId, ganttData);
             this.parent.setRecordValue('rowUniqueID', uniqueId, ganttProperties, true);
+            this.parent.setRecordValue('sharedTaskUniqueIds', [], ganttProperties, true);
         }
         return ganttData;
     }
@@ -2444,6 +2492,293 @@ class TaskProcessor extends DateProcessor {
             this.updateGanttData();
         }
     }
+    //check day is fall between from and to date range
+    _isInStartDateRange(day, from, to) {
+        let isInRange = false;
+        if (day.getTime() >= from.getTime() && day.getTime() < to.getTime()) {
+            isInRange = true;
+        }
+        return isInRange;
+    }
+    //check day is fall between from and to date range
+    _isInEndDateRange(day, from, to) {
+        let isInRange = false;
+        if (day.getTime() > from.getTime() && day.getTime() <= to.getTime()) {
+            isInRange = true;
+        }
+        return isInRange;
+    }
+    /**
+     * @private
+     * Method to find overlapping value of the parent task
+     */
+    updateOverlappingValues(resourceTask) {
+        let tasks = resourceTask.childRecords;
+        let currentTask;
+        let ranges = [];
+        if (tasks.length <= 1) {
+            resourceTask.ganttProperties.workTimelineRanges = [];
+            return;
+        }
+        tasks = this.setSortedChildTasks(resourceTask);
+        this.updateOverlappingIndex(tasks);
+        for (let count = 1; count < tasks.length; count++) {
+            currentTask = tasks[count];
+            let cStartDate = new Date(currentTask.ganttProperties.startDate.getTime());
+            let cEndDate = new Date(currentTask.ganttProperties.endDate.getTime()); //task 2
+            let range = [];
+            for (let index = 0; index < count; index++) {
+                let tStartDate = tasks[index].ganttProperties.startDate;
+                let tEndDate = tasks[index].ganttProperties.endDate; // task 1
+                let rangeObj = {};
+                if (this._isInStartDateRange(cStartDate, tStartDate, tEndDate) || this._isInEndDateRange(cEndDate, tStartDate, tEndDate)) {
+                    if ((tStartDate.getTime() > cStartDate.getTime() && tStartDate.getTime() < cEndDate.getTime()
+                        && tEndDate.getTime() > cStartDate.getTime() && tEndDate.getTime() > cEndDate.getTime())
+                        || (cStartDate.getTime() === tStartDate.getTime() && cEndDate.getTime() <= tEndDate.getTime())) {
+                        rangeObj.from = tStartDate;
+                        rangeObj.to = cEndDate;
+                    }
+                    else if (cStartDate.getTime() === tStartDate.getTime() && cEndDate.getTime() > tEndDate.getTime()) {
+                        rangeObj.from = tStartDate;
+                        rangeObj.to = tEndDate;
+                    }
+                    else if (cStartDate.getTime() > tStartDate.getTime() && cEndDate.getTime() >= tEndDate.getTime()) {
+                        rangeObj.from = cStartDate;
+                        rangeObj.to = tEndDate;
+                    }
+                    else if (cStartDate.getTime() > tStartDate.getTime() && cEndDate.getTime() < tEndDate.getTime()) {
+                        rangeObj.from = cStartDate;
+                        rangeObj.to = cEndDate;
+                    }
+                    range.push(rangeObj);
+                }
+            }
+            ranges.push.apply(ranges, this.mergeRangeCollections(range));
+        }
+        this.parent.setRecordValue('workTimelineRanges', this.mergeRangeCollections(ranges, true), resourceTask.ganttProperties, true);
+        this.calculateRangeLeftWidth(resourceTask.ganttProperties.workTimelineRanges);
+    }
+    /**
+     * @private
+     */
+    updateOverlappingIndex(tasks) {
+        for (let i = 0; i < tasks.length; i++) {
+            tasks[i].ganttProperties.eOverlapIndex = i;
+        }
+    }
+    /**
+     * Method to calculate the left and width value of oarlapping ranges
+     * @private
+     */
+    calculateRangeLeftWidth(ranges) {
+        for (let count = 0; count < ranges.length; count++) {
+            ranges[count].left = this.getTaskLeft(ranges[count].from, false);
+            ranges[count].width = this.getTaskWidth(ranges[count].from, ranges[count].to);
+        }
+    }
+    /**
+     * @private
+     */
+    mergeRangeCollections(ranges, isSplit) {
+        let finalRange = [];
+        let currentTopRange = {};
+        let cCompareRange = {};
+        let sortedRanges;
+        let cStartDate;
+        let cEndDate;
+        let tStartDate;
+        let tEndDate;
+        sortedRanges = new DataManager(ranges).executeLocal(new Query()
+            .sortBy(this.parent.taskFields.startDate, 'Ascending'));
+        for (let i = 0; i < sortedRanges.length; i++) {
+            if (finalRange.length === 0 && i === 0) {
+                finalRange.push(sortedRanges[i]);
+                continue;
+            }
+            currentTopRange = finalRange[finalRange.length - 1];
+            cStartDate = currentTopRange.from;
+            cEndDate = currentTopRange.to;
+            cCompareRange = sortedRanges[i];
+            tStartDate = cCompareRange.from;
+            tEndDate = cCompareRange.to;
+            if ((cStartDate.getTime() === tStartDate.getTime() && cEndDate.getTime() >= tEndDate.getTime())
+                || (cStartDate.getTime() < tStartDate.getTime() && cEndDate.getTime() >= tEndDate.getTime())) {
+                continue;
+            }
+            /* tslint:disable-next-line */
+            else if ((cStartDate.getTime() <= tStartDate.getTime() && cEndDate.getTime() >= tStartDate.getTime() && cEndDate.getTime() < tEndDate.getTime())
+                || (cEndDate.getTime() < tStartDate.getTime() && this.checkStartDate(cEndDate).getTime() === tStartDate.getTime())) {
+                currentTopRange.to = tEndDate;
+            }
+            else if (cEndDate.getTime() < tStartDate.getTime() && this.checkStartDate(cEndDate).getTime() !== tStartDate.getTime()) {
+                finalRange.push(sortedRanges[i]);
+            }
+        }
+        if (isSplit) {
+            finalRange = this.splitRangeCollection(finalRange);
+        }
+        return finalRange;
+    }
+    /**
+     * @private
+     * Sort resource child records based on start date
+     */
+    setSortedChildTasks(resourceTask) {
+        let sortedRecords = [];
+        sortedRecords = new DataManager(resourceTask.childRecords).executeLocal(new Query()
+            .sortBy(this.parent.taskFields.startDate, 'Ascending'));
+        return sortedRecords;
+    }
+    splitRangeCollection(rangeCollection, fromField, toField) {
+        let splitArray = [];
+        let unit;
+        if (this.parent.timelineModule.isSingleTier) {
+            unit = this.parent.timelineModule.bottomTier !== 'None' ?
+                this.parent.timelineModule.bottomTier : this.parent.timelineModule.topTier;
+        }
+        else {
+            unit = this.parent.timelineModule.bottomTier;
+        }
+        if (unit === 'Week' || unit === 'Month' || unit === 'Year') {
+            splitArray = rangeCollection;
+        }
+        else if (unit === 'Day') {
+            splitArray = this.getRangeWithWeek(rangeCollection, fromField, toField);
+        }
+        else {
+            if (this.parent.workingTimeRanges[0].from === 0 && this.parent.workingTimeRanges[0].to === 86400) {
+                splitArray = this.getRangeWithWeek(rangeCollection, fromField, toField);
+            }
+            else {
+                splitArray = this.getRangeWithDay(rangeCollection, fromField, toField);
+            }
+        }
+        return splitArray;
+    }
+    getRangeWithDay(ranges, fromField, toField) {
+        let splitArray = [];
+        for (let i = 0; i < ranges.length; i++) {
+            splitArray.push.apply(splitArray, this.splitRangeForDayMode(ranges[i], fromField, toField));
+        }
+        return splitArray;
+    }
+    splitRangeForDayMode(range, fromField, toField) {
+        let fromString = fromField ? fromField : 'from';
+        let toString = toField ? toField : 'to';
+        let start = new Date(range[fromString]);
+        let tempStart = new Date(range[fromString]);
+        let end = new Date(range[toString]);
+        let ranges = [];
+        let rangeObject = {};
+        if (tempStart.getTime() < end.getTime()) {
+            do {
+                let nStart = new Date(tempStart.getTime());
+                let nEndDate = new Date(tempStart.getTime());
+                let nextAvailDuration = 0;
+                let sHour = this.parent.dataOperation.getSecondsInDecimal(tempStart);
+                let startRangeIndex = -1;
+                for (let i = 0; i < this.parent.workingTimeRanges.length; i++) {
+                    let val = this.parent.workingTimeRanges[i];
+                    if (sHour >= val.from && sHour <= val.to) {
+                        startRangeIndex = i;
+                        break;
+                    }
+                }
+                if (startRangeIndex !== -1) {
+                    nextAvailDuration = Math.round(this.parent.workingTimeRanges[startRangeIndex].to - sHour);
+                    nEndDate.setSeconds(nEndDate.getSeconds() + nextAvailDuration);
+                }
+                let taskName = 'task';
+                if (nEndDate.getTime() < end.getTime()) {
+                    rangeObject = {};
+                    if (range.task) {
+                        rangeObject[taskName] = extend([], range.task);
+                    }
+                    rangeObject[fromString] = nStart;
+                    rangeObject[toString] = nEndDate;
+                    rangeObject.isSplit = true;
+                    ranges.push(rangeObject);
+                }
+                else {
+                    rangeObject = {};
+                    if (range.task) {
+                        rangeObject[taskName] = extend([], range.task);
+                    }
+                    rangeObject[fromString] = nStart;
+                    rangeObject[toString] = end;
+                    rangeObject.isSplit = true;
+                    ranges.push(rangeObject);
+                }
+                tempStart = this.checkStartDate(nEndDate);
+            } while (tempStart.getTime() < end.getTime());
+        }
+        else {
+            ranges.push(range);
+        }
+        return ranges;
+    }
+    getRangeWithWeek(ranges, fromField, toField) {
+        let splitArray = [];
+        for (let i = 0; i < ranges.length; i++) {
+            splitArray.push.apply(splitArray, this.splitRangeForWeekMode(ranges[i], fromField, toField));
+        }
+        return splitArray;
+    }
+    splitRangeForWeekMode(range, fromField, toField) {
+        let from = fromField ? fromField : 'from';
+        let to = toField ? toField : 'to';
+        let start = new Date(range[from]);
+        let tempStart = new Date(range[from]);
+        let end = new Date(range[to]);
+        let isInSplit = false;
+        let ranges = [];
+        let rangeObj = {};
+        tempStart.setDate(tempStart.getDate() + 1);
+        if (tempStart.getTime() < end.getTime()) {
+            do {
+                if (this.parent.dataOperation.isOnHolidayOrWeekEnd(tempStart, null)) {
+                    let tempEndDate = new Date(tempStart.getTime());
+                    tempEndDate.setDate(tempStart.getDate() - 1);
+                    this.setTime(this.parent.defaultEndTime, tempEndDate);
+                    rangeObj = {};
+                    rangeObj[from] = start;
+                    rangeObj.isSplit = true;
+                    rangeObj[to] = tempEndDate;
+                    if (range.task) {
+                        rangeObj.task = extend([], range.task, true);
+                    }
+                    if (start.getTime() !== tempEndDate.getTime()) {
+                        ranges.push(rangeObj);
+                    }
+                    start = this.checkStartDate(tempEndDate);
+                    tempStart = new Date(start.getTime());
+                    isInSplit = true;
+                }
+                else {
+                    tempStart.setDate(tempStart.getDate() + 1);
+                }
+            } while (tempStart.getTime() < end.getTime());
+            if (isInSplit) {
+                if (start.getTime() !== end.getTime()) {
+                    rangeObj = {};
+                    if (range.task) {
+                        rangeObj.task = extend([], range.task, true);
+                    }
+                    rangeObj[from] = start;
+                    rangeObj[to] = end;
+                    rangeObj.isSplit = true;
+                    ranges.push(rangeObj);
+                }
+            }
+            else {
+                ranges.push(range);
+            }
+        }
+        else {
+            ranges.push(range);
+        }
+        return ranges;
+    }
     /**
      * Update all gantt data collection width, progress width and left value
      * @private
@@ -2803,6 +3138,9 @@ const activeParentTask = 'e-active-parent-task';
 const activeChildTask = 'e-active-child-task';
 const activeConnectedTask = 'e-active-connected-task';
 const touchMode = 'e-predecessor-touch-mode';
+//Over allocation range container
+const rangeContainer = 'e-rangecontainer';
+const rangeChildContainer = 'e-rg-rangdiv';
 
 /**
  * To handle scroll event on chart and from TreeGrid
@@ -2916,6 +3254,8 @@ class GanttChart {
         this.isExpandAll = false;
         this.parent = parent;
         this.chartTimelineContainer = null;
+        this.rangeViewContainer =
+            createElement('div', { className: rangeContainer });
         this.addEventListener();
     }
     addEventListener() {
@@ -2954,11 +3294,95 @@ class GanttChart {
     renderInitialContents() {
         this.parent.timelineModule.createTimelineSeries();
     }
+    /**
+     * @private
+     */
+    renderOverAllocationContainer() {
+        for (let i = 0; i < this.parent.flatData.length; i++) {
+            let data = this.parent.flatData[i];
+            if (data.childRecords.length > 0) {
+                this.parent.dataOperation.updateOverlappingValues(data);
+            }
+        }
+        let rangeContainer$$1 = this.parent.element.querySelector('.' + rangeContainer);
+        if (rangeContainer$$1) {
+            rangeContainer$$1.innerHTML = '';
+        }
+        this.renderRangeContainer(this.parent.flatData);
+    }
     renderChartElements() {
         this.parent.chartRowsModule.renderChartRows();
         this.parent.connectorLineModule.renderConnectorLines(this.parent.updatedConnectorLineCollection);
+        if (this.parent.viewType === 'ResourceView' && this.parent.showOverAllocation) {
+            this.renderOverAllocationContainer();
+        }
         this.updateWidthAndHeight();
         this.parent.notify('selectRowByIndex', {});
+    }
+    /**
+     * @private
+     */
+    renderRangeContainer(records) {
+        let recordLength = records.length;
+        let count;
+        let ganttRecord;
+        let rangeCollection;
+        for (count = 0; count < recordLength; count++) {
+            ganttRecord = records[count];
+            rangeCollection = ganttRecord.ganttProperties.workTimelineRanges;
+            if (rangeCollection) {
+                this.renderRange(rangeCollection, ganttRecord);
+            }
+        }
+    }
+    getTopValue(currentRecord) {
+        let updatedRecords = this.parent.getExpandedRecords(this.parent.currentViewData);
+        let recordIndex = updatedRecords.indexOf(currentRecord);
+        if (!currentRecord.expanded) {
+            return (recordIndex * this.parent.rowHeight);
+        }
+        return ((recordIndex + 1) * this.parent.rowHeight);
+    }
+    /*get height for range bar*/
+    getRangeHeight(data) {
+        if (!data.expanded && data.hasChildRecords) {
+            return (this.parent.rowHeight - Math.floor((this.parent.rowHeight - this.parent.chartRowsModule.taskBarHeight)));
+        }
+        return (data.childRecords.length * this.parent.rowHeight) -
+            Math.floor((this.parent.rowHeight - this.parent.chartRowsModule.taskBarHeight));
+    }
+    renderRange(rangeCollection, currentRecord) {
+        let topValue = this.getTopValue(currentRecord);
+        /* tslint:disable-next-line */
+        let sameIDElement = this.rangeViewContainer.querySelector('.' + 'rangeContainer' + currentRecord.ganttProperties.rowUniqueID);
+        if (sameIDElement) {
+            sameIDElement.remove();
+        }
+        let parentDiv = createElement('div', {
+            className: 'rangeContainer' + currentRecord.ganttProperties.rowUniqueID, styles: `top:${topValue}px; position: absolute;`,
+        });
+        if (currentRecord.level === 0 && !currentRecord.expanded && isNullOrUndefined(currentRecord.parentItem)
+            && !this.parent.enableMultiTaskbar) {
+            return;
+        }
+        for (let i = 0; i < rangeCollection.length; i++) {
+            let height = this.getRangeHeight(currentRecord);
+            let leftDiv = createElement('div', {
+                className: rangeChildContainer + ' ' + 'e-leftarc', styles: `left:${rangeCollection[i].left}px;
+                top: ${Math.floor((this.parent.rowHeight - this.parent.chartRowsModule.taskBarHeight) / 2)}px;
+                height: ${height + 1}px; border-right: 0px`
+            });
+            let rightDiv = createElement('div', {
+                className: rangeChildContainer + ' ' + 'e-rightarc',
+                styles: `left:${rangeCollection[i].left + rangeCollection[i].width - 5}px;
+                top: ${Math.floor((this.parent.rowHeight - this.parent.chartRowsModule.taskBarHeight) / 2)}px; height: ${height + 1}px;
+                border-left: 0px`
+            });
+            parentDiv.appendChild(leftDiv);
+            parentDiv.appendChild(rightDiv);
+            this.rangeViewContainer.appendChild(parentDiv);
+        }
+        this.parent.ganttChartModule.chartBodyContent.appendChild(this.rangeViewContainer);
     }
     /**
      * @private
@@ -3169,6 +3593,16 @@ class GanttChart {
         }
     }
     /**
+     *  Method trigger while perform right click action.
+     * @return {void}
+     * @private
+     */
+    contextClick(e) {
+        if (this.parent.allowFiltering && this.parent.filterModule) {
+            this.parent.filterModule.closeFilterOnContextClick(e.srcElement);
+        }
+    }
+    /**
      * Method to trigger while perform mouse move on Gantt.
      * @return {void}
      * @private
@@ -3253,11 +3687,18 @@ class GanttChart {
      * @private
      */
     getRecordByTarget(e) {
-        let row = closest(e.target, 'tr');
         let ganttData;
-        if (row) {
-            let rowIndex = getValue('rowIndex', closest(e.target, 'tr'));
-            ganttData = this.parent.currentViewData[rowIndex];
+        let row = closest(e.target, 'div.' + taskBarMainContainer);
+        if (!isNullOrUndefined(row)) {
+            let id = row.getAttribute('rowUniqueId');
+            ganttData = this.parent.getRecordByID(id);
+        }
+        else {
+            row = closest(e.target, 'tr');
+            if (row) {
+                let rowIndex = getValue('rowIndex', closest(e.target, 'tr'));
+                ganttData = this.parent.currentViewData[rowIndex];
+            }
         }
         return ganttData;
     }
@@ -3276,6 +3717,9 @@ class GanttChart {
      * @private
      */
     chartExpandCollapseRequest(e) {
+        if (this.parent.enableMultiTaskbar) {
+            return;
+        }
         let target = e.target;
         let parentElement = closest(target, '.e-gantt-parent-taskbar');
         let record = this.getRecordByTarget(e);
@@ -3296,10 +3740,9 @@ class GanttChart {
      */
     reRenderConnectorLines() {
         this.parent.connectorLineModule.dependencyViewContainer.innerHTML = '';
-        let expandedRecords = this.parent.getExpandedRecords(this.parent.currentViewData);
         this.parent.connectorLineIds = [];
         this.parent.updatedConnectorLineCollection = [];
-        this.parent.predecessorModule.createConnectorLinesCollection(expandedRecords);
+        this.parent.predecessorModule.createConnectorLinesCollection();
         this.parent.connectorLineModule.renderConnectorLines(this.parent.updatedConnectorLineCollection);
     }
     /**
@@ -3339,6 +3782,10 @@ class GanttChart {
         }
         else {
             this.expandCollapseChartRows('collapse', getValue('chartRow', args), record, null);
+        }
+        // To render the child record on parent row after collapsing
+        if (this.parent.viewType === 'ResourceView') {
+            this.renderMultiTaskbar(record);
         }
         this.parent.updateContentHeight();
         this.updateWidthAndHeight();
@@ -3384,11 +3831,23 @@ class GanttChart {
         else {
             this.expandCollapseChartRows('expand', getValue('chartRow', args), record, null);
         }
+        // To render the child record on parent row after expanding.
+        if (this.parent.viewType === 'ResourceView') {
+            this.renderMultiTaskbar(record);
+        }
         this.parent.updateContentHeight();
         this.updateWidthAndHeight();
         this.reRenderConnectorLines();
         getValue('chartRow', args).setAttribute('aria-expanded', 'true');
         this.parent.trigger('expanded', args);
+    }
+    renderMultiTaskbar(record) {
+        if (this.parent.enableMultiTaskbar) {
+            this.parent.chartRowsModule.refreshRecords([record], true);
+        }
+        else if (this.parent.showOverAllocation) {
+            this.parent.ganttChartModule.renderRangeContainer(this.parent.currentViewData);
+        }
     }
     /**
      * On expand collapse operation row properties will be updated here.
@@ -3498,6 +3957,7 @@ class GanttChart {
             EventHandler.add(document, mouseUp, this.documentMouseUp, this);
         }
         EventHandler.add(document.body, 'mousemove', this.mouseMoveHandler, this);
+        EventHandler.add(document.body, 'contextmenu', this.contextClick, this);
         EventHandler.add(this.parent.chartRowsModule.ganttChartTableBody, 'dblclick', this.doubleClickHandler, this);
     }
     unWireEvents() {
@@ -3519,6 +3979,7 @@ class GanttChart {
             EventHandler.remove(document, mouseUp, this.documentMouseUp);
         }
         EventHandler.remove(document.body, 'mousemove', this.mouseMoveHandler);
+        EventHandler.remove(document.body, 'contextmenu', this.contextClick);
         EventHandler.remove(this.parent.chartRowsModule.ganttChartTableBody, 'dblclick', this.doubleClickHandler);
     }
     /**
@@ -3746,8 +4207,23 @@ class GanttChart {
      * @private
      */
     getIndexByTaskBar(target) {
-        let row = closest(target, 'tr.' + chartRow);
-        let recordIndex = [].slice.call(this.parent.chartRowsModule.ganttChartTableBody.childNodes).indexOf(row);
+        let row;
+        let recordIndex;
+        if (!target.classList.contains(taskBarMainContainer)) {
+            row = closest(target, 'div.' + taskBarMainContainer);
+        }
+        else {
+            row = target;
+        }
+        if (isNullOrUndefined(row)) {
+            row = closest(target, 'tr.' + chartRow);
+            recordIndex = [].slice.call(this.parent.chartRowsModule.ganttChartTableBody.childNodes).indexOf(row);
+        }
+        else {
+            let id = row.getAttribute('rowUniqueId');
+            let record = this.parent.getRecordByID(id);
+            recordIndex = this.parent.currentViewData.indexOf(record);
+        }
         return recordIndex;
     }
     destroy() {
@@ -5465,7 +5941,7 @@ class GanttTreeGrid {
                 }
             }
             else {
-                column.disableHtmlEncode = true;
+                column.disableHtmlEncode = false;
             }
         }
         else if (taskSettings.baselineStartDate === column.field ||
@@ -6247,8 +6723,10 @@ class ChartRows {
                 'border-top-right-radius:' + this.getBorderRadius(data.ganttProperties) + 'px;' +
                 'border-bottom-right-radius:' + this.getBorderRadius(data.ganttProperties) + 'px;">' +
                 '<span class="' + taskLabel + '" style="line-height:' +
-                (this.taskBarHeight - 1) + 'px;height:' + this.taskBarHeight + 'px;">' +
-                labelString + '</span></div></div>') :
+                (this.taskBarHeight - 1) + 'px; text-align:' + (this.parent.viewType === 'ResourceView' ? 'left;' : '') +
+                'display:' + (this.parent.viewType === 'ResourceView' ? 'inline-flex;' : '') +
+                'width:' + (this.parent.viewType === 'ResourceView' ? (data.ganttProperties.width - 10) : '') + 'px; height:' +
+                this.taskBarHeight + 'px;">' + labelString + '</span></div></div>') :
                 (data.ganttProperties.startDate && !data.ganttProperties.endDate && !data.ganttProperties.duration) ? ('<div class="' + childProgressBarInnerDiv + ' ' + traceChildTaskBar + ' ' +
                     unscheduledTaskbarLeft + ' ' + (data.ganttProperties.isAutoSchedule ?
                     '' : manualChildTaskBar) + '"' +
@@ -6471,8 +6949,9 @@ class ChartRows {
                 'border-top-right-radius:' + this.getBorderRadius(data) + 'px;' +
                 'border-bottom-right-radius:' + this.getBorderRadius(data) + 'px;height:100%;"><span class="' +
                 taskLabel + '" style="line-height:' +
-                (this.taskBarHeight - 1) + 'px;height:' + this.taskBarHeight + 'px;">' +
-                labelString + '</span></div></div>';
+                (this.taskBarHeight - 1) + 'px; display:' + (this.parent.viewType === 'ResourceView' ? 'inline-flex;' : '') + 'width:' +
+                (this.parent.viewType === 'ResourceView' ? (data.ganttProperties.width - 10) : '') + 'px; height:' +
+                this.taskBarHeight + 'px;">' + labelString + '</span></div></div>';
             let milestoneTemplate = '<div class="' + parentMilestone + '" style="position:absolute;">' +
                 '<div class="' + parentMilestoneTop + '" style="border-right-width:' +
                 this.milesStoneRadius + 'px;border-left-width:' + this.milesStoneRadius + 'px;border-bottom-width:' +
@@ -6874,6 +7353,17 @@ class ChartRows {
     refreshGanttRows() {
         this.parent.currentViewData = this.parent.treeGrid.getCurrentViewRecords().slice();
         this.createTaskbarTemplate();
+        if (this.parent.viewType === 'ResourceView' && this.parent.showOverAllocation) {
+            for (let i = 0; i < this.parent.currentViewData.length; i++) {
+                let data = this.parent.currentViewData[i];
+                if (data.childRecords.length > 0) {
+                    /* tslint:disable-next-line */
+                    this.parent.setRecordValue('workTimelineRanges', this.parent.dataOperation.mergeRangeCollections(data.ganttProperties.workTimelineRanges, true), data.ganttProperties, true);
+                    this.parent.dataOperation.calculateRangeLeftWidth(data.ganttProperties.workTimelineRanges);
+                }
+            }
+            this.parent.ganttChartModule.renderRangeContainer(this.parent.currentViewData);
+        }
         this.triggerQueryTaskbarInfo();
     }
     /**
@@ -6884,9 +7374,21 @@ class ChartRows {
     createTaskbarTemplate() {
         this.updateTaskbarBlazorTemplate(false);
         this.ganttChartTableBody.innerHTML = '';
+        let collapsedResourceRecord = [];
         for (let i = 0; i < this.parent.currentViewData.length; i++) {
             let tempTemplateData = this.parent.currentViewData[i];
+            if (this.parent.viewType === 'ResourceView' && !tempTemplateData.expanded && this.parent.enableMultiTaskbar) {
+                collapsedResourceRecord.push(tempTemplateData);
+            }
             this.ganttChartTableBody.appendChild(this.getGanttChartRow(i, tempTemplateData));
+        }
+        if (collapsedResourceRecord.length) {
+            for (let j = 0; j < collapsedResourceRecord.length; j++) {
+                if (collapsedResourceRecord[j].hasChildRecords) {
+                    this.parent.isGanttChartRendered = true;
+                    this.parent.chartRowsModule.refreshRecords([collapsedResourceRecord[j]]);
+                }
+            }
         }
         this.updateTaskbarBlazorTemplate(true);
     }
@@ -6903,6 +7405,7 @@ class ChartRows {
         let leftLabelNode = this.getLeftLabelNode(i);
         let taskbarContainerNode = this.taskbarContainer();
         taskbarContainerNode[0].setAttribute('aria-label', this.generateAriaLabel(this.templateData));
+        taskbarContainerNode[0].setAttribute('rowUniqueId', this.templateData.ganttProperties.rowUniqueID);
         if (!this.templateData.hasChildRecords) {
             let connectorLineLeftNode = this.getLeftPointNode();
             taskbarContainerNode[0].appendChild([].slice.call(connectorLineLeftNode)[0]);
@@ -7006,6 +7509,9 @@ class ChartRows {
      * @private
      */
     triggerQueryTaskbarInfo() {
+        if (!this.parent.queryTaskbarInfo) {
+            return;
+        }
         let length = this.ganttChartTableBody.querySelectorAll('tr').length;
         let trElement;
         let taskbarElement;
@@ -7161,12 +7667,26 @@ class ChartRows {
      * @param index
      * @private
      */
-    refreshRow(index) {
+    refreshRow(index, isValidateRange) {
         let tr = this.ganttChartTableBody.childNodes[index];
         let selectedItem = this.parent.currentViewData[index];
         if (index !== -1 && selectedItem) {
             let data = selectedItem;
-            tr.replaceChild(this.getGanttChartRow(index, data).childNodes[0], tr.childNodes[0]);
+            if (this.parent.viewType === 'ResourceView' && data.hasChildRecords && !data.expanded && this.parent.enableMultiTaskbar) {
+                tr.replaceChild(this.getResourceParent(data).childNodes[0], tr.childNodes[0]);
+            }
+            else {
+                tr.replaceChild(this.getGanttChartRow(index, data).childNodes[0], tr.childNodes[0]);
+            }
+            if (this.parent.viewType === 'ResourceView' && data.hasChildRecords && this.parent.showOverAllocation) {
+                if (isValidateRange) {
+                    this.parent.ganttChartModule.renderRangeContainer(this.parent.currentViewData);
+                }
+                else {
+                    this.parent.dataOperation.updateOverlappingValues(data);
+                    this.parent.ganttChartModule.renderRangeContainer([data]);
+                }
+            }
             this.triggerQueryTaskbarInfoByIndex(tr, data);
             /* tslint:disable-next-line */
             let dataId = this.parent.viewType === 'ProjectView' ? data.ganttProperties.taskId : data.ganttProperties.rowUniqueID;
@@ -7175,17 +7695,50 @@ class ChartRows {
             row.data = data;
         }
     }
+    getResourceParent(record) {
+        let chartRows = this.parent.ganttChartModule.getChartRows();
+        this.templateData = record;
+        let parentTrNode = this.getTableTrNode();
+        let leftLabelNode = this.leftLabelContainer();
+        let collapseParent = createElement('div', {
+            className: 'e-collapse-parent'
+        });
+        parentTrNode[0].childNodes[0].childNodes[0].appendChild(collapseParent);
+        let tasks = this.parent.dataOperation.setSortedChildTasks(record);
+        this.parent.dataOperation.updateOverlappingIndex(tasks);
+        for (let i = 0; i < chartRows.length; i++) {
+            if (chartRows[i].classList.contains('gridrowtaskId'
+                + record.ganttProperties.rowUniqueID + 'level' + (record.level + 1))) {
+                let cloneElement = chartRows[i].querySelector('.e-taskbar-main-container');
+                addClass([cloneElement], 'collpse-parent-border');
+                let id = chartRows[i].querySelector('.' + taskBarMainContainer).getAttribute('rowUniqueId');
+                let ganttData = this.parent.getRecordByID(id);
+                let zIndex = (ganttData.ganttProperties.eOverlapIndex).toString();
+                let cloneChildElement = cloneElement.cloneNode(true);
+                cloneChildElement.style.zIndex = zIndex;
+                parentTrNode[0].childNodes[0].childNodes[0].childNodes[0].appendChild(cloneChildElement);
+            }
+        }
+        parentTrNode[0].childNodes[0].childNodes[0].appendChild([].slice.call(leftLabelNode)[0]);
+        return parentTrNode[0].childNodes[0];
+    }
     /**
      * To refresh all edited records
      * @param items
      * @private
      */
-    refreshRecords(items) {
+    refreshRecords(items, isValidateRange) {
         if (this.parent.isGanttChartRendered) {
             this.updateTaskbarBlazorTemplate(false);
+            if (this.parent.viewType === 'ResourceView' && this.parent.enableMultiTaskbar) {
+                let sortedRecords = [];
+                sortedRecords = new DataManager(items).executeLocal(new Query()
+                    .sortBy('expanded', 'Descending'));
+                items = sortedRecords;
+            }
             for (let i = 0; i < items.length; i++) {
                 let index = this.parent.currentViewData.indexOf(items[i]);
-                this.refreshRow(index);
+                this.refreshRow(index, isValidateRange);
             }
             this.parent.ganttChartModule.updateLastRowBottomWidth();
             this.updateTaskbarBlazorTemplate(true);
@@ -7342,7 +7895,7 @@ class Dependency {
      */
     checkIsParent(fromId) {
         let boolValue = false;
-        let task = this.parent.getRecordByID(fromId);
+        let task = this.parent.connectorLineModule.getRecordByID(fromId);
         if (task.hasChildRecords) {
             boolValue = true;
         }
@@ -7369,8 +7922,10 @@ class Dependency {
                 offsetValue = '-';
             }
             match = values[0].match(/(\d+|[A-z]+)/g);
+            let ids = this.parent.viewType === 'ResourceView' ? this.parent.getTaskIds() : this.parent.ids;
+            let isExist = this.parent.viewType === 'ResourceView' ? ids.indexOf('T' + match[0]) : ids.indexOf(match[0]);
             /*Validate for appropriate predecessor*/
-            if (match[0] && this.parent.ids.indexOf(match[0]) !== -1) {
+            if (match[0] && isExist !== -1) {
                 if (match.length > 1) {
                     let type = match[1].toUpperCase();
                     if (type === 'FS' || type === 'FF' || type === 'SF' || type === 'SS') {
@@ -7393,7 +7948,8 @@ class Dependency {
                 from: match[0],
                 type: predecessorText,
                 isDrawn: false,
-                to: ganttRecord.ganttProperties.rowUniqueID.toString(),
+                to: this.parent.viewType === 'ResourceView' ? ganttRecord.ganttProperties.taskId.toString()
+                    : ganttRecord.ganttProperties.rowUniqueID.toString(),
                 offsetUnit: offsetUnits.durationUnit,
                 offset: offsetUnits.duration
             };
@@ -7418,7 +7974,9 @@ class Dependency {
             for (let i = 0; i < length; i++) {
                 let currentValue = predecessors[i];
                 let temp = '';
-                if (currentValue.from !== data.ganttProperties.rowUniqueID.toString()) {
+                let id = this.parent.viewType === 'ResourceView' ? data.ganttProperties.taskId
+                    : data.ganttProperties.rowUniqueID;
+                if (currentValue.from !== id.toString()) {
                     temp = currentValue.from + currentValue.type;
                     if (currentValue.offset !== 0) {
                         temp += currentValue.offset > 0 ? ('+' + currentValue.offset + ' ') : (currentValue.offset + ' ');
@@ -7525,8 +8083,10 @@ class Dependency {
         connectorCount = connectorsCollection.length;
         for (let i = 0; i < connectorCount; i++) {
             let connector = connectorsCollection[i];
-            successorGanttRecord = this.parent.getRecordByID(connector.from);
-            if (connector.from !== ganttRecord.ganttProperties.rowUniqueID.toString()) {
+            successorGanttRecord = this.parent.connectorLineModule.getRecordByID(connector.from);
+            let id = this.parent.viewType === 'ResourceView' ? ganttRecord.ganttProperties.taskId
+                : ganttRecord.ganttProperties.rowUniqueID;
+            if (connector.from !== id.toString()) {
                 if (successorGanttRecord) {
                     let predecessorCollection;
                     if (successorGanttRecord.ganttProperties.predecessor) {
@@ -7554,7 +8114,7 @@ class Dependency {
     updatedRecordsDateByPredecessor() {
         let flatData = this.parent.flatData;
         for (let count = 0; count < flatData.length; count++) {
-            if (flatData[count].ganttProperties.predecessor && flatData[count].taskData[this.parent.taskFields.dependency]) {
+            if (flatData[count].ganttProperties.predecessor) {
                 this.validatePredecessorDates(flatData[count]);
             }
         }
@@ -7570,7 +8130,8 @@ class Dependency {
             let count;
             let parentGanttRecord;
             let record = null;
-            let currentTaskId = ganttRecord.ganttProperties.rowUniqueID.toString();
+            let currentTaskId = this.parent.viewType === 'ResourceView' ? ganttRecord.ganttProperties.taskId.toString()
+                : ganttRecord.ganttProperties.rowUniqueID.toString();
             let predecessors = predecessorsCollection.filter((data) => {
                 if (data.to === currentTaskId) {
                     return data;
@@ -7582,8 +8143,8 @@ class Dependency {
             for (count = 0; count < predecessors.length; count++) {
                 let predecessor;
                 predecessor = predecessors[count];
-                parentGanttRecord = this.parent.getRecordByID(predecessor.from);
-                record = this.parent.getRecordByID(predecessor.to);
+                parentGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor.from);
+                record = this.parent.connectorLineModule.getRecordByID(predecessor.to);
                 if (record.ganttProperties.isAutoSchedule || this.parent.validateManualTasksOnLinking) {
                     this.validateChildGanttRecord(parentGanttRecord, record);
                 }
@@ -7603,7 +8164,8 @@ class Dependency {
         if (this.parent.isInPredecessorValidation && (childGanttRecord.ganttProperties.isAutoSchedule ||
             this.parent.validateManualTasksOnLinking)) {
             let childRecordProperty = childGanttRecord.ganttProperties;
-            let currentTaskId = childRecordProperty.rowUniqueID.toString();
+            let currentTaskId = this.parent.viewType === 'ResourceView' ? childRecordProperty.taskId.toString()
+                : childRecordProperty.rowUniqueID.toString();
             let predecessorsCollection = childRecordProperty.predecessor;
             let childPredecessor = predecessorsCollection.filter((data) => {
                 if (data.to === currentTaskId) {
@@ -7638,7 +8200,9 @@ class Dependency {
         let parentGanttRecord;
         let childGanttRecord;
         let validatedPredecessor = predecessorsCollection.filter((data) => {
-            if (data.to === ganttRecord.ganttProperties.rowUniqueID.toString()) {
+            let id = this.parent.viewType === 'ResourceView' ? ganttRecord.ganttProperties.taskId
+                : ganttRecord.ganttProperties.rowUniqueID;
+            if (data.to === id.toString()) {
                 return data;
             }
             else {
@@ -7649,8 +8213,8 @@ class Dependency {
             let length = validatedPredecessor.length;
             for (let i = 0; i < length; i++) {
                 let predecessor = validatedPredecessor[i];
-                parentGanttRecord = this.parent.getRecordByID(predecessor.from);
-                childGanttRecord = this.parent.getRecordByID(predecessor.to);
+                parentGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor.from);
+                childGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor.to);
                 tempStartDate =
                     this.getValidatedStartDate(childGanttRecord.ganttProperties, parentGanttRecord.ganttProperties, predecessor);
                 if (maxStartDate == null) {
@@ -7745,12 +8309,14 @@ class Dependency {
      * @private
      */
     createConnectorLinesCollection(records) {
-        let recordLength = records.length;
+        let ganttRecords = records ? records : this.parent.currentViewData;
+        let recordLength = ganttRecords.length;
         let count;
         let ganttRecord;
         let predecessorsCollection;
+        this.parent.connectorLineModule.expandedRecords = this.parent.getExpandedRecords(this.parent.currentViewData);
         for (count = 0; count < recordLength; count++) {
-            ganttRecord = records[count];
+            ganttRecord = ganttRecords[count];
             predecessorsCollection = ganttRecord.ganttProperties.predecessor;
             if (predecessorsCollection) {
                 this.addPredecessorsCollection(predecessorsCollection);
@@ -7773,8 +8339,8 @@ class Dependency {
                 predecessor = predecessorsCollection[predecessorCount];
                 let from = 'from';
                 let to = 'to';
-                parentGanttRecord = this.parent.getRecordByID(predecessor[from]);
-                childGanttRecord = this.parent.getRecordByID(predecessor[to]);
+                parentGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor[from]);
+                childGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor[to]);
                 if (this.parent.currentViewData && this.parent.currentViewData.indexOf(parentGanttRecord) !== -1 &&
                     this.parent.currentViewData.indexOf(childGanttRecord) !== -1) {
                     this.updateConnectorLineObject(parentGanttRecord, childGanttRecord, predecessor);
@@ -7825,7 +8391,9 @@ class Dependency {
             let parentGanttRecord;
             let record = null;
             let predecessor;
-            let currentTaskId = childGanttRecord.ganttProperties.rowUniqueID.toString();
+            let successor;
+            let currentTaskId = this.parent.viewType === 'ResourceView' ? childGanttRecord.ganttProperties.taskId.toString()
+                : childGanttRecord.ganttProperties.rowUniqueID.toString();
             let predecessors = predecessorsCollection.filter((data) => {
                 if (data.to === currentTaskId) {
                     return data;
@@ -7844,24 +8412,26 @@ class Dependency {
             });
             for (let count = 0; count < predecessors.length; count++) {
                 predecessor = predecessors[count];
-                parentGanttRecord = this.parent.getRecordByID(predecessor.from);
-                record = this.parent.getRecordByID(predecessor.to);
+                parentGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor.from);
+                record = this.parent.connectorLineModule.getRecordByID(predecessor.to);
                 if (this.parent.isInPredecessorValidation && record.ganttProperties.isAutoSchedule) {
                     this.parent.isValidationEnabled = true;
                 }
                 else {
                     this.parent.isValidationEnabled = false;
                 }
-                if ((childGanttRecord.ganttProperties.rowUniqueID.toString() === predecessor.to
-                    || childGanttRecord.ganttProperties.rowUniqueID.toString() === predecessor.from)
+                let id = this.parent.viewType === 'ResourceView' ? childGanttRecord.ganttProperties.taskId
+                    : childGanttRecord.ganttProperties.rowUniqueID;
+                if ((id.toString() === predecessor.to
+                    || id.toString() === predecessor.from)
                     && (!validationOn || validationOn === 'predecessor')) {
                     this.validateChildGanttRecord(parentGanttRecord, record);
                 }
             }
             for (let count = 0; count < successors.length; count++) {
-                predecessor = successors[count];
-                parentGanttRecord = this.parent.getRecordByID(predecessor.from);
-                record = this.parent.getRecordByID(predecessor.to);
+                successor = successors[count];
+                parentGanttRecord = this.parent.connectorLineModule.getRecordByID(successor.from);
+                record = this.parent.connectorLineModule.getRecordByID(successor.to);
                 if (this.parent.isInPredecessorValidation && record.ganttProperties.isAutoSchedule) {
                     this.parent.isValidationEnabled = true;
                 }
@@ -7894,7 +8464,9 @@ class Dependency {
             let recPredecessor = record.ganttProperties.predecessor;
             if (recPredecessor && recPredecessor.length > 0) {
                 validPredecessor = recPredecessor.filter((value) => {
-                    return value.from !== record.ganttProperties.rowUniqueID.toString();
+                    let id = this.parent.viewType === 'ResourceView' ? record.ganttProperties.taskId
+                        : record.ganttProperties.rowUniqueID;
+                    return value.from !== id.toString();
                 });
             }
         }
@@ -7907,6 +8479,7 @@ class Dependency {
  */
 class ConnectorLine {
     constructor(ganttObj) {
+        this.expandedRecords = [];
         this.parent = ganttObj;
         this.dependencyViewContainer =
             createElement('div', { className: dependencyViewContainer });
@@ -7946,7 +8519,7 @@ class ConnectorLine {
      */
     createConnectorLineObject(parentGanttData, childGanttData, predecessor) {
         let connectorObj = {};
-        let updatedRecords = this.parent.getExpandedRecords(this.parent.currentViewData);
+        let updatedRecords = this.expandedRecords;
         let parentIndex = updatedRecords.indexOf(parentGanttData);
         let childIndex = updatedRecords.indexOf(childGanttData);
         let parentGanttRecord = parentGanttData.ganttProperties;
@@ -7967,7 +8540,9 @@ class ConnectorLine {
             connectorObj.childIndex = childIndex;
             connectorObj.rowHeight = this.parent.rowHeight;
             connectorObj.type = predecessor.type;
-            connectorObj.connectorLineId = 'parent' + parentGanttRecord.rowUniqueID + 'child' + childGanttRecord.rowUniqueID;
+            let parentId = this.parent.viewType === 'ResourceView' ? parentGanttRecord.taskId : parentGanttRecord.rowUniqueID;
+            let childId = this.parent.viewType === 'ResourceView' ? childGanttRecord.taskId : childGanttRecord.rowUniqueID;
+            connectorObj.connectorLineId = 'parent' + parentId + 'child' + childId;
             connectorObj.milestoneParent = parentGanttRecord.isMilestone ? true : false;
             connectorObj.milestoneChild = childGanttRecord.isMilestone ? true : false;
             if (isNullOrUndefined(isScheduledTask(parentGanttRecord)) || isNullOrUndefined(isScheduledTask(childGanttRecord))) {
@@ -8687,6 +9262,17 @@ class ConnectorLine {
         }
         return value;
     }
+    /**
+     * To get the record based on the predecessor value
+     * @private
+     */
+    getRecordByID(id) {
+        if (isNullOrUndefined(id)) {
+            return null;
+        }
+        return this.parent.viewType === 'ResourceView' ? this.parent.flatData[this.parent.getTaskIds().indexOf('T' + id.toString())] :
+            this.parent.flatData[this.parent.ids.indexOf(id.toString())];
+    }
 }
 
 /**
@@ -8887,7 +9473,14 @@ class Tooltip$1 {
         if (parent.isOnEdit) {
             args.cancel = true;
         }
-        let element = parentsUntil$1(args.target, chartRowCell);
+        let element;
+        let row = closest(args.target, 'div.' + taskBarMainContainer);
+        if (!isNullOrUndefined(row)) {
+            element = args.target;
+        }
+        else {
+            element = parentsUntil$1(args.target, chartRowCell);
+        }
         let data;
         let argsData = {
             data: {},
@@ -9184,12 +9777,20 @@ class Tooltip$1 {
     getPredecessorTooltipData(args) {
         let predeceesorParent = args.target.parentElement.id;
         let taskIds = predeceesorParent.match(/\d+/g);
-        let fromTask = this.parent.flatData[this.parent.ids.indexOf(taskIds[0])];
-        let toTask = this.parent.flatData[this.parent.ids.indexOf(taskIds[1])];
+        let fromTask;
+        let toTask;
+        if (this.parent.viewType === 'ResourceView') {
+            fromTask = this.parent.flatData[this.parent.getTaskIds().indexOf('T' + taskIds[0])];
+            toTask = this.parent.flatData[this.parent.getTaskIds().indexOf('T' + taskIds[1])];
+        }
+        else {
+            fromTask = this.parent.flatData[this.parent.ids.indexOf(taskIds[0])];
+            toTask = this.parent.flatData[this.parent.ids.indexOf(taskIds[1])];
+        }
         let predecessor = fromTask.ganttProperties.predecessor.filter((pdc) => { return pdc.to === taskIds[1]; });
         let predecessorTooltipData = {
-            fromId: fromTask.ganttProperties.rowUniqueID,
-            toId: toTask.ganttProperties.rowUniqueID,
+            fromId: this.parent.viewType === 'ResourceView' ? fromTask.ganttProperties.taskId : fromTask.ganttProperties.rowUniqueID,
+            toId: this.parent.viewType === 'ResourceView' ? toTask.ganttProperties.taskId : toTask.ganttProperties.rowUniqueID,
             fromName: fromTask.ganttProperties.taskName,
             toName: toTask.ganttProperties.taskName,
             linkType: predecessor[0].type,
@@ -10033,7 +10634,7 @@ let Gantt = class Gantt extends Component {
         if (this.predecessorModule && this.taskFields.dependency) {
             this.connectorLineIds = [];
             this.updatedConnectorLineCollection = [];
-            this.predecessorModule.createConnectorLinesCollection(this.currentViewData);
+            this.predecessorModule.createConnectorLinesCollection();
         }
         this.notify('recordsUpdated', {});
         this.trigger('dataBound', args);
@@ -10235,10 +10836,28 @@ let Gantt = class Gantt extends Component {
                 case 'validateManualTasksOnLinking':
                     this.validateManualTasksOnLinking = newProp.validateManualTasksOnLinking;
                     break;
+                case 'readOnly':
+                    this.readOnly = this.readOnly;
+                    this.refresh();
+                    break;
+                case 'showOverAllocation':
+                    this.updateOverAllocationCotainer();
+                    break;
             }
         }
         if (isRefresh) {
             this.refresh();
+        }
+    }
+    updateOverAllocationCotainer() {
+        if (this.showOverAllocation && this.viewType === 'ResourceView') {
+            this.ganttChartModule.renderOverAllocationContainer();
+        }
+        else {
+            let rangeContainer$$1 = this.element.querySelector('.' + rangeContainer);
+            if (rangeContainer$$1) {
+                rangeContainer$$1.innerHTML = '';
+            }
         }
     }
     /**
@@ -11064,7 +11683,50 @@ let Gantt = class Gantt extends Component {
      */
     addRecord(data, rowPosition, rowIndex) {
         if (this.editModule && this.editSettings.allowAdding) {
-            this.editModule.addRecord(data, rowPosition, rowIndex);
+            if (this.viewType === 'ResourceView') {
+                this.editModule.addRowPosition = rowPosition;
+                this.editModule.addRowIndex = rowIndex;
+                let resources = data[this.taskFields.resourceInfo];
+                let id;
+                let parentTask;
+                if (!isNullOrUndefined(resources) && resources.length) {
+                    for (let i = 0; i < resources.length; i++) {
+                        id = (typeof resources[i] === 'object') ? resources[i][this.resourceFields.id] :
+                            resources[0];
+                        parentTask = this.flatData[this.getTaskIds().indexOf('R' + id)];
+                        if (parentTask) {
+                            break;
+                        }
+                    }
+                    if (parentTask && parentTask.childRecords.length || parentTask.level === 0) {
+                        let dropChildRecord = parentTask.childRecords[rowIndex];
+                        if (dropChildRecord) {
+                            let position = rowPosition === 'Above' || rowPosition === 'Below' ? rowPosition :
+                                'Child';
+                            if (position === 'Child') {
+                                this.editModule.addRecord(data, position, this.getTaskIds().indexOf('R' + id));
+                            }
+                            else {
+                                this.editModule.addRecord(data, position, this.flatData.indexOf(dropChildRecord));
+                            }
+                        }
+                        else {
+                            this.editModule.addRecord(data, 'Child', this.getTaskIds().indexOf('R' + id));
+                        }
+                    }
+                    else {
+                        this.editModule.addRecord(data, 'Bottom');
+                    }
+                }
+                else {
+                    this.editModule.addRecord(data, 'Bottom');
+                }
+                this.editModule.addRowPosition = null;
+                this.editModule.addRowIndex = null;
+            }
+            else {
+                this.editModule.addRecord(data, rowPosition, rowIndex);
+            }
         }
     }
     /**
@@ -11822,6 +12484,9 @@ __decorate([
 ], Gantt.prototype, "allowReordering", void 0);
 __decorate([
     Property(false)
+], Gantt.prototype, "readOnly", void 0);
+__decorate([
+    Property(false)
 ], Gantt.prototype, "allowResizing", void 0);
 __decorate([
     Property(false)
@@ -11835,6 +12500,12 @@ __decorate([
 __decorate([
     Property(false)
 ], Gantt.prototype, "validateManualTasksOnLinking", void 0);
+__decorate([
+    Property(false)
+], Gantt.prototype, "enableMultiTaskbar", void 0);
+__decorate([
+    Property(false)
+], Gantt.prototype, "showOverAllocation", void 0);
 __decorate([
     Property('Auto')
 ], Gantt.prototype, "taskMode", void 0);
@@ -12095,6 +12766,10 @@ class CellEdit {
         let data = args.rowData;
         let field = args.columnName;
         let taskSettings = this.parent.taskFields;
+        if (this.parent.readOnly) {
+            args.cancel = true;
+            return;
+        }
         if (this.parent.editSettings.mode === 'Dialog') {
             args.cancel = true;
             return;
@@ -12148,6 +12823,9 @@ class CellEdit {
                 tabObj.selectedItem = index;
             }
         }
+        if (field === taskSettings.notes && this.parent.showInlineNotes === true) {
+            this.isCellEdit = true;
+        }
     }
     isValueChange(args, field) {
         let data = getValue('data', args);
@@ -12182,10 +12860,10 @@ class CellEdit {
         editedArgs.action = 'CellEditing';
         editedArgs.data = this.parent.getTaskByUniqueID(data.uniqueID);
         let previousValue = getValue('previousData', args);
-        let tempEditedValue = column.editType === 'stringedit' &&
-            column.field === 'Duration' ? data[column.field] !== '' : !isUndefined(data[column.field]);
-        let editedValue = this.parent.allowUnscheduledTasks ? data[column.field] : tempEditedValue ? data[column.field] :
-            previousValue;
+        let editedValue = this.parent.allowUnscheduledTasks ? data[column.field] : ((isNullOrUndefined(data[column.field])
+            || data[column.field] === '') && (this.parent.taskFields.duration === column.field ||
+            this.parent.taskFields.startDate === column.field || this.parent.taskFields.endDate === column.field)) ? previousValue
+            : data[column.field];
         if (!isNullOrUndefined(data)) {
             data[column.field] = previousValue;
             editedArgs.data[column.field] = previousValue;
@@ -12204,7 +12882,7 @@ class CellEdit {
                 this.durationEdited(editedArgs);
             }
             else if (column.field === this.parent.taskFields.resourceInfo) {
-                this.resourceEdited(editedArgs, editedObj, data, true);
+                this.resourceEdited(editedArgs, editedObj, data);
             }
             else if (column.field === this.parent.taskFields.progress) {
                 this.progressEdited(editedArgs);
@@ -12428,7 +13106,7 @@ class CellEdit {
      * @param args
      * @param editedObj
      */
-    resourceEdited(args, editedObj, previousData, isResourceEdited) {
+    resourceEdited(args, editedObj, previousData) {
         let resourceSettings = this.parent.resourceFields;
         let editedResourceId = editedObj[this.parent.taskFields.resourceInfo];
         if (editedResourceId) {
@@ -12467,7 +13145,11 @@ class CellEdit {
             args.data.ganttProperties.resourceInfo = editedResources;
             this.parent.dataOperation.updateMappingData(args.data, 'resourceInfo');
             this.parent.editModule.updateResourceRelatedFields(args.data, 'resource');
-            this.updateEditedRecord(args, isResourceEdited, previousResource);
+            if (this.parent.viewType === 'ResourceView') {
+                this.parent.editModule.dialogModule.isResourceUpdate = true;
+                this.parent.editModule.dialogModule.previousResource = previousResource;
+            }
+            this.updateEditedRecord(args);
         }
     }
     /**
@@ -12519,13 +13201,8 @@ class CellEdit {
      * To start method save action with edited cell value
      * @param args
      */
-    updateEditedRecord(args, isResourceEdited, previousResources) {
-        if (this.parent.viewType === 'ResourceView') {
-            this.parent.editModule.updateRsourceRecords(args, isResourceEdited, previousResources);
-        }
-        else {
-            this.parent.editModule.initiateUpdateAction(args);
-        }
+    updateEditedRecord(args) {
+        this.parent.editModule.initiateUpdateAction(args);
     }
     /**
      * To remove all public private properties
@@ -12797,13 +13474,14 @@ class TaskbarEdit {
     showHideActivePredecessors(show) {
         let ganttProp = this.taskBarEditRecord.ganttProperties;
         let predecessors = ganttProp.predecessor;
+        let id = this.parent.viewType === 'ResourceView' ? ganttProp.taskId : ganttProp.rowUniqueID;
         if (predecessors) {
             for (let i = 0; i < predecessors.length; i++) {
                 let predecessor = predecessors[i];
-                if (ganttProp.rowUniqueID.toString() === predecessor.from) {
+                if (id.toString() === predecessor.from) {
                     this.applyActiveColor(predecessor.from, predecessor.to, show);
                 }
-                else if (ganttProp.rowUniqueID.toString() === predecessor.to) {
+                else if (id.toString() === predecessor.to) {
                     this.applyActiveColor(predecessor.from, predecessor.to, show);
                 }
             }
@@ -12823,9 +13501,10 @@ class TaskbarEdit {
         }
     }
     applyActiveColor(from, to, enable) {
-        let taskId = this.taskBarEditRecord.ganttProperties.rowUniqueID.toString();
-        let ganttRecord = (taskId === from) ? this.parent.getRecordByID(to) :
-            this.parent.getRecordByID(from);
+        let taskId = this.parent.viewType === 'ProjectView' ? this.taskBarEditRecord.ganttProperties.taskId.toString() :
+            this.taskBarEditRecord.ganttProperties.rowUniqueID.toString();
+        let ganttRecord = (taskId === from) ? this.parent.connectorLineModule.getRecordByID(to) :
+            this.parent.connectorLineModule.getRecordByID(from);
         let $tr = this.parent.ganttChartModule.getChartRows()[this.parent.currentViewData.indexOf(ganttRecord)];
         if (!isNullOrUndefined($tr)) {
             let $taskbar = $tr.querySelector('.' + taskBarMainContainer);
@@ -12848,22 +13527,24 @@ class TaskbarEdit {
         let parentRecord = this.taskBarEditRecord.ganttProperties;
         let childRecord = this.connectorSecondRecord.ganttProperties;
         let isValid = true;
+        let parentId = this.parent.viewType === 'ResourceView' ? parentRecord.taskId : parentRecord.rowUniqueID;
+        let childId = this.parent.viewType === 'ResourceView' ? childRecord.taskId : childRecord.rowUniqueID;
         if (this.connectorSecondRecord.hasChildRecords) {
             isValid = false;
         }
         else if (childRecord.predecessor) {
             for (let i = 0; i < childRecord.predecessor.length; i++) {
                 let predecessor = childRecord.predecessor[i];
-                if (predecessor.from === parentRecord.rowUniqueID.toString() &&
-                    predecessor.to === childRecord.rowUniqueID.toString()) {
+                if (predecessor.from === parentId.toString() &&
+                    predecessor.to === childId.toString()) {
                     this.parent.connectorLineEditModule.childRecord = this.connectorSecondRecord;
                     this.parent.connectorLineEditModule.predecessorIndex = i;
                     this.parent.connectorLineEditModule.renderPredecessorDeleteConfirmDialog();
                     isValid = false;
                     break;
                 }
-                else if (predecessor.from === childRecord.rowUniqueID.toString() &&
-                    predecessor.to === parentRecord.rowUniqueID.toString()) {
+                else if (predecessor.from === childId.toString() &&
+                    predecessor.to === parentId.toString()) {
                     this.parent.connectorLineEditModule.childRecord = this.taskBarEditRecord;
                     this.parent.connectorLineEditModule.predecessorIndex = i;
                     this.parent.connectorLineEditModule.renderPredecessorDeleteConfirmDialog();
@@ -12909,6 +13590,19 @@ class TaskbarEdit {
                     this.taskBarEditAction = null;
                 }
                 this.updateMouseDownProperties(e);
+                if (this.parent.viewType === 'ResourceView') {
+                    if (this.taskBarEditRecord.level === 0) {
+                        return;
+                    }
+                    else if (this.parent.enableMultiTaskbar) {
+                        let parentRecord = this.parent.getTaskByUniqueID(this.taskBarEditRecord.parentItem.uniqueID);
+                        if (!isNullOrUndefined(parentRecord) && !parentRecord.expanded) {
+                            this.prevZIndex = this.taskBarEditElement.style.zIndex;
+                            this.taskBarEditElement.style.zIndex = '1000';
+                            addClass([this.taskBarEditElement.querySelector('.e-gantt-child-taskbar')], 'e-collapsed-taskbar-drag');
+                        }
+                    }
+                }
             }
         }
         else {
@@ -12930,21 +13624,39 @@ class TaskbarEdit {
      */
     showHideTaskBarEditingElements(element, secondElement, fadeConnectorLine) {
         secondElement = secondElement ? secondElement : this.editElement;
+        let isShowProgressResizer = true;
+        if (this.parent.readOnly) {
+            return;
+        }
+        if (this.parent.viewType === 'ResourceView' && this.parent.enableMultiTaskbar && element) {
+            let record = this.parent.ganttChartModule.getRecordByTaskBar(element);
+            let parentRecord = this.parent.getParentTask(record.parentItem);
+            if (!isNullOrUndefined(parentRecord)) {
+                if (!parentRecord.expanded) {
+                    isShowProgressResizer = false;
+                }
+            }
+        }
         if (element) {
             if (element.querySelector('.' + taskBarLeftResizer)) {
                 addClass([element.querySelector('.' + taskBarLeftResizer)], [leftResizeGripper]);
                 addClass([element.querySelector('.' + taskBarRightResizer)], [rightResizeGripper]);
-                addClass([element.querySelector('.' + childProgressResizer)], [progressResizeGripper]);
+                if (isShowProgressResizer) {
+                    addClass([element.querySelector('.' + childProgressResizer)], [progressResizeGripper]);
+                }
             }
-            else if (this.parent.isAdaptive) {
+            else if (this.parent.isAdaptive && isShowProgressResizer) {
                 let record = this.parent.ganttChartModule.getRecordByTaskBar(element);
                 if (record.hasChildRecords) {
                     addClass([element], [activeParentTask]);
                 }
             }
-            addClass(this.parent.ganttChartModule.scrollElement.querySelectorAll('.' + connectorLineContainer), [connectorLineZIndex]);
+            if (isShowProgressResizer) {
+                /* tslint:disable-next-line */
+                addClass(this.parent.ganttChartModule.scrollElement.querySelectorAll('.' + connectorLineContainer), [connectorLineZIndex]);
+            }
             if (!isNullOrUndefined(this.parent.taskFields.dependency)
-                && element.querySelector('.' + connectorPointLeft)) {
+                && element.querySelector('.' + connectorPointLeft) && isShowProgressResizer) {
                 addClass([element.querySelector('.' + connectorPointLeft)], [connectorPointLeftHover]);
                 addClass([element.querySelector('.' + connectorPointRight)], [connectorPointRightHover]);
             }
@@ -13608,8 +14320,9 @@ class TaskbarEdit {
         let width = this.taskBarEditAction === 'MilestoneDrag' || item.isMilestone ?
             this.parent.chartRowsModule.milestoneHeight : item.width;
         let rightResizer = this.parent.isAdaptive ? (width - 2) : (width - 10);
-        let taskBarMainContainer$$1 = closest(this.taskBarEditElement, 'tr.' + chartRow)
-            .querySelector('.' + taskBarMainContainer);
+        /* tslint:disable-next-line */
+        let taskBarMainContainer$$1 = (!this.taskBarEditElement.classList.contains(taskBarMainContainer)) ? closest(this.taskBarEditElement, 'tr.' + chartRow)
+            .querySelector('.' + taskBarMainContainer) : this.taskBarEditElement;
         let leftLabelContainer$$1 = closest(this.taskBarEditElement, 'tr.' + chartRow)
             .querySelector('.' + leftLabelContainer);
         let rightLabelContainer$$1 = closest(this.taskBarEditElement, 'tr.' + chartRow)
@@ -13631,7 +14344,9 @@ class TaskbarEdit {
                 taskBarMainContainer$$1.style.width = (width) + 'px';
                 taskBarMainContainer$$1.style.left = (item.left) + 'px';
                 leftLabelContainer$$1.style.width = (item.left) + 'px';
-                rightLabelContainer$$1.style.left = (item.left + width) + 'px';
+                if (!isNullOrUndefined(rightLabelContainer$$1)) {
+                    rightLabelContainer$$1.style.left = (item.left + width) + 'px';
+                }
             }
             if (traceConnectorPointRight) {
                 traceConnectorPointRight.style.left = (this.parent.isAdaptive ? (width + 10) : (width + 2)) + 'px';
@@ -13639,7 +14354,9 @@ class TaskbarEdit {
             if (this.taskBarEditAction === 'MilestoneDrag' || item.isMilestone) {
                 taskBarMainContainer$$1.style.left = (item.left - (width / 2)) + 'px';
                 leftLabelContainer$$1.style.width = (item.left - (width / 2)) + 'px';
-                rightLabelContainer$$1.style.left = (item.left + (width / 2)) + 'px';
+                if (!isNullOrUndefined(rightLabelContainer$$1)) {
+                    rightLabelContainer$$1.style.left = (item.left + (width / 2)) + 'px';
+                }
             }
             else if (this.taskBarEditAction === 'ProgressResizing') {
                 traceChildTaskBar$$1.style.left = (item.left + item.progressWidth - 10) + 'px';
@@ -13674,7 +14391,9 @@ class TaskbarEdit {
                 manualParentTaskbar.style.left = (item.left - item.autoLeft) + 'px';
             }
             else {
-                traceChildTaskBar$$1.style.width = (width) + 'px';
+                if (!isNullOrUndefined(traceChildTaskBar$$1)) {
+                    traceChildTaskBar$$1.style.width = (width) + 'px';
+                }
                 if (!isNullOrUndefined(traceChildProgressBar$$1)) {
                     taskBarRightResizer$$1.style.left = rightResizer + 'px';
                     traceChildProgressBar$$1.style.width = (item.progressWidth) + 'px';
@@ -13698,6 +14417,15 @@ class TaskbarEdit {
             }
             else {
                 this.cancelTaskbarEditActionInMouseLeave();
+            }
+        }
+        if (this.parent.viewType === 'ResourceView' && this.parent.enableMultiTaskbar && !isNullOrUndefined(this.taskBarEditElement)) {
+            if (!isNullOrUndefined(this.taskBarEditElement.querySelector('.e-gantt-child-taskbar'))) {
+                if (this.taskBarEditElement.querySelector('.e-gantt-child-taskbar').classList.contains('e-collapsed-taskbar-drag')) {
+                    removeClass([this.taskBarEditElement.querySelector('.e-gantt-child-taskbar')], 'e-collapsed-taskbar-drag');
+                    this.taskBarEditElement.style.zIndex = this.prevZIndex;
+                    this.prevZIndex = '';
+                }
             }
         }
         if (!this.parent.isAdaptive || mouseDragged) {
@@ -13776,12 +14504,7 @@ class TaskbarEdit {
             this.parent.dataOperation.updateWidthLeft(args.data);
         }
         this.parent.dataOperation.updateTaskData(ganttRecord);
-        if (this.parent.viewType === 'ResourceView') {
-            this.parent.editModule.updateRsourceRecords(args);
-        }
-        else {
-            this.parent.editModule.initiateUpdateAction(args);
-        }
+        this.parent.editModule.initiateUpdateAction(args);
     }
     /**
      * To get progress in percentage.
@@ -13880,11 +14603,12 @@ class TaskbarEdit {
         let currentTarget;
         let target = this.getElementByPosition(e);
         let element = target;
+        let uniqueId = this.parent.viewType === 'ResourceView' ? fromItem.taskId : fromItem.rowUniqueID;
         if (this.taskBarEditAction === 'ConnectorPointLeftDrag') {
-            predecessor = fromItem.rowUniqueID + 'S';
+            predecessor = uniqueId + 'S';
         }
         else if (this.taskBarEditAction === 'ConnectorPointRightDrag') {
-            predecessor = fromItem.rowUniqueID + 'F';
+            predecessor = uniqueId + 'F';
         }
         if (this.connectorSecondAction) {
             if (this.connectorSecondAction === 'ConnectorPointLeftDrag') {
@@ -14014,7 +14738,13 @@ class DialogEdit {
         this.addedRecord = null;
         this.dialogEditValidationFlag = false;
         this.ganttResources = [];
+        /**
+         * @private
+         */
         this.previousResource = [];
+        /**
+         * @private
+         */
         this.isResourceUpdate = false;
         this.parent = parent;
         this.localeObj = this.parent.localeObj;
@@ -15044,7 +15774,8 @@ class DialogEdit {
                 column = {
                     field: resourceSettings.unit,
                     headerText: this.localeObj.getConstant('unit'),
-                    editType: 'numericedit'
+                    editType: 'numericedit',
+                    edit: { params: { min: 0 } }
                 };
                 columns.push(column);
             }
@@ -15139,7 +15870,7 @@ class DialogEdit {
     }
     isCheckIsDisabled(column) {
         let disabled = false;
-        if (column.allowEditing === false) {
+        if (column.allowEditing === false || column.isPrimaryKey || this.parent.readOnly) {
             if (this.parent.customColumns.indexOf(column.field) !== -1) {
                 disabled = true;
             }
@@ -15204,9 +15935,10 @@ class DialogEdit {
         let ganttObj = this.parent;
         let gridModel = this.beforeOpenArgs[itemName];
         let dependencyColumn = this.parent.columnByField[this.parent.taskFields.dependency];
-        if (dependencyColumn.allowEditing === false) {
+        if (dependencyColumn.allowEditing === false || dependencyColumn.isPrimaryKey || this.parent.readOnly) {
             gridModel.editSettings.allowEditing = false;
             gridModel.editSettings.allowAdding = false;
+            gridModel.editSettings.allowDeleting = false;
         }
         let ganttData = this.beforeOpenArgs.rowData;
         let preData = [];
@@ -15317,7 +16049,7 @@ class DialogEdit {
         TreeGrid.Inject(Selection, Filter, Edit$1);
         let treeGridObj = new TreeGrid(inputModel);
         let resourceColumn = this.parent.columnByField[this.parent.taskFields.resourceInfo];
-        if (resourceColumn.allowEditing === false) {
+        if (resourceColumn.allowEditing === false || resourceColumn.isPrimaryKey || this.parent.readOnly) {
             treeGridObj.allowSelection = false;
             treeGridObj.allowFiltering = false;
             treeGridObj.editSettings.allowEditing = false;
@@ -15336,7 +16068,7 @@ class DialogEdit {
         RichTextEditor.Inject(Toolbar$2, Link, HtmlEditor, QuickToolbar, Count);
         inputModel.value = ganttProp.notes;
         let notesColumn = this.parent.columnByField[this.parent.taskFields.notes];
-        if (notesColumn.allowEditing === false) {
+        if (notesColumn.allowEditing === false || notesColumn.isPrimaryKey || this.parent.readOnly) {
             inputModel.enabled = false;
         }
         let rteObj = new RichTextEditor(inputModel);
@@ -15405,10 +16137,12 @@ class DialogEdit {
             if (data.hasChildRecords) {
                 continue;
             }
+            let taskId = this.parent.viewType === 'ResourceView' ? data.ganttProperties.taskId.toString()
+                : data.ganttProperties.rowUniqueID.toString();
             let tempObject = {
-                id: data.ganttProperties.rowUniqueID.toString(),
-                text: (data.ganttProperties.rowUniqueID.toString() + '-' + data.ganttProperties.taskName),
-                value: data.ganttProperties.rowUniqueID.toString()
+                id: taskId,
+                text: (taskId + '-' + data.ganttProperties.taskName),
+                value: taskId
             };
             this.preTaskIds.push(tempObject.id);
             this.preTableCollection.push(tempObject);
@@ -15424,7 +16158,8 @@ class DialogEdit {
             for (let i = 0; i < predecessor.length; i++) {
                 let from = predecessor[i].from.toString();
                 let preData = {};
-                if (ganttProp.rowUniqueID.toString() !== from) {
+                let taskID = this.parent.viewType === 'ResourceView' ? ganttProp.taskId : ganttProp.rowUniqueID;
+                if (taskID.toString() !== from) {
                     preData.id = from;
                     for (let index = 0; index < idCollection.length; index++) {
                         if (idCollection[index].value === from) {
@@ -15433,7 +16168,7 @@ class DialogEdit {
                         }
                     }
                     preData.type = predecessor[i].type;
-                    let offset = Math.abs(predecessor[i].offset);
+                    let offset = predecessor[i].offset;
                     let offsetUnit = predecessor[i].offsetUnit;
                     preData.offset = this.parent.dataOperation.getDurationString(offset, offsetUnit);
                     preData.uniqueId = getUid$1();
@@ -15445,7 +16180,8 @@ class DialogEdit {
     }
     updatePredecessorDropDownData(ganttData) {
         let index = -1;
-        let id = ganttData.ganttProperties.rowUniqueID.toString();
+        let id = this.parent.viewType === 'ResourceView' ? ganttData.ganttProperties.taskId.toString()
+            : ganttData.ganttProperties.rowUniqueID.toString();
         index = this.preTaskIds.indexOf(id);
         this.preTableCollection.splice(index, 1);
         this.preTaskIds.splice(index, 1);
@@ -15455,7 +16191,7 @@ class DialogEdit {
         let ganttProp = data.ganttProperties;
         if (ganttProp.predecessor && ganttProp.predecessor.length > 0) {
             let predecessor = ganttProp.predecessor;
-            let fromId = ganttProp.rowUniqueID.toString();
+            let fromId = this.parent.viewType === 'ResourceView' ? ganttProp.taskId.toString() : ganttProp.rowUniqueID.toString();
             predecessor.forEach((item) => {
                 if (item.from.toString() === fromId) {
                     let toId = item.to;
@@ -15465,7 +16201,7 @@ class DialogEdit {
                         ids.splice(idIndex, 1);
                         idCollection.splice(idIndex, 1);
                     }
-                    let ganttData = this.parent.getRecordByID(toId);
+                    let ganttData = this.parent.connectorLineModule.getRecordByID(toId);
                     this.validSuccessorTasks(ganttData, ids, idCollection);
                 }
             });
@@ -15524,60 +16260,23 @@ class DialogEdit {
                 data: this.rowData,
                 action: 'DialogEditing'
             };
-            if (this.parent.viewType === 'ResourceView') {
-                if (this.isResourceUpdate) {
-                    this.parent.editModule.updateRsourceRecords(editArgs, true, this.previousResource);
-                    this.previousResource = [];
-                }
-                else {
-                    this.parent.editModule.updateRsourceRecords(editArgs);
-                }
-            }
-            else {
-                this.parent.editModule.initiateUpdateAction(editArgs);
-            }
+            this.parent.editModule.initiateUpdateAction(editArgs);
         }
         else {
             if (this.parent.viewType === 'ResourceView') {
                 let newRecords = extend({}, this.addedRecord, true);
-                let addingRecords = [];
-                let unassignedTasks;
                 if (newRecords[this.parent.taskFields.resourceInfo].length) {
-                    // Block for if the added recoed has resources
-                    newRecords[this.parent.taskFields.resourceInfo].forEach((resourceID) => {
-                        let taskIds = this.parent.getTaskIds();
-                        addingRecords.push(this.parent.currentViewData[taskIds.indexOf('R' + resourceID)]);
-                    });
-                    for (let j = 0; j < addingRecords.length; j++) {
-                        if (!addingRecords[j][this.parent.taskFields.resourceInfo]) {
-                            /* tslint:disable-next-line */
-                            this.parent.isSameResourceAdd = true;
-                            this.parent.editModule.addRecord(Object.assign({}, newRecords), 'Child', this.parent.ids.indexOf(addingRecords[j].ganttProperties.rowUniqueID));
-                            this.parent.isSameResourceAdd = false;
+                    for (let i = 0; i < newRecords[this.parent.taskFields.resourceInfo].length; i++) {
+                        let id = newRecords[this.parent.taskFields.resourceInfo][i].toString();
+                        let parentRecordIndex = this.parent.getTaskIds().indexOf('R' + id.toString());
+                        if (parentRecordIndex !== -1) {
+                            this.parent.editModule.addRecord(this.addedRecord, 'Child', parentRecordIndex);
+                            break;
                         }
                     }
                 }
                 else {
-                    // Block for if the added record has no resources
-                    for (let i = 0; i < this.parent.currentViewData.length; i++) {
-                        /* tslint:disable-next-line */
-                        if (this.parent.currentViewData[i].ganttProperties.taskName === this.parent.localeObj.getConstant('unassignedTask')) {
-                            unassignedTasks = this.parent.currentViewData[i];
-                        }
-                    }
-                    this.parent.isOnEdit = false;
-                    if (unassignedTasks) {
-                        /* tslint:disable-next-line */
-                        this.parent.editModule.addRecord(Object.assign({}, newRecords), 'Child', this.parent.ids.indexOf(unassignedTasks.ganttProperties.rowUniqueID));
-                    }
-                    else {
-                        // Block for create the unassigned task.
-                        let record = {};
-                        record[this.parent.taskFields.id] = 0;
-                        record[this.parent.taskFields.name] = this.parent.localeObj.getConstant('unassignedTask');
-                        this.parent.editModule.addRecord(Object.assign({}, record), 'Bottom');
-                        this.parent.editModule.addRecord(Object.assign({}, newRecords), 'Child', this.parent.ids.length - 1);
-                    }
+                    this.parent.editModule.addRecord(this.addedRecord, 'Bottom');
                 }
             }
             else {
@@ -15708,10 +16407,13 @@ class DialogEdit {
         }
         let selectedItems = this.ganttResources;
         if (this.parent.viewType === 'ResourceView' && !isNullOrUndefined(this.rowData.ganttProperties)) {
-            if (this.ganttResources !== this.rowData.ganttProperties.resourceInfo) {
+            if (JSON.stringify(this.ganttResources) !== JSON.stringify(this.rowData.ganttProperties.resourceInfo)) {
                 this.isResourceUpdate = true;
                 this.previousResource = !isNullOrUndefined(this.rowData.ganttProperties.resourceInfo) ?
                     [...this.rowData.ganttProperties.resourceInfo] : [];
+            }
+            else {
+                this.isResourceUpdate = false;
             }
         }
         let idArray = [];
@@ -15857,8 +16559,8 @@ class ConnectorLineEdit {
                     let from = 'from';
                     let to = 'to';
                     this.removeConnectorLineById('parent' + predecessor[from] + 'child' + predecessor[to]);
-                    parentGanttRecord = this.parent.getRecordByID(predecessor[from]);
-                    childGanttRecord = this.parent.getRecordByID(predecessor[to]);
+                    parentGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor[from]);
+                    childGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor[to]);
                     if ((parentGanttRecord && parentGanttRecord.expanded === true) ||
                         (childGanttRecord && childGanttRecord.expanded === true)) {
                         connectorObj =
@@ -15888,6 +16590,7 @@ class ConnectorLineEdit {
      */
     refreshEditedRecordConnectorLine(editedRecord) {
         this.removePreviousConnectorLines(this.parent.previousRecords);
+        this.parent.connectorLineModule.expandedRecords = this.parent.getExpandedRecords(this.parent.currentViewData);
         let editedConnectorLineString;
         editedConnectorLineString = this.getEditedConnectorLineString(editedRecord);
         this.parent.connectorLineModule.dependencyViewContainer.innerHTML =
@@ -15963,10 +16666,10 @@ class ConnectorLineEdit {
                 let currentIdArray = [];
                 if (visitedIdArray.indexOf(currentId) === -1) {
                     //Predecessor id not in records collection
-                    if (isNullOrUndefined(this.parent.getRecordByID(currentId))) {
+                    if (isNullOrUndefined(this.parent.connectorLineModule.getRecordByID(currentId))) {
                         return false;
                     }
-                    currentRecord = this.parent.getRecordByID(currentId).ganttProperties;
+                    currentRecord = this.parent.connectorLineModule.getRecordByID(currentId).ganttProperties;
                     if (!isNullOrUndefined(currentRecord.predecessor) && currentRecord.predecessor.length > 0) {
                         currentRecord.predecessor.forEach((value) => {
                             if (currentRecord.rowUniqueID.toString() !== value.from) {
@@ -16001,7 +16704,8 @@ class ConnectorLineEdit {
      */
     validatePredecessorRelation(ganttRecord, predecessorString) {
         let flag = true;
-        let recordId = ganttRecord.ganttProperties.rowUniqueID;
+        let recordId = this.parent.viewType === 'ResourceView' ? ganttRecord.ganttProperties.taskId
+            : ganttRecord.ganttProperties.rowUniqueID;
         let predecessorIdArray;
         let currentId;
         if (!isNullOrUndefined(predecessorString) && predecessorString.length > 0) {
@@ -16038,10 +16742,10 @@ class ConnectorLineEdit {
                     let currentRecord;
                     if (visitedIdArray.indexOf(currentId) === -1) {
                         //Predecessor id not in records collection
-                        if (isNullOrUndefined(this.parent.getRecordByID(currentId.toString()))) {
+                        if (isNullOrUndefined(this.parent.connectorLineModule.getRecordByID(currentId.toString()))) {
                             return false;
                         }
-                        currentRecord = this.parent.getRecordByID(currentId.toString()).ganttProperties;
+                        currentRecord = this.parent.connectorLineModule.getRecordByID(currentId.toString()).ganttProperties;
                         //  let currentPredecessor='';
                         if (!isNullOrUndefined(currentRecord.predecessor) && currentRecord.predecessor.length > 0) {
                             currentRecord.predecessor.forEach((value, index) => {
@@ -16241,7 +16945,7 @@ class ConnectorLineEdit {
         let validPredecessor = this.parent.predecessorModule.getValidPredecessor(record);
         for (let i = 0; i < validPredecessor.length; i++) {
             let predecessor = validPredecessor[i];
-            let parentTask = this.parent.getRecordByID(predecessor.from);
+            let parentTask = this.parent.connectorLineModule.getRecordByID(predecessor.from);
             let offset;
             if (isScheduledTask(parentTask.ganttProperties) && isScheduledTask(record.ganttProperties)) {
                 let tempStartDate;
@@ -16311,7 +17015,7 @@ class ConnectorLineEdit {
         let prevPredecessor = extend([], [], ganttRecord.ganttProperties.predecessor, true);
         let preLength = predecessor.length;
         for (let i = 0; i < preLength; i++) {
-            let parentGanttRecord = this.parent.getRecordByID(predecessor[i].from);
+            let parentGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor[i].from);
             let parentPredecessor = extend([], [], parentGanttRecord.ganttProperties.predecessor, true);
             let index = getIndex(predecessor[i], 'from', prevPredecessor, 'to');
             prevPredecessor.splice(index, 1);
@@ -16413,7 +17117,7 @@ class ConnectorLineEdit {
             ganttTaskData.endDate :
             this.dateValidateModule.getEndDate(startDate, ganttTaskData.duration, ganttTaskData.durationUnit, ganttTaskData, false);
         for (let i = 0; i < predecessor.length; i++) {
-            parentGanttRecord = this.parent.getRecordByID(predecessor[i].from);
+            parentGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor[i].from);
             let violationType = null;
             if (predecessor[i].type === 'FS') {
                 if (ganttTaskData.startDate < startDate) {
@@ -16479,7 +17183,7 @@ class ConnectorLineEdit {
             let prevPredecessor = prevData.ganttProperties.predecessor;
             if (!isNullOrUndefined(prevPredecessor)) {
                 for (let p = 0; p < prevPredecessor.length; p++) {
-                    let parentGanttRecord = this.parent.getRecordByID(prevPredecessor[p].from);
+                    let parentGanttRecord = this.parent.connectorLineModule.getRecordByID(prevPredecessor[p].from);
                     if (parentGanttRecord === data) {
                         data.ganttProperties.predecessor.push(prevPredecessor[p]);
                     }
@@ -16495,7 +17199,7 @@ class ConnectorLineEdit {
             }
             if (!isNullOrUndefined(newPredecessor)) {
                 for (let n = 0; n < newPredecessor.length; n++) {
-                    let parentGanttRecord = this.parent.getRecordByID(newPredecessor[n].from);
+                    let parentGanttRecord = this.parent.connectorLineModule.getRecordByID(newPredecessor[n].from);
                     let parentPredecessor = extend([], [], parentGanttRecord.ganttProperties.predecessor, true);
                     parentPredecessor.push(newPredecessor[n]);
                     this.parent.setRecordValue('predecessor', parentPredecessor, parentGanttRecord.ganttProperties, true);
@@ -16512,7 +17216,7 @@ class ConnectorLineEdit {
     removePredecessorByIndex(childRecord, index) {
         let childPredecessor = childRecord.ganttProperties.predecessor;
         let predecessor = childPredecessor.splice(index, 1);
-        let parentRecord = this.parent.getRecordByID(predecessor[0].from);
+        let parentRecord = this.parent.connectorLineModule.getRecordByID(predecessor[0].from);
         let parentPredecessor = parentRecord.ganttProperties.predecessor;
         let parentIndex = getIndex(predecessor[0], 'from', parentPredecessor, 'to');
         parentPredecessor.splice(parentIndex, 1);
@@ -16862,44 +17566,50 @@ class Edit$2 {
      * @param {Object} data - Defines new data to update.
      */
     updateRecordByID(data) {
-        let tasks = this.parent.taskFields;
-        if (isNullOrUndefined(data) || isNullOrUndefined(data[tasks.id])) {
-            return;
-        }
-        let ganttData = this.parent.getRecordByID(data[tasks.id]);
-        if (isBlazor()) {
-            let keys = Object.keys(data);
-            if (keys.indexOf(tasks.startDate) !== -1 && !isNullOrUndefined(getValue(this.parent.taskFields.startDate, data))) {
-                setValue(this.parent.taskFields.startDate, this.parent.dataOperation.getDateFromFormat(getValue(this.parent.taskFields.startDate, data)), data);
+        if (!this.parent.readOnly) {
+            let tasks = this.parent.taskFields;
+            if (isNullOrUndefined(data) || isNullOrUndefined(data[tasks.id])) {
+                return;
             }
-            if (keys.indexOf(tasks.endDate) !== -1 && !isNullOrUndefined(getValue(this.parent.taskFields.endDate, data))) {
-                setValue(this.parent.taskFields.endDate, this.parent.dataOperation.getDateFromFormat(getValue(this.parent.taskFields.endDate, data)), data);
+            let ganttData = this.parent.viewType === 'ResourceView' ?
+                this.parent.flatData[this.parent.getTaskIds().indexOf('T' + data[tasks.id])] : this.parent.getRecordByID(data[tasks.id]);
+            if (isBlazor()) {
+                let keys = Object.keys(data);
+                if (keys.indexOf(tasks.startDate) !== -1 && !isNullOrUndefined(getValue(this.parent.taskFields.startDate, data))) {
+                    setValue(this.parent.taskFields.startDate, this.parent.dataOperation.getDateFromFormat(getValue(this.parent.taskFields.startDate, data)), data);
+                }
+                if (keys.indexOf(tasks.endDate) !== -1 && !isNullOrUndefined(getValue(this.parent.taskFields.endDate, data))) {
+                    setValue(this.parent.taskFields.endDate, this.parent.dataOperation.getDateFromFormat(getValue(this.parent.taskFields.endDate, data)), data);
+                }
+                /* tslint:disable-next-line */
+                if (keys.indexOf(tasks.baselineStartDate) !== -1 && !isNullOrUndefined(getValue(this.parent.taskFields.baselineStartDate, data))) {
+                    setValue(this.parent.taskFields.baselineStartDate, this.parent.dataOperation.getDateFromFormat(getValue(this.parent.taskFields.baselineStartDate, data)), data);
+                }
+                if (keys.indexOf(tasks.baselineEndDate) !== -1 && !isNullOrUndefined(getValue(this.parent.taskFields.baselineEndDate, data))) {
+                    setValue(this.parent.taskFields.baselineEndDate, this.parent.dataOperation.getDateFromFormat(getValue(this.parent.taskFields.baselineEndDate, data)), data);
+                }
             }
-            /* tslint:disable-next-line */
-            if (keys.indexOf(tasks.baselineStartDate) !== -1 && !isNullOrUndefined(getValue(this.parent.taskFields.baselineStartDate, data))) {
-                setValue(this.parent.taskFields.baselineStartDate, this.parent.dataOperation.getDateFromFormat(getValue(this.parent.taskFields.baselineStartDate, data)), data);
-            }
-            if (keys.indexOf(tasks.baselineEndDate) !== -1 && !isNullOrUndefined(getValue(this.parent.taskFields.baselineEndDate, data))) {
-                setValue(this.parent.taskFields.baselineEndDate, this.parent.dataOperation.getDateFromFormat(getValue(this.parent.taskFields.baselineEndDate, data)), data);
-            }
-        }
-        if (!isNullOrUndefined(this.parent.editModule) && ganttData) {
-            this.parent.isOnEdit = true;
-            this.validateUpdateValues(data, ganttData, true);
-            let keys = Object.keys(data);
-            if (keys.indexOf(tasks.startDate) !== -1 || keys.indexOf(tasks.endDate) !== -1 ||
-                keys.indexOf(tasks.duration) !== -1) {
-                this.parent.dataOperation.calculateScheduledValues(ganttData, ganttData.taskData, false);
-            }
-            this.parent.dataOperation.updateWidthLeft(ganttData);
-            if (!isUndefined(data[this.parent.taskFields.dependency]) &&
-                data[this.parent.taskFields.dependency] !== ganttData.ganttProperties.predecessorsName) {
-                this.parent.connectorLineEditModule.updatePredecessor(ganttData, data[this.parent.taskFields.dependency]);
-            }
-            else {
-                let args = {};
-                args.data = ganttData;
-                this.parent.editModule.initiateUpdateAction(args);
+            if (!isNullOrUndefined(this.parent.editModule) && ganttData) {
+                this.parent.isOnEdit = true;
+                this.validateUpdateValues(data, ganttData, true);
+                let keys = Object.keys(data);
+                if (keys.indexOf(tasks.startDate) !== -1 || keys.indexOf(tasks.endDate) !== -1 ||
+                    keys.indexOf(tasks.duration) !== -1) {
+                    this.parent.dataOperation.calculateScheduledValues(ganttData, ganttData.taskData, false);
+                }
+                this.parent.dataOperation.updateWidthLeft(ganttData);
+                if (!isUndefined(data[this.parent.taskFields.dependency]) &&
+                    data[this.parent.taskFields.dependency] !== ganttData.ganttProperties.predecessorsName) {
+                    this.parent.connectorLineEditModule.updatePredecessor(ganttData, data[this.parent.taskFields.dependency]);
+                }
+                else {
+                    let args = {};
+                    args.data = ganttData;
+                    if (this.parent.viewType === 'ResourceView') {
+                        args.action = 'methodUpdate';
+                    }
+                    this.parent.editModule.initiateUpdateAction(args);
+                }
             }
         }
     }
@@ -16941,6 +17651,16 @@ class Edit$2 {
             }
             else if (tasks.resourceInfo === key) {
                 let resourceData = ganttObj.dataOperation.setResourceInfo(data);
+                if (this.parent.viewType === 'ResourceView') {
+                    if (JSON.stringify(resourceData) !== JSON.stringify(ganttData.ganttProperties.resourceInfo)) {
+                        this.parent.editModule.dialogModule.isResourceUpdate = true;
+                        this.parent.editModule.dialogModule.previousResource = !isNullOrUndefined(ganttData.ganttProperties.resourceInfo) ?
+                            [...ganttData.ganttProperties.resourceInfo] : [];
+                    }
+                    else {
+                        this.parent.editModule.dialogModule.isResourceUpdate = false;
+                    }
+                }
                 ganttData.ganttProperties.resourceInfo = resourceData;
                 ganttObj.dataOperation.updateMappingData(ganttData, 'resourceInfo');
             }
@@ -17045,7 +17765,7 @@ class Edit$2 {
                             if (column === 'duration' || column === 'endDate') {
                                 this.parent.dataOperation.updateUnitWithWork(currentData);
                                 if (ganttProp.duration === 0) {
-                                    this.parent.setRecordValue('work', 0, ganttProp);
+                                    this.parent.setRecordValue('work', 0, ganttProp, true);
                                     if (!isNullOrUndefined(this.parent.taskFields.work)) {
                                         this.parent.dataOperation.updateMappingData(currentData, 'work');
                                     }
@@ -17181,74 +17901,6 @@ class Edit$2 {
             }
         }
         return isValidatePredecessor;
-    }
-    /**
-     * Method to update the resource records while editing
-     * @private
-     */
-    updateRsourceRecords(args, isResourceEdited, previousResources) {
-        let editedRecords = [];
-        let unassignedTasks;
-        if (!args.data.hasChildRecords) {
-            for (let i = 0; i < this.parent.getTaskIds().length; i++) {
-                if (this.parent.getTaskIds()[i] === 'T' + args.data.ganttProperties.taskId) {
-                    editedRecords.push(this.parent.currentViewData[i]);
-                    this.updateGanttProperties(args.data, this.parent.currentViewData[i]);
-                    this.parent.dataOperation.updateTaskData(this.parent.currentViewData[i]);
-                }
-            }
-        }
-        if (isResourceEdited) {
-            // Block for if the resources of the task gets edited.
-            let addRecords = [];
-            this.deleteRow(editedRecords);
-            if (args.data.taskData[this.parent.taskFields.resourceInfo].length) {
-                args.data.taskData[this.parent.taskFields.resourceInfo].forEach((resourceID) => {
-                    let taskIds = this.parent.getTaskIds();
-                    addRecords.push(this.parent.currentViewData[taskIds.indexOf('R' + resourceID)]);
-                });
-                for (let j = 0; j < addRecords.length; j++) {
-                    if (!addRecords[j][this.parent.taskFields.resourceInfo]) {
-                        let data = Object.assign({}, args.data);
-                        data[this.parent.taskFields.resourceInfo] = data.taskData[this.parent.taskFields.resourceInfo];
-                        /* tslint:disable-next-line */
-                        this.parent.isSameResourceAdd = true;
-                        this.parent.editModule.addRecord(data, 'Child', this.parent.ids.indexOf(addRecords[j].ganttProperties.rowUniqueID));
-                        this.parent.isSameResourceAdd = false;
-                    }
-                }
-            }
-            else {
-                // Block for if the added record has no resources
-                for (let i = 0; i < this.parent.currentViewData.length; i++) {
-                    if (this.parent.currentViewData[i].ganttProperties.taskName === this.parent.localeObj.getConstant('unassignedTask')) {
-                        unassignedTasks = this.parent.currentViewData[i];
-                    }
-                }
-                this.parent.isOnEdit = false;
-                if (unassignedTasks) {
-                    /* tslint:disable-next-line */
-                    this.parent.editModule.addRecord(Object.assign({}, args.data), 'Child', this.parent.ids.indexOf(unassignedTasks.ganttProperties.rowUniqueID));
-                }
-                else {
-                    // Block for create the unassigned task.
-                    let unassignTask = {};
-                    unassignTask[this.parent.taskFields.id] = 0;
-                    unassignTask[this.parent.taskFields.name] = this.parent.localeObj.getConstant('unassignedTask');
-                    this.parent.editModule.addRecord(Object.assign({}, unassignTask), 'Bottom');
-                    this.parent.editModule.addRecord(Object.assign({}, args.data), 'Child', this.parent.ids.length - 1);
-                }
-            }
-        }
-        else {
-            for (let j = 0; j < editedRecords.length; j++) {
-                let editArgs = {};
-                editArgs.data = editedRecords[j];
-                this.parent.isOnEdit = true;
-                this.initiateUpdateAction(editArgs);
-                this.parent.isOnEdit = false;
-            }
-        }
     }
     /**
      * Method to copy the ganttProperties values
@@ -17673,6 +18325,21 @@ class Edit$2 {
         this.resetEditProperties();
         this.parent.trigger('actionFailure', { error: e });
     }
+    updateSharedTask(data) {
+        let ids = data.ganttProperties.sharedTaskUniqueIds;
+        for (let i = 0; i < ids.length; i++) {
+            let editRecord = this.parent.flatData[this.parent.ids.indexOf(ids[i].toString())];
+            if (editRecord.uniqueID !== data.uniqueID) {
+                this.updateGanttProperties(data, editRecord);
+                this.parent.setRecordValue('taskData', data.taskData, editRecord, true);
+                this.parent.dataOperation.updateTaskData(editRecord);
+                this.parent.dataOperation.updateResourceName(editRecord);
+                if (!isNullOrUndefined(editRecord.parentItem)) {
+                    this.parent.dataOperation.updateParentItems(editRecord.parentItem);
+                }
+            }
+        }
+    }
     /**
      * Method for save action success for local and remote data
      */
@@ -17682,12 +18349,37 @@ class Edit$2 {
             let tempArray = this.parent.editedRecords;
             this.parent.timelineModule.updateTimeLineOnEditing(tempArray, args.action);
         }
-        this.parent.chartRowsModule.refreshRecords(this.parent.editedRecords);
-        if (this.parent.isConnectorLineUpdate && !isNullOrUndefined(this.parent.connectorLineEditModule)) {
-            this.parent.updatedConnectorLineCollection = [];
-            this.parent.connectorLineIds = [];
-            this.parent.connectorLineEditModule.refreshEditedRecordConnectorLine(this.parent.editedRecords);
-            this.updateScheduleDatesOnEditing(args);
+        if (this.parent.viewType === 'ResourceView') {
+            if (args.action === 'TaskbarEditing') {
+                this.updateSharedTask(args.data);
+            }
+            else if (args.action === 'DialogEditing' || args.action === 'CellEditing' || args.action === 'methodUpdate') {
+                if (this.parent.editModule.dialogModule.isResourceUpdate) {
+                    /* tslint:disable-next-line */
+                    this.updateResoures(this.parent.editModule.dialogModule.previousResource, args.data.ganttProperties.resourceInfo, args.data);
+                    this.updateSharedTask(args.data);
+                    this.isTreeGridRefresh = true;
+                }
+                else {
+                    this.updateSharedTask(args.data);
+                }
+            }
+            // method to update the edited parent records
+            for (let k = 0; k < this.updateParentRecords.length; k++) {
+                this.parent.dataOperation.updateParentItems(this.updateParentRecords[k]);
+            }
+            this.updateParentRecords = [];
+            this.parent.editModule.dialogModule.isResourceUpdate = false;
+            this.parent.editModule.dialogModule.previousResource = [];
+        }
+        if (!this.isTreeGridRefresh) {
+            this.parent.chartRowsModule.refreshRecords(this.parent.editedRecords);
+            if (this.parent.isConnectorLineUpdate && !isNullOrUndefined(this.parent.connectorLineEditModule)) {
+                this.parent.updatedConnectorLineCollection = [];
+                this.parent.connectorLineIds = [];
+                this.parent.connectorLineEditModule.refreshEditedRecordConnectorLine(this.parent.editedRecords);
+                this.updateScheduleDatesOnEditing(args);
+            }
         }
         if (!this.parent.editSettings.allowTaskbarEditing || (this.parent.editSettings.allowTaskbarEditing &&
             !this.taskbarEditModule.dependencyCancel)) {
@@ -17713,6 +18405,246 @@ class Edit$2 {
             if (isBlazor()) {
                 this.parent.updateDataArgs(eventArgs);
             }
+        }
+        if (this.parent.viewType === 'ResourceView' && this.isTreeGridRefresh) {
+            this.parent.treeGrid.refresh();
+            this.isTreeGridRefresh = false;
+        }
+    }
+    updateResoures(prevResource, currentResource, updateRecord) {
+        let flatRecords = this.parent.flatData;
+        let currentLength = currentResource ? currentResource.length : 0;
+        let previousLength = prevResource ? prevResource.length : 0;
+        if (currentLength === 0 && previousLength === 0) {
+            return;
+        }
+        for (let index = 0; index < currentLength; index++) {
+            let recordIndex = [];
+            let resourceID = parseInt(currentResource[index][this.parent.resourceFields.id], 10);
+            for (let i = 0; i < prevResource.length; i++) {
+                if (parseInt(prevResource[i][this.parent.resourceFields.id], 10) === resourceID) {
+                    recordIndex.push(i);
+                    break;
+                }
+            }
+            if (recordIndex.length === 0) {
+                let parentRecord = flatRecords[this.parent.getTaskIds().indexOf('R' + resourceID)];
+                if (parentRecord) {
+                    this.addNewRecord(updateRecord, parentRecord);
+                }
+            }
+            else {
+                prevResource.splice(parseInt(recordIndex[0].toString(), 10), 1);
+            }
+        }
+        let prevLength = prevResource ? prevResource.length : 0;
+        for (let index = 0; index < prevLength; index++) {
+            let taskID = updateRecord.ganttProperties.taskId;
+            let resourceID = prevResource[index][this.parent.resourceFields.id];
+            let record = flatRecords[this.parent.getTaskIds().indexOf('R' + resourceID)];
+            for (let j = 0; j < record.childRecords.length; j++) {
+                if (record.childRecords[j].ganttProperties.taskId === taskID) {
+                    this.removeChildRecord(record.childRecords[j]);
+                }
+            }
+        }
+        if (currentLength > 0) {
+            let parentTask = this.parent.getParentTask(updateRecord.parentItem);
+            if (parentTask) {
+                if (parentTask.ganttProperties.taskName === this.parent.localeObj.getConstant('unassignedTask')) {
+                    this.removeChildRecord(updateRecord);
+                }
+            }
+        }
+        //Assign resource to unassigned task
+        if (currentLength === 0) {
+            this.checkWithUnassignedTask(updateRecord);
+        }
+    }
+    /**
+     * @private
+     */
+    checkWithUnassignedTask(updateRecord) {
+        let unassignedTasks = null;
+        // Block for check the unassigned task.
+        for (let i = 0; i < this.parent.flatData.length; i++) {
+            if (this.parent.flatData[i].ganttProperties.taskName === this.parent.localeObj.getConstant('unassignedTask')) {
+                unassignedTasks = this.parent.flatData[i];
+            }
+        }
+        if (!isNullOrUndefined(unassignedTasks)) {
+            this.addNewRecord(updateRecord, unassignedTasks);
+        }
+        else {
+            // Block for create the unassigned task.
+            let unassignTaskObj = {};
+            unassignTaskObj[this.parent.taskFields.id] = 0;
+            unassignTaskObj[this.parent.taskFields.name] = this.parent.localeObj.getConstant('unassignedTask');
+            let cAddedRecord;
+            let beforeEditStatus = this.parent.isOnEdit;
+            this.parent.isOnEdit = false;
+            cAddedRecord = this.parent.dataOperation.createRecord(unassignTaskObj, 0);
+            this.parent.isOnEdit = beforeEditStatus;
+            this.addRecordAsBottom(cAddedRecord);
+            let parentRecord = this.parent.flatData[this.parent.flatData.length - 1];
+            this.addNewRecord(updateRecord, parentRecord);
+        }
+    }
+    addRecordAsBottom(cAddedRecord) {
+        let recordIndex1 = this.parent.flatData.length;
+        if (this.parent.taskFields.parentID && this.parent.dataSource.length > 0) {
+            this.parent.dataSource.splice(recordIndex1 + 1, 0, cAddedRecord.taskData);
+        }
+        this.parent.currentViewData.splice(recordIndex1 + 1, 0, cAddedRecord);
+        this.parent.flatData.splice(recordIndex1 + 1, 0, cAddedRecord);
+        this.parent.ids.splice(recordIndex1 + 1, 0, cAddedRecord.ganttProperties.rowUniqueID.toString());
+        /* tslint:disable-next-line */
+        let taskId = cAddedRecord.level === 0 ? 'R' + cAddedRecord.ganttProperties.taskId : 'T' + cAddedRecord.ganttProperties.taskId;
+        this.parent.getTaskIds().splice(recordIndex1 + 1, 0, taskId);
+        this.updateTreeGridUniqueID(cAddedRecord, 'add');
+    }
+    addNewRecord(updateRecord, parentRecord) {
+        let cAddedRecord = null;
+        cAddedRecord = extend({}, {}, updateRecord, true);
+        this.parent.setRecordValue('uniqueID', getUid(this.parent.element.id + '_data_'), cAddedRecord);
+        this.parent.setRecordValue('uniqueID', cAddedRecord.uniqueID, cAddedRecord.ganttProperties, true);
+        let uniqueId = cAddedRecord.uniqueID.replace(this.parent.element.id + '_data_', '');
+        this.parent.setRecordValue('rowUniqueID', uniqueId, cAddedRecord);
+        this.parent.setRecordValue('rowUniqueID', uniqueId, cAddedRecord.ganttProperties, true);
+        this.parent.setRecordValue('level', 1, cAddedRecord);
+        if (this.parent.taskFields.parentID) {
+            this.parent.setRecordValue('parentId', parentRecord.ganttProperties.taskId, cAddedRecord.ganttProperties, true);
+        }
+        this.parent.setRecordValue('parentItem', this.parent.dataOperation.getCloneParent(parentRecord), cAddedRecord);
+        let parentUniqId = cAddedRecord.parentItem ? cAddedRecord.parentItem.uniqueID : null;
+        this.parent.setRecordValue('parentUniqueID', parentUniqId, cAddedRecord);
+        updateRecord.ganttProperties.sharedTaskUniqueIds.push(uniqueId);
+        cAddedRecord.ganttProperties.sharedTaskUniqueIds = updateRecord.ganttProperties.sharedTaskUniqueIds;
+        this.addRecordAsChild(parentRecord, cAddedRecord);
+    }
+    removeChildRecord(record) {
+        let gObj = this.parent;
+        let dataSource;
+        let data = [];
+        if (this.parent.dataSource instanceof DataManager && this.parent.dataSource.dataSource.json.length > 0) {
+            data = this.parent.dataSource.dataSource.json;
+        }
+        else {
+            data = this.parent.currentViewData;
+        }
+        dataSource = this.parent.dataSource;
+        let deletedRow = record;
+        let flatParentData = this.parent.getParentTask(deletedRow.parentItem);
+        if (deletedRow) {
+            if (deletedRow.parentItem) {
+                let deleteChildRecords = flatParentData ? flatParentData.childRecords : [];
+                let childIndex = 0;
+                if (deleteChildRecords && deleteChildRecords.length > 0) {
+                    if (deleteChildRecords.length === 1) {
+                        //For updating the parent record which has no child reords.
+                        this.parent.isOnDelete = true;
+                        deleteChildRecords[0].isDelete = true;
+                        this.parent.dataOperation.updateParentItems(flatParentData);
+                        this.parent.isOnDelete = false;
+                        deleteChildRecords[0].isDelete = false;
+                    }
+                    childIndex = deleteChildRecords.indexOf(deletedRow);
+                    flatParentData.childRecords.splice(childIndex, 1);
+                    // collection for updating parent record
+                    this.updateParentRecords.push(flatParentData);
+                }
+            }
+            if (deletedRow.ganttProperties.sharedTaskUniqueIds.length) {
+                let uniqueIDIndex = deletedRow.ganttProperties.sharedTaskUniqueIds.indexOf(deletedRow.ganttProperties.rowUniqueID);
+                deletedRow.ganttProperties.sharedTaskUniqueIds.splice(uniqueIDIndex, 1);
+            }
+            this.updateTreeGridUniqueID(deletedRow, 'delete');
+            //method to delete the record from datasource collection
+            if (deletedRow && !this.parent.taskFields.parentID) {
+                let deleteRecordIDs = [];
+                deleteRecordIDs.push(deletedRow.ganttProperties.rowUniqueID.toString());
+                this.parent.editModule.removeFromDataSource(deleteRecordIDs);
+            }
+            if (gObj.taskFields.parentID) {
+                let idx;
+                let ganttData = this.parent.currentViewData;
+                for (let i = 0; i < ganttData.length; i++) {
+                    if (ganttData[i].ganttProperties.rowUniqueID === deletedRow.ganttProperties.rowUniqueID) {
+                        idx = i;
+                    }
+                }
+                if (idx !== -1) {
+                    if (dataSource.length > 0) {
+                        dataSource.splice(idx, 1);
+                    }
+                    data.splice(idx, 1);
+                    this.parent.flatData.splice(idx, 1);
+                    this.parent.ids.splice(idx, 1);
+                    this.parent.getTaskIds().splice(idx, 1);
+                }
+            }
+            let recordIndex = data.indexOf(deletedRow);
+            if (!gObj.taskFields.parentID) {
+                let deletedRecordCount = this.parent.editModule.getChildCount(deletedRow, 0);
+                data.splice(recordIndex, deletedRecordCount + 1);
+                this.parent.flatData.splice(recordIndex, deletedRecordCount + 1);
+                this.parent.ids.splice(recordIndex, deletedRecordCount + 1);
+                this.parent.getTaskIds().splice(recordIndex, deletedRecordCount + 1);
+            }
+            if (deletedRow.parentItem && flatParentData && flatParentData.childRecords && !flatParentData.childRecords.length) {
+                flatParentData.expanded = false;
+                flatParentData.hasChildRecords = false;
+            }
+        }
+    }
+    // Method to add new record after resource edit
+    addRecordAsChild(droppedRecord, draggedRecord) {
+        let gObj = this.parent;
+        let recordIndex1 = this.parent.flatData.indexOf(droppedRecord);
+        let childRecords = this.parent.editModule.getChildCount(droppedRecord, 0);
+        let childRecordsLength;
+        if (!isNullOrUndefined(this.addRowIndex) && this.addRowPosition && droppedRecord.childRecords && this.addRowPosition !== 'Child') {
+            let dropChildRecord = droppedRecord.childRecords[this.addRowIndex];
+            let position = this.addRowPosition === 'Above' || this.addRowPosition === 'Below' ? this.addRowPosition :
+                'Child';
+            childRecordsLength = dropChildRecord ? this.addRowIndex + recordIndex1 + 1 :
+                childRecords + recordIndex1 + 1;
+            childRecordsLength = position === 'Above' ? childRecordsLength : childRecordsLength + 1;
+        }
+        else {
+            childRecordsLength = (isNullOrUndefined(childRecords) ||
+                childRecords === 0) ? recordIndex1 + 1 :
+                childRecords + recordIndex1 + 1;
+        }
+        if (gObj.taskFields.parentID && this.parent.dataSource.length > 0) {
+            this.parent.dataSource.splice(childRecordsLength, 0, draggedRecord.taskData);
+        }
+        //this.ganttData.splice(childRecordsLength, 0, this.draggedRecord);
+        this.parent.currentViewData.splice(childRecordsLength, 0, draggedRecord);
+        this.parent.flatData.splice(childRecordsLength, 0, draggedRecord);
+        this.parent.ids.splice(childRecordsLength, 0, draggedRecord.ganttProperties.rowUniqueID.toString());
+        this.updateTreeGridUniqueID(draggedRecord, 'add');
+        /* tslint:disable-next-line */
+        let recordId = draggedRecord.level === 0 ? 'R' + draggedRecord.ganttProperties.taskId : 'T' + draggedRecord.ganttProperties.taskId;
+        this.parent.getTaskIds().splice(childRecordsLength, 0, recordId);
+        if (!droppedRecord.hasChildRecords) {
+            droppedRecord.hasChildRecords = true;
+            droppedRecord.expanded = true;
+            if (!droppedRecord.childRecords.length) {
+                droppedRecord.childRecords = [];
+                if (!gObj.taskFields.parentID && isNullOrUndefined(droppedRecord.taskData[this.parent.taskFields.child])) {
+                    droppedRecord.taskData[this.parent.taskFields.child] = [];
+                }
+            }
+        }
+        droppedRecord.childRecords.splice(droppedRecord.childRecords.length, 0, draggedRecord);
+        if (!isNullOrUndefined(draggedRecord) && !this.parent.taskFields.parentID
+            && !isNullOrUndefined(droppedRecord.taskData[this.parent.taskFields.child])) {
+            droppedRecord.taskData[this.parent.taskFields.child].splice(droppedRecord.childRecords.length, 0, draggedRecord.taskData);
+        }
+        if (!isNullOrUndefined(draggedRecord.parentItem)) {
+            //collection to update the parent records
+            this.updateParentRecords.push(droppedRecord);
         }
     }
     resetEditProperties() {
@@ -17805,15 +18737,20 @@ class Edit$2 {
             }
         }
     }
+    /**
+     *
+     * @param selectedRecords - Defines the deleted records
+     * Method to delete the records from resource view Gantt.
+     */
     deleteResourceRecords(selectedRecords) {
         let deleteRecords = [];
         for (let i = 0; i < selectedRecords.length; i++) {
             /* tslint:disable-next-line */
             if (selectedRecords[i].parentItem) {
-                for (let j = 0; j < this.parent.getTaskIds().length; j++) {
-                    if (this.parent.getTaskIds()[j] === 'T' + selectedRecords[i].ganttProperties.taskId) {
-                        deleteRecords.push(this.parent.currentViewData[j]);
-                    }
+                let data = selectedRecords[i];
+                let ids = data.ganttProperties.sharedTaskUniqueIds;
+                for (let j = 0; j < ids.length; j++) {
+                    deleteRecords.push(this.parent.flatData[this.parent.ids.indexOf(ids[j].toString())]);
                 }
             }
         }
@@ -17860,8 +18797,15 @@ class Edit$2 {
             case 'number':
             case 'string':
                 let taskId = taskDetail.toString();
-                if (!isNullOrUndefined(taskId) && this.parent.ids.indexOf(taskId) !== -1) {
-                    this.targetedRecords.push(this.parent.getRecordByID(taskId));
+                if (this.parent.viewType === 'ResourceView') {
+                    if (!isNullOrUndefined(taskId) && this.parent.getTaskIds().indexOf('T' + taskId) !== -1) {
+                        this.targetedRecords.push(this.parent.flatData[this.parent.getTaskIds().indexOf('T' + taskId)]);
+                    }
+                }
+                else {
+                    if (!isNullOrUndefined(taskId) && this.parent.ids.indexOf(taskId) !== -1) {
+                        this.targetedRecords.push(this.parent.getRecordByID(taskId));
+                    }
                 }
                 break;
             case 'object':
@@ -17889,9 +18833,14 @@ class Edit$2 {
             else {
                 // Get record from array of task ids
                 for (let i = 0; i < taskDetailArray.length; i++) {
-                    let taskId = taskDetailArray[i].toString();
-                    if (!isNullOrUndefined(taskId) && this.parent.ids.indexOf(taskId) !== -1) {
-                        this.targetedRecords.push(this.parent.getRecordByID(taskId));
+                    let id = taskDetailArray[i].toString();
+                    if (this.parent.viewType === 'ResourceView') {
+                        if (!isNullOrUndefined(id) && this.parent.getTaskIds().indexOf('T' + id) !== -1) {
+                            this.targetedRecords.push(this.parent.flatData[this.parent.getTaskIds().indexOf('T' + id)]);
+                        }
+                    }
+                    else if (!isNullOrUndefined(id) && this.parent.ids.indexOf(id) !== -1) {
+                        this.targetedRecords.push(this.parent.getRecordByID(id));
                     }
                 }
             }
@@ -17953,14 +18902,18 @@ class Edit$2 {
         let predecessors = record.ganttProperties.predecessor;
         for (let i = 0; i < predecessors.length; i++) {
             let predecessor = predecessors[i];
-            if (predecessor.from.toString() === record.ganttProperties.rowUniqueID.toString()) {
-                let toRecord = this.parent.getRecordByID(predecessor.to.toString());
+            let recordId = this.parent.viewType === 'ResourceView' ? record.ganttProperties.taskId :
+                record.ganttProperties.rowUniqueID;
+            if (predecessor.from.toString() === recordId.toString()) {
+                let toRecord = this.parent.connectorLineModule.getRecordByID(predecessor.to.toString());
                 if (!isNullOrUndefined(toRecord)) {
                     let toRecordPredcessor = extend([], [], toRecord.ganttProperties.predecessor, true);
                     let index;
                     for (let t = 0; t < toRecordPredcessor.length; t++) {
-                        if (toRecordPredcessor[t].to.toString() === toRecord.ganttProperties.rowUniqueID.toString()
-                            && toRecordPredcessor[t].from.toString() === record.ganttProperties.rowUniqueID.toString()) {
+                        let toId = this.parent.viewType === 'ResourceView' ? toRecord.ganttProperties.taskId :
+                            toRecord.ganttProperties.rowUniqueID;
+                        if (toRecordPredcessor[t].to.toString() === toId.toString()
+                            && toRecordPredcessor[t].from.toString() === recordId.toString()) {
                             index = t;
                             break;
                         }
@@ -17969,14 +18922,16 @@ class Edit$2 {
                     this.updatePredecessorValues(toRecord, toRecordPredcessor);
                 }
             }
-            else if (predecessor.to.toString() === record.ganttProperties.rowUniqueID.toString()) {
-                let fromRecord = this.parent.getRecordByID(predecessor.from.toString());
+            else if (predecessor.to.toString() === recordId.toString()) {
+                let fromRecord = this.parent.connectorLineModule.getRecordByID(predecessor.from.toString());
                 if (!isNullOrUndefined(fromRecord)) {
                     let fromRecordPredcessor = extend([], [], fromRecord.ganttProperties.predecessor, true);
                     let index;
                     for (let t = 0; t < fromRecordPredcessor.length; t++) {
-                        if (fromRecordPredcessor[t].from.toString() === fromRecord.ganttProperties.rowUniqueID.toString()
-                            && fromRecordPredcessor[t].to.toString() === record.ganttProperties.rowUniqueID.toString()) {
+                        let fromId = this.parent.viewType === 'ResourceView' ? fromRecord.ganttProperties.taskId :
+                            fromRecord.ganttProperties.rowUniqueID;
+                        if (fromRecordPredcessor[t].from.toString() === fromId.toString()
+                            && fromRecordPredcessor[t].to.toString() === recordId.toString()) {
                             index = t;
                             break;
                         }
@@ -17998,45 +18953,47 @@ class Edit$2 {
      * Method to update TaskID of a gantt record
      */
     updateTaskId(currentId, newId) {
-        let cId = typeof currentId === 'number' ? currentId.toString() : currentId;
-        let nId = typeof newId === 'number' ? newId.toString() : newId;
-        let ids = this.parent.ids;
-        if (!isNullOrUndefined(cId) && !isNullOrUndefined(nId)) {
-            let cIndex = ids.indexOf(cId);
-            let nIndex = ids.indexOf(nId);
-            // return false for invalid taskID
-            if (cIndex === -1 || nIndex > -1) {
-                return;
-            }
-            let thisRecord = this.parent.flatData[cIndex];
-            thisRecord.ganttProperties.taskId = thisRecord.ganttProperties.rowUniqueID = nId;
-            thisRecord.taskData[this.parent.taskFields.id] = nId;
-            thisRecord[this.parent.taskFields.id] = nId;
-            ids[cIndex] = nId;
-            if (thisRecord.hasChildRecords && this.parent.taskFields.parentID) {
-                let childRecords = thisRecord.childRecords;
-                for (let count = 0; count < childRecords.length; count++) {
-                    let childRecord = childRecords[count];
-                    childRecord[this.parent.taskFields.parentID] = newId;
-                    this.parent.chartRowsModule.refreshRecords([childRecord]);
+        if (!this.parent.readOnly) {
+            let cId = typeof currentId === 'number' ? currentId.toString() : currentId;
+            let nId = typeof newId === 'number' ? newId.toString() : newId;
+            let ids = this.parent.ids;
+            if (!isNullOrUndefined(cId) && !isNullOrUndefined(nId)) {
+                let cIndex = ids.indexOf(cId);
+                let nIndex = ids.indexOf(nId);
+                // return false for invalid taskID
+                if (cIndex === -1 || nIndex > -1) {
+                    return;
                 }
-            }
-            if (this.parent.taskFields.dependency && !isNullOrUndefined(thisRecord.ganttProperties.predecessor)) {
-                let predecessors = thisRecord.ganttProperties.predecessor;
-                let currentGanttRecord;
-                for (let i = 0; i < predecessors.length; i++) {
-                    let predecessor = predecessors[i];
-                    if (predecessor.to === cId) {
-                        currentGanttRecord = this.parent.flatData[ids.indexOf(predecessor.from)];
+                let thisRecord = this.parent.flatData[cIndex];
+                thisRecord.ganttProperties.taskId = thisRecord.ganttProperties.rowUniqueID = nId;
+                thisRecord.taskData[this.parent.taskFields.id] = nId;
+                thisRecord[this.parent.taskFields.id] = nId;
+                ids[cIndex] = nId;
+                if (thisRecord.hasChildRecords && this.parent.taskFields.parentID) {
+                    let childRecords = thisRecord.childRecords;
+                    for (let count = 0; count < childRecords.length; count++) {
+                        let childRecord = childRecords[count];
+                        childRecord[this.parent.taskFields.parentID] = newId;
+                        this.parent.chartRowsModule.refreshRecords([childRecord]);
                     }
-                    else if (predecessor.from === cId) {
-                        currentGanttRecord = this.parent.flatData[ids.indexOf(predecessor.to)];
-                    }
-                    this.updatePredecessorOnUpdateId(currentGanttRecord, cId, nId);
                 }
+                if (this.parent.taskFields.dependency && !isNullOrUndefined(thisRecord.ganttProperties.predecessor)) {
+                    let predecessors = thisRecord.ganttProperties.predecessor;
+                    let currentGanttRecord;
+                    for (let i = 0; i < predecessors.length; i++) {
+                        let predecessor = predecessors[i];
+                        if (predecessor.to === cId) {
+                            currentGanttRecord = this.parent.flatData[ids.indexOf(predecessor.from)];
+                        }
+                        else if (predecessor.from === cId) {
+                            currentGanttRecord = this.parent.flatData[ids.indexOf(predecessor.to)];
+                        }
+                        this.updatePredecessorOnUpdateId(currentGanttRecord, cId, nId);
+                    }
+                }
+                this.updatePredecessorOnUpdateId(thisRecord, cId, nId);
+                this.parent.treeGrid.refresh();
             }
-            this.updatePredecessorOnUpdateId(thisRecord, cId, nId);
-            this.parent.treeGrid.refresh();
         }
     }
     updatePredecessorOnUpdateId(currentGanttRecord, cId, nId) {
@@ -18244,7 +19201,7 @@ class Edit$2 {
         let ids = this.parent.ids;
         /*Validate Task Id of data*/
         if (obj[taskModel.id]) {
-            if (ids.indexOf(obj[taskModel.id].toString()) !== -1 && !this.parent.isSameResourceAdd) {
+            if (ids.indexOf(obj[taskModel.id].toString()) !== -1) {
                 obj[taskModel.id] = null;
             }
             else {
@@ -18480,8 +19437,8 @@ class Edit$2 {
                 if (this.addRowSelectedItem.hasChildRecords) {
                     let dataChildCount = this.getChildCount(this.addRowSelectedItem, 0);
                     recordIndex = currentItemIndex + dataChildCount + 1;
-                    //Expand Add record's parent item 
-                    if (!this.addRowSelectedItem.expanded) {
+                    //Expand Add record's parent item for project view
+                    if (!this.addRowSelectedItem.expanded && !this.parent.enableMultiTaskbar) {
                         this.parent.expandByID(Number(this.addRowSelectedItem.ganttProperties.rowUniqueID));
                     }
                     updatedCollectionIndex = currentViewData.indexOf(this.addRowSelectedItem) +
@@ -18640,7 +19597,8 @@ class Edit$2 {
                     (this.parent.selectionSettings.mode === 'Row' || this.parent.selectionSettings.mode === 'Both') &&
                         this.parent.selectionModule.selectedRowIndexes.length === 1 ?
                         this.parent.selectionModule.selectedRowIndexes[0] :
-                        this.parent.selectionSettings.mode === 'Cell' && this.parent.selectionModule.getSelectedRowCellIndexes().length === 1 ?
+                        this.parent.selectionSettings.mode === 'Cell' &&
+                            this.parent.selectionModule.getSelectedRowCellIndexes().length === 1 ?
                             this.parent.selectionModule.getSelectedRowCellIndexes()[0].rowIndex : null : null : rowIndex;
             this.addRowSelectedItem = isNullOrUndefined(selectedRowIndex) ? null : this.parent.currentViewData[selectedRowIndex];
             rowPosition = isNullOrUndefined(rowPosition) ? this.parent.editSettings.newRowPosition : rowPosition;
@@ -18804,6 +19762,24 @@ class Edit$2 {
             this.dialogModule.dialogObj.hide();
         }
         this.dialogModule.dialogClose();
+        if (this.parent.viewType === 'ResourceView') {
+            args.data.ganttProperties.sharedTaskUniqueIds.push(args.data.ganttProperties.rowUniqueID);
+            if (args.data.ganttProperties.resourceInfo.length) {
+                if (args.data.ganttProperties.resourceInfo.length > 1) {
+                    let resources = extend([], [], args.data.ganttProperties.resourceInfo, true);
+                    resources.splice(0, 1);
+                    this.updateResoures([], resources, args.data);
+                }
+            }
+            else {
+                this.removeChildRecord(args.data);
+                this.parent.editModule.checkWithUnassignedTask(args.data);
+            }
+            for (let k = 0; k < this.updateParentRecords.length; k++) {
+                this.parent.dataOperation.updateParentItems(this.updateParentRecords[k]);
+            }
+            this.updateParentRecords = [];
+        }
     }
     /**
      *
@@ -19569,6 +20545,15 @@ class Filter$1 {
     actionBegin(args) {
         // ...
     }
+    closeFilterOnContextClick(element) {
+        if (this.filterMenuElement && document.body.contains(this.filterMenuElement)) {
+            if (!(this.filterMenuElement.contains(element))) {
+                remove(this.filterMenuElement);
+                this.parent.treeGrid.grid.notify('filter-menu-close', { isOpen: false });
+                this.filterMenuElement = null;
+            }
+        }
+    }
     actionComplete(args) {
         if (args.requestType === filterAfterOpen) {
             this.filterMenuElement = getValue('filterModel.dlgObj.element', args);
@@ -19820,13 +20805,30 @@ class Selection$1 {
         this.parent.trigger('rowDeselecting', args);
     }
     rowDeselected(args) {
-        let rowIndexes = 'rowIndexes';
-        let index = [];
+        let index;
+        let isContains;
         if (this.multipleIndexes.length !== 0) {
             index = this.multipleIndexes;
         }
         else {
-            index = args[rowIndexes] || args.rowIndex;
+            if (this.isMultiCtrlRequest) {
+                index = args.rowIndex;
+            }
+            else {
+                if (!isNullOrUndefined(args.rowIndexes)) {
+                    for (let i = 0; i < args.rowIndexes.length; i++) {
+                        if (args.rowIndexes[i] === args.rowIndex) {
+                            isContains = true;
+                        }
+                    }
+                    if (isContains) {
+                        index = args.rowIndexes;
+                    }
+                }
+                else {
+                    index = args.rowIndex;
+                }
+            }
         }
         this.removeClass(index);
         this.selectedRowIndexes = extend([], this.getSelectedRowIndexes(), [], true);
@@ -20267,6 +21269,10 @@ class Toolbar$3 {
                 this.updateSearchTextBox();
             }
         }
+        if (this.parent.readOnly) {
+            this.enableItems([this.parent.element.id + '_add', this.parent.element.id + '_update', this.parent.element.id + '_delete',
+                this.parent.element.id + '_cancel', this.parent.element.id + '_indent', this.parent.element.id + '_outdent'], false);
+        }
     }
     getSearchBarElement() {
         let div = createElement('div', { className: 'e-adaptive-searchbar', styles: 'display: none' });
@@ -20503,7 +21509,7 @@ class Toolbar$3 {
             let touchEdit = gObj.editModule.taskbarEditModule ?
                 gObj.editModule.taskbarEditModule.touchEdit : false;
             let hasData = gObj.currentViewData && gObj.currentViewData.length;
-            edit.allowAdding && isResouceParent && !touchEdit ? enableItems.push(gID + '_add') : disableItems.push(gID + '_add');
+            edit.allowAdding && !touchEdit ? enableItems.push(gID + '_add') : disableItems.push(gID + '_add');
             edit.allowEditing && isResouceParent && hasData && isSelected && !touchEdit ?
                 enableItems.push(gID + '_edit') : disableItems.push(gID + '_edit');
             if (!edit.allowEditing || ind === 0 || ind === -1 || !hasData || !isSelected || this.parent.viewType === 'ResourceView') {
@@ -21115,6 +22121,9 @@ class ContextMenu$2 {
             this.parent.treeGrid.grid.saveCell();
             this.parent.editModule.cellEditModule.isCellEdit = false;
         }
+        if (this.parent.readOnly) {
+            this.contextMenu.enableItems(['Add', 'Save', 'Convert', 'Delete Dependency', 'Delete Task', 'TaskMode', 'Indent', 'Outdent'], false);
+        }
         if ((isNullOrUndefined(args.gridRow) && isNullOrUndefined(args.chartRow)) || this.contentMenuItems.length === 0) {
             if (!isNullOrUndefined(args.parentItem) && !isNullOrUndefined(menuElement)) {
                 args.cancel = false;
@@ -21690,153 +22699,159 @@ class RowDD$1 {
     }
     /* tslint:disable-next-line:max-func-body-length */
     dropRows(args, isByMethod) {
-        this.dropPosition = args.dropPosition;
-        if (args.dropPosition !== 'Invalid' && this.parent.editModule) {
-            let gObj = this.parent;
-            let draggedRecord;
-            let droppedRecord;
-            this.droppedRecord = gObj.currentViewData[args.dropIndex];
-            let dragRecords = [];
-            droppedRecord = this.droppedRecord;
-            if (!args.data[0]) {
-                dragRecords.push(args.data);
-            }
-            else {
-                dragRecords = args.data;
-            }
-            let count = 0;
-            let dragLength = dragRecords.length;
-            for (let i = 0; i < dragLength; i++) {
-                this.parent.isOnEdit = true;
-                draggedRecord = dragRecords[i];
-                this.draggedRecord = draggedRecord;
-                if (this.dropPosition !== 'Invalid') {
-                    if (isByMethod) {
-                        this.deleteDragRow();
-                    }
-                    let recordIndex1 = this.ganttData.indexOf(droppedRecord);
-                    if (this.parent.viewType === 'ResourceView') {
-                        this.checkisSharedTask();
-                        this.previousParent = this.draggedRecord.parentItem.uniqueID;
-                    }
-                    if (this.dropPosition === 'topSegment') {
-                        this.dropAtTop(recordIndex1);
-                    }
-                    if (this.dropPosition === 'bottomSegment') {
-                        if (!this.isSharedTask) {
-                            if (!droppedRecord.hasChildRecords) {
-                                if (this.parent.taskFields.parentID && this.parent.dataSource.length > 0) {
-                                    this.parent.dataSource.splice(recordIndex1 + 1, 0, this.draggedRecord.taskData);
+        if (!this.parent.readOnly) {
+            this.dropPosition = args.dropPosition;
+            if (args.dropPosition !== 'Invalid' && this.parent.editModule) {
+                let gObj = this.parent;
+                let draggedRecord;
+                let droppedRecord;
+                this.droppedRecord = gObj.currentViewData[args.dropIndex];
+                let dragRecords = [];
+                droppedRecord = this.droppedRecord;
+                if (!args.data[0]) {
+                    dragRecords.push(args.data);
+                }
+                else {
+                    dragRecords = args.data;
+                }
+                let count = 0;
+                let dragLength = dragRecords.length;
+                for (let i = 0; i < dragLength; i++) {
+                    this.parent.isOnEdit = true;
+                    draggedRecord = dragRecords[i];
+                    this.draggedRecord = draggedRecord;
+                    if (this.dropPosition !== 'Invalid') {
+                        if (this.parent.viewType === 'ResourceView') {
+                            this.checkisSharedTask();
+                            this.previousParent = this.draggedRecord.parentItem.uniqueID;
+                        }
+                        if (this.isSharedTask) {
+                            return;
+                        }
+                        if (isByMethod) {
+                            this.deleteDragRow();
+                        }
+                        let recordIndex1 = this.ganttData.indexOf(droppedRecord);
+                        if (this.dropPosition === 'topSegment') {
+                            this.dropAtTop(recordIndex1);
+                        }
+                        if (this.dropPosition === 'bottomSegment') {
+                            if (!this.isSharedTask) {
+                                if (!droppedRecord.hasChildRecords) {
+                                    if (this.parent.taskFields.parentID && this.parent.dataSource.length > 0) {
+                                        this.parent.dataSource.splice(recordIndex1 + 1, 0, this.draggedRecord.taskData);
+                                    }
+                                    this.ganttData.splice(recordIndex1 + 1, 0, this.draggedRecord);
+                                    this.parent.flatData.splice(recordIndex1 + 1, 0, this.draggedRecord);
+                                    this.parent.ids.splice(recordIndex1 + 1, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
+                                    if (this.parent.viewType === 'ResourceView') {
+                                        /* tslint:disable-next-line */
+                                        let taskId = this.draggedRecord.level === 0 ? 'R' + this.draggedRecord.ganttProperties.taskId : 'T' + this.draggedRecord.ganttProperties.taskId;
+                                        this.parent.getTaskIds().splice(recordIndex1 + 1, 0, taskId);
+                                    }
                                 }
-                                this.ganttData.splice(recordIndex1 + 1, 0, this.draggedRecord);
-                                this.parent.flatData.splice(recordIndex1 + 1, 0, this.draggedRecord);
-                                this.parent.ids.splice(recordIndex1 + 1, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
-                                if (this.parent.viewType === 'ResourceView') {
-                                    /* tslint:disable-next-line */
-                                    let taskId = this.draggedRecord.level === 0 ? 'R' + this.draggedRecord.ganttProperties.taskId : 'T' + this.draggedRecord.ganttProperties.taskId;
-                                    this.parent.getTaskIds().splice(recordIndex1 + 1, 0, taskId);
+                                else {
+                                    count = this.parent.editModule.getChildCount(droppedRecord, 0);
+                                    if (this.parent.taskFields.parentID && this.parent.dataSource.length > 0) {
+                                        this.parent.dataSource.splice(recordIndex1 + count + 1, 0, this.draggedRecord.taskData);
+                                    }
+                                    this.ganttData.splice(recordIndex1 + count + 1, 0, this.draggedRecord);
+                                    this.parent.flatData.splice(recordIndex1 + count + 1, 0, this.draggedRecord);
+                                    this.parent.ids.splice(recordIndex1 + count + 1, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
+                                    if (this.parent.viewType === 'ResourceView') {
+                                        /* tslint:disable-next-line */
+                                        let spliceId = this.draggedRecord.level === 0 ? 'R' + this.draggedRecord.ganttProperties.taskId : 'T' + this.draggedRecord.ganttProperties.taskId;
+                                        this.parent.getTaskIds().splice(recordIndex1 + count + 1, 0, spliceId);
+                                    }
                                 }
-                            }
-                            else {
-                                count = this.parent.editModule.getChildCount(droppedRecord, 0);
-                                if (this.parent.taskFields.parentID && this.parent.dataSource.length > 0) {
-                                    this.parent.dataSource.splice(recordIndex1 + count + 1, 0, this.draggedRecord.taskData);
+                                draggedRecord.parentItem = this.ganttData[recordIndex1].parentItem;
+                                draggedRecord.parentUniqueID = this.ganttData[recordIndex1].parentUniqueID;
+                                draggedRecord.level = this.ganttData[recordIndex1].level;
+                                if (draggedRecord.hasChildRecords) {
+                                    let level = 1;
+                                    this.updateChildRecordLevel(draggedRecord, level);
+                                    this.updateChildRecord(draggedRecord, recordIndex1 + count + 1);
                                 }
-                                this.ganttData.splice(recordIndex1 + count + 1, 0, this.draggedRecord);
-                                this.parent.flatData.splice(recordIndex1 + count + 1, 0, this.draggedRecord);
-                                this.parent.ids.splice(recordIndex1 + count + 1, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
-                                if (this.parent.viewType === 'ResourceView') {
-                                    /* tslint:disable-next-line */
-                                    let spliceId = this.draggedRecord.level === 0 ? 'R' + this.draggedRecord.ganttProperties.taskId : 'T' + this.draggedRecord.ganttProperties.taskId;
-                                    this.parent.getTaskIds().splice(recordIndex1 + count + 1, 0, spliceId);
+                                if (droppedRecord.parentItem) {
+                                    let rec = this.parent.getParentTask(droppedRecord.parentItem).childRecords;
+                                    let childRecords = rec;
+                                    let droppedRecordIndex = childRecords.indexOf(droppedRecord) + 1;
+                                    childRecords.splice(droppedRecordIndex, 0, draggedRecord);
                                 }
-                            }
-                            draggedRecord.parentItem = this.ganttData[recordIndex1].parentItem;
-                            draggedRecord.parentUniqueID = this.ganttData[recordIndex1].parentUniqueID;
-                            draggedRecord.level = this.ganttData[recordIndex1].level;
-                            if (draggedRecord.hasChildRecords) {
-                                let level = 1;
-                                this.updateChildRecordLevel(draggedRecord, level);
-                                this.updateChildRecord(draggedRecord, recordIndex1 + count + 1);
-                            }
-                            if (droppedRecord.parentItem) {
-                                let rec = this.parent.getParentTask(droppedRecord.parentItem).childRecords;
-                                let childRecords = rec;
-                                let droppedRecordIndex = childRecords.indexOf(droppedRecord) + 1;
-                                childRecords.splice(droppedRecordIndex, 0, draggedRecord);
                             }
                         }
-                    }
-                    if (this.dropPosition === 'middleSegment') {
-                        this.dropMiddle(recordIndex1);
-                    }
-                    if (!isNullOrUndefined(draggedRecord.parentItem && this.updateParentRecords.indexOf(draggedRecord.parentItem) !== -1)) {
-                        this.updateParentRecords.push(draggedRecord.parentItem);
-                    }
-                }
-                gObj.rowDragAndDropModule.refreshDataSource();
-            }
-            if (this.dropPosition === 'middleSegment') {
-                if (droppedRecord.ganttProperties.predecessor) {
-                    this.parent.editModule.removePredecessorOnDelete(droppedRecord);
-                    droppedRecord.ganttProperties.predecessor = null;
-                    droppedRecord.ganttProperties.predecessorsName = null;
-                    droppedRecord[this.parent.taskFields.dependency] = null;
-                    droppedRecord.taskData[this.parent.taskFields.dependency] = null;
-                }
-                if (droppedRecord.ganttProperties.isMilestone) {
-                    this.parent.setRecordValue('isMilestone', false, droppedRecord.ganttProperties, true);
-                    if (!isNullOrUndefined(droppedRecord.taskData[this.parent.taskFields.milestone])) {
-                        if (droppedRecord.taskData[this.parent.taskFields.milestone] === true) {
-                            droppedRecord.taskData[this.parent.taskFields.milestone] = false;
+                        if (this.dropPosition === 'middleSegment') {
+                            this.dropMiddle(recordIndex1);
+                        }
+                        if (!isNullOrUndefined(draggedRecord.parentItem && this.updateParentRecords.indexOf(draggedRecord.parentItem) !== -1)) {
+                            this.updateParentRecords.push(draggedRecord.parentItem);
                         }
                     }
+                    gObj.rowDragAndDropModule.refreshDataSource();
                 }
-            }
-            if (this.parent.viewType === 'ResourceView' && !this.isSharedTask) {
-                let parentUniqueID;
                 if (this.dropPosition === 'middleSegment') {
-                    parentUniqueID = this.droppedRecord.uniqueID;
+                    if (droppedRecord.ganttProperties.predecessor) {
+                        this.parent.editModule.removePredecessorOnDelete(droppedRecord);
+                        droppedRecord.ganttProperties.predecessor = null;
+                        droppedRecord.ganttProperties.predecessorsName = null;
+                        droppedRecord[this.parent.taskFields.dependency] = null;
+                        droppedRecord.taskData[this.parent.taskFields.dependency] = null;
+                    }
+                    if (droppedRecord.ganttProperties.isMilestone) {
+                        this.parent.setRecordValue('isMilestone', false, droppedRecord.ganttProperties, true);
+                        if (!isNullOrUndefined(droppedRecord.taskData[this.parent.taskFields.milestone])) {
+                            if (droppedRecord.taskData[this.parent.taskFields.milestone] === true) {
+                                droppedRecord.taskData[this.parent.taskFields.milestone] = false;
+                            }
+                        }
+                    }
                 }
-                else {
-                    parentUniqueID = this.droppedRecord.parentItem.uniqueID;
+                if (this.parent.viewType === 'ResourceView' && !this.isSharedTask) {
+                    let parentUniqueID;
+                    if (this.dropPosition === 'middleSegment') {
+                        parentUniqueID = this.droppedRecord.uniqueID;
+                    }
+                    else {
+                        parentUniqueID = this.droppedRecord.parentItem.uniqueID;
+                    }
+                    let droppedParentItem = this.parent.getTaskByUniqueID(parentUniqueID);
+                    let editedObj = {};
+                    editedObj[this.parent.taskFields.resourceInfo] = [];
+                    editedObj[this.parent.taskFields.resourceInfo].push(droppedParentItem.ganttProperties.taskId);
+                    this.removeExistingResources();
+                    let tempResourceInfo = this.parent.dataOperation.setResourceInfo(editedObj);
+                    let currentTask = this.draggedRecord;
+                    if (isNullOrUndefined(currentTask.ganttProperties.resourceInfo)) {
+                        currentTask.ganttProperties.resourceInfo = [];
+                    }
+                    if (droppedParentItem.ganttProperties.taskName === 'Unassigned Task') {
+                        currentTask.ganttProperties.resourceInfo = [];
+                        currentTask.ganttProperties.sharedTaskUniqueIds = [currentTask.ganttProperties.rowUniqueID];
+                    }
+                    else {
+                        currentTask.ganttProperties.resourceInfo.push(tempResourceInfo[0]);
+                    }
+                    this.updateCurrentTask(currentTask);
+                    if (droppedParentItem.ganttProperties.taskName === 'Unassigned Task') {
+                        this.deleteSharedResourceTask();
+                    }
+                    else {
+                        this.updateSharedResourceTask();
+                    }
                 }
-                let droppedParentItem = this.parent.getTaskByUniqueID(parentUniqueID);
-                let editedObj = {};
-                editedObj[this.parent.taskFields.resourceInfo] = [];
-                editedObj[this.parent.taskFields.resourceInfo].push(droppedParentItem.ganttProperties.taskId);
-                this.removeExistingResources();
-                let tempResourceInfo = this.parent.dataOperation.setResourceInfo(editedObj);
-                let currentTask = this.draggedRecord;
-                if (isNullOrUndefined(currentTask.ganttProperties.resourceInfo)) {
-                    currentTask.ganttProperties.resourceInfo = [];
+                // method to update the edited parent records
+                for (let j = 0; j < this.updateParentRecords.length; j++) {
+                    this.parent.dataOperation.updateParentItems(this.updateParentRecords[j]);
                 }
-                if (droppedParentItem.ganttProperties.taskName === 'Unassigned Task') {
-                    currentTask.ganttProperties.resourceInfo = [];
-                }
-                else {
-                    currentTask.ganttProperties.resourceInfo.push(tempResourceInfo[0]);
-                }
-                this.updateCurrentTask(currentTask);
-                if (droppedParentItem.ganttProperties.taskName === 'Unassigned Task') {
-                    this.deleteSharedResourceTask();
-                }
-                else {
-                    this.updateSharedResourceTask();
-                }
+                this.updateParentRecords = [];
+                this.parent.isOnEdit = false;
             }
-            // method to update the edited parent records
-            for (let j = 0; j < this.updateParentRecords.length; j++) {
-                this.parent.dataOperation.updateParentItems(this.updateParentRecords[j]);
-            }
-            this.updateParentRecords = [];
-            this.parent.isOnEdit = false;
+            this.parent.treeGrid.refresh();
+            args.requestType = 'rowDropped';
+            args.modifiedRecords = this.parent.editedRecords;
+            this.parent.trigger('actionComplete', args);
+            this.parent.editedRecords = [];
         }
-        this.parent.treeGrid.refresh();
-        args.requestType = 'rowDropped';
-        args.modifiedRecords = this.parent.editedRecords;
-        this.parent.trigger('actionComplete', args);
-        this.parent.editedRecords = [];
     }
     updateCurrentTask(currentTask) {
         this.parent.dataOperation.updateMappingData(currentTask, 'resourceInfo');
@@ -22187,11 +23202,18 @@ class RowDD$1 {
                     this.removeChildItem(deletedRow);
                 }
                 let idx;
-                let ganttData = dataSource.length > 0 ?
+                let ganttData = dataSource.length > 0 && this.parent.viewType !== 'ResourceView' ?
                     dataSource : this.parent.currentViewData;
                 for (let i = 0; i < ganttData.length; i++) {
-                    if (ganttData[i][this.parent.taskFields.id] === deletedRow.taskData[this.parent.taskFields.id]) {
-                        idx = i;
+                    if (this.parent.viewType === 'ResourceView') {
+                        if (ganttData[i].ganttProperties.rowUniqueID === deletedRow.ganttProperties.rowUniqueID) {
+                            idx = i;
+                        }
+                    }
+                    else {
+                        if (ganttData[i][this.parent.taskFields.id] === deletedRow.taskData[this.parent.taskFields.id]) {
+                            idx = i;
+                        }
                     }
                 }
                 if (idx !== -1) {
@@ -22256,30 +23278,32 @@ class RowDD$1 {
      * Reorder the rows based on given indexes and position
      */
     reorderRows(fromIndexes, toIndex, position) {
-        if (fromIndexes[0] !== toIndex && position === 'above' || 'below' || 'child') {
-            if (position === 'above') {
-                this.dropPosition = 'topSegment';
+        if (!this.parent.readOnly) {
+            if (fromIndexes[0] !== toIndex && position === 'above' || 'below' || 'child') {
+                if (position === 'above') {
+                    this.dropPosition = 'topSegment';
+                }
+                if (position === 'below') {
+                    this.dropPosition = 'bottomSegment';
+                }
+                if (position === 'child') {
+                    this.dropPosition = 'middleSegment';
+                }
+                let data = [];
+                for (let i = 0; i < fromIndexes.length; i++) {
+                    data[i] = this.parent.currentViewData[fromIndexes[i]];
+                }
+                let isByMethod = true;
+                let args = {
+                    data: data,
+                    dropIndex: toIndex,
+                    dropPosition: this.dropPosition
+                };
+                this.dropRows(args, isByMethod);
             }
-            if (position === 'below') {
-                this.dropPosition = 'bottomSegment';
+            else {
+                return;
             }
-            if (position === 'child') {
-                this.dropPosition = 'middleSegment';
-            }
-            let data = [];
-            for (let i = 0; i < fromIndexes.length; i++) {
-                data[i] = this.parent.currentViewData[fromIndexes[i]];
-            }
-            let isByMethod = true;
-            let args = {
-                data: data,
-                dropIndex: toIndex,
-                dropPosition: this.dropPosition
-            };
-            this.dropRows(args, isByMethod);
-        }
-        else {
-            return;
         }
     }
 }
@@ -24305,7 +25329,7 @@ class ExportHelper {
      */
     processPredecessor() {
         if (isNullOrUndefined(this.exportProps.showPredecessorLines) || this.exportProps.showPredecessorLines) {
-            this.parent.predecessorModule.createConnectorLinesCollection(this.parent.currentViewData);
+            this.parent.predecessorModule.createConnectorLinesCollection();
             this.parent.updatedConnectorLineCollection.forEach((data) => {
                 let predecessor = this.gantt.predecessor.add();
                 predecessor.parentLeft = data.parentLeft;

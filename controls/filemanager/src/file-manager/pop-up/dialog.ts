@@ -7,7 +7,7 @@ import { createFolder } from '../common/operations';
 import * as CLS from '../base/classes';
 import * as events from '../base/constant';
 import { paste, rename } from '../common/operations';
-import { getLocaleText, getDuplicateData, getParentPath, objectToString } from '../common/utility';
+import { getLocaleText, getDuplicateData, getParentPath, objectToString, getCssClass } from '../common/utility';
 import { SelectedEventArgs, FileInfo, Input } from '@syncfusion/ej2-inputs';
 import { CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
 
@@ -29,7 +29,8 @@ export function createDialog(parent: IFileManager, text: string, e?: ReadArgs | 
             visible: true,
             allowDragging: true,
             isModal: true,
-            target: '#' + parent.element.id,
+            target: parent.popupTarget ? parent.popupTarget : '#' + parent.element.id,
+            cssClass: getCssClass(parent, parent.isMobile ? CLS.MOB_POPUP : CLS.ROOT_POPUP),
             width: '350px',
             open: options.open,
             close: options.close,
@@ -57,7 +58,8 @@ export function createExtDialog(parent: IFileManager, text: string, replaceItems
             closeOnEscape: true,
             allowDragging: true,
             animationSettings: { effect: 'None' },
-            target: '#' + parent.element.id,
+            target: parent.popupTarget ? parent.popupTarget : '#' + parent.element.id,
+            cssClass: getCssClass(parent, parent.isMobile ? CLS.MOB_POPUP : CLS.ROOT_POPUP),
             enableRtl: parent.enableRtl,
             showCloseIcon: true,
             isModal: true,
@@ -701,7 +703,8 @@ export function createImageDialog(parent: IFileManager, header: string, imageUrl
             isModal: true,
             width: '350px',
             height: '350px',
-            target: '#' + parent.element.id,
+            target: parent.popupTarget ? parent.popupTarget : '#' + parent.element.id,
+            cssClass: getCssClass(parent, parent.isMobile ? CLS.MOB_POPUP : CLS.ROOT_POPUP),
             locale: parent.locale,
             enableResize: true,
             allowDragging: true,

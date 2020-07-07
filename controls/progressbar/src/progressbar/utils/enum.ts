@@ -16,10 +16,13 @@ export type CornerType =
     /** square */
     'Square' |
     /** Round */
-    'Round';
+    'Round' |
+    /** Round4px */
+    'Round4px' ;
+
 
 /** 
- * ProgressTheme
+ * theme
  */
 export type ProgressTheme =
     /** Material */
@@ -53,13 +56,3 @@ export type ModeType =
     'Info' |
     'Danger' |
     'Warning';
-
-/**
- * Timing function
- */
-export type TimingFunction =
-    'Linear' |
-    'EaseIn' |
-    'EaseOut' |
-    'EaseInOut'|
-    'Bounce';

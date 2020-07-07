@@ -352,3 +352,13 @@ export type ProviderType =
     'Relational' |
     /**  Allows to render the pivot table with OLAP data fetch from OLAP cube. */
     'SSAS';
+/**
+ * Allows to define the data source type. They are,
+ * * JSON: Defines JSON type of data source.
+ * * CSV: Defines CSV or string[][] type of data source.
+ */
+export type DataSourceType =
+/** Defines JSON type of data source */
+'JSON' |
+/** Defines CSV or string[][] type of data source */
+'CSV';

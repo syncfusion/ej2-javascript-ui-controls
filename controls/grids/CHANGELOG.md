@@ -2,24 +2,16 @@
 
 ## [Unreleased]
 
-### Grid
-
-#### Bug Fixes
-
-- `#279922, #280077` -  Scrollbar when clicking `childgrid` summary row, issue has been fixed.
-
-## 18.1.57 (2020-06-16)
+## 18.2.44 (2020-07-07)
 
 ### Grid
 
-#### Bug Fixes
+#### New Features
 
-- `#279487` - Selecting and Deselecting now works properly after searching in external column chooser.
-- `#278413` - Unwanted Vertical scrollbar after column resizing issue has been resolved.
-- `#279922` - The last row detail template border issue has been fixed.
-- `#154568` - Filter pop-up issue with mobile device has been fixed.
-- `#263232` - Throws scripts error while `hide/show` the columns issue has been fixed.
-- `#277663` - Footer aggregate works properly with custom data while exporting in excel.
+- `#221401, #247125, #152063` - Provided support to select the operator for `filterbar` in UI.
+- `#147816` - Provided support for `Frozen` rows and columns with `AutoFill`.
+- Provided the `Frozen` support in Grid continuous scroll feature.
+- Provide the Editing support in Grid continuous scroll feature.
 
 ## 18.1.56 (2020-06-09)
 

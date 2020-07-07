@@ -260,6 +260,13 @@ export interface DatePickerModel extends CalendarModel{
     serverTimezoneOffset?: number;
 
     /**
+     * By default, the popup opens while clicking on the datepicker icon.
+     * If you want to open the popup while focusing the date input then specify its value as true.
+     * @default false
+     */
+    openOnFocus?: boolean;
+
+    /**
      * Triggers when the popup is opened.
      * @event
      * @blazorProperty 'OnOpen'

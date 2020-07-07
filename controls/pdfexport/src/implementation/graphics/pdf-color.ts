@@ -106,6 +106,7 @@ export class PdfColor {
      */
     public constructor()
     public constructor(color1 : PdfColor)
+    public constructor(color1 : number)
     public constructor(color1 : number, color2 : number, color3 : number)
     public constructor(color1 : number, color2 : number, color3 : number, color4 : number)
     public constructor(color1 ?: number|PdfColor, color2 ?: number, color3 ?: number, color4 ?: number) {
@@ -122,6 +123,24 @@ export class PdfColor {
             this.grayColor = color1.gray;
             this.alpha = color1.alpha;
             this.filled = (this.alpha !== 0);
+            /* tslint:disable-next-line:max-line-length */
+        } else if (typeof color1 === 'number' && typeof color2 === 'undefined' && typeof color3 === 'undefined' && typeof color4 === 'undefined') {
+            if (color1 < 0) {
+                color1 = 0;
+            }
+            if (color1 > 1) {
+                color1 = 1;
+            }
+            this.redColor = color1 * PdfColor.maxColourChannelValue;
+            this.greenColor = color1 * PdfColor.maxColourChannelValue;
+            this.blueColor = color1 * PdfColor.maxColourChannelValue;
+            this.cyanColor = color1;
+            this.magentaColor = color1;
+            this.yellowColor = color1;
+            this.blackColor = color1;
+            this.grayColor = color1;
+            this.alpha = PdfColor.maxColourChannelValue;
+            this.filled = true;
         } else if (typeof color4 === 'undefined') {
             this.assignRGB(color1, color2, color3);
         } else {
@@ -215,6 +234,78 @@ export class PdfColor {
         return (this.b / PdfColor.maxColourChannelValue);
     }
     /**
+     * Gets or sets `Cyan` channel value.
+     * @private
+     */
+    public get c() : number {
+        return this.cyanColor;
+    }
+    public set c(value : number) {
+        if (value < 0) {
+            this.cyanColor = 0;
+        } else if (value > 1) {
+            this.cyanColor = 1;
+        } else {
+            this.cyanColor = value;
+        }
+        this.assignRGB(this.cyanColor, this.magentaColor, this.yellowColor, this.blackColor);
+        this.filled = true;
+    }
+    /**
+     * Gets or sets `Black` channel value.
+     * @private
+     */
+    public get k(): number {
+        return this.blackColor;
+    }
+    public set k(value: number)  {
+        if ((value < 0)) {
+            this.blackColor = 0;
+        } else if ((value > 1)) {
+            this.blackColor = 1;
+        } else {
+            this.blackColor = value;
+        }
+        this.assignRGB(this.cyanColor, this.magentaColor, this.yellowColor, this.blackColor);
+        this.filled = true;
+    }
+    /**
+     * Gets or sets `Magenta` channel value.
+     * @private
+     */
+    public get m(): number {
+        return this.magentaColor;
+    }
+    public set m(value: number)  {
+        if ((value < 0)) {
+            this.magentaColor = 0;
+        } else if ((value > 1)) {
+            this.magentaColor = 1;
+        } else {
+            this.magentaColor = value;
+        }
+        this.assignRGB(this.cyanColor, this.magentaColor, this.yellowColor, this.blackColor);
+        this.filled = true;
+    }
+    /**
+     * Gets or sets `Yellow` channel value.
+     * @private
+     */
+    public get y(): number {
+        return this.yellowColor;
+    }
+    public set y(value: number)  {
+        if ((value < 0)) {
+            this.yellowColor = 0;
+        } else if ((value > 1)) {
+            this.yellowColor = 1;
+        } else {
+            this.yellowColor = value;
+        }
+        this.assignRGB(this.cyanColor, this.magentaColor, this.yellowColor, this.blackColor);
+        this.filled = true;
+    }
+    /**
      *  Gets or sets `Green` channel value.
      * @private
      */
@@ -290,7 +381,39 @@ export class PdfColor {
         if (this.isEmpty) {
             return '';
         }
-        return this.rgbToString(stroke);
+        let str : string = '';
+        switch (colorSpace) {
+            case PdfColorSpace.Rgb:
+                str = this.rgbToString(stroke);
+                break;
+            case PdfColorSpace.GrayScale:
+                str = this.grayScaleToString(stroke);
+                break;
+            case PdfColorSpace.Cmyk:
+                str = this.cmykToString(stroke);
+                break;
+        }
+        return str;
+    }
+    /**
+     * Sets `GrayScale` color.
+     * @private
+     */
+    private grayScaleToString(ifStroking : boolean) : string {
+        let gray : number = this.gray;
+        let colour : string = '';
+        let obj : Object = null;
+        /* tslint:disable-next-line:max-line-length */
+        obj = (ifStroking) ? PdfColor.grayStringsSroke.containsKey(gray) ? PdfColor.grayStringsSroke.getValue(gray) : null : PdfColor.grayStringsFill.containsKey(gray) ? PdfColor.grayStringsFill.getValue(gray) : null;
+        if (obj == null) {
+            if (ifStroking) {
+                colour = gray.toString() + ' G';
+                PdfColor.grayStringsSroke.setValue(gray, colour);
+            }
+        } else {
+            colour = obj.toString();
+        }
+        return colour + Operators.newLine;
     }
     /**
      * Sets `RGB` color.
@@ -324,6 +447,19 @@ export class PdfColor {
         }
         return colour + Operators.newLine;
     }
+    /***
+     * Sets `CMYK` color.
+     * @private
+     */
+    private cmykToString(ifStroking : boolean) : string {
+        let cyan : number = this.c;
+        let magenta : number = this.m;
+        let yellow : number = this.y;
+        let black : number = this.b;
+        let colour : string = '';
+        colour = cyan.toString() + ' ' + magenta.toString() + ' ' + yellow.toString() + ' ' + black.toString() + ' K';
+        return colour + Operators.newLine;
+    }
     /**
      * Converts `colour to a PDF array`.
      * @private
@@ -336,9 +472,6 @@ export class PdfColor {
                 array.add(new PdfNumber(this.green));
                 array.add(new PdfNumber(this.blue));
                 break;
-
-            default:
-                throw new Error('NotSupportedException : Unsupported colour space.');
         }
         return array;
     }

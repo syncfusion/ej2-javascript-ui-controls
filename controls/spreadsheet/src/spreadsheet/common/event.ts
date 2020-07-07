@@ -196,8 +196,6 @@ export const clearInvalid: string = 'clearInvalid';
 /** @hidden */
 export const protectSheet: string = 'protectSheet';
 /** @hidden */
-export const unprotectSheet: string = 'unprotectSheet';
-/** @hidden */
 export const applyProtect: string = 'applyProtect';
 /** @hidden */
 export const protectCellFormat: string = 'protectCellFormat';
@@ -228,4 +226,12 @@ export const checkMerge: string = 'checkMerge';
 /** @hidden */
 export const removeDataValidation: string = 'removeDataValidation';
 /** @hidden */
-export const blankWorkbook: string = 'blankWorkbook';
+export const showAggregate: string = 'showAggregate';
+/** @hidden */
+export const initiateConditionalFormat: string = 'initiateConditionalFormat';
+/** @hidden */
+export const checkConditionalFormat: string = 'checkConditionalFormat';
+/** @hidden */
+export const setCF: string = 'setCF';
+/** @hidden */
+export const clearViewer: string = 'clearViewer';

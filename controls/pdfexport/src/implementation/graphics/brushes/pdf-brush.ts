@@ -5,12 +5,13 @@ import { PdfStreamWriter } from './../../input-output/pdf-stream-writer';
 import { GetResourceEventHandler } from './../pdf-graphics';
 import { PdfColorSpace } from './../enum';
 import { PdfColor } from './../pdf-color';
+import { ICloneable} from './../../../interfaces/i-pdf-clonable';
 /**
  * `PdfBrush` class provides objects used to fill the interiors of graphical shapes such as rectangles,
  * ellipses, pies, polygons, and paths.
  * @private
  */
-export abstract class PdfBrush {
+export abstract class PdfBrush implements ICloneable {
     /**
      * Creates instanceof `PdfBrush` class.
      * @hidden
@@ -60,4 +61,8 @@ export abstract class PdfBrush {
      * @private
      */
     public abstract resetChanges(streamWriter : PdfStreamWriter) : void;
+    //IClonable implementation
+    public clone() : PdfBrush {
+        return this;
+    }
 }

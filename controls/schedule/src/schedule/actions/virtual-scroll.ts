@@ -1,4 +1,5 @@
 import { append, addClass, remove, isNullOrUndefined, setStyleAttribute, createElement } from '@syncfusion/ej2-base';
+import { isBlazor } from '@syncfusion/ej2-base';
 import { TdData } from '../base/interface';
 import { Schedule } from '../base/schedule';
 import * as events from '../base/constant';
@@ -15,6 +16,10 @@ export class VirtualScroll {
     public bufferCount: number = 3;
     private renderedLength: number = 0;
     private averageRowHeight: number = 0;
+    private startIndex: number = 0;
+    private timeValue: number;
+    private isScrollHeightNull: boolean = true;
+    private previousTop: number = 0;
 
     constructor(parent: Schedule) {
         this.parent = parent;
@@ -32,8 +37,50 @@ export class VirtualScroll {
     }
 
     public getRenderedCount(): number {
+        if (isBlazor()) {
+            let conTable: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_TABLE_CLASS) as HTMLElement;
+            this.renderedLength = conTable.querySelector('tbody').children.length;
+            return this.renderedLength;
+        }
         this.setItemSize();
         return Math.ceil(this.parent.element.clientHeight / this.itemSize) + this.bufferCount;
+    }
+
+    private triggerScrolling(): void {
+        this.parent.showSpinner();
+        // tslint:disable-next-line:no-any
+        let scheduleObj: any = this.parent;
+        let adaptor: string = 'interopAdaptor';
+        let invokeMethodAsync: string = 'invokeMethodAsync';
+        scheduleObj[adaptor][invokeMethodAsync]('OnContentUpdate', this.startIndex);
+    }
+
+    public setTranslateValue(): void {
+        let resWrap: HTMLElement = this.parent.element.querySelector('.' + cls.RESOURCE_COLUMN_WRAP_CLASS);
+        let conWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS);
+        let eventWrap: HTMLElement = this.parent.element.querySelector('.' + cls.EVENT_TABLE_CLASS);
+        let timeIndicator: HTMLElement = this.parent.element.querySelector('.' + cls.CURRENT_TIMELINE_CLASS) as HTMLElement;
+        this.renderVirtualTrackHeight(conWrap, resWrap);
+        this.setTranslate(resWrap, conWrap, eventWrap, timeIndicator);
+    }
+
+    private renderVirtualTrackHeight(contentWrap: HTMLElement, resourceWrap: HTMLElement): void {
+        this.parent.resourceBase.setExpandedResources();
+        if (this.isScrollHeightNull) {
+            let wrap: HTMLElement = createElement('div', { className: cls.VIRTUAL_TRACK_CLASS }) as HTMLElement;
+            let resWrap: HTMLElement[] =
+                [].slice.call((resourceWrap).querySelectorAll('table td'));
+            let startIndex: number = parseInt(resWrap[0].getAttribute('data-group-index'), 10);
+            let endIndex: number = parseInt(resWrap[resWrap.length - 1].getAttribute('data-group-index'), 10);
+            this.parent.resourceBase.renderedResources = this.parent.resourceBase.expandedResources.slice(startIndex, endIndex + 1);
+            wrap.style.height = (this.parent.resourceBase.expandedResources.length * this.itemSize) + 'px';
+            this.isScrollHeightNull = false;
+            let virtual: HTMLElement = this.parent.element.querySelector('.' + cls.VIRTUAL_TRACK_CLASS) as HTMLElement;
+            if (!isNullOrUndefined(virtual)) {
+                remove(virtual);
+            }
+            contentWrap.appendChild(wrap);
+        }
     }
 
     public renderVirtualTrack(contentWrap: Element): void {
@@ -48,7 +95,7 @@ export class VirtualScroll {
             this.parent.resourceBase.expandedResources[this.parent.resourceBase.expandedResources.length - 1].groupIndex;
         let lastRenderIndex: number =
             this.parent.resourceBase.renderedResources[this.parent.resourceBase.renderedResources.length - 1].groupIndex;
-        if (lastRenderIndex !== lastResourceIndex) {
+        if (lastRenderIndex !== lastResourceIndex || isBlazor()) {
             let conTable: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_TABLE_CLASS) as HTMLElement;
             this.renderedLength = conTable.querySelector('tbody').children.length;
             virtual.style.height = (conTable.offsetHeight + (this.parent.resourceBase.expandedResources.length - (this.renderedLength)) *
@@ -83,6 +130,15 @@ export class VirtualScroll {
         this.itemSize = util.getElementHeightFromClass(this.parent.activeView.element, cls.WORK_CELLS_CLASS) || this.itemSize;
     }
 
+    private beforeInvoke(resWrap: HTMLElement, conWrap: HTMLElement, eventWrap: HTMLElement, timeIndicator?: HTMLElement): void {
+        if (isBlazor()) {
+            clearTimeout(this.timeValue);
+            this.timeValue = setTimeout(() => { this.triggerScrolling(); }, 250);
+            this.setTranslate(resWrap, conWrap, eventWrap, timeIndicator);
+            this.previousTop = conWrap.scrollTop;
+        }
+    }
+
     public virtualScrolling(): void {
         this.parent.quickPopup.quickPopupHide();
         this.parent.quickPopup.morePopup.hide();
@@ -96,24 +152,38 @@ export class VirtualScroll {
         let scrollHeight: number = this.parent.rowAutoHeight ?
             (conTable.offsetHeight - conWrap.offsetHeight) : this.bufferCount * this.itemSize;
         addClass([conWrap], 'e-transition');
+        if (isBlazor()) {
+            this.setItemSize();
+        }
         let resCollection: TdData[] = [];
         if ((conWrap.scrollTop) - this.translateY < 0) {
             resCollection = this.upScroll(conWrap, firstTDIndex);
+            this.beforeInvoke(resWrap, conWrap, eventWrap, timeIndicator);
         } else if (conWrap.scrollTop - this.translateY > scrollHeight) {
             resCollection = this.downScroll(conWrap, firstTDIndex);
+            if (!(this.previousTop === conWrap.scrollTop)) {
+                this.beforeInvoke(resWrap, conWrap, eventWrap, timeIndicator);
+            }
         }
-        if (!isNullOrUndefined(resCollection) && resCollection.length > 0) {
-            this.updateContent(resWrap, conWrap, eventWrap, resCollection);
-            this.setTranslate(resWrap, conWrap, eventWrap, timeIndicator);
-            this.parent.notify(events.dataReady, {});
-            if (this.parent.dragAndDropModule && this.parent.dragAndDropModule.actionObj.action === 'drag') {
-                this.parent.dragAndDropModule.navigationWrapper();
+        if (!isBlazor()) {
+            if (!isNullOrUndefined(resCollection) && resCollection.length > 0) {
+                this.updateContent(resWrap, conWrap, eventWrap, resCollection);
+                this.setTranslate(resWrap, conWrap, eventWrap, timeIndicator);
+                this.parent.notify(events.dataReady, {});
+                if (this.parent.dragAndDropModule && this.parent.dragAndDropModule.actionObj.action === 'drag') {
+                    this.parent.dragAndDropModule.navigationWrapper();
+                }
             }
         }
     }
 
     private upScroll(conWrap: HTMLElement, firstTDIndex: number): TdData[] {
-        let index: number = (~~(conWrap.scrollTop / this.itemSize) + Math.ceil(conWrap.clientHeight / this.itemSize)) - this.renderedLength;
+        let index: number = 0;
+        if (isBlazor()) {
+            index = ~~(conWrap.scrollTop / this.itemSize);
+        } else {
+            index = (~~(conWrap.scrollTop / this.itemSize) + Math.ceil(conWrap.clientHeight / this.itemSize)) - this.renderedLength;
+        }
         if (this.parent.rowAutoHeight) {
             index = (index > firstTDIndex) ? firstTDIndex - this.bufferCount : index;
         }
@@ -127,6 +197,9 @@ export class VirtualScroll {
             this.translateY = (conWrap.scrollTop - (this.bufferCount * height) > 0) ?
                 conWrap.scrollTop - (this.bufferCount * height) : 0;
         }
+        if (isBlazor()) {
+            this.startIndex = index;
+        }
         return prevSetCollection;
     }
 
@@ -138,16 +211,29 @@ export class VirtualScroll {
         if (lastResource === lastResourceIndex) {
             return null;
         }
-        let nextSetResIndex: number = ~~(conWrap.scrollTop / this.itemSize);
-        if (this.parent.rowAutoHeight) {
-            nextSetResIndex = ~~((conWrap.scrollTop - this.translateY) / this.averageRowHeight) + firstTDIndex;
-            nextSetResIndex = (nextSetResIndex > firstTDIndex + this.bufferCount) ? nextSetResIndex : firstTDIndex + this.bufferCount;
+        let nextSetResIndex: number = 0;
+        let height: number = (this.parent.rowAutoHeight) ? this.averageRowHeight : this.itemSize;
+        if (isBlazor()) {
+            nextSetResIndex = ~~(conWrap.scrollTop / height);
+        } else {
+            nextSetResIndex = ~~(conWrap.scrollTop / this.itemSize);
+            if (this.parent.rowAutoHeight) {
+                nextSetResIndex = ~~((conWrap.scrollTop - this.translateY) / this.averageRowHeight) + firstTDIndex;
+                nextSetResIndex = (nextSetResIndex > firstTDIndex + this.bufferCount) ? nextSetResIndex : firstTDIndex + this.bufferCount;
+            }
         }
         let lastIndex: number = nextSetResIndex + this.renderedLength;
         lastIndex = (lastIndex > this.parent.resourceBase.expandedResources.length) ?
             nextSetResIndex + (this.parent.resourceBase.expandedResources.length - nextSetResIndex) : lastIndex;
         let nextSetCollection: TdData[] = this.getBufferCollection(lastIndex - this.renderedLength, lastIndex);
         this.translateY = conWrap.scrollTop;
+        if (isBlazor()) {
+            if (this.translateY > (this.parent.resourceBase.expandedResources.length * height) - (this.renderedLength * height)) {
+                this.translateY = (this.parent.resourceBase.expandedResources.length * height) - (this.renderedLength * height);
+            }
+            this.startIndex = lastIndex - this.renderedLength;
+            this.parent.resourceBase.renderedResources = nextSetCollection;
+        }
         return nextSetCollection;
     }
 

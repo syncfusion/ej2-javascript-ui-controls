@@ -93,8 +93,8 @@ export class Lists {
         let range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
         let startNode: Element = this.parent.domNode.getSelectedNode(range.startContainer as Element, range.startOffset);
         let endNode: Element = this.parent.domNode.getSelectedNode(range.endContainer as Element, range.endOffset);
-        if (startNode === endNode && !isNullOrUndefined(closest(startNode, 'li')) &&
-        startNode.textContent.trim() === '' && startNode.textContent.charCodeAt(0) === 65279) {
+        if (startNode === endNode && startNode.tagName === 'LI' && startNode.textContent.trim() === '' &&
+        startNode.textContent.charCodeAt(0) === 65279) {
             startNode.textContent = '';
         }
     }
@@ -425,16 +425,6 @@ export class Lists {
                 nodesTemp.push(node);
             }
         }
-        let parentList: Element[] = [];
-        for (let k: number = 0; k < nodesTemp.length; k++) {
-            let nodesTempListParent: Element = nodesTemp[k].closest('LI');
-            if (!isNOU(nodesTempListParent) && (nodesTemp.indexOf(nodesTempListParent.parentElement) < 0)) {
-               if (nodesTempListParent.parentElement.innerText === (nodesTemp[k] as HTMLElement).innerText) {
-                    parentList.push(nodesTempListParent.parentElement);
-               }
-            }
-        }
-        nodesTemp = parentList.concat(nodesTemp);
         for (let j: number = nodesTemp.length - 1; j >= 0; j--) {
             let h: Element = nodesTemp[j];
             let replace: string = '<' + tagName.toLowerCase() + ' '

@@ -621,12 +621,12 @@ export class TextSearch {
             textDiv.classList.add(className);
             if (className === 'e-pv-search-text-highlight') {
                 // tslint:disable-next-line:max-line-length
-                textDiv.style.backgroundColor = (this.pdfViewer.textSearchColorSettings.currentOccurrence === '') ? '#fdd835' : this.pdfViewer.textSearchColorSettings.currentOccurrence;
+                textDiv.style.backgroundColor = (this.pdfViewer.textSearchColorSettings.searchHighlightColor === '') ? '#fdd835' : this.pdfViewer.textSearchColorSettings.searchHighlightColor;
                 let bounds: RectangleBoundsModel  = { left: left, top: top, width: width, height: height };
                 this.pdfViewer.fireTextSearchHighlight(this.searchString, this.isMatchCase, bounds, (pageIndex + 1));
             } else if (className === 'e-pv-search-text-highlightother') {
                 // tslint:disable-next-line:max-line-length
-                textDiv.style.backgroundColor = (this.pdfViewer.textSearchColorSettings.otherOccurrence === '') ? '#8b4c12' : this.pdfViewer.textSearchColorSettings.otherOccurrence;
+                textDiv.style.backgroundColor = (this.pdfViewer.textSearchColorSettings.searchColor === '') ? '#8b4c12' : this.pdfViewer.textSearchColorSettings.searchColor;
             }
             let textLayer: HTMLElement = this.pdfViewerBase.getElement('_textLayer_' + pageIndex);
             if (textLayer) {

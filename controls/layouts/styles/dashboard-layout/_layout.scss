@@ -149,6 +149,13 @@
       cursor: $panel-dragging-cursor;
     }
 
+    & .e-drag-restrict {
+      &.e-drag:hover,
+      .e-drag:hover {
+        cursor: default;
+      }
+    }
+
     & .e-panel.e-dragging,
     & .e-panel.e-item-moving {
       cursor: $panel-dragging-cursor;

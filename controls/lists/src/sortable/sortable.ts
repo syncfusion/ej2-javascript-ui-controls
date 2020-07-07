@@ -387,6 +387,9 @@ export interface DropEventArgs {
     handled?: boolean;
 }
 
+/**
+ * An interface that holds item before drag event arguments
+ */
 export interface BeforeDragEventArgs {
     cancel?: boolean;
     target: Element;

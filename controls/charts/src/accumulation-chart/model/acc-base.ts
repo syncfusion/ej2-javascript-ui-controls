@@ -8,7 +8,7 @@ import { Border, Font, Animation, Index, EmptyPointSettings, Connector } from '.
 import { Rect, Size, PathOption } from '@syncfusion/ej2-svg-base';
 import { ChartLocation, stringToNumber, appendChildElement} from '../../common/utils/helper';
 import { AccumulationType, AccumulationLabelPosition, PyramidModes } from '../model/enum';
-import { IAccSeriesRenderEventArgs, IAccPointRenderEventArgs } from '../model/pie-interface';
+import { IAccSeriesRenderEventArgs, IAccPointRenderEventArgs, IAccTextRenderEventArgs  } from '../model/pie-interface';
 import { LegendShape } from '../../chart/utils/enum';
 import { AccumulationDataLabelSettingsModel } from '../model/acc-base-model';
 import { Data } from '../../common/model/data';
@@ -289,6 +289,17 @@ export class AccPoints {
     public transform: string;
      /** @private */
      public separatorY: string;
+     /** @private */
+     public adjustedLabel: boolean;
+     /** @private */
+     public connectorLength: number;
+     /** @private  */
+     public argsData: IAccTextRenderEventArgs = null;
+     /** @private  */
+     public textSize: Size;
+     /** @private */
+     public isLabelUpdated: number = null;
+     public initialLabelRegion: Rect = null;
 }
 
 /**
@@ -595,6 +606,10 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public clipRect: Rect = new Rect(0, 0, 0, 0);
      /** @private */
     public category: SeriesCategories = 'Series';
+    /** @private */
+    public rightSidePoints: AccPoints[] = [];
+    /** @private */
+    public leftSidePoints: AccPoints[] = [];
     /**
      * To find the max bounds of the data label to place smart legend
      *  @private
@@ -761,6 +776,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
 
         let seriesGroup: Element = redraw ? getElement(accumulation.element.id + '_Series_' + this.index) :
             accumulation.renderer.createGroup({ id: accumulation.element.id + '_Series_' + this.index });
+            
 
         this.renderPoints(accumulation, seriesGroup, redraw);
 
@@ -817,6 +833,9 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
         let element: HTMLElement = createElement('div', {
             id: accumulation.element.id + '_Series_0' + '_DataLabelCollections'
         });
+        this.leftSidePoints = [], this.rightSidePoints = [];
+        let firstQuarter: AccPoints[]= [];
+        let secondQuarter: AccPoints[] = [];
         for (let point of this.points) {
             if (point.visible) {
                 if ((point.y !== 0) || (point.y === 0 && this.emptyPointSettings.mode === 'Zero')) {
@@ -824,9 +843,23 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
                         point, this.dataLabel, datalabelGroup, this.points, this.index, element,
                         redraw
                     );
+                }                
+            }
+            if (point.midAngle >= 90 && point.midAngle <= 270) {
+                this.leftSidePoints.push(point);
+            } else {
+                if (point.midAngle >= 0 && point.midAngle <= 90) {
+                    secondQuarter.push(point);
+                } else {
+                    firstQuarter.push(point);
                 }
             }
         }
+        firstQuarter.sort((a: AccPoints, b: AccPoints) => a.midAngle - b.midAngle);
+        secondQuarter.sort((a: AccPoints, b: AccPoints) => a.midAngle - b.midAngle);
+        this.leftSidePoints.sort((a: AccPoints, b: AccPoints) => a.midAngle - b.midAngle);
+        this.rightSidePoints = firstQuarter.concat(secondQuarter);
+        accumulation.accumulationDataLabelModule.drawDataLabels(this, this.dataLabel, datalabelGroup as HTMLElement, element, redraw)
         if (this.dataLabel.template !== null && element.childElementCount) {
             appendChildElement(
                 false, getElement(accumulation.element.id + '_Secondary_Element'), element, redraw

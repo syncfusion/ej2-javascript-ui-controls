@@ -4,7 +4,8 @@ import { Axis, Tick, Pointer, Range } from './axis';
 import { animationComplete } from '../model/constant';
 import { AxisModel } from './axis-model';
 import { Animations } from './animation';
-import { Size, Rect, valueToCoefficient, PathOption, textElement, getElement } from '../utils/helper';
+import { Size, Rect, valueToCoefficient, PathOption, textElement,
+    getElement} from '../utils/helper';
 import { TextOption, RectOption, calculateShapes, getBox, getPathToRect, getRangeColor, VisibleRange } from '../utils/helper';
 import { MarkerType } from '../utils/enum';
 
@@ -201,6 +202,7 @@ export class AxisRenderer extends Animations {
                 pointesGroup.appendChild(pointerClipRectGroup);
             }
         }
+        this.gauge.gradientCount = 0;
         axisObject.appendChild(pointesGroup);
     }
 
@@ -211,6 +213,10 @@ export class AxisRenderer extends Animations {
         let pointerID: string = this.gauge.element.id + '_AxisIndex_' + axisIndex + '_' + pointer.type + 'Pointer' + '_' + pointerIndex;
         let transform: string = 'translate( 0, 0 )';
         let pointerElement: Element;
+        let gradientMarkerColor: string;
+        if (this.gauge.gradientModule) {
+            gradientMarkerColor = this.gauge.gradientModule.getGradientColorString(pointer);
+        }
         if (getElement(pointerID) && getElement(pointerID).childElementCount > 0) {
             remove(getElement(pointerID));
         }
@@ -225,7 +231,7 @@ export class AxisRenderer extends Animations {
                     pointer.markerType === 'InvertedTriangle' ? 'Triangle' as MarkerType : pointer.markerType));
         }
         options = new PathOption(
-            pointerID, pointerColor,
+            pointerID, (gradientMarkerColor) ? gradientMarkerColor : pointerColor,
             pointer.border.width, pointer.border.color, pointer.opacity, null, null, transform);
         options = calculateShapes(
             pointer.bounds, shapeBasedOnPosition, new Size(pointer.width, pointer.height),
@@ -251,12 +257,17 @@ export class AxisRenderer extends Animations {
         let bottomRadius: number; let topRadius: number;
         let size: Size = new Size(this.gauge.availableSize.width, this.gauge.availableSize.height);
         let pointerID: string = this.gauge.element.id + '_AxisIndex_' + axisIndex + '_' + pointer.type + 'Pointer' + '_' + pointerIndex;
+        let gradientBarColor: string;
+        if (this.gauge.gradientModule) {
+            gradientBarColor = this.gauge.gradientModule.getGradientColorString(pointer);
+        }
         if (getElement(pointerID) && getElement(pointerID).childElementCount > 0) {
             remove(getElement(pointerID));
         }
         if (this.gauge.container.type === 'Normal') {
             rectOptions = new RectOption(
-                pointerID, pointer.color || this.gauge.themeStyle.pointerColor,
+                pointerID, (gradientBarColor) ?
+                gradientBarColor : pointer.color || this.gauge.themeStyle.pointerColor,
                 pointer.border, pointer.opacity, pointer.bounds, null, null);
             box = pointer.bounds;
             pointerElement = this.gauge.renderer.drawRectangle(rectOptions) as SVGAElement;
@@ -266,8 +277,8 @@ export class AxisRenderer extends Animations {
                 new Size(pointer.bounds.width, pointer.bounds.height), 'bar',
                 this.gauge.container.width, axis, pointer.roundedCornerRadius);
             options = new PathOption(
-                pointerID, pointer.color || this.gauge.themeStyle.pointerColor, pointer.border.width,
-                pointer.border.color, pointer.opacity, null, path);
+                pointerID, (gradientBarColor) ? gradientBarColor : pointer.color || this.gauge.themeStyle.pointerColor,
+                pointer.border.width, pointer.border.color, pointer.opacity, null, path);
             pointerElement = this.gauge.renderer.drawPath(options) as SVGAElement;
             box = getPathToRect(<SVGPathElement>pointerElement.cloneNode(true), size, this.gauge.element);
         }

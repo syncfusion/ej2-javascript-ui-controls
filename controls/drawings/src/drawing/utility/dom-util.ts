@@ -69,45 +69,12 @@ export function measurePath(data: string): Rect {
             bounds = window[path][data];
         } else {
             window[path][data] = bounds = element.getBBox();
-            if ((bounds.x === 0 || bounds.y === 0) && (bounds.width === 0 || bounds.height === 0)) {
-                window[path][data] = bounds = getBBox(data);
-            }
         }
         let svgBounds: Rect = new Rect(bounds.x, bounds.y, bounds.width, bounds.height);
         window[measureElement].style.visibility = 'hidden';
         return svgBounds;
     }
     return new Rect(0, 0, 0, 0);
-}
-// tslint:disable-next-line
-function getBBox(path: string): any {
-    let xmin: number = 0;
-    let xmax: number = 0;
-    let ymin: number = 0;
-    let ymax: number = 0;
-    // tslint:disable-next-line
-    let currentValue: any;
-    // tslint:disable-next-line
-    let currentpath: any = path;
-    currentpath = currentpath.replace(/[a-z].*/g, ' ').replace(/[\sA-Z]+/gi, ' ').trim().split(' ');
-    for (let i: number = 0; i < currentpath.length; i++) {
-        if (currentpath[i].length > 1) {
-            currentValue = currentpath[i].split(',');
-            xmin = xmax = currentValue[0]; ymin = ymax = currentValue[1];
-        }
-    }
-    for (let i: number = 0; i < currentpath.length; i++) {
-        currentValue = currentpath[i].split(',');
-        if (!currentValue[1]) {
-            currentValue[0] = xmin;
-            currentValue[1] = ymin;
-        }
-        xmin = Math.min(xmin, currentValue[0]);
-        xmax = Math.max(xmax, currentValue[0]);
-        ymin = Math.min(ymin, currentValue[1]);
-        ymax = Math.max(ymax, currentValue[1]);
-    }
-    return { x: xmin, y: ymin, width: xmax - xmin, height: ymax - ymin };
 }
 
 function getTextOptions(element: TextElement, maxWidth?: number): BaseAttributes {

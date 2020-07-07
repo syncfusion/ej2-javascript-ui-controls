@@ -531,6 +531,16 @@ describe('Map Events tesing', () => {
             };
             map.refresh();
         });
+
+        it('checking loaded event with args', (done: Function) => {
+            map.loaded = (args: ILoadedEventArgs): void => {
+                args.isResized = false;
+                spec = document.getElementById('container_Layer_Collections') 
+                expect(spec.childElementCount).toBe(2);
+                done();
+            };
+            map.refresh();
+        });
     });
     describe('Shape Highlight testing', () => {
         let id: string = 'container';

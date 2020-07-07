@@ -125,6 +125,41 @@ describe('Map marker properties tesing', () => {
             map.refresh();
         });
 
+        it('Marker shape checking with Circle captial letter Latitude and Longitude', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_Markers_Group');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+            };
+            map.layers[0].markerSettings = [
+                {
+                    visible: true,
+                    shape: 'Circle',
+                    dataSource: [{ Name: "USA", Latitude: 38.8833, Longitude: -77.0167 }]
+                },
+                {
+                    visible: true,
+                    shape: 'Circle',
+                    dataSource: [{ Name: "Brazil", Latitude: -15.7833, Longitude: -47.8667 }]
+                },
+                {
+                    visible: true,
+                    shape: 'Circle',
+                    dataSource: [{ Name: "India", Latitude: 21.0000, Longitude: 78.0000 }]
+                },
+                {
+                    visible: true,
+                    shape: 'Circle',
+                    dataSource: [{ Name: "China", Latitude: 35.0000, Longitude: 103.0000 }]
+                },
+                {
+                    visible: true,
+                    shape: 'Circle',
+                    dataSource: [{ Name: "Indonesia", Latitude: -6.1750, Longitude: 106.8283 }]
+                }
+            ]
+            map.refresh();
+        });
+  
         it('Marker shape checking with InvertedTriangle', () => {
             map.loaded = (args: ILoadedEventArgs) => {
                 let element: Element = document.getElementById(map.element.id + '_Markers_Group');
@@ -502,6 +537,26 @@ describe('Map marker properties tesing', () => {
             map.refresh();
         });
 
+        it('checking with marker template captial letter latitude and longtitude', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_Markers_Template_Group');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+            };
+            map.layers[0].markerSettings = [
+                {
+                    visible: true,
+                    template: '<div id="marker1"><p>{{:Name}}</p></div>',
+                    dataSource: [
+                        { Name: "USA", Latitude: 38.8833, Longitude: -77.0167 },
+                        { Name: "Brazil", Latitude: -15.7833, Longitude: -47.8667 },
+                        { Name: "India", Latitude: 21.0000, longitude: 78.0000 },
+                        { Name: "China", Latitude: 35.0000, Longitude: 103.0000 },
+                        { Name: "Indonesia", Latitude: -6.1750, Longitude: 106.8283 }
+                    ]
+                }]
+            map.refresh();
+        });
+  
         it('checking with add marker method', () => {
             map.loaded = (args: ILoadedEventArgs) => {
                 let element: Element = <Element>document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_1_dataIndex_0').firstChild;
@@ -1638,6 +1693,25 @@ describe('Map marker properties tesing', () => {
             }];
             map.layers[0].layerType = 'GoogleStaticMap';
             map.layers[0].key='AIzaSyBhIDLGwyY8654k7_Ziss1Nx-mKO6kwvcw';
+            map.refresh();
+        });
+        it('Marker zooming in google map', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_Markers_Template_Group');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+            };
+            map.layers[0].markerSettings = [{
+                visible: true,
+                height: 30,
+                width: 30,
+                template: "<div><img src=http://js.syncfusion.com/demos/web/Images/map/pin.png></img></div>",
+                dataSource: [{ Name: "Chennai", latitude: 13.018410, longitude: 80.223068 },
+                { Name: "Mumbai", latitude: 19.076090, longitude: 72.877426 },
+                { Name: "Kolakata", latitude: 22.572645, longitude: 88.363892 },
+                { Name: "Gujarath", latitude: 22.140547, longitude: 73.184296 }
+                ]
+            }];
+            map.layers[0].layerType = 'Google';
             map.refresh();
         });
         it('Marker Template is hidden when the template is placed outside of the map', () => {

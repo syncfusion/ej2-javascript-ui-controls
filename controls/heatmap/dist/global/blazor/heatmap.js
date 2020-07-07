@@ -1,5 +1,5 @@
 window.sf = window.sf || {};
-window.sf.heatmap = (function (exports) {
+var sfheatmap = (function (exports) {
 'use strict';
 
 /**
@@ -8240,10 +8240,6 @@ var HeatMap = /** @class */ (function (_super) {
  * Heatmap component exported items
  */
 
-/**
- * HeatMap index file
- */
-
 HeatMap.Inject(Legend, Tooltip$1, Adaptor);
 
 exports.HeatMap = HeatMap;
@@ -8328,6 +8324,7 @@ exports.MultiLevelPosition = MultiLevelPosition;
 return exports;
 
 });
+sfBlazor.modules["heatmap"] = "heatmap.HeatMap";
 sfBlazor.loadDependencies(sfBlazor.dependencyJson.heatmap, () => {
-    sf.heatmap = sf.heatmap({});
+    sf.heatmap = sf.base.extend({}, sf.heatmap, sfheatmap({}));
 });

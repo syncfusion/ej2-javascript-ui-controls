@@ -77,7 +77,7 @@ export class LayerPanel {
                 'transparent', { width: 1, color: 'Gray' }, 1,
                 {
                     x: this.mapObject.isTileMap ? 0 : areaRect.x, y: this.mapObject.isTileMap ? 0 : areaRect.y,
-                    width: areaRect.width, height: areaRect.height
+                    width: areaRect.width, height: (areaRect.height < 0) ? 0 : areaRect.height
                 }));
         }
 
@@ -286,7 +286,8 @@ export class LayerPanel {
     //tslint:disable:max-func-body-length
     private bubbleCalculation(bubbleSettings: BubbleSettingsModel, range: { min: number, max: number }): void {
         if (bubbleSettings.dataSource != null && bubbleSettings != null) {
-            for (let i: number = 0; i < bubbleSettings.dataSource.length; i++) {
+            let bubbleDataSource: Object[] = bubbleSettings.dataSource as Object[];
+            for (let i: number = 0; i < bubbleDataSource.length; i++) {
                 let bubbledata: number = (!isNullOrUndefined(bubbleSettings.valuePath)) ? ((bubbleSettings.valuePath.indexOf('.') > -1) ?
                                           Number(getValueFromObject(bubbleSettings.dataSource[i], bubbleSettings.valuePath)) :
                                           parseFloat(bubbleSettings.dataSource[i][bubbleSettings.valuePath])) :
@@ -525,7 +526,8 @@ export class LayerPanel {
                     max: number;
                 } = { min: 0, max: 0 };
                 this.bubbleCalculation(bubble, range);
-                bubble.dataSource.map((bubbleData: object, i: number) => {
+                let bubbleDataSource: Object[] = bubble.dataSource as Object[];
+                bubbleDataSource.map((bubbleData: object, i: number) => {
                     this.renderBubble(
                         this.currentLayer, bubbleData, colors[i % colors.length], range, j, i, bubbleG, layerIndex, bubble);
                 });

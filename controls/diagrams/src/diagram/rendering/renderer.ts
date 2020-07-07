@@ -600,18 +600,20 @@ export class DiagramRenderer {
     }
 
     /**   @private  */
-    public renderUserHandler(selectorItem: SelectorModel, canvas: HTMLCanvasElement | SVGElement, transform?: Transforms): void {
-        let wrapper: DiagramElement = selectorItem.wrapper;
-        let canDraw: boolean;
+    public renderUserHandler(
+        selectorItem: SelectorModel, canvas: HTMLCanvasElement | SVGElement, transform?: Transforms,
+        diagramUserHandlelayer?: HTMLElement): void {
+        let wrapper: DiagramElement = selectorItem.wrapper; let canDraw: boolean;
         for (let obj of selectorItem.userHandles) {
             canDraw = true;
-            if (obj.disableConnectors && selectorItem.connectors.length > 0) {
+            if ((obj.disableConnectors && selectorItem.connectors.length > 0) ||
+                (obj.disableNodes && selectorItem.nodes.length > 0)) {
                 canDraw = false;
             }
-            if (obj.disableNodes && selectorItem.nodes.length > 0) {
-                canDraw = false;
+            let div: HTMLElement = document.getElementById(obj.name + '_template_hiddenUserHandle');
+            if (div) {
+                obj.template = (div.childNodes[0]).cloneNode(true) as HTMLElement;
             }
-            let element: PathElement = new PathElement();
             let newPoint: PointModel;
             newPoint = getUserHandlePosition(selectorItem, obj, transform);
             newPoint.x = (newPoint.x + transform.tx) * transform.scale;
@@ -620,7 +622,7 @@ export class DiagramRenderer {
                 obj.visible = (selectorItem.constraints & SelectorConstraints.UserHandle) ? true : false;
             }
             if (canDraw) {
-                if (obj.content === '' && obj.source === '') {
+                if (obj.pathData) {
                     let data: string = obj.pathData ? obj.pathData : obj.content;
                     let option: CircleAttributes = this.getBaseAttributes(wrapper) as CircleAttributes;
                     option.id = obj.name + '_userhandle';
@@ -633,7 +635,6 @@ export class DiagramRenderer {
                     option.visible = obj.visible;
                     option.opacity = 1;
                     this.svgRenderer.drawCircle(canvas as SVGElement, option, 1, { 'aria-label': obj.name + 'user handle' });
-
                     let pathPading: number = 5;
                     let arrayCollection: Object[] = [];
                     arrayCollection = processPathData(data);
@@ -646,23 +647,20 @@ export class DiagramRenderer {
                     pathSize = measurePath(newData);
                     let options: PathAttributes = {
                         x: newPoint.x - pathSize.width / 2,
-                        y: newPoint.y - pathSize.height / 2,
-                        angle: 0, id: '',
-                        class: 'e-diagram-userhandle-path',
-                        fill: obj.pathColor, stroke: obj.backgroundColor, strokeWidth: 0.5, dashArray: '', data: newData,
+                        y: newPoint.y - pathSize.height / 2, angle: 0, id: '',
+                        class: 'e-diagram-userhandle-path', fill: obj.pathColor,
+                        stroke: obj.backgroundColor, strokeWidth: 0.5, dashArray: '', data: newData,
                         width: obj.size - pathPading, height: obj.size - pathPading, pivotX: 0, pivotY: 0, opacity: 1, visible: obj.visible
                     };
                     this.svgRenderer.drawPath(
                         canvas as SVGElement, options as PathAttributes, this.diagramId, undefined,
                         undefined, { 'aria-label': obj.name + 'user handle' });
-                } else if (obj.content !== '') {
+                } else if (obj.content) {
                     let handleContent: DiagramNativeElement;
                     handleContent = new DiagramNativeElement(obj.name, this.diagramId);
                     handleContent.content = obj.content;
                     handleContent.offsetX = newPoint.x;
                     handleContent.offsetY = newPoint.y;
-                    handleContent.height = obj.size;
-                    handleContent.width = obj.size;
                     handleContent.id = obj.name + '_shape';
                     handleContent.horizontalAlignment = 'Center';
                     handleContent.verticalAlignment = 'Center';
@@ -673,7 +671,7 @@ export class DiagramRenderer {
                     handleContent.measure(new Size(obj.size, obj.size));
                     handleContent.arrange(handleContent.desiredSize);
                     this.svgRenderer.drawNativeContent(handleContent, canvas, obj.size, obj.size, this.adornerSvgLayer);
-                } else {
+                } else if (obj.source) {
                     let element: ImageElement = new ImageElement();
                     let options: BaseAttributes = this.getBaseAttributes(element, transform);
                     options.width = obj.size;
@@ -689,6 +687,18 @@ export class DiagramRenderer {
                     (options as ImageAttributes).description = obj.name || 'User handle';
                     (options as ImageAttributes).id = obj.name + '_';
                     this.renderer.drawImage(canvas, options as ImageAttributes, this.adornerSvgLayer, false);
+                } else {
+                    let templateContent: DiagramHtmlElement;
+                    templateContent = new DiagramHtmlElement(obj.name, this.diagramId);
+                    templateContent.offsetX = newPoint.x;
+                    templateContent.offsetY = newPoint.y;
+                    templateContent.id = obj.name + '_shape';
+                    templateContent.visible = obj.visible;
+                    templateContent.relativeMode = 'Object';
+                    templateContent.template = obj.template as HTMLElement;
+                    templateContent.measure(new Size(obj.size, obj.size));
+                    templateContent.arrange(templateContent.desiredSize);
+                    this.svgRenderer.drawHTMLContent(templateContent, diagramUserHandlelayer as HTMLElement, undefined, true, undefined);
                 }
             }
         }

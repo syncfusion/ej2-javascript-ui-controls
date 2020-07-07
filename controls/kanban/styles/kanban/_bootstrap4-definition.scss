@@ -1,9 +1,11 @@
 /*! Kanban component's bootstrap4 theme definitions and variables */
 $kanban-skin: 'bootstrap4' !default;
-$kanban-column-bg-color: $gray-100 !default;
+$kanban-column-bg-color: darken($gray-100, 2%) !default;
 $kanban-primary-color: $primary !default;
 $kanban-border-color: $gray-300 !default;
 $kanban-default-font: $gray-900 !default;
+$kanban-header-font: $kanban-default-font !default;
+$kanban-content-font: $gray-800 !default;
 $kanban-card-selection: $gray-200 !default;
 $kanban-dropped-clone-bg-color: rgba($kanban-primary-color, .1) !default;
 $kanban-dropped-clone-border-color: $kanban-primary-color !default;
@@ -24,3 +26,5 @@ $kanban-icons-toggle-bg-color: darken($gray-600, 7.5%) !default;
 $kanban-icons-toggle-color: $primary-font !default;
 $kanban-icons-border-radius: 4px !default;
 $kanban-border-hover-color: darken($gray-600, 12.5%) !default;
+$kanban-tags-bg-color: #eceaff !default;
+$kanban-tags-color: #3225c9 !default;

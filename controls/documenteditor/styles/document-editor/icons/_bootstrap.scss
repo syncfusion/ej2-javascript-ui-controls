@@ -160,6 +160,16 @@
     font-size: $de-tablecell-alignment-font-size;
   }
 
+  .e-de-acceptchange::before {
+    content: '\e19f';
+    font-family: 'e-icons';
+  }
+
+  .e-de-rejectchange::before {
+    content: '\e204';
+    font-family: 'e-icons';
+  }
+
   .e-de-table-border-setting {
     border: 1px solid $de-border-dlg-border-setting-inside-border;
     height: 48px;

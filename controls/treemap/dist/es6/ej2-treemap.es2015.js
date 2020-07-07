@@ -412,7 +412,7 @@ __decorate$1([
     Property(false)
 ], SelectionSettings.prototype, "enable", void 0);
 __decorate$1([
-    Property('null')
+    Property(null)
 ], SelectionSettings.prototype, "fill", void 0);
 __decorate$1([
     Property('0.5')
@@ -1187,7 +1187,9 @@ function removeClassNames(elements, type, treemap) {
 }
 function applyOptions(element, options) {
     element.setAttribute('opacity', options['opacity']);
-    element.setAttribute('fill', options['fill']);
+    if (!isNullOrUndefined(options['fill'])) {
+        element.setAttribute('fill', options['fill']);
+    }
     element.setAttribute('stroke', options['border']['color']);
     element.setAttribute('stroke-width', options['border']['width']);
 }
@@ -2448,7 +2450,6 @@ var __rest = (undefined && undefined.__rest) || function (s, e) {
             t[p[i]] = s[p[i]];
     return t;
 };
-var TreeMap_1;
 /**
  * Represents the treemap component.
  * ```html
@@ -2459,12 +2460,16 @@ var TreeMap_1;
  * </script>
  * ```
  */
-let TreeMap = TreeMap_1 = class TreeMap extends Component {
+let TreeMap = class TreeMap extends Component {
     /**s
      * Constructor for TreeMap component.
      */
     constructor(options, element) {
         super(options, element);
+        /**
+         * resize the treemap
+         */
+        this.isResize = false;
         /** @private */
         this.orientation = 'Horizontal';
         /** @private */
@@ -2478,14 +2483,6 @@ let TreeMap = TreeMap_1 = class TreeMap extends Component {
     }
     preRender() {
         this.isBlazor = isBlazor();
-        if (!this.isBlazor) {
-            this.allowPrint = true;
-            this.allowImageExport = true;
-            this.allowPdfExport = true;
-            TreeMap_1.Inject(Print);
-            TreeMap_1.Inject(PdfExport);
-            TreeMap_1.Inject(ImageExport);
-        }
         this.trigger(load, { treemap: this.isBlazor ? null : this }, () => {
             this.initPrivateVariable();
             this.unWireEVents();
@@ -2545,7 +2542,8 @@ let TreeMap = TreeMap_1 = class TreeMap extends Component {
         this.layout.processLayoutPanel();
         this.element.appendChild(this.svgObject);
         this.elementChange();
-        this.trigger(loaded, { treemap: this.isBlazor ? null : this });
+        this.trigger(loaded, this.isBlazor ? { isResized: this.isResize } : { treemap: this, isResized: this.isResize });
+        this.isResize = false;
         this.renderComplete();
     }
     createSvg() {
@@ -2953,6 +2951,7 @@ let TreeMap = TreeMap_1 = class TreeMap extends Component {
      * @param e - Specifies the pointer event.
      */
     resizeOnTreeMap(e) {
+        this.isResize = true;
         let args = {
             name: resize,
             cancel: false,
@@ -3660,7 +3659,7 @@ __decorate([
 __decorate([
     Event()
 ], TreeMap.prototype, "legendRendering", void 0);
-TreeMap = TreeMap_1 = __decorate([
+TreeMap = __decorate([
     NotifyPropertyChanges
 ], TreeMap);
 /**
@@ -4924,9 +4923,6 @@ class TreeMapSelection {
                         }
                     }
                     else {
-                        selection.fill = selection.fill === 'null' ?
-                            treemap.layout.renderItems[parseInt(element.id.split('Item_Index_')[1], 10)]['options']['fill']
-                            : selection.fill;
                         applyOptions(element.childNodes[0], { border: selection.border, fill: selection.fill, opacity: selection.opacity });
                         element.classList.add('treeMapSelection');
                     }

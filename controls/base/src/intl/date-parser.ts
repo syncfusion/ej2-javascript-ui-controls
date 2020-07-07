@@ -10,7 +10,7 @@ const noSystem: string = 'numberingSystem';
 const standalone: string = 'stand-alone';
 const curWeekDay: string = 'curWeekDay';
 const latnRegex: RegExp = /^[0-9]*$/;
-const abbreviateRegex: RegExp = /\/MMMMM|MMMM|MMM|a|LLL|EEEEE|EEEE|E|ccc/;
+const abbreviateRegex: RegExp = /\/MMMMM|MMMM|MMM|a|LLLL|LLL|EEEEE|EEEE|E|ccc/;
 const timeSetter: Object = {
     minute: 'setMinutes',
     hour: 'setHours',

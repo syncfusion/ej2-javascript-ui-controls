@@ -117,7 +117,8 @@
           &.e-timeline-week .e-icon-timeline-week,
           &.e-timeline-work-week .e-icon-timeline-workweek,
           &.e-timeline-month .e-icon-timeline-month,
-          &.e-timeline-year .e-icon-timeline-year,
+          &.e-timeline-year .e-icon-timeline-year-vertical,
+          &.e-timeline-year .e-icon-timeline-year-horizontal,
           &.e-add .e-tbar-btn-text,
           &.e-today .e-icon-day,
           &.e-today .e-icon-today + .e-tbar-btn-text {
@@ -357,10 +358,6 @@
       }
     }
 
-    .e-month-view .e-new-event {
-      height: calc(100% - 25px);
-    }
-
     .e-schedule-table {
       border: 0 none;
       border-collapse: separate;
@@ -463,10 +460,6 @@
       float: left;
     }
 
-    .e-month-view .e-block-indicator {
-      margin-top: -20px;
-    }
-
     .e-timeline-view .e-block-indicator,
     .e-timeline-month-view .e-block-indicator {
       position: absolute;
@@ -476,6 +469,21 @@
     .e-appointment {
       opacity: 1;
       transition: opacity 100ms linear;
+
+      .e-subject.e-disable {
+        display: none;
+      }
+
+      .e-inline-subject {
+        background-color: transparent;
+        border: 0;
+        color: $schedule-appointment-font-color;
+        font-size: 13px;
+        font-weight: 500;
+        line-height: 1.2;
+        padding-top: 4px;
+        width: 100%;
+      }
 
       &.e-event-action {
         opacity: .4;
@@ -1265,6 +1273,14 @@
         position: absolute;
       }
 
+      .e-new-event {
+        height: calc(100% - 25px);
+      }
+
+      .e-block-indicator {
+        margin-top: -20px;
+      }
+
       .e-appointment {
         background: $schedule-appointment-bg-color;
         border: 1px solid $schedule-appointment-border-color;
@@ -1293,6 +1309,11 @@
             overflow: hidden;
             padding: $schedule-month-appointment-subject-padding;
             text-overflow: ellipsis;
+          }
+
+          .e-inline-subject {
+            padding: 4px;
+            text-align: center;
           }
 
           .e-time {
@@ -1365,9 +1386,14 @@
       .e-calendar-wrapper {
         display: flex;
         flex-wrap: wrap;
+        justify-content: center;
 
         .e-month-calendar.e-calendar {
           border: 0;
+          flex: 0 25%;
+          max-width: 100%;
+          min-width: 260px;
+          padding: 10px;
 
           .e-header .e-title {
             cursor: default;

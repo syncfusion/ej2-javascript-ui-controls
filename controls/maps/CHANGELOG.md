@@ -8,131 +8,20 @@
 
 ## [Unreleased]
 
-## 18.1.56 (2020-06-09)
-
-### Maps
-
-#### Bug Fixes
-
-- `I278468` - The script errors will not be thrown when rendering the GeoJSON file with line string geometry in Maps control.
-
-## 18.1.48 (2020-05-05)
+## 18.2.44 (2020-07-07)
 
 ### Maps
 
 #### New Features
 
-- Tooltip will now be rendered for overflowed legend text which is trimmed.
-
-## 18.1.43 (2020-04-07)
-
-### Maps
+- The data manager support for bubble and marker data source is now available.
+- `Google` enum value is provided in `ShapeLayerType` to render the Google maps in the Maps control.
+- `#280380` - `isResized` argument is exposed in the `loaded` event argument for indicating that the component is resized.
 
 #### Bug Fixes
 
-- `#268755` - `isShapeSelected` property is exposed to check whether the shape is selected or not on the map.
-
-## 18.1.42 (2020-04-01)
-
-### Maps
-
-#### New Features
-
-- `#264809` - Latitude and longitude values are exposed in the arguments of panning event of the Maps control.
-
-#### Bug Fixes
-
-- `#268354` - `shapeDataPath` property will now work properly in the Maps control.
-- `#263976` - Data label template will render properly now in the sublayers.
-
-## 18.1.36-beta (2020-03-19)
-
-### Maps
-
-#### New Features
-
-- `#F149168` - Support is provided to parse and utilize the complex data source.
-- `#258888` - The map rendered from the providers such as Bing, OSM, and Google can now be exported in the supported formats.
-
-#### Bug Fixes
-
-- `#264141` - Zooming with `zoomToCoordinates()` method will now render the data labels properly.
-- `#263976` - Script errors will not be thrown when zooming to the maximum level in the Maps component.
-
-## 17.4.51 (2020-02-25)
-
-### Maps
-
-#### Bug Fixes
-
-- `#244109` - Maps will now be aligned vertically at middle while using the `zoomToCoordinates()` method.
-- `#263976` - Data labels will now be rendered properly in the correct positions.
-- `#264153` - Data labels will now be rendered properly when zooming.
-
-## 17.4.50 (2020-02-18)
-
-### Maps
-
-#### Bug Fixes
-
-- `#264141`  - The data labels will now be rendered properly while using `zoomToCoordinates()` method.
-
-## 17.4.49 (2020-02-11)
-
-### Maps
-
-#### Bug Fixes
-
-- `#263056` - Now, Legend will be rendered properly when the OSM map is used along with a geometric sublayers.
-
-## 17.4.47 (2020-02-05)
-
-### Maps
-
-#### Bug Fixes
-
-- `#244109`  - Zooming will not be maintained properly when the sublayers are added to the Maps control.
-
-## 17.4.46 (2020-01-30)
-
-### Maps
-
-#### New Features
-
-- `#256121`  - Provided support to toggle the panning functionality in maps control by using the `enablePanning` property.
-
-## 17.4.43 (2020-01-14)
-
-### Maps
-
-#### New Features
-
-- `#244109`  - `zoomToCoordinates` method is now exposed to zoom the map based on the coordinates.
-
-#### Bug Fixes
-
-- `#244109`  - Panning is working properly now when we enable the `shouldZoomInitially` property.
-- `#259807`  - Console error will not be thrown now when changing the position of the legend.
-- `#259807`  - Shapes in the maps will not be cropped when changing the position of the legend after clicking the zoom reset button.
-- `#258541`  - The latitude and the longitude values of the markers can now be set as a string.
-- `#258541`  - The performance of the data label for point shape is now improved.
-
-## 17.4.41 (2020-01-07)
-
-### Maps
-
-#### Bug Fixes
-
-- `#258541` - Local storage is now maintained properly without clearing the user data.
-- `#258541` - The performance of the marker template rendering is improved.
-
-## 17.4.40 (2019-12-24)
-
-### Maps
-
-#### Bug Fixes
-
-- `#I256861` - Now, the data labels are displaying properly for the point type sublayers.
+- `#278468` - The script errors will not be thrown when rendering the GeoJSON file with line string geometry in Maps control.
+- `#280380` - The center position property will be maintained when the zooming operation is done after the reset zoom.
 
 ## 17.4.39 (2019-12-17)
 

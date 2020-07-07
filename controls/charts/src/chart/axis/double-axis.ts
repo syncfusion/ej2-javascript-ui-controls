@@ -182,7 +182,7 @@ export class Double {
         if (this.max === null || this.max < max) {
             this.max = <number>max;
         }
-        if ((this.max === this.min) && this.max < 0 && this.min < 0) {                   // max == min
+        if ((this.max === this.min) && this.max < 0 && this.min < 0) { // max == min
             this.max = 0;
         }
     }

@@ -11,42 +11,54 @@ export class ProgressAnimation {
     public doLinearAnimation(element: Element, progress: ProgressBar, delay: number, previousWidth?: number, active?: Element): void {
         let animation: Animation = new Animation({});
         let linearPath: HTMLElement = <HTMLElement>element;
+        let duration: number = (progress.isActive) ? 3000 : progress.animation.duration;
         let width: string = linearPath.getAttribute('width');
         let x: string = linearPath.getAttribute('x');
         let opacityValue: number = 0;
         let value: number = 0;
-        let start: number = (!progress.enableRtl) ? previousWidth : parseInt(x, 10);
-        let end: number = (!progress.enableRtl) ? parseInt(width, 10) - start : parseInt(width, 10) - previousWidth;
+        let start: number = (!progress.enableRtl || (progress.cornerRadius === 'Round4px')) ? previousWidth : parseInt(x, 10);
+        let end: number = (!progress.enableRtl || (progress.cornerRadius === 'Round4px')) ? parseInt(width, 10) - start :
+            parseInt(width, 10) - previousWidth;
         let rtlX: number = parseInt(x, 10) - end;
         linearPath.style.visibility = 'hidden';
         animation.animate(linearPath, {
-            duration: progress.animation.duration,
+            duration: duration,
             delay: delay,
             progress: (args: AnimationOptions): void => {
-                if (progress.enableRtl) {
+                progress.cancelResize = true;
+                if (progress.enableRtl && !(progress.cornerRadius === 'Round4px')) {
                     if (args.timeStamp >= args.delay) {
                         linearPath.style.visibility = 'visible';
-                        value = effect(args.timeStamp, start, end, args.duration, progress.enableRtl);
-                        linearPath.setAttribute('x', value.toString());
                         if (progress.isActive) {
+                            value = this.activeAnimate((args.timeStamp / args.duration), parseInt(x, 10), parseInt(width, 10), true);
                             opacityValue = effect(args.timeStamp, 0.5, 0.5, args.duration, true);
                             active.setAttribute('opacity', opacityValue.toString());
+                            linearPath.setAttribute('x', value.toString());
+                        } else {
+                            value = effect(args.timeStamp, start, end, args.duration, true);
+                            linearPath.setAttribute('x', value.toString());
                         }
                     }
                 } else {
                     if (args.timeStamp >= args.delay) {
                         linearPath.style.visibility = 'visible';
-                        value = effect(args.timeStamp, start, end, args.duration, progress.enableRtl);
-                        linearPath.setAttribute('width', value.toString());
                         if (progress.isActive) {
+                            value = this.activeAnimate((args.timeStamp / args.duration), 0, parseInt(width, 10), false);
                             opacityValue = effect(args.timeStamp, 0.5, 0.5, args.duration, true);
                             active.setAttribute('opacity', opacityValue.toString());
+                            linearPath.setAttribute('width', value.toString());
+                        } else {
+                            value = effect(args.timeStamp, start, end, args.duration, false);
+                            linearPath.setAttribute('width', value.toString());
                         }
+
                     }
                 }
             },
             end: (model: AnimationOptions) => {
-                if (progress.enableRtl) {
+                progress.cancelResize = false;
+                linearPath.style.visibility = '';
+                if (progress.enableRtl && !(progress.cornerRadius === 'Round4px')) {
                     if (progress.isActive) {
                         linearPath.setAttribute('x', x.toString());
                         this.doLinearAnimation(element, progress, delay, previousWidth, active);
@@ -67,9 +79,10 @@ export class ProgressAnimation {
         });
     }
 
-
     /** Linear Indeterminate */
-    public doLinearIndeterminate(element: Element, progressWidth: number, thickness: number, progress: ProgressBar): void {
+    public doLinearIndeterminate(
+        element: Element, progressWidth: number, thickness: number, progress: ProgressBar, clipPath: Element
+    ): void {
         let animation: Animation = new Animation({});
         let linearPath: HTMLElement = <HTMLElement>element;
         let x: string = linearPath.getAttribute('x');
@@ -77,24 +90,24 @@ export class ProgressAnimation {
         let value: number = 0;
         let start: number = (width) ? -(parseInt(width, 10)) : -progressWidth;
         let end: number = (progress.progressRect.x + progress.progressRect.width) + ((width) ? (parseInt(width, 10)) : progressWidth);
-        let duration: number = (!progress.trackSegmentDisable) ? 2500 : 3500;
-        animation.animate(linearPath, {
+        let duration: number = (!progress.enableProgressSegments) ? 2500 : 3500;
+        animation.animate(<HTMLElement>clipPath, {
             duration: duration,
             delay: 0,
             progress: (args: AnimationOptions): void => {
-                if (progress.enableRtl) {
+                if (progress.enableRtl && !(progress.cornerRadius === 'Round4px')) {
                     value = effect(
                         args.timeStamp, parseInt(x, 10) || progress.progressRect.x + progressWidth,
-                        end, args.duration, progress.enableRtl
+                        end, args.duration, true
                     );
-                    if (!progress.trackSegmentDisable) {
+                    if (!progress.enableProgressSegments) {
                         linearPath.setAttribute('x', value.toString());
                     } else {
                         linearPath.setAttribute('d', progress.getPathLine(value, progressWidth, thickness));
                     }
                 } else {
-                    value = effect(args.timeStamp, start, end, args.duration, progress.enableRtl);
-                    if (!progress.trackSegmentDisable) {
+                    value = effect(args.timeStamp, start, end, args.duration, false);
+                    if (!progress.enableProgressSegments) {
                         linearPath.setAttribute('x', value.toString());
                     } else {
                         linearPath.setAttribute('d', progress.getPathLine(value, progressWidth, thickness));
@@ -102,12 +115,14 @@ export class ProgressAnimation {
                 }
             },
             end: () => {
-                if (progress.enableRtl && !progress.trackSegmentDisable) {
+                if (progress.enableRtl && !progress.enableProgressSegments && !(progress.cornerRadius === 'Round4px')) {
                     linearPath.setAttribute('x', x.toString());
-                } else if (!progress.trackSegmentDisable) {
+                } else if (!progress.enableProgressSegments) {
                     linearPath.setAttribute('x', start.toString());
                 }
-                this.doLinearIndeterminate(element, progressWidth, thickness, progress);
+                if (!progress.destroyIndeterminate) {
+                    this.doLinearIndeterminate(element, progressWidth, thickness, progress, clipPath);
+                }
             }
         });
     }
@@ -115,7 +130,7 @@ export class ProgressAnimation {
     /** Linear striped */
     public doStripedAnimation(element: Element, progress: ProgressBar, value: number, delay?: boolean): void {
         let animation: Animation = new Animation({});
-        let point: number = 1500 / progress.animation.duration;
+        let point: number = 1000 / progress.animation.duration;
         animation.animate(<HTMLElement>element, {
             duration: progress.animation.duration,
             delay: progress.animation.delay,
@@ -124,7 +139,9 @@ export class ProgressAnimation {
                 element.setAttribute('gradientTransform', 'translate(' + value + ') rotate(-45)');
             },
             end: () => {
-                this.doStripedAnimation(element, progress, value, false);
+                if (!progress.destroyIndeterminate) {
+                    this.doStripedAnimation(element, progress, value, false);
+                }
             }
         });
     }
@@ -143,6 +160,7 @@ export class ProgressAnimation {
         let opacityValue: number = 0;
         let startPos: number;
         let endPos: number;
+        let duration: number = (progress.isActive) ? 3000 : progress.animation.duration;
         start += (progress.cornerRadius === 'Round' && totalEnd !== completeAngle && totalEnd !== 0) ?
             ((progress.enableRtl) ? (lineCapRadius / 2) * thickness : -(lineCapRadius / 2) * thickness) : 0;
         totalEnd += (progress.cornerRadius === 'Round' && totalEnd !== completeAngle && totalEnd !== 0) ?
@@ -153,20 +171,25 @@ export class ProgressAnimation {
         endPos = (!isNullOrUndefined(startValue)) ? totalEnd - previousTotal : totalEnd;
         circularPath.setAttribute('visibility', 'Hidden');
         animation.animate(circularPath, {
-            duration: progress.animation.duration,
+            duration: duration,
             delay: delay,
             progress: (args: AnimationOptions): void => {
+                progress.cancelResize = true;
                 if (args.timeStamp >= args.delay) {
                     circularPath.setAttribute('visibility', 'visible');
-                    end = effect(args.timeStamp, startPos, endPos, args.duration, progress.enableRtl);
-                    circularPath.setAttribute('d', getPathArc(x, y, pathRadius, start, end % 360, progress.enableRtl, true));
                     if (progress.isActive) {
+                        end = this.activeAnimate((args.timeStamp / args.duration), startPos, endPos, progress.enableRtl);
                         opacityValue = effect(args.timeStamp, 0.5, 0.5, args.duration, true);
                         active.setAttribute('opacity', opacityValue.toString());
+                        circularPath.setAttribute('d', getPathArc(x, y, pathRadius, start, end % 360, progress.enableRtl, true));
+                    } else {
+                        end = effect(args.timeStamp, startPos, endPos, args.duration, progress.enableRtl);
+                        circularPath.setAttribute('d', getPathArc(x, y, pathRadius, start, end % 360, progress.enableRtl, true));
                     }
                 }
             },
             end: (model: AnimationOptions) => {
+                progress.cancelResize = false;
                 circularPath.setAttribute('visibility', '');
                 circularPath.setAttribute('d', getPathArc(x, y, pathRadius, start, progressEnd, progress.enableRtl, true));
                 if (progress.isActive) {
@@ -186,21 +209,25 @@ export class ProgressAnimation {
     /** Circular indeterminate */
     public doCircularIndeterminate(
         circularProgress: Element, progress: ProgressBar,
-        start: number, end: number, x: number, y: number, radius: number, thickness: number
+        start: number, end: number, x: number, y: number, radius: number, thickness: number, clipPath: Element
     ): void {
         let animation: Animation = new Animation({});
-        let pathRadius: number = radius + ((!progress.trackSegmentDisable) ? (thickness / 2) : 0);
-        let value: number = (!progress.trackSegmentDisable) ? 3 : 2;
-        animation.animate(<HTMLElement>circularProgress, {
+        let pathRadius: number = radius + ((!progress.enableProgressSegments) ? (thickness / 2) : 0);
+        let value: number = (!progress.enableProgressSegments) ? 3 : 2;
+        animation.animate((<HTMLElement>clipPath), {
             progress: (): void => {
+                (<HTMLElement>circularProgress).style.visibility = 'visible';
                 start += (progress.enableRtl) ? -value : value;
                 end += (progress.enableRtl) ? -value : value;
                 circularProgress.setAttribute(
-                    'd', getPathArc(x, y, pathRadius, start % 360, end % 360, progress.enableRtl, !progress.trackSegmentDisable)
+                    'd', getPathArc(x, y, pathRadius, start % 360, end % 360, progress.enableRtl, !progress.enableProgressSegments)
                 );
             },
             end: (model: AnimationOptions) => {
-                this.doCircularIndeterminate(circularProgress, progress, start, end, x, y, radius, thickness);
+                if (!progress.destroyIndeterminate) {
+                    this.doCircularIndeterminate(circularProgress, progress, start, end, x, y, radius, thickness, clipPath);
+                }
+
             }
         });
     }
@@ -230,6 +257,7 @@ export class ProgressAnimation {
             duration: progress.animation.duration,
             delay: delay,
             progress: (args: AnimationOptions): void => {
+                progress.cancelResize = true;
                 if (progress.type === 'Linear') {
                     if (args.timeStamp >= args.delay) {
                         if (labelText === '') {
@@ -253,6 +281,7 @@ export class ProgressAnimation {
                 }
             },
             end: () => {
+                progress.cancelResize = false;
                 if (labelText === '') {
                     labelPath.innerHTML = text;
                     labelPath.setAttribute('x', posX.toString());
@@ -311,6 +340,7 @@ export class ProgressAnimation {
                 duration: progress.animation.duration,
                 delay: progress.animation.delay,
                 progress: (args: AnimationOptions): void => {
+                    progress.cancelResize = true;
                     if (isAnnotation && annotatElementChanged) {
                         value = effect(args.timeStamp, startValue, endValue, args.duration, false);
                         annotateValueChanged = parseInt((((Math.round(value) - start) / totalAngle) * percentage).toString(), 10);
@@ -318,10 +348,18 @@ export class ProgressAnimation {
                     }
                 },
                 end: (model: AnimationOptions) => {
+                    progress.cancelResize = false;
                     annotatElementChanged.innerHTML = annotateValue + '%';
                 }
             });
         }
     }
+
+    private activeAnimate(t: number, start: number, end: number, enableRtl: boolean): number {
+        let time: number = 1 - Math.pow(1 - t, 3);
+        let attrValue: number = start + ((!enableRtl) ? (time * end) : -(time * end));
+        return attrValue;
+    }
+
 }
 

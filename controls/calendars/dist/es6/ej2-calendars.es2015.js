@@ -3469,6 +3469,9 @@ let DatePicker = class DatePicker extends Calendar {
         this.isDateIconClicked = false;
         this.trigger('focus', focusArguments);
         this.updateIconState();
+        if (this.openOnFocus) {
+            this.show();
+        }
     }
     inputHandler(e) {
         this.isPopupClicked = false;
@@ -4695,6 +4698,9 @@ __decorate$1([
     Property(null)
 ], DatePicker.prototype, "serverTimezoneOffset", void 0);
 __decorate$1([
+    Property(false)
+], DatePicker.prototype, "openOnFocus", void 0);
+__decorate$1([
     Event()
 ], DatePicker.prototype, "open", void 0);
 __decorate$1([
@@ -5602,6 +5608,9 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         }
         this.updateClearIconState();
         this.updateHiddenInput();
+        if (this.openOnFocus) {
+            this.show();
+        }
     }
     inputBlurHandler(e) {
         if (!this.preventBlur) {
@@ -8796,6 +8805,9 @@ __decorate$2([
     Property('Gregorian')
 ], DateRangePicker.prototype, "calendarMode", void 0);
 __decorate$2([
+    Property(false)
+], DateRangePicker.prototype, "openOnFocus", void 0);
+__decorate$2([
     Event()
 ], DateRangePicker.prototype, "created", void 0);
 __decorate$2([
@@ -10986,6 +10998,9 @@ let TimePicker = class TimePicker extends Component {
         }
         this.trigger('focus', focusArguments);
         this.clearIconState();
+        if (this.openOnFocus) {
+            this.show();
+        }
     }
     /**
      * Focused the TimePicker textbox element.
@@ -11371,6 +11386,9 @@ __decorate$3([
 __decorate$3([
     Property(true)
 ], TimePicker.prototype, "allowEdit", void 0);
+__decorate$3([
+    Property(false)
+], TimePicker.prototype, "openOnFocus", void 0);
 __decorate$3([
     Event()
 ], TimePicker.prototype, "change", void 0);
@@ -11937,6 +11955,9 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
                 this.isPreventBlur = ((document.activeElement === this.inputElement) && (Browser.isIE || Browser.info.name === 'edge')
                     && target === this.popupObject.element);
             }
+        }
+        if (this.openOnFocus) {
+            this.show();
         }
     }
     isTimePopupOpen() {
@@ -12838,6 +12859,9 @@ __decorate$4([
 __decorate$4([
     Property('Short')
 ], DateTimePicker.prototype, "dayHeaderFormat", void 0);
+__decorate$4([
+    Property(false)
+], DateTimePicker.prototype, "openOnFocus", void 0);
 __decorate$4([
     Event()
 ], DateTimePicker.prototype, "open", void 0);

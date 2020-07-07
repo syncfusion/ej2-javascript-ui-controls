@@ -2,7 +2,7 @@ import { KeyboardEvents, KeyboardEventArgs, closest, EventHandler, extend } from
 import { isNullOrUndefined, addClass, removeClass } from '@syncfusion/ej2-base';
 import { View } from '../base/type';
 import { Schedule } from '../base/schedule';
-import { CellClickEventArgs, KeyEventArgs, ResizeEdges, SelectEventArgs } from '../base/interface';
+import { CellClickEventArgs, KeyEventArgs, ResizeEdges, SelectEventArgs, InlineClickArgs } from '../base/interface';
 import * as event from '../base/constant';
 import * as util from '../base/util';
 import * as cls from '../base/css-constant';
@@ -219,7 +219,19 @@ export class KeyboardInteraction {
         if (target.classList.contains(cls.WORK_CELLS_CLASS) || target.classList.contains(cls.ALLDAY_CELLS_CLASS)) {
             this.parent.activeCellsData = this.getSelectedElements(target);
             let args: CellClickEventArgs = <CellClickEventArgs>extend(this.parent.activeCellsData, { cancel: false, event: e });
-            this.parent.notify(event.cellClick, args);
+            if (this.parent.allowInline) {
+                let inlineArgs: InlineClickArgs = {
+                    element: args.element as HTMLElement,
+                    groupIndex: args.groupIndex, type: 'Cell'
+                };
+                this.parent.notify(event.inlineClick, inlineArgs);
+            } else {
+                this.parent.notify(event.cellClick, args);
+            }
+            return;
+        }
+        if (target.classList.contains(cls.INLINE_SUBJECT_CLASS)) {
+            this.parent.inlineModule.inlineCrudActions(target);
             return;
         }
         if (target.classList.contains(cls.APPOINTMENT_CLASS) || target.classList.contains(cls.MORE_EVENT_CLOSE_CLASS) ||
@@ -305,6 +317,7 @@ export class KeyboardInteraction {
             let initialId: string;
             let views: string[] = ['Day', 'Week', 'WorkWeek', 'Month', 'TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth'];
             let args: SelectEventArgs = { element: targetCell, requestType: 'mousemove', allowMultipleRow: true };
+            this.parent.inlineModule.removeInlineAppointmentElement();
             this.parent.trigger(event.select, args, (selectArgs: SelectEventArgs) => {
                 let allowMultipleRow: boolean = (!selectArgs.allowMultipleRow) || (!this.parent.allowMultiRowSelection);
                 if (allowMultipleRow && (views.indexOf(this.parent.currentView) > -1)) {
@@ -727,6 +740,9 @@ export class KeyboardInteraction {
         this.parent.quickPopup.morePopup.hide();
         if (this.parent.headerModule) {
             this.parent.headerModule.hideHeaderPopup();
+        }
+        if (this.parent.inlineModule) {
+            this.parent.inlineModule.removeInlineAppointmentElement();
         }
     }
     private isPreventAction(e: Event): boolean {

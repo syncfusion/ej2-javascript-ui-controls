@@ -25,6 +25,7 @@
       }
 
       .e-header-cells {
+        border-radius: 4px;
         height: 50px;
         overflow: hidden;
         padding: 5px 8px;
@@ -89,7 +90,7 @@
         }
 
         .e-header-text {
-          font-size: 16px;
+          font-size: 15px;
           font-weight: 400;
           line-height: 24px;
           overflow: hidden;
@@ -118,14 +119,6 @@
 
           .e-max-count {
             text-align: right;
-          }
-        }
-      }
-
-      .e-swimlane {
-        .e-header-cells {
-          &.e-header-bottom {
-            border-bottom: 1px solid $kanban-header-border-color;
           }
         }
       }
@@ -190,10 +183,6 @@
             }
           }
 
-          &.e-dropping {
-            border: 1px dashed $kanban-border-color;
-          }
-
           .e-show-add-button {
             border: 1px dashed $kanban-dropped-clone-border-color;
             height: 36px;
@@ -219,16 +208,105 @@
             padding: 8px 8px 0;
 
             .e-card {
-              border: 1px solid transparent;
               margin-bottom: 8px;
               min-height: 50px;
+              @if ($kanban-skin == 'material') {
+                border: 1px solid transparent;
+              }
+
+              @if ($kanban-skin == 'fabric' or $kanban-skin == 'highcontrast') {
+                border-radius: 0;
+              }
 
               &.e-draggable {
                 cursor: all-scroll;
               }
 
               .e-card-header {
-                padding-bottom: 0;
+                padding: 7px 11px 0;
+
+                .e-card-header-title {
+                  font-size: 14px;
+                  line-height: 20px;
+                }
+              }
+
+              .e-card-footer {
+                display: inline-flex;
+                line-height: normal;
+                padding: 0 11px 7px;
+              }
+
+              .e-card-content {
+                font-size: 13px;
+                line-height: 20px;
+                padding: 8px 11px;
+              }
+
+              &.e-card-color {
+                border-left: 3px solid;
+
+                .e-card-header {
+                  padding: 7px 11px 0 8px;
+                }
+
+                .e-card-content {
+                  padding: 8px 11px 8px 8px;
+                }
+
+                .e-card-tags {
+                  padding: 0 11px 8px 8px;
+                }
+
+                &.e-selection {
+                  border-left: 3px solid;
+
+                  &:hover {
+                    @if ($kanban-skin == 'fabric' or $kanban-skin == 'highcontrast') {
+                      padding: 1px;
+                    }
+                  }
+
+                }
+
+                &:hover {
+                  @if ($kanban-skin == 'fabric' or $kanban-skin == 'highcontrast') {
+                    border-left: 4px solid;
+                  }
+                }
+
+                .e-card-footer {
+                  padding: 0 11px 7px 8px;
+                }
+              }
+
+              .e-card-tag {
+                border-radius: 12px;
+                display: inline-block;
+                font-size: 12px;
+                line-height: 20px;
+                margin-right: 8px;
+                max-width: 100%;
+                overflow: hidden;
+                padding: 2px 8px;
+                text-overflow: ellipsis;
+
+                @if ($kanban-skin == 'fabric' or $kanban-skin == 'highcontrast') {
+                  border-radius: 0;
+                }
+
+                @if ($kanban-skin == 'bootstrap' or $kanban-skin == 'bootstrap4') {
+                  border-radius: 4px;
+                }
+              }
+
+              .e-card-tags {
+                line-height: 1;
+                padding: 0 11px 8px;
+              }
+
+              .e-card-footer {
+                padding: 0 11px 7px;
               }
 
               &.e-cloned-card {
@@ -237,13 +315,27 @@
               }
 
               &.e-selection {
-                @if ($kanban-skin == 'fabric' or $kanban-skin == 'highcontrast') {
-                  padding: 1px;
+                @if ($kanban-skin == 'fabric') {
+                  border-color: $kanban-border-color;
+                }
+
+                &:hover {
+                  @if ($kanban-skin == 'fabric' or $kanban-skin == 'highcontrast') {
+                    padding: 1px;
+                  }
                 }
               }
 
               &:focus {
-                border: 1px solid $kanban-border-color;
+                @if ($kanban-skin == 'material') {
+                  border: 1px solid $kanban-focus-color;
+                }
+              }
+
+              &.e-card-color {
+                &:focus {
+                  border-left: 3px solid;
+                }
               }
 
               &.e-kanban-dragged-card {
@@ -352,7 +444,12 @@
 
         &:not(.e-swimlane-row) .e-content-cells {
           border: 1px solid transparent;
+          border-radius: 4px;
           vertical-align: top;
+
+          &.e-dropping {
+            border: 1px dashed $kanban-border-color;
+          }
 
           &.e-min-color {
             background: $kanban-min-color;
@@ -364,6 +461,10 @@
 
           &:focus {
             border: 1px solid $kanban-border-color;
+
+            @if ($kanban-skin == 'material') {
+              border-color: $kanban-focus-color;
+            }
           }
 
           .e-card-wrapper {
@@ -528,8 +629,20 @@
       height: 56px;
 
       .e-header-text {
-        font-size: 18px;
+        font-size: 16px;
         line-height: 24px;
+      }
+    }
+
+    .e-kanban-content {
+      .e-content-row .e-content-cells .e-card-wrapper .e-card {
+        .e-card-header .e-card-header-title {
+          font-size: 15px;
+        }
+
+        .e-card-content {
+          font-size: 14px;
+        }
       }
     }
   }
@@ -617,6 +730,20 @@
 
     .e-dialog-delete {
       float: left;
+    }
+  }
+
+  &.e-rtl {
+    .e-kanban-form-wrapper table {
+      .e-label {
+        padding-left: 10px;
+        padding-right: 0;
+        text-align: right;
+      }
+    }
+
+    .e-dialog-delete {
+      float: right;
     }
   }
 }

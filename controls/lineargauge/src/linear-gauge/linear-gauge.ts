@@ -26,6 +26,7 @@ import { ExportType } from '../linear-gauge/utils/enum';
 import { Print } from './model/print';
 import { PdfExport } from './model/pdf-export';
 import { ImageExport } from './model/image-export';
+import { Gradient } from './axes/gradient';
 
 /**
  * Represents the EJ2 Linear gauge control.
@@ -67,6 +68,18 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      * @private
      */
     public imageExportModule: ImageExport;
+
+    /**
+     *  This module enables the gradient option for pointer and ranges.
+     * @private
+     */
+    public gradientModule: Gradient;
+
+    /**
+     * Specifies the gradient count of the linear gauge.
+     * @private
+     */
+    public gradientCount: number = 0;
 
     /**
      * Specifies the width of the linear gauge as a string in order to provide input as both like '100px' or '100%'.
@@ -442,14 +455,6 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     protected preRender(): void {
         this.isBlazor = isBlazor();
-        if (!this.isBlazor) {
-            this.allowPrint = true;
-            this.allowImageExport = true;
-            this.allowPdfExport = true;
-            LinearGauge.Inject(Print);
-            LinearGauge.Inject(PdfExport);
-            LinearGauge.Inject(ImageExport);
-        }
         this.unWireEvents();
         this.trigger(load, { gauge: !this.isBlazor ? this : null });
         this.initPrivateVariable();
@@ -1317,6 +1322,10 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                 args: [this]
             });
         }
+        modules.push({
+            member: 'Gradient',
+            args: [this, Gradient]
+        });
         return modules;
     }
 

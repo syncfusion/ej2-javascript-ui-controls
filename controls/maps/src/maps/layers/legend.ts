@@ -92,7 +92,7 @@ export class Legend {
                         if (bubble.visible) {
                             colorValuePath = bubble.colorValuePath;
                             colorMapping = <ColorMappingSettings[]>bubble.colorMapping;
-                            dataSource = bubble.dataSource;
+                            dataSource = bubble.dataSource as Object[];
                             this.getLegends(layerIndex, layerData, colorMapping, dataSource, dataPath, colorValuePath, propertyPath);
                         }
                     }
@@ -432,8 +432,8 @@ export class Legend {
                     this.renderLegendBorder();
                 }
                 legendElement.appendChild(drawSymbol(shapeLocation, shape, shapeSize, collection['ImageSrc'], renderOptions));
-                if (collection['Rect']['width'] > this.legendBorderRect.width) {
-                    let legendRectSize : number = collection['Rect']['x'] + collection['Rect']['width'];
+                let legendRectSize : number = collection['Rect']['x'] + collection['Rect']['width'];
+                if (legendRectSize > this.legendBorderRect.width) {
                     let trimmedText : string = this.legendTextTrim(this.legendBorderRect.width, legendText,
                                                                    legend.textStyle, legendRectSize);
                     legendText = trimmedText;
@@ -1240,7 +1240,7 @@ export class Legend {
 
     private getMarkersLegendCollections(layerIndex: number, markers: MarkerSettingsModel[]): void {
         Array.prototype.forEach.call(markers, (marker: MarkerSettings, markerIndex: number) => {
-            let dataSource: Object[] = marker.dataSource;
+            let dataSource: Object[] = marker.dataSource as Object[];
             let field: string = marker.legendText;
             let templateFn: Function;
             let isDuplicate: boolean;

@@ -805,3 +805,45 @@ describe('Insert row below validation', () => {
     expect(editor.selection.start.paragraph.associatedCell.ownerRow.bottomBorderWidth).toBe(0);
   });
 });
+
+describe('Update Revision Collection validation', () => {
+  let editor: DocumentEditor = undefined;
+  beforeAll(() => {
+    document.body.innerHTML = '';
+    let ele: HTMLElement = createElement('div', { id: 'container' });
+    document.body.appendChild(ele);
+    editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableLocalPaste: false });
+    DocumentEditor.Inject(Editor, Selection, EditorHistory);
+    (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+    (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+    (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+    (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+    editor.appendTo('#container');
+  });
+  afterAll((done) => {
+    editor.destroy();
+    document.body.removeChild(document.getElementById('container'));
+    editor = undefined;
+    document.body.innerHTML = '';
+    setTimeout(() => {
+      done();
+    }, 1000);
+  });
+  it('Update Revision Collection validation', () => {
+    editor.enableTrackChanges = true;
+    editor.editorModule.insertText('Syncfusion');
+    editor.enableTrackChanges = false;
+    editor.selection.handleControlLeftKey();
+    editor.selection.handleControlHomeKey();
+    editor.enableTrackChanges = false;
+    editor.editor.onEnter();
+    editor.selection.handleControlHomeKey();
+    editor.enableTrackChanges = true;
+    editor.editorModule.insertText('Document Editor');
+    let text: string = (editor.revisions.changes[0].range[0] as TextElementBox).text;
+    expect(text).toBe('Document Editor');
+    text =  (editor.revisions.changes[1].range[0] as TextElementBox).text;
+    expect(text).toBe('Syncfusion');
+
+  });
+});

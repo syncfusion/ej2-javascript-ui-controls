@@ -1,4 +1,4 @@
-import { ChildProperty, Property } from '@syncfusion/ej2-base';import { FontFamily, TextAlign, VerticalAlign, FontWeight, FontStyle, TextDecoration, ValidationType, ValidationOperator } from './enum';
+import { ChildProperty, Property, Collection } from '@syncfusion/ej2-base';import { FontFamily, TextAlign, VerticalAlign, FontWeight, FontStyle, TextDecoration, HighlightCell } from './enum';import { ValidationType, ValidationOperator, TopBottom, DataBar, ColorScale, IconSet, CFColor } from './enum';import { FormatModel, Format } from '../base/index';
 
 /**
  * Interface for a class CellStyle
@@ -225,5 +225,43 @@ export interface ValidationModel {
      * @default false
      */
     isHighlighted?: boolean;
+
+}
+
+/**
+ * Interface for a class ConditionalFormat
+ */
+export interface ConditionalFormatModel {
+
+    /**
+     * Specifies Conditional formatting Type.
+     * @default 'GreaterThan'
+     * @aspIgnore
+     */
+    type?: HighlightCell | TopBottom | DataBar | ColorScale | IconSet;
+
+    /**
+     * Specifies format.
+     * @default []
+     */
+    format?: FormatModel[];
+
+    /**
+     * Specifies Conditional formatting Highlight Color.
+     * @default 'RedFT'
+     */
+    cFColor?: CFColor;
+
+    /**
+     * Specifies Conditional formatting Value.
+     * @default ''
+     */
+    value?: string;
+
+    /**
+     * Specifies Conditional formatting range.
+     * @default ''
+     */
+    range?: string;
 
 }

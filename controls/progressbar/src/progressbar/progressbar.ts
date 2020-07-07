@@ -199,7 +199,7 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
      * @default false
      */
     @Property(false)
-    public trackSegmentDisable: boolean;
+    public enableProgressSegments: boolean;
     /**
      * Option for customizing the  label text.
      */
@@ -339,6 +339,8 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     /** @private */
     public secElement: HTMLElement;
     /** @private */
+    public cancelResize: boolean;
+    /** @private */
     public linear: Linear = new Linear(this);
     /** @private */
     public circular: Circular = new Circular(this);
@@ -348,8 +350,10 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     public progressAnnotationModule: ProgressAnnotation;
     /** @private */
     // private resizeTo: number;
-   /** @private */
-   public isBlazor: boolean;
+    /** @private */
+    public isBlazor: boolean;
+    /** @private */
+    public destroyIndeterminate: boolean = false;
 
     /**
      * controlRenderedTimeStamp used to avoid inital resize issue while theme change
@@ -395,7 +399,6 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
         this.renderComplete();
         this.controlRenderedTimeStamp = new Date().getTime();
     }
-
     /**
      * calculate size of the progress bar
      */
@@ -535,7 +538,7 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     }
 
     public createClipPath(
-        clipPath?: Element, range?: number, d?: string, refresh?: boolean, thickness?: number, isLabel?: boolean
+        clipPath?: Element, range?: number, d?: string, refresh?: boolean, thickness?: number, isLabel?: boolean, isMaximum?: boolean
     ): Element {
         let path: Element;
         let rect: RectOption;
@@ -546,12 +549,20 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
         let x: number = this.progressRect.x;
         let totalWidth: number = this.progressRect.width;
         if (this.type === 'Linear') {
-            posx = (this.enableRtl && !isLabel) ? (x + totalWidth) : x;
-            posx += (this.cornerRadius === 'Round') ?
-                ((this.enableRtl && !isLabel) ? (lineCapRadius / 2) * thickness : -(lineCapRadius / 2) * thickness) : 0;
-            posy = (this.progressRect.y + (this.progressRect.height / 2)) - (thickness / 2);
-            pathWidth = totalWidth * range;
-            pathWidth += (this.cornerRadius === 'Round') ? (lineCapRadius * thickness) : 0;
+            if (this.cornerRadius === 'Round4px') {
+                posx = x;
+                pathWidth = totalWidth * range;
+                posx += (!isLabel) ? (-4) : 0;
+                posy = this.progressRect.y;
+                pathWidth += ((!isLabel && isMaximum) || this.isIndeterminate) ? 4 : 0;
+            } else {
+                posx = (this.enableRtl && !isLabel) ? (x + totalWidth) : x;
+                pathWidth = totalWidth * range;
+                posx += (this.cornerRadius === 'Round' && !isLabel) ?
+                    ((this.enableRtl) ? (lineCapRadius / 2) * thickness : -(lineCapRadius / 2) * thickness) : 0;
+                posy = (this.progressRect.y + (this.progressRect.height / 2)) - (thickness / 2);
+                pathWidth += (this.cornerRadius === 'Round' && !isLabel) ? (lineCapRadius * thickness) : 0;
+            }
             if (!refresh) {
                 rect = new RectOption(
                     this.element.id + '_clippathrect', 'transparent', 1, 'transparent', 1,
@@ -590,7 +601,8 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
         switch (this.theme) {
             case 'Bootstrap':
             case 'Bootstrap4':
-                this.cornerRadius = this.cornerRadius === 'Auto' ? 'Round' : this.cornerRadius;
+                this.cornerRadius = this.cornerRadius === 'Auto' ?
+                    ((this.type === 'Linear') ? 'Round4px' : 'Round') : this.cornerRadius;
                 break;
             default:
                 this.cornerRadius = this.cornerRadius === 'Auto' ? 'Square' : this.cornerRadius;
@@ -624,6 +636,7 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
                 this.progressSize.width,
                 this.progressSize.height
             ),
+            cancel: (this.cancelResize) ? true : false,
         };
         if (this.resizeTo) {
             clearTimeout(this.resizeTo);
@@ -636,7 +649,7 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
                 }
                 arg.currentSize = this.progressSize;
                 this.trigger('resized', arg);
-                if ((this.width === null || this.height === null)) {
+                if ((this.width === null || this.height === null) && !arg.cancel) {
                     this.secElement.innerHTML = '';
                     this.calculateProgressBarSize();
                     this.createSVG();
@@ -730,6 +743,7 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
                     this.renderAnnotation();
                     break;
                 case 'value':
+                    this.cancelResize = (this.animation.enable) ? true : false;
                     this.argsData = {
                         value: this.value,
                         progressColor: this.argsData.progressColor,
@@ -751,6 +765,10 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
                     } else {
                         this.linear.renderLinearProgress(true, this.previousWidth);
                     }
+                    break;
+                case 'animation':
+                    this.createSVG();
+                    this.renderElements();
                     break;
             }
         }
@@ -775,6 +793,26 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
         return ' ';
     }
 
+    public show(): void {
+        this.svgObject.setAttribute('visibility', 'Visible');
+        if (this.isIndeterminate) {
+            this.destroyIndeterminate = false;
+            if (this.type === 'Linear') {
+                this.linear.renderLinearProgress(true);
+            } else {
+                this.circular.renderCircularProgress(null, null, true);
+            }
+        }
+
+    }
+
+    public hide(): void {
+        this.svgObject.setAttribute('visibility', 'Hidden');
+        if (this.isIndeterminate) {
+            this.destroyIndeterminate = true;
+        }
+    }
+
     /**
      * To destroy the widget
      * @method destroy
@@ -787,5 +825,8 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
         this.removeSvg();
         this.svgObject = null;
         this.element.classList.remove('e-progressbar');
+        if (!this.refreshing) {
+            this.destroyIndeterminate = true;
+        }
     }
 }

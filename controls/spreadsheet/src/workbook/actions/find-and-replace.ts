@@ -800,8 +800,8 @@ export class WorkbookFindAndReplace {
         }
         let totalCount: number = count;
         let requiredCount: number = this.requiredCount(args) - 1;
-        count = totalCount - requiredCount ;
-        args.findCount = count + 'of' + totalCount;
+        count = totalCount - requiredCount;
+        args.findCount = count + ' ' + 'of' + ' ' + totalCount;
         return;
     }
     private requiredCount(args: FindOptions): number {

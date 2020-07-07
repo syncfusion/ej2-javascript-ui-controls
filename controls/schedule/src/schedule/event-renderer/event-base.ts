@@ -1,7 +1,7 @@
 import { isNullOrUndefined, closest, extend, EventHandler, isBlazor } from '@syncfusion/ej2-base';
 import { createElement, prepend, append, addClass, removeClass, getElement } from '@syncfusion/ej2-base';
 import { DataManager, Query, Predicate } from '@syncfusion/ej2-data';
-import { EventFieldsMapping, EventClickArgs, CellClickEventArgs, TdData, SelectEventArgs } from '../base/interface';
+import { EventFieldsMapping, EventClickArgs, CellClickEventArgs, TdData, SelectEventArgs, InlineClickArgs } from '../base/interface';
 import { Schedule } from '../base/schedule';
 import { ResourcesModel } from '../models/resources-model';
 import { generate, getDateFromRecurrenceDateString } from '../../recurrence-editor/date-generator';
@@ -30,7 +30,6 @@ export class EventBase {
         let start: Date = this.parent.activeView.startDate();
         let end: Date = this.parent.activeView.endDate();
         let fields: EventFieldsMapping = this.parent.eventFields;
-        this.parent.eventsProcessed = [];
         let processed: Object[] = [];
         let temp: number = 1;
         let generateID: boolean = false;
@@ -61,22 +60,49 @@ export class EventBase {
             if (!isNullOrUndefined(event[fields.recurrenceRule]) && event[fields.recurrenceRule] === '') {
                 event[fields.recurrenceRule] = null;
             }
-            if (!isNullOrUndefined(event[fields.recurrenceRule]) && isNullOrUndefined(event[fields.recurrenceID])) {
+            if (!isNullOrUndefined(event[fields.recurrenceRule]) && isNullOrUndefined(event[fields.recurrenceID]) &&
+                !(this.parent.crudModule && this.parent.crudModule.crudObj.isCrudAction)) {
                 processed = processed.concat(this.generateOccurrence(event, null, oldTimezone, true));
             } else {
-                event.Guid = this.generateGuid();
-                processed.push(event);
+                if (this.parent.crudModule && this.parent.crudModule.crudObj.isCrudAction) {
+                    let recEvent: object[];
+                    let app: Object[];
+                    if (!isNullOrUndefined(event[fields.recurrenceRule]) && isNullOrUndefined(event[fields.recurrenceID])) {
+                        recEvent = this.generateOccurrence(event, null, oldTimezone, true);
+                        for (let k: number = 0; k < recEvent.length; k++) {
+                            event = recEvent[k] as { [key: string]: Object };
+                            app = this.parent.eventsProcessed.filter((data: { [key: string]: Object }) =>
+                                ((data[this.parent.eventFields.startTime] as Date).getTime() -
+                                    (event[this.parent.eventFields.startTime] as Date).getTime() === 0 &&
+                                    data[this.parent.eventFields.id] === event[this.parent.eventFields.id]));
+                            event.Guid = (app.length > 0) ? (app[0] as { [key: string]: Object }).Guid : this.generateGuid();
+                            processed.push(event);
+                        }
+
+                    } else {
+                        app = this.parent.eventsProcessed.filter((data: { [key: string]: Object }) =>
+                            data[this.parent.eventFields.id] === event[this.parent.eventFields.id]);
+                        event.Guid = (app.length > 0) ? (app[0] as { [key: string]: Object }).Guid : this.generateGuid();
+                        processed.push(event);
+                    }
+
+                } else {
+                    event.Guid = this.generateGuid();
+                    processed.push(event);
+                }
             }
         }
+        this.parent.eventsProcessed = [];
         let eventData: Object[] = processed.filter((data: { [key: string]: Object }) => !data[this.parent.eventFields.isBlock]);
         this.parent.eventsProcessed = this.filterEvents(start, end, eventData);
         let blockData: Object[] = processed.filter((data: { [key: string]: Object }) => data[this.parent.eventFields.isBlock]);
-        blockData.forEach((eventObj: { [key: string]: Object }) => {
+        for (let i: number = 0, len: number = blockData.length; i < len; i++) {
+            let eventObj: { [key: string]: Object } = (blockData[i] as { [key: string]: Object });
             if (eventObj[fields.isAllDay]) {
                 eventObj[fields.startTime] = util.resetTime(eventObj[fields.startTime] as Date);
                 eventObj[fields.endTime] = util.addDays(util.resetTime(eventObj[fields.endTime] as Date), 1);
             }
-        });
+        }
         this.parent.blockProcessed = blockData;
         return eventData;
     }
@@ -322,11 +348,15 @@ export class EventBase {
                 if (this.parent.currentView === 'WorkWeek' || this.parent.currentView === 'TimelineWorkWeek'
                     || this.parent.activeViewOptions.group.byDate || this.parent.activeViewOptions.showWeekend) {
                     let slotDates: Date[] = [];
-                    slot.forEach((x: number) => slotDates.push(new Date(x)));
+                    for (let s of slot) {
+                        slotDates.push(new Date(s));
+                    }
                     let renderedDates: Date[] = this.getRenderedDates(slotDates);
                     if (!isNullOrUndefined(renderedDates) && renderedDates.length > 0) {
                         slot = [];
-                        renderedDates.forEach((date: Date) => slot.push(date.getTime()));
+                        for (let date of renderedDates) {
+                            slot.push(date.getTime());
+                        }
                     }
                 }
                 let firstSlot: number = <number>slot[0];
@@ -378,7 +408,7 @@ export class EventBase {
         return ranges;
     }
 
-    private cloneEventObject(event: { [key: string]: Object }, start: number, end: number, count: number, isLeft: boolean, isRight: boolean)
+    public cloneEventObject(event: { [key: string]: Object }, start: number, end: number, count: number, isLeft: boolean, isRight: boolean)
         : { [key: string]: Object } {
         let fields: EventFieldsMapping = this.parent.eventFields;
         let e: { [key: string]: Object } = extend({}, event, null, true) as { [key: string]: Object };
@@ -400,19 +430,17 @@ export class EventBase {
         if (this.parent.selectedElements.length <= 0) {
             this.parent.selectedElements.push(target);
         } else {
-            let isAlreadySelected: Element[] = this.parent.selectedElements.filter((element: HTMLElement) => {
-                return element.getAttribute('data-guid') === target.getAttribute('data-guid');
-            });
+            let isAlreadySelected: Element[] = this.parent.selectedElements.filter((element: HTMLElement) =>
+                element.getAttribute('data-guid') === target.getAttribute('data-guid'));
             if (isAlreadySelected.length <= 0) {
-                let focusElements: Element[] = [].slice.call(this.parent.element.
-                    querySelectorAll('div[data-guid="' + target.getAttribute('data-guid') + '"]'));
+                let elementSelector: string = 'div[data-guid="' + target.getAttribute('data-guid') + '"]';
+                let focusElements: Element[] = [].slice.call(this.parent.element.querySelectorAll(elementSelector));
                 for (let element of focusElements) {
                     this.parent.selectedElements.push(element);
                 }
             } else {
-                let selectedElements: Element[] = this.parent.selectedElements.filter((element: HTMLElement) => {
-                    return element.getAttribute('data-guid') !== target.getAttribute('data-guid');
-                });
+                let selectedElements: Element[] = this.parent.selectedElements.filter((element: HTMLElement) =>
+                    element.getAttribute('data-guid') !== target.getAttribute('data-guid'));
                 this.parent.selectedElements = selectedElements;
             }
         }
@@ -677,7 +705,16 @@ export class EventBase {
                     if (this.parent.currentView === 'Agenda' || this.parent.currentView === 'MonthAgenda') {
                         addClass([this.parent.activeEventData.element as Element], cls.AGENDA_SELECTED_CELL);
                     }
-                    this.parent.notify(event.eventClick, eventClickArgs);
+                    if (this.parent.allowInline) {
+                        let inlineArgs: InlineClickArgs = {
+                            data: eventClickArgs.event as { [key: string]: Object },
+                            element: eventClickArgs.element as HTMLElement,
+                            type: 'Event'
+                        };
+                        this.parent.notify(event.inlineClick, inlineArgs);
+                    } else {
+                        this.parent.notify(event.eventClick, eventClickArgs);
+                    }
                 }
             });
         }
@@ -689,6 +726,10 @@ export class EventBase {
             this.activeEventData(e, true);
         }
         this.removeSelectedAppointmentClass();
+        if ((this.parent.activeEventData.element as HTMLElement).classList.contains(cls.INLINE_APPOINTMENT_CLASS) ||
+            (this.parent.activeEventData.element as HTMLElement).querySelector('.' + cls.INLINE_SUBJECT_CLASS)) {
+            return;
+        }
         if (!isNullOrUndefined(this.parent.activeEventData.event) &&
             isNullOrUndefined((<{ [key: string]: Object }>this.parent.activeEventData.event)[this.parent.eventFields.recurrenceID])) {
             this.parent.eventWindow.openEditor(this.parent.activeEventData.event, 'Save');
@@ -913,15 +954,15 @@ export class EventBase {
         }
         if (parentObject[fields.recurrenceException]) {
             let exDateString: string[] = (<string>parentObject[fields.recurrenceException]).split(',');
-            exDateString.forEach((date: string) => {
+            for (let i: number = 0, len: number = exDateString.length; i < len; i++) {
                 let edited: Object[] = this.parent.eventsData.filter((eventObj: { [key: string]: Object }) =>
-                    eventObj[fields.recurrenceID] === parentObject[fields.id] && eventObj[fields.recurrenceException] === date);
+                    eventObj[fields.recurrenceID] === parentObject[fields.id] && eventObj[fields.recurrenceException] === exDateString[i]);
                 if (edited.length === 0) {
-                    let exDate: Date = getDateFromRecurrenceDateString(date);
+                    let exDate: Date = getDateFromRecurrenceDateString(exDateString[i]);
                     let childObject: { [key: string]: Object } = extend({}, recurrenceData, null, true) as { [key: string]: Object };
                     childObject[fields.recurrenceID] = parentObject[fields.id];
                     delete childObject[fields.followingID];
-                    childObject[fields.recurrenceException] = date;
+                    childObject[fields.recurrenceException] = exDateString[i];
                     let startDate: Date = new Date(exDate.getTime());
                     let time: number = (<Date>parentObject[fields.endTime]).getTime() - (<Date>parentObject[fields.startTime]).getTime();
                     let endDate: Date = new Date(startDate.getTime());
@@ -930,7 +971,7 @@ export class EventBase {
                     childObject[fields.endTime] = new Date(endDate.getTime());
                     deletedOccurrences.push(childObject);
                 }
-            });
+            }
         }
         return deletedOccurrences;
     }
@@ -998,7 +1039,7 @@ export class EventBase {
         let eventCollection: Object[] = (eventData instanceof Array) ? eventData : [eventData];
         let isBlockAlert: boolean = false;
         let fields: EventFieldsMapping = this.parent.eventFields;
-        eventCollection.forEach((event: { [key: string]: Object }) => {
+        for (let event of eventCollection as { [key: string]: Object }[]) {
             let dataCol: Object[] = [];
             if (!isNullOrUndefined(event[fields.recurrenceRule]) &&
                 (isNullOrUndefined(event[fields.recurrenceID]) || event[fields.id] === event[fields.recurrenceID])) {
@@ -1013,7 +1054,7 @@ export class EventBase {
                     break;
                 }
             }
-        });
+        }
         this.parent.uiStateValues.isBlock = isBlockAlert;
         return isBlockAlert;
     }

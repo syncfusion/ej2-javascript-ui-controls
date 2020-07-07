@@ -1,4 +1,4 @@
-import { BaseEventArgs } from '@syncfusion/ej2-base';
+import { BaseEventArgs, Draggable } from '@syncfusion/ej2-base';
 import { CurrentAction } from './type';
 
 /**
@@ -144,6 +144,7 @@ export interface DragArgs extends BaseEventArgs {
     draggedClone?: HTMLElement;
     targetCloneMulti?: HTMLElement;
     selectedCards?: HTMLElement | HTMLElement[];
+    instance?: Draggable;
     pageX?: number;
     pageY?: number;
     navigationInterval?: number;

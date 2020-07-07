@@ -323,7 +323,7 @@ describe('ProgressBar Control', () => {
             progress.cornerRadius = 'Square';
             progress.segmentCount = 10;
             progress.gapWidth = 2;
-            progress.trackSegmentDisable = true;
+            progress.enableProgressSegments = true;
             progress.loaded = loaded;
             progress.refresh();
         });
@@ -577,7 +577,7 @@ describe('ProgressBar Control', () => {
             };
             progress.segmentCount = 5;
             progress.gapWidth = 2;
-            progress.trackSegmentDisable = true;
+            progress.enableProgressSegments = true;
             progress.loaded = loaded;
             progress.refresh();
         });

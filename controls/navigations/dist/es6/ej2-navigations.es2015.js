@@ -1371,6 +1371,7 @@ let MenuBase = class MenuBase extends Component {
                 isClose = true;
             }
             if (!isClose) {
+                let liElem = e && e.target && this.getLI(e.target);
                 item = this.navIdx.length ? this.getItem(this.navIdx) : null;
                 items = item ? item.items : this.items;
                 beforeCloseArgs = { element: ul, parentItem: item, items: items, event: e, cancel: false };
@@ -1385,6 +1386,7 @@ let MenuBase = class MenuBase extends Component {
                             popupEle = closest(ul, '.' + POPUP);
                             if (this.hamburgerMode) {
                                 popupEle.parentElement.style.minHeight = '';
+                                closest(ul, '.e-menu-item').setAttribute('aria-expanded', 'false');
                             }
                             this.unWireKeyboardEvent(popupEle);
                             this.destroyScrollObj(getInstance(popupEle.children[0], VScroll), popupEle.children[0]);
@@ -1405,7 +1407,6 @@ let MenuBase = class MenuBase extends Component {
                     let closedLi;
                     let trgtLi;
                     let trgtpopUp = this.getWrapper() && this.getUlByNavIdx();
-                    let liElem = e && e.target && this.getLI(e.target);
                     if (this.isCMenu) {
                         if (this.canOpen(e.target)) {
                             this.openMenu(null, null, this.pageY, this.pageX, e);
@@ -1452,6 +1453,19 @@ let MenuBase = class MenuBase extends Component {
                                     sli.classList.add(FOCUSED);
                                     sli.focus();
                                 }
+                            }
+                            if (!isOpen && this.hamburgerMode && liElem && liElem.getAttribute('aria-expanded') === 'false' &&
+                                liElem.getAttribute('aria-haspopup') === 'true') {
+                                if (closest(liElem, '.e-menu-parent.e-control')) {
+                                    this.navIdx = [];
+                                }
+                                else {
+                                    this.navIdx.pop();
+                                }
+                                this.navIdx.push(this.cliIdx);
+                                let item = this.getItem(this.navIdx);
+                                liElem.setAttribute('aria-expanded', 'true');
+                                this.openMenu(liElem, item, -1, -1, e);
                             }
                         }
                     }
@@ -1647,6 +1661,7 @@ let MenuBase = class MenuBase extends Component {
             element: ul, items: items, parentItem: item, event: e, cancel: false, top: top, left: left
         };
         let menuType = type;
+        let collide;
         this.trigger('beforeOpen', eventArgs, (observedOpenArgs) => {
             switch (menuType) {
                 case 'menu':
@@ -1660,7 +1675,6 @@ let MenuBase = class MenuBase extends Component {
                         this.addScrolling(this.popupWrapper, this.uList, 'vscroll', this.popupWrapper.offsetHeight, this.uList.offsetHeight);
                         this.checkScrollOffset(e);
                     }
-                    let collide;
                     if (!this.hamburgerMode && !this.left && !this.top) {
                         this.popupObj.refreshPosition(this.lItem, true);
                         this.left = parseInt(this.popupWrapper.style.left, 10);
@@ -1707,6 +1721,9 @@ let MenuBase = class MenuBase extends Component {
                         this.popupObj.destroy();
                         detach(this.popupWrapper);
                     }
+                    else if (ul.className.indexOf('e-ul') > -1) {
+                        detach(ul);
+                    }
                     this.navIdx.pop();
                 }
                 else {
@@ -1737,6 +1754,7 @@ let MenuBase = class MenuBase extends Component {
             if (this.keyType === 'right') {
                 let cul = this.getUlByNavIdx();
                 li.classList.remove(FOCUSED);
+                let index;
                 if (this.isMenu && this.navIdx.length === 1) {
                     this.removeLIStateByClass([SELECTED], [this.getWrapper()]);
                 }
@@ -1747,7 +1765,7 @@ let MenuBase = class MenuBase extends Component {
                 }
                 li.focus();
                 cul = this.getUlByNavIdx();
-                let index = this.isValidLI(cul.children[0], 0, this.action);
+                index = this.isValidLI(cul.children[0], 0, this.action);
                 cul.children[index].classList.add(FOCUSED);
                 cul.children[index].focus();
             }
@@ -2094,7 +2112,9 @@ let MenuBase = class MenuBase extends Component {
                                 this.isClosed = true;
                                 this.keyType = 'click';
                                 this.closeMenu(culIdx + 1, e);
-                                this.setLISelected(cli);
+                                if (this.showItemOnClick) {
+                                    this.setLISelected(cli);
+                                }
                             }
                         }
                         if (!this.isClosed) {
@@ -2140,9 +2160,11 @@ let MenuBase = class MenuBase extends Component {
                 if (e.type === 'mouseover' || (Browser.isDevice && this.isMenu)) {
                     this.setLISelected(this.cli);
                 }
-                this.cli.setAttribute('aria-expanded', 'true');
-                this.navIdx.push(this.cliIdx);
-                this.openMenu(this.cli, item, null, null, e);
+                if (!this.hamburgerMode || (this.hamburgerMode && this.cli.getAttribute('aria-expanded') === 'false')) {
+                    this.cli.setAttribute('aria-expanded', 'true');
+                    this.navIdx.push(this.cliIdx);
+                    this.openMenu(this.cli, item, null, null, e);
+                }
             }
             else {
                 if (e.type !== 'mouseover') {
@@ -2836,13 +2858,13 @@ __decorate$2([
     Property(false)
 ], MenuBase.prototype, "enableHtmlSanitizer", void 0);
 __decorate$2([
-    Complex({}, FieldSettings)
+    Complex({ itemId: "id", text: "text", parentId: "parentId", iconCss: "iconCss", url: "url", separator: "separator", children: "items" }, FieldSettings)
 ], MenuBase.prototype, "fields", void 0);
 __decorate$2([
     Collection([], MenuItem)
 ], MenuBase.prototype, "items", void 0);
 __decorate$2([
-    Complex({}, MenuAnimationSettings)
+    Complex({ duration: 400, easing: 'ease', effect: 'SlideDown' }, MenuAnimationSettings)
 ], MenuBase.prototype, "animationSettings", void 0);
 MenuBase = __decorate$2([
     NotifyPropertyChanges
@@ -5179,9 +5201,6 @@ let Accordion = class Accordion extends Component {
         if (this.enableRtl) {
             this.add(this.element, CLS_RTL$3);
         }
-        if (!this.enablePersistence || isNullOrUndefined(this.expandedItems)) {
-            this.expandedItems = [];
-        }
     }
     add(ele, val) {
         ele.classList.add(val);
@@ -5216,8 +5235,8 @@ let Accordion = class Accordion extends Component {
         if (isNullOrUndefined(this.initExpand)) {
             this.initExpand = [];
         }
-        if (this.expandedItems.length > 0) {
-            this.initExpand = this.expandedItems;
+        if (this.expandedIndices.length > 0) {
+            this.initExpand = this.expandedIndices;
         }
         attributes(this.element, ariaAttr);
         if (this.expandMode === 'Single') {
@@ -5796,8 +5815,10 @@ let Accordion = class Accordion extends Component {
     }
     expandedItemsPush(item) {
         let index = this.getIndexByItem(item);
-        if (this.expandedItems.indexOf(index) === -1) {
-            this.expandedItems.push(index);
+        if (this.expandedIndices.indexOf(index) === -1) {
+            let temp = [].slice.call(this.expandedIndices);
+            temp.push(index);
+            this.setProperties({ expandedIndices: temp }, true);
         }
     }
     getIndexByItem(item) {
@@ -5816,7 +5837,9 @@ let Accordion = class Accordion extends Component {
     }
     expandedItemsPop(item) {
         let index = this.getIndexByItem(item);
-        this.expandedItems.splice(this.expandedItems.indexOf(index), 1);
+        let temp = [].slice.call(this.expandedIndices);
+        temp.splice(temp.indexOf(index), 1);
+        this.setProperties({ expandedIndices: temp }, true);
     }
     collapse(trgt) {
         let eventArgs;
@@ -5961,7 +5984,7 @@ let Accordion = class Accordion extends Component {
                 EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'focus', this.focusIn, this);
                 EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'blur', this.focusOut, this);
                 this.itemAttribUpdate();
-                this.expandedItems = [];
+                this.expandedIndices = [];
                 this.expandedItemRefresh(ele);
                 if (addItem && addItem.expanded) {
                     this.expandItem(true, itemIndex);
@@ -5994,7 +6017,7 @@ let Accordion = class Accordion extends Component {
         detach(ele);
         items.splice(index, 1);
         this.itemAttribUpdate();
-        this.expandedItems = [];
+        this.expandedIndices = [];
         this.expandedItemRefresh(this.element);
     }
     /**
@@ -6179,7 +6202,7 @@ let Accordion = class Accordion extends Component {
         }
     }
     getPersistData() {
-        let keyEntity = ['expandedItems'];
+        let keyEntity = ['expandedIndices'];
         return this.addOnPersist(keyEntity);
     }
     /**
@@ -6234,6 +6257,10 @@ let Accordion = class Accordion extends Component {
                     }
                     break;
                 case 'dataSource':
+                case 'expandedIndices':
+                    if (this.expandedIndices === null) {
+                        this.expandedIndices = [];
+                    }
                     isRefresh = true;
                     break;
                 case 'headerTemplate':
@@ -6256,7 +6283,7 @@ let Accordion = class Accordion extends Component {
                 case 'expandMode':
                     if (newProp.expandMode === 'Single') {
                         this.element.setAttribute('aria-multiselectable', 'false');
-                        if (this.expandedItems.length > 1) {
+                        if (this.expandedIndices.length > 1) {
                             this.expandItem(false);
                         }
                     }
@@ -6267,6 +6294,10 @@ let Accordion = class Accordion extends Component {
             }
         }
         if (isRefresh && !this.isServerRendered) {
+            this.initExpand = [];
+            if (this.expandedIndices.length > 0) {
+                this.initExpand = this.expandedIndices;
+            }
             this.destroyItems();
             this.renderItems();
             this.initItemExpand();
@@ -6291,6 +6322,9 @@ __decorate$4([
 __decorate$4([
     Property('auto')
 ], Accordion.prototype, "height", void 0);
+__decorate$4([
+    Property([])
+], Accordion.prototype, "expandedIndices", void 0);
 __decorate$4([
     Property('Multiple')
 ], Accordion.prototype, "expandMode", void 0);
@@ -6668,7 +6702,7 @@ __decorate$6([
     Property(false)
 ], Menu.prototype, "enableHtmlSanitizer", void 0);
 __decorate$6([
-    Complex({}, FieldSettings)
+    Complex({ itemId: "id", text: "text", parentId: "parentId", iconCss: "iconCss", url: "url", separator: "separator", children: "items" }, FieldSettings)
 ], Menu.prototype, "fields", void 0);
 Menu = __decorate$6([
     NotifyPropertyChanges
@@ -6865,14 +6899,8 @@ let Tab = class Tab extends Component {
         if (!this.isServerRendered) {
             super.refresh();
         }
-        else if (this.isServerRendered) {
-            if (this.tbObj) {
-                this.tbObj.refreshOverflow();
-                this.refreshActiveBorder();
-            }
-            if (this.loadOn !== 'Dynamic') {
-                this.setActiveBorder();
-            }
+        else if (this.isServerRendered && this.loadOn !== 'Dynamic') {
+            this.setActiveBorder();
         }
     }
     /**
@@ -7838,6 +7866,9 @@ let Tab = class Tab extends Component {
     swipeHandler(e) {
         if (e.velocity < 3 && isNullOrUndefined(e.originalEvent.changedTouches)) {
             return;
+        }
+        if (e.originalEvent) {
+            e.originalEvent.stopPropagation();
         }
         this.isSwipeed = true;
         if (e.swipeDirection === 'Right' && this.selectedItem !== 0) {

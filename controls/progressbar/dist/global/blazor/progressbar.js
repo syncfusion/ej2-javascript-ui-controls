@@ -1,5 +1,5 @@
 window.sf = window.sf || {};
-window.sf.progressbar = (function (exports) {
+var sfprogressbar = (function (exports) {
 'use strict';
 
 var __extends$1 = (undefined && undefined.__extends) || (function () {
@@ -296,9 +296,6 @@ var Animation$1 = /** @class */ (function (_super) {
     __decorate$1([
         sf.base.Property(0)
     ], Animation$$1.prototype, "delay", void 0);
-    __decorate$1([
-        sf.base.Property('Linear')
-    ], Animation$$1.prototype, "timing", void 0);
     return Animation$$1;
 }(sf.base.ChildProperty));
 /**
@@ -368,10 +365,10 @@ function getProgressThemeColor(theme) {
                 linearProgressThickness: 4,
                 circularTrackThickness: 4,
                 circularProgressThickness: 4,
-                success: '#4D841E',
-                danger: '#D74113',
-                warning: '#C25700',
-                info: '#0279D6',
+                success: '#4caf50',
+                danger: '#ff6652',
+                warning: '#ff9800',
+                info: '#03a9f4',
             };
             break;
         case 'Bootstrap':
@@ -397,10 +394,10 @@ function getProgressThemeColor(theme) {
                 linearProgressThickness: 20,
                 circularTrackThickness: 6,
                 circularProgressThickness: 6,
-                success: '#4CB051',
-                danger: '#DC3244',
-                warning: '#AA6709',
-                info: '#1A819E',
+                success: '#48b14c',
+                danger: '#d44f4f',
+                warning: '#fac168',
+                info: '#2aaac0',
             };
             break;
         case 'Bootstrap4':
@@ -426,10 +423,10 @@ function getProgressThemeColor(theme) {
                 linearProgressThickness: 16,
                 circularTrackThickness: 6,
                 circularProgressThickness: 6,
-                success: '#29A745',
-                danger: '#DC3546',
-                warning: '#FFC106',
-                info: '#17A2B8',
+                success: '#28a745',
+                danger: '#dc3545',
+                warning: '#ffc107',
+                info: '#17a2b8',
             };
             break;
         case 'HighContrast':
@@ -455,10 +452,10 @@ function getProgressThemeColor(theme) {
                 linearProgressThickness: 2,
                 circularTrackThickness: 4,
                 circularProgressThickness: 4,
-                success: '#176600',
-                danger: '#B30A00',
-                warning: '#944000',
-                info: '#0156B3',
+                success: '#2bc700',
+                danger: '#ff6161',
+                warning: '#ff7d1a',
+                info: '#66b0ff',
             };
             break;
         default:
@@ -484,10 +481,10 @@ function getProgressThemeColor(theme) {
                 linearProgressThickness: 2,
                 circularTrackThickness: 4,
                 circularProgressThickness: 4,
-                success: '#127C0F',
-                danger: '#C00000',
-                warning: '#D83B01',
-                info: '#0279D6',
+                success: '#166600',
+                danger: '#b30900',
+                warning: '#944000',
+                info: '#0056b3',
             };
             break;
     }
@@ -631,43 +628,56 @@ var ProgressAnimation = /** @class */ (function () {
         var _this = this;
         var animation = new sf.base.Animation({});
         var linearPath = element;
+        var duration = (progress.isActive) ? 3000 : progress.animation.duration;
         var width = linearPath.getAttribute('width');
         var x = linearPath.getAttribute('x');
         var opacityValue = 0;
         var value = 0;
-        var start = (!progress.enableRtl) ? previousWidth : parseInt(x, 10);
-        var end = (!progress.enableRtl) ? parseInt(width, 10) - start : parseInt(width, 10) - previousWidth;
+        var start = (!progress.enableRtl || (progress.cornerRadius === 'Round4px')) ? previousWidth : parseInt(x, 10);
+        var end = (!progress.enableRtl || (progress.cornerRadius === 'Round4px')) ? parseInt(width, 10) - start :
+            parseInt(width, 10) - previousWidth;
         var rtlX = parseInt(x, 10) - end;
         linearPath.style.visibility = 'hidden';
         animation.animate(linearPath, {
-            duration: progress.animation.duration,
+            duration: duration,
             delay: delay,
             progress: function (args) {
-                if (progress.enableRtl) {
+                progress.cancelResize = true;
+                if (progress.enableRtl && !(progress.cornerRadius === 'Round4px')) {
                     if (args.timeStamp >= args.delay) {
                         linearPath.style.visibility = 'visible';
-                        value = effect(args.timeStamp, start, end, args.duration, progress.enableRtl);
-                        linearPath.setAttribute('x', value.toString());
                         if (progress.isActive) {
+                            value = _this.activeAnimate((args.timeStamp / args.duration), parseInt(x, 10), parseInt(width, 10), true);
                             opacityValue = effect(args.timeStamp, 0.5, 0.5, args.duration, true);
                             active.setAttribute('opacity', opacityValue.toString());
+                            linearPath.setAttribute('x', value.toString());
+                        }
+                        else {
+                            value = effect(args.timeStamp, start, end, args.duration, true);
+                            linearPath.setAttribute('x', value.toString());
                         }
                     }
                 }
                 else {
                     if (args.timeStamp >= args.delay) {
                         linearPath.style.visibility = 'visible';
-                        value = effect(args.timeStamp, start, end, args.duration, progress.enableRtl);
-                        linearPath.setAttribute('width', value.toString());
                         if (progress.isActive) {
+                            value = _this.activeAnimate((args.timeStamp / args.duration), 0, parseInt(width, 10), false);
                             opacityValue = effect(args.timeStamp, 0.5, 0.5, args.duration, true);
                             active.setAttribute('opacity', opacityValue.toString());
+                            linearPath.setAttribute('width', value.toString());
+                        }
+                        else {
+                            value = effect(args.timeStamp, start, end, args.duration, false);
+                            linearPath.setAttribute('width', value.toString());
                         }
                     }
                 }
             },
             end: function (model) {
-                if (progress.enableRtl) {
+                progress.cancelResize = false;
+                linearPath.style.visibility = '';
+                if (progress.enableRtl && !(progress.cornerRadius === 'Round4px')) {
                     if (progress.isActive) {
                         linearPath.setAttribute('x', x.toString());
                         _this.doLinearAnimation(element, progress, delay, previousWidth, active);
@@ -690,7 +700,7 @@ var ProgressAnimation = /** @class */ (function () {
         });
     };
     /** Linear Indeterminate */
-    ProgressAnimation.prototype.doLinearIndeterminate = function (element, progressWidth, thickness, progress) {
+    ProgressAnimation.prototype.doLinearIndeterminate = function (element, progressWidth, thickness, progress, clipPath) {
         var _this = this;
         var animation = new sf.base.Animation({});
         var linearPath = element;
@@ -699,14 +709,14 @@ var ProgressAnimation = /** @class */ (function () {
         var value = 0;
         var start = (width) ? -(parseInt(width, 10)) : -progressWidth;
         var end = (progress.progressRect.x + progress.progressRect.width) + ((width) ? (parseInt(width, 10)) : progressWidth);
-        var duration = (!progress.trackSegmentDisable) ? 2500 : 3500;
-        animation.animate(linearPath, {
+        var duration = (!progress.enableProgressSegments) ? 2500 : 3500;
+        animation.animate(clipPath, {
             duration: duration,
             delay: 0,
             progress: function (args) {
-                if (progress.enableRtl) {
-                    value = effect(args.timeStamp, parseInt(x, 10) || progress.progressRect.x + progressWidth, end, args.duration, progress.enableRtl);
-                    if (!progress.trackSegmentDisable) {
+                if (progress.enableRtl && !(progress.cornerRadius === 'Round4px')) {
+                    value = effect(args.timeStamp, parseInt(x, 10) || progress.progressRect.x + progressWidth, end, args.duration, true);
+                    if (!progress.enableProgressSegments) {
                         linearPath.setAttribute('x', value.toString());
                     }
                     else {
@@ -714,8 +724,8 @@ var ProgressAnimation = /** @class */ (function () {
                     }
                 }
                 else {
-                    value = effect(args.timeStamp, start, end, args.duration, progress.enableRtl);
-                    if (!progress.trackSegmentDisable) {
+                    value = effect(args.timeStamp, start, end, args.duration, false);
+                    if (!progress.enableProgressSegments) {
                         linearPath.setAttribute('x', value.toString());
                     }
                     else {
@@ -724,13 +734,15 @@ var ProgressAnimation = /** @class */ (function () {
                 }
             },
             end: function () {
-                if (progress.enableRtl && !progress.trackSegmentDisable) {
+                if (progress.enableRtl && !progress.enableProgressSegments && !(progress.cornerRadius === 'Round4px')) {
                     linearPath.setAttribute('x', x.toString());
                 }
-                else if (!progress.trackSegmentDisable) {
+                else if (!progress.enableProgressSegments) {
                     linearPath.setAttribute('x', start.toString());
                 }
-                _this.doLinearIndeterminate(element, progressWidth, thickness, progress);
+                if (!progress.destroyIndeterminate) {
+                    _this.doLinearIndeterminate(element, progressWidth, thickness, progress, clipPath);
+                }
             }
         });
     };
@@ -738,7 +750,7 @@ var ProgressAnimation = /** @class */ (function () {
     ProgressAnimation.prototype.doStripedAnimation = function (element, progress, value, delay) {
         var _this = this;
         var animation = new sf.base.Animation({});
-        var point = 1500 / progress.animation.duration;
+        var point = 1000 / progress.animation.duration;
         animation.animate(element, {
             duration: progress.animation.duration,
             delay: progress.animation.delay,
@@ -747,7 +759,9 @@ var ProgressAnimation = /** @class */ (function () {
                 element.setAttribute('gradientTransform', 'translate(' + value + ') rotate(-45)');
             },
             end: function () {
-                _this.doStripedAnimation(element, progress, value, false);
+                if (!progress.destroyIndeterminate) {
+                    _this.doStripedAnimation(element, progress, value, false);
+                }
             }
         });
     };
@@ -762,6 +776,7 @@ var ProgressAnimation = /** @class */ (function () {
         var opacityValue = 0;
         var startPos;
         var endPos;
+        var duration = (progress.isActive) ? 3000 : progress.animation.duration;
         start += (progress.cornerRadius === 'Round' && totalEnd !== completeAngle && totalEnd !== 0) ?
             ((progress.enableRtl) ? (lineCapRadius / 2) * thickness : -(lineCapRadius / 2) * thickness) : 0;
         totalEnd += (progress.cornerRadius === 'Round' && totalEnd !== completeAngle && totalEnd !== 0) ?
@@ -772,20 +787,26 @@ var ProgressAnimation = /** @class */ (function () {
         endPos = (!sf.base.isNullOrUndefined(startValue)) ? totalEnd - previousTotal : totalEnd;
         circularPath.setAttribute('visibility', 'Hidden');
         animation.animate(circularPath, {
-            duration: progress.animation.duration,
+            duration: duration,
             delay: delay,
             progress: function (args) {
+                progress.cancelResize = true;
                 if (args.timeStamp >= args.delay) {
                     circularPath.setAttribute('visibility', 'visible');
-                    end = effect(args.timeStamp, startPos, endPos, args.duration, progress.enableRtl);
-                    circularPath.setAttribute('d', getPathArc(x, y, pathRadius, start, end % 360, progress.enableRtl, true));
                     if (progress.isActive) {
+                        end = _this.activeAnimate((args.timeStamp / args.duration), startPos, endPos, progress.enableRtl);
                         opacityValue = effect(args.timeStamp, 0.5, 0.5, args.duration, true);
                         active.setAttribute('opacity', opacityValue.toString());
+                        circularPath.setAttribute('d', getPathArc(x, y, pathRadius, start, end % 360, progress.enableRtl, true));
+                    }
+                    else {
+                        end = effect(args.timeStamp, startPos, endPos, args.duration, progress.enableRtl);
+                        circularPath.setAttribute('d', getPathArc(x, y, pathRadius, start, end % 360, progress.enableRtl, true));
                     }
                 }
             },
             end: function (model) {
+                progress.cancelResize = false;
                 circularPath.setAttribute('visibility', '');
                 circularPath.setAttribute('d', getPathArc(x, y, pathRadius, start, progressEnd, progress.enableRtl, true));
                 if (progress.isActive) {
@@ -799,19 +820,22 @@ var ProgressAnimation = /** @class */ (function () {
         });
     };
     /** Circular indeterminate */
-    ProgressAnimation.prototype.doCircularIndeterminate = function (circularProgress, progress, start, end, x, y, radius, thickness) {
+    ProgressAnimation.prototype.doCircularIndeterminate = function (circularProgress, progress, start, end, x, y, radius, thickness, clipPath) {
         var _this = this;
         var animation = new sf.base.Animation({});
-        var pathRadius = radius + ((!progress.trackSegmentDisable) ? (thickness / 2) : 0);
-        var value = (!progress.trackSegmentDisable) ? 3 : 2;
-        animation.animate(circularProgress, {
+        var pathRadius = radius + ((!progress.enableProgressSegments) ? (thickness / 2) : 0);
+        var value = (!progress.enableProgressSegments) ? 3 : 2;
+        animation.animate(clipPath, {
             progress: function () {
+                circularProgress.style.visibility = 'visible';
                 start += (progress.enableRtl) ? -value : value;
                 end += (progress.enableRtl) ? -value : value;
-                circularProgress.setAttribute('d', getPathArc(x, y, pathRadius, start % 360, end % 360, progress.enableRtl, !progress.trackSegmentDisable));
+                circularProgress.setAttribute('d', getPathArc(x, y, pathRadius, start % 360, end % 360, progress.enableRtl, !progress.enableProgressSegments));
             },
             end: function (model) {
-                _this.doCircularIndeterminate(circularProgress, progress, start, end, x, y, radius, thickness);
+                if (!progress.destroyIndeterminate) {
+                    _this.doCircularIndeterminate(circularProgress, progress, start, end, x, y, radius, thickness, clipPath);
+                }
             }
         });
     };
@@ -840,6 +864,7 @@ var ProgressAnimation = /** @class */ (function () {
             duration: progress.animation.duration,
             delay: delay,
             progress: function (args) {
+                progress.cancelResize = true;
                 if (progress.type === 'Linear') {
                     if (args.timeStamp >= args.delay) {
                         if (labelText === '') {
@@ -864,6 +889,7 @@ var ProgressAnimation = /** @class */ (function () {
                 }
             },
             end: function () {
+                progress.cancelResize = false;
                 if (labelText === '') {
                     labelPath.innerHTML = text;
                     labelPath.setAttribute('x', posX.toString());
@@ -923,6 +949,7 @@ var ProgressAnimation = /** @class */ (function () {
                 duration: progress.animation.duration,
                 delay: progress.animation.delay,
                 progress: function (args) {
+                    progress.cancelResize = true;
                     if (isAnnotation && annotatElementChanged) {
                         value = effect(args.timeStamp, startValue, endValue, args.duration, false);
                         annotateValueChanged = parseInt((((Math.round(value) - start) / totalAngle) * percentage).toString(), 10);
@@ -930,10 +957,16 @@ var ProgressAnimation = /** @class */ (function () {
                     }
                 },
                 end: function (model) {
+                    progress.cancelResize = false;
                     annotatElementChanged.innerHTML = annotateValue + '%';
                 }
             });
         }
+    };
+    ProgressAnimation.prototype.activeAnimate = function (t, start, end, enableRtl) {
+        var time = 1 - Math.pow(1 - t, 3);
+        var attrValue = start + ((!enableRtl) ? (time * end) : -(time * end));
+        return attrValue;
     };
     return ProgressAnimation;
 }());
@@ -1256,20 +1289,32 @@ var Linear = /** @class */ (function () {
             this.progress.rangeColors[0].end !== null);
         thickness = (progress.trackThickness || progress.themeStyle.linearTrackThickness);
         stroke = (progress.argsData.trackColor || progress.themeStyle.linearTrackColor);
-        option = new sf.svgbase.PathOption(progress.element.id + '_Lineartrack', 'none', thickness, stroke, progress.themeStyle.trackOpacity, '0', progress.getPathLine(progress.progressRect.x, progress.progressRect.width, thickness));
-        linearTrack = progress.renderer.drawPath(option);
-        progress.trackWidth = linearTrack.getTotalLength();
-        if (progress.segmentCount > 1 && !this.isRange && !progress.trackSegmentDisable) {
-            progress.segmentSize = progress.calculateSegmentSize(progress.trackWidth, thickness);
-            linearTrack.setAttribute('stroke-dasharray', progress.segmentSize);
+        if (progress.cornerRadius === 'Round4px') {
+            if (progress.segmentCount > 1) {
+                linearTrack = this.createRoundCornerSegment('_LinearTrack_', stroke, thickness, true, 0, progress);
+            }
+            else {
+                option = new sf.svgbase.PathOption(progress.element.id + '_Lineartrack', stroke, 0, 'none', progress.themeStyle.trackOpacity, '0', this.cornerRadius(progress.progressRect.x, progress.progressRect.y, progress.progressRect.width, thickness, 4, ''));
+                linearTrack = progress.renderer.drawPath(option);
+            }
         }
-        if (progress.cornerRadius === 'Round' && !this.isRange) {
-            linearTrack.setAttribute('stroke-linecap', 'round');
+        else {
+            option = new sf.svgbase.PathOption(progress.element.id + '_Lineartrack', 'none', thickness, stroke, progress.themeStyle.trackOpacity, '0', progress.getPathLine(progress.progressRect.x, progress.progressRect.width, thickness));
+            linearTrack = progress.renderer.drawPath(option);
+            progress.trackWidth = linearTrack.getTotalLength();
+            if (progress.cornerRadius === 'Round' && !this.isRange) {
+                linearTrack.setAttribute('stroke-linecap', 'round');
+            }
+            if (progress.segmentCount > 1 && !this.isRange && !progress.enableProgressSegments) {
+                progress.segmentSize = progress.calculateSegmentSize(progress.trackWidth, thickness);
+                linearTrack.setAttribute('stroke-dasharray', progress.segmentSize);
+            }
         }
         linearTrackGroup.appendChild(linearTrack);
         progress.svgObject.appendChild(linearTrackGroup);
     };
     /** To render the linear progress  */
+    // tslint:disable-next-line:max-func-body-length
     Linear.prototype.renderLinearProgress = function (refresh, previousWidth) {
         if (previousWidth === void 0) { previousWidth = 0; }
         var progress = this.progress;
@@ -1285,9 +1330,10 @@ var Linear = /** @class */ (function () {
         var stroke;
         var segmentWidth;
         var strippedStroke;
+        var ismaximum = (progress.value === progress.maximum);
         progressWidth = progress.calculateProgressRange(progress.argsData.value);
         progress.previousWidth = linearProgressWidth = progress.progressRect.width *
-            ((progress.isIndeterminate && !progress.trackSegmentDisable) ? 1 : progressWidth);
+            ((progress.isIndeterminate && !progress.enableProgressSegments) ? 1 : progressWidth);
         if (!refresh) {
             linearProgressGroup = progress.renderer.createGroup({ 'id': progress.element.id + '_LinearProgressGroup' });
         }
@@ -1296,35 +1342,50 @@ var Linear = /** @class */ (function () {
         }
         thickness = (progress.progressThickness || progress.themeStyle.linearProgressThickness);
         stroke = (!progress.isStriped) ? this.checkingLinearProgressColor() : 'url(#' + progress.element.id + '_LinearStriped)';
-        option = new sf.svgbase.PathOption(progress.element.id + '_Linearprogress', 'none', thickness, stroke, progress.themeStyle.progressOpacity, '0', progress.getPathLine(progress.progressRect.x, linearProgressWidth, thickness));
+        if (progress.cornerRadius === 'Round4px') {
+            option = new sf.svgbase.PathOption(progress.element.id + '_Linearprogress', stroke, 0, 'none', progress.themeStyle.progressOpacity, '0', this.cornerRadius(progress.progressRect.x, progress.progressRect.y, linearProgressWidth, thickness, 4, (ismaximum || progress.isIndeterminate) ? '' : 'start'));
+        }
+        else {
+            option = new sf.svgbase.PathOption(progress.element.id + '_Linearprogress', 'none', thickness, stroke, progress.themeStyle.progressOpacity, '0', progress.getPathLine(progress.progressRect.x, linearProgressWidth, thickness));
+        }
         progress.progressWidth = progress.renderer.drawPath(option).getTotalLength();
-        progress.segmentSize = (!progress.trackSegmentDisable) ? progress.segmentSize :
+        progress.segmentSize = (!progress.enableProgressSegments) ? progress.segmentSize :
             progress.calculateSegmentSize(progress.progressWidth, thickness);
         if (progress.secondaryProgress !== null && !progress.isIndeterminate) {
             this.renderLinearBuffer(progress);
         }
         if (progress.argsData.value !== null) {
-            if (progress.segmentColor.length !== 0 && !progress.isIndeterminate && !this.isRange) {
-                segmentWidth = (!progress.trackSegmentDisable) ? progress.trackWidth : progress.progressWidth;
-                linearProgress = this.segment.createLinearSegment(progress, '_LinearProgressSegment', linearProgressWidth, progress.themeStyle.progressOpacity, thickness, segmentWidth);
-            }
-            else if (this.isRange && !progress.isIndeterminate) {
-                linearProgress = this.segment.createLinearRange(linearProgressWidth, progress);
-            }
-            else {
-                if (!refresh) {
-                    linearProgress = progress.renderer.drawPath(option);
+            if (progress.cornerRadius === 'Round4px') {
+                if (progress.segmentCount > 1) {
+                    linearProgress = this.createRoundCornerSegment('_Linearprogress_', stroke, thickness, false, linearProgressWidth, progress, progress.themeStyle.progressOpacity);
                 }
                 else {
-                    linearProgress = sf.svgbase.getElement(progress.element.id + '_Linearprogress');
-                    linearProgress.setAttribute('d', progress.getPathLine(progress.progressRect.x, linearProgressWidth, thickness));
-                    linearProgress.setAttribute('stroke', stroke);
+                    linearProgress = progress.renderer.drawPath(option);
                 }
-                if (progress.segmentCount > 1) {
-                    linearProgress.setAttribute('stroke-dasharray', progress.segmentSize);
+            }
+            else {
+                if (progress.segmentColor.length !== 0 && !progress.isIndeterminate && !this.isRange) {
+                    segmentWidth = (!progress.enableProgressSegments) ? progress.trackWidth : progress.progressWidth;
+                    linearProgress = this.segment.createLinearSegment(progress, '_LinearProgressSegment', linearProgressWidth, progress.themeStyle.progressOpacity, thickness, segmentWidth);
                 }
-                if (progress.cornerRadius === 'Round' && progressWidth) {
-                    linearProgress.setAttribute('stroke-linecap', 'round');
+                else if (this.isRange && !progress.isIndeterminate) {
+                    linearProgress = this.segment.createLinearRange(linearProgressWidth, progress);
+                }
+                else {
+                    if (!refresh) {
+                        linearProgress = progress.renderer.drawPath(option);
+                    }
+                    else {
+                        linearProgress = sf.svgbase.getElement(progress.element.id + '_Linearprogress');
+                        linearProgress.setAttribute('d', progress.getPathLine(progress.progressRect.x, linearProgressWidth, thickness));
+                        linearProgress.setAttribute('stroke', stroke);
+                    }
+                    if (progress.segmentCount > 1) {
+                        linearProgress.setAttribute('stroke-dasharray', progress.segmentSize);
+                    }
+                    if (progress.cornerRadius === 'Round' && progressWidth) {
+                        linearProgress.setAttribute('stroke-linecap', 'round');
+                    }
                 }
             }
             linearProgressGroup.appendChild(linearProgress);
@@ -1342,18 +1403,17 @@ var Linear = /** @class */ (function () {
                 else {
                     animationdelay = progress.animation.delay;
                 }
-                /** used for label animation delay */
                 this.delay = animationdelay;
-                clipPathLinear = progress.createClipPath(progress.clipPath, progressWidth, null, refresh, thickness, false);
+                clipPathLinear = progress.createClipPath(progress.clipPath, progressWidth, null, refresh, thickness, false, (progress.cornerRadius === 'Round4px' && ismaximum));
                 linearProgressGroup.appendChild(progress.clipPath);
                 linearProgress.setAttribute('style', 'clip-path:url(#' + progress.element.id + '_clippath)');
                 this.animation.doLinearAnimation(clipPathLinear, progress, animationdelay, refresh ? previousWidth : 0);
             }
             if (progress.isIndeterminate) {
-                clipPathIndeterminate = progress.createClipPath(progress.clipPath, (progress.trackSegmentDisable) ? 1 : progressWidth, null, refresh, thickness, progress.trackSegmentDisable);
+                clipPathIndeterminate = progress.createClipPath(progress.clipPath, (progress.enableProgressSegments) ? 1 : progressWidth, null, refresh, thickness, progress.enableProgressSegments);
                 linearProgressGroup.appendChild(progress.clipPath);
                 linearProgress.setAttribute('style', 'clip-path:url(#' + progress.element.id + '_clippath)');
-                this.animation.doLinearIndeterminate(((!progress.trackSegmentDisable) ? clipPathIndeterminate : linearProgress), linearProgressWidth, thickness, progress);
+                this.animation.doLinearIndeterminate(((!progress.enableProgressSegments) ? clipPathIndeterminate : linearProgress), linearProgressWidth, thickness, progress, clipPathIndeterminate);
             }
             progress.svgObject.appendChild(linearProgressGroup);
         }
@@ -1369,28 +1429,40 @@ var Linear = /** @class */ (function () {
         var thickness;
         var stroke;
         var segmentWidth;
+        var ismaximum = (progress.secondaryProgress === progress.maximum);
         secondaryProgressWidth = progress.calculateProgressRange(progress.secondaryProgress);
         this.bufferWidth = linearBufferWidth = progress.progressRect.width * secondaryProgressWidth;
         linearBufferGroup = progress.renderer.createGroup({ 'id': progress.element.id + '_LinearBufferGroup' });
         thickness = (progress.progressThickness || progress.themeStyle.linearProgressThickness);
         stroke = this.checkingLinearProgressColor();
-        option = new sf.svgbase.PathOption(progress.element.id + '_Linearbuffer', 'none', thickness, stroke, progress.themeStyle.bufferOpacity, '0', progress.getPathLine(progress.progressRect.x, linearBufferWidth, thickness));
-        if (progress.segmentColor.length !== 0 && !progress.isIndeterminate && !this.isRange) {
-            segmentWidth = (!progress.trackSegmentDisable) ? progress.trackWidth : progress.progressWidth;
-            linearBuffer = this.segment.createLinearSegment(progress, '_LinearBufferSegment', linearBufferWidth, progress.themeStyle.bufferOpacity, (progress.progressThickness || progress.themeStyle.linearProgressThickness), segmentWidth);
+        if (progress.cornerRadius === 'Round4px') {
+            if (progress.segmentCount > 1) {
+                linearBuffer = this.createRoundCornerSegment('_Linearbuffer_', stroke, thickness, false, linearBufferWidth, progress, progress.themeStyle.bufferOpacity);
+            }
+            else {
+                option = new sf.svgbase.PathOption(progress.element.id + '_Linearbuffer', stroke, 0, 'none', progress.themeStyle.bufferOpacity, '0', this.cornerRadius(progress.progressRect.x, progress.progressRect.y, linearBufferWidth, thickness, 4, (ismaximum) ? '' : 'start'));
+                linearBuffer = progress.renderer.drawPath(option);
+            }
         }
         else {
-            linearBuffer = progress.renderer.drawPath(option);
-            if (progress.segmentCount > 1 && !this.isRange) {
-                linearBuffer.setAttribute('stroke-dasharray', progress.segmentSize);
+            option = new sf.svgbase.PathOption(progress.element.id + '_Linearbuffer', 'none', thickness, stroke, progress.themeStyle.bufferOpacity, '0', progress.getPathLine(progress.progressRect.x, linearBufferWidth, thickness));
+            if (progress.segmentColor.length !== 0 && !progress.isIndeterminate && !this.isRange) {
+                segmentWidth = (!progress.enableProgressSegments) ? progress.trackWidth : progress.progressWidth;
+                linearBuffer = this.segment.createLinearSegment(progress, '_LinearBufferSegment', linearBufferWidth, progress.themeStyle.bufferOpacity, (progress.progressThickness || progress.themeStyle.linearProgressThickness), segmentWidth);
             }
-            if (progress.cornerRadius === 'Round' && !this.isRange) {
-                linearBuffer.setAttribute('stroke-linecap', 'round');
+            else {
+                linearBuffer = progress.renderer.drawPath(option);
+                if (progress.segmentCount > 1 && !this.isRange) {
+                    linearBuffer.setAttribute('stroke-dasharray', progress.segmentSize);
+                }
+                if (progress.cornerRadius === 'Round' && !this.isRange) {
+                    linearBuffer.setAttribute('stroke-linecap', 'round');
+                }
             }
         }
         linearBufferGroup.appendChild(linearBuffer);
         if (progress.animation.enable) {
-            clipPathBuffer = progress.createClipPath(progress.bufferClipPath, secondaryProgressWidth, null, false, thickness, false);
+            clipPathBuffer = progress.createClipPath(progress.bufferClipPath, secondaryProgressWidth, null, false, thickness, false, (progress.cornerRadius === 'Round4px' && ismaximum));
             linearBufferGroup.appendChild(progress.bufferClipPath);
             linearBuffer.setAttribute('style', 'clip-path:url(#' + progress.element.id + '_clippathBuffer)');
             this.animation.doLinearAnimation(clipPathBuffer, progress, progress.animation.delay, 0);
@@ -1416,6 +1488,7 @@ var Linear = /** @class */ (function () {
         var contrast;
         var clipPath;
         var linearLabelGroup;
+        var thickness = (this.progress.progressThickness || this.progress.themeStyle.linearProgressThickness);
         var padding = 5;
         var progress = this.progress;
         var textAlignment = progress.labelStyle.textAlignment;
@@ -1463,7 +1536,12 @@ var Linear = /** @class */ (function () {
                     posX = defaultPos;
                 }
             }
-            posY = progress.progressRect.y + (progress.progressRect.height / 2) + (textSize.height / 4);
+            if (this.progress.cornerRadius === 'Round4px') {
+                posY = progress.progressRect.y + (thickness / 2) + (textSize.height / 4);
+            }
+            else {
+                posY = progress.progressRect.y + (progress.progressRect.height / 2) + (textSize.height / 4);
+            }
             option = new TextOption(progress.element.id + '_linearLabel', progress.labelStyle.size || progress.themeStyle.linearFontSize, progress.labelStyle.fontStyle || progress.themeStyle.linearFontStyle, progress.labelStyle.fontFamily || progress.themeStyle.linearFontFamily, progress.labelStyle.fontWeight, 'middle', argsData.color || ((contrast >= 128) ? 'black' : 'white'), posX, posY);
             linearlabel = progress.renderer.createText(option, argsData.text);
             linearLabelGroup.appendChild(linearlabel);
@@ -1483,19 +1561,31 @@ var Linear = /** @class */ (function () {
         var activeClip;
         var progress = this.progress;
         var option;
-        if (!refresh) {
-            option = new sf.svgbase.PathOption(progress.element.id + '_LinearActiveProgress', 'none', thickness, '#ffffff', 0.5, '', progress.getPathLine(progress.progressRect.x, linearProgressWidth, thickness));
-            linearActive = progress.renderer.drawPath(option);
+        var ismaximum = (progress.value === progress.maximum);
+        if (progress.cornerRadius === 'Round4px') {
+            if (progress.segmentCount > 1) {
+                linearActive = this.createRoundCornerSegment('_LinearActiveProgress_', '#ffffff', thickness, false, linearProgressWidth, progress, 0.5);
+            }
+            else {
+                option = new sf.svgbase.PathOption(progress.element.id + '_LinearActiveProgress', '#ffffff', 0, 'none', 0.5, '0', this.cornerRadius(progress.progressRect.x, progress.progressRect.y, linearProgressWidth, thickness, 4, ismaximum ? '' : 'start'));
+                linearActive = progress.renderer.drawPath(option);
+            }
         }
         else {
-            linearActive = sf.svgbase.getElement(progress.element.id + '_LinearActiveProgress');
-            linearActive.setAttribute('d', progress.getPathLine(progress.progressRect.x, linearProgressWidth, thickness));
-        }
-        if (progress.segmentCount > 1 && !this.isRange) {
-            linearActive.setAttribute('stroke-dasharray', progress.segmentSize);
-        }
-        if (progress.cornerRadius === 'Round' && progressWidth && !this.isRange) {
-            linearActive.setAttribute('stroke-linecap', 'round');
+            if (!refresh) {
+                option = new sf.svgbase.PathOption(progress.element.id + '_LinearActiveProgress', 'none', thickness, '#ffffff', 0.5, '', progress.getPathLine(progress.progressRect.x, linearProgressWidth, thickness));
+                linearActive = progress.renderer.drawPath(option);
+            }
+            else {
+                linearActive = sf.svgbase.getElement(progress.element.id + '_LinearActiveProgress');
+                linearActive.setAttribute('d', progress.getPathLine(progress.progressRect.x, linearProgressWidth, thickness));
+            }
+            if (progress.segmentCount > 1 && !this.isRange) {
+                linearActive.setAttribute('stroke-dasharray', progress.segmentSize);
+            }
+            if (progress.cornerRadius === 'Round' && progressWidth && !this.isRange) {
+                linearActive.setAttribute('stroke-linecap', 'round');
+            }
         }
         activeClip = progress.createClipPath(progress.clipPath, progressWidth, null, refresh, thickness, false);
         linearActive.setAttribute('style', 'clip-path:url(#' + progress.element.id + '_clippath)');
@@ -1507,7 +1597,7 @@ var Linear = /** @class */ (function () {
     Linear.prototype.renderLinearStriped = function (color, group, progress) {
         var defs = progress.renderer.createDefs();
         var linearGradient = document.createElementNS(svgLink, gradientType);
-        var stripWidth = 30;
+        var stripWidth = 14;
         var stop;
         var gradOption;
         var stopOption = [];
@@ -1517,7 +1607,7 @@ var Linear = /** @class */ (function () {
             spreadMethod: 'repeat', gradientUnits: 'userSpaceOnUse', gradientTransform: 'rotate(-45)'
         };
         stopOption = [{ offset: '50%', 'stop-color': color, 'stop-opacity': '1' },
-            { offset: '50%', 'stop-color': color, 'stop-opacity': '0.6' }];
+            { offset: '50%', 'stop-color': color, 'stop-opacity': '0.4' }];
         linearGradient = setAttributes(gradOption, linearGradient);
         for (var i = 0; i < stopOption.length; i++) {
             stop = document.createElementNS(svgLink, stopElement);
@@ -1552,6 +1642,93 @@ var Linear = /** @class */ (function () {
                 linearColor = (progress.argsData.progressColor || progress.themeStyle.linearProgressColor);
         }
         return linearColor;
+    };
+    /** Bootstrap 3 & Bootstrap 4 corner path */
+    Linear.prototype.cornerRadius = function (x, y, width, height, radius, pathtype) {
+        var path = '';
+        var endWidth = width;
+        var endRadius = radius;
+        switch (pathtype) {
+            case 'start':
+                path = 'M' + x + ',' + y + ' '
+                    + 'h' + (width) + ' '
+                    + 'v' + (height) + ' '
+                    + 'h' + (-width) + ' '
+                    + 'a' + radius + ',' + radius + ' 0 0 1 ' + -radius + ',' + -radius + ' '
+                    + 'v' + (2 * radius - height) + ' '
+                    + 'a' + radius + ',' + radius + ' 0 0 1 ' + radius + ',' + -radius + ' '
+                    + 'z';
+                break;
+            case 'end':
+                path = 'M' + x + ',' + y + ' '
+                    + 'h' + (endWidth - endRadius) + ' '
+                    + 'a' + endRadius + ',' + endRadius + ' 0 0 1 ' + endRadius + ',' + endRadius + ' '
+                    + 'v' + (height - 2 * endRadius) + ' '
+                    + 'a' + endRadius + ',' + endRadius + ' 0 0 1 ' + -endRadius + ',' + endRadius + ' '
+                    + 'h' + (radius - endWidth) + ' '
+                    + 'v' + (-height) + ' '
+                    + 'z';
+                break;
+            case 'none':
+                path = 'M' + x + ',' + y + ' '
+                    + 'h' + (width) + ' '
+                    + 'v' + (height) + ' '
+                    + 'h' + (-width) + ' '
+                    + 'v' + (-height) + ' '
+                    + 'z';
+                break;
+            default:
+                path = 'M' + x + ',' + y + ' '
+                    + 'h' + (width - radius) + ' '
+                    + 'a' + radius + ',' + radius + ' 0 0 1 ' + radius + ',' + radius + ' '
+                    + 'v' + (height - 2 * radius) + ' '
+                    + 'a' + radius + ',' + radius + ' 0 0 1 ' + -radius + ',' + radius + ' '
+                    + 'h' + (radius - width) + ' '
+                    + 'a' + radius + ',' + radius + ' 0 0 1 ' + -radius + ',' + -radius + ' '
+                    + 'v' + (2 * radius - height) + ' '
+                    + 'a' + radius + ',' + radius + ' 0 0 1 ' + radius + ',' + -radius + ' '
+                    + 'z';
+        }
+        return path;
+    };
+    /** Bootstrap 3 & Bootstrap 4 corner segment */
+    Linear.prototype.createRoundCornerSegment = function (id, stroke, thickness, isTrack, progressWidth, progress, opacity) {
+        var locX = progress.progressRect.x;
+        var locY = progress.progressRect.y;
+        var width = progress.progressRect.width;
+        var option;
+        var pathType;
+        var avlWidth;
+        var gapWidth = (progress.gapWidth || progress.themeStyle.linearGapWidth);
+        var segWidth = (width - ((progress.segmentCount - 1) * gapWidth)) / progress.segmentCount;
+        var segmentGroup = progress.renderer.createGroup({ 'id': progress.element.id + id + 'SegmentGroup' });
+        var segmentPath;
+        for (var i = 1; i <= progress.segmentCount; i++) {
+            if (i === 1 || i === progress.segmentCount) {
+                pathType = (i === 1) ? 'start' : 'end';
+            }
+            else {
+                pathType = 'none';
+            }
+            if (isTrack) {
+                option = new sf.svgbase.PathOption(progress.element.id + id + i, stroke, 0, 'none', progress.themeStyle.trackOpacity, '0', this.cornerRadius(locX, locY, segWidth, thickness, 4, pathType));
+                segmentPath = progress.renderer.drawPath(option);
+                segmentGroup.appendChild(segmentPath);
+                locX += (segWidth + gapWidth);
+            }
+            else {
+                avlWidth = (progressWidth < segWidth) ? progressWidth : segWidth;
+                option = new sf.svgbase.PathOption(progress.element.id + id + i, stroke, 0, 'none', opacity, '0', this.cornerRadius(locX, locY, avlWidth, thickness, 4, pathType));
+                segmentPath = progress.renderer.drawPath(option);
+                segmentGroup.appendChild(segmentPath);
+                locX += (segWidth + gapWidth);
+                progressWidth -= (segWidth + gapWidth);
+                if (progressWidth <= 0) {
+                    break;
+                }
+            }
+        }
+        return segmentGroup;
     };
     return Linear;
 }());
@@ -1599,7 +1776,7 @@ var Circular = /** @class */ (function () {
         option = new sf.svgbase.PathOption(progress.element.id + '_Circulartrack', fill, strokeWidth, stroke, progress.themeStyle.trackOpacity, '0', circularPath);
         circularTrack = progress.renderer.drawPath(option);
         progress.trackWidth = circularTrack.getTotalLength();
-        if (progress.segmentCount > 1 && !progress.trackSegmentDisable && !progress.enablePieProgress && !this.isRange) {
+        if (progress.segmentCount > 1 && !progress.enableProgressSegments && !progress.enablePieProgress && !this.isRange) {
             progress.segmentSize = progress.calculateSegmentSize(progress.trackWidth, strokeWidth);
             circularTrack.setAttribute('stroke-dasharray', progress.segmentSize);
         }
@@ -1640,7 +1817,7 @@ var Circular = /** @class */ (function () {
         radius = (radius === null) ? 0 : radius;
         progress.previousTotalEnd = progressEnd = progress.calculateProgressRange(progress.argsData.value);
         progressEndAngle = (progress.startAngle + ((progress.enableRtl) ? -progressEnd : progressEnd)) % 360;
-        progress.previousEndAngle = endAngle = ((progress.isIndeterminate && !progress.trackSegmentDisable) ? (progress.startAngle + ((progress.enableRtl) ? -progress.totalAngle : progress.totalAngle)) % 360 : progressEndAngle);
+        progress.previousEndAngle = endAngle = ((progress.isIndeterminate && !progress.enableProgressSegments) ? (progress.startAngle + ((progress.enableRtl) ? -progress.totalAngle : progress.totalAngle)) % 360 : progressEndAngle);
         progressTotalAngle = (progressEnd - progress.startAngle) % 360;
         progressTotalAngle = (progressTotalAngle <= 0 ? (360 + progressTotalAngle) : progressTotalAngle);
         progressTotalAngle -= (progressTotalAngle === 360) ? 0.01 : 0;
@@ -1657,8 +1834,8 @@ var Circular = /** @class */ (function () {
         }
         if (progress.argsData.value !== null) {
             if (progress.segmentColor.length !== 0 && !progress.isIndeterminate && !progress.enablePieProgress) {
-                totalAngle = (!progress.trackSegmentDisable) ? progress.totalAngle : progressTotalAngle;
-                segmentWidth = (!progress.trackSegmentDisable) ? progress.trackWidth : progress.progressWidth;
+                totalAngle = (!progress.enableProgressSegments) ? progress.totalAngle : progressTotalAngle;
+                segmentWidth = (!progress.enableProgressSegments) ? progress.trackWidth : progress.progressWidth;
                 circularProgress = this.segment.createCircularSegment(progress, '_CircularProgressSegment', this.centerX, this.centerY, radius, progress.argsData.value, progress.themeStyle.progressOpacity, thickness, totalAngle, segmentWidth);
             }
             else if (this.isRange && !progress.isIndeterminate) {
@@ -1694,11 +1871,11 @@ var Circular = /** @class */ (function () {
                     this.animation.doCircularAnimation(this.centerX, this.centerY, radius, progressEndAngle, progressEnd, linearClipPath, progress, thickness, this.delay, refresh ? previousEnd : null, refresh ? previousTotalEnd : null);
                 }
                 if (progress.isIndeterminate) {
-                    if (progress.trackSegmentDisable) {
+                    if (progress.enableProgressSegments) {
                         linearClipPath.setAttribute('d', getPathArc(this.centerX, this.centerY, radius + (thickness / 2), progress.startAngle, this.trackEndAngle, progress.enableRtl, true));
                     }
                     circularProgress.setAttribute('style', 'clip-path:url(#' + progress.element.id + '_clippath)');
-                    this.animation.doCircularIndeterminate((!progress.trackSegmentDisable) ? linearClipPath : circularProgress, progress, startAngle, progressEndAngle, this.centerX, this.centerY, radius, thickness);
+                    this.animation.doCircularIndeterminate((!progress.enableProgressSegments) ? linearClipPath : circularProgress, progress, startAngle, progressEndAngle, this.centerX, this.centerY, radius, thickness, linearClipPath);
                 }
             }
             progress.svgObject.appendChild(circularProgressGroup);
@@ -1727,8 +1904,8 @@ var Circular = /** @class */ (function () {
         strokeWidth = (progress.enablePieProgress) ? 0 : (progress.progressThickness || progress.themeStyle.circularProgressThickness);
         option = new sf.svgbase.PathOption(progress.element.id + '_Circularbuffer', fill, strokeWidth, stroke, progress.themeStyle.bufferOpacity, '0', circularPath);
         if (progress.segmentColor.length !== 0 && !progress.isIndeterminate && !progress.enablePieProgress && !this.isRange) {
-            totalAngle = (!progress.trackSegmentDisable) ? progress.totalAngle : progressTotalAngle;
-            segmentWidth = (!progress.trackSegmentDisable) ? progress.trackWidth : progress.progressWidth;
+            totalAngle = (!progress.enableProgressSegments) ? progress.totalAngle : progressTotalAngle;
+            segmentWidth = (!progress.enableProgressSegments) ? progress.trackWidth : progress.progressWidth;
             circularBuffer = this.segment.createCircularSegment(progress, '_CircularBufferSegment', this.centerX, this.centerY, radius, progress.secondaryProgress, progress.themeStyle.bufferOpacity, strokeWidth, totalAngle, segmentWidth);
         }
         else {
@@ -1790,8 +1967,9 @@ var Circular = /** @class */ (function () {
         var activeClip;
         var option;
         var progress = this.progress;
+        var thickness = strokeWidth + 1;
         if (!refresh) {
-            option = new sf.svgbase.PathOption(progress.element.id + '_CircularActiveProgress', 'none', strokeWidth, '#ffffff', 0.5, '0', circularPath);
+            option = new sf.svgbase.PathOption(progress.element.id + '_CircularActiveProgress', 'none', thickness, '#ffffff', 0.5, '0', circularPath);
             circularActive = progress.renderer.drawPath(option);
         }
         else {
@@ -1808,7 +1986,7 @@ var Circular = /** @class */ (function () {
         circularActive.setAttribute('style', 'clip-path:url(#' + progress.element.id + '_clippath)');
         progressGroup.appendChild(circularActive);
         progressGroup.appendChild(progress.clipPath);
-        this.animation.doCircularAnimation(this.centerX, this.centerY, radius, endAngle, totalEnd, activeClip, progress, (progress.progressThickness || progress.themeStyle.circularProgressThickness), 0, null, null, circularActive);
+        this.animation.doCircularAnimation(this.centerX, this.centerY, radius, endAngle, totalEnd, activeClip, progress, thickness, 0, null, null, circularActive);
     };
     /** Checking the segment size */
     Circular.prototype.validateSegmentSize = function (progress, thickness) {
@@ -1816,12 +1994,12 @@ var Circular = /** @class */ (function () {
         var rDiff;
         var progressSegment;
         rDiff = parseInt(progress.radius, 10) - parseInt(progress.innerRadius, 10);
-        if (rDiff !== 0 && !progress.trackSegmentDisable) {
+        if (rDiff !== 0 && !progress.enableProgressSegments) {
             progressSegment = progress.trackWidth + ((rDiff < 0) ? (progress.trackWidth * Math.abs(rDiff)) / parseInt(progress.radius, 10) :
                 -(progress.trackWidth * Math.abs(rDiff)) / parseInt(progress.radius, 10));
             validSegment = progress.calculateSegmentSize(progressSegment, thickness);
         }
-        else if (progress.trackSegmentDisable) {
+        else if (progress.enableProgressSegments) {
             validSegment = progress.calculateSegmentSize(progress.progressWidth, thickness);
         }
         else {
@@ -1887,6 +2065,8 @@ var ProgressBar = /** @class */ (function (_super) {
         _this.circular = new Circular(_this);
         /** @private */
         _this.annotateAnimation = new ProgressAnimation();
+        /** @private */
+        _this.destroyIndeterminate = false;
         return _this;
     }
     ProgressBar.prototype.getModuleName = function () {
@@ -2052,7 +2232,7 @@ var ProgressBar = /** @class */ (function (_super) {
         gap += (this.cornerRadius === 'Round') ? lineCapRadius * thickness : 0;
         return ' ' + size + ' ' + gap;
     };
-    ProgressBar.prototype.createClipPath = function (clipPath, range, d, refresh, thickness, isLabel) {
+    ProgressBar.prototype.createClipPath = function (clipPath, range, d, refresh, thickness, isLabel, isMaximum) {
         var path;
         var rect;
         var option;
@@ -2062,12 +2242,21 @@ var ProgressBar = /** @class */ (function (_super) {
         var x = this.progressRect.x;
         var totalWidth = this.progressRect.width;
         if (this.type === 'Linear') {
-            posx = (this.enableRtl && !isLabel) ? (x + totalWidth) : x;
-            posx += (this.cornerRadius === 'Round') ?
-                ((this.enableRtl && !isLabel) ? (lineCapRadius / 2) * thickness : -(lineCapRadius / 2) * thickness) : 0;
-            posy = (this.progressRect.y + (this.progressRect.height / 2)) - (thickness / 2);
-            pathWidth = totalWidth * range;
-            pathWidth += (this.cornerRadius === 'Round') ? (lineCapRadius * thickness) : 0;
+            if (this.cornerRadius === 'Round4px') {
+                posx = x;
+                pathWidth = totalWidth * range;
+                posx += (!isLabel) ? (-4) : 0;
+                posy = this.progressRect.y;
+                pathWidth += ((!isLabel && isMaximum) || this.isIndeterminate) ? 4 : 0;
+            }
+            else {
+                posx = (this.enableRtl && !isLabel) ? (x + totalWidth) : x;
+                pathWidth = totalWidth * range;
+                posx += (this.cornerRadius === 'Round' && !isLabel) ?
+                    ((this.enableRtl) ? (lineCapRadius / 2) * thickness : -(lineCapRadius / 2) * thickness) : 0;
+                posy = (this.progressRect.y + (this.progressRect.height / 2)) - (thickness / 2);
+                pathWidth += (this.cornerRadius === 'Round' && !isLabel) ? (lineCapRadius * thickness) : 0;
+            }
             if (!refresh) {
                 rect = new RectOption(this.element.id + '_clippathrect', 'transparent', 1, 'transparent', 1, new Rect(posx, posy, thickness, pathWidth));
                 path = this.renderer.drawRectangle(rect);
@@ -2102,7 +2291,8 @@ var ProgressBar = /** @class */ (function (_super) {
         switch (this.theme) {
             case 'Bootstrap':
             case 'Bootstrap4':
-                this.cornerRadius = this.cornerRadius === 'Auto' ? 'Round' : this.cornerRadius;
+                this.cornerRadius = this.cornerRadius === 'Auto' ?
+                    ((this.type === 'Linear') ? 'Round4px' : 'Round') : this.cornerRadius;
                 break;
             default:
                 this.cornerRadius = this.cornerRadius === 'Auto' ? 'Square' : this.cornerRadius;
@@ -2132,6 +2322,7 @@ var ProgressBar = /** @class */ (function (_super) {
             name: 'resized',
             currentSize: new Size(0, 0),
             previousSize: new Size(this.progressSize.width, this.progressSize.height),
+            cancel: (this.cancelResize) ? true : false,
         };
         if (this.resizeTo) {
             clearTimeout(this.resizeTo);
@@ -2143,7 +2334,7 @@ var ProgressBar = /** @class */ (function (_super) {
             }
             arg.currentSize = _this.progressSize;
             _this.trigger('resized', arg);
-            if ((_this.width === null || _this.height === null)) {
+            if ((_this.width === null || _this.height === null) && !arg.cancel) {
                 _this.secElement.innerHTML = '';
                 _this.calculateProgressBarSize();
                 _this.createSVG();
@@ -2221,6 +2412,7 @@ var ProgressBar = /** @class */ (function (_super) {
                     this.renderAnnotation();
                     break;
                 case 'value':
+                    this.cancelResize = (this.animation.enable) ? true : false;
                     this.argsData = {
                         value: this.value,
                         progressColor: this.argsData.progressColor,
@@ -2245,6 +2437,10 @@ var ProgressBar = /** @class */ (function (_super) {
                         this.linear.renderLinearProgress(true, this.previousWidth);
                     }
                     break;
+                case 'animation':
+                    this.createSVG();
+                    this.renderElements();
+                    break;
             }
         }
     };
@@ -2265,6 +2461,24 @@ var ProgressBar = /** @class */ (function (_super) {
     ProgressBar.prototype.getPersistData = function () {
         return ' ';
     };
+    ProgressBar.prototype.show = function () {
+        this.svgObject.setAttribute('visibility', 'Visible');
+        if (this.isIndeterminate) {
+            this.destroyIndeterminate = false;
+            if (this.type === 'Linear') {
+                this.linear.renderLinearProgress(true);
+            }
+            else {
+                this.circular.renderCircularProgress(null, null, true);
+            }
+        }
+    };
+    ProgressBar.prototype.hide = function () {
+        this.svgObject.setAttribute('visibility', 'Hidden');
+        if (this.isIndeterminate) {
+            this.destroyIndeterminate = true;
+        }
+    };
     /**
      * To destroy the widget
      * @method destroy
@@ -2277,6 +2491,9 @@ var ProgressBar = /** @class */ (function (_super) {
         this.removeSvg();
         this.svgObject = null;
         this.element.classList.remove('e-progressbar');
+        if (!this.refreshing) {
+            this.destroyIndeterminate = true;
+        }
     };
     __decorate([
         sf.base.Property('Linear')
@@ -2364,7 +2581,7 @@ var ProgressBar = /** @class */ (function (_super) {
     ], ProgressBar.prototype, "showProgressValue", void 0);
     __decorate([
         sf.base.Property(false)
-    ], ProgressBar.prototype, "trackSegmentDisable", void 0);
+    ], ProgressBar.prototype, "enableProgressSegments", void 0);
     __decorate([
         sf.base.Complex({ size: null, color: null, fontStyle: null, fontWeight: 'Normal', fontFamily: null }, Font)
     ], ProgressBar.prototype, "labelStyle", void 0);
@@ -2423,10 +2640,6 @@ var ProgressBar = /** @class */ (function (_super) {
  * Progress Bar component export methods
  */
 
-/**
- * Progress Bar component export methods
- */
-
 ProgressBar.Inject(ProgressAnnotation);
 
 exports.ProgressBar = ProgressBar;
@@ -2460,6 +2673,7 @@ exports.ProgressAnimation = ProgressAnimation;
 return exports;
 
 });
+sfBlazor.modules["progressbar"] = "progressbar.ProgressBar";
 sfBlazor.loadDependencies(sfBlazor.dependencyJson.progressbar, () => {
-    sf.progressbar = sf.progressbar({});
+    sf.progressbar = sf.base.extend({}, sf.progressbar, sfprogressbar({}));
 });

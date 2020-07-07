@@ -1,7 +1,9 @@
 import { CellStyleModel, getRangeIndexes, setCellFormat, applyCellFormat, activeCellChanged, SetCellFormatArgs } from '../common/index';
 import { CellFormatArgs, getSwapRange, TextDecoration, textDecorationUpdate, BorderType, BeforeCellFormatArgs } from '../common/index';
-import { CellStyleExtendedModel } from '../common/index';
-import { SheetModel, Workbook, getSheetIndex, isHiddenRow } from '../base/index';
+import { CellStyleExtendedModel, ClearOptions, clear, getIndexesFromAddress } from '../common/index';
+import { SheetModel, Workbook, getSheetIndex, isHiddenRow, getSheet, getCell, CellModel, setCell } from '../base/index';
+
+
 
 /**
  * Workbook Cell format.
@@ -301,11 +303,50 @@ export class WorkbookCellFormat {
     private addEventListener(): void {
         this.parent.on(setCellFormat, this.format, this);
         this.parent.on(textDecorationUpdate, this.textDecorationActionUpdate, this);
+        this.parent.on(clear, this.clearCellObj, this);
     }
     private removeEventListener(): void {
         if (!this.parent.isDestroyed) {
             this.parent.off(setCellFormat, this.format);
             this.parent.off(textDecorationUpdate, this.textDecorationActionUpdate);
+            this.parent.off(clear, this.clearCellObj);
+        }
+    }
+
+    private clearCellObj(options: ClearOptions): void {
+        let clrRange: string = options.range ? (options.range.indexOf('!') > 0) ? options.range.split('!')[1] : options.range.split('!')[0]
+            : this.parent.getActiveSheet().selectedRange;
+        let sheetIdx: number = (options.range && options.range.indexOf('!') > 0) ?
+            getSheetIndex(this.parent, options.range.split('!')[0]) : this.parent.activeSheetIndex;
+        let sheet: SheetModel = getSheet(this.parent, sheetIdx);
+        let range: number[] = getIndexesFromAddress(clrRange);
+        let sRowIdx: number = range[0];
+        let eRowIdx: number = range[2];
+        let sColIdx: number;
+        let eColIdx: number;
+        for (sRowIdx; sRowIdx <= eRowIdx; sRowIdx++) {
+            sColIdx = range[1];
+            eColIdx = range[3];
+            for (sColIdx; sColIdx <= eColIdx; sColIdx++) {
+                let cell: CellModel = getCell(sRowIdx, sColIdx, sheet);
+                if (cell) {
+                    switch (options.type) {
+                        case 'Clear Formats':
+                            delete cell.format; delete cell.rowSpan; delete cell.style;
+                            delete cell.wrap; delete cell.colSpan;
+                            break;
+                        case 'Clear Contents':
+                            delete cell.value; delete cell.formula;
+                            break;
+                        case 'Clear Hyperlinks':
+                            delete cell.hyperlink;
+                            break;
+                        case 'Clear All':
+                            setCell(sRowIdx, sColIdx, sheet, {}, false);
+                            break;
+                    }
+                }
+            }
         }
     }
     /**

@@ -14,6 +14,12 @@
 
 #### Bug Fixes
 
+- `#278404` - "Ean-13 barcode not rendering" issue has been fixed.
+
+### Barcode
+
+#### Bug Fixes
+
 - `#269847` - "Barcode control is not rendering in MVC" issue has been fixed.
 
 ## 17.4.51 (2020-02-25)

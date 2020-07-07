@@ -9,7 +9,7 @@ import { BorderModel, ColorMappingSettingsModel, FontModel, CommonTitleSettingsM
 import { MarkerSettingsModel, MarkerClusterSettingsModel, ShapeSettingsModel, BubbleSettingsModel, ArrowModel } from './base-model';
 import { DataLabelSettingsModel, TooltipSettingsModel, SubTitleSettingsModel, SelectionSettingsModel } from './base-model';
 import { HighlightSettingsModel, ToggleLegendSettingsModel, ConnectorLineSettingsModel} from './base-model';
-import { InitialShapeSelectionSettingsModel } from './base-model';
+import { InitialShapeSelectionSettingsModel, InitialMarkerSelectionSettingsModel } from './base-model';
 import { Theme } from './theme';
 import { Point, GeoLocation } from '../utils/helper';
 import { BingMapType, LegendArrangement, LegendShape, BubbleType, StaticMapType } from '../utils/enum';
@@ -447,6 +447,26 @@ export class ColorMappingSettings extends ChildProperty<ColorMappingSettings> {
     @Property(true)
     public showLegend: boolean;
 }
+
+/**
+ * To configure the initial marker shape selection settings
+ */
+export class InitialMarkerSelectionSettings extends ChildProperty<InitialMarkerSelectionSettings> {
+
+    /**
+     * To initially select the marker latitude.
+     * @default null
+     */
+    @Property(null)
+    public latitude: number;
+    /**
+     * To initially select the marker longitude
+     * @default null
+     */
+    @Property(null)
+    public longitude: number;
+}
+
 /**
  * Sets and gets the shapes that is selected initially on rendering the maps.
  */
@@ -613,12 +633,18 @@ export class BubbleSettings extends ChildProperty<BubbleSettings> {
      * The data source must contain the size value of the bubble that can be bound to the bubble 
      * of the Maps using the valuePath property in the bubbleSettings.
      * The data source can contain data such as color, and the other information that can be bound to the bubble, and tooltip of the bubble.
-     * @isdatamanager false
      * @isObservable true
      * @default []
      */
     @Property([])
-    public dataSource: object[];
+    public dataSource: Object[] | DataManager;
+    /**
+     * Sets and gets the query to select particular data from the bubble data. 
+     * This property is applicable only when the data source is created by data manager.
+     * @default null
+     */
+    @Property()
+    public query: Query;
     /**
      * Sets and gets the duration for the animation for bubble in maps.
      * @default 1000
@@ -1349,12 +1375,19 @@ export class MarkerBase extends ChildProperty<MarkerBase> {
      * of the marker.
      * The data source can contain data such as color, shape, and other details that can be bound to the color, shape,
      * and tooltip of the marker.
-     * @isdatamanager false
      * @isObservable true
      * @default []
      */
     @Property([])
-    public dataSource: Object[];
+    public dataSource: Object[] | DataManager;
+
+    /**
+     * Sets and gets the query to select particular data from the marker data. 
+     * This property is applicable only when the data source is created by data manager.
+     * @default null
+     */
+    @Property()
+    public query: Query;
 
     /**
      * Sets and gets the options to customize the tooltip for the marker in maps.
@@ -1397,6 +1430,12 @@ export class MarkerBase extends ChildProperty<MarkerBase> {
     @Property(null)
     public longitudeValuePath: string;
 
+    /**
+     * To select the shape at the rendering time.
+     */
+    @Collection<InitialMarkerSelectionSettingsModel>([], InitialMarkerSelectionSettings)
+    public initialMarkerSelection: InitialMarkerSelectionSettingsModel[];
+
 }
 
 export class MarkerSettings extends MarkerBase {
@@ -1412,7 +1451,7 @@ export class MarkerSettings extends MarkerBase {
 export class LayerSettings extends ChildProperty<LayerSettings> {
     /**
      * Sets and gets the shape data for the maps to render.
-     * @isdatamanager false
+     * @isObservable true
      * @default null
      */
     @Property(null)
@@ -1435,7 +1474,6 @@ export class LayerSettings extends ChildProperty<LayerSettings> {
     /**
      * * Sets and gets the data source for the layer.
      * * The data source can contain data that can be bound to the tooltip, marker, and bubble.
-     * @isdatamanager false
      * @isObservable true
      * @default []
      */

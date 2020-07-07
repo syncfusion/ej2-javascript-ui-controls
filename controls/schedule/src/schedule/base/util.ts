@@ -13,7 +13,7 @@ export function getElementHeightFromClass(container: Element, elementClass: stri
     el.style.visibility = 'hidden';
     el.style.position = 'absolute';
     container.appendChild(el);
-    height = getOuterHeight(el);
+    height = el.getBoundingClientRect().height;
     remove(el);
     return height;
 }

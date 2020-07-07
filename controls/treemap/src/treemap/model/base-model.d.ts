@@ -553,7 +553,7 @@ export interface SelectionSettingsModel {
 
     /**
      * Sets and gets the color of the selection when the leaf item is selected in the treemap component.
-     * @default 'null'
+     * @default null
      */
     fill?: string;
 

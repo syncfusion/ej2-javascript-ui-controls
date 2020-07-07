@@ -931,9 +931,11 @@ describe('UI virtualization', () => {
                 height: 550,
                 template: '<div>${text}</div>'
             });
+            let id: any = [{context: { $implicit: { text: 'BMW', id: '1' } }}];
             listObj.templateRef = {};
             listObj.viewContainerRef = {};
-            listObj.viewContainerRef._embeddedViews = [{ context: { $implicit: { text: 'BMW', id: '1' } } }];
+            listObj.viewContainerRef.get = function() {return id;};
+            listObj.viewContainerRef.get(0).context ={ $implicit: { text: 'BMW', id: '1' } };
             listObj.appendTo(ele);
         });
 

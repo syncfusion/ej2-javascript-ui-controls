@@ -93,9 +93,6 @@ export class LayoutRender extends MobileLayout {
                     className: index === -1 ? cls.HEADER_CELLS_CLASS : cls.HEADER_CELLS_CLASS + ' ' + cls.COLLAPSED_CLASS,
                     attrs: { 'data-role': 'kanban-column', 'data-key': column.keyField }
                 });
-                if (this.parent.kanbanData.length !== 0 && this.parent.swimlaneSettings.keyField && !this.parent.isAdaptive) {
-                    th.classList.add(cls.HEADER_BOTTOM_CLASS);
-                }
                 let classList: string[] = [];
                 if (column.allowToggle) {
                     classList.push(cls.HEADER_ROW_TOGGLE_CLASS);
@@ -187,7 +184,9 @@ export class LayoutRender extends MobileLayout {
                     });
                     if (column.allowToggle && !column.isExpanded || index !== -1) {
                         addClass([td], cls.COLLAPSED_CLASS);
-                        td.appendChild(createElement('div', { className: cls.COLLAPSE_HEADER_TEXT_CLASS, innerHTML: column.headerText }));
+                        let text: string = (column.showItemCount ? '[' +
+                            this.getColumnData(column.keyField, this.swimlaneData[row.keyField]).length + '] ' : '') + column.headerText;
+                        td.appendChild(createElement('div', { className: cls.COLLAPSE_HEADER_TEXT_CLASS, innerHTML: text }));
                         td.setAttribute('aria-expanded', 'false');
                     }
                     if (column.showAddButton) {
@@ -326,6 +325,31 @@ export class LayoutRender extends MobileLayout {
                                 innerHTML: data[this.parent.cardSettings.contentField] || ''
                             });
                             cardElement.appendChild(cardContent);
+                            if (this.parent.cardSettings.tagsField && data[this.parent.cardSettings.tagsField]) {
+                                let cardTags: HTMLElement = createElement('div', { className: cls.CARD_TAGS_CLASS });
+                                let tags: string[] = data[this.parent.cardSettings.tagsField].toString().split(',');
+                                for (let tag of tags) {
+                                    cardTags.appendChild(createElement('div', {
+                                        className: cls.CARD_TAG_CLASS + ' ' + cls.CARD_LABEL_CLASS,
+                                        innerHTML: tag
+                                    }));
+                                }
+                                cardElement.appendChild(cardTags);
+                            }
+                            if (this.parent.cardSettings.grabberField && data[this.parent.cardSettings.grabberField]) {
+                                addClass([cardElement], cls.CARD_COLOR_CLASS);
+                                cardElement.style.borderLeftColor = data[this.parent.cardSettings.grabberField];
+                            }
+                            if (this.parent.cardSettings.footerCssField) {
+                                let cardFields: HTMLElement = createElement('div', { className: cls.CARD_FOOTER_CLASS });
+                                let keys: string[] = data[this.parent.cardSettings.footerCssField].split(',');
+                                for (let key of keys) {
+                                    cardFields.appendChild(createElement('div', {
+                                        className: key.trim() + ' ' + cls.CARD_FOOTER_CSS_CLASS
+                                    }));
+                                }
+                                cardElement.appendChild(cardFields);
+                            }
                         }
                         let args: CardRenderedEventArgs = { data: data, element: cardElement, cancel: false };
                         this.parent.trigger(events.cardRendered, args, (cardArgs: CardRenderedEventArgs) => {
@@ -388,7 +412,7 @@ export class LayoutRender extends MobileLayout {
                 let second: string = secondRow.textField.toLowerCase();
                 return (first > second) ? 1 : ((second > first) ? -1 : 0);
             });
-            if (this.parent.swimlaneSettings.sortBy === 'Descending') {
+            if (this.parent.swimlaneSettings.sortDirection === 'Descending') {
                 kanbanRows.reverse();
             }
             kanbanRows.forEach((row: HeaderArgs) => {
@@ -560,9 +584,57 @@ export class LayoutRender extends MobileLayout {
             let keyData: Object[] = dataSource.filter((cardObj: { [key: string]: Object }) => cardObj[this.parent.keyField] === key.trim());
             cardData = cardData.concat(keyData);
         }
-        if (this.parent.cardSettings.priority) {
-            cardData = cardData.sort((data1: { [key: string]: string }, data2: { [key: string]: string }) =>
-                parseInt(data1[this.parent.cardSettings.priority], 10) - parseInt(data2[this.parent.cardSettings.priority], 10));
+        this.sortCategory(cardData);
+        return cardData;
+    }
+
+    private sortCategory(cardData: Object[]): Object[] {
+        let key: string;
+        let direction: string = this.parent.sortSettings.direction;
+        switch (this.parent.sortSettings.sortBy) {
+            case 'DataSourceOrder':
+                if (direction === 'Descending') {
+                    cardData.reverse();
+                }
+                break;
+            case 'Custom':
+            case 'Index':
+                if (this.parent.sortSettings.field) {
+                    key = this.parent.sortSettings.field;
+                    if (this.parent.sortSettings.sortBy === 'Custom') {
+                        direction = this.parent.sortSettings.direction;
+                    }
+                    this.sortOrder(key, direction, cardData);
+                }
+                break;
+        }
+        return cardData;
+    }
+
+    private sortOrder(key: string, direction: string, cardData: Object[]): Object[] {
+        let isNumeric: boolean;
+        if (this.parent.kanbanData.length > 0) {
+            isNumeric = typeof (this.parent.kanbanData[0] as { [key: string]: Object })[key] === 'number';
+        } else {
+            isNumeric = true;
+        }
+        if (!isNumeric && this.parent.sortSettings.sortBy === 'Index') {
+            return cardData;
+        }
+        let first: string | number;
+        let second: string | number;
+        cardData = cardData.sort((firstData: { [key: string]: string | number }, secondData: { [key: string]: string | number }) => {
+            if (!isNumeric) {
+                first = (firstData[key] as string).toLowerCase();
+                second = (secondData[key] as string).toLowerCase();
+            } else {
+                first = (firstData[key] as number);
+                second = (secondData[key] as number);
+            }
+            return (first > second) ? 1 : ((second > first) ? -1 : 0);
+        });
+        if (direction === 'Descending') {
+            cardData.reverse();
         }
         return cardData;
     }
@@ -656,9 +728,7 @@ export class LayoutRender extends MobileLayout {
 
     public wireDragEvent(): void {
         if (this.parent.allowDragAndDrop) {
-            this.parent.element.querySelectorAll('.' + cls.CARD_CLASS).forEach((card: HTMLElement): void => {
-                 card.classList.add(cls.DRAGGABLE_CLASS);
-            });
+            addClass(this.parent.element.querySelectorAll('.' + cls.CARD_CLASS), cls.DRAGGABLE_CLASS);
             this.parent.dragAndDropModule.wireDragEvents(this.parent.element.querySelector('.' + cls.CONTENT_CLASS));
         }
     }

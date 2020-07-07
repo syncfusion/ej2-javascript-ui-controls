@@ -4,8 +4,8 @@ import {
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ColorPicker } from '@syncfusion/ej2-inputs';
 import { PointModel } from '@syncfusion/ej2-drawings';
-import { PdfAnnotationBase } from '../../diagram/pdf-annotation';
-import { PdfAnnotationBaseModel } from '../../diagram/pdf-annotation-model';
+import { PdfAnnotationBase } from '../drawing/pdf-annotation';
+import { PdfAnnotationBaseModel } from '../drawing/pdf-annotation-model';
 import { AnnotationSelectorSettings } from '../pdfviewer';
 import { AnnotationSelectorSettingsModel } from '../pdfviewer-model';
 
@@ -219,7 +219,7 @@ export class FreeTextAnnotation {
         this.opacity = this.pdfViewer.freeTextSettings.opacity ? this.pdfViewer.freeTextSettings.opacity : 1;
         this.fontColor = this.pdfViewer.freeTextSettings.fontColor ? this.pdfViewer.freeTextSettings.fontColor : '#000';
         // tslint:disable-next-line:max-line-length
-        this.author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.freeTextSettings.author ? this.pdfViewer.freeTextSettings.author : 'Guest';
+        this.author = (this.pdfViewer.freeTextSettings.author !== 'Guest') ? this.pdfViewer.freeTextSettings.author : this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
         this.fontFamily = this.pdfViewer.freeTextSettings.fontFamily ? this.pdfViewer.freeTextSettings.fontFamily : 'Helvetica';
         this.textAlign = this.pdfViewer.freeTextSettings.textAlignment ? this.pdfViewer.freeTextSettings.textAlignment : 'Left';
         this.defaultText = this.pdfViewer.freeTextSettings.defaultText ? this.pdfViewer.freeTextSettings.defaultText : 'Type here';
@@ -348,13 +348,13 @@ export class FreeTextAnnotation {
                 this.currentAnnotationMode = 'FreeText';
                 this.updateTextProperties();
                 // tslint:disable-next-line:max-line-length
-                let modifiedDateRect: string = this.pdfViewer.freeTextSettings.modifiedDate ? this.pdfViewer.freeTextSettings.modifiedDate : date.toLocaleString();
+                let modifiedDateRect: string = date.toLocaleString();
                 this.pdfViewer.drawingObject = {
                     shapeAnnotationType: 'FreeText', strokeColor: this.borderColor,
                     fillColor: this.fillColor, opacity: this.opacity, notes: '',
                     thickness: this.borderWidth, borderDashArray: '0', modifiedDate: modifiedDateRect,
                     // tslint:disable-next-line:max-line-length
-                    author: this.pdfViewer.freeTextSettings.author, subject: this.pdfViewer.freeTextSettings.subject, font: { isBold: this.isBold, isItalic: this.isItalic, isStrikeout: this.isStrikethrough, isUnderline: this.isUnderline }, textAlign: this.textAlign
+                    author: this.pdfViewer.freeTextSettings.author, subject: 'Text Box', font: { isBold: this.isBold, isItalic: this.isItalic, isStrikeout: this.isStrikethrough, isUnderline: this.isUnderline }, textAlign: this.textAlign
                 };
                 this.pdfViewer.tool = 'Select';
                 break;
@@ -366,7 +366,7 @@ export class FreeTextAnnotation {
      */
     // tslint:disable-next-line
     public modifyInCollection(property: string, pageNumber: number, annotationBase: any): IFreeTextAnnotation {
-        this.pdfViewerBase.isDocumentEdited = true;
+        this.pdfViewer.isDocumentEdited = true;
         let currentAnnotObject: IFreeTextAnnotation = null;
         let pageAnnotations: IFreeTextAnnotation[] = this.getAnnotations(pageNumber, null);
         if (pageAnnotations != null && annotationBase) {
@@ -462,13 +462,14 @@ export class FreeTextAnnotation {
         for (let j: number = 0; j < this.pdfViewerBase.pageCount; j++) {
             annotations[j] = [];
         }
-        if (storeObject && this.pdfViewer.annotationSettings.isDownload) {
+        if (storeObject && !this.pdfViewer.annotationSettings.skipDownload) {
             let annotationCollection: IPageAnnotations[] = JSON.parse(storeObject);
             for (let i: number = 0; i < annotationCollection.length; i++) {
                 let newArray: IFreeTextAnnotation[] = [];
                 let pageAnnotationObject: IPageAnnotations = annotationCollection[i];
                 if (pageAnnotationObject) {
                     for (let z: number = 0; pageAnnotationObject.annotations.length > z; z++) {
+                        this.pdfViewer.annotationModule.updateModifiedDate(pageAnnotationObject.annotations[z]);
                         // tslint:disable-next-line:max-line-length
                         pageAnnotationObject.annotations[z].bounds = JSON.stringify(this.pdfViewer.annotation.getBounds(pageAnnotationObject.annotations[z].bounds, pageAnnotationObject.pageIndex));
                         let strokeColorString: string = pageAnnotationObject.annotations[z].strokeColor;
@@ -604,7 +605,7 @@ export class FreeTextAnnotation {
                     review: { state: 'Unmarked', stateModel: 'None', modifiedDate: currentDateString, author: this.author },
                     // tslint:disable-next-line:max-line-length
                     annotationSelectorSettings: annotationSelectorSettings, annotationSettings: annotationSettings,
-                    customData: this.pdfViewer.freeTextSettings.customData
+                    customData: this.pdfViewer.annotationModule.getData('FreeText')
                 };
                 if (this.pdfViewer.enableRtl) {
                     annot.textAlign = 'Right';
@@ -612,7 +613,7 @@ export class FreeTextAnnotation {
                 let annotation: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
                 // tslint:disable-next-line
                 let bounds: any = { left: annot.bounds.x, top: annot.bounds.y, width: annot.bounds.width, height: annot.bounds.height };
-                this.pdfViewerBase.isDocumentEdited = true;
+                this.pdfViewer.isDocumentEdited = true;
                 // tslint:disable-next-line
                 let settings: any = {
                     opacity: annot.opacity, borderColor: annot.strokeColor, borderWidth: annot.thickness, author: annotation.author, subject: annotation.subject, modifiedDate: annotation.modifiedDate,

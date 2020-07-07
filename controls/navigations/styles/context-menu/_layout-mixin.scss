@@ -102,12 +102,12 @@
 
 @mixin rtl-li-layout {
   & .e-menu-icon {
-    float: right;
     margin-right: 0;
   }
 
   & .e-caret {
     margin-left: 0;
+    margin-right: 16px;
     right: auto;
   }
 }
@@ -171,5 +171,29 @@
 
   &.e-menu-caret-icon {
     padding-left: $cmenu-caret-li-padding;
+  }
+}
+
+@mixin transparent-ui {
+  &.e-transparent {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    height: 1px;
+    left: 0;
+    min-width: 0;
+    padding: 0;
+    top: 0;
+    width: 0;
+
+    & .e-menu-item {
+      height: 0;
+      padding: 0;
+
+      &.e-separator {
+        border: 0;
+        margin: 0;
+      }
+    }
   }
 }

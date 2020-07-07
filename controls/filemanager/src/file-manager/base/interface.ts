@@ -21,7 +21,8 @@ export type ViewType = 'LargeIcons' | 'Details';
 /**
  * Defines the files sorting order in FileManager.
  */
-export type SortOrder = 'Ascending' | 'Descending';
+export type SortOrder = 'Ascending' |'Descending'| 'None';
+
 /**
  * Defines the Toolbar items of the FileManager.
  */
@@ -554,6 +555,7 @@ export interface IFileManager extends Component<HTMLElement> {
     enableRtl: boolean;
     rootAliasName: string;
     path: string;
+    popupTarget: HTMLElement | string;
     folderPath: string;
     showFileExtension: boolean;
     enablePersistence: boolean;

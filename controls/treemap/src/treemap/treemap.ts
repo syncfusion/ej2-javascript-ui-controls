@@ -396,6 +396,10 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     public legendRendering: EmitType<ILegendRenderingEventArgs>;
 
     /**
+     * resize the treemap
+     */
+    private isResize: boolean = false;
+    /**
      * svg renderer object.
      * @private
      */
@@ -469,14 +473,6 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     protected preRender(): void {
         this.isBlazor = isBlazor();
-        if (!this.isBlazor) {
-            this.allowPrint = true;
-            this.allowImageExport = true;
-            this.allowPdfExport = true;
-            TreeMap.Inject(Print);
-            TreeMap.Inject(PdfExport);
-            TreeMap.Inject(ImageExport);
-        }
         this.trigger(load, { treemap: this.isBlazor ? null : this }, () => {
             this.initPrivateVariable();
             this.unWireEVents();
@@ -544,7 +540,8 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
 
         this.elementChange();
 
-        this.trigger(loaded, { treemap: this.isBlazor ? null : this });
+        this.trigger(loaded, this.isBlazor ? { isResized: this.isResize } : {treemap: this, isResized: this.isResize});
+        this.isResize = false;
 
         this.renderComplete();
     }
@@ -976,6 +973,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      * @param e - Specifies the pointer event.
      */
     public resizeOnTreeMap(e: Event): void {
+        this.isResize = true;
         let args: IResizeEventArgs = {
             name: resize,
             cancel: false,

@@ -40,7 +40,7 @@ export class Year extends ViewBase implements IRenderer {
         this.columnCount = this.getRowColumnCount('column');
         this.renderHeader(calendarTBody);
         this.renderContent(calendarTBody);
-        if (this.parent.uiStateValues.isGroupAdaptive) {
+        if (this.parent.currentView !== 'Year' && this.parent.uiStateValues.isGroupAdaptive) {
             this.generateColumnLevels();
             this.renderResourceMobileLayout();
         }
@@ -98,6 +98,9 @@ export class Year extends ViewBase implements IRenderer {
         let thead: HTMLElement = createElement('thead', { className: 'e-week-header' });
         let tr: HTMLElement = createElement('tr');
         let currentWeek: Date = util.getWeekFirstDate(util.firstDateOfMonth(currentDate), this.parent.firstDayOfWeek);
+        if (this.parent.activeViewOptions.showWeekNumber) {
+            tr.appendChild(createElement('th'));
+        }
         for (let i: number = 0; i < util.WEEK_LENGTH; i++) {
             tr.appendChild(createElement('th', { innerHTML: this.parent.getDayNames('narrow')[currentWeek.getDay()] }));
             currentWeek = new Date(currentWeek.getTime() + util.MS_PER_DAY);

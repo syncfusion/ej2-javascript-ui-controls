@@ -35,6 +35,10 @@ export interface ILoadedEventArgs extends IMapsEventArgs {
      * @deprecated
      */
     maps?: Maps;
+
+     /** Defines the isResized argument.
+      */
+    isResized: boolean;
 }
 /**
  * Specifies the event argument load event in maps.

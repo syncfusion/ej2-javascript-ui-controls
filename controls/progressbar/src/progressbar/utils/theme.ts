@@ -31,10 +31,10 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
                 linearProgressThickness: 4,
                 circularTrackThickness: 4,
                 circularProgressThickness: 4,
-                success: '#4D841E',
-                danger: '#D74113',
-                warning: '#C25700',
-                info: '#0279D6',
+                success: '#4caf50',
+                danger: '#ff6652',
+                warning: '#ff9800',
+                info: '#03a9f4',
             };
             break;
         case 'Bootstrap':
@@ -60,10 +60,10 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
                 linearProgressThickness: 20,
                 circularTrackThickness: 6,
                 circularProgressThickness: 6,
-                success: '#4CB051',
-                danger: '#DC3244',
-                warning: '#AA6709',
-                info: '#1A819E',
+                success: '#48b14c',
+                danger: '#d44f4f',
+                warning: '#fac168',
+                info: '#2aaac0',
              };
             break;
         case 'Bootstrap4':
@@ -89,10 +89,10 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
                 linearProgressThickness: 16,
                 circularTrackThickness: 6,
                 circularProgressThickness: 6,
-                success: '#29A745',
-                danger: '#DC3546',
-                warning: '#FFC106',
-                info: '#17A2B8',
+                success: '#28a745',
+                danger: '#dc3545',
+                warning: '#ffc107',
+                info: '#17a2b8',
               };
             break;
         case 'HighContrast':
@@ -118,10 +118,10 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
                 linearProgressThickness: 2,
                 circularTrackThickness: 4,
                 circularProgressThickness: 4,
-                success: '#176600',
-                danger: '#B30A00',
-                warning: '#944000',
-                info: '#0156B3',
+                success: '#2bc700',
+                danger: '#ff6161',
+                warning: '#ff7d1a',
+                info: '#66b0ff',
              };
             break;
         default:
@@ -147,10 +147,10 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
                 linearProgressThickness: 2,
                 circularTrackThickness: 4,
                 circularProgressThickness: 4,
-                success: '#127C0F',
-                danger: '#C00000',
-                warning: '#D83B01',
-                info: '#0279D6',
+                success: '#166600',
+                danger: '#b30900',
+                warning: '#944000',
+                info: '#0056b3',
             };
             break;
     }

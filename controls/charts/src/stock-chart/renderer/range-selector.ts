@@ -1,11 +1,15 @@
 /**
  * Render range navigator for financial chart
  */
-import { RangeNavigator, RangeNavigatorSeriesModel, IChangedEventArgs, getElement, RangeValueType } from '../../index';
+import { RangeNavigator } from '../../range-navigator/range-navigator';
+import { RangeNavigatorSeriesModel } from '../../range-navigator/model/range-base-model';
+import { RangeValueType } from '../../range-navigator/utils/enum';
+import { IChangedEventArgs } from '../../range-navigator/model/range-navigator-interface';
 import { remove } from '@syncfusion/ej2-base';
 import { StockChart } from '../stock-chart';
 import { StockSeriesModel } from '../model/base-model';
-import { MarginModel } from '../../chart';
+import { MarginModel } from '../../common/model/base-model';
+import { getElement } from '../../common/utils/helper';
 import { IRangeChangeEventArgs } from '../model/base';
 import { Size } from '@syncfusion/ej2-svg-base';
 

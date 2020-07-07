@@ -3,9 +3,6 @@ import {
     cldrData, Internationalization, addClass, setStyleAttribute, formatUnit, isBlazor, EventHandler
 } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
-import {
-    getDateInMs, addDays, resetTime, WEEK_LENGTH, getWeekFirstDate, getOuterHeight, getScrollBarWidth, capitalizeFirstWord
-} from '../base/util';
 import { TdData, ResourceDetails } from '../base/interface';
 import * as cls from '../base/css-constant';
 import * as util from '../base/util';
@@ -36,7 +33,7 @@ export namespace ViewHelper {
         let skeleton: string = isBlazor() ? 'M' : 'MMMd';
         let text: string = proxy.globalize.formatDate(date, { skeleton: skeleton, calendar: proxy.getCalendarMode() }) + ', ' +
             proxy.getDayNames('wide')[date.getDay()];
-        return capitalizeFirstWord(text, 'multiple');
+        return util.capitalizeFirstWord(text, 'multiple');
     };
 }
 export class ViewBase {
@@ -102,7 +99,7 @@ export class ViewBase {
         prepend([colGroupEle], table);
     }
     public getScrollXIndent(content: HTMLElement): number {
-        return content.offsetHeight - content.clientHeight > 0 ? getScrollBarWidth() : 0;
+        return content.offsetHeight - content.clientHeight > 0 ? util.getScrollBarWidth() : 0;
     }
     public scrollTopPanel(target: HTMLElement): void {
         (this.getDatesHeaderElement().firstElementChild as Element).scrollLeft = target.scrollLeft;
@@ -115,22 +112,23 @@ export class ViewBase {
             let tdLeft: number = 0;
             let colSpan: number = 0;
             let hiddenLeft: number = isRtl ? target.scrollWidth - target.offsetWidth - target.scrollLeft : target.scrollLeft;
-            for (let i: number = 0; i < headerCells.length; i++) {
-                colSpan += parseInt(headerCells[i].getAttribute('colSpan'), 10);
+            for (let cell of headerCells) {
+                colSpan += parseInt(cell.getAttribute('colSpan'), 10);
                 if (colSpan > Math.floor(hiddenLeft / colWidth)) {
-                    currentCell = headerCells[i];
+                    currentCell = cell;
                     break;
                 }
-                tdLeft += headerCells[i].offsetWidth;
+                tdLeft += cell.offsetWidth;
             }
             (currentCell.children[0] as HTMLElement).style[isRtl ? 'right' : 'left'] = (hiddenLeft - tdLeft) + 'px';
         };
-        let className: string[] = ['.e-header-year-cell', '.e-header-month-cell', '.e-header-week-cell', '.e-header-cells'];
-        for (let i: number = 0; i < className.length; i++) {
-            let headerCells: HTMLElement[] = [].slice.call(this.element.querySelectorAll(className[i]));
+        let classNames: string[] = ['.e-header-year-cell', '.e-header-month-cell', '.e-header-week-cell', '.e-header-cells'];
+        for (let className of classNames) {
+            let headerCells: HTMLElement[] = [].slice.call(this.element.querySelectorAll(className));
             if (headerCells.length > 0) {
-                headerCells.forEach((element: HTMLElement) =>
-                    (element.children[0] as HTMLElement).style[this.parent.enableRtl ? 'right' : 'left'] = '');
+                for (let element of headerCells) {
+                    (element.children[0] as HTMLElement).style[this.parent.enableRtl ? 'right' : 'left'] = '';
+                }
                 applyLeft(headerCells, this.parent.enableRtl);
             }
         }
@@ -143,7 +141,7 @@ export class ViewBase {
     public getHeaderBarHeight(): number {
         let headerBarHeight: number = 2;
         if (this.parent.headerModule) {
-            headerBarHeight += getOuterHeight(this.parent.headerModule.getHeaderElement());
+            headerBarHeight += util.getOuterHeight(this.parent.headerModule.getHeaderElement());
         }
         if (this.parent.uiStateValues.isGroupAdaptive) {
             let resHeader: HTMLElement = (<HTMLElement>this.parent.element.querySelector('.' + cls.RESOURCE_HEADER_TOOLBAR));
@@ -187,7 +185,7 @@ export class ViewBase {
         return this.renderDates[0];
     }
     public endDate(): Date {
-        return addDays(this.renderDates[this.renderDates.length - 1], 1);
+        return util.addDays(this.renderDates[this.renderDates.length - 1], 1);
     }
     public getStartHour(): Date {
         let startHour: Date = this.parent.getStartEndTime(this.parent.activeViewOptions.startHour);
@@ -222,18 +220,16 @@ export class ViewBase {
         }
         startHour.setMilliseconds(0);
         endHour.setMilliseconds(0);
-        if (getDateInMs(date) < getDateInMs(startHour) || getDateInMs(date) >= getDateInMs(endHour) || !this.isWorkDay(date, workDays)) {
-            return false;
-        }
-        return true;
+        return !(util.getDateInMs(date) < util.getDateInMs(startHour) || util.getDateInMs(date) >= util.getDateInMs(endHour) ||
+            !this.isWorkDay(date, workDays));
     }
     public getRenderDates(workDays?: number[]): Date[] {
         let renderDates: Date[] = [];
         // Due to same code for vertical and time line, week & work week views, if condition has used
         if (this.parent.currentView === 'Week' || this.parent.currentView === 'TimelineWeek') {
-            let selectedDate: Date = resetTime(this.parent.selectedDate);
-            let start: Date = getWeekFirstDate(selectedDate, this.parent.activeViewOptions.firstDayOfWeek);
-            for (let i: number = 0, length: number = WEEK_LENGTH * this.parent.activeViewOptions.interval; i < length; i++) {
+            let selectedDate: Date = util.resetTime(this.parent.selectedDate);
+            let start: Date = util.getWeekFirstDate(selectedDate, this.parent.activeViewOptions.firstDayOfWeek);
+            for (let i: number = 0, length: number = util.WEEK_LENGTH * this.parent.activeViewOptions.interval; i < length; i++) {
                 if (this.parent.activeViewOptions.showWeekend) {
                     renderDates.push(start);
                 } else {
@@ -241,18 +237,18 @@ export class ViewBase {
                         renderDates.push(start);
                     }
                 }
-                start = addDays(start, 1);
+                start = util.addDays(start, 1);
             }
         } else if (this.parent.currentView === 'WorkWeek' || this.parent.currentView === 'TimelineWorkWeek') {
-            let start: Date = getWeekFirstDate(resetTime(this.parent.selectedDate), this.parent.activeViewOptions.firstDayOfWeek);
-            for (let i: number = 0, length: number = WEEK_LENGTH * this.parent.activeViewOptions.interval; i < length; i++) {
+            let start: Date = util.getWeekFirstDate(util.resetTime(this.parent.selectedDate), this.parent.activeViewOptions.firstDayOfWeek);
+            for (let i: number = 0, length: number = util.WEEK_LENGTH * this.parent.activeViewOptions.interval; i < length; i++) {
                 if (this.isWorkDay(start, workDays)) {
                     renderDates.push(start);
                 }
-                start = addDays(start, 1);
+                start = util.addDays(start, 1);
             }
         } else {
-            let start: Date = resetTime(this.parent.selectedDate);
+            let start: Date = util.resetTime(this.parent.selectedDate);
             do {
                 if (this.parent.activeViewOptions.showWeekend) {
                     renderDates.push(start);
@@ -261,7 +257,7 @@ export class ViewBase {
                         renderDates.push(start);
                     }
                 }
-                start = addDays(start, 1);
+                start = util.addDays(start, 1);
             } while (this.parent.activeViewOptions.interval !== renderDates.length);
         }
         if (!workDays) {
@@ -276,38 +272,35 @@ export class ViewBase {
         if (this.parent.currentView === 'Day' || this.parent.currentView === 'TimelineDay') {
             if (this.parent.activeViewOptions.showWeekend) {
                 let daysCount: number = this.parent.activeViewOptions.interval;
-                return addDays(this.parent.selectedDate, type === 'next' ? daysCount : -daysCount);
+                return util.addDays(this.parent.selectedDate, type === 'next' ? daysCount : -daysCount);
             } else {
                 let date: Date;
                 if (type === 'next') {
-                    date = addDays(this.renderDates.slice(-1)[0], 1);
+                    date = util.addDays(this.renderDates.slice(-1)[0], 1);
                     while (!this.isWorkDay(date)) {
-                        date = addDays(date, 1);
+                        date = util.addDays(date, 1);
                     }
                 } else {
-                    date = addDays(this.renderDates[0], -1);
+                    date = util.addDays(this.renderDates[0], -1);
                     let count: number = 0;
                     do {
                         if (this.isWorkDay(date)) {
                             count += 1;
                         }
                         if (this.parent.activeViewOptions.interval !== count) {
-                            date = addDays(date, -1);
+                            date = util.addDays(date, -1);
                         }
                     } while (this.parent.activeViewOptions.interval !== count);
                 }
                 return date;
             }
         }
-        if (type === 'next') {
-            return addDays(this.parent.selectedDate, WEEK_LENGTH * this.parent.activeViewOptions.interval);
-        } else {
-            return addDays(this.parent.selectedDate, -WEEK_LENGTH * this.parent.activeViewOptions.interval);
-        }
+        let weekLength: number = type === 'next' ? util.WEEK_LENGTH : -util.WEEK_LENGTH;
+        return util.addDays(this.parent.selectedDate, weekLength * this.parent.activeViewOptions.interval);
     }
     public getLabelText(view: string): string {
         let viewStr: string = view.charAt(0).toLowerCase() + view.substring(1);
-        return this.parent.localeObj.getConstant(viewStr) + ' of ' + capitalizeFirstWord(
+        return this.parent.localeObj.getConstant(viewStr) + ' of ' + util.capitalizeFirstWord(
             isBlazor() ?
                 this.parent.globalize.formatDate(this.parent.selectedDate, { skeleton: 'D', calendar: this.parent.getCalendarMode() }) :
                 this.parent.globalize.formatDate(this.parent.selectedDate, { skeleton: 'long', calendar: this.parent.getCalendarMode() }),
@@ -315,7 +308,7 @@ export class ViewBase {
     }
     public getDateRangeText(): string {
         if (this.parent.isAdaptive) {
-            return capitalizeFirstWord(
+            return util.capitalizeFirstWord(
                 this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM y', calendar: this.parent.getCalendarMode() }),
                 'single');
         }
@@ -331,11 +324,11 @@ export class ViewBase {
             let text: string = '';
             if (!endDate) {
                 text = globalize.formatDate(startDate, { format: this.parent.activeViewOptions.dateFormat, calendar: mode });
-                return capitalizeFirstWord(text, 'multiple');
+                return util.capitalizeFirstWord(text, 'multiple');
             }
             text = (globalize.formatDate(startDate, { format: this.parent.activeViewOptions.dateFormat, calendar: mode }) +
                 ' - ' + globalize.formatDate(endDate, { format: this.parent.activeViewOptions.dateFormat, calendar: mode }));
-            return capitalizeFirstWord(text, 'multiple');
+            return util.capitalizeFirstWord(text, 'multiple');
         }
         let formattedStr: string;
         let longDateFormat: string;
@@ -349,7 +342,7 @@ export class ViewBase {
             }
         }
         if (!endDate) {
-            return capitalizeFirstWord(globalize.formatDate(startDate, { format: longDateFormat, calendar: mode }), 'single');
+            return util.capitalizeFirstWord(globalize.formatDate(startDate, { format: longDateFormat, calendar: mode }), 'single');
         }
         let dateFormat: string = longDateFormat.trim().toLocaleLowerCase();
         if (dateFormat.substr(0, 1) === 'd') {
@@ -383,13 +376,14 @@ export class ViewBase {
             formattedStr = globalize.formatDate(startDate, { format: longDateFormat, calendar: mode }) + ' - ' +
                 globalize.formatDate(endDate, { format: longDateFormat, calendar: mode });
         }
-        return capitalizeFirstWord(formattedStr, 'multiple');
+        return util.capitalizeFirstWord(formattedStr, 'multiple');
     }
     public getMobileDateElement(date: Date, className?: string): Element {
         let wrap: Element = createElement('div', {
             className: className,
             innerHTML: '<div class="e-m-date">' + this.parent.globalize.formatDate(
-                date, { format: 'd', calendar: this.parent.getCalendarMode() }) + '</div>' + '<div class="e-m-day">' + capitalizeFirstWord(
+                date, { format: 'd', calendar: this.parent.getCalendarMode() }) + '</div>' + '<div class="e-m-day">' +
+                util.capitalizeFirstWord(
                     this.parent.globalize.formatDate(date, { format: 'E', calendar: this.parent.getCalendarMode() }), 'single') + '</div>'
         });
         return wrap;
@@ -425,8 +419,7 @@ export class ViewBase {
     }
 
     private getColElements(): HTMLElement[] {
-        return [].slice.call(this.element.querySelectorAll('.' + cls.CONTENT_WRAP_CLASS
-            + ' col, .' + cls.DATE_HEADER_WRAP_CLASS + ' col')) as HTMLElement[];
+        return [].slice.call(this.element.querySelectorAll('.' + cls.CONTENT_WRAP_CLASS + ' col, .' + cls.DATE_HEADER_WRAP_CLASS + ' col'));
     }
 
     public setColWidth(content: HTMLElement): void {
@@ -446,7 +439,9 @@ export class ViewBase {
 
     public resetColWidth(): void {
         let colElements: HTMLElement[] = this.getColElements();
-        colElements.forEach((col: HTMLElement) => col.style.width = '');
+        for (let col of colElements) {
+            col.style.width = '';
+        }
     }
 
     public getContentAreaElement(): HTMLElement {
@@ -456,10 +451,10 @@ export class ViewBase {
     public wireExpandCollapseIconEvents(): void {
         if (this.parent.resourceBase && this.parent.resourceBase.resourceCollection.length > 1) {
             let treeIcons: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.RESOURCE_TREE_ICON_CLASS));
-            treeIcons.forEach((icon: Element) => {
+            for (let icon of treeIcons) {
                 EventHandler.clearEvents(icon);
                 EventHandler.add(icon, 'click', this.parent.resourceBase.onTreeIconClick, this.parent.resourceBase);
-            });
+            }
         }
     }
 
@@ -468,9 +463,8 @@ export class ViewBase {
             return;
         }
         let scrollWrap: HTMLElement = this.getContentAreaElement();
-        let elementSelector: string =
-            `.${cls.WORK_CELLS_CLASS}[data-date="${this.parent.getMsFromDate(new Date(util.resetTime(new Date(+scrollDate)).getTime()))}"]`;
-        let dateElement: HTMLElement = scrollWrap.querySelector(elementSelector) as HTMLElement;
+        let tdDate: number = this.parent.getMsFromDate(new Date(util.resetTime(new Date(+scrollDate)).getTime()));
+        let dateElement: HTMLElement = scrollWrap.querySelector(`.${cls.WORK_CELLS_CLASS}[data-date="${tdDate}"]`) as HTMLElement;
         if (this.parent.currentView === 'Month' && dateElement) {
             scrollWrap.scrollTop = dateElement.offsetTop;
         }

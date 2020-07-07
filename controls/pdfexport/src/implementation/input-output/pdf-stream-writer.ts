@@ -640,4 +640,42 @@ export class PdfStreamWriter implements IPdfWriter {
     public get document() : PdfDocument {
         return null;
     }
+    /**
+     * `Appends a line segment`.
+     * @public
+     */
+    public appendBezierSegment(arg1 : PointF, arg2 : PointF, arg3 : PointF) : void
+    public appendBezierSegment(x1 : number, y1 : number, x2 : number, y2 : number, x3 : number, y3 : number ) : void
+    /* tslint:disable-next-line:max-line-length */
+    public appendBezierSegment(arg1 : number|PointF, arg2 : number|PointF, arg3 : number|PointF, arg4 ?: number, arg5 ?: number, arg6 ?: number ) : void {
+        if (arg1 instanceof PointF && arg2 instanceof PointF && arg3 instanceof PointF) {
+            this.writePoint(arg1.x, arg1.y);
+            this.writePoint(arg2.x, arg2.y);
+            this.writePoint(arg3.x, arg3.y);
+        } else {
+            this.writePoint(arg1 as number, arg2 as number);
+            this.writePoint(arg3 as number, arg4 as number);
+            this.writePoint(arg5 as number, arg6 as number);
+        }
+        this.writeOperator(Operators.appendbeziercurve);
+    }
+    public setColourWithPattern(colours: number[], patternName: PdfName, forStroking: boolean) : void {
+        if ((colours != null)) {
+            let count: number = colours.length;
+            let i : number = 0;
+            for (i = 0; i < count; ++i) {
+                this.stream.write(colours[i].toString());
+                this.stream.write(Operators.whiteSpace);
+            }
+        }
+        if ((patternName != null)) {
+            this.stream.write(patternName.toString());
+            this.stream.write(Operators.whiteSpace);
+        }
+        if (forStroking) {
+            this.writeOperator(Operators.setColorAndPatternStroking);
+        } else {
+            this.writeOperator(Operators.setColorAndPattern);
+        }
+    }
 }

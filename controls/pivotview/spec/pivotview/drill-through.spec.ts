@@ -82,7 +82,7 @@ describe('- Drill Through', () => {
                 expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="1"]')[2].textContent).toBe('Delhi');
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('click car-quantity-male', (done: Function) => {
             document.querySelectorAll('td[aria-colindex="5"]')[1].dispatchEvent(event);
@@ -95,7 +95,7 @@ describe('- Drill Through', () => {
                 expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[2].textContent).toBe('Car');
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('click jet-price-female', (done: Function) => {
             document.querySelectorAll('td[aria-colindex="3"]')[3].dispatchEvent(event);
@@ -108,7 +108,7 @@ describe('- Drill Through', () => {
                 expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[2].textContent).toBe('Jet');
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('click bike-quantity', (done: Function) => {
             document.querySelectorAll('td[aria-colindex="8"]')[0].dispatchEvent(event);
@@ -120,7 +120,7 @@ describe('- Drill Through', () => {
                 expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[2].textContent).toBe('Bike');
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('click female-balance', (done: Function) => {
             document.querySelectorAll('td[aria-colindex="1"]')[6].dispatchEvent(event);
@@ -132,7 +132,7 @@ describe('- Drill Through', () => {
                 expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[2].textContent).toBe('Jet');
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('click price', (done: Function) => {
             document.querySelectorAll('td[aria-colindex="9"]')[6].dispatchEvent(event);
@@ -143,14 +143,14 @@ describe('- Drill Through', () => {
                 expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[2].textContent).toBe('Car');
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('expand bike', (done: Function) => {
             (document.querySelectorAll('td[aria-colindex="0"] .e-expand')[0] as HTMLElement).click();
             setTimeout(() => {
                 expect(document.querySelectorAll('td[aria-colindex="0"]')[2].textContent).toBe('Delhi');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('click delhi-quantity-female', (done: Function) => {
             document.querySelectorAll('td[aria-colindex="2"]')[2].dispatchEvent(event);
@@ -163,14 +163,14 @@ describe('- Drill Through', () => {
                 expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[2].textContent).toBe('Bike');
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('value axis to row', (done: Function) => {
             pivotGridObj.dataSourceSettings.valueAxis = 'row';
             setTimeout(() => {
                 expect(document.querySelectorAll('td[aria-colindex="0"]')[2].textContent).toBe('quantity');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('click bike-balance-male', (done: Function) => {
             document.querySelectorAll('td[aria-colindex="2"]')[1].dispatchEvent(event);
@@ -183,14 +183,14 @@ describe('- Drill Through', () => {
                 expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[2].textContent).toBe('Bike');
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('click bike-male', (done: Function) => {
             document.querySelectorAll('td[aria-colindex="2"]')[0].dispatchEvent(event);
             setTimeout(() => {
                 expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(0);
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('value axis to column filter bike alone', (done: Function) => {
             pivotGridObj.setProperties({ dataSourceSettings: { valueAxis: 'column' } });
@@ -198,7 +198,7 @@ describe('- Drill Through', () => {
             setTimeout(() => {
                 expect(document.querySelectorAll('td[aria-colindex="0"]')[2].textContent).toBe('Delhi');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('click quantity-female', (done: Function) => {
             document.querySelectorAll('td[aria-colindex="2"]')[7].dispatchEvent(event);
@@ -210,10 +210,10 @@ describe('- Drill Through', () => {
                 expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[2].textContent).toBe('Bike');
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('click quantity-female keyboard', (done: Function) => {
-            (pivotGridObj.keyboardModule as any).keyActionHandler({ action: 'enter', target: document.querySelectorAll('td[aria-colindex="2"]')[7], preventDefault: (): void => { /** Null */ } });
+            (pivotGridObj.keyboardModule as any).keyActionHandler({ action: 'enter', keyCode: 13, target: document.querySelectorAll('td[aria-colindex="2"]')[7], preventDefault: (): void => { /** Null */ } });
             setTimeout(() => {
                 expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(1);
                 expect(document.querySelectorAll('.e-drillthrough-body-header-value')[0].textContent).toBe('female');
@@ -222,21 +222,21 @@ describe('- Drill Through', () => {
                 expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[2].textContent).toBe('Bike');
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('click bike', (done: Function) => {
             document.querySelectorAll('td[aria-colindex="0"]')[0].querySelector('.e-cellvalue').dispatchEvent(event);
             setTimeout(() => {
                 expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(0);
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('click female', (done: Function) => {
             document.querySelectorAll('th[aria-colindex="1"]')[0].querySelector('.e-stackedheadercelldiv').dispatchEvent(event);
             setTimeout(() => {
                 expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(0);
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('state no data', (done: Function) => {
             pivotGridObj.setProperties({
@@ -253,7 +253,7 @@ describe('- Drill Through', () => {
             setTimeout(() => {
                 expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(0);
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('click empty data', (done: Function) => {
             document.querySelectorAll('td[aria-colindex="1"]')[1].dispatchEvent(event);
@@ -261,7 +261,7 @@ describe('- Drill Through', () => {
                 expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(1);
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('click balance', (done: Function) => {
             document.querySelectorAll('th[aria-colindex="1"]')[1].querySelector('.e-headertext').dispatchEvent(event);
@@ -270,14 +270,14 @@ describe('- Drill Through', () => {
                 pivotGridObj.isAdaptive = true;
                 pivotGridObj.render();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('click Bike adaptive', (done: Function) => {
             document.querySelectorAll('th[aria-colindex="1"]')[0].dispatchEvent(event);
             setTimeout(() => {
                 expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(0);
                 done();
-            }, 1000);
+            }, 2000);
         });
     });
     describe('- Virtual scrolling', () => {
@@ -318,7 +318,7 @@ describe('- Drill Through', () => {
             pivotGridObj.appendTo('#PivotGrid');
         });
         beforeEach((done: Function) => {
-            setTimeout(() => { done(); }, 1000);
+            setTimeout(() => { done(); }, 2000);
         });
         let event: MouseEvent = new MouseEvent('dblclick', {
             'view': window,
@@ -339,7 +339,7 @@ describe('- Drill Through', () => {
                 expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="1"]')[2].textContent).toBe('Delhi');
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('click car-quantity-male', (done: Function) => {
             document.querySelectorAll('td[aria-colindex="5"]')[1].dispatchEvent(event);
@@ -352,7 +352,7 @@ describe('- Drill Through', () => {
                 expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[2].textContent).toBe('Car');
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('click jet-price-female', (done: Function) => {
             document.querySelectorAll('td[aria-colindex="3"]')[3].dispatchEvent(event);
@@ -365,7 +365,7 @@ describe('- Drill Through', () => {
                 expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[2].textContent).toBe('Jet');
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('click bike-quantity', (done: Function) => {
             document.querySelectorAll('td[aria-colindex="8"]')[0].dispatchEvent(event);
@@ -377,7 +377,7 @@ describe('- Drill Through', () => {
                 expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[2].textContent).toBe('Bike');
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('click female-balance', (done: Function) => {
             document.querySelectorAll('td[aria-colindex="1"]')[6].dispatchEvent(event);
@@ -389,7 +389,7 @@ describe('- Drill Through', () => {
                 expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[2].textContent).toBe('Jet');
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('click price', (done: Function) => {
             document.querySelectorAll('td[aria-colindex="9"]')[6].dispatchEvent(event);
@@ -400,14 +400,14 @@ describe('- Drill Through', () => {
                 expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[2].textContent).toBe('Car');
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('expand bike', (done: Function) => {
             (document.querySelectorAll('td[aria-colindex="0"] .e-expand')[0] as HTMLElement).click();
             setTimeout(() => {
                 expect(document.querySelectorAll('td[aria-colindex="0"]')[2].textContent).toBe('Delhi');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('click delhi-quantity-female', (done: Function) => {
             document.querySelectorAll('td[aria-colindex="2"]')[2].dispatchEvent(event);
@@ -420,14 +420,14 @@ describe('- Drill Through', () => {
                 expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[2].textContent).toBe('Bike');
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('value axis to row', (done: Function) => {
             pivotGridObj.dataSourceSettings.valueAxis = 'row';
             setTimeout(() => {
                 expect(document.querySelectorAll('td[aria-colindex="0"]')[2].textContent).toBe('quantity');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('click bike-balance-male', (done: Function) => {
             document.querySelectorAll('td[aria-colindex="2"]')[1].dispatchEvent(event);
@@ -440,14 +440,14 @@ describe('- Drill Through', () => {
                 expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[2].textContent).toBe('Bike');
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('click bike-male', (done: Function) => {
             document.querySelectorAll('td[aria-colindex="2"]')[0].dispatchEvent(event);
             setTimeout(() => {
                 expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(0);
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('value axis to column filter bike alone', (done: Function) => {
             pivotGridObj.setProperties({ dataSourceSettings: { valueAxis: 'column' } });
@@ -455,7 +455,7 @@ describe('- Drill Through', () => {
             setTimeout(() => {
                 expect(document.querySelectorAll('td[aria-colindex="0"]')[2].textContent).toBe('Delhi');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('click quantity-female', (done: Function) => {
             document.querySelectorAll('td[aria-colindex="2"]')[7].dispatchEvent(event);
@@ -467,7 +467,7 @@ describe('- Drill Through', () => {
                 expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[2].textContent).toBe('Bike');
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('filter clear expand all', (done: Function) => {
             pivotGridObj.setProperties({ dataSourceSettings: { expandAll: true } });
@@ -475,7 +475,7 @@ describe('- Drill Through', () => {
             setTimeout(() => {
                 expect(document.querySelectorAll('td[aria-colindex="0"]')[7].textContent).toBe('Vetaikan');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('scroll bottom', (done: Function) => {
             document.querySelectorAll('.e-movablecontent')[0].scrollTop = 1265;
@@ -485,22 +485,22 @@ describe('- Drill Through', () => {
             args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
             document.querySelector('.e-movablecontent').dispatchEvent(args);
             setTimeout(() => {
-                expect(document.querySelectorAll('td[aria-colindex="0"]')[1].textContent).toBe('Tamilnadu');
+                expect(document.querySelectorAll('td[aria-colindex="0"]')[1].textContent).toBe('Vetaikan');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('click delhi-quantity-female', (done: Function) => {
             document.querySelectorAll('td[aria-colindex="2"]')[19].dispatchEvent(event);
             setTimeout(() => {
                 expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(1);
-                expect(document.querySelectorAll('.e-drillthrough-body-header-value')[0].textContent).toBe('Van - Delhi');
+                expect(document.querySelectorAll('.e-drillthrough-body-header-value')[0].textContent).toBe('Tempo - New Jercy');
                 expect(document.querySelectorAll('.e-drillthrough-body-header-value')[1].textContent).toBe('female');
                 expect(document.querySelectorAll('.e-drillthrough-body-header')[2].textContent).toBe('Sum of quantity');
-                expect(document.querySelectorAll('.e-drillthrough-body-header-value')[2].textContent).toBe('52');
-                expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[2].textContent).toBe('Van');
+                expect(document.querySelectorAll('.e-drillthrough-body-header-value')[2].textContent).toBe('77');
+                expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[2].textContent).toBe('Tempo');
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
     });
 

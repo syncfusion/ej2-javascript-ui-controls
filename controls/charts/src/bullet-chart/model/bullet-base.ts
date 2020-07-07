@@ -4,7 +4,7 @@ import { BorderModel, MarginModel } from '../../common/model/base-model';
 import { Border, Font, Margin } from '../../common/model/base';
 import { Alignment, TextOverflow } from '../../common/utils/enum';
 import { BulletChartTheme } from '../utils/theme';
-import { LegendShape, LegendPosition } from '../../chart';
+import { LegendShape, LegendPosition } from '../../chart/utils/enum';
 import { Location } from '../../common/legend/legend';
 import { LocationModel } from '../../common/legend/legend-model';
 

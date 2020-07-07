@@ -625,10 +625,10 @@ let Popup = class Popup extends Component {
         else {
             let win = window;
             let windowView = {
-                top: win.pageYOffset,
-                left: win.pageXOffset,
-                right: win.pageXOffset + win.outerWidth,
-                bottom: win.pageYOffset + win.outerHeight
+                top: win.scrollY,
+                left: win.scrollX,
+                right: win.scrollX + win.outerWidth,
+                bottom: win.scrollY + win.outerHeight
             };
             let off = calculatePosition(relateToElement);
             let ele = {
@@ -1772,14 +1772,14 @@ let Dialog = class Dialog extends Component {
                 if (!isNullOrUndefined(this.btnObj)) {
                     buttonObj = this.btnObj[this.btnObj.length - 1];
                 }
+                if (!isNullOrUndefined(buttonObj) && document.activeElement === buttonObj.element && !event.shiftKey) {
+                    event.preventDefault();
+                    this.focusableElements(this.element).focus();
+                }
                 if ((isNullOrUndefined(this.btnObj)) && (!isNullOrUndefined(this.ftrTemplateContent))) {
                     let value = 'input,select,textarea,button,a,[contenteditable="true"],[tabindex]';
                     let items = this.ftrTemplateContent.querySelectorAll(value);
                     buttonObj = { element: items[items.length - 1] };
-                }
-                if (!isNullOrUndefined(buttonObj) && document.activeElement === buttonObj.element && !event.shiftKey) {
-                    event.preventDefault();
-                    this.focusableElements(this.element).focus();
                 }
                 if (document.activeElement === this.focusableElements(this.element) && event.shiftKey) {
                     event.preventDefault();
@@ -2768,14 +2768,12 @@ let Dialog = class Dialog extends Component {
         if (this.preventVisibility) {
             let eventArgs = isBlazor() ? {
                 cancel: false,
-                isInteraction: event ? true : false,
                 isInteracted: event ? true : false,
                 element: this.element,
                 container: this.isModal ? this.dlgContainer : this.element,
                 event: event
             } : {
                 cancel: false,
-                isInteraction: event ? true : false,
                 isInteracted: event ? true : false,
                 element: this.element,
                 target: this.target,
@@ -4393,7 +4391,7 @@ const CLS_SPINTEMPLATE = 'e-spin-template';
  * @param args
  * @private
  */
-function blazorSpinner(action, options, target, type) {
+function Spinner(action, options, target, type) {
     switch (action) {
         case 'Create':
             let element = document.querySelector(options.target);
@@ -4422,6 +4420,9 @@ function blazorSpinner(action, options, target, type) {
  * @private
  */
 function createSpinner(args, internalCreateElement) {
+    if (!args.target) {
+        return;
+    }
     let radius;
     let makeElement = !isNullOrUndefined(internalCreateElement) ? internalCreateElement : createElement;
     let container = create_spinner_container(args.target, makeElement);
@@ -4801,30 +4802,35 @@ function showSpinner(container) {
     container = null;
 }
 function showHideSpinner(container, isHide) {
-    let spinnerWrap = container.classList.contains(CLS_SPINWRAP) ? container :
-        container.querySelector('.' + CLS_SPINWRAP);
-    let inner = spinnerWrap.querySelector('.' + CLS_SPININWRAP);
-    let spinCheck;
-    spinCheck = isHide ? !spinnerWrap.classList.contains(CLS_SPINTEMPLATE) && !spinnerWrap.classList.contains(CLS_HIDESPIN) :
-        !spinnerWrap.classList.contains(CLS_SPINTEMPLATE) && !spinnerWrap.classList.contains(CLS_SHOWSPIN);
-    if (spinCheck) {
-        let svgEle = spinnerWrap.querySelector('svg');
-        if (isNullOrUndefined(svgEle)) {
-            return;
-        }
-        let id = svgEle.getAttribute('id');
-        globalTimeOut[id].isAnimate = !isHide;
-        switch (globalTimeOut[id].type) {
-            case 'Material':
-                isHide ? clearTimeout(globalTimeOut[id].timeOut) : startMatAnimate(inner, id, globalTimeOut[id].radius);
-                break;
-            case 'Bootstrap':
-                isHide ? clearTimeout(globalTimeOut[id].timeOut) : animateBootstrap(inner);
-                break;
-        }
+    let spinnerWrap;
+    if (container) {
+        spinnerWrap = container.classList.contains(CLS_SPINWRAP) ? container :
+            container.querySelector('.' + CLS_SPINWRAP);
     }
-    isHide ? classList(spinnerWrap, [CLS_HIDESPIN], [CLS_SHOWSPIN]) : classList(spinnerWrap, [CLS_SHOWSPIN], [CLS_HIDESPIN]);
-    container = null;
+    if (container && spinnerWrap) {
+        let inner = spinnerWrap.querySelector('.' + CLS_SPININWRAP);
+        let spinCheck;
+        spinCheck = isHide ? !spinnerWrap.classList.contains(CLS_SPINTEMPLATE) && !spinnerWrap.classList.contains(CLS_HIDESPIN) :
+            !spinnerWrap.classList.contains(CLS_SPINTEMPLATE) && !spinnerWrap.classList.contains(CLS_SHOWSPIN);
+        if (spinCheck) {
+            let svgEle = spinnerWrap.querySelector('svg');
+            if (isNullOrUndefined(svgEle)) {
+                return;
+            }
+            let id = svgEle.getAttribute('id');
+            globalTimeOut[id].isAnimate = !isHide;
+            switch (globalTimeOut[id].type) {
+                case 'Material':
+                    isHide ? clearTimeout(globalTimeOut[id].timeOut) : startMatAnimate(inner, id, globalTimeOut[id].radius);
+                    break;
+                case 'Bootstrap':
+                    isHide ? clearTimeout(globalTimeOut[id].timeOut) : animateBootstrap(inner);
+                    break;
+            }
+        }
+        isHide ? classList(spinnerWrap, [CLS_HIDESPIN], [CLS_SHOWSPIN]) : classList(spinnerWrap, [CLS_SHOWSPIN], [CLS_HIDESPIN]);
+        container = null;
+    }
 }
 /**
  * Function to hide the Spinner.
@@ -4898,5 +4904,5 @@ function replaceTheme(container, theme, cssClass, makeEle) {
  * Popup Components
  */
 
-export { PositionData, Popup, getScrollableParent, getZindexPartial, getMaxZindex, calculateRelativeBasedPosition, calculatePosition, fit, isCollide, flip, ButtonProps, AnimationSettings, Dialog, DialogUtility, Animation$1 as Animation, Tooltip, blazorSpinner, createSpinner, showSpinner, hideSpinner, setSpinner };
+export { PositionData, Popup, getScrollableParent, getZindexPartial, getMaxZindex, calculateRelativeBasedPosition, calculatePosition, fit, isCollide, flip, ButtonProps, AnimationSettings, Dialog, DialogUtility, Animation$1 as Animation, Tooltip, Spinner, createSpinner, showSpinner, hideSpinner, setSpinner };
 //# sourceMappingURL=ej2-popups.es2015.js.map

@@ -2,24 +2,25 @@ import { Component, INotifyPropertyChanged, Property, Complex, Collection, Inter
 import { Browser, EmitType, remove, Event, EventHandler } from '@syncfusion/ej2-base';
 import { DataManager } from '@syncfusion/ej2-data';
 import { StockChartModel } from './stock-chart-model';
-import { Chart } from '../chart/index';
-import { RangeNavigator, IThemeStyle, appendChildElement, redrawElement, Series } from '../index';
+import { Chart, ZoomSettings, CrosshairSettings } from '../chart/chart';
+import { ZoomSettingsModel, CrosshairSettingsModel } from '../chart/chart-model';
+import { appendChildElement, redrawElement, titlePositionX, textElement } from '../common/utils/helper';
+import { Axis } from '../chart/axis/axis';
+import { Series } from '../chart/series/chart-series';
 import { Size, Rect, TextOption, measureText, SvgRenderer } from '@syncfusion/ej2-svg-base';
-import { Axis } from '../chart/index';
 import { Periods } from '../common/model/base';
 import { IRangeSelectorRenderEventArgs, ITooltipRenderEventArgs, IMouseEventArgs, IPointEventArgs } from '../chart/model/chart-interface';
 import { IAxisLabelRenderEventArgs, ISeriesRenderEventArgs, IZoomingEventArgs  } from '../chart/model/chart-interface';
 import { PeriodsModel } from '../common/model/base-model';
-import { ChartTheme } from '../chart/index';
-import { CrosshairSettings, CrosshairSettingsModel, TooltipSettings, TooltipSettingsModel } from '../chart/index';
-import { ZoomSettings, ZoomSettingsModel } from '../chart/index';
+import { TooltipSettings } from '../common/model/base';
+import { TooltipSettingsModel } from '../common/model/base-model';
 import { calculateSize, getElement } from '../common/utils/helper';
-import { getRangeValueXByPoint } from '../range-navigator/index';
+import { RangeNavigator } from '../range-navigator/range-navigator';
+import { getRangeValueXByPoint } from '../range-navigator/utils/helper';
 import { PeriodSelector } from '../common/period-selector/period-selector';
 import { CartesianChart } from './renderer/cartesian-chart';
 import { RangeSelector } from './renderer/range-selector';
 import { ToolBarSelector } from './renderer/toolbar-selector';
-import { SelectionMode } from '../index';
 import { StockMargin, StockChartArea, StockChartAxis, StockChartRow, StockChartIndexes, StockEventsSettings } from './model/base';
 import { StockSeries, IStockChartEventArgs, StockChartIndicator, StockChartBorder, IRangeChangeEventArgs } from './model/base';
 import { StockChartAnnotationSettings, IStockEventRenderArgs, } from './model/base';
@@ -28,10 +29,11 @@ import { StockChartFont } from './model/base';
 import { StockSeriesModel, StockChartIndicatorModel, StockChartAxisModel, StockChartRowModel } from './model/base-model';
 import { StockChartIndexesModel, StockChartFontModel, StockChartAreaModel, StockEventsSettingsModel } from './model/base-model';
 import { StockChartBorderModel, StockMarginModel } from './model/base-model';
-import { ChartSeriesType, ExportType, TrendlineTypes, TechnicalIndicators } from '../index';
-import { textElement, titlePositionX, Alignment } from '../index';
+import { ChartSeriesType, TrendlineTypes, TechnicalIndicators, ChartTheme, SelectionMode } from '../chart/utils/enum';
+import { ExportType, Alignment } from '../common/utils/enum';
 import { getThemeColor } from '../common/model/theme';
 import { StockEvents } from './renderer/stock-events';
+import { IThemeStyle } from '../chart/model/chart-interface';
 
 /**
  * Stock Chart

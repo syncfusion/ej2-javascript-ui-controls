@@ -2,7 +2,8 @@
 @include export-module('spreadsheet-layout') {
   /*! spreadsheet layout */
   #{&}.e-spreadsheet {
-    display: block;
+    display: flex;
+    flex-direction: column;
     user-select: none;
 
     & .e-protect-dlg {
@@ -271,8 +272,11 @@
           }
 
           & .e-hyperlink {
-            color: $hyper-link-color;
             cursor: pointer;
+          }
+
+          & .e-hyperlink-style {
+            color: $hyper-link-color;
             text-decoration: underline;
           }
 
@@ -286,7 +290,27 @@
               width: 100%;
             }
           }
+
+          & .e-cf-databar {
+            position: relative;
+            z-index: 1;
+
+            .e-databar {
+              margin-top: 1px;
+              position: absolute;
+              z-index: -1;
+            }
         }
+
+          .e-iconsetspan {
+            float: left;
+            height: 15px;
+            position: relative;
+            vertical-align: bottom;
+            width: 15px;
+            z-index: 2;
+        }
+    }
 
         & .e-header-cell {
           font-size: 12px;
@@ -352,6 +376,54 @@
       .e-zero-end .e-cell  {
         border-bottom-width: 0;
       }
+    }
+
+    & .e-sheet-content .e-ss-overlay {
+      background-repeat: no-repeat;
+      left: 0;
+      position: absolute;
+      top: 0;
+      z-index: 1;
+    }
+
+    & .e-sheet-content .e-ss-overlay-active .e-ss-overlay-t {
+      background-color: $selection-border-color;
+      cursor: ns-resize;
+      position: absolute;
+      right: 50%;
+      top: 0;
+      transform: translate(-50%, -50%);
+    }
+
+    & .e-sheet-content .e-ss-overlay-active .e-ss-overlay-r {
+      background-color: $selection-border-color;
+      cursor: ew-resize;
+      position: absolute;
+      right: -8px;
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    & .e-sheet-content .e-ss-overlay-active .e-ss-overlay-b {
+      background-color: $selection-border-color;
+      cursor: ns-resize;
+      position: absolute;
+      right: 50%;
+      top: 100%;
+      transform: translate(-50%, -50%);
+    }
+
+    & .e-sheet-content .e-ss-overlay.e-ss-overlay-active {
+      border: 1px solid $selection-border-color;
+      cursor: move;
+    }
+
+    & .e-sheet-content .e-ss-overlay-active .e-ss-overlay-l {
+      background-color: $selection-border-color;
+      cursor: ew-resize;
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%);
     }
 
     & .e-column-header .e-table tr .e-header-cell.e-colresize {
@@ -958,6 +1030,8 @@
     }
 
     .e-sheet-panel {
+      flex-grow: 1;
+      overflow-y: hidden;
       position: relative;
 
       &.e-protected {
@@ -1033,6 +1107,30 @@
           float: left;
           margin-left: 0;
         }
+      }
+    }
+
+    & .e-conditionalformatting-dlg {
+      & .e-input,
+      & .e-input-group {
+        height: 34px;
+      }
+
+      & .e-cfmain {
+        margin-bottom: 22px;
+      }
+
+      & .e-header {
+        display: block;
+        margin-bottom: 6px;
+      }
+
+      & .e-header-2 {
+        margin-top: 10px;
+      }
+
+      & .e-top-header {
+        font-weight: bold;
       }
     }
 
@@ -1406,6 +1504,193 @@
           }
         }
       }
+    }
+
+    &.e-popup.e-menu-popup.e-cf-menu ul {
+      padding: 0;
+    }
+
+    &.e-popup.e-menu-popup.e-databars ul {
+      min-width: 110px;
+      overflow: visible;
+      padding: 0;
+
+      & .e-menu-item {
+        background-color: $cell-background;
+        height: auto;
+        line-height: 0;
+        padding: 0;
+
+        & .e-db {
+          height: auto;
+          width: auto;
+
+          & .e-bdatabar,
+          & .e-gdatabar,
+          & .e-rdatabar,
+          & .e-odatabar,
+          & .e-lbdatabar,
+          & .e-pdatabar {
+            height: 40px;
+            width: 40px;
+          }
+
+          & .e-databar-icon {
+            background-position: center;
+            float: left;
+          }
+
+          & .e-db1 {
+            height: 40px;
+          }
+
+          & .e-db2 {
+            height: 40px;
+          }
+        }
+      }
+    }
+
+    &.e-popup.e-menu-popup.e-colorscales ul {
+      min-width: 150px;
+      overflow: visible;
+      padding: 0;
+
+      & .e-menu-item {
+        background-color: $cell-background;
+        height: auto;
+        line-height: 0;
+        padding: 0;
+
+        & .e-cs {
+          height: auto;
+          width: auto;
+
+          & .e-gyr,
+          & .e-ryg,
+          & .e-gwr,
+          & .e-rwg,
+          & .e-bwr,
+          & .e-rwb,
+          & .e-wr,
+          & .e-rw,
+          & .e-gw,
+          & .e-wg,
+          & .e-gy,
+          & .e-yg {
+            height: 40px;
+            width: 40px;
+          }
+
+          & .e-colorscale-icon {
+            background-position: center;
+            float: left;
+          }
+
+          & .e-cs1 {
+            height: 40px;
+            }
+
+          & .e-cs2 {
+            height: 40px;
+            }
+
+          & .e-cs3 {
+            height: 40px;
+            }
+          }
+        }
+      }
+
+    &.e-popup.e-menu-popup.e-iconsets ul {
+      min-width: 250px;
+      overflow: visible;
+      padding: 0;
+
+      & .e-menu-item {
+        height: auto;
+        line-height: 0;
+        padding: 0;
+
+        & .e-is {
+          height: 550px;
+          width: auto;
+
+          & .e-is1,
+          & .e-is3,
+          & .e-is5,
+          & .e-is7 {
+            height: 6%;
+            padding: 18px 16px;
+        }
+
+          & .e-iconsetspan {
+            display: inline-block;
+            height: 100%;
+            width: 20%;
+            }
+
+          & .e-is2 {
+            height: 25.3%;
+
+            & .e-3arrows,
+            & .e-3arrowsgray,
+            & .e-3triangles,
+            & .e-4arrowsgray,
+            & .e-4arrows,
+            & .e-5arrowsgray,
+            & .e-5arrows {
+              float: left;
+              height: 25%;
+              padding: 2px 12px;
+              width: 50%;
+           }
+        }
+
+
+          & .e-is4 {
+            height: 19%;
+
+            & .e-3trafficlights,
+            & .e-3rafficlights2,
+            & .e-3signs,
+            & .e-4trafficlights,
+            & .e-4redtoblack {
+              float: left;
+              height: 33%;
+              padding: 2px 12px;
+              width: 50%;
+       }
+    }
+
+          & .e-is6 {
+            height: 12.6%;
+
+            & .e-3symbols,
+            & .e-3symbols2,
+            & .e-3flags {
+              float: left;
+              height: 50%;
+              padding: 2px 12px;
+              width: 50%;
+              }
+        }
+
+          & .e-is8 {
+            height: 19%;
+
+            & .e-3stars,
+            & .e-4rating,
+            & .e-5quarters,
+            & .e-5rating,
+            & .e-5boxes {
+              float: left;
+              height: 33%;
+              width: 50%;
+            }
+           }
+          }
+        }
     }
 
     &.e-popup.e-menu-popup.e-border-color ul {

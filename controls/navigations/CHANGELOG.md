@@ -2,19 +2,20 @@
 
 ## [Unreleased]
 
-### Sidebar
-
-#### Bug Fixes
-
-- `#272991` - The issue with "Unable to use the same target for more than one Sidebar component" has been resolved.
-
-## 18.1.55 (2020-06-02)
+## 18.2.44 (2020-07-07)
 
 ### Menu
 
 #### Bug Fixes
 
-- Issue with Menu closing when collision occurred.
+- An issue with menu selection has been fixed.
+- An issue with hamburger mode has been fixed.
+
+### Context Menu
+
+#### Bug Fixes
+
+- An issue with sub menu after preventing first sub menu has been fixed.
 
 ### Accordion
 
@@ -41,6 +42,12 @@
 #### Bug Fixes
 
 - `#276986` - Now, the previous state will be restored in the TreeView when the CRUD operation is failed at the server side.
+
+### Sidebar
+
+#### Bug Fixes
+
+- `#272991` - The issue with "Unable to use the same target for more than one Sidebar component" has been resolved.
 
 ## 18.1.54 (2020-05-26)
 

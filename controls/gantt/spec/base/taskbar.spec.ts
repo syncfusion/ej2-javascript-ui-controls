@@ -159,7 +159,7 @@ describe('Gantt taskbar rendering', () => {
                 expect((ganttObj.element.querySelector('.' + cls.chartRow) as HTMLElement).offsetHeight).toBe(50);
                 expect((ganttObj.element.querySelector('.' + cls.taskBarMainContainer) as HTMLElement).offsetHeight).toBe(40);
                 expect((ganttObj.element.querySelector('.' + cls.baselineBar) as HTMLElement).style.backgroundColor).toBe("blue");
-                expect((ganttObj.element.querySelector('.' + cls.baselineMilestoneTop) as HTMLElement).style.borderBottomColor).toBe("rgb(0, 0, 255)");
+                expect((ganttObj.element.querySelector('.' + cls.baselineMilestoneTop) as HTMLElement).style.borderBottomColor).toBe("blue");
                 expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.leftLabelContainer).textContent).toBe('80');
                 expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.rightLabelContainer).textContent).toBe('Robert King');
                 expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.taskLabel).textContent).toBe('2');

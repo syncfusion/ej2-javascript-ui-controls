@@ -16,6 +16,7 @@ export class Views extends ChildProperty<Views> {
      * * Week
      * * WorkWeek
      * * Month
+     * * Year
      * * Agenda
      * * MonthAgenda
      * * TimelineDay
@@ -152,7 +153,6 @@ export class Views extends ChildProperty<Views> {
      *  this property. It usually accepts the integer values, whereby 0 is always denoted as Sunday, 1 as Monday and so on.
      * @default 0
      * @blazorType double?
-     * @aspDefaultValue null
      */
     @Property(0)
     public firstDayOfWeek: number;

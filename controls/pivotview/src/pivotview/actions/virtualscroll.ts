@@ -1,4 +1,4 @@
-import { EventHandler, setStyleAttribute, isBlazor } from '@syncfusion/ej2-base';
+import { EventHandler, setStyleAttribute, isBlazor, KeyboardEvents, KeyboardEventArgs, } from '@syncfusion/ej2-base';
 import { PivotView } from '../base/pivotview';
 import { contentReady } from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
@@ -17,6 +17,7 @@ export class VirtualScroll {
     private engineModule: PivotEngine | OlapEngine;
     /** @hidden */
     public direction: string;
+    private keyboardEvents: KeyboardEvents;
 
     /**
      * Constructor for PivotView scrolling.
@@ -49,7 +50,7 @@ export class VirtualScroll {
         EventHandler.clearEvents(fCont);
         if (this.engineModule) {
             EventHandler.add(mCont, 'scroll touchmove pointermove', this.onHorizondalScroll(mHdr, mCont, fCont), this);
-            EventHandler.add(mCont, 'scroll wheel touchmove pointermove', this.onVerticalScroll(fCont, mCont), this);
+            EventHandler.add(mCont, 'scroll wheel touchmove pointermove keyup keydown', this.onVerticalScroll(fCont, mCont), this);
             EventHandler.add(mCont, 'mouseup touchend', this.common(mHdr, mCont, fCont), this);
             EventHandler.add(fCont, 'wheel', this.onWheelScroll(mCont, fCont), this);
             EventHandler.add(fCont, 'touchstart pointerdown', this.setPageXY(), this);
@@ -59,7 +60,6 @@ export class VirtualScroll {
         }
         this.parent.grid.isPreventScrollEvent = true;
     }
-
     private onWheelScroll(mCont: HTMLElement, fCont: HTMLElement): Function {
         let element: HTMLElement = mCont;
         return (e: WheelEvent) => {
@@ -331,9 +331,9 @@ export class VirtualScroll {
 
     private onVerticalScroll(fCont: HTMLElement, mCont: HTMLElement): Function {
         let timeOutObj: any;
-        return (e: Event) => {
+        return (e: Event | KeyboardEventArgs) => {
             let top: number = mCont.scrollTop * this.parent.verticalScrollScale;
-            if (e.type === 'wheel' || e.type === 'touchmove' || this.eventType === 'wheel' || this.eventType === 'touchmove') {
+            if (e.type === 'wheel' || e.type === 'touchmove' || this.eventType === 'wheel' || this.eventType === 'touchmove' || e.type === 'keyup' || e.type === 'keydown') {
                 clearTimeout(timeOutObj);
                 timeOutObj = setTimeout(() => {
                     this.update(null, mCont, mCont.scrollTop * this.parent.verticalScrollScale,

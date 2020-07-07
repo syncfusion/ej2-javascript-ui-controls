@@ -35,6 +35,7 @@ import { ExportType } from '../circular-gauge/utils/enum';
 import { PdfExport } from  './model/pdf-export';
 import { ImageExport } from './model/image-export';
 import { Print } from './model/print';
+import { Gradient } from './axes/gradient';
 
 /**
  * Represents the circular gauge control.
@@ -83,6 +84,12 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
      * Sets and gets the module that is used to manipulate and add legend to the circular gauge.
      */
     public legendModule: Legend;
+
+    /**
+     * Sets and gets the module that enables the gradient option for pointer and ranges.
+     * @private
+     */
+    public gradientModule: Gradient;
 
     /**
      * Sets and gets the width of the circular gauge as a string in order to provide input as both like '100px' or '100%'.
@@ -441,6 +448,11 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /** @private Mouse position y */
     public mouseY: number;
 
+    /**
+     * @private
+     */
+    public gradientCount: number = 0;
+
 
     /**
      * Constructor for creating the widget
@@ -456,14 +468,6 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     //tslint:disable
     protected preRender(): void {
         this.isBlazor = isBlazor();
-        if (!this.isBlazor) {
-            this.allowPrint = true;
-            this.allowImageExport = true;
-            this.allowPdfExport = true;
-            CircularGauge.Inject(Print);
-            CircularGauge.Inject(PdfExport);
-            CircularGauge.Inject(ImageExport);
-        }
         this.unWireEvents();
         this.trigger(load, this.isBlazor ? null : { gauge: this });
         this.initPrivateVariable();
@@ -1324,6 +1328,10 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
                 args: [this, Legend]
             });
         }
+            modules.push({
+                member: 'Gradient',
+                args: [this, Gradient]
+            }); 
         return modules;
     }
 

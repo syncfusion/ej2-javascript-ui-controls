@@ -6,7 +6,8 @@ import {NavigationPane} from '../../../src/file-manager/layout/navigation-pane';
 import {DetailsView} from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { createElement } from '@syncfusion/ej2-base';
-import { toolbarItems1, data1, data16, idData1, idData2, idData3 } from '../data';
+import {  BeforePopupOpenCloseEventArgs } from '../../../src/file-manager/base/interface';
+import { toolbarItems1, data1, data16, idData1, idData2, idData3, descendingData, ascendingData, noSorting, doubleClickRead2, multiCopySuccess1, multiItemCopyRead3, multiCopySuccess2, data2, uploadData1, getMultipleDetails, multiItemCopyRead2, singleSelectionDetails } from '../data';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
 
@@ -548,6 +549,439 @@ describe('FileManager control LargeIcons view', () => {
                 expect(li[4].getAttribute('aria-selected')).toEqual('true');
                 done();
             }, 400);
+        });
+
+        it('for sorting - Default value', (done) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                sortOrder: 'Ascending'
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(ascendingData)
+            });
+            setTimeout(function () {
+                expect(document.getElementById('file_largeicons').querySelectorAll('.e-list-text').length).toEqual(3);
+                expect(document.getElementById('file_largeicons').querySelectorAll('.e-list-text')[0].textContent).toBe('Apple');
+                expect(document.getElementById('file_largeicons').querySelectorAll('.e-list-text')[1].textContent).toBe('Music');
+                done();
+            }, 400);
+        });
+
+        it('for sorting - Descending value', (done) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                sortOrder: 'Descending'
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(descendingData)
+            });
+            setTimeout(function () {
+                expect(document.getElementById('file_largeicons').querySelectorAll('.e-list-text').length).toEqual(3);
+                expect(document.getElementById('file_largeicons').querySelectorAll('.e-list-text')[0].textContent).toBe('Videos');
+                expect(document.getElementById('file_largeicons').querySelectorAll('.e-list-text')[2].textContent).toBe('Apple');
+                done();
+            },400);
+        });
+        it('for sorting - None value', (done) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                sortOrder: 'None'
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(noSorting)
+            });
+            setTimeout(function () {
+                expect(document.getElementById('file_largeicons').querySelectorAll('.e-list-text').length).toEqual(3);
+                expect(document.getElementById('file_largeicons').querySelectorAll('.e-list-text')[0].textContent).toBe('Music');
+                expect(document.getElementById('file_largeicons').querySelectorAll('.e-list-text')[1].textContent).toBe('Videos');
+                done();
+            },400);
+        });
+    });
+    describe('popupTarget property testing', () => {
+        let mouseEventArgs: any, tapEvent: any;
+        let feObj: FileManager;
+        let ele: HTMLElement;
+        let target: any;
+        let j:number=0;
+        let name: string = null;
+        let dblclickevent: any;
+        let originalTimeout: any;
+        beforeEach((done) => {
+           j= 0; name = null;
+            jasmine.Ajax.install();
+            ele = createElement('div', { id: 'file' });
+            document.body.appendChild(ele);
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+                popupTarget: 'BODY',
+                beforePopupOpen: (args: BeforePopupOpenCloseEventArgs) => {
+                    expect(args.popupName).toBe(name);
+                    target = args.popupModule.target;
+                    j++;
+                },
+                rootAliasName: "My Drive"
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
+            mouseEventArgs = {
+                preventDefault: (): void => { },
+                stopImmediatePropagation: (): void => { },
+                target: null,
+                type: null,
+                shiftKey: false,
+                ctrlKey: false,
+                originalEvent: { target: null }
+            };
+            dblclickevent = new MouseEvent('dblclick', {
+                'view': window,
+                'bubbles': true,
+                'cancelable': true
+            });
+            tapEvent = {
+                originalEvent: mouseEventArgs,
+                tapCount: 1
+            };
+            setTimeout(function () {
+                let menuObj: any = (document.getElementById(feObj.element.id + '_contextmenu') as any).ej2_instances[0];
+                menuObj.animationSettings = { effect: 'None' };
+                menuObj.dataBind();
+                done();
+            }, 500);
+        });
+        afterEach(() => {
+            jasmine.Ajax.uninstall();
+            if (feObj) feObj.destroy();
+            ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        });
+        it('for BeforeOpen cancel testing', () => {
+            name = 'Create Folder';
+            feObj.beforePopupOpen = (args: BeforePopupOpenCloseEventArgs) => { args.cancel = true; j++; target = args.popupModule.target }
+            let item: any = document.getElementById('file_tb_newfolder');
+            item.click();
+            expect(target).toBe('BODY');
+            expect(target).not.toBe('#' + feObj.element.id);
+            expect(j).toBe(1);
+        });
+
+        it('for create folder', () => {
+            name = 'Create Folder';
+            let item: any = document.getElementById('file_tb_newfolder');
+            item.click();
+            item = document.getElementById('file_dialog').querySelector('.e-dlg-closeicon-btn');
+            item.click();
+            expect(target).toBe('BODY');
+            expect(target).not.toBe('#' + feObj.element.id);
+        });
+
+        it('for Rename', () => {
+            feObj.selectedItems = ['Food']
+            name = 'Rename';
+            let item: any = document.getElementById('file_tb_rename');
+            item.click();
+            item = document.getElementById('file_dialog').querySelector('.e-dlg-closeicon-btn');
+            item.click();
+            expect(j).toBe(1);
+            expect(target).toBe('BODY');
+            expect(target).not.toBe('#' + feObj.element.id);
+        });
+
+        it('for Delete', () => {
+            feObj.selectedItems = ['Food']
+            name = 'Delete';
+            let item: any = document.getElementById('file_tb_delete');
+            item.click();
+            item = document.getElementById('file_dialog').querySelector('.e-dlg-closeicon-btn');
+            item.click();
+            expect(j).toBe(1);
+            expect(target).toBe('BODY');
+            expect(target).not.toBe('#' + feObj.element.id);
+        });
+
+        it('for Duplicate Items testing', (done) => {
+            name = 'Duplicate Items';
+            let Li: any = document.getElementById('file_largeicons').querySelectorAll('li')[4].querySelector('.e-frame.e-icons');
+            mouseEventArgs.target = Li;
+            tapEvent.tapCount = 1;
+            (<any>feObj.largeiconsviewModule).clickObj.tap(tapEvent);
+            Li = document.getElementById('file_largeicons').querySelectorAll('li')[0].querySelector('.e-frame.e-icons');
+            mouseEventArgs.target = Li;
+            tapEvent.tapCount = 1;
+            (<any>feObj.largeiconsviewModule).clickObj.tap(tapEvent);
+            Li = document.getElementById('file_largeicons').querySelectorAll('li')[1].querySelector('.e-frame.e-icons');
+            mouseEventArgs.target = Li;
+            tapEvent.tapCount = 1;
+            (<any>feObj.largeiconsviewModule).clickObj.tap(tapEvent);
+            (<HTMLElement>document.getElementsByClassName('e-fe-cut')[0]).click();
+            expect(document.getElementById('file_largeicons').querySelectorAll('li')[4].classList.contains('e-blur')).toBe(true);
+            expect(document.getElementById('file_largeicons').querySelectorAll('li')[0].classList.contains('e-blur')).toBe(true);
+            mouseEventArgs.target = document.getElementById('file_largeicons').querySelectorAll('li')[2];
+            tapEvent.tapCount = 2;
+            (<any>feObj.largeiconsviewModule).clickObj.tap(tapEvent);
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(doubleClickRead2)
+            });
+            setTimeout(function () {
+                expect(document.getElementById('file_largeicons').querySelectorAll('li').length).toBe(5);
+                (<HTMLElement>document.getElementsByClassName('e-fe-paste')[0]).click();
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(multiCopySuccess1)
+                });
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(multiItemCopyRead3)
+                });
+                setTimeout(function () {
+                    expect(document.getElementById('file_largeicons').querySelectorAll('li').length).toBe(6);
+                    expect(document.getElementById('file_extn_dialog').querySelectorAll('button').length).toBe(3);
+                    document.getElementById('file_extn_dialog').querySelectorAll('button')[2].click();
+                    document.getElementById('file_extn_dialog').querySelectorAll('button')[1].click();
+                    this.request = jasmine.Ajax.requests.mostRecent();
+                    this.request.respondWith({
+                        status: 200,
+                        responseText: JSON.stringify(multiCopySuccess2)
+                    });
+                    this.request = jasmine.Ajax.requests.mostRecent();
+                    this.request.respondWith({
+                        status: 200,
+                        responseText: JSON.stringify(multiItemCopyRead2)
+                    });
+                    setTimeout(function () {
+                        expect(document.getElementById('file_largeicons').querySelectorAll('li').length).toBe(7);
+                        expect(j).toBe(1);
+                        expect(target).toBe('BODY');
+                        expect(target).not.toBe('#' + feObj.element.id);
+                        done();
+                    }, 500);
+                }, 500);
+            }, 500);
+        });
+
+        it('for upload and for Upload retry', (done) => {
+            name = 'Upload';
+            expect(document.getElementById('file_largeicons').querySelectorAll('li').length).toBe(5);
+            let fileObj: File = new File(["Nice One"], "sample.txt", { lastModified: 0, type: "overide/mimetype" })
+            let eventArgs: any = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+            let uploadObj: any = document.querySelector('#' + feObj.element.id + '_upload');
+            uploadObj.ej2_instances[0].onSelectFiles(eventArgs);
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify('')
+            });
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(uploadData1)
+            });
+            setTimeout(function () {
+                (<HTMLElement>document.querySelector('.e-dlg-closeicon-btn')).click();
+                expect(document.getElementById('file_largeicons').querySelectorAll('li').length).toBe(6);
+                uploadObj.ej2_instances[0].onSelectFiles(eventArgs);
+                name = 'Retry Upload';
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 400,
+                    statusText: "File already exists",
+                });
+                setTimeout(function () {
+                    expect(document.querySelector('.e-file-status').textContent).toBe('File already exists');
+                    expect((<any>feObj.extDialogObj).btnObj[1].element.textContent).toBe('Replace');
+                    (<any>feObj.extDialogObj).btnObj[1].element.click()
+                    this.request = jasmine.Ajax.requests.mostRecent();
+                    this.request.respondWith({
+                        status: 200,
+                        responseText: JSON.stringify('')
+                    });
+                    this.request = jasmine.Ajax.requests.mostRecent();
+                    this.request.respondWith({
+                        status: 200,
+                        responseText: JSON.stringify(uploadData1)
+                    });
+                    setTimeout(function () {
+                        name = 'Upload';
+                        (<HTMLElement>document.querySelector('.e-dlg-closeicon-btn')).click();
+                        expect(document.getElementById('file_largeicons').querySelectorAll('li').length).toBe(6);
+                        expect(j).toBe(3);
+                        expect(target).toBe('BODY');
+                        expect(target).not.toBe('#' + feObj.element.id);
+                        done();
+                    }, 500);
+                }, 500);
+            }, 500);
+        });
+
+        it('for details', (done: Function) => {
+            name = 'File Details';
+            let Li: any = document.getElementById('file_largeicons').querySelectorAll('li')[1].querySelector('.e-frame.e-icons');
+            mouseEventArgs.target = Li;
+            tapEvent.tapCount = 1;
+            (<any>feObj.largeiconsviewModule).clickObj.tap(tapEvent);
+            let items: any = document.getElementById('file_tb_details');
+            items.click();
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(singleSelectionDetails)
+            });
+            setTimeout(function () {
+                expect(document.getElementById('file_dialog_title').textContent).toBe('Documents');
+                expect((<any>document.querySelectorAll('.e-fe-value')[0]).textContent).toBe('Folder');
+                let item: any = document.getElementById('file_dialog').querySelector('.e-dlg-closeicon-btn');
+                item.click();
+                expect(j).toBe(1);
+                expect(target).toBe('BODY');
+                expect(target).not.toBe('#' + feObj.element.id);
+                done();
+            }, 500);
+        });
+
+        it('for Extension', () => {
+            name = 'Rename'
+            let Li: any = document.getElementById('file_largeicons').querySelectorAll('li')[4].querySelector('.e-frame.e-icons');
+            mouseEventArgs.target = Li;
+            tapEvent.tapCount = 1;
+            (<any>feObj.largeiconsviewModule).clickObj.tap(tapEvent);
+            let items: any = document.getElementsByClassName('e-fe-rename');
+            items[0].click();
+            let ntr: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-text');
+            expect(ntr.length).toEqual(5);
+            expect(ntr[4].textContent).toBe("1.png");
+            (<HTMLInputElement>document.getElementById('rename')).value = "1.pnga";
+            name = 'Extension Change';
+            (<HTMLElement>document.getElementById('file_dialog').querySelectorAll('.e-btn')[1]).click();
+            let item: any = document.getElementById('file_extn_dialog').querySelector('.e-dlg-closeicon-btn');
+            item.click();
+            name = 'Rename'
+            item = document.getElementById('file_dialog').querySelector('.e-dlg-closeicon-btn');
+            item.click();
+            expect(j).toBe(2);
+            expect(target).toBe('BODY');
+            expect(target).not.toBe('#' + feObj.element.id);
+        });
+
+        it('for Error', (done) => {
+            name = 'Error';
+            let item: any = document.getElementById('file_tb_refresh');
+            item.click();
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data2)
+            });
+            setTimeout(function () {
+                item = document.getElementById('file_dialog').querySelector('.e-dlg-closeicon-btn');
+                item.click();
+                expect(j).toBe(1);
+                expect(target).toBe('BODY');
+                expect(target).not.toBe('#' + feObj.element.id);
+                done();
+            }, 500);
+        });
+
+        it('for continous multiple dialogs', (done) => {
+            name = 'Error';
+            let item: any = document.getElementById('file_tb_refresh');
+            item.click();
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data2)
+            });
+            setTimeout(function () {
+                item = document.getElementById('file_dialog').querySelector('.e-dlg-closeicon-btn');
+                item.click();
+                expect(j).toBe(1);
+                expect(target).toBe('BODY');
+                expect(target).not.toBe('#' + feObj.element.id);
+                name = 'Create Folder';
+                item = document.getElementById('file_tb_newfolder');
+                item.click();
+                item = document.getElementById('file_dialog').querySelector('.e-dlg-closeicon-btn');
+                item.click();
+                expect(j).toBe(2);
+                expect(target).toBe('BODY');
+                expect(target).not.toBe('#' + feObj.element.id);
+                feObj.selectedItems = ['Food'];
+                name = 'Rename';
+                item = document.getElementById('file_tb_rename');
+                item.click();
+                item = document.getElementById('file_dialog').querySelector('.e-dlg-closeicon-btn');
+                item.click();
+                expect(j).toBe(3);
+                expect(target).toBe('BODY');
+                expect(target).not.toBe('#' + feObj.element.id);
+                feObj.selectedItems = ['Food'];
+                name = 'Delete';
+                item = document.getElementById('file_tb_delete');
+                item.click();
+                item = document.getElementById('file_dialog').querySelector('.e-dlg-closeicon-btn');
+                item.click();
+                expect(j).toBe(4);
+                expect(target).toBe('BODY');
+                expect(target).not.toBe('#' + feObj.element.id);
+                feObj.selectedItems =[];
+                name = 'Rename'
+                let Li: any = document.getElementById('file_largeicons').querySelectorAll('li')[4].querySelector('.e-frame.e-icons');
+                mouseEventArgs.target = Li;
+                tapEvent.tapCount = 1;
+                (<any>feObj.largeiconsviewModule).clickObj.tap(tapEvent);
+                let items: any = document.getElementsByClassName('e-fe-rename');
+                items[0].click();
+                let ntr: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-text');
+                expect(ntr.length).toEqual(5);
+                expect(ntr[4].textContent).toBe("1.png");
+                (<HTMLInputElement>document.getElementById('rename')).value = "1.pnga";
+                name = 'Extension Change';
+                (<HTMLElement>document.getElementById('file_dialog').querySelectorAll('.e-btn')[1]).click();
+                item = document.getElementById('file_extn_dialog').querySelector('.e-dlg-closeicon-btn');
+                item.click();
+                name = 'Rename'
+                item = document.getElementById('file_dialog').querySelector('.e-dlg-closeicon-btn');
+                item.click();
+                expect(j).toBe(6);
+                expect(target).toBe('BODY');
+                expect(target).not.toBe('#' + feObj.element.id);
+                done();
+            }, 500);
         });
     });
 });

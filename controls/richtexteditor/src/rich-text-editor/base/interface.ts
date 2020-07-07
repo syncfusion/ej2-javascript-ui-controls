@@ -83,6 +83,7 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     format?: IFormatProperties;
 
     value?: string;
+    saveInterval?: number;
 
     isBlur?: boolean;
     isRTE?: boolean;

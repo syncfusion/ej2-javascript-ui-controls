@@ -179,6 +179,9 @@ export class DialogRenderer {
         this.cancelButtonClick();
     }
     private applyButtonClick(): void {
+        if (this.parent.getModuleName() === 'pivotfieldlist' && this.parent.allowDeferLayoutUpdate) {
+            (this.parent as PivotFieldList).pivotChange = false;
+        }
         this.parent.updateDataSource(false);
         let parent: PivotFieldList = this.parent;
         //setTimeout(() => {

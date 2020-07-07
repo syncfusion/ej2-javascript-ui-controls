@@ -1,4 +1,4 @@
-import { Property, Complex, ChildProperty, Collection } from '@syncfusion/ej2-base';import { VisibleLabels, Size, VisibleRange, Rect, Align } from '../utils/helper';import { Font, Border } from '../model/base';import { FontModel, BorderModel } from '../model/base-model';import { Point, Placement, MarkerType, Position} from '../utils/enum';
+import { Property, Complex, ChildProperty, Collection } from '@syncfusion/ej2-base';import { VisibleLabels, Size, VisibleRange, Rect, Align } from '../utils/helper';import { Font, Border } from '../model/base';import { FontModel, BorderModel } from '../model/base-model';import { Point, Placement, MarkerType, Position} from '../utils/enum';import { LinearGradientModel, RadialGradientModel} from '../axes/gradient-model';
 
 /**
  * Interface for a class Line
@@ -94,6 +94,19 @@ export interface RangeModel {
     end?: number;
 
     /**
+     * Sets and gets the properties to render a linear gradient for the range.
+     * If both linear and radial gradient is set, then the linear gradient will be rendered in the range.
+     * @default null
+     */
+    linearGradient?: LinearGradientModel;
+
+    /**
+     * Sets and gets the properties to render a radial gradient for the range.
+     * @default null
+     */
+    radialGradient?: RadialGradientModel;
+
+    /**
      * Sets and gets the position to place the ranges in the axis.
      * @default Outside
      */
@@ -182,6 +195,19 @@ export interface PointerModel {
      * @default Marker
      */
     type?: Point;
+
+    /**
+     * Sets and gets the properties to render a linear gradient for the pointer.
+     * If both linear and radial gradient is set, then the linear gradient will be rendered in the pointer.
+     * @default null
+     */
+    linearGradient?: LinearGradientModel;
+
+    /**
+     * Sets and gets the properties to render a radial gradient for the pointer.
+     * @default null
+     */
+    radialGradient?: RadialGradientModel;
 
     /**
      * Sets and gets the value of the pointer in axis.

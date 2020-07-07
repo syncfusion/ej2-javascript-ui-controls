@@ -237,6 +237,11 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     private liElement: Element;
     private itemReRender: boolean = false;
     private virtualCheckBox: Element | string;
+    private liElementHeight: number;
+    private previousSelectedItems: string[] = [];
+    private hiddenItems: string[] = [];
+    private enabledItems: string[] = [];
+    private disabledItems: string[] = [];
     /**
      * The `cssClass` property is used to add a user-preferred class name in the root element of the ListView, 
      *  using which we can customize the component (both CSS and functionality customization)
@@ -550,7 +555,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                     break;
                 case 'showCheckBox':
                 case 'checkBoxPosition':
-                    if (!isBlazor() || !this.isServerRendered || this.enableVirtualization) {
+                    if (!isBlazor() || !this.isServerRendered) {
                         if (this.enableVirtualization) {
                             this.virtualizationModule.reRenderUiVirtualization();
                         } else {
@@ -570,7 +575,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                     break;
                 case 'sortOrder':
                 case 'showIcon':
-                    if (isBlazor() && this.isServerRendered && !this.enableVirtualization) {
+                    if (isBlazor() && this.isServerRendered) {
                         // tslint:disable
                         (this as any).interopAdaptor.invokeMethodAsync('ItemSorting');
                         //tslint:enable
@@ -636,7 +641,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     // Support Component Functions
     private header(text?: string, showBack?: boolean): void {
 
-        if (isBlazor() && this.isServerRendered && !this.enableVirtualization) {
+        if (isBlazor() && this.isServerRendered) {
             let args: object = { HeaderText: text, BackButton: showBack };
             // tslint:disable
             (this as any).interopAdaptor.invokeMethodAsync('HeaderTitle', args);
@@ -759,8 +764,34 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         };
         this.initialization();
     }
-
+    private updateLiELementHeight(): void {
+        let liContainer: Element = this.element.querySelector('#virtualUlContainer');
+        if (liContainer.children[0]) {
+            this.liElementHeight = liContainer.children[0].getBoundingClientRect().height;
+            // tslint:disable
+            (this as any).interopAdaptor.invokeMethodAsync('LiElementHeight', this.liElementHeight);
+            // tslint:enable
+        }
+    }
     private initialization(): void {
+        if (isBlazor() && this.isServerRendered && this.enableVirtualization) {
+            let ulContainer: Element = this.element.querySelector('#virtualUlContainer');
+            if (ulContainer !== null) {
+                if (this.height === '') {
+                    // tslint:disable
+                    (this as any).interopAdaptor.invokeMethodAsync('SetComponentHeight', window.innerHeight);
+                    // tslint:enable
+                    this.isWindow = true;
+                    ulContainer.scrollIntoView();
+                }
+                if (ulContainer.children[0]) {
+                    this.liElementHeight = ulContainer.children[0].getBoundingClientRect().height;
+                    // tslint:disable
+                    (this as any).interopAdaptor.invokeMethodAsync('LiElementHeight', this.liElementHeight);
+                    // tslint:enable
+                }
+            }
+        }
         this.curDSLevel = [];
         this.animateOptions = {};
         this.curViewDS = [];
@@ -814,7 +845,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 args.item.firstElementChild.appendChild(checkboxElement);
             }
             this.currentLiElements.push(args.item);
-            this.checkBoxPosition == "Left" ? this.virtualCheckBox = args.item.firstElementChild.children[0] : this.virtualCheckBox = args.item.firstElementChild.lastElementChild;
+            this.checkBoxPosition === 'Left' ? this.virtualCheckBox = args.item.firstElementChild.children[0] :
+             this.virtualCheckBox = args.item.firstElementChild.lastElementChild;
         }
     }
 
@@ -981,7 +1013,48 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 this.setSelectLI(li, e);
             }
             if ((e.target as HTMLElement).closest('li')) {
-                if ((e.target as HTMLElement).closest('li').classList.contains('e-has-child') && !(e.target as HTMLElement).parentElement.classList.contains('e-listview-checkbox')) { (e.target as HTMLElement).closest('li').classList.add(classNames.disable); }
+                if ((e.target as HTMLElement).closest('li').classList.contains('e-has-child') &&
+                    !(e.target as HTMLElement).parentElement.classList.contains('e-listview-checkbox')) {
+                    (e.target as HTMLElement).closest('li').classList.add(classNames.disable);
+                }
+            }
+        }
+        if (isBlazor() && this.isServerRendered && this.enableVirtualization) {
+            let ulElementContainer: Element = this.element.querySelector('#virtualUlContainer');
+            if (ulElementContainer.querySelector('.e-active')) {
+                // tslint:disable-next-line:no-any
+                let selectedElements: any = ulElementContainer.querySelectorAll('.e-active');
+                // tslint:enable-next-line:no-any
+                if (this.showCheckBox) {
+
+                    for (let i: number = 0; i < selectedElements.length; i++) {
+                        // tslint:disable-next-line:no-any
+                        if (!(this.previousSelectedItems as any).includes(selectedElements[i].getAttribute('data-uid'))) {
+                            this.previousSelectedItems.push(selectedElements[i].getAttribute('data-uid'));
+                        }
+                        // tslint:enable-next-line:no-any
+                    }
+                } else {
+                    this.previousSelectedItems[0] = (ulElementContainer.querySelector('.e-active').getAttribute('data-uid'));
+                }
+            }
+            if (ulElementContainer.querySelector('.e-focused')) {
+                // tslint:disable-next-line:no-any
+                let focusElement: any = ulElementContainer.querySelector('.e-focused');
+                // tslint:enable-next-line:no-any
+                if (!focusElement.classList.contains('e-active')) {
+                    let focusElementId: string = focusElement.getAttribute('data-uid');
+                    // tslint:disable-next-line:no-any
+                    if ((this.previousSelectedItems as any).includes(focusElementId)) {
+                        let selectedElement1: string[] =
+                            this.previousSelectedItems.slice(0, this.previousSelectedItems.indexOf(focusElementId));
+                        let selectedElement2: string[] =
+                            this.previousSelectedItems.
+                            slice(this.previousSelectedItems.indexOf(focusElementId) + 1, this.previousSelectedItems.length);
+                        this.previousSelectedItems = selectedElement1.concat(selectedElement2);
+                    }
+                    // tslint:enable-next-line:no-any
+                }
             }
         }
     }
@@ -1174,7 +1247,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private swipeActionHandler(e: SwipeEventArgs): void {
-        if (e.swipeDirection === 'Right' && e.velocity > swipeVelocity && e.originalEvent.type == "touchend") {
+        if (e.swipeDirection === 'Right' && e.velocity > swipeVelocity && e.originalEvent.type === 'touchend') {
             if (this.showCheckBox && this.curDSLevel[this.curDSLevel.length - 1]) {
                 this.uncheckAllItems();
             }
@@ -1463,13 +1536,13 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     private setLocalData(): void {
         this.trigger('actionBegin');
-        let _this = this;
+        let listViewComponent: ListView = this;
         if (this.dataSource instanceof DataManager) {
             (this.dataSource as DataManager).executeQuery(this.getQuery()).then((e: Object) => {
                 if (this.isDestroyed) { return; }
                 this.localData = (e as ResultData).result;
-                if (_this.enableVirtualization || !this.isServerRendered || (!isBlazor())) {
-                    _this.removeElement(_this.contentContainer);
+                if (!this.isServerRendered || (!isBlazor())) {
+                    listViewComponent.removeElement(listViewComponent.contentContainer);
                 }
                 this.renderList();
                 this.trigger('actionComplete', e);
@@ -1579,6 +1652,87 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             // tslint:enable
         }
     }
+
+    private removeActiveClass(): void {
+        let listViewComponent: ListView = this;
+        setTimeout(
+            () => {
+                for (let i: number = 0; i < this.element.querySelector('#virtualUlContainer').childElementCount; i++) {
+                    let selectedElement: Element = this.element.querySelector('#virtualUlContainer').children[i];
+                    let elementIndex: number;
+                    let hiddenElementIndex: number;
+                    if (listViewComponent.showCheckBox) {
+                        if (listViewComponent.previousSelectedItems.length > 0) {
+                            for (let j: number = 0; j < listViewComponent.previousSelectedItems.length; j++) {
+                                if (selectedElement.getAttribute('data-uid') === listViewComponent.previousSelectedItems[j]) {
+                                    selectedElement.classList.add('e-active');
+                                    selectedElement.setAttribute('aria-selected', 'true');
+                                    if (selectedElement.querySelector('.e-frame.e-icons')) {
+                                        selectedElement.querySelector('.e-frame.e-icons').classList.add('e-check');
+                                    }
+                                    elementIndex = i;
+                                } else {
+                                    if (elementIndex !== i) {
+                                        selectedElement.classList.remove('e-active');
+                                        selectedElement.removeAttribute('aria-selected');
+                                        if (selectedElement.querySelector('.e-check')) {
+                                            selectedElement.querySelector('.e-check').classList.remove('e-check');
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            selectedElement.classList.remove('e-active');
+                            selectedElement.removeAttribute('aria-selected');
+                            if (selectedElement.querySelector('.e-check')) {
+                                selectedElement.querySelector('.e-check').classList.remove('e-check');
+                            }
+                        }
+                    } else {
+                        if (selectedElement.getAttribute('data-uid') === listViewComponent.previousSelectedItems[0]) {
+                            selectedElement.classList.add('e-active');
+                            selectedElement.setAttribute('aria-selected', 'true');
+                        } else {
+                            selectedElement.classList.remove('e-active');
+                            selectedElement.removeAttribute('aria-selected');
+                        }
+                    }
+                    if (listViewComponent.hiddenItems.length > 0) {
+                        for (let k: number = 0; k < listViewComponent.hiddenItems.length; k++) {
+                            if (selectedElement.getAttribute('data-uid') === listViewComponent.previousSelectedItems[k]) {
+                                (selectedElement as HTMLElement).style.display = 'none';
+                                hiddenElementIndex = i;
+                            } else {
+                                if (hiddenElementIndex !== i) {
+                                    (selectedElement as HTMLElement).style.display = null;
+                                }
+                            }
+                        }
+                    }
+                    if (listViewComponent.enabledItems.length > 0) {
+                        for (let x: number = 0; x < listViewComponent.enabledItems.length; x++) {
+                            if (selectedElement.getAttribute('data-uid') === listViewComponent.enabledItems[x]) {
+                                if (selectedElement.classList.contains('e-disabled')) {
+                                    selectedElement.classList.remove('e-disabled');
+                                }
+                            }
+                        }
+                    }
+
+                    if (listViewComponent.disabledItems.length > 0) {
+                        for (let y: number = 0; y < listViewComponent.disabledItems.length; y++) {
+                            if (selectedElement.getAttribute('data-uid') === listViewComponent.disabledItems[y]) {
+                                if (!selectedElement.classList.contains('e-disabled')) {
+                                    selectedElement.classList.add('e-disabled');
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            200);
+    }
+
     private renderingNestedList(): void {
         let ul: Element = closest(this.liElement.parentNode, '.' + classNames.parentItem);
         let ctrlId: string = this.element.id;
@@ -1597,7 +1751,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             this.setViewDataSource(this.getSubDS());
             if (!ele) {
                 let data: DataSource[] = this.curViewDS as DataSource[];
-                if (isBlazor() && this.isServerRendered && !this.enableVirtualization) {
+                if (isBlazor() && this.isServerRendered) {
                     // tslint:disable
                     (this as any).interopAdaptor.invokeMethodAsync('ListChildDataSource', data);
                     // tslint:enable
@@ -1633,13 +1787,15 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         if (!isBlazor() || !this.isServerRendered || this.enableVirtualization) {
             if (this.enableVirtualization) {
                 if (Object.keys(this.dataSource).length) {
-                    if ((this.template || this.groupTemplate) && !this.virtualizationModule.isNgTemplate()) {
-                        this.listBaseOption.template = null;
-                        this.listBaseOption.groupTemplate = null;
-                        this.listBaseOption.itemCreated = this.virtualizationModule.createUIItem.bind(this.virtualizationModule);
+                    if (!(isBlazor() && this.isServerRendered)) {
+                        if ((this.template || this.groupTemplate) && !this.virtualizationModule.isNgTemplate()) {
+                            this.listBaseOption.template = null;
+                            this.listBaseOption.groupTemplate = null;
+                            this.listBaseOption.itemCreated = this.virtualizationModule.createUIItem.bind(this.virtualizationModule);
+                        }
                     }
-                    this.virtualizationModule.uiVirtualization();
                 }
+                this.virtualizationModule.uiVirtualization();
             } else {
                 this.createList();
                 this.contentContainer = this.createElement('div', { className: classNames.content });
@@ -1663,7 +1819,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      * Initializes the ListView component rendering.
      */
     public render(): void {
-        if (!isBlazor() || !this.isServerRendered || this.enableVirtualization) {
+        if (!isBlazor() || !this.isServerRendered) {
             this.element.classList.add(classNames.root);
             attributes(this.element, { role: 'list', tabindex: '0' });
             this.setCSSClass();
@@ -1728,7 +1884,11 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             this.renderIntoDom(this.ulElement);
             toUL = this.curUL;
         } else {
-            toUL = toUL.parentElement;
+            if (isBlazor() && this.isServerRendered && this.enableVirtualization) {
+                toUL = toUL.parentElement.parentElement.parentElement;
+            } else {
+                toUL = toUL.parentElement;
+            }
         }
         let fieldData: DataSource = <DataSource>getFieldValues(this.curDSJSON, this.listBaseOption.fields);
         let text: string = <string>fieldData[this.fields.text];

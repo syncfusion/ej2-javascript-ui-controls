@@ -65,7 +65,7 @@ describe('Ribbon ->', () => {
             expect(element.firstElementChild.classList.contains('e-tab')).toBeTruthy();
             let header: Element = element.firstElementChild.firstElementChild;
             expect(header.classList.contains('e-tab-header')).toBeTruthy();
-            expect(header.firstElementChild.className).toEqual('e-drop-icon e-icons');
+            expect(ribbon.element.lastElementChild.className).toEqual('e-drop-icon e-icons');
             let tabItems: HTMLElement[] = selectAll('.e-toolbar-item', header);
             expect(tabItems.length).toBe(3);
             expect(tabItems[0].classList.contains('e-active')).toBeTruthy();

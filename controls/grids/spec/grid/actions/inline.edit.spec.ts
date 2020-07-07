@@ -2978,4 +2978,50 @@ describe('Inline Editing module', () => {
         });
     });
 
+describe('EJ2-40519 - ActionBegin event arguments cancel property value getting maintained', () => {
+        let gridObj: Grid;
+        let actionBegin: () => void;
+        let preventDefault: Function = new Function();
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: dataSource(),
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal',},
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    allowPaging: true,
+                    columns: [
+                        { field: 'OrderID', type: 'number', isPrimaryKey: true },
+                        { field: 'CustomerID', type: 'string' },
+                        { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit' },
+                        { field: 'ShipCountry', type: 'string', editType: 'dropdownedit' },
+                        { field: 'OrderDate', format: { skeleton: 'yMd', type: 'date' }, type: 'date', editType: 'datepickeredit' }
+                    ],
+                    actionBegin: actionBegin,
+                }, done);
+        });
+
+        it('Cancel Events check', (done: Function) => {
+            actionBegin = (args?: any): void => {               
+                if (args.requestType === 'save') {
+                    args.cancel = true;
+                    gridObj.closeEdit(); 
+                    done();
+                }
+            };
+            let cell: HTMLElement= gridObj.element.querySelector('.e-content').querySelector('table').rows[0].childNodes[1] as any;
+            cell.click();
+            gridObj.keyboardModule.keyAction({ action: 'f2', preventDefault: preventDefault, target: cell } as any);
+            let update = gridObj.element.querySelector('#' + gridObj.element.id + '_update') as HTMLElement;
+            gridObj.actionBegin = actionBegin;
+            update.click();
+        });
+        it('check the edit form', () => {
+            expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(0);
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+        
+    });
 });

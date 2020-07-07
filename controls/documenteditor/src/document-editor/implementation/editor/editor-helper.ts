@@ -1,7 +1,7 @@
 import { isNullOrUndefined, NumberFormatOptions, Internationalization, DateFormatOptions } from '@syncfusion/ej2-base';
 import { LineWidget, ElementBox, BodyWidget, ParagraphWidget, TextElementBox } from '../viewer/page';
 import { WCharacterFormat, WCellFormat, TextPosition, TextSearchResults } from '../index';
-import { HighlightColor, TextFormFieldType, CheckBoxSizeType } from '../../base/types';
+import { HighlightColor, TextFormFieldType, CheckBoxSizeType, RevisionType } from '../../base/types';
 import { Widget, FieldElementBox } from '../viewer/page';
 import { Dictionary } from '../..';
 /** 
@@ -449,6 +449,17 @@ export class HelperMethods {
     private static capitaliseFirstInternal(value: string): string {
         return (value.charAt(0).toUpperCase() + value.slice(1, value.length).toLowerCase());
     }
+    /**
+     * @private
+     * @param date 
+     */
+    public static getModifiedDate(date: string): string {
+        let modifiedDate: Date = new Date(date);
+        let dateString: string = modifiedDate.toLocaleDateString([], { year: 'numeric', month: 'long', day: 'numeric' });
+        let time: string = modifiedDate.toLocaleTimeString([], { hour: 'numeric', minute: 'numeric' });
+        let dateTime: string = dateString + ' ' + time;
+        return dateTime;
+    }
 
 }
 /** 
@@ -784,6 +795,21 @@ export interface ElementInfo {
 /** 
  * @private
  */
+export interface RevisionMatchedInfo {
+    element: ElementBox;
+    isMatched: boolean;
+}
+/** 
+ * @private
+ */
+export interface RevisionInfo {
+    type: RevisionType;
+    color: string;
+}
+
+/** 
+ * @private
+ */
 export interface MatchResults {
     matches: RegExpExecArray[];
     elementInfo: Dictionary<TextElementBox, number>;
@@ -940,7 +966,7 @@ export interface DropDownFormFieldInfo {
     /**
      * DropDown items
      */
-    dropDownItems: string[];
+    dropdownItems: string[];
     /**
      * Enable or disable form field.
      */

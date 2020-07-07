@@ -1,5 +1,5 @@
 window.sf = window.sf || {};
-window.sf.treemap = (function (exports) {
+var sftreemap = (function (exports) {
 'use strict';
 
 /**
@@ -482,7 +482,7 @@ var SelectionSettings = /** @class */ (function (_super) {
         sf.base.Property(false)
     ], SelectionSettings.prototype, "enable", void 0);
     __decorate$1([
-        sf.base.Property('null')
+        sf.base.Property(null)
     ], SelectionSettings.prototype, "fill", void 0);
     __decorate$1([
         sf.base.Property('0.5')
@@ -1277,7 +1277,9 @@ function removeClassNames(elements, type, treemap) {
 }
 function applyOptions(element, options) {
     element.setAttribute('opacity', options['opacity']);
-    element.setAttribute('fill', options['fill']);
+    if (!sf.base.isNullOrUndefined(options['fill'])) {
+        element.setAttribute('fill', options['fill']);
+    }
     element.setAttribute('stroke', options['border']['color']);
     element.setAttribute('stroke-width', options['border']['width']);
 }
@@ -2583,6 +2585,10 @@ var TreeMap = /** @class */ (function (_super) {
      */
     function TreeMap(options, element) {
         var _this = _super.call(this, options, element) || this;
+        /**
+         * resize the treemap
+         */
+        _this.isResize = false;
         /** @private */
         _this.orientation = 'Horizontal';
         /** @private */
@@ -2595,18 +2601,9 @@ var TreeMap = /** @class */ (function (_super) {
         _this.legendId = [];
         return _this;
     }
-    TreeMap_1 = TreeMap;
     TreeMap.prototype.preRender = function () {
         var _this = this;
         this.isBlazor = sf.base.isBlazor();
-        if (!this.isBlazor) {
-            this.allowPrint = true;
-            this.allowImageExport = true;
-            this.allowPdfExport = true;
-            TreeMap_1.Inject(Print);
-            TreeMap_1.Inject(PdfExport);
-            TreeMap_1.Inject(ImageExport);
-        }
         this.trigger(load, { treemap: this.isBlazor ? null : this }, function () {
             _this.initPrivateVariable();
             _this.unWireEVents();
@@ -2667,7 +2664,8 @@ var TreeMap = /** @class */ (function (_super) {
         this.layout.processLayoutPanel();
         this.element.appendChild(this.svgObject);
         this.elementChange();
-        this.trigger(loaded, { treemap: this.isBlazor ? null : this });
+        this.trigger(loaded, this.isBlazor ? { isResized: this.isResize } : { treemap: this, isResized: this.isResize });
+        this.isResize = false;
         this.renderComplete();
     };
     TreeMap.prototype.createSvg = function () {
@@ -3084,6 +3082,7 @@ var TreeMap = /** @class */ (function (_super) {
      */
     TreeMap.prototype.resizeOnTreeMap = function (e) {
         var _this = this;
+        this.isResize = true;
         var args = {
             name: resize,
             cancel: false,
@@ -3639,7 +3638,6 @@ var TreeMap = /** @class */ (function (_super) {
     TreeMap.prototype.getPersistData = function () {
         return '';
     };
-    var TreeMap_1;
     __decorate([
         sf.base.Property(false)
     ], TreeMap.prototype, "allowPrint", void 0);
@@ -3796,7 +3794,7 @@ var TreeMap = /** @class */ (function (_super) {
     __decorate([
         sf.base.Event()
     ], TreeMap.prototype, "legendRendering", void 0);
-    TreeMap = TreeMap_1 = __decorate([
+    TreeMap = __decorate([
         sf.base.NotifyPropertyChanges
     ], TreeMap);
     return TreeMap;
@@ -5075,9 +5073,6 @@ var TreeMapSelection = /** @class */ (function () {
                         }
                     }
                     else {
-                        selection.fill = selection.fill === 'null' ?
-                            treemap.layout.renderItems[parseInt(element.id.split('Item_Index_')[1], 10)]['options']['fill']
-                            : selection.fill;
                         applyOptions(element.childNodes[0], { border: selection.border, fill: selection.fill, opacity: selection.opacity });
                         element.classList.add('treeMapSelection');
                     }
@@ -5495,10 +5490,6 @@ var TreeMapTooltip = /** @class */ (function () {
  * export all modules from treemap component
  */
 
-/**
- * exporting all modules from tree map index
- */
-
 TreeMap.Inject(TreeMapTooltip, TreeMapLegend, TreeMapHighlight, TreeMapSelection, Print, PdfExport, ImageExport);
 
 exports.TreeMap = TreeMap;
@@ -5610,6 +5601,7 @@ exports.Print = Print;
 return exports;
 
 });
+sfBlazor.modules["treemap"] = "treemap.TreeMap";
 sfBlazor.loadDependencies(sfBlazor.dependencyJson.treemap, () => {
-    sf.treemap = sf.treemap({});
+    sf.treemap = sf.base.extend({}, sf.treemap, sftreemap({}));
 });

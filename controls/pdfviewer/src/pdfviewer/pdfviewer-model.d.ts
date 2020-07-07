@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex, isBlazor } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';import { PdfViewerBase } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { FormFields } from './index';import { Print, CalibrationUnit } from './index';import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs, AnnotationMouseoverEventArgs, PageMouseoverEventArgs } from './index';import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs, ExtractTextCompletedEventArgs, PrintStartEventArgs, PrintEndEventArgs } from './index';import { TextSearchStartEventArgs, TextSearchCompleteEventArgs, TextSearchHighlightEventArgs } from './index';import { PdfAnnotationBase, ZOrderPageTable } from '../diagram/pdf-annotation';import { PdfAnnotationBaseModel } from '../diagram/pdf-annotation-model';import { Drawing, ClipBoardObject } from '../diagram/drawing';import { Selector } from '../diagram/selector';import { SelectorModel } from '../diagram/selector-model';import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';import { renderAdornerLayer } from '../diagram/dom-util';import { ThumbnailClickEventArgs } from './index';import { ValidateFormFieldsArgs } from './base';import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs } from './base';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex, isBlazor } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';import { PdfViewerBase } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { FormFields } from './index';import { Print, CalibrationUnit } from './index';import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs, AnnotationMouseoverEventArgs, PageMouseoverEventArgs, AnnotationMouseLeaveEventArgs } from './index';import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs, ExtractTextCompletedEventArgs, PrintStartEventArgs, PrintEndEventArgs } from './index';import { TextSearchStartEventArgs, TextSearchCompleteEventArgs, TextSearchHighlightEventArgs } from './index';import { PdfAnnotationBase, ZOrderPageTable } from './drawing/pdf-annotation';import { PdfAnnotationBaseModel } from './drawing/pdf-annotation-model';import { Drawing, ClipBoardObject } from './drawing/drawing';import { Selector } from './drawing/selector';import { SelectorModel } from './drawing/selector-model';import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';import { renderAdornerLayer } from './drawing/dom-util';import { ThumbnailClickEventArgs } from './index';import { ValidateFormFieldsArgs } from './base';import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs } from './base';
 import {IAjaxHeaders} from "./pdfviewer";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -16,6 +16,11 @@ export interface ToolbarSettingsModel {
      * shows only the defined options in the PdfViewer.
      */
     toolbarItems?: ToolbarItem[];
+
+    /**
+     * Provide option to customize the annotation toolbar of the PDF Viewer.
+     */
+    annotationToolbarItems?: AnnotationToolbarItem[];
 
 }
 
@@ -37,17 +42,17 @@ export interface AjaxRequestSettingsModel {
 }
 
 /**
- * Interface for a class CustomStampItem
+ * Interface for a class CustomStamp
  */
-export interface CustomStampItemModel {
+export interface CustomStampModel {
 
     /**
-     * specifies the stamp Name of the PdfViewer.
+     * Defines the custom stamp name to be added in stamp menu of the PDF Viewer toolbar.
      */
     customStampName?: string;
 
     /**
-     * specifies the stamp ImageSource of the PdfViewer.
+     * Defines the custom stamp images source to be added in stamp menu of the PDF Viewer toolbar. 
      */
     customStampImageSource?: string;
 
@@ -158,16 +163,6 @@ export interface StrikethroughSettingsModel {
     author?: string;
 
     /**
-     * specifies the subject of the annotation.
-     */
-    subject?: string;
-
-    /**
-     * specifies the modified date of the annotation.
-     */
-    modifiedDate?: string;
-
-    /**
      * specifies the annotation selector settings of the annotation.
      */
     annotationSelectorSettings?: AnnotationSelectorSettingsModel;
@@ -181,6 +176,18 @@ export interface StrikethroughSettingsModel {
      * specifies the locked action of the annotation.
      */
     isLock?: boolean;
+
+    /**
+     * Enables or disables the multi-page text markup annotation selection in UI.
+     * @default false
+     */
+    enableMultiPageAnnotation?: boolean;
+
+    /**
+     * Enable or disable the text markup resizer to modify the bounds in UI.
+     * @default false
+     */
+    enableTextMarkupResizer?: boolean;
 
 }
 
@@ -205,16 +212,6 @@ export interface UnderlineSettingsModel {
     author?: string;
 
     /**
-     * specifies the subject of the annotation.
-     */
-    subject?: string;
-
-    /**
-     * specifies the modified date of the annotation.
-     */
-    modifiedDate?: string;
-
-    /**
      * specifies the annotation selector settings of the annotation.
      */
     annotationSelectorSettings?: AnnotationSelectorSettingsModel;
@@ -228,6 +225,18 @@ export interface UnderlineSettingsModel {
      * specifies the locked action of the annotation.
      */
     isLock?: boolean;
+
+    /**
+     * Enables or disables the multi-page text markup annotation selection in UI.
+     * @default false
+     */
+    enableMultiPageAnnotation?: boolean;
+
+    /**
+     * Enable or disable the text markup resizer to modify the bounds in UI.
+     * @default false
+     */
+    enableTextMarkupResizer?: boolean;
 
 }
 
@@ -252,16 +261,6 @@ export interface HighlightSettingsModel {
     author?: string;
 
     /**
-     * specifies the subject of the annotation.
-     */
-    subject?: string;
-
-    /**
-     * specifies the modified date of the annotation.
-     */
-    modifiedDate?: string;
-
-    /**
      * specifies the annotation selector settings of the annotation.
      */
     annotationSelectorSettings?: AnnotationSelectorSettingsModel;
@@ -275,6 +274,18 @@ export interface HighlightSettingsModel {
      * specifies the locked action of the annotation.
      */
     isLock?: boolean;
+
+    /**
+     * Enables or disables the multi-page text markup annotation selection in UI.
+     * @default false
+     */
+    enableMultiPageAnnotation?: boolean;
+
+    /**
+     * Enable or disable the text markup resizer to modify the bounds in UI.
+     * @default false
+     */
+    enableTextMarkupResizer?: boolean;
 
 }
 
@@ -302,16 +313,6 @@ export interface LineSettingsModel {
      * specifies the author of the annotation.
      */
     author?: string;
-
-    /**
-     * specifies the subject of the annotation.
-     */
-    subject?: string;
-
-    /**
-     * specifies the modified date of the annotation.
-     */
-    modifiedDate?: string;
 
     /**
      * specified the thickness of the annotation.
@@ -396,16 +397,6 @@ export interface ArrowSettingsModel {
     author?: string;
 
     /**
-     * specifies the subject of the annotation.
-     */
-    subject?: string;
-
-    /**
-     * specifies the modified date of the annotation.
-     */
-    modifiedDate?: string;
-
-    /**
      * specified the thickness of the annotation.
      */
     thickness?: number;
@@ -488,16 +479,6 @@ export interface RectangleSettingsModel {
     author?: string;
 
     /**
-     * specifies the subject of the annotation.
-     */
-    subject?: string;
-
-    /**
-     * specifies the modified date of the annotation.
-     */
-    modifiedDate?: string;
-
-    /**
      * specified the thickness of the annotation.
      */
     thickness?: number;
@@ -563,16 +544,6 @@ export interface CircleSettingsModel {
      * specifies the author of the annotation.
      */
     author?: string;
-
-    /**
-     * specifies the subject of the annotation.
-     */
-    subject?: string;
-
-    /**
-     * specifies the modified date of the annotation.
-     */
-    modifiedDate?: string;
 
     /**
      * specified the thickness of the annotation.
@@ -684,16 +655,6 @@ export interface PolygonSettingsModel {
     author?: string;
 
     /**
-     * specifies the subject of the annotation.
-     */
-    subject?: string;
-
-    /**
-     * specifies the modified date of the annotation.
-     */
-    modifiedDate?: string;
-
-    /**
      * specified the thickness of the annotation.
      */
     thickness?: number;
@@ -751,11 +712,6 @@ export interface StampSettingsModel {
     author?: string;
 
     /**
-     * specifies the modified date of the annotation.
-     */
-    modifiedDate?: string;
-
-    /**
      * specifies the annotation selector settings of the annotation.
      */
     annotationSelectorSettings?: AnnotationSelectorSettingsModel;
@@ -790,6 +746,21 @@ export interface StampSettingsModel {
      */
     customData?: object;
 
+    /**
+     * Provide option to define the required dynamic stamp items to be displayed in annotation toolbar menu.
+     */
+    dynamicStamps?: DynamicStampItem[];
+
+    /**
+     * Provide option to define the required sign stamp items to be displayed in annotation toolbar menu.
+     */
+    signStamps?: SignStampItem[];
+
+    /**
+     * Provide option to define the required standard business stamp items to be displayed in annotation toolbar menu.
+     */
+    standardBusinessStamps?: StandardBusinessStampItem[];
+
 }
 
 /**
@@ -806,11 +777,6 @@ export interface CustomStampSettingsModel {
      * specifies the author of the annotation.
      */
     author?: string;
-
-    /**
-     * specifies the modified date of the annotation.
-     */
-    modifiedDate?: string;
 
     /**
      * specifies the width of the annotation.
@@ -835,7 +801,7 @@ export interface CustomStampSettingsModel {
     /**
      * Specifies to maintain the newly added custom stamp element in the menu items.
      */
-    isAddToSubMenu?: boolean;
+    isAddToMenu?: boolean;
 
     /**
      * specifies the minHeight of the annotation.
@@ -861,6 +827,16 @@ export interface CustomStampSettingsModel {
      * specifies the locked action of the annotation.
      */
     isLock?: boolean;
+
+    /**
+     * Define the custom image path and it's name to be displayed in the menu items.
+     */
+    customStamps?: CustomStampModel[];
+
+    /**
+     * If it is set as false. then the custom stamp items won't be visible in the annotation toolbar stamp menu items.
+     */
+    enableCustomStamp?: boolean;
 
 }
 
@@ -888,16 +864,6 @@ export interface DistanceSettingsModel {
      * specifies the author of the annotation.
      */
     author?: string;
-
-    /**
-     * specifies the subject of the annotation.
-     */
-    subject?: string;
-
-    /**
-     * specifies the modified date of the annotation.
-     */
-    modifiedDate?: string;
 
     /**
      * specified the thickness of the annotation.
@@ -992,16 +958,6 @@ export interface PerimeterSettingsModel {
     author?: string;
 
     /**
-     * specifies the subject of the annotation.
-     */
-    subject?: string;
-
-    /**
-     * specifies the modified date of the annotation.
-     */
-    modifiedDate?: string;
-
-    /**
      * specified the thickness of the annotation.
      */
     thickness?: number;
@@ -1079,16 +1035,6 @@ export interface AreaSettingsModel {
     author?: string;
 
     /**
-     * specifies the subject of the annotation.
-     */
-    subject?: string;
-
-    /**
-     * specifies the modified date of the annotation.
-     */
-    modifiedDate?: string;
-
-    /**
      * specified the thickness of the annotation.
      */
     thickness?: number;
@@ -1149,16 +1095,6 @@ export interface RadiusSettingsModel {
      * specifies the author of the annotation.
      */
     author?: string;
-
-    /**
-     * specifies the subject of the annotation.
-     */
-    subject?: string;
-
-    /**
-     * specifies the modified date of the annotation.
-     */
-    modifiedDate?: string;
 
     /**
      * specified the thickness of the annotation.
@@ -1228,16 +1164,6 @@ export interface VolumeSettingsModel {
     author?: string;
 
     /**
-     * specifies the subject of the annotation.
-     */
-    subject?: string;
-
-    /**
-     * specifies the modified date of the annotation.
-     */
-    modifiedDate?: string;
-
-    /**
      * specified the thickness of the annotation.
      */
     thickness?: number;
@@ -1280,39 +1206,34 @@ export interface VolumeSettingsModel {
 export interface InkAnnotationSettingsModel {
 
     /**
-     * specifies the opacity of the annotation.
+     * Sets the opacity value for ink annotation.By default value is 1. It range varies from 0 to 1.
      */
     opacity?: number;
 
     /**
-     * specifies the stroke color of the annotation.
+     * Sets the stroke color for ink annotation.By default values is #FF0000.
      */
     strokeColor?: string;
 
     /**
-     * specified the thickness of the annotation.
+     * Sets the thickness for the ink annotation. By default value is 1. It range varies from 1 to 10.
      */
     thickness?: number;
 
     /**
-     * specified the width of the annotation.
-     */
-    width?: number;
-
-    /**
-     * specified the height of the annotation.
-     */
-    height?: number;
-
-    /**
-     * specifies the annotation selector settings of the annotation.
+     * Define the default option to customize the selector for ink annotation.
      */
     annotationSelectorSettings?: AnnotationSelectorSettingsModel;
 
     /**
-     * specifies the lock action of the annotation.
+     * If it is set as true, can't interact with annotation. Otherwise can interact the annotations. By default it is false.
      */
     isLock?: boolean;
+
+    /**
+     * specifies the author of the annotation.
+     */
+    author?: string;
 
 }
 
@@ -1325,16 +1246,6 @@ export interface StickyNotesSettingsModel {
      * specifies the author of the annotation.
      */
     author?: string;
-
-    /**
-     * specifies the subject of the annotation.
-     */
-    subject?: string;
-
-    /**
-     * specifies the modified date of the annotation.
-     */
-    modifiedDate?: string;
 
     /**
      * specifies the opacity of the annotation.
@@ -1416,16 +1327,6 @@ export interface FreeTextSettingsModel {
     author?: string;
 
     /**
-     * specifies the subject of the annotation.
-     */
-    subject?: string;
-
-    /**
-     * specifies the modified date of the annotation.
-     */
-    modifiedDate?: string;
-
-    /**
      * specifies the background fill color of the annotation.
      */
     fillColor?: string;
@@ -1473,7 +1374,7 @@ export interface FreeTextSettingsModel {
     /**
      * specifies the allow text only action of the free text annotation.
      */
-    allowTextOnly?: boolean;
+    allowEditTextOnly?: boolean;
 
     /**
      * specifies the annotation selector settings of the annotation.
@@ -1560,6 +1461,11 @@ export interface AnnotationSelectorSettingsModel {
      */
     resizerLocation?: AnnotationResizerLocation;
 
+    /**
+     * specifies the cursor type of resizer
+     */
+    resizerCursorType?: CursorType;
+
 }
 
 /**
@@ -1568,14 +1474,14 @@ export interface AnnotationSelectorSettingsModel {
 export interface TextSearchColorSettingsModel {
 
     /**
-     * Sets the color of the current occurrence of the text searched string.
+     * Gets or Sets the color of the current occurrence of the text searched string.
      */
-    currentOccurrence?: string;
+    searchHighlightColor?: string;
 
     /**
-     * Sets the color of the other occurrence of the text searched string.
+     * Gets or Sets the color of the other occurrence of the text searched string.
      */
-    otherOccurrence?: string;
+    searchColor?: string;
 
 }
 
@@ -1654,12 +1560,17 @@ export interface AnnotationSettingsModel {
     /**
      * specifies whether the annotations are included or not in print actions.
      */
-    isPrint?: boolean;
+    skipPrint?: boolean;
 
     /**
      * specifies whether the annotations are included or not in download actions.
      */
-    isDownload?: boolean;
+    skipDownload?: boolean;
+
+    /**
+     * specifies the custom data of the annotation.
+     */
+    customData?: object;
 
 }
 
@@ -1795,56 +1706,53 @@ export interface ScrollSettingsModel {
 }
 
 /**
- * Interface for a class FormFieldCollections
+ * Interface for a class FormField
  */
-export interface FormFieldCollectionsModel {
+export interface FormFieldModel {
 
     /**
-     * fieldName of the form fields.
+     * Gets the name of the form field.
      */
-    fieldName?: string;
+    name?: string;
 
     /**
-     * id of the form fields.
+     * Gets the id of the form field.
      */
     id?: string;
 
     /**
-     * type of the form fields.
+     * Gets or sets the value of the form field.
      */
-    type?: string;
+    value?: string;
 
     /**
-     * isReadOnly of the form fields.
+     * Gets the type of the form field.
+     */
+    type?: FormFieldType;
+
+    /**
+     * If it is set as true, can't edit the form field in the PDF document. By default it is false.
      */
     isReadOnly?: boolean;
 
 }
 
 /**
- * Interface for a class StampItemSettings
+ * Interface for a class ContextMenuSettings
  */
-export interface StampItemSettingsModel {
+export interface ContextMenuSettingsModel {
 
     /**
-     * Enable or disables the custom stamp of PdfViewer.
+     * Defines the context menu action.
+     * @default RightClick
      */
-    enableCustomStamp?: boolean;
+    contextMenuAction?: ContextMenuAction;
 
     /**
-     * dynamic stamp item in the PdfViewer.
+     * Defines the context menu items should be visible in the PDF Viewer.
+     *  @default []
      */
-    dynamicStamps?: DynamicStampItem[];
-
-    /**
-     * sign stamp item in the PdfViewer.
-     */
-    signStamps?: SignStampItem[];
-
-    /**
-     * standard business stamp item in the PdfViewer.
-     */
-    standardBusinessStamps?: StandardBusinessStampItem[];
+    contextMenuItems?: ContextMenuItem[];
 
 }
 
@@ -1857,6 +1765,25 @@ export interface PdfViewerModel extends ComponentModel{
      * Defines the service url of the PdfViewer control.
      */
     serviceUrl?: string;
+
+    /**
+     * gets the page count of the document loaded in the PdfViewer control.
+     * @default 0
+     */
+    pageCount?: number;
+
+    /**
+     * Checks whether the PDF document is edited.
+     * @asptype bool
+     * @blazorType bool
+     */
+    isDocumentEdited?: boolean;
+
+    /**
+     * Returns the current page number of the document displayed in the PdfViewer control.
+     * @default 0
+     */
+    currentPageNumber?: number;
 
     /**
      * Sets the PDF document path for initial loading.
@@ -1923,7 +1850,7 @@ export interface PdfViewerModel extends ComponentModel{
     enableTextMarkupResizer?: boolean;
 
     /**
-     * Enable or disable the multi line text markup annotations in overlapping collections. 
+     * Enable or disable the multi line text markup annotations in overlapping collections.
      * @default false
      */
     enableMultiLineOverlap?: boolean;
@@ -1983,7 +1910,7 @@ export interface PdfViewerModel extends ComponentModel{
     enableHandwrittenSignature?: boolean;
 
     /**
-     * Enables or disables the ink annotation in PDF document.
+     * If it is set as false, then the ink annotation support in the PDF Viewer will be disabled. By default it is true.
      * @default true
      */
     enableInkAnnotation?: boolean;
@@ -2013,10 +1940,10 @@ export interface PdfViewerModel extends ComponentModel{
     disableContextMenuItems?: ContextMenuItem[];
 
     /**
-     * Defines the settings of the PdfViewer toolbar.
+     * Gets the form fields present in the loaded PDF document. It used to get the form fields id, name, type and it's values.
      */
     // tslint:disable-next-line:max-line-length
-    formFieldCollections?: FormFieldCollectionsModel[];
+    formFieldCollections?: FormFieldModel[];
 
     /**
      * Enable or disables the Navigation module of PdfViewer.
@@ -2088,7 +2015,7 @@ export interface PdfViewerModel extends ComponentModel{
      * Enable if the PDF document contains form fields.
      * @default false
      */
-    isFormFieldsDocument?: boolean;
+    isFormFieldDocument?: boolean;
 
     /**
      * Enable or disable the free text annotation in the Pdfviewer.
@@ -2185,13 +2112,7 @@ export interface PdfViewerModel extends ComponentModel{
      */
     // tslint:disable-next-line:max-line-length
 
-    customStampItems?: CustomStampItemModel[];
-
-    /**
-     * Defines the settings of the PdfViewer annotation toolbar.
-     */
-    // tslint:disable-next-line:max-line-length
-    annotationToolbarSettings?: AnnotationToolbarSettingsModel;
+    customStamp?: CustomStampModel[];
 
     /**
      * Defines the settings of the PdfViewer service.
@@ -2330,7 +2251,7 @@ export interface PdfViewerModel extends ComponentModel{
     handWrittenSignatureSettings?: HandWrittenSignatureSettingsModel;
 
     /**
-     * Defines the settings of Ink annotation.
+     * Defines the ink annotation settings for PDF Viewer.It used to customize the strokeColor, thickness, opacity of the ink annotation.
      */
     // tslint:disable-next-line:max-line-length
     inkAnnotationSettings?: InkAnnotationSettingsModel;
@@ -2347,15 +2268,15 @@ export interface PdfViewerModel extends ComponentModel{
     tileRenderingSettings?: TileRenderingSettingsModel;
 
     /**
-     * Defines the settings of the PdfViewer toolbar.
-     */
-    // tslint:disable-next-line:max-line-length
-    stampItemSettings?: StampItemSettingsModel;
-
-    /**
      * Defines the scroll settings.
      */
     scrollSettings?: ScrollSettingsModel;
+
+    /**
+     * Defines the context menu settings.
+     */
+    // tslint:disable-next-line:max-line-length
+    contextMenuSettings?: ContextMenuSettingsModel;
 
     /**
      * Defines the collection of selected items, size and position of the selector
@@ -2442,7 +2363,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers when an annotation is removed from the page of the PDF document.
-     * @event 
+     * @event
      * @blazorProperty 'AnnotationRemoved'
      */
     annotationRemove?: EmitType<AnnotationRemoveEventArgs>;
@@ -2523,6 +2444,12 @@ export interface PdfViewerModel extends ComponentModel{
      * @event
      */
     annotationMouseover?: EmitType<AnnotationMouseoverEventArgs>;
+
+    /**
+     * Triggers when mouse over the annotation object.
+     * @event
+     */
+    annotationMouseLeave?: EmitType<AnnotationMouseLeaveEventArgs>;
 
     /**
      * Triggers when mouse over the page.

@@ -16,8 +16,30 @@
 <body>
     <div class="container-fluid" style="margin-top:15px;">
         <div class="row">
-            <div class="col-md-12">
+            <div class="col-md-9">
                 <div id="schedule"></div>
+            </div>
+            <div class="col-md-3">
+                <div class="prop-grid">
+                    <div class="row">
+                        <div class="col-md-4">Auto Row Height</div>
+                        <div class="col-md-6">
+                            <select id="autorowheight" name="ddl" class="form-control">
+                                <option value="true">Enable</option>
+                                <option value="false" selected>Disable</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">Resource Grouping</div>
+                        <div class="col-md-6">
+                            <select id="resource_grouping" name="ddl" class="form-control">
+                                <option value="true" selected>Enable</option>
+                                <option value="false">Disable</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

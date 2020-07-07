@@ -110,7 +110,7 @@ export type ToolbarItems =
      * Allows to show the pivot chart with specific type from the built-in list. 
      * It also has the option to show the chart with multiple axes based on the value fields bound to the report. 
      * You can do this by selecting the checkbox at the bottom of the list.
-      */
+     */
     'Chart' |
     /** Allow set of options to export the pivot table as PDF/Excel/CSV and the pivot chart as PDF and image format such as PNG, JPEG, SVG. */
     'Export' |
@@ -130,7 +130,7 @@ export type ToolbarItems =
     /** 
      * Allows ro show the MDX query that was run to retrieve data from the OLAP data source. 
      * > It is applicable only for OLAP data source.
-     * */
+     */
     'NumberFormatting' |
     /** Allow options to show the conditional formatting and the number formatting pop-up that used to apply formatting to the values in the component. */
     'Formatting';
@@ -221,7 +221,15 @@ export type ChartSeriesType =
     /** Allows to display the pivot chart with polar series. */
     'Polar' |
     /** Allows to display the pivot chart with radar series. */
-    'Radar';
+    'Radar' |
+    /** Allows to display the pivot chart with pie series. */
+    'Pie' |
+    /** Allows to display the pivot chart with pyramid series. */
+    'Pyramid' |
+    /** Allows to display the pivot chart with doughnut series. */
+    'Doughnut' |
+    /** Allows to display the pivot chart with funnel series. */
+    'Funnel';
 
 /**
  * Defines the pivot chart selection mode. They are
@@ -645,6 +653,63 @@ export type PivotChartLineType =
     'Vertical' |
     /** Shows the horizontal line. */
     'Horizontal';
+
+/**
+ * Defines the SelectionMode for chart types pie, doughnut, Funnel and pyramid.
+ * * none - Disable the selection.
+ * * point - To select a point.
+ */
+export type PivotAccumulationChartSelectionMode =
+    /** Disable the selection. */
+    'None' |
+    /** To select a point. */
+    'Point';
+
+/**
+* Defines the ConnectorType for chart types pie, doughnut, Funnel and pyramid. They are
+* * Line - Accumulation series Connector line type as Straight line.
+* * Curve - Accumulation series Connector line type as Curved line.
+* *
+*/
+export type PivotChartConnectorType =
+    /** Accumulation series Connector line type as Straight line */
+    'Line' |
+    /** Accumulation series Connector line type as Curved line */
+    'Curve';
+
+/**
+ * Defines the LabelPosition for chart types pie, doughnut, Funnel and pyramid. They are
+ * * Inside - Define the data label position for the accumulation series Inside.
+ * * Outside - Define the data label position for the accumulation series Outside.
+ * *
+ */
+export type PivotChartLabelPosition =
+    /** Define the data label position for the accumulation series Inside */
+    'Inside' |
+    /** Define the data label position for the accumulation series Outside */
+    'Outside';
+
+/**
+ * Defines the mode of the group mode for chart types pie, doughnut, Funnel and pyramid
+ * * Point - When choosing points, the selected points get grouped.
+ * * Value - When choosing values, the points which less then values get grouped.
+ */
+export type PivotChartGroupModes =
+    /** When choosing points, the selected points get grouped */
+    'Point' |
+    /** When choosing values, the points which less then values get grouped. */
+    'Value';
+
+/**
+ * Defines the mode of the pyramid 
+ * * Linear - Height of the pyramid segments reflects the values
+ * * Surface - Surface/Area of the  pyramid segments reflects the values
+ */
+export type PivotChartPyramidModes =
+    /** Height of the pyramid segments reflects the values */
+    'Linear' |
+    /** Surface/Area of the  pyramid segments reflects the values */
+    'Surface';
 
 /**
  * Defines the position of the legend. They are

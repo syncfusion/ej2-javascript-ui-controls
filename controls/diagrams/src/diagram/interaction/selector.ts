@@ -193,5 +193,13 @@ export class UserHandle extends ChildProperty<UserHandle> {
     public getClassName(): string {
         return 'UserHandle';
     }
+
+    /**
+     * defines geometry of the html element
+     * @private
+     * @default ''
+     */
+    @Property('')
+    public template: HTMLElement;
 }
 

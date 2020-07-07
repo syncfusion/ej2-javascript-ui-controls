@@ -8,23 +8,17 @@
 
 ## [Unreleased]
 
-### TreeMap
-
-#### Bug Fixes
-
-- `OnItemClick` event arguments in the treemap is now improved.
-
-## 18.1.46 (2020-04-28)
+## 18.2.44 (2020-07-07)
 
 ### TreeMap
 
 #### New Features
 
-- `#272704` - Treemap selection can now be done dynamically using `selectItem()` method.
+- `#280380` - `isResized` argument is exposed in the `loaded` event arguments for indicating that the component is resized.
 
-## 18.1.36-beta (2020-03-19)
+#### Bug Fixes
 
-- `#258211` - Support to customize the header of the treemap items is provided in the `itemRendering` and `itemClick` events.
+- `#280380` - Color of the treemap item will be maintained when the fill color of the selection settings is not provided.
 
 ## 17.1.48 (2019-05-21)
 

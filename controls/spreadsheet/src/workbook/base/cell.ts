@@ -3,13 +3,48 @@ import { SheetModel } from './index';
 import { CellStyleModel, HyperlinkModel, CellStyle, wrapEvent, ValidationModel } from '../common/index';
 import { getRow } from './row';
 import { RowModel } from './row-model';
-import { CellModel } from './cell-model';
+import { CellModel, FormatModel } from './cell-model';
 import { Workbook } from './workbook';
 import { getSheet } from './sheet';
+
+/**
+ * Represents the Format.
+ */
+export class Format extends ChildProperty<FormatModel> {
+    /**
+     * Specifies the number format code to display value in specified number format.
+     * @default 'General'
+     */
+    public format: string;
+
+    /**
+     * Specifies the cell style options.
+     *  ```html
+     * <div id='Spreadsheet'></div>
+     * ```
+     * ```typescript
+     * let spreadsheet: Spreadsheet = new Spreadsheet({
+     *      sheets: [{
+     *       ...
+     *            rows: [{
+     *                  cells: [{ value: '12', index: 2,  style: { fontWeight: 'bold', fontSize: 12, fontStyle: 'italic', textIndent: '2pt' 
+     *                         backgroundColor: '#4b5366', color: '#ffffff' } }]
+     *                  }]
+     *            }]
+     *  });
+     * spreadsheet.appendTo('#Spreadsheet');
+     * ```
+     * @default {}
+     */
+    @Complex<CellStyleModel>({}, CellStyle)
+    public style: CellStyleModel;
+
+}
+
 /**
  * Represents the cell.
  */
-export class Cell extends ChildProperty<RowModel> {
+export class Cell extends Format {
     /**
      * Defines the value of the cell which can be text or number.
      * @default ''

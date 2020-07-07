@@ -3,8 +3,10 @@
  */
 import { StockChart } from '../stock-chart';
 import { StockEventsSettingsModel } from '../model/base-model';
-import { Series, Points, drawSymbol, valueToCoefficient, ChartLocation, getElement, FlagType, BorderModel } from '../../chart/index';
-import { withIn, PointData, textElement,  } from '../../common/utils/helper';
+import { Series, Points } from '../../chart/series/chart-series';
+import { FlagType } from '../../common/utils/enum';
+import { BorderModel } from '../../common/model/base-model';
+import { withIn, PointData, textElement, getElement, valueToCoefficient, drawSymbol, ChartLocation } from '../../common/utils/helper';
 import { BaseTooltip } from '../../common/user-interaction/tooltip';
 import { Tooltip, PathOption, TextOption, measureText, Size } from '@syncfusion/ej2-svg-base';
 import { createElement, remove } from '@syncfusion/ej2-base';
@@ -195,7 +197,7 @@ export class StockEvents extends BaseTooltip {
     }
 
     public renderStockEventTooltip(targetId: string): void {
-        let seriesIndex: number = parseInt(targetId.split('_StockEvents_')[0].replace(/\D+/g, ''), 10);
+        let seriesIndex: number = parseInt((targetId.split('_StockEvents_')[0]).split(this.chartId + '_Series_')[1], 10);
         let pointIndex: number = parseInt(targetId.split('_StockEvents_')[1].replace(/\D+/g, ''), 10);
         let updatedLocation: ChartLocation = this.symbolLocations[seriesIndex][pointIndex];
         let pointLocation: ChartLocation = new ChartLocation(

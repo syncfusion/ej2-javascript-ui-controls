@@ -73,11 +73,7 @@ export class Common implements IAction {
             load: this.initiateCommonModule
         };
         if (this.parent.isDestroyed) { return; }
-        if (this.parent.gridSettings.contextMenuItems) {
-            if ((!this.parent.showFieldList) || (!this.parent.showGroupingBar)) {
-                this.parent.on(events.initialLoad, this.handlers.load, this);
-            }
-        }
+        this.parent.on(events.initialLoad, this.handlers.load, this);
         this.parent.on(events.uiUpdate, this.handlers.load, this);
     }
 
@@ -86,6 +82,7 @@ export class Common implements IAction {
      */
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
+        this.parent.off(events.initialLoad, this.handlers.load);
         this.parent.off(events.uiUpdate, this.handlers.load);
     }
 

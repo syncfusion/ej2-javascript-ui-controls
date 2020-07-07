@@ -1,5 +1,5 @@
 import { ChildProperty, Property } from '@syncfusion/ej2-base';
-import { TextAlignmentType, TimingFunction } from '../utils/enum';
+import { TextAlignmentType } from '../utils/enum';
 /**
  * progress bar complex interface
  */
@@ -120,12 +120,6 @@ export class Animation extends ChildProperty<Animation> {
      */
     @Property(0)
     public delay: number;
-    /** 
-     * timing-function
-     * @default 'Linear'
-     */
-    @Property('Linear')
-    public timing: TimingFunction;
 }
 /**
  * Annotation

@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## 18.1.59 (2020-06-23)
+
 ### MultiSelect
 
 #### Bug Fixes

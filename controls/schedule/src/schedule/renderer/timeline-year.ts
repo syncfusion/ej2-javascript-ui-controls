@@ -1,7 +1,7 @@
 import { append, addClass, createElement, isBlazor } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
 import { Year } from './year';
-import { TdData, RenderCellEventArgs } from '../base/interface';
+import { TdData, RenderCellEventArgs, CellTemplateArgs } from '../base/interface';
 import * as event from '../base/constant';
 import * as cls from '../base/css-constant';
 import * as util from '../base/util';
@@ -221,6 +221,7 @@ export class TimelineYear extends Year {
                         date = util.addDays(new Date(date.getTime()), 1);
                     }
                 }
+                this.renderCellTemplate({ date: date, type: 'workCells' }, td);
                 this.parent.trigger(event.renderCell, { elementType: 'workCells', element: td, date: date });
             }
         }
@@ -272,6 +273,7 @@ export class TimelineYear extends Year {
                 });
                 addClass([td], classList);
                 td.setAttribute('data-group-index', groupIndex.toString());
+                this.renderCellTemplate({ date: date, type: 'workCells', groupIndex: groupIndex }, td);
                 this.wireEvents(td, 'cell');
                 tr.appendChild(td);
                 this.parent.trigger(event.renderCell, { elementType: 'workCells', element: td, date: date });
@@ -280,6 +282,23 @@ export class TimelineYear extends Year {
         if (this.parent.activeViewOptions.orientation === 'Vertical') {
             this.collapseRows(this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS));
         }
+    }
+
+    private renderCellTemplate(data: { [key: string]: Object }, td: HTMLElement): void {
+        if (!this.parent.activeViewOptions.cellTemplate) {
+            return;
+        }
+        let dateValue: Date = util.addLocalOffset(data.date as Date);
+        let args: CellTemplateArgs = { date: dateValue, type: data.type as string };
+        if (data.groupIndex) {
+            args.groupIndex = data.groupIndex as number;
+        }
+        let scheduleId: string = this.parent.element.id + '_';
+        let viewName: string = this.parent.activeViewOptions.cellTemplateName;
+        let templateId: string = scheduleId + viewName + 'cellTemplate';
+        let cellTemplate: HTMLElement[] =
+            [].slice.call(this.parent.getCellTemplate()(args, this.parent, 'cellTemplate', templateId, false));
+        append(cellTemplate, td);
     }
 
 }

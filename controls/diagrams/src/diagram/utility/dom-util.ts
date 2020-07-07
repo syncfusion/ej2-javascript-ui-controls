@@ -15,6 +15,10 @@ import { DiagramNativeElement } from '../core/elements/native-element';
 import { BaseAttributes, TextAttributes, SubTextElement, TextBounds } from '../rendering/canvas-interface';
 import { getElement, cloneBlazorObject } from './diagram-util';
 import { Annotation, PathAnnotation } from '../objects/annotation';
+import { templateCompiler } from '../utility/base-util';
+import { SelectorModel } from '../objects/node-model';
+import { UserHandleModel } from '../interaction/selector-model';
+
 
 /**
  * Defines the functionalities that need to access DOM
@@ -456,6 +460,18 @@ export function getAdornerLayer(diagramId: string): SVGElement {
     return adornerLayer;
 }
 
+/**
+ * @private
+ */
+export function getUserHandleLayer(diagramId: string): HTMLElement {
+    let adornerLayer: HTMLElement = null;
+    let diagramUserHandleLayer: HTMLElement = getDiagramElement(diagramId);
+    let elementcoll: NodeList;
+    elementcoll = diagramUserHandleLayer.getElementsByClassName('e-userHandle-layer');
+    adornerLayer = elementcoll[0] as HTMLElement;
+    return adornerLayer;
+}
+
 /** @private */
 export function getDiagramLayer(diagramId: string): SVGElement {
     let diagramLayer: SVGElement;
@@ -811,4 +827,47 @@ export function getTemplateContent(
         annotationcontent.content = annotation.template;
     }
     return annotationcontent;
+}
+
+
+/** @private */
+export function createUserHandleTemplates(userHandleTemplate: string, template: HTMLCollection, selectedItems: SelectorModel): void {
+    let userHandleFn: Function;
+    let handle: UserHandleModel;
+    let compiledString: Function;
+    let i: number;
+    let div: HTMLElement;
+    if (userHandleTemplate && template) {
+        userHandleFn = templateCompiler(userHandleTemplate);
+        for (handle of selectedItems.userHandles) {
+            if (userHandleFn) {
+                compiledString = userHandleFn(cloneObject(handle), undefined, 'template', undefined, undefined, false);
+                for (i = 0; i < compiledString.length; i++) {
+                    let attr: Object = {
+                        'style': 'height: 100%; width: 100%; pointer-events: all',
+                        'id': handle.name + '_template_hiddenUserHandle'
+                    };
+                    div = createHtmlElement('div', attr);
+                    div.appendChild(compiledString[i]);
+                }
+                template[0].appendChild(div);
+            }
+        }
+    } else if (isBlazor()) {
+        let content: string = 'diagramsf_userHandle_template';
+        let a: Function;
+        for (handle of selectedItems.userHandles) {
+            compiledString = compile(handle.content);
+            for (i = 0, a = compiledString(cloneBlazorObject(handle), null, null, content); i < a.length; i++) {
+                let attr: object = {
+                    'style': 'height: 100%; width: 100%; pointer-events: all',
+                    'id': handle.name + '_template_hiddenUserHandle'
+                };
+                div = createHtmlElement('div', attr);
+                div.appendChild(a[i]);
+            }
+            template[0].appendChild(div);
+
+        }
+    }
 }

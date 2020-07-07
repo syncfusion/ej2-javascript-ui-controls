@@ -3,9 +3,9 @@ import { formatUnit, remove, removeClass, isBlazor } from '@syncfusion/ej2-base'
 import { ActionBaseArgs, ResizeEdges, DragEventArgs, ResizeEventArgs, TdData } from '../base/interface';
 import { Schedule } from '../base/schedule';
 import { CurrentAction } from '../base/type';
-import * as cls from '../base/css-constant';
 import { MonthEvent } from '../event-renderer/month';
 import { VerticalEvent } from '../event-renderer/vertical-view';
+import * as cls from '../base/css-constant';
 import * as util from '../base/util';
 
 /**
@@ -220,14 +220,14 @@ export class ActionBase {
         if (this.parent.currentView === 'Month') {
             elements = [].slice.call(this.parent.element.querySelectorAll('.' + cls.EVENT_ACTION_CLASS));
         }
-        elements.forEach((element: HTMLElement) => removeClass([element], cls.EVENT_ACTION_CLASS));
+        removeClass(elements, cls.EVENT_ACTION_CLASS);
     }
 
     public removeCloneElement(): void {
         this.actionObj.originalElement = [];
-        this.actionObj.cloneElement.forEach((element: HTMLElement) => {
-            if (!isNullOrUndefined(element.parentNode)) { remove(element); }
-        });
+        for (let cloneElement of this.actionObj.cloneElement) {
+            if (!isNullOrUndefined(cloneElement.parentNode)) { remove(cloneElement); }
+        }
         this.actionObj.cloneElement = [];
         let timeIndicator: Element = this.parent.element.querySelector('.' + cls.CLONE_TIME_INDICATOR_CLASS);
         if (timeIndicator) {
@@ -308,9 +308,9 @@ export class ActionBase {
             query = query.concat('[data-group-index = "' + cloneElement.getAttribute('data-group-index') + '"]');
         }
         let elements: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(query));
-        elements.forEach((element: HTMLElement) => addClass([element], cls.EVENT_ACTION_CLASS));
-        let appWrap: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.e-schedule-event-clone'));
-        appWrap.forEach((element: HTMLElement) => removeClass([element], cls.EVENT_ACTION_CLASS));
+        addClass(elements, cls.EVENT_ACTION_CLASS);
+        let eventWrappers: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CLONE_ELEMENT_CLASS));
+        removeClass(eventWrappers, cls.EVENT_ACTION_CLASS);
     }
 
     public getUpdatedEvent(startTime: Date, endTime: Date, eventObj: { [key: string]: Object }): { [key: string]: Object } {
@@ -329,16 +329,16 @@ export class ActionBase {
             let resources: TdData[] = this.parent.resourceBase.lastResourceLevel.
                 filter((res: TdData) => res.groupIndex === this.actionObj.groupIndex);
             dateRender = resources[0].renderDates;
-            workCells = [].slice.call(this.parent.element.
-                querySelectorAll('.' + cls.WORK_CELLS_CLASS + '[data-group-index="' + this.actionObj.groupIndex + '"]'));
+            let elementSelector: string = `.${cls.WORK_CELLS_CLASS}[data-group-index="${this.actionObj.groupIndex}"]`;
+            workCells = [].slice.call(this.parent.element.querySelectorAll(elementSelector));
             workDays = resources[0].workDays;
             groupOrder = resources[0].groupOrder;
         }
         this.monthEvent.dateRender = dateRender;
         this.monthEvent.getSlotDates(workDays);
-        let appWrap: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.e-schedule-event-clone'));
-        if (appWrap.length > 0) {
-            (appWrap).forEach((element: HTMLElement) => remove(element));
+        let eventWrappers: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CLONE_ELEMENT_CLASS));
+        for (let wrapper of eventWrappers) {
+            remove(wrapper);
         }
         let splittedEvents: { [key: string]: Object }[] = this.monthEvent.splitEvent(event, dateRender);
         for (let event of splittedEvents) {
@@ -347,7 +347,7 @@ export class ActionBase {
             let appWidth: number = (diffInDays * this.actionObj.cellWidth) - 7;
             let appointmentElement: HTMLElement = this.monthEvent.createAppointmentElement(event, this.actionObj.groupIndex, true);
             appointmentElement.setAttribute('drag', 'true');
-            addClass([appointmentElement], 'e-schedule-event-clone');
+            addClass([appointmentElement], cls.CLONE_ELEMENT_CLASS);
             this.monthEvent.applyResourceColor(appointmentElement, event, 'backgroundColor', groupOrder);
             setStyleAttribute(appointmentElement, { 'width': appWidth + 'px', 'border': '0px', 'pointer-events': 'none' });
             let cellTd: Element = workCells[day];

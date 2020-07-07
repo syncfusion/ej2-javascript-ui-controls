@@ -576,11 +576,17 @@ export const GROUP_CHART_VALUE: string = 'e-group-chart-values';
 /** @hidden */
 export const GROUP_CHART_MULTI_VALUE: string = 'e-group-chart-multi-values';
 /** @hidden */
+export const GROUP_CHART_ACCUMULATION_COLUMN: string = 'e-group-chart-accumulation-column';
+/** @hidden */
 export const GROUP_CHART_FILTER: string = 'e-group-chart-filters';
 /** @hidden */
 export const GROUP_CHART_VALUE_DROPDOWN_DIV: string = 'e-group-chart-values-drodown-div';
 /** @hidden */
 export const GROUP_CHART_VALUE_DROPDOWN: string = 'e-group-chart-values-drodown';
+/** @hidden */
+export const GROUP_CHART_COLUMN_DROPDOWN_DIV: string = 'e-group-chart-columns-dropdown-div';
+/** @hidden */
+export const GROUP_CHART_COLUMN_DROPDOWN: string = 'e-group-chart-columns-dropdown';
 /** @hidden */
 export const CHART_GROUPING_BAR_CLASS: string = 'e-chart-grouping-bar';
 /** @hidden */
@@ -649,3 +655,5 @@ export const PIVOTCHART_INNER: string = 'e-pivotchart-inner';
 export const PIVOTCHART_TYPE_DIALOG: string = 'e-pivotchart-type-dialog';
 /** @hidden */
 export const FORMAT_FONT_COLOR_PICKER: string = 'e-format-font-color-picker';
+/** @hidden */
+export const GROUP_PIVOT_ROW: string = 'e-group-pivot-rows';

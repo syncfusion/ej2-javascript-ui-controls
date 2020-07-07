@@ -72,6 +72,12 @@ export class Marker {
                 if (this.maps.isBlazor) {
                     const { maps, marker, ...blazorEventArgs }: IMarkerRenderingEventArgs = eventArgs;
                     eventArgs = blazorEventArgs;
+                    markerSettings.longitudeValuePath = !isNullOrUndefined(markerSettings.longitudeValuePath) ?
+                    markerSettings.longitudeValuePath : !isNullOrUndefined(data['Longitude']) ? 'Longitude' :
+                    !isNullOrUndefined(data['longitude']) ? 'longitude' : null;
+                    markerSettings.latitudeValuePath = !isNullOrUndefined(markerSettings.latitudeValuePath) ?
+                    markerSettings.latitudeValuePath : !isNullOrUndefined(data['Latitude']) ? 'Latitude' :
+                    !isNullOrUndefined(data['latitude']) ? 'latitude' : null;
                 }
                 this.maps.trigger('markerRendering', eventArgs, (MarkerArgs: IMarkerRenderingEventArgs) => {
                     if (markerSettings.colorValuePath !== eventArgs.colorValuePath ) {
@@ -80,18 +86,16 @@ export class Marker {
                     if (markerSettings.shapeValuePath !== eventArgs.shapeValuePath ) {
                         eventArgs = markerShapeChoose(eventArgs, data);
                     }
-                    let lng: number = (!isNullOrUndefined(data[markerSettings.longitudeValuePath])) ?
-                    Number(getValueFromObject(data, markerSettings.longitudeValuePath)) : parseFloat(data['longitude']);
-                    let lat: number = (!isNullOrUndefined(data[markerSettings.latitudeValuePath])) ?
-                    Number(getValueFromObject(data, markerSettings.latitudeValuePath)) : parseFloat(data['latitude']);
+                    let lng: number = (!isNullOrUndefined(markerSettings.longitudeValuePath)) ?
+                    Number(getValueFromObject(data, markerSettings.longitudeValuePath)) : !isNullOrUndefined(data['longitude']) ?
+                    parseFloat(data['longitude']) : !isNullOrUndefined(data['Longitude']) ? parseFloat(data['Longitude']) : 0;
+                    let lat: number = (!isNullOrUndefined(markerSettings.latitudeValuePath)) ?
+                    Number(getValueFromObject(data, markerSettings.latitudeValuePath)) : !isNullOrUndefined(data['latitude']) ?
+                    parseFloat(data['latitude']) : !isNullOrUndefined(data['Latitude']) ? parseFloat(data['Latitude']) : 0;
                     if (this.maps.isBlazor) {
                         let data1: Object = {};
                         let text: string[] = [];
                         let j: number = 0;
-                        if (data == {} || isNullOrUndefined(data['latitude']) || isNullOrUndefined(data['longitude'])) {
-                            lat = (data['latitude'] && !isNullOrUndefined(data['latitude'])) ? data['latitude'] : 0;
-                            lng = (data['longitude'] && !isNullOrUndefined(data['longitude'])) ? data['longitude'] : 0;
-                        }
                         for (let i: number = 0; i < Object.keys(data).length; i++) {
                             if (Object.keys(data)[i].toLowerCase() !== 'latitude' && Object.keys(data)[i].toLowerCase() !== 'longitude'
                                 && Object.keys(data)[i].toLowerCase() !== 'name' && Object.keys(data)[i].toLowerCase() !== 'blazortemplateid'
@@ -193,8 +197,10 @@ export class Marker {
                     Array.prototype.forEach.call(currentLayer.markerSettings, (markerSetting: MarkerSettingsModel, markerIndex: number) => {
                         let markerData: Object[] = <Object[]>markerSetting.dataSource;
                         Array.prototype.forEach.call(markerData, (data: Object, dataIndex: number) => {
-                            let latitude: number = !isNullOrUndefined(data['latitude']) ? parseFloat(data['latitude']) : null;
-                            let longitude: number = !isNullOrUndefined(data['longitude']) ? parseFloat(data['longitude']) : null;
+                            let latitude: number = !isNullOrUndefined(data['latitude']) ? parseFloat(data['latitude']) :
+                          !isNullOrUndefined(data['Latitude']) ? parseFloat(data['Latitude']) : null;
+                          let longitude: number = !isNullOrUndefined(data['longitude']) ? parseFloat(data['longitude']) :
+                          !isNullOrUndefined(data['Longitude']) ? parseFloat(data['Longitude']) : null;
                             minLong = isNullOrUndefined(minLong) && dataIndex === 0 ?
                                 longitude : minLong;
                             maxLat = isNullOrUndefined(maxLat) && dataIndex === 0 ?

@@ -142,3 +142,7 @@ export const activeParentTask: string = 'e-active-parent-task';
 export const activeChildTask: string = 'e-active-child-task';
 export const activeConnectedTask: string = 'e-active-connected-task';
 export const touchMode: string = 'e-predecessor-touch-mode';
+//Over allocation range container
+export const rangeContainer: string = 'e-rangecontainer';
+export const rangeChildContainer: string = 'e-rg-rangdiv';
+export const rangeChildMiddleContainer: string = 'e-rg-middlerangdiv';

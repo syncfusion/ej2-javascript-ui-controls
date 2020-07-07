@@ -1,7 +1,8 @@
 import { Property, ChildProperty } from '@syncfusion/ej2-base';
 import { DialogFieldType } from '../base/type';
 
-/**  
+/**
+ * @deprecated
  * Holds the configuration of editor fields.
  */
 export class DialogFields extends ChildProperty<DialogFields>  {

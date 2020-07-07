@@ -2572,6 +2572,7 @@ exports.BlobHelper = BlobHelper;
 return exports;
 
 });
+sfBlazor.libs.push("excelexport")
 sfBlazor.loadDependencies(["compression","base"], () => {
     sf.excelexport = sf.excelexport({});
 });

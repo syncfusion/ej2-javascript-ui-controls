@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Kanban Typescript Component</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta name="description" content="Typescript UI Controls" />
+    <meta name="author" content="Syncfusion" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="../css/material.css" />
+    <script data-main="sort" src="../../node_modules/requirejs/require.js"></script>
+    <script src="require.config.js"></script>
+</head>
+
+<body>
+    <div class="container-fluid" style="margin-top:15px;">
+        <div class="row">
+            <div class="col-md-8">
+                <div id="kanban"></div>
+            </div>
+            <div class="col-lg-4 property-section">
+                <table id="property" title="Properties">
+                    <tr>
+                        <td>
+                            <div>Sort by</div>
+                        </td>
+                        <td>
+                            <div>
+                                <select id="sortBy" class="form-control">
+                                    <option value="Datasource">DataSource order</option>
+                                    <option value="Index">Index</option>
+                                    <option value="Custom">Custom</option>
+                                </select>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div>Field</div>
+                        </td>
+                        <td>
+                            <div>
+                                <select id="field" class="form-control">
+                                    <option value="None">None</option>
+                                    <option value="Priority">Priority</option>
+                                    <option value="RankId">RankId</option>
+                                    <option value="Summary">Summary</option>
+                                </select>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div>Direction</div>
+                        </td>
+                        <td>
+                            <div>
+                                <select id="direction" class="form-control">
+                                    <option value="Ascending">Ascending</option>
+                                    <option value="Descending">Descending</option>
+                                </select>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr><td><b>Restrictions</b></td></tr>
+                    <tr>
+                        <td>
+                            DataSource Order
+                        </td>
+                        <td>
+                            Does not consider <b>field</b>.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Index
+                        </td>
+                        <td>
+                            Placed card on corresponding place and accept only integer mapping value.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Custom
+                        </td>
+                        <td>
+                            Consider initial mapping value and placed the card.
+                        </td>
+                    </tr>
+                </table>
+            </div>            
+        </div>
+    </div>
+    <style>
+        #property tr {
+            height: 50px
+        }
+    </style>
+</body>
+
+</html>

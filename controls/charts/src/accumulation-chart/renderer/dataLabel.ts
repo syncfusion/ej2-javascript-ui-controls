@@ -1,7 +1,7 @@
 /**
  * AccumulationChart DataLabel module file
  */
-import { extend, createElement, getValue } from '@syncfusion/ej2-base';
+import { extend, createElement, getValue, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Rect, Size, PathOption, measureText, TextOption } from '@syncfusion/ej2-svg-base';
 import { ChartLocation, degreeToLocation, isOverlap, stringToNumber, getAngle, appendChildElement } from '../../common/utils/helper';
 import { textTrim, subtractThickness, Thickness, getElement } from '../../common/utils/helper';
@@ -11,12 +11,11 @@ import { AccumulationLabelPosition } from '../model/enum';
 import { AccPoints, getSeriesFromIndex, AccumulationSeries } from '../model/acc-base';
 import { IAccTextRenderEventArgs } from '../model/pie-interface';
 import { AccumulationDataLabelSettingsModel } from '../model/acc-base-model';
-import { MarginModel, FontModel, ConnectorModel } from '../../common/model/base-model';
+import { MarginModel, FontModel, ConnectorModel, BorderModel } from '../../common/model/base-model';
 import { textRender } from '../../common/model/constants';
 import { AccumulationChart } from '../accumulation';
 import { getFontStyle, createTemplate, measureElementRect, templateAnimate } from '../../common/utils/helper';
 import { AccumulationBase } from './accumulation-base';
-import { BorderModel } from '../../chart/index';
 
 /**
  * AccumulationDataLabel module used to render `dataLabel`.
@@ -30,6 +29,13 @@ export class AccumulationDataLabel extends AccumulationBase {
     public clearTooltip: number;
     private id: string;
     public marginValue: number;
+    /**
+     * This varaible indicated the change of angle direction.
+     * Such as increase/decrease the label angle while doing smart label arrangements.
+     */
+    private isIncreaseAngle: boolean;
+    private rightSideRenderingPoints: AccPoints[] = [];
+    private leftSideRenderingPoints: AccPoints[] = [];
     constructor(accumulation: AccumulationChart) {
         super(accumulation);
         this.id = accumulation.element.id + '_datalabel_Series_';
@@ -146,29 +152,6 @@ export class AccumulationDataLabel extends AccumulationBase {
                 this.setOuterSmartLabel(previousPoint, point, dataLabel.border.width, labelRadius, textSize, this.marginValue);
             }
         }
-        if (this.isOverlapping(point, points) ||
-            (this.titleRect && point.labelRegion && isOverlap(point.labelRegion, this.titleRect))) {
-            this.setPointVisibileFalse(point);
-        }
-
-        if (this.accumulation.accumulationLegendModule && point.labelVisible && point.labelRegion) {
-            let rect: Rect = this.accumulation.accumulationLegendModule.legendBounds;
-            let padding: number = this.accumulation.legendSettings.border.width / 2;
-            this.textTrimming(
-                point, new Rect(rect.x - padding, rect.y - padding, rect.width + (2 * padding), rect.height + (2 * padding)),
-                dataLabel.font, this.accumulation.accumulationLegendModule.position);
-        }
-        if (point.labelVisible && point.labelRegion) {
-            let position: string = this.isCircular() ? (point.labelRegion.x >= this.center.x) ? 'InsideRight' : 'InsideLeft' :
-            (point.labelRegion.x >= point.region.x) ? 'InsideRight' : 'InsideLeft';
-
-            this.textTrimming(point, this.areaRect, dataLabel.font, position);
-        }
-        if (point.labelVisible && point.labelRegion && ((point.labelRegion.y + point.labelRegion.height >
-            this.areaRect.y + this.areaRect.height || point.labelRegion.y < this.areaRect.y) || (point.labelRegion.x < this.areaRect.x ||
-                point.labelRegion.x + point.labelRegion.width > this.areaRect.x + this.areaRect.width))) {
-            this.setPointVisibileFalse(point);
-        }
     }
 
     /**
@@ -281,13 +264,14 @@ export class AccumulationDataLabel extends AccumulationBase {
             let labelAngle: number = this.getOverlappedAngle(previousPoint.labelRegion, point.labelRegion, point.midAngle, border * 2);
             this.getLabelRegion(point, 'Outside', textsize, labelRadius, margin, labelAngle);
             if (labelAngle > point.endAngle) {
-                this.setPointVisibileFalse(point);
+                labelAngle = point.midAngle;
+                //this.setPointVisibileFalse(point);
             }
             point.labelAngle = labelAngle;
             while (point.labelVisible && (isOverlap(previousPoint.labelRegion, point.labelRegion) || labelAngle <= previousPoint.labelAngle
                 || this.isConnectorLineOverlapping(point, previousPoint))) {
                 if (labelAngle > point.endAngle) {
-                    this.setPointVisibileFalse(point);
+                    //this.setPointVisibileFalse(point);
                     break;
                 }
                 point.labelAngle = labelAngle;
@@ -387,6 +371,7 @@ export class AccumulationDataLabel extends AccumulationBase {
         }
         return getAngle(this.center, new ChartLocation(x, second.y));
     }
+
     /**
      * To get connector line path
      */
@@ -400,7 +385,7 @@ export class AccumulationDataLabel extends AccumulationBase {
 
         let start: ChartLocation = this.getConnectorStartPoint(point, connector);
 
-        let labelAngle: number = end || point.midAngle;
+        let labelAngle: number = this.accumulation.enableSmartLabels ? point.midAngle :  end || point.midAngle;
 
         let middle: ChartLocation = new ChartLocation(0, 0);
 
@@ -412,7 +397,14 @@ export class AccumulationDataLabel extends AccumulationBase {
                     this.isVariousRadius() ? stringToNumber(point.sliceRadius, this.accumulation.pieSeriesModule.seriesRadius) :
                         this.radius);
                 //let r: number = labelRadius - this.radius;
-                middle = degreeToLocation(labelAngle, labelRadius - (r / 2), this.center);
+                if (point.isLabelUpdated) {
+                    middle = this.getPerpendicularDistance(start, point);
+                } else {
+                    middle = degreeToLocation(labelAngle, labelRadius - (r / 2), this.center);
+                    if (point.labelPosition === 'Outside' && dataLabel.position === 'Inside') {
+                        middle = degreeToLocation(labelAngle, labelRadius - r * 1.25, this.center);
+                    }
+                }
                 return 'M ' + start.x + ' ' + start.y + ' Q ' + middle.x + ' ' + middle.y + ' ' + endPoint.x + ' ' + endPoint.y;
             } else {
                 return this.getPolyLinePath(start, endPoint);
@@ -593,6 +585,7 @@ export class AccumulationDataLabel extends AccumulationBase {
             text: point.label, border: border, color: dataLabel.fill, template: dataLabel.template, font: argsFont
         };
         this.accumulation.trigger(textRender, argsData);
+        point.argsData = argsData;
         let angle: number; let degree: number;
         let isTemplate: boolean = argsData.template !== null;
         point.labelVisible = !argsData.cancel; point.text = point.label = argsData.text;
@@ -611,73 +604,144 @@ export class AccumulationDataLabel extends AccumulationBase {
             measureText(point.label, dataLabel.font);
         textSize.height += 4; // 4 for calculation with padding for smart label shape
         textSize.width += 4;
+        point.textSize = textSize;
         this.getDataLabelPosition(point, dataLabel, textSize, points, datalabelGroup, id);
-        let dataLabelElement: Element; let location: ChartLocation;
-        let element: Element;
-        if (point.labelVisible) {
-            angle = degree = dataLabel.angle;
-            this.correctLabelRegion(point.labelRegion, textSize);
-            if (isTemplate) {
-                this.setTemplateStyle(
-                    childElement, point, templateElement, dataLabel.font.color, argsData.color, redraw);
-            } else {
-                location = new ChartLocation(
-                    point.labelRegion.x + this.marginValue, point.labelRegion.y + (textSize.height * 3 / 4) + this.marginValue);
-                element = getElement(id + 'shape_' + point.index);
-                let startLocation: ChartLocation = element ? new ChartLocation(
-                    +element.getAttribute('x'), +element.getAttribute('y')
-                ) : null;
-                dataLabelElement = this.accumulation.renderer.drawRectangle(new RectOption(
-                    id + 'shape_' + point.index, argsData.color, argsData.border, 1, point.labelRegion, dataLabel.rx, dataLabel.ry));
-                appendChildElement(false, datalabelGroup, dataLabelElement, redraw, true, 'x', 'y', startLocation, null,
-                                   false, false, null, this.accumulation.duration);
-                let textWidth: number = textSize.width;
-                let textHeight: number = textSize.height;
-                let rotate: string;
-                if (angle !== 0 && dataLabel.enableRotation) {
-                    if (point.labelPosition === 'Outside') {
-                        degree = 0;
+        if (point.labelRegion) {
+            this.correctLabelRegion(point.labelRegion, point.textSize);
+        }
+    }
+
+    /**
+     * @private
+     */
+    // tslint:disable-next-line:max-func-body-length
+    public drawDataLabels(series: AccumulationSeries, dataLabel: AccumulationDataLabelSettingsModel, parent: HTMLElement,
+                          templateElement?: HTMLElement, redraw?: boolean): void {
+        let angle: number; let degree: number;
+        let modifiedPoints: AccPoints[] = series.leftSidePoints.concat(series.rightSidePoints);
+        modifiedPoints.sort((a: AccPoints, b: AccPoints) => a.index - b.index);
+        if (series.type === 'Pie' && this.accumulation.enableSmartLabels) {
+            this.extendedLabelsCalculation();
+        }
+        for (let point of modifiedPoints) {
+            if (!isNullOrUndefined(point.argsData) && !isNullOrUndefined(point.y)) {
+                this.finalizeDatalabels(point, modifiedPoints, dataLabel);
+                let id: string = this.accumulation.element.id + '_datalabel_Series_' + 0 + '_';
+                let datalabelGroup: Element = this.accumulation.renderer.createGroup({ id: id + 'g_' + point.index });
+                let dataLabelElement: Element; let location: ChartLocation;
+                // tslint:disable-next-line:max-line-length
+                let childElement: HTMLElement = createElement('div', {
+                    id: this.accumulation.element.id + '_Series_' + 0 + '_DataLabel_' + point.index,
+                    styles: 'position: absolute;background-color:' + point.argsData.color + ';' +
+                        // tslint:disable-next-line:max-line-length
+                        getFontStyle(dataLabel.font) + ';border:' + point.argsData.border.width + 'px solid ' + point.argsData.border.color + ';'
+                });
+                let textSize: Size = point.argsData ?
+                    this.getTemplateSize(childElement, point, point.argsData, redraw) :
+                    measureText(point.label, dataLabel.font);
+                let element: Element;
+                if (point.visible && point.labelVisible) {
+                    angle = degree = dataLabel.angle;
+                    if (point.argsData.template) {
+                        this.setTemplateStyle(
+                            childElement, point, templateElement, dataLabel.font.color, point.color, redraw);
                     } else {
-                        if (point.midAngle >= 90 && point.midAngle <= 270) {
-                            degree = point.midAngle + 180;
-                        } else { degree = point.midAngle; }
+                        location = new ChartLocation(
+                            // tslint:disable-next-line:max-line-length
+                            point.labelRegion.x + this.marginValue, point.labelRegion.y + (point.textSize.height * 3 / 4) + this.marginValue);
+                        element = getElement(id + 'shape_' + point.index);
+                        let startLocation: ChartLocation = element ? new ChartLocation(
+                            +element.getAttribute('x'), +element.getAttribute('y')
+                        ) : null;
+                        dataLabelElement = this.accumulation.renderer.drawRectangle(new RectOption(
+                            id + 'shape_' + point.index, point.argsData.color, point.argsData.border, 1,
+                            point.labelRegion, dataLabel.rx, dataLabel.ry));
+                        appendChildElement(false, datalabelGroup, dataLabelElement, redraw, true, 'x', 'y', startLocation, null,
+                                           false, false, null, this.accumulation.duration);
+                        let textWidth: number = point.textSize.width;
+                        let textHeight: number = point.textSize.height;
+                        let rotate: string;
+                        if (angle !== 0 && dataLabel.enableRotation) {
+                            if (point.labelPosition === 'Outside') {
+                                degree = 0;
+                            } else {
+                                if (point.midAngle >= 90 && point.midAngle <= 270) {
+                                    degree = point.midAngle + 180;
+                                } else { degree = point.midAngle; }
+                            }
+                            // tslint:disable-next-line:max-line-length
+                            rotate = 'rotate(' + degree + ',' + (location.x + (textWidth / 2)) + ',' + (location.y - (textHeight / 4)) + ')';
+                        } else {
+                            if (angle) {
+                                degree = (angle > 360) ? angle - 360 : (angle < -360) ? angle + 360 : angle;
+                            } else { degree = 0; }
+                            rotate = 'rotate(' + degree + ',' + (location.x + (textWidth / 2)) + ',' + (location.y) + ')';
+                        }
+                        point.transform = rotate;
+                        textElement(
+                            this.accumulation.renderer,
+                            new TextOption(
+                                id + 'text_' + point.index, location.x, location.y,
+                                'start', point.label, rotate, 'auto', degree
+                            ),
+                            point.argsData.font, point.argsData.font.color || this.getSaturatedColor(point, point.argsData.color),
+                            datalabelGroup, false, redraw, true, false, this.accumulation.duration
+                        );
+                        element = null;
                     }
-                    rotate = 'rotate(' + degree + ',' + (location.x + (textWidth / 2)) + ',' + (location.y - (textHeight / 4)) + ')';
-                } else {
-                    if (angle) {
-                        degree = (angle > 360) ? angle - 360 : (angle < -360) ? angle + 360 : angle;
-                    } else { degree = 0; }
-                    rotate = 'rotate(' + degree + ',' + (location.x + (textWidth / 2)) + ',' + (location.y) + ')';
+                    // tslint:disable-next-line:max-line-length
+                    if (this.accumulation.accumulationLegendModule && (dataLabel.position === 'Outside' || this.accumulation.enableSmartLabels)) {
+                        this.accumulation.visibleSeries[0].findMaxBounds(this.accumulation.visibleSeries[0].labelBound, point.labelRegion);
+                    }
+                    if (point.labelPosition === 'Outside') {
+                        let element: Element = getElement(id + 'connector_' + point.index);
+                        let previousDirection: string = element ? element.getAttribute('d') : '';
+                        let pathElement: Element = this.accumulation.renderer.drawPath(new PathOption(
+                            id + 'connector_' + point.index, 'transparent', dataLabel.connectorStyle.width,
+                            dataLabel.connectorStyle.color || point.color, 1, dataLabel.connectorStyle.dashArray,
+                            this.getConnectorPath(
+                                <Rect>extend({}, point.labelRegion, null, true), point, dataLabel, point.labelAngle
+                            )
+                        ));
+                        appendChildElement(false, datalabelGroup, pathElement, redraw, true, null, null, null, previousDirection,
+                                           false, false, null, this.accumulation.duration);
+                    }
+                    appendChildElement(false, parent, datalabelGroup, redraw);
                 }
-                point.transform = rotate;
-                textElement(
-                    this.accumulation.renderer,
-                    new TextOption(
-                        id + 'text_' + point.index, location.x, location.y,
-                        'start', point.label, rotate, 'auto', degree
-                    ),
-                    argsData.font, argsData.font.color || this.getSaturatedColor(point, argsData.color), datalabelGroup,
-                    false, redraw, true, false, this.accumulation.duration
-                );
-                element = null;
             }
-            if (this.accumulation.accumulationLegendModule && (dataLabel.position === 'Outside' || this.accumulation.enableSmartLabels)) {
-                this.accumulation.visibleSeries[0].findMaxBounds(this.accumulation.visibleSeries[0].labelBound, point.labelRegion);
-            }
-            if (point.labelPosition === 'Outside') {
-                let element: Element = getElement(id + 'connector_' + point.index);
-                let previousDirection: string = element ? element.getAttribute('d') : '';
-                let pathElement: Element = this.accumulation.renderer.drawPath(new PathOption(
-                    id + 'connector_' + point.index, 'transparent', dataLabel.connectorStyle.width,
-                    dataLabel.connectorStyle.color || point.color, 1, dataLabel.connectorStyle.dashArray,
-                    this.getConnectorPath(
-                        <Rect>extend({}, point.labelRegion, null, true), point, dataLabel, point.labelAngle
-                    )
-                ));
-                appendChildElement(false, datalabelGroup, pathElement, redraw, true, null, null, null, previousDirection,
-                                   false, false, null, this.accumulation.duration);
-            }
-            appendChildElement(false, parent, datalabelGroup, redraw);
+        }
+    }
+
+    /**
+     * In this method datalabels region checked with legebdBounds and areaBounds.
+     * Trimming of datalabel and point's visibility again changed here.
+     * @param point current point in which trimming and visibility to be checked
+     * @param points finalized points
+     * @param dataLabel datalabel model
+     */
+    private finalizeDatalabels(point: AccPoints, points: AccPoints[], dataLabel: AccumulationDataLabelSettingsModel): void {
+        if (this.isOverlapping(point, points) ||
+            (this.titleRect && point.labelRegion && isOverlap(point.labelRegion, this.titleRect))) {
+            //this.setPointVisibileFalse(point);
+        }
+
+        if (this.accumulation.accumulationLegendModule && point.labelVisible && point.labelRegion) {
+            let rect: Rect = this.accumulation.accumulationLegendModule.legendBounds;
+            let padding: number = this.accumulation.legendSettings.border.width / 2;
+            this.textTrimming(
+                point, new Rect(rect.x - padding, rect.y - padding, rect.width + (2 * padding), rect.height + (2 * padding)),
+                dataLabel.font, this.accumulation.accumulationLegendModule.position);
+        }
+        if (point.labelVisible && point.labelRegion) {
+            let position: string = this.isCircular() ? (point.labelRegion.x >= this.center.x) ? 'InsideRight' : 'InsideLeft' :
+                (point.labelRegion.x >= point.region.x) ? 'InsideRight' : 'InsideLeft';
+
+            this.textTrimming(point, this.areaRect, dataLabel.font, position);
+        }
+        if (point.labelVisible && point.labelRegion && ((point.labelRegion.y + point.labelRegion.height >
+            this.areaRect.y + this.areaRect.height || point.labelRegion.y < this.areaRect.y) || (point.labelRegion.x < this.areaRect.x ||
+                point.labelRegion.x + point.labelRegion.width > this.areaRect.x + this.areaRect.width))) {
+            this.setPointVisibileFalse(point);
         }
     }
 
@@ -792,5 +856,301 @@ export class AccumulationDataLabel extends AccumulationBase {
         /**
          * Destroy method performed here
          */
+    }
+
+    //calculation for placing labels smartly
+    private extendedLabelsCalculation(): void {
+        let series: AccumulationSeries = <AccumulationSeries>this.accumulation.series[0];
+        series.rightSidePoints.forEach((point: AccPoints, index: number, halfSidePoints: AccPoints[]) => {
+            point.initialLabelRegion = point.labelRegion;
+            point.isLabelUpdated = 0;
+            this.skipPoints(point, halfSidePoints, index);
+        });
+        series.leftSidePoints.forEach((point: AccPoints, index: number, halfSidePoints: AccPoints[]) => {
+            point.initialLabelRegion = point.labelRegion;
+            point.isLabelUpdated = 0;
+            this.skipPoints(point, halfSidePoints, index);
+        });
+        this.arrangeLeftSidePoints(series);
+        this.isIncreaseAngle = false;
+        this.arrangeRightSidePoints(series);
+    }
+
+    /**
+     * Rightside points alignments calculation
+     * @param series 
+     */
+    private arrangeRightSidePoints(series: AccumulationSeries): void {
+        let startFresh: boolean;
+        let angleChanged: boolean;
+        let rightSideRenderPoints: AccPoints[] = series.rightSidePoints.filter(
+            (point: AccPoints) => (point.labelVisible && point.labelPosition === 'Outside'));
+        this.rightSideRenderingPoints = rightSideRenderPoints;
+        let checkAngle: number;
+        let currentPoint: AccPoints;
+        let lastPoint: AccPoints = rightSideRenderPoints[rightSideRenderPoints.length - 1];
+        let nextPoint: AccPoints;
+        if (lastPoint) {
+            if (lastPoint.labelAngle > 90 && lastPoint.labelAngle < 270) {
+                this.isIncreaseAngle = true;
+                this.changeLabelAngle(lastPoint, 89);
+            }
+        }
+        /**
+         * Right side points arranged from last point.
+         * A point checked with successive points for overlapping. 
+         * If that is overlapped, its label angle is decreased and placing in optimal position
+         * If one point's angle is decreased, its previous points in the half side points also decreased until it reaced optimum position.
+         * When decreasing angle falls beyond 270, label angle increased.
+         * If one point's angle is increased, its successive points in that half point also increased until it reaced optimum position.
+         */
+        for (let i: number = rightSideRenderPoints.length - 1; i >= 0; i--) {
+            currentPoint = rightSideRenderPoints[i];
+            nextPoint = rightSideRenderPoints[i + 1];
+            // A point checked for overlapping, label visibility
+            if (this.isOverlapWithNext(currentPoint, rightSideRenderPoints, i) && currentPoint.labelVisible
+                || !(currentPoint.labelAngle <= 90 || currentPoint.labelAngle >= 270)) {
+                checkAngle = lastPoint.labelAngle + 10;
+                angleChanged = true;
+                //If last's point change angle in beyond the limit, stop the increasing angle and do decrease the angle.
+                if (startFresh) {
+                    this.isIncreaseAngle = false;
+                } else if (checkAngle > 90 && checkAngle < 270 && nextPoint.isLabelUpdated) {
+                    this.isIncreaseAngle = true;
+                }
+                if (!this.isIncreaseAngle) {
+                    for (let k: number = i + 1; k < rightSideRenderPoints.length; k++) {
+                        this.increaseAngle(rightSideRenderPoints[k - 1], rightSideRenderPoints[k], series, true);
+                    }
+                } else {
+                    for (let k: number = i + 1; k > 0; k--) {
+                        this.decreaseAngle(rightSideRenderPoints[k], rightSideRenderPoints[k - 1], series, true);
+                    }
+                }
+            } else {
+                //If a point did not overlapped with previous points, increase the angle always for right side points.
+                if (angleChanged && nextPoint && !nextPoint.isLabelUpdated) {
+                    startFresh = true;
+                }
+            }
+        }
+    }
+
+    /**
+     * Leftside points alignments calculation
+     * @param series 
+     */
+    private arrangeLeftSidePoints(series: AccumulationSeries): void {
+        let leftSideRenderPoints: AccPoints[] = series.leftSidePoints.filter(
+            (point: AccPoints) => (point.labelVisible && point.labelPosition === 'Outside'));
+        this.leftSideRenderingPoints = leftSideRenderPoints;
+        let previousPoint: AccPoints;
+        let currentPoint: AccPoints;
+        let angleChanged: boolean;
+        let startFresh: boolean;
+        /**
+         * Left side points arranged from first point.
+         * A point checked with previous points for overlapping. 
+         * If that is overlapped, its label angle is decreased and placing in optimal position
+         * If one point's angle is decreased, its previous points in the half side points also decreased until it reaced optimum position.
+         * When decreasing angle falls beyond 90, label angle increased.
+         * If one point's angle is increased, its successive points in that half point also increased until it reaced optimum position.
+         */
+        for (let i: number = 0; i < leftSideRenderPoints.length; i++) {
+            currentPoint = leftSideRenderPoints[i];
+            previousPoint = leftSideRenderPoints[i - 1];
+            // A point checked
+            if (this.isOverlapWithPrevious(currentPoint, leftSideRenderPoints, i) && currentPoint.labelVisible
+                || !(currentPoint.labelAngle < 270)) {
+                angleChanged = true;
+                if (startFresh) {
+                    this.isIncreaseAngle = false;
+                }
+                if (!this.isIncreaseAngle) {
+                    for (let k: number = i; k > 0; k--) {
+                        this.decreaseAngle(leftSideRenderPoints[k], leftSideRenderPoints[k - 1], series, false);
+                        leftSideRenderPoints.filter((point: AccPoints, index: number) => {
+                            if (point.isLabelUpdated && leftSideRenderPoints[index].labelAngle - 10 < 100) {
+                                this.isIncreaseAngle = true;
+                            }
+                        });
+                    }
+                } else {
+                    for (let k: number = i; k < leftSideRenderPoints.length; k++) {
+                        this.increaseAngle(leftSideRenderPoints[k - 1], leftSideRenderPoints[k], series, false);
+                    }
+                }
+            } else {
+                if (angleChanged && previousPoint && previousPoint.isLabelUpdated) {
+                    startFresh = true;
+                }
+            }
+        }
+    }
+
+    private decreaseAngle(currentPoint: AccPoints, previousPoint: AccPoints, series: AccumulationSeries, isRightSide: boolean): void {
+        if (isNullOrUndefined(currentPoint) || isNullOrUndefined(previousPoint)) {
+            return null;
+        }
+        let count: number = 1;
+        if (isRightSide) {
+            while (isOverlap(currentPoint.labelRegion, previousPoint.labelRegion) || (!this.isVariousRadius() &&
+                !((previousPoint.labelRegion.height + previousPoint.labelRegion.y) < currentPoint.labelRegion.y))) {
+                let newAngle: number = previousPoint.midAngle - count;
+                if (newAngle < 0) {
+                    newAngle = 360 + newAngle;
+                }
+                if (newAngle <= 270 && newAngle >= 90) {
+                    newAngle = 270;
+                    this.isIncreaseAngle = true;
+                    break;
+                }
+                this.changeLabelAngle(previousPoint, newAngle);
+                count++;
+            }
+        } else {
+            if (currentPoint.labelAngle > 270) {
+                this.changeLabelAngle(currentPoint, 270);
+                previousPoint.labelAngle = 270;
+            }
+            while (isOverlap(currentPoint.labelRegion, previousPoint.labelRegion) || (!this.isVariousRadius() &&
+                ((currentPoint.labelRegion.y + currentPoint.labelRegion.height) > previousPoint.labelRegion.y))) {
+                let newAngle: number = previousPoint.midAngle - count;
+                if (!(newAngle <= 270 && newAngle >= 90)) {
+                    newAngle = 90;
+                    this.isIncreaseAngle = true;
+                    break;
+                }
+                this.changeLabelAngle(previousPoint, newAngle);
+                if (isOverlap(currentPoint.labelRegion, previousPoint.labelRegion) &&
+                    !series.leftSidePoints.indexOf(previousPoint) && (newAngle - 1 < 90 && newAngle - 1 > 270)) {
+                    this.changeLabelAngle(currentPoint, currentPoint.labelAngle + 1);
+                    this.arrangeLeftSidePoints(series);
+                    break;
+                }
+                count++;
+            }
+        }
+    }
+
+    private increaseAngle(currentPoint: AccPoints, nextPoint: AccPoints, series: AccumulationSeries, isRightSide: boolean): void {
+        if (isNullOrUndefined(currentPoint) || isNullOrUndefined(nextPoint)) {
+            return null;
+        }
+        let count: number = 1;
+        if (isRightSide) {
+            while (isOverlap(currentPoint.labelRegion, nextPoint.labelRegion) || (!this.isVariousRadius() &&
+                !((currentPoint.labelRegion.y + currentPoint.labelRegion.height) < nextPoint.labelRegion.y))) {
+                let newAngle: number = nextPoint.midAngle + count;
+                if (newAngle < 270 && newAngle > 90) {
+                    newAngle = 90;
+                    this.isIncreaseAngle = true;
+                    break;
+                }
+                this.changeLabelAngle(nextPoint, newAngle);
+                if (isOverlap(currentPoint.labelRegion, nextPoint.labelRegion) && (newAngle + 1 > 90 && newAngle + 1 < 270) &&
+                    this.rightSideRenderingPoints.indexOf(nextPoint) === this.rightSideRenderingPoints.length - 1) {
+                    this.changeLabelAngle(currentPoint, currentPoint.labelAngle - 1);
+                    nextPoint.labelRegion = nextPoint.initialLabelRegion;
+                    this.arrangeRightSidePoints(series);
+                    break;
+                }
+                count++;
+            }
+        } else {
+            while (isOverlap(currentPoint.labelRegion, nextPoint.labelRegion) || (!this.isVariousRadius() &&
+                (currentPoint.labelRegion.y < (nextPoint.labelRegion.y + nextPoint.labelRegion.height)))) {
+                let newAngle: number = nextPoint.midAngle + count;
+                if (!(newAngle < 270 && newAngle > 90)) {
+                    newAngle = 270;
+                    this.isIncreaseAngle = true;
+                    break;
+                }
+                this.changeLabelAngle(nextPoint, newAngle);
+                count++;
+            }
+        }
+    }
+
+    private changeLabelAngle(currentPoint: AccPoints, newAngle: number): void {
+        let dataLabel: AccumulationDataLabelSettingsModel = this.accumulation.series[0].dataLabel;
+        let variableR: number;
+        if (!this.isVariousRadius()) {
+            variableR = this.accumulation.pieSeriesModule.getLabelRadius(this.accumulation.visibleSeries[0], currentPoint);
+        }
+
+        //padding 10px is added to label radius for increasing the angle and avoid congestion.
+        let labelRadius: number = (currentPoint.labelPosition === 'Outside' && this.accumulation.enableSmartLabels &&
+            dataLabel.position === 'Inside') ?
+            this.radius + stringToNumber(dataLabel.connectorStyle.length || '4%', this.accumulation.pieSeriesModule.size / 2) :
+            (!this.isVariousRadius() ? this.accumulation.pieSeriesModule.labelRadius + 10 : variableR);
+        let radius: number = (!this.isVariousRadius() ? labelRadius : variableR);
+        this.getLabelRegion(currentPoint, 'Outside', currentPoint.textSize, radius, this.marginValue, newAngle);
+        currentPoint.isLabelUpdated = 1;
+        currentPoint.labelAngle = newAngle;
+    }
+
+    private isOverlapWithPrevious(currentPoint: AccPoints, points: AccPoints[], currentPointIndex?: number): boolean {
+        for (let i: number = 0; i < currentPointIndex; i++) {
+            if (i !== points.indexOf(currentPoint) &&
+                points[i].visible && points[i].labelVisible && points[i].labelRegion && currentPoint.labelRegion &&
+                currentPoint.labelVisible && isOverlap(currentPoint.labelRegion, points[i].labelRegion)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private isOverlapWithNext(point: AccPoints, points: AccPoints[], pointIndex?: number): boolean {
+        for (let i: number = pointIndex; i < points.length; i++) {
+            if (i !== points.indexOf(point) && points[i].visible && points[i].labelVisible && points[i].labelRegion &&
+                point.labelRegion && point.labelVisible && isOverlap(point.labelRegion, points[i].labelRegion)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    private skipPoints(currentPoint: AccPoints, halfsidePoints: AccPoints[], pointIndex: number): void {
+        if (pointIndex > 0 && ((currentPoint.midAngle < 285 && currentPoint.midAngle > 255) ||
+            (currentPoint.midAngle < 105 && currentPoint.midAngle > 75))) {
+            let previousPoint: AccPoints = halfsidePoints[pointIndex - 1];
+            let angleDiff: number = currentPoint.endAngle % 360 - currentPoint.startAngle % 360;
+            let prevAngleDiff: number = previousPoint.endAngle % 360 - previousPoint.startAngle % 360;
+            if (prevAngleDiff <= angleDiff && angleDiff < 5 && previousPoint.labelVisible) {
+                this.setPointVisibileFalse(currentPoint);
+            }
+        } else if (pointIndex > 1 && ((currentPoint.midAngle < 300 && currentPoint.midAngle > 240) ||
+            (currentPoint.midAngle < 120 && currentPoint.midAngle > 60))) {
+            let prevPoint: AccPoints = halfsidePoints[pointIndex - 1];
+            let secondPrevPoint: AccPoints = halfsidePoints[pointIndex - 2];
+            let angleDiff: number = currentPoint.endAngle % 360 - currentPoint.startAngle % 360;
+            let prevAngleDiff: number = prevPoint.endAngle % 360 - prevPoint.startAngle % 360;
+            let thirdAngleDiff: number = secondPrevPoint.endAngle % 360 - secondPrevPoint.startAngle % 360;
+            if (angleDiff < 3 && prevAngleDiff < 3 && thirdAngleDiff < 3 && prevPoint.labelVisible && currentPoint.labelVisible) {
+                this.setPointVisibileFalse(currentPoint);
+            }
+        }
+    }
+
+    private getPerpendicularDistance(startPoint: ChartLocation, point: AccPoints): ChartLocation {
+        let increasedLocation: ChartLocation;
+        let add: number = 10;
+        let height: number = add + 10 * Math.sin(point.midAngle * Math.PI / 360);
+        if (point.midAngle > 270 && point.midAngle < 360) {
+            increasedLocation = new ChartLocation(startPoint.x + height * (Math.cos((360 - point.midAngle) * Math.PI / 180)),
+                                                  startPoint.y - height * (Math.sin((360 - point.midAngle) * Math.PI / 180)));
+        } else if (point.midAngle > 0 && point.midAngle < 90) {
+            increasedLocation = new ChartLocation(startPoint.x + height * (Math.cos((point.midAngle) * Math.PI / 180)),
+                                                  startPoint.y + height * (Math.sin((point.midAngle) * Math.PI / 180)));
+        } else if (point.midAngle > 0 && point.midAngle < 90) {
+            increasedLocation = new ChartLocation(startPoint.x - height * (Math.cos((point.midAngle - 90) * Math.PI / 180)),
+                                                  startPoint.y + height * (Math.sin((point.midAngle - 90) * Math.PI / 180)));
+        } else {
+            increasedLocation = new ChartLocation(startPoint.x - height * (Math.cos((point.midAngle - 180) * Math.PI / 180)),
+                                                  startPoint.y - height * (Math.sin((point.midAngle - 180) * Math.PI / 180)));
+        }
+        return increasedLocation;
     }
 }

@@ -138,6 +138,38 @@ export interface ITaskData {
     autoWidth?: number;
     /** It have taskId for ProjectView and uniqueID for resourceView */
     rowUniqueID?: string;
+    /** Defines work timeline ranges. */
+    workTimelineRanges?: IWorkTimelineRanges[];
+    /** Defines overlap index. */
+    eOverlapIndex?: number;
+    /**
+     * Defines shared task unique ids.
+     */
+    sharedTaskUniqueIds?: string[];
+}
+
+export interface IWorkTimelineRanges {
+    /** Defines start date of task */
+    startDate?: Date;
+    /** Defines end date of task */
+    endDate?: Date;
+    /** Defines left value of resource usage/resource histogram. */
+    left?: number;
+    /** Defines width of the resource usage/resource histogram. */
+    width?: number;
+    /** Defines height of the resource usage/resource histogram. */
+    height?: number;
+	/** Defines per day work. */
+    workPerDay?: number;
+    /** Defines whether resource is over allocate or not. */
+    isOverAllocated?: boolean;
+    /** Defines the task. */
+    task?: IGanttData;
+
+    /** Defines start date of task */
+    from?: Date;
+    /** Defines start date of task */
+    to?: Date;
 }
 
 export interface IGanttColumn {

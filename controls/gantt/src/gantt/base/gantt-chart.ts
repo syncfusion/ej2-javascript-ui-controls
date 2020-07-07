@@ -3,10 +3,10 @@ import {
     createElement, formatUnit, EventHandler, Browser, KeyboardEvents, isBlazor, getElement,
     KeyboardEventArgs
 } from '@syncfusion/ej2-base';
-import { isNullOrUndefined, closest, addClass, removeClass, getValue, setValue } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, closest, addClass, removeClass, getValue, setValue, remove } from '@syncfusion/ej2-base';
 import * as cls from '../base/css-constants';
 import { ChartScroll } from '../actions/chart-scroll';
-import { IGanttData } from '../base/interface';
+import { IGanttData, IWorkTimelineRanges } from '../base/interface';
 import { click } from '@syncfusion/ej2-grids';
 import { ITaskbarClickEventArgs, RecordDoubleClickEventArgs, IMouseMoveEventArgs, IIndicator } from '../base/interface';
 import { TooltipEventArgs } from '@syncfusion/ej2-popups';
@@ -22,6 +22,7 @@ export class GanttChart {
     public chartTimelineContainer: HTMLElement;
     public chartBodyContainer: HTMLElement;
     public chartBodyContent: HTMLElement;
+    public rangeViewContainer: HTMLElement;
     public scrollElement: HTMLElement;
     public scrollObject: ChartScroll;
     public isExpandCollapseFromChart: boolean = false;
@@ -31,6 +32,8 @@ export class GanttChart {
     constructor(parent: Gantt) {
         this.parent = parent;
         this.chartTimelineContainer = null;
+        this.rangeViewContainer =
+            createElement('div', { className: cls.rangeContainer });
         this.addEventListener();
     }
 
@@ -71,11 +74,94 @@ export class GanttChart {
     private renderInitialContents(): void {
         this.parent.timelineModule.createTimelineSeries();
     }
+    /**
+     * @private
+     */
+    public renderOverAllocationContainer(): void {
+        for (let i: number = 0; i < this.parent.flatData.length; i++) {
+            let data: IGanttData = this.parent.flatData[i];
+            if (data.childRecords.length > 0) {
+                this.parent.dataOperation.updateOverlappingValues(data);
+            }
+        }
+        let rangeContainer: HTMLElement = this.parent.element.querySelector('.' + cls.rangeContainer);
+        if (rangeContainer) {
+            rangeContainer.innerHTML = '';
+        }
+        this.renderRangeContainer(this.parent.flatData);
+    }
     private renderChartElements(): void {
         this.parent.chartRowsModule.renderChartRows();
         this.parent.connectorLineModule.renderConnectorLines(this.parent.updatedConnectorLineCollection);
+        if (this.parent.viewType === 'ResourceView' && this.parent.showOverAllocation) {
+            this.renderOverAllocationContainer();
+        }
         this.updateWidthAndHeight();
         this.parent.notify('selectRowByIndex', {});
+    }
+    /**
+     * @private
+     */
+    public renderRangeContainer(records: IGanttData[]): void {
+        let recordLength: number = records.length;
+        let count: number; let ganttRecord: IGanttData;
+        let rangeCollection: IWorkTimelineRanges[];
+        for (count = 0; count < recordLength; count++) {
+            ganttRecord = records[count];
+            rangeCollection = ganttRecord.ganttProperties.workTimelineRanges;
+            if (rangeCollection) {
+                this.renderRange(rangeCollection, ganttRecord);
+            }
+        }
+    }
+    private getTopValue(currentRecord: IGanttData): number {
+        let updatedRecords: IGanttData[] = this.parent.getExpandedRecords(this.parent.currentViewData);
+        let recordIndex: number = updatedRecords.indexOf(currentRecord);
+        if (!currentRecord.expanded) {
+            return (recordIndex * this.parent.rowHeight);
+        }
+        return ((recordIndex + 1) * this.parent.rowHeight);
+    }
+     /*get height for range bar*/
+    private getRangeHeight(data: IGanttData): number {
+        if (!data.expanded && data.hasChildRecords) {
+            return (this.parent.rowHeight - Math.floor((this.parent.rowHeight - this.parent.chartRowsModule.taskBarHeight)));
+        }
+        return (data.childRecords.length * this.parent.rowHeight) -
+            Math.floor((this.parent.rowHeight - this.parent.chartRowsModule.taskBarHeight));
+    }
+    private renderRange(rangeCollection: IWorkTimelineRanges[], currentRecord: IGanttData): void {
+        let topValue: number = this.getTopValue(currentRecord);
+        /* tslint:disable-next-line */
+        let sameIDElement: Element = this.rangeViewContainer.querySelector('.' + 'rangeContainer' + currentRecord.ganttProperties.rowUniqueID);
+        if (sameIDElement) {
+            sameIDElement.remove();
+        }
+        let parentDiv: HTMLElement = createElement('div', {
+            className: 'rangeContainer' + currentRecord.ganttProperties.rowUniqueID, styles: `top:${topValue}px; position: absolute;`,
+        });
+        if (currentRecord.level === 0 && !currentRecord.expanded && isNullOrUndefined(currentRecord.parentItem)
+            && !this.parent.enableMultiTaskbar) {
+            return;
+        }
+        for (let i: number = 0; i < rangeCollection.length; i++) {
+            let height: number = this.getRangeHeight(currentRecord);
+            let leftDiv: HTMLElement = createElement('div', {
+                className: cls.rangeChildContainer + ' ' + 'e-leftarc', styles: `left:${rangeCollection[i].left}px;
+                top: ${Math.floor((this.parent.rowHeight - this.parent.chartRowsModule.taskBarHeight) / 2)}px;
+                height: ${height + 1}px; border-right: 0px`
+            });
+            let rightDiv: HTMLElement = createElement('div', {
+                className: cls.rangeChildContainer + ' ' + 'e-rightarc',
+                styles: `left:${rangeCollection[i].left + rangeCollection[i].width - 5}px;
+                top: ${Math.floor((this.parent.rowHeight - this.parent.chartRowsModule.taskBarHeight) / 2)}px; height: ${height + 1}px;
+                border-left: 0px`
+            });
+            parentDiv.appendChild(leftDiv);
+            parentDiv.appendChild(rightDiv);
+            this.rangeViewContainer.appendChild(parentDiv);
+        }
+        this.parent.ganttChartModule.chartBodyContent.appendChild(this.rangeViewContainer);
     }
     /**
      * @private
@@ -297,6 +383,17 @@ export class GanttChart {
     }
 
     /**
+     *  Method trigger while perform right click action.
+     * @return {void}
+     * @private
+     */
+    private contextClick(e: PointerEvent): void {
+        if (this.parent.allowFiltering && this.parent.filterModule) {
+            this.parent.filterModule.closeFilterOnContextClick(e.srcElement);
+        }
+    }
+
+    /**
      * Method to trigger while perform mouse move on Gantt.
      * @return {void}
      * @private
@@ -384,11 +481,17 @@ export class GanttChart {
      * @private
      */
     public getRecordByTarget(e: PointerEvent): IGanttData {
-        let row: Element = closest(e.target as Element, 'tr');
         let ganttData: IGanttData;
-        if (row) {
-            let rowIndex: number = getValue('rowIndex', closest(e.target as Element, 'tr'));
-            ganttData = this.parent.currentViewData[rowIndex];
+        let row: Element = closest(e.target as Element, 'div.' + cls.taskBarMainContainer);
+        if (!isNullOrUndefined(row)) {
+            let id: string = row.getAttribute('rowUniqueId');
+            ganttData = this.parent.getRecordByID(id);
+        } else {
+            row = closest(e.target as Element, 'tr');
+            if (row) {
+                let rowIndex: number = getValue('rowIndex', closest(e.target as Element, 'tr'));
+                ganttData = this.parent.currentViewData[rowIndex];
+            }
         }
         return ganttData;
     }
@@ -409,6 +512,9 @@ export class GanttChart {
      * @private
      */
     private chartExpandCollapseRequest(e: PointerEvent): void {
+        if (this.parent.enableMultiTaskbar) {
+            return;
+        }
         let target: EventTarget = e.target;
         let parentElement: Element = closest((<HTMLElement>target), '.e-gantt-parent-taskbar');
         let record: IGanttData = this.getRecordByTarget(e);
@@ -428,10 +534,9 @@ export class GanttChart {
      */
     public reRenderConnectorLines(): void {
         this.parent.connectorLineModule.dependencyViewContainer.innerHTML = '';
-        let expandedRecords: IGanttData[] = this.parent.getExpandedRecords(this.parent.currentViewData);
         this.parent.connectorLineIds = [];
         this.parent.updatedConnectorLineCollection = [];
-        this.parent.predecessorModule.createConnectorLinesCollection(expandedRecords);
+        this.parent.predecessorModule.createConnectorLinesCollection();
         this.parent.connectorLineModule.renderConnectorLines(this.parent.updatedConnectorLineCollection);
     }
 
@@ -471,6 +576,10 @@ export class GanttChart {
             this.isExpandCollapseFromChart = false;
         } else {
             this.expandCollapseChartRows('collapse', getValue('chartRow', args), record, null);
+        }
+        // To render the child record on parent row after collapsing
+        if (this.parent.viewType === 'ResourceView') {
+            this.renderMultiTaskbar(record);
         }
         this.parent.updateContentHeight();
         this.updateWidthAndHeight();
@@ -516,11 +625,22 @@ export class GanttChart {
         } else {
             this.expandCollapseChartRows('expand', getValue('chartRow', args), record, null);
         }
+        // To render the child record on parent row after expanding.
+        if (this.parent.viewType === 'ResourceView') {
+            this.renderMultiTaskbar(record);
+        }
         this.parent.updateContentHeight();
         this.updateWidthAndHeight();
         this.reRenderConnectorLines();
         getValue('chartRow', args).setAttribute('aria-expanded', 'true');
         this.parent.trigger('expanded', args);
+    }
+    private renderMultiTaskbar(record: IGanttData): void {
+        if (this.parent.enableMultiTaskbar) {
+            this.parent.chartRowsModule.refreshRecords([record], true);
+        } else if (this.parent.showOverAllocation) {
+            this.parent.ganttChartModule.renderRangeContainer(this.parent.currentViewData);
+        }
     }
 
     /**
@@ -633,6 +753,7 @@ export class GanttChart {
             EventHandler.add(document, mouseUp, this.documentMouseUp, this);
         }
         EventHandler.add(document.body, 'mousemove', this.mouseMoveHandler, this);
+        EventHandler.add(document.body, 'contextmenu', this.contextClick, this);
         EventHandler.add(this.parent.chartRowsModule.ganttChartTableBody, 'dblclick', this.doubleClickHandler, this);
     }
 
@@ -655,6 +776,7 @@ export class GanttChart {
             EventHandler.remove(document, mouseUp, this.documentMouseUp);
         }
         EventHandler.remove(document.body, 'mousemove', this.mouseMoveHandler);
+        EventHandler.remove(document.body, 'contextmenu', this.contextClick);
         EventHandler.remove(this.parent.chartRowsModule.ganttChartTableBody, 'dblclick', this.doubleClickHandler);
     }
 
@@ -867,8 +989,21 @@ export class GanttChart {
      * @private
      */
     public getIndexByTaskBar(target: Element): number {
-        let row: Element = closest(target, 'tr.' + cls.chartRow);
-        let recordIndex: number = [].slice.call(this.parent.chartRowsModule.ganttChartTableBody.childNodes).indexOf(row);
+        let row: Element;
+        let recordIndex: number;
+        if (!target.classList.contains(cls.taskBarMainContainer)) {
+            row = closest(target, 'div.' + cls.taskBarMainContainer);
+        } else {
+            row = target;
+        }
+        if (isNullOrUndefined(row)) {
+            row = closest(target, 'tr.' + cls.chartRow);
+            recordIndex = [].slice.call(this.parent.chartRowsModule.ganttChartTableBody.childNodes).indexOf(row);
+        } else {
+            let id: string = row.getAttribute('rowUniqueId');
+            let record: IGanttData = this.parent.getRecordByID(id);
+            recordIndex = this.parent.currentViewData.indexOf(record);
+        }
         return recordIndex;
     }
 

@@ -1,11 +1,12 @@
 import { isNullOrUndefined, getValue, isBlazor, extend, setValue } from '@syncfusion/ej2-base';
 import { getUid, ReturnType } from '@syncfusion/ej2-grids';
-import { IGanttData, ITaskData, IParent } from './interface';
+import { IGanttData, ITaskData, IParent, IWorkTimelineRanges, IWorkingTimeRange } from './interface';
 import { DataManager, Query, Group, ReturnOption } from '@syncfusion/ej2-data';
 import { isScheduledTask } from './utils';
 import { Gantt } from './gantt';
 import { DateProcessor } from './date-processor';
 import { TaskFieldsModel, ColumnModel, ResourceFieldsModel } from '../models/models';
+import { CObject } from './enum';
 
 /**
  * To calculate and update task related values
@@ -163,8 +164,32 @@ export class TaskProcessor extends DateProcessor {
      */
     private prepareDataSource(data: Object[]): void {
         this.prepareRecordCollection(data, 0);
+        // Method to maintain the shared task uniqueIds
+        if (this.parent.viewType === 'ResourceView') {
+            this.calculateSharedTaskUniqueIds();
+        }
         if (this.parent.taskFields.dependency && this.parent.predecessorModule) {
             this.parent.predecessorModule.ensurePredecessorCollection();
+        }
+    }
+
+    private calculateSharedTaskUniqueIds(): void {
+        for (let i: number = 0; i < this.parent.getTaskIds().length; i++) {
+            let value: string[] = this.parent.getTaskIds()[i].match(/(\d+|[A-z]+)/g);
+            if (value[0] !== 'R') {
+                let sharedRecords: IGanttData[] = [];
+                let ids: string[] = [];
+                this.parent.flatData.filter((data: IGanttData) => {
+                    /* tslint:disable-next-line */
+                    if (data.ganttProperties.taskId.toString() === value[1] && data.level !== 0) {
+                        ids.push(data.ganttProperties.rowUniqueID);
+                        sharedRecords.push(data);
+                    }
+                });
+                for (let j: number = 0; j < sharedRecords.length; j++) {
+                    sharedRecords[j].ganttProperties.sharedTaskUniqueIds = ids;
+                }
+            }
         }
     }
     private prepareRecordCollection(data: Object[], level: number, parentItem?: IGanttData): void {
@@ -177,6 +202,38 @@ export class TaskProcessor extends DateProcessor {
             this.parent.flatData.push(ganttData);
             this.parent.setTaskIds(ganttData);
             let childData: Object[] = tempData[this.parent.taskFields.child];
+            if (this.parent.viewType === 'ResourceView' && isNullOrUndefined(childData)
+                && isNullOrUndefined(ganttData.parentItem) && ganttData.level === 0) {
+                let ganttProp: ITaskData = ganttData.ganttProperties;
+                let parentData: IGanttData = ganttData;
+                this.parent.setRecordValue(
+                    ganttProp.isAutoSchedule ? 'startDate' : 'autoStartDate',
+                    null, parentData.ganttProperties, true);
+                this.parent.setRecordValue(
+                    ganttProp.isAutoSchedule ? 'endDate' : 'autoEndDate',
+                    null, parentData.ganttProperties, true);
+                let parentProgress: number = 0;
+                let parentProp: ITaskData = parentData.ganttProperties;
+                this.parent.setRecordValue('isMilestone', false, parentProp, true);
+                if (parentProp.isAutoSchedule) {
+                    this.calculateDuration(parentData);
+                }
+                this.updateWorkWithDuration(parentData);
+                let parentWork: number = parentProp.work;
+                this.parent.setRecordValue('work', parentWork, parentProp, true);
+                this.parent.setRecordValue('taskType', 'FixedDuration', parentProp, true);
+                this.updateMappingData(parentData, 'taskType');
+                this.parent.setRecordValue('progress', Math.floor(parentProgress), parentProp, true);
+                this.parent.setRecordValue('totalProgress', 0, parentProp, true);
+                this.parent.setRecordValue('totalDuration', 0, parentProp, true);
+                if (!parentProp.isAutoSchedule) {
+                    this.parent.setRecordValue('autoDuration', this.calculateAutoDuration(parentProp), parentProp, true);
+                    this.updateAutoWidthLeft(parentData);
+                }
+                this.resetDependency(parentData);
+                this.updateWidthLeft(parentData);
+                this.updateTaskData(parentData);
+            }
             if (!isNullOrUndefined(childData) && childData.length > 0) {
                 this.prepareRecordCollection(childData, ganttData.level + 1, ganttData);
             }
@@ -237,16 +294,7 @@ export class TaskProcessor extends DateProcessor {
         }
         this.addCustomFieldValue(data, ganttData);
         this.parent.setRecordValue('isAutoSchedule', autoSchedule, ganttProperties, true);
-        if (!this.parent.isSameResourceAdd) {
-            this.parent.setRecordValue('resourceInfo', this.setResourceInfo(data), ganttProperties, true);
-        } else {
-            let preProperties: object = getValue('ganttProperties.resourceInfo', data);
-            if (preProperties) {
-                this.parent.setRecordValue('resourceInfo', preProperties, ganttProperties, true);
-            } else {
-                this.parent.setRecordValue('resourceInfo', this.setResourceInfo(data), ganttProperties, true);
-            }
-        }
+        this.parent.setRecordValue('resourceInfo', this.setResourceInfo(data), ganttProperties, true);
         this.parent.setRecordValue('isMilestone', false, ganttProperties, true);
         this.updateResourceName(ganttData);
         this.calculateScheduledValues(ganttData, data, isLoad);
@@ -265,6 +313,10 @@ export class TaskProcessor extends DateProcessor {
         this.parent.setRecordValue('parentItem', this.getCloneParent(parentItem), ganttData);
         let parentUniqId: string = ganttData.parentItem ? ganttData.parentItem.uniqueID : null;
         this.parent.setRecordValue('parentUniqueID', parentUniqId, ganttData);
+        if (this.parent.viewType === 'ResourceView' && !isNullOrUndefined(taskSettings.parentID)
+            && !isNullOrUndefined(ganttData.parentItem)) {
+            this.parent.setRecordValue('parentId', ganttData.parentItem.taskId, ganttProperties, true);
+        }
         this.parent.setRecordValue('level', level, ganttData);
         this.parent.setRecordValue('uniqueID', getUid(this.parent.element.id + '_data_'), ganttData);
         this.parent.setRecordValue('uniqueID', ganttData.uniqueID, ganttProperties, true);
@@ -316,6 +368,7 @@ export class TaskProcessor extends DateProcessor {
             let uniqueId: string = ganttData.uniqueID.replace(this.parent.element.id + '_data_', '');
             this.parent.setRecordValue('rowUniqueID', uniqueId, ganttData);
             this.parent.setRecordValue('rowUniqueID', uniqueId, ganttProperties, true);
+            this.parent.setRecordValue('sharedTaskUniqueIds', [], ganttProperties, true);
         }
         return ganttData;
     }
@@ -1205,7 +1258,284 @@ export class TaskProcessor extends DateProcessor {
             this.updateGanttData();
         }
     }
+    //check day is fall between from and to date range
+    private _isInStartDateRange(day: Date, from: Date, to: Date): boolean {
+        let isInRange: boolean = false;
+        if (day.getTime() >= from.getTime() && day.getTime() < to.getTime()) {
+            isInRange = true;
+        }
+        return isInRange;
+    }
+    //check day is fall between from and to date range
+    private _isInEndDateRange(day: Date, from: Date, to: Date): boolean {
+        let isInRange: boolean = false;
+        if (day.getTime() > from.getTime() && day.getTime() <= to.getTime()) {
+            isInRange = true;
+        }
+        return isInRange;
+    }
+    /**
+     * @private
+     * Method to find overlapping value of the parent task
+     */
+    public updateOverlappingValues(resourceTask: IGanttData): void {
+        let tasks: IGanttData[] = resourceTask.childRecords;
+        let currentTask: IGanttData;
+        let ranges: IWorkTimelineRanges[] = [];
+        if (tasks.length <= 1) {
+            resourceTask.ganttProperties.workTimelineRanges = [];
+            return;
+        }
+        tasks = this.setSortedChildTasks(resourceTask);
+        this.updateOverlappingIndex(tasks);
+        for (let count: number = 1; count < tasks.length; count++) {
+            currentTask = tasks[count];
+            let cStartDate: Date = new Date(currentTask.ganttProperties.startDate.getTime());
+            let cEndDate: Date = new Date(currentTask.ganttProperties.endDate.getTime()); //task 2
+            let range: IWorkTimelineRanges[] = [];
+            let rangeObj: IWorkTimelineRanges = {};
+            for (let index: number = 0; index < count; index++) {
+                let tStartDate: Date = tasks[index].ganttProperties.startDate;
+                let tEndDate: Date = tasks[index].ganttProperties.endDate; // task 1
+                let rangeObj: IWorkTimelineRanges = {};
+                if (this._isInStartDateRange(cStartDate, tStartDate, tEndDate) || this._isInEndDateRange(cEndDate, tStartDate, tEndDate)) {
+                    if ((tStartDate.getTime() > cStartDate.getTime() && tStartDate.getTime() < cEndDate.getTime()
+                        && tEndDate.getTime() > cStartDate.getTime() && tEndDate.getTime() > cEndDate.getTime())
+                        || (cStartDate.getTime() === tStartDate.getTime() && cEndDate.getTime() <= tEndDate.getTime())) {
+                        rangeObj.from = tStartDate;
+                        rangeObj.to = cEndDate;
+                    } else if (cStartDate.getTime() === tStartDate.getTime() && cEndDate.getTime() > tEndDate.getTime()) {
+                        rangeObj.from = tStartDate;
+                        rangeObj.to = tEndDate;
+                    } else if (cStartDate.getTime() > tStartDate.getTime() && cEndDate.getTime() >= tEndDate.getTime()) {
+                        rangeObj.from = cStartDate;
+                        rangeObj.to = tEndDate;
+                    } else if (cStartDate.getTime() > tStartDate.getTime() && cEndDate.getTime() < tEndDate.getTime()) {
+                        rangeObj.from = cStartDate;
+                        rangeObj.to = cEndDate;
+                    }
+                    range.push(rangeObj);
+                }
+            }
+            ranges.push.apply(ranges, this.mergeRangeCollections(range));
+        }
+        this.parent.setRecordValue('workTimelineRanges', this.mergeRangeCollections(ranges, true), resourceTask.ganttProperties, true);
+        this.calculateRangeLeftWidth(resourceTask.ganttProperties.workTimelineRanges);
+    }
+    /**
+     * @private
+     */
+    public updateOverlappingIndex(tasks: IGanttData[]): void {
+        for (let i: number = 0; i < tasks.length; i++) {
+            tasks[i].ganttProperties.eOverlapIndex = i;
+        }
+    }
+    /**
+     * Method to calculate the left and width value of oarlapping ranges
+     * @private
+     */
+    public calculateRangeLeftWidth(ranges: IWorkTimelineRanges[]): void {
+        for (let count: number = 0; count < ranges.length; count++) {
+            ranges[count].left = this.getTaskLeft(ranges[count].from, false);
+            ranges[count].width = this.getTaskWidth(ranges[count].from, ranges[count].to);
+        }
+    }
+    /**
+     * @private
+     */
+    public mergeRangeCollections(ranges: IWorkTimelineRanges[], isSplit?: boolean): IWorkTimelineRanges[] {
+        let finalRange: IWorkTimelineRanges[] = [];
+        let currentTopRange: IWorkTimelineRanges = {};
+        let cCompareRange: IWorkTimelineRanges = {};
+        let sortedRanges: IWorkTimelineRanges[];
+        let cStartDate: Date;
+        let cEndDate: Date;
+        let tStartDate: Date;
+        let tEndDate: Date;
+        sortedRanges = new DataManager(ranges).executeLocal(new Query()
+            .sortBy(this.parent.taskFields.startDate, 'Ascending'));
+        for (let i: number = 0; i < sortedRanges.length; i++) {
+            if (finalRange.length === 0 && i === 0) {
+                finalRange.push(sortedRanges[i]);
+                continue;
+            }
+            currentTopRange = finalRange[finalRange.length - 1];
+            cStartDate = currentTopRange.from;
+            cEndDate = currentTopRange.to;
+            cCompareRange = sortedRanges[i];
+            tStartDate = cCompareRange.from;
+            tEndDate = cCompareRange.to;
+            if ((cStartDate.getTime() === tStartDate.getTime() && cEndDate.getTime() >= tEndDate.getTime())
+                || (cStartDate.getTime() < tStartDate.getTime() && cEndDate.getTime() >= tEndDate.getTime())
+            ) {
+                continue;
+            }
+            /* tslint:disable-next-line */
+            else if ((cStartDate.getTime() <= tStartDate.getTime() && cEndDate.getTime() >= tStartDate.getTime() && cEndDate.getTime() < tEndDate.getTime())
+                || (cEndDate.getTime() < tStartDate.getTime() && this.checkStartDate(cEndDate).getTime() === tStartDate.getTime())) {
+                currentTopRange.to = tEndDate;
+            } else if (cEndDate.getTime() < tStartDate.getTime() && this.checkStartDate(cEndDate).getTime() !== tStartDate.getTime()) {
+                finalRange.push(sortedRanges[i]);
+            }
+        }
+        if (isSplit) {
+            finalRange = this.splitRangeCollection(finalRange);
+        }
+        return finalRange;
+    }
+    /**
+     * @private
+     * Sort resource child records based on start date
+     */
+    public setSortedChildTasks(resourceTask: IGanttData): IGanttData[] {
+        let sortedRecords: IGanttData[] = [];
+        sortedRecords = new DataManager(resourceTask.childRecords).executeLocal(new Query()
+            .sortBy(this.parent.taskFields.startDate, 'Ascending'));
+        return sortedRecords;
+    }
 
+    private splitRangeCollection(rangeCollection: IWorkTimelineRanges[], fromField?: string, toField?: string): IWorkTimelineRanges[] {
+        let splitArray: IWorkTimelineRanges[] = [];
+        let unit: string;
+        if (this.parent.timelineModule.isSingleTier) {
+            unit = this.parent.timelineModule.bottomTier !== 'None' ?
+                this.parent.timelineModule.bottomTier : this.parent.timelineModule.topTier;
+        } else {
+            unit = this.parent.timelineModule.bottomTier;
+        }
+        if (unit === 'Week' || unit === 'Month' || unit === 'Year') {
+            splitArray = rangeCollection;
+        } else if (unit === 'Day') {
+            splitArray = this.getRangeWithWeek(rangeCollection, fromField, toField);
+        } else {
+            if (this.parent.workingTimeRanges[0].from === 0 && this.parent.workingTimeRanges[0].to === 86400) {
+                splitArray = this.getRangeWithWeek(rangeCollection, fromField, toField);
+            } else {
+                splitArray = this.getRangeWithDay(rangeCollection, fromField, toField);
+            }
+        }
+        return splitArray;
+    }
+    private getRangeWithDay(ranges: IWorkTimelineRanges[], fromField: string, toField: string): IWorkTimelineRanges[] {
+        let splitArray: IWorkTimelineRanges[] = [];
+        for (let i: number = 0; i < ranges.length; i++) {
+            splitArray.push.apply(splitArray, this.splitRangeForDayMode(ranges[i], fromField, toField));
+        }
+        return splitArray;
+    }
+    private splitRangeForDayMode(range: IWorkTimelineRanges, fromField: string, toField: string): IWorkTimelineRanges[] {
+        let fromString: string = fromField ? fromField : 'from';
+        let toString: string = toField ? toField : 'to';
+        let start: Date = new Date(range[fromString]);
+        let tempStart: Date = new Date(range[fromString]);
+        let end: Date = new Date(range[toString]);
+        let isInSplit: boolean = false;
+        let ranges: IWorkTimelineRanges[] = [];
+        let rangeObject: CObject = {};
+        if (tempStart.getTime() < end.getTime()) {
+            do {
+                let nStart: Date = new Date(tempStart.getTime());
+                let nEndDate: Date = new Date(tempStart.getTime());
+                let nextAvailDuration: number = 0;
+                let sHour: number = this.parent.dataOperation.getSecondsInDecimal(tempStart);
+                let startRangeIndex: number = -1;
+                for (let i: number = 0; i < this.parent.workingTimeRanges.length; i++) {
+                    let val: IWorkingTimeRange = this.parent.workingTimeRanges[i];
+                    if (sHour >= val.from && sHour <= val.to) {
+                        startRangeIndex = i;
+                        break;
+                    }
+                }
+                if (startRangeIndex !== -1) {
+                    nextAvailDuration = Math.round(this.parent.workingTimeRanges[startRangeIndex].to - sHour);
+                    nEndDate.setSeconds(nEndDate.getSeconds() + nextAvailDuration);
+                }
+                let taskName: string = 'task';
+                if (nEndDate.getTime() < end.getTime()) {
+                    rangeObject = {};
+                    if (range.task) {
+                        rangeObject[taskName] = extend([], range.task);
+                    }
+                    rangeObject[fromString] = nStart;
+                    rangeObject[toString] = nEndDate;
+                    rangeObject.isSplit = true;
+                    ranges.push(rangeObject);
+                } else {
+                    rangeObject = {};
+                    if (range.task) {
+                        rangeObject[taskName] = extend([], range.task);
+                    }
+                    rangeObject[fromString] = nStart;
+                    rangeObject[toString] = end;
+                    rangeObject.isSplit = true;
+                    ranges.push(rangeObject);
+                }
+                tempStart = this.checkStartDate(nEndDate);
+            } while (tempStart.getTime() < end.getTime());
+        } else {
+            ranges.push(range);
+        }
+        return ranges;
+    }
+    private getRangeWithWeek(ranges: IWorkTimelineRanges[], fromField: string, toField: string): IWorkTimelineRanges[] {
+        let splitArray: IWorkTimelineRanges[] = [];
+        for (let i: number = 0; i < ranges.length; i++) {
+            splitArray.push.apply(splitArray, this.splitRangeForWeekMode(ranges[i], fromField, toField));
+        }
+        return splitArray;
+    }
+    private splitRangeForWeekMode(range: IWorkTimelineRanges, fromField: string, toField: string): IWorkTimelineRanges[] {
+        let from: string = fromField ? fromField : 'from';
+        let to: string = toField ? toField : 'to';
+        let start: Date = new Date(range[from]);
+        let tempStart: Date = new Date(range[from]);
+        let end: Date = new Date(range[to]);
+        let isInSplit: boolean = false;
+        let ranges: IWorkTimelineRanges[] = [];
+        let rangeObj: CObject = {};
+        tempStart.setDate(tempStart.getDate() + 1);
+        if (tempStart.getTime() < end.getTime()) {
+            do {
+                if (this.parent.dataOperation.isOnHolidayOrWeekEnd(tempStart, null)) {
+                    let tempEndDate: Date = new Date(tempStart.getTime());
+                    tempEndDate.setDate(tempStart.getDate() - 1);
+                    this.setTime(this.parent.defaultEndTime, tempEndDate);
+                    rangeObj = {};
+                    rangeObj[from] = start;
+                    rangeObj.isSplit = true;
+                    rangeObj[to] = tempEndDate;
+                    if (range.task) {
+                        rangeObj.task = extend([], range.task, true);
+                    }
+                    if (start.getTime() !== tempEndDate.getTime()) {
+                        ranges.push(rangeObj);
+                    }
+                    start = this.checkStartDate(tempEndDate);
+                    tempStart = new Date(start.getTime());
+                    isInSplit = true;
+                } else {
+                    tempStart.setDate(tempStart.getDate() + 1);
+                }
+            } while (tempStart.getTime() < end.getTime());
+            if (isInSplit) {
+                if (start.getTime() !== end.getTime()) {
+                    rangeObj = {};
+                    if (range.task) {
+                        rangeObj.task = extend([], range.task, true);
+                    }
+                    rangeObj[from] = start;
+                    rangeObj[to] = end;
+                    rangeObj.isSplit = true;
+                    ranges.push(rangeObj);
+                }
+            } else {
+                ranges.push(range);
+            }
+        } else {
+            ranges.push(range);
+        }
+        return ranges;
+    }
     /**
      * Update all gantt data collection width, progress width and left value
      * @private

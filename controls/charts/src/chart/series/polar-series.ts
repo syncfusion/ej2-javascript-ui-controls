@@ -29,10 +29,12 @@ export class PolarSeries extends PolarRadarPanel {
             visiblePoint.visible = visiblePoint.visible && !((!isNullOrUndefined(yAxisMin) && visiblePoint.yValue < yAxisMin) ||
             (!isNullOrUndefined(yAxisMax) && visiblePoint.yValue > yAxisMax));
         }
-        if ((series.drawType.indexOf('Column') > -1) && (series.points.length > 0)) {
-            this.columnDrawTypeRender(series, xAxis, yAxis);
-        } else {
-            series.chart[seriesType + 'SeriesModule'].render(series, xAxis, yAxis, inverted);
+        if (series.points.length) {
+            if ((series.drawType.indexOf('Column') > -1)) {
+                this.columnDrawTypeRender(series, xAxis, yAxis);
+            } else {
+                series.chart[seriesType + 'SeriesModule'].render(series, xAxis, yAxis, inverted);
+            }
         }
     }
 

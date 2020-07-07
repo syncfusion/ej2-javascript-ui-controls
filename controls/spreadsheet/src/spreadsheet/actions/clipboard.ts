@@ -1,10 +1,10 @@
-import { detach, EventHandler, Browser, extend, L10n } from '@syncfusion/ej2-base';
+import { detach, EventHandler, Browser, extend, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Spreadsheet } from '../base/index';
 import { SheetModel, getRangeIndexes, getCell, setCell, getSheet, CellModel, getSwapRange, wrapEvent } from '../../workbook/index';
 import { CellStyleModel, getRangeAddress, workbookEditOperation, getSheetIndexFromId, getSheetName } from '../../workbook/index';
 import { RowModel, getFormattedCellObject, workbookFormulaOperation, applyCellFormat, checkIsFormula, Sheet } from '../../workbook/index';
-import { ExtendedSheet, Cell, pasteMerge, setMerge, MergeArgs } from '../../workbook/index';
+import { ExtendedSheet, Cell, pasteMerge, setMerge, MergeArgs, getCellIndexes } from '../../workbook/index';
 import { ribbonClick, ICellRenderer, cut, copy, paste, PasteSpecialType, BeforePasteEventArgs, hasTemplate } from '../common/index';
 import { enableToolbarItems, rowHeightChanged, completeAction, beginAction } from '../common/index';
 import { clearCopy, locateElem, selectRange, dialog, contentLoaded, tabSwitch, cMenuBeforeOpen, locale } from '../common/index';
@@ -85,16 +85,21 @@ export class Clipboard {
         let l10n: L10n = this.parent.serviceLocator.getService(locale);
         let delRowItems: string[] = []; let hideRowItems: string[] = [];
         let delColItems: string[] = []; let hideColItems: string[] = [];
+        let actCell: string = sheet.activeCell;
+        let actCellIndex: number[] = getCellIndexes(actCell);
+        let cellObj: CellModel = getCell(actCellIndex[0], actCellIndex[1], sheet);
+        let isLocked: boolean = cellObj ? !isNullOrUndefined(cellObj.isLocked) ? cellObj.isLocked
+            : sheet.isProtected : sheet.isProtected;
         if (e.target === 'Content' || e.target === 'RowHeader' || e.target === 'ColumnHeader') {
             this.parent.enableContextMenuItems(
-                [l10n.getConstant('Paste'), l10n.getConstant('PasteSpecial')], (this.copiedInfo && !sheet.isProtected) ? true : false);
-            this.parent.enableContextMenuItems([l10n.getConstant('Cut')], (!sheet.isProtected) ? true : false);
+                [l10n.getConstant('Paste'), l10n.getConstant('PasteSpecial')], (this.copiedInfo && !isLocked) ? true : false);
+            this.parent.enableContextMenuItems([l10n.getConstant('Cut')], (!isLocked) ? true : false);
         }
-        if ((e.target === 'Content') && sheet.isProtected) {
+        if ((e.target === 'Content') && isLocked) {
             this.parent.enableContextMenuItems (
                 [l10n.getConstant('Cut'), l10n.getConstant('Filter'), l10n.getConstant('Sort')], false);
         }
-        if ((e.target === 'Content') && (sheet.isProtected && !sheet.protectSettings.insertLink)) {
+        if ((e.target === 'Content') && (isLocked && !sheet.protectSettings.insertLink)) {
             this.parent.enableContextMenuItems([l10n.getConstant('Hyperlink')], false);
         }
         if (e.target === 'ColumnHeader' && sheet.isProtected) {
@@ -162,12 +167,12 @@ export class Clipboard {
             let beginEventArgs: BeforePasteEventArgs = {
                 requestType: 'paste',
                 copiedInfo: this.copiedInfo,
-                copiedRange: isExternal ? null : getRangeAddress(cIdx),
+                copiedRange: getRangeAddress(cIdx),
                 pastedRange: getRangeAddress(rfshRange),
                 type: (args && args.type) || 'All',
                 cancel: false
             };
-            if (args.isAction || isExternal) {
+            if (args.isAction) {
                 this.parent.notify(beginAction, { eventArgs: beginEventArgs, action: 'clipboard' });
             }
             if (beginEventArgs.cancel) {
@@ -245,7 +250,7 @@ export class Clipboard {
             if (isExternal || (args && args.isAction)) {
                 this.parent.element.focus();
             }
-            if (args.isAction || isExternal) {
+            if (args.isAction) {
                 let sheetIndex: number = copyInfo && copyInfo.sId ? getSheetIndexFromId(this.parent, copyInfo.sId) :
                     this.parent.activeSheetIndex;
                 let eventArgs: Object = {
@@ -253,8 +258,8 @@ export class Clipboard {
                     copiedInfo: copyInfo,
                     mergeCollection: mergeCollection,
                     pasteSheetIndex: this.parent.activeSheetIndex,
-                    copiedRange: isExternal ? null : this.parent.sheets[sheetIndex].name + '!' + getRangeAddress(copyInfo &&
-                        copyInfo.range ? copyInfo.range : getRangeIndexes(this.parent.sheets[sheetIndex].selectedRange)),
+                    copiedRange: this.parent.sheets[sheetIndex].name + '!' + getRangeAddress(copyInfo && copyInfo.range ? copyInfo.range :
+                        getRangeIndexes(this.parent.sheets[sheetIndex].selectedRange)),
                     pastedRange: getSheetName(this.parent) + '!' + getRangeAddress(rfshRange),
                     type: (args && args.type) || 'All'
                 };

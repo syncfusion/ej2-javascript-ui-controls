@@ -1,5 +1,5 @@
 import { CellStyleModel, HyperlinkModel } from './class-model';
-import { SaveType, SortOrder, FormatType, BorderType, ModelType, MergeType } from './index';
+import { SaveType, SortOrder, FormatType, BorderType, ModelType, MergeType, ClearType } from './index';
 import { Sheet, RangeModel, CellModel, SheetModel, WorkbookModel, ColumnModel, RowModel, UsedRangeModel } from '../base/index';
 import { DataManager, Predicate } from '@syncfusion/ej2-data';
 
@@ -276,7 +276,6 @@ export interface InsertDeleteModelArgs {
     columnCellsModel?: RowModel[];
     activeSheetIndex?: number;
     checkCount?: number;
-    sheet?: number;
 }
 
 /**
@@ -306,7 +305,11 @@ export interface MergeArgs {
     preventRefresh?: boolean;
     refreshRibbon?: boolean;
 }
-/** @hidden */
-export interface UnprotectArgs {
-   sheet?: number;
-}
+
+/**
+ * ClearOptions
+ */
+export interface ClearOptions {
+    type?: ClearType;
+    range?: string;
+ }

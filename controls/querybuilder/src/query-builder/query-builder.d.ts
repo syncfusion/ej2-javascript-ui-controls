@@ -38,6 +38,10 @@ export declare class Columns extends ChildProperty<Columns> {
         [key: string]: Object;
     }[];
     /**
+     * Specifies the rule template for the field with any other widgets.
+     */
+    ruleTemplate: string;
+    /**
      * Specifies the template for value field such as slider or any other widgets.
      * @default null
      */
@@ -181,6 +185,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private dataColl;
     private dataManager;
     private selectedColumn;
+    private previousColumn;
     private actionButton;
     private isInitialLoad;
     private timer;
@@ -189,12 +194,19 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private columnTemplateFn;
     private target;
     private updatedRule;
+    private ruleTemplateFn;
     /**
      * Triggers when the component is created.
      * @event
      * @blazorProperty 'Created'
      */
     created: EmitType<Event>;
+    /**
+     * Triggers when field, operator, value is change.
+     * @event
+     * @blazorProperty 'OnActionBegin'
+     */
+    actionBegin: EmitType<ActionEventArgs>;
     /**
      * Triggers before the condition (And/Or), field, operator, value is changed.
      * @event
@@ -319,8 +331,11 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private clickEventHandler;
     private beforeSuccessCallBack;
     private selectBtn;
+    private appendRuleElem;
     private addRuleElement;
     private addRuleSuccessCallBack;
+    private updateAddedRule;
+    private changeRuleTemplate;
     private renderToolTip;
     /**
      * Validate the conditions and it display errors for invalid fields.
@@ -333,7 +348,12 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private ruleTemplate;
     private addGroupElement;
     private addGroupSuccess;
-    notifyChange(value: string | number | boolean | Date | string[] | number[] | Date[], element: Element): void;
+    /**
+     * notify the changes to component.
+     * @returns void.
+     */
+    notifyChange(value: string | number | boolean | Date | string[] | number[] | Date[], element: Element, type?: string): void;
+    private templateChange;
     private changeValue;
     private filterValue;
     private changeValueSuccessCallBack;
@@ -346,6 +366,12 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private changeRuleValues;
     private destroyControls;
     private templateDestroy;
+    /**
+     * return values bound to the column.
+     * @returns object[].
+     */
+    getValues(field: string): object[];
+    private createNestedObject;
     private getDistinctValues;
     private renderMultiSelect;
     private multiSelectOpen;
@@ -466,6 +492,13 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     getPredicate(rule: RuleModel): Predicate;
     private getLocale;
     private getColumn;
+    /**
+     * return the operator bound to the column.
+     * @returns {[key: string]: Object}[].
+     */
+    getOperators(field: string): {
+        [key: string]: Object;
+    }[];
     private datePredicate;
     private arrayPredicate;
     private getDate;
@@ -560,4 +593,19 @@ export interface RuleChangeEventArgs extends BaseEventArgs {
     previousRule?: RuleModel;
     rule: RuleModel;
     type?: string;
+}
+/**
+ * Interface for action begin and action complete event args
+ */
+export interface ActionEventArgs extends BaseEventArgs {
+    ruleID: string;
+    requestType?: string;
+    action?: string;
+    rule?: RuleModel;
+    fields?: Object;
+    columns?: ColumnsModel[];
+    operators?: {
+        [key: string]: Object;
+    }[];
+    operatorFields?: Object;
 }

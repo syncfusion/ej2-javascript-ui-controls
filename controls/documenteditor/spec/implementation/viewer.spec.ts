@@ -5,7 +5,7 @@ import { Selection } from '../../src/index';
 import { createElement } from '@syncfusion/ej2-base';
 import { TestHelper } from './../test-helper.spec';
 import { ContextMenu } from '../../src/document-editor/implementation/context-menu';
-import { ParagraphWidget, BodyWidget, LineWidget, ImageElementBox } from '../../src/index';
+import { ParagraphWidget, BodyWidget, LineWidget, ImageElementBox, TextElementBox } from '../../src/index';
 import { WSectionFormat } from '../../src/document-editor/implementation/format/section-format';
 import { EditorHistory } from '../../src/document-editor/implementation/editor-history/editor-history';
 import { ImageResizer } from '../../src/index';
@@ -648,5 +648,15 @@ describe('Long Touch Testing', () => {
         let selStart: string = documentHelper.selection.start.hierarchicalPosition;
         let selEnd: string = documentHelper.selection.end.hierarchicalPosition;
         expect(selStart).not.toBe(selEnd);
+    });
+    it('Restrict editing in drop down form field', () => {
+        editor.openBlank();
+        editor.editor.insertFormField('DropDown');
+        editor.selection.handleHomeKey();
+        editor.selection.handleControlRightKey();
+        editor.selection.handleControlRightKey();
+        editor.editor.insertText('HELLO');
+        let text: string = (((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text;
+        expect(text).toBe('HELLO');
     });
 });

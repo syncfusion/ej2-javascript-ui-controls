@@ -295,9 +295,6 @@ export class TreeMapSelection {
                             element.classList.add('treeMapSelection');
                         }
                     } else {
-                        selection.fill = selection.fill === 'null' ?
-                                    treemap.layout.renderItems[parseInt(element.id.split('Item_Index_')[1], 10)]['options']['fill']
-                                            : selection.fill;
                         applyOptions(
                             element.childNodes[0] as SVGPathElement,
                             { border: selection.border, fill: selection.fill, opacity: selection.opacity }

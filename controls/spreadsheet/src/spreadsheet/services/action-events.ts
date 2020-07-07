@@ -71,7 +71,8 @@ export class ActionEvents {
     }): void {
         this.parent.trigger('actionBegin', { action: args.action, args: args });
         if (args.action === 'clipboard' || args.action === 'beforeSort' || args.action === 'format' || args.action === 'cellSave'
-            || args.action === 'beforeWrap' || args.action === 'beforeReplace' ) {
+            || args.action === 'beforeWrap' || args.action === 'beforeReplace' || args.action === 'beforeReplaceAll'
+            || args.action === 'beforeClear') {
             this.parent.notify(setActionData, { args: args });
         }
     }

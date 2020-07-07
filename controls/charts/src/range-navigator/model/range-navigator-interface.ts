@@ -4,7 +4,8 @@
 
 import { RangeNavigator } from '../index';
 import { DataPoint } from '../utils/helper';
-import { FontModel, ChartTheme } from '../../chart/index';
+import { FontModel } from '../../common/model/base-model';
+import { ChartTheme } from '../../chart/utils/enum';
 import { Rect, Size } from '@syncfusion/ej2-svg-base';
 
 /**

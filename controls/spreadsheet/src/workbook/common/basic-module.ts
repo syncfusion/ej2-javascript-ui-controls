@@ -3,6 +3,7 @@ import { WorkbookSave, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookFilt
 import { WorkbookNumberFormat } from '../integrations/number-format';
 import { WorkbookEdit, WorkbookCellFormat, WorkbookHyperlink, WorkbookInsert, WorkbookDelete } from '../actions/index';
 import { WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookDataValidation, WorkbookMerge } from '../actions/index';
+import { WorkbookConditionalFormat } from '../actions/conditional-formatting';
 /**
  * Workbook basic module.
  * @private
@@ -16,7 +17,7 @@ export class WorkbookBasicModule {
         Workbook.Inject(
             DataBind, WorkbookSave, WorkbookOpen, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit, WorkbookFormula,
             WorkbookSort, WorkbookHyperlink, WorkbookFilter, WorkbookInsert, WorkbookDelete, WorkbookFindAndReplace, WorkbookProtectSheet,
-            WorkbookDataValidation, WorkbookMerge);
+            WorkbookDataValidation, WorkbookMerge, WorkbookConditionalFormat);
     }
 
     /**

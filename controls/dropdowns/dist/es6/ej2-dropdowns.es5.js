@@ -1917,7 +1917,9 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
     
     DropDownList.prototype.removeHover = function () {
         if (this.list) {
-            var hoveredItem = this.list.querySelectorAll('.' + dropDownBaseClasses.hover);
+            var hoveredItem = (this.isServerBlazor && this.popupObj && this.popupObj.element) ?
+                this.popupObj.element.querySelectorAll('.' + dropDownBaseClasses.hover) :
+                this.list.querySelectorAll('.' + dropDownBaseClasses.hover);
             if (hoveredItem && hoveredItem.length) {
                 removeClass(hoveredItem, dropDownBaseClasses.hover);
             }
@@ -3102,7 +3104,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
     DropDownList.prototype.updateServerPopup = function (popupEle) {
         if (this.isServerBlazor) {
             if (popupEle && popupEle.querySelector('li')) {
-                removeClass([this.list], ['e-nodata']);
+                removeClass([popupEle.querySelector('.e-content')], ['e-nodata']);
             }
             this.initial = false;
             popupEle.removeAttribute('style');
@@ -3676,7 +3678,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                                 this.getModuleName() === 'autocomplete' && this.listData.length > 100) {
                                 this.setSelectionData(newProp.text, oldProp.text, 'text');
                             }
-                            else {
+                            else if (!this.isServerBlazor) {
                                 this.setOldText(oldProp.text);
                             }
                         }
@@ -3702,7 +3704,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                                 this.getModuleName() === 'autocomplete' && this.listData.length > 100) {
                                 this.setSelectionData(newProp.value, oldProp.value, 'value');
                             }
-                            else {
+                            else if (!this.isServerBlazor) {
                                 this.setOldValue(oldProp.value);
                             }
                         }
@@ -3720,14 +3722,14 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                         }
                         this.renderList();
                     }
-                    if (!this.initRemoteRender) {
+                    if (!this.initRemoteRender && this.liCollections) {
                         var element = this.liCollections[newProp.index];
                         if (!this.checkValidLi(element)) {
                             if (this.liCollections && this.liCollections.length === 100 &&
                                 this.getModuleName() === 'autocomplete' && this.listData.length > 100) {
                                 this.setSelectionData(newProp.index, oldProp.index, 'index');
                             }
-                            else {
+                            else if (!this.isServerBlazor) {
                                 this.index = oldProp.index;
                             }
                         }
@@ -3851,7 +3853,9 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         if (!this.isServerBlazor) {
             this.invokeRenderPopup();
         }
-        if (this.isServerBlazor && !isNullOrUndefined(this.list) && (this.getModuleName() === 'dropdownlist' || !this.isFiltering())) {
+        var popupHolderEle = !this.isFiltering() || document.querySelector('#' + this.element.id + '_popup_holder');
+        var isDropdownComp = this.getModuleName() === 'dropdownlist' || !this.isFiltering();
+        if (this.isServerBlazor && popupHolderEle && !isNullOrUndefined(this.list) && isDropdownComp) {
             this.invokeRenderPopup();
         }
     };
@@ -3922,6 +3926,11 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
     DropDownList.prototype.updateclientItemData = function (data) {
         this.listData = data;
     };
+    DropDownList.prototype.initValueItemData = function (selectData) {
+        this.itemData = selectData;
+        this.previousValue = this.value;
+        this.initial = false;
+    };
     DropDownList.prototype.serverUpdateListElement = function (data, popupEle) {
         this.listData = data;
         if (this.ulElement) {
@@ -3955,8 +3964,9 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         }
         this.closePopup();
         var dataItem = this.getItemData();
+        var isSelectVal = this.isServerBlazor ? !isNullOrUndefined(this.value) : !isNullOrUndefined(this.selectedLI);
         if (this.inputElement.value.trim() === '' && !this.isInteracted && (this.isSelectCustom ||
-            !isNullOrUndefined(this.selectedLI) && this.inputElement.value !== dataItem.text)) {
+            isSelectVal && this.inputElement.value !== dataItem.text)) {
             this.isSelectCustom = false;
             this.clearAll(e);
         }
@@ -5390,6 +5400,10 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
                     _this.changeState(wrap, 'check');
                     _this.checkSelectAll = false;
                 }
+                if (_this.allowFiltering) {
+                    removeClass([_this.inputWrapper], [INPUTFOCUS]);
+                    _this.filterObj.element.focus();
+                }
                 var eventArgs = { popup: _this.popupObj };
                 _this.trigger('open', eventArgs);
             }
@@ -5490,18 +5504,17 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
         var target = e.target;
         var isTree = closest(target, '.' + PARENTITEM);
         var isFilter = closest(target, '.' + FILTERWRAP);
-        if ((this.isPopupOpen && (this.inputWrapper.contains(target) || isTree || isFilter)) ||
+        var isScroller = target.classList.contains(DROPDOWN) ? true :
+            (matches(target, '.e-ddt .e-popup') || matches(target, '.e-ddt .e-treeview'));
+        if ((this.isPopupOpen && (this.inputWrapper.contains(target) || isTree || isFilter || isScroller)) ||
             ((this.allowMultiSelection || this.showCheckBox) && (this.isPopupOpen && target.classList.contains(CHIP_CLOSE) ||
                 (this.isPopupOpen && (target.classList.contains(CHECKALLPARENT) || target.classList.contains(ALLTEXT)
                     || target.classList.contains(CHECKBOXFRAME)))))) {
             this.isDocumentClick = false;
+            e.preventDefault();
         }
-        else if (!this.inputWrapper.contains(target)) {
-            var isScroller = target.classList.contains(DROPDOWN) ? true :
-                (matches(target, '.e-ddt .e-popup') || matches(target, '.e-ddt .e-treeview'));
-            if (!isScroller && this.inputFocus) {
-                this.focusOut(e);
-            }
+        else if (!this.inputWrapper.contains(target) && this.inputFocus) {
+            this.focusOut(e);
         }
     };
     DropDownTree.prototype.onActionFailure = function (e) {
@@ -6595,6 +6608,9 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
             this.popupObj.hide();
             if (this.inputFocus) {
                 this.inputWrapper.focus();
+                if (this.allowFiltering) {
+                    addClass([this.inputWrapper], [INPUTFOCUS]);
+                }
             }
             this.trigger('close', eventArgs);
         }
@@ -8536,6 +8552,9 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         else {
             this.updateActionList(ulElement, list, e);
         }
+        if (isBlazor() && this.isServerRendered && this.allowFiltering && this.mode === 'CheckBox') {
+            this.removeFocus();
+        }
         if (isBlazor() && this.isServerRendered && this.isDynamicDataChange && this.value && this.value.length > 0) {
             this.updateVal(this.value, null, 'value');
             this.addValidInputClass();
@@ -10077,16 +10096,16 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                                     if (_this.itemTemplate && (isBlazor() && _this.isServerRendered)) {
                                         setTimeout(function () { _this.mainList = _this.ulElement; }, 0);
                                     }
-                                    else {
-                                        if (!(_this.mode !== 'CheckBox' && _this.allowFiltering && _this.targetElement().trim() !== '')) {
-                                            _this.mainList = ulElement.cloneNode ? ulElement.cloneNode(true) : ulElement;
-                                        }
+                                    else if (!(_this.mode !== 'CheckBox' && (_this.allowFiltering || _this.allowCustomValue) &&
+                                        _this.targetElement().trim() !== '')) {
+                                        _this.mainList = ulElement.cloneNode ? ulElement.cloneNode(true) : ulElement;
                                     }
                                 }
                                 _this.isFirstClick = true;
                             }
                             _this.popupObj.wireScrollEvents();
-                            if (!(_this.mode !== 'CheckBox' && _this.allowFiltering && _this.targetElement().trim() !== '')) {
+                            if (!(_this.mode !== 'CheckBox' && (_this.allowFiltering || _this.allowCustomValue) &&
+                                _this.targetElement().trim() !== '')) {
                                 _this.loadTemplate();
                             }
                             _this.setScrollPosition();
@@ -12548,6 +12567,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
     function ListBox(options, element) {
         var _this = _super.call(this, options, element) || this;
         _this.isValidKey = false;
+        _this.keyDownStatus = false;
         return _this;
     }
     ListBox_1 = ListBox;
@@ -12593,12 +12613,12 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
     };
     ListBox.prototype.updateBlazorListData = function (data, isDataSource) {
         if (isDataSource) {
+            this.liCollections = this.list.querySelectorAll('.' + cssClass.li);
             this.mainList = this.ulElement = this.list.querySelector('ul');
         }
-        else {
+        if (!isNullOrUndefined(data)) {
             this.sortedData = this.jsonData = this.listData = data;
         }
-        this.initDraggable();
     };
     ListBox.prototype.initWrapper = function () {
         var hiddenSelect = this.createElement('select', { className: 'e-hidden-select', attrs: { 'multiple': '' } });
@@ -12643,9 +12663,6 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
     };
     ListBox.prototype.initDraggable = function () {
         var _this = this;
-        if (this.ulElement) {
-            this.ulElement.id = this.element.id + '_parent';
-        }
         if (this.allowDragAndDrop) {
             new Sortable(this.ulElement, {
                 scope: this.scope,
@@ -12782,7 +12799,13 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         }
     };
     ListBox.prototype.onInput = function () {
-        this.isValidKey = true;
+        if (this.keyDownStatus) {
+            this.isValidKey = true;
+        }
+        else {
+            this.isValidKey = false;
+        }
+        this.keyDownStatus = false;
         this.refreshClearIcon();
     };
     ListBox.prototype.clearText = function () {
@@ -12800,21 +12823,12 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
     };
     ListBox.prototype.onActionComplete = function (ulElement, list, e) {
         var searchEle;
-        if (this.allowFiltering && this.list.getElementsByClassName('e-filter-parent')[0]) {
-            if (isBlazor() && this.isServerRendered) {
-                searchEle = this.list.getElementsByClassName('e-filter-parent')[0];
-            }
-            else {
-                searchEle = this.list.getElementsByClassName('e-filter-parent')[0].cloneNode(true);
-            }
+        if (this.allowFiltering) {
+            searchEle = this.list.getElementsByClassName('e-filter-parent')[0];
         }
         _super.prototype.onActionComplete.call(this, ulElement, list, e);
         if (this.allowFiltering && !isNullOrUndefined(searchEle)) {
             this.list.insertBefore(searchEle, this.list.firstElementChild);
-            if (!isBlazor() && !this.isServerRendered) {
-                this.filterParent = this.list.getElementsByClassName('e-filter-parent')[0];
-                this.filterWireEvents(searchEle);
-            }
         }
         this.initWrapper();
         this.setSelection();
@@ -12834,11 +12848,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             if (this.allowFiltering) {
-                var filterElem = this.list.getElementsByClassName('e-input-filter')[0];
-                var txtLength = this.filterInput.value.length;
-                filterElem.selectionStart = txtLength;
-                filterElem.selectionEnd = txtLength;
-                filterElem.focus();
+                this.list.getElementsByClassName('e-input-filter')[0].focus();
             }
         }
         this.initLoad = false;
@@ -13152,6 +13162,8 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             var dupData = [];
             var itemIdx = void 0;
             extend(dupData, [], this.listData);
+            var removeIdxes = [];
+            var removeLiIdxes = [];
             for (var j = 0; j < items.length; j++) {
                 if (items[j] instanceof Object) {
                     dataValue = getValue(fields.value, items[j]);
@@ -13169,10 +13181,16 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
                     if (objValue === dataValue) {
                         itemIdx = this.getIndexByValue(dataValue);
                         liCollections.push(liElement[itemIdx]);
-                        this.listData.splice(i, 1);
-                        this.updateLiCollection(itemIdx);
+                        removeIdxes.push(i);
+                        removeLiIdxes.push(itemIdx);
                     }
                 }
+            }
+            for (var k = removeIdxes.length - 1; k > 0; k--) {
+                this.listData.splice(removeIdxes[k], 1);
+            }
+            for (var k = removeLiIdxes.length - 1; k > 0; k--) {
+                this.liCollections.splice(removeLiIdxes[k], 1);
             }
         }
         else {
@@ -13183,6 +13201,9 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         }
         for (var i = 0; i < liCollections.length; i++) {
             this.ulElement.removeChild(liCollections[i]);
+        }
+        if (this.listData.length === 0) {
+            this.l10nUpdate();
         }
     };
     /**
@@ -13388,7 +13409,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         EventHandler.remove(this.list, 'click', this.clickHandler);
         EventHandler.remove(wrapper, 'keydown', this.keyDownHandler);
         EventHandler.remove(wrapper, 'focusout', this.focusOutHandler);
-        if (this.allowFiltering && this.clearFilterIconElem) {
+        if (this.allowFiltering) {
             EventHandler.remove(this.clearFilterIconElem, 'click', this.clearText);
         }
         if (this.toolbarSettings.items.length) {
@@ -13450,6 +13471,9 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
                     className: listBoxClasses.filterInput
                 });
                 this.element.parentNode.insertBefore(this.filterInput, this.element);
+                if (Browser.isDevice) {
+                    
+                }
                 filterInputObj = Input.createInput({
                     element: this.filterInput,
                     buttons: [listBoxClasses.filterBarClearIcon],
@@ -13472,24 +13496,16 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
                 addClass([this.list], 'e-filter-list');
             }
             this.inputString = this.filterInput.value;
-            this.filterWireEvents();
-            return filterInputObj;
-        }
-    };
-    ListBox.prototype.filterWireEvents = function (filterElem) {
-        if (filterElem) {
-            this.filterInput = filterElem.querySelector('.e-input-filter');
-        }
-        this.clearFilterIconElem = this.filterInput.parentElement.querySelector('.' + listBoxClasses.clearIcon);
-        if (this.clearFilterIconElem) {
-            EventHandler.add(this.clearFilterIconElem, 'click', this.clearText, this);
-            if (!filterElem) {
+            this.clearFilterIconElem = this.filterInput.parentElement.querySelector('.' + listBoxClasses.clearIcon);
+            if (this.clearFilterIconElem) {
+                EventHandler.add(this.clearFilterIconElem, 'click', this.clearText, this);
                 this.clearFilterIconElem.style.visibility = 'hidden';
             }
+            EventHandler.add(this.filterInput, 'input', this.onInput, this);
+            EventHandler.add(this.filterInput, 'keyup', this.KeyUp, this);
+            EventHandler.add(this.filterInput, 'keydown', this.onKeyDown, this);
+            return filterInputObj;
         }
-        EventHandler.add(this.filterInput, 'input', this.onInput, this);
-        EventHandler.add(this.filterInput, 'keyup', this.KeyUp, this);
-        EventHandler.add(this.filterInput, 'keydown', this.onKeyDown, this);
     };
     ListBox.prototype.selectHandler = function (e, isKey) {
         var isSelect = true;
@@ -14593,5 +14609,5 @@ var listBoxClasses = {
  * export all modules from current location
  */
 
-export { incrementalSearch, Search, highlightSearch, revertHighlightSearch, FieldSettings, dropDownBaseClasses, DropDownBase, dropDownListClasses, DropDownList, Fields, TreeSettings, DropDownTree, ComboBox, AutoComplete, MultiSelect, CheckBoxSelection, SelectionSettings, ToolbarSettings, ListBox };
+export { incrementalSearch, Search, highlightSearch, revertHighlightSearch, FieldSettings, dropDownBaseClasses, DropDownBase, dropDownListClasses, DropDownList, Fields, TreeSettings, DropDownTree, ComboBox, AutoComplete, MultiSelect, CheckBoxSelection, createFloatLabel, updateFloatLabelState, removeFloating, setPlaceHolder, floatLabelFocus, floatLabelBlur, SelectionSettings, ToolbarSettings, ListBox };
 //# sourceMappingURL=ej2-dropdowns.es5.js.map

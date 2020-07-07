@@ -3,16 +3,16 @@ import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty
 import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';
 // tslint:disable-next-line:max-line-length
 import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, StrikethroughSettingsModel, LineSettingsModel, ArrowSettingsModel, RectangleSettingsModel, CircleSettingsModel, PolygonSettingsModel, StampSettingsModel, StickyNotesSettingsModel, CustomStampSettingsModel, VolumeSettingsModel, RadiusSettingsModel, AreaSettingsModel, PerimeterSettingsModel, DistanceSettingsModel, MeasurementSettingsModel, FreeTextSettingsModel, AnnotationSelectorSettingsModel, TextSearchColorSettingsModel, DocumentTextCollectionSettingsModel, TextDataSettingsModel, RectangleBoundsModel } from './pdfviewer-model';
-import { ToolbarSettingsModel, AnnotationToolbarSettingsModel, ShapeLabelSettingsModel } from './pdfviewer-model';
+import { ToolbarSettingsModel, ShapeLabelSettingsModel } from './pdfviewer-model';
 // tslint:disable-next-line:max-line-length
-import { ServerActionSettingsModel, AjaxRequestSettingsModel, CustomStampItemModel, HandWrittenSignatureSettingsModel, AnnotationSettingsModel, TileRenderingSettingsModel, StampItemSettingsModel, ScrollSettingsModel, FormFieldCollectionsModel, InkAnnotationSettingsModel } from './pdfviewer-model';
+import { ServerActionSettingsModel, AjaxRequestSettingsModel, CustomStampModel, HandWrittenSignatureSettingsModel, AnnotationSettingsModel, TileRenderingSettingsModel, ScrollSettingsModel, FormFieldModel , InkAnnotationSettingsModel } from './pdfviewer-model';
 import { PdfViewerBase } from './index';
 import { Navigation } from './index';
 import { Magnification } from './index';
 import { Toolbar } from './index';
 import { ToolbarItem } from './index';
 // tslint:disable-next-line:max-line-length
-import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem } from './base/types';
+import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType } from './base/types';
 import { Annotation } from './index';
 import { LinkAnnotation } from './index';
 import { ThumbnailView } from './index';
@@ -23,22 +23,23 @@ import { FormFields } from './index';
 import { Print, CalibrationUnit } from './index';
 // tslint:disable-next-line:max-line-length
 import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs } from './index';
-import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs, AnnotationMouseoverEventArgs, PageMouseoverEventArgs } from './index';
+import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs, AnnotationMouseoverEventArgs, PageMouseoverEventArgs, AnnotationMouseLeaveEventArgs } from './index';
 // tslint:disable-next-line:max-line-length
 import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs, ExtractTextCompletedEventArgs, PrintStartEventArgs, PrintEndEventArgs } from './index';
 // tslint:disable-next-line:max-line-length
 import { TextSearchStartEventArgs, TextSearchCompleteEventArgs, TextSearchHighlightEventArgs } from './index';
-import { PdfAnnotationBase, ZOrderPageTable } from '../diagram/pdf-annotation';
-import { PdfAnnotationBaseModel } from '../diagram/pdf-annotation-model';
-import { Drawing, ClipBoardObject } from '../diagram/drawing';
-import { Selector } from '../diagram/selector';
-import { SelectorModel } from '../diagram/selector-model';
+import { PdfAnnotationBase, ZOrderPageTable } from './drawing/pdf-annotation';
+import { PdfAnnotationBaseModel } from './drawing/pdf-annotation-model';
+import { Drawing, ClipBoardObject } from './drawing/drawing';
+import { Selector } from './drawing/selector';
+import { SelectorModel } from './drawing/selector-model';
 import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';
-import { renderAdornerLayer } from '../diagram/dom-util';
+import { renderAdornerLayer } from './drawing/dom-util';
 import { ThumbnailClickEventArgs } from './index';
 import { ValidateFormFieldsArgs } from './base';
 // tslint:disable-next-line:max-line-length
 import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs } from './base';
+import { ContextMenuSettingsModel } from './pdfviewer-model';
 
 
 /**
@@ -56,6 +57,12 @@ export class ToolbarSettings extends ChildProperty<ToolbarSettings> {
      */
     @Property()
     public toolbarItems: ToolbarItem[];
+
+    /**
+     * Provide option to customize the annotation toolbar of the PDF Viewer.
+     */
+    @Property()
+    public annotationToolbarItems: AnnotationToolbarItem[];
 }
 
 /**
@@ -89,15 +96,15 @@ export interface IAjaxHeaders {
     headerValue: string;
 }
 
-export class CustomStampItem extends ChildProperty<CustomStampItem> {
+export class CustomStamp extends ChildProperty<CustomStamp> {
     /**
-     * specifies the stamp Name of the PdfViewer.
+     * Defines the custom stamp name to be added in stamp menu of the PDF Viewer toolbar.
      */
     @Property('')
     public customStampName: string;
 
     /**
-     * specifies the stamp ImageSource of the PdfViewer.
+     * Defines the custom stamp images source to be added in stamp menu of the PDF Viewer toolbar. 
      */
     @Property('')
     public customStampImageSource: string;
@@ -221,18 +228,6 @@ export class StrikethroughSettings extends ChildProperty<StrikethroughSettings> 
     public author: string;
 
     /**
-     * specifies the subject of the annotation.
-     */
-    @Property('strikethrough')
-    public subject: string;
-
-    /**
-     * specifies the modified date of the annotation.
-     */
-    @Property('')
-    public modifiedDate: string;
-
-    /**
      * specifies the annotation selector settings of the annotation.
      */
     @Property('')
@@ -249,6 +244,22 @@ export class StrikethroughSettings extends ChildProperty<StrikethroughSettings> 
      */
     @Property(false)
     public isLock: boolean;
+
+    /**
+     * Enables or disables the multi-page text markup annotation selection in UI.
+     * @default false
+     */
+    @Property(false)
+    public enableMultiPageAnnotation: boolean;
+
+    /**
+     * Enable or disable the text markup resizer to modify the bounds in UI.
+     * @default false
+     */
+    @Property(false)
+    public enableTextMarkupResizer: boolean;
+
+
 
 }
 
@@ -275,18 +286,6 @@ export class UnderlineSettings extends ChildProperty<UnderlineSettings> {
     public author: string;
 
     /**
-     * specifies the subject of the annotation.
-     */
-    @Property('underline')
-    public subject: string;
-
-    /**
-     * specifies the modified date of the annotation.
-     */
-    @Property('')
-    public modifiedDate: string;
-
-    /**
      * specifies the annotation selector settings of the annotation.
      */
     @Property('')
@@ -303,6 +302,20 @@ export class UnderlineSettings extends ChildProperty<UnderlineSettings> {
      */
     @Property(false)
     public isLock: boolean;
+
+    /**
+     * Enables or disables the multi-page text markup annotation selection in UI.
+     * @default false
+     */
+    @Property(false)
+    public enableMultiPageAnnotation: boolean;
+
+    /**
+     * Enable or disable the text markup resizer to modify the bounds in UI.
+     * @default false
+     */
+    @Property(false)
+    public enableTextMarkupResizer: boolean;
 
 }
 
@@ -329,18 +342,6 @@ export class HighlightSettings extends ChildProperty<HighlightSettings> {
     public author: string;
 
     /**
-     * specifies the subject of the annotation.
-     */
-    @Property('highlight')
-    public subject: string;
-
-    /**
-     * specifies the modified date of the annotation.
-     */
-    @Property('')
-    public modifiedDate: string;
-
-    /**
      * specifies the annotation selector settings of the annotation.
      */
     @Property('')
@@ -358,6 +359,19 @@ export class HighlightSettings extends ChildProperty<HighlightSettings> {
     @Property(false)
     public isLock: boolean;
 
+    /**
+     * Enables or disables the multi-page text markup annotation selection in UI.
+     * @default false
+     */
+    @Property(false)
+    public enableMultiPageAnnotation: boolean;
+
+    /**
+     * Enable or disable the text markup resizer to modify the bounds in UI.
+     * @default false
+     */
+    @Property(false)
+    public enableTextMarkupResizer: boolean;
 }
 
 /**
@@ -387,18 +401,6 @@ export class LineSettings extends ChildProperty<LineSettings> {
      */
     @Property('Guest')
     public author: string;
-
-    /**
-     * specifies the subject of the annotation.
-     */
-    @Property('Line')
-    public subject: string;
-
-    /**
-     * specifies the modified date of the annotation.
-     */
-    @Property('')
-    public modifiedDate: string;
 
     /**
      * specified the thickness of the annotation.
@@ -497,18 +499,6 @@ export class ArrowSettings extends ChildProperty<ArrowSettings> {
     public author: string;
 
     /**
-     * specifies the subject of the annotation.
-     */
-    @Property('Arrow')
-    public subject: string;
-
-    /**
-     * specifies the modified date of the annotation.
-     */
-    @Property('')
-    public modifiedDate: string;
-
-    /**
      * specified the thickness of the annotation.
      */
     @Property('1')
@@ -605,18 +595,6 @@ export class RectangleSettings extends ChildProperty<RectangleSettings> {
     public author: string;
 
     /**
-     * specifies the subject of the annotation.
-     */
-    @Property('Rectangle')
-    public subject: string;
-
-    /**
-     * specifies the modified date of the annotation.
-     */
-    @Property('')
-    public modifiedDate: string;
-
-    /**
      * specified the thickness of the annotation.
      */
     @Property('1')
@@ -692,18 +670,6 @@ export class CircleSettings extends ChildProperty<CircleSettings> {
      */
     @Property('Guest')
     public author: string;
-
-    /**
-     * specifies the subject of the annotation.
-     */
-    @Property('Circle')
-    public subject: string;
-
-    /**
-     * specifies the modified date of the annotation.
-     */
-    @Property('')
-    public modifiedDate: string;
 
     /**
      * specified the thickness of the annotation.
@@ -827,18 +793,6 @@ export class PolygonSettings extends ChildProperty<PolygonSettings> {
     public author: string;
 
     /**
-     * specifies the subject of the annotation.
-     */
-    @Property('Polygon')
-    public subject: string;
-
-    /**
-     * specifies the modified date of the annotation.
-     */
-    @Property('')
-    public modifiedDate: string;
-
-    /**
      * specified the thickness of the annotation.
      */
     @Property('1')
@@ -905,12 +859,6 @@ export class StampSettings extends ChildProperty<StampSettings> {
     public author: string;
 
     /**
-     * specifies the modified date of the annotation.
-     */
-    @Property('')
-    public modifiedDate: string;
-
-    /**
      * specifies the annotation selector settings of the annotation.
      */
     @Property('')
@@ -951,6 +899,24 @@ export class StampSettings extends ChildProperty<StampSettings> {
      */
     @Property(null)
     public customData: object;
+
+    /**
+     * Provide option to define the required dynamic stamp items to be displayed in annotation toolbar menu.
+     */
+    @Property([])
+    public dynamicStamps: DynamicStampItem[];
+
+    /**
+     * Provide option to define the required sign stamp items to be displayed in annotation toolbar menu.
+     */
+    @Property([])
+    public signStamps: SignStampItem[];
+
+    /**
+     * Provide option to define the required standard business stamp items to be displayed in annotation toolbar menu.
+     */
+    @Property([])
+    public standardBusinessStamps: StandardBusinessStampItem[];
 }
 
 /**
@@ -968,12 +934,6 @@ export class CustomStampSettings extends ChildProperty<CustomStampSettings> {
      */
     @Property('Guest')
     public author: string;
-
-    /**
-     * specifies the modified date of the annotation.
-     */
-    @Property('')
-    public modifiedDate: string;
 
     /**
      * specifies the width of the annotation.
@@ -1001,7 +961,7 @@ export class CustomStampSettings extends ChildProperty<CustomStampSettings> {
      * Specifies to maintain the newly added custom stamp element in the menu items.
      */
     @Property(false)
-    public isAddToSubMenu: boolean;
+    public isAddToMenu: boolean;
 
     /**
      * specifies the minHeight of the annotation.
@@ -1032,6 +992,19 @@ export class CustomStampSettings extends ChildProperty<CustomStampSettings> {
      */
     @Property(false)
     public isLock: boolean;
+
+    /**
+     * Define the custom image path and it's name to be displayed in the menu items.
+     */
+    @Property('')
+    public customStamps: CustomStampModel[];
+
+    /**
+     * If it is set as false. then the custom stamp items won't be visible in the annotation toolbar stamp menu items.
+     */
+    @Property(true)
+    public enableCustomStamp: boolean;
+
 }
 
 /**
@@ -1061,18 +1034,6 @@ export class DistanceSettings extends ChildProperty<DistanceSettings> {
      */
     @Property('Guest')
     public author: string;
-
-    /**
-     * specifies the subject of the annotation.
-     */
-    @Property('Distance calculation')
-    public subject: string;
-
-    /**
-     * specifies the modified date of the annotation.
-     */
-    @Property('')
-    public modifiedDate: string;
 
     /**
      * specified the thickness of the annotation.
@@ -1183,18 +1144,6 @@ export class PerimeterSettings extends ChildProperty<PerimeterSettings> {
     public author: string;
 
     /**
-     * specifies the subject of the annotation.
-     */
-    @Property('Perimeter calculation')
-    public subject: string;
-
-    /**
-     * specifies the modified date of the annotation.
-     */
-    @Property('')
-    public modifiedDate: string;
-
-    /**
      * specified the thickness of the annotation.
      */
     @Property('1')
@@ -1285,18 +1234,6 @@ export class AreaSettings extends ChildProperty<AreaSettings> {
     public author: string;
 
     /**
-     * specifies the subject of the annotation.
-     */
-    @Property('Area calculation')
-    public subject: string;
-
-    /**
-     * specifies the modified date of the annotation.
-     */
-    @Property('')
-    public modifiedDate: string;
-
-    /**
      * specified the thickness of the annotation.
      */
     @Property('1')
@@ -1367,18 +1304,6 @@ export class RadiusSettings extends ChildProperty<RadiusSettings> {
      */
     @Property('Guest')
     public author: string;
-
-    /**
-     * specifies the subject of the annotation.
-     */
-    @Property('Radius calculation')
-    public subject: string;
-
-    /**
-     * specifies the modified date of the annotation.
-     */
-    @Property('')
-    public modifiedDate: string;
 
     /**
      * specified the thickness of the annotation.
@@ -1458,18 +1383,6 @@ export class VolumeSettings extends ChildProperty<VolumeSettings> {
     public author: string;
 
     /**
-     * specifies the subject of the annotation.
-     */
-    @Property('Volume calculation')
-    public subject: string;
-
-    /**
-     * specifies the modified date of the annotation.
-     */
-    @Property('')
-    public modifiedDate: string;
-
-    /**
      * specified the thickness of the annotation.
      */
     @Property('1')
@@ -1517,46 +1430,40 @@ export class VolumeSettings extends ChildProperty<VolumeSettings> {
  */
 export class InkAnnotationSettings extends ChildProperty<InkAnnotationSettings> {
     /**
-     * specifies the opacity of the annotation.
+     * Sets the opacity value for ink annotation.By default value is 1. It range varies from 0 to 1.
      */
     @Property(1)
     public opacity: number;
 
     /**
-     * specifies the stroke color of the annotation.
+     * Sets the stroke color for ink annotation.By default values is #FF0000.
      */
-    @Property('#000000')
+    @Property('#ff0000')
     public strokeColor: string;
 
     /**
-     * specified the thickness of the annotation.
+     * Sets the thickness for the ink annotation. By default value is 1. It range varies from 1 to 10.
      */
     @Property(1)
     public thickness: number;
 
     /**
-     * specified the width of the annotation.
-     */
-    @Property(100)
-    public width: number;
-
-    /**
-     * specified the height of the annotation.
-     */
-    @Property(100)
-    public height: number;
-
-    /**
-     * specifies the annotation selector settings of the annotation.
+     * Define the default option to customize the selector for ink annotation.
      */
     @Property('')
     public annotationSelectorSettings: AnnotationSelectorSettingsModel;
 
     /**
-     * specifies the lock action of the annotation.
+     * If it is set as true, can't interact with annotation. Otherwise can interact the annotations. By default it is false.
      */
     @Property(false)
     public isLock: boolean;
+
+    /**
+     * specifies the author of the annotation.
+     */
+    @Property('Guest')
+    public author: string;
 
 }
 /**
@@ -1569,18 +1476,6 @@ export class StickyNotesSettings extends ChildProperty<StickyNotesSettings> {
      */
     @Property('Guest')
     public author: string;
-
-    /**
-     * specifies the subject of the annotation.
-     */
-    @Property('Sticky Note')
-    public subject: string;
-
-    /**
-     * specifies the modified date of the annotation.
-     */
-    @Property('')
-    public modifiedDate: string;
 
     /**
      * specifies the opacity of the annotation.
@@ -1672,18 +1567,6 @@ export class FreeTextSettings extends ChildProperty<FreeTextSettings> {
     public author: string;
 
     /**
-     * specifies the subject of the annotation.
-     */
-    @Property('Text Box')
-    public subject: string;
-
-    /**
-     * specifies the modified date of the annotation.
-     */
-    @Property('')
-    public modifiedDate: string;
-
-    /**
      * specifies the background fill color of the annotation.
      */
     @Property('#ffffff00')
@@ -1740,7 +1623,7 @@ export class FreeTextSettings extends ChildProperty<FreeTextSettings> {
      * specifies the allow text only action of the free text annotation.
      */
     @Property(false)
-    public allowTextOnly: boolean;
+    public allowEditTextOnly: boolean;
 
     /**
      * specifies the annotation selector settings of the annotation.
@@ -1840,6 +1723,12 @@ export class AnnotationSelectorSettings extends ChildProperty<AnnotationSelector
      */
     @Property(AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges)
     public resizerLocation: AnnotationResizerLocation;
+
+    /**
+     * specifies the cursor type of resizer
+     */
+    @Property(null)
+    public resizerCursorType: CursorType;
 }
 
 /**
@@ -1847,16 +1736,16 @@ export class AnnotationSelectorSettings extends ChildProperty<AnnotationSelector
  */
 export class TextSearchColorSettings extends ChildProperty<TextSearchColorSettings> {
     /**
-     * Sets the color of the current occurrence of the text searched string.
+     * Gets or Sets the color of the current occurrence of the text searched string.
      */
     @Property('#fdd835')
-    public currentOccurrence: string;
+    public searchHighlightColor: string;
 
     /**
-     * Sets the color of the other occurrence of the text searched string.
+     * Gets or Sets the color of the other occurrence of the text searched string.
      */
     @Property('#8b4c12')
-    public otherOccurrence: string;
+    public searchColor: string;
 }
 
 /**
@@ -1944,14 +1833,21 @@ export class AnnotationSettings extends ChildProperty<AnnotationSettings> {
     /**
      * specifies whether the annotations are included or not in print actions.
      */
-    @Property(true)
-    public isPrint: boolean;
+    @Property(false)
+    public skipPrint: boolean;
 
     /**
      * specifies whether the annotations are included or not in download actions.
      */
-    @Property(true)
-    public isDownload: boolean;
+    @Property(false)
+    public skipDownload: boolean;
+
+    /**
+     * specifies the custom data of the annotation.
+     */
+    @Property(null)
+    public customData: object;
+
 }
 
 /**
@@ -2081,62 +1977,57 @@ export class ScrollSettings extends ChildProperty<ScrollSettings> {
     public delayPageRequestTimeOnScroll: number;
 }
 /**
- * The `FormFieldCollections` is used to store the form fields of PDF document.
+ * The `FormField` is used to store the form fields of PDF document.
  */
-export class FormFieldCollections extends ChildProperty<FormFieldCollections> {
+export class FormField extends ChildProperty<FormField> {
     /**
-     * fieldName of the form fields.
+     * Gets the name of the form field.
      */
     @Property('')
-    public fieldName: string;
+    public name: string;
 
     /**
-     * id of the form fields.
+     * Gets the id of the form field.
      */
     @Property('')
     public id: string;
 
     /**
-     * type of the form fields.
+     * Gets or sets the value of the form field.
      */
     @Property('')
-    public type: string;
+    public value: string;
 
     /**
-     * isReadOnly of the form fields.
+     * Gets the type of the form field.
+     */
+    @Property('')
+    public type: FormFieldType;
+
+    /**
+     * If it is set as true, can't edit the form field in the PDF document. By default it is false.
      */
     @Property(false)
     public isReadOnly: boolean;
 }
 /**
- * The `StampItemSettings` module is used to provide the  stamp items in toolbar of PDF viewer.
+ * The `ContextMenuSettings` is used to show the context menu of PDF document.
  */
-export class StampItemSettings extends ChildProperty<StampItemSettings> {
+export class ContextMenuSettings extends ChildProperty<ContextMenuSettings> {
     /**
-     * Enable or disables the custom stamp of PdfViewer.
+     * Defines the context menu action.
+     * @default RightClick
      */
-    @Property(true)
-    public enableCustomStamp: boolean;
+    @Property('RightClick')
+    public contextMenuAction: ContextMenuAction;
 
     /**
-     * dynamic stamp item in the PdfViewer.
+     * Defines the context menu items should be visible in the PDF Viewer.
+     *  @default []
      */
     @Property([])
-    public dynamicStamps: DynamicStampItem[];
-
-    /**
-     * sign stamp item in the PdfViewer.
-     */
-    @Property([])
-    public signStamps: SignStampItem[];
-
-    /**
-     * standard business stamp item in the PdfViewer.
-     */
-    @Property([])
-    public standardBusinessStamps: StandardBusinessStampItem[];
+    public contextMenuItems: ContextMenuItem[];
 }
-
 /**
  * Represents the PDF viewer component.
  * ```html
@@ -2158,31 +2049,26 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public serviceUrl: string;
 
     /**
-     * Returns the page count of the document loaded in the PdfViewer control.
-     * @asptype int
-     * @blazorType int
+     * gets the page count of the document loaded in the PdfViewer control.
+     * @default 0
      */
-    public get pageCount(): number {
-        return this.viewerBase.pageCount;
-    }
+    @Property(0)
+    public pageCount: number;
 
     /**
      * Checks whether the PDF document is edited.
      * @asptype bool
      * @blazorType bool
      */
-    public get isDocumentEdited(): boolean {
-        return this.viewerBase.isDocumentEdited;
-    }
+    @Property(false)
+    public isDocumentEdited: boolean;
 
     /**
      * Returns the current page number of the document displayed in the PdfViewer control.
-     * @asptype int
-     * @blazorType int
+     * @default 0
      */
-    public get currentPageNumber(): number {
-        return this.viewerBase.currentPageNumber;
-    }
+    @Property(0)
+    public currentPageNumber: number;
 
     /**
      * Sets the PDF document path for initial loading.
@@ -2291,7 +2177,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public enableTextMarkupResizer: boolean;
 
     /**
-     * Enable or disable the multi line text markup annotations in overlapping collections. 
+     * Enable or disable the multi line text markup annotations in overlapping collections.
      * @default false
      */
     @Property(false)
@@ -2318,7 +2204,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     @Property(true)
     public enablePrint: boolean;
 
-    /**    
+    /**
      * Enables or disables the thumbnail view in the PDF viewer
      * @default true
      */
@@ -2332,7 +2218,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     @Property(false)
     public isThumbnailViewOpen: boolean;
 
-    /**    
+    /**
      * Enables or disable saving Hand Written signature as editable in the PDF.
      * @default false
      */
@@ -2360,7 +2246,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     @Property(true)
     public enableHandwrittenSignature: boolean;
     /**
-     * Enables or disables the ink annotation in PDF document.
+     * If it is set as false, then the ink annotation support in the PDF Viewer will be disabled. By default it is true.
      * @default true
      */
     @Property(true)
@@ -2394,11 +2280,11 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public disableContextMenuItems: ContextMenuItem[];
 
     /**
-     * Defines the settings of the PdfViewer toolbar.
+     * Gets the form fields present in the loaded PDF document. It used to get the form fields id, name, type and it's values.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ fieldName: '', id: '', type: '', isReadOnly: false })
-    public formFieldCollections: FormFieldCollectionsModel[];
+    @Property({ name: '', id: '', type: '', isReadOnly: false, value: '' })
+    public formFieldCollections: FormFieldModel[];
 
     /**
      * Enable or disables the Navigation module of PdfViewer.
@@ -2470,19 +2356,19 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     @Property(true)
     public enableFormFields: boolean;
 
-    /** 
+    /**
      * Enable or disable the form fields validation.
      * @default false
      */
     @Property(false)
     public enableFormFieldsValidation: boolean;
 
-    /** 
+    /**
      * Enable if the PDF document contains form fields.
      * @default false
      */
     @Property(false)
-    public isFormFieldsDocument: boolean;
+    public isFormFieldDocument: boolean;
 
     /**
      * Enable or disable the free text annotation in the Pdfviewer.
@@ -2561,7 +2447,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     @Property(0)
     public zoomValue: number;
 
-    /** 
+    /**
      *  Enable or disable the zoom optimization mode in PDF Viewer.
      * @default true
      */
@@ -2579,7 +2465,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Defines the settings of the PdfViewer toolbar.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ showTooltip: true, toolbarItems: ['OpenOption', 'UndoRedoTool', 'PageNavigationTool', 'MagnificationTool', 'PanTool', 'SelectionTool', 'CommentTool', 'AnnotationEditTool', 'FreeTextAnnotationOption', 'InkAnnotationOption', 'ShapeAnnotationOption', 'StampAnnotation', 'SignatureOption', 'SearchOption', 'PrintOption', 'DownloadOption'] })
+    @Property({ showTooltip: true, toolbarItems: ['OpenOption', 'UndoRedoTool', 'PageNavigationTool', 'MagnificationTool', 'PanTool', 'SelectionTool', 'CommentTool', 'AnnotationEditTool', 'FreeTextAnnotationOption', 'InkAnnotationOption', 'ShapeAnnotationOption', 'StampAnnotation', 'SignatureOption', 'SearchOption', 'PrintOption', 'DownloadOption'], annotationToolbarItems: ['HighlightTool', 'UnderlineTool', 'StrikethroughTool', 'ColorEditTool', 'OpacityEditTool', 'AnnotationDeleteTool', 'StampAnnotationTool', 'HandWrittenSignatureTool', 'InkAnnotationTool', 'ShapeTool', 'CalibrateTool', 'StrokeColorEditTool', 'ThicknessEditTool', 'FreeTextAnnotationTool', 'FontFamilyAnnotationTool', 'FontSizeAnnotationTool', 'FontStylesAnnotationTool', 'FontAlignAnnotationTool', 'FontColorAnnotationTool', 'CommentPanelTool'] })
     public toolbarSettings: ToolbarSettingsModel;
 
     /**
@@ -2595,14 +2481,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     // tslint:disable-next-line:max-line-length
 
     @Property({ customStampName: '', customStampImageSource: '' })
-    public customStampItems: CustomStampItemModel[];
-
-    /**
-     * Defines the settings of the PdfViewer annotation toolbar.
-     */
-    // tslint:disable-next-line:max-line-length
-    @Property({ showTooltip: true, annotationToolbarItem: ['HighlightTool', 'UnderlineTool', 'StrikethroughTool', 'ColorEditTool', 'OpacityEditTool', 'AnnotationDeleteTool', 'StampAnnotationTool', 'HandWrittenSignatureTool', 'InkAnnotationTool', 'ShapeTool', 'CalibrateTool', 'StrokeColorEditTool', 'ThicknessEditTool', 'FreeTextAnnotationTool', 'FontFamilyAnnotationTool', 'FontSizeAnnotationTool', 'FontStylesAnnotationTool', 'FontAlignAnnotationTool', 'FontColorAnnotationTool', 'CommentPanelTool'] })
-    public annotationToolbarSettings: AnnotationToolbarSettingsModel;
+    public customStamp: CustomStampModel[];
 
     /**
      * Defines the settings of the PdfViewer service.
@@ -2615,42 +2494,42 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Defines the settings of highlight annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, color: '#FFDF56', author: 'Guest', subject: 'Highlight', modifiedDate: '', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, isLock: false })
+    @Property({ opacity: 1, color: '#FFDF56', author: 'Guest', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, isLock: false, enableMultiPageAnnotation: false, enableTextMarkupResizer: false })
     public highlightSettings: HighlightSettingsModel;
 
     /**
      * Defines the settings of strikethrough annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, color: '#ff0000', author: 'Guest', subject: 'Strikethrough', modifiedDate: '', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, isLock: false })
+    @Property({ opacity: 1, color: '#ff0000', author: 'Guest', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, isLock: false, enableMultiPageAnnotation: false, enableTextMarkupResizer: false })
     public strikethroughSettings: StrikethroughSettingsModel;
 
     /**
      * Defines the settings of underline annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, color: '#00ff00', author: 'Guest', subject: 'Underline', modifiedDate: '', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, isLock: false })
+    @Property({ opacity: 1, color: '#00ff00', author: 'Guest', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, isLock: false, enableMultiPageAnnotation: false, enableTextMarkupResizer: false })
     public underlineSettings: UnderlineSettingsModel;
 
     /**
      * Defines the settings of line annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', subject: 'Line', modifiedDate: '', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'None', lineHeadEndStyle: 'None', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false })
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'None', lineHeadEndStyle: 'None', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false })
     public lineSettings: LineSettingsModel;
 
     /**
      * Defines the settings of arrow annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', subject: 'Arrow', modifiedDate: '', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'Closed', lineHeadEndStyle: 'Closed', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false })
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'Closed', lineHeadEndStyle: 'Closed', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false })
     public arrowSettings: ArrowSettingsModel;
 
     /**
      * Defines the settings of rectangle annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', subject: 'Rectangle', modifiedDate: '', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false })
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false })
     public rectangleSettings: RectangleSettingsModel;
 
     /**
@@ -2664,76 +2543,76 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Defines the settings of circle annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', subject: 'Circle', modifiedDate: '', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false })
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false })
     public circleSettings: CircleSettingsModel;
 
     /**
      * Defines the settings of polygon annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', subject: 'Polygon', modifiedDate: '', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false })
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false })
     public polygonSettings: PolygonSettingsModel;
 
     /**
      * Defines the settings of stamp annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, author: 'Guest', modifiedDate: '', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false })
+    @Property({ opacity: 1, author: 'Guest', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, dynamicStamps: [DynamicStampItem.Revised, DynamicStampItem.Reviewed, DynamicStampItem.Received, DynamicStampItem.Confidential, DynamicStampItem.Approved, DynamicStampItem.NotApproved], signStamps: [SignStampItem.Witness, SignStampItem.InitialHere, SignStampItem.SignHere, SignStampItem.Accepted, SignStampItem.Rejected], standardBusinessStamps: [StandardBusinessStampItem.Approved, StandardBusinessStampItem.NotApproved, StandardBusinessStampItem.Draft, StandardBusinessStampItem.Final, StandardBusinessStampItem.Completed, StandardBusinessStampItem.Confidential, StandardBusinessStampItem.ForPublicRelease, StandardBusinessStampItem.NotForPublicRelease, StandardBusinessStampItem.ForComment, StandardBusinessStampItem.Void, StandardBusinessStampItem.PreliminaryResults, StandardBusinessStampItem.InformationOnly] })
     public stampSettings: StampSettingsModel;
 
     /**
      * Defines the settings of customStamp annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, author: 'Guest', modifiedDate: '', width: 0, height: 0, left: 0, top: 0, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false })
+    @Property({ opacity: 1, author: 'Guest', width: 0, height: 0, left: 0, top: 0, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, enableCustomStamp: true })
     public customStampSettings: CustomStampSettingsModel;
 
     /**
      * Defines the settings of distance annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', subject: 'Distance calculation', modifiedDate: '', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'Closed', lineHeadEndStyle: 'Closed', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, leaderLength: 40, resizeCursorType: CursorType.move })
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'Closed', lineHeadEndStyle: 'Closed', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, leaderLength: 40, resizeCursorType: CursorType.move })
     public distanceSettings: DistanceSettingsModel;
 
     /**
      * Defines the settings of perimeter annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', subject: 'Perimeter calculation', modifiedDate: '', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'Open', lineHeadEndStyle: 'Open', minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges } })
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'Open', lineHeadEndStyle: 'Open', minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null } })
     public perimeterSettings: PerimeterSettingsModel;
 
     /**
      * Defines the settings of area annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', subject: 'Area calculation', modifiedDate: '', thickness: 1, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges } })
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null } })
     public areaSettings: AreaSettingsModel;
 
     /**
      * Defines the settings of radius annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', subject: 'Radius calculation', modifiedDate: '', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false })
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false })
     public radiusSettings: RadiusSettingsModel;
 
     /**
      * Defines the settings of volume annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', subject: 'Volume calculation', modifiedDate: '', thickness: 1, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges } })
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null } })
     public volumeSettings: VolumeSettingsModel;
 
     /**
      * Defines the settings of stickyNotes annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ author: 'Guest', subject: 'Sticky Note', modifiedDate: '', opacity: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, isLock: false })
+    @Property({ author: 'Guest', opacity: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, isLock: false })
     public stickyNotesSettings: StickyNotesSettingsModel;
     /**
      * Defines the settings of free text annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, fillColor: '#ffffff00', borderColor: '#ffffff00', author: 'Guest', subject: 'Text Box', modifiedDate: '', borderWidth: 1, width: 151, fontSize: 16, height: 24.6, fontColor: '#000', fontFamily: 'Helvetica', defaultText: 'Type Here', textAlignment: 'Left', fontStyle: FontStyle.None, allowTextOnly: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false })
+    @Property({ opacity: 1, fillColor: '#ffffff00', borderColor: '#ffffff00', author: 'Guest', borderWidth: 1, width: 151, fontSize: 16, height: 24.6, fontColor: '#000', fontFamily: 'Helvetica', defaultText: 'Type Here', textAlignment: 'Left', fontStyle: FontStyle.None, allowTextOnly: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false })
     public freeTextSettings: FreeTextSettingsModel;
 
     /**
@@ -2746,34 +2625,34 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Defines the settings of annotation selector.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges })
+    @Property({ selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null })
     public annotationSelectorSettings: AnnotationSelectorSettingsModel;
 
     /**
      * Sets the settings for the color of the text search highlight.
      */
-    @Property({ currentOccurrence: '#fdd835', otherOccurrence: '#8b4c12' })
+    @Property({ searchHighlightColor: '#fdd835', searchColor: '#8b4c12' })
     public textSearchColorSettings: TextSearchColorSettingsModel;
 
     /**
      * Defines the settings of handWrittenSignature.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, strokeColor: '#000000', width: 100, height: 100, thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges } })
+    @Property({ opacity: 1, strokeColor: '#000000', width: 100, height: 100, thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null } })
     public handWrittenSignatureSettings: HandWrittenSignatureSettingsModel;
 
     /**
-     * Defines the settings of Ink annotation.
+     * Defines the ink annotation settings for PDF Viewer.It used to customize the strokeColor, thickness, opacity of the ink annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, strokeColor: '#000000', width: 100, height: 100, thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, isLock: false })
+    @Property({ author: 'Guest', opacity: 1, strokeColor: '#ff0000', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, isLock: false })
     public inkAnnotationSettings: InkAnnotationSettingsModel;
 
     /**
      * Defines the settings of the annotations.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ author: 'Guest', minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, isPrint: true, isDownload: true })
+    @Property({ author: 'Guest', minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, skipPrint: false, skipDownload: false })
     public annotationSettings: AnnotationSettingsModel;
 
     /**
@@ -2783,17 +2662,17 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public tileRenderingSettings: TileRenderingSettingsModel;
 
     /**
-     * Defines the settings of the PdfViewer toolbar.
-     */
-    // tslint:disable-next-line:max-line-length
-    @Property({ enableCustomStamp: true, dynamicStamps: [DynamicStampItem.Revised, DynamicStampItem.Reviewed, DynamicStampItem.Received, DynamicStampItem.Confidential, DynamicStampItem.Approved, DynamicStampItem.NotApproved], signStamps: [SignStampItem.Witness, SignStampItem.InitialHere, SignStampItem.SignHere, SignStampItem.Accepted, SignStampItem.Rejected], standardBusinessStamps: [StandardBusinessStampItem.Approved, StandardBusinessStampItem.NotApproved, StandardBusinessStampItem.Draft, StandardBusinessStampItem.Final, StandardBusinessStampItem.Completed, StandardBusinessStampItem.Confidential, StandardBusinessStampItem.ForPublicRelease, StandardBusinessStampItem.NotForPublicRelease, StandardBusinessStampItem.ForComment, StandardBusinessStampItem.Void, StandardBusinessStampItem.PreliminaryResults, StandardBusinessStampItem.InformationOnly] })
-    public stampItemSettings: StampItemSettingsModel;
-
-    /**
      * Defines the scroll settings.
      */
     @Property({ delayPageRequestTimeOnScroll: 100 })
     public scrollSettings: ScrollSettingsModel;
+
+    /**
+     * Defines the context menu settings.
+     */
+    // tslint:disable-next-line:max-line-length
+    @Property({ contextMenuAction: 'RightClick', contextMenuItems: [ ContextMenuItem.Comment, ContextMenuItem.Copy, ContextMenuItem.Cut, ContextMenuItem.Delete, ContextMenuItem.Highlight, ContextMenuItem.Paste, ContextMenuItem.Properties, ContextMenuItem.ScaleRatio, ContextMenuItem.Strikethrough, ContextMenuItem.Underline] })
+    public contextMenuSettings: ContextMenuSettingsModel;
 
     /**
      * @private
@@ -2879,7 +2758,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     public formFieldsModule: FormFields;
-    /** 
+    /**
      * Gets the bookmark view object of the pdf viewer.
      * @asptype BookmarkView
      * @blazorType BookmarkView
@@ -2889,9 +2768,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         return this.bookmarkViewModule;
     }
 
-    /** 
+    /**
      * Gets the print object of the pdf viewer.
-     * @asptype Print 
+     * @asptype Print
      * @blazorType Print
      * @returns { Print }
      */
@@ -2899,7 +2778,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         return this.printModule;
     }
 
-    /** 
+    /**
      * Gets the magnification object of the pdf viewer.
      * @asptype Magnification
      * @blazorType Magnification
@@ -2908,7 +2787,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public get magnification(): Magnification {
         return this.magnificationModule;
     }
-    /** 
+    /**
      * Gets the navigation object of the pdf viewer.
      * @asptype Navigation
      * @blazorType Navigation
@@ -2918,7 +2797,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         return this.navigationModule;
     }
 
-    /** 
+    /**
      * Gets the text search object of the pdf viewer.
      * @asptype TextSearch
      * @blazorType TextSearch
@@ -2928,7 +2807,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         return this.textSearchModule;
     }
 
-    /** 
+    /**
      * Gets the toolbar object of the pdf viewer.
      * @asptype Toolbar
      * @blazorType Toolbar
@@ -2938,7 +2817,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         return this.toolbarModule;
     }
 
-    /** 
+    /**
      * Gets the thumbnail-view object of the pdf viewer.
      * @asptype ThumbnailView
      * @blazorType ThumbnailView
@@ -3058,7 +2937,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers when an annotation is removed from the page of the PDF document.
-     * @event 
+     * @event
      * @blazorProperty 'AnnotationRemoved'
      */
     @Event()
@@ -3152,6 +3031,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     @Event()
     public annotationMouseover: EmitType<AnnotationMouseoverEventArgs>;
+
+    /**
+     * Triggers when mouse over the annotation object.
+     * @event
+     */
+    @Event()
+    public annotationMouseLeave: EmitType<AnnotationMouseLeaveEventArgs>;
 
     /**
      * Triggers when mouse over the page.
@@ -3429,11 +3315,11 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     this.viewerBase.stampAdded = true;
                     this.viewerBase.isAlreadyAdded = false;
                     // tslint:disable-next-line:max-line-length
-                    this.annotation.stampAnnotationModule.createCustomStampAnnotation(this.customStampItems[0].customStampImageSource);
+                    this.annotation.stampAnnotationModule.createCustomStampAnnotation(this.customStamp[0].customStampImageSource);
                     break;
                 case 'enableFormFields':
                     if (this.enableFormFields && this.formFieldsModule) {
-                        for (let m: number = 0; m < this.viewerBase.pageCount; m++) {
+                        for (let m: number = 0; m < this.pageCount; m++) {
                             this.formFieldsModule.renderFormFields(m);
                         }
                     } else {
@@ -3671,13 +3557,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @returns void
      */
     public load(document: string, password: string): void {
-        if (this.viewerBase.pageCount !== 0) {
+        if (this.pageCount !== 0) {
             this.viewerBase.clear(true);
         } else {
             this.viewerBase.clear(false);
         }
-        this.viewerBase.pageCount = 0;
-        this.viewerBase.currentPageNumber = 0;
+        this.pageCount = 0;
+        this.currentPageNumber = 0;
         if (this.toolbarModule) {
             this.toolbarModule.resetToolbar();
         }
@@ -3742,7 +3628,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     public unload(): void {
         this.viewerBase.clear(true);
-        this.viewerBase.pageCount = 0;
+        this.pageCount = 0;
         this.toolbarModule.resetToolbar();
         this.magnificationModule.zoomTo(100);
     }
@@ -3850,7 +3736,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * To retrieve the form fields in the PDF Document.
      * @returns void
      */
-    public retrieveFormFields(): FormFieldCollectionsModel[] {
+    public retrieveFormFields(): FormFieldModel[] {
         return this.formFieldCollections;
     }
 
@@ -3911,9 +3797,18 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     public fireValidatedFailed(action: string): void {
-        // tslint:disable-next-line:max-line-length
-        let eventArgs: ValidateFormFieldsArgs = { formField: this.viewerBase.createFormfieldsJsonData(), documentName: this.fileName, nonFillableFields: this.formFieldsModule.nonFillableFields };
-        this.trigger('validateFormFields', eventArgs);
+        if (!isBlazor()) {
+            // tslint:disable-next-line:max-line-length
+            let eventArgs: ValidateFormFieldsArgs = { formField: this.viewerBase.createFormfieldsJsonData(), documentName: this.fileName, nonFillableFields: this.formFieldsModule.nonFillableFields };
+            this.trigger('validateFormFields', eventArgs);
+        }   else {
+            // tslint:disable-next-line
+            let eventArgs: any = {};
+            eventArgs.documentName = this.fileName;
+            eventArgs.formFields = this.formFieldCollections;
+            eventArgs.nonFillableFields = this.formFieldsModule.nonFillableFields;
+            this.trigger('validateFormFields', eventArgs);
+        }
     }
 
     /**
@@ -3929,7 +3824,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     public firePageChange(previousPageNumber: number): void {
         // tslint:disable-next-line:max-line-length
-        let eventArgs: PageChangeEventArgs = { name: 'pageChange', documentName: this.fileName, currentPageNumber: this.viewerBase.currentPageNumber, previousPageNumber: previousPageNumber };
+        let eventArgs: PageChangeEventArgs = { name: 'pageChange', documentName: this.fileName, currentPageNumber: this.currentPageNumber, previousPageNumber: previousPageNumber };
         this.trigger('pageChange', eventArgs);
     }
 
@@ -3967,9 +3862,15 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public fireAnnotationAdd(pageNumber: number, index: string, type: AnnotationType, bounds: any, settings: any, textMarkupContent?: string, tmStartIndex?: number, tmEndIndex?: number, labelSettings?: ShapeLabelSettingsModel, multiPageCollection?: any): void {
         let eventArgs: AnnotationAddEventArgs = { name: 'annotationAdd', pageIndex: pageNumber, annotationId: index, annotationType: type, annotationBound: bounds, annotationSettings: settings };
         if (textMarkupContent) {
-            eventArgs.textMarkupContent = textMarkupContent;
-            eventArgs.textMarkupStartIndex = tmStartIndex;
-            eventArgs.textMarkupEndIndex = tmEndIndex;
+            if (isBlazor()) {
+                eventArgs.annotationSettings.textMarkupContent = textMarkupContent;
+                eventArgs.annotationSettings.textMarkupStartIndex = tmStartIndex;
+                eventArgs.annotationSettings.textMarkupEndIndex = tmEndIndex;
+            } else {
+                eventArgs.textMarkupContent = textMarkupContent;
+                eventArgs.textMarkupStartIndex = tmStartIndex;
+                eventArgs.textMarkupEndIndex = tmEndIndex;
+            }
         }
         if (labelSettings) {
             eventArgs.labelSettings = labelSettings;
@@ -4093,6 +3994,22 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             eventArgs.annotationAddMode = annotationAddMode;
         }
 
+        if (isBlazor()) {
+            if (annotation.type === 'FreeText' ) {
+                // tslint:disable-next-line
+                let fontStyle: any  = { isBold : false, isItalic : false, isStrikeout : false, isUnderline : false };
+                if (annotation.fontStyle === 1 ) {
+                    fontStyle.isBold = true;
+                } else if (annotation.fontStyle === 2) {
+                    fontStyle.isItalic = true;
+                } else if (annotation.fontStyle === 3) {
+                    fontStyle.isStrikeout = true;
+                } else if (annotation.fontStyle === 4) {
+                    fontStyle.isUnderline = true;
+                }
+                annotation.fontStyle = fontStyle;
+            }
+        }
         this.trigger('annotationSelect', eventArgs);
     }
 
@@ -4167,7 +4084,28 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     // tslint:disable-next-line
     public fireAnnotationMouseover(id: string, pageNumber: number, annotationType: AnnotationType, bounds: any, annotation: any, currentPosition: any, mousePosition: any) {
         let eventArgs: AnnotationMouseoverEventArgs = { name: 'annotationMouseover', annotationId: id, pageIndex: pageNumber, annotationType: annotationType, annotationBounds: bounds, annotation: annotation, pageX: currentPosition.left, pageY: currentPosition.top, X: mousePosition.left, Y: mousePosition.top };
+        if (isBlazor()) {
+            if (annotation.subject === 'Perimeter calculation') {
+                eventArgs.annotationType = 'Perimeter';
+            } else if (annotation.subject === 'Area calculation') {
+                eventArgs.annotationType = 'Area';
+            } else if (annotation.subject === 'Volume calculation') {
+                eventArgs.annotationType = 'Volume';
+            } else if (annotation.subject === 'Arrow') {
+                eventArgs.annotationType = 'Arrow';
+            } else if (annotation.subject === 'Circle') {
+                eventArgs.annotationType = 'Circle';
+            }
+        }
         this.trigger('annotationMouseover', eventArgs);
+    }
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public fireAnnotationMouseLeave(pageNumber: number) {
+        let eventArgs: AnnotationMouseLeaveEventArgs = { name: 'annotationMouseLeave', pageIndex: pageNumber };
+        this.trigger('annotationMouseLeave', eventArgs);
     }
     /**
      * @private
@@ -4234,7 +4172,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     // tslint:disable-next-line
     public fireImportStart(importData: any): void {
-        let eventArgs: ImportStartEventArgs = { name: 'ImportAnnotationsStart', importData: importData };
+        let eventArgs: ImportStartEventArgs = { name: 'importAnnotationsStart', importData: importData, formFieldData: null};
         this.trigger('importStart', eventArgs);
     }
     /**
@@ -4242,7 +4180,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     // tslint:disable-next-line
     public fireExportStart(exportData: any): void {
-        let eventArgs: ExportStartEventArgs = { name: 'ExportAnnotationsStart', exportData: exportData };
+        let eventArgs: ExportStartEventArgs = { name: 'exportAnnotationsStart', exportData: exportData, formFieldData: null};
         this.trigger('exportStart', eventArgs);
     }
     /**
@@ -4250,7 +4188,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     // tslint:disable-next-line
     public fireImportSuccess(importData: any): void {
-        let eventArgs: ImportSuccessEventArgs = { name: 'ImportAnnotationsSuccess', importData: importData };
+        let eventArgs: ImportSuccessEventArgs = { name: 'importAnnotationsSuccess', importData: importData, formFieldData: null };
         this.trigger('importSuccess', eventArgs);
     }
     /**
@@ -4258,7 +4196,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     // tslint:disable-next-line
     public fireExportSuccess(exportData: any, fileName: string): void {
-        let eventArgs: ExportSuccessEventArgs = { name: 'ExportAnnotationsSuccess', exportData: exportData, fileName: fileName };
+        let eventArgs: ExportSuccessEventArgs = { name: 'exportAnnotationsSuccess', exportData: exportData, fileName: fileName, formFieldData: null };
         this.trigger('exportSuccess', eventArgs);
     }
     /**
@@ -4267,7 +4205,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     // tslint:disable-next-line
     public fireImportFailed(data: any, errorDetails: string): void {
         // tslint:disable-next-line:max-line-length
-        let eventArgs: ImportFailureEventArgs = { name: 'importAnnotationsFailed', importData: data, errorDetails: errorDetails };
+        let eventArgs: ImportFailureEventArgs = { name: 'importAnnotationsFailed', importData: data, errorDetails: errorDetails, formFieldData: null };
         this.trigger('importFailed', eventArgs);
     }
     /**
@@ -4276,9 +4214,60 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     // tslint:disable-next-line
     public fireExportFailed(data: any, errorDetails: string): void {
         // tslint:disable-next-line:max-line-length
-        let eventArgs: ExportFailureEventArgs = { name: 'exportAnnotationsFailed', exportData: data, errorDetails: errorDetails };
+        let eventArgs: ExportFailureEventArgs = { name: 'exportAnnotationsFailed', exportData: data, errorDetails: errorDetails, formFieldData: null };
         this.trigger('exportFailed', eventArgs);
     }
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public fireFormImportStarted(data: any): void {
+        let eventArgs: ImportStartEventArgs = { name: 'importFormFieldsStart', importData: null, formFieldData: data };
+        this.trigger('importStart', eventArgs);
+    }
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public fireFormExportStarted(data: any): void {
+        let eventArgs: ExportStartEventArgs = { name: 'exportFormFieldsStart', exportData: null, formFieldData: data };
+        this.trigger('exportStart', eventArgs);
+    }
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public fireFormImportSuccess(data: any): void {
+        let eventArgs: ImportSuccessEventArgs = { name: 'importFormFieldsSuccess', importData: null, formFieldData: data };
+        this.trigger('importSuccess', eventArgs);
+    }
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public fireFormExportSuccess(data: any, fileName: string): void {
+        let eventArgs: ExportSuccessEventArgs = { name: 'exportFormFieldsSuccess', exportData: null, fileName: fileName, formFieldData: data };
+        this.trigger('exportSuccess', eventArgs);
+    }
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public fireFormImportFailed(data: any, errorDetails: string): void {
+        //tslint:disable-next-line:max-line-length
+        let eventArgs: ImportFailureEventArgs = {name: 'importFormFieldsfailed', importData: null, errorDetails: errorDetails, formFieldData: data };
+        this.trigger('importFailed', eventArgs);
+    }
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public fireFormExportFailed(data: any, errorDetails: string) : void {
+        //tslint:disable-next-line:max-line-length
+        let eventArgs: ExportFailureEventArgs = { name: 'exportFormFieldsFailed', exportData: null, errorDetails: errorDetails, formFieldData: data };
+        this.trigger('exportFailed', eventArgs);
+    }
+
     /**
      * @private
      */

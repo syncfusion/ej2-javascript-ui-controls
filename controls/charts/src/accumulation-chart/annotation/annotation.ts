@@ -7,7 +7,7 @@ import { AccumulationAnnotationSettings } from '../model/acc-base';
 import { AnnotationBase } from '../../common/annotation/annotation';
 import { appendElement, redrawElement } from '../../common/utils/helper';
 import { createElement } from '@syncfusion/ej2-base';
-import { AccumulationAnnotationSettingsModel } from '../index';
+import { AccumulationAnnotationSettingsModel } from '../model/acc-base-model';
 
 
 /**

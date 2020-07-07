@@ -184,6 +184,12 @@ export interface AccordionModel extends ComponentModel{
     height?: string | number;
 
     /**
+   * Specifies the expanded items at initial load.
+   * @default []
+   */
+    expandedIndices?: number[];
+
+    /**
    * Specifies the options to expand single or multiple panel at a time.
    * The possible values are:
    * - Single: Sets to expand only one Accordion item at a time.

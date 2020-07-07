@@ -6,8 +6,8 @@ import { Orientation, Position } from '../utils/enum';
 import { axisLabelRender } from '../model/constant';
 import { AxisRenderer } from './axis-renderer';
 import { IAxisLabelRenderEventArgs } from '../model/interface';
-import { VisibleLabels, Size, measureText, Rect, textFormatter, formatValue, stringToNumber } from '../utils/helper';
-import { valueToCoefficient, Align, getRangePalette, VisibleRange, withInRange, calculateNiceInterval } from '../utils/helper';
+import { VisibleLabels, Size, Align, measureText, Rect, textFormatter, formatValue, stringToNumber} from '../utils/helper';
+import { valueToCoefficient, getRangePalette, VisibleRange, withInRange, calculateNiceInterval } from '../utils/helper';
 
 /**
  * @private
@@ -358,7 +358,7 @@ export class AxisLayoutPanel {
     /**
      * Calculate ranges bounds
      * @param axis 
-     * @param axisIndex 
+     * @param axisIndex
      */
     public calculateRangesBounds(axis: Axis, axisIndex: number): void {
         let range: Range;
@@ -370,10 +370,14 @@ export class AxisLayoutPanel {
         let pointX: number; let pointY: number;
         let width: number; let height: number;
         let position: Position;
+        let gradientRangeColor: string;
         let startWidth: number; let endWidth: number;
         let colors: string[];
         for (let i: number = 0; i < axis.ranges.length; i++) {
             range = <Range>axis.ranges[i];
+            if (this.gauge.gradientModule) {
+                gradientRangeColor = this.gauge.gradientModule.getGradientColorString(range);
+            }
             if ((<string>range.offset).length > 0) {
                 range.currentOffset = stringToNumber(<string>range.offset, (this.gauge.orientation === 'Horizontal' ?
                     this.gauge.availableSize.height / 2 : this.gauge.availableSize.width / 2));
@@ -389,7 +393,8 @@ export class AxisLayoutPanel {
                 startWidth = range.startWidth;
                 endWidth = range.endWidth;
                 colors = this.gauge.rangePalettes.length ? this.gauge.rangePalettes : getRangePalette();
-                range.interior = range.color ? range.color : colors[i % colors.length];
+                range.interior = (gradientRangeColor) ? gradientRangeColor :
+                    (range.color) ? range.color : colors[i % colors.length];
                 if (this.gauge.orientation === 'Vertical') {
                     pointX = line.x + (range.currentOffset) + (position === 'Cross' ? startWidth / 2 :
                         (position === 'Outside' || position === 'Auto') ?
@@ -425,7 +430,6 @@ export class AxisLayoutPanel {
             }
         }
     }
-
 
     private checkPreviousAxes(currentAxis: Axis, axisIndex: number): number {
         let index: number = axisIndex - 1;

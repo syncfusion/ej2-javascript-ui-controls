@@ -421,6 +421,91 @@ export class DictionaryProperties {
      */
     public readonly descendantFonts : string = 'DescendantFonts';
     /**
+     * Specifies the value of 'background'.
+     * @private
+     */
+    public readonly background : string = 'Background';
+    /**
+     * Specifies the value of 'shading'.
+     * @private
+     */
+    public readonly shading : string = 'Shading';
+    /**
+     * Specifies the value of 'matrix'.
+     * @private
+     */
+    public readonly matrix : string = 'Matrix';
+    /**
+     * Specifies the value of 'antiAlias'.
+     * @private
+     */
+    public readonly antiAlias : string = 'AntiAlias';
+    /**
+     * Specifies the value of 'function'.
+     * @private
+     */
+    public readonly function : string = 'Function';
+    /**
+     * Specifies the value of 'extend'.
+     * @private
+     */
+    public readonly extend : string = 'Extend';
+    /**
+     * Specifies the value of 'shadingType'.
+     * @private
+     */
+    public readonly shadingType : string = 'ShadingType';
+    /**
+     * Specifies the value of 'coords'.
+     * @private
+     */
+    public readonly coords : string = 'Coords';
+    /**
+     * Specifies the value of 'domain'.
+     * @private
+     */
+    public readonly domain : string = 'Domain';
+    /**
+     * Specifies the value of 'range'.
+     * @private
+     */
+    public readonly range : string = 'Range';
+    /**
+     * Specifies the value of 'functionType'.
+     * @private
+     */
+    public readonly functionType : string = 'FunctionType';
+    /**
+     * Specifies the value of 'bitsPerSample'.
+     * @private
+     */
+    public readonly bitsPerSample : string = 'BitsPerSample';
+    /**
+     * Specifies the value of 'patternType'.
+     * @private
+     */
+    public readonly patternType : string = 'PatternType';
+    /**
+     * Specifies the value of 'paintType'.
+     * @private
+     */
+    public readonly paintType : string = 'PaintType';
+    /**
+     * Specifies the value of 'tilingType'.
+     * @private
+     */
+    public readonly tilingType : string = 'TilingType';
+    /**
+     * Specifies the value of 'xStep'.
+     * @private
+     */
+    public readonly xStep : string = 'XStep';
+    /**
+     * Specifies the value of 'yStep'.
+     * @private
+     */
+    public readonly yStep : string = 'YStep';
+    /**
      * Initialize an instance for `PdfDictionaryProperties` class.
      * @private
      */

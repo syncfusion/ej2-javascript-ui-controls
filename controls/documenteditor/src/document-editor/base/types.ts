@@ -19,6 +19,21 @@ export type HyperlinkType =
      */
     'Bookmark';
 
+    /**
+     * Indicates inserted revision types
+     */
+    export type RevisionType =
+    'Insertion' |
+    'Deletion'|
+    'MoveTo' |
+    'MoveFrom';
+    /**
+     * Indicates inserted revision types
+     */
+    export type  ReviewTabType=
+    'Comments' |
+    'Changes';
+
 /**
  * Enum underline for character format
  */
@@ -1181,7 +1196,8 @@ export type Action = 'Insert' | 'Delete' | 'BackSpace' | 'Selection' | 'MultiSel
     | 'ApplyStyle' | 'SectionBreak' | 'PageBreak' | 'IMEInput' | 'TableAutoFitToContents' | 'TableAutoFitToWindow' | 'TableFixedColumnWidth'
     | 'ParagraphBidi' | 'TableBidi' | 'ContextualSpacing' | 'RestrictEditing' | 'RemoveEditRange' | 'InsertComment' | 'DeleteComment'
     | 'RemoveInline' | 'DeleteAllComments' | 'InsertCommentWidget' | 'DeleteCommentWidget' | 'FormField' | 'UpdateFormField' |
-    'FormTextFormat';
+    'FormTextFormat'|'Accept Change' | 'Reject Change' | 'Accept All' | 'Reject All' | 'ParaMarkTrack' | 'ParaMarkReject' | 'RemoveRowTrack'
+    | 'AcceptTOC' | 'ClearRevisions';
 /**
  * Enum for direction
  */
@@ -1293,6 +1309,10 @@ export type ToolbarItem =
      * Comments option in the toolbar item.
      */
     'Comments' |
+    /**
+     * Track changes option in toolbar item.
+     */
+    'TrackChanges' |
     /**
      * Insert image option in the toolbar item.
      */

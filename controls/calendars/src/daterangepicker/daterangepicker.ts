@@ -312,6 +312,13 @@ export class DateRangePicker extends CalendarBase {
      */
     @Property('Gregorian')
     public calendarMode: CalendarType;
+    /**
+     * By default, the popup opens while clicking on the daterangepicker icon.
+     * If you want to open the popup while focusing the daterange input then specify its value as true.
+     * @default false
+     */
+    @Property(false)
+    public openOnFocus : boolean;
     /** 
      * Triggers when Calendar is created.
      * @event
@@ -1429,6 +1436,9 @@ export class DateRangePicker extends CalendarBase {
         }
         this.updateClearIconState();
         this.updateHiddenInput();
+        if (this.openOnFocus) {
+            this.show();
+        }
     }
 
     private inputBlurHandler(e: MouseEvent | KeyboardEvent): void {

@@ -217,17 +217,6 @@
       }
     }
 
-    .e-dialog {
-
-      td {
-        color: $fe-text-color;
-
-        &:first-child {
-          color: $fe-label-color;
-        }
-      }
-    }
-
     .e-large-icons {
 
       .e-list-img {
@@ -269,17 +258,6 @@
         }
       }
 
-    }
-
-    .e-fe-error {
-      color: $fe-error-color;
-    }
-
-    .e-upload {
-
-      .e-upload-actions {
-        border-bottom-color: $fe-up-list-border-color;
-      }
     }
 
     .e-fe-clone {
@@ -335,6 +313,28 @@
         @if $fm-skin-name == 'bootstrap4' {
           border-bottom-color: $fe-tb-db-sep-color;
         }
+      }
+    }
+
+    &.e-dialog {
+
+      td {
+        color: $fe-text-color;
+
+        &:first-child {
+          color: $fe-label-color;
+        }
+      }
+    }
+
+    .e-fe-error {
+      color: $fe-error-color;
+    }
+
+    .e-upload {
+
+      .e-upload-actions {
+        border-bottom-color: $fe-up-list-border-color;
       }
     }
   }

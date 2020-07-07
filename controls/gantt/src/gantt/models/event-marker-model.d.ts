@@ -8,7 +8,6 @@ export interface EventMarkerModel {
     /**
      * Defines day of event marker.
      * @default null     
-     * @blazorType Date
      */
     day?: Date | string;
 

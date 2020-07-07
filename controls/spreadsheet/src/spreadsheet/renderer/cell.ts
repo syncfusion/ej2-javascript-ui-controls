@@ -1,12 +1,12 @@
 import { Spreadsheet } from '../base/index';
-import { ICellRenderer, CellRenderEventArgs, inView, CellRenderArgs, renderFilterCell } from '../common/index';
+import { ICellRenderer, CellRenderEventArgs, inView, CellRenderArgs, renderFilterCell, checkConditionalFormat } from '../common/index';
 import { hasTemplate, createHyperlinkElement, checkPrevMerge } from '../common/index';
 import { getColumnHeaderText, CellStyleModel, CellFormatArgs, getRangeIndexes } from '../../workbook/common/index';
 import { CellStyleExtendedModel } from '../../workbook/common/index';
 import { CellModel, SheetModel, getCell, skipDefaultValue, isHiddenRow, RangeModel, isHiddenCol } from '../../workbook/base/index';
 import { getRowHeight, setRowHeight } from '../../workbook/base/index';
 import { addClass, attributes, getNumberDependable, extend, compile, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { getFormattedCellObject, applyCellFormat, workbookFormulaOperation, wrapEvent } from '../../workbook/common/event';
+import { getFormattedCellObject, applyCellFormat, workbookFormulaOperation, wrapEvent, cFRender } from '../../workbook/common/event';
 import { getTypeFromFormat } from '../../workbook/index';
 import { checkIsFormula } from '../../workbook/common/util';
 /**
@@ -48,6 +48,10 @@ export class CellRenderer implements ICellRenderer {
         args.td.innerHTML = this.processTemplates(args.cell, args.rowIdx, args.colIdx);
         args.isRefresh = false;
         this.update(args);
+        if (args.cell && args.td) {
+            this.parent.notify(
+             cFRender, { rowIdx: args.rowIdx, colIdx: args.colIdx, cell: args.cell, td: args.td, isChecked: false });
+        }
         if (!hasTemplate(this.parent, args.rowIdx, args.colIdx, this.parent.activeSheetIndex)) {
             this.parent.notify(renderFilterCell, { td: args.td, rowIndex: args.rowIdx, colIndex: args.colIdx });
         }
@@ -122,6 +126,9 @@ export class CellRenderer implements ICellRenderer {
             }
         }
         if (args.isRefresh) { this.removeStyle(args.td, args.rowIdx, args.colIdx); }
+        if (this.parent.allowConditionalFormat && args.lastCell) {
+            this.parent.notify(checkConditionalFormat, { rowIdx: args.rowIdx , colIdx: args.colIdx, cell: args.cell });
+        }
         if (Object.keys(style).length || Object.keys(this.parent.commonCellStyle).length || args.lastCell) {
             this.parent.notify(applyCellFormat, <CellFormatArgs>{
                 style: extend({}, this.parent.commonCellStyle, style), rowIdx: args.rowIdx, colIdx: args.colIdx, cell: args.td,
@@ -157,10 +164,6 @@ export class CellRenderer implements ICellRenderer {
                 }
             }
             this.parent.notify(createHyperlinkElement, { cell: args.cell, td: args.td, rowIdx: args.rowIdx, colIdx: args.colIdx });
-        }
-        if (args.cell && args.cell.validation && args.cell.validation.isHighlighted) {
-            args.td.style.backgroundColor = '#ffff00';
-            args.td.style.color = '#ff0000';
         }
     }
     private checkMerged(args: CellRenderArgs): boolean {

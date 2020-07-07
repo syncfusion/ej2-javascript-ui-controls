@@ -2,13 +2,7 @@
 
 ## [Unreleased]
 
-### Pdf Export
-
-#### Bug Fixes
-
-- Rendering issue with exceeded image into PDF export is fixed.
-
-## 18.1.36-beta (2020-03-19)
+## 18.2.44 (2020-07-07)
 
 ### Pdf Export
 
@@ -19,6 +13,24 @@
 - Preservation issue with PDF colour empty constructor is fixed.
 
 - Preservation issue with PDF Grid in Angular sample browser is fixed.
+
+- Rendering issue with exceeded image into PDF export is fixed.
+
+- Rendering issue with PDF Grid border into PDF export is fixed.
+
+#### New Features
+
+- Added Draw Path support
+
+- Added Draw Arc support
+
+- Added support for Linear gradient brush
+
+- Added support for Radial gradient brush
+
+- Added support for Tiling brush
+
+- Added support for PDF Brushes.
 
 ## 17.3.9-beta (2019-09-20)
 

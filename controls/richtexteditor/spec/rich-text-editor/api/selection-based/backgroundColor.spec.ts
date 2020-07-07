@@ -75,7 +75,6 @@ describe('RTE SELECTION BASED - backgroundColor - ', () => {
         });
     });
 
-
     describe(' Combination of font size and background ', () => {
         describe(' toolbarSettings property - ', () => {
             let rteObj: RichTextEditor;
@@ -296,7 +295,7 @@ describe('RTE SELECTION BASED - backgroundColor - ', () => {
         });
     });
     describe(' PUBLIC METHODS - ', () => {
-        describe(' getHtml and getText method - ', () => {
+         describe(' getHtml and getText method - ', () => {
             let rteObj: RichTextEditor;
             let controlId: string;
             beforeAll((done: Function) => {
@@ -319,16 +318,14 @@ describe('RTE SELECTION BASED - backgroundColor - ', () => {
                 done();
             })
             it(' Test the getHtml method after apply the background color ', (done) => {
-                rteObj.focusIn();
-                dispatchEvent((rteObj as any).inputElement, 'focusin');
                 let pEle: HTMLElement = rteObj.element.querySelector('#rte');
                 rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0], pEle.childNodes[0], 0, 3);
                 let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_BackgroundColor');
                 item = (item.querySelector('.e-rte-color-content') as HTMLElement);
                 dispatchEvent(item, 'mousedown');
                 item.click();
-                document.body.click();
                 dispatchEvent(document.body, 'mousedown');
+                document.body.click();
                 (rteObj as any).isBlur = true;
                 dispatchEvent((rteObj as any).inputElement, 'focusout');
                 expect(rteObj.getHtml() === '<p id="rte"><span style="background-color: rgb(255, 255, 0);">RTE</span></p>').toBe(true);

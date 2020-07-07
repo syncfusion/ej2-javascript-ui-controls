@@ -2,14 +2,13 @@
 import { Collection, Event, NotifyPropertyChanges, detach, Property, EventHandler, EmitType } from '@syncfusion/ej2-base';
 import { addClass, INotifyPropertyChanged, getUniqueID, rippleEffect } from '@syncfusion/ej2-base';
 import { attributes, Component, closest, select, KeyboardEventArgs, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
-import { classList, remove, removeClass, isBlazor, Observer } from '@syncfusion/ej2-base';
-import { Button, buttonObserver } from '@syncfusion/ej2-buttons';
+import { classList, remove, removeClass } from '@syncfusion/ej2-base';
+import { Button } from '@syncfusion/ej2-buttons';
 import { Popup } from '@syncfusion/ej2-popups';
-import { MenuEventArgs, BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs } from './../common/common';
+import { MenuEventArgs, BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs, upDownKeyHandler } from './../common/common';
 import { getModel, SplitButtonIconPosition, Item } from './../common/common';
 import { ItemModel } from './../common/common-model';
 import { DropDownButtonModel } from './drop-down-button-model';
-export const dropDownButtonObserver: Observer = new Observer();
 
 const classNames: ClassNames = {
     DISABLED: 'e-disabled',
@@ -108,7 +107,6 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
     /**
      * Triggers while rendering each Popup item of DropDownButton.
      * @event
-     * @blazorProperty 'OnItemRender'
      */
     @Event()
     public beforeItemRender: EmitType<MenuEventArgs>;
@@ -116,7 +114,6 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
     /**
      * Triggers before opening the DropDownButton popup.
      * @event
-     * @blazorProperty 'OnOpen'
      */
     @Event()
     public beforeOpen: EmitType<BeforeOpenCloseMenuEventArgs>;
@@ -124,7 +121,6 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
     /**
      * Triggers before closing the DropDownButton popup.
      * @event
-     * @blazorProperty 'OnClose'
      */
     @Event()
     public beforeClose: EmitType<BeforeOpenCloseMenuEventArgs>;
@@ -132,7 +128,6 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
     /**
      * Triggers while closing the DropDownButton popup.
      * @event
-     * @blazorProperty 'Closed'
      */
     @Event()
     public close: EmitType<OpenCloseMenuEventArgs>;
@@ -140,7 +135,6 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
     /**
      * Triggers while opening the DropDownButton popup.
      * @event
-     * @blazorProperty 'Opened'
      */
     @Event()
     public open: EmitType<OpenCloseMenuEventArgs>;
@@ -148,7 +142,6 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
     /**
      * Triggers while selecting action item in DropDownButton popup.
      * @event
-     * @blazorProperty 'ItemSelected'
      */
     @Event()
     public select: EmitType<MenuEventArgs>;
@@ -156,7 +149,6 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
     /**
      * Triggers once the component rendering is completed.
      * @event
-     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Event>;
@@ -196,26 +188,11 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
      * @private
      */
     public render(): void {
-        if (isBlazor() && this.isServerRendered) {
-            buttonObserver.on('component-rendered', this.buttonRendered, this, this.element.id);
-            this.createPopup();
-            this.setActiveElem([this.element]);
-        } else {
-            this.initialize();
-        }
+        this.initialize();
         if (!this.disabled) {
             this.wireEvents();
         }
         this.renderComplete();
-        if (isBlazor() && this.isServerRendered) {
-            dropDownButtonObserver.notify('component-rendered', {id: this.element.id, instance: this});
-        }
-    }
-    private buttonRendered(args: { instance: Button, id: string }): void {
-        if (this.element.id === args.instance.element.id) {
-            this.button = args.instance;
-            buttonObserver.off('component-rendered', this.buttonRendered, this.element.id);
-        }
     }
     /**
      * Adds a new item to the menu. By default, new item appends to the list as the last item,
@@ -485,54 +462,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
             return;
         }
         e.preventDefault();
-        let ul: Element = this.getULElement();
-        let defaultIdx: number = e.keyCode === 40 ? 0 : ul.childElementCount - 1;
-        let liIdx: number = defaultIdx;
-        let li: Element = null;
-        this.removeCustomSelection();
-        for (let i: number = 0, len: number = ul.children.length; i < len; i++) {
-            if (ul.children[i].classList.contains(classNames.FOCUS)) {
-                li = ul.children[i];
-                liIdx = i;
-                li.classList.remove(classNames.FOCUS);
-                e.keyCode === 40 ? liIdx++ : liIdx--;
-                if (liIdx === (e.keyCode === 40 ? ul.childElementCount : -1)) {
-                    liIdx = defaultIdx;
-                }
-            }
-        }
-        li = ul.children[liIdx];
-        liIdx = this.isValidLI(li, liIdx, e.keyCode);
-        if (liIdx !== -1) {
-            addClass([ul.children[liIdx]], classNames.FOCUS);
-            (ul.children[liIdx] as HTMLElement).focus();
-        }
-    }
-
-    private removeCustomSelection(): void {
-        let selectedLi: Element = this.getULElement().querySelector('.e-selected');
-        if (selectedLi) {
-            selectedLi.classList.remove('e-selected');
-        }
-    }
-
-    private isValidLI(li: Element, index: number, keyCode: number, count: number = 0): number {
-        if (li.classList.contains(classNames.SEPARATOR) || li.classList.contains(classNames.DISABLED)) {
-            if (index === (keyCode === 40 ? this.items.length - 1 : 0)) {
-                index = keyCode === 40 ? 0 : this.items.length - 1;
-            } else {
-                keyCode === 40 ? index++ : index--;
-            }
-        }
-        li = this.getULElement().children[index];
-        if (li.classList.contains(classNames.SEPARATOR) || li.classList.contains(classNames.DISABLED)) {
-            count++;
-            if (count === this.items.length) {
-                return index = -1;
-            }
-            index = this.isValidLI(li, index, keyCode, count);
-        }
-        return index;
+        upDownKeyHandler(this.getULElement(), e.keyCode);
     }
 
     private keyEventHandler(e: KeyboardEventArgs): void {
@@ -615,7 +545,8 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
         this.trigger('beforeClose', beforeCloseArgs,  (observedArgs: BeforeOpenCloseMenuEventArgs) => {
             if (!observedArgs.cancel) {
                 let ul: HTMLElement = this.getULElement();
-                this.removeCustomSelection();
+                let selectedLi: Element = ul.querySelector('.e-selected');
+                if (selectedLi) { selectedLi.classList.remove('e-selected'); }
                 this.dropDown.hide();
                 removeClass(this.activeElem, 'e-active');
                 this.element.setAttribute('aria-expanded', 'false');

@@ -1857,6 +1857,10 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                     this.changeState(wrap, 'check');
                     this.checkSelectAll = false;
                 }
+                if (this.allowFiltering) {
+                    removeClass([this.inputWrapper], [INPUTFOCUS]);
+                    this.filterObj.element.focus();
+                }
                 let eventArgs: DdtPopupEventArgs = { popup: this.popupObj };
                 this.trigger('open', eventArgs);
             }
@@ -1955,17 +1959,16 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         let target: HTMLElement = <HTMLElement>e.target;
         let isTree: Element = closest(target, '.' + PARENTITEM);
         let isFilter: Element = closest(target, '.' + FILTERWRAP);
-        if ((this.isPopupOpen && (this.inputWrapper.contains(target) || isTree || isFilter)) ||
+        let isScroller: boolean = target.classList.contains(DROPDOWN) ? true :
+            (matches(target, '.e-ddt .e-popup') || matches(target, '.e-ddt .e-treeview'));
+        if ((this.isPopupOpen && (this.inputWrapper.contains(target) || isTree || isFilter || isScroller)) ||
             ((this.allowMultiSelection || this.showCheckBox) && (this.isPopupOpen && target.classList.contains(CHIP_CLOSE) ||
                 (this.isPopupOpen && (target.classList.contains(CHECKALLPARENT) || target.classList.contains(ALLTEXT)
                  || target.classList.contains(CHECKBOXFRAME)))))) {
             this.isDocumentClick = false;
-        } else if (!this.inputWrapper.contains(target)) {
-            let isScroller: boolean = target.classList.contains(DROPDOWN) ? true :
-                (matches(target, '.e-ddt .e-popup') || matches(target, '.e-ddt .e-treeview'));
-            if (!isScroller && this.inputFocus) {
-                this.focusOut(e);
-            }
+            e.preventDefault();
+        } else if (!this.inputWrapper.contains(target) && this.inputFocus) {
+            this.focusOut(e);
         }
     }
 
@@ -3022,6 +3025,9 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             this.popupObj.hide();
             if (this.inputFocus) {
                 this.inputWrapper.focus();
+                if (this.allowFiltering) {
+                   addClass([this.inputWrapper], [INPUTFOCUS]);
+                }
             }
             this.trigger('close', eventArgs);
         }

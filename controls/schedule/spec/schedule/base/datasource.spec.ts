@@ -1627,7 +1627,9 @@ export function yearDataGenerator(count: number = 100, date: Date = new Date(), 
             Subject: id.toString(),
             StartTime: new Date(start.getTime()),
             EndTime: new Date(end.getTime()),
-            IsAllDay: (id % 10) ? true : false
+            IsAllDay: (id % 10) ? true : false,
+            ProjectId: (id % 3) + 1,
+            TaskId: (id % 6) + 1
         });
         id++;
     }

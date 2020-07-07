@@ -4,7 +4,7 @@ import { workbookFormulaOperation, getColumnHeaderText, aggregateComputation, Ag
 import { Calculate, ValueChangedArgs, CalcSheetFamilyItem, FormulaInfo, CommonErrors, getAlphalabel } from '../../calculate/index';
 import { IFormulaColl } from '../../calculate/common/interface';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { DefineNameModel, getCellAddress } from '../common/index';
+import { DefineNameModel, getCellAddress,  getFormattedCellObject, isNumber } from '../common/index';
 
 /**
  * @hidden
@@ -367,6 +367,7 @@ export class WorkbookFormula {
                         this.calculateInstance.valueChanged(sheetName, tempArgs, true);
                     }
                 }
+                this.calculateInstance.cell = '';
             }
         } else {
             let family: CalcSheetFamilyItem = this.calculateInstance.getSheetFamilyItem(sheetName);
@@ -428,7 +429,7 @@ export class WorkbookFormula {
         if (definedName.scope) {
             sheetIdx = getSheetIndex(this.parent, definedName.scope);
             if (sheetIdx > -1) {
-                name = getSheetName(this.parent, sheetIdx + 1) + '!' + name;
+                name = getSheetName(this.parent, sheetIdx) + '!' + name;
             }
         } else {
             definedName.scope = '';
@@ -500,14 +501,39 @@ export class WorkbookFormula {
         let sheet: SheetModel = this.parent.getActiveSheet();
         let range: string = sheet.selectedRange;
         let indexes: number[] = getRangeIndexes(range.split(':')[1]);
+        let i: number; let calcValue: string;
+        let formulaVal: string[] = ['SUM', 'AVERAGE', 'MIN', 'MAX'];
+        let formatedValues: string[] = [];
         if (indexes[0] + 1 === sheet.rowCount && indexes[1] + 1 === sheet.colCount) {
             range = `A1:${getCellAddress(sheet.usedRange.rowIndex, sheet.usedRange.colIndex)}`;
         }
+        let actCell: number[] = getRangeIndexes(sheet.activeCell);
+        let actCellModel: CellModel = sheet.rows[actCell[0]] ? sheet.rows[actCell[0]].cells ?
+            sheet.rows[actCell[0]].cells[actCell[1]] : {} : {};
+        let actCellfrmt: string = (actCellModel) ? actCellModel.format : '';
+        let cellValue: string;
+        let cellCol: string | string[] = this.calculateInstance.getCellCollection(range);
+        for (i = 0; i < cellCol.length; i++) {
+            cellValue = this.calculateInstance.getValueFromArg(cellCol[i]);
+            if (isNumber(cellValue)) { args.countOnly = false; break; }
+        }
         args.Count = this.calculateInstance.getFunction('COUNTA')(range);
         if (!args.Count || args.countOnly) { return; }
-        args.Sum = this.toFixed(this.calculateInstance.getFunction('SUM')(range));
-        args.Avg = this.toFixed(this.calculateInstance.getFunction('AVERAGE')(range));
-        args.Min = this.toFixed(this.calculateInstance.getFunction('MIN')(range));
-        args.Max = this.toFixed(this.calculateInstance.getFunction('MAX')(range));
+        for (i = 0; i < 4; i++) {
+            calcValue = this.toFixed(this.calculateInstance.getFunction(formulaVal[i])(range));
+            let eventArgs: { [key: string]: string | number | boolean } = {
+                formattedText: calcValue,
+                value: calcValue,
+                format: actCellfrmt,
+                onLoad: true
+            };
+            if (actCellfrmt) {
+                this.parent.notify(getFormattedCellObject, eventArgs);
+                calcValue = eventArgs.formattedText as string;
+            }
+            formatedValues.push(calcValue);
+        }
+        args.Sum = formatedValues[0]; args.Avg = formatedValues[1];
+        args.Min = formatedValues[2]; args.Max = formatedValues[3];
     }
 }

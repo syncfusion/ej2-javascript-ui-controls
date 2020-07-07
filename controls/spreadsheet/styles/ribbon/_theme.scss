@@ -6,10 +6,6 @@
       & .e-tab-header {
         background-color: inherit;
 
-        & .e-drop-icon {
-          color: $expand-icon-color;
-        }
-
         @if $skin-name == 'bootstrap' {
           &::before {
             border-bottom-color: $ribbon-border-color;
@@ -33,6 +29,10 @@
           border: 0;
         }
       }
+    }
+
+    & .e-drop-icon {
+      color: $expand-icon-color;
     }
 
     & .e-tab .e-content .e-toolbar {

@@ -2,7 +2,8 @@ import { TreeGrid } from '../base/treegrid';
 import { ITreeData } from '../base/interface';
 import { getObject, Grid, ExcelExport as GridExcel, ExcelExportProperties, BeforeDataBoundArgs } from '@syncfusion/ej2-grids';
 import { ExcelStyle, ExcelQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
-import { isRemoteData, isOffline } from '../utils';
+import { ExcelRow, Row, Column } from '@syncfusion/ej2-grids';
+import { isRemoteData, isOffline, getParentData } from '../utils';
 import { isNullOrUndefined, setValue, Ajax, extend } from '@syncfusion/ej2-base';
 import { DataManager, Query, ReturnOption } from '@syncfusion/ej2-data';
 import * as event from '../base/constant';
@@ -35,6 +36,8 @@ export class ExcelExport {
     public addEventListener(): void {
         this.parent.on('updateResults', this.updateExcelResultModel, this);
         this.parent.on('excelCellInfo', this.excelQueryCellInfo, this);
+        this.parent.grid.on('export-RowDataBound', this.exportRowDataBound, this);
+        this.parent.grid.on('finalPageSetup', this.finalPageSetup, this);
       }
       /**
        * To destroy the Excel Export
@@ -51,6 +54,8 @@ export class ExcelExport {
         if (this.parent.isDestroyed) { return; }
         this.parent.off('updateResults', this.updateExcelResultModel);
         this.parent.off('excelCellInfo', this.excelQueryCellInfo);
+        this.parent.grid.off('export-RowDataBound', this.exportRowDataBound);
+        this.parent.grid.off('finalPageSetup', this.finalPageSetup);
       }
       private updateExcelResultModel(returnResult: { result: ITreeData[], count: number }): void {
         this.dataResults = <ReturnOption>returnResult;
@@ -148,6 +153,25 @@ export class ExcelExport {
           }
         this.parent.notify('updateResults', args);
         this.parent.trigger('excelQueryCellInfo', args);
+      }
+      private exportRowDataBound(excelRow: {excelRows: ExcelRow[], rowObj: Row<Column>, type: string}) : void {
+          if (excelRow.type === 'excel') {
+              let excelrowobj: ITreeData = excelRow.rowObj.data;
+              let filtercolumnlength: number = this.parent.grid.filterSettings.columns.length;
+              if (excelrowobj.parentItem && getParentData(this.parent, excelrowobj.parentItem.uniqueID, Boolean(filtercolumnlength))) {
+                  let rowlength: number = excelRow.excelRows.length;
+                  let rowlevel: number = excelrowobj.level;
+                  excelRow.excelRows[rowlength - 1].grouping = { outlineLevel: rowlevel, isCollapsed: false };
+              }
+          }
+      }
+      /* tslint:disable-next-line:max-func-body-length */
+      private finalPageSetup( /* tslint:disable-next-line:no-any */  workbook: any): void {
+          for (let i: number = 0; i < workbook.worksheets.length; i++) {
+              if (workbook.worksheets[i].rows) {
+                  workbook.worksheets[i].pageSetup = { isSummaryRowBelow: false };
+              }
+          }
       }
       private isLocal(): Boolean {
         return !isRemoteData(this.parent) && isOffline(this.parent);

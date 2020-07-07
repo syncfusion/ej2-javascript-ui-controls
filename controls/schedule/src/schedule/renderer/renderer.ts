@@ -1,10 +1,10 @@
 import { isNullOrUndefined, extend, addClass, removeClass, isBlazor } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
 import { View, ReturnType } from '../base/type';
+import { VirtualScroll } from '../actions/virtual-scroll';
 import { EventTooltip } from '../popups/event-tooltip';
 import * as events from '../base/constant';
 import * as cls from '../base/css-constant';
-import { VirtualScroll } from '../actions/virtual-scroll';
 
 /**
  * Schedule DOM rendering
@@ -43,9 +43,9 @@ export class Render {
             case 'Month':
                 this.parent.activeView = this.parent.monthModule;
                 break;
-            // case 'Year':
-            //     this.parent.activeView = this.parent.yearModule;
-            //     break;
+            case 'Year':
+                this.parent.activeView = this.parent.yearModule;
+                break;
             case 'Agenda':
                 this.parent.activeView = this.parent.agendaModule;
                 break;
@@ -142,7 +142,9 @@ export class Render {
         this.parent.trigger(events.dataBinding, e, (args: ReturnType) => {
             let resultData: Object[] = <Object[]>extend([], args.result, null, true);
             if (isBlazor()) {
-                resultData.forEach((data: { [key: string]: Object }) => delete data.BlazId);
+                for (let data of resultData as { [key: string]: Object }[]) {
+                    delete data.BlazId;
+                }
             }
             this.parent.eventsData = resultData.filter((data: { [key: string]: Object }) => !data[this.parent.eventFields.isBlock]);
             this.parent.blockData = resultData.filter((data: { [key: string]: Object }) => data[this.parent.eventFields.isBlock]);

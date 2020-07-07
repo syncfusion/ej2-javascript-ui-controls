@@ -775,7 +775,9 @@ export function removeClassNames(elements: HTMLCollection, type: string, treemap
 
 export function applyOptions(element: SVGPathElement, options: Object): void {
     element.setAttribute('opacity', options['opacity']);
-    element.setAttribute('fill', options['fill']);
+    if (!isNullOrUndefined(options['fill'])) {
+        element.setAttribute('fill', options['fill']);
+    }
     element.setAttribute('stroke', options['border']['color']);
     element.setAttribute('stroke-width', options['border']['width']);
 }

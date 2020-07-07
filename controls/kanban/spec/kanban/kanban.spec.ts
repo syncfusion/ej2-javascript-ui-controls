@@ -619,7 +619,7 @@ describe('Kanban base module', () => {
 
         it('swimlane descending order rendering', () => {
             expect(kanbanObj.element.querySelector('.e-swimlane-text').innerHTML).toEqual('Andrew Fuller');
-            kanbanObj.swimlaneSettings.sortBy = 'Descending';
+            kanbanObj.swimlaneSettings.sortDirection = 'Descending';
             kanbanObj.dataBind();
             expect(kanbanObj.element.querySelector('.e-swimlane-text').innerHTML).toEqual('Steven walker');
         });

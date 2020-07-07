@@ -29,19 +29,36 @@ export class CardSettings extends ChildProperty<CardSettings> {
     public contentField: string;
 
     /**
+     * Defines the card content labels
+     * @deprecated
+     * @default null
+     */
+    @Property()
+    public tagsField: string;
+
+    /**
+     * Defines the card color
+     * @deprecated
+     * @default null
+     */
+    @Property()
+    public grabberField: string;
+
+    /**
+     * Defines the card icons
+     * @deprecated
+     * @default null
+     */
+    @Property()
+    public footerCssField: string;
+
+    /**
      * Defines the card template
      * @default null
      * @deprecated
      */
     @Property()
     public template: string;
-
-    /**
-     * Defines the card order
-     * @default null
-     */
-    @Property()
-    public priority: string;
 
     /**
      * It defines the card selection type, which accepts either of the following values.

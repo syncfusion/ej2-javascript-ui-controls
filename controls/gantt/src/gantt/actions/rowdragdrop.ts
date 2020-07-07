@@ -51,7 +51,7 @@ export class RowDD {
      * @private
      */
     public destroy(): void {
-         // Destroy Method
+        // Destroy Method
     }
     /**
      * To bind excel exporting events.
@@ -69,7 +69,7 @@ export class RowDD {
         this.parent.trigger('rowDragStart', args);
         this.parent.element.style.position = 'relative'; // for positioning the drag element properly
     }
-    private  addErrorElem(): void {
+    private addErrorElem(): void {
         let dragelem: Element = document.getElementsByClassName('e-ganttdrag')[0];
         let errorelem: number = dragelem.querySelectorAll('.e-errorelem').length;
         if (!errorelem) {
@@ -104,15 +104,15 @@ export class RowDD {
         let ganttDragElement: HTMLElement = cloneElement.cloneNode(true) as HTMLElement;
         ganttDragElement.classList.add('e-ganttdrag');
         ganttDragElement.style.display = '';
-        if (this.parent.element.querySelectorAll('.e-cloneproperties').length <= 1 ) {
+        if (this.parent.element.querySelectorAll('.e-cloneproperties').length <= 1) {
             this.parent.element.appendChild(ganttDragElement);
         } else {
-        if (document.getElementsByClassName('e-cloneproperties')[0].querySelectorAll('.e-errorelem').length) {
-            this.addErrorElem();
-        } else {
-            this.removeErrorElem();
+            if (document.getElementsByClassName('e-cloneproperties')[0].querySelectorAll('.e-errorelem').length) {
+                this.addErrorElem();
+            } else {
+                this.removeErrorElem();
+            }
         }
-    }
         if (this.parent.gridLines === 'Both') {
             addClass(this.parent.element.querySelectorAll('.e-ganttdrag .e-rowcell'), ['e-bothganttlines']);
         }
@@ -166,6 +166,7 @@ export class RowDD {
     }
     /* tslint:disable-next-line:max-func-body-length */
     private dropRows(args: RowDropEventArgs, isByMethod?: boolean): void {
+        if (!this.parent.readOnly) {
         this.dropPosition = args.dropPosition;
         if (args.dropPosition !== 'Invalid' && this.parent.editModule) {
             let gObj: Gantt = this.parent;
@@ -185,14 +186,17 @@ export class RowDD {
                 draggedRecord = dragRecords[i];
                 this.draggedRecord = draggedRecord;
                 if (this.dropPosition !== 'Invalid') {
-                    if (isByMethod) {
-                        this.deleteDragRow();
-                    }
-                    let recordIndex1: number = this.ganttData.indexOf(droppedRecord);
                     if (this.parent.viewType === 'ResourceView') {
                         this.checkisSharedTask();
                         this.previousParent = this.draggedRecord.parentItem.uniqueID;
                     }
+                    if (this.isSharedTask) {
+                        return;
+                    }
+                    if (isByMethod) {
+                        this.deleteDragRow();
+                    }
+                    let recordIndex1: number = this.ganttData.indexOf(droppedRecord);
                     if (this.dropPosition === 'topSegment') {
                         this.dropAtTop(recordIndex1);
                     }
@@ -286,6 +290,7 @@ export class RowDD {
                 }
                 if (droppedParentItem.ganttProperties.taskName === 'Unassigned Task') {
                     currentTask.ganttProperties.resourceInfo = [];
+                    currentTask.ganttProperties.sharedTaskUniqueIds = [currentTask.ganttProperties.rowUniqueID];
                 } else {
                     currentTask.ganttProperties.resourceInfo.push(tempResourceInfo[0]);
                 }
@@ -309,6 +314,7 @@ export class RowDD {
         this.parent.trigger('actionComplete', args);
         this.parent.editedRecords = [];
     }
+}
     private updateCurrentTask(currentTask: IGanttData): void {
         this.parent.dataOperation.updateMappingData(currentTask, 'resourceInfo');
         this.parent.editModule.updateResourceRelatedFields(currentTask, 'resource');
@@ -413,11 +419,11 @@ export class RowDD {
                 if (!this.parent.taskFields.parentID) {
                     (tempDataSource as IGanttData[]).splice(idx, 0, draggedRecord.taskData);
                 }
-           } else if (this.dropPosition === 'bottomSegment') {
+            } else if (this.dropPosition === 'bottomSegment') {
                 if (!this.parent.taskFields.parentID) {
                     (tempDataSource as IGanttData[]).splice(idx + 1, 0, draggedRecord.taskData);
                 }
-           }
+            }
         } else if (!this.parent.taskFields.parentID && (!isNullOrUndefined(droppedRecord) && droppedRecord.parentItem)) {
             if (this.dropPosition === 'topSegment' || this.dropPosition === 'bottomSegment') {
                 let rowPosition: RowPosition = this.dropPosition === 'topSegment' ? 'Above' : 'Below';
@@ -427,18 +433,18 @@ export class RowDD {
             }
         }
         if (this.parent.taskFields.parentID) {
-           if (draggedRecord.parentItem) {
-              if (this.dropPosition === 'topSegment' || this.dropPosition === 'bottomSegment') {
-                draggedRecord[this.parent.taskFields.parentID] = droppedRecord[this.parent.taskFields.parentID];
-                draggedRecord.taskData[this.parent.taskFields.parentID] = droppedRecord[this.parent.taskFields.parentID];
-              } else {
-                draggedRecord[this.parent.taskFields.parentID] = droppedRecord[this.parent.taskFields.id];
-                draggedRecord.taskData[this.parent.taskFields.parentID] = droppedRecord[this.parent.taskFields.id];
-              }
-           } else {
-            draggedRecord[this.parent.taskFields.parentID] = null;
-            draggedRecord.taskData[this.parent.taskFields.parentID] = null;
-           }
+            if (draggedRecord.parentItem) {
+                if (this.dropPosition === 'topSegment' || this.dropPosition === 'bottomSegment') {
+                    draggedRecord[this.parent.taskFields.parentID] = droppedRecord[this.parent.taskFields.parentID];
+                    draggedRecord.taskData[this.parent.taskFields.parentID] = droppedRecord[this.parent.taskFields.parentID];
+                } else {
+                    draggedRecord[this.parent.taskFields.parentID] = droppedRecord[this.parent.taskFields.id];
+                    draggedRecord.taskData[this.parent.taskFields.parentID] = droppedRecord[this.parent.taskFields.id];
+                }
+            } else {
+                draggedRecord[this.parent.taskFields.parentID] = null;
+                draggedRecord.taskData[this.parent.taskFields.parentID] = null;
+            }
         }
     }
     private dropMiddle(recordIndex1: number): void {
@@ -487,11 +493,11 @@ export class RowDD {
             let parentItem: IGanttData = extend({}, droppedRecord);
             delete parentItem.childRecords;
             let createParentItem: IParent = {
-                uniqueID : parentItem.uniqueID,
-                expanded : parentItem.expanded,
-                level : parentItem.level,
-                index : parentItem.index,
-                taskId : parentItem.ganttProperties.rowUniqueID
+                uniqueID: parentItem.uniqueID,
+                expanded: parentItem.expanded,
+                level: parentItem.level,
+                index: parentItem.index,
+                taskId: parentItem.ganttProperties.rowUniqueID
             };
             draggedRecord.parentItem = createParentItem;
             draggedRecord.parentUniqueID = droppedRecord.uniqueID;
@@ -640,7 +646,7 @@ export class RowDD {
                     this.updateParentRecords.push(flatParentData);
                 }
             }
-             //method to delete the record from datasource collection
+            //method to delete the record from datasource collection
             if (deletedRow && !this.parent.taskFields.parentID) {
                 let deleteRecordIDs: string[] = [];
                 deleteRecordIDs.push(deletedRow.ganttProperties.rowUniqueID.toString());
@@ -651,11 +657,17 @@ export class RowDD {
                     this.removeChildItem(deletedRow);
                 }
                 let idx: number;
-                let ganttData: IGanttData[] = (dataSource as IGanttData[]).length > 0 ?
+                let ganttData: IGanttData[] = (dataSource as IGanttData[]).length > 0 && this.parent.viewType !== 'ResourceView' ?
                     dataSource as IGanttData[] : this.parent.currentViewData;
                 for (let i: number = 0; i < ganttData.length; i++) {
-                    if (ganttData[i][this.parent.taskFields.id] === deletedRow.taskData[this.parent.taskFields.id]) {
-                        idx = i;
+                    if (this.parent.viewType === 'ResourceView') {
+                        if (ganttData[i].ganttProperties.rowUniqueID === deletedRow.ganttProperties.rowUniqueID) {
+                            idx = i;
+                        }
+                    } else {
+                        if (ganttData[i][this.parent.taskFields.id] === deletedRow.taskData[this.parent.taskFields.id]) {
+                            idx = i;
+                        }
                     }
                 }
                 if (idx !== -1) {
@@ -694,8 +706,8 @@ export class RowDD {
             currentRecord = record.childRecords[i];
             let ganttData: Object;
             ganttData = (this.parent.dataSource as IGanttData[]).length > 0 ?
-               this.parent.dataSource as IGanttData[] : this.parent.currentViewData;
-            for (let i: number = 0; i < (< IGanttData[]>ganttData).length; i++) {
+                this.parent.dataSource as IGanttData[] : this.parent.currentViewData;
+            for (let i: number = 0; i < (<IGanttData[]>ganttData).length; i++) {
                 if (ganttData[i][this.parent.taskFields.id] === currentRecord.taskData[this.parent.taskFields.id]) {
                     idx = i;
                 }
@@ -708,7 +720,7 @@ export class RowDD {
                 this.parent.flatData.splice(idx, 1);
                 this.parent.ids.splice(idx, 1);
                 if (this.parent.viewType === 'ResourceView') {
-                this.parent.getTaskIds().splice(idx, 1);
+                    this.parent.getTaskIds().splice(idx, 1);
                 }
             }
             if (currentRecord.hasChildRecords) {
@@ -720,29 +732,31 @@ export class RowDD {
      * Reorder the rows based on given indexes and position
      */
     public reorderRows(fromIndexes: number[], toIndex: number, position: string): void {
-        if (fromIndexes[0] !== toIndex && position === 'above' || 'below' || 'child') {
-            if (position === 'above') {
-                this.dropPosition = 'topSegment';
+        if (!this.parent.readOnly) {
+            if (fromIndexes[0] !== toIndex && position === 'above' || 'below' || 'child') {
+                if (position === 'above') {
+                    this.dropPosition = 'topSegment';
+                }
+                if (position === 'below') {
+                    this.dropPosition = 'bottomSegment';
+                }
+                if (position === 'child') {
+                    this.dropPosition = 'middleSegment';
+                }
+                let data: IGanttData[] = [];
+                for (let i: number = 0; i < fromIndexes.length; i++) {
+                    data[i] = this.parent.currentViewData[fromIndexes[i]];
+                }
+                let isByMethod: boolean = true;
+                let args: RowDropEventArgs = {
+                    data: data,
+                    dropIndex: toIndex,
+                    dropPosition: this.dropPosition
+                };
+                this.dropRows(args, isByMethod);
+            } else {
+                return;
             }
-            if (position === 'below') {
-                this.dropPosition = 'bottomSegment';
-            }
-            if (position === 'child') {
-                this.dropPosition = 'middleSegment';
-            }
-            let data: IGanttData[] = [];
-            for (let i: number = 0; i < fromIndexes.length; i++) {
-                data[i] = this.parent.currentViewData[fromIndexes[i]];
-            }
-            let isByMethod: boolean = true;
-            let args: RowDropEventArgs = {
-                data: data,
-                dropIndex: toIndex,
-                dropPosition: this.dropPosition
-            };
-            this.dropRows(args, isByMethod);
-        } else {
-            return;
         }
     }
 }

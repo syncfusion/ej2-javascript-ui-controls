@@ -505,7 +505,7 @@
 
     // sass-lint:disable-all
     &.e-olap-calc-dialog-div {
-      min-width: 550px;
+      min-width: 575px;
 
       .e-pivot-calc-outer-div {
         display: flex;
@@ -542,10 +542,22 @@
                   width: 100%;
                 }
 
+                .e-calcfieldmember .e-list-text{
+                  width: 150px;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                }
+
                 .e-list-item .e-text-content {
                   height: 30px;
                   margin: 0;
                   padding: 0 0 0 24px;
+                }
+
+                .e-remove-report.e-list-icon {
+                  cursor: pointer;
+                  font-size: 13px;
+                  margin-top: 0;
                 }
 
                 .e-list-icon {

@@ -4,7 +4,7 @@
 
 import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { profile, inMB, getMemoryProfile} from './common.spec';
-import { blazorSpinner } from '../../src/spinner/spinner';
+import { Spinner } from '../../src/spinner/spinner';
 import '../../node_modules/es6-promise/dist/es6-promise';
 
 describe('Spinner Control', () => {
@@ -31,26 +31,26 @@ describe('Spinner Control', () => {
             target_01.remove();
         });
         it('Ensure show and hide spinner testing', () => {
-            let spinObject = blazorSpinner("Create", { 
+            let spinObject = Spinner("Create", { 
                 target: '#spinner-01',
                     width: 50,
                     label:"Loading..."
             }, null, 'Material');
-            let spinObject_01 = blazorSpinner("Create", { 
+            let spinObject_01 = Spinner("Create", { 
                 target: '#spinner-02',
                     width: 50,
                     label:"Loading..."
             }, null, 'Material');
             let container = document.getElementById('spinner-01');
             let container1 = document.getElementById('spinner-02');
-            blazorSpinner('Show', null, '#spinner-01', null);
-            blazorSpinner('Show', null, '#spinner-02', null);
+            Spinner('Show', null, '#spinner-01', null);
+            Spinner('Show', null, '#spinner-02', null);
             expect((container.querySelector('.e-spinner-pane') as HTMLElement).classList.contains('e-spin-show')).toEqual(true);
             expect((container1.querySelector('.e-spinner-pane') as HTMLElement).classList.contains('e-spin-show')).toEqual(true);
-            blazorSpinner('Hide', null, '#spinner-01', null);
+            Spinner('Hide', null, '#spinner-01', null);
             expect((container.querySelector('.e-spinner-pane') as HTMLElement).classList.contains('e-spin-hide')).toEqual(true);
             expect((container1.querySelector('.e-spinner-pane') as HTMLElement).classList.contains('e-spin-hide')).toEqual(false);
-            blazorSpinner('Show', null, '#spinner-01', null);
+            Spinner('Show', null, '#spinner-01', null);
         });
     });
     it('memory leak', () => {     

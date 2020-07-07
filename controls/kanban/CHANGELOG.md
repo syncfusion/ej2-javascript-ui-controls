@@ -2,6 +2,29 @@
 
 ## [Unreleased]
 
+## 18.2.44 (2020-07-07)
+
+### Kanban
+
+#### New Features
+
+- **Sorting Order**: Arrange their cards in ascending or descending order based on `sortBy` property.
+- **Card Layout**: Improved the card layout by providing default colours, labels, and custom classes.
+- **Dialog Customization**: User can customize the particular property in the editing/adding dialog by using the `model` property.
+- **Toggle Column Count**: Provided cards count on collapsed column.
+
+#### Breaking Changes
+
+- Removed the `priority` under the `cardSettings` property and included this functionalities to the sorting order feature by setting `sortBy` as `Index` under the `sortSettings` property.
+- Replaced `sortBy` into `sortDirection` under `swimlaneSettings` property.
+
+| **Previous API** | **Current API** |
+| ---- | ---- |
+| cardSettings.priority | sortSettings.sortBy as `Index` |
+| swimlaneSettings.sortBy | swimlaneSettings.sortDirection |
+
+## 18.1.56 (2020-06-09)
+
 ### Kanban
 
 #### Bug Fixes
@@ -22,7 +45,7 @@
 
 #### Bug Fixes
 
-- `#274830` - An issue with Rendered empty column when empty data passed to Kanban board.
+- `#274830` - An issue with Rendered empty column when empty data passed to Kanban board has been fixed.
 
 ## 18.1.46 (2020-04-28)
 

@@ -2,7 +2,7 @@ import { Size } from '@syncfusion/ej2-svg-base';
 import { BulletChart } from '../bullet-chart';
 import { ScaleGroup } from '../renderer/scale-render';
 import { RangeModel } from '../model/bullet-base-model';
-import { LegendShape, ChartTheme } from '../../chart';
+import { LegendShape, ChartTheme } from '../../chart/utils/enum';
 
 /**
  * Interface for Bullet chart Theme Style

@@ -1,7 +1,8 @@
 import { createElement, isNullOrUndefined, extend, compile } from '@syncfusion/ej2-base';
-import { formatUnit, updateBlazorTemplate, resetBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
+import { formatUnit, updateBlazorTemplate, resetBlazorTemplate, isBlazor, addClass } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
 import { isScheduledTask } from '../base/utils';
+import { DataManager, Query } from '@syncfusion/ej2-data';
 import * as cls from '../base/css-constants';
 import { IGanttData, IQueryTaskbarInfoEventArgs, IParent, IIndicator, ITaskData } from '../base/interface';
 import { Row, Column } from '@syncfusion/ej2-grids';
@@ -157,8 +158,10 @@ export class ChartRows {
                     'border-top-right-radius:' + this.getBorderRadius(data.ganttProperties) + 'px;' +
                     'border-bottom-right-radius:' + this.getBorderRadius(data.ganttProperties) + 'px;">' +
                     '<span class="' + cls.taskLabel + '" style="line-height:' +
-                    (this.taskBarHeight - 1) + 'px;height:' + this.taskBarHeight + 'px;">' +
-                    labelString + '</span></div></div>') :
+                    (this.taskBarHeight - 1) + 'px; text-align:' + (this.parent.viewType === 'ResourceView' ? 'left;' : '') +
+                    'display:' + (this.parent.viewType === 'ResourceView' ? 'inline-flex;' : '') +
+                    'width:' + (this.parent.viewType === 'ResourceView' ? (data.ganttProperties.width - 10) : '') + 'px; height:' +
+                    this.taskBarHeight + 'px;">' + labelString + '</span></div></div>') :
                 (data.ganttProperties.startDate && !data.ganttProperties.endDate && !data.ganttProperties.duration) ? (
                     '<div class="' + cls.childProgressBarInnerDiv + ' ' + cls.traceChildTaskBar + ' ' +
                     cls.unscheduledTaskbarLeft + ' ' + (data.ganttProperties.isAutoSchedule ?
@@ -393,8 +396,9 @@ export class ChartRows {
                 'border-top-right-radius:' + this.getBorderRadius(data) + 'px;' +
                 'border-bottom-right-radius:' + this.getBorderRadius(data) + 'px;height:100%;"><span class="' +
                 cls.taskLabel + '" style="line-height:' +
-                (this.taskBarHeight - 1) + 'px;height:' + this.taskBarHeight + 'px;">' +
-                labelString + '</span></div></div>';
+                (this.taskBarHeight - 1) + 'px; display:' + (this.parent.viewType === 'ResourceView' ? 'inline-flex;' : '') + 'width:' +
+                (this.parent.viewType === 'ResourceView' ? (data.ganttProperties.width - 10) : '') + 'px; height:' +
+                this.taskBarHeight + 'px;">' + labelString + '</span></div></div>';
             let milestoneTemplate: string = '<div class="' + cls.parentMilestone + '" style="position:absolute;">' +
                 '<div class="' + cls.parentMilestoneTop + '" style="border-right-width:' +
                 this.milesStoneRadius + 'px;border-left-width:' + this.milesStoneRadius + 'px;border-bottom-width:' +
@@ -800,6 +804,17 @@ export class ChartRows {
     public refreshGanttRows(): void {
         this.parent.currentViewData = this.parent.treeGrid.getCurrentViewRecords().slice();
         this.createTaskbarTemplate();
+        if (this.parent.viewType === 'ResourceView' && this.parent.showOverAllocation) {
+            for (let i: number = 0; i < this.parent.currentViewData.length; i++) {
+                let data: IGanttData = this.parent.currentViewData[i];
+                if (data.childRecords.length > 0) {
+                    /* tslint:disable-next-line */
+                    this.parent.setRecordValue('workTimelineRanges', this.parent.dataOperation.mergeRangeCollections(data.ganttProperties.workTimelineRanges, true), data.ganttProperties, true);
+                    this.parent.dataOperation.calculateRangeLeftWidth(data.ganttProperties.workTimelineRanges);
+                }
+            }
+            this.parent.ganttChartModule.renderRangeContainer(this.parent.currentViewData);
+        }
         this.triggerQueryTaskbarInfo();
     }
 
@@ -811,9 +826,21 @@ export class ChartRows {
     private createTaskbarTemplate(): void {
         this.updateTaskbarBlazorTemplate(false);
         this.ganttChartTableBody.innerHTML = '';
+        let collapsedResourceRecord: IGanttData[] = [];
         for (let i: number = 0; i < this.parent.currentViewData.length; i++) {
             let tempTemplateData: IGanttData = this.parent.currentViewData[i];
+            if (this.parent.viewType === 'ResourceView' && !tempTemplateData.expanded && this.parent.enableMultiTaskbar) {
+                collapsedResourceRecord.push(tempTemplateData);
+            }
             this.ganttChartTableBody.appendChild(this.getGanttChartRow(i, tempTemplateData));
+        }
+        if (collapsedResourceRecord.length) {
+            for (let j: number = 0; j < collapsedResourceRecord.length; j++) {
+                if (collapsedResourceRecord[j].hasChildRecords) {
+                    this.parent.isGanttChartRendered = true;
+                    this.parent.chartRowsModule.refreshRecords([collapsedResourceRecord[j]]);
+                }
+            }
         }
         this.updateTaskbarBlazorTemplate(true);
     }
@@ -831,6 +858,7 @@ export class ChartRows {
         let leftLabelNode: NodeList = this.getLeftLabelNode(i);
         let taskbarContainerNode: NodeList = this.taskbarContainer();
         (<HTMLElement>taskbarContainerNode[0]).setAttribute('aria-label', this.generateAriaLabel(this.templateData));
+        (<HTMLElement>taskbarContainerNode[0]).setAttribute('rowUniqueId', this.templateData.ganttProperties.rowUniqueID);
         if (!this.templateData.hasChildRecords) {
             let connectorLineLeftNode: NodeList = this.getLeftPointNode();
             taskbarContainerNode[0].appendChild([].slice.call(connectorLineLeftNode)[0]);
@@ -932,6 +960,9 @@ export class ChartRows {
      * @private
      */
     public triggerQueryTaskbarInfo(): void {
+        if (!this.parent.queryTaskbarInfo) {
+            return;
+        }
         let length: number = this.ganttChartTableBody.querySelectorAll('tr').length;
         let trElement: Element;
         let taskbarElement: Element;
@@ -1090,12 +1121,24 @@ export class ChartRows {
      * @param index 
      * @private
      */
-    public refreshRow(index: number): void {
+    public refreshRow(index: number, isValidateRange?: boolean): void {
         let tr: Node = this.ganttChartTableBody.childNodes[index];
         let selectedItem: IGanttData = this.parent.currentViewData[index];
         if (index !== -1 && selectedItem) {
             let data: IGanttData = selectedItem;
-            tr.replaceChild(this.getGanttChartRow(index, data).childNodes[0], tr.childNodes[0]);
+            if (this.parent.viewType === 'ResourceView' && data.hasChildRecords && !data.expanded && this.parent.enableMultiTaskbar) {
+               tr.replaceChild(this.getResourceParent(data).childNodes[0], tr.childNodes[0]);
+            } else {
+                tr.replaceChild(this.getGanttChartRow(index, data).childNodes[0], tr.childNodes[0]);
+            }
+            if (this.parent.viewType === 'ResourceView' && data.hasChildRecords && this.parent.showOverAllocation) {
+                if (isValidateRange) {
+                    this.parent.ganttChartModule.renderRangeContainer(this.parent.currentViewData);
+                } else {
+                    this.parent.dataOperation.updateOverlappingValues(data);
+                    this.parent.ganttChartModule.renderRangeContainer([data]);
+                }
+            }
             this.triggerQueryTaskbarInfoByIndex(tr as Element, data);
             /* tslint:disable-next-line */
             let dataId: number | string = this.parent.viewType === 'ProjectView' ? data.ganttProperties.taskId : data.ganttProperties.rowUniqueID;
@@ -1106,17 +1149,50 @@ export class ChartRows {
         }
     }
 
+    private getResourceParent(record: IGanttData): Node {
+        let chartRows: NodeListOf<Element> = this.parent.ganttChartModule.getChartRows();
+        this.templateData = record;
+        let parentTrNode: NodeList = this.getTableTrNode();
+        let leftLabelNode: NodeList = this.leftLabelContainer();
+        let collapseParent: HTMLElement = createElement('div', {
+            className: 'e-collapse-parent'
+        });
+        parentTrNode[0].childNodes[0].childNodes[0].appendChild(collapseParent);
+        let tasks: IGanttData[] = this.parent.dataOperation.setSortedChildTasks(record);
+        this.parent.dataOperation.updateOverlappingIndex(tasks);
+        for (let i: number = 0; i < chartRows.length; i++) {
+            if ((<HTMLElement>chartRows[i]).classList.contains('gridrowtaskId'
+                + record.ganttProperties.rowUniqueID + 'level' + (record.level + 1))) {
+                let cloneElement: HTMLElement = chartRows[i].querySelector('.e-taskbar-main-container') as HTMLElement;
+                addClass([cloneElement], 'collpse-parent-border');
+                let id: string = chartRows[i].querySelector('.' + cls.taskBarMainContainer).getAttribute('rowUniqueId');
+                let ganttData: IGanttData = this.parent.getRecordByID(id);
+                let zIndex: string =  (ganttData.ganttProperties.eOverlapIndex).toString();
+                let cloneChildElement: HTMLElement = cloneElement.cloneNode(true) as HTMLElement;
+                cloneChildElement.style.zIndex = zIndex;
+                parentTrNode[0].childNodes[0].childNodes[0].childNodes[0].appendChild(cloneChildElement);
+            }
+        }
+        parentTrNode[0].childNodes[0].childNodes[0].appendChild([].slice.call(leftLabelNode)[0]);
+        return parentTrNode[0].childNodes[0];
+    }
     /**
      * To refresh all edited records
      * @param items 
      * @private
      */
-    public refreshRecords(items: IGanttData[]): void {
+    public refreshRecords(items: IGanttData[], isValidateRange?: boolean): void {
         if (this.parent.isGanttChartRendered) {
             this.updateTaskbarBlazorTemplate(false);
+            if (this.parent.viewType === 'ResourceView' && this.parent.enableMultiTaskbar) {
+                let sortedRecords: IGanttData[] = [];
+                sortedRecords = new DataManager(items).executeLocal(new Query()
+                    .sortBy('expanded', 'Descending'));
+                items = sortedRecords;
+            }
             for (let i: number = 0; i < items.length; i++) {
                 let index: number = this.parent.currentViewData.indexOf(items[i]);
-                this.refreshRow(index);
+                this.refreshRow(index, isValidateRange);
             }
             this.parent.ganttChartModule.updateLastRowBottomWidth();
             this.updateTaskbarBlazorTemplate(true);

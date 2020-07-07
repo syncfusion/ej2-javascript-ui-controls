@@ -66,14 +66,15 @@ export class Crud {
                 this.parent.showSpinner();
                 let promise: Promise<Object> = null;
                 let modifiedData: { [key: string]: Object }[] = [];
-                if (this.parent.cardSettings.priority) {
+                if (this.parent.sortSettings.field && this.parent.sortSettings.sortBy === 'Index') {
                     cardData instanceof Array ? modifiedData = cardData : modifiedData.push(cardData);
                     if (!this.parent.isBlazorRender()) {
                         modifiedData = this.priorityOrder(modifiedData, addArgs);
                     }
                 }
                 let addedRecords: { [key: string]: Object }[] = (cardData instanceof Array) ? cardData : [cardData];
-                let changedRecords: { [key: string]: Object }[] = this.parent.cardSettings.priority ? modifiedData : [];
+                let changedRecords: { [key: string]: Object }[] =
+                    (this.parent.sortSettings.field && this.parent.sortSettings.sortBy === 'Index') ? modifiedData : [];
                 let editParms: SaveChanges = { addedRecords: addedRecords, changedRecords: changedRecords, deletedRecords: [] };
                 if (cardData instanceof Array || modifiedData.length > 0) {
                     if (!this.parent.isBlazorRender()) {
@@ -111,7 +112,7 @@ export class Crud {
             if (!updateArgs.cancel) {
                 this.parent.showSpinner();
                 let promise: Promise<Object> = null;
-                if (this.parent.cardSettings.priority) {
+                if (this.parent.sortSettings.field && this.parent.sortSettings.sortBy === 'Index') {
                     let modifiedData: { [key: string]: Object }[] = [];
                     cardData instanceof Array ? modifiedData = cardData : modifiedData.push(cardData);
                     if (!this.parent.isBlazorRender()) {
@@ -200,29 +201,36 @@ export class Crud {
         let columnAllDatas: { [key: string]: Object }[];
         let finalData: { [key: string]: Object }[] = [];
         for (let columnKey of modifiedKey) {
-            let keyData: Object[] = cardData.filter((cardObj: { [key: string]: Object }) => cardObj[this.parent.keyField] === columnKey);
+            let keyData: { [key: string]: Object }[] =
+                cardData.filter((cardObj: { [key: string]: Object }) => cardObj[this.parent.keyField] === columnKey);
             columnAllDatas = this.parent.getColumnData(columnKey) as { [key: string]: Object }[];
+            if (this.parent.sortSettings.direction === 'Descending') {
+                columnAllDatas = this.removeData(columnAllDatas, keyData);
+            }
             let customOrder: number = 1;
             let initialOrder: number;
             for (let data of keyData as { [key: string]: Object }[]) {
                 let order: number;
-                if (data[this.parent.cardSettings.priority]) {
-                    order = data[this.parent.cardSettings.priority] as number;
+                if (data[this.parent.sortSettings.field]) {
+                    order = data[this.parent.sortSettings.field] as number;
                 } else {
                     if (customOrder === 1) {
-                        initialOrder = columnAllDatas.slice(-1)[0][this.parent.cardSettings.priority] as number;
+                        initialOrder = columnAllDatas.slice(-1)[0][this.parent.sortSettings.field] as number;
                     }
-                    order = data[this.parent.cardSettings.priority] = (customOrder > 1 ? initialOrder :
-                        columnAllDatas.slice(-1)[0][this.parent.cardSettings.priority] as number) + customOrder;
+                    order = data[this.parent.sortSettings.field] = (customOrder > 1 ? initialOrder :
+                        columnAllDatas.slice(-1)[0][this.parent.sortSettings.field] as number) + customOrder;
                     customOrder++;
                 }
                 if (this.parent.swimlaneSettings.keyField) {
                     let swimlaneDatas: Object[] = this.parent.getSwimlaneData(data[this.parent.swimlaneSettings.keyField] as string);
                     columnAllDatas = this.parent.getColumnData(columnKey, swimlaneDatas) as { [key: string]: Object }[];
+                    if (this.parent.sortSettings.direction === 'Descending') {
+                        columnAllDatas = this.removeData(columnAllDatas, keyData);
+                    }
                 }
                 let count: number[] = [];
                 for (let j: number = 0; j < columnAllDatas.length; j++) {
-                    if (columnAllDatas[j][this.parent.cardSettings.priority] === order) {
+                    if (columnAllDatas[j][this.parent.sortSettings.field] === order) {
                         count.push(j + 1);
                         break;
                     }
@@ -231,18 +239,33 @@ export class Crud {
                     finalData.push(data);
                 }
                 let finalCardsId: string[] = finalData.map((obj: { [key: string]: string }) => obj[this.parent.cardSettings.headerField]);
-                for (let i: number = count[0]; i <= columnAllDatas.length; i++) {
-                    let dataObj: { [key: string]: Object } = columnAllDatas[i - 1];
-                    let index: number = cardsId.indexOf(dataObj[this.parent.cardSettings.headerField] as string);
-                    if (index === -1 && order >= dataObj[this.parent.cardSettings.priority]) {
-                        dataObj[this.parent.cardSettings.priority] = ++order;
-                        let isData: number = finalCardsId.indexOf(dataObj[this.parent.cardSettings.headerField] as string);
-                        (isData === -1) ? finalData.push(dataObj) : finalData[isData] = dataObj;
+                if (this.parent.sortSettings.direction === 'Ascending') {
+                    for (let i: number = count[0]; i <= columnAllDatas.length; i++) {
+                        let dataObj: { [key: string]: Object } = columnAllDatas[i - 1];
+                        let index: number = cardsId.indexOf(dataObj[this.parent.cardSettings.headerField] as string);
+                        if (index === -1 && order >= dataObj[this.parent.sortSettings.field]) {
+                            dataObj[this.parent.sortSettings.field] = ++order;
+                            let isData: number = finalCardsId.indexOf(dataObj[this.parent.cardSettings.headerField] as string);
+                            (isData === -1) ? finalData.push(dataObj) : finalData[isData] = dataObj;
+                        }
+                    }
+                } else {
+                    for (let i: number = count[0]; i > 0; i--) {
+                        let dataObj: { [key: string]: Object } = columnAllDatas[i - 1];
+                        dataObj[this.parent.sortSettings.field] = ++order;
+                        finalData.push(dataObj);
                     }
                 }
             }
         }
         return finalData;
     }
-
+    private removeData(columnAllDatas: { [key: string]: Object }[], keyData: { [key: string]: Object }[]): { [key: string]: Object }[] {
+        keyData.map((cardObj: { [key: string]: Object }) => {
+            if (columnAllDatas.indexOf(cardObj) !== -1) {
+                columnAllDatas.splice(columnAllDatas.indexOf(cardObj), 1);
+            }
+        });
+        return columnAllDatas;
+    }
 }

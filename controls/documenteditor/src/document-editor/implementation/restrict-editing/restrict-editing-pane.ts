@@ -31,6 +31,7 @@ export class RestrictEditing {
      */
     public unProtectDialog: UnProtectDocumentDialog;
     public stopProtectionDiv: HTMLElement;
+    public contentDiv1: HTMLElement;
     public restrictPaneWholeDiv: HTMLElement;
     private closeButton: HTMLButtonElement;
     public protectionType: ProtectionType = 'ReadOnly';
@@ -197,8 +198,8 @@ export class RestrictEditing {
         this.stopProtectionDiv.appendChild(headerDiv);
         // tslint:disable-next-line:max-line-length
         let content: string = localObj.getConstant('Protected Document');
-        let contentDiv1: HTMLElement = createElement('div', { innerHTML: content, className: 'e-de-rp-stop-div2' });
-        this.stopProtectionDiv.appendChild(contentDiv1);
+        this.contentDiv1 = createElement('div', { innerHTML: content, className: 'e-de-rp-stop-div2' });
+        this.stopProtectionDiv.appendChild(this.contentDiv1);
         // tslint:disable-next-line:max-line-length
         let contentDiv2: HTMLElement = createElement('div', { innerHTML: localObj.getConstant('You may format text only with certain styles'), className: 'e-de-rp-stop-div3' });
         this.stopProtectionDiv.appendChild(contentDiv2);
@@ -293,6 +294,11 @@ export class RestrictEditing {
             this.protectionType = 'NoProtection';
             this.addedUser.uncheckAllItems();
             this.viewer.owner.editor.removeAllEditRestrictions();
+        }
+        if (args.value === 'Filling in forms') {
+            this.contentDiv1.innerHTML = this.localObj.getConstant('FormFieldsOnly');
+        } else {
+            this.contentDiv1.innerHTML = this.localObj.getConstant('Protected Document');
         }
     }
     private selectHandler = (args: any): void => {

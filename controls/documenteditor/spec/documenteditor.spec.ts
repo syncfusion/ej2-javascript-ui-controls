@@ -1,7 +1,7 @@
 import { DocumentEditor } from '../src/document-editor/document-editor';
 import {
     Margin, Page, TableWidget, ImageElementBox, TableRowWidget, TextFormField, CheckBoxFormField, DropDownFormField, FieldElementBox,
-    TableCellWidget, BodyWidget, ParagraphWidget, LineWidget, XmlHttpRequestHandler, DocumentHelper, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, FormFieldData
+    TableCellWidget, BodyWidget, ParagraphWidget, LineWidget, DocumentHelper, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, FormFieldData
 } from '../src/index';
 import { createElement, Browser } from '@syncfusion/ej2-base';
 import { Layout } from '../src/document-editor/implementation/viewer/layout';
@@ -17,6 +17,7 @@ import {
 } from '../src/document-editor/implementation/dialogs/index';
 import { EditorHistory } from '../src/document-editor/implementation/editor-history/index';
 import { profile, inMB, getMemoryProfile } from './common.spec';
+import { XmlHttpRequestHandler } from '../src/document-editor/base/ajax-helper';
 
 /**
  * Document Editor spec
@@ -1599,7 +1600,7 @@ describe('Form field API validation', () => {
         (documentEditor.documentHelper.formFields[0].formFieldData as CheckBoxFormField).checked = false;
         (documentEditor.documentHelper.formFields[1].formFieldData as DropDownFormField).name = 'Dropdown1';
         (documentEditor.documentHelper.formFields[1].formFieldData as DropDownFormField).selectedIndex = 0;
-        (documentEditor.documentHelper.formFields[1].formFieldData as DropDownFormField).dropDownItems = ['one', 'two', 'three'];
+        (documentEditor.documentHelper.formFields[1].formFieldData as DropDownFormField).dropdownItems = ['one', 'two', 'three'];
         documentEditor.resetFormFields();
         expect((documentEditor.documentHelper.formFields[2].formFieldData as TextFormField).defaultValue).toBe('');
         expect((documentEditor.documentHelper.formFields[0].formFieldData as CheckBoxFormField).checked).toBe(false);
@@ -1642,6 +1643,6 @@ describe('Form field API validation', () => {
     it('prevent content change trigger', () => {
         documentEditor.openBlank();
         documentEditor.layoutType = 'Continuous';
-        expect(() => { documentEditor.editor.layoutWholeDocument(true)}).not.toThrowError();
+        expect(() => { documentEditor.editor.layoutWholeDocument(true) }).not.toThrowError();
     })
 });

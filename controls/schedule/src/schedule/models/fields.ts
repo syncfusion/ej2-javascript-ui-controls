@@ -31,7 +31,7 @@ export class Field extends ChildProperty<Field> {
      * The `subject` field is optional, and usually assigns the subject text to each of the events.
      * @default { name: null, default: 'Add title', title: null, validation: {}  }
      */
-    @Complex<FieldOptionsModel>({ name: 'Subject', default: 'Add title' }, FieldOptions)
+    @Complex<FieldOptionsModel>({ name: 'Subject' }, FieldOptions)
     public subject: FieldOptionsModel;
 
     /** 

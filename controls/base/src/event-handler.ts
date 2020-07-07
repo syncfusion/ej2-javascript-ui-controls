@@ -70,7 +70,6 @@ export class EventHandler {
             } else {
                 element.addEventListener(event[i], <EventListener>debounceListener, { passive: false });
             }
-
         }
         return debounceListener;
     }

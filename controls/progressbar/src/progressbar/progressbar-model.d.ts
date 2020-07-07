@@ -178,7 +178,7 @@ export interface ProgressBarModel extends ComponentModel{
      * disable the trackSegment
      * @default false
      */
-    trackSegmentDisable?: boolean;
+    enableProgressSegments?: boolean;
 
     /**
      * Option for customizing the  label text.

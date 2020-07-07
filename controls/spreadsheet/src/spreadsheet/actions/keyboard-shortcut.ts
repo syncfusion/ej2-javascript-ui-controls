@@ -3,7 +3,7 @@ import { keyDown, cut, paste, copy, clearCopy, performUndoRedo, initiateHyperlin
 import { findDlg, gotoDlg } from '../common/index';
 import { setCellFormat, textDecorationUpdate, FontWeight, getCellIndexes, FontStyle } from '../../workbook/common/index';
 import { CellModel, SheetModel } from '../../workbook';
-import { setCell } from '../../workbook/base/cell';
+import { setCell, getCell } from '../../workbook/base/cell';
 import { RowModel } from '../../workbook/base/row-model';
 import { isNullOrUndefined, closest } from '@syncfusion/ej2-base';
 
@@ -69,7 +69,13 @@ export class KeyboardShortcut {
                     e.preventDefault(); this.parent.notify(performUndoRedo, { isUndo: false });
                 }
             }
-            if (!this.parent.getActiveSheet().isProtected) {
+            let actSheet: SheetModel = this.parent.sheets[this.parent.getActiveSheet().id - 1];
+            let actCell: string = actSheet.activeCell;
+            let actCellIndex: number[] = getCellIndexes(actCell);
+            let cellObj: CellModel = getCell(actCellIndex[0], actCellIndex[1], actSheet);
+            let isLocked: boolean = cellObj ? !isNullOrUndefined(cellObj.isLocked) ? cellObj.isLocked
+                : actSheet.isProtected : actSheet.isProtected;
+            if (!isLocked || !actSheet.isProtected) {
                 if (e.keyCode === 70) {
                     e.preventDefault();
                     let toolBarElem: HTMLElement = document.querySelector('.e-spreadsheet-find-ddb') as HTMLElement;
@@ -83,7 +89,9 @@ export class KeyboardShortcut {
                 } else if (e.keyCode === 88) {
                     this.parent.notify(cut, { promise: Promise });
                 } else if (e.keyCode === 86) {
-                    this.parent.notify(paste, { isAction: true });
+                    if (!isLocked) {
+                        this.parent.notify(paste, { isAction: true });
+                    }
                 } else if (e.keyCode === 66) {
                     e.preventDefault();
                     let value: FontWeight = this.parent.getCellStyleValue(

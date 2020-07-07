@@ -1954,11 +1954,11 @@ export class Series extends SeriesBase {
         if (
             marker.visible && (chart.chartAreaType === 'Cartesian' ||
                 ((this.drawType !== 'Scatter') && chart.chartAreaType === 'PolarRadar')) && this.type !== 'Scatter' &&
-            this.type !== 'Bubble' && this.type !== 'Candle' && this.type !== 'Hilo' && this.type !== 'HiloOpenClose'
+            this.type !== 'Bubble' && this.type !== 'Candle' && this.type !== 'Hilo' && this.type !== 'HiloOpenClose' && this.symbolElement
         ) {
             appendChildElement(chart.enableCanvas, chart.seriesElements, this.symbolElement, redraw);
         }
-        if (dataLabel.visible) {
+        if (dataLabel.visible && this.textElement) {
             appendChildElement(chart.enableCanvas, chart.dataLabelElements, this.shapeElement, redraw);
             appendChildElement(chart.enableCanvas, chart.dataLabelElements, this.textElement, redraw);
         }

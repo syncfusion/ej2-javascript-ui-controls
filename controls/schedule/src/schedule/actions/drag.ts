@@ -2,13 +2,13 @@ import { createElement, closest, Draggable, extend, formatUnit, isNullOrUndefine
 import { addClass, remove, removeClass, setStyleAttribute, isBlazor, getElement, Browser, EventHandler } from '@syncfusion/ej2-base';
 import { DragEventArgs, TdData, EJ2Instance } from '../base/interface';
 import { ActionBase } from '../actions/action-base';
-import * as events from '../base/constant';
-import * as util from '../base/util';
-import * as cls from '../base/css-constant';
 import { MonthEvent } from '../event-renderer/month';
 import { TimelineEvent } from '../event-renderer/timeline-view';
 import { HeaderRowsModel } from '../models/header-rows-model';
 import { VerticalEvent } from '../event-renderer/vertical-view';
+import * as cls from '../base/css-constant';
+import * as events from '../base/constant';
+import * as util from '../base/util';
 
 const MINUTES_PER_DAY: number = 1440;
 
@@ -47,11 +47,10 @@ export class DragAndDrop extends ActionBase {
             helper: this.dragHelper.bind(this),
             queryPositionInfo: this.dragPosition.bind(this)
         });
-        // tslint:disable-next-line:no-any
-        let handler: Function = (dragObj.enableTapHold && Browser.isDevice && Browser.isTouch) ? (dragObj as any).mobileInitialize :
+        if (!(dragObj.enableTapHold && Browser.isDevice && Browser.isTouch)) {
             // tslint:disable-next-line:no-any
-            (dragObj as any).initialize;
-        EventHandler.remove(element, 'touchstart', handler);
+            EventHandler.remove(element, 'touchstart', (dragObj as any).initialize);
+        }
     }
 
     private dragHelper(e: { [key: string]: Object }): HTMLElement {
@@ -309,6 +308,14 @@ export class DragAndDrop extends ActionBase {
             if (dragEventArgs.cancel) {
                 return;
             }
+            if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.activeViewOptions.group.allowGroupEdit
+                && !this.parent.rowAutoHeight  && !this.parent.virtualScrollModule && this.parent.activeViewOptions.group.byGroupID) {
+                this.parent.crudModule.crudObj.isCrudAction = true;
+                this.parent.crudModule.crudObj.sourceEvent =
+                    [this.parent.resourceBase.lastResourceLevel[parseInt(dragArgs.element.getAttribute('data-group-index'), 10)]];
+                this.parent.crudModule.crudObj.targetEvent =
+                    [this.parent.resourceBase.lastResourceLevel[parseInt(dragArgs.target.getAttribute('data-group-index'), 10)]];
+            }
             this.saveChangedData(dragEventArgs);
         });
     }
@@ -377,7 +384,9 @@ export class DragAndDrop extends ActionBase {
                     let event: HTMLElement[] =
                         [].slice.call(this.parent.element.querySelectorAll('.' + cls.ALLDAY_CELLS_CLASS + ':first-child'));
                     if (event[0].offsetHeight < elementHeight) {
-                        event.forEach((element: HTMLElement) => element.style.height = ((elementHeight + 2) / 12) + 'em');
+                        for (let e of event) {
+                            e.style.height = ((elementHeight + 2) / 12) + 'em';
+                        }
                     }
                     this.actionObj.clone.style.height = formatUnit(elementHeight);
                 }
@@ -477,7 +486,7 @@ export class DragAndDrop extends ActionBase {
             offsetTop = Math.round(offsetTop / this.actionObj.cellHeight) * this.actionObj.cellHeight;
             this.actionObj.clone.style.top = formatUnit(offsetTop);
         }
-        let rowIndex: number = (this.parent.activeViewOptions.timeScale.enable) ? (offsetTop / this.actionObj.cellHeight) : 0;
+        let rowIndex: number = offsetTop / this.actionObj.cellHeight;
         let heightPerMinute: number = this.actionObj.cellHeight / this.actionObj.slotInterval;
         let diffInMinutes: number = parseInt(this.actionObj.clone.style.top, 10) - offsetTop;
         let tr: HTMLElement;
@@ -588,7 +597,9 @@ export class DragAndDrop extends ActionBase {
             let allDayElement: HTMLElement[] =
                 [].slice.call(this.parent.element.querySelectorAll('.' + cls.ALLDAY_CELLS_CLASS + ':first-child'));
             if (allDayElement[0].offsetHeight < eventHeight) {
-                allDayElement.forEach((element: HTMLElement) => element.style.height = ((eventHeight + 2) / 12) + 'em');
+                for (let element of allDayElement) {
+                    element.style.height = ((eventHeight + 2) / 12) + 'em';
+                }
             }
             setStyleAttribute(this.actionObj.clone, {
                 width: formatUnit(this.actionObj.cellWidth),
@@ -897,4 +908,5 @@ export class DragAndDrop extends ActionBase {
     protected getModuleName(): string {
         return 'dragAndDrop';
     }
+
 }

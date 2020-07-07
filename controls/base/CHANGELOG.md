@@ -2,37 +2,6 @@
 
 ## [Unreleased]
 
-### Common
-
-#### Bug Fixes
-
-- `I275883`, `I276699` - Resolved `Drag and drop` not working properly in IE11.
-
-## 18.1.56 (2020-06-09)
-
-### Common
-
-#### New Features
-
-- Provided week of year date formatting support.
-
-## 18.1.53 (2020-05-19)
-
-### Common
-
-#### Bug Fixes
-
-- `I271681` - Resolved script error while using mouse click events in Firefox browser.
-- `I276939` - Resolved `Drag and drop` not working in touch mode issue.
-
-## 18.1.44 (2020-04-14)
-
-### Common
-
-#### Bug Fixes
-
-- `I263525` - Resolved currency issue for decimal and groups for different cultures in the internalization.
-
 ## 17.4.51 (2020-02-25)
 
 ### Common

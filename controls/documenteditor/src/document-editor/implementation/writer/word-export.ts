@@ -7,6 +7,7 @@ import { Dictionary, TabJustification, TabLeader } from '../../index';
 import { WCharacterFormat, WParagraphFormat, WTabStop } from '../index';
 import { ProtectionType } from '../../base';
 import { DocumentHelper } from '../viewer';
+import { Revision } from '../track-changes/track-changes';
 
 /** 
  * Exports the document to Word format.
@@ -307,6 +308,7 @@ export class WordExport {
     private fileName: string;
     private spanCellFormat: any;
     private mComments: any[] = [];
+    private revisions: any[] = [];
     private paraID: number = 0;
     private commentParaID: number = 0;
     private commentParaIDInfo: any = {};
@@ -314,6 +316,10 @@ export class WordExport {
     private isInsideComment: boolean = false;
     private commentId: any = {};
     private currentCommentId: number = 0;
+    private jsonObject: any;
+    private trackChangesId: number = 0;
+    private prevRevisionIds: any[] = [];
+    private isRevisionContinuous: boolean = false;
     // Gets the bookmark name
     private get bookmarks(): string[] {
         if (isNullOrUndefined(this.mBookmarks)) {
@@ -453,6 +459,7 @@ export class WordExport {
         let document: any = documentHelper.owner.sfdtExportModule.write();
         this.setDocument(document);
         this.mComments = documentHelper.comments;
+        this.revisions = documentHelper.owner.revisions.changes;
         this.mArchive = new ZipArchive();
         this.mArchive.compressionLevel = 'Normal';
         this.commentParaIDInfo = {};
@@ -1067,10 +1074,56 @@ export class WordExport {
 
         // Serialize watermark if paragraph is the first item of Header document.
         // EnsureWatermark(paragraph);
-
+        this.prevRevisionIds = [];
         this.serializeParagraphItems(writer, paragraph.inlines);
         writer.writeEndElement(); //end of paragraph tag.
 
+    }
+    //Serialize Revision start
+    private serializeRevisionStart(writer: XmlWriter, item: any, previousNode: any): void {
+        if (item.hasOwnProperty('revisionIds')) {
+            if (!isNullOrUndefined(previousNode) && previousNode.hasOwnProperty('fieldType') && previousNode.fieldType === 0) {
+                return;
+            }
+            if (item.hasOwnProperty('fieldType') && item.fieldType === 1) {
+                return;
+            }
+            // tslint:disable-next-line:max-line-length
+            if (!isNullOrUndefined(previousNode) && previousNode.hasOwnProperty('bookmarkType') && (previousNode.bookmarkType === 0 && !(previousNode.name.indexOf('_Toc') >= 0))) {
+                return;
+            }
+
+            let ids: string[] = item.revisionIds;
+
+            for (let i: number = 0; i < ids.length; i++) {
+                let revision: Revision = this.retrieveRevision(ids[i]);
+                if (revision.revisionType === 'Insertion') {
+                    this.serializeTrackChanges(writer, 'ins', revision.author, revision.date);
+                }
+                if (revision.revisionType === 'Deletion') {
+                    this.serializeTrackChanges(writer, 'del', revision.author, revision.date);
+                }
+            }
+        }
+    }
+    //Serialize track changes
+    private serializeTrackChanges(writer: XmlWriter, type: any, author: any, date: any): void {
+        writer.writeStartElement('w', type, this.wNamespace);
+        writer.writeAttributeString('w', 'id', this.wNamespace, (this.trackChangesId++).toString());
+        writer.writeAttributeString('w', 'author', this.wNamespace, author);
+        writer.writeAttributeString('w', 'date', this.wNamespace, date);
+    }
+    /**
+     * Method to return matched revisions
+     */
+    private retrieveRevision(id: any): Revision {
+        let matchedRevisions: any = [];
+        for (let i: number = 0; i < this.revisions.length; i++) {
+            if (this.revisions[i].revisionID === id) {
+                return this.revisions[i];
+            }
+        }
+        return undefined;
     }
     // Serialize the paragraph items
     private serializeParagraphItems(writer: XmlWriter, paraItems: any): void {
@@ -1078,6 +1131,7 @@ export class WordExport {
         let isContinueOverride: boolean = false;
         for (let i: number = 0; i < paraItems.length; i++) {
             let item: any = paraItems[i];
+            this.serializeRevisionStart(writer, item, previousNode);
             let isBdo: boolean = false;
             if (item.characterFormat) {
                 isBdo = !isNullOrUndefined(item.characterFormat.bdo) && item.characterFormat.bdo !== 'None';
@@ -1112,13 +1166,35 @@ export class WordExport {
             } else {
                 this.serializeTextRange(writer, item, previousNode);
             }
+            //Serialize revision end
+            this.serializeRevisionEnd(writer, item, previousNode);
             previousNode = item;
         }
         if (isContinueOverride) {
             writer.writeEndElement();
         }
     }
-
+    //Serialize Revision end
+    private serializeRevisionEnd(writer: XmlWriter, item: any, previousNode: any): void {
+        if (item.hasOwnProperty('revisionIds')) {
+            //skip revision end for field begin as we combine to end with field code text
+            if (item.hasOwnProperty('fieldType') && item.fieldType === 0) {
+              return;
+            }
+            //skip revision end for field result text as we need to only on field end.
+            // tslint:disable-next-line:max-line-length
+            if (!isNullOrUndefined(previousNode) && previousNode.hasOwnProperty('fieldType') && (previousNode.fieldType === 2 || (previousNode.fieldType === 0 && item.text.indexOf('TOC') >= 0))) {
+                return;
+            }
+            for (let i: number = 0; i < item.revisionIds.length; i++) {
+                let revision: Revision = this.retrieveRevision(item.revisionIds[i]);
+                 // tslint:disable-next-line:max-line-length
+                if (revision.revisionType === 'Insertion' || revision.revisionType === 'Deletion') {
+                    writer.writeEndElement();
+                }
+            }
+        }
+    }
     // Serialize the comment
     private serializeComment(writer: XmlWriter, comment: any): void {
         if (comment.commentCharacterType === 0) {
@@ -3129,6 +3205,11 @@ export class WordExport {
             writer.writeStartElement(undefined, 'tblHeader', this.wNamespace);
             writer.writeEndElement();
         }
+        //serialize revision
+        if (!isNullOrUndefined(rowFormat.revisionIds) && rowFormat.revisionIds.length > 0) {
+            this.serializeRevisionStart(writer, rowFormat, undefined);
+            this.serializeRevisionEnd(writer, rowFormat, undefined);
+        }
         writer.writeEndElement();
     }
     // serialize the table cells
@@ -3937,9 +4018,11 @@ export class WordExport {
             writer.writeAttributeString('w', 'type', this.wNamespace, 'page');
             writer.writeEndElement();
         } else {
+            let isDeleteText: boolean = this.retrieveDeleteRevision(span);
             let isField: boolean = !isNullOrUndefined(previousNode)
                 && previousNode.hasOwnProperty('fieldType') && previousNode.fieldType !== 2;
-            writer.writeStartElement(undefined, isField ? 'instrText' : 't', this.wNamespace);
+            let localName: string = isField ? isDeleteText ? 'delInstrText' : 'instrText' : isDeleteText ? 'delText' : 't';
+            writer.writeStartElement(undefined, localName , this.wNamespace);
             writer.writeAttributeString('xml', 'space', this.xmlNamespace, 'preserve');
             writer.writeString(span.text);
             writer.writeEndElement();
@@ -3947,8 +4030,23 @@ export class WordExport {
 
         writer.writeEndElement();
     }
+    private retrieveDeleteRevision(span: any): boolean {
+        if (span.hasOwnProperty('revisionIds')) {
+        if (span.revisionIds.length > 0) {
+            for (let i : number = 0; i < span.revisionIds.length; i++) {
+               if (this.retrieveRevision(span.revisionIds[i]).revisionType === 'Deletion') {
+                   return true;
+               }
+            }
+        }
+    }
+        return false;
+    }
     // Serializes the paragraph format
     private serializeParagraphFormat(writer: XmlWriter, paragraphFormat: any, paragraph: any): void {
+        if (isNullOrUndefined(paragraphFormat)) {
+            return;
+        }
         if (!isNullOrUndefined(paragraphFormat.styleName)) {
             writer.writeStartElement(undefined, 'pStyle', this.wNamespace);
             writer.writeAttributeString('w', 'val', this.wNamespace, paragraphFormat.styleName);
@@ -3963,6 +4061,12 @@ export class WordExport {
             writer.writeStartElement(undefined, 'bidi', this.wNamespace);
             writer.writeEndElement();
         }
+        if (!isNullOrUndefined(paragraphFormat.outlineLevel)) {
+            writer.writeStartElement(undefined, 'outlineLvl', this.wNamespace);
+            writer.writeAttributeString('w', 'val', this.wNamespace, this.getOutlineLevelValue(paragraphFormat.outlineLevel).toString());
+            writer.writeEndElement();
+        }
+        this.serializeParagraphSpacing(writer, paragraphFormat);
         if (!isNullOrUndefined(paragraphFormat.contextualSpacing)) {
             writer.writeStartElement('w', 'contextualSpacing', this.wNamespace);
             if (!paragraphFormat.contextualSpacing) {
@@ -3970,12 +4074,6 @@ export class WordExport {
             }
             writer.writeEndElement();
         }
-        if (!isNullOrUndefined(paragraphFormat.outlineLevel)) {
-            writer.writeStartElement(undefined, 'outlineLvl', this.wNamespace);
-            writer.writeAttributeString('w', 'val', this.wNamespace, this.getOutlineLevelValue(paragraphFormat.outlineLevel).toString());
-            writer.writeEndElement();
-        }
-        this.serializeParagraphSpacing(writer, paragraphFormat);
         this.serializeIndentation(writer, paragraphFormat);
         this.serializeParagraphAlignment(writer, paragraphFormat.textAlignment, paragraphFormat.bidi);
         if (!isNullOrUndefined(paragraphFormat.tabs) && paragraphFormat.tabs.length > 0) {
@@ -4455,6 +4553,10 @@ export class WordExport {
             writer.writeStartElement(undefined, 'highlight', this.wNamespace);
             writer.writeAttributeString('w', 'val', this.wNamespace, this.getHighlightColor(characterFormat.highlightColor));
             writer.writeEndElement();
+        }
+        if (!isNullOrUndefined(characterFormat.revisionIds) && characterFormat.revisionIds.length > 0) {
+            this.serializeRevisionStart(writer, characterFormat, undefined);
+            this.serializeRevisionEnd(writer, characterFormat, undefined);
         }
         if (!isNullOrUndefined(characterFormat.underline) && characterFormat.underline !== 'None') {
             writer.writeStartElement(undefined, 'u', this.wNamespace);

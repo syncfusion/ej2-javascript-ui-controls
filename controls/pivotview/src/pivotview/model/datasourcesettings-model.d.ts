@@ -1,4 +1,4 @@
-import { Property, Complex, Collection, ChildProperty, NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';import { IDataSet, IDataOptions, IFieldOptions, IFilter, ISort, ICalculatedFieldSettings } from '../../base/engine';import { IDrillOptions, IValueSortSettings, IFormatSettings, IConditionalFormatSettings, IGroupSettings } from '../../base/engine';import { SummaryTypes, Sorting, FilterType, Operators, Condition, DateGroup, GroupType, ProviderType } from '../../base/types';import { IStyle, ICustomGroups, IAuthenticationInfo } from '../../base/engine';import { DataManager } from '@syncfusion/ej2-data';
+import { Property, Complex, Collection, ChildProperty, NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';import { IDataSet, IDataOptions, IFieldOptions, IFilter, ISort, ICalculatedFieldSettings } from '../../base/engine';import { IDrillOptions, IValueSortSettings, IFormatSettings, IConditionalFormatSettings, IGroupSettings } from '../../base/engine';import { SummaryTypes, Sorting, FilterType, Operators, Condition, DateGroup, GroupType, ProviderType } from '../../base/types';import { DataSourceType } from '../../base/types';import { IStyle, ICustomGroups, IAuthenticationInfo } from '../../base/engine';import { DataManager } from '@syncfusion/ej2-data';
 
 /**
  * Interface for a class FieldOptions
@@ -132,6 +132,11 @@ export interface FieldOptionsModel {
      * @default true     
      */
     allowDragAndDrop?: boolean;
+
+    /**
+     * Allows to specify the data type of specific field.
+     */
+    dataType?: string;
 
 }
 
@@ -593,7 +598,7 @@ export interface DataSourceSettingsModel {
      * > It is applicable only for relational data source.
      * @isGenericType true
      */
-    dataSource?: IDataSet[] | DataManager;
+    dataSource?: IDataSet[] | DataManager | string[][];
 
     /**
      * Allows specific fields associated with field information that needs to be displayed in row axis of pivot table. The following configurations which are applicable are as follows:
@@ -689,6 +694,31 @@ export interface DataSourceSettingsModel {
     filters?: FieldOptionsModel[];
 
     /**
+     * Allows specific fields associated with field information that can be used while creating fieldlist. The following configurations which are applicable are as follows:
+     * * `name`: Allows you to set the field name which is going to configure while creating the fieldlist.
+     * * `caption`: Allows you to set caption to the specific field. It will be used to display instead of its name in pivot table component's UI.
+     * * `showNoDataItems`: Allows you to display all members items of a specific field to the pivot table, 
+     * even doesn't have any data in its row/column intersection in data source. **Note: It is applicable only for relational data source.**
+     * * `showSubTotals`: Allows to show or hide sub-totals to a specific field in row axis of the pivot table.
+     * * `isNamedSet`: Allows you to set whether the specified field is a named set or not. In general, 
+     * the named set is a set of dimension members or a set expression (MDX query) to be created as a dimension in the SSAS OLAP cube itself. **Note: It is applicable only for OLAP data source.**
+     * * `isCalculatedField`: Allows to set whether the specified field is a calculated field or not. 
+     * In general, the calculated field is created from the bound data source or using simple formula with basic arithmetic operators in the pivot table. **Note: It is applicable only for OLAP data source.**
+     * * `showFilterIcon`: Allows you to show or hide the filter icon of a specific field that used to be displayed on the pivot button of the grouping bar and field list UI. 
+     * This filter icon is used to filter the members of a specified field at runtime in the pivot table.
+     * * `showSortIcon`: Allows you to show or hide the sort icon of a specific field that used to be displayed in the pivot button of the grouping bar and field list UI. 
+     * This sort icon is used to order members of a specified field either in ascending or descending at runtime.
+     * * `showRemoveIcon`: Allows you to show or hide the remove icon of a specific field that used to be displayed in the pivot button of the grouping bar and field list UI. 
+     * This remove icon is used to remove the specified field during runtime.
+     * * `showEditIcon`: Allows you to show or hide the edit icon of a specific field that used to be displayed on the pivot button of the grouping bar and field list UI. 
+     * This edit icon is used to modify caption, formula, and format of a specified calculated field at runtime that to be displayed in the pivot table.
+     * * `allowDragAndDrop`: Allows you to restrict the specific field's pivot button that is used to drag on runtime in the grouping bar and field list UI. 
+     * This will prevent you from modifying the current report.
+     * @default []
+     */
+    fieldMapping?: FieldOptionsModel[];
+
+    /**
      * Allows you to restrict the specific field(s) from displaying it in the field list UI. 
      * You may also be unable to render the pivot table with this field(s) by doing so. 
      * > It is applicable only for relational data source.
@@ -728,6 +758,12 @@ export interface DataSourceSettingsModel {
      * @default true
      */
     enableSorting?: boolean;
+
+    /**
+     * Allows to define the data source type.
+     * @default JSON
+     */
+    type?: DataSourceType;
 
     /**
      * Allows to perform filter operation based on the selective filter members of the specific fields used to be displayed in the pivot table.

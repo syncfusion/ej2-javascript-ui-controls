@@ -1,5 +1,5 @@
 import { Property, ChildProperty, EmitType, Event, Complex, Collection } from '@syncfusion/ej2-base';
-import { BorderModel as PivotChartBorderModel, ErrorBarSettingsModel as PivotChartErrorBarSettingsModel } from '@syncfusion/ej2-charts';
+import { BorderModel as PivotChartBorderModel, ErrorBarSettingsModel as PivotChartErrorBarSettingsModel, AccumulationLabelPosition } from '@syncfusion/ej2-charts';
 import { ChartDrawType, ChartShape, DataLabelSettingsModel as PivotChartDataLabelSettingsModel, ZoomMode } from '@syncfusion/ej2-charts';
 import { ErrorBarType, ErrorBarDirection, ErrorBarMode, TrendlineTypes, ToolbarItems, IScrollEventArgs } from '@syncfusion/ej2-charts';
 import { EmptyPointMode, TextOverflow, Alignment, ZIndex, Anchor, SizeType, BorderType, LineType } from '@syncfusion/ej2-charts';
@@ -7,21 +7,22 @@ import { TrendlineModel as PivotChartTrendlineModel, LegendShape, SplineType, IL
 import { AnimationModel as PivotChartAnimationModel, ChartSegmentModel as PivotChartSegmentModel } from '@syncfusion/ej2-charts';
 import { EdgeLabelPlacement, LabelPlacement, MajorTickLinesModel as PivotChartMajorTickLinesModel } from '@syncfusion/ej2-charts';
 import { MinorGridLinesModel as PivotChartMinorGridLinesModel, AxisLineModel as PivotChartAxisLineModel } from '@syncfusion/ej2-charts';
-import { ChartAreaModel as PivotChartAreaModel, IndexesModel as PivotChartIndexesModel } from '@syncfusion/ej2-charts';
+import { ChartAreaModel as PivotChartAreaModel, IndexesModel as PivotChartIndexesModel, GroupModes } from '@syncfusion/ej2-charts';
 import { IResizeEventArgs, IPrintEventArgs, FontModel as PivotChartFontModel, LegendPosition } from '@syncfusion/ej2-charts';
 import { ITextRenderEventArgs, IPointRenderEventArgs, ISeriesRenderEventArgs, ITooltipRenderEventArgs } from '@syncfusion/ej2-charts';
 import { IMouseEventArgs, IPointEventArgs, EmptyPointSettingsModel as PivotChartEmptyPointSettingsModel } from '@syncfusion/ej2-charts';
 import { LabelIntersectAction, ErrorBarCapSettingsModel as PivotChartErrorBarCapSettingsModel, ChartTheme } from '@syncfusion/ej2-charts';
-import { CornerRadiusModel as PivotChartCornerRadiusModel } from '@syncfusion/ej2-charts';
-import { MajorGridLinesModel as PivotChartMajorGridLinesModel } from '@syncfusion/ej2-charts';
+import { CornerRadiusModel as PivotChartCornerRadiusModel, AccumulationSelectionMode } from '@syncfusion/ej2-charts';
+import { MajorGridLinesModel as PivotChartMajorGridLinesModel, ConnectorType, PyramidModes } from '@syncfusion/ej2-charts';
 import { IAnimationCompleteEventArgs, StripLineSettingsModel as PivotChartStripLineSettingsModel } from '@syncfusion/ej2-charts';
 import { CrosshairTooltipModel as PivotChartCrosshairTooltipModel, IZoomCompleteEventArgs } from '@syncfusion/ej2-charts';
 import { LocationModel as PivotChartLocationModel, AccEmptyPointMode, MarkerSettingsModel as PivotChartMarkerSettingsModel } from '@syncfusion/ej2-charts';
 import { CrosshairSettingsModel as PivotChartCrosshairSettingsModel, IDragCompleteEventArgs } from '@syncfusion/ej2-charts';
 import { LabelBorderModel as PivotChartLabelBorderModel, MarginModel as PivotChartMarginModel } from '@syncfusion/ej2-charts';
 import { MinorTickLinesModel as PivotChartMinorTickLinesModel, IAxisLabelRenderEventArgs } from '@syncfusion/ej2-charts';
-import { Segment, AxisPosition, LegendSettingsModel, ILoadedEventArgs } from '@syncfusion/ej2-charts';
+import { Segment, AxisPosition, LegendSettingsModel, ILoadedEventArgs, SelectionPattern } from '@syncfusion/ej2-charts';
 import { PivotSeriesModel, PivotAxisModel, PivotTooltipSettingsModel, PivotZoomSettingsModel } from './chartsettings-model';
+import { PivotPieChartCenterModel, PivotChartDataLabelModel, PivotChartConnectorStyleModel } from './chartsettings-model';
 import { ChartSeriesType, ChartSelectionMode } from '../../common';
 import { Theme } from '../../common/base/themes';
 import { OffsetModel as PivotChartOffsetModel } from '../../common/base/interface';
@@ -194,7 +195,8 @@ export class Margin extends ChildProperty<Margin> {
 
 /**
  * Allow options to customize the border of the chart such as color and border size in the pivot chart. 
- * For example, to display the chart border color as red, set the properties `color` to either **"red"** or **"#FF0000"** or **"rgba(255,0,0,1.0)"** and `width` to **0.5**.
+ * For example, to display the chart border color as red, set the properties `color` to either **"red"**
+ * or **"#FF0000"** or **"rgba(255,0,0,1.0)"** and `width` to **0.5**.
  */
 export class Border extends ChildProperty<Border> {
 
@@ -461,6 +463,129 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
      @Property(null)
      public template: string;
 
+}
+
+/**
+ * Allow options to customize the pie, funnel, doughnut and pyramid chart data label connector.
+ */
+export class PivotChartConnectorStyle extends ChildProperty<PivotChartConnectorStyle> {
+
+     /**
+      * specifies the type of the connector line for pie, funnel, doughnut and pyramid chart. They are
+      * * curve
+      * * Line
+      * @default 'Line'
+      * @blazorType PivotChartConnectorType
+      * @blazorDefaultValue PivotChartConnectorType.Line
+      */
+     @Property('Line')
+     public type: ConnectorType;
+
+     /**
+      * Specifies the color of the connector line for pie, funnel, doughnut and pyramid chart.
+      * @default null
+      */
+     @Property(null)
+     public color: string;
+
+     /**
+      * Width of the connector line in pixels for pie, funnel, doughnut and pyramid chart.
+      * @default 1
+      */
+     @Property(1)
+     public width: number;
+
+     /**
+      * Length of the connector line in pixels for pie, funnel, doughnut and pyramid chart.
+      * @default 'null'
+      */
+     @Property(null)
+     public length: string;
+
+     /**
+      * dashArray of the connector line for pie, funnel, doughnut and pyramid chart.
+      * @default ''
+      */
+     @Property('')
+     public dashArray: string;
+}
+
+/**
+ * Allow options to customize the pie, funnel, doughnut and pyramid chart data label connector.
+ */
+export class PivotChartDataLabel extends ChildProperty<PivotChartDataLabel> {
+
+     /**
+      * Allows to set the visibility of data label to the series renders.
+      * @default true
+      */
+     @Property(true)
+     public visible: boolean;
+
+     /**
+      * Allows to set the background color of the data label accepts value in hex and rgba as a valid CSS color string.
+      * @default 'transparent'
+      */
+     @Property('transparent')
+     public fill: string;
+
+     /**
+      * Allows to specify the rotation angle to data label.
+      * @default 0
+      * @blazorType int
+      */
+     @Property(0)
+     public angle: number;
+
+     /**
+      * Allows to set whether rotation to data label is enable or not.
+      * @default false
+      */
+
+     @Property(false)
+     public enableRotation: boolean;
+
+     /**
+      * Allows to specify the position of the data label. They are,
+      * * Outside: Positions the label outside the point.
+      * * Inside: Positions the label on top of the point.
+      * @default 'Outside'
+      * @blazorType PivotChartLabelPosition
+      * @blazorDefaultValue PivotChartLabelPosition.Outside
+      */
+     @Property('Outside')
+     public position: AccumulationLabelPosition;
+
+     /**
+      * Allows to set the roundedCornerX for the data label. It requires `border` values not to be null.
+      * @default 5
+      * @blazorType int
+      */
+     @Property(5)
+     public rx: number;
+
+     /**
+      * Allows to set the roundedCornerY for the data label. It requires `border` values not to be null.
+      * @default 5
+      * @blazorType int
+      */
+     @Property(5)
+     public ry: number;
+
+     /**
+      * Allows custom template to show the data label. Use ${point.x} and ${point.y} as a placeholder
+      * text to display the corresponding data point.
+      * @default null
+      */
+     @Property(null)
+     public template: string;
+
+     /**
+      * Allows custom connector of the pie, funnel, pyramid and doughnut chart data label.
+      * @default null
+      */
+     @Complex<PivotChartConnectorStyleModel>({}, PivotChartConnectorStyle)
+     public connectorStyle: PivotChartConnectorStyleModel;
 }
 
 /**
@@ -2512,11 +2637,114 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
      public fill: string;
 
      /**
+      * Allows to set the end angle for the pie and doughnut chart series.
+      * @default null
+      */
+     @Property(null)
+     public endAngle: number;
+
+     /**
+      * Allows to enable or disable series point explode on mouse click or touch for pie, funnel, doughnut and pyramid chart.
+      * @default false
+      */
+     @Property(false)
+     public explode: boolean;
+
+     /**
+      * Allows to enable or disable all series point explode on mouse click or touch for  pie, funnel, doughnut and pyramid chart.
+      * @default false
+      */
+     @Property(false)
+     public explodeAll: boolean;
+
+     /**
+      * Allows to set Index of the point to be exploded on load for pie, funnel, doughnut and pyramid chart.
+      * @default null
+      */
+     @Property(null)
+     public explodeIndex: number;
+
+     /**
+      * Allows to set inner radius for pie and doughnut series chart.
+      * @default null
+      */
+     @Property(null)
+     public innerRadius: string;
+
+     /**
+      * Allows to set distance of the point from the center, which takes values in both pixels and 
+      * percentage for pie, funnel, doughnut and pyramid chart.
+      * @default "30%"
+      */
+     @Property('30%')
+     public explodeOffset: string;
+
+     /**
+      * Allows to set the distance between the segments of a funnel/pyramid series. The range will be from 0 to 1.
+      * @default 0
+      */
+     @Property(0)
+     public gapRatio: number;
+
+     /**
+      * Allows to define the mode of grouping for pie, funnel, doughnut and pyramid chart series.
+      * @default "Value"
+      * @blazorType PivotChartGroupModes
+      * @blazorDefaultValue PivotChartGroupModes.Value
+      */
+     @Property('Value')
+     public groupMode: GroupModes;
+
+     /**
+      * Allows to combine the y values into slice named other for  pie, funnel, doughnut and pyramid chart Series.
+      * @default null
+      */
+     @Property(null)
+     public groupTo: string;
+
+     /**
+      * Allows to defines the height of the funnel chart neck with respect to the chart area.
+      * @default "20%"
+      */
+     @Property('20%')
+     public neckHeight: string;
+
+     /**
+      * Allows to defines the width of the funnel chart neck with respect to the chart area.
+      * @default "20%"
+      */
+     @Property('20%')
+     public neckWidth: string;
+
+     /**
+      * Defines how the values have to be reflected, whether through height/surface of the segments in pyramid series.
+      * @default 'Linear'
+      * @blazorType PivotChartPyramidModes
+      * @blazorDefaultValue PivotChartPyramidModes.Linear
+      */
+     @Property('Linear')
+     public pyramidMode: PyramidModes;
+
+     /**
+      * Allows to defines start angle for the pie, funnel, doughnut and pyramid chart series.
+      * @default 0
+      */
+     @Property(0)
+     public startAngle: number;
+
+     /**
       * Allows options to customizing animation for the series.
       * @default null
       */
      @Complex<PivotChartAnimationModel>(null, Animation)
      public animation: PivotChartAnimationModel;
+
+     /**
+      * Allows options to customize data label for the pie, funnel, pyramid, doughnut chart series.
+      * @default null
+      */
+     @Complex<PivotChartDataLabelModel>(null, PivotChartDataLabel)
+     public dataLabel: PivotChartDataLabelModel;
 
      /**
       * Allows to set the pattern of dashes and gaps to stroke the lines in `Line` type series.
@@ -3096,6 +3324,26 @@ export class PivotTooltipSettings extends ChildProperty<PivotTooltipSettings> {
 }
 
 /**
+ * Allow options to customize the center of the pivot pie series chart.
+ */
+export class PivotPieChartCenter extends ChildProperty<PivotPieChartCenter> {
+
+     /**
+      * X value of the center.
+      * @default "50%"
+      */
+     @Property('50%')
+     public x: string;
+
+     /**
+      * Y value of the center.
+      * @default "50%"
+      */
+     @Property('50%')
+     public y: string;
+}
+
+/**
  * Allow options to customize the pivot chart zooming with different properties such as enablePinchZooming, enableSelectionZooming, 
  * enableDeferredZooming, enableMouseWheelZooming, zoom modes, toolbarItems, enableScrollbar and enablePan.
  */
@@ -3268,6 +3516,22 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
      public value: string;
 
      /**     
+      * Allows to specify the column whose values will be considered to draw the pivot chart. The is applicable
+      * for pie, doughnut, funnel and pyramid chart types.
+      * @default ''
+      */
+     @Property('')
+     public columnHeader: string;
+
+     /**     
+      * Allows to specify the delimiter to split the column headers. The is applicable for pie, doughnut,
+      * funnel and pyramid chart types.
+      * @default '-'
+      */
+     @Property('-')
+     public columnDelimiter: string;
+
+     /**     
       * Allows you to draw the pivot chart with multiple value fields as separate chart area.
       * @default false
       */
@@ -3367,6 +3631,12 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
      public tooltip: PivotTooltipSettingsModel;
 
      /**
+      * Allow options to customize the center of pie series chart with properties x and y.
+      */
+     @Complex<PivotPieChartCenterModel>(null, PivotPieChartCenter)
+     public pieCenter: PivotPieChartCenterModel;
+
+     /**
       * Allow options to customize the pivot chart zooming with different properties such as enablePinchZooming, enableSelectionZooming, 
       * enableDeferredZooming, enableMouseWheelZooming, zoom modes, toolbarItems, enableScrollbar and enablePan.
       */
@@ -3394,6 +3664,73 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
       */
      @Property('None')
      public selectionMode: ChartSelectionMode;
+
+     /**
+      * Allow options for customizing the selection mode to be done either by a specific series or point or cluster 
+      * or by dragging it to the pivot chart. For example, to highlight a specific point in a specific series of the 
+      * pivot chart, set the property `accumulationSelectionMode` to **Point**. It is applicable for chart types pie,
+      * funnel, doughnut and pyramid. The available modes are,
+      * * none: Disables the selection.
+      * * point: selects a point.
+      * @default 'None'
+      * @blazorType PivotAccumulationChartSelectionMode
+      * @blazorDefaultValue PivotAccumulationChartSelectionMode.None
+      */
+     @Property('None')
+     public accumulationSelectionMode: AccumulationSelectionMode;
+
+     /**
+      * Allows to set the labels placed smartly without overlapping. It is applicable for chart types pie,
+      * funnel, doughnut and pyramid.
+      * @default true
+      */
+     @Property(true)
+     public enableSmartLabels: boolean;
+
+     /**
+      * Allows to Enable or disable the border in pie and doughnut chart while mouse moving.
+      * @default true
+      */
+     @Property(true)
+     public enableBorderOnMouseMove: boolean;
+
+     /**
+      * Specifies whether point has to get highlighted or not. It is applicable for chart types pie,
+      * funnel, doughnut and pyramid. Takes value either 'None 'or 'Point'.
+      * @default None
+      * @blazorType PivotAccumulationChartSelectionMode
+      * @blazorDefaultValue PivotAccumulationChartSelectionMode.None
+      */
+     @Property('None')
+     public highlightMode: AccumulationSelectionMode;
+
+     /**
+      * Specifies whether series or data point for accumulation chart has to be selected. They are,
+      * * none: sets none as selecting pattern to accumulation chart .
+      * * chessboard: sets chess board as selecting pattern accumulation chart .
+      * * dots: sets dots as  selecting pattern accumulation chart .
+      * * diagonalForward: sets diagonal forward as selecting pattern to accumulation chart .
+      * * crosshatch: sets crosshatch as selecting pattern to accumulation chart.
+      * * pacman: sets pacman selecting pattern to accumulation chart.
+      * * diagonalbackward: sets diagonal backward as selecting pattern to accumulation chart.
+      * * grid: sets grid as selecting pattern to accumulation chart.
+      * * turquoise: sets turquoise as selecting pattern to accumulation chart.
+      * * star: sets star as selecting pattern to accumulation chart.
+      * * triangle: sets triangle as selecting pattern to accumulation chart.
+      * * circle: sets circle as selecting pattern to accumulation chart.
+      * * tile: sets tile as selecting pattern to accumulation chart.
+      * * horizontaldash: sets horizontal dash as selecting pattern to accumulation chart.
+      * * verticaldash: sets vertical dash as selecting pattern to accumulation chart.
+      * * rectangle: sets rectangle as selecting pattern.
+      * * box: sets box as selecting pattern to accumulation chart.
+      * * verticalstripe: sets vertical stripe as  selecting pattern to accumulation chart.
+      * * horizontalstripe: sets horizontal stripe as selecting pattern to accumulation chart.
+      * * bubble: sets bubble as selecting pattern to accumulation chart.
+      * It is applicable for chart types pie, funnel, doughnut and pyramid.
+      * @default None
+      */
+     @Property('None')
+     public highlightPattern: SelectionPattern;
 
      /**
       * Allows the pivot chart to be exported to either **PDF** or **PNG** or **JPEG** or **SVG** filter formats.

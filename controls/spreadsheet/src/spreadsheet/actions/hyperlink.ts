@@ -356,7 +356,7 @@ export class SpreadsheetHyperlink {
         let td: HTMLElement = args.td;
         let rowIdx: number = args.rowIdx;
         let colIdx: number = args.colIdx;
-        let hyperEle: HTMLElement = this.parent.createElement('a', { className: 'e-hyperlink' });
+        let hyperEle: HTMLElement = this.parent.createElement('a', { className: 'e-hyperlink e-hyperlink-style' });
         if (!isNullOrUndefined(cell.hyperlink) && !td.querySelector('a')) {
             let hyperlink: string | HyperlinkModel = cell.hyperlink;
             if (typeof (hyperlink) === 'string') {

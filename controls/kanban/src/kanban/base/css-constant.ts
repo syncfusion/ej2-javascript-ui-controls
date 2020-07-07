@@ -22,8 +22,6 @@ export const HEADER_TABLE_CLASS: string = 'e-header-table';
 /** @hidden */
 export const HEADER_CELLS_CLASS: string = 'e-header-cells';
 /** @hidden */
-export const HEADER_BOTTOM_CLASS: string = 'e-header-bottom';
-/** @hidden */
 export const HEADER_WRAP_CLASS: string = 'e-header-wrap';
 /** @hidden */
 export const HEADER_TITLE_CLASS: string = 'e-header-title';
@@ -71,6 +69,18 @@ export const CARD_CONTENT_CLASS: string = 'e-card-content';
 export const CARD_HEADER_TEXT_CLASS: string = 'e-card-header-caption';
 /** @hidden */
 export const CARD_HEADER_TITLE_CLASS: string = 'e-card-header-title';
+/** @hidden */
+export const CARD_TAGS_CLASS: string = 'e-card-tags';
+/** @hidden */
+export const CARD_TAG_CLASS: string = 'e-card-tag';
+/** @hidden */
+export const CARD_COLOR_CLASS: string = 'e-card-color';
+/** @hidden */
+export const CARD_LABEL_CLASS: string = 'e-card-label';
+/** @hidden */
+export const CARD_FOOTER_CLASS: string = 'e-card-footer';
+/** @hidden */
+export const CARD_FOOTER_CSS_CLASS: string = 'e-card-footer-css';
 /** @hidden */
 export const COLUMN_EXPAND_CLASS: string = 'e-column-expand';
 /** @hidden */

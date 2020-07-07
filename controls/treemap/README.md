@@ -2,7 +2,7 @@
 
 # ej2-treemap
 
-The tree map control provides a simple and effective way to visualize the flat or hierarchical data as clustered rectangles with a specific, weighted attribute determining the size of each rectangle.
+The tree map control provides a simple and effective way to visualize flat or hierarchical data as clustered rectangles with a specific, weighted attribute determining the size of each rectangle.
 
 ![TreeMap] (https://ej2.syncfusion.com/products/images/treemap/readme.gif)
 

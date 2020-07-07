@@ -89,3 +89,52 @@ export type MergeType =
     'Horizontally' |
     /** Merge the cells column-wise. */
     'Vertically';
+
+/**
+ * Conditional formatting HighlightCell Type
+ * @hidden
+ */
+export type HighlightCell = 'GreaterThan' | 'LessThan' | 'Between' | 'EqualTo' | 'ContainsText' | 'DateOccur' | 'Duplicate' | 'Unique';
+
+/**
+ * Conditional formatting TopBottom Type
+ * @hidden
+ */
+export type TopBottom = 'Top10Items' | 'Bottom10Items' | 'Top10Percentage' | 'Bottom10Percentage' | 'BelowAverage' | 'AboveAverage';
+
+/**
+ * Conditional formatting DataBar Type
+ * @hidden
+ */
+export type DataBar = 'BlueDataBar' | 'GreenDataBar' | 'RedDataBar' | 'OrangeDataBar' | 'LightBlueDataBar' | 'PurpleDataBar';
+
+/**
+ * Conditional formatting ColorScale Type
+ * @hidden
+ */
+export type ColorScale = 'GYRColorScale' | 'RYGColorScale' | 'GWRColorScale' | 'RWGColorScale' | 'BWRColorScale' | 'RWBColorScale' |
+    'WRColorScale' | 'RWColorScale' | 'GWColorScale' | 'WGColorScale' | 'GYColorScale' | 'YGColorScale';
+
+/**
+ * Conditional formatting IconSet Type
+ * @hidden
+ */
+export type IconSet = 'ThreeArrows' | 'ThreeArrowsGray' | 'FourArrowsGray' | 'FourArrows' | 'FiveArrowsGray' |
+    'FiveArrows' | 'ThreeTrafficLights1' | 'ThreeTrafficLights2' | 'ThreeSigns' | 'FourTrafficLights' |
+    'FourRedToBlack' | 'ThreeSymbols' | 'ThreeSymbols2' | 'ThreeFlags' | 'FourRating' | 'FiveQuarters' |
+    'FiveRating' | 'ThreeTriangles' | 'ThreeStars' | 'FiveBoxes';
+
+export type CFColor = 'RedFT' | 'YellowFT' | 'GreenFT' | 'RedF' | 'RedT';
+
+/** 
+ * Clear type
+ */
+export type ClearType =
+    /** Clear the content, formats and hyperlinks applied in the provided range. */
+    'Clear All' |
+    /** Clear the formats applied in the provided range. */
+    'Clear Formats' |
+    /** Clear the content in the provided range. */
+    'Clear Contents' |
+    /** Clear the hyperlinks applied in the provided range. */
+    'Clear Hyperlinks';

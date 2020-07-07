@@ -304,6 +304,10 @@ export interface ClearingEventArgs {
 
 export interface BeforeUploadEventArgs {
     /**
+     * Defines whether the current action can be prevented.
+     */
+    cancel: boolean;
+    /**
      * Defines the additional data in key and value pair format that will be submitted to the upload action.
      * @blazorType object
      */
@@ -3734,15 +3738,18 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         let uploadFiles: FileInfo[] = this.getFilesInArray(files);
         let eventArgs: BeforeUploadEventArgs = {
             customFormData: [],
-            currentRequest: null
+            currentRequest: null,
+            cancel: false
         };
         this.trigger('beforeUpload', eventArgs, (eventArgs: BeforeUploadEventArgs) => {
-            if (isBlazor()) {
-                this.currentRequestHeader = eventArgs.currentRequest ? eventArgs.currentRequest : this.currentRequestHeader;
-                this.customFormDatas = (eventArgs.customFormData && eventArgs.customFormData.length > 0) ?
-                    eventArgs.customFormData : this.customFormDatas;
+            if (!eventArgs.cancel) {
+                if (isBlazor()) {
+                    this.currentRequestHeader = eventArgs.currentRequest ? eventArgs.currentRequest : this.currentRequestHeader;
+                    this.customFormDatas = (eventArgs.customFormData && eventArgs.customFormData.length > 0) ?
+                        eventArgs.customFormData : this.customFormDatas;
+                }
+                this.uploadFiles(uploadFiles, custom);
             }
-            this.uploadFiles(uploadFiles, custom);
         });
     }
     private getFilesInArray(files: FileInfo | FileInfo[]):  FileInfo[] {

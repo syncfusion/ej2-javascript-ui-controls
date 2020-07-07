@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-## 18.1.57 (2020-06-16)
+## 18.2.44 (2020-07-07)
 
 ### TreeGrid
 
@@ -10,88 +10,28 @@
 
 - `#279109` - Checkbox checked properly for child records in remote data.
 - `#277364`, `#279732` - Checkbox with `allowRowDragAndDrop` property rendered properly after editing and cancelling in cell edit mode.
-
-## 18.1.56 (2020-06-09)
-
-### TreeGrid
-
-#### Bug Fixes
-
-- `#F15641` - Content is rendered properly for random scrolling when Virtualization is enabled.
-- `#279755` - Virtual Scrolling works fine.
-
-## 18.1.55 (2020-06-02)
-
-### TreeGrid
-
-#### Bug Fixes
-
 - `#277364` - Checkbox with `autoCheckHierarchy` property rendered properly after editing and cancelling in cell edit mode.
 - `#278266` - Edit type `dropdownedit` is working properly in cell edit mode when enter key is pressed.
-
-## 18.1.54 (2020-05-26)
-
-### TreeGrid
-
-#### New Features
-
-- `#152599` - Provided support for toggling selection by adding `enableToggle` API in selection Settings
-
-#### Bug Fixes
-
+- `#272026` - `updateRow` method works fine for updating treegrid data source.
+- `#273309` - Editing the zeroth level added record works fine in Batch mode.
 - `#277361` - Auto generated columns work fine when two treegrids are rendered on the same page.
 
-## 18.1.52 (2020-05-13)
-
-### TreeGrid
-
 #### New Features
 
-- Provided support for Editing with Frozen Columns.
+- `#258863`, `#271677` - Expand & Collapse child rows support has been provided in Excel Export.
+- Columnchooser support has been provided that allows user to show or hide columns dynamically.
+- Provided support for Editing with Virtualization feature.
 
-## 18.1.48 (2020-05-05)
+#### Breaking Changes
 
-### TreeGrid
+- Now `data`, `row` these Tree Grid selection event arguments are get array values only when we perform multi selection. Please find modified event arguments and it types from the below table,
 
-#### Bug Fixes
-
-- `F153495` - Sorting after editing is working fine with cell edit mode.
-- `#273309` - Editing the zeroth level added record works fine in Batch mode.
-
-## 18.1.45 (2020-04-21)
-
-### TreeGrid
-
-#### Bug Fixes
-
-- `#272026` - `updateRow` method works fine for updating treegrid data source.
-- `#272616` - In editing, add operation works fine in empty data source.
-- `#272409`- Expand Collapse works fine when number of frozen columns is less than `treeColumnIndex`.
-
-## 18.1.43 (2020-04-07)
-
-### TreeGrid
-
-#### Bug Fixes
-
-- `#266963`- Drag and drop works fine in unordered list of data.
-- `#F151795` - Localization support works fine in Add row, Above, Below Context Menu Items.
-- `#F151795`- In Drag and drop, while dropping at first row, its border color is changed properly.
-- `#267541`- ExpandAll works fine with Virtualization feature.
-
-## 18.1.36-beta (2020-03-19)
-
-### TreeGrid
-
-#### New Features
-
-- Provides support to copy the selected rows or cells data into clipboard.
-- Provides support to load large amount of data on-demand in Virtual Scrolling.
-- Provides batch editing support for bulk add, edit and delete operations.
-
-#### Bug Fixes
-
-- `#262583`- Dragging a row works fine, when Tree Grid is in Edit state.
+`Properties` |`Type`
+-----|-----
+`data` | `Object or Object[]`
+`rowIndex` | `number`
+`rowIndexes` | `number[]`
+`row` | `Element or Element[]`
 
 ## 17.4.39 (2019-12-17)
 

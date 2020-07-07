@@ -5,18 +5,18 @@
 
 @include export-module('dropdowntree-layout') {
 
-  #{&}.e-ddt  {
+  #{&}.e-ddt {
     cursor: pointer;
     outline: none;
+
+    .e-ddt-icon::before {
+      @include ddt-rotate(0deg);
+    }
 
     &.e-icon-anim {
       .e-ddt-icon::before {
         @include ddt-rotate(180deg);
       }
-    }
-
-    .e-ddt-icon::before {
-      @include ddt-rotate(0deg);
     }
 
     .e-ddt-hidden {
@@ -38,22 +38,10 @@
         @if $ddt-skin-name == 'bootstrap4' {
           font-size: 8px;
         }
-
-        @if $ddt-skin-name == 'material' or $ddt-skin-name == 'material-dark' {
-          margin-bottom: 0;
-          margin-top: 0;
-          padding: $ddt-dd-icon-padding;
-        }
       }
 
       .e-icon-hide {
         display: none;
-      }
-
-      &.e-input-focus input ~ label.e-float-text {
-        @if ($ddt-skin-name != 'material' and $ddt-skin-name != 'material-dark') {
-          top: $ddt-label-top;
-        }
       }
 
       &.e-show-chip {
@@ -85,23 +73,26 @@
       width: 100%;
 
       .e-chips-close {
-        line-height: $ddt-chip-close-square;
-        min-height: $ddt-chip-close-square;
-        min-width: $ddt-chip-close-square;
+        line-height: $ddt-chip-icon-line-height;
+        min-height: $ddt-chip-close-height;
+        min-width: $ddt-chip-close-width;
         text-align: center;
 
         &::before {
           font-size: $ddt-chip-close-font;
+          vertical-align: middle;
         }
       }
 
       .e-chips {
         align-items: center;
+        border-radius: $ddt-chip-radius;
+        box-sizing: border-box;
         display: inline-flex;
         float: left;
         height: $ddt-chip-height;
         margin: $ddt-chip-margin;
-        max-width: 100%;
+        max-width: $ddt-chip-width;
         overflow: hidden;
         padding: $ddt-chip-padding;
         text-overflow: ellipsis;
@@ -114,20 +105,27 @@
           text-indent: 0;
           text-overflow: ellipsis;
           white-space: nowrap;
+
+          @if $ddt-skin-name == 'fabric' or $ddt-skin-name == 'fabric-dark' or $ddt-skin-name == 'highcontrast' or $ddt-skin-name == 'highcontrast-light' {
+            line-height: $ddt-chip-text-line-height;
+          }
         }
       }
     }
 
-    &.e-show-clear.e-show-dd-icon .e-chips-wrapper .e-chips-collection .e-chips:last-child {
-      margin-right: $ddt-last-chip-right-margin;
-    }
-
-    &.e-show-clear .e-chips-wrapper .e-chips-collection .e-chips:last-child {
-      margin-right: $ddt-close-icon-width;
-    }
-
-    &.e-show-dd-icon .e-chips-wrapper .e-chips-collection .e-chips:last-child {
+    &.e-show-dd-icon .e-chips-wrapper .e-chips:last-child {
       margin-right: $ddt-dd-icon-width;
+      max-width: $ddt-chip-ddi-width;
+    }
+
+    &.e-show-clear .e-chips-wrapper .e-chips:last-child {
+      margin-right: $ddt-close-icon-width;
+      max-width: $ddt-chip-ci-width;
+    }
+
+    &.e-show-clear.e-show-dd-icon .e-chips-wrapper .e-chips:last-child {
+      margin-right: $ddt-last-chip-right-margin;
+      max-width: $ddt-chip-ddi-ci-width;
     }
 
     input[readonly],
@@ -141,9 +139,15 @@
     }
 
     &.e-popup {
-      border: 1px solid;
+      @if $skin-name != 'material' {
+        border: 1px solid $ddt-popup-border-color;
+      }
+
+      @if $skin-name == 'bootstrap4' {
+        border-radius: $ddt-chip-radius;
+      }
+
       box-shadow: $ddt-box-shadow;
-      margin-top: $ddt-margin-top;
       position: absolute;
 
       .e-selectall-parent {
@@ -162,7 +166,6 @@
         }
 
         .e-checkbox-wrapper {
-          margin-right: $ddt-select-all-checkbox-margin;
           position: relative;
           text-indent: 0;
         }
@@ -170,11 +173,62 @@
         .e-all-text {
           font-family: inherit;
           font-size: 14px;
+          margin: $ddt-select-all-checkbox-margin;
+        }
+      }
+
+      & .e-filter-wrap .e-input,
+      & .e-filter-wrap .e-input:focus {
+        padding: $ddt-list-filter-text-indent;
+      }
+
+      .e-filter-wrap {
+        border: $ddt-filter-border;
+        border-top-width: $ddt-filter-top-border;
+        display: block;
+        padding: $ddt-filter-padding;
+      }
+
+      .e-filter-wrap {
+        @if $ddt-skin-name == 'fabric' or $ddt-skin-name == 'fabric-dark' or $ddt-skin-name == 'highcontrast' or $ddt-skin-name == 'highcontrast-light' {
+          border-left-width: 0;
+          border-right-width: 0;
+        }
+
+        @if $ddt-skin-name == 'bootstrap-dark' or $ddt-skin-name == 'bootstrap' {
+          border-bottom: $ddt-filter-border-bottom-color;
+        }
+
+        @if $ddt-skin-name == 'bootstrap4' {
+          background: $ddt-filter-bg;
+        }
+
+        .e-input-group:not(.e-disabled):not(.e-float-icon-left)::before,
+        .e-input-group:not(.e-disabled):not(.e-float-icon-left)::after,
+        .e-input-group.e-control-wrapper:not(.e-disabled):not(.e-float-icon-left)::before,
+        .e-input-group.e-control-wrapper:not(.e-disabled):not(.e-float-icon-left)::after {
+          @if $ddt-skin-name == 'material' {
+            bottom: -1px;
+            height: 1px;
+          }
         }
       }
 
       .e-filter-wrap .e-input-group {
-        padding: 0 10px;
+        margin-bottom: 0;
+
+        @if $ddt-skin-name == 'bootstrap4' {
+          background: $ddt-filter-bg;
+        }
+
+        .e-clear-icon {
+          @if $ddt-skin-name == 'material' or $ddt-skin-name == 'material-dark' {
+            margin: 6px 6px 5px;
+            min-height: 12px;
+            min-width: 12px;
+            padding: 6px;
+          }
+        }
       }
 
       .e-popup-content {
@@ -243,39 +297,30 @@
 
       .e-chips-wrapper .e-chips {
         float: right;
-        padding: $ddt-chip-rtl-padding;
-
-        & > .e-chipcontent {
-          padding: $ddt-chip-content-rtl-padding;
-        }
       }
 
-      &.e-show-clear.e-show-dd-icon .e-chips-wrapper .e-chips-collection .e-chips:last-child {
-        margin-left: $ddt-last-chip-right-margin;
+      &.e-show-dd-icon .e-chips-wrapper .e-chips:last-child {
+        margin-left: $ddt-dd-icon-width;
         margin-right: 1px;
       }
 
-      &.e-show-clear .e-chips-wrapper .e-chips-collection .e-chips:last-child {
+      &.e-show-clear .e-chips-wrapper .e-chips:last-child {
         margin-left: $ddt-close-icon-width;
         margin-right: 1px;
       }
 
-      &.e-show-dd-icon .e-chips-wrapper .e-chips-collection .e-chips:last-child {
-        margin-left: $ddt-dd-icon-width;
+      &.e-show-clear.e-show-dd-icon .e-chips-wrapper .e-chips:last-child {
+        margin-left: $ddt-last-chip-right-margin;
         margin-right: 1px;
       }
 
       &.e-input-group.e-control-wrapper,
       &.e-float-input.e-control-wrapper {
-        .e-clear-icon {
-          @if $ddt-skin-name == 'material' or $ddt-skin-name == 'material-dark' {
-            padding: $ddt-close-icon-rtl-padding;
-          }
-        }
 
         &.e-show-chip {
 
-          .e-clear-icon {
+          .e-clear-icon,
+          .e-ddt-icon {
             left: 0;
             right: auto;
           }
@@ -283,19 +328,10 @@
           &.e-show-dd-icon .e-clear-icon {
             left: $ddt-dd-icon-width;
           }
-
-          .e-ddt-icon {
-            left: 0;
-            right: auto;
-          }
         }
       }
 
       &.e-popup {
-        .e-selectall-parent .e-checkbox-wrapper {
-          margin-left: $ddt-select-all-checkbox-margin;
-          margin-right: 0;
-        }
 
         .e-treeview .e-list-item .e-ul {
           padding: 0 14px 0 0;
@@ -328,31 +364,41 @@
         @if $ddt-skin-name == 'bootstrap4' {
           font-size: 10px;
         }
-
-        @if $ddt-skin-name == 'material' or $ddt-skin-name == 'material-dark' {
-          padding: $ddt-dd-icon-bigger-padding;
-        }
       }
 
       .e-clear-icon {
         min-height: $ddt-close-icon-bigger-min-height;
+      }
+    }
 
-        @if $ddt-skin-name == 'material' or $ddt-skin-name == 'material-dark' {
-          padding: $ddt-close-icon-bigger-padding;
+    .e-chips-wrapper {
+
+      .e-chips-close {
+        @if $ddt-skin-name == 'bootstrap4' {
+          line-height: 27px;
+          min-height: 30px;
+          min-width: 30px;
+
+          &::before {
+            font-size: 10px;
+          }
         }
       }
     }
 
-    &.e-show-clear.e-show-dd-icon .e-chips-wrapper .e-chips-collection .e-chips:last-child {
-      margin-right: $ddt-last-chip-bigger-right-margin;
-    }
-
-    &.e-show-clear .e-chips-wrapper .e-chips-collection .e-chips:last-child {
-      margin-right: $ddt-close-icon-bigger-width;
-    }
-
-    &.e-show-dd-icon .e-chips-wrapper .e-chips-collection .e-chips:last-child {
+    &.e-show-dd-icon .e-chips-wrapper .e-chips:last-child {
       margin-right: $ddt-dd-icon-bigger-width;
+      max-width: $ddt-big-chip-ddi-width;
+    }
+
+    &.e-show-clear .e-chips-wrapper .e-chips:last-child {
+      margin-right: $ddt-close-icon-bigger-width;
+      max-width: $ddt-big-chip-ci-width;
+    }
+
+    &.e-show-clear.e-show-dd-icon .e-chips-wrapper .e-chips:last-child {
+      margin-right: $ddt-last-chip-bigger-right-margin;
+      max-width: $ddt-big-chip-ddi-ci-width;
     }
 
     &.e-popup {
@@ -367,25 +413,18 @@
 
     &.e-rtl {
 
-      &.e-input-group.e-control-wrapper .e-clear-icon,
-      &.e-float-input.e-control-wrapper .e-clear-icon {
-        @if $ddt-skin-name == 'material' or $ddt-skin-name == 'material-dark' {
-          padding: $ddt-close-icon-bigger-rtl-padding;
-        }
-      }
-
-      &.e-show-clear.e-show-dd-icon .e-chips-wrapper .e-chips-collection .e-chips:last-child {
-        margin-left: $ddt-last-chip-bigger-right-margin;
+      &.e-show-dd-icon .e-chips-wrapper .e-chips:last-child {
+        margin-left: $ddt-dd-icon-bigger-width;
         margin-right: 1px;
       }
 
-      &.e-show-clear .e-chips-wrapper .e-chips-collection .e-chips:last-child {
+      &.e-show-clear .e-chips-wrapper .e-chips:last-child {
         margin-left: $ddt-close-icon-bigger-width;
         margin-right: 1px;
       }
 
-      &.e-show-dd-icon .e-chips-wrapper .e-chips-collection .e-chips:last-child {
-        margin-left: $ddt-dd-icon-bigger-width;
+      &.e-show-clear.e-show-dd-icon .e-chips-wrapper .e-chips:last-child {
+        margin-left: $ddt-last-chip-bigger-right-margin;
         margin-right: 1px;
       }
 

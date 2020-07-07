@@ -1,4 +1,4 @@
-import { Property, Complex, ChildProperty, Collection } from '@syncfusion/ej2-base';import { Font, Border } from '../model/base';import { Position, PointerRangePosition, PointerType, GaugeDirection, HiddenLabel, GaugeShape} from '../utils/enum';import { FontModel, BorderModel } from '../model/base-model';import { Size, Rect, VisibleLabels } from '../utils/helper';import { Theme } from '../model/theme';
+import { Property, Complex, ChildProperty, Collection } from '@syncfusion/ej2-base';import { Font, Border } from '../model/base';import { Position, PointerRangePosition, PointerType, GaugeDirection, HiddenLabel, GaugeShape} from '../utils/enum';import { FontModel, BorderModel } from '../model/base-model';import { LinearGradientModel, RadialGradientModel } from './gradient-model';import { Size, Rect, VisibleLabels } from '../utils/helper';import { Theme } from '../model/theme';
 
 /**
  * Interface for a class Line
@@ -173,6 +173,19 @@ export interface RangeModel {
      */
     offset?: number | string;
 
+    /**
+     * Sets and gets the properties to render a linear gradient for the range. 
+     * If both linear and radial gradient is set, then the linear gradient will be rendered in the range.
+     * @default null
+     */
+    linearGradient?: LinearGradientModel;
+
+    /**
+     * Sets and gets the properties to render a radial gradient for the range.
+     * @default null
+     */
+    radialGradient?: RadialGradientModel;
+
 }
 
 /**
@@ -255,6 +268,21 @@ export interface CapModel {
     color?: string;
 
     /**
+     * Sets and gets the properties to render a linear gradient for the cap of the needle pointer. 
+     * If both linear and radial gradient is set, then the linear gradient will be rendered in the cap.
+     * @default null
+     */
+
+    linearGradient?: LinearGradientModel;
+
+    /**
+     * Sets and gets the properties to render a radial gradient for cap of the needle pointer.
+     * @default null
+     */
+
+    radialGradient?: RadialGradientModel;
+
+    /**
      * Sets and gets the border of the pointer cap in the circular gauge component.
      */
 
@@ -294,6 +322,21 @@ export interface NeedleTailModel {
      */
 
     length?: string;
+
+    /**
+     * Sets and gets the properties to render a linear gradient for the tail of the needle pointer. 
+     * If both linear and radial gradient is set, then the linear gradient will be rendered in the needle tail.
+     * @default null
+     */
+
+    linearGradient?: LinearGradientModel;
+
+    /**
+     * Sets and gets the properties to render a radial gradient for tail of the needle pointer.
+     * @default null
+     */
+
+    radialGradient?: RadialGradientModel;
 
 }
 
@@ -509,6 +552,21 @@ export interface PointerModel {
      */
 
     needleEndWidth?: number;
+
+    /**
+     * Sets and gets the properties to render a linear gradient for the pointer.
+     * If both linear and radial gradient is set, then the linear gradient will be rendered in the pointer.
+     * @default null
+     */
+
+    linearGradient?: LinearGradientModel;
+
+    /**
+     * Sets and gets the properties to render a radial gradient for pointer.
+     * @default null
+     */
+
+    radialGradient?: RadialGradientModel;
 
 }
 

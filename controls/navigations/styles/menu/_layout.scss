@@ -470,21 +470,28 @@
             display: inline;
             text-indent: 0;
           }
-
-          // sass-lint:disable-all
-          & .e-caret {
-            -webkit-transition: -webkit-transform .3s ease-in-out;
-            transition: -webkit-transform .3s ease-in-out;
-            transition: transform .3s ease-in-out;
-            text-indent: 0;
-          }
-
-          &.e-selected > .e-caret {
-            -webkit-transform: rotate(-180deg);
-            transform: rotate(-180deg);
-          }
-          // sass-lint:enable-all
         }
+
+        // sass-lint:disable-all
+
+		    & .e-menu-item[aria-expanded = "true"] .e-caret {
+			    -webkit-transition: -webkit-transform .3s ease-in-out;
+          transition: -webkit-transform .3s ease-in-out;
+          transition: transform .3s ease-in-out;
+			    -webkit-transform: rotate(-180deg);
+          transform: rotate(-180deg);
+          text-indent: 0;
+		    }
+		
+		    & .e-menu-item[aria-expanded = "false"] .e-caret {
+			    -webkit-transition: -webkit-transform .3s ease-in-out;
+          transition: -webkit-transform .3s ease-in-out;
+          transition: transform .3s ease-in-out;
+          -webkit-transform: rotate(0deg);
+          transform: rotate(0deg);
+          text-indent: 0;
+        }
+        // sass-lint:enable-all
       }
 
       &.e-menu:not(.e-vertical) {

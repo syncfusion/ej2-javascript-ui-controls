@@ -196,10 +196,6 @@ export interface BeforeCloseEventArgs {
      */
     cancel: boolean;
     /**
-     * DEPRECATED-Determines whether the event is triggered by interaction.
-     */
-    isInteraction: boolean;
-    /**
      * Determines whether the event is triggered by interaction.
      */
     isInteracted: boolean;
@@ -275,10 +271,6 @@ export interface CloseEventArgs {
      */
     isInteracted: boolean;
     /**
-     * DEPRECATED-Determines whether the event is triggered by interaction.
-     */
-    isInteraction: boolean;
-    /**
      * Specify the name of the event.
      */
     name: string;
@@ -290,6 +282,7 @@ export interface CloseEventArgs {
 export interface DragStartEventArgs {
     /**
      * Returns the original event arguments.
+     * @blazorType MouseEventArgs
      */
     event: Event;
     /**
@@ -312,6 +305,7 @@ export interface DragStartEventArgs {
 export interface DragStopEventArgs {
     /**
      * Returns the original event arguments.
+     * @blazorType MouseEventArgs
      */
     event: Event;
     /**
@@ -338,6 +332,7 @@ export interface DragStopEventArgs {
 export interface DragEventArgs {
     /**
      * Returns the original event arguments.
+     * @blazorType MouseEventArgs
      */
     event: Event;
     /**
@@ -852,14 +847,14 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                 if (!isNullOrUndefined(this.btnObj)) {
                     buttonObj = this.btnObj[this.btnObj.length - 1];
                 }
+                if (!isNullOrUndefined(buttonObj) && document.activeElement === buttonObj.element && !event.shiftKey) {
+                    event.preventDefault();
+                    this.focusableElements(this.element).focus();
+                }
                 if ((isNullOrUndefined(this.btnObj)) && (!isNullOrUndefined(this.ftrTemplateContent))) {
                     let value: string = 'input,select,textarea,button,a,[contenteditable="true"],[tabindex]';
                     let items: NodeListOf<HTMLElement> = this.ftrTemplateContent.querySelectorAll(value);
                     buttonObj = { element: items[items.length - 1] as HTMLElement } as Button;
-               }
-                if (!isNullOrUndefined(buttonObj) && document.activeElement === buttonObj.element && !event.shiftKey) {
-                    event.preventDefault();
-                    this.focusableElements(this.element).focus();
                 }
                 if (document.activeElement === this.focusableElements(this.element) && event.shiftKey) {
                     event.preventDefault();
@@ -1114,6 +1109,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                footerBtn = <NodeListOf<Element>>(childNodes[i] as HTMLElement).querySelectorAll('button');
             }
         }
+
         for (let i: number = 0; i < this.buttons.length; i++) {
             if (!this.isBlazorServerRender()) { this.btnObj[i] = new Button(this.buttons[i].buttonModel); }
             if (this.isBlazorServerRender()) { this.ftrTemplateContent = this.element.querySelector('.' + DLG_FOOTER_CONTENT); }
@@ -1750,13 +1746,11 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         if (this.preventVisibility) {
             let eventArgs: BeforeCloseEventArgs = isBlazor() ? {
                 cancel: false,
-                isInteraction: event ? true : false,
                 isInteracted: event ? true : false,
                 element: this.element,
                 container: this.isModal ? this.dlgContainer : this.element,
                 event: event } : {
                 cancel: false,
-                isInteraction: event ? true : false,
                 isInteracted: event ? true : false,
                 element: this.element,
                 target: this.target,

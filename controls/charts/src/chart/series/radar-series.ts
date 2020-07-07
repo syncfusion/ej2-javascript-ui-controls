@@ -23,10 +23,12 @@ export class RadarSeries extends PolarSeries {
             point.visible = point.visible && !((!isNullOrUndefined(yAxisMin) && point.yValue < yAxisMin) ||
             (!isNullOrUndefined(yAxisMax) && point.yValue > yAxisMax));
         }
-        if (series.drawType.indexOf('Column') === -1) {
-            series.chart[seriesType + 'SeriesModule'].render(series, xAxis, yAxis, inverted);
-        } else {
-            this.columnDrawTypeRender(series, xAxis, yAxis);
+        if (series.points.length) {
+            if (series.drawType.indexOf('Column') === -1) {
+                series.chart[seriesType + 'SeriesModule'].render(series, xAxis, yAxis, inverted);
+            } else {
+                this.columnDrawTypeRender(series, xAxis, yAxis);
+            }
         }
     }
 

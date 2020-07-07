@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.2.44 (2020-07-07)
+
+### Dashboard Layout
+
+#### Bug Fixes
+
+- `#276817` - Panel content will now get persisted on page reload with persistence enabled.
+
 ## 18.1.52 (2020-05-13)
 
 ### Dashboard Layout

@@ -19,6 +19,11 @@
     content: '\eb98';
   }
 
+  .e-de-cnt-track::before {
+    content: '\e20a';
+    font-family: 'e-icons';
+  }
+
   .e-de-selected-spellcheck-item::before {
     content: '\e935';
     font-family: 'e-icons';

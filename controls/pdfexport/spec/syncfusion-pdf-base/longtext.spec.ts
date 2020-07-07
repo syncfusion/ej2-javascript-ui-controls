@@ -13,7 +13,175 @@ import { PdfCompositeField } from './../../src/implementation/document/automatic
 import { StreamWriter } from '@syncfusion/ej2-file-utils';
 import { PdfTextElement, PdfLayoutResult } from './../../src/index';
 import { Utils } from './utils.spec';
+describe('PDFGrid_singlecell_extend',()=>{
+    it('PDFGrid_cell_extend', (done) => {
+          //Create a new PDF document
+        let document : PdfDocument = new PdfDocument();
+        let page : PdfPage = document.pages.add();
 
+        // create a PdfGrid
+        let pdfGrid : PdfGrid = new PdfGrid();
+        
+        // add two columns
+        pdfGrid.columns.add(10);
+        // add header
+        pdfGrid.headers.add(1);
+
+        //Set values to the grid
+        let pdfGridHeader : PdfGridRow = pdfGrid.headers.getHeader(0);
+        pdfGridHeader.cells.getCell(0).value = "Order ID";
+        pdfGridHeader.cells.getCell(1).value = "Customer ID";
+        pdfGridHeader.cells.getCell(2).value = "Ship Country";
+        pdfGridHeader.cells.getCell(3).value = "Ship City";
+        pdfGridHeader.cells.getCell(4).value = "Frieight";
+        pdfGridHeader.cells.getCell(5).value = "Ship Name";
+        pdfGridHeader.cells.getCell(6).value = "Verified";
+        pdfGridHeader.cells.getCell(7).value = "Country";
+        pdfGridHeader.cells.getCell(8).value = "Employee ID";
+        pdfGridHeader.cells.getCell(9).value = "Ship Address";
+
+        //Set color and width of the header cell border
+        for (let i = 0; i < pdfGridHeader.cells.count; i++) {
+            if (i == 0) {
+            pdfGridHeader.cells.getCell(i).style.borders.right.color = new PdfColor(255, 255, 255);
+            pdfGridHeader.cells.getCell(i).style.borders.right.width = 0;
+            } else if (i == pdfGridHeader.cells.count-1) {
+            pdfGridHeader.cells.getCell(i).style.borders.left.color = new PdfColor(255, 255, 255);
+            pdfGridHeader.cells.getCell(i).style.borders.left.width = 0;
+            } else {
+            pdfGridHeader.cells.getCell(i).style.borders.left.color = new PdfColor(255, 255, 255);
+            pdfGridHeader.cells.getCell(i).style.borders.left.width = 0;
+            pdfGridHeader.cells.getCell(i).style.borders.right.color = new PdfColor(255, 255, 255);
+            pdfGridHeader.cells.getCell(i).style.borders.right.width = 0;
+            }
+        }
+        
+        let row1 : PdfGridRow = pdfGrid.rows.addRow();
+        row1.cells.getCell(0).value = "10248";
+        row1.cells.getCell(1).value = "VINET";
+        row1.cells.getCell(2).value = "France";
+        row1.cells.getCell(3).value = "Reims";
+        row1.cells.getCell(4).value = "";
+        row1.cells.getCell(5).value = "Vins et alcools Chevalier";
+        row1.cells.getCell(6).value = "true";
+        row1.cells.getCell(7).value = "";
+        row1.cells.getCell(8).value = "5";
+        row1.cells.getCell(9).value = "59 rue de l Abbaye";
+        let row2 : PdfGridRow = pdfGrid.rows.addRow();
+        row2.cells.getCell(0).value = "10249";
+        row2.cells.getCell(1).value = "TOMSP";
+        row2.cells.getCell(2).value = "Germany";
+        row2.cells.getCell(3).value = "Münster";
+        row2.cells.getCell(4).value = "";
+        row2.cells.getCell(5).value = "Toms Spezialitäten";
+        row2.cells.getCell(6).value = "false";
+        row2.cells.getCell(7).value = "";
+        row2.cells.getCell(8).value = "6";
+        row2.cells.getCell(9).value = "Luisenstr. 48";
+        let row3 : PdfGridRow = pdfGrid.rows.addRow();
+        row3.cells.getCell(0).value = "10248";
+        row3.cells.getCell(1).value = "VINET";
+        row3.cells.getCell(2).value = "France";
+        row3.cells.getCell(3).value = "Reims";
+        row3.cells.getCell(4).value = "";
+        row3.cells.getCell(5).value = "Vins et alcools Chevalier";
+        row3.cells.getCell(6).value = "true";
+        row3.cells.getCell(7).value = "";
+        row3.cells.getCell(8).value = "5";
+        row3.cells.getCell(9).value = "59 rue de l Abbaye";
+        let row4 : PdfGridRow = pdfGrid.rows.addRow();
+        row4.cells.getCell(0).value = "10249";
+        row4.cells.getCell(1).value = "TOMSP";
+        row4.cells.getCell(2).value = "Germany";
+        row4.cells.getCell(3).value = "Münster";
+        row4.cells.getCell(4).value = "";
+        row4.cells.getCell(5).value = "Toms Spezialitäten";
+        row4.cells.getCell(6).value = "false";
+        row4.cells.getCell(7).value = "";
+        row4.cells.getCell(8).value = "6";
+        row4.cells.getCell(9).value = "Luisenstr. 48";
+        let row5 : PdfGridRow = pdfGrid.rows.addRow();
+        row5.cells.getCell(0).value = "10248";
+        row5.cells.getCell(1).value = "VINET";
+        row5.cells.getCell(2).value = "France";
+        row5.cells.getCell(3).value = "Reims";
+        row5.cells.getCell(4).value = "";
+        row5.cells.getCell(5).value = "Vins et alcools Chevalier";
+        row5.cells.getCell(6).value = "true";
+        row5.cells.getCell(7).value = "";
+        row5.cells.getCell(8).value = "5";
+        row5.cells.getCell(9).value = "59 rue de l Abbaye";
+        let row6 : PdfGridRow = pdfGrid.rows.addRow();
+        row6.cells.getCell(0).value = "10249";
+        row6.cells.getCell(1).value = "TOMSP";
+        row6.cells.getCell(2).value = "Germany";
+        row6.cells.getCell(3).value = "Münster";
+        row6.cells.getCell(4).value = "";
+        row6.cells.getCell(5).value = "Toms Spezialitäten";
+        row6.cells.getCell(6).value = "false";
+        row6.cells.getCell(7).value = "";
+        row6.cells.getCell(8).value = "6";
+        row6.cells.getCell(9).value = "Luisenstr. 48";
+        let row7 : PdfGridRow = pdfGrid.rows.addRow();
+        row7.cells.getCell(0).value = "10248";
+        row7.cells.getCell(1).value = "VINET";
+        row7.cells.getCell(2).value = "France";
+        row7.cells.getCell(3).value = "Reims";
+        row7.cells.getCell(4).value = "";
+        row7.cells.getCell(5).value = "Vins et alcools Chevalier";
+        row7.cells.getCell(6).value = "true";
+        row7.cells.getCell(7).value = "";
+        row7.cells.getCell(8).value = "5";
+        row7.cells.getCell(9).value = "59 rue de l Abbaye";
+        let row8 : PdfGridRow = pdfGrid.rows.addRow();
+        row8.cells.getCell(0).value = "10249";
+        row8.cells.getCell(1).value = "TOMSP";
+        row8.cells.getCell(2).value = "Germany";
+        row8.cells.getCell(3).value = "Münster";
+        row8.cells.getCell(4).value = "";
+        row8.cells.getCell(5).value = "Toms Spezialitäten";
+        row8.cells.getCell(6).value = "false";
+        row8.cells.getCell(7).value = "";
+        row8.cells.getCell(8).value = "6";
+        row8.cells.getCell(9).value = "Luisenstr. 48";
+
+        //Set color and width of the grid cell border
+        for (let i = 0; i < pdfGrid.rows.count; i++) {
+            if (i % 4 != 3) {
+            let row : PdfGridRow = pdfGrid.rows.getRow(i);
+            for (let j = 0; j < row.cells.count; j++) {
+                row.cells.getCell(j).style.borders.bottom.width = 0;
+                row.cells.getCell(j).style.borders.bottom.color = new PdfColor(255, 255, 255);
+            }
+            }
+            if (i % 4 != 0) {
+            let row : PdfGridRow = pdfGrid.rows.getRow(i);
+            for (let j = 0; j < row.cells.count; j++) {
+                row.cells.getCell(j).style.borders.top.width = 0;
+                row.cells.getCell(j).style.borders.top.color = new PdfColor(255, 255, 255);
+            }
+            }
+        }
+        // drawing a grid
+        pdfGrid.draw(page, new PointF(0, 0), null);
+        //document.save('EJ2_39510_PDFGrid_EJ2_border.pdf');
+        document.save().then((xlBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(xlBlob.blobData, 'EJ2_39510_PDFGrid_EJ2_border.pdf');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(xlBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+
+            }
+        });
+        document.destroy(); 
+    })
+})
 describe('PDFGrid_onepage',()=>{
     it('PDFGrid', (done) => {
         let document : PdfDocument = new PdfDocument();

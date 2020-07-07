@@ -1732,7 +1732,7 @@ export interface NodeModel extends NodeBaseModel{
     /**
      * Sets or gets the UI of a node
      * @default null
-     * @@deprecated
+     * @deprecated
      */
     wrapper?: Container;
 
@@ -1822,7 +1822,6 @@ export interface NodeModel extends NodeBaseModel{
      * Used to define the column for the grid container
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
-     * @deprecated
      * @default undefined
      */
 
@@ -2077,7 +2076,6 @@ export interface SelectorModel {
     /**
      * Defines the size and position of the container
      * @default null
-     * @deprecated
      */
     wrapper?: Container;
 

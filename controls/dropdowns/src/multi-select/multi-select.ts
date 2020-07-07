@@ -947,6 +947,9 @@ export class MultiSelect extends DropDownBase implements IInput {
         } else {
             this.updateActionList(ulElement, list, e);
         }
+        if (isBlazor() && this.isServerRendered && this.allowFiltering && this.mode === 'CheckBox') {
+            this.removeFocus();
+        }
         if (isBlazor() && this.isServerRendered && this.isDynamicDataChange && this.value && this.value.length > 0) {
             this.updateVal(this.value, null, 'value');
             this.addValidInputClass();
@@ -1367,7 +1370,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.setPlaceholderSize(downIconWidth);
         } else {
             if (!isNullOrUndefined(this.dropIcon)) {
-            this.setPlaceholderSize(this.showDropDownIcon ? this.dropIcon.offsetWidth : 0);
+                this.setPlaceholderSize(this.showDropDownIcon ? this.dropIcon.offsetWidth : 0);
             }
         }
     }
@@ -2441,16 +2444,16 @@ export class MultiSelect extends DropDownBase implements IInput {
                                 if (ulElement) {
                                     if (this.itemTemplate && (isBlazor() && this.isServerRendered)) {
                                         setTimeout((): void => { this.mainList = this.ulElement; }, 0);
-                                    } else {
-                                        if (!(this.mode !== 'CheckBox' && this.allowFiltering && this.targetElement().trim() !== '')) {
-                                            this.mainList = ulElement.cloneNode ? (ulElement.cloneNode(true) as HTMLElement) : ulElement;
-                                        }
+                                    } else if (!(this.mode !== 'CheckBox' && (this.allowFiltering || this.allowCustomValue) &&
+                                    this.targetElement().trim() !== '')) {
+                                        this.mainList = ulElement.cloneNode ? (ulElement.cloneNode(true) as HTMLElement) : ulElement;
                                     }
                                 }
                                 this.isFirstClick = true;
                             }
                             this.popupObj.wireScrollEvents();
-                            if (!(this.mode !== 'CheckBox' && this.allowFiltering && this.targetElement().trim() !== '')) {
+                            if (!(this.mode !== 'CheckBox' && (this.allowFiltering || this.allowCustomValue) &&
+                            this.targetElement().trim() !== '')) {
                                 this.loadTemplate();
                             }
                             this.setScrollPosition();

@@ -1,11 +1,11 @@
 /// <reference path='../drop-down-button/drop-down-button-model.d.ts'/>
 import { Event, EmitType, remove, addClass, removeClass, detach, getValue, setValue } from '@syncfusion/ej2-base';
 import { EventHandler, Collection, BaseEventArgs, NotifyPropertyChanges, INotifyPropertyChanged, Property } from '@syncfusion/ej2-base';
-import { attributes, getUniqueID, getInstance, KeyboardEvents, KeyboardEventArgs, isBlazor } from '@syncfusion/ej2-base';
-import { Button, ButtonModel, buttonObserver } from '@syncfusion/ej2-buttons';
+import { attributes, getUniqueID, getInstance, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { Button, ButtonModel } from '@syncfusion/ej2-buttons';
 import { MenuEventArgs, BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs } from './../common/common';
 import { getModel, SplitButtonIconPosition, Item } from './../common/common';
-import { DropDownButton, dropDownButtonObserver } from '../drop-down-button/drop-down-button';
+import { DropDownButton } from '../drop-down-button/drop-down-button';
 import { ItemModel } from './../common/common-model';
 import { SplitButtonModel } from './split-button-model';
 
@@ -89,7 +89,6 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
     /**
      * Triggers while rendering each Popup item of SplitButton.
      * @event
-     * @blazorProperty 'OnItemRender'
      */
     @Event()
     public beforeItemRender: EmitType<MenuEventArgs>;
@@ -97,7 +96,6 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
     /**
      * Triggers before opening the SplitButton popup.
      * @event
-     * @blazorProperty 'OnOpen'
      */
     @Event()
     public beforeOpen: EmitType<BeforeOpenCloseMenuEventArgs>;
@@ -105,7 +103,6 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
     /**
      * Triggers before closing the SplitButton popup.
      * @event
-     * @blazorProperty 'OnClose'
      */
     @Event()
     public beforeClose: EmitType<BeforeOpenCloseMenuEventArgs>;
@@ -113,7 +110,6 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
     /**
      * Triggers when the primary button of SplitButton has been clicked.
      * @event
-     * @blazorProperty 'Clicked'
      */
     @Event()
     public click: EmitType<ClickEventArgs>;
@@ -121,7 +117,6 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
     /**
      * Triggers while closing the SplitButton popup.
      * @event
-     * @blazorProperty 'Closed'
      */
     @Event()
     public close: EmitType<OpenCloseMenuEventArgs>;
@@ -129,7 +124,6 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
     /**
      * Triggers while opening the SplitButton popup.
      * @event
-     * @blazorProperty 'Opened'
      */
     @Event()
     public open: EmitType<OpenCloseMenuEventArgs>;
@@ -137,7 +131,6 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
     /**
      * Triggers while selecting action item of SplitButton popup.
      * @event
-     * @blazorProperty 'ItemSelected'
      */
     @Event()
     public select: EmitType<MenuEventArgs>;
@@ -145,7 +138,6 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
     /**
      * Triggers once the component rendering is completed.
      * @event
-     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Event>;
@@ -164,9 +156,6 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
      * @private
      */
     protected preRender(): void {
-        if (isBlazor() && this.isServerRendered) {
-            return;
-        }
         let ele: Element = this.element;
         if (ele.tagName === TAGNAME) {
             let ejInstance: Object = getValue('ej2_instances', ele);
@@ -193,29 +182,9 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
      * @private
      */
     public render(): void {
-        if (isBlazor() && this.isServerRendered) {
-            buttonObserver.on('component-rendered', this.buttonInstance, this, this.element.id);
-            dropDownButtonObserver.on('component-rendered', this.dropDownButtonInstance, this, this.element.id);
-        } else {
-            this.initWrapper();
-            this.createPrimaryButton();
-            this.renderControl();
-        }
-    }
-
-    private buttonInstance(args: { instance: Button, id: string }): void {
-        if (this.element.id === args.instance.element.id) {
-            this.primaryBtnObj = args.instance;
-            buttonObserver.off('component-rendered', this.buttonInstance, this.element.id);
-        }
-    }
-
-    private dropDownButtonInstance(args: { instance: DropDownButton, id: string }): void {
-        if (args.instance.element.id.indexOf(this.element.id) > -1) {
-            this.secondaryBtnObj = args.instance;
-            this.renderControl();
-            dropDownButtonObserver.off('component-rendered', this.dropDownButtonInstance, this.element.id);
-        }
+        this.initWrapper();
+        this.createPrimaryButton();
+        this.renderControl();
     }
 
     private renderControl(): void {
@@ -280,24 +249,19 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
     private createSecondaryButton(): void {
         let dropDownBtnModel: SplitButtonModel;
         let btnElem: HTMLButtonElement;
-        if (isBlazor() && this.isServerRendered) {
-            this.wrapper = this.element.parentElement;
-            dropDownBtnModel = this.secondaryBtnObj;
-        } else {
-            btnElem = this.createElement('button', {
-                className: 'e-icon-btn',
-                attrs: { 'tabindex': '-1' },
-                id: this.element.id + '_dropdownbtn'
-            }) as HTMLButtonElement;
-            this.wrapper.appendChild(btnElem);
-            dropDownBtnModel = {
-                cssClass: this.cssClass,
-                disabled: this.disabled,
-                enableRtl: this.enableRtl,
-                items: this.items,
-                target: this.target,
-            };
-        }
+        btnElem = this.createElement('button', {
+            className: 'e-icon-btn',
+            attrs: { 'tabindex': '-1' },
+            id: this.element.id + '_dropdownbtn'
+        }) as HTMLButtonElement;
+        this.wrapper.appendChild(btnElem);
+        dropDownBtnModel = {
+            cssClass: this.cssClass,
+            disabled: this.disabled,
+            enableRtl: this.enableRtl,
+            items: this.items,
+            target: this.target,
+        };
         dropDownBtnModel.beforeItemRender = (args: MenuEventArgs): void => {
             this.trigger('beforeItemRender', args);
         };
@@ -324,11 +288,9 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
             });
             return callBackPromise;
         };
-        if (!(isBlazor() && this.isServerRendered)) {
-            this.secondaryBtnObj = new DropDownButton(dropDownBtnModel);
-            this.secondaryBtnObj.createElement = this.createElement;
-            this.secondaryBtnObj.appendTo(btnElem);
-        }
+        this.secondaryBtnObj = new DropDownButton(dropDownBtnModel);
+        this.secondaryBtnObj.createElement = this.createElement;
+        this.secondaryBtnObj.appendTo(btnElem);
         this.secondaryBtnObj.dropDown.relateTo = this.wrapper;
         this.dropDown = this.secondaryBtnObj.dropDown;
         this.secondaryBtnObj.activeElem = [this.element, this.secondaryBtnObj.element];
@@ -361,7 +323,6 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
     }
 
     public destroy(): void {
-        if (!(isBlazor() && this.isServerRendered)) {
         let classList: string[] = [RTL];
         let element: Element = document.getElementById(this.element.id);
         if (this.cssClass) {
@@ -389,9 +350,6 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
         if (!this.element.getAttribute('class')) {
             this.element.removeAttribute('class');
         }
-    } else {
-        EventHandler.remove(this.element, 'click', this.primaryBtnClickHandler);
-    }
     }
 
     protected wireEvents(): void {

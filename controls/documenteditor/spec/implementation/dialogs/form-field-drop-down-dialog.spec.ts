@@ -46,8 +46,8 @@ describe('Form field Dropdown dialog', () => {
         dialog.insertDropDownField();
         editor.selection.selectAll();
         let fieldData: DropDownFormField = editor.selection.getCurrentFormField().formFieldData as DropDownFormField;
-        expect(fieldData.dropDownItems[0]).toBe('Sync');
-        expect(fieldData.dropDownItems[1]).toBe('Syncfusion');
+        expect(fieldData.dropdownItems[0]).toBe('Sync');
+        expect(fieldData.dropdownItems[1]).toBe('Syncfusion');
         expect(fieldData.name).toBe('Test');
         expect(fieldData.enabled).toBe(false);
         expect(fieldData.helpText).toBe('testsync');
@@ -58,7 +58,7 @@ describe('Form field Dropdown dialog', () => {
         dialog.loadDropDownDialog();
         editor.selection.selectAll();
         let fieldData: DropDownFormField = editor.selection.getCurrentFormField().formFieldData as DropDownFormField;
-        expect(fieldData.dropDownItems.length).toBe(0);
+        expect(fieldData.dropdownItems.length).toBe(0);
         expect(fieldData.helpText).toBe((dialog as any).tooltipInput.value);
         expect(fieldData.name).toBe((dialog as any).bookmarkInput.value);
         expect(fieldData.enabled).toBe((dialog as any).dropDownEnable.checked);

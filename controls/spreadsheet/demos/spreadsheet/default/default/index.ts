@@ -1,11 +1,12 @@
 /**
  * Spreadsheet default sample
  */
-import { Spreadsheet, SheetModel, ColumnModel, SortEventArgs, CellSaveEventArgs, SaveCompleteEventArgs, CollaborativeEditArgs, BeforeCellFormatArgs, CellModel, CellInfoEventArgs } from './../../../../src/index';
+import { Spreadsheet, SheetModel, ColumnModel, SortEventArgs, CellSaveEventArgs, SaveCompleteEventArgs, CollaborativeEditArgs, BeforeCellFormatArgs, CellModel, CellInfoEventArgs, overlay } from './../../../../src/index';
 import { enableRipple } from '@syncfusion/ej2-base';
 import { switchTheme } from '../../../common/switch-theme';
 import { defaultData as dataSource } from './../../../common/data-source';
 import './../../../../node_modules/es6-promise/dist/es6-promise';
+import { Overlay } from '../../../../src/spreadsheet/services';
 
 enableRipple(true);
 
@@ -27,23 +28,28 @@ let columns: ColumnModel[] = [
 
 let sheet: SheetModel[] = [{
     name: 'Price Details',
-    ranges: [{ dataSource: dataSource }],
+    ranges: [{
+        dataSource: dataSource,
+        startCell: 'A1'
+    }],
     rowCount: 200,
-    columns: columns
+    columns: columns,
+    rows: [{ index: 3, cells: [{ wrap: true }] }]
 }];
 
 let spreadsheet: Spreadsheet = new Spreadsheet({
     sheets: sheet,
-    created: (): void => {
-        spreadsheet.cellFormat({ fontWeight: 'bold', textAlign: 'center' }, 'A1:H1');
-        // spreadsheet.addCustomFunction('customFunc', 'fn')
+    beforeDataBound: (): void => {
+        if (spreadsheet.sheets[spreadsheet.activeSheetIndex].name === 'Price Details') {
+            spreadsheet.cellFormat({ fontWeight: 'bold', textAlign: 'center' }, 'A1:H1');
+        }
     },
     openUrl: 'https://ej2services.syncfusion.com/production/web-services/api/spreadsheet/open',
     saveUrl: 'https://ej2services.syncfusion.com/production/web-services/api/spreadsheet/save',
-    actionBegin:(args: object) => {
+    actionBegin: (args: object) => {
         console.log(args);
     },
-    actionComplete: (args: SortEventArgs | CellSaveEventArgs | SaveCompleteEventArgs |CollaborativeEditArgs | Object) => {
+    actionComplete: (args: SortEventArgs | CellSaveEventArgs | SaveCompleteEventArgs | CollaborativeEditArgs | Object) => {
         //spreadsheet.refreshClient(args as CollaborativeEditArgs);
         console.log(args);
     },
@@ -58,23 +64,28 @@ let spreadsheet: Spreadsheet = new Spreadsheet({
 spreadsheet.appendTo('#spreadsheet');
 
 window.addEventListener('resize', onResize);
+document.getElementById('shape').addEventListener('click', renderOverlay);
 (window as any).fn = async () => {
-    let arr :String[] = [];
-    let val: number =0 ;
-    let values = await spreadsheet.getData("PriceDetails!D2:D5").then((values: Map<string, CellModel>)=>{
-        debugger;
+    let arr: String[] = [];
+    let val: number = 0;
+    let values = await spreadsheet.getData("PriceDetails!D2:D5").then((values: Map<string, CellModel>) => {
         (values as Map<string, CellModel>).forEach((cell: CellModel, key: string): void => {
             arr.push(cell.value);
             val = val + parseInt(cell.value);
         })
-       return val;
+        return val;
     });
     console.log(values);
+
     //console.log('custom fun');
 }
 function onResize(): void {
     wrapper.style.height = `${document.documentElement.clientHeight - 70}px`;
     spreadsheet.resize();
 }
-
+function renderOverlay() {
+    spreadsheet.selectRange("B2");
+    let overlay1: Overlay = spreadsheet.serviceLocator.getService(overlay) as Overlay;
+    overlay1.insertOverlayElement();
+}
 switchTheme('#select-theme', spreadsheet);

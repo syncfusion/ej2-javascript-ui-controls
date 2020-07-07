@@ -7,6 +7,8 @@ import { EJ2Instance, ToolbarActionArgs, CellClickEventArgs } from '../base/inte
 import * as events from '../base/constant';
 import * as util from '../base/util';
 import * as cls from '../base/css-constant';
+import { View } from '../base/type';
+import { ViewsModel } from '../models/models';
 
 /**
  * Header module
@@ -201,13 +203,22 @@ export class HeaderRenderer {
         }
         if (this.parent.views.length > 1) {
             for (let item of this.parent.views) {
-                typeof (item) === 'string' ? items.push(this.getItemObject(item.toLowerCase(), null)) :
-                    items.push(this.getItemObject(item.option.toLowerCase(), item.displayName));
+                typeof (item) === 'string' ? items.push(this.getItemObject(item)) :
+                    items.push(this.getItemObject(item));
             }
         }
         return items;
     }
-    private getItemObject(viewName: string, displayName: string): ItemModel {
+    private getItemObject(item: View | ViewsModel): ItemModel {
+        let viewName: string;
+        let displayName: string;
+        if (typeof (item) === 'string') {
+            viewName = item.toLowerCase();
+            displayName = null;
+        } else {
+            viewName = item.option.toLowerCase();
+            displayName = item.displayName;
+        }
         let view: ItemModel;
         let showInPopup: boolean = <boolean>this.parent.isAdaptive;
         switch (viewName) {
@@ -235,12 +246,12 @@ export class HeaderRenderer {
                     text: displayName || this.l10n.getConstant('month'), cssClass: 'e-views e-month'
                 };
                 break;
-            // case 'year':
-            //     view = {
-            //         align: 'Right', showAlwaysInPopup: showInPopup, prefixIcon: 'e-icon-year',
-            //         text: displayName || this.l10n.getConstant('year'), cssClass: 'e-views e-year'
-            //     };
-            //     break;
+            case 'year':
+                view = {
+                    align: 'Right', showAlwaysInPopup: showInPopup, prefixIcon: 'e-icon-year',
+                    text: displayName || this.l10n.getConstant('year'), cssClass: 'e-views e-year'
+                };
+                break;
             case 'agenda':
                 view = {
                     align: 'Right', showAlwaysInPopup: showInPopup, prefixIcon: 'e-icon-agenda', text: this.l10n.getConstant('agenda'),
@@ -278,8 +289,9 @@ export class HeaderRenderer {
                 };
                 break;
             case 'timelineyear':
+                let orientationClass: string = ((item as ViewsModel).orientation === 'Vertical') ? 'vertical' : 'horizontal';
                 view = {
-                    align: 'Right', showAlwaysInPopup: showInPopup, prefixIcon: 'e-icon-timeline-year',
+                    align: 'Right', showAlwaysInPopup: showInPopup, prefixIcon: 'e-icon-timeline-year-' + orientationClass,
                     text: displayName || this.l10n.getConstant('timelineYear'), cssClass: 'e-views e-timeline-year'
                 };
                 break;
@@ -355,9 +367,9 @@ export class HeaderRenderer {
             case 'e-month':
                 this.parent.changeView('Month', args.originalEvent, undefined, this.calculateViewIndex(args));
                 break;
-            // case 'e-year':
-            //     this.parent.changeView('Year', args.originalEvent, undefined, this.calculateViewIndex(args));
-            //     break;
+            case 'e-year':
+                this.parent.changeView('Year', args.originalEvent, undefined, this.calculateViewIndex(args));
+                break;
             case 'e-agenda':
                 this.parent.changeView('Agenda', args.originalEvent, undefined, this.calculateViewIndex(args));
                 break;

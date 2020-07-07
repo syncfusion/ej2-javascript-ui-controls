@@ -4,9 +4,11 @@ import { RangeModel, SheetModel, UsedRangeModel } from './sheet-model';
 import { RowModel } from './row-model';
 import { ColumnModel } from './column-model';
 import { processIdx } from './data';
-import { SheetState, ProtectSettingsModel } from '../common/index';
+import { SheetState, ProtectSettingsModel, ConditionalFormat, ConditionalFormatModel } from '../common/index';
 import { ProtectSettings } from '../common/index';
-import { isUndefined, isNullOrUndefined, ChildProperty, Property, Complex } from '@syncfusion/ej2-base';
+import { isUndefined, ChildProperty, Property, Complex, Collection } from '@syncfusion/ej2-base';
+import { Row } from './row';
+import { Column } from './column';
 import { WorkbookModel } from './workbook-model';
 
 /**
@@ -113,14 +115,14 @@ export class Sheet extends ChildProperty<WorkbookModel> {
      * Configures row and its properties for the sheet.
      * @default []
      */
-    @Property([])
+    @Collection([], Row)
     public rows: RowModel[];
 
     /**
      * Configures column and its properties for the sheet.
      * @default []
      */
-    @Property([])
+    @Collection([], Column)
     public columns: ColumnModel[];
 
     /**
@@ -134,8 +136,16 @@ export class Sheet extends ChildProperty<WorkbookModel> {
      * Specifies the collection of range for the sheet.
      * @default []
      */
-    @Property([])
+    @Collection([], Range)
     public ranges: RangeModel[];
+
+    /**
+     * Specifies the conditional formatting for the sheet.
+     * @default []
+     */
+    @Collection([], ConditionalFormat)
+    public conditionalFormats: ConditionalFormatModel[];
+
 
     /**
      * Specifies index of the sheet. Based on the index, sheet properties are applied.
@@ -246,15 +256,13 @@ export class Sheet extends ChildProperty<WorkbookModel> {
 }
 
 /**
- * To get sheet index from name.
+ * To get sheet index from address.
  * @hidden
  */
-export function getSheetIndex(context: Workbook, sheet?: string | number): number {
-    if (isNullOrUndefined(sheet)) { return context.activeSheetIndex; }
-    if (typeof(sheet) === 'number') { return sheet; }
+export function getSheetIndex(context: Workbook, name: string): number {
     let idx: number;
     for (let i: number = 0; i < context.sheets.length; i++) {
-        if (context.sheets[i].name.toLowerCase() === sheet.toLowerCase()) {
+        if (context.sheets[i].name.toLowerCase() === name.toLowerCase()) {
             idx = i;
             break;
         }
@@ -316,9 +324,11 @@ export function getSelectedRange(sheet: SheetModel): string {
     return sheet && sheet.selectedRange || 'A1';
 }
 
-/** @hidden */
-export function getSheet(context: Workbook, sheet?: string | number): SheetModel {
-    return context.sheets[getSheetIndex(context, sheet) || 0];
+/**
+ * @hidden
+ */
+export function getSheet(context: Workbook, idx: number): SheetModel {
+    return context.sheets[idx];
 }
 
 /**

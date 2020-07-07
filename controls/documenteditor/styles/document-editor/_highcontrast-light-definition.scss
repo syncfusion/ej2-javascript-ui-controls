@@ -747,6 +747,8 @@ $de-cmt-post-btn-ht-big: 40px !default;
 $de-cmt-separator: $border-fg !default;
 $de-reply-footer-margin-top: 8px !default;
 $de-tooltip-color: #000 !default;
+$de-avatar-clr:  #fff !default;
+$de-tc-tlbr-padding-btm: 0;
 
 @include export-module('documenteditor-icons') {
   .e-documenteditor {

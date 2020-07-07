@@ -1,5 +1,10 @@
-import { Chart, DateTime, Logarithmic, IntervalType } from '../../chart/index';
-import { Axis, AxisModel, firstToLowerCase, RectOption } from '../../chart/index';
+import { IntervalType } from '../../chart/utils/enum';
+import { firstToLowerCase, RectOption} from '../../common/utils/helper';
+import { Axis } from '../../chart/axis/axis';
+import { DateTime } from '../../chart/axis/date-time-axis';
+import { Logarithmic } from '../../chart/axis/logarithmic-axis';
+import { NiceInterval } from '../../chart/axis/axis-helper';
+import { AxisModel } from '../../chart/axis/axis-model';
 import { RangeNavigator } from '../range-navigator';
 import { DataManager, Query, DataUtil } from '@syncfusion/ej2-data';
 import { DataPoint } from '../utils/helper';
@@ -7,7 +12,6 @@ import { getValue, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Double } from '../../chart/axis/double-axis';
 import { RangeNavigatorSeries } from '../model/range-base';
 import { getSeriesColor } from '../../common/model/theme';
-import { NiceInterval } from '../../chart/index';
 import { PathOption, Rect, measureText, Size } from '@syncfusion/ej2-svg-base';
 import { Data } from '../../common/model/data';
 

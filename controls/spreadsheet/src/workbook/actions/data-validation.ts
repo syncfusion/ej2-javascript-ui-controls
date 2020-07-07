@@ -119,16 +119,10 @@ export class WorkbookDataValidation {
                             this.parent.allowDataValidation = true;
                             if (!isValid) {
                                 if (!isRemoveHighlightedData) {
-                                    if (!cell.validation.isHighlighted) {
-                                        cell.validation.isHighlighted = true;
-                                    }
                                     this.parent.notify(applyCellFormat, <CellFormatArgs>{
                                         style: { backgroundColor: '#ffff00', color: '#ff0000' }, rowIdx: rowIdx, colIdx: colIdx
                                     });
                                 } else if (isRemoveHighlightedData) {
-                                    if (cell.validation.isHighlighted) {
-                                        cell.validation.isHighlighted = false;
-                                    }
                                     let style: CellStyleModel =
                                         this.parent.getCellStyleValue(['backgroundColor', 'color'], [rowIdx, colIdx]);
                                     this.parent.notify(applyCellFormat, <CellFormatArgs>{
@@ -141,8 +135,8 @@ export class WorkbookDataValidation {
                 }
             }
         }
-    }
 
+    }
     /**
      * Gets the module name.
      * @returns string

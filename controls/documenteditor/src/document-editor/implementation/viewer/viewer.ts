@@ -31,6 +31,8 @@ import { CaretHeightInfo } from '../editor/editor-helper';
 import { DocumentEditorKeyDownEventArgs, BeforePaneSwitchEventArgs, FormFieldFillEventArgs } from '../../base/events-helper';
 import { RestrictEditing } from '../restrict-editing/restrict-editing-pane';
 import { FormFieldPopUp } from '../dialogs/form-field-popup';
+import { Revision } from '../track-changes/track-changes';
+import { TrackChangesPane } from '../track-changes/track-changes-pane';
 
 /** 
  * @private
@@ -293,6 +295,14 @@ export class DocumentHelper {
     /**
      * @private
      */
+    public authors: Dictionary<string, string> = new Dictionary<string, string>();
+    /**
+     * @private
+     */
+    public revisionsInternal: Dictionary<string, Revision> = new Dictionary<string, Revision>();
+    /**
+     * @private
+     */
     public commentUserOptionId: number = 1;
     /**
      * @private
@@ -443,6 +453,10 @@ export class DocumentHelper {
      * @private
      */
     public currentSelectedCommentInternal: CommentElementBox;
+    /**
+     * @private
+     */
+    public currentSelectedRevisionInternal: Revision;
     /**
      * @private
      */
@@ -606,6 +620,21 @@ export class DocumentHelper {
     /**
      * @private
      */
+    get currentSelectedRevision(): Revision {
+        return this.currentSelectedRevisionInternal;
+    }
+    /**
+     * @private
+     */
+    set currentSelectedRevision(value: Revision) {
+        // if (this.owner && this.owner.commentReviewPane) {
+        //     this.owner.commentReviewPane.previousSelectedComment = this.currentSelectedCommentInternal;
+        // }
+        this.currentSelectedRevisionInternal = value;
+    }
+    /**
+     * @private
+     */
     get isInlineFormFillProtectedMode(): boolean {
         return this.isFormFillProtectedMode && this.owner.documentEditorSettings.formFieldSettings.formFillingMode === 'Inline';
     }
@@ -695,6 +724,7 @@ export class DocumentHelper {
         this.fields = [];
         this.formFields = [];
         this.currentSelectedComment = undefined;
+        this.currentSelectedRevision = undefined;
         for (let i: number = 0; i < this.comments.length; i++) {
             let commentStart: CommentCharacterElementBox = this.comments[i].commentStart;
             if (commentStart) {
@@ -704,8 +734,14 @@ export class DocumentHelper {
         this.comments = [];
         this.bookmarks.clear();
         this.styles.clear();
+        this.authors.clear();
+        this.revisionsInternal.clear();
+        this.owner.revisions.destroy();
         this.characterFormat.clearFormat();
         this.paragraphFormat.clearFormat();
+        if (this.owner.trackChangesPane) {
+            this.owner.trackChangesPane.clear();
+        }
         this.setDefaultCharacterValue(this.characterFormat);
         this.setDefaultParagraphValue(this.paragraphFormat);
         if (this.owner.commentReviewPane) {
@@ -831,7 +867,21 @@ export class DocumentHelper {
             let eventArgs: BeforePaneSwitchEventArgs = { type: 'Comment' };
             this.owner.trigger('beforePaneSwitch', eventArgs);
         }
-        this.owner.commentReviewPane.showHidePane(show && this.owner.enableComment);
+        this.owner.commentReviewPane.showHidePane(show && this.owner.enableComment, 'Comments');
+    }
+    /**
+     * @private
+     */
+    public showRevisions(show: boolean): void {
+        if (this.owner && show) {
+            let eventArgs: BeforePaneSwitchEventArgs = { type: 'comment' };
+            this.owner.trigger('beforePaneSwitch', eventArgs);
+        }
+        if (!show && this.owner.showComments) {
+            this.owner.commentReviewPane.showHidePane(true, 'Comments');
+        } else {
+            this.owner.commentReviewPane.showHidePane(show, 'Changes');
+        }
     }
     /**
      * Initializes components.
@@ -880,6 +930,7 @@ export class DocumentHelper {
         this.wireEvent();
         this.restrictEditingPane = new RestrictEditing(this);
         this.owner.commentReviewPane = new CommentReviewPane(this.owner);
+        this.owner.trackChangesPane = new TrackChangesPane(this.owner, this.owner.commentReviewPane);
         createSpinner({ target: this.owner.element, cssClass: 'e-spin-overlay' });
     }
     private measureScrollbarWidth(element: HTMLElement): void {
@@ -1060,6 +1111,81 @@ export class DocumentHelper {
     }
     private getEditableDivTextContent(): string {
         return this.editableDiv.textContent;
+    }
+    /**
+     * @private
+     */
+    public updateAuthorIdentity(): void {
+        let revisions: Revision[] = this.owner.revisions.changes;
+        for (let i: number = 0; i < revisions.length; i++) {
+            this.getAuthorColor(revisions[i].author);
+        }
+    }
+    /**
+     * @private
+     */
+    public getAvatar(userInfo: HTMLElement, userName: HTMLElement, comment: CommentElementBox, revision: Revision): void {
+        let author: string;
+        let userinitial: string;
+        if (!isNullOrUndefined(comment)) {
+            author = comment.author;
+            userinitial = comment.initial;
+        } else {
+            author = revision.author;
+        }
+        if (!isNullOrUndefined(author)) {
+            let avatarDiv: HTMLElement = createElement('div', { className: 'e-de-cmt-avatar' });
+            let avatar: HTMLElement = createElement('div', { className: 'e-de-ff-cmt-avatar' });
+            avatar.style.backgroundColor = this.owner.documentHelper.getAuthorColor(author);
+            if (userinitial === '' || isNullOrUndefined(userinitial)) {
+                let authorName: string[] = author.split(' ');
+                let initial: string = authorName[0].charAt(0);
+                if (authorName.length > 1) {
+                    initial += authorName[authorName.length - 1][0];
+                }
+                avatar.innerText = initial.toUpperCase();
+            } else {
+                if (userinitial.length > 2) {
+                    avatar.innerText = userinitial.substring(0, 2);
+                } else {
+                    avatar.innerText = userinitial;
+                }
+            }
+            avatarDiv.appendChild(avatar);
+            avatarDiv.appendChild(userName);
+            userInfo.appendChild(avatarDiv);
+        }
+    }
+
+
+    /**
+     * @private
+     */
+    public getAuthorColor(author: string): string {
+        if (this.authors.containsKey(author)) {
+            return this.authors.get(author);
+        }
+        let color: string = this.owner.userColor;
+        if (author !== this.owner.currentUser) {
+            if (this.authors.length === 0 && color !== '#b70f34') {
+                color = '#b70f34';
+            } else {
+                color = this.generateRandomColor();
+            }
+        }
+        this.authors.add(author, color);
+        return color;
+    }
+    /**
+     * @private
+     */
+    public generateRandomColor(): string {
+        let letters: string = '0123456789ABCDEF';
+        let color: string = '#';
+        for (let i: number = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
     }
     /**
      * @private
@@ -1278,6 +1404,7 @@ export class DocumentHelper {
         }
         this.heightInfoCollection = {};
         this.owner.isDocumentLoaded = false;
+        this.updateAuthorIdentity();
         for (let i: number = 0; i < this.pages.length; i++) {
             this.pages[i].bodyWidgets[0].destroy();
         }
@@ -1604,15 +1731,20 @@ export class DocumentHelper {
         if (!isNullOrUndefined(this.selection)) {
             this.isTouchInput = false;
             let cursorPoint: Point = new Point(event.offsetX, event.offsetY);
+            let touchPoint: Point = this.owner.viewer.findFocusedPage(cursorPoint, true);
             if (this.selection.checkAndEnableHeaderFooter(cursorPoint, this.owner.viewer.findFocusedPage(cursorPoint, true))) {
                 return;
             }
-            let formField: FieldElementBox = this.selection.getCurrentFormField();
+            let widget: LineWidget = this.getLineWidget(touchPoint);
+            let formField: FieldElementBox = this.selection.getHyperLinkFieldInCurrentSelection(widget, touchPoint, true);
+            if (isNullOrUndefined(formField)) {
+                formField = this.selection.getCurrentFormField();
+            }
             if (!this.isDocumentProtected && this.owner.enableFormField) {
-                let formatType: FormFieldType = this.selection.getFormFieldType();
+                let formatType: FormFieldType = this.selection.getFormFieldType(formField);
                 if (formatType) {
                     if (formatType.toString() !== '') {
-                        this.selection.selectField();
+                        this.selection.selectField(formField);
                     }
                     switch (formatType) {
                         case 'Text':
@@ -1725,8 +1857,13 @@ export class DocumentHelper {
             } else if (this.isMouseDown) {
                 if (this.formFields.length > 0) {
                     let formField: FieldElementBox = this.selection.getCurrentFormField(true);
-                    if (formField && formField.formFieldData) {
+                    if (formField && formField.formFieldData instanceof TextFormField) {
                         this.selection.selectField();
+                        // tslint:disable-next-line:max-line-length
+                    } else if (this.isLeftButtonPressed(event) && formField && formField.formFieldData instanceof DropDownFormField) {
+                        let offset: number = formField.line.getOffset(formField, 0);
+                        let point: Point = this.selection.getPhysicalPositionInternal(formField.line, offset, false);
+                        this.selection.selectInternal(formField.line, formField, 0, point);
                     }
                 }
             }
@@ -2252,8 +2389,8 @@ export class DocumentHelper {
                 this.restrictEditingPane.restrictPane.getBoundingClientRect() : undefined;
             let optionsRect: ClientRect = this.owner.optionsPaneModule && this.owner.optionsPaneModule.isOptionsPaneShow ?
                 this.owner.optionsPaneModule.optionsPane.getBoundingClientRect() : undefined;
-            let commentPane: ClientRect = this.owner.commentReviewPane && this.owner.commentReviewPane.reviewPane ?
-                this.owner.commentReviewPane.reviewPane.getBoundingClientRect() : undefined;
+            let commentPane: ClientRect = this.owner.commentReviewPane && this.owner.commentReviewPane.parentPaneElement ?
+                this.owner.commentReviewPane.parentPaneElement.getBoundingClientRect() : undefined;
             if (restrictPaneRect || optionsRect || commentPane) {
                 let paneWidth: number = restrictPaneRect ? restrictPaneRect.width : 0;
                 paneWidth += optionsRect ? optionsRect.width : 0;

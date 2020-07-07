@@ -189,6 +189,50 @@ describe('TreeGrid Toolbar module', () => {
       destroy(gridObj);
     });
   });
+
+  describe('CollapseAll records ', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                 treeColumnIndex: 1,
+                 allowSorting: true,
+                 allowPaging: true,
+                 allowFiltering: true,
+                 allowExcelExport: true,
+                 pageSettings: {pageSize: 11},
+                 toolbar: ['ExpandAll', 'CollapseAll'],
+                 columns: [
+          
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true,  width: 150},
+                    { field: 'taskName', headerText: 'Task Name', width: 150 },
+                    { field: 'priority', headerText: 'priority' ,width: 150},
+                    { field: 'approved', headerText: 'approved',width: 150 }  
+           
+        ]
+            },
+            done
+        );
+    });
+
+    it('CollapseAll records', () => {
+        gridObj.pagerModule.goToPage(4);
+        (<HTMLElement>gridObj.element.querySelector('.e-collapse')).click();
+        expect(gridObj.pageSettings.currentPage == 1).toBe(true);
+        expect(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Planning").toBe(true);
+        expect(gridObj.getRows()[1].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Design").toBe(true);
+        expect(gridObj.getRows()[2].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Implementation Phase").toBe(true);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+
+
   it('memory leak', () => {
     profile.sample();
     let average: any = inMB(profile.averageChange)

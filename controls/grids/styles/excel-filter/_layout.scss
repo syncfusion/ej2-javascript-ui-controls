@@ -1,5 +1,40 @@
 @include export-module('excel-filter-layout') {
   /*! Excel-Filter layout */
+  .sf-grid .e-excelfilter {
+    .e-dlg-content {
+      overflow: visible;
+      padding: 0;
+    }
+
+    .e-searchcontainer {
+      padding: $sfgrid-xlfl-dlg-padding;
+      padding-top: 4px;
+    }
+
+    .e-contextmenu-wrapper.e-sfcontextmenu .e-ul .e-menu-item:not(.e-separator) {
+      height: 26px;
+      line-height: 26px;
+    }
+
+    .e-contextmenu-wrapper.e-sfcontextmenu .e-ul .e-separator {
+      height: auto;
+    }
+
+    .e-contextmenu-wrapper.e-sfcontextmenu .e-ul {
+      position: absolute;
+    }
+
+    .e-contextmenu-wrapper.e-sfcontextmenu {
+      display: inline-block;
+      width: 100%;
+    }
+
+  }
+
+  .sf-grid-dlg.e-xlflmenu .e-xlfl-radiodiv {
+    width: unset;
+  }
+
   #{&}.e-xlflmenu {
     min-height: $grid-xlfl-min-height;
 
@@ -164,6 +199,7 @@
     }
   }
 
+  #{&}.sf-grid
   #{&}.e-excelfilter {
     .e-checkboxlist {
       height: 200px;

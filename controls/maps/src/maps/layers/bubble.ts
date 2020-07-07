@@ -147,12 +147,13 @@ export class Bubble {
                 } else {
                     translate = getTranslate(this.maps, layer, animate);
                 }
+                let bubbleDataSource: Object[] = bubbleSettings.dataSource as Object[];
                 let scale: number = translate['scale']; let transPoint: Point = translate['location'] as Point;
                 let position: MapLocation = new MapLocation(
                     (this.maps.isTileMap ? (eventArgs.cx) : ((eventArgs.cx + transPoint.x) * scale)),
                     (this.maps.isTileMap ? (eventArgs.cy) : ((eventArgs.cy + transPoint.y) * scale)));
                 bubbleElement.setAttribute('transform', 'translate( ' + (position.x) + ' ' + (position.y) + ' )');
-                let bubble: string = (bubbleSettings.dataSource.length - 1) === dataIndex ? 'bubble' : null;
+                let bubble: string = (bubbleDataSource.length - 1) === dataIndex ? 'bubble' : null;
                 if (bubbleSettings.bubbleType === 'Square') {
                     position.x += radius;
                     position.y += radius * (this.maps.projectionType === 'Mercator' ? 1 : -1);

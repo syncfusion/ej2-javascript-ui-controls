@@ -2,10 +2,10 @@ import { addClass, Browser, EventHandler, closest, extend, formatUnit, setStyleA
 import { getElement, isBlazor } from '@syncfusion/ej2-base';
 import { ResizeEventArgs } from '../base/interface';
 import { ActionBase } from '../actions/action-base';
+import { MonthEvent } from '../event-renderer/month';
 import * as util from '../base/util';
 import * as event from '../base/constant';
 import * as cls from '../base/css-constant';
-import { MonthEvent } from '../event-renderer/month';
 
 /**
  * Schedule events resize actions
@@ -13,18 +13,20 @@ import { MonthEvent } from '../event-renderer/month';
 export class Resize extends ActionBase {
     public wireResizeEvent(element: HTMLElement): void {
         let resizeElement: HTMLElement[] = [].slice.call(element.querySelectorAll('.' + cls.EVENT_RESIZE_CLASS));
-        resizeElement.forEach((element: HTMLElement) => EventHandler.add(element, Browser.touchStartEvent, this.resizeStart, this));
+        for (let element of resizeElement) {
+            EventHandler.add(element, Browser.touchStartEvent, this.resizeStart, this);
+        }
     }
 
     private resizeHelper(): void {
         if (this.parent.activeViewOptions.group.resources.length > 0 && this.parent.activeViewOptions.group.allowGroupEdit) {
-            this.actionObj.originalElement.forEach((element: HTMLElement, index: number) => {
-                let cloneElement: HTMLElement = this.createCloneElement(element);
-                this.actionObj.cloneElement[index] = cloneElement;
-                if (this.actionObj.element === element) {
+            for (let i: number = 0, len: number = this.actionObj.originalElement.length; i < len; i++) {
+                let cloneElement: HTMLElement = this.createCloneElement(this.actionObj.originalElement[i]);
+                this.actionObj.cloneElement[i] = cloneElement;
+                if (this.actionObj.element === this.actionObj.originalElement[i]) {
                     this.actionObj.clone = cloneElement;
                 }
-            });
+            }
         } else {
             this.actionObj.clone = this.createCloneElement(this.actionObj.element);
             this.actionObj.cloneElement = [this.actionObj.clone];
@@ -81,7 +83,9 @@ export class Resize extends ActionBase {
                 let tr: HTMLTableRowElement = this.parent.getContentTable().querySelector('tr') as HTMLTableRowElement;
                 let noOfDays: number = 0;
                 let tdCollections: HTMLElement[] = [].slice.call(tr.children);
-                tdCollections.forEach((td: HTMLElement) => noOfDays += parseInt(td.getAttribute('colspan'), 10));
+                for (let td of tdCollections) {
+                    noOfDays += parseInt(td.getAttribute('colspan'), 10);
+                }
                 this.actionObj.cellWidth = tr.offsetWidth / noOfDays;
                 this.actionObj.cellHeight = tr.offsetHeight;
             }
@@ -220,6 +224,14 @@ export class Resize extends ActionBase {
             if (resizeEventArgs.cancel) {
                 return;
             }
+            if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.rowAutoHeight
+                && !this.parent.activeViewOptions.group.allowGroupEdit && !this.parent.virtualScrollModule
+                && this.parent.activeViewOptions.group.byGroupID) {
+                this.parent.crudModule.crudObj.sourceEvent =
+                    [this.parent.resourceBase.lastResourceLevel[parseInt(resizeEventArgs.element.getAttribute('data-group-index'), 10)]];
+                this.parent.crudModule.crudObj.targetEvent = this.parent.crudModule.crudObj.sourceEvent;
+                this.parent.crudModule.crudObj.isCrudAction = true;
+            }
             this.saveChangedData(resizeEventArgs);
         });
     }
@@ -265,7 +277,9 @@ export class Resize extends ActionBase {
             let isLastCell: boolean = false;
             if (['Year', 'Month', 'Week', 'Date'].indexOf(headerName) !== -1) {
                 let noOfDays: number = 0;
-                tdCollections.forEach((td: HTMLElement) => noOfDays += parseInt(td.getAttribute('colspan'), 10));
+                for (let td of tdCollections) {
+                    noOfDays += parseInt(td.getAttribute('colspan'), 10);
+                }
                 let offsetValue: number = this.parent.enableRtl ? parseInt(this.actionObj.clone.style.right, 10) :
                     parseInt(this.actionObj.clone.style.left, 10);
                 if (!isLeft) {

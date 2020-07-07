@@ -5,6 +5,7 @@ import { WUniqueFormat } from '../../base/unique-format';
 import { WUniqueFormats } from '../../base/unique-formats';
 import { WBorders } from './borders';
 import { TableRowWidget } from '../viewer/page';
+import { Revision } from '../track-changes/track-changes';
 /** 
  * @private
  */
@@ -12,6 +13,7 @@ export class WRowFormat {
     private uniqueRowFormat: WUniqueFormat = undefined;
     private static uniqueRowFormats: WUniqueFormats = new WUniqueFormats();
     private static uniqueFormatType: number = 6;
+
     /**
      * @private
      */
@@ -28,6 +30,14 @@ export class WRowFormat {
      * @private
      */
     public afterWidth: number = 0;
+    /**
+     * @private
+     */
+    public revisions: Revision[] = [];
+    /**
+     * @private
+     */
+    public removedIds: string[] = [];
 
     get gridBefore(): number {
         return this.getPropertyValue('gridBefore') as number;
@@ -261,6 +271,11 @@ export class WRowFormat {
         format.topMargin = this.topMargin;
         format.bottomMargin = this.bottomMargin;
         format.leftIndent = this.leftIndent;
+        if (this.revisions.length > 0) {
+        format.removedIds = Revision.cloneRevisions(this.revisions);
+        } else {
+            format.removedIds = this.removedIds.slice();
+        }
         return format;
     }
     public hasValue(property: string): boolean {
@@ -293,6 +308,11 @@ export class WRowFormat {
                 this.borders = new WBorders(this);
                 this.borders.ownerBase = format as WRowFormat;
                 (this.borders as WBorders).copyFormat(format.borders);
+            }
+            if (format.revisions.length > 0) {
+               this.removedIds = Revision.cloneRevisions(format.revisions);
+            } else {
+                this.removedIds = format.removedIds.slice();
             }
         }
     }

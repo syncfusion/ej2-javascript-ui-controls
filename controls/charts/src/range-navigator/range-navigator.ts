@@ -13,9 +13,12 @@ import { RangeNavigatorSeries, StyleSettings, RangeTooltipSettings } from './mod
 import { RangeNavigatorSeriesModel, StyleSettingsModel } from './model/range-base-model';
 import { ThumbSettingsModel, RangeTooltipSettingsModel } from './model/range-base-model';
 import { RangeSlider } from './renderer/slider';
-import { AxisPosition, StepLineSeries, ExportType, IPrintEventArgs, RectOption } from '../chart/index';
-import { Chart, getElement, ChartTheme, LineSeries, AreaSeries } from '../chart/index';
-import { IResizeRangeNavigatorEventArgs } from '../range-navigator/index';
+import { RectOption, getElement} from '../common/utils/helper';
+import { LineSeries } from '../chart/series/line-series';
+import { AreaSeries } from '../chart/series/area-series';
+import { StepLineSeries } from '../chart/series/step-line-series';
+import { Chart } from '../chart/chart';
+import { IResizeRangeNavigatorEventArgs } from '../range-navigator/model/range-navigator-interface';
 import { DateTime } from '../chart/axis/date-time-axis';
 import { Logarithmic } from '../chart/axis/logarithmic-axis';
 import { ILabelRenderEventsArgs, IRangeTooltipRenderEventArgs } from './model/range-navigator-interface';
@@ -27,16 +30,16 @@ import { FontModel } from '../common/model/base-model';
 import { MajorGridLines, MajorTickLines, VisibleRangeModel } from '../chart/axis/axis';
 import { MajorGridLinesModel, MajorTickLinesModel } from '../chart/axis/axis-model';
 import { RangeNavigatorTheme } from './utils/theme';
-import { SkeletonType } from '../chart/utils/enum';
+import { SkeletonType, AxisPosition, ChartTheme } from '../chart/utils/enum';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { Double } from '../chart/axis/double-axis';
 import { Data } from '../common/model/data';
 import { ExportUtils } from '../common/utils/export';
-import { RangeIntervalType } from '../common/utils/enum';
+import { RangeIntervalType, ExportType } from '../common/utils/enum';
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import { PeriodSelector } from '../common/period-selector/period-selector';
-import { AccumulationChart } from '../accumulation-chart/index';
-import { IRangeSelectorRenderEventArgs } from '../chart/model/chart-interface';
+import { AccumulationChart } from '../accumulation-chart/accumulation';
+import { IRangeSelectorRenderEventArgs, IPrintEventArgs } from '../chart/model/chart-interface';
 import { StockChart } from '../stock-chart/stock-chart';
 
 /**
@@ -567,6 +570,9 @@ export class RangeNavigator extends Component<HTMLElement> {
         let isLeightWeight: boolean = !this.series.length;
         let tooltipSpace: number = (!this.disableRangeSelector) &&
             isLeightWeight && this.tooltip.enable ? 35 : 0;
+        if (this.isBlazor && !this.periodSelectorModule && this.periodSelectorSettings.periods.length && !this.stockChart) {
+            this.periodSelectorModule = new PeriodSelector(this);
+        }
         let selector: PeriodSelector = this.periodSelectorModule;
         if (this.periodSelectorModule && this.periodSelectorSettings.periods.length > 0) {
             selector.periodSelectorSize = { x: 0, y: 0, height: 0, width: 0 };

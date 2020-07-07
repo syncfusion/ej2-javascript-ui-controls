@@ -62,23 +62,23 @@ Maps.Inject(Zoom, Marker);
 };
 
 document.getElementById('addMarker').onclick = () => {
-        let markerDataSource = maps.layersCollection[0].markerSettings[0].dataSource;
+        let markerDataSource: Object[] = maps.layersCollection[0].markerSettings[0].dataSource as object[];
         let data : Object = { 
             latitude : 19.1555762, longitude : 72.8849595, name : "Mumbai"
         };
-        markerDataSource.push(data);
+        markerDataSource.push(data as Object);
         maps.refresh(); 
 };
 
 document.getElementById('addMarker1').onclick = () => {
-        let markerDataSource = maps.layersCollection[0].markerSettings[0].dataSource;
-        maps.layersCollection[0].markerSettings[0].dataSource.pop();
+        let markerDataSource: Object[] = maps.layersCollection[0].markerSettings[0].dataSource as object[];
+        (maps.layersCollection[0].markerSettings[0].dataSource as object[]).pop();
         let data : Object = { 
             name: 'Karnataka',
             latitude: 15.317277,
             longitude: 75.713890
         };
-        markerDataSource.push(data);
+        markerDataSource.push(data as Object);
         maps.refresh(); 
 };
    

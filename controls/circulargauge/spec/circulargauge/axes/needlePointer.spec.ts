@@ -218,5 +218,5 @@ describe('Circular-Gauge Control', () => {
             gauge.refresh();
         });
 
-    });          
-    });
+    });              
+});    

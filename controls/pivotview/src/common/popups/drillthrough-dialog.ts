@@ -9,6 +9,7 @@ import { IDataSet, INumberIndex, IDataOptions, PivotEngine } from '../../base/en
 import * as events from '../../common/base/constant';
 import { OlapEngine } from '../../base/olap/engine';
 
+
 /**
  * `DrillThroughDialog` module to create drill-through dialog.
  */
@@ -54,11 +55,15 @@ export class DrillThroughDialog {
                 this.drillThroughGrid.setProperties({
                     dataSource: this.parent.editSettings.allowEditing ?
                         this.dataWithPrimarykey(eventArgs) : this.gridData,
-                    height: !this.parent.editSettings.allowEditing ? 300 : 220
+                    height: !this.parent.editSettings.allowEditing ? 300 : 220,
+                    rowHeight: this.parent.gridSettings.rowHeight
                 }, false);
             },
             beforeClose: () => {
                 if (this.parent.editSettings.allowEditing && this.isUpdated) {
+                    if (this.parent.dataSourceSettings.type === 'CSV') {
+                        this.updateData(this.drillThroughGrid.dataSource as IDataSet[]);
+                    }
                     let count: number = Object.keys(this.gridIndexObjects).length;
                     let addItems: IDataSet[] = [];
                     /* tslint:disable:no-string-literal */
@@ -98,7 +103,7 @@ export class DrillThroughDialog {
                         /* tslint:enable:no-any */
                     } else {
                         let items: IDataSet[] = [];
-                        let data: IDataSet[] = (this.parent.allowDataCompression && this.parent.enableVirtualization) ?
+                        let data: IDataSet[] | string[][] = (this.parent.allowDataCompression && this.parent.enableVirtualization) ?
                             this.parent.engineModule.actualData : this.parent.engineModule.data;
                         for (let item of data as IDataSet[]) {
                             delete item['__index'];
@@ -134,6 +139,31 @@ export class DrillThroughDialog {
         this.dialogPopUp.appendTo(drillThroughDialog);
         // this.dialogPopUp.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('details');
         setStyleAttribute(this.dialogPopUp.element, { 'visibility': 'visible' });
+    }
+
+    /* tslint:disable:typedef no-any */
+    private updateData(dataSource: IDataSet[]): void {
+        let dataPos: number = 0;
+        let data: string[][] = (this.parent.allowDataCompression && this.parent.enableVirtualization) ?
+            this.parent.engineModule.actualData as string[][] : this.parent.engineModule.data as string[][];
+        while (dataPos < dataSource.length) {
+            let fields: string[] = Object.keys((dataSource as any)[dataPos]);
+            let keyPos: number = 0;
+            let framedSet: any = [];
+            while (keyPos < fields.length) {
+                if (!isNullOrUndefined(this.parent.engineModule.fieldKeys[fields[keyPos]])) {
+                    framedSet[this.parent.engineModule.fieldKeys[fields[keyPos]] as any] = (dataSource as any)[dataPos][fields[keyPos]];
+                }
+                keyPos++;
+            }
+            data[(dataSource as any)[dataPos]['__index']] = framedSet;
+            dataPos++;
+        }
+        if (this.parent.allowDataCompression && this.parent.enableVirtualization) {
+            this.parent.engineModule.actualData = data;
+        } else {
+            this.parent.engineModule.data = data;
+        }
     }
 
     private removeDrillThroughDialog(): void {

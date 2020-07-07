@@ -40,6 +40,16 @@
         }
       }
     }
+
+    &.e-sfcontextmenu {
+      position: relative;
+      width: 1px;
+
+      & ul {
+        @include transparent-ui;
+        white-space: nowrap;
+      }
+    }
   }
 
   .e-rtl.e-contextmenu-wrapper .e-menu-item {

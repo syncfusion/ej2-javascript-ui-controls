@@ -1,5 +1,5 @@
-import { Animation, ChildProperty, Collection, Complex, Component, Event, EventHandler, KeyboardEvents, NotifyPropertyChanges, Observer, Property, SanitizeHtmlHelper, addClass, attributes, classList, closest, createElement, deleteObject, detach, extend, getInstance, getUniqueID, getValue, isBlazor, isNullOrUndefined, remove, removeClass, rippleEffect, select, setValue } from '@syncfusion/ej2-base';
-import { Button, buttonObserver } from '@syncfusion/ej2-buttons';
+import { Animation, ChildProperty, Collection, Complex, Component, Event, EventHandler, KeyboardEvents, NotifyPropertyChanges, Property, SanitizeHtmlHelper, addClass, attributes, classList, closest, createElement, deleteObject, detach, extend, getInstance, getUniqueID, getValue, isBlazor, isNullOrUndefined, remove, removeClass, rippleEffect, select, setValue } from '@syncfusion/ej2-base';
+import { Button } from '@syncfusion/ej2-buttons';
 import { Popup, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 
 var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
@@ -20,6 +20,52 @@ function getModel(props, model) {
         }
     }
     return obj;
+}
+/** @hidden */
+function upDownKeyHandler(ul, keyCode) {
+    let defaultIdx = keyCode === 40 ? 0 : ul.childElementCount - 1;
+    let liIdx = defaultIdx;
+    let li;
+    let selectedLi = ul.querySelector('.e-selected');
+    if (selectedLi) {
+        selectedLi.classList.remove('e-selected');
+    }
+    for (let i = 0, len = ul.children.length; i < len; i++) {
+        if (ul.children[i].classList.contains('e-focused')) {
+            li = ul.children[i];
+            liIdx = i;
+            li.classList.remove('e-focused');
+            keyCode === 40 ? liIdx++ : liIdx--;
+            if (liIdx === (keyCode === 40 ? ul.childElementCount : -1)) {
+                liIdx = defaultIdx;
+            }
+        }
+    }
+    li = ul.children[liIdx];
+    liIdx = isValidLI(ul, li, liIdx, keyCode);
+    if (liIdx !== -1) {
+        addClass([ul.children[liIdx]], 'e-focused');
+        ul.children[liIdx].focus();
+    }
+}
+function isValidLI(ul, li, index, keyCode, count = 0) {
+    if (li.classList.contains('e-separator') || li.classList.contains('e-disabled')) {
+        if (index === (keyCode === 40 ? ul.childElementCount - 1 : 0)) {
+            index = keyCode === 40 ? 0 : ul.childElementCount - 1;
+        }
+        else {
+            keyCode === 40 ? index++ : index--;
+        }
+    }
+    li = ul.children[index];
+    if (li.classList.contains('e-separator') || li.classList.contains('e-disabled')) {
+        count++;
+        if (count === ul.childElementCount) {
+            return index = -1;
+        }
+        index = isValidLI(ul, li, index, keyCode, count);
+    }
+    return index;
 }
 /**
  * Defines the items of Split Button/DropDownButton.
@@ -52,7 +98,6 @@ var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, 
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-const dropDownButtonObserver = new Observer();
 const classNames = {
     DISABLED: 'e-disabled',
     FOCUS: 'e-focused',
@@ -108,27 +153,11 @@ let DropDownButton = class DropDownButton extends Component {
      * @private
      */
     render() {
-        if (isBlazor() && this.isServerRendered) {
-            buttonObserver.on('component-rendered', this.buttonRendered, this, this.element.id);
-            this.createPopup();
-            this.setActiveElem([this.element]);
-        }
-        else {
-            this.initialize();
-        }
+        this.initialize();
         if (!this.disabled) {
             this.wireEvents();
         }
         this.renderComplete();
-        if (isBlazor() && this.isServerRendered) {
-            dropDownButtonObserver.notify('component-rendered', { id: this.element.id, instance: this });
-        }
-    }
-    buttonRendered(args) {
-        if (this.element.id === args.instance.element.id) {
-            this.button = args.instance;
-            buttonObserver.off('component-rendered', this.buttonRendered, this.element.id);
-        }
     }
     /**
      * Adds a new item to the menu. By default, new item appends to the list as the last item,
@@ -394,53 +423,7 @@ let DropDownButton = class DropDownButton extends Component {
             return;
         }
         e.preventDefault();
-        let ul = this.getULElement();
-        let defaultIdx = e.keyCode === 40 ? 0 : ul.childElementCount - 1;
-        let liIdx = defaultIdx;
-        let li = null;
-        this.removeCustomSelection();
-        for (let i = 0, len = ul.children.length; i < len; i++) {
-            if (ul.children[i].classList.contains(classNames.FOCUS)) {
-                li = ul.children[i];
-                liIdx = i;
-                li.classList.remove(classNames.FOCUS);
-                e.keyCode === 40 ? liIdx++ : liIdx--;
-                if (liIdx === (e.keyCode === 40 ? ul.childElementCount : -1)) {
-                    liIdx = defaultIdx;
-                }
-            }
-        }
-        li = ul.children[liIdx];
-        liIdx = this.isValidLI(li, liIdx, e.keyCode);
-        if (liIdx !== -1) {
-            addClass([ul.children[liIdx]], classNames.FOCUS);
-            ul.children[liIdx].focus();
-        }
-    }
-    removeCustomSelection() {
-        let selectedLi = this.getULElement().querySelector('.e-selected');
-        if (selectedLi) {
-            selectedLi.classList.remove('e-selected');
-        }
-    }
-    isValidLI(li, index, keyCode, count = 0) {
-        if (li.classList.contains(classNames.SEPARATOR) || li.classList.contains(classNames.DISABLED)) {
-            if (index === (keyCode === 40 ? this.items.length - 1 : 0)) {
-                index = keyCode === 40 ? 0 : this.items.length - 1;
-            }
-            else {
-                keyCode === 40 ? index++ : index--;
-            }
-        }
-        li = this.getULElement().children[index];
-        if (li.classList.contains(classNames.SEPARATOR) || li.classList.contains(classNames.DISABLED)) {
-            count++;
-            if (count === this.items.length) {
-                return index = -1;
-            }
-            index = this.isValidLI(li, index, keyCode, count);
-        }
-        return index;
+        upDownKeyHandler(this.getULElement(), e.keyCode);
     }
     keyEventHandler(e) {
         if (this.target && (e.keyCode === 13 || e.keyCode === 9)) {
@@ -520,7 +503,10 @@ let DropDownButton = class DropDownButton extends Component {
         this.trigger('beforeClose', beforeCloseArgs, (observedArgs) => {
             if (!observedArgs.cancel) {
                 let ul = this.getULElement();
-                this.removeCustomSelection();
+                let selectedLi = ul.querySelector('.e-selected');
+                if (selectedLi) {
+                    selectedLi.classList.remove('e-selected');
+                }
                 this.dropDown.hide();
                 removeClass(this.activeElem, 'e-active');
                 this.element.setAttribute('aria-expanded', 'false');
@@ -696,9 +682,6 @@ let SplitButton = class SplitButton extends DropDownButton {
      * @private
      */
     preRender() {
-        if (isBlazor() && this.isServerRendered) {
-            return;
-        }
         let ele = this.element;
         if (ele.tagName === TAGNAME) {
             let ejInstance = getValue('ej2_instances', ele);
@@ -725,28 +708,9 @@ let SplitButton = class SplitButton extends DropDownButton {
      * @private
      */
     render() {
-        if (isBlazor() && this.isServerRendered) {
-            buttonObserver.on('component-rendered', this.buttonInstance, this, this.element.id);
-            dropDownButtonObserver.on('component-rendered', this.dropDownButtonInstance, this, this.element.id);
-        }
-        else {
-            this.initWrapper();
-            this.createPrimaryButton();
-            this.renderControl();
-        }
-    }
-    buttonInstance(args) {
-        if (this.element.id === args.instance.element.id) {
-            this.primaryBtnObj = args.instance;
-            buttonObserver.off('component-rendered', this.buttonInstance, this.element.id);
-        }
-    }
-    dropDownButtonInstance(args) {
-        if (args.instance.element.id.indexOf(this.element.id) > -1) {
-            this.secondaryBtnObj = args.instance;
-            this.renderControl();
-            dropDownButtonObserver.off('component-rendered', this.dropDownButtonInstance, this.element.id);
-        }
+        this.initWrapper();
+        this.createPrimaryButton();
+        this.renderControl();
     }
     renderControl() {
         this.createSecondaryButton();
@@ -807,25 +771,19 @@ let SplitButton = class SplitButton extends DropDownButton {
     createSecondaryButton() {
         let dropDownBtnModel;
         let btnElem;
-        if (isBlazor() && this.isServerRendered) {
-            this.wrapper = this.element.parentElement;
-            dropDownBtnModel = this.secondaryBtnObj;
-        }
-        else {
-            btnElem = this.createElement('button', {
-                className: 'e-icon-btn',
-                attrs: { 'tabindex': '-1' },
-                id: this.element.id + '_dropdownbtn'
-            });
-            this.wrapper.appendChild(btnElem);
-            dropDownBtnModel = {
-                cssClass: this.cssClass,
-                disabled: this.disabled,
-                enableRtl: this.enableRtl,
-                items: this.items,
-                target: this.target,
-            };
-        }
+        btnElem = this.createElement('button', {
+            className: 'e-icon-btn',
+            attrs: { 'tabindex': '-1' },
+            id: this.element.id + '_dropdownbtn'
+        });
+        this.wrapper.appendChild(btnElem);
+        dropDownBtnModel = {
+            cssClass: this.cssClass,
+            disabled: this.disabled,
+            enableRtl: this.enableRtl,
+            items: this.items,
+            target: this.target,
+        };
         dropDownBtnModel.beforeItemRender = (args) => {
             this.trigger('beforeItemRender', args);
         };
@@ -852,11 +810,9 @@ let SplitButton = class SplitButton extends DropDownButton {
             });
             return callBackPromise;
         };
-        if (!(isBlazor() && this.isServerRendered)) {
-            this.secondaryBtnObj = new DropDownButton(dropDownBtnModel);
-            this.secondaryBtnObj.createElement = this.createElement;
-            this.secondaryBtnObj.appendTo(btnElem);
-        }
+        this.secondaryBtnObj = new DropDownButton(dropDownBtnModel);
+        this.secondaryBtnObj.createElement = this.createElement;
+        this.secondaryBtnObj.appendTo(btnElem);
         this.secondaryBtnObj.dropDown.relateTo = this.wrapper;
         this.dropDown = this.secondaryBtnObj.dropDown;
         this.secondaryBtnObj.activeElem = [this.element, this.secondaryBtnObj.element];
@@ -885,38 +841,33 @@ let SplitButton = class SplitButton extends DropDownButton {
         this.secondaryBtnObj.toggle();
     }
     destroy() {
-        if (!(isBlazor() && this.isServerRendered)) {
-            let classList$$1 = [RTL];
-            let element = document.getElementById(this.element.id);
-            if (this.cssClass) {
-                classList$$1 = classList$$1.concat(this.cssClass.split(' '));
-            }
-            if (element && element.parentElement === this.wrapper) {
-                if (this.wrapper.tagName === TAGNAME) {
-                    this.wrapper.innerHTML = '';
-                    removeClass([this.wrapper], ['e-rtl', 'e-' + this.getModuleName() + '-wrapper']);
-                    removeClass([this.wrapper], this.cssClass.split(' '));
-                }
-                else {
-                    removeClass([this.element], classList$$1);
-                    ['aria-label', 'aria-haspopup', 'aria-expanded',
-                        'aria-owns', 'type'].forEach((key) => {
-                        this.element.removeAttribute(key);
-                    });
-                    this.wrapper.parentNode.insertBefore(this.element, this.wrapper);
-                    remove(this.wrapper);
-                }
-                this.unWireEvents();
-            }
-            this.primaryBtnObj.destroy();
-            this.secondaryBtnObj.destroy();
-            super.destroy();
-            if (!this.element.getAttribute('class')) {
-                this.element.removeAttribute('class');
-            }
+        let classList$$1 = [RTL];
+        let element = document.getElementById(this.element.id);
+        if (this.cssClass) {
+            classList$$1 = classList$$1.concat(this.cssClass.split(' '));
         }
-        else {
-            EventHandler.remove(this.element, 'click', this.primaryBtnClickHandler);
+        if (element && element.parentElement === this.wrapper) {
+            if (this.wrapper.tagName === TAGNAME) {
+                this.wrapper.innerHTML = '';
+                removeClass([this.wrapper], ['e-rtl', 'e-' + this.getModuleName() + '-wrapper']);
+                removeClass([this.wrapper], this.cssClass.split(' '));
+            }
+            else {
+                removeClass([this.element], classList$$1);
+                ['aria-label', 'aria-haspopup', 'aria-expanded',
+                    'aria-owns', 'type'].forEach((key) => {
+                    this.element.removeAttribute(key);
+                });
+                this.wrapper.parentNode.insertBefore(this.element, this.wrapper);
+                remove(this.wrapper);
+            }
+            this.unWireEvents();
+        }
+        this.primaryBtnObj.destroy();
+        this.secondaryBtnObj.destroy();
+        super.destroy();
+        if (!this.element.getAttribute('class')) {
+            this.element.removeAttribute('class');
         }
     }
     wireEvents() {
@@ -1662,5 +1613,5 @@ ProgressButton = __decorate$3([
  * SplitButton all module
  */
 
-export { getModel, Item, dropDownButtonObserver, DropDownButton, SplitButton, Deferred, createButtonGroup, SpinSettings, AnimationSettings, ProgressButton };
+export { getModel, upDownKeyHandler, Item, DropDownButton, SplitButton, Deferred, createButtonGroup, SpinSettings, AnimationSettings, ProgressButton };
 //# sourceMappingURL=ej2-splitbuttons.es2015.js.map

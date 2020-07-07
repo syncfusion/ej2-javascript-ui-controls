@@ -162,7 +162,8 @@ export interface DiagramMenuEventArgs extends MenuEventArgs {
 export interface DiagramBeforeMenuOpenEventArgs extends BeforeOpenCloseMenuEventArgs {
     /** 
      * Defines the hidden items of the diagram context menu
-     * @blazorType Object
+     * @blazorType Object   
+     * @blazorType List<string>
      */
     hiddenItems: string[];
     /**

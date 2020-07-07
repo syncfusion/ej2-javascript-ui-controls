@@ -297,6 +297,11 @@ export class ThumbnailView {
         proxy.isThumbnailClicked = true;
         proxy.goToThumbnailPage(pageNumber + 1);
         proxy.pdfViewerBase.focusViewerContainer();
+        if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.inkAnnotationModule) {
+            // tslint:disable-next-line
+            let currentPageNumber: number = parseInt(this.pdfViewer.annotationModule.inkAnnotationModule.currentPageNumber);
+            this.pdfViewer.annotationModule.inkAnnotationModule.drawInkAnnotation(currentPageNumber);
+        }
     }
 
     private goToThumbnailPage(pageNumber: number): void {

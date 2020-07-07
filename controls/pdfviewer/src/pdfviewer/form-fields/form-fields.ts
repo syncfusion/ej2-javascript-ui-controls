@@ -1,10 +1,9 @@
-import { PdfViewer } from '../index';
+import { PdfViewer, FormFieldModel, FormFieldType} from '../index';
 import { PdfViewerBase } from '../index';
 import { createElement, Browser } from '@syncfusion/ej2-base';
-import { PdfAnnotationBaseModel } from '../../diagram/pdf-annotation-model';
-import { PdfAnnotationBase } from '../../diagram/pdf-annotation';
+import { PdfAnnotationBaseModel } from '../drawing/pdf-annotation-model';
+import { PdfAnnotationBase } from '../drawing/pdf-annotation';
 import { splitArrayCollection, processPathData } from '@syncfusion/ej2-drawings';
-import { CheckBox } from '@syncfusion/ej2-buttons';
 
 
 /**
@@ -104,9 +103,9 @@ export class FormFields {
                 // tslint:disable-next-line
                 let currentData: any = formFieldsData[i];
                 // tslint:disable-next-line
-                let type: string = currentData['Name'];
+                let type: FormFieldType = currentData['Name'];
                 // tslint:disable-next-line
-                let formFieldCollection: any = { fieldName: this.retriveFieldName(currentData), id: this.pdfViewer.element.id + 'input_' + parseFloat(currentData['PageIndex']) + '_' + i, isReadOnly: false, type: type };
+                let formFieldCollection: FormFieldModel = { name: this.retriveFieldName(currentData), id: this.pdfViewer.element.id + 'input_' + parseFloat(currentData['PageIndex']) + '_' + i, isReadOnly: false, type: type, value: this.retriveCurrentValue(currentData) };
                 this.pdfViewer.formFieldCollections.push(formFieldCollection);
             }
         }
@@ -153,6 +152,32 @@ export class FormFields {
             case 'DropDown':
             case 'ListBox':
                 currentField = currentData.Text;
+                break;
+        }
+        return currentField;
+    }
+    // tslint:disable-next-line
+    private retriveCurrentValue(currentData: any): string {
+        // tslint:disable-next-line
+        let currentField: any;
+        // tslint:disable-next-line
+        switch (currentData['Name']) {
+            case 'Textbox':
+            case 'Password':
+                currentField = currentData.Text;
+                break;
+            case 'SignatureField':
+                currentField = currentData.Value;
+                break;
+            case 'RadioButton':
+            case 'CheckBox':
+                currentField = currentData.Selected;
+                break;
+            case 'DropDown':
+                currentField = currentData.SelectedValue;
+                break;
+            case 'ListBox':
+                currentField = currentData.SelectedList;
                 break;
         }
         return currentField;
@@ -223,6 +248,15 @@ export class FormFields {
                         delete(this.nonFillableFields[currentData.FieldName]);
                     }
                     datas[currentData.FieldName] = JSON.stringify(csData);
+                    if (currentData.Bounds) {
+                        datas[currentData.FieldName + 'bounds'] = JSON.stringify(currentData.Bounds);
+                    } else {
+                        // tslint:disable-next-line
+                        let lineBounds: any = currentData.LineBounds;
+                        // tslint:disable-next-line
+                        let bounds: any = { x: this.ConvertPointToPixel(lineBounds.X), y: this.ConvertPointToPixel(lineBounds.Y), width: this.ConvertPointToPixel(lineBounds.Width), height: this.ConvertPointToPixel(lineBounds.Height)};
+                        datas[currentData.FieldName + 'bounds'] = JSON.stringify(bounds);
+                    }
                 }
             }
         }
@@ -284,9 +318,11 @@ export class FormFields {
         let currentLeft: number = parseFloat(this.currentTarget.style.left) / zoomvalue;
         let currentTop: number = parseFloat(this.currentTarget.style.top) / zoomvalue;
         let currentPage: number = parseFloat(this.currentTarget.id.split('_')[1]);
+        // tslint:disable-next-line
+        let signatureBounds: any = this.checkSignatureWidth(this.pdfViewerBase.signatureModule.outputString);
         annot = {
             // tslint:disable-next-line:max-line-length
-            id: this.currentTarget.id, bounds: { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight }, pageIndex: currentPage, data: this.pdfViewerBase.signatureModule.outputString, modifiedDate: '',
+            id: this.currentTarget.id, bounds: { x: currentLeft + signatureBounds.left, y: currentTop + signatureBounds.top, width: signatureBounds.width, height: signatureBounds.height }, pageIndex: currentPage, data: this.pdfViewerBase.signatureModule.outputString, modifiedDate: '',
             shapeAnnotationType: 'Path', opacity: 1, rotateAngle: 0, annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
         };
         this.pdfViewer.add(annot as PdfAnnotationBase);
@@ -296,7 +332,7 @@ export class FormFields {
         this.pdfViewer.renderDrawing(canvass as any, currentPage);
         this.pdfViewerBase.signatureModule.showSignatureDialog(false);
         this.currentTarget.className = 'e-pdfviewer-signatureformFields signature';
-        this.updateDataInSession(this.currentTarget, annot.data);
+        this.updateDataInSession(this.currentTarget, annot.data, annot.bounds);
         this.currentTarget.style.pointerEvents = 'none';
     }
     private updateFormFieldsValue(event: MouseEvent): void {
@@ -366,12 +402,70 @@ export class FormFields {
         let currentTarget: any = event.target;
         this.updateDataInSession(currentTarget);
     }
+    // tslint:disable-next-line
+    private checkSignatureWidth(data: any): any {
+        // tslint:disable-next-line
+        let collectionData: any = processPathData(data);
+        // tslint:disable-next-line
+        let csData: any = splitArrayCollection(collectionData);
+        let minimumX: number = -1;
+        let minimumY: number = -1;
+        let maximumX: number = -1;
+        let maximumY: number = -1;
+        for (let m: number = 0; m < csData.length; m++) {
+            // tslint:disable-next-line
+            let val: any = csData[m];
+            if (minimumX === -1) {
+                // tslint:disable-next-line
+                minimumX = parseFloat(val['x'].toString());
+                // tslint:disable-next-line
+                maximumX = parseFloat(val['x'].toString());
+                // tslint:disable-next-line
+                minimumY = parseFloat(val['y'].toString());
+                // tslint:disable-next-line
+                maximumY = parseFloat(val['y'].toString());
+            } else {
+                // tslint:disable-next-line
+                let point1: number = parseFloat(val['x'].toString());
+                // tslint:disable-next-line
+                let point2: number = parseFloat(val['y'].toString());
+                if (minimumX >= point1) {
+                    minimumX = point1;
+                }
+                if (minimumY >= point2) {
+                    minimumY = point2;
+                }
+                if (maximumX <= point1) {
+                    maximumX = point1;
+                }
+                if (maximumY <= point2) {
+                    maximumY = point2;
+                }
+            }
+        }
+        let newdifferenceX: number = maximumX - minimumX;
+        let newdifferenceY: number = maximumY - minimumY;
+        let ratioX: number = newdifferenceX / 650;
+        let ratioY: number = newdifferenceY / 300;
+        let zoomvalue: number = this.pdfViewerBase.getZoomFactor();
+        // tslint:disable-next-line
+        let currentWidth: number = parseFloat(this.currentTarget.style.width) / zoomvalue;
+        // tslint:disable-next-line
+        let currentHeight: number = parseFloat(this.currentTarget.style.height) / zoomvalue;
+        let currentLeftDiff : number = (650 - newdifferenceX) / 2;
+        let currentTopDiff : number = (300 - newdifferenceY) / 2;
+        currentLeftDiff = (currentLeftDiff / 650) * currentWidth;
+        currentTopDiff = (currentTopDiff  / 300) * currentHeight;
+        currentWidth = currentWidth * ratioX;
+        currentHeight = currentHeight * ratioY;
+        return { left : currentLeftDiff, top : currentTopDiff, width: currentWidth, height: currentHeight };
+    }
     /**
      * @private
      */
     // tslint:disable-next-line
-    public updateDataInSession(target: any, signaturePath?: any): void {
-        this.pdfViewerBase.isDocumentEdited = true;
+    public updateDataInSession(target: any, signaturePath?: any, signatureBounds?: any): void {
+        this.pdfViewer.isDocumentEdited = true;
         // tslint:disable-next-line
         let data: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formfields');
         // tslint:disable-next-line
@@ -384,6 +478,9 @@ export class FormFields {
                     let signField: HTMLElement = target as HTMLElement;
                     if (signField.classList.contains('e-pdfviewer-signatureformFields')) {
                         currentData.Value = signaturePath;
+                        if (signatureBounds) {
+                            currentData.Bounds = signatureBounds;
+                        }
                     } else {
                         currentData.Text = target.value;
                     }
@@ -795,6 +892,7 @@ export class FormFields {
             let currentData: any = formFieldsData[m];
             if ((currentData.Name === 'ink' || currentData.Name === 'SignatureField') && currentData.FieldName === signData.FieldName && currentData.Value && currentData.Value !== '') {
                 signData.Value = currentData.Value;
+                signData.Bounds = currentData.LineBounds;
                 this.isSignatureField = true;
                 break;
             }
@@ -846,7 +944,12 @@ export class FormFields {
     private renderExistingAnnnot(data: any, index: any, printContainer: any): any {
         if (!printContainer) {
             // tslint:disable-next-line
-            let bounds: any = data['LineBounds'];
+            let bounds: any;
+            if (data.Bounds) {
+                bounds = data.Bounds;
+            } else {
+                bounds = data.LineBounds;
+            }
             let currentLeft: number = this.ConvertPointToPixel(bounds.X);
             let currentTop: number = this.ConvertPointToPixel(bounds.Y);
             let currentWidth: number = this.ConvertPointToPixel(bounds.Width);

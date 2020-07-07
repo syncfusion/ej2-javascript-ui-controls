@@ -212,6 +212,12 @@ export class BatchEdit {
       }
 
       private beforeBatchAdd(e: BeforeBatchAddArgs): void {
+        let isTabLastRow: string = 'isTabLastRow';
+        if (this.parent.editSettings.mode === 'Cell' && this.parent.editModule[isTabLastRow]) {
+          e.cancel = true;
+          this.parent.editModule[isTabLastRow] = false;
+          return;
+        }
         this.selectedIndex = this.parent.grid.selectedRowIndex;
         this.addRowIndex = this.parent.grid.selectedRowIndex > -1 ? this.parent.grid.selectedRowIndex : 0;
         this.addRowRecord = this.parent.getSelectedRecords()[0];

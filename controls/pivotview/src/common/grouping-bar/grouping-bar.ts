@@ -97,6 +97,7 @@ export class GroupingBar implements IAction {
         this.groupingTable.appendChild(this.leftAxisPanel);
         this.groupingTable.appendChild(this.rightAxisPanel);
         this.groupingTable.classList.add(cls.GRID_GROUPING_BAR_CLASS);
+        this.groupingTable.querySelector('.' + cls.GROUP_ROW_CLASS).classList.add(cls.GROUP_PIVOT_ROW);
         let axisPanels: HTMLElement[] = [this.rowPanel, this.columnPanel, this.valuePanel, this.filterPanel];
 
         for (let element of axisPanels) {
@@ -111,12 +112,20 @@ export class GroupingBar implements IAction {
             this.groupingChartTable.classList.add(cls.CHART_GROUPING_BAR_CLASS);
             this.groupingChartTable.classList.remove(cls.GRID_GROUPING_BAR_CLASS);
             this.groupingChartTable.querySelector('.' + cls.GROUP_ROW_CLASS).classList.add(cls.GROUP_CHART_ROW);
-            this.groupingChartTable.querySelector('.' + cls.GROUP_COLUMN_CLASS).classList.add(cls.GROUP_CHART_COLUMN);
-            if (this.parent.chartSettings.enableMultiAxis) {
+            this.groupingChartTable.querySelector('.' + cls.GROUP_ROW_CLASS).classList.remove(cls.GROUP_PIVOT_ROW);
+            if (this.parent.chartSettings.enableMultiAxis && this.parent.chartSettings.chartSeries &&
+                ['Pie', 'Pyramid', 'Doughnut', 'Funnel'].indexOf(this.parent.chartSettings.chartSeries.type) < 0) {
                 this.groupingChartTable.querySelector('.' + cls.GROUP_VALUE_CLASS).classList.add(cls.GROUP_CHART_MULTI_VALUE);
             } else {
                 this.groupingChartTable.querySelector('.' + cls.GROUP_VALUE_CLASS).classList.add(cls.GROUP_CHART_VALUE);
                 this.groupingChartTable.querySelector('.' + cls.GROUP_VALUE_CLASS).classList.remove(cls.DROPPABLE_CLASS);
+            }
+            if (this.parent.chartSettings.chartSeries &&
+                ['Pie', 'Pyramid', 'Doughnut', 'Funnel'].indexOf(this.parent.chartSettings.chartSeries.type) > -1) {
+                this.groupingChartTable.querySelector('.' + cls.GROUP_COLUMN_CLASS).classList.add(cls.GROUP_CHART_COLUMN);
+                this.groupingChartTable.querySelector('.' + cls.GROUP_COLUMN_CLASS).classList.remove(cls.DROPPABLE_CLASS);
+            } else {
+                this.groupingChartTable.querySelector('.' + cls.GROUP_COLUMN_CLASS).classList.add(cls.GROUP_CHART_ACCUMULATION_COLUMN);
             }
             this.groupingChartTable.querySelector('.' + cls.GROUP_FILTER_CLASS).classList.add(cls.GROUP_CHART_FILTER);
         } else {

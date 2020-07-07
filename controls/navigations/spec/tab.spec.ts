@@ -8116,7 +8116,8 @@ describe('Tab Control', () => {
                 preventDefault: function () { },
                 swipeDirection: 'Left',
                 originalEvent: {
-                    changedTouches: {}
+                    changedTouches: {},
+                    stopPropagation: function () { }
                 }
             };
             tab.swipeHandler(swipeEventArgs);
@@ -8124,6 +8125,7 @@ describe('Tab Control', () => {
             expect(ele.querySelector('#e-item' + tab.tabId + '_1').classList.contains('e-active')).toEqual(true);
             swipeEventArgs = {
                 preventDefault: function () { },
+                originalEvent: { stopPropagation: function () { } },
                 swipeDirection: 'Right'
             };
             tab.swipeHandler(swipeEventArgs);
@@ -8141,7 +8143,7 @@ describe('Tab Control', () => {
                 preventDefault: function () { },
                 swipeDirection: 'Left',
                 velocity: 0.58,
-                originalEvent: {}
+                originalEvent: { stopPropagation: function () { } }
             };
             tab.swipeHandler(swipeEventArgs);
             let ele: HTMLElement = document.getElementById('ej2Tab');
@@ -8163,12 +8165,14 @@ describe('Tab Control', () => {
             expect(ele.querySelector('#e-item' + tab.tabId + '_3').classList.contains('e-active')).toEqual(true);
             swipeEventArgs = {
                 preventDefault: function () { },
+                originalEvent: { stopPropagation: function () { } },
                 swipeDirection: 'Right'
             };
             tab.swipeHandler(swipeEventArgs);
             expect(ele.querySelector('#e-item' + tab.tabId + '_2').classList.contains('e-active')).toEqual(true);
             swipeEventArgs = {
                 preventDefault: function () { },
+                originalEvent: { stopPropagation: function () { } },
                 swipeDirection: 'Right'
             };
             tab.swipeHandler(swipeEventArgs);
@@ -8184,6 +8188,7 @@ describe('Tab Control', () => {
             tab.appendTo('#ej2Tab');
             swipeEventArgs = {
                 preventDefault: function () { },
+                originalEvent: { stopPropagation: function () { } },
                 swipeDirection: 'Top'
             };
             tab.swipeHandler(swipeEventArgs);
@@ -8191,6 +8196,7 @@ describe('Tab Control', () => {
             expect(ele.querySelector('#e-item' + tab.tabId + '_0').classList.contains('e-active')).toEqual(true);
             swipeEventArgs = {
                 preventDefault: function () { },
+                originalEvent: { stopPropagation: function () { } },
                 swipeDirection: 'Bottom'
             };
             tab.swipeHandler(swipeEventArgs);
@@ -8992,7 +8998,8 @@ describe('Tab Control', () => {
                 preventDefault: function () { },
                 swipeDirection: 'Left',
                 originalEvent: {
-                    changedTouches: {}
+                    changedTouches: {},
+                    stopPropagation: function () { }
                 }
             };
             tab.swipeHandler(swipeEventArgs);
@@ -9002,7 +9009,8 @@ describe('Tab Control', () => {
                 preventDefault: function () { },
                 swipeDirection: 'Left',
                 originalEvent: {
-                    changedTouches: {}
+                    changedTouches: {},
+                    stopPropagation: function () { }
                 }
             };
             tab.swipeHandler(swipeEventArgs);
@@ -9710,9 +9718,7 @@ describe('Tab Control', () => {
             swipeEventArgs = {
                 preventDefault: function () { },
                 swipeDirection: 'Left',
-                originalEvent: {
-                    changedTouches: {}
-                }
+                originalEvent: { stopPropagation: function () { } },
             };
             tab.swipeHandler(swipeEventArgs);
             expect(prevIndex).toEqual(0);
@@ -9727,7 +9733,8 @@ describe('Tab Control', () => {
                 preventDefault: function () { },
                 swipeDirection: 'Right',
                 originalEvent: {
-                    changedTouches: {}
+                    changedTouches: {},
+                    stopPropagation: function () { }
                 }
             };
             tab.swipeHandler(swipeEventArgs);
@@ -9820,7 +9827,8 @@ describe('Tab Control', () => {
                 preventDefault: function () { },
                 swipeDirection: 'Right',
                 originalEvent: {
-                    changedTouches: {}
+                    changedTouches: {},
+                    stopPropagation: function () { }
                 }
             };
             tab.swipeHandler(swipeEventArgs);
@@ -9835,7 +9843,8 @@ describe('Tab Control', () => {
                 preventDefault: function () { },
                 swipeDirection: 'Right',
                 originalEvent: {
-                    changedTouches: {}
+                    changedTouches: {},
+                    stopPropagation: function () { }
                 }
             };
             tab.swipeHandler(swipeEventArgs);
@@ -9852,7 +9861,8 @@ describe('Tab Control', () => {
                 preventDefault: function () { },
                 swipeDirection: 'Right',
                 originalEvent: {
-                    changedTouches: {}
+                    changedTouches: {},
+                    stopPropagation: function () { }
                 }
             };
             tab.swipeHandler(swipeEventArgs);
@@ -9870,7 +9880,8 @@ describe('Tab Control', () => {
                 preventDefault: function () { },
                 swipeDirection: 'Left',
                 originalEvent: {
-                    changedTouches: {}
+                    changedTouches: {},
+                    stopPropagation: function () { }
                 }
             };
             tab.swipeHandler(swipeEventArgs);
@@ -9885,7 +9896,8 @@ describe('Tab Control', () => {
                 preventDefault: function () { },
                 swipeDirection: 'Left',
                 originalEvent: {
-                    changedTouches: {}
+                    changedTouches: {},
+                    stopPropagation: function () { }
                 }
             };
             tab.swipeHandler(swipeEventArgs);
@@ -9901,7 +9913,8 @@ describe('Tab Control', () => {
                 preventDefault: function () { },
                 swipeDirection: 'Left',
                 originalEvent: {
-                    changedTouches: {}
+                    changedTouches: {},
+                    stopPropagation: function () { }
                 }
             };
             tab.swipeHandler(swipeEventArgs);
@@ -9921,7 +9934,8 @@ describe('Tab Control', () => {
                 preventDefault: function () { },
                 swipeDirection: 'Left',
                 originalEvent: {
-                    changedTouches: {}
+                    changedTouches: {},
+                    stopPropagation: function () { }
                 }
             };
             tab.swipeHandler(swipeEventArgs);

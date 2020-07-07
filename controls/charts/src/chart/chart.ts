@@ -85,7 +85,7 @@ import { IAnnotationRenderEventArgs, IAxisMultiLabelRenderEventArgs, IThemeStyle
 import { IPointRenderEventArgs, ISeriesRenderEventArgs, ISelectionCompleteEventArgs } from '../chart/model/chart-interface';
 import { IDragCompleteEventArgs, ITooltipRenderEventArgs, IExportEventArgs, IAfterExportEventArgs } from '../chart/model/chart-interface';
 import { IZoomCompleteEventArgs, ILoadedEventArgs, IZoomingEventArgs } from '../chart/model/chart-interface';
-import { IMultiLevelLabelClickEventArgs, ILegendClickEventArgs, ISharedTooltipRenderEventArgs } from '../chart/model/chart-interface';
+import { IMultiLevelLabelClickEventArgs, ILegendClickEventArgs } from '../chart/model/chart-interface';
 import { IAnimationCompleteEventArgs, IMouseEventArgs, IPointEventArgs } from '../chart/model/chart-interface';
 import { chartMouseClick, pointClick, pointDoubleClick,  } from '../common/model/constants';
 import { chartMouseDown, chartMouseMove, chartMouseUp, load, pointMove, chartMouseLeave, resized } from '../common/model/constants';
@@ -796,6 +796,13 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public enableExport: boolean;
 
     /**
+     * To enable export feature in blazor chart.
+     * @default false
+     */
+    @Property(false)
+    public allowExport: boolean;
+
+    /**
      * Specifies the point indexes to be selected while loading a chart.
      * It requires `selectionMode` or `highlightMode` to be `Point` | `Series` | or `Cluster`.
      * ```html
@@ -1017,14 +1024,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     @Event()
     public tooltipRender: EmitType<ITooltipRenderEventArgs>;
-    /**
-     * Triggers before the shared tooltip for series is rendered.
-     * This applicable for blazor only.
-     * @event
-     */
-
-    @Event()
-    public sharedTooltipRender: EmitType<ISharedTooltipRenderEventArgs>;
 
     /**
      * Triggers on hovering the chart.
@@ -1296,6 +1295,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      /** @private */
     public dragY: number;
     private resizeTo: number;
+    /** @private */
+    private checkResize: number = 0;
     /** @private */
     public disableTrackTooltip: boolean;
     /** @private */
@@ -2916,14 +2917,14 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 args: [this]
             });
         }
-        if (this.enableExport) {
+        if (this.enableExport || this.allowExport) {
             modules.push({
                 member: 'Export',
                 args: [this]
             });
         }
         if (this.chartAreaType !== 'PolarRadar' && !this.scrollSettingEnabled && (zooming.enableSelectionZooming
-            || zooming.enableMouseWheelZooming || zooming.enablePinchZooming || zooming.enablePan)) {
+            || zooming.enableMouseWheelZooming || zooming.enablePinchZooming || zooming.enablePan || zooming.enableScrollbar)) {
             modules.push({
                 member: 'Zoom',
                 args: [this, this.zoomSettings]
@@ -3151,7 +3152,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             removeLength = 1;
         }
         // Fix for blazor resize issue
-        if (this.resizeTo && this.isBlazor && this.element.childElementCount) {
+        if (this.resizeTo !== this.checkResize && this.isBlazor && this.element.childElementCount) {
             let containerCollection: NodeListOf<Element> = document.querySelectorAll('.e-chart');
             for (let index: number = 0; index < containerCollection.length; index++) {
                 let container: Element = containerCollection[index];
@@ -3159,7 +3160,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                     remove(container.firstChild);
                 }
             }
+            this.checkResize = this.resizeTo;
         }
+
         if (this.svgObject) {
             while (this.svgObject.childNodes.length > removeLength) {
                 this.svgObject.removeChild(this.svgObject.firstChild);
@@ -3248,7 +3251,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         removeElement(this.element.id + '_ej2_chart_selection');
         removeElement(this.element.id + '_ej2_chart_highlight');
     }
-
     /**
      * Called internally if any of the property value changed.
      * @private

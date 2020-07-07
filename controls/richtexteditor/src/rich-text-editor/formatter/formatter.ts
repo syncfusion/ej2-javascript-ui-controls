@@ -15,6 +15,7 @@ import { NodeSelection } from '../../selection/selection';
  */
 export class Formatter {
     public editorManager: IEditorModel;
+    private timeInterval: number;
     /**
      * To execute the command
      * @param  {IRichTextEditor} self
@@ -131,6 +132,7 @@ export class Formatter {
     public onKeyHandler(self: IRichTextEditor, e: KeyboardEvent): void {
         this.editorManager.observer.notify(KEY_UP, {
             event: e, callBack: () => {
+                self.notify(CONSTANT.contentChanged, {});
                 this.enableUndo(self);
             }
         });
@@ -141,6 +143,7 @@ export class Formatter {
      * @deprecated
      */
     public onSuccess(self: IRichTextEditor, events: IMarkdownFormatterCallBack | IHtmlFormatterCallBack): void {
+        self.notify(CONSTANT.contentChanged, {});
         if (isNullOrUndefined(events.event) || (events && (events.event as KeyboardEventArgs).action !== 'copy')) {
             this.enableUndo(self);
             self.notify(CONSTANT.execCommandCallBack, events);

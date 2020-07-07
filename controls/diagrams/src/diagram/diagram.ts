@@ -29,8 +29,9 @@ import { ZoomOptions, IPrintOptions, IExportOptions, IFitOptions, ActiveLabel } 
 import { View, IDataSource, IFields } from './objects/interface/interfaces';
 import { Container } from './core/containers/container';
 import { Node, BpmnShape, BpmnAnnotation, SwimLane, Path, DiagramShape, UmlActivityShape, FlowShape, BasicShape } from './objects/node';
-import { cloneBlazorObject, cloneSelectedObjects } from './utility/diagram-util';
-import { updateDefaultValues, getCollectionChangeEventArguements, checkBrowserInfo } from './utility/diagram-util';
+import { cloneBlazorObject, cloneSelectedObjects, findObjectIndex } from './utility/diagram-util';
+import { checkBrowserInfo } from './utility/diagram-util';
+import { updateDefaultValues, getCollectionChangeEventArguements } from './utility/diagram-util';
 import { flipConnector, updatePortEdges, alignElement, setConnectorDefaults } from './utility/diagram-util';
 import { Segment } from './interaction/scroller';
 import { Connector } from './objects/connector';
@@ -67,7 +68,7 @@ import { DataSource } from './diagram/data-source';
 import { LayoutModel } from './layout/layout-base-model';
 import { Layout, INode, ILayout } from './layout/layout-base';
 import { DataBinding } from './data-binding/data-binding';
-import { Selector } from './objects/node';
+import { Selector, Text } from './objects/node';
 import { SelectorModel } from './objects/node-model';
 import { DiagramEventHandler } from './interaction/event-handlers';
 import { CommandHandler } from './interaction/command-manager';
@@ -84,8 +85,8 @@ import { ConnectorEditing } from './interaction/connector-editing';
 import { Ruler } from '../ruler/index';
 import { BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { setAttributeSvg, setAttributeHtml, measureHtmlText, removeElement, createMeasureElements, getDomIndex } from './utility/dom-util';
-import { getDiagramElement, getScrollerWidth, getHTMLLayer } from './utility/dom-util';
-import { getBackgroundLayer, createHtmlElement, createSvgElement, getNativeLayerSvg } from './utility/dom-util';
+import { getDiagramElement, getScrollerWidth, getHTMLLayer, createUserHandleTemplates } from './utility/dom-util';
+import { getBackgroundLayer, createHtmlElement, createSvgElement, getNativeLayerSvg, getUserHandleLayer } from './utility/dom-util';
 import { getPortLayerSvg, getDiagramLayerSvg, applyStyleAgainstCsp } from './utility/dom-util';
 import { getAdornerLayerSvg, getSelectorElement, getGridLayerSvg, getBackgroundLayerSvg } from './utility/dom-util';
 import { CommandManager, ContextMenuSettings } from './diagram/keyboard-commands';
@@ -248,7 +249,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * diagram.appendTo('#diagram');
      * ```
      * @default '100%'
-     * @blazorType string
      */
     @Property('100%')
     public width: string | number;
@@ -265,7 +265,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Defines the height of the diagram model.
      * @default '100%'
-     * @blazorType string
      */
     @Property('100%')
     public height: string | number;
@@ -557,6 +556,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      */
     @Property()
     public annotationTemplate: string;
+
+    /**
+     * This property represents the template content of a user handle. The user can define any HTML element as a template.  
+     * @default undefined
+     */
+    @Property()
+    public userHandleTemplate: string;
 
     /**
      * Helps to return the default properties of node
@@ -1303,7 +1309,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when a command executed.
      * @event
      * @blazorProperty 'OnCommandExecuted'
-     * @blazorType Syncfusion.Blazor.Diagrams.ICommandExecuteEventArgs
      */
     @Event()
     public commandExecute: EmitType<ICommandExecuteEventArgs>;
@@ -2018,6 +2023,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
         }
         this.initCommands();
+        let hiddenUserHandleTemplate: HTMLCollection = document.getElementsByClassName(this.element.id + '_hiddenUserHandleTemplate');
+        createUserHandleTemplates(this.userHandleTemplate, hiddenUserHandleTemplate, this.selectedItems);
         this.updateTemplate();
         this.isLoading = false;
         this.renderComplete();
@@ -2048,6 +2055,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 updateBlazorTemplate('diagramsf_annotation_template', 'AnnotationTemplate', this, false);
             }
         }
+        for (let i: number = 0; i < this.selectedItems.userHandles.length; i++) {
+            {
+                updateBlazorTemplate('diagramsf_userHandle_template', 'UserHandleTemplate', this, false);
+            }
+        }
+
     }
 
     private resetTemplate(): void {
@@ -2067,6 +2080,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             path = this.connectors[i].annotations[0];
             if (path && path.annotationType === 'Template') {
                 resetBlazorTemplate('diagramsf_annotation_template', 'AnnotationTemplate');
+            }
+        }
+        for (let i: number = 0; i < this.selectedItems.userHandles.length; i++) {
+            {
+                updateBlazorTemplate('diagramsf_userHandle_template', 'UserHandleTemplate', this, false);
             }
         }
     }
@@ -2513,6 +2531,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     public addLayer(layer: LayerModel, layerObject?: Object[]): void {
         this.commandHandler.addLayer(layer, layerObject);
     }
+    /**
+     *  @private
+     */
+    private addDiagramLayer(layer: LayerModel, layerObject?: Object[]): void {
+        this.commandHandler.addLayer(layer, layerObject, false);
+    }
 
     /**
      * remove the layer from diagram
@@ -2522,11 +2546,16 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     public removeLayer(layerId: string): void {
         this.commandHandler.removeLayer(layerId);
     }
+    /**
+     *  @private
+     */
+    private removeDiagramLayer(layerId: string): void {
+        this.commandHandler.removeLayer(layerId, false);
+    }
 
     /**
      * move objects from the layer to another layer from diagram
      * @param {string[]} objects - define the objects id of string array
-     * @blazorArgsType objects|List<string>
      */
     public moveObjects(objects: string[], targetLayer?: string): void {
         let oldValues: object = cloneObject(this.layers);
@@ -2615,7 +2644,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * gets the node or connector having the given name
-     * @deprecated
      */
     public getObject(name: string): {} {
         return this.nameTable[name];
@@ -2905,7 +2933,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @param {NodeModel[] | ConnectorModel[]}objects - Defines the collection of objects, from which the object has to be found.
      * @param {Actions} action - Defines the action, using which the relevant object has to be found.
      * @param {boolean} inAction - Defines the active state of the action.
-     * @deprecated
      */
     public findObjectUnderMouse(
         objects: (NodeModel | ConnectorModel)[], action: Actions, inAction: boolean): IElement {
@@ -2917,7 +2944,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @param {NodeModel[] | ConnectorModel[]} objects - Defines the collection of objects, from which the object has to be found.
      * @param {Actions} action - Defines the action, using which the relevant object has to be found.
      * @param {boolean} inAction - Defines the active state of the action.
-     * @deprecated
      */
     public findTargetObjectUnderMouse(
         objects: (NodeModel | ConnectorModel)[], action: Actions, inAction: boolean, position: PointModel, source?: IElement): IElement {
@@ -2929,7 +2955,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @param {IElement} obj - Defines the object, the child element of which has to be found
      * @param {PointModel} position - Defines the position, the child element under which has to be found
      * @param {number} padding - Defines the padding, the child element under which has to be found
-     * @deprecated
      */
     public findElementUnderMouse(obj: IElement, position: PointModel, padding?: number): DiagramElement {
         return this.eventHandler.findElementUnderMouse(obj, position, padding);
@@ -2951,7 +2976,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Returns the tool that handles the given action
      * @param {string} action - Defines the action that is going to be performed
-     * @deprecated
      */
     public getTool(action: string): ToolBase {
         let tool: ToolBase;
@@ -3457,7 +3481,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Adds the given diagram object to the group.
      * @param {NodeModel} Group - defines where the diagram object to be added.
      * @param {string | NodeModel | ConnectorModel} Child - defines the diagram object to be added to the group
-     * @blazorArgsType group|DiagramNode
+     * @blazorArgsType obj|DiagramNode
      */
     public addChildToGroup(group: NodeModel, child: string | NodeModel | ConnectorModel): void {
         this.addChild(group, child);
@@ -3507,7 +3531,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Adds the given connector to diagram control
      * @param {ConnectorModel} obj - Defines the connector that has to be added to diagram
      * @blazorArgsType obj|DiagramConnector
-     * @blazorType DiagramConnector
      */
     public addConnector(obj: ConnectorModel): Connector {
         return this.add(obj) as Connector;
@@ -3575,7 +3598,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
 
-    private UpdateBlazorDiagramModel(
+    /**
+     * @private
+     */
+    public UpdateBlazorDiagramModel(
         obj: Node | Connector | ShapeAnnotation | PathAnnotation,
         objectType: string, removalIndex?: number, annotationNodeIndex?: number)
         : void {
@@ -4656,7 +4682,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Add ports at the run time
-     * @blazorArgsType obj|DiagramNode, ports|ObservableCollection<DiagramPort>
+     * @blazorArgsType obj|DiagramNode
      */
     public addPorts(obj: NodeModel, ports: PointPortModel[]): void {
         this.protectPropertyChange(true);
@@ -4708,7 +4734,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Add labels in node at the run time in the blazor platform
-     * @blazorArgsType obj|DiagramNode,labels|ObservableCollection<DiagramNodeAnnotation>
      */
     public addNodeLabels(obj: NodeModel, labels: ShapeAnnotationModel[]): void {
         this.addLabels(obj, labels);
@@ -4716,7 +4741,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Add labels in connector at the run time in the blazor platform
-     * @blazorArgsType obj|DiagramConnector , labels|ObservableCollection<DiagramConnectorAnnotation>
      */
     public addConnectorLabels(obj: ConnectorModel, labels: PathAnnotationModel[]): void {
         this.addLabels(obj, labels);
@@ -4792,7 +4816,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Add dynamic Lanes to swimLane at runtime
-     * @deprecated
      */
 
     public addLanes(node: NodeModel, lane: LaneModel[], index?: number): void {
@@ -4808,7 +4831,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Add a phase to a swimLane at runtime
-     * @deprecated
      */
 
     public addPhases(node: NodeModel, phases: PhaseModel[]): void {
@@ -4821,7 +4843,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Remove dynamic Lanes to swimLane at runtime
-     * @deprecated
      */
 
     public removeLane(node: NodeModel, lane: LaneModel): void {
@@ -4831,7 +4852,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Remove a phase to a swimLane at runtime
-     * @deprecated
      */
 
     public removePhase(node: NodeModel, phase: PhaseModel): void {
@@ -4941,7 +4961,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Remove Ports at the run time
-     * @blazorArgsType obj|DiagramNode,ports|ObservableCollection<DiagramPort>
      */
     public removePorts(obj: Node, ports: PointPortModel[]): void {
         obj = this.nameTable[obj.id] || obj;
@@ -5034,7 +5053,15 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 + this.getSizeValue(this.height) + ';position:relative;overflow:hidden;'
         });
     };
-
+    private renderHiddenUserHandleTemplateLayer(bounds: ClientRect): void {
+        let element: HTMLElement;
+        let attributes: object = {
+            'class': this.element.id + '_hiddenUserHandleTemplate',
+            'style': 'width:' + bounds.width + 'px; height:' + bounds.height + 'px;' + 'visibility:hidden ;  overflow: hidden;'
+        };
+        element = createHtmlElement('div', attributes);
+        this.element.appendChild(element);
+    }
     private renderBackgroundLayer(bounds: ClientRect, commonStyle: string): void {
         let bgLayer: SVGElement = this.createSvg(this.element.id + '_backgroundLayer_svg', bounds.width, bounds.height);
         applyStyleAgainstCsp(bgLayer, commonStyle);
@@ -5115,6 +5142,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.renderPortsExpandLayer(bounds, commonStyle);
         this.renderNativeLayer(bounds, commonStyle);
         this.renderAdornerLayer(bounds, commonStyle);
+        this.renderHiddenUserHandleTemplateLayer(bounds);
     }
 
     private renderAdornerLayer(bounds: ClientRect, commonStyle: string): void {
@@ -5122,6 +5150,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             'id': this.element.id + '_diagramAdornerLayer',
             'style': 'width:' + bounds.width + 'px;height:' + bounds.height + 'px;' + commonStyle
         });
+        let element: HTMLElement = createHtmlElement('div', {
+            'id': this.element.id + '_diagramUserHandleLayer',
+            'style': 'width:' + bounds.width + 'px;height:' + bounds.height + 'px;' + commonStyle
+        });
+        element.setAttribute('class', 'e-userHandle-layer');
+        divElement.appendChild(element);
         let svgAdornerSvg: SVGElement = this.createSvg(this.element.id + '_diagramAdorner_svg', bounds.width, bounds.height);
         svgAdornerSvg.setAttribute('class', 'e-adorner-layer');
         svgAdornerSvg.style['pointer-events'] = 'none';
@@ -6574,7 +6608,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 (this.constraints & DiagramConstraints.Virtualization)) ? this.scroller.viewPortHeight as number : height;
             diagramLayer.setAttribute('width', (factor * w).toString());
             diagramLayer.setAttribute('height', (factor * h).toString());
-
+            let hiddenUserHandleTemplate: HTMLElement = document.getElementById(this.element.id + '_diagramUserHandleLayer');
+            if (hiddenUserHandleTemplate) {
+                hiddenUserHandleTemplate.style.width = width + 'px';
+                hiddenUserHandleTemplate.style.height = height + 'px';
+            }
             let attr: Object = { 'width': width.toString(), 'height': height.toString() };
             this.diagramLayerDiv.style.width = width + 'px';
             this.diagramLayerDiv.style.height = height + 'px';
@@ -6845,6 +6883,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             let bounds: Rect = this.spatialSearch.getPageBounds();
             let selectorElement: (SVGElement | HTMLCanvasElement);
             selectorElement = getSelectorElement(this.element.id);
+            let diagramUserHandlelayer: (SVGElement | HTMLElement);
+            diagramUserHandlelayer = getUserHandleLayer(this.element.id);
             selectorModel.thumbsConstraints = ThumbsConstraints.Default;
             if (selectorModel.annotation) {
                 this.updateThumbConstraints([selectorModel.annotation] as (ShapeAnnotation[] | PathAnnotation[]), selectorModel);
@@ -6886,7 +6926,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     selectorModel.constraints, this.scroller.transform, undefined, canMove(selectorModel));
             }
             if (!(selectorModel.annotation) && !this.currentSymbol) {
-                this.diagramRenderer.renderUserHandler(selectorModel, selectorElement, this.scroller.transform);
+                this.diagramRenderer.renderUserHandler(selectorModel, selectorElement, this.scroller.transform, diagramUserHandlelayer);
             }
         }
         this.commandHandler.updateBlazorSelector();
@@ -6919,6 +6959,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 selector.offsetY = selector.wrapper.offsetY;
                 let selectorEle: (SVGElement | HTMLCanvasElement);
                 selectorEle = getSelectorElement(this.element.id);
+                let diagramUserHandlelayer: (SVGElement | HTMLElement);
+                diagramUserHandlelayer = getUserHandleLayer(this.element.id);
                 let canHideResizers: boolean = this.eventHandler.canHideResizers();
                 selector.thumbsConstraints = ThumbsConstraints.Default;
                 if (selector.annotation) {
@@ -6928,7 +6970,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     this.updateThumbConstraints(selector.connectors, selector, true);
                 }
                 if ((this.selectedItems.constraints & SelectorConstraints.UserHandle) && (!(selector.annotation)) && !this.currentSymbol) {
-                    this.diagramRenderer.renderUserHandler(selector, selectorEle, this.scroller.transform);
+                    this.diagramRenderer.renderUserHandler(selector, selectorEle, this.scroller.transform, diagramUserHandlelayer);
                 }
                 if (selector.annotation) {
                     this.renderSelectorForAnnotation(selector, selectorEle);
@@ -7036,6 +7078,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 child = childNodes[i - 1] as SVGElement;
                 child.parentNode.removeChild(child);
             }
+            let templates: NodeList = getUserHandleLayer(this.element.id).childNodes;
+            let i: number;
+            for (i = templates.length; i > 0; i--) {
+                (templates[i - 1] as HTMLElement).parentNode.removeChild(templates[i - 1]);
+            }
         } else {
             let symbolBorder: SVGElement = (adornerSvg as SVGSVGElement).getElementById('borderRect_symbol') as SVGElement;
             if (symbolBorder) { symbolBorder.parentNode.removeChild(symbolBorder); }
@@ -7101,7 +7148,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /* tslint:disable */
     public async endEdit(): Promise<void> {
         if (this.diagramActions & DiagramAction.TextEdit) {
-            this.enableServerDataBinding(false);
+            let oldValues: Object; let changedvalues: Object; let annotations: Object = {};
+            this.enableServerDataBinding(false);            
+            if (isBlazor()) { this.canEnableBlazorObject = true; }
             let textArea: HTMLTextAreaElement = (document.getElementById(this.element.id + '_editBox') as HTMLTextAreaElement);
             if ((isBlazor() && textArea) || !isBlazor()) {
                 let text: string = textArea.value;
@@ -7138,6 +7187,18 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
                 if (!bpmnAnnotation) {
                     node = this.nameTable[this.activeLabel.parentId];
+                    let annotation: ShapeAnnotationModel | PathAnnotationModel | TextModel = findAnnotation(node, this.activeLabel.id);
+                    if (annotation && !(annotation instanceof Text)) {
+                        let index: string = findObjectIndex(node as NodeModel, (annotation as ShapeAnnotationModel | PathAnnotationModel).id, true);
+                        annotations[index] = { content: annotation.content };
+                        oldValues = { annotations: annotations };
+                    } else {
+                        if (isBlazor() && ((node.shape) as DiagramShape).type === "Text") {
+                            oldValues = { shape: { textContent: (node.shape as DiagramShape).content } };
+                        } else {
+                            oldValues = { shape: { content: (node.shape as TextModel).content } };
+                        }
+                    }
                     let deleteNode: boolean = this.eventHandler.isAddTextNode(node as Node, true);
                     if (!deleteNode && (element.textContent !== text || text !== this.activeLabel.text)) {
                         if (isBlazor()) {
@@ -7150,7 +7211,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         textWrapper = this.getWrapper(node.wrapper, this.activeLabel.id);
                     }
 
-                    let annotation: ShapeAnnotationModel | PathAnnotationModel | TextModel = findAnnotation(node, this.activeLabel.id);
                     if (annotation.content !== text && !args.cancel) {
                         if ((node as Node).parentId && this.nameTable[(node as Node).parentId].shape.type === 'UmlClassifier'
                             && text.indexOf('+') === -1 && text.indexOf('-') === -1 && text.indexOf('#') === -1
@@ -7160,11 +7220,38 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         if ((node as Node).isLane || (node as Node).isPhase) {
                             this.protectPropertyChange(true);
                         }
+                        if (!(annotation instanceof Text)) {
+                            let index: string = findObjectIndex(node as NodeModel, (annotation as ShapeAnnotationModel | PathAnnotationModel).id, true);
+                            let changesAnnotation: Object= {};
+                            changesAnnotation[index] = { content: text };
+                            changedvalues = { annotations: changesAnnotation };
+                        }
+                        else {
+                            if (isBlazor() && ((node.shape) as DiagramShape).type === "Text") {
+                                changedvalues = { shape: { textContent: text } };
+                            } else {
+                                changedvalues = { shape: { content: text } };
+                            }
+                        }
+                        let nodeIndex: string = this.getIndex(node, node.id);
+                        if(nodeIndex) {
+                        let oldnodes = {};
+                        oldnodes[nodeIndex] = oldValues;
+                        let newnodes = {};
+                        newnodes[nodeIndex] = changedvalues;
+                        if (getObjectType(node) === Node) {
+                            this.onPropertyChanged({ nodes: newnodes } as DiagramModel, { nodes : oldnodes } as DiagramModel);
+                        } else {
+                            this.onPropertyChanged({ connectors: newnodes } as DiagramModel, { connectors : oldnodes } as DiagramModel);
+                        }
+                        }
+                        this.protectPropertyChange(true);
                         if (isBlazor() && ((node.shape) as DiagramShape).type === "Text") {
                             (node.shape as DiagramShape).textContent = text
+                        } else {
+                            annotation.content = text;
                         }
-                        annotation.content = text;
-                        this.dataBind();
+                        this.protectPropertyChange(false);
                         this.updateSelector();
                         if ((node as Node).isLane || (node as Node).isPhase) {
                             this.protectPropertyChange(false);
@@ -7214,10 +7301,22 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
                 this.activeLabel = { id: '', parentId: '', isGroup: false, text: undefined };
                 this.commandHandler.getBlazorOldValues();
+                if (isBlazor()) { this.canEnableBlazorObject = false; }
                 this.enableServerDataBinding(true);
             }
         }
     }
+
+    private getIndex(node: NodeModel | ConnectorModel, id: string) {
+        let index: number;
+        let collection: (NodeModel | ConnectorModel)[] = (getObjectType(node) === Node) ? this.nodes : this.connectors;
+        for (var i = 0; i < collection.length; i++) {
+            if (collection[i].id.toString() === id.toString()) {
+                return i.toString();
+            }
+        }
+        return null;
+    };
     /* tslint:enable */
 
     private getBlazorTextEditArgs(args: IBlazorTextEditEventArgs | ITextEditEventArgs): IBlazorTextEditEventArgs {
@@ -9118,7 +9217,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * moves the node or connector forward within given layer
-     * @deprecated
      */
     public moveObjectsUp(node: NodeModel | ConnectorModel, currentLayer: LayerModel): void {
         let targetLayer: LayerModel;
@@ -9137,7 +9235,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Inserts newly added element into the database
-     * @deprecated
      */
     public insertData(node?: Node | Connector): object {
         return this.crudOperation(node, 'create', this.getNewUpdateNodes('New'));
@@ -9145,7 +9242,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * updates the user defined element properties into the existing database
-     * @deprecated
      */
     public updateData(node?: Node | Connector): object {
         return this.crudOperation(node, 'update', this.getNewUpdateNodes('Update'));
@@ -9153,7 +9249,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Removes the user deleted element from the existing database
-     * @deprecated
      */
     public removeData(node?: Node | Connector): object {
         return this.crudOperation(node, 'destroy', this.getDeletedNodes());

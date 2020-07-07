@@ -2,51 +2,24 @@
 
 ## [Unreleased]
 
+## 18.2.44 (2020-07-07)
+
+### Spreadsheet
+
+#### New Features
+
+- **Conditional formatting:** Provides option to format a cell or range of cells based on the conditions applied.
+- **Clear:** Provides option to clear the content, formats, and hyperlinks applied to a cell or range of cells in a spreadsheet.
+- **Aggregates:** Provides option to check the sum, average, and count for the selected cells or range in the sheet tab.
+
+## 18.1.56 (2020-06-09)
+
 ### Spreadsheet
 
 #### Bug Fixes
 
 `#I279666`- Provided the actionBegin and actionComplete event for page switching action.
 `#I276608`- Provided the validation to prevent the long text exception for list data validation.
-
-## 18.1.53 (2020-05-19)
-
-### Spreadsheet
-
-#### Bug Fixes
-
-`#I275309`- Dropdownlist added randomly in cells while scrolling issue fixed.
-`#I275297`- Lock cell functionality misbehaves for empty cells in spreadsheet issue fixed.
-
-## 18.1.48 (2020-05-05)
-
-### Spreadsheet
-
-#### New Features
-
-`#I273372`- Provided an option to create new blank workbook in spreadsheet.
-
-#### Bug Fixes
-
-- Events are not triggering while pasting external data issue fixed.
-
-## 18.1.45 (2020-04-21)
-
-### Spreadsheet
-
-#### Bug Fixes
-
-`#I271476`- Fixed the issue of find and replace is not working properly.
-
-## 18.1.44 (2020-04-14)
-
-### Spreadsheet
-
-#### Bug Fixes
-
-`#I271476` - Issue with Highlighted cells get changed while scrolling down when data is validated has been fixed.
-
-## 18.1.43 (2020-04-07)
 
 ### Spreadsheet
 
@@ -173,7 +146,7 @@ Old Property | New Property
 
 #### New Features
 
-- Provided `updateCell` method to update a cell properties.
+- Provided `updateCell` method to update a cell properties
 
 ## 17.3.14 (2019-10-03)
 

@@ -237,6 +237,8 @@ export interface NavigatingEventArgs extends BaseEventArgs {
     previousView?: string;
     /** Returns the active view name after the view navigation takes place. */
     currentView?: string;
+    /** Returns the active view index after the view navigation takes place. */
+    viewIndex?: number;
 }
 
 /** An interface that holds options to control the rendering of all cells (work, time, resource, header, and more). */
@@ -336,6 +338,14 @@ export interface ScrollOptions {
     scrollBy: number;
     /** Allows to define the time delay value while scrolling. */
     timeDelay: number;
+}
+
+/** @hidden */
+export interface InlineClickArgs extends BaseEventArgs {
+    data?: { [key: string]: Object };
+    element: HTMLElement;
+    groupIndex?: number;
+    type: string;
 }
 
 /** @hidden */
@@ -646,4 +656,11 @@ export interface DataBindingEventArgs extends BaseEventArgs {
     result: Object[];
     count?: number;
     aggregates?: Object;
+}
+
+/** @hidden */
+export interface CrudAction {
+    isCrudAction: boolean;
+    sourceEvent: TdData[];
+    targetEvent: TdData[];
 }

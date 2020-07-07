@@ -1,9 +1,9 @@
 import { Tab, SelectingEventArgs, TabItemModel, SelectEventArgs } from '@syncfusion/ej2-navigations';
 import { Spreadsheet } from '../base/index';
-import { refreshSheetTabs, locale, insertSheetTab, cMenuBeforeOpen, dialog, renameSheet, hideSheet } from '../common/index';
-import { sheetNameUpdate, clearUndoRedoCollection, completeAction, beginAction } from '../common/index';
+import { refreshSheetTabs, locale, insertSheetTab, cMenuBeforeOpen, dialog, renameSheet, hideSheet, beginAction } from '../common/index';
+import { sheetNameUpdate, clearUndoRedoCollection, completeAction, showAggregate } from '../common/index';
 import { sheetTabs, renameSheetTab, removeSheetTab, activeSheetChanged, onVerticalScroll, onHorizontalScroll } from '../common/index';
-import { getUpdateUsingRaf, protectSheet } from '../common/index';
+import { getUpdateUsingRaf,  protectSheet } from '../common/index';
 import { SheetModel, getSheetName, aggregateComputation, AggregateArgs } from '../../workbook/index';
 import { isSingleCell, getRangeIndexes, getSheet, getSheetIndex } from '../../workbook/index';
 import { DropDownButton, MenuEventArgs, BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
@@ -25,6 +25,7 @@ export class SheetTabs {
     private aggregateDropDown: DropDownButton;
     private aggregateContent: string = '';
     private isSelectCancel: boolean = false;
+    private selaggregateCnt: string = 'Sum';
     constructor(parent: Spreadsheet) {
         this.parent = parent;
         this.addEventListener();
@@ -181,7 +182,7 @@ export class SheetTabs {
         this.parent.element.focus();
     }
 
-    private insertSheetTab(args: { startIdx: number, endIdx: number, isAction: boolean }): void {
+    private insertSheetTab(args: { startIdx: number, endIdx: number }): void {
         this.dropDownInstance.items[this.tabInstance.selectedItem].iconCss = '';
         for (let i: number = args.startIdx; i <= args.endIdx; i++) {
             let sheetName: string = this.parent.sheets[i].name;
@@ -190,7 +191,7 @@ export class SheetTabs {
         }
         this.dropDownInstance.items[args.startIdx].iconCss = 'e-selected-icon e-icons';
         this.dropDownInstance.setProperties({ 'items': this.dropDownInstance.items }, true);
-        if (args.isAction) { this.updateSheetTab({ idx: args.startIdx }); }
+        this.updateSheetTab({ idx: args.startIdx });
     }
 
     private updateSheetTab(args: { idx: number, name?: string }): void {
@@ -449,7 +450,8 @@ export class SheetTabs {
         this.dropDownInstance.setProperties({ 'items': this.dropDownInstance.items }, true);
         this.tabInstance.removeTab(activeSheetIdx);
         let activeIndex: number = this.parent.skipHiddenSheets(this.tabInstance.selectedItem);
-        this.parent.setProperties({ 'activeSheetIndex': activeIndex }, true);
+        this.parent.activeSheetIndex = activeIndex;
+        this.parent.setProperties({ activeSheetIndex: activeIndex }, true);
         this.parent.renderModule.refreshSheet();
         this.tabInstance.selectedItem = activeIndex; this.tabInstance.dataBind();
         this.updateDropDownItems(activeIndex);
@@ -460,10 +462,17 @@ export class SheetTabs {
     private showAggregate(): void {
         if (isSingleCell(getRangeIndexes(this.parent.getActiveSheet().selectedRange))) { return; }
         getUpdateUsingRaf((): void => {
-            let eventArgs: AggregateArgs = { Count: 0, Sum: '0', Avg: '0', Min: '0', Max: '0' };
+            let eventArgs: AggregateArgs = { Count: 0, Sum: '0', Avg: '0', Min: '0', Max: '0', countOnly: true };
             this.parent.notify(aggregateComputation, eventArgs);
-            if (eventArgs.Count) {
-                if (!this.aggregateContent) { this.aggregateContent = eventArgs.Sum ? 'Sum' : 'Count'; }
+            if (eventArgs.Count > 1) {
+                this.aggregateContent = eventArgs.countOnly ? 'Count' : this.selaggregateCnt;
+                if (eventArgs.countOnly) {
+                    this.aggregateContent = 'Count';
+                    delete eventArgs.Sum; delete eventArgs.Avg; delete eventArgs.Min; delete eventArgs.Max;
+                }
+                let btnClass: string = eventArgs.countOnly ? 'e-aggregate-list e-flat e-aggregate-list-countonly e-caret-hide'
+                    : 'e-aggregate-list e-flat';
+                delete eventArgs.countOnly;
                 let key: string = this.aggregateContent;
                 let content: string = `${key}: ${eventArgs[key]}`;
                 if (!this.aggregateDropDown) {
@@ -472,12 +481,12 @@ export class SheetTabs {
                     this.aggregateDropDown = new DropDownButton({
                         content: content,
                         items: this.getAggregateItems(eventArgs),
-                        select: (args: MenuEventArgs): void => this.updateAggregateContent(args.item.text, eventArgs),
+                        select: (args: MenuEventArgs): void => this.updateAggregateContent(args.item.text, eventArgs, true),
                         beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void =>
                             this.beforeOpenHandler(this.aggregateDropDown, args.element),
                         open: (args: OpenCloseMenuEventArgs): void => this.openHandler(this.aggregateDropDown, args.element, 'right'),
                         close: (): void => this.parent.element.focus(),
-                        cssClass: 'e-aggregate-list e-flat'
+                        cssClass: btnClass
                     });
                     this.aggregateDropDown.createElement = this.parent.createElement;
                     this.aggregateDropDown.appendTo(aggregateEle);
@@ -499,15 +508,18 @@ export class SheetTabs {
         return items;
     }
 
-    private updateAggregateContent(text: string, eventArgs: AggregateArgs): void {
+    private updateAggregateContent(text: string, eventArgs: AggregateArgs, isSelect?: boolean): void {
         this.aggregateContent = text.split(': ')[0];
+        if (isSelect) {
+            this.selaggregateCnt = text.split(': ')[0];
+        }
         this.aggregateDropDown.content = text;
         this.aggregateDropDown.dataBind();
         this.aggregateDropDown.setProperties({ 'items': this.getAggregateItems(eventArgs) }, true);
     }
 
     private removeAggregate(): void {
-        if (this.aggregateDropDown && isSingleCell(getRangeIndexes(this.parent.getActiveSheet().selectedRange))) {
+        if (this.aggregateDropDown) {
             this.aggregateDropDown.destroy();
             remove(this.aggregateDropDown.element);
             this.aggregateDropDown = null;
@@ -528,6 +540,7 @@ export class SheetTabs {
         this.parent.on(onHorizontalScroll, this.focusRenameInput, this);
         this.parent.on(sheetNameUpdate, this.updateSheetName, this);
         this.parent.on(hideSheet, this.hideSheet, this);
+        this.parent.on(showAggregate, this.showAggregate, this);
     }
 
     public destroy(): void {
@@ -561,6 +574,7 @@ export class SheetTabs {
             this.parent.off(onHorizontalScroll, this.focusRenameInput);
             this.parent.off(sheetNameUpdate, this.updateSheetName);
             this.parent.off(hideSheet, this.hideSheet);
+            this.parent.off(showAggregate, this.showAggregate);
         }
     }
 }

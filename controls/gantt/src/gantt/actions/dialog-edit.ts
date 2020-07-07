@@ -67,8 +67,14 @@ export class DialogEdit {
     private dialogEditValidationFlag: boolean = false;
     private tabObj: Tab;
     public ganttResources: Object[] = [];
-    private previousResource: Object[] = [];
-    private isResourceUpdate: boolean = false;
+    /**
+     * @private
+     */
+    public previousResource: Object[] = [];
+    /**
+     * @private
+     */
+    public isResourceUpdate: boolean = false;
     /**
      * Constructor for render module
      */
@@ -567,9 +573,9 @@ export class DialogEdit {
         this.beforeOpenArgs.requestType = this.isEdit ? 'beforeOpenEditDialog' : 'beforeOpenAddDialog';
         this.renderTabItems();
         let args: ActionBeginArgs = {
-            rowData : this.beforeOpenArgs.rowData as IGanttData,
-            name : this.beforeOpenArgs.name as string,
-            requestType : this.beforeOpenArgs.requestType as string,
+            rowData: this.beforeOpenArgs.rowData as IGanttData,
+            name: this.beforeOpenArgs.name as string,
+            requestType: this.beforeOpenArgs.requestType as string,
             cancel: this.beforeOpenArgs.cancel as boolean
         };
         this.parent.trigger('actionBegin', isBlazor() ? args : this.beforeOpenArgs, (args: ActionBeginArgs | CObject) => {
@@ -587,7 +593,7 @@ export class DialogEdit {
                 this.dialogObj.isStringTemplate = true;
                 this.dialogObj.appendTo(this.dialog);
                 let actionCompleteArgs: CObject = {
-                    action : 'OpenDialog',
+                    action: 'OpenDialog',
                     requestType: this.isEdit ? 'openEditDialog' : 'openAddDialog',
                     data: this.beforeOpenArgs.rowData,
                     element: this.dialog,
@@ -695,7 +701,7 @@ export class DialogEdit {
                 }
                 if (taskSettings.work === column.field) {
                     numeric.change = (args: CObject): void => {
-                        this.validateScheduleFields(args , column, ganttObj);
+                        this.validateScheduleFields(args, column, ganttObj);
                     };
                 }
                 fieldsModel[column.field] = numeric;
@@ -1069,7 +1075,8 @@ export class DialogEdit {
                 column = {
                     field: resourceSettings.unit,
                     headerText: this.localeObj.getConstant('unit'),
-                    editType: 'numericedit'
+                    editType: 'numericedit',
+                    edit: { params: { min: 0 } }
                 };
                 columns.push(column);
             } else if (fields[i] === resourceSettings.group && !isNullOrUndefined(resourceSettings.group)) {
@@ -1162,7 +1169,7 @@ export class DialogEdit {
 
     private isCheckIsDisabled(column: GanttColumnModel): boolean {
         let disabled: boolean = false;
-        if (column.allowEditing === false) {
+        if (column.allowEditing === false || column.isPrimaryKey || this.parent.readOnly) {
             if (this.parent.customColumns.indexOf(column.field) !== -1) {
                 disabled = true;
             } else {
@@ -1214,9 +1221,10 @@ export class DialogEdit {
         let ganttObj: Gantt = this.parent;
         let gridModel: GridModel = this.beforeOpenArgs[itemName];
         let dependencyColumn: GanttColumnModel = this.parent.columnByField[this.parent.taskFields.dependency];
-        if (dependencyColumn.allowEditing === false) {
+        if (dependencyColumn.allowEditing === false || dependencyColumn.isPrimaryKey || this.parent.readOnly) {
             gridModel.editSettings.allowEditing = false;
             gridModel.editSettings.allowAdding = false;
+            gridModel.editSettings.allowDeleting = false;
         }
         let ganttData: IGanttData = this.beforeOpenArgs.rowData;
         let preData: IPreData[] = [];
@@ -1328,7 +1336,7 @@ export class DialogEdit {
         TreeGrid.Inject(Selection, Filter, TreeGridEdit);
         let treeGridObj: TreeGrid = new TreeGrid(inputModel);
         let resourceColumn: GanttColumnModel = this.parent.columnByField[this.parent.taskFields.resourceInfo];
-        if (resourceColumn.allowEditing === false) {
+        if (resourceColumn.allowEditing === false || resourceColumn.isPrimaryKey || this.parent.readOnly) {
             treeGridObj.allowSelection = false;
             treeGridObj.allowFiltering = false;
             treeGridObj.editSettings.allowEditing = false;
@@ -1348,7 +1356,7 @@ export class DialogEdit {
         RichTextEditor.Inject(RTEToolbar, Link, HtmlEditor, QuickToolbar, Count);
         inputModel.value = ganttProp.notes;
         let notesColumn: GanttColumnModel = this.parent.columnByField[this.parent.taskFields.notes];
-        if (notesColumn.allowEditing === false) {
+        if (notesColumn.allowEditing === false || notesColumn.isPrimaryKey || this.parent.readOnly) {
             inputModel.enabled = false;
         }
         let rteObj: RichTextEditor = new RichTextEditor(inputModel);
@@ -1413,10 +1421,12 @@ export class DialogEdit {
             if (data.hasChildRecords) {
                 continue;
             }
+            let taskId: string = this.parent.viewType === 'ResourceView' ? data.ganttProperties.taskId.toString()
+                : data.ganttProperties.rowUniqueID.toString();
             let tempObject: IDependencyEditData = {
-                id: data.ganttProperties.rowUniqueID.toString(),
-                text: (data.ganttProperties.rowUniqueID.toString() + '-' + data.ganttProperties.taskName),
-                value: data.ganttProperties.rowUniqueID.toString()
+                id: taskId,
+                text: (taskId + '-' + data.ganttProperties.taskName),
+                value: taskId
             };
             this.preTaskIds.push(tempObject.id);
             this.preTableCollection.push(tempObject);
@@ -1433,7 +1443,8 @@ export class DialogEdit {
             for (let i: number = 0; i < predecessor.length; i++) {
                 let from: string = predecessor[i].from.toString();
                 let preData: IPreData = {};
-                if (ganttProp.rowUniqueID.toString() !== from) {
+                let taskID: string = this.parent.viewType === 'ResourceView' ? ganttProp.taskId : ganttProp.rowUniqueID;
+                if (taskID.toString() !== from) {
                     preData.id = from;
                     for (let index: number = 0; index < idCollection.length; index++) {
                         if (idCollection[index].value === from) {
@@ -1442,7 +1453,7 @@ export class DialogEdit {
                         }
                     }
                     preData.type = predecessor[i].type;
-                    let offset: number = Math.abs(predecessor[i].offset);
+                    let offset: number = predecessor[i].offset;
                     let offsetUnit: string = predecessor[i].offsetUnit;
                     preData.offset = this.parent.dataOperation.getDurationString(offset, offsetUnit);
                     preData.uniqueId = getUid();
@@ -1455,7 +1466,8 @@ export class DialogEdit {
 
     private updatePredecessorDropDownData(ganttData: IGanttData): void {
         let index: number = -1;
-        let id: string = ganttData.ganttProperties.rowUniqueID.toString();
+        let id: string = this.parent.viewType === 'ResourceView' ? ganttData.ganttProperties.taskId.toString()
+            : ganttData.ganttProperties.rowUniqueID.toString();
         index = this.preTaskIds.indexOf(id);
         this.preTableCollection.splice(index, 1);
         this.preTaskIds.splice(index, 1);
@@ -1466,7 +1478,7 @@ export class DialogEdit {
         let ganttProp: ITaskData = data.ganttProperties;
         if (ganttProp.predecessor && ganttProp.predecessor.length > 0) {
             let predecessor: IPredecessor[] = ganttProp.predecessor;
-            let fromId: string = ganttProp.rowUniqueID.toString();
+            let fromId: string = this.parent.viewType === 'ResourceView' ? ganttProp.taskId.toString() : ganttProp.rowUniqueID.toString();
             predecessor.forEach((item: IPredecessor) => {
                 if (item.from.toString() === fromId) {
                     let toId: string = item.to; let idIndex: number = -1;
@@ -1475,7 +1487,7 @@ export class DialogEdit {
                         ids.splice(idIndex, 1);
                         idCollection.splice(idIndex, 1);
                     }
-                    let ganttData: IGanttData = this.parent.getRecordByID(toId);
+                    let ganttData: IGanttData = this.parent.connectorLineModule.getRecordByID(toId);
                     this.validSuccessorTasks(ganttData, ids, idCollection);
                 }
             });
@@ -1530,55 +1542,21 @@ export class DialogEdit {
                 data: this.rowData,
                 action: 'DialogEditing'
             };
-            if (this.parent.viewType === 'ResourceView') {
-                if (this.isResourceUpdate) {
-                    this.parent.editModule.updateRsourceRecords(editArgs, true, this.previousResource);
-                    this.previousResource = [];
-                } else {
-                    this.parent.editModule.updateRsourceRecords(editArgs);
-                }
-            } else {
-                this.parent.editModule.initiateUpdateAction(editArgs);
-            }
+            this.parent.editModule.initiateUpdateAction(editArgs);
         } else {
             if (this.parent.viewType === 'ResourceView') {
                 let newRecords: Object = extend({}, this.addedRecord, true);
-                let addingRecords: IGanttData[] = [];
-                let unassignedTasks: IGanttData;
                 if (newRecords[this.parent.taskFields.resourceInfo].length) {
-                    // Block for if the added recoed has resources
-                    newRecords[this.parent.taskFields.resourceInfo].forEach((resourceID: string) => {
-                        let taskIds: string[] = this.parent.getTaskIds();
-                        addingRecords.push(this.parent.currentViewData[taskIds.indexOf('R' + resourceID)]);
-                    });
-                    for (let j: number = 0; j < addingRecords.length; j++) {
-                        if (!addingRecords[j][this.parent.taskFields.resourceInfo]) {
-                            /* tslint:disable-next-line */
-                            this.parent.isSameResourceAdd = true;
-                            this.parent.editModule.addRecord({ ...newRecords }, 'Child', this.parent.ids.indexOf(addingRecords[j].ganttProperties.rowUniqueID));
-                            this.parent.isSameResourceAdd = false;
+                    for (let i: number = 0; i < newRecords[this.parent.taskFields.resourceInfo].length; i++) {
+                        let id: string = newRecords[this.parent.taskFields.resourceInfo][i].toString();
+                        let parentRecordIndex: number = this.parent.getTaskIds().indexOf('R' + id.toString());
+                        if (parentRecordIndex !== -1) {
+                            this.parent.editModule.addRecord(this.addedRecord, 'Child', parentRecordIndex);
+                            break;
                         }
                     }
                 } else {
-                    // Block for if the added record has no resources
-                    for (let i: number = 0; i < this.parent.currentViewData.length; i++) {
-                        /* tslint:disable-next-line */
-                        if (this.parent.currentViewData[i].ganttProperties.taskName === this.parent.localeObj.getConstant('unassignedTask')) {
-                            unassignedTasks = this.parent.currentViewData[i];
-                        }
-                    }
-                    this.parent.isOnEdit = false;
-                    if (unassignedTasks) {
-                        /* tslint:disable-next-line */
-                        this.parent.editModule.addRecord({ ...newRecords }, 'Child', this.parent.ids.indexOf(unassignedTasks.ganttProperties.rowUniqueID));
-                    } else {
-                        // Block for create the unassigned task.
-                        let record: Object = {};
-                        record[this.parent.taskFields.id] = 0;
-                        record[this.parent.taskFields.name] = this.parent.localeObj.getConstant('unassignedTask');
-                        this.parent.editModule.addRecord({ ...record }, 'Bottom');
-                        this.parent.editModule.addRecord({ ...newRecords }, 'Child', this.parent.ids.length - 1);
-                    }
+                    this.parent.editModule.addRecord(this.addedRecord, 'Bottom');
                 }
             } else {
                 this.parent.editModule.addRecord(this.addedRecord, this.parent.editSettings.newRowPosition);
@@ -1707,10 +1685,12 @@ export class DialogEdit {
         }
         let selectedItems: CObject[] = <CObject[]>this.ganttResources;
         if (this.parent.viewType === 'ResourceView' && !isNullOrUndefined(this.rowData.ganttProperties)) {
-            if (this.ganttResources !== this.rowData.ganttProperties.resourceInfo) {
+            if (JSON.stringify(this.ganttResources) !== JSON.stringify(this.rowData.ganttProperties.resourceInfo)) {
                 this.isResourceUpdate = true;
                 this.previousResource = !isNullOrUndefined(this.rowData.ganttProperties.resourceInfo) ?
-                [...this.rowData.ganttProperties.resourceInfo] : [];
+                    [...this.rowData.ganttProperties.resourceInfo] : [];
+            } else {
+                this.isResourceUpdate = false;
             }
         }
         let idArray: object[] = [];

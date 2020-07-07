@@ -421,7 +421,7 @@ describe('Spreadsheet base module ->', () => {
                     } else {
                         expect(helper.getModel('activeSheetIndex')).toBe(1);
                         let td: HTMLTableCellElement = helper.invoke('getCell', [0, 0]);
-                        expect(td.textContent).toBe('Product Id');
+                        expect(td.textContent).toBe('ProductID');
                         helper.setModel('activeSheetIndex', 0);
                     }
                 }, 30);
@@ -608,7 +608,7 @@ describe('Spreadsheet base module ->', () => {
         });
 
         it('setRowHeight testing', (done: Function) => {
-            helper.invoke('setRowHeight', [100, 2, 0]);
+            helper.invoke('setRowHeight', [100, 2, 1]);
             let tr: HTMLTableRowElement = helper.invoke('getRow', [2]);
             expect(tr.style.height).toBe('100px');
             done();

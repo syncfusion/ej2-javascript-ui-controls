@@ -318,7 +318,10 @@ var SvgRenderer = /** @__PURE__ @class */ (function () {
             var stop_1 = document.createElementNS(this.svgLink, 'stop');
             stop_1.setAttribute('offset', colors[i].colorStop);
             stop_1.setAttribute('stop-color', colors[i].color);
-            stop_1.setAttribute('stop-opacity', '1');
+            stop_1.setAttribute('stop-opacity', colors[i].opacity ? (colors[i].opacity) : '1');
+            if (!isNullOrUndefined(colors[i].style)) {
+                stop_1.setAttribute('style', colors[i].style);
+            }
             gradient.appendChild(stop_1);
         }
         defs.appendChild(gradient);
@@ -1691,7 +1694,8 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
                             fontWeight = 'Normal';
                             labelColor = this.themeStyle.tooltipLightLabel;
                         }
-                        (tspanElement).textContent = line = line.replace(/<[a-zA-Z\/](.|\n)*?>/g, '');
+                        var isRtlText = /[\u0590-\u07FF\u200F\u202B\u202E\uFB1D-\uFDFD\uFE70-\uFEFC]/.test(line);
+                        (tspanElement).textContent = line = line.replace(/<[a-zA-Z\/](.|\n)*?>/g, isRtlText ? '\u200E' : '');
                         subWidth += measureText(line, font).width;
                         if (tspanStyle !== '') {
                             tspanElement.setAttribute('style', tspanStyle);

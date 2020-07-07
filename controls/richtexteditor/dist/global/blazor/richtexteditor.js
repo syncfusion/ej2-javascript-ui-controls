@@ -1,5 +1,5 @@
 window.sf = window.sf || {};
-window.sf.richtexteditor = (function (exports) {
+var sfrichtexteditor = (function (exports) {
 'use strict';
 
 /**
@@ -25,6 +25,11 @@ var load = 'load';
  * @deprecated
  */
 var initialLoad = 'initial-load';
+/**
+ * @hidden
+ * @deprecated
+ */
+var contentChanged = 'content-changed';
 /**
  * @hidden
  * @deprecated
@@ -4870,12 +4875,22 @@ var QuickToolbar = /** @class */ (function () {
             sf.base.EventHandler.add(this.inlineQTBar.element, 'mousedown', this.onMouseDown, this);
         }
     };
+    /**
+     * Method for showing the inline quick toolbar
+     * @hidden
+     * @deprecated
+     */
     QuickToolbar.prototype.showInlineQTBar = function (x, y, target) {
         if (this.parent.readonly) {
             return;
         }
         this.inlineQTBar.showPopup(x, y, target);
     };
+    /**
+     * Method for hidding the inline quick toolbar
+     * @hidden
+     * @deprecated
+     */
     QuickToolbar.prototype.hideInlineQTBar = function () {
         if (this.inlineQTBar && !hasClass(this.inlineQTBar.element, 'e-popup-close')) {
             this.inlineQTBar.hidePopup();
@@ -5781,6 +5796,7 @@ var Formatter = /** @class */ (function () {
         var _this = this;
         this.editorManager.observer.notify(KEY_UP, {
             event: e, callBack: function () {
+                self.notify(contentChanged, {});
                 _this.enableUndo(self);
             }
         });
@@ -5791,6 +5807,7 @@ var Formatter = /** @class */ (function () {
      * @deprecated
      */
     Formatter.prototype.onSuccess = function (self, events) {
+        self.notify(contentChanged, {});
         if (sf.base.isNullOrUndefined(events.event) || (events && events.event.action !== 'copy')) {
             this.enableUndo(self);
             self.notify(execCommandCallBack, events);
@@ -6994,11 +7011,7 @@ var pasteCleanupGroupingTags = {
 /**
  * PasteCleanup Grouping of similar functionality tags
  */
-var listConversionFilters = {
-    'first': 'MsoListParagraphCxSpFirst',
-    'middle': 'MsoListParagraphCxSpMiddle',
-    'last': 'MsoListParagraphCxSpLast'
-};
+
 /**
  * Dom-Node Grouping of self closing tags
  * @hidden
@@ -9181,8 +9194,8 @@ var Lists = /** @class */ (function () {
         var range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
         var startNode = this.parent.domNode.getSelectedNode(range.startContainer, range.startOffset);
         var endNode = this.parent.domNode.getSelectedNode(range.endContainer, range.endOffset);
-        if (startNode === endNode && !sf.base.isNullOrUndefined(sf.base.closest(startNode, 'li')) &&
-            startNode.textContent.trim() === '' && startNode.textContent.charCodeAt(0) === 65279) {
+        if (startNode === endNode && startNode.tagName === 'LI' && startNode.textContent.trim() === '' &&
+            startNode.textContent.charCodeAt(0) === 65279) {
             startNode.textContent = '';
         }
     };
@@ -9523,16 +9536,6 @@ var Lists = /** @class */ (function () {
                 nodesTemp.push(node);
             }
         }
-        var parentList = [];
-        for (var k = 0; k < nodesTemp.length; k++) {
-            var nodesTempListParent = nodesTemp[k].closest('LI');
-            if (!sf.base.isNullOrUndefined(nodesTempListParent) && (nodesTemp.indexOf(nodesTempListParent.parentElement) < 0)) {
-                if (nodesTempListParent.parentElement.innerText === nodesTemp[k].innerText) {
-                    parentList.push(nodesTempListParent.parentElement);
-                }
-            }
-        }
-        nodesTemp = parentList.concat(nodesTemp);
         for (var j = nodesTemp.length - 1; j >= 0; j--) {
             var h = nodesTemp[j];
             var replace = '<' + tagName.toLowerCase() + ' '
@@ -11077,7 +11080,7 @@ var CLASS_IMAGE_LEFT = 'e-imgleft';
 var CLASS_IMAGE_CENTER = 'e-imgcenter';
 var CLASS_IMAGE_BREAK = 'e-imgbreak';
 var CLASS_CAPTION = 'e-img-caption';
-var CLASS_RTE_CAPTION = 'e-rte-img-caption';
+
 var CLASS_CAPTION_INLINE = 'e-caption-inline';
 var CLASS_IMAGE_INLINE = 'e-imginline';
 
@@ -14755,6 +14758,8 @@ var PasteCleanup = /** @class */ (function () {
         sf.base.addClass([popupObj.element], [CLS_POPUP_OPEN, CLS_RTE_UPLOAD_POPUP]);
         var timeOut = fileList.size > 1000000 ? 300 : 100;
         setTimeout(function () { _this.refreshPopup(imgElem, popupObj); }, timeOut);
+        var rawFile;
+        var beforeUploadArgs;
         var uploadObj = new sf.inputs.Uploader({
             asyncSettings: {
                 saveUrl: this.parent.insertImageSettings.saveUrl
@@ -14766,8 +14771,24 @@ var PasteCleanup = /** @class */ (function () {
                 setTimeout(function () { _this.popupClose(popupObj, uploadObj, imgElem, e); }, 900);
             },
             uploading: function (e) {
-                _this.parent.trigger(imageUploading, e);
-                _this.parent.inputElement.contentEditable = 'false';
+                if (!_this.parent.isServerRendered) {
+                    _this.parent.trigger(imageUploading, e);
+                    _this.parent.inputElement.contentEditable = 'false';
+                }
+            },
+            beforeUpload: function (args) {
+                if (_this.parent.isServerRendered) {
+                    args.cancel = true;
+                    beforeUploadArgs = JSON.parse(JSON.stringify(args));
+                    _this.parent.trigger(imageUploading, beforeUploadArgs, function (beforeUploadArgs) {
+                        if (beforeUploadArgs.cancel) {
+                            return;
+                        }
+                        /* tslint:disable */
+                        _this.uploadObj.uploadFiles(rawFile, null);
+                        /* tslint:enable */
+                    });
+                }
             },
             failure: function (e) {
                 setTimeout(function () { _this.uploadFailure(imgElem, uploadObj, popupObj, e); }, 900);
@@ -14782,6 +14803,9 @@ var PasteCleanup = /** @class */ (function () {
             },
             selected: function (e) {
                 e.cancel = true;
+                if (_this.parent.isServerRendered) {
+                    rawFile = e.filesData;
+                }
             },
             removing: function () {
                 _this.parent.inputElement.contentEditable = 'true';
@@ -17460,19 +17484,23 @@ var Image = /** @class */ (function () {
         uploadParentEle.appendChild(uploadEle);
         var altText;
         var rawFile;
+        var selectArgs;
+        var beforeUploadArgs;
         this.uploadObj = new sf.inputs.Uploader({
             asyncSettings: { saveUrl: this.parent.insertImageSettings.saveUrl, },
             dropArea: span, multiple: false, enableRtl: this.parent.enableRtl,
             allowedExtensions: this.parent.insertImageSettings.allowedTypes.toString(),
             selected: function (e) {
-                if (sf.base.isBlazor()) {
+                proxy.isImgUploaded = true;
+                selectArgs = e;
+                if (_this.parent.isServerRendered) {
+                    selectArgs = JSON.parse(JSON.stringify(e));
                     e.cancel = true;
                     rawFile = e.filesData;
                 }
-                proxy.isImgUploaded = true;
-                _this.parent.trigger(imageSelected, e, function (e) {
-                    _this.checkExtension(e.filesData[0]);
-                    altText = e.filesData[0].name;
+                _this.parent.trigger(imageSelected, selectArgs, function (selectArgs) {
+                    _this.checkExtension(selectArgs.filesData[0]);
+                    altText = selectArgs.filesData[0].name;
                     if (_this.parent.editorMode === 'HTML' && sf.base.isNullOrUndefined(_this.parent.insertImageSettings.path)) {
                         var reader_1 = new FileReader();
                         reader_1.addEventListener('load', function (e) {
@@ -17491,18 +17519,33 @@ var Image = /** @class */ (function () {
                             };
                             proxy.inputUrl.setAttribute('disabled', 'true');
                         });
-                        reader_1.readAsDataURL(e.filesData[0].rawFile);
+                        reader_1.readAsDataURL(selectArgs.filesData[0].rawFile);
                     }
-                    if (sf.base.isBlazor()) {
-                        e.cancel = false;
+                    if (_this.parent.isServerRendered) {
                         /* tslint:disable */
-                        _this.uploadObj._internalRenderSelect(e, rawFile);
+                        _this.uploadObj._internalRenderSelect(selectArgs, rawFile);
                         /* tslint:enable */
                     }
                 });
             },
+            beforeUpload: function (args) {
+                if (_this.parent.isServerRendered) {
+                    beforeUploadArgs = JSON.parse(JSON.stringify(args));
+                    args.cancel = true;
+                    _this.parent.trigger(imageUploading, beforeUploadArgs, function (beforeUploadArgs) {
+                        if (beforeUploadArgs.cancel) {
+                            return;
+                        }
+                        /* tslint:disable */
+                        _this.uploadObj.uploadFiles(rawFile, null);
+                        /* tslint:enable */
+                    });
+                }
+            },
             uploading: function (e) {
-                _this.parent.trigger(imageUploading, e);
+                if (!_this.parent.isServerRendered) {
+                    _this.parent.trigger(imageUploading, e);
+                }
             },
             success: function (e) {
                 _this.parent.trigger(imageUploadSuccess, e, function (e) {
@@ -17774,6 +17817,8 @@ var Image = /** @class */ (function () {
         var timeOut = dragEvent.dataTransfer.files[0].size > 1000000 ? 300 : 100;
         setTimeout(function () { proxy.refreshPopup(imageElement); }, timeOut);
         var range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
+        var rawFile;
+        var beforeUploadArgs;
         this.uploadObj = new sf.inputs.Uploader({
             asyncSettings: {
                 saveUrl: this.parent.insertImageSettings.saveUrl,
@@ -17793,14 +17838,35 @@ var Image = /** @class */ (function () {
                 sf.base.detach(imageElement);
                 _this.popupObj.close();
             },
+            beforeUpload: function (args) {
+                if (_this.parent.isServerRendered) {
+                    beforeUploadArgs = JSON.parse(JSON.stringify(args));
+                    args.cancel = true;
+                    isUploading = true;
+                    _this.parent.trigger(imageUploading, beforeUploadArgs, function (beforeUploadArgs) {
+                        if (beforeUploadArgs.cancel) {
+                            return;
+                        }
+                        /* tslint:disable */
+                        _this.uploadObj.uploadFiles(rawFile, null);
+                        _this.parent.inputElement.contentEditable = 'false';
+                        /* tslint:enable */
+                    });
+                }
+            },
             uploading: function (e) {
-                isUploading = true;
-                _this.parent.trigger(imageUploading, e);
-                _this.parent.inputElement.contentEditable = 'false';
+                if (!_this.parent.isServerRendered) {
+                    isUploading = true;
+                    _this.parent.trigger(imageUploading, e);
+                    _this.parent.inputElement.contentEditable = 'false';
+                }
             },
             selected: function (e) {
                 if (isUploading) {
                     e.cancel = true;
+                }
+                if (_this.parent.isServerRendered) {
+                    rawFile = e.filesData;
                 }
             },
             failure: function (e) {
@@ -20217,6 +20283,7 @@ var RichTextEditor = /** @class */ (function (_super) {
             this.formatter.enableUndo(this);
         }
         this.setPlaceHolder();
+        this.notify(contentChanged, {});
     };
     RichTextEditor.prototype.htmlPurifier = function (command, value) {
         if (this.editorMode === 'HTML') {
@@ -20716,6 +20783,25 @@ var RichTextEditor = /** @class */ (function (_super) {
         return wrapperElm.innerHTML;
     };
     /**
+     * It shows the inline quick toolbar
+     */
+    RichTextEditor.prototype.showInlineToolbar = function () {
+        if (this.inlineMode.enable) {
+            var currentRange = this.getRange();
+            var targetElm = currentRange.endContainer.nodeName === '#text' ?
+                currentRange.endContainer.parentElement : currentRange.endContainer;
+            var x = currentRange.getClientRects()[0].left;
+            var y = currentRange.getClientRects()[0].top;
+            this.quickToolbarModule.showInlineQTBar(x, y, targetElm);
+        }
+    };
+    /**
+     * It hides the inline quick toolbar
+     */
+    RichTextEditor.prototype.hideInlineToolbar = function () {
+        this.quickToolbarModule.hideInlineQTBar();
+    };
+    /**
      * For internal use only - Get the module name.
      * @private
      * @deprecated
@@ -20874,7 +20960,11 @@ var RichTextEditor = /** @class */ (function (_super) {
     RichTextEditor.prototype.updatePanelValue = function () {
         var value = this.value;
         value = (this.enableHtmlEncode && this.value) ? decode(value) : value;
+        var getTextArea = this.element.querySelector('.e-rte-srctextarea');
         if (value) {
+            if (getTextArea && getTextArea.style.display === 'block') {
+                getTextArea.value = this.value;
+            }
             if (this.valueContainer) {
                 this.valueContainer.value = (this.enableHtmlEncode) ? this.value : value;
             }
@@ -20887,6 +20977,9 @@ var RichTextEditor = /** @class */ (function (_super) {
             }
         }
         else {
+            if (getTextArea && getTextArea.style.display === 'block') {
+                getTextArea.value = '';
+            }
             if (this.editorMode === 'HTML') {
                 this.inputElement.innerHTML = '<p><br/></p>';
             }
@@ -21366,8 +21459,8 @@ var RichTextEditor = /** @class */ (function (_super) {
             }
             this.preventDefaultResize(e);
             this.trigger('focus', { event: e, isInteracted: Object.keys(e).length === 0 ? false : true });
-            if (!sf.base.isNullOrUndefined(this.saveInterval) && this.saveInterval > 0) {
-                this.timeInterval = setInterval(this.updateIntervalValue.bind(this), this.saveInterval);
+            if (!sf.base.isNullOrUndefined(this.saveInterval) && this.saveInterval > 0 && !this.autoSaveOnIdle) {
+                this.timeInterval = setInterval(this.updateValueOnIdle.bind(this), this.saveInterval);
             }
             sf.base.EventHandler.add(document, 'mousedown', this.onDocumentClick, this);
         }
@@ -21395,10 +21488,14 @@ var RichTextEditor = /** @class */ (function (_super) {
         }
         return value;
     };
-    RichTextEditor.prototype.updateIntervalValue = function () {
+    RichTextEditor.prototype.updateValueOnIdle = function () {
         this.setProperties({ value: this.getUpdatedValue() }, true);
         this.valueContainer.value = this.value;
         this.invokeChangeEvent();
+    };
+    RichTextEditor.prototype.updateIntervalValue = function () {
+        clearTimeout(this.idleInterval);
+        this.idleInterval = setTimeout(this.updateValueOnIdle.bind(this), 0);
     };
     RichTextEditor.prototype.onDocumentClick = function (e) {
         var target = e.target;
@@ -21448,6 +21545,19 @@ var RichTextEditor = /** @class */ (function (_super) {
         }
         else {
             this.isRTE = true;
+        }
+    };
+    /**
+     * invokeChangeEvent method
+     * @hidden
+     * @deprecated
+     */
+    RichTextEditor.prototype.contentChanged = function () {
+        if (this.autoSaveOnIdle) {
+            if (!sf.base.isNullOrUndefined(this.saveInterval)) {
+                clearTimeout(this.timeInterval);
+                this.timeInterval = setTimeout(this.updateIntervalValue.bind(this), this.saveInterval);
+            }
         }
     };
     /**
@@ -21551,6 +21661,7 @@ var RichTextEditor = /** @class */ (function (_super) {
     RichTextEditor.prototype.wireEvents = function () {
         this.element.addEventListener('focusin', this.onFocusHandler, true);
         this.element.addEventListener('focusout', this.onBlurHandler, true);
+        this.on(contentChanged, this.contentChanged, this);
         if (this.readonly && this.enabled) {
             return;
         }
@@ -21625,6 +21736,7 @@ var RichTextEditor = /** @class */ (function (_super) {
     RichTextEditor.prototype.unWireEvents = function () {
         this.element.removeEventListener('focusin', this.onFocusHandler, true);
         this.element.removeEventListener('focusout', this.onBlurHandler, true);
+        this.off(contentChanged, this.contentChanged);
         if (this.readonly && this.enabled) {
             return;
         }
@@ -21694,6 +21806,9 @@ var RichTextEditor = /** @class */ (function (_super) {
     __decorate$1([
         sf.base.Property(null)
     ], RichTextEditor.prototype, "placeholder", void 0);
+    __decorate$1([
+        sf.base.Property(false)
+    ], RichTextEditor.prototype, "autoSaveOnIdle", void 0);
     __decorate$1([
         sf.base.Property(false)
     ], RichTextEditor.prototype, "readonly", void 0);
@@ -21862,38 +21977,6 @@ var RichTextEditor = /** @class */ (function (_super) {
  * Rich Text Editor component exported items
  */
 
-/**
- * Base export
- */
-
-/**
- * Base export
- */
-
-/**
- * Base export
- */
-
-/**
- * Base export
- */
-
-/**
- * Export all markdown plugins
- */
-
-/**
- * Base export
- */
-
-/**
- * Export the common module
- */
-
-/**
- * Rich Text Editor component exported items
- */
-
 RichTextEditor.Inject(Toolbar$1, Link, Image, Count, QuickToolbar, HtmlEditor, MarkdownEditor, Table, PasteCleanup, Resize);
 
 exports.Toolbar = Toolbar$1;
@@ -21935,6 +22018,7 @@ exports.created = created;
 exports.destroyed = destroyed;
 exports.load = load;
 exports.initialLoad = initialLoad;
+exports.contentChanged = contentChanged;
 exports.initialEnd = initialEnd;
 exports.iframeMouseDown = iframeMouseDown;
 exports.destroy = destroy;
@@ -22158,95 +22242,11 @@ exports.sanitizeHelper = sanitizeHelper;
 exports.convertToBlob = convertToBlob;
 exports.ServiceLocator = ServiceLocator;
 exports.RendererFactory = RendererFactory;
-exports.EditorManager = EditorManager;
-exports.IMAGE = IMAGE;
-exports.TABLE = TABLE;
-exports.LINK = LINK;
-exports.INSERT_ROW = INSERT_ROW;
-exports.INSERT_COLUMN = INSERT_COLUMN;
-exports.DELETEROW = DELETEROW;
-exports.DELETECOLUMN = DELETECOLUMN;
-exports.REMOVETABLE = REMOVETABLE;
-exports.TABLEHEADER = TABLEHEADER;
-exports.TABLE_VERTICAL_ALIGN = TABLE_VERTICAL_ALIGN;
-exports.ALIGNMENT_TYPE = ALIGNMENT_TYPE;
-exports.INDENT_TYPE = INDENT_TYPE;
-exports.DEFAULT_TAG = DEFAULT_TAG;
-exports.BLOCK_TAGS = BLOCK_TAGS;
-exports.IGNORE_BLOCK_TAGS = IGNORE_BLOCK_TAGS;
-exports.TABLE_BLOCK_TAGS = TABLE_BLOCK_TAGS;
-exports.SELECTION_TYPE = SELECTION_TYPE;
-exports.INSERTHTML_TYPE = INSERTHTML_TYPE;
-exports.INSERT_TEXT_TYPE = INSERT_TEXT_TYPE;
-exports.CLEAR_TYPE = CLEAR_TYPE;
-exports.CLASS_IMAGE_RIGHT = CLASS_IMAGE_RIGHT;
-exports.CLASS_IMAGE_LEFT = CLASS_IMAGE_LEFT;
-exports.CLASS_IMAGE_CENTER = CLASS_IMAGE_CENTER;
-exports.CLASS_IMAGE_BREAK = CLASS_IMAGE_BREAK;
-exports.CLASS_CAPTION = CLASS_CAPTION;
-exports.CLASS_RTE_CAPTION = CLASS_RTE_CAPTION;
-exports.CLASS_CAPTION_INLINE = CLASS_CAPTION_INLINE;
-exports.CLASS_IMAGE_INLINE = CLASS_IMAGE_INLINE;
-exports.Lists = Lists;
-exports.markerClassName = markerClassName;
-exports.DOMNode = DOMNode;
-exports.Alignments = Alignments;
-exports.Indents = Indents;
-exports.Formats = Formats;
-exports.LinkCommand = LinkCommand;
-exports.InsertMethods = InsertMethods;
-exports.InsertTextExec = InsertTextExec;
-exports.InsertHtmlExec = InsertHtmlExec;
-exports.InsertHtml = InsertHtml;
-exports.IsFormatted = IsFormatted;
-exports.MsWordPaste = MsWordPaste;
-exports.NodeCutter = NodeCutter;
-exports.ImageCommand = ImageCommand;
-exports.SelectionCommands = SelectionCommands;
-exports.SelectionBasedExec = SelectionBasedExec;
-exports.ClearFormatExec = ClearFormatExec;
-exports.UndoRedoManager = UndoRedoManager;
-exports.TableCommand = TableCommand;
-exports.statusCollection = statusCollection;
-exports.ToolbarStatus = ToolbarStatus;
-exports.NodeSelection = NodeSelection;
-exports.MarkdownParser = MarkdownParser;
-exports.LISTS_COMMAND = LISTS_COMMAND;
-exports.selectionCommand = selectionCommand;
-exports.LINK_COMMAND = LINK_COMMAND;
-exports.CLEAR_COMMAND = CLEAR_COMMAND;
-exports.MD_TABLE = MD_TABLE;
-exports.ClearFormat = ClearFormat;
-exports.MDLists = MDLists;
-exports.MDFormats = MDFormats;
-exports.MarkdownSelection = MarkdownSelection;
-exports.UndoRedoCommands = UndoRedoCommands;
-exports.MDSelectionFormats = MDSelectionFormats;
-exports.MDLink = MDLink;
-exports.MDTable = MDTable;
-exports.markdownFormatTags = markdownFormatTags;
-exports.markdownSelectionTags = markdownSelectionTags;
-exports.markdownListsTags = markdownListsTags;
-exports.htmlKeyConfig = htmlKeyConfig;
-exports.markdownKeyConfig = markdownKeyConfig;
-exports.pasteCleanupGroupingTags = pasteCleanupGroupingTags;
-exports.listConversionFilters = listConversionFilters;
-exports.selfClosingTags = selfClosingTags;
-exports.KEY_DOWN = KEY_DOWN;
-exports.ACTION = ACTION;
-exports.FORMAT_TYPE = FORMAT_TYPE;
-exports.KEY_DOWN_HANDLER = KEY_DOWN_HANDLER;
-exports.LIST_TYPE = LIST_TYPE;
-exports.KEY_UP_HANDLER = KEY_UP_HANDLER;
-exports.KEY_UP = KEY_UP;
-exports.MODEL_CHANGED_PLUGIN = MODEL_CHANGED_PLUGIN;
-exports.MODEL_CHANGED = MODEL_CHANGED;
-exports.MS_WORD_CLEANUP_PLUGIN = MS_WORD_CLEANUP_PLUGIN;
-exports.MS_WORD_CLEANUP = MS_WORD_CLEANUP;
 
 return exports;
 
 });
+sfBlazor.modules["richtexteditor"] = "richtexteditor.RichTextEditor";
 sfBlazor.loadDependencies(sfBlazor.dependencyJson.richtexteditor, () => {
-    sf.richtexteditor = sf.richtexteditor({});
+    sf.richtexteditor = sf.base.extend({}, sf.richtexteditor, sfrichtexteditor({}));
 });

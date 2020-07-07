@@ -60,6 +60,14 @@ export abstract class ElementLayouter {
         let nextPage : PdfPage = section.add() as PdfPage;
         return nextPage;
     }
+    protected getPaginateBounds(param: PdfLayoutParams): RectangleF {
+        if ((param == null)) {
+            throw new Error('ArgumentNullException : param');
+        }
+        let result : RectangleF = param.format.usePaginateBounds ? param.format.paginateBounds
+         : new RectangleF(param.bounds.x, 0, param.bounds.width, param.bounds.height);
+        return result;
+    }
     /**
      * `Layouts` the element.
      * @private

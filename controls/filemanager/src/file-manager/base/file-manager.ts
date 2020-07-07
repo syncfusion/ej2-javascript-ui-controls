@@ -24,7 +24,7 @@ import { BeforeSendEventArgs, SuccessEventArgs, FailureEventArgs, FileLoadEventA
 import { FileOpenEventArgs, FileSelectEventArgs, MenuClickEventArgs, MenuOpenEventArgs } from './interface';
 import { ToolbarClickEventArgs, ToolbarCreateEventArgs, UploadListCreateArgs } from './interface';
 import { PopupOpenCloseEventArgs, BeforePopupOpenCloseEventArgs, BeforeDownloadEventArgs, BeforeImageLoadEventArgs } from './interface';
-import { refresh, getPathObject, getLocaleText, setNextPath, createDeniedDialog } from '../common/utility';
+import { refresh, getPathObject, getLocaleText, setNextPath, createDeniedDialog, getCssClass } from '../common/utility';
 import { hasContentAccess, hasUploadAccess, updateLayout, createNewFolder, uploadItem } from '../common/utility';
 import { TreeView as BaseTreeView } from '@syncfusion/ej2-navigations';
 import { ContextMenuSettingsModel } from '../models/contextMenu-settings-model';
@@ -112,7 +112,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     public isMobile: Boolean;
     public isBigger: Boolean;
     public isFile: boolean = false;
-    public sortOrder: SortOrder = 'Ascending';
     public sortBy: string = 'name';
     public actionRecords: Object[];
     public activeRecords: Object[];
@@ -268,6 +267,15 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     public path: string;
 
     /**
+     * Specifies the target element in which the File Manager’s dialog will be displayed.
+     * The default value is null, which refers to the File Manager element.
+     * @default null
+     * @blazorType string
+     */
+    @Property(null)
+    public popupTarget: HTMLElement | string;
+
+    /**
      * Specifies the search settings of the file manager.
      * @default {
      *  allowSearchOnTyping: true,
@@ -312,6 +320,17 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      */
     @Property(true)
     public showThumbnail: boolean;
+
+    /**
+     * Specifies a value that indicates whether the folders and files are sorted in the ascending or descending order,
+     * or they are not sorted at all. The available types of sort orders are,
+     * `None` - Indicates that the folders and files are not sorted.
+     * `Ascending` - Indicates that the folders and files are sorted in the ascending order.
+     * `Descending` - Indicates that the folders and files are sorted in the descending order.
+     * @default 'Ascending'
+     */
+    @Property('Ascending')
+    public sortOrder: SortOrder;
 
     /**
      * Specifies the group of items aligned horizontally in the toolbar.
@@ -815,7 +834,8 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
             visible: false,
             isModal: true,
             width: '350px',
-            target: '#' + this.element.id,
+            target: this.popupTarget ? this.popupTarget : '#' + this.element.id,
+            cssClass: getCssClass(this, this.isMobile ? CLS.MOB_POPUP : CLS.ROOT_POPUP),
             locale: this.locale,
             allowDragging: true,
             position: { X: 'center', Y: 'center' },
@@ -1223,6 +1243,24 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
                     let width: string | number = !isNOU(newProp.width) ? formatUnit(newProp.width) : newProp.width;
                     setAttr(this.element, { 'width': width });
                     this.notify(events.modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
+                    break;
+                case 'sortOrder':
+                    refresh(this);
+                    this.notify(events.sortByChange, {});
+                    break;
+                case 'popupTarget':
+                    if (this.uploadDialogObj) {
+                        this.uploadDialogObj.target = newProp.popupTarget;
+                    }
+                    if (this.dialogObj) {
+                        this.dialogObj.target = newProp.popupTarget;
+                    }
+                    if (this.extDialogObj) {
+                        this.extDialogObj.target = newProp.popupTarget;
+                    }
+                    if (this.viewerObj) {
+                        this.viewerObj.target = newProp.popupTarget;
+                    }
                     break;
             }
         }

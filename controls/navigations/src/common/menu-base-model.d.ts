@@ -241,6 +241,7 @@ export interface MenuBaseModel extends ComponentModel{
      * children: "items" }
      * @private
      */
+	// tslint:disable-next-line
     fields?: FieldSettingsModel;
 
     /**

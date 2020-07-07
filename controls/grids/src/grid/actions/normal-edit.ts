@@ -455,9 +455,9 @@ export class NormalEdit {
     protected closeEdit(): void {
         if (!this.parent.isEdit) { return; }
         let gObj: IGrid = this.parent;
-        let args: { data: Object, requestType: string, selectedRow: Number, type: string } = extend(this.args, {
-            requestType: 'cancel', type: events.actionBegin, data: this.previousData, selectedRow: gObj.selectedRowIndex
-        }) as { data: Object, requestType: string, selectedRow: Number, type: string };
+        let args: { data: Object, requestType: string, cancel: Boolean, selectedRow: Number, type: string } = extend(this.args, {
+            requestType: 'cancel', type: events.actionBegin, cancel: false, data: this.previousData, selectedRow: gObj.selectedRowIndex
+        }) as { data: Object, requestType: string, cancel: Boolean, selectedRow: Number, type: string };
         gObj.notify(events.virtualScrollEditCancel, args);
         this.blazorTemplate();
         if (isBlazor()) {

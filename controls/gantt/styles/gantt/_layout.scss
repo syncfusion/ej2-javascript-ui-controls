@@ -572,6 +572,21 @@
         z-index: 0;
       }
 
+      .e-rangecontainer {
+
+        .e-leftarc {
+          border-bottom-left-radius: $gantt-range-container-arc-radius;
+          border-top-left-radius: $gantt-range-container-arc-radius;
+          position: absolute;
+        }
+
+        .e-rightarc {
+          border-bottom-right-radius: $gantt-range-container-arc-radius;
+          border-top-right-radius: $gantt-range-container-arc-radius;
+          position: absolute;
+        }
+      }
+
       .e-event-markers {
         border-left: 1px dashed;
         position: absolute;

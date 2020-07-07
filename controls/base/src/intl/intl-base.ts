@@ -1,7 +1,7 @@
 import { NumberFormatOptions, DateFormatOptions, defaultCurrencyCode } from '../internationalization';
 import { NumericParts } from './number-parser';
 import { getValue, isNullOrUndefined, extend, isBlazor } from '../util';
-import { ParserBase as parser } from './parser-base';
+import { ParserBase as parser, getBlazorCurrencySymbol } from './parser-base';
 import { DateFormat, FormatOptions } from './date-formatter';
 import { NumberFormat, FormatParts, CommonOptions } from './number-formatter';
 import { isUndefined } from '../util';
@@ -1144,6 +1144,21 @@ export namespace IntlBase {
             firstDay = mapper[iCulture] || defaultFirstDay;
         }
         return firstDayMapper[firstDay];
+    }
+    /**
+     * @private
+     * @param pData 
+     * @param aCurrency 
+     * @param rCurrency 
+     */
+    export function replaceBlazorCurrency(pData: NegativeData[], aCurrency: string, rCurrency: string): void {
+        let iCurrency: string = getBlazorCurrencySymbol(rCurrency);
+        if (aCurrency !== iCurrency) {
+            for (let data of pData) {
+                data.nend = data.nend.replace(aCurrency, iCurrency);
+                data.nlead = data.nlead.replace(aCurrency, iCurrency);
+            }
+        }
     }
     /**
      * @private

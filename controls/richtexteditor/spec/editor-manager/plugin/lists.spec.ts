@@ -637,33 +637,6 @@ describe ('left indent testing', () => {
             });
         });
 
-        describe('Apply UL to OL list which is right indented and then left indent', () => {            
-            let innerText: string = `<div style="color:red;" id="content-edit" contenteditable="true" class="e-node-deletable e-node-inner"><ol><li style="list-style-type: none;"><ol><li id="start">list 1<ol><li id="sublist">list 2</li></ol></li><li id="end">list 3</li></ol></li></ol></div>`;            
-            let elem: HTMLElement = createElement('div', {
-                id: 'dom-node', innerHTML: innerText.trim()
-            });
-            beforeAll(() => {
-                document.body.appendChild(elem);
-                editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
-                editNode = editorObj.editableElement as HTMLElement;
-            });
-            it('Apply UL to OL list which is right indented and then left indent', () => {
-                startNode = editNode.querySelector('#start');
-                endNode = editNode.querySelector('#end');
-                editorObj.nodeSelection.setSelectionText(document, startNode.childNodes[0], endNode, 1, 1);
-                editorObj.execCommand("Lists", 'UL', null);
-                expect(editNode.querySelector('#sublist').parentElement.tagName === 'UL').toBe(true);
-                expect(editNode.querySelector('#start').parentElement.closest('LI').parentElement.tagName === 'UL').toBe(true);
-
-                editorObj.execCommand("Indents", 'Outdent', null);
-                expect(editNode.querySelector('#sublist').parentElement.tagName === 'UL').toBe(true);
-                expect(editNode.querySelector('#start').parentElement.tagName === 'UL').toBe(true);
-            });
-            afterAll(() => {
-                detach(elem);
-            });
-        });
-
         describe(' basic OL format apply and revert', () => {
             let elem: HTMLElement = createElement('div', {
                 id: 'dom-node', innerHTML: olHTML.trim()

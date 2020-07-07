@@ -67,7 +67,7 @@ describe('- Editing', () => {
             pivotGridObj.appendTo('#PivotGrid');
         });
         beforeEach((done: Function) => {
-            setTimeout(() => { done(); }, 1000);
+            setTimeout(() => { done(); }, 2000);
         });
         let event: MouseEvent = new MouseEvent('dblclick', {
             'view': window,
@@ -105,7 +105,7 @@ describe('- Editing', () => {
                 document.querySelectorAll('.e-drillthrough-grid .e-tbar-btn')[3].dispatchEvent(click);
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('click california-quantity-female', (done: Function) => {
             //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -119,7 +119,7 @@ describe('- Editing', () => {
                 document.querySelectorAll('.e-drillthrough-grid .e-tbar-btn')[3].dispatchEvent(click);
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('remove tamilnadu single', (done: Function) => {
             //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -129,7 +129,7 @@ describe('- Editing', () => {
                 document.querySelectorAll('.e-drillthrough-grid tr')[2].querySelector('td').dispatchEvent(click);
                 document.querySelectorAll('.e-drillthrough-grid .e-tbar-btn')[2].dispatchEvent(click);
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('remove tamilnadu single check', (done: Function) => {
             //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -137,7 +137,7 @@ describe('- Editing', () => {
                 expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="11"]')[0].textContent).toBe("12");
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('remove tamilnadu full', (done: Function) => {
             //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -147,7 +147,7 @@ describe('- Editing', () => {
                 document.querySelectorAll('.e-drillthrough-grid tr')[2].querySelector('td').dispatchEvent(click);
                 document.querySelectorAll('.e-drillthrough-grid .e-tbar-btn')[2].dispatchEvent(click);
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('remove tamilnadu full check', (done: Function) => {
             //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -155,7 +155,7 @@ describe('- Editing', () => {
                 expect(document.querySelectorAll('.e-drillthrough-grid tr')[2].textContent).toBe("No records to display");
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('add tamilnadu', (done: Function) => {
             //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -164,7 +164,7 @@ describe('- Editing', () => {
             setTimeout(() => {
                 document.querySelectorAll('.e-drillthrough-grid .e-tbar-btn')[0].dispatchEvent(click);
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('add tamilnadu 1', (done: Function) => {
             //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -179,7 +179,7 @@ describe('- Editing', () => {
                 document.querySelectorAll('.e-drillthrough-grid .e-numeric span')[5].dispatchEvent(mousedown);
                 document.querySelectorAll('.e-drillthrough-grid .e-numeric span')[5].dispatchEvent(mouseup);
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('add tamilnadu check', (done: Function) => {
             ///jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -188,7 +188,7 @@ describe('- Editing', () => {
                 document.querySelectorAll('.e-drillthrough-grid .e-tbar-btn')[3].dispatchEvent(click);
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
 
 
@@ -201,7 +201,7 @@ describe('- Editing', () => {
                 pivotGridObj.dataSourceSettings.dataSource = pivot_dataset as IDataSet[];
                 pivotGridObj.refresh();
                 done();
-            }, 1000);
+            }, 2000);
         });
 
         it('batch click bike-female-balance', (done: Function) => {
@@ -212,7 +212,7 @@ describe('- Editing', () => {
                 document.querySelectorAll('.e-drillthrough-grid .e-numeric span')[0].dispatchEvent(mousedown);
                 document.querySelectorAll('.e-drillthrough-grid .e-numeric span')[0].dispatchEvent(mouseup);
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('batch click bike-female-balance check', (done: Function) => {
             //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -221,14 +221,14 @@ describe('- Editing', () => {
                 document.querySelectorAll('.e-drillthrough-grid .e-tbar-btn')[2].dispatchEvent(click);
                 document.querySelectorAll('.e-drillthrough-grid .e-tbar-btn')[2].dispatchEvent(click);
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('dummy', (done: Function) => {
             //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
                 expect(true).toBe(true);
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('batch click california-quantity-female', (done: Function) => {
             expect(document.querySelectorAll('td[aria-colindex="3"]')[0].textContent).toBe("476");
@@ -239,7 +239,7 @@ describe('- Editing', () => {
                 document.querySelectorAll('.e-drillthrough-grid .e-numeric span')[1].dispatchEvent(mousedown);
                 document.querySelectorAll('.e-drillthrough-grid .e-numeric span')[1].dispatchEvent(mouseup);
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('batch click california-quantity-female', (done: Function) => {
             //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -249,7 +249,7 @@ describe('- Editing', () => {
                 document.querySelectorAll('.e-drillthrough-grid .e-tbar-btn')[2].dispatchEvent(click);
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('batch remove tamilnadu single', (done: Function) => {
             ///jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -260,7 +260,7 @@ describe('- Editing', () => {
                 document.querySelectorAll('.e-drillthrough-grid .e-tbar-btn')[2].dispatchEvent(click);
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('dialogmode', (done: Function) => {
             //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -269,7 +269,7 @@ describe('- Editing', () => {
                 pivotGridObj.dataSourceSettings.dataSource = pivot_dataset as IDataSet[];
                 pivotGridObj.refresh();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('dialog click bike-female-balance', (done: Function) => {
             //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -280,7 +280,7 @@ describe('- Editing', () => {
                 document.querySelectorAll('.e-spin-down')[0].dispatchEvent(mouseup);
                 document.querySelectorAll('.e-edit-dialog button.e-primary')[0].dispatchEvent(click);
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('dialog click bike-female-balance check', (done: Function) => {
             //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -288,7 +288,7 @@ describe('- Editing', () => {
                 expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="11"]')[0].textContent).toBe("17");
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('dialog click california-quantity-female', (done: Function) => {
             //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -300,7 +300,7 @@ describe('- Editing', () => {
                 document.querySelectorAll('.e-spin-up')[0].dispatchEvent(mouseup);
                 document.querySelectorAll('.e-edit-dialog button.e-primary')[0].dispatchEvent(click);
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('dialog click california-quantity-female', (done: Function) => {
             //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -308,7 +308,7 @@ describe('- Editing', () => {
                 expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="11"]')[0].textContent).toBe("21");
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
 
         it('command columns mode', (done: Function) => {
@@ -318,7 +318,7 @@ describe('- Editing', () => {
                 pivotGridObj.dataSourceSettings.dataSource = pivot_dataset as IDataSet[];
                 pivotGridObj.refresh();
                 done();
-            }, 1000);
+            }, 2000);
         });
 
         it('cc click bike-female-balance', (done: Function) => {
@@ -327,7 +327,7 @@ describe('- Editing', () => {
             setTimeout(() => {
                 document.querySelectorAll('.e-drillthrough-grid .e-editbutton')[0].dispatchEvent(click);
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('cc click bike-female-balance save', (done: Function) => {
             //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -336,7 +336,7 @@ describe('- Editing', () => {
                 document.querySelectorAll('.e-drillthrough-grid .e-spin-down')[0].dispatchEvent(mouseup);
                 document.querySelectorAll('.e-drillthrough-grid .e-savebutton')[2].dispatchEvent(click);
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('cc click bike-female-balance check', (done: Function) => {
             //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -344,7 +344,7 @@ describe('- Editing', () => {
                 expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="11"]')[0].textContent).toBe("16");
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('cc click california-quantity-female', (done: Function) => {
             //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -353,7 +353,7 @@ describe('- Editing', () => {
             setTimeout(() => {
                 document.querySelectorAll('.e-drillthrough-grid .e-editbutton')[0].dispatchEvent(click);
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('cc click california-quantity-female save', (done: Function) => {
             //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -362,7 +362,7 @@ describe('- Editing', () => {
                 document.querySelectorAll('.e-drillthrough-grid .e-spin-up')[0].dispatchEvent(mouseup);
                 document.querySelectorAll('.e-drillthrough-grid .e-savebutton')[2].dispatchEvent(click);
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('cc click california-quantity-female check', (done: Function) => {
             //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -370,7 +370,7 @@ describe('- Editing', () => {
                 expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="11"]')[0].textContent).toBe("22");
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('cc click bike-female-balance', (done: Function) => {
             //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -378,7 +378,7 @@ describe('- Editing', () => {
             setTimeout(() => {
                 document.querySelectorAll('.e-drillthrough-grid .e-editbutton')[0].dispatchEvent(click);
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('cc click bike-female-balance save', (done: Function) => {
             //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -393,7 +393,7 @@ describe('- Editing', () => {
                 document.querySelectorAll('.e-drillthrough-grid .e-spin-up')[0].dispatchEvent(mouseup);
                 document.querySelectorAll('.e-drillthrough-grid .e-savebutton')[2].dispatchEvent(click);
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('cc click bike-female-balance check', (done: Function) => {
             //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -401,7 +401,7 @@ describe('- Editing', () => {
                 expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="11"]')[0].textContent).toBe("20");
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('cc click california-quantity-female', (done: Function) => {
             //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -409,7 +409,7 @@ describe('- Editing', () => {
             setTimeout(() => {
                 document.querySelectorAll('.e-drillthrough-grid .e-editbutton')[0].dispatchEvent(click);
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('cc click california-quantity-female save', (done: Function) => {
             //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -424,7 +424,7 @@ describe('- Editing', () => {
                 document.querySelectorAll('.e-drillthrough-grid .e-spin-down')[0].dispatchEvent(mouseup);
                 document.querySelectorAll('.e-drillthrough-grid .e-savebutton')[2].dispatchEvent(click);
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('cc click california-quantity-female check', (done: Function) => {
             ///jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -432,7 +432,7 @@ describe('- Editing', () => {
                 expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="11"]')[0].textContent).toBe("18");
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('apply value filter', () => {
             expect(document.querySelector('.e-drillthrough-dialog')).toBeTruthy;
@@ -445,7 +445,7 @@ describe('- Editing', () => {
             setTimeout(() => {
                 expect(document.querySelectorAll('td[aria-colindex="9"]')[4].textContent).toBe("4663");
                 done();
-            }, 1000);
+            }, 2000);
         });
     });
 

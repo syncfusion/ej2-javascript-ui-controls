@@ -66,11 +66,13 @@ export class Action {
                 (obj: { [key: string]: string }) => parseInt(obj[this.parent.cardSettings.headerField], 10))) + 1;
         }
         newData[this.parent.keyField] = closest(target, '.' + cls.CONTENT_CELLS_CLASS).getAttribute('data-key');
-        if (this.parent.cardSettings.priority) {
-            newData[this.parent.cardSettings.priority] = 1;
+        if (this.parent.sortSettings.sortBy === 'Index') {
+            newData[this.parent.sortSettings.field] = 1;
             if (closest(target, '.' + cls.CONTENT_CELLS_CLASS).querySelector('.' + cls.CARD_CLASS)) {
-                let data: { [key: string]: Object } = this.parent.getCardDetails(target.nextElementSibling.firstElementChild);
-                newData[this.parent.cardSettings.priority] = data[this.parent.cardSettings.priority] as number + 1;
+                let card: Element = this.parent.sortSettings.direction === 'Ascending' ?
+                    target.nextElementSibling.lastElementChild : target.nextElementSibling.firstElementChild;
+                let data: { [key: string]: Object } = this.parent.getCardDetails(card);
+                newData[this.parent.sortSettings.field] = data[this.parent.sortSettings.field] as number + 1;
             }
         }
         if (this.parent.kanbanData.length !== 0 && this.parent.swimlaneSettings.keyField &&

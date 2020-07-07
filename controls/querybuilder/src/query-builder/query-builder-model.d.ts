@@ -1,5 +1,5 @@
 import { Component, INotifyPropertyChanged, NotifyPropertyChanges, getComponent, MouseEventArgs, Browser } from '@syncfusion/ej2-base';import { Property, ChildProperty, Complex, L10n, closest, extend, isNullOrUndefined, Collection, cldrData } from '@syncfusion/ej2-base';import { getInstance, addClass, removeClass, rippleEffect, detach, classList, isBlazor } from '@syncfusion/ej2-base';import { Internationalization, DateFormatOptions, KeyboardEventArgs, getUniqueID } from '@syncfusion/ej2-base';import { Button, RadioButton, ChangeEventArgs as ButtonChangeEventArgs, CheckBox } from '@syncfusion/ej2-buttons';import { DropDownList, ChangeEventArgs as DropDownChangeEventArgs, FieldSettingsModel, CheckBoxSelection } from '@syncfusion/ej2-dropdowns';import { MultiSelect, MultiSelectChangeEventArgs, PopupEventArgs  } from '@syncfusion/ej2-dropdowns';import { EmitType, Event, EventHandler, getValue, Animation, BaseEventArgs } from '@syncfusion/ej2-base';import { Query, Predicate, DataManager, Deferred, UrlAdaptor } from '@syncfusion/ej2-data';import { TextBox, NumericTextBox, InputEventArgs, ChangeEventArgs as InputChangeEventArgs } from '@syncfusion/ej2-inputs';import { DatePicker, ChangeEventArgs as CalendarChangeEventArgs } from '@syncfusion/ej2-calendars';import { DropDownButton, ItemModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';import { Tooltip, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { resetBlazorTemplate, updateBlazorTemplate, blazorTemplates, compile as templateCompiler } from '@syncfusion/ej2-base';
-import {TemplateColumn,Validation,FormatObject,ChangeEventArgs,RuleChangeEventArgs,DisplayMode,SortDirection} from "./query-builder";
+import {TemplateColumn,Validation,FormatObject,ActionEventArgs,ChangeEventArgs,RuleChangeEventArgs,DisplayMode,SortDirection} from "./query-builder";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -36,6 +36,11 @@ export interface ColumnsModel {
      * @default null
      */
     operators?: { [key: string]: Object }[];
+
+    /**
+     * Specifies the rule template for the field with any other widgets.
+     */
+    ruleTemplate?: string;
 
     /**
      * Specifies the template for value field such as slider or any other widgets.
@@ -168,6 +173,13 @@ export interface QueryBuilderModel extends ComponentModel{
      * @blazorProperty 'Created'
      */
     created?: EmitType<Event>;
+
+    /**
+     * Triggers when field, operator, value is change.
+     * @event
+     * @blazorProperty 'OnActionBegin'
+     */
+    actionBegin?: EmitType<ActionEventArgs>;
 
     /**
      * Triggers before the condition (And/Or), field, operator, value is changed.

@@ -112,7 +112,7 @@ export class Print {
             }
             if (printImage && printImage.uniqueId === proxy.pdfViewerBase.documentId) {
                 let annotationSource: string = '';
-                if (proxy.pdfViewer.annotationSettings.isPrint) {
+                if (!proxy.pdfViewer.annotationSettings.skipPrint) {
                     // tslint:disable-next-line
                     let annotationCollections: any = proxy.pdfViewerBase.documentAnnotationCollections;
                     if (annotationCollections && annotationCollections[printImage.pageNumber] && proxy.pdfViewerBase.isTextMarkupAnnotationModule()) {

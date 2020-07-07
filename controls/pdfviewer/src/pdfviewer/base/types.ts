@@ -1,3 +1,4 @@
+
 /**
  * Enum toolbarItem for toolbar settings
  */
@@ -67,6 +68,11 @@ export type CalibrationUnit = 'pt' | 'in' | 'mm' | 'cm' | 'p' | 'ft'| 'ft_in' | 
  * Enum unit for ContextMenu Actions
  */
 export type ContextMenuAction = 'None' | 'MouseUp' | 'RightClick';
+
+/**
+ * Enum unit for FormFieldType
+ */
+export type FormFieldType = 'Textbox' | 'Password' | 'CheckBox' | 'RadioButton' | 'DropDown' | 'ListBox' | 'SignatureField';
 
 /**
  * Enum for font styles

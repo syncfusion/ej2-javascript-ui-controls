@@ -106,11 +106,11 @@ describe('RTL Paragraph layout validation', () => {
         expect(paraWidget.paragraphFormat.textAlignment).toBe('Right');
         expect((((paraWidget.childWidgets[0] as LineWidget).children[0]) as TextElementBox).text).toBe("سشةحمث سشةحمث ");
     });
-    it('Bidi true and bdo- RTL with normal text and RTL Text combination', () => {        
-        let paraWidget: ParagraphWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[9] as ParagraphWidget);
-        expect(paraWidget.paragraphFormat.textAlignment).toBe('Right');
-        expect((((paraWidget.childWidgets[0] as LineWidget).children[0]) as TextElementBox).text.indexOf('سشةحمث سشةحمث سشةحمث سشةحمث ')).toBe(0);
-    });
+    // it('Bidi true and bdo- RTL with normal text and RTL Text combination', () => {        
+    //     let paraWidget: ParagraphWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[9] as ParagraphWidget);
+    //     expect(paraWidget.paragraphFormat.textAlignment).toBe('Right');
+    //     expect((((paraWidget.childWidgets[0] as LineWidget).children[0]) as TextElementBox).text.indexOf('سشةحمث سشةحمث سشةحمث سشةحمث ')).toBe(0);
+    // });
     it('Bidi true and bdo- LTR with normal text and RTL Text combination', () => {        
         let paraWidget: ParagraphWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[10] as ParagraphWidget);
         expect(paraWidget.paragraphFormat.textAlignment).toBe('Right');

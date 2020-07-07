@@ -160,8 +160,6 @@ export class Gantt extends Component<HTMLElement>
     /** @hidden */
     public isInPredecessorValidation?: boolean;
     /** @hidden */
-    public isSameResourceAdd?: boolean;
-    /** @hidden */
     public isValidationEnabled?: boolean;
     /** @hidden */
     public isLoad?: boolean;
@@ -460,8 +458,10 @@ export class Gantt extends Component<HTMLElement>
      * * ZoomIn: ZoomIn the Gantt control.
      * * ZoomOut: ZoomOut the Gantt control.
      * * ZoomToFit: Display the all tasks within the viewable Gantt chart.
-     * * ExcelExport: To export in Excel format
-     * * CsvExport : To export in CSV format
+     * * ExcelExport: To export in Excel format.
+     * * CsvExport : To export in CSV format.    
+     * * Indent: To indent a task to one level.
+     * * Outdent: To outdent a task from one level.
      * @default null
      */
     @Property()
@@ -717,6 +717,14 @@ export class Gantt extends Component<HTMLElement>
      */
     @Property(false)
     public allowReordering: boolean;
+
+    /**
+     * If `readOnly` is set to true, Gantt cannot be edited.      
+     * @default false
+     */
+    @Property(false)
+    public readOnly: boolean;
+
     /**
      * If `allowResizing` is set to true, Gantt columns can be resized.      
      * @default false
@@ -751,7 +759,18 @@ export class Gantt extends Component<HTMLElement>
 
     @Property(false)
     public validateManualTasksOnLinking: boolean;
-
+    /**
+     * It enables to render the child taskbar on parent row for resource view Gantt.
+     * @default false
+     */
+    @Property(false)
+    public enableMultiTaskbar: boolean;
+    /**
+     * It enables to render the overallocation container for resource view Gantt.
+     * @default false
+     */
+    @Property(false)
+    public showOverAllocation: boolean;
     /**
      * Specifies task schedule mode for a project.
      */
@@ -2008,7 +2027,7 @@ export class Gantt extends Component<HTMLElement>
         if (this.predecessorModule && this.taskFields.dependency) {
             this.connectorLineIds = [];
             this.updatedConnectorLineCollection = [];
-            this.predecessorModule.createConnectorLinesCollection(this.currentViewData);
+            this.predecessorModule.createConnectorLinesCollection();
         }
         this.notify('recordsUpdated', {});
         this.trigger('dataBound', args);
@@ -2211,10 +2230,28 @@ export class Gantt extends Component<HTMLElement>
                 case 'validateManualTasksOnLinking':
                     this.validateManualTasksOnLinking = newProp.validateManualTasksOnLinking;
                     break;
+                case 'readOnly':
+                    this.readOnly = this.readOnly;
+                    this.refresh();
+                    break;
+                case 'showOverAllocation':
+                    this.updateOverAllocationCotainer();
+                    break;
             }
         }
         if (isRefresh) {
             this.refresh();
+        }
+    }
+
+    private updateOverAllocationCotainer(): void {
+        if (this.showOverAllocation && this.viewType === 'ResourceView') {
+            this.ganttChartModule.renderOverAllocationContainer();
+        } else {
+            let rangeContainer: HTMLElement = this.element.querySelector('.' + cls.rangeContainer);
+            if (rangeContainer) {
+                rangeContainer.innerHTML = '';
+            }
         }
     }
 
@@ -3053,7 +3090,45 @@ export class Gantt extends Component<HTMLElement>
      */
     public addRecord(data?: Object | IGanttData, rowPosition?: RowPosition, rowIndex?: number): void {
         if (this.editModule && this.editSettings.allowAdding) {
-            this.editModule.addRecord(data, rowPosition, rowIndex);
+            if (this.viewType === 'ResourceView') {
+                this.editModule.addRowPosition = rowPosition;
+                this.editModule.addRowIndex = rowIndex;
+                let resources: Object[] = data[this.taskFields.resourceInfo];
+                let id: string;
+                let parentTask: IGanttData;
+                if (!isNullOrUndefined(resources) && resources.length) {
+                    for (let i: number = 0; i < resources.length; i++) {
+                        id = (typeof resources[i] === 'object') ? resources[i][this.resourceFields.id] :
+                            resources[0];
+                        parentTask = this.flatData[this.getTaskIds().indexOf('R' + id)];
+                        if (parentTask) {
+                            break;
+                        }
+                    }
+                    if (parentTask && parentTask.childRecords.length || parentTask.level === 0) {
+                        let dropChildRecord: IGanttData = parentTask.childRecords[rowIndex];
+                        if (dropChildRecord) {
+                            let position: RowPosition = rowPosition === 'Above' || rowPosition === 'Below' ? rowPosition :
+                                'Child';
+                            if (position === 'Child') {
+                                this.editModule.addRecord(data, position, this.getTaskIds().indexOf('R' + id));
+                            } else {
+                                this.editModule.addRecord(data, position, this.flatData.indexOf(dropChildRecord));
+                            }
+                        } else {
+                            this.editModule.addRecord(data, 'Child', this.getTaskIds().indexOf('R' + id));
+                        }
+                    } else {
+                        this.editModule.addRecord(data, 'Bottom');
+                    }
+                } else {
+                    this.editModule.addRecord(data, 'Bottom');
+                }
+                this.editModule.addRowPosition = null;
+                this.editModule.addRowIndex = null;
+            } else {
+                this.editModule.addRecord(data, rowPosition, rowIndex);
+            }
         }
     }
 

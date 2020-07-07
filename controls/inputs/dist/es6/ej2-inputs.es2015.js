@@ -10205,15 +10205,18 @@ let Uploader = class Uploader extends Component {
         let uploadFiles = this.getFilesInArray(files);
         let eventArgs = {
             customFormData: [],
-            currentRequest: null
+            currentRequest: null,
+            cancel: false
         };
         this.trigger('beforeUpload', eventArgs, (eventArgs) => {
-            if (isBlazor()) {
-                this.currentRequestHeader = eventArgs.currentRequest ? eventArgs.currentRequest : this.currentRequestHeader;
-                this.customFormDatas = (eventArgs.customFormData && eventArgs.customFormData.length > 0) ?
-                    eventArgs.customFormData : this.customFormDatas;
+            if (!eventArgs.cancel) {
+                if (isBlazor()) {
+                    this.currentRequestHeader = eventArgs.currentRequest ? eventArgs.currentRequest : this.currentRequestHeader;
+                    this.customFormDatas = (eventArgs.customFormData && eventArgs.customFormData.length > 0) ?
+                        eventArgs.customFormData : this.customFormDatas;
+                }
+                this.uploadFiles(uploadFiles, custom);
             }
-            this.uploadFiles(uploadFiles, custom);
         });
     }
     getFilesInArray(files) {

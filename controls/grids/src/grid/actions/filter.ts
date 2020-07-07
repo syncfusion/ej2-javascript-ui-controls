@@ -1016,7 +1016,9 @@ export class Filter implements IAction {
             }
             if ((e.target as HTMLElement).classList.contains('e-list-item')) {
                 let inputId: string = document.querySelector('.e-popup-open').getAttribute('id').replace('_popup', '');
-                (closest(document.getElementById(inputId), 'div').querySelector('.e-filtertext') as HTMLElement).focus();
+                if (inputId.indexOf('grid-column') !== -1) {
+                    (closest(document.getElementById(inputId), 'div').querySelector('.e-filtertext') as HTMLElement).focus();
+                }
             }
         }
         if (this.filterSettings.mode === 'Immediate' || this.parent.filterSettings.type === 'Menu' ||
