@@ -150,8 +150,11 @@ export class WorkbookDelete {
             if (i === args.start) { deletedModel[0].index = args.start; }
         }
         mergeArgsCollection.forEach((merge: MergeArgs): void => { this.parent.notify(setMerge, merge); });
-        this.parent.notify(deleteAction, { startIndex: args.start, endIndex: args.end, modelType: args.modelType,
-            isAction: args.isAction, deletedModel: deletedModel, deletedCellsModel: deletedCells });
+        this.parent.notify(deleteAction, {
+            startIndex: args.start, endIndex: args.end, modelType: args.modelType,
+            isAction: args.isAction, deletedModel: deletedModel, deletedCellsModel: deletedCells,
+            activeSheetIndex: this.parent.activeSheetIndex
+        });
     }
     private setDeleteInfo(startIndex: number, endIndex: number, totalKey: string, modelType: string = 'Row'): void {
         let total: number = (endIndex - startIndex) + 1; let newRange: number[] = []; let insertRange: number[];

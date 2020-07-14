@@ -3913,7 +3913,8 @@ var ContentRender = /** @class */ (function () {
             idx = this.parent.getFrozenColumns();
         }
         /* tslint:disable:no-any */
-        if (this.parent.registeredTemplate && this.parent.registeredTemplate.template && !args.isFrozen) {
+        if (args.requestType !== 'infiniteScroll' && this.parent.registeredTemplate
+            && this.parent.registeredTemplate.template && !args.isFrozen) {
             var templatetoclear = [];
             for (var i = 0; i < this.parent.registeredTemplate.template.length; i++) {
                 for (var j = 0; j < this.parent.registeredTemplate.template[i].rootNodes.length; j++) {
@@ -4437,7 +4438,12 @@ var ContentRender = /** @class */ (function () {
                 if (tr[trs[i]].querySelectorAll('td.e-rowcell')[idx].classList.contains('e-hide')) {
                     sf.base.removeClass([tr[trs[i]].querySelectorAll('td.e-rowcell')[idx]], ['e-hide']);
                 }
-                rows[trs[i]].cells[idx].visible = displayVal === '' ? true : false;
+                if (this.parent.isRowDragable()) {
+                    rows[trs[i]].cells[idx + 1].visible = displayVal === '' ? true : false;
+                }
+                else {
+                    rows[trs[i]].cells[idx].visible = displayVal === '' ? true : false;
+                }
             }
         }
         this.parent.notify(infiniteShowHide, { visible: displayVal, index: idx, isFreeze: this.isInfiniteFreeze });
@@ -6577,6 +6583,10 @@ var Render = /** @class */ (function () {
                 gObj.hideSpinner();
                 return;
             }
+            if (_this.isInfiniteEnd(args) && !len) {
+                _this.parent.notify(infiniteEditHandler, { e: args, result: e.result, count: e.count, agg: e.aggregates });
+                return;
+            }
             _this.parent.isEdit = false;
             _this.parent.notify(editReset, {});
             _this.parent.notify(tooltipDestroy, {});
@@ -6613,7 +6623,12 @@ var Render = /** @class */ (function () {
                 _this.updatesOnInitialRender(dataArgs);
             }
             if (!_this.isColTypeDef && gObj.getCurrentViewRecords()) {
-                _this.updateColumnType(gObj.getCurrentViewRecords()[0]);
+                if (_this.data.dataManager.dataSource.offline && gObj.dataSource.length) {
+                    _this.updateColumnType(gObj.dataSource[0]);
+                }
+                else {
+                    _this.updateColumnType(gObj.getCurrentViewRecords()[0]);
+                }
             }
             if (!_this.parent.isInitialLoad && _this.parent.groupSettings.disablePageWiseAggregates &&
                 !_this.parent.groupSettings.columns.length) {
@@ -6673,6 +6688,9 @@ var Render = /** @class */ (function () {
         this.parent.currentViewData = [];
         this.renderEmptyRow();
         this.parent.log('actionfailure', { error: e });
+    };
+    Render.prototype.isInfiniteEnd = function (args) {
+        return this.parent.enableInfiniteScrolling && !this.parent.infiniteScrollSettings.enableCache && args.requestType === 'delete';
     };
     Render.prototype.updatesOnInitialRender = function (e) {
         this.isLayoutRendered = true;
@@ -7879,7 +7897,7 @@ var ContentFocus = /** @class */ (function () {
         var _b = this.matrix.current, oRowIndex = _b[0], oCellIndex = _b[1];
         var val = sf.base.getValue(rowIndex + "." + cellIndex, this.matrix.matrix);
         if (this.matrix.inValid(val) || (!force && oRowIndex === rowIndex && oCellIndex === cellIndex) ||
-            parentsUntil(e.target, 'e-summarycell')) {
+            (!parentsUntil(e.target, 'e-rowcell') && !parentsUntil(e.target, 'e-groupcaption'))) {
             return false;
         }
         this.matrix.select(rowIndex, cellIndex);
@@ -8549,6 +8567,9 @@ var Selection = /** @class */ (function () {
             else if (!isRowSelected && _this.selectionSettings.persistSelection &&
                 _this.selectionSettings.checkboxMode !== 'ResetOnRowClick') {
                 _this.selectRowCallBack();
+            }
+            if (_this.selectionSettings.checkboxMode === 'ResetOnRowClick') {
+                _this.clearSelection();
             }
             if (!_this.selectionSettings.persistSelection || _this.selectionSettings.checkboxMode === 'ResetOnRowClick') {
                 _this.selectRowCheck = true;
@@ -9752,6 +9773,7 @@ var Selection = /** @class */ (function () {
     };
     Selection.prototype.drawBorders = function () {
         if (this.selectionSettings.cellSelectionMode === 'BoxWithBorder' && this.selectedRowCellIndexes.length && !this.parent.isEdit) {
+            this.parent.element.classList.add('e-enabledboxbdr');
             if (!this.bdrElement) {
                 this.createBorders();
             }
@@ -10672,7 +10694,7 @@ var Selection = /** @class */ (function () {
                 return data[_this.primaryKey] in _this.selectedRowState;
             });
         }
-        if (this.parent.isPersistSelection) {
+        if (this.parent.isPersistSelection && this.parent.allowPaging) {
             this.totalRecordsCount = this.parent.pageSettings.totalRecordsCount;
         }
         this.checkSelectAllAction(!state);
@@ -11527,6 +11549,9 @@ var ShowHide = /** @class */ (function () {
             var currentViewCols = _this.parent.getColumns();
             columns = sf.base.isNullOrUndefined(columns) ? currentViewCols : columns;
             if (showHideArgs[cancel]) {
+                if (_this.parent.columnChooserModule) {
+                    _this.parent.columnChooserModule.resetColumnState();
+                }
                 if (columns.length > 0) {
                     columns[0].visible = true;
                 }

@@ -158,8 +158,10 @@ export class Render {
         });
     }
 
-    private dataManagerFailure(e: { result: Object[] }): void {
+    public dataManagerFailure(e: { result: Object[] }): void {
         if (this.parent.isDestroyed) { return; }
-        this.parent.trigger(events.actionFailure, { error: e }, () => this.parent.hideSpinner());
+        // tslint:disable:no-any
+        this.parent.trigger(events.actionFailure, { error: isBlazor() ? (e as any).error.toString() : e }, () => this.parent.hideSpinner());
+        // tslint:disable:no-any
     }
 }

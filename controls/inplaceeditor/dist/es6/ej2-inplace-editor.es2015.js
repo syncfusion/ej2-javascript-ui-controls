@@ -951,20 +951,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
             this.formValidate.validate();
         }
         else {
-            args = {
-                errorMessage: '',
-                data: { name: this.name, primaryKey: this.primaryKey, value: this.checkValue(this.getSendValue()) }
-            };
-            this.trigger('validating', args, (validateArgs) => {
-                if (validateArgs.errorMessage) {
-                    select('.' + EDITABLE_ERROR, this.formEle).innerHTML = validateArgs.errorMessage;
-                    this.toggleErrorClass(true);
-                }
-                else {
-                    this.toggleErrorClass(false);
-                }
-                this.afterValidation(isValidate);
-            });
+            this.afterValidation(isValidate);
         }
     }
     afterValidation(isValidate) {
@@ -1256,11 +1243,6 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         this.editEle = select('.' + INPUT, this.formEle);
         let errEle = null;
         errEle = select('.' + ERROR, this.editEle);
-        let type = this.type;
-        let calendarComp = type === 'Date' || type === 'DateTime' || type === 'DateRange' || type === 'Time';
-        if (errEle && calendarComp) {
-            return;
-        }
         if (!this.isTemplate) {
             this.setValue();
         }

@@ -2212,7 +2212,7 @@ describe('InPlace-Editor Control', () => {
                 expect(successArgs['name']).toEqual('actionSuccess');
                 expect(successArgs['value']).toEqual('Syncfusion');
                 done();
-            }, 500);
+            }, 4000);
         });
         it('Success with data modify testing', (done: Function) => {
             editorObj = renderEditor({
@@ -2236,7 +2236,7 @@ describe('InPlace-Editor Control', () => {
                 expect(successArgs['name']).toEqual('actionSuccess');
                 expect(successArgs['value']).toEqual('Syncfusion');
                 done();
-            }, 500);
+            }, 4000);
         });
         it('Url null with Success testing', (done: Function) => {
             editorObj = renderEditor({

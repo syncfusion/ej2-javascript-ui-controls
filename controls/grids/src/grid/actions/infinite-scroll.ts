@@ -262,10 +262,13 @@ export class InfiniteScroll implements IAction {
 
     private resetRowIndex(rows: Row<Column>[], args: NotifyArgs, rowElms: Element[], isAdd: boolean): void {
         let keyField: string = this.parent.getPrimaryKeyFieldNames()[0];
+        let isRemove: boolean = !(rowElms.length % this.parent.pageSettings.pageSize);
         if (isAdd) {
-            remove(rowElms[rows.length - 1]);
-            rowElms.splice(rows.length - 1, 1);
-            rows.splice(rows.length - 1, 1);
+            if (isRemove) {
+                remove(rowElms[rows.length - 1]);
+                rowElms.splice(rows.length - 1, 1);
+                rows.splice(rows.length - 1, 1);
+            }
         } else {
             rows.filter((e: Row<Column>, index: number) => {
                 if (e.data[keyField] === (<{ data?: Object[] }>args).data[0][keyField]) {
@@ -282,6 +285,13 @@ export class InfiniteScroll implements IAction {
             this.resetCellIndex((<{ cells?: HTMLElement[] }>rowElms[i]).cells, startIndex);
             startIndex++;
         }
+        if (!rows.length) {
+            this.renderEmptyRow();
+        }
+    }
+
+    private renderEmptyRow(): void {
+        this.parent.renderModule.emptyRow(true);
     }
 
     private resetCellIndex(cells: HTMLElement[], index: number): void {
@@ -468,21 +478,25 @@ export class InfiniteScroll implements IAction {
 
     private makeRequest(args: InfiniteScrollArgs): void {
         if (this.parent.pageSettings.currentPage !== args.prevPage) {
-            this.isInfiniteScroll = true;
-            if (isNullOrUndefined(this.infiniteCache[args.currentPage])) {
-                setTimeout(
-                    () => {
-                        this.getVirtualInfiniteEditedData();
-                        this.parent.notify('model-changed', args);
-                    },
-                    100);
+            if (this.parent.pageSettings.currentPage <= this.maxPage) {
+                this.isInfiniteScroll = true;
+                if (isNullOrUndefined(this.infiniteCache[args.currentPage])) {
+                    setTimeout(
+                        () => {
+                            this.getVirtualInfiniteEditedData();
+                            this.parent.notify('model-changed', args);
+                        },
+                        100);
+                } else {
+                    setTimeout(
+                        () => {
+                            this.getVirtualInfiniteEditedData();
+                            this.parent.notify(events.refreshInfiniteModeBlocks, args);
+                        },
+                        100);
+                }
             } else {
-                setTimeout(
-                    () => {
-                        this.getVirtualInfiniteEditedData();
-                        this.parent.notify(events.refreshInfiniteModeBlocks, args);
-                    },
-                    100);
+                this.parent.pageSettings.currentPage = this.maxPage;
             }
         }
     }

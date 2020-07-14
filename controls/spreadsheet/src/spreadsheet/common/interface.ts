@@ -140,6 +140,26 @@ export interface BeforeOpenEventArgs {
     requestData: object;
 }
 
+export interface DialogBeforeOpenEventArgs {
+    /**
+     * Defines whether the current action can be prevented.
+     */
+    cancel: boolean;
+    /**
+     * Returns the element of the dialog.
+     */
+    element: Element;
+    /**
+     * Returns the target element of the dialog.
+     */
+    target: HTMLElement | String;
+    /**
+     * Returns the name of the dialog.
+     */
+    dialogName: String;
+
+}
+
 /**
  * MenuSelectEventArgs
  */
@@ -336,7 +356,7 @@ export interface InsertDeleteEventArgs {
     isAction?: boolean;
     startIndex?: number;
     endIndex?: number;
-    deletedModel?: RowModel[] | ColumnModel[] | CellModel[];
+    deletedModel?: RowModel[] | ColumnModel[] | CellModel[] | SheetModel;
     deletedCellsModel?: RowModel[];
     activeSheetIndex?: number;
     sheetCount?: number;

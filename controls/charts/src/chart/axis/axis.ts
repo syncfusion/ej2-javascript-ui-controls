@@ -1006,7 +1006,6 @@ export class Axis extends ChildProperty<Axis> {
      * @private
      */
     public calculateVisibleRange(size: Size): void {
-
         if (this.zoomFactor < 1 || this.zoomPosition > 0) {
             let baseRange: VisibleRangeModel = this.actualRange;
             let start: number;
@@ -1031,6 +1030,51 @@ export class Axis extends ChildProperty<Axis> {
                                   delta: this.doubleRange.delta, interval : this.visibleRange.interval };
         }
     }
+
+    /**
+     * Calculate range for x and y axis after zoom.
+     * @return {void}
+     * @private
+     */
+    public calculateAxisRange(size: Size, chart: Chart): void {
+        if (chart.enableAutoIntervalOnBothAxis) {
+            if (this.orientation === 'Horizontal' && chart.zoomSettings.mode === 'X') {
+                for (let i: number = 0; i < this.series.length; i++) {
+                    let yValue: number[] = [];
+                    for (let points of this.series[i].visiblePoints) {
+                        if ((points.xValue > this.visibleRange.min) && (points.xValue < this.visibleRange.max)) {
+                            yValue.push(points.yValue);
+                        }
+                    }
+                    for (let axis of chart.axisCollections) {
+                        if (axis.orientation === 'Vertical' && !isNullOrUndefined(axis.series[i])) {
+                            axis.series[i].yMin = Math.min(...yValue);
+                            axis.series[i].yMax = Math.max(...yValue);
+                            axis.baseModule.calculateRangeAndInterval(size, axis);
+                        }
+                    }
+                }
+            }
+            if (this.orientation === 'Vertical' && chart.zoomSettings.mode === 'Y') {
+                for (let i: number = 0; i < this.series.length; i++) {
+                    let xValue: number[] = [];
+                    for (let points of this.series[i].visiblePoints) {
+                        if ((points.yValue > this.visibleRange.min) && (points.yValue < this.visibleRange.max)) {
+                            xValue.push(points.xValue);
+                        }
+                    }
+                    for (let axis of chart.axisCollections) {
+                        if (axis.orientation === 'Horizontal' && !isNullOrUndefined(axis.series[i])) {
+                            axis.series[i].xMin = Math.min(...xValue);
+                            axis.series[i].xMax = Math.max(...xValue);
+                            axis.baseModule.calculateRangeAndInterval(size, axis);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * Triggers the event.
      * @return {void}

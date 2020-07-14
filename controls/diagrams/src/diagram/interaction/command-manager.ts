@@ -91,7 +91,7 @@ export class CommandHandler {
     public isContainer: boolean = false;
     private state: TransactionState;
     /** @private */
-    private  diagram: Diagram;
+    private diagram: Diagram;
 
     private childTable: {} = {};
 
@@ -700,8 +700,10 @@ export class CommandHandler {
         let updatedModel: object = cloneBlazorObject(layer);
         let blazor: string = 'Blazor';
         if (window && window[blazor]) {
-            let obj: object = { 'methodName': 'UpdateBlazorDiagramModelLayers',
-                'diagramobj': JSON.stringify(updatedModel), 'isRemove': isRemove };
+            let obj: object = {
+                'methodName': 'UpdateBlazorDiagramModelLayers',
+                'diagramobj': JSON.stringify(updatedModel), 'isRemove': isRemove
+            };
             window[blazorInterop].updateBlazorProperties(obj, this.diagram);
         }
     }
@@ -837,54 +839,54 @@ export class CommandHandler {
             selectedItems = selectedItems.concat(this.diagram.selectedItems.nodes);
             for (let j: number = 0; j < this.diagram.selectedItems.nodes.length; j++) {
                 if (!(selectedItems[j] as Node).isPhase) {
-                let node: NodeModel = clone(this.diagram.selectedItems.nodes[j]);
-                if (node.wrapper && (node.offsetX !== node.wrapper.offsetX)) {
-                    node.offsetX = node.wrapper.offsetX;
-                }
-                if (node.wrapper && (node.offsetY !== node.wrapper.offsetY)) {
-                    node.offsetY = node.wrapper.offsetY;
-                }
-                let processTable: {} = {};
-                this.copyProcesses(node as Node);
-                obj.push(clone(node));
-                let matrix: Matrix = identityMatrix();
-                rotateMatrix(matrix, -node.rotateAngle, node.offsetX, node.offsetY);
-                if (node.children) {
-                    let childTable: {} = this.clipboardData.childTable;
-                    let tempNode: NodeModel | ConnectorModel;
-                    let elements: (NodeModel | ConnectorModel)[] = [];
-                    let nodes: (NodeModel | ConnectorModel)[] = this.getAllDescendants(node, elements, true);
-                    for (let i: number = 0; i < nodes.length; i++) {
-                        tempNode = this.diagram.nameTable[nodes[i].id];
-                        let clonedObject: NodeModel | ConnectorModel = childTable[tempNode.id] = clone(tempNode);
-                        let newOffset: PointModel = transformPointByMatrix(
-                            matrix, { x: clonedObject.wrapper.offsetX, y: clonedObject.wrapper.offsetY });
-                        if (tempNode instanceof Node) {
-                            (clonedObject as Node).offsetX = newOffset.x;
-                            (clonedObject as Node).offsetY = newOffset.y;
-                            (clonedObject as Node).rotateAngle -= node.rotateAngle;
+                    let node: NodeModel = clone(this.diagram.selectedItems.nodes[j]);
+                    if (node.wrapper && (node.offsetX !== node.wrapper.offsetX)) {
+                        node.offsetX = node.wrapper.offsetX;
+                    }
+                    if (node.wrapper && (node.offsetY !== node.wrapper.offsetY)) {
+                        node.offsetY = node.wrapper.offsetY;
+                    }
+                    let processTable: {} = {};
+                    this.copyProcesses(node as Node);
+                    obj.push(clone(node));
+                    let matrix: Matrix = identityMatrix();
+                    rotateMatrix(matrix, -node.rotateAngle, node.offsetX, node.offsetY);
+                    if (node.children) {
+                        let childTable: {} = this.clipboardData.childTable;
+                        let tempNode: NodeModel | ConnectorModel;
+                        let elements: (NodeModel | ConnectorModel)[] = [];
+                        let nodes: (NodeModel | ConnectorModel)[] = this.getAllDescendants(node, elements, true);
+                        for (let i: number = 0; i < nodes.length; i++) {
+                            tempNode = this.diagram.nameTable[nodes[i].id];
+                            let clonedObject: NodeModel | ConnectorModel = childTable[tempNode.id] = clone(tempNode);
+                            let newOffset: PointModel = transformPointByMatrix(
+                                matrix, { x: clonedObject.wrapper.offsetX, y: clonedObject.wrapper.offsetY });
+                            if (tempNode instanceof Node) {
+                                (clonedObject as Node).offsetX = newOffset.x;
+                                (clonedObject as Node).offsetY = newOffset.y;
+                                (clonedObject as Node).rotateAngle -= node.rotateAngle;
+                            }
+                        }
+                        this.clipboardData.childTable = childTable;
+                    }
+                    if (node.shape.type === 'SwimLane') {
+                        let swimlane: NodeModel = this.diagram.getObject(this.diagram.selectedItems.nodes[j].id);
+                        let childTable: {} = this.clipboardData.childTable;
+                        let connectorsList: string[] = getConnectors(this.diagram, swimlane.wrapper.children[0] as GridPanel, 0, true);
+                        for (let i: number = 0; i < connectorsList.length; i++) {
+                            let connector: ConnectorModel = this.diagram.getObject(connectorsList[i]);
+                            childTable[connector.id] = clone(connector);
                         }
                     }
-                    this.clipboardData.childTable = childTable;
-                }
-                if (node.shape.type === 'SwimLane') {
-                    let swimlane: NodeModel = this.diagram.getObject(this.diagram.selectedItems.nodes[j].id);
-                    let childTable: {} = this.clipboardData.childTable;
-                    let connectorsList: string[] = getConnectors(this.diagram, swimlane.wrapper.children[0] as GridPanel, 0, true);
-                    for (let i: number = 0; i < connectorsList.length; i++) {
-                        let connector: ConnectorModel = this.diagram.getObject(connectorsList[i]);
-                        childTable[connector.id] = clone(connector);
+                    if (node && (node as Node).isLane) {
+                        let childTable: {} = this.clipboardData.childTable;
+                        let swimlane: NodeModel = this.diagram.getObject((node as Node).parentId);
+                        let lane: LaneModel = findLane(node as Node, this.diagram);
+                        childTable[node.id] = cloneObject(lane);
+                        childTable[node.id].width = swimlane.wrapper.actualSize.width;
                     }
                 }
-                if (node && (node as Node).isLane) {
-                    let childTable: {} = this.clipboardData.childTable;
-                    let swimlane: NodeModel = this.diagram.getObject((node as Node).parentId);
-                    let lane: LaneModel = findLane(node as Node, this.diagram);
-                    childTable[node.id] = cloneObject(lane);
-                    childTable[node.id].width = swimlane.wrapper.actualSize.width;
-                }
             }
-        }
         }
         if (this.clipboardData.pasteIndex === 0) {
             this.startGroupAction();
@@ -922,6 +924,7 @@ export class CommandHandler {
 
     /** @private */
     public group(): void {
+        this.oldSelectedObjects = cloneSelectedObjects(this.diagram);
         let propName: string = 'isProtectedOnChange';
         let protectedChange: boolean = this.diagram[propName];
         this.diagram.protectPropertyChange(true);
@@ -947,6 +950,7 @@ export class CommandHandler {
         this.addHistoryEntry(entry);
         this.diagram.diagramActions = this.diagram.diagramActions & ~DiagramAction.Group;
         this.diagram.protectPropertyChange(protectedChange);
+        this.updateBlazorSelector();
     }
 
 
@@ -1457,6 +1461,8 @@ export class CommandHandler {
         let select: boolean = true;
         if (!isBlazor()) {
             this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
+        }else {
+            this.oldSelectedObjects = cloneSelectedObjects(this.diagram);
         }
         let canDoMultipleSelection: number = canMultiSelect(this.diagram);
         let canDoSingleSelection: number = canSingleSelect(this.diagram);
@@ -1535,6 +1541,7 @@ export class CommandHandler {
                 }
             }
             this.diagram.enableServerDataBinding(true);
+            this.updateBlazorSelector();
         }
     }
 
@@ -1718,6 +1725,7 @@ export class CommandHandler {
     }
     /** @private */
     public labelSelect(obj: NodeModel | ConnectorModel, textWrapper: DiagramElement): void {
+        this.oldSelectedObjects = cloneSelectedObjects(this.diagram);
         let selectorModel: Selector = (this.diagram.selectedItems) as Selector;
         let isEnableServerDatabind: boolean = this.diagram.allowServerDataBinding;
         this.diagram.allowServerDataBinding = false;
@@ -1731,6 +1739,7 @@ export class CommandHandler {
         selectorModel.annotation = (this.findTarget(textWrapper, obj as IElement)) as PathAnnotationModel | ShapeAnnotationModel;
         selectorModel.init(this.diagram);
         this.diagram.renderSelector(false);
+        this.updateBlazorSelector();
     }
 
     /** @private */
@@ -1862,43 +1871,57 @@ export class CommandHandler {
             let layerNum: number = this.diagram.layers.indexOf(this.getObjectLayer(objectId));
             let zIndexTable: {} = (this.diagram.layers[layerNum] as Layer).zIndexTable;
             let undoObject: SelectorModel = cloneObject(this.diagram.selectedItems);
-
-            for (let i: number = index; i > 0; i--) {
-                if (zIndexTable[i]) {
-                    //When there are empty records in the zindex table
-                    if (!zIndexTable[i - 1]) {
-                        zIndexTable[i - 1] = zIndexTable[i];
-                        this.diagram.nameTable[zIndexTable[i - 1]].zIndex = i;
-                        delete zIndexTable[i];
-                    } else {
-                        //bringing the objects forward
-                        zIndexTable[i] = zIndexTable[i - 1];
-                        this.diagram.nameTable[zIndexTable[i]].zIndex = i;
+            //Checks whether the selected node is the only node in the node array.
+            //Checks whether it is not a group and the nodes behind it are not it’s children.
+            if (this.diagram.nodes.length !== 1 && (this.diagram.nameTable[objectId].children === undefined ||
+                this.checkObjectBehind(objectId, zIndexTable, index))) {
+                for (let i: number = index; i > 0; i--) {
+                    if (zIndexTable[i]) {
+                        //When there are empty records in the zindex table
+                        if (!zIndexTable[i - 1]) {
+                            zIndexTable[i - 1] = zIndexTable[i];
+                            this.diagram.nameTable[zIndexTable[i - 1]].zIndex = i;
+                            delete zIndexTable[i];
+                        } else {
+                            //bringing the objects forward
+                            zIndexTable[i] = zIndexTable[i - 1];
+                            this.diagram.nameTable[zIndexTable[i]].zIndex = i;
+                        }
                     }
                 }
-            }
-            zIndexTable[0] = this.diagram.nameTable[objectId].id;
-            this.diagram.nameTable[objectId].zIndex = 0;
-            if (this.diagram.mode === 'SVG') {
-                let i: number = 1;
-                let target: string = zIndexTable[i];
-                while (!target && i < index) {
-                    target = zIndexTable[++i];
+                zIndexTable[0] = this.diagram.nameTable[objectId].id;
+                this.diagram.nameTable[objectId].zIndex = 0;
+                if (this.diagram.mode === 'SVG') {
+                    let i: number = 1;
+                    let target: string = zIndexTable[i];
+                    while (!target && i < index) {
+                        target = zIndexTable[++i];
+                    }
+                    this.moveSvgNode(objectId, target);
+                    this.updateNativeNodeIndex(objectId);
+                } else {
+                    this.diagram.refreshCanvasLayers();
                 }
-                this.moveSvgNode(objectId, target);
-                this.updateNativeNodeIndex(objectId);
-            } else {
-                this.diagram.refreshCanvasLayers();
-            }
-            let redoObject: SelectorModel = cloneObject(this.diagram.selectedItems);
-            let entry: HistoryEntry = { type: 'SendToBack', category: 'Internal', undoObject: undoObject, redoObject: redoObject };
-            if (!(this.diagram.diagramActions & DiagramAction.UndoRedo)) {
-                this.addHistoryEntry(entry);
+                let redoObject: SelectorModel = cloneObject(this.diagram.selectedItems);
+                let entry: HistoryEntry = { type: 'SendToBack', category: 'Internal', undoObject: undoObject, redoObject: redoObject };
+                if (!(this.diagram.diagramActions & DiagramAction.UndoRedo)) {
+                    this.addHistoryEntry(entry);
+                }
             }
         }
         this.diagram.protectPropertyChange(false);
     }
 
+    //Checks whether the selected node is not a parent of another node.
+    public checkObjectBehind(objectId: string, zIndexTable: {}, index: number): boolean {
+        for (let i: number = 0; i < index; i++) {
+            let z: string = zIndexTable[i];
+            if (objectId !== this.diagram.nameTable[z].parentId) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /** @private */
     public bringToFront(obj?: NodeModel | ConnectorModel): void {
@@ -2048,7 +2071,7 @@ export class CommandHandler {
                     this.moveObject(selectedObject[1].id, selectedObject[0].id);
                 } else if (action === 'SendForward') {
                     this.moveObject(selectedObject[0].id, selectedObject[1].id);
-                } else if (action === 'BringToFront' ) {
+                } else if (action === 'BringToFront') {
                     this.moveObject(selectedObject[0].id, zIndexTable[selectedObject[0].zIndex + 1]);
                 } else if (action === 'SendToBack') {
                     let layer: LayerModel = this.getObjectLayer(selectedObject[0].id);

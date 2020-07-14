@@ -1438,6 +1438,10 @@ export class DocumentHelper {
         if (this.restrictEditingPane.restrictPane && !this.isDocumentProtected) {
             this.restrictEditingPane.showHideRestrictPane(false);
         }
+        if (!isNullOrUndefined(this.owner.selection) && this.owner.selection.isViewPasteOptions) {
+            this.owner.selection.isViewPasteOptions = false;
+            this.owner.selection.showHidePasteOptions(undefined, undefined);
+        }
         this.owner.fireDocumentChange();
     }
     /**

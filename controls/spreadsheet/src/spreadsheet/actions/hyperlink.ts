@@ -1,4 +1,4 @@
-import { Spreadsheet } from '../index';
+import { Spreadsheet, DialogBeforeOpenEventArgs } from '../index';
 import { initiateHyperlink, locale, dialog, click, keyUp, createHyperlinkElement, getUpdateUsingRaf } from '../common/index';
 import { editHyperlink, removeHyperlink, openHyperlink, editAlert } from '../common/index';
 import { L10n, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
@@ -8,6 +8,7 @@ import { getRangeIndexes, getCellIndexes, getCellAddress, getRangeAddress } from
 import { CellModel, HyperlinkModel, BeforeHyperlinkArgs, AfterHyperlinkArgs, getTypeFromFormat, getCell } from '../../workbook/index';
 import { beforeHyperlinkClick, afterHyperlinkClick } from '../../workbook/common/event';
 import { Tab, TreeView } from '@syncfusion/ej2-navigations';
+import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 
 /**
  * `Hyperlink` module 
@@ -91,12 +92,20 @@ export class SpreadsheetHyperlink {
             this.parent.notify(editAlert, null);
             return;
         }
-        if (!this.parent.element.querySelector('.e-dlg-container')) {
+        if (!this.parent.element.querySelector('.e-hyperlink-dlg')) {
             let dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
             dialogInst.show({
                 width: 323, isModal: true, showCloseIcon: true, cssClass: 'e-hyperlink-dlg',
                 header: l10n.getConstant('InsertLink'),
-                beforeOpen: (): void => {
+                beforeOpen: (args: BeforeOpenEventArgs): void => {
+                    let dlgArgs: DialogBeforeOpenEventArgs = {
+                        dialogName: 'InsertLinkDialog',
+                        element: args.element, target: args.target, cancel: args.cancel
+                    };
+                    this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                    if (dlgArgs.cancel) {
+                        args.cancel = true;
+                    }
                     dialogInst.dialogInstance.content = this.hyperlinkContent(); dialogInst.dialogInstance.dataBind();
                     this.parent.element.focus();
                 },
@@ -164,7 +173,15 @@ export class SpreadsheetHyperlink {
         dialogInst.show({
             width: 323, isModal: true, showCloseIcon: true, cssClass: 'e-edithyperlink-dlg',
             header: l10n.getConstant('EditLink'),
-            beforeOpen: (): void => {
+            beforeOpen: (args: BeforeOpenEventArgs): void => {
+                let dlgArgs: DialogBeforeOpenEventArgs = {
+                    dialogName: 'EditLinkDialog',
+                    element: args.element, target: args.target, cancel: args.cancel
+                };
+                this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                if (dlgArgs.cancel) {
+                    args.cancel = true;
+                }
                 dialogInst.dialogInstance.content = this.hyperEditContent(); dialogInst.dialogInstance.dataBind();
                 this.parent.element.focus();
             },

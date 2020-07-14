@@ -1,5 +1,5 @@
 import * as events from '../base/constant';
-import { IRichTextEditor, NotifyArgs, IRenderer } from '../base/interface';
+import { IRichTextEditor, NotifyArgs, IRenderer, ImageUploadingEventArgs } from '../base/interface';
 import { Dialog, DialogModel, Popup } from '@syncfusion/ej2-popups';
 import { RadioButton } from '@syncfusion/ej2-buttons';
 import { RendererFactory } from '../services/renderer-factory';
@@ -256,7 +256,7 @@ export class PasteCleanup {
       let timeOut: number = fileList.size > 1000000 ? 300 : 100;
       setTimeout(() => { this.refreshPopup(imgElem as HTMLElement, popupObj); }, timeOut);
       let rawFile: FileInfo[];
-      let beforeUploadArgs: BeforeUploadEventArgs;
+      let beforeUploadArgs: ImageUploadingEventArgs;
       let uploadObj: Uploader = new Uploader({
         asyncSettings: {
             saveUrl: this.parent.insertImageSettings.saveUrl
@@ -274,9 +274,9 @@ export class PasteCleanup {
         },
         beforeUpload: (args: BeforeUploadEventArgs) => {
           if (this.parent.isServerRendered) {
-              args.cancel = true;
               beforeUploadArgs = JSON.parse(JSON.stringify(args));
-              this.parent.trigger(events.imageUploading, beforeUploadArgs, (beforeUploadArgs: BeforeUploadEventArgs) => {
+              beforeUploadArgs.filesData = rawFile;
+              this.parent.trigger(events.imageUploading, beforeUploadArgs, (beforeUploadArgs: ImageUploadingEventArgs) => {
                   if (beforeUploadArgs.cancel) { return; }
                   /* tslint:disable */
                   (this.uploadObj as any).uploadFiles(rawFile, null);
@@ -532,6 +532,7 @@ export class PasteCleanup {
     for (let i: number = 0; i < allImg.length; i++) {
       allImg[i].classList.add('pasteContent_Img');
     }
+    this.addTempClass(clipBoardElem);
     if (clipBoardElem.textContent !== '' || !isNOU(clipBoardElem.querySelector('img')) ||
     !isNOU(clipBoardElem.querySelector('table'))) {
       this.parent.formatter.editorManager.execCommand(
@@ -539,13 +540,31 @@ export class PasteCleanup {
         'pasteCleanup',
         args,
         (returnArgs: IHtmlFormatterCallBack) => {
-          extend(args, {elements: [returnArgs.elements]}, true);
+          extend(args, {elements: returnArgs.elements, imageElements: returnArgs.imgElem}, true);
           this.parent.formatter.onSuccess(this.parent, args);
         },
         clipBoardElem
       );
+      this.removeTempClass();
       this.parent.notify(events.toolbarRefresh, {});
       this.imgUploading(this.parent.inputElement);
+    }
+  }
+
+  private addTempClass(clipBoardElem: HTMLElement): void {
+    let allChild: HTMLCollection = clipBoardElem.children;
+    for (let i: number = 0; i < allChild.length; i++) {
+      allChild[i].classList.add('pasteContent_RTE');
+    }
+  }
+
+  private removeTempClass(): void {
+    let classElm: NodeListOf<Element> = this.parent.inputElement.querySelectorAll('.pasteContent_RTE');
+    for (let i: number = 0; i < classElm.length; i++) {
+      classElm[i].classList.remove('pasteContent_RTE');
+      if (classElm[i].getAttribute('class') === '') {
+        classElm[i].removeAttribute('class');
+      }
     }
   }
 
@@ -590,16 +609,18 @@ export class PasteCleanup {
       this.removeEmptyElements(clipBoardElem);
       this.saveSelection.restore();
       clipBoardElem.innerHTML = this.sanitizeHelper(clipBoardElem.innerHTML);
+      this.addTempClass(clipBoardElem);
       this.parent.formatter.editorManager.execCommand(
         'inserthtml',
         'pasteCleanup',
         args,
         (returnArgs: IHtmlFormatterCallBack) => {
-          extend(args, {elements: []}, true);
+          extend(args, {elements: returnArgs.elements, imageElements: returnArgs.imgElem}, true);
           this.parent.formatter.onSuccess(this.parent, args);
         },
         clipBoardElem
       );
+      this.removeTempClass();
     } else {
       this.saveSelection.restore();
       extend(args, {elements: []}, true);

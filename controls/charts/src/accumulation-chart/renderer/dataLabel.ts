@@ -586,7 +586,6 @@ export class AccumulationDataLabel extends AccumulationBase {
         };
         this.accumulation.trigger(textRender, argsData);
         point.argsData = argsData;
-        let angle: number; let degree: number;
         let isTemplate: boolean = argsData.template !== null;
         point.labelVisible = !argsData.cancel; point.text = point.label = argsData.text;
         if (Number(point.label)) {
@@ -594,7 +593,6 @@ export class AccumulationDataLabel extends AccumulationBase {
                 useGrouping: this.accumulation.useGroupingSeparator});
             }
         this.marginValue = argsData.border.width ? (5 + argsData.border.width) : 1;
-        // Template element
         let childElement: HTMLElement = createElement('div', {
             id: this.accumulation.element.id + '_Series_' + 0 + '_DataLabel_' + point.index,
             styles: 'position: absolute;background-color:' + argsData.color + ';' +
@@ -605,6 +603,7 @@ export class AccumulationDataLabel extends AccumulationBase {
         textSize.height += 4; // 4 for calculation with padding for smart label shape
         textSize.width += 4;
         point.textSize = textSize;
+        point.templateElement = childElement;
         this.getDataLabelPosition(point, dataLabel, textSize, points, datalabelGroup, id);
         if (point.labelRegion) {
             this.correctLabelRegion(point.labelRegion, point.textSize);
@@ -629,22 +628,12 @@ export class AccumulationDataLabel extends AccumulationBase {
                 let id: string = this.accumulation.element.id + '_datalabel_Series_' + 0 + '_';
                 let datalabelGroup: Element = this.accumulation.renderer.createGroup({ id: id + 'g_' + point.index });
                 let dataLabelElement: Element; let location: ChartLocation;
-                // tslint:disable-next-line:max-line-length
-                let childElement: HTMLElement = createElement('div', {
-                    id: this.accumulation.element.id + '_Series_' + 0 + '_DataLabel_' + point.index,
-                    styles: 'position: absolute;background-color:' + point.argsData.color + ';' +
-                        // tslint:disable-next-line:max-line-length
-                        getFontStyle(dataLabel.font) + ';border:' + point.argsData.border.width + 'px solid ' + point.argsData.border.color + ';'
-                });
-                let textSize: Size = point.argsData ?
-                    this.getTemplateSize(childElement, point, point.argsData, redraw) :
-                    measureText(point.label, dataLabel.font);
                 let element: Element;
                 if (point.visible && point.labelVisible) {
                     angle = degree = dataLabel.angle;
                     if (point.argsData.template) {
                         this.setTemplateStyle(
-                            childElement, point, templateElement, dataLabel.font.color, point.color, redraw);
+                            point.templateElement, point, templateElement, dataLabel.font.color, point.color, redraw);
                     } else {
                         location = new ChartLocation(
                             // tslint:disable-next-line:max-line-length
@@ -878,7 +867,7 @@ export class AccumulationDataLabel extends AccumulationBase {
 
     /**
      * Rightside points alignments calculation
-     * @param series 
+     * @param series
      */
     private arrangeRightSidePoints(series: AccumulationSeries): void {
         let startFresh: boolean;
@@ -898,7 +887,7 @@ export class AccumulationDataLabel extends AccumulationBase {
         }
         /**
          * Right side points arranged from last point.
-         * A point checked with successive points for overlapping. 
+         * A point checked with successive points for overlapping.
          * If that is overlapped, its label angle is decreased and placing in optimal position
          * If one point's angle is decreased, its previous points in the half side points also decreased until it reaced optimum position.
          * When decreasing angle falls beyond 270, label angle increased.
@@ -938,7 +927,7 @@ export class AccumulationDataLabel extends AccumulationBase {
 
     /**
      * Leftside points alignments calculation
-     * @param series 
+     * @param series
      */
     private arrangeLeftSidePoints(series: AccumulationSeries): void {
         let leftSideRenderPoints: AccPoints[] = series.leftSidePoints.filter(
@@ -950,7 +939,7 @@ export class AccumulationDataLabel extends AccumulationBase {
         let startFresh: boolean;
         /**
          * Left side points arranged from first point.
-         * A point checked with previous points for overlapping. 
+         * A point checked with previous points for overlapping.
          * If that is overlapped, its label angle is decreased and placing in optimal position
          * If one point's angle is decreased, its previous points in the half side points also decreased until it reaced optimum position.
          * When decreasing angle falls beyond 90, label angle increased.

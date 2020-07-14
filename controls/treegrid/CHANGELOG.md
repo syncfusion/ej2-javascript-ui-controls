@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.2.45 (2020-07-14)
+
+### TreeGrid
+
+#### Bug Fixes
+
+- `#F155077`- Records rendered properly while using remote data with jQuery unobtrusive library.
+
 ## 18.2.44 (2020-07-07)
 
 ### TreeGrid

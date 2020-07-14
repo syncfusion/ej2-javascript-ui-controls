@@ -437,13 +437,16 @@ export class RowDD {
                 if (this.dropPosition === 'topSegment' || this.dropPosition === 'bottomSegment') {
                     draggedRecord[this.parent.taskFields.parentID] = droppedRecord[this.parent.taskFields.parentID];
                     draggedRecord.taskData[this.parent.taskFields.parentID] = droppedRecord[this.parent.taskFields.parentID];
+                    draggedRecord.ganttProperties.parentId = droppedRecord[this.parent.taskFields.parentID];
                 } else {
                     draggedRecord[this.parent.taskFields.parentID] = droppedRecord[this.parent.taskFields.id];
                     draggedRecord.taskData[this.parent.taskFields.parentID] = droppedRecord[this.parent.taskFields.id];
+                    draggedRecord.ganttProperties.parentId = droppedRecord[this.parent.taskFields.id];
                 }
             } else {
                 draggedRecord[this.parent.taskFields.parentID] = null;
                 draggedRecord.taskData[this.parent.taskFields.parentID] = null;
+                draggedRecord.ganttProperties.parentId = null;
             }
         }
     }

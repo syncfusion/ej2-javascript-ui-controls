@@ -774,15 +774,15 @@ export class PivotChart {
             let cKeys: string[];
             if (!isNullOrUndefined(rows)) {
                 cKeys = Object.keys(rows);
-            }
-            for (let cellIndex of cKeys) {
-                let cell: IAxisSet = rows[Number(cellIndex)] as IAxisSet;
-                if (!isNullOrUndefined(cell)) {
-                    if (cell.axis !== 'column') {
-                        return colIndexColl;
-                    } else if ((cell.type === 'sum' || (this.dataSourceSettings.columns.length === 0 ? false : cell.type === 'grand sum'))
-                        && cell.rowSpan !== -1) {
-                        colIndexColl[cell.colIndex] = cell.colIndex;
+                for (let cellIndex of cKeys) {
+                    let cell: IAxisSet = rows[Number(cellIndex)] as IAxisSet;
+                    if (!isNullOrUndefined(cell)) {
+                        if (cell.axis !== 'column') {
+                            return colIndexColl;
+                        } else if ((cell.type === 'sum' || (this.dataSourceSettings.columns.length === 0 ? false : cell.type === 'grand sum'))
+                            && cell.rowSpan !== -1) {
+                            colIndexColl[cell.colIndex] = cell.colIndex;
+                        }
                     }
                 }
             }

@@ -1,6 +1,7 @@
 import { Workbook, SheetModel } from '../base/index';
-import { ProtectSettings, applyLockCells } from '../common/index';
+import { ProtectSettings, applyLockCells, UnprotectArgs } from '../common/index';
 import { protectsheetHandler, protectSheetWorkBook, updateToggle, setLockCells } from '../common/index';
+import { unprotectsheetHandler } from '../common/index';
 import { getRangeIndexes,  getSwapRange } from '../common/index';
 /**
  * The `WorkbookSpreadSheet` module is used to handle the Protecting functionalities in Workbook.
@@ -27,6 +28,18 @@ export class WorkbookProtectSheet {
         this.parent.notify(updateToggle, { props: 'Protect' });
     }
 
+    private unprotectsheetHandler(args: UnprotectArgs): void {
+        let sheet: SheetModel = this.parent.getActiveSheet();
+        if (args.sheet) {
+          sheet = this.parent.sheets[args.sheet];
+        }
+        sheet.protectSettings.formatCells = sheet.protectSettings.formatColumns = false;
+        sheet.protectSettings.formatRows = sheet.protectSettings.selectCells = false;
+        sheet.isProtected = false;
+        this.parent.notify(protectSheetWorkBook, sheet.protectSettings);
+        this.parent.notify(updateToggle, { props: 'Protect' });
+    }
+
     /**
      * To destroy the edit module. 
      * @return {void}
@@ -39,13 +52,16 @@ export class WorkbookProtectSheet {
 
     private addEventListener(): void {
         this.parent.on(protectsheetHandler, this.protectsheetHandler, this);
+        this.parent.on(unprotectsheetHandler, this.unprotectsheetHandler, this);
         this.parent.on(setLockCells, this.lockCells, this);
     }
 
     private removeEventListener(): void {
         if (!this.parent.isDestroyed) {
             this.parent.off(protectsheetHandler, this.protectsheetHandler);
-            this.parent.on(setLockCells, this.lockCells);
+            this.parent.off(setLockCells, this.lockCells);
+            this.parent.off(protectsheetHandler, this.unprotectsheetHandler);
+
         }
     }
 

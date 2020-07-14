@@ -10,9 +10,15 @@ export class CsvHelper {
     private formatter: ValueFormatter;
     private globalStyles: Map<string, string>;
     private isServerRendered: boolean;
+    private separator: string;
     /* tslint:disable:no-any */
-    constructor(json: any) {
+    constructor(json: any, separator: string) {
         this.csvStr = '';
+        if (separator === null || separator === undefined) {
+            this.separator = ',';
+        } else {
+            this.separator = separator;
+        }
         this.formatter = new ValueFormatter();
         this.isMicrosoftBrowser = !(!navigator.msSaveBlob);
         if (json.isServerRendered !== null && json.isServerRendered !== undefined) {
@@ -67,7 +73,7 @@ export class CsvHelper {
                 //cell index
                 if (cell.index !== null && cell.index !== undefined) {
                     while (count < cell.index) {
-                        this.csvStr += ',';
+                        this.csvStr += this.separator;
                         count++;
                     }
                     this.parseCell(cell);
@@ -133,7 +139,7 @@ export class CsvHelper {
             }
         }
         value = val;
-        if (value.indexOf(',') !== -1 || value.indexOf('\n') !== -1) {
+        if (value.indexOf(this.separator) !== -1 || value.indexOf('\n') !== -1) {
             return value = '\"' + value + '\"';
         } else {
             return value;

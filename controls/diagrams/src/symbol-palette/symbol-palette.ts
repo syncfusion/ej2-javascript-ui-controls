@@ -12,7 +12,7 @@ import { SvgRenderer } from '../diagram/rendering/svg-renderer';
 import { parentsUntil, createSvgElement, createHtmlElement, createMeasureElements } from '../diagram/utility/dom-util';
 import { removeElementsByClass, applyStyleAgainstCsp } from '../diagram/utility/dom-util';
 import { scaleElement, arrangeChild, groupHasType, setUMLActivityDefaults, updateDefaultValues } from '../diagram/utility/diagram-util';
-import { getFunction, randomId } from '../diagram/utility/base-util';
+import { getFunction, randomId, cloneObject } from '../diagram/utility/base-util';
 import { getOuterBounds } from '../diagram/utility/connector';
 import { Point } from '../diagram/primitives/point';
 import { CanvasRenderer } from '../diagram/rendering/canvas-renderer';
@@ -826,7 +826,8 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     /**
      * Used to add the palette item as nodes or connectors in palettes
      */
-    public addPaletteItem(paletteName: string, paletteSymbol: NodeModel | ConnectorModel): void {
+    public addPaletteItem(paletteName: string, paletteSymbol: NodeModel | ConnectorModel, isChild?: boolean): void {
+        paletteSymbol = cloneObject(paletteSymbol) as NodeModel | ConnectorModel;
         let refresh: boolean;
         for (let i: number = 0; i < this.palettes.length; i++) {
             let symbolPaletteGroup: PaletteModel = this.palettes[i];
@@ -843,16 +844,18 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                 }
                 updateDefaultValues(obj, paletteSymbol, obj instanceof Node ? this.nodeDefaults : this.connectorDefaults);
                 symbolPaletteGroup.symbols.push(obj);
-                if (!(obj as Node).children) {
-                    let isEnableServerDatabind: boolean = this.allowServerDataBinding;
-                    this.allowServerDataBinding = false;
-                    this.prepareSymbol(obj);
-                    this.allowServerDataBinding = isEnableServerDatabind;
-                }
+                let isEnableServerDatabind: boolean = this.allowServerDataBinding;
+                this.allowServerDataBinding = false;
+                this.prepareSymbol(obj);
+                this.allowServerDataBinding = isEnableServerDatabind;
                 this.symbolTable[obj.id] = obj;
-                let paletteDiv: HTMLElement = document.getElementById(symbolPaletteGroup.id);
-                if (paletteDiv) {
-                    paletteDiv.appendChild(this.getSymbolContainer(obj, paletteDiv));
+                if (isChild) {
+                    this.childTable[obj.id] = obj;
+                } else {
+                    let paletteDiv: HTMLElement = document.getElementById(symbolPaletteGroup.id);
+                    if (paletteDiv) {
+                     paletteDiv.appendChild(this.getSymbolContainer(obj, paletteDiv));
+                    }
                 }
                 break;
             }

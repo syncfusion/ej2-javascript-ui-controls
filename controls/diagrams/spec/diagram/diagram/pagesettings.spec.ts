@@ -698,3 +698,46 @@ describe('PageSettings boundary constraints', () => {
     });
 
 });
+describe('Page Settings with orientation', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let scroller: DiagramScroller;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+
+        ele = createElement('div', { id: 'diagramconstraints' });
+        document.body.appendChild(ele);
+        let node: NodeModel = {
+            id: 'node1', width: 150, height: 100, offsetX: 100, offsetY: 100,
+        };
+        diagram = new Diagram({
+            width: 800, height: 800, nodes: [node],
+            pageSettings: {
+                orientation: 'Landscape',
+                width: 600, height: 500,
+                multiplePage: true, showPageBreaks: true,
+                margin: { left: 10, top: 10, bottom: 10 },
+            }
+        });
+        diagram.appendTo('#diagramconstraints');
+
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('boundary constraints for drag and drop', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        diagram.pageSettings.boundaryConstraints = 'Diagram';
+        mouseEvents.dragAndDropEvent(diagramCanvas, diagram.nodes[0].offsetX, diagram.nodes[0].offsetY, 600, 600);
+        console.log(diagram.nodes[0].offsetX);
+        expect(diagram.nodes[0].offsetX === 595).toBe(true);
+        done();
+    });
+})

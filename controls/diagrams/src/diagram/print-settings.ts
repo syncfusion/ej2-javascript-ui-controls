@@ -768,7 +768,7 @@ export class PrintAndExport {
         }
         this.diagram.renderSelector(false);
         /* tslint:disable */
-        return checkBrowserInfo() ? htmlData.replace("url(" + location.href + "#diagram_pattern ", "url(#diagram_pattern)") : htmlData;
+        return checkBrowserInfo() ? htmlData.replace("url(" + location.protocol + '//' + location.host + location.pathname + "#diagram_pattern ", "url(#diagram_pattern)") : htmlData;
         /* tslint:enable */
     }
 

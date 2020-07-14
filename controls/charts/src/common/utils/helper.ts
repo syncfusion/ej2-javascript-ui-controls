@@ -931,6 +931,7 @@ export function calculateShapes(
         case 'Waterfall':
         case 'BoxAndWhisker':
         case 'StepArea':
+        case 'StackingStepArea':
         case 'Square':
         case 'Flag':
             dir = 'M' + ' ' + x + ' ' + (ly + (-height / 2)) + ' ' +

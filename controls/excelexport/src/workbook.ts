@@ -53,7 +53,7 @@ export class Workbook {
     private drawingCount: number;
     private imageCount: number;
     /* tslint:disable:no-any */
-    public constructor(json: any, saveType: SaveType, culture?: string, currencyString?: string) {
+    public constructor(json: any, saveType: SaveType, culture?: string, currencyString?: string, separator?: string) {
         if (culture !== undefined) {
             this.culture = culture;
         } else {
@@ -131,7 +131,7 @@ export class Workbook {
                 this.parserBuiltInProperties(json.builtInProperties, this.builtInProperties);
             }
         } else {
-            this.csvHelper = new CsvHelper(json);
+            this.csvHelper = new CsvHelper(json, separator);
         }
     }
     /* tslint:disable:no-any */

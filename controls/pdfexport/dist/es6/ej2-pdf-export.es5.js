@@ -23438,19 +23438,45 @@ var PdfNumbersConvertor = /** @__PURE__ @class */ (function () {
      */
     PdfNumbersConvertor.arabicToRoman = function (intArabic) {
         var retval = '';
-        retval += this.generateNumber(intArabic, 1000, 'M');
-        retval += this.generateNumber(intArabic, 900, 'CM');
-        retval += this.generateNumber(intArabic, 500, 'D');
-        retval += this.generateNumber(intArabic, 400, 'CD');
-        retval += this.generateNumber(intArabic, 100, 'C');
-        retval += this.generateNumber(intArabic, 90, 'XC');
-        retval += this.generateNumber(intArabic, 50, 'L');
-        retval += this.generateNumber(intArabic, 40, 'XL');
-        retval += this.generateNumber(intArabic, 10, 'X');
-        retval += this.generateNumber(intArabic, 9, 'IX');
-        retval += this.generateNumber(intArabic, 5, 'V');
-        retval += this.generateNumber(intArabic, 4, 'IV');
-        retval += this.generateNumber(intArabic, 1, 'I');
+        var retvalM = this.generateNumber(intArabic, 1000, 'M');
+        retval += retvalM.returnValue;
+        intArabic = retvalM.intArabic;
+        var retvalCM = this.generateNumber(intArabic, 900, 'CM');
+        retval += retvalCM.returnValue;
+        intArabic = retvalCM.intArabic;
+        var retvalD = this.generateNumber(intArabic, 500, 'D');
+        retval += retvalD.returnValue;
+        intArabic = retvalD.intArabic;
+        var retvalCD = this.generateNumber(intArabic, 400, 'CD');
+        retval += retvalCD.returnValue;
+        intArabic = retvalCD.intArabic;
+        var retvalC = this.generateNumber(intArabic, 100, 'C');
+        retval += retvalC.returnValue;
+        intArabic = retvalC.intArabic;
+        var retvalXC = this.generateNumber(intArabic, 90, 'XC');
+        retval += retvalXC.returnValue;
+        intArabic = retvalXC.intArabic;
+        var retvalL = this.generateNumber(intArabic, 50, 'L');
+        retval += retvalL.returnValue;
+        intArabic = retvalL.intArabic;
+        var retvalXL = this.generateNumber(intArabic, 40, 'XL');
+        retval += retvalXL.returnValue;
+        intArabic = retvalXL.intArabic;
+        var retvalX = this.generateNumber(intArabic, 10, 'X');
+        retval += retvalX.returnValue;
+        intArabic = retvalX.intArabic;
+        var retvalIX = this.generateNumber(intArabic, 9, 'IX');
+        retval += retvalIX.returnValue;
+        intArabic = retvalIX.intArabic;
+        var retvalV = this.generateNumber(intArabic, 5, 'V');
+        retval += retvalV.returnValue;
+        intArabic = retvalV.intArabic;
+        var retvalIV = this.generateNumber(intArabic, 4, 'IV');
+        retval += retvalIV.returnValue;
+        intArabic = retvalIV.intArabic;
+        var retvalI = this.generateNumber(intArabic, 1, 'I');
+        retval += retvalI.returnValue;
+        intArabic = retvalI.intArabic;
         return retval.toString();
     };
     /**
@@ -23476,7 +23502,7 @@ var PdfNumbersConvertor = /** @__PURE__ @class */ (function () {
             value -= magnitude;
             numberstring += letter;
         }
-        return numberstring.toString();
+        return { returnValue: numberstring.toString(), intArabic: value };
     };
     /**
      * Convert a input number into letters.

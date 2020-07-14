@@ -136,6 +136,7 @@ export class FooterRenderer extends ContentRender implements IRenderer {
             if (!frozenDiv.offsetHeight) {
                 frozenDiv.style.height = (<HTMLElement>this.getTable()).offsetHeight + 'px';
             }
+            if (this.parent.allowResizing) { this.updateFooterTableWidth(this.getTable() as HTMLElement); }
         }
         this.onScroll();
     }
@@ -145,8 +146,13 @@ export class FooterRenderer extends ContentRender implements IRenderer {
         let mheaderCol: Node;
         let fheaderCol: Node = mheaderCol = this.parent.element.querySelector('.e-gridheader').querySelector('colgroup').cloneNode(true);
         if (this.parent.getFrozenColumns()) {
-            mheaderCol = renderMovable(<Element>fheaderCol, this.parent.getFrozenColumns());
-            this.freezeTable.replaceChild(fheaderCol, this.freezeTable.querySelector('colGroup'));
+            let isXaxis: boolean = this.parent.enableColumnVirtualization && (<{ isXaxis?: Function }>this.parent.contentModule).isXaxis();
+            if (isXaxis) {
+                mheaderCol = this.parent.getMovableVirtualHeader().querySelector('colgroup').cloneNode(true);
+            } else {
+                mheaderCol = renderMovable(<Element>fheaderCol, this.parent.getFrozenColumns());
+                this.freezeTable.replaceChild(fheaderCol, this.freezeTable.querySelector('colGroup'));
+            }
         }
         this.getTable().replaceChild(mheaderCol, this.getColGroup());
         this.setColGroup(<Element>mheaderCol);

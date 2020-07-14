@@ -817,4 +817,39 @@ describe('Column chooser module', () => {
         });
 
     });
+
+    describe('EJ2-40938 => While adding a hide custom column On editing this cell, the columns were get collapsed', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowPaging: true,
+                    allowRowDragAndDrop: true,
+                    selectionSettings: { type: 'Multiple' },
+                    height: 400,
+                    gridLines: 'Both',
+                    editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true, mode: 'Normal' },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update'],
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, width: 80, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 130, textAlign: 'Left' },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 120, format: 'yMd', textAlign: 'Right' },
+                        { field: 'Freight', visible: false , headerText: 'Freight', width: 130, format: 'C2', textAlign: 'Right' },
+                        { field: 'ShipCity', headerText: 'Ship City', width: 130, textAlign: 'Left' },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 150 }
+                    ]
+                }, done);
+        });
+        it('check the visible cells true/false', () => {
+            gridObj.showColumns('Freight');
+            expect(gridObj.getRowsObject()[1].cells[4].visible).toBeTruthy()
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+
+    });
 });

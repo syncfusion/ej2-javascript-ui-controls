@@ -2,7 +2,7 @@
  * Image module spec 
  */
 import { Browser, isNullOrUndefined, closest, detach, createElement } from '@syncfusion/ej2-base';
-import { RichTextEditor, QuickToolbar, IRenderer } from './../../../src/index';
+import { RichTextEditor, QuickToolbar, IRenderer, actionComplete } from './../../../src/index';
 import { NodeSelection } from './../../../src/selection/index';
 import { renderRTE, destroy, setCursorPoint, dispatchEvent, androidUA, iPhoneUA, currentBrowserUA } from "./../render.spec";
 
@@ -215,7 +215,8 @@ describe('insert image', () => {
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
             (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
-            expect((rteObj.element.querySelectorAll('.rte-placeholder')[0] as HTMLElement).style.display).toBe('none');
+            let placeHolder: HTMLElement = (rteObj.element.querySelectorAll('.rte-placeholder')[0] as HTMLElement);
+            expect(placeHolder.style.display).toBe('block');
         });
         it('resize start', () => {
             let trg = (rteObj.element.querySelector('.e-rte-image') as HTMLElement);
@@ -2790,6 +2791,7 @@ client side. Customer easy to edit the contents and get the HTML content for
         let rteObj: RichTextEditor;
         let ele: HTMLElement;
         let element: HTMLElement;
+        let actionCompleteContent: boolean = false;
         beforeAll((done: Function) => {
             element = createElement('form', {
                 id: "form-element", innerHTML:
@@ -2805,8 +2807,12 @@ client side. Customer easy to edit the contents and get the HTML content for
                     saveUrl: 'http://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
                 },
                 value: `<div><p>First p node-0</p></div>`,
-                placeholder: 'Type something'
+                placeholder: 'Type something',
+                actionComplete: actionCompleteFun
             });
+            function actionCompleteFun(args: any): void {
+                actionCompleteContent = true;
+            }
             rteObj.appendTo('#defaultRTE');
             done();
         });
@@ -2858,6 +2864,7 @@ client side. Customer easy to edit the contents and get the HTML content for
         it(" Check insertDragImage method -Internal image", function () {
             let image: HTMLElement = createElement("IMG");
             image.classList.add('e-rte-drag-image');
+            image.setAttribute('src', 'https://www.google.co.in/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png');
             rteObj.inputElement.appendChild(image);
             let event: any = { clientX: 40, clientY: 294, dataTransfer: { files: [] }, preventDefault: function () { return; } };
             (rteObj.imageModule as any).insertDragImage(event);
@@ -2997,6 +3004,33 @@ client side. Customer easy to edit the contents and get the HTML content for
                 expect(rteObj.element.querySelectorAll('.e-img-resize').length).toBe(0);
                 expect(rteObj.element.querySelectorAll('.e-rte-quick-toolbar').length).toBe(0);
                 done(); 
+            }, 100);
+        });
+    });
+    describe('EJ2-40774 - Deleting the image using context menu doesn’t remove the resize and borders of the image', () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+               value: '<p>rich text <img alt="image.jpg" class="e-resize" style="">editor</p>'
+            });
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it('Resize element availability check', (done) => {
+            dispatchEvent((rteObj.element.querySelector('img') as HTMLElement), 'mousedown');
+            setTimeout(() => {
+                expect(rteObj.element.querySelectorAll('.e-img-resize').length).toBe(1);
+                done();
+            }, 100);
+        });
+        it('Cut with resize element availability check', (done) => {
+            (rteObj.imageModule as any).onCutHandler();
+            setTimeout(() => {
+                expect(rteObj.element.querySelectorAll('.e-img-resize').length).toBe(0);
+                done();
             }, 100);
         });
     });

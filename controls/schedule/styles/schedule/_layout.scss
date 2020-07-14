@@ -474,6 +474,10 @@
         display: none;
       }
 
+      .e-inline-appointment {
+        z-index: 1;
+      }
+
       .e-inline-subject {
         background-color: transparent;
         border: 0;
@@ -1281,6 +1285,10 @@
         margin-top: -20px;
       }
 
+      .e-inline-appointment {
+        z-index: 1;
+      }
+
       .e-appointment {
         background: $schedule-appointment-bg-color;
         border: 1px solid $schedule-appointment-border-color;
@@ -1704,6 +1712,10 @@
           position: absolute;
         }
 
+        .e-inline-appointment {
+          z-index: 1;
+        }
+
         .e-appointment {
           background: $schedule-appointment-bg-color;
           border: 1px solid $schedule-appointment-border-color;
@@ -1940,6 +1952,10 @@
         position: absolute;
       }
 
+      .e-inline-appointment {
+        z-index: 1;
+      }
+
       .e-appointment {
         background: $schedule-appointment-bg-color;
         border: 1px solid $schedule-appointment-border-color;
@@ -2083,6 +2099,10 @@
           .e-right-icon {
             padding: 0 0 0 5px;
           }
+        }
+
+        .e-inline-appointment {
+          z-index: 1;
         }
 
         .e-resource-left-td {

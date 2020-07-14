@@ -1524,7 +1524,8 @@ var DataManipulation = /** @class */ (function () {
                 this.parent.query = sf.base.isNullOrUndefined(this.parent.query) ?
                     new sf.data.Query() : this.parent.query;
                 if (this.parent.parentIdMapping) {
-                    if (this.parent.initialRender) {
+                    var filterKey = this.parent.query.params.filter(function (param) { return param.key === 'IdMapping'; });
+                    if (this.parent.initialRender && !filterKey.length) {
                         this.parent.query.where(this.parent.parentIdMapping, 'equal', null);
                         this.parent.query.addParams('IdMapping', this.parent.idMapping);
                     }

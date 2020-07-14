@@ -427,8 +427,14 @@ var ValueFormatter = /** @class */ (function () {
  */
 var CsvHelper = /** @class */ (function () {
     /* tslint:disable:no-any */
-    function CsvHelper(json) {
+    function CsvHelper(json, separator) {
         this.csvStr = '';
+        if (separator === null || separator === undefined) {
+            this.separator = ',';
+        }
+        else {
+            this.separator = separator;
+        }
         this.formatter = new ValueFormatter();
         this.isMicrosoftBrowser = !(!navigator.msSaveBlob);
         if (json.isServerRendered !== null && json.isServerRendered !== undefined) {
@@ -481,7 +487,7 @@ var CsvHelper = /** @class */ (function () {
                 //cell index
                 if (cell.index !== null && cell.index !== undefined) {
                     while (count < cell.index) {
-                        this.csvStr += ',';
+                        this.csvStr += this.separator;
                         count++;
                     }
                     this.parseCell(cell);
@@ -555,7 +561,7 @@ var CsvHelper = /** @class */ (function () {
             }
         }
         value = val;
-        if (value.indexOf(',') !== -1 || value.indexOf('\n') !== -1) {
+        if (value.indexOf(this.separator) !== -1 || value.indexOf('\n') !== -1) {
             return value = '\"' + value + '\"';
         }
         else {
@@ -616,7 +622,7 @@ var BlobHelper = /** @class */ (function () {
  */
 var Workbook = /** @class */ (function () {
     /* tslint:disable:no-any */
-    function Workbook(json, saveType, culture, currencyString) {
+    function Workbook(json, saveType, culture, currencyString, separator) {
         this.sharedStringCount = 0;
         this.unitsProportions = [
             96 / 75.0,
@@ -711,7 +717,7 @@ var Workbook = /** @class */ (function () {
             }
         }
         else {
-            this.csvHelper = new CsvHelper(json);
+            this.csvHelper = new CsvHelper(json, separator);
         }
     }
     /* tslint:disable:no-any */

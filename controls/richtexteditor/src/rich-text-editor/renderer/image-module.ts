@@ -2,7 +2,7 @@ import { addClass, detach, EventHandler, L10n, isNullOrUndefined, KeyboardEventA
 import { Browser, closest, removeClass, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import {
     IImageCommandsArgs, IRenderer, IDropDownItemModel, IToolbarItemModel, OffsetPosition,
-    ImageDragEvent, ActionBeginEventArgs, AfterImageDeleteEventArgs
+    ImageDragEvent, ActionBeginEventArgs, ActionCompleteEventArgs, AfterImageDeleteEventArgs, ImageUploadingEventArgs
 } from '../base/interface';
 import { IRichTextEditor, IImageNotifyArgs, NotifyArgs, IShowPopupArgs, ResizeArgs } from '../base/interface';
 import * as events from '../base/constant';
@@ -105,6 +105,7 @@ export class Image {
             if (this.parent.insertImageSettings.resize) {
                 EventHandler.remove(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.resizeStart);
                 EventHandler.remove(this.parent.element.ownerDocument, 'mousedown', this.onDocumentClick);
+                EventHandler.remove(this.contentModule.getEditPanel(), 'cut', this.onCutHandler);
             }
         }
     }
@@ -119,6 +120,7 @@ export class Image {
         if (this.parent.insertImageSettings.resize) {
             EventHandler.add(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.resizeStart, this);
             EventHandler.add(this.parent.element.ownerDocument, 'mousedown', this.onDocumentClick, this);
+            EventHandler.add(this.contentModule.getEditPanel(), 'cut', this.onCutHandler, this);
         }
         let dropElement: HTMLElement | Document = this.parent.iframeSettings.enable ? this.parent.inputElement.ownerDocument :
             this.parent.inputElement;
@@ -212,6 +214,12 @@ export class Image {
         if ((e.target as HTMLElement).tagName === 'IMG' &&
             (e.target as HTMLElement).parentElement.tagName === 'A') {
             e.preventDefault();
+        }
+    }
+
+    private onCutHandler(): void {
+        if (this.imgResizeDiv && this.contentModule.getEditPanel().contains(this.imgResizeDiv)) {
+            this.cancelResizeAction();
         }
     }
 
@@ -529,7 +537,7 @@ export class Image {
             this.undoStack({ subCommand: (originalEvent.keyCode === 90 ? 'undo' : 'redo') });
         }
         if (originalEvent.keyCode === 8 || originalEvent.keyCode === 46) {
-            if (selectNodeEle && selectNodeEle[0].nodeName === 'IMG') {
+            if (selectNodeEle && selectNodeEle[0].nodeName === 'IMG' && selectNodeEle.length < 1) {
                 originalEvent.preventDefault();
                 let event: IImageNotifyArgs = {
                     selectNode: selectNodeEle, selection: save, selectParent: selectParentEle,
@@ -1357,7 +1365,8 @@ export class Image {
         });
         uploadParentEle.appendChild(uploadEle); let altText: string; let rawFile: FileInfo[];
         let selectArgs: SelectedEventArgs;
-        let beforeUploadArgs: BeforeUploadEventArgs;
+        let filesData: FileInfo[];
+        let beforeUploadArgs: ImageUploadingEventArgs;
         this.uploadObj = new Uploader({
             asyncSettings: { saveUrl: this.parent.insertImageSettings.saveUrl, },
             dropArea: span, multiple: false, enableRtl: this.parent.enableRtl,
@@ -1365,10 +1374,12 @@ export class Image {
             selected: (e: SelectedEventArgs) => {
                 proxy.isImgUploaded = true;
                 selectArgs = e;
+                filesData = e.filesData;
                 if (this.parent.isServerRendered) {
                     selectArgs = JSON.parse(JSON.stringify(e));
                     e.cancel = true;
                     rawFile = e.filesData;
+                    selectArgs.filesData = rawFile;
                 }
                 this.parent.trigger(events.imageSelected, selectArgs, (selectArgs: SelectedEventArgs) => {
                     this.checkExtension(selectArgs.filesData[0]); altText = selectArgs.filesData[0].name;
@@ -1402,8 +1413,8 @@ export class Image {
             beforeUpload: (args: BeforeUploadEventArgs) => {
                 if (this.parent.isServerRendered) {
                     beforeUploadArgs = JSON.parse(JSON.stringify(args));
-                    args.cancel = true;
-                    this.parent.trigger(events.imageUploading, beforeUploadArgs, (beforeUploadArgs: BeforeUploadEventArgs) => {
+                    beforeUploadArgs.filesData = filesData;
+                    this.parent.trigger(events.imageUploading, beforeUploadArgs, (beforeUploadArgs: ImageUploadingEventArgs) => {
                         if (beforeUploadArgs.cancel) { return; }
                         /* tslint:disable */
                         (this.uploadObj as any).uploadFiles(rawFile, null);
@@ -1595,6 +1606,10 @@ export class Image {
                     range.insertNode(imgElement);
                 }
                 imgElement.classList.remove(classes.CLS_RTE_DRAG_IMAGE);
+                let imgArgs: ActionCompleteEventArgs = { elements: [imgElement] };
+                imgElement.addEventListener('load', () => {
+                    this.parent.trigger(events.actionComplete, imgArgs);
+                });
                 this.parent.formatter.editorManager.nodeSelection.Clear(this.contentModule.getDocument());
                 let args: MouseEvent = e as MouseEvent;
                 this.resizeStart(args as PointerEvent, imgElement);
@@ -1633,6 +1648,11 @@ export class Image {
         }
         range.insertNode(imageTag);
         this.uploadMethod(args, imageTag);
+        let e: ActionCompleteEventArgs = { elements: [imageTag] };
+        imageTag.addEventListener('load', () => {
+            this.parent.trigger(events.actionComplete, e);
+        });
+
     }
 
     /**
@@ -1672,7 +1692,7 @@ export class Image {
         setTimeout(() => { proxy.refreshPopup(imageElement); }, timeOut);
         let range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
         let rawFile: FileInfo[];
-        let beforeUploadArgs: BeforeUploadEventArgs;
+        let beforeUploadArgs: ImageUploadingEventArgs;
         this.uploadObj = new Uploader({
             asyncSettings: {
                 saveUrl: this.parent.insertImageSettings.saveUrl,
@@ -1695,9 +1715,9 @@ export class Image {
             beforeUpload: (args: BeforeUploadEventArgs) => {
                 if (this.parent.isServerRendered) {
                     beforeUploadArgs = JSON.parse(JSON.stringify(args));
-                    args.cancel = true;
+                    beforeUploadArgs.filesData = rawFile;
                     isUploading = true;
-                    this.parent.trigger(events.imageUploading, beforeUploadArgs, (beforeUploadArgs: BeforeUploadEventArgs) => {
+                    this.parent.trigger(events.imageUploading, beforeUploadArgs, (beforeUploadArgs: ImageUploadingEventArgs) => {
                         if (beforeUploadArgs.cancel) { return; }
                         /* tslint:disable */
                         (this.uploadObj as any).uploadFiles(rawFile, null);

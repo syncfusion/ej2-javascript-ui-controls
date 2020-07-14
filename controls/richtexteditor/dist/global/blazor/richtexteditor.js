@@ -1652,7 +1652,7 @@ var defaultLocale = {
     'redo': 'Redo',
     'superscript': 'Superscript',
     'subscript': 'Subscript',
-    'createLink': 'Insert Hyperlink',
+    'createLink': 'Insert Link',
     'openLink': 'Open Link',
     'editLink': 'Edit Link',
     'removeLink': 'Remove Link',
@@ -1945,7 +1945,7 @@ function setToolbarStatus(e, isPopToolbar) {
                         case 'formats':
                             if (sf.base.isNullOrUndefined(dropDown.formatDropDown) || isPopToolbar ||
                                 (!sf.base.isNullOrUndefined(dropDown.formatDropDown) && dropDown.formatDropDown.isDestroyed)) {
-                                return;
+                                break;
                             }
                             var formatItems = e.parent.format.types;
                             result = getDropDownValue(formatItems, value, 'subCommand', 'text');
@@ -1961,7 +1961,7 @@ function setToolbarStatus(e, isPopToolbar) {
                         case 'alignments':
                             if (sf.base.isNullOrUndefined(dropDown.alignDropDown) ||
                                 (!sf.base.isNullOrUndefined(dropDown.alignDropDown) && dropDown.alignDropDown.isDestroyed)) {
-                                return;
+                                break;
                             }
                             var alignItems = alignmentItems;
                             result = getDropDownValue(alignItems, value, 'subCommand', 'iconCss');
@@ -1971,7 +1971,7 @@ function setToolbarStatus(e, isPopToolbar) {
                         case 'fontname':
                             if (sf.base.isNullOrUndefined(dropDown.fontNameDropDown) || isPopToolbar ||
                                 (!sf.base.isNullOrUndefined(dropDown.fontNameDropDown) && dropDown.fontNameDropDown.isDestroyed)) {
-                                return;
+                                break;
                             }
                             var fontNameItems = e.parent.fontFamily.items;
                             result = getDropDownValue(fontNameItems, value, 'value', 'text');
@@ -1988,7 +1988,7 @@ function setToolbarStatus(e, isPopToolbar) {
                         case 'fontsize':
                             if (sf.base.isNullOrUndefined(dropDown.fontSizeDropDown) ||
                                 (!sf.base.isNullOrUndefined(dropDown.fontSizeDropDown) && dropDown.fontSizeDropDown.isDestroyed)) {
-                                return;
+                                break;
                             }
                             var fontSizeItems = e.parent.fontSize.items;
                             var fontSizeContent = sf.base.isNullOrUndefined(e.parent.fontSize.default) ? fontSizeItems[1].text :
@@ -3876,6 +3876,7 @@ var Toolbar$1 = /** @class */ (function () {
         this.parent.off(bindOnEnd, this.toolbarBindEvent);
         this.parent.off(toolbarUpdated, this.updateToolbarStatus);
         this.parent.off(modelChanged, this.onPropertyChanged);
+        this.parent.off(refreshBegin, this.onRefresh);
         this.parent.off(destroy, this.destroy);
         this.parent.off(enableFullScreen, this.parent.fullScreenModule.showFullScreen);
         this.parent.off(disableFullScreen, this.parent.fullScreenModule.hideFullScreen);
@@ -5117,6 +5118,7 @@ var QuickToolbar = /** @class */ (function () {
         this.parent.off(initialEnd, this.initializeQuickToolbars);
         this.parent.off(mouseDown, this.renderQuickToolbars);
         this.parent.off(toolbarUpdated, this.toolbarUpdated);
+        this.parent.off(drop, this.renderQuickToolbars);
         this.unWireInlineQTBarEvents();
         this.parent.off(modelChanged, this.onPropertyChanged);
         if (this.parent.quickToolbarSettings.actionOnScroll === 'hide') {
@@ -5490,7 +5492,7 @@ var MarkdownToolbarStatus = /** @class */ (function () {
     };
     MarkdownToolbarStatus.prototype.removeEventListener = function () {
         this.parent.off(toolbarRefresh, this.onRefreshHandler);
-        this.parent.off(destroy, this.onRefreshHandler);
+        this.parent.off(destroy, this.removeEventListener);
     };
     MarkdownToolbarStatus.prototype.onRefreshHandler = function (args) {
         var parentsLines = this.selection.getSelectedParentPoints(this.element);
@@ -5808,7 +5810,7 @@ var Formatter = /** @class */ (function () {
      */
     Formatter.prototype.onSuccess = function (self, events) {
         self.notify(contentChanged, {});
-        if (sf.base.isNullOrUndefined(events.event) || (events && events.event.action !== 'copy')) {
+        if (events && (sf.base.isNullOrUndefined(events.event) || events.event.action !== 'copy')) {
             this.enableUndo(self);
             self.notify(execCommandCallBack, events);
         }
@@ -9226,8 +9228,8 @@ var Lists = /** @class */ (function () {
                 }
             }
         }
-        else if (startNode.firstChild.nodeName === 'BR' && (startNode.childNodes[1].nodeName === 'UL' ||
-            startNode.childNodes[1].nodeName === 'OL')) {
+        else if (!sf.base.isNullOrUndefined(startNode.firstChild) && startNode.firstChild.nodeName === 'BR' &&
+            (startNode.childNodes[1].nodeName === 'UL' || startNode.childNodes[1].nodeName === 'OL')) {
             var parentList = !sf.base.isNullOrUndefined(startNode.closest('ul')) ? startNode.closest('ul') : startNode.closest('ol');
             if (parentList.tagName === startNode.childNodes[1].nodeName) {
                 while (startNode.childNodes[1].lastChild) {
@@ -10637,7 +10639,7 @@ var LinkCommand = /** @class */ (function () {
             if (!sf.base.isNullOrUndefined(e.item.title)) {
                 anchorEle.setAttribute('title', e.item.title);
             }
-            if (!sf.base.isNullOrUndefined(e.item.text)) {
+            if (!sf.base.isNullOrUndefined(e.item.text) && e.item.text !== '') {
                 linkText = anchorEle.innerText;
                 anchorEle.innerText = e.item.text;
             }
@@ -11155,6 +11157,7 @@ var ImageCommand = /** @class */ (function () {
         }
     };
     ImageCommand.prototype.createImage = function (e) {
+        var _this = this;
         e.item.url = sf.base.isNullOrUndefined(e.item.url) || e.item.url === 'undefined' ? e.item.src : e.item.url;
         if (!sf.base.isNullOrUndefined(e.item.selectParent) && e.item.selectParent[0].tagName === 'IMG') {
             var imgEle = e.item.selectParent[0];
@@ -11179,12 +11182,16 @@ var ImageCommand = /** @class */ (function () {
             }
         }
         if (e.callBack && (sf.base.isNullOrUndefined(e.selector) || !sf.base.isNullOrUndefined(e.selector) && e.selector !== 'pasteCleanupModule')) {
-            e.callBack({
-                requestType: 'Image',
-                editorMode: 'HTML',
-                event: e.event,
-                range: this.parent.nodeSelection.getRange(this.parent.currentDocument),
-                elements: this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument)
+            var imgElm_1 = e.value === 'Replace' ? e.item.selectParent[0] :
+                this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument)[0].previousElementSibling;
+            imgElm_1.addEventListener('load', function () {
+                e.callBack({
+                    requestType: 'Image',
+                    editorMode: 'HTML',
+                    event: e.event,
+                    range: _this.parent.nodeSelection.getRange(_this.parent.currentDocument),
+                    elements: [imgElm_1]
+                });
             });
         }
     };
@@ -12317,10 +12324,15 @@ var InsertHtmlExec = /** @class */ (function () {
     InsertHtmlExec.prototype.applyHtml = function (e) {
         InsertHtml.Insert(this.parent.currentDocument, e.value, this.parent.editableElement, true);
         if (e.subCommand === 'pasteCleanup') {
+            var pastedElements = this.parent.editableElement.querySelectorAll('.pasteContent_RTE');
+            var allPastedElements = [].slice.call(pastedElements);
+            var imgElements = this.parent.editableElement.querySelectorAll('.pasteContent_Img');
+            var allImgElm = [].slice.call(imgElements);
             e.callBack({
                 requestType: e.subCommand,
                 editorMode: 'HTML',
-                elements: e.value
+                elements: allPastedElements,
+                imgElem: allImgElm
             });
         }
         else {
@@ -13844,6 +13856,7 @@ var HtmlToolbarStatus = /** @class */ (function () {
     };
     HtmlToolbarStatus.prototype.removeEventListener = function () {
         this.parent.off(toolbarRefresh, this.onRefreshHandler);
+        this.parent.off(destroy, this.removeEventListener);
     };
     HtmlToolbarStatus.prototype.onRefreshHandler = function (args) {
         if (this.parent.readonly) {
@@ -14040,6 +14053,11 @@ var XhtmlValidation = /** @class */ (function () {
     }
     XhtmlValidation.prototype.addEventListener = function () {
         this.parent.on(xhtmlValidation, this.enableXhtmlValidation, this);
+        this.parent.on(destroy, this.removeEventListener, this);
+    };
+    XhtmlValidation.prototype.removeEventListener = function () {
+        this.parent.off(xhtmlValidation, this.enableXhtmlValidation);
+        this.parent.off(destroy, this.removeEventListener);
     };
     XhtmlValidation.prototype.enableXhtmlValidation = function () {
         if (this.parent.enableXhtml) {
@@ -14778,8 +14796,8 @@ var PasteCleanup = /** @class */ (function () {
             },
             beforeUpload: function (args) {
                 if (_this.parent.isServerRendered) {
-                    args.cancel = true;
                     beforeUploadArgs = JSON.parse(JSON.stringify(args));
+                    beforeUploadArgs.filesData = rawFile;
                     _this.parent.trigger(imageUploading, beforeUploadArgs, function (beforeUploadArgs) {
                         if (beforeUploadArgs.cancel) {
                             return;
@@ -15042,14 +15060,31 @@ var PasteCleanup = /** @class */ (function () {
         for (var i = 0; i < allImg.length; i++) {
             allImg[i].classList.add('pasteContent_Img');
         }
+        this.addTempClass(clipBoardElem);
         if (clipBoardElem.textContent !== '' || !sf.base.isNullOrUndefined(clipBoardElem.querySelector('img')) ||
             !sf.base.isNullOrUndefined(clipBoardElem.querySelector('table'))) {
             this.parent.formatter.editorManager.execCommand('inserthtml', 'pasteCleanup', args, function (returnArgs) {
-                sf.base.extend(args, { elements: [returnArgs.elements] }, true);
+                sf.base.extend(args, { elements: returnArgs.elements, imageElements: returnArgs.imgElem }, true);
                 _this.parent.formatter.onSuccess(_this.parent, args);
             }, clipBoardElem);
+            this.removeTempClass();
             this.parent.notify(toolbarRefresh, {});
             this.imgUploading(this.parent.inputElement);
+        }
+    };
+    PasteCleanup.prototype.addTempClass = function (clipBoardElem) {
+        var allChild = clipBoardElem.children;
+        for (var i = 0; i < allChild.length; i++) {
+            allChild[i].classList.add('pasteContent_RTE');
+        }
+    };
+    PasteCleanup.prototype.removeTempClass = function () {
+        var classElm = this.parent.inputElement.querySelectorAll('.pasteContent_RTE');
+        for (var i = 0; i < classElm.length; i++) {
+            classElm[i].classList.remove('pasteContent_RTE');
+            if (classElm[i].getAttribute('class') === '') {
+                classElm[i].removeAttribute('class');
+            }
         }
     };
     PasteCleanup.prototype.sanitizeHelper = function (value) {
@@ -15094,10 +15129,12 @@ var PasteCleanup = /** @class */ (function () {
             this.removeEmptyElements(clipBoardElem);
             this.saveSelection.restore();
             clipBoardElem.innerHTML = this.sanitizeHelper(clipBoardElem.innerHTML);
+            this.addTempClass(clipBoardElem);
             this.parent.formatter.editorManager.execCommand('inserthtml', 'pasteCleanup', args, function (returnArgs) {
-                sf.base.extend(args, { elements: [] }, true);
+                sf.base.extend(args, { elements: returnArgs.elements, imageElements: returnArgs.imgElem }, true);
                 _this.parent.formatter.onSuccess(_this.parent, args);
             }, clipBoardElem);
+            this.removeTempClass();
         }
         else {
             this.saveSelection.restore();
@@ -15703,6 +15740,7 @@ var Link = /** @class */ (function () {
         this.parent.on(editLink, this.editLink, this);
         this.parent.on(openLink, this.openLink, this);
         this.parent.on(editAreaClick, this.editAreaClickHandler, this);
+        this.parent.on(destroy, this.destroy, this);
     };
     Link.prototype.onToolbarAction = function (args) {
         var item = args.args.item;
@@ -15731,6 +15769,7 @@ var Link = /** @class */ (function () {
         this.parent.off(editLink, this.editLink);
         this.parent.off(openLink, this.openLink);
         this.parent.off(editAreaClick, this.editAreaClickHandler);
+        this.parent.off(destroy, this.destroy);
     };
     Link.prototype.onIframeMouseDown = function () {
         if (this.dialogObj) {
@@ -16197,6 +16236,7 @@ var Image = /** @class */ (function () {
             if (this.parent.insertImageSettings.resize) {
                 sf.base.EventHandler.remove(this.parent.contentModule.getEditPanel(), sf.base.Browser.touchStartEvent, this.resizeStart);
                 sf.base.EventHandler.remove(this.parent.element.ownerDocument, 'mousedown', this.onDocumentClick);
+                sf.base.EventHandler.remove(this.contentModule.getEditPanel(), 'cut', this.onCutHandler);
             }
         }
     };
@@ -16211,6 +16251,7 @@ var Image = /** @class */ (function () {
         if (this.parent.insertImageSettings.resize) {
             sf.base.EventHandler.add(this.parent.contentModule.getEditPanel(), sf.base.Browser.touchStartEvent, this.resizeStart, this);
             sf.base.EventHandler.add(this.parent.element.ownerDocument, 'mousedown', this.onDocumentClick, this);
+            sf.base.EventHandler.add(this.contentModule.getEditPanel(), 'cut', this.onCutHandler, this);
         }
         var dropElement = this.parent.iframeSettings.enable ? this.parent.inputElement.ownerDocument :
             this.parent.inputElement;
@@ -16320,6 +16361,11 @@ var Image = /** @class */ (function () {
         if (e.target.tagName === 'IMG' &&
             e.target.parentElement.tagName === 'A') {
             e.preventDefault();
+        }
+    };
+    Image.prototype.onCutHandler = function () {
+        if (this.imgResizeDiv && this.contentModule.getEditPanel().contains(this.imgResizeDiv)) {
+            this.cancelResizeAction();
         }
     };
     Image.prototype.imageResize = function (e) {
@@ -16651,7 +16697,7 @@ var Image = /** @class */ (function () {
             this.undoStack({ subCommand: (originalEvent.keyCode === 90 ? 'undo' : 'redo') });
         }
         if (originalEvent.keyCode === 8 || originalEvent.keyCode === 46) {
-            if (selectNodeEle && selectNodeEle[0].nodeName === 'IMG') {
+            if (selectNodeEle && selectNodeEle[0].nodeName === 'IMG' && selectNodeEle.length < 1) {
                 originalEvent.preventDefault();
                 var event_1 = {
                     selectNode: selectNodeEle, selection: save, selectParent: selectParentEle,
@@ -17485,6 +17531,7 @@ var Image = /** @class */ (function () {
         var altText;
         var rawFile;
         var selectArgs;
+        var filesData;
         var beforeUploadArgs;
         this.uploadObj = new sf.inputs.Uploader({
             asyncSettings: { saveUrl: this.parent.insertImageSettings.saveUrl, },
@@ -17493,10 +17540,12 @@ var Image = /** @class */ (function () {
             selected: function (e) {
                 proxy.isImgUploaded = true;
                 selectArgs = e;
+                filesData = e.filesData;
                 if (_this.parent.isServerRendered) {
                     selectArgs = JSON.parse(JSON.stringify(e));
                     e.cancel = true;
                     rawFile = e.filesData;
+                    selectArgs.filesData = rawFile;
                 }
                 _this.parent.trigger(imageSelected, selectArgs, function (selectArgs) {
                     _this.checkExtension(selectArgs.filesData[0]);
@@ -17531,7 +17580,7 @@ var Image = /** @class */ (function () {
             beforeUpload: function (args) {
                 if (_this.parent.isServerRendered) {
                     beforeUploadArgs = JSON.parse(JSON.stringify(args));
-                    args.cancel = true;
+                    beforeUploadArgs.filesData = filesData;
                     _this.parent.trigger(imageUploading, beforeUploadArgs, function (beforeUploadArgs) {
                         if (beforeUploadArgs.cancel) {
                             return;
@@ -17700,6 +17749,7 @@ var Image = /** @class */ (function () {
         return startRange;
     };
     Image.prototype.insertDragImage = function (e) {
+        var _this = this;
         e.preventDefault();
         var activePopupElement = this.parent.element.querySelector('' + CLS_POPUP_OPEN);
         this.parent.notify(drop, { args: e });
@@ -17743,6 +17793,10 @@ var Image = /** @class */ (function () {
                     range.insertNode(imgElement);
                 }
                 imgElement.classList.remove(CLS_RTE_DRAG_IMAGE);
+                var imgArgs_1 = { elements: [imgElement] };
+                imgElement.addEventListener('load', function () {
+                    _this.parent.trigger(actionComplete, imgArgs_1);
+                });
                 this.parent.formatter.editorManager.nodeSelection.Clear(this.contentModule.getDocument());
                 var args = e;
                 this.resizeStart(args, imgElement);
@@ -17751,6 +17805,7 @@ var Image = /** @class */ (function () {
         }
     };
     Image.prototype.onSelect = function (args) {
+        var _this = this;
         var proxy = this;
         var range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
         var parentElement = this.parent.createElement('ul', { className: CLS_UPLOAD_FILES });
@@ -17780,6 +17835,10 @@ var Image = /** @class */ (function () {
         }
         range.insertNode(imageTag);
         this.uploadMethod(args, imageTag);
+        var e = { elements: [imageTag] };
+        imageTag.addEventListener('load', function () {
+            _this.parent.trigger(actionComplete, e);
+        });
     };
     /**
      * Rendering uploader and popup for drag and drop
@@ -17841,7 +17900,7 @@ var Image = /** @class */ (function () {
             beforeUpload: function (args) {
                 if (_this.parent.isServerRendered) {
                     beforeUploadArgs = JSON.parse(JSON.stringify(args));
-                    args.cancel = true;
+                    beforeUploadArgs.filesData = rawFile;
                     isUploading = true;
                     _this.parent.trigger(imageUploading, beforeUploadArgs, function (beforeUploadArgs) {
                         if (beforeUploadArgs.cancel) {
@@ -18028,6 +18087,7 @@ var ViewSource = /** @class */ (function () {
         this.parent.on(sourceCode, this.sourceCode, this);
         this.parent.on(initialEnd, this.onInitialEnd, this);
         this.parent.on(updateSource, this.updateSourceCode, this);
+        this.parent.on(destroy, this.destroy, this);
     };
     ViewSource.prototype.onInitialEnd = function () {
         this.parent.formatter.editorManager.observer.on(KEY_DOWN_HANDLER, this.onKeyDown, this);
@@ -18037,6 +18097,7 @@ var ViewSource = /** @class */ (function () {
         this.parent.off(sourceCode, this.sourceCode);
         this.parent.off(updateSource, this.updateSourceCode);
         this.parent.off(initialEnd, this.onInitialEnd);
+        this.parent.off(destroy, this.destroy);
         this.parent.formatter.editorManager.observer.off(KEY_DOWN_HANDLER, this.onKeyDown);
     };
     ViewSource.prototype.getSourceCode = function () {
@@ -18264,6 +18325,7 @@ var Table = /** @class */ (function () {
         this.parent.on(tableToolbarAction, this.onToolbarAction, this);
         this.parent.on(dropDownSelect, this.dropdownSelect, this);
         this.parent.on(keyDown, this.keyDown, this);
+        this.parent.on(destroy, this.destroy, this);
     };
     Table.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -18278,6 +18340,7 @@ var Table = /** @class */ (function () {
         this.parent.off(mouseDown, this.cellSelect);
         this.parent.off(tableColorPickerChanged, this.setBGColor);
         this.parent.off(keyDown, this.keyDown);
+        this.parent.off(destroy, this.destroy);
     };
     Table.prototype.afterRender = function () {
         this.contentModule = this.rendererFactory.getRenderer(exports.RenderType.Content);
@@ -20461,7 +20524,12 @@ var RichTextEditor = /** @class */ (function (_super) {
             }
         }
         if (!sf.base.isNullOrUndefined(this.placeholder)) {
-            this.setPlaceHolder();
+            if ((!sf.base.isNullOrUndefined(this.placeHolderWrapper)) && (this.inputElement.textContent.length !== 1)) {
+                this.placeHolderWrapper.style.display = 'none';
+            }
+            else {
+                this.setPlaceHolder();
+            }
         }
         this.autoResize();
     };
@@ -21016,7 +21084,7 @@ var RichTextEditor = /** @class */ (function (_super) {
                         this.inputElement.parentElement.insertBefore(this.placeHolderWrapper, this.inputElement);
                     }
                     sf.base.attributes(this.placeHolderWrapper, {
-                        'style': 'font-size: 16px; padding: 16px; margin-left: 0px; margin-right: 0px;'
+                        'style': 'font-size: 14px; padding: 16px; margin-left: 0px; margin-right: 0px;'
                     });
                 }
                 this.placeHolderWrapper.innerHTML = this.placeholder;

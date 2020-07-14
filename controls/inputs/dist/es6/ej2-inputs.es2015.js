@@ -7260,7 +7260,7 @@ let FormValidator = FormValidator_1 = class FormValidator extends Base {
 // List of function to validate the rules
 FormValidator.checkValidator = {
     required: (option) => {
-        return option.value.length > 0;
+        return !isNaN(Date.parse(option.value)) ? !isNaN(new Date(option.value).getTime()) : option.value.toString().length > 0;
     },
     email: (option) => {
         return regex.EMAIL.test(option.value);

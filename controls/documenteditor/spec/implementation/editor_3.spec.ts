@@ -1211,4 +1211,15 @@ describe('Delete table width undo and redo', () => {
         }
         expect(editor.selection.start.paragraph.bodyWidget.childWidgets.length).toBe(3);
     });
+    it('paste dropdown on opening document', () => {
+        editor.openBlank()
+        editor.editorModule.insertText('Adventure');
+        editor.enableLocalPaste = true;
+        editor.selection.selectAll();
+        editor.selection.copy();
+        editor.selection.selectAll();
+        expect(() => { editor.editorModule.paste(); }).not.toThrowError();
+        editor.openBlank();
+        expect(editor.selection.isViewPasteOptions).toBe(false);
+    });
 });

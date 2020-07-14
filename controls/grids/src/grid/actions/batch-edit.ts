@@ -1177,6 +1177,9 @@ export class BatchEdit {
                 if (col && col.allowEditing) {
                 this.editCellExtend(this.index, this.field, this.isAdd); }
             }
+            if (isEscapeCellEdit) {
+                gObj.notify(events.restoreFocus, {});
+            }
         };
     }
 

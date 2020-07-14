@@ -47,7 +47,7 @@ export class InkAnnotation {
         if (this.pdfViewerBase.isToolbarInkClicked) {
             this.pdfViewerBase.isInkAdded = true;
             let pageIndex: number = !isNaN(pageNumber) ? pageNumber : this.pdfViewerBase.currentPageNumber - 1;
-            if (this.newObject && this.newObject.length > 0) {
+            if (this.outputString && this.outputString !== '') {
                 let currentAnnot: PdfAnnotationBaseModel = this.addInk(pageIndex);
                 this.pdfViewer.renderDrawing(undefined, pageIndex);
                 this.pdfViewer.clearSelection(pageIndex);
@@ -63,6 +63,14 @@ export class InkAnnotation {
             }
             this.pdfViewerBase.isInkAdded = false;
         }
+    }
+
+    /**
+     * @private
+     */
+    public storePathData(): void {
+        this.convertToPath(this.newObject);
+        this.newObject = [];
     }
     /**
      * @private
@@ -118,7 +126,6 @@ export class InkAnnotation {
      */
     //tslint:disable-next-line
     public addInk(pageNumber?:number): any {
-        this.convertToPath(this.newObject);
         //tslint:disable-next-line
         let currentBounds: any = this.calculateInkSize();
         let zoomvalue: number = this.pdfViewerBase.getZoomFactor();

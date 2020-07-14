@@ -8,6 +8,12 @@
 
 #### Bug Fixes
 
+- Issue with `Remote data with Virtualization feature` has been fixed.
+
+### ListView
+
+#### Bug Fixes
+
 - #276068 Issue with `Angular's ngTemplate with Virtualization being enabled` has been fixed.
 
 ### ListBase

@@ -3,8 +3,8 @@ import { Property, NotifyPropertyChanges, INotifyPropertyChanged, ModuleDeclarat
 import { addClass, removeClass, EmitType, Complex, formatUnit, L10n, isNullOrUndefined, Browser, EventHandler } from '@syncfusion/ej2-base';
 import { detach, select, closest } from '@syncfusion/ej2-base';
 import { MenuItemModel, BeforeOpenCloseMenuEventArgs, ItemModel } from '@syncfusion/ej2-navigations';
-import { initialLoad, mouseDown, spreadsheetDestroyed, keyUp, BeforeOpenEventArgs, clearViewer, removeSheetTab } from '../common/index';
-import { hideShow, performUndoRedo, overlay } from '../common/index';
+import { initialLoad, mouseDown, spreadsheetDestroyed, keyUp, BeforeOpenEventArgs, clearViewer } from '../common/index';
+import { hideShow, performUndoRedo, overlay, DialogBeforeOpenEventArgs } from '../common/index';
 import { HideShowEventArgs, sheetNameUpdate, updateUndoRedoCollection, getUpdateUsingRaf, setAutoFit, created } from '../common/index';
 import { actionEvents, collaborativeUpdate, CollaborativeEditArgs, keyDown, enableFileMenuItems, hideToolbarItems } from '../common/index';
 import { ICellRenderer, colWidthChanged, rowHeightChanged, hideRibbonTabs, addFileMenuItems } from '../common/index';
@@ -32,7 +32,7 @@ import { SpreadsheetModel } from './spreadsheet-model';
 import { getRequiredModules, ScrollSettings, ScrollSettingsModel, SelectionSettingsModel, enableToolbarItems } from '../common/index';
 import { SelectionSettings, BeforeSelectEventArgs, SelectEventArgs, getStartEvent, enableRibbonTabs } from '../common/index';
 import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
-import { setRowHeight, getRowsHeight, getColumnWidth, getRowHeight, getSheetName } from './../../workbook/base/index';
+import { setRowHeight, getRowsHeight, getColumnWidth, getRowHeight } from './../../workbook/base/index';
 import { getRangeIndexes, getIndexesFromAddress, getCellIndexes, WorkbookNumberFormat, WorkbookFormula } from '../../workbook/index';
 import { RefreshValueArgs, Ribbon, FormulaBar, SheetTabs, Open, ContextMenu, Save, NumberFormat, Formula } from '../integrations/index';
 import { Sort, Filter } from '../integrations/index';
@@ -278,6 +278,23 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      */
     @Event()
     public contextMenuBeforeClose: EmitType<BeforeOpenCloseMenuEventArgs>;
+
+    /**
+     * Triggers before opening the dialog box.
+     * ```html
+     * <div id='Spreadsheet'></div>
+     * ```
+     * ```typescript
+     * new Spreadsheet({
+     *       dialogBeforeOpen: (args: DialogBeforeOpenEventArgs) => {
+     *       }
+     *      ...
+     *  }, '#Spreadsheet');
+     * ```
+     * @event
+     */
+    @Event()
+    public dialogBeforeOpen: EmitType<DialogBeforeOpenEventArgs>;
 
     /**
      * Triggers before closing the file menu.
@@ -776,18 +793,43 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     public hideSpinner(): void {
         hideSpinner(this.element);
     }
-    public protectSheet(sheetIndex?: number | string, protectSettings?: ProtectSettingsModel): void {
-        if (typeof(sheetIndex) === 'string') {
-            sheetIndex = getSheetIndex(this, sheetIndex);
-        } else {
-            if (sheetIndex) {
-                this.sheets[sheetIndex].isProtected = true;
-                this.sheets[sheetIndex].protectSettings = protectSettings;
-            }
-            sheetIndex = this.getActiveSheet().index;
-            this.getActiveSheet().isProtected = true;
+
+    /**
+     * To protect the particular sheet.
+     * @param {number | string} sheet - Specifies the sheet to protect.
+     * @param {ProtectSettingsModel} protectSettings - Specifies the protect sheet options.
+     * @default { selectCells: 'false', formatCells: 'false', formatRows: 'false', formatColumns:'false', insertLink:'false' }
+     * @return {void}
+     */
+    public protectSheet(sheet?: number | string, protectSettings?: ProtectSettingsModel): void {
+        if (typeof(sheet) === 'string') {
+            sheet = getSheetIndex(this, sheet);
         }
-        super.protectSheet(sheetIndex, protectSettings);
+        if (sheet) {
+            this.sheets[sheet].isProtected = true;
+            this.sheets[sheet].protectSettings = protectSettings;
+        }
+        sheet = this.getActiveSheet().index;
+        this.getActiveSheet().isProtected = true;
+        super.protectSheet(sheet, protectSettings);
+    }
+
+    /**
+     * To unprotect the particular sheet.
+     * @param {number | string} sheet - Specifies the sheet to Unprotect.
+     * @return {void}
+     */
+    public unprotectSheet(sheet?: number | string): void {
+        if (typeof(sheet) === 'string') {
+            sheet = getSheetIndex(this, sheet);
+        }
+        if (sheet) {
+            this.sheets[sheet].isProtected = false;
+
+        } else {
+            this.getActiveSheet().isProtected = false;
+        }
+        super.unprotectSheet(sheet);
     }
 
     /**
@@ -1199,7 +1241,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             for (let colIdx: number = rangeIndexes[1]; colIdx <= rangeIndexes[3]; colIdx++) {
                 if (sheet && sheet.rows[rowIdx] && sheet.rows[rowIdx].cells[colIdx]) {
                     cellMod = sheet.rows[rowIdx].cells[colIdx];
-                    if (isNullOrUndefined(cellMod)) {
+                    if (cellMod) {
                         if (typeof (cellMod.hyperlink) === 'string') {
                             cellMod.value = cellMod.value ? cellMod.value : cellMod.hyperlink;
                         } else {
@@ -1615,20 +1657,6 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     public updateUndoRedoCollection(args: { [key: string]: Object }): void {
         this.notify(updateUndoRedoCollection, { args: args, isPublic: true });
     }
-
-    // /**
-    //  * To delete the sheet in spreadsheet.
-    //  * @param {number} sheetIdx - Provide the sheet index.
-    //  */
-    // public deleteSheet(sheetIdx:number): void {
-    //     this.notify(removeSheetTab, {
-    //         index: sheetIdx,
-    //             isAction: true,
-    //             count: this.sheets.length - 1,
-    //             clicked: true,
-    //             sheetName:  getSheetName(this, sheetIdx)
-    //     });
-    // }
 
     /**
      * Adds the defined name to the Spreadsheet.

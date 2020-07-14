@@ -1,4 +1,4 @@
-import { Spreadsheet } from '../index';
+import { Spreadsheet, DialogBeforeOpenEventArgs } from '../index';
 import { checkConditionalFormat, initiateConditionalFormat, locale, dialog, setCF, CFormattingEventArgs } from '../common/index';
 import { beginAction, completeAction } from '../common/index';
 import { CellModel, SheetModel, getCell, setRow, setCell } from '../../workbook/base/index';
@@ -8,6 +8,7 @@ import { setCFRule, clearCells } from '../../workbook/common/index';
 import { isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
+import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { ColorScale, IconSet, HighlightCell, TopBottom, CFColor, ConditionalFormatModel } from '../../workbook/common/index';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 
@@ -193,7 +194,15 @@ export class ConditionalFormatting {
             width: 375, showCloseIcon: true, isModal: true, cssClass: 'e-conditionalformatting-dlg',
             header: args.action.replace('...', ''),
             target: document.querySelector('.e-control.e-spreadsheet') as HTMLElement,
-            beforeOpen: (): void => {
+            beforeOpen: (openArgs: BeforeOpenEventArgs): void => {
+                let dlgArgs: DialogBeforeOpenEventArgs = {
+                    dialogName: 'CFDialog', element: openArgs.element,
+                    target: openArgs.target, cancel: openArgs.cancel
+                };
+                this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                if (dlgArgs.cancel) {
+                    openArgs.cancel = true;
+                }
                 dialogInst.dialogInstance.content = this.cFDlgContent(args.action);
                 dialogInst.dialogInstance.dataBind();
                 this.parent.element.focus();

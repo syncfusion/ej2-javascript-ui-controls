@@ -1459,7 +1459,8 @@
       }
     }
 
-    & .e-aggregate-list {
+    &.e-aggregate-list {
+      font-size: 13px;
       margin-left: auto;
     }
 
@@ -1469,6 +1470,10 @@
       & ul .e-menu-item .e-menu-icon {
         font-size: 16px;
       }
+    }
+
+    &.e-popup.e-aggregate-list ul {
+      font-size: 13px;
     }
   }
 
@@ -1833,6 +1838,7 @@
     }
 
     & .e-aggregate-list {
+      font-size: 13px;
       margin-left: auto;
     }
 

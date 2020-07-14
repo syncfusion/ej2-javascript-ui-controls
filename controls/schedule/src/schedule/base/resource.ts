@@ -518,7 +518,7 @@ export class ResourceBase {
                     this.parent.activeView.serverRenderLayout();
                     let processed: Object[] = this.parent.eventBase.processData(this.parent.eventsData as { [key: string]: Object }[]);
                     this.parent.notify(events.dataReady, { processedData: processed });
-                }).catch((e: ReturnType) => this.dataManagerFailure(e));
+                }).catch((e: ReturnType) => this.parent.renderModule.dataManagerFailure(e));
             } else {
                 this.parent.renderModule.render(this.parent.currentView, false);
                 let processed: Object[] = this.parent.eventBase.processData([...this.parent.blockData as { [key: string]: Object }[],
@@ -553,7 +553,7 @@ export class ResourceBase {
             //     if (this.parent.isDestroyed) { return; }
             //     this.parent.resourceCollection = DataUtil.parse.parseJson(result);
             //     this.refreshLayout(isSetModel);
-            // }).catch((e: ReturnType) => this.dataManagerFailure(e));
+            // }).catch((e: ReturnType) => this.parent.renderModule.dataManagerFailure(e));
             return;
         }
         let promises: Promise<Object>[] = [];
@@ -562,7 +562,7 @@ export class ResourceBase {
             promises.push(dataModule.getData(dataModule.generateQuery()));
         }
         Promise.all(promises).then((e: ReturnType[]) => this.dataManagerSuccess(e, isSetModel))
-            .catch((e: ReturnType) => this.dataManagerFailure(e));
+            .catch((e: ReturnType) => this.parent.renderModule.dataManagerFailure(e));
     }
 
     private dataManagerSuccess(e: ReturnType[], isSetModel: boolean): void {
@@ -848,11 +848,6 @@ export class ResourceBase {
 
     private filterData(dataSource: Object[], field: string, value: string): Object[] {
         return dataSource.filter((data: { [key: string]: Object }) => data[field] === value);
-    }
-
-    private dataManagerFailure(e: { result: Object[] }): void {
-        if (this.parent.isDestroyed) { return; }
-        this.parent.trigger(events.actionFailure, { error: e }, () => this.parent.hideSpinner());
     }
 
     public getResourceData(eventObj: { [key: string]: Object }, index: number, groupEditIndex: number[]): void {

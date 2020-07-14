@@ -1084,7 +1084,7 @@ export class Edit {
         eventArgs.requestType = 'beforeSave';
         eventArgs.data = args.data;
         eventArgs.modifiedRecords = this.parent.editedRecords;
-        eventArgs.modifiedTaskData = getTaskData(this.parent.editedRecords);
+        eventArgs.modifiedTaskData = getTaskData(this.parent.editedRecords, true);
         if (args.action && args.action === 'DrawConnectorLine') {
             eventArgs.action = 'DrawConnectorLine';
         }
@@ -1099,10 +1099,11 @@ export class Edit {
                 this.resetEditProperties();
                 // Trigger action complete event with save canceled request type
             } else {
+                eventArgs.modifiedTaskData = getTaskData(eventArgs.modifiedRecords);
                 if (isRemoteData(this.parent.dataSource)) {
                     let data: DataManager = this.parent.dataSource as DataManager;
                     let updatedData: object = {
-                        changedRecords: isBlazor() ? modifiedTaskData : eventArgs.modifiedTaskData
+                        changedRecords: eventArgs.modifiedTaskData
                     };
                     /* tslint:disable-next-line */
                     let query: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
@@ -2052,9 +2053,9 @@ export class Edit {
                 this.parent.setRecordValue(this.parent.taskFields.parentID, cAddedRecord.parentItem.taskId, cAddedRecord, true);
             }
         }
+        this.parent.isOnEdit = true;
         this.backUpAndPushNewlyAddedRecord(cAddedRecord, rowPosition, parentItem);
         // need to push in dataSource also.
-        this.parent.isOnEdit = true;
         if (this.parent.taskFields.dependency && cAddedRecord.ganttProperties.predecessorsName) {
             this.parent.predecessorModule.ensurePredecessorCollectionHelper(cAddedRecord, cAddedRecord.ganttProperties);
             this.parent.predecessorModule.updatePredecessorHelper(cAddedRecord);
@@ -2143,6 +2144,7 @@ export class Edit {
                 let ind: number = prdcList.indexOf(str);
                 prdcList.splice(ind, 1);
                 this.parent.setRecordValue('predecessorsName', prdcList.join(','), childRecord.ganttProperties, true);
+                this.parent.setRecordValue(this.parent.taskFields.dependency, prdcList.join(','), childRecord);
                 predecessorIndex = getIndex(predecessorCollection[count], 'from', childRecord.ganttProperties.predecessor, 'to');
                 let temppredecessorCollection: IPredecessor[];
                 temppredecessorCollection = (extend([], childRecord.ganttProperties.predecessor, [], true)) as IPredecessor[];
@@ -2242,12 +2244,15 @@ export class Edit {
                     updatedCollectionIndex = currentViewData.indexOf(this.addRowSelectedItem) +
                         this.getVisibleChildRecordCount(this.addRowSelectedItem, 0, currentViewData) + 1;
                 } else {
-                    this.addRowSelectedItem.hasChildRecords = true;
-                    this.addRowSelectedItem.childRecords = [];
-                    this.addRowSelectedItem.expanded = true;
-                    this.addRowSelectedItem.ganttProperties.isMilestone = false;
+                    this.parent.setRecordValue('hasChildRecords', true, this.addRowSelectedItem);
+                    this.parent.setRecordValue('isMilestone', false, this.addRowSelectedItem.ganttProperties, true);
+                    this.parent.setRecordValue('expanded', true, this.addRowSelectedItem);
+                    this.parent.setRecordValue('childRecords', [], this.addRowSelectedItem);
                     recordIndex = currentItemIndex + 1;
                     updatedCollectionIndex = currentViewData.indexOf(this.addRowSelectedItem) + 1;
+                    if (this.addRowSelectedItem.ganttProperties.predecessor) {
+                        this.updatePredecessorOnIndentOutdent(this.addRowSelectedItem);
+                    }
                 }
                 this.recordCollectionUpdate(childIndex + 1, recordIndex, updatedCollectionIndex, record, parentItem);
                 break;
@@ -2446,10 +2451,6 @@ export class Edit {
             }
             this.parent.trigger('actionBegin', args, (args: ITaskAddedEventArgs) => {
                 if (!args.cancel) {
-                    if (rowPosition === 'Child' && this.addRowSelectedItem && this.addRowSelectedItem.ganttProperties.predecessor
-                        && this.addRowSelectedItem.ganttProperties.predecessor.length > 0) {
-                        this.updatePredecessorOnIndentOutdent(this.addRowSelectedItem);
-                    }
                     if (isBlazor()) {
                         blazorArgs.data = blazorArgs.data[0];
                         args = blazorArgs;
@@ -2601,9 +2602,6 @@ export class Edit {
             let parentItem: IGanttData = this.parent.getParentTask(this.newlyAddedRecordBackup.parentItem);
             let parentIndex: number = parentItem.childRecords.indexOf(this.newlyAddedRecordBackup);
             parentItem.childRecords.splice(parentIndex, 1);
-            if (parentItem.childRecords.length === 0) {
-                parentItem.hasChildRecords = false;
-            }
         }
         flatRecords.splice(flatRecordsIndex, 1);
         currentViewData.splice(currentViewDataIndex, 1);

@@ -19,6 +19,7 @@ export class HtmlToolbarStatus {
     }
     private removeEventListener(): void {
         this.parent.off(events.toolbarRefresh, this.onRefreshHandler);
+        this.parent.off(events.destroy, this.removeEventListener);
     }
     private onRefreshHandler(args: { [key: string]: Node | Object }): void {
         if (this.parent.readonly) {

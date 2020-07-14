@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.2.45 (2020-07-14)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#283180` - Resolved font family no records found issue.
+
 ## 18.2.44 (2020-07-07)
 
 ### Document Editor

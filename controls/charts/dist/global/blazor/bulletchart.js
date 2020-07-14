@@ -1326,6 +1326,7 @@ var Double = /** @class */ (function () {
             var isLazyLoad = sf.base.isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
             if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad) {
                 axis.calculateVisibleRange(size);
+                axis.calculateAxisRange(size, this.chart);
                 axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming && axis.valueType !== 'Category') ?
                     this.calculateNumericNiceInterval(axis, axis.doubleRange.delta, size)
                     : axis.visibleRange.interval;
@@ -1417,6 +1418,8 @@ var Double = /** @class */ (function () {
 
 /** @private */
 var legendRender = 'legendRender';
+/** @private */
+
 /** @private */
 
 /** @private */
@@ -2131,6 +2134,53 @@ var Axis = /** @class */ (function (_super) {
             this.doubleRange = new DoubleRange(start, end);
             this.visibleRange = { min: this.doubleRange.start, max: this.doubleRange.end,
                 delta: this.doubleRange.delta, interval: this.visibleRange.interval };
+        }
+    };
+    /**
+     * Calculate range for x and y axis after zoom.
+     * @return {void}
+     * @private
+     */
+    Axis.prototype.calculateAxisRange = function (size, chart) {
+        if (chart.enableAutoIntervalOnBothAxis) {
+            if (this.orientation === 'Horizontal' && chart.zoomSettings.mode === 'X') {
+                for (var i = 0; i < this.series.length; i++) {
+                    var yValue = [];
+                    for (var _i = 0, _a = this.series[i].visiblePoints; _i < _a.length; _i++) {
+                        var points = _a[_i];
+                        if ((points.xValue > this.visibleRange.min) && (points.xValue < this.visibleRange.max)) {
+                            yValue.push(points.yValue);
+                        }
+                    }
+                    for (var _b = 0, _c = chart.axisCollections; _b < _c.length; _b++) {
+                        var axis = _c[_b];
+                        if (axis.orientation === 'Vertical' && !sf.base.isNullOrUndefined(axis.series[i])) {
+                            axis.series[i].yMin = Math.min.apply(Math, yValue);
+                            axis.series[i].yMax = Math.max.apply(Math, yValue);
+                            axis.baseModule.calculateRangeAndInterval(size, axis);
+                        }
+                    }
+                }
+            }
+            if (this.orientation === 'Vertical' && chart.zoomSettings.mode === 'Y') {
+                for (var i = 0; i < this.series.length; i++) {
+                    var xValue = [];
+                    for (var _d = 0, _e = this.series[i].visiblePoints; _d < _e.length; _d++) {
+                        var points = _e[_d];
+                        if ((points.yValue > this.visibleRange.min) && (points.yValue < this.visibleRange.max)) {
+                            xValue.push(points.xValue);
+                        }
+                    }
+                    for (var _f = 0, _g = chart.axisCollections; _f < _g.length; _f++) {
+                        var axis = _g[_f];
+                        if (axis.orientation === 'Horizontal' && !sf.base.isNullOrUndefined(axis.series[i])) {
+                            axis.series[i].xMin = Math.min.apply(Math, xValue);
+                            axis.series[i].xMax = Math.max.apply(Math, xValue);
+                            axis.baseModule.calculateRangeAndInterval(size, axis);
+                        }
+                    }
+                }
+            }
         }
     };
     /**
@@ -3027,6 +3077,7 @@ function calculateShapes(location, size, shape, options, url, isChart, control) 
         case 'Waterfall':
         case 'BoxAndWhisker':
         case 'StepArea':
+        case 'StackingStepArea':
         case 'Square':
         case 'Flag':
             dir = 'M' + ' ' + x + ' ' + (ly + (-height / 2)) + ' ' +

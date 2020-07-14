@@ -2031,6 +2031,7 @@ var GaugeTooltip = /** @class */ (function () {
         }
         this.gauge.on(sf.base.Browser.touchMoveEvent, this.renderTooltip, this);
         this.gauge.on(sf.base.Browser.touchEndEvent, this.mouseUpHandler, this);
+        this.gauge.element.addEventListener('contextmenu', this.removeTooltip);
     };
     /**
      * To unbind events for tooltip module

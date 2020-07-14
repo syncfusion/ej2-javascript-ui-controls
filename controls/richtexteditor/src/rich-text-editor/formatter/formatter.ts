@@ -144,7 +144,7 @@ export class Formatter {
      */
     public onSuccess(self: IRichTextEditor, events: IMarkdownFormatterCallBack | IHtmlFormatterCallBack): void {
         self.notify(CONSTANT.contentChanged, {});
-        if (isNullOrUndefined(events.event) || (events && (events.event as KeyboardEventArgs).action !== 'copy')) {
+        if (events && (isNullOrUndefined(events.event) || (events.event as KeyboardEventArgs).action !== 'copy')) {
             this.enableUndo(self);
             self.notify(CONSTANT.execCommandCallBack, events);
         }

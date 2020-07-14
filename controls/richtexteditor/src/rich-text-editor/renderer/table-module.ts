@@ -56,14 +56,14 @@ export class Table {
 
     protected addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
-        this.parent.on(
-            events.createTable, this.renderDlgContent, this);
+        this.parent.on(events.createTable, this.renderDlgContent, this);
         this.parent.on(events.initialEnd, this.afterRender, this);
         this.parent.on(events.docClick, this.docClick, this);
         this.parent.on(events.editAreaClick, this.editAreaClickHandler, this);
         this.parent.on(events.tableToolbarAction, this.onToolbarAction, this);
         this.parent.on(events.dropDownSelect, this.dropdownSelect, this);
         this.parent.on(events.keyDown, this.keyDown, this);
+        this.parent.on(events.destroy, this.destroy, this);
     }
 
     protected removeEventListener(): void {
@@ -77,6 +77,7 @@ export class Table {
         this.parent.off(events.mouseDown, this.cellSelect);
         this.parent.off(events.tableColorPickerChanged, this.setBGColor);
         this.parent.off(events.keyDown, this.keyDown);
+        this.parent.off(events.destroy, this.destroy);
     }
 
     private afterRender(): void {

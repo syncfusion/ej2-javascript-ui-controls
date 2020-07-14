@@ -1,4 +1,5 @@
-import { Spreadsheet, locale, dialog, mouseDown, renderFilterCell, initiateFilterUI, reapplyFilter, filterCellKeyDown } from '../index';
+import { Spreadsheet, locale, dialog, mouseDown, renderFilterCell, initiateFilterUI } from '../index';
+import { reapplyFilter, filterCellKeyDown, DialogBeforeOpenEventArgs } from '../index';
 import { getFilteredColumn, cMenuBeforeOpen, filterByCellValue, clearFilter, getFilterRange, applySort, getCellPosition } from '../index';
 import { filterRangeAlert, filterComplete, beforeFilter, clearAllFilter } from '../../workbook/common/event';
 import { getIndexesFromAddress, getSwapRange, SheetModel, getColumnHeaderText, CellModel } from '../../workbook/index';
@@ -11,6 +12,7 @@ import { beforeCustomFilterOpen, parentsUntil, filterCboxValue } from '@syncfusi
 import { Button } from '@syncfusion/ej2-buttons';
 import { Query, DataManager, Predicate } from '@syncfusion/ej2-data';
 import { SortOrder, MenuItemModel } from '@syncfusion/ej2-navigations';
+import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 
 /**
  * `Filter` module is used to handle the filter action in Spreadsheet.
@@ -107,6 +109,16 @@ export class Filter {
         dialogInst.show({
             content: args.error, isModal: true,
             height: 180, width: 400, showCloseIcon: true,
+            beforeOpen: (args: BeforeOpenEventArgs): void => {
+                let dlgArgs: DialogBeforeOpenEventArgs = {
+                    dialogName: 'FilterRangeDialog',
+                    element: args.element, target: args.target, cancel: args.cancel
+                };
+                this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                if (dlgArgs.cancel) {
+                    args.cancel = true;
+                }
+            },
         });
         this.parent.hideSpinner();
     }

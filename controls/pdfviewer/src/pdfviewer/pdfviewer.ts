@@ -3309,13 +3309,11 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     this.viewerBase.updateWidth();
                     this.viewerBase.onWindowResize();
                     break;
-                case 'customStampItems':
-                    this.annotation.stampAnnotationModule.isStampAddMode = true;
-                    this.annotationModule.stampAnnotationModule.isStampAnnotSelected = true;
-                    this.viewerBase.stampAdded = true;
-                    this.viewerBase.isAlreadyAdded = false;
-                    // tslint:disable-next-line:max-line-length
-                    this.annotation.stampAnnotationModule.createCustomStampAnnotation(this.customStamp[0].customStampImageSource);
+                case 'customStamp':
+                    this.renderCustomerStamp(this.customStamp[0]);
+                    break;
+                case 'customStampSettings':
+                    this.renderCustomerStamp(this.customStampSettings.customStamps[0]);
                     break;
                 case 'enableFormFields':
                     if (this.enableFormFields && this.formFieldsModule) {
@@ -3336,6 +3334,16 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     break;
             }
         }
+    }
+
+    // tslint:disable-next-line
+    private renderCustomerStamp(customStamp: any) {
+        this.annotation.stampAnnotationModule.isStampAddMode = true;
+        this.annotationModule.stampAnnotationModule.isStampAnnotSelected = true;
+        this.viewerBase.stampAdded = true;
+        this.viewerBase.isAlreadyAdded = false;
+        // tslint:disable-next-line:max-line-length
+        this.annotation.stampAnnotationModule.createCustomStampAnnotation(customStamp.customStampImageSource);
     }
 
     public getPersistData(): string {

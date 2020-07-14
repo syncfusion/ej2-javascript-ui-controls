@@ -4835,7 +4835,7 @@ var PivotEngine = /** @class */ (function () {
                         }
                     }
                     cellValue = this.evaluate(actualFormula);
-                    (cellValue === Infinity ? Infinity : (cellValue === undefined || isNaN(cellValue)) ? undefined : JSON.parse(String(cellValue)));
+                    cellValue = (cellValue === Infinity || cellValue === -Infinity ? Infinity : (cellValue === undefined || isNaN(cellValue)) ? undefined : JSON.parse(String(cellValue)));
                 }
                 ri++;
             }
@@ -14086,17 +14086,17 @@ var PivotChart = /** @class */ (function () {
             var cKeys = void 0;
             if (!sf.base.isNullOrUndefined(rows)) {
                 cKeys = Object.keys(rows);
-            }
-            for (var _a = 0, cKeys_2 = cKeys; _a < cKeys_2.length; _a++) {
-                var cellIndex = cKeys_2[_a];
-                var cell = rows[Number(cellIndex)];
-                if (!sf.base.isNullOrUndefined(cell)) {
-                    if (cell.axis !== 'column') {
-                        return colIndexColl;
-                    }
-                    else if ((cell.type === 'sum' || (this.dataSourceSettings.columns.length === 0 ? false : cell.type === 'grand sum'))
-                        && cell.rowSpan !== -1) {
-                        colIndexColl[cell.colIndex] = cell.colIndex;
+                for (var _a = 0, cKeys_2 = cKeys; _a < cKeys_2.length; _a++) {
+                    var cellIndex = cKeys_2[_a];
+                    var cell = rows[Number(cellIndex)];
+                    if (!sf.base.isNullOrUndefined(cell)) {
+                        if (cell.axis !== 'column') {
+                            return colIndexColl;
+                        }
+                        else if ((cell.type === 'sum' || (this.dataSourceSettings.columns.length === 0 ? false : cell.type === 'grand sum'))
+                            && cell.rowSpan !== -1) {
+                            colIndexColl[cell.colIndex] = cell.colIndex;
+                        }
                     }
                 }
             }
@@ -17128,7 +17128,7 @@ var MDXQuery = /** @class */ (function () {
                 }
                 i_1++;
             }
-            query = '\nWHERE (' + query.replace(/DrilldownLevel/g, '') + ')';
+            query = query === '' ? '' : '\nWHERE (' + query.replace(/DrilldownLevel/g, '') + ')';
         }
         return query;
     };
@@ -17232,7 +17232,7 @@ var MDXQuery = /** @class */ (function () {
                     }
                 }
             }
-            if (isFound) {
+            if (!isFound) {
                 for (var _h = 0, _j = this.rows; _h < _j.length; _h++) {
                     var row = _j[_h];
                     if (this.getDimensionUniqueName(row.name) === this.getDimensionUniqueName(field.name)) {

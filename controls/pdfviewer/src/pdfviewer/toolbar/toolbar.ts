@@ -11,7 +11,10 @@ import { ToolbarItem } from '../base/types';
  * Toolbar module
  */
 export class Toolbar {
-    private toolbar: tool;
+    /**
+     * @private
+     */
+    public toolbar: tool;
     private pdfViewer: PdfViewer;
     private pdfViewerBase: PdfViewerBase;
     private currentPageBox: NumericTextBox;

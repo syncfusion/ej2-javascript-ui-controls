@@ -60,7 +60,7 @@ export class DateTime extends NiceInterval {
         let dateFormatter: Function = this.chart.intl.getDateFormat(option);
         // Axis min
         if ((axis.minimum) !== null) {
-            this.min = Date.parse(dateParser(dateFormatter(new Date(
+            this.min = this.chart.isBlazor ? Date.parse(axis.minimum.toString()) : Date.parse(dateParser(dateFormatter(new Date(
                 DataUtil.parse.parseJson({ val: axis.minimum }).val
             ))));
         } else if (this.min === null || this.min === Number.POSITIVE_INFINITY) {
@@ -68,7 +68,7 @@ export class DateTime extends NiceInterval {
         }
         // Axis Max
         if ((axis.maximum) !== null) {
-            this.max = Date.parse(dateParser(dateFormatter(new Date(
+            this.max = this.chart.isBlazor ? Date.parse(axis.maximum.toString()) : Date.parse(dateParser(dateFormatter(new Date(
                 DataUtil.parse.parseJson({ val: axis.maximum }).val
             ))));
         } else if (this.max === null || this.max === Number.NEGATIVE_INFINITY) {
@@ -263,6 +263,7 @@ export class DateTime extends NiceInterval {
         let isLazyLoad : boolean = isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
         if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad) {
             axis.calculateVisibleRange(size);
+            axis.calculateAxisRange(size, this.chart);
             axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming) ?
                 this.calculateDateTimeNiceInterval(axis, size, axis.visibleRange.min, axis.visibleRange.max)
                 : axis.visibleRange.interval;

@@ -2560,7 +2560,8 @@ class ContentRender {
             idx = this.parent.getFrozenColumns();
         }
         /* tslint:disable:no-any */
-        if (this.parent.registeredTemplate && this.parent.registeredTemplate.template && !args.isFrozen) {
+        if (args.requestType !== 'infiniteScroll' && this.parent.registeredTemplate
+            && this.parent.registeredTemplate.template && !args.isFrozen) {
             let templatetoclear = [];
             for (let i = 0; i < this.parent.registeredTemplate.template.length; i++) {
                 for (let j = 0; j < this.parent.registeredTemplate.template[i].rootNodes.length; j++) {
@@ -3084,7 +3085,12 @@ class ContentRender {
                 if (tr[trs[i]].querySelectorAll('td.e-rowcell')[idx].classList.contains('e-hide')) {
                     removeClass([tr[trs[i]].querySelectorAll('td.e-rowcell')[idx]], ['e-hide']);
                 }
-                rows[trs[i]].cells[idx].visible = displayVal === '' ? true : false;
+                if (this.parent.isRowDragable()) {
+                    rows[trs[i]].cells[idx + 1].visible = displayVal === '' ? true : false;
+                }
+                else {
+                    rows[trs[i]].cells[idx].visible = displayVal === '' ? true : false;
+                }
             }
         }
         this.parent.notify(infiniteShowHide, { visible: displayVal, index: idx, isFreeze: this.isInfiniteFreeze });
@@ -5038,6 +5044,10 @@ class Render {
                 gObj.hideSpinner();
                 return;
             }
+            if (this.isInfiniteEnd(args) && !len) {
+                this.parent.notify(infiniteEditHandler, { e: args, result: e.result, count: e.count, agg: e.aggregates });
+                return;
+            }
             this.parent.isEdit = false;
             this.parent.notify(editReset, {});
             this.parent.notify(tooltipDestroy, {});
@@ -5074,7 +5084,12 @@ class Render {
                 this.updatesOnInitialRender(dataArgs);
             }
             if (!this.isColTypeDef && gObj.getCurrentViewRecords()) {
-                this.updateColumnType(gObj.getCurrentViewRecords()[0]);
+                if (this.data.dataManager.dataSource.offline && gObj.dataSource.length) {
+                    this.updateColumnType(gObj.dataSource[0]);
+                }
+                else {
+                    this.updateColumnType(gObj.getCurrentViewRecords()[0]);
+                }
             }
             if (!this.parent.isInitialLoad && this.parent.groupSettings.disablePageWiseAggregates &&
                 !this.parent.groupSettings.columns.length) {
@@ -5134,6 +5149,9 @@ class Render {
         this.parent.currentViewData = [];
         this.renderEmptyRow();
         this.parent.log('actionfailure', { error: e });
+    }
+    isInfiniteEnd(args) {
+        return this.parent.enableInfiniteScrolling && !this.parent.infiniteScrollSettings.enableCache && args.requestType === 'delete';
     }
     updatesOnInitialRender(e) {
         this.isLayoutRendered = true;
@@ -6309,7 +6327,7 @@ class ContentFocus {
         let [oRowIndex, oCellIndex] = this.matrix.current;
         let val = getValue(`${rowIndex}.${cellIndex}`, this.matrix.matrix);
         if (this.matrix.inValid(val) || (!force && oRowIndex === rowIndex && oCellIndex === cellIndex) ||
-            parentsUntil(e.target, 'e-summarycell')) {
+            (!parentsUntil(e.target, 'e-rowcell') && !parentsUntil(e.target, 'e-groupcaption'))) {
             return false;
         }
         this.matrix.select(rowIndex, cellIndex);
@@ -6937,6 +6955,9 @@ class Selection {
             else if (!isRowSelected && this.selectionSettings.persistSelection &&
                 this.selectionSettings.checkboxMode !== 'ResetOnRowClick') {
                 this.selectRowCallBack();
+            }
+            if (this.selectionSettings.checkboxMode === 'ResetOnRowClick') {
+                this.clearSelection();
             }
             if (!this.selectionSettings.persistSelection || this.selectionSettings.checkboxMode === 'ResetOnRowClick') {
                 this.selectRowCheck = true;
@@ -8120,6 +8141,7 @@ class Selection {
     }
     drawBorders() {
         if (this.selectionSettings.cellSelectionMode === 'BoxWithBorder' && this.selectedRowCellIndexes.length && !this.parent.isEdit) {
+            this.parent.element.classList.add('e-enabledboxbdr');
             if (!this.bdrElement) {
                 this.createBorders();
             }
@@ -9035,7 +9057,7 @@ class Selection {
         if (stateStr === 'Intermediate') {
             state = this.getCurrentBatchRecordChanges().some((data) => data[this.primaryKey] in this.selectedRowState);
         }
-        if (this.parent.isPersistSelection) {
+        if (this.parent.isPersistSelection && this.parent.allowPaging) {
             this.totalRecordsCount = this.parent.pageSettings.totalRecordsCount;
         }
         this.checkSelectAllAction(!state);
@@ -9880,6 +9902,9 @@ class ShowHide {
             let currentViewCols = this.parent.getColumns();
             columns = isNullOrUndefined(columns) ? currentViewCols : columns;
             if (showHideArgs[cancel]) {
+                if (this.parent.columnChooserModule) {
+                    this.parent.columnChooserModule.resetColumnState();
+                }
                 if (columns.length > 0) {
                     columns[0].visible = true;
                 }
@@ -21863,7 +21888,8 @@ class Resize {
         for (let i = 0; i < fName.length; i++) {
             let fieldName = fName[i];
             let columnIndex = this.parent.getColumnIndexByField(fieldName);
-            if (this.parent.getColumns()[columnIndex].visible === true) {
+            let column = this.parent.getColumns()[columnIndex];
+            if (columnIndex > -1 && !isNullOrUndefined(column) && column.visible === true) {
                 this.resizeColumn(fieldName, columnIndex);
             }
         }
@@ -25304,6 +25330,9 @@ class FooterRenderer extends ContentRender {
             if (!frozenDiv.offsetHeight) {
                 frozenDiv.style.height = this.getTable().offsetHeight + 'px';
             }
+            if (this.parent.allowResizing) {
+                this.updateFooterTableWidth(this.getTable());
+            }
         }
         this.onScroll();
     }
@@ -25312,8 +25341,14 @@ class FooterRenderer extends ContentRender {
         let mheaderCol;
         let fheaderCol = mheaderCol = this.parent.element.querySelector('.e-gridheader').querySelector('colgroup').cloneNode(true);
         if (this.parent.getFrozenColumns()) {
-            mheaderCol = renderMovable(fheaderCol, this.parent.getFrozenColumns());
-            this.freezeTable.replaceChild(fheaderCol, this.freezeTable.querySelector('colGroup'));
+            let isXaxis = this.parent.enableColumnVirtualization && this.parent.contentModule.isXaxis();
+            if (isXaxis) {
+                mheaderCol = this.parent.getMovableVirtualHeader().querySelector('colgroup').cloneNode(true);
+            }
+            else {
+                mheaderCol = renderMovable(fheaderCol, this.parent.getFrozenColumns());
+                this.freezeTable.replaceChild(fheaderCol, this.freezeTable.querySelector('colGroup'));
+            }
         }
         this.getTable().replaceChild(mheaderCol, this.getColGroup());
         this.setColGroup(mheaderCol);
@@ -26972,7 +27007,7 @@ class VirtualContentRenderer extends ContentRender {
     }
     selectVirtualRow(args) {
         if (this.activeKey !== 'upArrow' && this.activeKey !== 'downArrow'
-            && !this.requestTypes.some((value) => value === this.requestType)) {
+            && !this.requestTypes.some((value) => value === this.requestType) && !this.parent.selectionModule.isInteracted) {
             let ele = this.parent.getFrozenColumns() ? this.parent.getMovableVirtualContent()
                 : this.parent.getContent().firstElementChild;
             let selectedRow = this.parent.getRowByIndex(args.selectedIndex);
@@ -29938,6 +29973,9 @@ class BatchEdit {
                     this.editCellExtend(this.index, this.field, this.isAdd);
                 }
             }
+            if (isEscapeCellEdit) {
+                gObj.notify(restoreFocus, {});
+            }
         };
     }
     getDataByIndex(index) {
@@ -31331,32 +31369,22 @@ class ColumnChooser {
             this.ulElement.querySelectorAll('.e-uncheck:not(.e-selectall)').length;
         if (!isNullOrUndefined(args)) {
             if (uncheckedLength < this.parent.getColumns().length) {
-                let chooserArgs = { requestType: 'columnstate', columns: this.changedStateColumns, cancel: false };
-                let cancel = 'cancel';
-                this.parent.trigger(actionBegin, chooserArgs, (columnChooserArgs) => {
-                    if (columnChooserArgs[cancel]) {
-                        this.showColumn = [];
-                        this.hideColumn = [];
-                        this.hideDialog();
-                        return;
-                    }
-                    if (this.hideColumn.length) {
-                        this.columnStateChange(this.hideColumn, false);
-                    }
-                    if (this.showColumn.length) {
-                        this.columnStateChange(this.showColumn, true);
-                    }
-                    let params = {
-                        requestType: 'columnstate',
-                        columns: this.changedStateColumns
-                    };
-                    this.parent.trigger(actionComplete, params);
-                    this.getShowHideService.setVisible(this.stateChangeColumns, this.changedStateColumns);
-                    this.clearActions();
-                    this.parent.notify(tooltipDestroy, { module: 'edit' });
-                });
+                if (this.hideColumn.length) {
+                    this.columnStateChange(this.hideColumn, false);
+                }
+                if (this.showColumn.length) {
+                    this.columnStateChange(this.showColumn, true);
+                }
+                this.getShowHideService.setVisible(this.stateChangeColumns, this.changedStateColumns);
+                this.clearActions();
+                this.parent.notify(tooltipDestroy, { module: 'edit' });
             }
         }
+    }
+    resetColumnState() {
+        this.showColumn = [];
+        this.hideColumn = [];
+        this.hideDialog();
     }
     changedColumnState(changedColumns) {
         for (let index = 0; index < changedColumns.length; index++) {
@@ -33063,6 +33091,9 @@ class PdfExport {
                         parent.trigger(pdfExportComplete, this.isBlob ? { promise: this.blobPromise } : {});
                         this.parent.log('exporting_complete', this.getModuleName());
                         resolve(this.pdfDocument);
+                    }).catch((e) => {
+                        reject(this.pdfDocument);
+                        this.parent.trigger(actionFailure, e);
                     });
                 });
             });
@@ -37068,10 +37099,13 @@ class InfiniteScroll {
     }
     resetRowIndex(rows, args, rowElms, isAdd) {
         let keyField = this.parent.getPrimaryKeyFieldNames()[0];
+        let isRemove = !(rowElms.length % this.parent.pageSettings.pageSize);
         if (isAdd) {
-            remove(rowElms[rows.length - 1]);
-            rowElms.splice(rows.length - 1, 1);
-            rows.splice(rows.length - 1, 1);
+            if (isRemove) {
+                remove(rowElms[rows.length - 1]);
+                rowElms.splice(rows.length - 1, 1);
+                rows.splice(rows.length - 1, 1);
+            }
         }
         else {
             rows.filter((e, index) => {
@@ -37089,6 +37123,12 @@ class InfiniteScroll {
             this.resetCellIndex(rowElms[i].cells, startIndex);
             startIndex++;
         }
+        if (!rows.length) {
+            this.renderEmptyRow();
+        }
+    }
+    renderEmptyRow() {
+        this.parent.renderModule.emptyRow(true);
     }
     resetCellIndex(cells, index) {
         for (let i = 0; i < cells.length; i++) {
@@ -37254,18 +37294,23 @@ class InfiniteScroll {
     }
     makeRequest(args) {
         if (this.parent.pageSettings.currentPage !== args.prevPage) {
-            this.isInfiniteScroll = true;
-            if (isNullOrUndefined(this.infiniteCache[args.currentPage])) {
-                setTimeout(() => {
-                    this.getVirtualInfiniteEditedData();
-                    this.parent.notify('model-changed', args);
-                }, 100);
+            if (this.parent.pageSettings.currentPage <= this.maxPage) {
+                this.isInfiniteScroll = true;
+                if (isNullOrUndefined(this.infiniteCache[args.currentPage])) {
+                    setTimeout(() => {
+                        this.getVirtualInfiniteEditedData();
+                        this.parent.notify('model-changed', args);
+                    }, 100);
+                }
+                else {
+                    setTimeout(() => {
+                        this.getVirtualInfiniteEditedData();
+                        this.parent.notify(refreshInfiniteModeBlocks, args);
+                    }, 100);
+                }
             }
             else {
-                setTimeout(() => {
-                    this.getVirtualInfiniteEditedData();
-                    this.parent.notify(refreshInfiniteModeBlocks, args);
-                }, 100);
+                this.parent.pageSettings.currentPage = this.maxPage;
             }
         }
     }

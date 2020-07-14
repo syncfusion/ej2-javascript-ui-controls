@@ -6,10 +6,11 @@ import { CellStyleModel, getRangeAddress, workbookEditOperation, getSheetIndexFr
 import { RowModel, getFormattedCellObject, workbookFormulaOperation, applyCellFormat, checkIsFormula, Sheet } from '../../workbook/index';
 import { ExtendedSheet, Cell, pasteMerge, setMerge, MergeArgs, getCellIndexes } from '../../workbook/index';
 import { ribbonClick, ICellRenderer, cut, copy, paste, PasteSpecialType, BeforePasteEventArgs, hasTemplate } from '../common/index';
-import { enableToolbarItems, rowHeightChanged, completeAction, beginAction } from '../common/index';
+import { enableToolbarItems, rowHeightChanged, completeAction, beginAction, DialogBeforeOpenEventArgs } from '../common/index';
 import { clearCopy, locateElem, selectRange, dialog, contentLoaded, tabSwitch, cMenuBeforeOpen, locale } from '../common/index';
 import { Dialog } from '../services/index';
 import { Deferred } from '@syncfusion/ej2-data';
+import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 
 /**
  * Represents clipboard support for Spreadsheet.
@@ -392,7 +393,17 @@ export class Clipboard {
             header: 'Spreadsheet',
             target: this.parent.element,
             height: 205, width: 340, isModal: true, showCloseIcon: true,
-            content: (this.parent.serviceLocator.getService(locale) as L10n).getConstant('PasteAlert')
+            content: (this.parent.serviceLocator.getService(locale) as L10n).getConstant('PasteAlert'),
+            beforeOpen: (args: BeforeOpenEventArgs): void => {
+                let dlgArgs: DialogBeforeOpenEventArgs = {
+                    dialogName: 'PasteDialog',
+                    element: args.element, target: args.target, cancel: args.cancel
+                };
+                this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                if (dlgArgs.cancel) {
+                    args.cancel = true;
+                }
+            }
         });
     }
 

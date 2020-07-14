@@ -123,7 +123,7 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                     switch (key) {
                         case 'formats':
                             if (isNOU(dropDown.formatDropDown) || isPopToolbar ||
-                                (!isNOU(dropDown.formatDropDown) && dropDown.formatDropDown.isDestroyed)) { return; }
+                                (!isNOU(dropDown.formatDropDown) && dropDown.formatDropDown.isDestroyed)) { break; }
                             let formatItems: IDropDownItemModel[] = e.parent.format.types;
                             result = getDropDownValue(formatItems, value, 'subCommand', 'text');
                             let formatContent: string = isNOU(e.parent.format.default) ? formatItems[0].text :
@@ -137,7 +137,7 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                             break;
                         case 'alignments':
                             if (isNOU(dropDown.alignDropDown) ||
-                                (!isNOU(dropDown.alignDropDown) && dropDown.alignDropDown.isDestroyed)) { return; }
+                                (!isNOU(dropDown.alignDropDown) && dropDown.alignDropDown.isDestroyed)) { break; }
                             let alignItems: IDropDownItemModel[] = model.alignmentItems;
                             result = getDropDownValue(alignItems, value, 'subCommand', 'iconCss');
                             dropDown.alignDropDown.iconCss = isNOU(result) ? 'e-icons e-justify-left' : result;
@@ -145,7 +145,7 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                             break;
                         case 'fontname':
                             if (isNOU(dropDown.fontNameDropDown) || isPopToolbar ||
-                                (!isNOU(dropDown.fontNameDropDown) && dropDown.fontNameDropDown.isDestroyed)) { return; }
+                                (!isNOU(dropDown.fontNameDropDown) && dropDown.fontNameDropDown.isDestroyed)) { break; }
                             let fontNameItems: IDropDownItemModel[] = e.parent.fontFamily.items;
                             result = getDropDownValue(fontNameItems, value, 'value', 'text');
                             let fontNameContent: string = isNOU(e.parent.fontFamily.default) ? fontNameItems[0].text :
@@ -160,7 +160,7 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                             break;
                         case 'fontsize':
                             if (isNOU(dropDown.fontSizeDropDown) ||
-                                (!isNOU(dropDown.fontSizeDropDown) && dropDown.fontSizeDropDown.isDestroyed)) { return; }
+                                (!isNOU(dropDown.fontSizeDropDown) && dropDown.fontSizeDropDown.isDestroyed)) { break; }
                             let fontSizeItems: IDropDownItemModel[] = e.parent.fontSize.items;
                             let fontSizeContent: string = isNOU(e.parent.fontSize.default) ? fontSizeItems[1].text :
                                 e.parent.fontSize.default;

@@ -950,6 +950,7 @@ var Double = /** @__PURE__ @class */ (function () {
             var isLazyLoad = isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
             if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad) {
                 axis.calculateVisibleRange(size);
+                axis.calculateAxisRange(size, this.chart);
                 axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming && axis.valueType !== 'Category') ?
                     this.calculateNumericNiceInterval(axis, axis.doubleRange.delta, size)
                     : axis.visibleRange.interval;
@@ -1045,6 +1046,8 @@ var legendRender = 'legendRender';
 var textRender = 'textRender';
 /** @private */
 var pointRender = 'pointRender';
+/** @private */
+var sharedTooltipRender = 'sharedTooltipRender';
 /** @private */
 var seriesRender = 'seriesRender';
 /** @private */
@@ -1756,6 +1759,53 @@ var Axis = /** @__PURE__ @class */ (function (_super) {
             this.doubleRange = new DoubleRange(start, end);
             this.visibleRange = { min: this.doubleRange.start, max: this.doubleRange.end,
                 delta: this.doubleRange.delta, interval: this.visibleRange.interval };
+        }
+    };
+    /**
+     * Calculate range for x and y axis after zoom.
+     * @return {void}
+     * @private
+     */
+    Axis.prototype.calculateAxisRange = function (size, chart) {
+        if (chart.enableAutoIntervalOnBothAxis) {
+            if (this.orientation === 'Horizontal' && chart.zoomSettings.mode === 'X') {
+                for (var i = 0; i < this.series.length; i++) {
+                    var yValue = [];
+                    for (var _i = 0, _a = this.series[i].visiblePoints; _i < _a.length; _i++) {
+                        var points = _a[_i];
+                        if ((points.xValue > this.visibleRange.min) && (points.xValue < this.visibleRange.max)) {
+                            yValue.push(points.yValue);
+                        }
+                    }
+                    for (var _b = 0, _c = chart.axisCollections; _b < _c.length; _b++) {
+                        var axis = _c[_b];
+                        if (axis.orientation === 'Vertical' && !isNullOrUndefined(axis.series[i])) {
+                            axis.series[i].yMin = Math.min.apply(Math, yValue);
+                            axis.series[i].yMax = Math.max.apply(Math, yValue);
+                            axis.baseModule.calculateRangeAndInterval(size, axis);
+                        }
+                    }
+                }
+            }
+            if (this.orientation === 'Vertical' && chart.zoomSettings.mode === 'Y') {
+                for (var i = 0; i < this.series.length; i++) {
+                    var xValue = [];
+                    for (var _d = 0, _e = this.series[i].visiblePoints; _d < _e.length; _d++) {
+                        var points = _e[_d];
+                        if ((points.yValue > this.visibleRange.min) && (points.yValue < this.visibleRange.max)) {
+                            xValue.push(points.xValue);
+                        }
+                    }
+                    for (var _f = 0, _g = chart.axisCollections; _f < _g.length; _f++) {
+                        var axis = _g[_f];
+                        if (axis.orientation === 'Horizontal' && !isNullOrUndefined(axis.series[i])) {
+                            axis.series[i].xMin = Math.min.apply(Math, xValue);
+                            axis.series[i].xMax = Math.max.apply(Math, xValue);
+                            axis.baseModule.calculateRangeAndInterval(size, axis);
+                        }
+                    }
+                }
+            }
         }
     };
     /**
@@ -3014,6 +3064,7 @@ function calculateShapes(location, size, shape, options, url, isChart, control) 
         case 'Waterfall':
         case 'BoxAndWhisker':
         case 'StepArea':
+        case 'StackingStepArea':
         case 'Square':
         case 'Flag':
             dir = 'M' + ' ' + x + ' ' + (ly + (-height / 2)) + ' ' +
@@ -10325,6 +10376,9 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
     ], Chart.prototype, "useGroupingSeparator", void 0);
     __decorate([
         Property(false)
+    ], Chart.prototype, "enableAutoIntervalOnBothAxis", void 0);
+    __decorate([
+        Property(false)
     ], Chart.prototype, "isTransposed", void 0);
     __decorate([
         Property(false)
@@ -10401,6 +10455,9 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Event()
     ], Chart.prototype, "tooltipRender", void 0);
+    __decorate([
+        Event()
+    ], Chart.prototype, "sharedTooltipRender", void 0);
     __decorate([
         Event()
     ], Chart.prototype, "chartMouseMove", void 0);
@@ -10718,14 +10775,14 @@ var DateTime = /** @__PURE__ @class */ (function (_super) {
         var dateFormatter = this.chart.intl.getDateFormat(option);
         // Axis min
         if ((axis.minimum) !== null) {
-            this.min = Date.parse(dateParser(dateFormatter(new Date(DataUtil.parse.parseJson({ val: axis.minimum }).val))));
+            this.min = this.chart.isBlazor ? Date.parse(axis.minimum.toString()) : Date.parse(dateParser(dateFormatter(new Date(DataUtil.parse.parseJson({ val: axis.minimum }).val))));
         }
         else if (this.min === null || this.min === Number.POSITIVE_INFINITY) {
             this.min = Date.parse(dateParser(dateFormatter(new Date(1970, 1, 1))));
         }
         // Axis Max
         if ((axis.maximum) !== null) {
-            this.max = Date.parse(dateParser(dateFormatter(new Date(DataUtil.parse.parseJson({ val: axis.maximum }).val))));
+            this.max = this.chart.isBlazor ? Date.parse(axis.maximum.toString()) : Date.parse(dateParser(dateFormatter(new Date(DataUtil.parse.parseJson({ val: axis.maximum }).val))));
         }
         else if (this.max === null || this.max === Number.NEGATIVE_INFINITY) {
             this.max = Date.parse(dateParser(dateFormatter(new Date(1970, 5, 1))));
@@ -10874,6 +10931,7 @@ var DateTime = /** @__PURE__ @class */ (function (_super) {
         var isLazyLoad = isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
         if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad) {
             axis.calculateVisibleRange(size);
+            axis.calculateAxisRange(size, this.chart);
             axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming) ?
                 this.calculateDateTimeNiceInterval(axis, size, axis.visibleRange.min, axis.visibleRange.max)
                 : axis.visibleRange.interval;
@@ -14714,10 +14772,183 @@ var __extends$29 = (undefined && undefined.__extends) || (function () {
     };
 })();
 /**
+ * `StackingStepAreaSeries` module used to render the Stacking Step Area series.
+ */
+var StackingStepAreaSeries = /** @__PURE__ @class */ (function (_super) {
+    __extends$29(StackingStepAreaSeries, _super);
+    function StackingStepAreaSeries() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    /**
+     * Render the Stacking step area series.
+     * @return {void}
+     * @private
+     */
+    StackingStepAreaSeries.prototype.render = function (stackSeries, xAxis, yAxis, isInverted) {
+        var currentPointLocation;
+        var secondPoint;
+        var start = null;
+        var direction = '';
+        var stackedvalue = stackSeries.stackedValues;
+        var visiblePoint = this.enableComplexProperty(stackSeries);
+        var origin = Math.max(stackSeries.yAxis.visibleRange.min, stackedvalue.startValues[0]);
+        var pointsLength = visiblePoint.length;
+        var options;
+        var point;
+        var point2;
+        var point3;
+        var xValue;
+        var lineLength;
+        var prevPoint = null;
+        var validIndex;
+        var startPoint = 0;
+        if (xAxis.valueType === 'Category' && xAxis.labelPlacement === 'BetweenTicks') {
+            lineLength = 0.5;
+        }
+        else {
+            lineLength = 0;
+        }
+        for (var i = 0; i < pointsLength; i++) {
+            point = visiblePoint[i];
+            xValue = point.xValue;
+            point.symbolLocations = [];
+            point.regions = [];
+            if (point.visible && withInRange(visiblePoint[i - 1], point, visiblePoint[i + 1], stackSeries)) {
+                if (start === null) {
+                    start = new ChartLocation(xValue, 0);
+                    currentPointLocation = getPoint(xValue - lineLength, origin, xAxis, yAxis, isInverted);
+                    direction += ('M' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
+                    currentPointLocation = getPoint(xValue - lineLength, stackedvalue.endValues[i], xAxis, yAxis, isInverted);
+                    direction += ('L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
+                }
+                if (prevPoint != null) {
+                    currentPointLocation = getPoint(point.xValue, stackedvalue.endValues[i], xAxis, yAxis, isInverted);
+                    secondPoint = getPoint(prevPoint.xValue, stackedvalue.endValues[prevPoint.index], xAxis, yAxis, isInverted);
+                    direction += ('L' + ' ' + (currentPointLocation.x) + ' ' + (secondPoint.y) +
+                        ' L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
+                }
+                else if (stackSeries.emptyPointSettings.mode === 'Gap') {
+                    currentPointLocation = getPoint(point.xValue, stackedvalue.endValues[i], xAxis, yAxis, isInverted);
+                    direction += 'L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ';
+                }
+                visiblePoint[i].symbolLocations.push(getPoint(visiblePoint[i].xValue, stackedvalue.endValues[i], xAxis, yAxis, isInverted, stackSeries));
+                visiblePoint[i].regions.push(new Rect(visiblePoint[i].symbolLocations[0].x - stackSeries.marker.width, visiblePoint[i].symbolLocations[0].y - stackSeries.marker.height, 2 * stackSeries.marker.width, 2 * stackSeries.marker.height));
+                prevPoint = point;
+            }
+            // If we set the empty point mode is Gap or next point of the current point is false, we will close the series path.
+            if (visiblePoint[i + 1] && !visiblePoint[i + 1].visible && stackSeries.emptyPointSettings.mode !== 'Drop') {
+                for (var j = i; j >= startPoint; j--) {
+                    if (j !== 0 && (stackedvalue.startValues[j] < stackedvalue.startValues[j - 1] ||
+                        stackedvalue.startValues[j] > stackedvalue.startValues[j - 1])) {
+                        currentPointLocation = getPoint(visiblePoint[j].xValue, stackedvalue.startValues[j], xAxis, yAxis, isInverted, stackSeries);
+                        direction = direction.concat('L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
+                        currentPointLocation = getPoint(visiblePoint[j].xValue, stackedvalue.startValues[j - 1], xAxis, yAxis, isInverted, stackSeries);
+                    }
+                    else {
+                        currentPointLocation = getPoint(visiblePoint[j].xValue, stackedvalue.startValues[j], xAxis, yAxis, isInverted, stackSeries);
+                    }
+                    direction = direction.concat('L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
+                }
+                startPoint = i + 1;
+                start = null;
+                prevPoint = null;
+            }
+        }
+        // For category axis
+        if ((pointsLength > 1) && direction !== '') {
+            start = { 'x': visiblePoint[pointsLength - 1].xValue + lineLength, 'y': stackedvalue.endValues[pointsLength - 1] };
+            secondPoint = getPoint(start.x, start.y, xAxis, yAxis, isInverted);
+            direction += ('L' + ' ' + (secondPoint.x) + ' ' + (secondPoint.y) + ' ');
+            start = { 'x': visiblePoint[pointsLength - 1].xValue + lineLength, 'y': stackedvalue.startValues[pointsLength - 1] };
+            secondPoint = getPoint(start.x, start.y, xAxis, yAxis, isInverted);
+            direction += ('L' + ' ' + (secondPoint.x) + ' ' + (secondPoint.y) + ' ');
+        }
+        // To close the stacked step area series path in reverse order
+        for (var j = pointsLength - 1; j >= startPoint; j--) {
+            var index = void 0;
+            if (visiblePoint[j].visible) {
+                point2 = getPoint(visiblePoint[j].xValue, stackedvalue.startValues[j], xAxis, yAxis, isInverted, stackSeries);
+                direction = direction.concat('L' + ' ' + (point2.x) + ' ' + (point2.y) + ' ');
+            }
+            if (j !== 0 && !visiblePoint[j - 1].visible) {
+                index = this.getNextVisiblePointIndex(visiblePoint, j);
+            }
+            if (j !== 0) {
+                validIndex = index ? index : j - 1;
+                point3 = getPoint(visiblePoint[validIndex].xValue, stackedvalue.startValues[validIndex], xAxis, yAxis, isInverted, stackSeries);
+                direction = direction.concat('L' + ' ' + (point2.x) + ' ' + (point3.y) + ' ');
+            }
+        }
+        options = new PathOption(stackSeries.chart.element.id + '_Series_' + stackSeries.index, stackSeries.interior, stackSeries.border.width, stackSeries.border.color, stackSeries.opacity, stackSeries.dashArray, direction);
+        this.appendLinePath(options, stackSeries, '');
+        this.renderMarker(stackSeries);
+    };
+    /**
+     * Animates the series.
+     * @param  {Series} series - Defines the series to animate.
+     * @return {void}
+     */
+    StackingStepAreaSeries.prototype.doAnimation = function (series) {
+        var option = series.animation;
+        this.doLinearAnimation(series, option);
+    };
+    /**
+     * To destroy the stacking step area.
+     * @return {void}
+     * @private
+     */
+    StackingStepAreaSeries.prototype.destroy = function (chart) {
+        /**
+         * Destroy method calling here
+         */
+    };
+    /**
+     * Get module name.
+     */
+    StackingStepAreaSeries.prototype.getModuleName = function () {
+        /**
+         * Returns the module name of the series
+         */
+        return 'StackingStepAreaSeries';
+    };
+    /**
+     * To get the nearest visible point
+     * @param points
+     * @param j
+     */
+    StackingStepAreaSeries.prototype.getNextVisiblePointIndex = function (points, j) {
+        var index;
+        for (index = j - 1; index >= 0; index--) {
+            if (!points[index].visible) {
+                continue;
+            }
+            else {
+                return index;
+            }
+        }
+        return 0;
+    };
+    return StackingStepAreaSeries;
+}(LineBase));
+
+var __extends$30 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+/**
  * `StackingLineSeries` module used to render the Stacking Line series.
  */
 var StackingLineSeries = /** @__PURE__ @class */ (function (_super) {
-    __extends$29(StackingLineSeries, _super);
+    __extends$30(StackingLineSeries, _super);
     function StackingLineSeries() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -14945,7 +15176,7 @@ var ScatterSeries = /** @__PURE__ @class */ (function () {
     return ScatterSeries;
 }());
 
-var __extends$30 = (undefined && undefined.__extends) || (function () {
+var __extends$31 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -14962,7 +15193,7 @@ var __extends$30 = (undefined && undefined.__extends) || (function () {
  * `RangeColumnSeries` module is used to render the range column series.
  */
 var RangeColumnSeries = /** @__PURE__ @class */ (function (_super) {
-    __extends$30(RangeColumnSeries, _super);
+    __extends$31(RangeColumnSeries, _super);
     function RangeColumnSeries() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -15021,7 +15252,7 @@ var RangeColumnSeries = /** @__PURE__ @class */ (function (_super) {
     return RangeColumnSeries;
 }(ColumnBase));
 
-var __extends$31 = (undefined && undefined.__extends) || (function () {
+var __extends$32 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -15038,7 +15269,7 @@ var __extends$31 = (undefined && undefined.__extends) || (function () {
  * `WaterfallSeries` module is used to render the waterfall series.
  */
 var WaterfallSeries = /** @__PURE__ @class */ (function (_super) {
-    __extends$31(WaterfallSeries, _super);
+    __extends$32(WaterfallSeries, _super);
     function WaterfallSeries() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -15235,7 +15466,7 @@ var WaterfallSeries = /** @__PURE__ @class */ (function (_super) {
     return WaterfallSeries;
 }(ColumnBase));
 
-var __extends$32 = (undefined && undefined.__extends) || (function () {
+var __extends$33 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -15252,7 +15483,7 @@ var __extends$32 = (undefined && undefined.__extends) || (function () {
  * `HiloSeries` module is used to render the hilo series.
  */
 var HiloSeries = /** @__PURE__ @class */ (function (_super) {
-    __extends$32(HiloSeries, _super);
+    __extends$33(HiloSeries, _super);
     function HiloSeries() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -15328,7 +15559,7 @@ var HiloSeries = /** @__PURE__ @class */ (function (_super) {
     return HiloSeries;
 }(ColumnBase));
 
-var __extends$33 = (undefined && undefined.__extends) || (function () {
+var __extends$34 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -15345,7 +15576,7 @@ var __extends$33 = (undefined && undefined.__extends) || (function () {
  * `HiloOpenCloseSeries` module is used to render the hiloOpenClose series.
  */
 var HiloOpenCloseSeries = /** @__PURE__ @class */ (function (_super) {
-    __extends$33(HiloOpenCloseSeries, _super);
+    __extends$34(HiloOpenCloseSeries, _super);
     function HiloOpenCloseSeries() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -15476,7 +15707,7 @@ var HiloOpenCloseSeries = /** @__PURE__ @class */ (function (_super) {
     return HiloOpenCloseSeries;
 }(ColumnBase));
 
-var __extends$34 = (undefined && undefined.__extends) || (function () {
+var __extends$35 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -15493,7 +15724,7 @@ var __extends$34 = (undefined && undefined.__extends) || (function () {
  * `RangeAreaSeries` module is used to render the range area series.
  */
 var RangeAreaSeries = /** @__PURE__ @class */ (function (_super) {
-    __extends$34(RangeAreaSeries, _super);
+    __extends$35(RangeAreaSeries, _super);
     function RangeAreaSeries() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -15735,7 +15966,7 @@ var BubbleSeries = /** @__PURE__ @class */ (function () {
     return BubbleSeries;
 }());
 
-var __extends$36 = (undefined && undefined.__extends) || (function () {
+var __extends$37 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -15752,7 +15983,7 @@ var __extends$36 = (undefined && undefined.__extends) || (function () {
  * render Line series
  */
 var SplineBase = /** @__PURE__ @class */ (function (_super) {
-    __extends$36(SplineBase, _super);
+    __extends$37(SplineBase, _super);
     /** @private */
     function SplineBase(chartModule) {
         var _this = _super.call(this, chartModule) || this;
@@ -16039,7 +16270,7 @@ var SplineBase = /** @__PURE__ @class */ (function (_super) {
     return SplineBase;
 }(LineBase));
 
-var __extends$35 = (undefined && undefined.__extends) || (function () {
+var __extends$36 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -16056,7 +16287,7 @@ var __extends$35 = (undefined && undefined.__extends) || (function () {
  * `SplineSeries` module is used to render the spline series.
  */
 var SplineSeries = /** @__PURE__ @class */ (function (_super) {
-    __extends$35(SplineSeries, _super);
+    __extends$36(SplineSeries, _super);
     function SplineSeries() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -16151,7 +16382,7 @@ var SplineSeries = /** @__PURE__ @class */ (function (_super) {
     return SplineSeries;
 }(SplineBase));
 
-var __extends$37 = (undefined && undefined.__extends) || (function () {
+var __extends$38 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -16168,7 +16399,7 @@ var __extends$37 = (undefined && undefined.__extends) || (function () {
  * `HistogramSeries` Module used to render the histogram series.
  */
 var HistogramSeries = /** @__PURE__ @class */ (function (_super) {
-    __extends$37(HistogramSeries, _super);
+    __extends$38(HistogramSeries, _super);
     function HistogramSeries() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -16300,7 +16531,7 @@ var HistogramSeries = /** @__PURE__ @class */ (function (_super) {
     return HistogramSeries;
 }(ColumnSeries));
 
-var __extends$38 = (undefined && undefined.__extends) || (function () {
+var __extends$39 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -16317,7 +16548,7 @@ var __extends$38 = (undefined && undefined.__extends) || (function () {
  * `SplineAreaSeries` module used to render the spline area series.
  */
 var SplineAreaSeries = /** @__PURE__ @class */ (function (_super) {
-    __extends$38(SplineAreaSeries, _super);
+    __extends$39(SplineAreaSeries, _super);
     function SplineAreaSeries() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -16421,7 +16652,7 @@ var SplineAreaSeries = /** @__PURE__ @class */ (function (_super) {
     return SplineAreaSeries;
 }(SplineBase));
 
-var __extends$40 = (undefined && undefined.__extends) || (function () {
+var __extends$41 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -16438,7 +16669,7 @@ var __extends$40 = (undefined && undefined.__extends) || (function () {
  * Technical Analysis module helps to predict the market trend
  */
 var TechnicalAnalysis = /** @__PURE__ @class */ (function (_super) {
-    __extends$40(TechnicalAnalysis, _super);
+    __extends$41(TechnicalAnalysis, _super);
     function TechnicalAnalysis() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -16569,7 +16800,7 @@ var TechnicalAnalysis = /** @__PURE__ @class */ (function (_super) {
     return TechnicalAnalysis;
 }(LineBase));
 
-var __extends$39 = (undefined && undefined.__extends) || (function () {
+var __extends$40 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -16586,7 +16817,7 @@ var __extends$39 = (undefined && undefined.__extends) || (function () {
  * `SmaIndicator` module is used to render SMA indicator.
  */
 var SmaIndicator = /** @__PURE__ @class */ (function (_super) {
-    __extends$39(SmaIndicator, _super);
+    __extends$40(SmaIndicator, _super);
     function SmaIndicator() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -16646,7 +16877,7 @@ var SmaIndicator = /** @__PURE__ @class */ (function (_super) {
     return SmaIndicator;
 }(TechnicalAnalysis));
 
-var __extends$41 = (undefined && undefined.__extends) || (function () {
+var __extends$42 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -16663,7 +16894,7 @@ var __extends$41 = (undefined && undefined.__extends) || (function () {
  * `EmaIndicator` module is used to render EMA indicator.
  */
 var EmaIndicator = /** @__PURE__ @class */ (function (_super) {
-    __extends$41(EmaIndicator, _super);
+    __extends$42(EmaIndicator, _super);
     function EmaIndicator() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -16722,7 +16953,7 @@ var EmaIndicator = /** @__PURE__ @class */ (function (_super) {
     return EmaIndicator;
 }(TechnicalAnalysis));
 
-var __extends$42 = (undefined && undefined.__extends) || (function () {
+var __extends$43 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -16739,7 +16970,7 @@ var __extends$42 = (undefined && undefined.__extends) || (function () {
  * `TmaIndicator` module is used to render TMA indicator.
  */
 var TmaIndicator = /** @__PURE__ @class */ (function (_super) {
-    __extends$42(TmaIndicator, _super);
+    __extends$43(TmaIndicator, _super);
     function TmaIndicator() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -16823,7 +17054,7 @@ var TmaIndicator = /** @__PURE__ @class */ (function (_super) {
     return TmaIndicator;
 }(TechnicalAnalysis));
 
-var __extends$43 = (undefined && undefined.__extends) || (function () {
+var __extends$44 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -16840,7 +17071,7 @@ var __extends$43 = (undefined && undefined.__extends) || (function () {
  * `AccumulationDistributionIndicator` module is used to render accumulation distribution indicator.
  */
 var AccumulationDistributionIndicator = /** @__PURE__ @class */ (function (_super) {
-    __extends$43(AccumulationDistributionIndicator, _super);
+    __extends$44(AccumulationDistributionIndicator, _super);
     function AccumulationDistributionIndicator() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -16913,7 +17144,7 @@ var AccumulationDistributionIndicator = /** @__PURE__ @class */ (function (_supe
     return AccumulationDistributionIndicator;
 }(TechnicalAnalysis));
 
-var __extends$44 = (undefined && undefined.__extends) || (function () {
+var __extends$45 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -16930,7 +17161,7 @@ var __extends$44 = (undefined && undefined.__extends) || (function () {
  * `AtrIndicator` module is used to render ATR indicator.
  */
 var AtrIndicator = /** @__PURE__ @class */ (function (_super) {
-    __extends$44(AtrIndicator, _super);
+    __extends$45(AtrIndicator, _super);
     function AtrIndicator() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -17016,7 +17247,7 @@ var AtrIndicator = /** @__PURE__ @class */ (function (_super) {
     return AtrIndicator;
 }(TechnicalAnalysis));
 
-var __extends$45 = (undefined && undefined.__extends) || (function () {
+var __extends$46 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -17033,7 +17264,7 @@ var __extends$45 = (undefined && undefined.__extends) || (function () {
  * `MomentumIndicator` module is used to render Momentum indicator.
  */
 var MomentumIndicator = /** @__PURE__ @class */ (function (_super) {
-    __extends$45(MomentumIndicator, _super);
+    __extends$46(MomentumIndicator, _super);
     function MomentumIndicator() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -17092,7 +17323,7 @@ var MomentumIndicator = /** @__PURE__ @class */ (function (_super) {
     return MomentumIndicator;
 }(TechnicalAnalysis));
 
-var __extends$46 = (undefined && undefined.__extends) || (function () {
+var __extends$47 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -17109,7 +17340,7 @@ var __extends$46 = (undefined && undefined.__extends) || (function () {
  * `RsiIndicator` module is used to render RSI indicator.
  */
 var RsiIndicator = /** @__PURE__ @class */ (function (_super) {
-    __extends$46(RsiIndicator, _super);
+    __extends$47(RsiIndicator, _super);
     function RsiIndicator() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -17204,7 +17435,7 @@ var RsiIndicator = /** @__PURE__ @class */ (function (_super) {
     return RsiIndicator;
 }(TechnicalAnalysis));
 
-var __extends$47 = (undefined && undefined.__extends) || (function () {
+var __extends$48 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -17221,7 +17452,7 @@ var __extends$47 = (undefined && undefined.__extends) || (function () {
  * `StochasticIndicator` module is used to render stochastic indicator.
  */
 var StochasticIndicator = /** @__PURE__ @class */ (function (_super) {
-    __extends$47(StochasticIndicator, _super);
+    __extends$48(StochasticIndicator, _super);
     function StochasticIndicator() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -17369,7 +17600,7 @@ var StochasticIndicator = /** @__PURE__ @class */ (function (_super) {
     return StochasticIndicator;
 }(TechnicalAnalysis));
 
-var __extends$48 = (undefined && undefined.__extends) || (function () {
+var __extends$49 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -17386,7 +17617,7 @@ var __extends$48 = (undefined && undefined.__extends) || (function () {
  * `BollingerBands` module is used to render bollinger band indicator.
  */
 var BollingerBands = /** @__PURE__ @class */ (function (_super) {
-    __extends$48(BollingerBands, _super);
+    __extends$49(BollingerBands, _super);
     function BollingerBands() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -17522,7 +17753,7 @@ var BollingerBands = /** @__PURE__ @class */ (function (_super) {
     return BollingerBands;
 }(TechnicalAnalysis));
 
-var __extends$49 = (undefined && undefined.__extends) || (function () {
+var __extends$50 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -17539,7 +17770,7 @@ var __extends$49 = (undefined && undefined.__extends) || (function () {
  * `MacdIndicator` module is used to render MACD indicator.
  */
 var MacdIndicator = /** @__PURE__ @class */ (function (_super) {
-    __extends$49(MacdIndicator, _super);
+    __extends$50(MacdIndicator, _super);
     function MacdIndicator() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -18729,7 +18960,7 @@ var Crosshair = /** @__PURE__ @class */ (function () {
     return Crosshair;
 }());
 
-var __extends$51 = (undefined && undefined.__extends) || (function () {
+var __extends$52 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -18746,7 +18977,7 @@ var __extends$51 = (undefined && undefined.__extends) || (function () {
  * Tooltip Module used to render the tooltip for series.
  */
 var BaseTooltip = /** @__PURE__ @class */ (function (_super) {
-    __extends$51(BaseTooltip, _super);
+    __extends$52(BaseTooltip, _super);
     /**
      * Constructor for tooltip module.
      * @private.
@@ -18999,7 +19230,7 @@ var BaseTooltip = /** @__PURE__ @class */ (function (_super) {
     return BaseTooltip;
 }(ChartData));
 
-var __extends$50 = (undefined && undefined.__extends) || (function () {
+var __extends$51 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -19016,7 +19247,7 @@ var __extends$50 = (undefined && undefined.__extends) || (function () {
  * `Tooltip` module is used to render the tooltip for chart series.
  */
 var Tooltip$1 = /** @__PURE__ @class */ (function (_super) {
-    __extends$50(Tooltip$$1, _super);
+    __extends$51(Tooltip$$1, _super);
     /**
      * Constructor for tooltip module.
      * @private.
@@ -19314,6 +19545,9 @@ var Tooltip$1 = /** @__PURE__ @class */ (function (_super) {
             }
         }
         this.removeText();
+        var argument = {
+            text: [], cancel: false, name: sharedTooltipRender, data: [], headerText: '', textStyle: this.textStyle
+        };
         for (var _i = 0, _a = chart.visibleSeries; _i < _a.length; _i++) {
             var series = _a[_i];
             if (!series.enableTooltip || !series.visible) {
@@ -19329,7 +19563,16 @@ var Tooltip$1 = /** @__PURE__ @class */ (function (_super) {
                 headerContent = this.findHeader(data);
             }
             if (data) {
-                this.triggerSharedTooltip(data, isFirst, this.getTooltipText(data), this.findHeader(data), extraPoints);
+                if (!chart.isBlazor) {
+                    this.triggerSharedTooltip(data, isFirst, this.getTooltipText(data), this.findHeader(data), extraPoints);
+                }
+                else {
+                    argument.data.push({ pointX: data.point.x, pointY: data.point.y, seriesIndex: data.series.index,
+                        seriesName: data.series.name, pointIndex: data.point.index, pointText: data.point.text });
+                    argument.headerText = this.findHeader(data);
+                    this.currentPoints.push(data);
+                    argument.text.push(this.getTooltipText(data));
+                }
             }
             // if (data && this.triggerEvent(data, isFirst, this.getTooltipText(data)), this.findHeader(data)) {
             //     this.findMouseValue(data, chart);
@@ -19339,12 +19582,37 @@ var Tooltip$1 = /** @__PURE__ @class */ (function (_super) {
             //     extraPoints.push(data);
             // }
         }
+        if (chart.isBlazor) {
+            this.triggerBlazorSharedTooltip(argument, data, extraPoints, chart, isFirst);
+        }
         if (this.currentPoints.length > 0) {
             this.createTooltip(chart, isFirst, this.findSharedLocation(), this.currentPoints.length === 1 ? this.currentPoints[0].series.clipRect : null, null, this.findShapes(), this.findMarkerHeight(this.currentPoints[0]), chart.chartAxisLayoutPanel.seriesClipRect, extraPoints);
         }
         else if (this.getElement(this.element.id + '_tooltip_path')) {
             this.getElement(this.element.id + '_tooltip_path').setAttribute('d', '');
         }
+    };
+    Tooltip$$1.prototype.triggerBlazorSharedTooltip = function (argument, point, extraPoints, chart, isFirst) {
+        var _this = this;
+        var argsData = {
+            cancel: false, name: sharedTooltipRender, text: argument.text, headerText: argument.headerText,
+            textStyle: argument.textStyle,
+            data: argument.data
+        };
+        var blazorSharedTooltip = function (argsData) {
+            if (!argsData.cancel) {
+                _this.text = argsData.text;
+                _this.headerText = argsData.headerText;
+                _this.findMouseValue(point, _this.chart);
+                point = null;
+                _this.createTooltip(chart, isFirst, _this.findSharedLocation(), null, null, _this.findShapes(), _this.findMarkerHeight(_this.currentPoints[0]), chart.chartAxisLayoutPanel.seriesClipRect, extraPoints);
+            }
+            else {
+                extraPoints.push(point);
+            }
+        };
+        blazorSharedTooltip.bind(this, point, extraPoints);
+        this.chart.trigger(sharedTooltipRender, argsData, blazorSharedTooltip);
     };
     Tooltip$$1.prototype.triggerSharedTooltip = function (point, isFirst, textCollection, headerText, extraPoints) {
         var _this = this;
@@ -21047,7 +21315,7 @@ var BaseSelection = /** @__PURE__ @class */ (function () {
     return BaseSelection;
 }());
 
-var __extends$52 = (undefined && undefined.__extends) || (function () {
+var __extends$53 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -21069,7 +21337,7 @@ var __extends$52 = (undefined && undefined.__extends) || (function () {
  * @private
  */
 var Selection = /** @__PURE__ @class */ (function (_super) {
-    __extends$52(Selection, _super);
+    __extends$53(Selection, _super);
     /**
      * Constructor for selection module.
      * @private.
@@ -22606,7 +22874,7 @@ var DataEditing = /** @__PURE__ @class */ (function () {
     return DataEditing;
 }());
 
-var __extends$53 = (undefined && undefined.__extends) || (function () {
+var __extends$54 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -22628,7 +22896,7 @@ var __extends$53 = (undefined && undefined.__extends) || (function () {
  * @private
  */
 var Highlight = /** @__PURE__ @class */ (function (_super) {
-    __extends$53(Highlight, _super);
+    __extends$54(Highlight, _super);
     /**
      * Constructor for selection module.
      * @private.
@@ -23744,7 +24012,7 @@ var ErrorBar = /** @__PURE__ @class */ (function () {
     return ErrorBar;
 }());
 
-var __extends$54 = (undefined && undefined.__extends) || (function () {
+var __extends$55 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -23764,7 +24032,7 @@ var __extends$54 = (undefined && undefined.__extends) || (function () {
  * `Legend` module is used to render legend for the chart.
  */
 var Legend = /** @__PURE__ @class */ (function (_super) {
-    __extends$54(Legend, _super);
+    __extends$55(Legend, _super);
     function Legend(chart) {
         var _this = _super.call(this, chart) || this;
         _this.library = _this;
@@ -23926,18 +24194,10 @@ var Legend = /** @__PURE__ @class */ (function (_super) {
         var series = chart.visibleSeries[seriesIndex];
         var legend = this.legendCollections[seriesIndex];
         var changeDetection = 'isProtectedOnChange';
-        var legendClickArgs = { legendText: legend.text, legendShape: legend.shape,
+        var legendClickArgs = {
+            legendText: legend.text, legendShape: legend.shape,
             chart: chart.isBlazor ? {} : chart, series: series, name: legendClick, cancel: false
         };
-        this.chart.trigger(legendClick, legendClickArgs);
-        series.legendShape = legendClickArgs.legendShape;
-        if (series.fill !== null) {
-            chart.visibleSeries[seriesIndex].interior = series.fill;
-        }
-        var selectedDataIndexes = [];
-        if (chart.selectionModule) {
-            selectedDataIndexes = extend([], chart.selectionModule.selectedDataIndexes, null, true);
-        }
         if (chart.legendSettings.toggleVisibility) {
             if (series.category === 'TrendLine') {
                 if (!chart.series[series.sourceIndex].trendlines[series.index].visible) {
@@ -23951,6 +24211,17 @@ var Legend = /** @__PURE__ @class */ (function (_super) {
                 series.chart[changeDetection] = true;
                 this.changeSeriesVisiblity(series, series.visible);
             }
+        }
+        this.chart.trigger(legendClick, legendClickArgs);
+        series.legendShape = legendClickArgs.legendShape;
+        if (series.fill !== null) {
+            chart.visibleSeries[seriesIndex].interior = series.fill;
+        }
+        var selectedDataIndexes = [];
+        if (chart.selectionModule) {
+            selectedDataIndexes = extend([], chart.selectionModule.selectedDataIndexes, null, true);
+        }
+        if (chart.legendSettings.toggleVisibility) {
             legend.visible = series.category === 'TrendLine' ? chart.series[series.sourceIndex].trendlines[series.index].visible :
                 (series.visible);
             if ((chart.svgObject.childNodes.length > 0) && !chart.enableAnimation && !chart.enableCanvas) {
@@ -24190,7 +24461,7 @@ var AnnotationBase = /** @__PURE__ @class */ (function () {
                     }
                     else if (xAxis.valueType === 'DateTime') {
                         var option = { skeleton: 'full', type: 'dateTime' };
-                        xValue = (typeof this.annotation.x === 'object') ?
+                        xValue = (typeof this.annotation.x === 'object' || typeof new Date(this.annotation.x) === 'object') ?
                             Date.parse(chart.intl.getDateParser(option)(chart.intl.getDateFormat(option)(new Date(DataUtil.parse.parseJson({ val: annotation.x }).val)))) : 0;
                     }
                     else {
@@ -24325,7 +24596,7 @@ var AnnotationBase = /** @__PURE__ @class */ (function () {
     return AnnotationBase;
 }());
 
-var __extends$55 = (undefined && undefined.__extends) || (function () {
+var __extends$56 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -24342,7 +24613,7 @@ var __extends$55 = (undefined && undefined.__extends) || (function () {
  * `ChartAnnotation` module handles the annotation for chart.
  */
 var ChartAnnotation = /** @__PURE__ @class */ (function (_super) {
-    __extends$55(ChartAnnotation, _super);
+    __extends$56(ChartAnnotation, _super);
     /**
      * Constructor for chart annotation.
      * @private.
@@ -24388,7 +24659,7 @@ var ChartAnnotation = /** @__PURE__ @class */ (function (_super) {
     return ChartAnnotation;
 }(AnnotationBase));
 
-var __extends$56 = (undefined && undefined.__extends) || (function () {
+var __extends$57 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -24405,7 +24676,7 @@ var __extends$56 = (undefined && undefined.__extends) || (function () {
  * `BoxAndWhiskerSeries` module is used to render the box and whisker series.
  */
 var BoxAndWhiskerSeries = /** @__PURE__ @class */ (function (_super) {
-    __extends$56(BoxAndWhiskerSeries, _super);
+    __extends$57(BoxAndWhiskerSeries, _super);
     function BoxAndWhiskerSeries() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -24716,7 +24987,7 @@ var BoxAndWhiskerSeries = /** @__PURE__ @class */ (function (_super) {
     return BoxAndWhiskerSeries;
 }(ColumnBase));
 
-var __extends$57 = (undefined && undefined.__extends) || (function () {
+var __extends$58 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -24733,7 +25004,7 @@ var __extends$57 = (undefined && undefined.__extends) || (function () {
  * `MultiColoredAreaSeries` module used to render the area series with multi color.
  */
 var MultiColoredAreaSeries = /** @__PURE__ @class */ (function (_super) {
-    __extends$57(MultiColoredAreaSeries, _super);
+    __extends$58(MultiColoredAreaSeries, _super);
     function MultiColoredAreaSeries() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -24826,7 +25097,7 @@ var MultiColoredAreaSeries = /** @__PURE__ @class */ (function (_super) {
     return MultiColoredAreaSeries;
 }(MultiColoredSeries));
 
-var __extends$58 = (undefined && undefined.__extends) || (function () {
+var __extends$59 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -24843,7 +25114,7 @@ var __extends$58 = (undefined && undefined.__extends) || (function () {
  * `MultiColoredLineSeries` used to render the line series with multi color.
  */
 var MultiColoredLineSeries = /** @__PURE__ @class */ (function (_super) {
-    __extends$58(MultiColoredLineSeries, _super);
+    __extends$59(MultiColoredLineSeries, _super);
     function MultiColoredLineSeries() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -26301,7 +26572,7 @@ var ScrollBar = /** @__PURE__ @class */ (function () {
     return ScrollBar;
 }());
 
-var __extends$59 = (undefined && undefined.__extends) || (function () {
+var __extends$60 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -26318,7 +26589,7 @@ var __extends$59 = (undefined && undefined.__extends) || (function () {
  * `Pareto series` module used to render the Pareto series.
  */
 var ParetoSeries = /** @__PURE__ @class */ (function (_super) {
-    __extends$59(ParetoSeries, _super);
+    __extends$60(ParetoSeries, _super);
     function ParetoSeries() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.paretoAxes = [];
@@ -26476,7 +26747,7 @@ var Export = /** @__PURE__ @class */ (function () {
  * Chart component exported items
  */
 
-var __extends$61 = (undefined && undefined.__extends) || (function () {
+var __extends$62 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -26502,7 +26773,7 @@ var __decorate$8 = (undefined && undefined.__decorate) || function (decorators, 
  * Annotation for accumulation series
  */
 var AccumulationAnnotationSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$61(AccumulationAnnotationSettings, _super);
+    __extends$62(AccumulationAnnotationSettings, _super);
     function AccumulationAnnotationSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -26536,7 +26807,7 @@ var AccumulationAnnotationSettings = /** @__PURE__ @class */ (function (_super) 
  * Configures the dataLabel in accumulation chart.
  */
 var AccumulationDataLabelSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$61(AccumulationDataLabelSettings, _super);
+    __extends$62(AccumulationDataLabelSettings, _super);
     function AccumulationDataLabelSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -26582,7 +26853,7 @@ var AccumulationDataLabelSettings = /** @__PURE__ @class */ (function (_super) {
  * Center value of the Pie series.
  */
 var PieCenter = /** @__PURE__ @class */ (function (_super) {
-    __extends$61(PieCenter, _super);
+    __extends$62(PieCenter, _super);
     function PieCenter() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -26621,6 +26892,7 @@ var AccPoints = /** @__PURE__ @class */ (function () {
         this.argsData = null;
         /** @private */
         this.isLabelUpdated = null;
+        /** @private */
         this.initialLabelRegion = null;
     }
     return AccPoints;
@@ -26629,7 +26901,7 @@ var AccPoints = /** @__PURE__ @class */ (function () {
  *  Configures the series in accumulation chart.
  */
 var AccumulationSeries = /** @__PURE__ @class */ (function (_super) {
-    __extends$61(AccumulationSeries, _super);
+    __extends$62(AccumulationSeries, _super);
     function AccumulationSeries() {
         /**
          * Specifies the dataSource for the series. It can be an array of JSON objects or an instance of DataManager.
@@ -27395,7 +27667,7 @@ var AccumulationBase = /** @__PURE__ @class */ (function () {
     return AccumulationBase;
 }());
 
-var __extends$63 = (undefined && undefined.__extends) || (function () {
+var __extends$64 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -27415,7 +27687,7 @@ var __extends$63 = (undefined && undefined.__extends) || (function () {
  * PieBase class used to do pie base calculations.
  */
 var PieBase = /** @__PURE__ @class */ (function (_super) {
-    __extends$63(PieBase, _super);
+    __extends$64(PieBase, _super);
     function PieBase() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -27611,7 +27883,7 @@ var PieBase = /** @__PURE__ @class */ (function (_super) {
     return PieBase;
 }(AccumulationBase));
 
-var __extends$62 = (undefined && undefined.__extends) || (function () {
+var __extends$63 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -27628,7 +27900,7 @@ var __extends$62 = (undefined && undefined.__extends) || (function () {
  * PieSeries module used to render `Pie` Series.
  */
 var PieSeries = /** @__PURE__ @class */ (function (_super) {
-    __extends$62(PieSeries, _super);
+    __extends$63(PieSeries, _super);
     function PieSeries() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -27791,7 +28063,7 @@ var PieSeries = /** @__PURE__ @class */ (function (_super) {
     return PieSeries;
 }(PieBase));
 
-var __extends$60 = (undefined && undefined.__extends) || (function () {
+var __extends$61 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -27825,7 +28097,7 @@ var __decorate$7 = (undefined && undefined.__decorate) || function (decorators, 
  * @public
  */
 var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
-    __extends$60(AccumulationChart, _super);
+    __extends$61(AccumulationChart, _super);
     /**
      * Constructor for creating the AccumulationChart widget
      * @private
@@ -28507,6 +28779,9 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
         rect = new Rect(margin.left, 0, this.availableSize.width - margin.left - margin.right, 0);
         var options = new TextOption(this.element.id + '_title', titlePositionX(rect, this.titleStyle), this.margin.top + (titleSize.height * 3 / 4), getAnchor, this.titleCollection, '', 'auto');
         var element = textElement$1(this.renderer, options, this.titleStyle, this.titleStyle.color || this.themeStyle.chartTitle, this.svgObject, false, this.redraw);
+        if (element) {
+            element.setAttribute('aria-label', this.title);
+        }
         if (this.subTitle) {
             this.renderSubTitle(options);
         }
@@ -28932,7 +29207,7 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
 /**
  * Defines the common behavior of funnel and pyramid series
  */
-var __extends$65 = (undefined && undefined.__extends) || (function () {
+var __extends$66 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -28949,7 +29224,7 @@ var __extends$65 = (undefined && undefined.__extends) || (function () {
  * TriangularBase is used to calculate base functions for funnel/pyramid series.
  */
 var TriangularBase = /** @__PURE__ @class */ (function (_super) {
-    __extends$65(TriangularBase, _super);
+    __extends$66(TriangularBase, _super);
     function TriangularBase() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -29046,7 +29321,7 @@ var TriangularBase = /** @__PURE__ @class */ (function (_super) {
 /**
  * Defines the behavior of a funnel series
  */
-var __extends$64 = (undefined && undefined.__extends) || (function () {
+var __extends$65 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -29063,7 +29338,7 @@ var __extends$64 = (undefined && undefined.__extends) || (function () {
  * FunnelSeries module used to render `Funnel` Series.
  */
 var FunnelSeries = /** @__PURE__ @class */ (function (_super) {
-    __extends$64(FunnelSeries, _super);
+    __extends$65(FunnelSeries, _super);
     function FunnelSeries() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -29168,7 +29443,7 @@ var FunnelSeries = /** @__PURE__ @class */ (function (_super) {
 /**
  * Defines the behavior of a pyramid series
  */
-var __extends$66 = (undefined && undefined.__extends) || (function () {
+var __extends$67 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -29185,7 +29460,7 @@ var __extends$66 = (undefined && undefined.__extends) || (function () {
  * PyramidSeries module used to render `Pyramid` Series.
  */
 var PyramidSeries = /** @__PURE__ @class */ (function (_super) {
-    __extends$66(PyramidSeries, _super);
+    __extends$67(PyramidSeries, _super);
     function PyramidSeries() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -29323,7 +29598,7 @@ var PyramidSeries = /** @__PURE__ @class */ (function (_super) {
     return PyramidSeries;
 }(TriangularBase));
 
-var __extends$67 = (undefined && undefined.__extends) || (function () {
+var __extends$68 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -29343,7 +29618,7 @@ var __extends$67 = (undefined && undefined.__extends) || (function () {
  * AccumulationLegend module used to render `Legend` for Accumulation chart.
  */
 var AccumulationLegend = /** @__PURE__ @class */ (function (_super) {
-    __extends$67(AccumulationLegend, _super);
+    __extends$68(AccumulationLegend, _super);
     /**
      * Constructor for Accumulation Legend.
      * @param chart
@@ -29680,7 +29955,7 @@ var AccumulationLegend = /** @__PURE__ @class */ (function (_super) {
     return AccumulationLegend;
 }(BaseLegend));
 
-var __extends$68 = (undefined && undefined.__extends) || (function () {
+var __extends$69 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -29700,7 +29975,7 @@ var __extends$68 = (undefined && undefined.__extends) || (function () {
  * AccumulationDataLabel module used to render `dataLabel`.
  */
 var AccumulationDataLabel = /** @__PURE__ @class */ (function (_super) {
-    __extends$68(AccumulationDataLabel, _super);
+    __extends$69(AccumulationDataLabel, _super);
     function AccumulationDataLabel(accumulation) {
         var _this = _super.call(this, accumulation) || this;
         _this.rightSideRenderingPoints = [];
@@ -30214,7 +30489,6 @@ var AccumulationDataLabel = /** @__PURE__ @class */ (function (_super) {
             });
         }
         this.marginValue = argsData.border.width ? (5 + argsData.border.width) : 1;
-        // Template element
         var childElement = createElement('div', {
             id: this.accumulation.element.id + '_Series_' + 0 + '_DataLabel_' + point.index,
             styles: 'position: absolute;background-color:' + argsData.color + ';' +
@@ -30225,6 +30499,7 @@ var AccumulationDataLabel = /** @__PURE__ @class */ (function (_super) {
         textSize.height += 4; // 4 for calculation with padding for smart label shape
         textSize.width += 4;
         point.textSize = textSize;
+        point.templateElement = childElement;
         this.getDataLabelPosition(point, dataLabel, textSize, points, datalabelGroup, id);
         if (point.labelRegion) {
             this.correctLabelRegion(point.labelRegion, point.textSize);
@@ -30250,21 +30525,11 @@ var AccumulationDataLabel = /** @__PURE__ @class */ (function (_super) {
                 var datalabelGroup = this.accumulation.renderer.createGroup({ id: id + 'g_' + point.index });
                 var dataLabelElement = void 0;
                 var location_3 = void 0;
-                // tslint:disable-next-line:max-line-length
-                var childElement = createElement('div', {
-                    id: this.accumulation.element.id + '_Series_' + 0 + '_DataLabel_' + point.index,
-                    styles: 'position: absolute;background-color:' + point.argsData.color + ';' +
-                        // tslint:disable-next-line:max-line-length
-                        getFontStyle(dataLabel.font) + ';border:' + point.argsData.border.width + 'px solid ' + point.argsData.border.color + ';'
-                });
-                var textSize = point.argsData ?
-                    this.getTemplateSize(childElement, point, point.argsData, redraw) :
-                    measureText(point.label, dataLabel.font);
                 var element = void 0;
                 if (point.visible && point.labelVisible) {
                     angle = degree = dataLabel.angle;
                     if (point.argsData.template) {
-                        this.setTemplateStyle(childElement, point, templateElement, dataLabel.font.color, point.color, redraw);
+                        this.setTemplateStyle(point.templateElement, point, templateElement, dataLabel.font.color, point.color, redraw);
                     }
                     else {
                         location_3 = new ChartLocation(
@@ -30746,7 +31011,7 @@ var AccumulationDataLabel = /** @__PURE__ @class */ (function (_super) {
     return AccumulationDataLabel;
 }(AccumulationBase));
 
-var __extends$69 = (undefined && undefined.__extends) || (function () {
+var __extends$70 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -30766,7 +31031,7 @@ var __extends$69 = (undefined && undefined.__extends) || (function () {
  * `AccumulationTooltip` module is used to render tooltip for accumulation chart.
  */
 var AccumulationTooltip = /** @__PURE__ @class */ (function (_super) {
-    __extends$69(AccumulationTooltip, _super);
+    __extends$70(AccumulationTooltip, _super);
     function AccumulationTooltip(accumulation) {
         var _this = _super.call(this, accumulation) || this;
         _this.accumulation = accumulation;
@@ -30930,7 +31195,7 @@ var AccumulationTooltip = /** @__PURE__ @class */ (function (_super) {
     return AccumulationTooltip;
 }(BaseTooltip));
 
-var __extends$70 = (undefined && undefined.__extends) || (function () {
+var __extends$71 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -30950,7 +31215,7 @@ var __extends$70 = (undefined && undefined.__extends) || (function () {
  * `AccumulationSelection` module handles the selection for accumulation chart.
  */
 var AccumulationSelection = /** @__PURE__ @class */ (function (_super) {
-    __extends$70(AccumulationSelection, _super);
+    __extends$71(AccumulationSelection, _super);
     function AccumulationSelection(accumulation) {
         var _this = _super.call(this, accumulation) || this;
         _this.renderer = accumulation.renderer;
@@ -31256,7 +31521,7 @@ var AccumulationSelection = /** @__PURE__ @class */ (function (_super) {
 /**
  * AccumulationChart annotation properties
  */
-var __extends$71 = (undefined && undefined.__extends) || (function () {
+var __extends$72 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -31273,7 +31538,7 @@ var __extends$71 = (undefined && undefined.__extends) || (function () {
  * `AccumulationAnnotation` module handles the annotation for accumulation chart.
  */
 var AccumulationAnnotation = /** @__PURE__ @class */ (function (_super) {
-    __extends$71(AccumulationAnnotation, _super);
+    __extends$72(AccumulationAnnotation, _super);
     /**
      * Constructor for accumulation chart annotation.
      * @private.
@@ -31374,7 +31639,7 @@ var DataPoint = /** @__PURE__ @class */ (function () {
     return DataPoint;
 }());
 
-var __extends$74 = (undefined && undefined.__extends) || (function () {
+var __extends$75 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -31391,7 +31656,7 @@ var __extends$74 = (undefined && undefined.__extends) || (function () {
  * To render Chart series
  */
 var RangeSeries = /** @__PURE__ @class */ (function (_super) {
-    __extends$74(RangeSeries, _super);
+    __extends$75(RangeSeries, _super);
     function RangeSeries(range) {
         var _this = _super.call(this) || this;
         _this.dataSource = range.dataSource;
@@ -31620,7 +31885,7 @@ var RangeSeries = /** @__PURE__ @class */ (function (_super) {
     return RangeSeries;
 }(NiceInterval));
 
-var __extends$75 = (undefined && undefined.__extends) || (function () {
+var __extends$76 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -31637,7 +31902,7 @@ var __extends$75 = (undefined && undefined.__extends) || (function () {
  * class for axis
  */
 var RangeNavigatorAxis = /** @__PURE__ @class */ (function (_super) {
-    __extends$75(RangeNavigatorAxis, _super);
+    __extends$76(RangeNavigatorAxis, _super);
     function RangeNavigatorAxis(range) {
         var _this = _super.call(this) || this;
         _this.firstLevelLabels = [];
@@ -32174,7 +32439,7 @@ function getRangeThemeColor(theme, range) {
     return style;
 }
 
-var __extends$76 = (undefined && undefined.__extends) || (function () {
+var __extends$77 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -32197,7 +32462,7 @@ var __decorate$11 = (undefined && undefined.__decorate) || function (decorators,
  * Series class for the range navigator
  */
 var RangeNavigatorSeries = /** @__PURE__ @class */ (function (_super) {
-    __extends$76(RangeNavigatorSeries, _super);
+    __extends$77(RangeNavigatorSeries, _super);
     function RangeNavigatorSeries() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         /** @private */
@@ -32243,7 +32508,7 @@ var RangeNavigatorSeries = /** @__PURE__ @class */ (function (_super) {
  * Thumb settings
  */
 var ThumbSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$76(ThumbSettings, _super);
+    __extends$77(ThumbSettings, _super);
     function ThumbSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -32268,7 +32533,7 @@ var ThumbSettings = /** @__PURE__ @class */ (function (_super) {
  * Style settings
  */
 var StyleSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$76(StyleSettings, _super);
+    __extends$77(StyleSettings, _super);
     function StyleSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -32287,7 +32552,7 @@ var StyleSettings = /** @__PURE__ @class */ (function (_super) {
  * Configures the ToolTips in the chart.
  */
 var RangeTooltipSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$76(RangeTooltipSettings, _super);
+    __extends$77(RangeTooltipSettings, _super);
     function RangeTooltipSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -32492,6 +32757,12 @@ var RangeSlider = /** @__PURE__ @class */ (function () {
         var argsData;
         var xAxis = this.control.chartSeries.xAxis;
         var valueType = xAxis.valueType;
+        var trigger = this.control.enableDeferredUpdate;
+        var enabledTooltip = this.control.tooltip.enable;
+        if (this.isDrag && this.control.allowSnapping) {
+            this.isDrag = false;
+            this.setAllowSnapping(this.control, this.currentStart, this.currentEnd, trigger, enabledTooltip);
+        }
         argsData = {
             cancel: false,
             start: valueType === 'DateTime' ? new Date(this.currentStart) :
@@ -33097,7 +33368,7 @@ var PeriodSelector = /** @__PURE__ @class */ (function () {
     return PeriodSelector;
 }());
 
-var __extends$73 = (undefined && undefined.__extends) || (function () {
+var __extends$74 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -33120,7 +33391,7 @@ var __decorate$10 = (undefined && undefined.__decorate) || function (decorators,
  * Range Navigator
  */
 var RangeNavigator = /** @__PURE__ @class */ (function (_super) {
-    __extends$73(RangeNavigator, _super);
+    __extends$74(RangeNavigator, _super);
     /**
      * Constructor for creating the widget
      * @hidden
@@ -34517,7 +34788,7 @@ var ToolBarSelector = /** @__PURE__ @class */ (function () {
     return ToolBarSelector;
 }());
 
-var __extends$77 = (undefined && undefined.__extends) || (function () {
+var __extends$78 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -34537,7 +34808,7 @@ var __decorate$12 = (undefined && undefined.__decorate) || function (decorators,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 var StockChartFont = /** @__PURE__ @class */ (function (_super) {
-    __extends$77(StockChartFont, _super);
+    __extends$78(StockChartFont, _super);
     function StockChartFont() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -34571,7 +34842,7 @@ var StockChartFont = /** @__PURE__ @class */ (function (_super) {
  * Border
  */
 var StockChartBorder = /** @__PURE__ @class */ (function (_super) {
-    __extends$77(StockChartBorder, _super);
+    __extends$78(StockChartBorder, _super);
     function StockChartBorder() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -34587,7 +34858,7 @@ var StockChartBorder = /** @__PURE__ @class */ (function (_super) {
  * Configures the chart area.
  */
 var StockChartArea = /** @__PURE__ @class */ (function (_super) {
-    __extends$77(StockChartArea, _super);
+    __extends$78(StockChartArea, _super);
     function StockChartArea() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -34606,7 +34877,7 @@ var StockChartArea = /** @__PURE__ @class */ (function (_super) {
  * Configures the chart margins.
  */
 var StockMargin = /** @__PURE__ @class */ (function (_super) {
-    __extends$77(StockMargin, _super);
+    __extends$78(StockMargin, _super);
     function StockMargin() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -34628,7 +34899,7 @@ var StockMargin = /** @__PURE__ @class */ (function (_super) {
  * StockChart strip line settings
  */
 var StockChartStripLineSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$77(StockChartStripLineSettings, _super);
+    __extends$78(StockChartStripLineSettings, _super);
     function StockChartStripLineSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -34704,7 +34975,7 @@ var StockChartStripLineSettings = /** @__PURE__ @class */ (function (_super) {
     return StockChartStripLineSettings;
 }(ChildProperty));
 var Animation$2 = /** @__PURE__ @class */ (function (_super) {
-    __extends$77(Animation$$1, _super);
+    __extends$78(Animation$$1, _super);
     function Animation$$1() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -34720,7 +34991,7 @@ var Animation$2 = /** @__PURE__ @class */ (function (_super) {
     return Animation$$1;
 }(ChildProperty));
 var StockEmptyPointSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$77(StockEmptyPointSettings, _super);
+    __extends$78(StockEmptyPointSettings, _super);
     function StockEmptyPointSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -34736,7 +35007,7 @@ var StockEmptyPointSettings = /** @__PURE__ @class */ (function (_super) {
     return StockEmptyPointSettings;
 }(ChildProperty));
 var StockChartConnector = /** @__PURE__ @class */ (function (_super) {
-    __extends$77(StockChartConnector, _super);
+    __extends$78(StockChartConnector, _super);
     function StockChartConnector() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -34761,7 +35032,7 @@ var StockChartConnector = /** @__PURE__ @class */ (function (_super) {
  * Configures the Annotation for chart.
  */
 var StockSeries = /** @__PURE__ @class */ (function (_super) {
-    __extends$77(StockSeries, _super);
+    __extends$78(StockSeries, _super);
     function StockSeries() {
         /**
          * The DataSource field that contains the x value.
@@ -34878,7 +35149,7 @@ var StockSeries = /** @__PURE__ @class */ (function (_super) {
     return StockSeries;
 }(ChildProperty));
 var StockChartIndicator = /** @__PURE__ @class */ (function (_super) {
-    __extends$77(StockChartIndicator, _super);
+    __extends$78(StockChartIndicator, _super);
     function StockChartIndicator() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -34990,7 +35261,7 @@ var StockChartIndicator = /** @__PURE__ @class */ (function (_super) {
     return StockChartIndicator;
 }(ChildProperty));
 var StockChartAxis = /** @__PURE__ @class */ (function (_super) {
-    __extends$77(StockChartAxis, _super);
+    __extends$78(StockChartAxis, _super);
     function StockChartAxis() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -35144,7 +35415,7 @@ var StockChartAxis = /** @__PURE__ @class */ (function (_super) {
  * StockChart row
  */
 var StockChartRow = /** @__PURE__ @class */ (function (_super) {
-    __extends$77(StockChartRow, _super);
+    __extends$78(StockChartRow, _super);
     function StockChartRow() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -35157,7 +35428,7 @@ var StockChartRow = /** @__PURE__ @class */ (function (_super) {
     return StockChartRow;
 }(ChildProperty));
 var StockChartTrendline = /** @__PURE__ @class */ (function (_super) {
-    __extends$77(StockChartTrendline, _super);
+    __extends$78(StockChartTrendline, _super);
     function StockChartTrendline() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -35203,7 +35474,7 @@ var StockChartTrendline = /** @__PURE__ @class */ (function (_super) {
     return StockChartTrendline;
 }(ChildProperty));
 var StockChartAnnotationSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$77(StockChartAnnotationSettings, _super);
+    __extends$78(StockChartAnnotationSettings, _super);
     function StockChartAnnotationSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -35240,7 +35511,7 @@ var StockChartAnnotationSettings = /** @__PURE__ @class */ (function (_super) {
     return StockChartAnnotationSettings;
 }(ChildProperty));
 var StockChartIndexes = /** @__PURE__ @class */ (function (_super) {
-    __extends$77(StockChartIndexes, _super);
+    __extends$78(StockChartIndexes, _super);
     function StockChartIndexes() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -35256,7 +35527,7 @@ var StockChartIndexes = /** @__PURE__ @class */ (function (_super) {
  * Configures the Stock events for stock chart.
  */
 var StockEventsSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$77(StockEventsSettings, _super);
+    __extends$78(StockEventsSettings, _super);
     function StockEventsSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -35290,7 +35561,7 @@ var StockEventsSettings = /** @__PURE__ @class */ (function (_super) {
     return StockEventsSettings;
 }(ChildProperty));
 
-var __extends$78 = (undefined && undefined.__extends) || (function () {
+var __extends$79 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -35307,7 +35578,7 @@ var __extends$78 = (undefined && undefined.__extends) || (function () {
  * @private
  */
 var StockEvents = /** @__PURE__ @class */ (function (_super) {
-    __extends$78(StockEvents, _super);
+    __extends$79(StockEvents, _super);
     function StockEvents(stockChart) {
         var _this = _super.call(this, stockChart.chart) || this;
         /** @private */
@@ -35549,7 +35820,7 @@ function initialArray(numrows, numcols, initial) {
     return arr;
 }
 
-var __extends$72 = (undefined && undefined.__extends) || (function () {
+var __extends$73 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -35572,7 +35843,7 @@ var __decorate$9 = (undefined && undefined.__decorate) || function (decorators, 
  * Stock Chart
  */
 var StockChart = /** @__PURE__ @class */ (function (_super) {
-    __extends$72(StockChart, _super);
+    __extends$73(StockChart, _super);
     /**
      * Constructor for creating the widget
      * @hidden
@@ -37619,7 +37890,7 @@ var ScaleGroup = /** @__PURE__ @class */ (function () {
     return ScaleGroup;
 }());
 
-var __extends$80 = (undefined && undefined.__extends) || (function () {
+var __extends$81 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -37642,7 +37913,7 @@ var __decorate$14 = (undefined && undefined.__decorate) || function (decorators,
  * Configuration of the bullet chart ranges
  */
 var Range = /** @__PURE__ @class */ (function (_super) {
-    __extends$80(Range, _super);
+    __extends$81(Range, _super);
     function Range() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -37670,7 +37941,7 @@ var Range = /** @__PURE__ @class */ (function (_super) {
  * Configures the major tick lines.
  */
 var MajorTickLinesSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$80(MajorTickLinesSettings, _super);
+    __extends$81(MajorTickLinesSettings, _super);
     function MajorTickLinesSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -37692,7 +37963,7 @@ var MajorTickLinesSettings = /** @__PURE__ @class */ (function (_super) {
  * Configures the minor tick lines.
  */
 var MinorTickLinesSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$80(MinorTickLinesSettings, _super);
+    __extends$81(MinorTickLinesSettings, _super);
     function MinorTickLinesSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -37714,7 +37985,7 @@ var MinorTickLinesSettings = /** @__PURE__ @class */ (function (_super) {
  * Configures the fonts in bullet chart.
  */
 var BulletLabelStyle = /** @__PURE__ @class */ (function (_super) {
-    __extends$80(BulletLabelStyle, _super);
+    __extends$81(BulletLabelStyle, _super);
     function BulletLabelStyle() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -37757,7 +38028,7 @@ var BulletLabelStyle = /** @__PURE__ @class */ (function (_super) {
  * Configures the ToolTips in the bullet chart.
  */
 var BulletTooltipSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$80(BulletTooltipSettings, _super);
+    __extends$81(BulletTooltipSettings, _super);
     function BulletTooltipSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -37782,7 +38053,7 @@ var BulletTooltipSettings = /** @__PURE__ @class */ (function (_super) {
  * Configures the DataLabel in the bullet chart.
  */
 var BulletDataLabel = /** @__PURE__ @class */ (function (_super) {
-    __extends$80(BulletDataLabel, _super);
+    __extends$81(BulletDataLabel, _super);
     function BulletDataLabel() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -37798,7 +38069,7 @@ var BulletDataLabel = /** @__PURE__ @class */ (function (_super) {
  * Configures the legends in charts.
  */
 var BulletChartLegendSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$80(BulletChartLegendSettings, _super);
+    __extends$81(BulletChartLegendSettings, _super);
     function BulletChartLegendSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -37847,7 +38118,7 @@ var BulletChartLegendSettings = /** @__PURE__ @class */ (function (_super) {
     return BulletChartLegendSettings;
 }(ChildProperty));
 
-var __extends$79 = (undefined && undefined.__extends) || (function () {
+var __extends$80 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -37870,7 +38141,7 @@ var __decorate$13 = (undefined && undefined.__decorate) || function (decorators,
  * bullet chart
  */
 var BulletChart = /** @__PURE__ @class */ (function (_super) {
-    __extends$79(BulletChart, _super);
+    __extends$80(BulletChart, _super);
     /**
      * Constructor for creating the bullet chart
      * @hidden
@@ -39156,7 +39427,7 @@ var BulletTooltip = /** @__PURE__ @class */ (function () {
     return BulletTooltip;
 }());
 
-var __extends$81 = (undefined && undefined.__extends) || (function () {
+var __extends$82 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -39176,7 +39447,7 @@ var __extends$81 = (undefined && undefined.__extends) || (function () {
  * `Legend` module is used to render legend for the chart.
  */
 var BulletChartLegend = /** @__PURE__ @class */ (function (_super) {
-    __extends$81(BulletChartLegend, _super);
+    __extends$82(BulletChartLegend, _super);
     function BulletChartLegend(chart) {
         var _this = _super.call(this, chart) || this;
         _this.library = _this;
@@ -39390,7 +39661,7 @@ var BulletChartLegend = /** @__PURE__ @class */ (function (_super) {
  * Bullet Chart component export methods
  */
 
-var __extends$84 = (undefined && undefined.__extends) || (function () {
+var __extends$85 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -39410,7 +39681,7 @@ var __decorate$16 = (undefined && undefined.__decorate) || function (decorators,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 var SmithchartFont = /** @__PURE__ @class */ (function (_super) {
-    __extends$84(SmithchartFont, _super);
+    __extends$85(SmithchartFont, _super);
     function SmithchartFont() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -39435,7 +39706,7 @@ var SmithchartFont = /** @__PURE__ @class */ (function (_super) {
     return SmithchartFont;
 }(ChildProperty));
 var SmithchartMargin = /** @__PURE__ @class */ (function (_super) {
-    __extends$84(SmithchartMargin, _super);
+    __extends$85(SmithchartMargin, _super);
     function SmithchartMargin() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -39454,7 +39725,7 @@ var SmithchartMargin = /** @__PURE__ @class */ (function (_super) {
     return SmithchartMargin;
 }(ChildProperty));
 var SmithchartBorder = /** @__PURE__ @class */ (function (_super) {
-    __extends$84(SmithchartBorder, _super);
+    __extends$85(SmithchartBorder, _super);
     function SmithchartBorder() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -39497,14 +39768,14 @@ var LabelRegion = /** @__PURE__ @class */ (function () {
     return LabelRegion;
 }());
 var HorizontalLabelCollection = /** @__PURE__ @class */ (function (_super) {
-    __extends$84(HorizontalLabelCollection, _super);
+    __extends$85(HorizontalLabelCollection, _super);
     function HorizontalLabelCollection() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     return HorizontalLabelCollection;
 }(LabelCollection));
 var RadialLabelCollections = /** @__PURE__ @class */ (function (_super) {
-    __extends$84(RadialLabelCollections, _super);
+    __extends$85(RadialLabelCollections, _super);
     function RadialLabelCollections() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -39579,7 +39850,7 @@ var GridArcPoints = /** @__PURE__ @class */ (function () {
     return GridArcPoints;
 }());
 
-var __extends$83 = (undefined && undefined.__extends) || (function () {
+var __extends$84 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -39723,7 +39994,7 @@ var PathOption$1 = /** @__PURE__ @class */ (function () {
  * @private
  */
 var RectOption$1 = /** @__PURE__ @class */ (function (_super) {
-    __extends$83(RectOption, _super);
+    __extends$84(RectOption, _super);
     function RectOption(id, fill, border, opacity, rect) {
         var _this = _super.call(this, id, fill, border.width, border.color, opacity) || this;
         _this.y = rect.y;
@@ -39739,7 +40010,7 @@ var RectOption$1 = /** @__PURE__ @class */ (function (_super) {
  * @private
  */
 var CircleOption$1 = /** @__PURE__ @class */ (function (_super) {
-    __extends$83(CircleOption, _super);
+    __extends$84(CircleOption, _super);
     function CircleOption(id, fill, border, opacity, cx, cy, r, dashArray) {
         var _this = _super.call(this, id, fill, border.width, border.color, opacity) || this;
         _this.cy = cy;
@@ -39992,7 +40263,7 @@ function getThemeColor$1(theme) {
     return style;
 }
 
-var __extends$85 = (undefined && undefined.__extends) || (function () {
+var __extends$86 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -40012,7 +40283,7 @@ var __decorate$17 = (undefined && undefined.__decorate) || function (decorators,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 var LegendTitle = /** @__PURE__ @class */ (function (_super) {
-    __extends$85(LegendTitle, _super);
+    __extends$86(LegendTitle, _super);
     function LegendTitle() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -40034,7 +40305,7 @@ var LegendTitle = /** @__PURE__ @class */ (function (_super) {
     return LegendTitle;
 }(ChildProperty));
 var LegendLocation = /** @__PURE__ @class */ (function (_super) {
-    __extends$85(LegendLocation, _super);
+    __extends$86(LegendLocation, _super);
     function LegendLocation() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -40047,7 +40318,7 @@ var LegendLocation = /** @__PURE__ @class */ (function (_super) {
     return LegendLocation;
 }(ChildProperty));
 var LegendItemStyleBorder = /** @__PURE__ @class */ (function (_super) {
-    __extends$85(LegendItemStyleBorder, _super);
+    __extends$86(LegendItemStyleBorder, _super);
     function LegendItemStyleBorder() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -40060,7 +40331,7 @@ var LegendItemStyleBorder = /** @__PURE__ @class */ (function (_super) {
     return LegendItemStyleBorder;
 }(ChildProperty));
 var LegendItemStyle = /** @__PURE__ @class */ (function (_super) {
-    __extends$85(LegendItemStyle, _super);
+    __extends$86(LegendItemStyle, _super);
     function LegendItemStyle() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -40076,7 +40347,7 @@ var LegendItemStyle = /** @__PURE__ @class */ (function (_super) {
     return LegendItemStyle;
 }(ChildProperty));
 var LegendBorder = /** @__PURE__ @class */ (function (_super) {
-    __extends$85(LegendBorder, _super);
+    __extends$86(LegendBorder, _super);
     function LegendBorder() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -40089,7 +40360,7 @@ var LegendBorder = /** @__PURE__ @class */ (function (_super) {
     return LegendBorder;
 }(ChildProperty));
 var SmithchartLegendSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$85(SmithchartLegendSettings, _super);
+    __extends$86(SmithchartLegendSettings, _super);
     function SmithchartLegendSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -40147,7 +40418,7 @@ var SmithchartLegendSettings = /** @__PURE__ @class */ (function (_super) {
     return SmithchartLegendSettings;
 }(ChildProperty));
 
-var __extends$86 = (undefined && undefined.__extends) || (function () {
+var __extends$87 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -40170,7 +40441,7 @@ var __decorate$18 = (undefined && undefined.__decorate) || function (decorators,
  * Configures the major Grid lines in the `axis`.
  */
 var SmithchartMajorGridLines = /** @__PURE__ @class */ (function (_super) {
-    __extends$86(SmithchartMajorGridLines, _super);
+    __extends$87(SmithchartMajorGridLines, _super);
     function SmithchartMajorGridLines() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -40195,7 +40466,7 @@ var SmithchartMajorGridLines = /** @__PURE__ @class */ (function (_super) {
  * Configures the major grid lines in the `axis`.
  */
 var SmithchartMinorGridLines = /** @__PURE__ @class */ (function (_super) {
-    __extends$86(SmithchartMinorGridLines, _super);
+    __extends$87(SmithchartMinorGridLines, _super);
     function SmithchartMinorGridLines() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -40220,7 +40491,7 @@ var SmithchartMinorGridLines = /** @__PURE__ @class */ (function (_super) {
  * Configures the axis lines in the `axis`.
  */
 var SmithchartAxisLine = /** @__PURE__ @class */ (function (_super) {
-    __extends$86(SmithchartAxisLine, _super);
+    __extends$87(SmithchartAxisLine, _super);
     function SmithchartAxisLine() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -40239,7 +40510,7 @@ var SmithchartAxisLine = /** @__PURE__ @class */ (function (_super) {
     return SmithchartAxisLine;
 }(ChildProperty));
 var SmithchartAxis = /** @__PURE__ @class */ (function (_super) {
-    __extends$86(SmithchartAxis, _super);
+    __extends$87(SmithchartAxis, _super);
     function SmithchartAxis() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -40267,7 +40538,7 @@ var SmithchartAxis = /** @__PURE__ @class */ (function (_super) {
     return SmithchartAxis;
 }(ChildProperty));
 
-var __extends$87 = (undefined && undefined.__extends) || (function () {
+var __extends$88 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -40287,7 +40558,7 @@ var __decorate$19 = (undefined && undefined.__decorate) || function (decorators,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 var Subtitle = /** @__PURE__ @class */ (function (_super) {
-    __extends$87(Subtitle, _super);
+    __extends$88(Subtitle, _super);
     function Subtitle() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -40315,7 +40586,7 @@ var Subtitle = /** @__PURE__ @class */ (function (_super) {
     return Subtitle;
 }(ChildProperty));
 var Title = /** @__PURE__ @class */ (function (_super) {
-    __extends$87(Title, _super);
+    __extends$88(Title, _super);
     function Title() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -40349,7 +40620,7 @@ var Title = /** @__PURE__ @class */ (function (_super) {
     return Title;
 }(ChildProperty));
 
-var __extends$88 = (undefined && undefined.__extends) || (function () {
+var __extends$89 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -40369,7 +40640,7 @@ var __decorate$20 = (undefined && undefined.__decorate) || function (decorators,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 var SeriesTooltipBorder = /** @__PURE__ @class */ (function (_super) {
-    __extends$88(SeriesTooltipBorder, _super);
+    __extends$89(SeriesTooltipBorder, _super);
     function SeriesTooltipBorder() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -40382,7 +40653,7 @@ var SeriesTooltipBorder = /** @__PURE__ @class */ (function (_super) {
     return SeriesTooltipBorder;
 }(ChildProperty));
 var SeriesTooltip = /** @__PURE__ @class */ (function (_super) {
-    __extends$88(SeriesTooltip, _super);
+    __extends$89(SeriesTooltip, _super);
     function SeriesTooltip() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -40404,7 +40675,7 @@ var SeriesTooltip = /** @__PURE__ @class */ (function (_super) {
     return SeriesTooltip;
 }(ChildProperty));
 var SeriesMarkerBorder = /** @__PURE__ @class */ (function (_super) {
-    __extends$88(SeriesMarkerBorder, _super);
+    __extends$89(SeriesMarkerBorder, _super);
     function SeriesMarkerBorder() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -40417,7 +40688,7 @@ var SeriesMarkerBorder = /** @__PURE__ @class */ (function (_super) {
     return SeriesMarkerBorder;
 }(ChildProperty));
 var SeriesMarkerDataLabelBorder = /** @__PURE__ @class */ (function (_super) {
-    __extends$88(SeriesMarkerDataLabelBorder, _super);
+    __extends$89(SeriesMarkerDataLabelBorder, _super);
     function SeriesMarkerDataLabelBorder() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -40430,7 +40701,7 @@ var SeriesMarkerDataLabelBorder = /** @__PURE__ @class */ (function (_super) {
     return SeriesMarkerDataLabelBorder;
 }(ChildProperty));
 var SeriesMarkerDataLabelConnectorLine = /** @__PURE__ @class */ (function (_super) {
-    __extends$88(SeriesMarkerDataLabelConnectorLine, _super);
+    __extends$89(SeriesMarkerDataLabelConnectorLine, _super);
     function SeriesMarkerDataLabelConnectorLine() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -40443,7 +40714,7 @@ var SeriesMarkerDataLabelConnectorLine = /** @__PURE__ @class */ (function (_sup
     return SeriesMarkerDataLabelConnectorLine;
 }(ChildProperty));
 var SeriesMarkerDataLabel = /** @__PURE__ @class */ (function (_super) {
-    __extends$88(SeriesMarkerDataLabel, _super);
+    __extends$89(SeriesMarkerDataLabel, _super);
     function SeriesMarkerDataLabel() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -40471,7 +40742,7 @@ var SeriesMarkerDataLabel = /** @__PURE__ @class */ (function (_super) {
     return SeriesMarkerDataLabel;
 }(ChildProperty));
 var SeriesMarker = /** @__PURE__ @class */ (function (_super) {
-    __extends$88(SeriesMarker, _super);
+    __extends$89(SeriesMarker, _super);
     function SeriesMarker() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -40505,7 +40776,7 @@ var SeriesMarker = /** @__PURE__ @class */ (function (_super) {
     return SeriesMarker;
 }(ChildProperty));
 var SmithchartSeries = /** @__PURE__ @class */ (function (_super) {
-    __extends$88(SmithchartSeries, _super);
+    __extends$89(SmithchartSeries, _super);
     function SmithchartSeries() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -42528,7 +42799,7 @@ var ExportUtils$1 = /** @__PURE__ @class */ (function () {
     return ExportUtils;
 }());
 
-var __extends$82 = (undefined && undefined.__extends) || (function () {
+var __extends$83 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -42559,7 +42830,7 @@ var __decorate$15 = (undefined && undefined.__decorate) || function (decorators,
  * ```
  */
 var Smithchart = /** @__PURE__ @class */ (function (_super) {
-    __extends$82(Smithchart, _super);
+    __extends$83(Smithchart, _super);
     /**
      * Constructor for creating the Smithchart widget
      */
@@ -43559,7 +43830,7 @@ var SmithchartLegend = /** @__PURE__ @class */ (function () {
  *
  */
 
-var __extends$90 = (undefined && undefined.__extends) || (function () {
+var __extends$91 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -43585,7 +43856,7 @@ var __decorate$22 = (undefined && undefined.__decorate) || function (decorators,
  * Configures the borders in the Sparkline.
  */
 var SparklineBorder = /** @__PURE__ @class */ (function (_super) {
-    __extends$90(SparklineBorder, _super);
+    __extends$91(SparklineBorder, _super);
     function SparklineBorder() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -43601,7 +43872,7 @@ var SparklineBorder = /** @__PURE__ @class */ (function (_super) {
  * Configures the fonts in sparklines.
  */
 var SparklineFont = /** @__PURE__ @class */ (function (_super) {
-    __extends$90(SparklineFont, _super);
+    __extends$91(SparklineFont, _super);
     function SparklineFont() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -43629,7 +43900,7 @@ var SparklineFont = /** @__PURE__ @class */ (function (_super) {
  * To configure the tracker line settings.
  */
 var TrackLineSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$90(TrackLineSettings, _super);
+    __extends$91(TrackLineSettings, _super);
     function TrackLineSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -43648,7 +43919,7 @@ var TrackLineSettings = /** @__PURE__ @class */ (function (_super) {
  * To configure the tooltip settings for sparkline.
  */
 var SparklineTooltipSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$90(SparklineTooltipSettings, _super);
+    __extends$91(SparklineTooltipSettings, _super);
     function SparklineTooltipSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -43679,7 +43950,7 @@ var SparklineTooltipSettings = /** @__PURE__ @class */ (function (_super) {
  * To configure the sparkline container area customization
  */
 var ContainerArea = /** @__PURE__ @class */ (function (_super) {
-    __extends$90(ContainerArea, _super);
+    __extends$91(ContainerArea, _super);
     function ContainerArea() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -43695,7 +43966,7 @@ var ContainerArea = /** @__PURE__ @class */ (function (_super) {
  * To configure axis line settings
  */
 var LineSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$90(LineSettings, _super);
+    __extends$91(LineSettings, _super);
     function LineSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -43720,7 +43991,7 @@ var LineSettings = /** @__PURE__ @class */ (function (_super) {
  * To configure the sparkline rangeband
  */
 var RangeBandSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$90(RangeBandSettings, _super);
+    __extends$91(RangeBandSettings, _super);
     function RangeBandSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -43742,7 +44013,7 @@ var RangeBandSettings = /** @__PURE__ @class */ (function (_super) {
  * To configure the sparkline axis
  */
 var AxisSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$90(AxisSettings, _super);
+    __extends$91(AxisSettings, _super);
     function AxisSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -43770,7 +44041,7 @@ var AxisSettings = /** @__PURE__ @class */ (function (_super) {
  * To configure the sparkline padding.
  */
 var Padding = /** @__PURE__ @class */ (function (_super) {
-    __extends$90(Padding, _super);
+    __extends$91(Padding, _super);
     function Padding() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -43792,7 +44063,7 @@ var Padding = /** @__PURE__ @class */ (function (_super) {
  * To configure the sparkline marker options.
  */
 var SparklineMarkerSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$90(SparklineMarkerSettings, _super);
+    __extends$91(SparklineMarkerSettings, _super);
     function SparklineMarkerSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -43817,7 +44088,7 @@ var SparklineMarkerSettings = /** @__PURE__ @class */ (function (_super) {
  * To configure the datalabel offset
  */
 var LabelOffset = /** @__PURE__ @class */ (function (_super) {
-    __extends$90(LabelOffset, _super);
+    __extends$91(LabelOffset, _super);
     function LabelOffset() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -43833,7 +44104,7 @@ var LabelOffset = /** @__PURE__ @class */ (function (_super) {
  * To configure the sparkline dataLabel options.
  */
 var SparklineDataLabelSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$90(SparklineDataLabelSettings, _super);
+    __extends$91(SparklineDataLabelSettings, _super);
     function SparklineDataLabelSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -43864,7 +44135,7 @@ var SparklineDataLabelSettings = /** @__PURE__ @class */ (function (_super) {
     return SparklineDataLabelSettings;
 }(ChildProperty));
 
-var __extends$91 = (undefined && undefined.__extends) || (function () {
+var __extends$92 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -44010,7 +44281,7 @@ var PathOption$2 = /** @__PURE__ @class */ (function () {
  * @private
  */
 var RectOption$2 = /** @__PURE__ @class */ (function (_super) {
-    __extends$91(RectOption, _super);
+    __extends$92(RectOption, _super);
     function RectOption(id, fill, border, opacity, rect, tl, tr, bl, br) {
         if (tl === void 0) { tl = 0; }
         if (tr === void 0) { tr = 0; }
@@ -44031,7 +44302,7 @@ var RectOption$2 = /** @__PURE__ @class */ (function (_super) {
  * @private
  */
 var CircleOption$2 = /** @__PURE__ @class */ (function (_super) {
-    __extends$91(CircleOption, _super);
+    __extends$92(CircleOption, _super);
     function CircleOption(id, fill, border, opacity, cx, cy, r, dashArray) {
         var _this = _super.call(this, id, fill, border.width, border.color, opacity) || this;
         _this.cy = cy;
@@ -45141,7 +45412,7 @@ var SparklineRenderer = /** @__PURE__ @class */ (function () {
     return SparklineRenderer;
 }());
 
-var __extends$89 = (undefined && undefined.__extends) || (function () {
+var __extends$90 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -45172,7 +45443,7 @@ var __decorate$21 = (undefined && undefined.__decorate) || function (decorators,
  * ```
  */
 var Sparkline = /** @__PURE__ @class */ (function (_super) {
-    __extends$89(Sparkline, _super);
+    __extends$90(Sparkline, _super);
     // Sparkline rendering starts from here.
     /**
      * Constructor for creating the Sparkline widget
@@ -45498,12 +45769,19 @@ var Sparkline = /** @__PURE__ @class */ (function (_super) {
             switch (prop) {
                 case 'xName':
                 case 'yName':
-                case 'dataSource':
                 case 'axisSettings':
                 case 'rangeBandSettings':
                 case 'type':
                 case 'valueType':
                 case 'enableRtl':
+                    refresh = true;
+                    break;
+                case 'dataSource':
+                    if (this.isBlazor) {
+                        this.sparklineRenderer.processDataManager();
+                        this.createSVG();
+                        break;
+                    }
                     refresh = true;
                     break;
                 case 'border':
@@ -45959,5 +46237,5 @@ var SparklineTooltip = /** @__PURE__ @class */ (function () {
  * Chart components exported.
  */
 
-export { CrosshairSettings, ZoomSettings, Chart, Row, Column, MajorGridLines, MinorGridLines, AxisLine, MajorTickLines, MinorTickLines, CrosshairTooltip, Axis, VisibleLabels, Double, DateTime, Category, Logarithmic, DateTimeCategory, NiceInterval, StripLine, Connector, Font, Border, Offset, ChartArea, Margin, Animation$1 as Animation, Indexes, CornerRadius, Index, EmptyPointSettings, DragSettings, TooltipSettings, Periods, PeriodSelectorSettings, LineSeries, ColumnSeries, AreaSeries, BarSeries, PolarSeries, RadarSeries, StackingBarSeries, CandleSeries, StackingColumnSeries, StepLineSeries, StepAreaSeries, StackingAreaSeries, StackingLineSeries, ScatterSeries, RangeColumnSeries, WaterfallSeries, HiloSeries, HiloOpenCloseSeries, RangeAreaSeries, BubbleSeries, SplineSeries, HistogramSeries, SplineAreaSeries, TechnicalIndicator, SmaIndicator, EmaIndicator, TmaIndicator, AccumulationDistributionIndicator, AtrIndicator, MomentumIndicator, RsiIndicator, StochasticIndicator, BollingerBands, MacdIndicator, Trendlines, sort, isBreakLabel, getVisiblePoints, rotateTextSize, removeElement$1 as removeElement, logBase, showTooltip, inside, withIn, logWithIn, withInRange, sum, subArraySum, subtractThickness, subtractRect, degreeToLocation, degreeToRadian, getRotatedRectangleCoordinates, isRotatedRectIntersect, getAngle, subArray, valueToCoefficient, TransformToVisible, indexFinder, CoefficientToVector, valueToPolarCoefficient, Mean, PolarArc, createTooltip, createZoomingLabels, withInBounds, getValueXByPoint, getValueYByPoint, findClipRect, firstToLowerCase, getTransform, getMinPointsDelta, getAnimationFunction, linear, markerAnimate, animateRectElement, pathAnimation, appendClipElement, triggerLabelRender, setRange, getActualDesiredIntervalsCount, templateAnimate, drawSymbol, calculateShapes, getRectLocation, minMax, getElement$1 as getElement, getTemplateFunction, createTemplate, getFontStyle, measureElementRect, findlElement, getPoint, appendElement, appendChildElement, getDraggedRectLocation, checkBounds, getLabelText, stopTimer, isCollide, isOverlap, containsRect, calculateRect, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, getSaturationColor, getMedian, calculateLegendShapes, textTrim, lineBreakLabelTrim, stringToNumber, redrawElement, animateRedrawElement, textElement$1 as textElement, calculateSize, createSvg, getTitle, titlePositionX, textWrap, getUnicodeText, blazorTemplatesReset, CustomizeOption, StackValues, RectOption, ImageOption, CircleOption, PolygonOption, ChartLocation, LabelLocation, Thickness, ColorValue, PointData, AccPointData, ControlPoints, Crosshair, Tooltip$1 as Tooltip, Zoom, Selection, DataEditing, Highlight, DataLabel, ErrorBar, DataLabelSettings, MarkerSettings, Points, Trendline, ErrorBarCapSettings, ChartSegment, ErrorBarSettings, SeriesBase, Series, Legend, ChartAnnotation, ChartAnnotationSettings, LabelBorder, MultiLevelCategories, StripLineSettings, MultiLevelLabels, ScrollbarSettingsRange, ScrollbarSettings, BoxAndWhiskerSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiColoredSeries, MultiLevelLabel, ScrollBar, ParetoSeries, Export, AccumulationChart, AccumulationAnnotationSettings, AccumulationDataLabelSettings, PieCenter, AccPoints, AccumulationSeries, getSeriesFromIndex, pointByIndex, PieSeries, FunnelSeries, PyramidSeries, AccumulationLegend, AccumulationDataLabel, AccumulationTooltip, AccumulationSelection, AccumulationAnnotation, StockChart, StockChartFont, StockChartBorder, StockChartArea, StockMargin, StockChartStripLineSettings, StockEmptyPointSettings, StockChartConnector, StockSeries, StockChartIndicator, StockChartAxis, StockChartRow, StockChartTrendline, StockChartAnnotationSettings, StockChartIndexes, StockEventsSettings, loaded, legendClick, load, animationComplete, legendRender, textRender, pointRender, seriesRender, axisLabelRender, axisRangeCalculated, axisMultiLabelRender, tooltipRender, chartMouseMove, chartMouseClick, pointClick, pointDoubleClick, pointMove, chartMouseLeave, chartMouseDown, chartMouseUp, zoomComplete, dragComplete, selectionComplete, resized, beforePrint, annotationRender, scrollStart, scrollEnd, scrollChanged, stockEventRender, multiLevelLabelClick, dragStart, drag, dragEnd, regSub, regSup, beforeExport, afterExport, bulletChartMouseClick, onZooming, Theme, getSeriesColor, getThemeColor, getScrollbarThemeColor, PeriodSelector, RangeNavigator, rangeValueToCoefficient, getXLocation, getRangeValueXByPoint, getExactData, getNearestValue, DataPoint, RangeNavigatorTheme, getRangeThemeColor, RangeNavigatorAxis, RangeSeries, RangeSlider, RangeNavigatorSeries, ThumbSettings, StyleSettings, RangeTooltipSettings, RangeTooltip, BulletChart, Range, MajorTickLinesSettings, MinorTickLinesSettings, BulletLabelStyle, BulletTooltipSettings, BulletDataLabel, BulletChartLegendSettings, BulletChartTheme, getBulletThemeColor, BulletTooltip, BulletChartLegend, Smithchart, SmithchartMajorGridLines, SmithchartMinorGridLines, SmithchartAxisLine, SmithchartAxis, LegendTitle, LegendLocation, LegendItemStyleBorder, LegendItemStyle, LegendBorder, SmithchartLegendSettings, SeriesTooltipBorder, SeriesTooltip, SeriesMarkerBorder, SeriesMarkerDataLabelBorder, SeriesMarkerDataLabelConnectorLine, SeriesMarkerDataLabel, SeriesMarker, SmithchartSeries, TooltipRender, Subtitle, Title, SmithchartFont, SmithchartMargin, SmithchartBorder, SmithchartRect, LabelCollection, LegendSeries, LabelRegion, HorizontalLabelCollection, RadialLabelCollections, LineSegment, PointRegion, Point, ClosestPoint, MarkerOptions, SmithchartLabelPosition, Direction, DataLabelTextOptions, LabelOption, SmithchartSize, GridArcPoints, smithchartBeforePrint, SmithchartLegend, Sparkline, SparklineTooltip, SparklineBorder, SparklineFont, TrackLineSettings, SparklineTooltipSettings, ContainerArea, LineSettings, RangeBandSettings, AxisSettings, Padding, SparklineMarkerSettings, LabelOffset, SparklineDataLabelSettings };
+export { CrosshairSettings, ZoomSettings, Chart, Row, Column, MajorGridLines, MinorGridLines, AxisLine, MajorTickLines, MinorTickLines, CrosshairTooltip, Axis, VisibleLabels, Double, DateTime, Category, Logarithmic, DateTimeCategory, NiceInterval, StripLine, Connector, Font, Border, Offset, ChartArea, Margin, Animation$1 as Animation, Indexes, CornerRadius, Index, EmptyPointSettings, DragSettings, TooltipSettings, Periods, PeriodSelectorSettings, LineSeries, ColumnSeries, AreaSeries, BarSeries, PolarSeries, RadarSeries, StackingBarSeries, CandleSeries, StackingColumnSeries, StepLineSeries, StepAreaSeries, StackingAreaSeries, StackingStepAreaSeries, StackingLineSeries, ScatterSeries, RangeColumnSeries, WaterfallSeries, HiloSeries, HiloOpenCloseSeries, RangeAreaSeries, BubbleSeries, SplineSeries, HistogramSeries, SplineAreaSeries, TechnicalIndicator, SmaIndicator, EmaIndicator, TmaIndicator, AccumulationDistributionIndicator, AtrIndicator, MomentumIndicator, RsiIndicator, StochasticIndicator, BollingerBands, MacdIndicator, Trendlines, sort, isBreakLabel, getVisiblePoints, rotateTextSize, removeElement$1 as removeElement, logBase, showTooltip, inside, withIn, logWithIn, withInRange, sum, subArraySum, subtractThickness, subtractRect, degreeToLocation, degreeToRadian, getRotatedRectangleCoordinates, isRotatedRectIntersect, getAngle, subArray, valueToCoefficient, TransformToVisible, indexFinder, CoefficientToVector, valueToPolarCoefficient, Mean, PolarArc, createTooltip, createZoomingLabels, withInBounds, getValueXByPoint, getValueYByPoint, findClipRect, firstToLowerCase, getTransform, getMinPointsDelta, getAnimationFunction, linear, markerAnimate, animateRectElement, pathAnimation, appendClipElement, triggerLabelRender, setRange, getActualDesiredIntervalsCount, templateAnimate, drawSymbol, calculateShapes, getRectLocation, minMax, getElement$1 as getElement, getTemplateFunction, createTemplate, getFontStyle, measureElementRect, findlElement, getPoint, appendElement, appendChildElement, getDraggedRectLocation, checkBounds, getLabelText, stopTimer, isCollide, isOverlap, containsRect, calculateRect, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, getSaturationColor, getMedian, calculateLegendShapes, textTrim, lineBreakLabelTrim, stringToNumber, redrawElement, animateRedrawElement, textElement$1 as textElement, calculateSize, createSvg, getTitle, titlePositionX, textWrap, getUnicodeText, blazorTemplatesReset, CustomizeOption, StackValues, RectOption, ImageOption, CircleOption, PolygonOption, ChartLocation, LabelLocation, Thickness, ColorValue, PointData, AccPointData, ControlPoints, Crosshair, Tooltip$1 as Tooltip, Zoom, Selection, DataEditing, Highlight, DataLabel, ErrorBar, DataLabelSettings, MarkerSettings, Points, Trendline, ErrorBarCapSettings, ChartSegment, ErrorBarSettings, SeriesBase, Series, Legend, ChartAnnotation, ChartAnnotationSettings, LabelBorder, MultiLevelCategories, StripLineSettings, MultiLevelLabels, ScrollbarSettingsRange, ScrollbarSettings, BoxAndWhiskerSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiColoredSeries, MultiLevelLabel, ScrollBar, ParetoSeries, Export, AccumulationChart, AccumulationAnnotationSettings, AccumulationDataLabelSettings, PieCenter, AccPoints, AccumulationSeries, getSeriesFromIndex, pointByIndex, PieSeries, FunnelSeries, PyramidSeries, AccumulationLegend, AccumulationDataLabel, AccumulationTooltip, AccumulationSelection, AccumulationAnnotation, StockChart, StockChartFont, StockChartBorder, StockChartArea, StockMargin, StockChartStripLineSettings, StockEmptyPointSettings, StockChartConnector, StockSeries, StockChartIndicator, StockChartAxis, StockChartRow, StockChartTrendline, StockChartAnnotationSettings, StockChartIndexes, StockEventsSettings, loaded, legendClick, load, animationComplete, legendRender, textRender, pointRender, sharedTooltipRender, seriesRender, axisLabelRender, axisRangeCalculated, axisMultiLabelRender, tooltipRender, chartMouseMove, chartMouseClick, pointClick, pointDoubleClick, pointMove, chartMouseLeave, chartMouseDown, chartMouseUp, zoomComplete, dragComplete, selectionComplete, resized, beforePrint, annotationRender, scrollStart, scrollEnd, scrollChanged, stockEventRender, multiLevelLabelClick, dragStart, drag, dragEnd, regSub, regSup, beforeExport, afterExport, bulletChartMouseClick, onZooming, Theme, getSeriesColor, getThemeColor, getScrollbarThemeColor, PeriodSelector, RangeNavigator, rangeValueToCoefficient, getXLocation, getRangeValueXByPoint, getExactData, getNearestValue, DataPoint, RangeNavigatorTheme, getRangeThemeColor, RangeNavigatorAxis, RangeSeries, RangeSlider, RangeNavigatorSeries, ThumbSettings, StyleSettings, RangeTooltipSettings, RangeTooltip, BulletChart, Range, MajorTickLinesSettings, MinorTickLinesSettings, BulletLabelStyle, BulletTooltipSettings, BulletDataLabel, BulletChartLegendSettings, BulletChartTheme, getBulletThemeColor, BulletTooltip, BulletChartLegend, Smithchart, SmithchartMajorGridLines, SmithchartMinorGridLines, SmithchartAxisLine, SmithchartAxis, LegendTitle, LegendLocation, LegendItemStyleBorder, LegendItemStyle, LegendBorder, SmithchartLegendSettings, SeriesTooltipBorder, SeriesTooltip, SeriesMarkerBorder, SeriesMarkerDataLabelBorder, SeriesMarkerDataLabelConnectorLine, SeriesMarkerDataLabel, SeriesMarker, SmithchartSeries, TooltipRender, Subtitle, Title, SmithchartFont, SmithchartMargin, SmithchartBorder, SmithchartRect, LabelCollection, LegendSeries, LabelRegion, HorizontalLabelCollection, RadialLabelCollections, LineSegment, PointRegion, Point, ClosestPoint, MarkerOptions, SmithchartLabelPosition, Direction, DataLabelTextOptions, LabelOption, SmithchartSize, GridArcPoints, smithchartBeforePrint, SmithchartLegend, Sparkline, SparklineTooltip, SparklineBorder, SparklineFont, TrackLineSettings, SparklineTooltipSettings, ContainerArea, LineSettings, RangeBandSettings, AxisSettings, Padding, SparklineMarkerSettings, LabelOffset, SparklineDataLabelSettings };
 //# sourceMappingURL=ej2-charts.es5.js.map

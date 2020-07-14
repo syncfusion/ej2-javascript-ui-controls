@@ -198,12 +198,10 @@ describe('TextBox Control', () => {
             valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
             valueEle.click();
                 expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
-                let formEle: HTMLElement = <HTMLElement>select('.' + classes.FORM, ele);
                 buttonEle = <HTMLElement>select('.' + classes.BTN_SAVE, ele);
                 buttonEle.dispatchEvent(new MouseEvent('mousedown'));
-                expect(formEle.classList.contains(classes.ERROR)).toEqual(true);
-                let editEle: HTMLElement = <HTMLElement>select('.' + classes.EDITABLE_ERROR, formEle);
-                expect(editEle.innerHTML).toBe(message);
+                let formEle: HTMLElement = <HTMLElement>select('.' + classes.FORM, ele);
+                expect(formEle).toBe(null);
         });
     });
     describe('Value formatting related testing', () => {

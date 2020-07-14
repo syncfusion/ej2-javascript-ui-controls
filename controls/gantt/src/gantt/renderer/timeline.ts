@@ -519,6 +519,8 @@ export class Timeline {
         let loopCount: number = this.isSingleTier ? 1 : 2;
         let tier: string = this.topTier === 'None' ? 'bottomTier' : 'topTier';
         this.updateTimelineHeaderHeight();
+        this.topTierCollection = [];
+        this.bottomTierCollection = [];
         for (let count: number = 0; count < loopCount; count++) {
             let tierCollection: TimelineFormat[] = [];
             table = createElement(

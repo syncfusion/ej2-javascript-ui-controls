@@ -3025,7 +3025,8 @@ export class Layout {
                     && splittedWidget.height < splittedCell.height + splittedCell.margin.top + splittedCell.margin.bottom) {
                     splittedWidget.height = splittedCell.height + splittedCell.margin.top + splittedCell.margin.bottom;
                 } else {
-                    if (tableRowWidget.rowFormat.heightType !== 'Auto') {
+                    if (tableRowWidget.rowFormat.heightType === 'Exactly' || (tableRowWidget.rowFormat.heightType === 'AtLeast' &&
+                    splittedWidget.height < tableRowWidget.rowFormat.height)) {
                         //Sets the height for row widget if height type is exact or at least.
                         splittedWidget.height = tableRowWidget.rowFormat.height;
                     }

@@ -399,7 +399,9 @@ var Scroll = /** @class */ (function () {
             if (this.parent.options.aggregatesCount) {
                 var footer = this.parent.options.frozenColumns ? this.parent.element.querySelector('.e-movablefootercontent') :
                     this.parent.element.querySelector('.e-summarycontent');
-                sf.base.EventHandler.add(footer, 'scroll', this.onContentScroll(this.content), this);
+                if (!sf.base.isNullOrUndefined(footer)) {
+                    sf.base.EventHandler.add(footer, 'scroll', this.onContentScroll(this.content), this);
+                }
             }
             this.refresh();
             this.oneTimeReady = false;
@@ -1462,15 +1464,18 @@ var ColumnWidthService = /** @class */ (function () {
         if (this.parent.options.aggregatesCount != 0) {
             var footerCol = void 0;
             if (frzCols && index >= frzCols) {
-                footerCol = this.parent.getFooterContent().querySelector('.e-movablefootercontent').querySelector('colgroup').children[index - frzCols];
+                var fmContent = this.parent.getFooterContent().querySelector('.e-movablefootercontent');
+                var fmColgroup = !sf.base.isNullOrUndefined(fmContent) ? fmContent.querySelector('colgroup') : null;
+                footerCol = !sf.base.isNullOrUndefined(fmColgroup) ? fmColgroup.children[index - frzCols] : null;
             }
             else {
-                footerCol = this.parent.getFooterContent().querySelector('colgroup').children[index];
+                var tcolGroup = this.parent.getFooterContent().querySelector('colgroup');
+                footerCol = !sf.base.isNullOrUndefined(tcolGroup) ? tcolGroup.children[index] : null;
             }
-            if (contentCol && !clear) {
+            if (contentCol && footerCol && !clear) {
                 footerCol.style.width = fWidth;
             }
-            else if (contentCol && clear) {
+            else if (contentCol && footerCol && clear) {
                 footerCol.style.width = ' ';
             }
         }
@@ -1785,7 +1790,8 @@ var Resize = /** @class */ (function () {
         for (var i = 0; i < fName.length; i++) {
             var fieldName = fName[i];
             var columnIndex = this.parent.getColumnIndexByField(fieldName);
-            if (this.parent.getColumns()[columnIndex].visible === true) {
+            var column = this.parent.getColumns()[columnIndex];
+            if (columnIndex > -1 && !sf.base.isNullOrUndefined(column) && column.visible === true) {
                 this.resizeColumn(fieldName, columnIndex);
             }
         }
@@ -2804,11 +2810,12 @@ var Edit = /** @class */ (function () {
             }
             var name_1 = results[i]['fieldName'];
             var message = results[i]['message'];
+            name_1 = name_1.replace(/[.]/g, "___");
             var element = this.parent.element.querySelector("#" + name_1) ||
                 document.querySelector("#" + name_1);
             var isScroll = gcontent.scrollHeight > gcontent.clientHeight || gcontent.scrollWidth > gcontent.clientWidth;
             var isInline = this.parent.options.editMode !== 'Dialog';
-            if (!this.parent.element.querySelector("#" + name_1) && !document.querySelector("#" + name_1)) {
+            if (!element) {
                 return;
             }
             var td = sf.base.closest(element, '.e-rowcell');
@@ -5265,11 +5272,12 @@ var Grid = {
             element.querySelector('.e-frozencontent').style.height =
                 element.querySelector('.e-movablecontent').getBoundingClientRect().height + 'px';
         }
-        if (field == "" && element.querySelector("input.e-boolcell")) {
+        var complexField = "#" + field.replace(/[.]/g, "___");
+        if (field === "" && element.querySelector("input.e-boolcell")) {
             element.querySelector("input.e-boolcell").focus();
         }
-        else if (element.querySelector("#" + field)) {
-            element.querySelector("#" + field).focus();
+        else if (field !== "" && element.querySelector(complexField)) {
+            element.querySelector(complexField).focus();
         }
     },
     setFrozenHeight: function (element) {

@@ -166,6 +166,7 @@ var QueryBuilder = /** @class */ (function (_super) {
         _this.isReadonly = true;
         _this.fields = { text: 'label', value: 'field' };
         _this.updatedRule = { not: false, condition: 'and' };
+        _this.isLocale = false;
         return _this;
     }
     QueryBuilder.prototype.getPersistData = function () {
@@ -236,7 +237,7 @@ var QueryBuilder = /** @class */ (function (_super) {
                     if (categories.indexOf(columns[i].category) < 0) {
                         categories.push(columns[i].category);
                     }
-                    if (!columns[i].operators) {
+                    if (!columns[i].operators || this.isLocale) {
                         columns[i].operators = this.customOperators[columns[i].type + 'Operator'];
                     }
                 }
@@ -273,7 +274,7 @@ var QueryBuilder = /** @class */ (function (_super) {
                     columns[i].category = this.l10n.getConstant('OtherFields');
                 }
                 this.updateCustomOperator(columns[i]);
-                if (!columns[i].operators) {
+                if (!columns[i].operators || this.isLocale) {
                     columns[i].operators = this.customOperators[columns[i].type + 'Operator'];
                 }
             }
@@ -2551,7 +2552,9 @@ var QueryBuilder = /** @class */ (function (_super) {
                 case 'locale':
                     this.locale = newProp.locale;
                     this.intl = new sf.base.Internationalization(this.locale);
+                    this.isLocale = true;
                     this.refresh();
+                    this.isLocale = false;
                     break;
                 case 'enableNotCondition':
                     this.onChangeNotGroup();

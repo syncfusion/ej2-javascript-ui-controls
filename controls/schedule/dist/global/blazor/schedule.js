@@ -6683,7 +6683,7 @@ var TimelineEvent = /** @class */ (function (_super) {
             appWidth = (appWidth <= 0) ? this.cellWidth : appWidth; // appWidth 0 when start and end time as same
             this.renderedEvents.push(sf.base.extend({}, event, null, true));
             var top_1 = this.getRowTop(resIndex);
-            var appTop = (top_1 + EVENT_GAP$1) + (overlapCount * (appHeight + EVENT_GAP$1));
+            var appTop = (top_1 + (this.maxHeight ? 0 : EVENT_GAP$1)) + (overlapCount * (appHeight + EVENT_GAP$1));
             appLeft = (this.parent.enableRtl) ? 0 : position;
             appRight = (this.parent.enableRtl) ? position : 0;
             var height = ((overlapCount + 1) * (appHeight + EVENT_GAP$1)) + this.moreIndicatorHeight;
@@ -6960,7 +6960,10 @@ var TimelineEvent = /** @class */ (function (_super) {
         }
     };
     TimelineEvent.prototype.setMaxEventHeight = function (event, cell) {
-        sf.base.setStyleAttribute(event, { 'height': (this.cellHeight - EVENT_GAP$1 - (this.maxHeight ? 0 : this.moreIndicatorHeight)) + 'px' });
+        sf.base.setStyleAttribute(event, {
+            'height': (this.cellHeight - (this.maxHeight ? 0 : EVENT_GAP$1) -
+                (this.maxHeight ? 0 : this.moreIndicatorHeight)) + 'px'
+        });
     };
     return TimelineEvent;
 }(MonthEvent));
@@ -7121,12 +7124,12 @@ var InlineEdit = /** @class */ (function () {
         var inlineElement = this.parent.element.querySelector('.' + INLINE_SUBJECT_CLASS);
         var subject = inlineElement ? inlineElement.value : target ? target.innerHTML : '';
         var saveObj = {};
-        this.parent.eventWindow.setDefaultValueToObject(saveObj);
         saveObj[this.parent.eventFields.id] = this.parent.eventBase.getEventMaxID();
         saveObj[this.parent.eventFields.subject] = subject;
         saveObj[this.parent.eventFields.startTime] = this.parent.activeCellsData.startTime;
         saveObj[this.parent.eventFields.endTime] = this.parent.activeCellsData.endTime;
         saveObj[this.parent.eventFields.isAllDay] = this.parent.activeCellsData.isAllDay;
+        this.parent.eventWindow.setDefaultValueToObject(saveObj);
         if (this.parent.resourceBase) {
             this.parent.resourceBase.setResourceValues(saveObj, this.parent.activeCellsData.groupIndex);
         }
@@ -7728,6 +7731,9 @@ var QuickPopups = /** @class */ (function () {
         var subjectElement = quickCellPopup.querySelector('.' + SUBJECT_CLASS);
         if (subjectElement) {
             sf.inputs.Input.createInput({ element: subjectElement, properties: { placeholder: this.l10n.getConstant('addTitle') } });
+        }
+        if (!sf.base.isNullOrUndefined(this.parent.eventSettings.fields.subject.default)) {
+            subjectElement.value = this.parent.eventSettings.fields.subject.default;
         }
         var closeIcon = quickCellPopup.querySelector('.' + CLOSE_CLASS);
         if (closeIcon) {
@@ -10714,6 +10720,15 @@ var EventWindow = /** @class */ (function () {
         eventObj.Timezone = false;
         this.repeatStartDate = eventObj[this.fields.startTime];
         this.repeatRule = '';
+        if (!sf.base.isNullOrUndefined(this.parent.eventSettings.fields.subject.default)) {
+            eventObj[this.fields.subject] = this.parent.eventSettings.fields.subject.default;
+        }
+        if (!sf.base.isNullOrUndefined(this.parent.eventSettings.fields.location.default)) {
+            eventObj[this.fields.location] = this.parent.eventSettings.fields.location.default;
+        }
+        if (!sf.base.isNullOrUndefined(this.parent.eventSettings.fields.description.default)) {
+            eventObj[this.fields.description] = this.parent.eventSettings.fields.description.default;
+        }
         this.showDetails(eventObj);
         if (eventObj[this.fields.recurrenceRule] && this.recurrenceEditor) {
             this.recurrenceEditor.setRecurrenceRule(eventObj[this.fields.recurrenceRule], eventObj[this.fields.startTime]);
@@ -11738,6 +11753,7 @@ var VirtualScroll = /** @class */ (function () {
             var startIndex = parseInt(resWrap[0].getAttribute('data-group-index'), 10);
             var endIndex = parseInt(resWrap[resWrap.length - 1].getAttribute('data-group-index'), 10);
             this.parent.resourceBase.renderedResources = this.parent.resourceBase.expandedResources.slice(startIndex, endIndex + 1);
+            this.setItemSize();
             wrap.style.height = (this.parent.resourceBase.expandedResources.length * this.itemSize) + 'px';
             this.isScrollHeightNull = false;
             var virtual = this.parent.element.querySelector('.' + VIRTUAL_TRACK_CLASS);
@@ -12092,7 +12108,9 @@ var Render = /** @class */ (function () {
         if (this.parent.isDestroyed) {
             return;
         }
-        this.parent.trigger(actionFailure, { error: e }, function () { return _this.parent.hideSpinner(); });
+        // tslint:disable:no-any
+        this.parent.trigger(actionFailure, { error: sf.base.isBlazor() ? e.error.toString() : e }, function () { return _this.parent.hideSpinner(); });
+        // tslint:disable:no-any
     };
     return Render;
 }());
@@ -12336,7 +12354,9 @@ var Crud = /** @class */ (function () {
                 if (_this.parent.isDestroyed) {
                     return;
                 }
-                _this.parent.trigger(actionFailure, { error: e });
+                // tslint:disable:no-any
+                _this.parent.trigger(actionFailure, { error: sf.base.isBlazor() ? e.error.toString() : e });
+                // tslint:disable:no-any
             });
         }
     };
@@ -13842,7 +13862,7 @@ var ResourceBase = /** @class */ (function () {
                     _this.parent.activeView.serverRenderLayout();
                     var processed = _this.parent.eventBase.processData(_this.parent.eventsData);
                     _this.parent.notify(dataReady, { processedData: processed });
-                }).catch(function (e) { return _this.dataManagerFailure(e); });
+                }).catch(function (e) { return _this.parent.renderModule.dataManagerFailure(e); });
             }
             else {
                 this.parent.renderModule.render(this.parent.currentView, false);
@@ -13876,7 +13896,7 @@ var ResourceBase = /** @class */ (function () {
             //     if (this.parent.isDestroyed) { return; }
             //     this.parent.resourceCollection = DataUtil.parse.parseJson(result);
             //     this.refreshLayout(isSetModel);
-            // }).catch((e: ReturnType) => this.dataManagerFailure(e));
+            // }).catch((e: ReturnType) => this.parent.renderModule.dataManagerFailure(e));
             return;
         }
         var promises = [];
@@ -13885,7 +13905,7 @@ var ResourceBase = /** @class */ (function () {
             promises.push(dataModule.getData(dataModule.generateQuery()));
         }
         Promise.all(promises).then(function (e) { return _this.dataManagerSuccess(e, isSetModel); })
-            .catch(function (e) { return _this.dataManagerFailure(e); });
+            .catch(function (e) { return _this.parent.renderModule.dataManagerFailure(e); });
     };
     ResourceBase.prototype.dataManagerSuccess = function (e, isSetModel) {
         if (this.parent.isDestroyed) {
@@ -14179,13 +14199,6 @@ var ResourceBase = /** @class */ (function () {
     };
     ResourceBase.prototype.filterData = function (dataSource, field, value) {
         return dataSource.filter(function (data) { return data[field] === value; });
-    };
-    ResourceBase.prototype.dataManagerFailure = function (e) {
-        var _this = this;
-        if (this.parent.isDestroyed) {
-            return;
-        }
-        this.parent.trigger(actionFailure, { error: e }, function () { return _this.parent.hideSpinner(); });
     };
     ResourceBase.prototype.getResourceData = function (eventObj, index, groupEditIndex) {
         if (this.parent.activeViewOptions.group.allowGroupEdit) {
@@ -18926,6 +18939,7 @@ var VerticalView = /** @class */ (function (_super) {
         var content = this.getScrollableElement();
         var header = this.getDatesHeaderElement();
         var scrollerHeight = this.parent.element.offsetHeight - headerBarHeight - header.offsetHeight;
+        this.setColWidth(content);
         this.setContentHeight(content, timecells, scrollerHeight);
         var scrollBarWidth = getScrollBarWidth();
         // tslint:disable:no-any
@@ -18953,7 +18967,6 @@ var VerticalView = /** @class */ (function (_super) {
                 content.scrollLeft = this.parent.uiStateValues.left;
             }
         }
-        this.setColWidth(content);
         if (this.parent.activeViewOptions.timeScale.enable) {
             this.highlightCurrentTime();
         }

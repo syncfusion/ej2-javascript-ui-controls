@@ -142,6 +142,8 @@ export type ChartSeriesType =
     'StackingColumn' |
     /**  Define the StackingArea series. */
     'StackingArea' |
+    /**  Define the StackingStepArea series. */
+    'StackingStepArea' |
     /**  Define the StackingLine series. */
     'StackingLine' |
     /**  Define the StackingBar series. */

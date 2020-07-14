@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 18.2.45 (2020-07-14)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+`#I276272`- Spinner not showed until remote data being loaded issue is fixed.
+
+#### New Features
+
+`#I282699`- Provided option to prevent protected sheet dialog box in spreadsheet.
+
 ## 18.2.44 (2020-07-07)
 
 ### Spreadsheet

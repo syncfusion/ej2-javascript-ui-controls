@@ -179,7 +179,7 @@ export class SheetRender implements IRenderer {
             }
             this.parent.notify(contentLoaded, null);
             this.parent.notify(editOperation, { action: 'renderEditor' });
-            if (!this.parent.isOpen) {
+            if (!args.initLoad && !this.parent.isOpen) {
                 this.parent.hideSpinner();
             }
             setAriaOptions(this.parent.getMainContent() as HTMLElement, { busy: false });
@@ -198,6 +198,9 @@ export class SheetRender implements IRenderer {
         });
     }
     private triggerCreatedEvent(): void {
+        if (!this.parent.isOpen) {
+            this.parent.hideSpinner();
+        }
         if (this.parent.createdHandler) {
             if ((this.parent.createdHandler as { observers: object }).observers) {
                 this.parent[created].observers = (this.parent.createdHandler as { observers: object }).observers;

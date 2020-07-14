@@ -135,8 +135,10 @@ export class Clipboard {
         let childRecords: string = 'childRecords';
         let hasChildRecords: string = 'hasChildRecords';
         let uniqueID: string = 'uniqueID';
+        let parentUniqueID: string = 'parentUniqueID';
         if (currentRecords[selectedIndex][hasChildRecords]) {
-            let childData: object[] = currentRecords[selectedIndex][childRecords];
+            let currentUniqueID: string = currentRecords[selectedIndex][uniqueID];
+            let childData: object[] = currentRecords.filter((a: object) => { return (a[parentUniqueID] === currentUniqueID); });
             for (let i: number = 0; i < childData.length; i++ ) {
                 for (let j: number = 0; j < currentRecords.length; j++) {
                     if (!isNullOrUndefined(childData[i][uniqueID]) && currentRecords[j][uniqueID] === childData[i][uniqueID]) {

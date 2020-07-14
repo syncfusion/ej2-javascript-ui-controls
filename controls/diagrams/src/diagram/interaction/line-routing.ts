@@ -117,7 +117,9 @@ export class LineRouting {
                 grid.tested = undefined;
                 grid.nodeId = [];
                 for (k = 0; k < diagramNodes.length; k++) {
-                    isContains = this.intersectRect(rectangle, diagramNodes[k].wrapper.bounds);
+                    if (diagramNodes[k].wrapper.bounds) {
+                        isContains = this.intersectRect(rectangle, diagramNodes[k].wrapper.bounds);
+                       }
                     if (isContains) {
                         grid.nodeId.push(diagramNodes[k].id);
                         grid.walkable = false;

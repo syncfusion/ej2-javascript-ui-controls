@@ -371,34 +371,23 @@ export class ColumnChooser implements IAction {
             this.ulElement.querySelectorAll('.e-uncheck:not(.e-selectall)').length;
         if (!isNullOrUndefined(args)) {
             if (uncheckedLength < this.parent.getColumns().length) {
-                let chooserArgs: Object = { requestType: 'columnstate', columns: this.changedStateColumns, cancel: false };
-                let cancel: string = 'cancel';
-                this.parent.trigger(events.actionBegin, chooserArgs, (columnChooserArgs: Object) => {
-                    if (columnChooserArgs[cancel]) {
-                        this.showColumn = [];
-                        this.hideColumn = [];
-                        this.hideDialog();
-                        return;
-                    }
-                    if (this.hideColumn.length) {
-                        this.columnStateChange(this.hideColumn, false);
-                    }
-                    if (this.showColumn.length) {
-                        this.columnStateChange(this.showColumn, true);
-                    }
-                    let params: {
-                        requestType: string, position?: Object, columns?: Column[]
-                    } = {
-                        requestType: 'columnstate',
-                        columns: this.changedStateColumns as Column[]
-                    };
-                    this.parent.trigger(events.actionComplete, params);
-                    this.getShowHideService.setVisible(this.stateChangeColumns, this.changedStateColumns);
-                    this.clearActions();
-                    this.parent.notify(events.tooltipDestroy, { module: 'edit' });
-                });
+                if (this.hideColumn.length) {
+                    this.columnStateChange(this.hideColumn, false);
+                }
+                if (this.showColumn.length) {
+                    this.columnStateChange(this.showColumn, true);
+                }
+                this.getShowHideService.setVisible(this.stateChangeColumns, this.changedStateColumns);
+                this.clearActions();
+                this.parent.notify(events.tooltipDestroy, { module: 'edit' });
             }
         }
+    }
+
+    public resetColumnState(): void {
+        this.showColumn = [];
+        this.hideColumn = [];
+        this.hideDialog();
     }
 
     private changedColumnState(changedColumns: string[]): void {

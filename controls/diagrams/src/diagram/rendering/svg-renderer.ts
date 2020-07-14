@@ -540,7 +540,8 @@ export class SvgRenderer implements IRenderer {
         };
         setAttributeSvg(rect, attr);
         if (checkBrowserInfo()) {
-            group.setAttribute('clip-path', 'url(' + location.href + '#' + node.id + '_clip)');
+            group.setAttribute('clip-path', 'url(' + location.protocol + '//' + location.host + location.pathname +
+            '#' + node.id + '_clip)');
         } else {
             group.setAttribute('clip-path', 'url(#' + node.id + '_clip)');
         }
@@ -621,7 +622,7 @@ export class SvgRenderer implements IRenderer {
             if (style.gradient && style.gradient.type !== 'None') {
                 let grd: SVGElement = this.renderGradient(style, svg, diagramId);
                 if (checkBrowserInfo()) {
-                    fill = 'url(' + location.href + '#' + grd.id + ')';
+                    fill = 'url(' + location.protocol + '//' + location.host + location.pathname + '#' + grd.id + ')';
                 } else {
                     fill = 'url(#' + grd.id + ')';
                 }

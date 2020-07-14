@@ -23,6 +23,8 @@ export const textRender: string = 'textRender';
 /** @private */
 export const pointRender: string = 'pointRender';
 /** @private */
+export const sharedTooltipRender : string = 'sharedTooltipRender';
+/** @private */
 export const seriesRender: string = 'seriesRender';
 /** @private */
 export const axisLabelRender : string = 'axisLabelRender';

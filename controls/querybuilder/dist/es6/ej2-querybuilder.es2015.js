@@ -115,6 +115,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         this.isReadonly = true;
         this.fields = { text: 'label', value: 'field' };
         this.updatedRule = { not: false, condition: 'and' };
+        this.isLocale = false;
     }
     getPersistData() {
         return this.addOnPersist(['rule']);
@@ -184,7 +185,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                     if (categories.indexOf(columns[i].category) < 0) {
                         categories.push(columns[i].category);
                     }
-                    if (!columns[i].operators) {
+                    if (!columns[i].operators || this.isLocale) {
                         columns[i].operators = this.customOperators[columns[i].type + 'Operator'];
                     }
                 }
@@ -221,7 +222,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                     columns[i].category = this.l10n.getConstant('OtherFields');
                 }
                 this.updateCustomOperator(columns[i]);
-                if (!columns[i].operators) {
+                if (!columns[i].operators || this.isLocale) {
                     columns[i].operators = this.customOperators[columns[i].type + 'Operator'];
                 }
             }
@@ -2480,7 +2481,9 @@ let QueryBuilder = class QueryBuilder extends Component {
                 case 'locale':
                     this.locale = newProp.locale;
                     this.intl = new Internationalization(this.locale);
+                    this.isLocale = true;
                     this.refresh();
+                    this.isLocale = false;
                     break;
                 case 'enableNotCondition':
                     this.onChangeNotGroup();

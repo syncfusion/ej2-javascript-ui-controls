@@ -14,6 +14,12 @@ export class XhtmlValidation {
 
     private addEventListener(): void {
         this.parent.on(events.xhtmlValidation, this.enableXhtmlValidation, this);
+        this.parent.on(events.destroy, this.removeEventListener, this);
+    }
+
+    private removeEventListener(): void {
+        this.parent.off(events.xhtmlValidation, this.enableXhtmlValidation);
+        this.parent.off(events.destroy, this.removeEventListener);
     }
 
     private enableXhtmlValidation(): void {

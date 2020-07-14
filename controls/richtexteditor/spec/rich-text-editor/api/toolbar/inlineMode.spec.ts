@@ -170,4 +170,51 @@ describe(' Inline Quick Toolbar - ', () => {
             }, 200);
         });
     });
+
+    describe('EJ2-39369 - Inline toolbar Font Size not update in toolbar status', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                inlineMode: {
+                    enable: true
+                },
+                toolbarSettings: {
+                    items: ['FontName', 'FontSize']
+                },
+                value: `<p id="spanSize">The Rich Text Editor (RTE) control is an easy to render in client side.
+                Customer easy to edit the contents and get the HTML content for the displayed content.<br></p>`
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+            done();
+        });
+
+        it('FontSize toolbar status', (done: Function) => {
+            let pEle: HTMLElement = rteObj.element.querySelector('#spanSize');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0], pEle.childNodes[0], 0, 3);
+            dispatchEvent(pEle, 'mouseup');
+            setTimeout(() => {
+                let item: HTMLElement = document.querySelector('#' + controlId + '_quick_FontSize');
+                item.click();
+                let popup: HTMLElement = document.getElementById(controlId + '_quick_FontSize-popup');
+                dispatchEvent((popup.querySelectorAll('.e-item')[3] as HTMLElement), 'mousedown');
+                (popup.querySelectorAll('.e-item')[3] as HTMLElement).click();
+                rteObj.quickToolbarModule.hideInlineQTBar();
+                setTimeout(()=>{
+                    dispatchEvent(pEle, 'mouseup');
+                    setTimeout(()=>{
+                        let sizeSpan: HTMLElement = item.querySelector('.e-rte-dropdown-btn-text');
+                        expect(sizeSpan.innerText === '14 pt').toBe(true);
+                        done();
+                    }, 200);
+                }, 200);
+            }, 200);
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
 });

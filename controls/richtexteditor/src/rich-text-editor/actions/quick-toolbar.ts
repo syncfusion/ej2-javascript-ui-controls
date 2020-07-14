@@ -352,6 +352,7 @@ export class QuickToolbar {
         this.parent.off(events.initialEnd, this.initializeQuickToolbars);
         this.parent.off(events.mouseDown, this.renderQuickToolbars);
         this.parent.off(events.toolbarUpdated, this.toolbarUpdated);
+        this.parent.off(events.drop, this.renderQuickToolbars);
         this.unWireInlineQTBarEvents();
         this.parent.off(events.modelChanged, this.onPropertyChanged);
         if (this.parent.quickToolbarSettings.actionOnScroll === 'hide') {

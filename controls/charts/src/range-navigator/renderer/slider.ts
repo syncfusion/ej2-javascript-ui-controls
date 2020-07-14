@@ -236,6 +236,12 @@ export class RangeSlider {
         let argsData: IChangedEventArgs;
         let xAxis: Axis = this.control.chartSeries.xAxis;
         let valueType: RangeValueType = xAxis.valueType as RangeValueType;
+        let trigger: boolean = this.control.enableDeferredUpdate;
+        let enabledTooltip: boolean = this.control.tooltip.enable;
+        if (this.isDrag && this.control.allowSnapping) {
+            this.isDrag = false;
+            this.setAllowSnapping(this.control, this.currentStart, this.currentEnd, trigger, enabledTooltip);
+        }
         argsData = {
             cancel: false,
             start: valueType === 'DateTime' ? new Date(this.currentStart) :

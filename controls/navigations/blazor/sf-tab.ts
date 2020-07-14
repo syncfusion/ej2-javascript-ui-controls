@@ -33,6 +33,9 @@ const CLS_HSCRCNT: string = 'e-hscroll-content';
 const CLS_VSCRCNT: string = 'e-vscroll-content';
 const CLS_VTAB: string = 'e-vertical-tab';
 const CLS_HBOTTOM: string = 'e-horizontal-bottom';
+const CLS_VERTICAL_ICON: string = 'e-vertical-icon';
+const CLS_VLEFT: string = 'e-vertical-left';
+const CLS_VRIGHT: string = 'e-vertical-right';
 const SPACEBAR: number = 32;
 const END: number = 35;
 
@@ -361,12 +364,17 @@ class SfTab {
     }
     public serverChangeOrientation(newProp: HeaderPosition, tbarEle: BlazorToolbarElement, isVertical: boolean, isChange: boolean): void {
         this.setOrientation(newProp, this.hdrEle);
-        removeClass([this.element], [CLS_VTAB]);
+        removeClass([this.element], [CLS_VTAB, CLS_VLEFT, CLS_VRIGHT]);
         if (isChange) {
             this.changeToolbarOrientation(tbarEle, isVertical);
         }
         if (this.isVertical()) {
-            addClass([this.element], [CLS_VTAB]);
+            let tbPos: string = (this.options.headerPlacement === 'Left') ? CLS_VLEFT : CLS_VRIGHT;
+            if (!this.element.classList.contains(CLS_NEST)) {
+                addClass([this.element], [CLS_VTAB, tbPos]);
+            } else {
+                addClass([this.hdrEle], [CLS_VTAB, tbPos]);
+            }
         }
         this.setActiveBorder();
         this.focusItem();
@@ -755,6 +763,7 @@ interface ITabOptions {
     scrollStep: number;
     enableRtl: boolean;
     animation: TabAnimationSettingsModel;
+    enablePersistence: boolean;
 }
 
 interface BlazorTabElement extends HTMLElement {
@@ -797,10 +806,15 @@ let Tab: object = {
             }
         }
     },
-    serverItemsChanged(element: BlazorTabElement, selectedItem: number, animation: TabAnimationSettingsModel): void {
+    serverItemsChanged(element: BlazorTabElement, selectedItem: number, animation: TabAnimationSettingsModel, isVerticalIcon: boolean): void {
         if (element.blazor__instance) {
             element.blazor__instance.options.selectedItem = selectedItem;
             element.blazor__instance.options.animation = animation;
+            if (isVerticalIcon) {
+                addClass([element], CLS_VERTICAL_ICON);
+            } else {
+                removeClass([element], CLS_VERTICAL_ICON);
+            }
             element.blazor__instance.serverItemsChanged();
         }
     },
@@ -865,8 +879,11 @@ let Tab: object = {
             element.blazor__instance.refreshActiveBorder();
         }
     },
-    destroy(element: BlazorTabElement): void {
+    destroy(element: BlazorTabElement, elementId: string, selectedItem: string): void {
         if (element.blazor__instance) {
+            if (element.blazor__instance.options.enablePersistence) {
+                window.localStorage.setItem(elementId, selectedItem);
+            }
             element.blazor__instance.destroy();
         }
     },

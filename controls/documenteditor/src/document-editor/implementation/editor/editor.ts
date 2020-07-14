@@ -2101,11 +2101,11 @@ export class Editor {
     public insertRevision(item: any, type: RevisionType, author?: string, date?: string, spittedRange?: object[]): void {
         author = !isNullOrUndefined(author) ? author : this.owner.currentUser ? this.owner.currentUser : 'Guest user';
         let currentDate: string = !isNullOrUndefined(date) ? date : new Date().toISOString();
-         // tslint:disable-next-line:max-line-length
+        // tslint:disable-next-line:max-line-length
         if (item instanceof ElementBox && !isNullOrUndefined(item.line) && item.line.paragraph.associatedCell || (item instanceof WCharacterFormat && item.ownerBase instanceof ParagraphWidget && item.ownerBase.associatedCell)) {
             let cellWidget: TableCellWidget = undefined;
             if (item instanceof ElementBox) {
-            cellWidget = item.line.paragraph.associatedCell;
+                cellWidget = item.line.paragraph.associatedCell;
             } else if (item instanceof WCharacterFormat) {
                 cellWidget = (item.ownerBase as ParagraphWidget).associatedCell;
             }
@@ -4245,7 +4245,7 @@ export class Editor {
         let currentElement: ElementBox = elementInfo.element;
         let skipElement: boolean = false;
         if (startoffset === paraWidget.getLength()) {
-          skipElement = true;
+            skipElement = true;
         }
         let endElement: ElementBox = paraWidget.getInline(endoffset, 0).element;
         if (endoffset > paraWidget.getLength()) {
@@ -4258,8 +4258,8 @@ export class Editor {
             } else {
                 while (currentElement !== endElement) {
                     if (!skipElement) {
-                    currentElement.removedIds.push(revisionId);
-                    this.constructRevisionFromID(currentElement, true);
+                        currentElement.removedIds.push(revisionId);
+                        this.constructRevisionFromID(currentElement, true);
                     }
                     if (!isNullOrUndefined(currentElement.nextNode)) {
                         currentElement = currentElement.nextNode.nextValidNodeForTracking;
@@ -11272,8 +11272,8 @@ export class Editor {
                 this.selection.end.setPositionInternal(this.selection.start);
             } else {
                 if (!isDelete) {
-                this.selection.start.movePreviousPosition();
-                this.selection.end.setPositionInternal(this.selection.start);
+                    this.selection.start.movePreviousPosition();
+                    this.selection.end.setPositionInternal(this.selection.start);
                 }
             }
         } else {
@@ -11540,7 +11540,7 @@ export class Editor {
                         }
                     } else {
                         selection.selectParagraphInternal(previousParagraph, false);
-                         this.setPositionForHistory();
+                        this.setPositionForHistory();
                     }
                 } else {
                     selection.selectParagraphInternal(nextParagraph, true);
@@ -11582,7 +11582,7 @@ export class Editor {
         if (this.owner.enableTrackChanges && !this.skipTracking()) {
             this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset + 1, false);
         } else {
-        this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset, false);
+            this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset, false);
         }
         if (!isRedoing) {
             this.reLayout(selection);
@@ -12377,7 +12377,9 @@ export class Editor {
         }
         this.documentHelper.bookmarks.remove(bookmark.name);
         bookmark.line.children.splice(bookmark.indexInOwner, 1);
-        bookmark.reference.line.children.splice(bookmark.reference.indexInOwner, 1);
+        if (!isNullOrUndefined(bookmark.reference)) {
+            bookmark.reference.line.children.splice(bookmark.reference.indexInOwner, 1);
+        }
         // Remove bookmark from header footer collections
         let paragraph: ParagraphWidget = bookmark.line.paragraph;
         if (bookmark.line.paragraph.isInHeaderFooter) {

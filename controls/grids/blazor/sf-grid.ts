@@ -103,10 +103,11 @@ let Grid: object = {
             (element.querySelector('.e-frozencontent') as HTMLElement).style.height = 
             element.querySelector('.e-movablecontent').getBoundingClientRect().height + 'px'; 
         }
-        if (field == "" && element.querySelector("input.e-boolcell")) {
+        let complexField: string = `#${field.replace(/[.]/g, "___")}`; 
+        if (field === "" && element.querySelector("input.e-boolcell")) {
             (element.querySelector("input.e-boolcell") as HTMLElement).focus();
-        } else if (element.querySelector(`#${field}`)) {
-            (element.querySelector(`#${field}`) as HTMLElement).focus();
+        } else if (field !== "" && element.querySelector(complexField)) {
+            (element.querySelector(complexField) as HTMLElement).focus();
         }
     },
       

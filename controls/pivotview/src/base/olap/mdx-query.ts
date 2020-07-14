@@ -364,7 +364,7 @@ export class MDXQuery {
                 }
                 i++;
             }
-            query = '\nWHERE (' + query.replace(/DrilldownLevel/g, '') + ')';
+            query = query === '' ? '' : '\nWHERE (' + query.replace(/DrilldownLevel/g, '') + ')';
         }
         return query;
     }
@@ -457,7 +457,7 @@ export class MDXQuery {
                     }
                 }
             }
-            if (isFound) {
+            if (!isFound) {
                 for (let row of this.rows) {
                     if (this.getDimensionUniqueName(row.name) === this.getDimensionUniqueName(field.name)) {
                         if (filters[field.name]) {

@@ -8,8 +8,8 @@ import { Series, Points } from '../series/chart-series';
 import { BaseTooltip } from '../../common/user-interaction/tooltip';
 import { ChartShape } from '../utils/enum';
 import { StockChart } from '../../stock-chart/stock-chart';
-import { ITooltipRenderEventArgs } from '../model/chart-interface';
-import { tooltipRender } from '../../common/model/constants';
+import { ITooltipRenderEventArgs, ISharedTooltipRenderEventArgs } from '../model/chart-interface';
+import { tooltipRender, sharedTooltipRender } from '../../common/model/constants';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
@@ -317,6 +317,9 @@ export class Tooltip extends BaseTooltip {
             }
         }
         this.removeText();
+        let argument: ISharedTooltipRenderEventArgs = {
+            text: [], cancel: false, name: sharedTooltipRender, data: [], headerText: '', textStyle: this.textStyle
+        };
         for (let series of chart.visibleSeries) {
             if (!series.enableTooltip || !series.visible) {
                 continue;
@@ -330,7 +333,15 @@ export class Tooltip extends BaseTooltip {
                 headerContent = this.findHeader(data);
             }
             if (data) {
-                this.triggerSharedTooltip(data, isFirst, this.getTooltipText(data), this.findHeader(data), extraPoints);
+                if (!chart.isBlazor) {
+                    this.triggerSharedTooltip(data, isFirst, this.getTooltipText(data), this.findHeader(data), extraPoints);
+                } else {
+                    argument.data.push({ pointX: data.point.x , pointY: data.point.y, seriesIndex: data.series.index,
+                        seriesName: data.series.name, pointIndex: data.point.index, pointText: data.point.text  });
+                    argument.headerText = this.findHeader(data);
+                    (<PointData[]>this.currentPoints).push(data);
+                    argument.text.push(this.getTooltipText(data));
+                }
             }
             // if (data && this.triggerEvent(data, isFirst, this.getTooltipText(data)), this.findHeader(data)) {
             //     this.findMouseValue(data, chart);
@@ -340,6 +351,9 @@ export class Tooltip extends BaseTooltip {
             //     extraPoints.push(data);
             // }
         }
+        if (chart.isBlazor) {
+            this.triggerBlazorSharedTooltip(argument, data, extraPoints, chart, isFirst);
+        }
         if (this.currentPoints.length > 0) {
             this.createTooltip(chart, isFirst, this.findSharedLocation(),
                                this.currentPoints.length === 1 ? this.currentPoints[0].series.clipRect : null,  null,
@@ -348,6 +362,30 @@ export class Tooltip extends BaseTooltip {
         } else if (this.getElement(this.element.id + '_tooltip_path')) {
             this.getElement(this.element.id + '_tooltip_path').setAttribute('d', '');
         }
+    }
+    private triggerBlazorSharedTooltip(
+        argument: ISharedTooltipRenderEventArgs, point: PointData, extraPoints: PointData[], chart: Chart, isFirst: boolean
+    ): void {
+        let argsData: ISharedTooltipRenderEventArgs = {
+            cancel: false, name: sharedTooltipRender, text: argument.text, headerText: argument.headerText,
+            textStyle: argument.textStyle,
+            data: argument.data
+        };
+        let blazorSharedTooltip: Function = (argsData: ISharedTooltipRenderEventArgs) => {
+            if (!argsData.cancel) {
+                this.text = argsData.text;
+                this.headerText = argsData.headerText;
+                this.findMouseValue(point, this.chart);
+                point = null;
+                this.createTooltip(chart, isFirst, this.findSharedLocation(), null, null, this.findShapes(),
+                                   this.findMarkerHeight(<PointData>this.currentPoints[0]),
+                                   chart.chartAxisLayoutPanel.seriesClipRect, extraPoints);
+            } else {
+                extraPoints.push(point);
+            }
+        };
+        blazorSharedTooltip.bind(this, point, extraPoints);
+        this.chart.trigger(sharedTooltipRender, argsData, blazorSharedTooltip);
     }
     private triggerSharedTooltip(point: PointData, isFirst: boolean, textCollection: string, headerText: string,
                                  extraPoints: PointData[]): void {

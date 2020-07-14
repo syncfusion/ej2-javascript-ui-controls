@@ -211,7 +211,8 @@ export interface ResizeClasses {
         for (let i: number = 0; i < fName.length; i++) {
             let fieldName: string = fName[i] as string;
             let columnIndex: number = this.parent.getColumnIndexByField(fieldName);
-            if (this.parent.getColumns()[columnIndex].visible === true) {
+            let column: Column = this.parent.getColumns()[columnIndex];
+            if (columnIndex > -1 && !isNullOrUndefined(column) && column.visible === true) {
                 this.resizeColumn(fieldName, columnIndex);
             }
         }

@@ -349,11 +349,11 @@ describe('Event Base Module', () => {
             schObj.currentView = 'Month';
             schObj.dataBind();
         });
-        it('Checking evnet filled full height of the cell in the Timeline month view', (done: Function) => {
+        it('Checking event filled full height of the cell in the Timeline month view', (done: Function) => {
             schObj.dataBound = () => {
                 let cellElement: HTMLElement = (schObj.element.querySelector('.e-work-cells') as HTMLElement);
                 let eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
-                expect(eventElement.offsetHeight).toEqual(cellElement.offsetHeight - 2);
+                expect(eventElement.offsetHeight).toEqual(cellElement.offsetHeight);
                 done();
             };
             schObj.currentView = 'TimelineMonth';
@@ -363,7 +363,7 @@ describe('Event Base Module', () => {
             schObj.dataBound = () => {
                 let cellElement: HTMLElement = (schObj.element.querySelector('.e-work-cells') as HTMLElement);
                 let eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
-                expect(eventElement.offsetHeight).toEqual(cellElement.offsetHeight - 2);
+                expect(eventElement.offsetHeight).toEqual(cellElement.offsetHeight);
                 done();
             };
             schObj.enableRtl = true;

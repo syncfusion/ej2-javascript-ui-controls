@@ -2,6 +2,31 @@
 
 ## [Unreleased]
 
+## 18.2.45 (2020-07-14)
+
+- `#278688` - Added sharedTooltipRender event for shared tooltip in blazor.
+- `#276213` - Added aria label for accumulation chart title.
+
+### Chart
+
+#### Bug Fixes
+
+- `#155030` - Chart annotation is not working in datetime axis issue fixed.
+- `#280301` - Radar and polar chart tooltip cropping issue fixed.
+- `#155580` - Chart not rendered properly, when interval type is minutes for DateTime axis issue fixed.
+
+### RangeNavigator
+
+#### Bug Fixes
+
+- `#278655` - Start and end of range slider values are wrongly calculated in `changed` event issue fixed.
+
+### Sparkline
+
+#### Bug Fixes
+
+- `282664` - Dynamic change is not working properly in sparkline issue is fixed.
+
 ## 18.2.44 (2020-07-07)
 
 ### Chart

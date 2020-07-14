@@ -55,10 +55,11 @@ function isRemoteData(dataSource) {
     }
     return false;
 }
-function getTaskData(records) {
+function getTaskData(records, isNotExtend) {
     let result = [];
     for (let i = 0; i < records.length; i++) {
-        let data = extend({}, records[i].taskData, {}, true);
+        let data;
+        data = isNotExtend ? (data = records[i].taskData) : data = extend({}, records[i].taskData, {}, true);
         result.push(data);
     }
     return result;
@@ -4730,6 +4731,8 @@ class Timeline {
         let loopCount = this.isSingleTier ? 1 : 2;
         let tier = this.topTier === 'None' ? 'bottomTier' : 'topTier';
         this.updateTimelineHeaderHeight();
+        this.topTierCollection = [];
+        this.bottomTierCollection = [];
         for (let count = 0; count < loopCount; count++) {
             table = createElement('table', { className: timelineHeaderTableContainer, styles: 'display: block;' });
             thead = createElement('thead', { className: timelineHeaderTableBody, styles: 'display:block; border-collapse:collapse' });
@@ -10663,6 +10666,9 @@ let Gantt = class Gantt extends Component {
                     this.dataOperation.getNonWorkingDayIndex();
                     this.dataOperation.reUpdateGanttData();
                     this.chartRowsModule.initiateTemplates();
+                    if (this.taskFields.dependency) {
+                        this.predecessorModule.updatedRecordsDateByPredecessor();
+                    }
                     this.chartRowsModule.refreshGanttRows();
                     this.treeGrid.refreshColumns();
                     this.timelineModule.refreshTimeline();
@@ -15251,7 +15257,6 @@ class DialogEdit {
             }
         }
         this.beforeOpenArgs.requestType = this.isEdit ? 'beforeOpenEditDialog' : 'beforeOpenAddDialog';
-        this.renderTabItems();
         let args = {
             rowData: this.beforeOpenArgs.rowData,
             name: this.beforeOpenArgs.name,
@@ -15259,6 +15264,7 @@ class DialogEdit {
             cancel: this.beforeOpenArgs.cancel
         };
         this.parent.trigger('actionBegin', isBlazor() ? args : this.beforeOpenArgs, (args) => {
+            this.renderTabItems();
             if (!args.cancel) {
                 tabModel.selected = this.tabSelectedEvent.bind(this);
                 tabModel.height = this.parent.isAdaptive ? '100%' : 'auto';
@@ -18277,7 +18283,7 @@ class Edit$2 {
         eventArgs.requestType = 'beforeSave';
         eventArgs.data = args.data;
         eventArgs.modifiedRecords = this.parent.editedRecords;
-        eventArgs.modifiedTaskData = getTaskData(this.parent.editedRecords);
+        eventArgs.modifiedTaskData = getTaskData(this.parent.editedRecords, true);
         if (args.action && args.action === 'DrawConnectorLine') {
             eventArgs.action = 'DrawConnectorLine';
         }
@@ -18293,10 +18299,11 @@ class Edit$2 {
                 // Trigger action complete event with save canceled request type
             }
             else {
+                eventArgs.modifiedTaskData = getTaskData(eventArgs.modifiedRecords);
                 if (isRemoteData(this.parent.dataSource)) {
                     let data = this.parent.dataSource;
                     let updatedData = {
-                        changedRecords: isBlazor() ? modifiedTaskData : eventArgs.modifiedTaskData
+                        changedRecords: eventArgs.modifiedTaskData
                     };
                     /* tslint:disable-next-line */
                     let query = this.parent.query instanceof Query ? this.parent.query : new Query();
@@ -19256,9 +19263,9 @@ class Edit$2 {
                 this.parent.setRecordValue(this.parent.taskFields.parentID, cAddedRecord.parentItem.taskId, cAddedRecord, true);
             }
         }
+        this.parent.isOnEdit = true;
         this.backUpAndPushNewlyAddedRecord(cAddedRecord, rowPosition, parentItem);
         // need to push in dataSource also.
-        this.parent.isOnEdit = true;
         if (this.parent.taskFields.dependency && cAddedRecord.ganttProperties.predecessorsName) {
             this.parent.predecessorModule.ensurePredecessorCollectionHelper(cAddedRecord, cAddedRecord.ganttProperties);
             this.parent.predecessorModule.updatePredecessorHelper(cAddedRecord);
@@ -19346,6 +19353,7 @@ class Edit$2 {
                 let ind = prdcList.indexOf(str);
                 prdcList.splice(ind, 1);
                 this.parent.setRecordValue('predecessorsName', prdcList.join(','), childRecord.ganttProperties, true);
+                this.parent.setRecordValue(this.parent.taskFields.dependency, prdcList.join(','), childRecord);
                 predecessorIndex = getIndex(predecessorCollection[count], 'from', childRecord.ganttProperties.predecessor, 'to');
                 let temppredecessorCollection;
                 temppredecessorCollection = (extend([], childRecord.ganttProperties.predecessor, [], true));
@@ -19445,12 +19453,15 @@ class Edit$2 {
                         this.getVisibleChildRecordCount(this.addRowSelectedItem, 0, currentViewData) + 1;
                 }
                 else {
-                    this.addRowSelectedItem.hasChildRecords = true;
-                    this.addRowSelectedItem.childRecords = [];
-                    this.addRowSelectedItem.expanded = true;
-                    this.addRowSelectedItem.ganttProperties.isMilestone = false;
+                    this.parent.setRecordValue('hasChildRecords', true, this.addRowSelectedItem);
+                    this.parent.setRecordValue('isMilestone', false, this.addRowSelectedItem.ganttProperties, true);
+                    this.parent.setRecordValue('expanded', true, this.addRowSelectedItem);
+                    this.parent.setRecordValue('childRecords', [], this.addRowSelectedItem);
                     recordIndex = currentItemIndex + 1;
                     updatedCollectionIndex = currentViewData.indexOf(this.addRowSelectedItem) + 1;
+                    if (this.addRowSelectedItem.ganttProperties.predecessor) {
+                        this.updatePredecessorOnIndentOutdent(this.addRowSelectedItem);
+                    }
                 }
                 this.recordCollectionUpdate(childIndex + 1, recordIndex, updatedCollectionIndex, record, parentItem);
                 break;
@@ -19647,10 +19658,6 @@ class Edit$2 {
             }
             this.parent.trigger('actionBegin', args, (args) => {
                 if (!args.cancel) {
-                    if (rowPosition === 'Child' && this.addRowSelectedItem && this.addRowSelectedItem.ganttProperties.predecessor
-                        && this.addRowSelectedItem.ganttProperties.predecessor.length > 0) {
-                        this.updatePredecessorOnIndentOutdent(this.addRowSelectedItem);
-                    }
                     if (isBlazor()) {
                         blazorArgs.data = blazorArgs.data[0];
                         args = blazorArgs;
@@ -19798,9 +19805,6 @@ class Edit$2 {
             let parentItem = this.parent.getParentTask(this.newlyAddedRecordBackup.parentItem);
             let parentIndex = parentItem.childRecords.indexOf(this.newlyAddedRecordBackup);
             parentItem.childRecords.splice(parentIndex, 1);
-            if (parentItem.childRecords.length === 0) {
-                parentItem.hasChildRecords = false;
-            }
         }
         flatRecords.splice(flatRecordsIndex, 1);
         currentViewData.splice(currentViewDataIndex, 1);
@@ -22978,15 +22982,18 @@ class RowDD$1 {
                 if (this.dropPosition === 'topSegment' || this.dropPosition === 'bottomSegment') {
                     draggedRecord[this.parent.taskFields.parentID] = droppedRecord[this.parent.taskFields.parentID];
                     draggedRecord.taskData[this.parent.taskFields.parentID] = droppedRecord[this.parent.taskFields.parentID];
+                    draggedRecord.ganttProperties.parentId = droppedRecord[this.parent.taskFields.parentID];
                 }
                 else {
                     draggedRecord[this.parent.taskFields.parentID] = droppedRecord[this.parent.taskFields.id];
                     draggedRecord.taskData[this.parent.taskFields.parentID] = droppedRecord[this.parent.taskFields.id];
+                    draggedRecord.ganttProperties.parentId = droppedRecord[this.parent.taskFields.id];
                 }
             }
             else {
                 draggedRecord[this.parent.taskFields.parentID] = null;
                 draggedRecord.taskData[this.parent.taskFields.parentID] = null;
+                draggedRecord.ganttProperties.parentId = null;
             }
         }
     }

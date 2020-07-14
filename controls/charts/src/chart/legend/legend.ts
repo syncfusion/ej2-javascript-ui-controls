@@ -175,18 +175,10 @@ export class Legend extends BaseLegend {
         let series: Series = chart.visibleSeries[seriesIndex];
         let legend: LegendOptions = this.legendCollections[seriesIndex];
         let changeDetection: string = 'isProtectedOnChange';
-        let legendClickArgs: ILegendClickEventArgs =  { legendText: legend.text, legendShape: legend.shape,
+        let legendClickArgs: ILegendClickEventArgs = {
+            legendText: legend.text, legendShape: legend.shape,
             chart: chart.isBlazor ? {} as Chart : chart, series: series, name: legendClick, cancel: false
-                };
-        this.chart.trigger(legendClick, legendClickArgs);
-        series.legendShape = legendClickArgs.legendShape;
-        if (series.fill !== null) {
-            chart.visibleSeries[seriesIndex].interior = series.fill;
-        }
-        let selectedDataIndexes: Indexes[] = [];
-        if (chart.selectionModule) {
-            selectedDataIndexes = <Indexes[]>extend([], chart.selectionModule.selectedDataIndexes, null, true);
-        }
+        };
         if (chart.legendSettings.toggleVisibility) {
             if (series.category === 'TrendLine') {
                 if (!chart.series[series.sourceIndex].trendlines[series.index].visible) {
@@ -198,6 +190,17 @@ export class Legend extends BaseLegend {
                 series.chart[changeDetection] = true;
                 this.changeSeriesVisiblity(series, series.visible);
             }
+        }
+        this.chart.trigger(legendClick, legendClickArgs);
+        series.legendShape = legendClickArgs.legendShape;
+        if (series.fill !== null) {
+            chart.visibleSeries[seriesIndex].interior = series.fill;
+        }
+        let selectedDataIndexes: Indexes[] = [];
+        if (chart.selectionModule) {
+            selectedDataIndexes = <Indexes[]>extend([], chart.selectionModule.selectedDataIndexes, null, true);
+        }
+        if (chart.legendSettings.toggleVisibility) {
             legend.visible = series.category === 'TrendLine' ? chart.series[series.sourceIndex].trendlines[series.index].visible :
                              (series.visible);
             if ((chart.svgObject.childNodes.length > 0 ) && !chart.enableAnimation && !chart.enableCanvas) {

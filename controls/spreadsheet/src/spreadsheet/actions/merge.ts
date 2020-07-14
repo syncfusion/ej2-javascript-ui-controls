@@ -1,9 +1,11 @@
 import { Spreadsheet } from '../base/index';
 import { applyMerge, activeCellMergedRange, MergeArgs } from '../../workbook/common/index';
-import { ICellRenderer, hiddenMerge, dialog, locale, CellRenderArgs, checkPrevMerge, checkMerge } from '../common/index';
+import { ICellRenderer, hiddenMerge, dialog, locale, CellRenderArgs } from '../common/index';
+import { checkPrevMerge, checkMerge, DialogBeforeOpenEventArgs } from '../common/index';
 import { Dialog } from '../services/index';
 import { CellModel, getCell, SheetModel, isHiddenCol, isHiddenRow } from '../../workbook/index';
 import { L10n } from '@syncfusion/ej2-base';
+import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 
 /**
  * The `Merge` module is used to to merge the range of cells.
@@ -24,7 +26,17 @@ export class Merge {
                 target: this.parent.element,
                 height: 180, width: 400, isModal: true, showCloseIcon: true,
                 content: (this.parent.serviceLocator.getService(locale) as L10n).getConstant('PasteMergeAlert'),
-                beforeOpen: (): void => this.parent.element.focus()
+                beforeOpen: (args: BeforeOpenEventArgs): void => {
+                    let dlgArgs: DialogBeforeOpenEventArgs = {
+                        dialogName: 'MergeDialog',
+                        element: args.element, target: args.target, cancel: args.cancel
+                    };
+                    this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                    if (dlgArgs.cancel) {
+                        args.cancel = true;
+                    }
+                    this.parent.element.focus();
+                },
             });
             return;
         }

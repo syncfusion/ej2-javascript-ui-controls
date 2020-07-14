@@ -57,7 +57,10 @@ export class AnnotationToolbar {
     private closeItem: HTMLElement;
     private opacityIndicator: HTMLElement;
     private thicknessIndicator: HTMLElement;
-    private toolbar: Tool;
+    /**
+     * @private
+     */
+    public toolbar: Tool;
     /**
      * @private
      */
@@ -2669,7 +2672,11 @@ export class AnnotationToolbar {
     }
 
     private getElementHeight(element: HTMLElement): number {
-        return element.getBoundingClientRect().height;
+        try {
+            return element.getBoundingClientRect().height;
+        } catch (error) {
+            return 0;
+        }
     }
 
     private updateViewerHeight(viewerHeight: number, toolbarHeight: number): number {

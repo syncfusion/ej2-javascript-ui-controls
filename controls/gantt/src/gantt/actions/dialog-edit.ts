@@ -571,7 +571,6 @@ export class DialogEdit {
             }
         }
         this.beforeOpenArgs.requestType = this.isEdit ? 'beforeOpenEditDialog' : 'beforeOpenAddDialog';
-        this.renderTabItems();
         let args: ActionBeginArgs = {
             rowData: this.beforeOpenArgs.rowData as IGanttData,
             name: this.beforeOpenArgs.name as string,
@@ -579,6 +578,7 @@ export class DialogEdit {
             cancel: this.beforeOpenArgs.cancel as boolean
         };
         this.parent.trigger('actionBegin', isBlazor() ? args : this.beforeOpenArgs, (args: ActionBeginArgs | CObject) => {
+            this.renderTabItems();
             if (!args.cancel) {
                 tabModel.selected = this.tabSelectedEvent.bind(this);
                 tabModel.height = this.parent.isAdaptive ? '100%' : 'auto';

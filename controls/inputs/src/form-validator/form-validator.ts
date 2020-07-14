@@ -782,7 +782,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
     // List of function to validate the rules
     private static checkValidator: Validator = {
         required: (option: ValidArgs): boolean => {
-            return option.value.length > 0;
+            return !isNaN(Date.parse(option.value)) ? !isNaN(new Date(option.value).getTime()) : option.value.toString().length > 0;
         },
         email: (option: ValidArgs): boolean => {
             return regex.EMAIL.test(option.value);

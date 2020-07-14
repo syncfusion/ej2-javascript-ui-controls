@@ -81,7 +81,9 @@ export class Crud {
                 });
             }).catch((e: ReturnType) => {
                 if (this.parent.isDestroyed) { return; }
-                this.parent.trigger(events.actionFailure, { error: e });
+                // tslint:disable:no-any
+                this.parent.trigger(events.actionFailure, { error: isBlazor() ? (e as any).error.toString() : e });
+                // tslint:disable:no-any
             });
         }
     }

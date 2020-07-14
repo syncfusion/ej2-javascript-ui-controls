@@ -313,3 +313,8 @@ export interface ClearOptions {
     type?: ClearType;
     range?: string;
  }
+ /** @hidden */
+export interface UnprotectArgs {
+    sheet?: number;
+ }
+ 

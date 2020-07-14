@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.2.45 (2020-07-14)
+
+### Pdf Export
+
+#### Bug Fixes
+
+- Rendering issue with Pdf number style is fixed.
+
 ## 18.2.44 (2020-07-07)
 
 ### Pdf Export

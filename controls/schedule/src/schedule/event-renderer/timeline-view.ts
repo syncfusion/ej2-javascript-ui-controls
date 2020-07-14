@@ -128,7 +128,7 @@ export class TimelineEvent extends MonthEvent {
             appWidth = (appWidth <= 0) ? this.cellWidth : appWidth; // appWidth 0 when start and end time as same
             this.renderedEvents.push(extend({}, event, null, true));
             let top: number = this.getRowTop(resIndex);
-            let appTop: number = (top + EVENT_GAP) + (overlapCount * (appHeight + EVENT_GAP));
+            let appTop: number = (top + (this.maxHeight ? 0 : EVENT_GAP)) + (overlapCount * (appHeight + EVENT_GAP));
             appLeft = (this.parent.enableRtl) ? 0 : position;
             appRight = (this.parent.enableRtl) ? position : 0;
             let height: number = ((overlapCount + 1) * (appHeight + EVENT_GAP)) + this.moreIndicatorHeight;
@@ -414,6 +414,9 @@ export class TimelineEvent extends MonthEvent {
     }
 
     public setMaxEventHeight(event: HTMLElement, cell: HTMLElement): void {
-        setStyleAttribute(event, { 'height': (this.cellHeight - EVENT_GAP - (this.maxHeight ? 0 : this.moreIndicatorHeight)) + 'px' });
+        setStyleAttribute(event, {
+            'height': (this.cellHeight - (this.maxHeight ? 0 : EVENT_GAP) -
+                (this.maxHeight ? 0 : this.moreIndicatorHeight)) + 'px'
+        });
     }
 }

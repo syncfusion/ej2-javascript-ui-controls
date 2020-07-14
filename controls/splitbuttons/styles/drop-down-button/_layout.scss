@@ -5,7 +5,6 @@
     @if $skin-name != 'bootstrap4' {
       box-shadow: none;
     }
-    position: relative;
     text-transform: none;
     white-space: normal;
 
@@ -110,9 +109,10 @@
         }
 
         & .e-menu-url {
-          display: inline-block;
+          display: block;
           padding: $drop-down-btn-li-padding;
           text-decoration: none;
+          width: 100%;
         }
 
         & .e-menu-icon {

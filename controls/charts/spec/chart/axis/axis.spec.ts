@@ -1334,6 +1334,73 @@ describe('Chart Control', () =>{
             chartEle.refresh();
         });
     });
+    describe('Checking Axis range auto on zooming', () => {
+        let chartEle: Chart;
+        ele = createElement('div', { id: 'chartContainer' });
+        beforeAll(() => {
+            document.body.appendChild(ele);
+            chartEle = new Chart(
+                {
+                    primaryXAxis: {
+                        valueType: 'Double'
+                    },
+                    
+                    series: [
+                        {
+                            type: 'Line',
+                            dataSource: [{ x: 1, y: 7 }, { x: 2, y: 1 }, { x: 3, y: 1 }, { x: 4, y: 14 },
+                                { x: 5, y: 1 }, { x: 6, y: 10 }, { x: 7, y: 8 }, { x: 8, y: 6 }],
+                            name: 'Product X',
+                            xName: 'x',
+                            yName: 'y',
+                            border: { width: 0.5, color: '#00bdae' },
+                            marker: {
+                                visible: true
+                            },
+                            animation: { enable: false }
+                        }
+                    ],
+                    zoomSettings:
+                    {
+                        enableMouseWheelZooming: false,
+                        enablePinchZooming: true,
+                        enableSelectionZooming: true,
+                        enableScrollbar: true
+                    },
+                    enableAutoIntervalOnBothAxis: true,
+                    width: '800',
+                    height: '450'
+                },
+                '#chartContainer');
+
+        });
+
+        afterAll((): void => {
+            chartEle.destroy();
+            ele.remove();
+        });
+
+        it('Checking axis in Zoom mode X', () => {
+            chartEle.primaryXAxis = { zoomFactor: 0.12, zoomPosition: 0.5 };
+            chartEle.zoomSettings = { mode: 'X' };
+            chartEle.dataBind();
+            text = document.getElementById('chartContainer0_AxisLabel_0');
+            expect(text.textContent == '4.5').toBe(true);
+            text = document.getElementById('chartContainer1_AxisLabel_1');
+            expect(text.textContent == '0.2').toBe(true);
+
+        });
+        it('Checking axis in Zoom mode Y', () => {
+            chartEle.primaryYAxis = { zoomFactor: 0.22, zoomPosition: 0.54 };
+            chartEle.zoomSettings = { mode: 'Y' };
+            chartEle.dataBind();
+            text = document.getElementById('chartContainer0_AxisLabel_0');
+            expect(text.textContent == '2.500').toBe(true);
+            text = document.getElementById('chartContainer1_AxisLabel_1');
+            expect(text.textContent == '1.250').toBe(true);
+
+        });
+    });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

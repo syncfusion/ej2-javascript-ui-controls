@@ -1002,7 +1002,8 @@
       height: $grid-rowcell-line-height + $grid-content-padding + $grid-content-padding;
     }
 
-    &.e-afenabled{
+    &.e-afenabled,
+    &.e-enabledboxbdr {
         .e-movablecontent,
         .e-frozencontent,
         .e-movableheader,
@@ -1012,7 +1013,8 @@
       }
     }
 
-    &.e-afenabled{
+    &.e-afenabled,
+    &.e-enabledboxbdr {
       overflow: hidden;
     }
 

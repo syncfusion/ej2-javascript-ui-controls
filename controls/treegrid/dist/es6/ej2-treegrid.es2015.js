@@ -1421,7 +1421,8 @@ class DataManipulation {
                 this.parent.query = isNullOrUndefined(this.parent.query) ?
                     new Query() : this.parent.query;
                 if (this.parent.parentIdMapping) {
-                    if (this.parent.initialRender) {
+                    const filterKey = this.parent.query.params.filter((param) => param.key === 'IdMapping');
+                    if (this.parent.initialRender && !filterKey.length) {
                         this.parent.query.where(this.parent.parentIdMapping, 'equal', null);
                         this.parent.query.addParams('IdMapping', this.parent.idMapping);
                     }

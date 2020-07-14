@@ -3,7 +3,7 @@ import { Spreadsheet } from '../base/index';
 import { ribbon, MenuSelectEventArgs, selectionComplete, beforeRibbonCreate, removeDataValidation, clearViewer } from '../common/index';
 import { initiateDataValidation, invalidData, setUndoRedo, initiateConditionalFormat, setCF } from '../common/index';
 import { dialog, reapplyFilter, enableFileMenuItems, applyProtect, protectCellFormat } from '../common/index';
-import { findHandler } from '../common/index';
+import { findHandler, DialogBeforeOpenEventArgs } from '../common/index';
 import { IRenderer, destroyComponent, performUndoRedo, beginAction, completeAction, applySort, hideRibbonTabs } from '../common/index';
 import { enableToolbarItems, ribbonClick, paste, locale, refreshSheetTabs, initiateCustomSort, getFilteredColumn } from '../common/index';
 import { tabSwitch, getUpdateUsingRaf, updateToggleItem, initiateHyperlink, editHyperlink } from '../common/index';
@@ -24,7 +24,7 @@ import { getCell, FontFamily, VerticalAlign, TextAlign, CellStyleModel, setCellF
 import { Button } from '@syncfusion/ej2-buttons';
 import { ColorPicker as RibbonColorPicker } from './color-picker';
 import { Dialog } from '../services';
-import { Dialog as FindDialog } from '@syncfusion/ej2-popups';
+import { Dialog as FindDialog, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { findDlg } from '../common/index';
 
 
@@ -936,7 +936,17 @@ export class Ribbon {
         dialogInst.show({
             target: this.parent.element, height: 200, width: 400, isModal: true, showCloseIcon: true,
             content: (this.parent.serviceLocator.getService(locale) as L10n).getConstant('MergeCellsAlert'),
-            beforeOpen: (): void => this.parent.element.focus(),
+            beforeOpen: (args: BeforeOpenEventArgs): void => {
+                let dlgArgs: DialogBeforeOpenEventArgs = {
+                    dialogName: 'MergeAlertDialog',
+                    element: args.element, target: args.target, cancel: args.cancel
+                };
+                this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                if (dlgArgs.cancel) {
+                    args.cancel = true;
+                }
+                this.parent.element.focus();
+            },
             buttons: [{
                 buttonModel: { content: (this.parent.serviceLocator.getService(locale) as L10n).getConstant('Ok'), isPrimary: true },
                 click: (): void => { dialogInst.hide(); this.performMerge(itemId); }
@@ -1537,7 +1547,17 @@ export class Ribbon {
                     dialogInst.show({
                         height: 200, width: 400, isModal: true, showCloseIcon: true,
                         content: (this.parent.serviceLocator.getService(locale) as L10n).getConstant('DestroyAlert'),
-                        beforeOpen: (): void => this.parent.element.focus(),
+                        beforeOpen: (args: BeforeOpenEventArgs): void => {
+                            let dlgArgs: DialogBeforeOpenEventArgs = {
+                                dialogName: 'DestroySheetDialog',
+                                element: args.element, target: args.target, cancel: args.cancel
+                            };
+                            this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                            if (dlgArgs.cancel) {
+                                args.cancel = true;
+                            }
+                            this.parent.element.focus();
+                        },
                         buttons: [{
                             buttonModel: {
                                 content: (this.parent.serviceLocator.getService(locale) as L10n).getConstant('Ok'), isPrimary: true

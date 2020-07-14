@@ -119,15 +119,18 @@ export class ColumnWidthService {
         if (this.parent.options.aggregatesCount != 0) {
             let footerCol: HTMLTableColElement;
             if (frzCols && index >= frzCols) {
-                footerCol = <HTMLTableColElement>this.parent.getFooterContent().querySelector('.e-movablefootercontent').querySelector('colgroup').children[index - frzCols];
+                let fmContent: Element = this.parent.getFooterContent().querySelector('.e-movablefootercontent');
+                let fmColgroup: Element = !isNullOrUndefined(fmContent) ? fmContent.querySelector('colgroup') : null;
+                footerCol = !isNullOrUndefined(fmColgroup) ? <HTMLTableColElement>fmColgroup.children[index - frzCols] : null;
             }
             else {
-                footerCol = <HTMLTableColElement>this.parent.getFooterContent().querySelector('colgroup').children[index];
+                let tcolGroup: Element = this.parent.getFooterContent().querySelector('colgroup');
+                footerCol = !isNullOrUndefined(tcolGroup) ? <HTMLTableColElement>tcolGroup.children[index] : null;
             }
 
-            if (contentCol && !clear) {
+            if (contentCol && footerCol && !clear) {
                 footerCol.style.width = fWidth;
-            } else if (contentCol && clear) {
+            } else if (contentCol && footerCol && clear) {
                 footerCol.style.width = ' ';
             }
         }

@@ -1370,6 +1370,9 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         let element: Element = textElement(
             this.renderer, options, this.titleStyle, this.titleStyle.color || this.themeStyle.chartTitle, this.svgObject, false, this.redraw
         );
+        if (element) {
+            element.setAttribute('aria-label', this.title);
+        }
         if (this.subTitle) {
             this.renderSubTitle(options);
         }

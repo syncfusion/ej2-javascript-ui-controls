@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title> Typescript Components</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Typescript UI Controls" />
+    <meta name="author" content="Syncfusion" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" />
+    <link id="theme" href="../../theme-files/material.css" rel="stylesheet" />
+    <script>
+        window.require = {
+            config: function (json) {
+                window.rsConfig = json;
+                window.rsConfig.baseUrl = "";
+            }
+        };
+    </script>
+    <script src="./../../demo-config.js"></script>
+    <script src="./../../../node_modules/requirejs/require.js" data-main="./default"></script>
+    <script>
+        require.config(window.rsConfig);
+    </script>
+    <style>
+        td {
+            padding: 10px;
+        }
+        .e-rule-template {
+            padding-bottom: 12px;
+        }
+        .e-rule-btn {
+            float: right;
+            padding-top: 18px;
+        }
+        .e-rule-value-group {
+            margin-left: 12px;
+            border-top: 1px solid #e0e0e0;
+            min-height: 40px;
+        }
+        .e-query-builder .e-slider-container.e-horizontal {
+            padding: 0px 0 0 18px;
+            height: 0;
+        }
+        .e-query-builder .e-slider-container.e-horizontal .e-slider {
+            top: calc(50% - 10px);
+        }
+        .e-query-builder .e-hide {
+            display: none;
+        }
+        .e-query-builder .e-slider-value {
+            width: 50% !important;
+        }
+        #datatable.e-table {
+            margin: 20px 0 0 20px;
+            border: solid 1px #e0e0e0;
+            border-collapse: collapse;
+            font-family: Roboto;
+            width: 320px;
+            height: 180px;
+            overflow-y: auto;
+        }
+
+        #datatable.e-table td, #datatable.e-table th {
+            border: solid #e0e0e0;
+            border-width: 1px 0 0;
+            display: table-cell;
+            font-size: 14px;
+            line-height: 20px;
+            overflow: hidden;
+            padding: 8px 21px;
+            vertical-align: middle;
+            white-space: nowrap;
+            width: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="col-lg-12 control-section">
+        <div class="querybuilder-main">
+            <div id="querybuilder">
+            </div>
+        </div>
+    </div>
+    
+    <script id="ageTemplate" type="text/x-template">
+        <div class="e-rule e-rule-template">
+            <div class="e-rule-filter">
+                <input id = ${ruleID}_filterkey class='e-filter-input'>
+            </div>
+            <div class="e-value e-rule-value e-slider-value">
+                <div id = ${ruleID}_valuekey0 class="ticks_slider"></div>
+            </div>
+            <div class="e-rule-btn">
+                <button id=${ruleID}_option onclick="myFunction(${ruleID})" class="e-primary e-btn e-small">
+                    View Details
+                </button>
+                <button class="e-removerule e-rule-delete e-css e-btn e-small e-round">
+                    <span class="e-btn-icon e-icons e-delete-icon"/>
+                </button>
+            </div>
+            <div id=${ruleID}_section class="e-rule-value-group e-hide">
+                <div>
+                    <table id='datatable' class='e-table' style='display:none'>
+                        <thead>
+                            <tr><th>EmployeeID</th><th>FirstName</th><th>Age</th></tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>     
+                </div>
+            </div>
+        </div>
+    </script>
+
+    <script type="text/javascript">
+        function myFunction(ruleElem) {
+            var element = document.getElementById(ruleElem.id + '_section');
+            if (element.className.indexOf('e-hide') > -1) {
+                element.className = element.className.replace('e-hide', '');
+                document.getElementById(ruleElem.id + '_option').textContent = 'Hide Details';
+            } else {
+                element.className += ' e-hide';
+                document.getElementById(ruleElem.id + '_option').textContent = 'View Details';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -39,6 +39,7 @@ import { ParetoSeries } from './series/pareto-series';
 import { StackingColumnSeries } from './series/stacking-column-series';
 import { StackingBarSeries } from './series/stacking-bar-series';
 import { StackingAreaSeries } from './series/stacking-area-series';
+import { StackingStepAreaSeries } from './series/stacking-step-area-series';
 import { StackingLineSeries } from './series/stacking-line-series';
 import { ScatterSeries } from './series/scatter-series';
 import { SplineSeries } from './series/spline-series';
@@ -85,7 +86,7 @@ import { IAnnotationRenderEventArgs, IAxisMultiLabelRenderEventArgs, IThemeStyle
 import { IPointRenderEventArgs, ISeriesRenderEventArgs, ISelectionCompleteEventArgs } from '../chart/model/chart-interface';
 import { IDragCompleteEventArgs, ITooltipRenderEventArgs, IExportEventArgs, IAfterExportEventArgs } from '../chart/model/chart-interface';
 import { IZoomCompleteEventArgs, ILoadedEventArgs, IZoomingEventArgs } from '../chart/model/chart-interface';
-import { IMultiLevelLabelClickEventArgs, ILegendClickEventArgs } from '../chart/model/chart-interface';
+import { IMultiLevelLabelClickEventArgs, ILegendClickEventArgs, ISharedTooltipRenderEventArgs } from '../chart/model/chart-interface';
 import { IAnimationCompleteEventArgs, IMouseEventArgs, IPointEventArgs } from '../chart/model/chart-interface';
 import { chartMouseClick, pointClick, pointDoubleClick,  } from '../common/model/constants';
 import { chartMouseDown, chartMouseMove, chartMouseUp, load, pointMove, chartMouseLeave, resized } from '../common/model/constants';
@@ -298,6 +299,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * `stackingAreaSeriesModule` is used to add stacking area series to the chart.
      */
     public stackingAreaSeriesModule: StackingAreaSeries;
+    /**
+     * `stackingStepAreaSeriesModule` is used to add stacking step area series to the chart.
+     */
+    public stackingStepAreaSeriesModule: StackingStepAreaSeries;
     /**
      * `stackingLineSeriesModule` is used to add stacking line series to the chart.
      */
@@ -831,6 +836,13 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public useGroupingSeparator: boolean;
 
     /**
+     * If set to true, both axis interval will be calculated automatically with respect to the zoomed range.
+     * @default false
+     */
+    @Property(false)
+    public enableAutoIntervalOnBothAxis: boolean;
+
+    /**
      * It specifies whether the chart should be render in transposed manner or not.
      * @default false
      */
@@ -1024,6 +1036,14 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     @Event()
     public tooltipRender: EmitType<ITooltipRenderEventArgs>;
+    /**
+     * Triggers before the shared tooltip for series is rendered.
+     * This applicable for blazor only.
+     * @event
+     */
+
+    @Event()
+    public sharedTooltipRender: EmitType<ISharedTooltipRenderEventArgs>;
 
     /**
      * Triggers on hovering the chart.

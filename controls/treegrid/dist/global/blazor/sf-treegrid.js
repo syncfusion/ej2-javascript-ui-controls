@@ -120,11 +120,12 @@ var Clipboard = /** @class */ (function () {
     Clipboard.prototype.childContentData = function (currentRecords, selectedIndex, rows, withHeader) {
         var getCopyData = 'getCopyData';
         var copyContent = 'copyContent';
-        var childRecords = 'childRecords';
         var hasChildRecords = 'hasChildRecords';
         var uniqueID = 'uniqueID';
+        var parentUniqueID = 'parentUniqueID';
         if (currentRecords[selectedIndex][hasChildRecords]) {
-            var childData = currentRecords[selectedIndex][childRecords];
+            var currentUniqueID_1 = currentRecords[selectedIndex][uniqueID];
+            var childData = currentRecords.filter(function (a) { return (a[parentUniqueID] === currentUniqueID_1); });
             for (var i = 0; i < childData.length; i++) {
                 for (var j = 0; j < currentRecords.length; j++) {
                     if (!sf.base.isNullOrUndefined(childData[i][uniqueID]) && currentRecords[j][uniqueID] === childData[i][uniqueID]) {

@@ -1931,7 +1931,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
             let blazorInterop: string = 'sfBlazor'; let blazor: string = 'Blazor';
             let diagramObject: Object = { nodes: changedNodes, connectors: changedConnectors };
-            if (window && window[blazor] && !this.dataSourceSettings.dataSource) {
+            if (window && window[blazor] && !this.dataSourceSettings.dataSource && (changedNodes.length > 0 || changedConnectors.length > 0)) {
                 let obj: object = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': diagramObject };
                 window[blazorInterop].updateBlazorProperties(obj, this);
             }
@@ -5084,7 +5084,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             'id': this.element.id + '_grid_rect', 'x': '0', 'y': '0', 'width': '100%', 'height': '100%'
         });
         if (checkBrowserInfo()) {
-            rect.setAttribute('fill', 'url(' + location.href + '#' + this.element.id + '_pattern ');
+            rect.setAttribute('fill', 'url(' + location.protocol + '//' + location.host + location.pathname +
+            '#' + this.element.id + '_pattern)');
         } else {
             rect.setAttribute('fill', 'url(#' + this.element.id + '_pattern)');
         }
@@ -6849,7 +6850,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         let isProtectedOnChangeValue: boolean = this.isProtectedOnChange;
         if (isBlazor()) {
             this.isProtectedOnChange = true;
-            this.commandHandler.oldSelectedObjects = cloneSelectedObjects(this, true);
         }
         let size: Size = new Size();
         let selectorModel: Selector = this.selectedItems as Selector;
@@ -6929,7 +6929,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 this.diagramRenderer.renderUserHandler(selectorModel, selectorElement, this.scroller.transform, diagramUserHandlelayer);
             }
         }
-        this.commandHandler.updateBlazorSelector();
         this.isProtectedOnChange = isProtectedOnChangeValue;
     }
 
@@ -7266,7 +7265,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             let clonedObject: Object = cloneObject(node);
                             node = this.add(clonedObject) as Node;
                             this.updateDiagramObject(node);
+                            this.commandHandler.oldSelectedObjects = cloneSelectedObjects(this);
                             this.commandHandler.select(this.nameTable[node.id]);
+                            this.commandHandler.updateBlazorSelector();
                         }
                     }
                 }
@@ -8670,6 +8671,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             }
         }
+        if (this.diagramActions & DiagramAction.DragUsingMouse) {
+            this.renderPageBreaks();
+        }
     }
 
     /** @private */
@@ -8935,7 +8939,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                                 if (this.mode !== 'SVG') {
                                     this.refreshDiagramLayer();
                                 }
+                                this.commandHandler.oldSelectedObjects = cloneSelectedObjects(this);
                                 this.commandHandler.select(newObj);
+                                this.commandHandler.updateBlazorSelector();
                                 this.eventHandler.mouseDown(args.event);
                                 this.eventHandler.mouseMove(args.event, args);
                                 this.preventUpdate = false; this.updatePage(); selectedSymbol.style.opacity = '0';

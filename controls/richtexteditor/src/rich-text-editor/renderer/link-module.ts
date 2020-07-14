@@ -49,6 +49,7 @@ export class Link {
         this.parent.on(events.editLink, this.editLink, this);
         this.parent.on(events.openLink, this.openLink, this);
         this.parent.on(events.editAreaClick, this.editAreaClickHandler, this);
+        this.parent.on(events.destroy, this.destroy, this);
     }
     private onToolbarAction(args: NotifyArgs): void {
         let item: IToolbarItemModel = (args.args as ClickEventArgs).item as IToolbarItemModel;
@@ -75,6 +76,7 @@ export class Link {
         this.parent.off(events.editLink, this.editLink);
         this.parent.off(events.openLink, this.openLink);
         this.parent.off(events.editAreaClick, this.editAreaClickHandler);
+        this.parent.off(events.destroy, this.destroy);
     }
     private onIframeMouseDown(): void {
         if (this.dialogObj) {

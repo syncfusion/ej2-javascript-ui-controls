@@ -3,7 +3,7 @@
  */
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
-import { Path } from '../../../src/diagram/objects/node';
+import { Path} from '../../../src/diagram/objects/node';
 import { NodeModel } from '../../../src/diagram/objects/node-model';
 import { MouseEvents } from '../interaction/mouseevents.spec';
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
@@ -328,4 +328,59 @@ describe('Diagram Control', () => {
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     })
+});
+describe('SendToBack exception', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let zIndexBeforeCall: number;
+    let zIndexAfterCall : number;
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'diagram_div' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] = [
+            {
+                id: "rectangle1",
+                offsetX: 100,
+                offsetY: 100,
+                width: 100,
+                height: 100,
+                annotations: [{
+                    content: 'rectangle1'
+                }]
+            }, {
+                id: "rectangle2",
+                offsetX: 200,
+                offsetY: 200,
+                width: 100,
+                height: 100,
+                annotations: [{
+                    content: 'rectangle2'
+                }]
+            },
+            {
+                id: 'group',
+                children: ['rectangle1', 'rectangle2']
+            },
+        
+        ];
+        
+        diagram = new Diagram({
+            width: '1500px',
+            height: '600px',
+            nodes: nodes,
+        });
+        diagram.appendTo("#diagram_div");
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Exception occurs when sendToBack method is called', (done: Function) => {
+        zIndexBeforeCall = diagram.nodes[2].zIndex;
+        diagram.select([diagram.nodes[2]]);
+        diagram.sendToBack();
+        zIndexAfterCall = diagram.nodes[2].zIndex;
+        expect(zIndexBeforeCall === zIndexAfterCall).toBe(true);
+        done();
+    });
 });

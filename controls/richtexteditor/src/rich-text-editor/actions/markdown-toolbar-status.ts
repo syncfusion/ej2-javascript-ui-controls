@@ -40,7 +40,7 @@ export class MarkdownToolbarStatus {
     }
     private removeEventListener(): void {
         this.parent.off(events.toolbarRefresh, this.onRefreshHandler);
-        this.parent.off(events.destroy, this.onRefreshHandler);
+        this.parent.off(events.destroy, this.removeEventListener);
     }
     private onRefreshHandler(args: { [key: string]: Node | Object }): void {
         let parentsLines: { [key: string]: string | number }[] = this.selection.getSelectedParentPoints(this.element);

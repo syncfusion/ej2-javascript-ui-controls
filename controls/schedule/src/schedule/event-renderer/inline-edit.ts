@@ -167,12 +167,12 @@ export class InlineEdit {
         let inlineElement: HTMLInputElement = this.parent.element.querySelector('.' + cls.INLINE_SUBJECT_CLASS) as HTMLInputElement;
         let subject: string = inlineElement ? inlineElement.value : target ? target.innerHTML : '';
         let saveObj: { [key: string]: Object } = {};
-        this.parent.eventWindow.setDefaultValueToObject(saveObj);
         saveObj[this.parent.eventFields.id] = this.parent.eventBase.getEventMaxID();
         saveObj[this.parent.eventFields.subject] = subject;
         saveObj[this.parent.eventFields.startTime] = this.parent.activeCellsData.startTime;
         saveObj[this.parent.eventFields.endTime] = this.parent.activeCellsData.endTime;
         saveObj[this.parent.eventFields.isAllDay] = this.parent.activeCellsData.isAllDay;
+        this.parent.eventWindow.setDefaultValueToObject(saveObj);
         if (this.parent.resourceBase) {
             this.parent.resourceBase.setResourceValues(saveObj, this.parent.activeCellsData.groupIndex);
         }

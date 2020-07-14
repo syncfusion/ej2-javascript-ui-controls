@@ -1,13 +1,14 @@
 /**
  * Open properties.
  */
-import { Spreadsheet } from '../index';
+import { Spreadsheet, DialogBeforeOpenEventArgs } from '../index';
 import { OpenOptions, OpenFailureArgs } from '../common/interface';
 import { refreshSheetTabs, completeAction } from '../common/event';
 import { dialog } from '../common/index';
 import { Dialog } from '../services/index';
 import { openSuccess, openFailure } from '../../workbook/index';
 import { L10n } from '@syncfusion/ej2-base';
+import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 
 export class Open {
     private parent: Spreadsheet;
@@ -78,7 +79,17 @@ export class Open {
             (this.parent.serviceLocator.getService(dialog) as Dialog).show({
                 content: (this.parent.serviceLocator.getService('spreadsheetLocale') as L10n)
                     .getConstant(response.data as string),
-                width: '300'
+                width: '300',
+                beforeOpen: (args: BeforeOpenEventArgs): void => {
+                    let dlgArgs: DialogBeforeOpenEventArgs = {
+                        dialogName: 'OpenDialog',
+                        element: args.element, target: args.target, cancel: args.cancel
+                    };
+                    this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                    if (dlgArgs.cancel) {
+                        args.cancel = true;
+                    }
+                },
             });
             this.parent.hideSpinner();
             return;

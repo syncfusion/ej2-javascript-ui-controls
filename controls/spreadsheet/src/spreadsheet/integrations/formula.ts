@@ -1,8 +1,9 @@
-import { Spreadsheet } from '../index';
+import { Spreadsheet, DialogBeforeOpenEventArgs } from '../index';
 import { formulaOperation, keyUp, keyDown, click, refreshFormulaDatasource } from '../common/event';
 import { editOperation, formulaBarOperation } from '../common/event';
 import { workbookFormulaOperation } from '../../workbook/common/event';
 import { AutoComplete } from '@syncfusion/ej2-dropdowns';
+import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { PopupEventArgs, SelectEventArgs, AutoCompleteModel } from '@syncfusion/ej2-dropdowns';
 import { KeyboardEventArgs, L10n, detach, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { checkIsFormula, getSheet, SheetModel, getSheetName, DefineNameModel, getCellIndexes } from '../../workbook/index';
@@ -121,6 +122,16 @@ export class Formula {
                 dialogInst.show({
                     height: 180, width: 400, isModal: true, showCloseIcon: true,
                     content: l10n.getConstant('CircularReference'),
+                    beforeOpen: (args: BeforeOpenEventArgs): void => {
+                        let dlgArgs: DialogBeforeOpenEventArgs = {
+                            dialogName: 'CircularReferenceDialog',
+                            element: args.element, target: args.target, cancel: args.cancel
+                        };
+                        this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                        if (dlgArgs.cancel) {
+                            args.cancel = true;
+                        }
+                    },
                 });
                 args.argValue = '0';
                 break;
@@ -439,13 +450,33 @@ export class Formula {
             if (!eventArgs.isAdded) {
                 (this.parent.serviceLocator.getService(dialog) as Dialog).show({
                     content: (this.parent.serviceLocator.getService(locale) as L10n).getConstant('DefineNameExists'),
-                    width: '300'
+                    width: '300',
+                    beforeOpen: (args: BeforeOpenEventArgs): void => {
+                        let dlgArgs: DialogBeforeOpenEventArgs = {
+                            dialogName: 'DefineNameExistsDialog',
+                            element: args.element, target: args.target, cancel: args.cancel
+                        };
+                        this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                        if (dlgArgs.cancel) {
+                            args.cancel = true;
+                        }
+                    },
                 });
             }
         } else {
             (this.parent.serviceLocator.getService(dialog) as Dialog).show({
                 content: (this.parent.serviceLocator.getService(locale) as L10n).getConstant('DefineNameInValid'),
-                width: '300'
+                width: '300',
+                beforeOpen: (args: BeforeOpenEventArgs): void => {
+                    let dlgArgs: DialogBeforeOpenEventArgs = {
+                        dialogName: 'DefineNameInValidDialog',
+                        element: args.element, target: args.target, cancel: args.cancel
+                    };
+                    this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                    if (dlgArgs.cancel) {
+                        args.cancel = true;
+                    }
+                },
             });
         }
         return isAdded;

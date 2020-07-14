@@ -4126,7 +4126,7 @@ export class PivotEngine {
                         }
                     }
                     cellValue = this.evaluate(actualFormula);
-                    (cellValue === Infinity ? Infinity : (cellValue === undefined || isNaN(cellValue)) ? undefined : JSON.parse(String(cellValue)));
+                    cellValue = (cellValue === Infinity || cellValue === -Infinity ? Infinity : (cellValue === undefined || isNaN(cellValue)) ? undefined : JSON.parse(String(cellValue)));
                 }
                 ri++;
             }

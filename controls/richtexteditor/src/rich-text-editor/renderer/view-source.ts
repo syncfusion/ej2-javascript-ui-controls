@@ -35,6 +35,7 @@ export class ViewSource {
         this.parent.on(events.sourceCode, this.sourceCode, this);
         this.parent.on(events.initialEnd, this.onInitialEnd, this);
         this.parent.on(events.updateSource, this.updateSourceCode, this);
+        this.parent.on(events.destroy, this.destroy, this);
     }
 
     private onInitialEnd(): void {
@@ -46,6 +47,7 @@ export class ViewSource {
         this.parent.off(events.sourceCode, this.sourceCode);
         this.parent.off(events.updateSource, this.updateSourceCode);
         this.parent.off(events.initialEnd, this.onInitialEnd);
+        this.parent.off(events.destroy, this.destroy);
         this.parent.formatter.editorManager.observer.off(CONSTANT.KEY_DOWN_HANDLER, this.onKeyDown);
     }
 

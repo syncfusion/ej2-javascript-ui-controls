@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+## 18.2.45 (2020-07-14)
+
+### Grid
+
+#### Bug Fixes
+
+- `#278574` - `Virtualization` scroll jumps when rendering grid inside the dialog component issue has been fixed.
+- `#283109` - Column Templates are removed in the Infinite scrolling issue has been fixed.
+- `#281788` - Infinite scroll editing issue has been fixed.
+- `#282440` - White space occurs while scrolling left and right in Frozen columns with `virtualization` issue has been fixed.
+- `#283323, #283973` - Triggering multiple `actionBegin` and `actionComplete` event while show/hide column issue has been fixed.
+- `#283675` - Script error while using excel filter has been fixed.
+- `#276276` - `dateTime` filtering issue with `URLAdaptor` has been fixed.
+- `#279521` - Scrollbar now refreshes correctly after filtering with frozen columns and `virtualization` present.
+- `#279969` - `ActionBegin` event arguments `cancel` property retained issue has been fixed.
+- `#281958` - `BoxWithBorder` selection issue has been fixed.
+- `#282215` - When `resetOnRowClick` is enabled, records in the previous page are not deselected issue has been fixed.
+- `#280984` - When enable `frozen` columns and resize, `aggregate` cells alignment issue has been fixed.
+- `#282759, #280077` - Scrollbar when clicking `childgrid` page container, issue has been fixed.
+- `#282379` - Provided `catch` exception for pdf exporting.
+- `#280511` - Cell focus not retained when escape key pressed while editing has been fixed.
+
 ## 18.2.44 (2020-07-07)
 
 ### Grid
@@ -12,6 +34,27 @@
 - `#147816` - Provided support for `Frozen` rows and columns with `AutoFill`.
 - Provided the `Frozen` support in Grid continuous scroll feature.
 - Provide the Editing support in Grid continuous scroll feature.
+
+## 18.1.59 (2020-06-23)
+
+### Grid
+
+#### Bug Fixes
+
+- `#279922, #280077` -  Scrollbar when clicking `childgrid` summary row, issue has been fixed.
+
+## 18.1.57 (2020-06-16)
+
+### Grid
+
+#### Bug Fixes
+
+- `#279487` - Selecting and Deselecting now works properly after searching in external column chooser.
+- `#278413` - Unwanted Vertical scrollbar after column resizing issue has been resolved.
+- `#279922` - The last row detail template border issue has been fixed.
+- `#154568` - Filter pop-up issue with mobile device has been fixed.
+- `#263232` - Throws scripts error while `hide/show` the columns issue has been fixed.
+- `#277663` - Footer aggregate works properly with custom data while exporting in excel.
 
 ## 18.1.56 (2020-06-09)
 

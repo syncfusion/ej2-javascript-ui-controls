@@ -55,13 +55,13 @@ describe('Chart Control', () => {
         beforeAll(() => {
             elem = createElement('div', { id: 'container' });
             document.body.appendChild(elem);
-           chartObj = new Chart(
+            chartObj = new Chart(
                 {
                     primaryXAxis: { title: 'PrimaryXAxis' },
                     primaryYAxis: { title: 'PrimaryYAxis', rangePadding: 'Normal' },
                     series: [{
                         dataSource: data, xName: 'x', yName: 'y', animation: { enable: false }, type: 'StepArea',
-                        name: 'ChartSeriesNameGold', fill: 'skyblue', marker:{visible:true,dataLabel:{visible:false}}
+                        name: 'ChartSeriesNameGold', fill: 'skyblue', marker:{visible: true,dataLabel:{visible:false}}
                     },
                     ], width: '800',
                     title: 'Chart TS Title', legendSettings: { visible: false, },

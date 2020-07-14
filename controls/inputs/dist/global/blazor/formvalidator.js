@@ -687,7 +687,7 @@ var FormValidator = /** @class */ (function (_super) {
     // List of function to validate the rules
     FormValidator.checkValidator = {
         required: function (option) {
-            return option.value.length > 0;
+            return !isNaN(Date.parse(option.value)) ? !isNaN(new Date(option.value).getTime()) : option.value.toString().length > 0;
         },
         email: function (option) {
             return regex.EMAIL.test(option.value);

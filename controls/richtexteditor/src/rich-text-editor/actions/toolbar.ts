@@ -131,13 +131,13 @@ export class Toolbar {
             target: ele
         } as IToolbarRenderOptions);
         if (this.parent.toolbarSettings.type === ToolbarType.Expand) {
-        addClass([ele], ['e-rte-tb-mobile']);
-        if (this.parent.inlineMode.enable) {
-            this.addFixedTBarClass();
-        } else {
-            addClass([ele], [classes.CLS_TB_STATIC]);
+            addClass([ele], ['e-rte-tb-mobile']);
+            if (this.parent.inlineMode.enable) {
+                this.addFixedTBarClass();
+            } else {
+                addClass([ele], [classes.CLS_TB_STATIC]);
+            }
         }
-    }
         this.wireEvents();
         this.dropDownModule.renderDropDowns({
             container: ele,
@@ -597,6 +597,7 @@ export class Toolbar {
         this.parent.off(events.bindOnEnd, this.toolbarBindEvent);
         this.parent.off(events.toolbarUpdated, this.updateToolbarStatus);
         this.parent.off(events.modelChanged, this.onPropertyChanged);
+        this.parent.off(events.refreshBegin, this.onRefresh);
         this.parent.off(events.destroy, this.destroy);
         this.parent.off(events.enableFullScreen, this.parent.fullScreenModule.showFullScreen);
         this.parent.off(events.disableFullScreen, this.parent.fullScreenModule.hideFullScreen);

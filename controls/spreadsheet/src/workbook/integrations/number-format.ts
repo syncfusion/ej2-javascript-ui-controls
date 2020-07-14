@@ -360,27 +360,55 @@ export class WorkbookNumberFormat {
         let dateObj: ToDateArgs;
         let intl: Internationalization = new Internationalization();
         let value: string = !isNullOrUndefined(args.value) ? args.value.toString() : '';
+        let checkedDate: string;
         let cell: CellModel = getCell(
             <number>args.rowIndex, <number>args.colIndex,
             getSheet(this.parent, isNullOrUndefined(<number>args.sheetIndex) ? this.parent.activeSheetIndex : <number>args.sheetIndex));
-        if (value && value.indexOf('/') > -1 || value.indexOf('-') > 0 || value.indexOf(':') > -1) {
-            dateObj = toDate(value, intl);
-            if (!isNullOrUndefined(dateObj.dateObj) && dateObj.dateObj.toString() !== 'Invalid Date') {
-                cell = cell ? cell : {};
-                value = dateToInt(dateObj.dateObj, value.indexOf(':') > -1).toString();
-                if (!cell.format || cell.format === '') {
-                    if (dateObj.type === 'time') {
-                        cell.format = getFormatFromType('Time');
-                    } else {
-                        cell.format = getFormatFromType('ShortDate');
+        checkedDate = this.checkCustomDateFormat(value);
+        if (value && (value.indexOf('/') > -1 || value.indexOf('-') > 0 || value.indexOf(':') > -1) && checkedDate !== 'Invalid') {
+            value = checkedDate;
+            if (value && value.indexOf('/') > -1 || value.indexOf('-') > 0 || value.indexOf(':') > -1) {
+                dateObj = toDate(value, intl);
+                if (!isNullOrUndefined(dateObj.dateObj) && dateObj.dateObj.toString() !== 'Invalid Date') {
+                    cell = cell ? cell : {};
+                    value = dateToInt(dateObj.dateObj, value.indexOf(':') > -1).toString();
+                    if (!cell.format || cell.format === '') {
+                        if (dateObj.type === 'time') {
+                            cell.format = getFormatFromType('Time');
+                        } else {
+                            cell.format = getFormatFromType('ShortDate');
+                        }
                     }
+                    args.isDate = dateObj.type === 'date' || dateObj.type === 'datetime';
+                    args.isTime = dateObj.type === 'time';
+                    args.dateObj = dateObj.dateObj;
                 }
-                args.isDate = dateObj.type === 'date' || dateObj.type === 'datetime';
-                args.isTime = dateObj.type === 'time';
-                args.dateObj = dateObj.dateObj;
+            }
+            args.updatedVal = value;
+        }
+    }
+
+    private checkCustomDateFormat(val: string): string {
+        let dateArr: string | string[] = val.indexOf('/') > -1 ? val.split('/') : val.indexOf('-') > 0 ? val.split('-') : '';
+        let months: string[] = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'sept', 'oct', 'nov', 'dec'];
+        if (dateArr.length === 2) {
+            if (months.indexOf(dateArr[0].toLowerCase()) > -1 && Number(dateArr[1]) <= 31) {
+                return '01-' + dateArr[0] + '-' + dateArr[1];
+            } else if (months.indexOf(dateArr[1].toLowerCase()) > -1 && Number(dateArr[0]) <= 31) {
+                return dateArr[0] + '-' + dateArr[1] + '-' + new Date().getFullYear();
+            } else if (dateArr[0] <= '31' && dateArr[1] <= '12') {
+                return dateArr[0] + '-' + dateArr[1] + '-' + new Date().getFullYear();
+            }
+            if (Number(dateArr[1]) <= 31 && Number(dateArr[0]) <= 12) {
+                return dateArr[0] + '-' + dateArr[1] + '-' + new Date().getFullYear();
+            }
+            if (Number(dateArr[0]) <= 12 && Number(dateArr[1]) <= 9999 && Number(dateArr[1]) >= 1900) {
+                return '01-' + dateArr[0] + '-' + dateArr[1];
+            } else {
+                return 'Invalid';
             }
         }
-        args.updatedVal = value;
+        return val;
     }
 
     private formattedBarText(args: { [key: string]: CellModel | string }): void {

@@ -713,7 +713,7 @@ export class InkDrawingTool extends ToolBase {
     }
     /**   @private  */
     public mouseUp(args: MouseEventArgs): boolean {
-        // super.mouseUp(args);
+        this.commandHandler.annotation.inkAnnotationModule.storePathData();
         return true;
     }
     /**   @private  */

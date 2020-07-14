@@ -431,6 +431,9 @@ export class Selection {
             if (includeHidden || !includeHidden && bookmarks.keys[i].indexOf('_') !== 0) {
                 bookmrkStart = bookmarks.get(bookmarks.keys[i]);
                 bookmrkEnd = bookmrkStart.reference;
+                if (isNullOrUndefined(bookmrkEnd)) {
+                    continue;
+                }
                 let bmStartPos: TextPosition = this.getElementPosition(bookmrkStart).startPosition;
                 let bmEndPos: TextPosition = this.getElementPosition(bookmrkEnd, true).startPosition;
                 if (bmStartPos.paragraph.isInsideTable || bmEndPos.paragraph.isInsideTable) {

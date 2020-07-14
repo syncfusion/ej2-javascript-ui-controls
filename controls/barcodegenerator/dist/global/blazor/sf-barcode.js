@@ -37,12 +37,17 @@ var __generator = (undefined && undefined.__generator) || function (thisArg, bod
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var Barcode = {
+/**
+ * Barcode used to calculate the barcode, text size and export, print the give barcode - Blazor scripts
+ */
+var barcode = {
     getBarcodeSize: function (element) {
         var bounds = element.getBoundingClientRect();
         var size = {};
-        size["Width"] = bounds.width;
-        size["Height"] = bounds.height;
+        var width = 'Width';
+        var height = 'Height';
+        size[width] = bounds.width;
+        size[height] = bounds.height;
         return size;
     },
     createHtmlElement: function (elementType, attribute) {
@@ -90,8 +95,10 @@ var Barcode = {
         text.setAttribute('style', 'font-size:' + size + 'px; font-family:' + fontStyle + ';');
         var bounds = text.getBBox();
         var bBox = {};
-        bBox["Width"] = bounds.width;
-        bBox["Height"] = bounds.height;
+        var width = 'Width';
+        var height = 'Height';
+        bBox[width] = bounds.width;
+        bBox[height] = bounds.height;
         window[measureElement].style.visibility = 'hidden';
         return bBox;
     },
@@ -112,15 +119,17 @@ var Barcode = {
         return collection;
     },
     checkOverlapTextPosition: function (value, stringSize, fontStyle, barcodeStartX, barcodeWidth, textStartX, marginRight, options) {
+        var textSize = 'stringSize';
+        var width = 'Width';
         options = options || {};
-        options["stringSize"] = stringSize;
+        options[textSize] = stringSize;
         var size = this.measureText(value, stringSize, fontStyle);
         var endValue = barcodeStartX + barcodeWidth;
-        if ((endValue - (textStartX + size.Width) <= marginRight) && stringSize > 2) {
-            options["stringSize"] -= .2;
-            this.checkOverlapTextPosition(value, options["stringSize"], fontStyle, barcodeStartX, barcodeWidth, textStartX, marginRight, options);
+        if ((endValue - (textStartX + size[width]) <= marginRight) && stringSize > 2) {
+            options[textSize] -= .2;
+            this.checkOverlapTextPosition(value, options[textSize], fontStyle, barcodeStartX, barcodeWidth, textStartX, marginRight, options);
         }
-        return options["stringSize"];
+        return options[textSize];
     },
     triggerDownload: function (type, fileName, url) {
         var anchorElement = document.createElement('a');
@@ -138,16 +147,13 @@ var Barcode = {
                         returnValue = _a.sent();
                         if (returnValue instanceof Promise) {
                             returnValue.then(function (data) {
-                                return __awaiter(this, void 0, void 0, function () {
-                                    return __generator(this, function (_a) {
-                                        return [2 /*return*/, data];
-                                    });
-                                });
+                                return data;
                             });
                             return [2 /*return*/, returnValue];
                         }
-                        else
+                        else {
                             return [2 /*return*/, returnValue];
+                        }
                         return [2 /*return*/];
                 }
             });
@@ -159,9 +165,11 @@ var Barcode = {
             return __generator(this, function (_a) {
                 instance = this;
                 promise = new Promise(function (resolve, reject) {
-                    var svgData = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' + element.children[0].outerHTML + '</svg>';
-                    var url = window.URL.createObjectURL(new Blob(type === 'SVG' ? [svgData] : [new window["XMLSerializer"]().serializeToString(element)], { type: 'image/svg+xml' }));
-                    if (type == "SVG") {
+                    var svgData = '<svg xmlns=' + 'http://www.w3.org/2000/svg' + ' xmlns:xlink=' + 'http://www.w3.org/1999/xlink' + '>'
+                        + element.children[0].outerHTML + '</svg>';
+                    var serializer = 'XMLSerializer';
+                    var url = window.URL.createObjectURL(new Blob(type === 'SVG' ? [svgData] : [new window[serializer]().serializeToString(element)], { type: 'image/svg+xml' }));
+                    if (type === 'SVG') {
                         instance.triggerDownload(type, fileName, url);
                         resolve(null);
                     }
@@ -179,7 +187,8 @@ var Barcode = {
                                 resolve(null);
                             }
                             else {
-                                var base64String = (type === 'JPEG') ? canvasElement_1.toDataURL('image/jpeg') : (type === 'PNG') ? canvasElement_1.toDataURL('image/png') : '';
+                                var base64String = (type === 'JPEG') ? canvasElement_1.toDataURL('image/jpeg') :
+                                    (type === 'PNG') ? canvasElement_1.toDataURL('image/png') : '';
                                 resolve(base64String);
                             }
                         };
@@ -192,6 +201,6 @@ var Barcode = {
     }
 };
 
-return Barcode;
+return barcode;
 
 }());

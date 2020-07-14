@@ -198,6 +198,8 @@ export const protectSheet: string = 'protectSheet';
 /** @hidden */
 export const applyProtect: string = 'applyProtect';
 /** @hidden */
+export const unprotectSheet: string = 'unprotectSheet';
+/** @hidden */
 export const protectCellFormat: string = 'protectCellFormat';
 /** @hidden */
 export const gotoDlg: string = 'renderGotoDlgt';

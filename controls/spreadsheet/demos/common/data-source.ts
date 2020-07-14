@@ -25725,3 +25725,26 @@ export let formulaData: Object[] = [
     { 'Platform': 'Vue', val1: 40, val2: 400, 'Formula': 'SUM(B2:B6)', 'Result': '=SUM(B2:B6)' },
     { 'Platform': 'Asp.Net Core', val1: 50, val2: 500, 'Formula': 'SUM(C2,C6)', 'Result': '=SUM(C2,C6)' }
 ];
+
+export let conditionalFormatData1: Object[] = [
+    { 'EV Model': 'BMW I3', JAN: 1224, FEB: 423, MAR: 585, APR: 367, MAY: 729, JUN: 733, JUL: 822, AUG: 424, SEP: 432, OCT: 811, NOV: 923, DEC: 542, Total: 8015 },
+    { 'EV Model': 'Tesla Model S', JAN: 975, FEB: 763, MAR: 723, APR: 483, MAY: 983, JUN: 589, JUL: 1120, AUG: 496, SEP: 673, OCT: 723, NOV: 1423, DEC: 546, Total: 9497 }, 
+    { 'EV Model': 'Chevrolet Volt', JAN: 113, FEB: 289, MAR: 675, APR: 458, MAY: 391, JUN: 198, JUL: 444, AUG: 412, SEP: 656, OCT: 321, NOV: 656, DEC: 711, Total: 5324 },
+    { 'EV Model': 'Jaguar I-PACE', JAN: 78, FEB: 177, MAR: 244, APR: 99, MAY: 312, JUN: 129, JUL: 300, AUG: 266, SEP: 182, OCT: 277, NOV: 101, DEC: 322, Total: 2487 },
+    { 'EV Model': 'Tesla Model X', JAN: 978, FEB: 1108, MAR: 1604, APR: 879, MAY: 1070, JUN: 1001, JUL: 1589, AUG: 989, SEP: 879, OCT: 992, NOV: 1102, DEC: 1089, Total: 13280 },
+    { 'EV Model': 'Nissan LEAF', JAN: 229, FEB: 978, MAR: 1202, APR: 822, MAY: 135, JUN: 878, JUL: 534, AUG: 434, SEP: 589, OCT: 667, NOV: 783, DEC: 281, Total: 7532 },
+    { 'EV Model': 'Honda Clarity EV', JAN: 671, FEB: 1302, MAR: 1201, APR: 989, MAY:679, JUN: 891, JUL: 591, AUG: 498, SEP: 711, OCT: 302, NOV: 998, DEC: 672, Total: 9505 },
+    { 'EV Model': 'Toyota Prius Prime', JAN: 978, FEB: 1362, MAR: 1872, APR: 678, MAY: 900, JUN: 867, JUL: 881, AUG: 911, SEP: 1101, OCT: 778, NOV: 891, DEC: 1067, Total: 12286 }
+];
+
+export let conditionalFormatData2: Object[] = [
+    { JAN: 700, FEB: 975, MAR: 844, APR: 764, MAY: 769, JUN: 1201, JUL: 390, AUG: 489, SEP: 789, OCT: 823, NOV: 633, DEC: 873, Total: 9250 },
+    { JAN: 989, FEB: 548, MAR: 398, APR: 458, MAY: 689, JUN: 1109, JUL: 878, AUG: 561, SEP: 985, OCT: 651, NOV: 300, DEC: 988, Total: 8554 },
+    { JAN: 289, FEB: 667, MAR: 166, APR: 298, MAY: 456, JUN: 398, JUL: 400, AUG: 399, SEP: 239, OCT: 159, NOV: 465, DEC: 334, Total: 4270 },
+    { JAN: 289, FEB: 110, MAR: 398, APR: 118, MAY: 411, JUN: 290, JUL: 210, AUG: 167, SEP: 98, OCT: 107, NOV: 211, DEC: 189, Total: 2598 },
+    { JAN: 1102, FEB: 1609, MAR: 1444, APR: 1320, MAY: 980, JUN: 1256, JUL: 1009, AUG: 790, SEP: 912, OCT: 1092, NOV: 1692, DEC: 1562, Total: 14768 },
+    { JAN: 404, FEB: 1202, MAR: 1110, APR: 298, MAY: 987, JUN: 456, JUL: 769, AUG: 333, SEP: 671, OCT: 1123, NOV: 309, DEC: 560, Total: 8222 },
+    { JAN: 496, FEB: 987, MAR: 878, APR: 401, MAY: 1110, JUN: 590, JUL: 719, AUG: 489, SEP: 1202, OCT: 1002, NOV: 711, DEC: 856, Total: 9441 },
+    { JAN: 1098, FEB: 1154, MAR: 989, APR: 1090, MAY: 889, JUN: 890, JUL: 978, AUG: 1190, SEP: 1270, OCT: 1508, NOV: 1209, DEC: 995, Total: 13260 }
+
+];

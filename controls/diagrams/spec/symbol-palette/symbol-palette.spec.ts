@@ -1704,5 +1704,75 @@ describe('Symbol Palette', () => {
             done();
         });
     })
+    describe('Adding groupnode into palette', () => {
+        let diagram: Diagram;
+        let palette: SymbolPalette;
+        let ele: HTMLElement;
+        function groupnode(){
+            if (diagram.selectedItems.nodes.length > 0) {
+                var nodes_1 = diagram.selectedItems.nodes[0];
+                if (nodes_1.children) {
+                    for (var i = 0; i < (nodes_1.children).length; i++) {
+                        var child1 = diagram.getObject((nodes_1.children[i]));
+                        palette.addPaletteItem('basic', child1, true);                      
+                    };
+                }
+                palette.addPaletteItem('basic', nodes_1, false);
+                palette.dataBind();
+               
+            }}
+        beforeAll((): void => {
+            ele = createElement('div', { styles: 'width:100%;height:500px;' });
+            ele.appendChild(createElement('div', { id: 'symbolPaletteOrder', styles: 'width:25%;height:500px;float:left;' }));
+            ele.appendChild(createElement('div', { id: 'diagramOrder', styles: 'width:74%;height:500px;float:left;' }));
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                {
+                    id: 'node1', width: 50, height: 50, offsetX: 100,
+                    offsetY: 100,
+                }, {
+                    id: 'node2', width: 50, height: 50, offsetX: 200,
+                    offsetY: 100
+                },
+                
+                { id: 'group', children: ['node1', 'node2']}
+            ];
+            diagram = new Diagram({
+                width: '800px', height: '500px', nodes: nodes
+        
+            });
+            diagram.appendTo('#diagramOrder');
+            function getBasicShapes(): NodeModel[] {
+                let BasicShapes: NodeModel[] = [];
+                return BasicShapes;
+            }
+            
+            palette = new SymbolPalette({
+                expandMode: 'Multiple',
+                palettes: [
+                    { id: 'basic', expanded: true, symbols: getBasicShapes(), title: 'Basic Shapes' },
+                ],
+                width: '200', height: '100%', symbolHeight: 50, symbolWidth: 50,
+                symbolPreview: { height: 100, width: 100 },
+               
+            });
+            palette.appendTo('#symbolPaletteOrder');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            palette.destroy();
+            ele.remove();
+        });
+
+        it('Adding group node into palette test cases', (done: Function) => {  
+            debugger          
+            diagram.select([diagram.nodes[2]]);
+            groupnode();
+            expect((document.getElementById('basic').childNodes.length == 1)).toBe(true)
+            done();
+        });
+        
+    });
 
 });

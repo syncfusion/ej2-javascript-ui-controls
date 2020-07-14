@@ -1,10 +1,11 @@
 import { Spreadsheet } from '../base/index';
-import { formulaBar, locale, selectionComplete, enableFormulaInput } from '../common/index';
+import { formulaBar, locale, selectionComplete, enableFormulaInput, DialogBeforeOpenEventArgs } from '../common/index';
 import { mouseUpAfterSelection, click } from '../common/index';
 import { getRangeIndexes, getRangeFromAddress, getCellAddress } from './../../workbook/common/address';
 import { CellModel, getSheetName, getTypeFromFormat, getSheet, SheetModel } from '../../workbook/index';
 import { updateSelectedRange, getSheetNameFromAddress, getSheetIndex, DefineNameModel } from '../../workbook/index';
 import { ComboBox, ChangeEventArgs, DropDownList, SelectEventArgs as DdlSelectArgs } from '@syncfusion/ej2-dropdowns';
+import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { rippleEffect, L10n, EventHandler, detach, Internationalization, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
 import { isUndefined } from '@syncfusion/ej2-base';
 import { editOperation, formulaBarOperation, keyDown, keyUp, formulaOperation, editAlert } from '../common/event';
@@ -320,10 +321,13 @@ export class FormulaBar {
                     descriptionContent.outerHTML + formulaDescription.outerHTML,
                     width: '320px', height: '485px', cssClass: 'e-spreadsheet-function-dlg',
                     showCloseIcon: true, isModal: true,
-                    beforeOpen: (): void => this.parent.element.focus(),
-                    open: this.dialogOpen.bind(this),
-                    beforeClose: this.dialogBeforeClose.bind(this),
-                    close: this.dialogClose.bind(this),
+                    beforeOpen: (args: BeforeOpenEventArgs): void => {
+                        let dlgArgs: DialogBeforeOpenEventArgs = {
+                            dialogName: 'InsertFunctionDialog', element: args.element, target: args.target, cancel: args.cancel };
+                        this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                        if (dlgArgs.cancel) { args.cancel = true; }
+                        this.parent.element.focus(); },
+                    open: this.dialogOpen.bind(this), beforeClose: this.dialogBeforeClose.bind(this), close: this.dialogClose.bind(this),
                     buttons: [
                     {
                         click: (this.selectFormula.bind(this, this.dialog, this)),

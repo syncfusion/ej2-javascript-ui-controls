@@ -77,6 +77,7 @@ export class VerticalView extends ViewBase implements IRenderer {
         let content: HTMLElement = this.getScrollableElement() as HTMLElement;
         let header: HTMLElement = this.getDatesHeaderElement();
         let scrollerHeight: number = this.parent.element.offsetHeight - headerBarHeight - header.offsetHeight;
+        this.setColWidth(content);
         this.setContentHeight(content, timecells, scrollerHeight);
         let scrollBarWidth: number = util.getScrollBarWidth();
         // tslint:disable:no-any
@@ -102,7 +103,6 @@ export class VerticalView extends ViewBase implements IRenderer {
                 content.scrollLeft = this.parent.uiStateValues.left;
             }
         }
-        this.setColWidth(content);
         if (this.parent.activeViewOptions.timeScale.enable) {
             this.highlightCurrentTime();
         }

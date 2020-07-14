@@ -1,4 +1,4 @@
-import { Spreadsheet } from '../index';
+import { Spreadsheet, DialogBeforeOpenEventArgs } from '../index';
 import { applyProtect, protectSheet, protectCellFormat, editAlert, enableFormulaInput } from '../common/event';
 import { clearCopy, protectSelection, clearUndoRedoCollection } from '../common/index';
 import { Dialog } from '../services/dialog';
@@ -8,6 +8,7 @@ import { locale, updateToggleItem, dialog} from '../common/index';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { SheetModel } from '../../workbook';
 import { applyLockCells, CellModel, setCell } from '../../workbook/index';
+import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 /**
  * The `Protect-sheet` module is used to handle the Protecting functionalities in Spreadsheet.
  */
@@ -94,7 +95,17 @@ export class ProtectSheet {
             content: checkBoxElement.outerHTML + protectHeaderCntent.outerHTML +  listViewElement.outerHTML,
             showCloseIcon: true, isModal: true,
             cssClass: 'e-protect-dlg',
-            beforeOpen: (): void => this.parent.element.focus(),
+            beforeOpen: (args: BeforeOpenEventArgs): void => {
+                let dlgArgs: DialogBeforeOpenEventArgs = {
+                    dialogName: 'ProtectSheetDialog',
+                    element: args.element, target: args.target, cancel: args.cancel
+                };
+                this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                if (dlgArgs.cancel) {
+                    args.cancel = true;
+                }
+                this.parent.element.focus();
+            },
             open: (): void => {
                 this.okBtnFocus();
             },
@@ -185,17 +196,25 @@ export class ProtectSheet {
     private editProtectedAlert(): void {
         let l10n: L10n = this.parent.serviceLocator.getService(locale);
         this.dialog = this.parent.serviceLocator.getService('dialog');
-        if (!this.dialog.dialogInstance) {
         this.dialog.show({
             content: l10n.getConstant('EditAlert'),
             isModal: true,
             closeOnEscape: true,
             showCloseIcon: true,
             width: '400px',
-            beforeOpen: (): void => this.parent.element.focus(),
+            beforeOpen: (args: BeforeOpenEventArgs): void => {
+                let dlgArgs: DialogBeforeOpenEventArgs = {
+                    dialogName: 'EditAlertDialog',
+                    element: args.element, target: args.target, cancel: args.cancel
+                };
+                this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                if (dlgArgs.cancel) {
+                    args.cancel = true;
+                }
+                this.parent.element.focus();
+            },
             close: (): void => this.parent.element.focus()
         });
-    }
     }
 
     private lockCellsHandler(args: { rowIdx: number, colIdx: number, isLocked?: boolean }): void {

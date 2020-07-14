@@ -945,6 +945,7 @@ var Double = /** @class */ (function () {
             var isLazyLoad = sf.base.isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
             if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad) {
                 axis.calculateVisibleRange(size);
+                axis.calculateAxisRange(size, this.chart);
                 axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming && axis.valueType !== 'Category') ?
                     this.calculateNumericNiceInterval(axis, axis.doubleRange.delta, size)
                     : axis.visibleRange.interval;
@@ -1040,6 +1041,8 @@ var legendRender = 'legendRender';
 var textRender = 'textRender';
 /** @private */
 var pointRender = 'pointRender';
+/** @private */
+var sharedTooltipRender = 'sharedTooltipRender';
 /** @private */
 var seriesRender = 'seriesRender';
 /** @private */
@@ -1751,6 +1754,53 @@ var Axis = /** @class */ (function (_super) {
             this.doubleRange = new DoubleRange(start, end);
             this.visibleRange = { min: this.doubleRange.start, max: this.doubleRange.end,
                 delta: this.doubleRange.delta, interval: this.visibleRange.interval };
+        }
+    };
+    /**
+     * Calculate range for x and y axis after zoom.
+     * @return {void}
+     * @private
+     */
+    Axis.prototype.calculateAxisRange = function (size, chart) {
+        if (chart.enableAutoIntervalOnBothAxis) {
+            if (this.orientation === 'Horizontal' && chart.zoomSettings.mode === 'X') {
+                for (var i = 0; i < this.series.length; i++) {
+                    var yValue = [];
+                    for (var _i = 0, _a = this.series[i].visiblePoints; _i < _a.length; _i++) {
+                        var points = _a[_i];
+                        if ((points.xValue > this.visibleRange.min) && (points.xValue < this.visibleRange.max)) {
+                            yValue.push(points.yValue);
+                        }
+                    }
+                    for (var _b = 0, _c = chart.axisCollections; _b < _c.length; _b++) {
+                        var axis = _c[_b];
+                        if (axis.orientation === 'Vertical' && !sf.base.isNullOrUndefined(axis.series[i])) {
+                            axis.series[i].yMin = Math.min.apply(Math, yValue);
+                            axis.series[i].yMax = Math.max.apply(Math, yValue);
+                            axis.baseModule.calculateRangeAndInterval(size, axis);
+                        }
+                    }
+                }
+            }
+            if (this.orientation === 'Vertical' && chart.zoomSettings.mode === 'Y') {
+                for (var i = 0; i < this.series.length; i++) {
+                    var xValue = [];
+                    for (var _d = 0, _e = this.series[i].visiblePoints; _d < _e.length; _d++) {
+                        var points = _e[_d];
+                        if ((points.yValue > this.visibleRange.min) && (points.yValue < this.visibleRange.max)) {
+                            xValue.push(points.xValue);
+                        }
+                    }
+                    for (var _f = 0, _g = chart.axisCollections; _f < _g.length; _f++) {
+                        var axis = _g[_f];
+                        if (axis.orientation === 'Horizontal' && !sf.base.isNullOrUndefined(axis.series[i])) {
+                            axis.series[i].xMin = Math.min.apply(Math, xValue);
+                            axis.series[i].xMax = Math.max.apply(Math, xValue);
+                            axis.baseModule.calculateRangeAndInterval(size, axis);
+                        }
+                    }
+                }
+            }
         }
     };
     /**
@@ -3009,6 +3059,7 @@ function calculateShapes(location, size, shape, options, url, isChart, control) 
         case 'Waterfall':
         case 'BoxAndWhisker':
         case 'StepArea':
+        case 'StackingStepArea':
         case 'Square':
         case 'Flag':
             dir = 'M' + ' ' + x + ' ' + (ly + (-height / 2)) + ' ' +
@@ -13536,6 +13587,9 @@ var Chart$1 = /** @class */ (function (_super) {
     ], Chart$$1.prototype, "useGroupingSeparator", void 0);
     __decorate$6([
         sf.base.Property(false)
+    ], Chart$$1.prototype, "enableAutoIntervalOnBothAxis", void 0);
+    __decorate$6([
+        sf.base.Property(false)
     ], Chart$$1.prototype, "isTransposed", void 0);
     __decorate$6([
         sf.base.Property(false)
@@ -13612,6 +13666,9 @@ var Chart$1 = /** @class */ (function (_super) {
     __decorate$6([
         sf.base.Event()
     ], Chart$$1.prototype, "tooltipRender", void 0);
+    __decorate$6([
+        sf.base.Event()
+    ], Chart$$1.prototype, "sharedTooltipRender", void 0);
     __decorate$6([
         sf.base.Event()
     ], Chart$$1.prototype, "chartMouseMove", void 0);
@@ -13929,14 +13986,14 @@ var DateTime = /** @class */ (function (_super) {
         var dateFormatter = this.chart.intl.getDateFormat(option);
         // Axis min
         if ((axis.minimum) !== null) {
-            this.min = Date.parse(dateParser(dateFormatter(new Date(sf.data.DataUtil.parse.parseJson({ val: axis.minimum }).val))));
+            this.min = this.chart.isBlazor ? Date.parse(axis.minimum.toString()) : Date.parse(dateParser(dateFormatter(new Date(sf.data.DataUtil.parse.parseJson({ val: axis.minimum }).val))));
         }
         else if (this.min === null || this.min === Number.POSITIVE_INFINITY) {
             this.min = Date.parse(dateParser(dateFormatter(new Date(1970, 1, 1))));
         }
         // Axis Max
         if ((axis.maximum) !== null) {
-            this.max = Date.parse(dateParser(dateFormatter(new Date(sf.data.DataUtil.parse.parseJson({ val: axis.maximum }).val))));
+            this.max = this.chart.isBlazor ? Date.parse(axis.maximum.toString()) : Date.parse(dateParser(dateFormatter(new Date(sf.data.DataUtil.parse.parseJson({ val: axis.maximum }).val))));
         }
         else if (this.max === null || this.max === Number.NEGATIVE_INFINITY) {
             this.max = Date.parse(dateParser(dateFormatter(new Date(1970, 5, 1))));
@@ -14085,6 +14142,7 @@ var DateTime = /** @class */ (function (_super) {
         var isLazyLoad = sf.base.isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
         if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad) {
             axis.calculateVisibleRange(size);
+            axis.calculateAxisRange(size, this.chart);
             axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming) ?
                 this.calculateDateTimeNiceInterval(axis, size, axis.visibleRange.min, axis.visibleRange.max)
                 : axis.visibleRange.interval;
@@ -17925,10 +17983,183 @@ var __extends$33 = (undefined && undefined.__extends) || (function () {
     };
 })();
 /**
+ * `StackingStepAreaSeries` module used to render the Stacking Step Area series.
+ */
+var StackingStepAreaSeries = /** @class */ (function (_super) {
+    __extends$33(StackingStepAreaSeries, _super);
+    function StackingStepAreaSeries() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    /**
+     * Render the Stacking step area series.
+     * @return {void}
+     * @private
+     */
+    StackingStepAreaSeries.prototype.render = function (stackSeries, xAxis, yAxis, isInverted) {
+        var currentPointLocation;
+        var secondPoint;
+        var start = null;
+        var direction = '';
+        var stackedvalue = stackSeries.stackedValues;
+        var visiblePoint = this.enableComplexProperty(stackSeries);
+        var origin = Math.max(stackSeries.yAxis.visibleRange.min, stackedvalue.startValues[0]);
+        var pointsLength = visiblePoint.length;
+        var options;
+        var point;
+        var point2;
+        var point3;
+        var xValue;
+        var lineLength;
+        var prevPoint = null;
+        var validIndex;
+        var startPoint = 0;
+        if (xAxis.valueType === 'Category' && xAxis.labelPlacement === 'BetweenTicks') {
+            lineLength = 0.5;
+        }
+        else {
+            lineLength = 0;
+        }
+        for (var i = 0; i < pointsLength; i++) {
+            point = visiblePoint[i];
+            xValue = point.xValue;
+            point.symbolLocations = [];
+            point.regions = [];
+            if (point.visible && withInRange(visiblePoint[i - 1], point, visiblePoint[i + 1], stackSeries)) {
+                if (start === null) {
+                    start = new ChartLocation(xValue, 0);
+                    currentPointLocation = getPoint(xValue - lineLength, origin, xAxis, yAxis, isInverted);
+                    direction += ('M' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
+                    currentPointLocation = getPoint(xValue - lineLength, stackedvalue.endValues[i], xAxis, yAxis, isInverted);
+                    direction += ('L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
+                }
+                if (prevPoint != null) {
+                    currentPointLocation = getPoint(point.xValue, stackedvalue.endValues[i], xAxis, yAxis, isInverted);
+                    secondPoint = getPoint(prevPoint.xValue, stackedvalue.endValues[prevPoint.index], xAxis, yAxis, isInverted);
+                    direction += ('L' + ' ' + (currentPointLocation.x) + ' ' + (secondPoint.y) +
+                        ' L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
+                }
+                else if (stackSeries.emptyPointSettings.mode === 'Gap') {
+                    currentPointLocation = getPoint(point.xValue, stackedvalue.endValues[i], xAxis, yAxis, isInverted);
+                    direction += 'L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ';
+                }
+                visiblePoint[i].symbolLocations.push(getPoint(visiblePoint[i].xValue, stackedvalue.endValues[i], xAxis, yAxis, isInverted, stackSeries));
+                visiblePoint[i].regions.push(new sf.svgbase.Rect(visiblePoint[i].symbolLocations[0].x - stackSeries.marker.width, visiblePoint[i].symbolLocations[0].y - stackSeries.marker.height, 2 * stackSeries.marker.width, 2 * stackSeries.marker.height));
+                prevPoint = point;
+            }
+            // If we set the empty point mode is Gap or next point of the current point is false, we will close the series path.
+            if (visiblePoint[i + 1] && !visiblePoint[i + 1].visible && stackSeries.emptyPointSettings.mode !== 'Drop') {
+                for (var j = i; j >= startPoint; j--) {
+                    if (j !== 0 && (stackedvalue.startValues[j] < stackedvalue.startValues[j - 1] ||
+                        stackedvalue.startValues[j] > stackedvalue.startValues[j - 1])) {
+                        currentPointLocation = getPoint(visiblePoint[j].xValue, stackedvalue.startValues[j], xAxis, yAxis, isInverted, stackSeries);
+                        direction = direction.concat('L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
+                        currentPointLocation = getPoint(visiblePoint[j].xValue, stackedvalue.startValues[j - 1], xAxis, yAxis, isInverted, stackSeries);
+                    }
+                    else {
+                        currentPointLocation = getPoint(visiblePoint[j].xValue, stackedvalue.startValues[j], xAxis, yAxis, isInverted, stackSeries);
+                    }
+                    direction = direction.concat('L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
+                }
+                startPoint = i + 1;
+                start = null;
+                prevPoint = null;
+            }
+        }
+        // For category axis
+        if ((pointsLength > 1) && direction !== '') {
+            start = { 'x': visiblePoint[pointsLength - 1].xValue + lineLength, 'y': stackedvalue.endValues[pointsLength - 1] };
+            secondPoint = getPoint(start.x, start.y, xAxis, yAxis, isInverted);
+            direction += ('L' + ' ' + (secondPoint.x) + ' ' + (secondPoint.y) + ' ');
+            start = { 'x': visiblePoint[pointsLength - 1].xValue + lineLength, 'y': stackedvalue.startValues[pointsLength - 1] };
+            secondPoint = getPoint(start.x, start.y, xAxis, yAxis, isInverted);
+            direction += ('L' + ' ' + (secondPoint.x) + ' ' + (secondPoint.y) + ' ');
+        }
+        // To close the stacked step area series path in reverse order
+        for (var j = pointsLength - 1; j >= startPoint; j--) {
+            var index = void 0;
+            if (visiblePoint[j].visible) {
+                point2 = getPoint(visiblePoint[j].xValue, stackedvalue.startValues[j], xAxis, yAxis, isInverted, stackSeries);
+                direction = direction.concat('L' + ' ' + (point2.x) + ' ' + (point2.y) + ' ');
+            }
+            if (j !== 0 && !visiblePoint[j - 1].visible) {
+                index = this.getNextVisiblePointIndex(visiblePoint, j);
+            }
+            if (j !== 0) {
+                validIndex = index ? index : j - 1;
+                point3 = getPoint(visiblePoint[validIndex].xValue, stackedvalue.startValues[validIndex], xAxis, yAxis, isInverted, stackSeries);
+                direction = direction.concat('L' + ' ' + (point2.x) + ' ' + (point3.y) + ' ');
+            }
+        }
+        options = new sf.svgbase.PathOption(stackSeries.chart.element.id + '_Series_' + stackSeries.index, stackSeries.interior, stackSeries.border.width, stackSeries.border.color, stackSeries.opacity, stackSeries.dashArray, direction);
+        this.appendLinePath(options, stackSeries, '');
+        this.renderMarker(stackSeries);
+    };
+    /**
+     * Animates the series.
+     * @param  {Series} series - Defines the series to animate.
+     * @return {void}
+     */
+    StackingStepAreaSeries.prototype.doAnimation = function (series) {
+        var option = series.animation;
+        this.doLinearAnimation(series, option);
+    };
+    /**
+     * To destroy the stacking step area.
+     * @return {void}
+     * @private
+     */
+    StackingStepAreaSeries.prototype.destroy = function (chart) {
+        /**
+         * Destroy method calling here
+         */
+    };
+    /**
+     * Get module name.
+     */
+    StackingStepAreaSeries.prototype.getModuleName = function () {
+        /**
+         * Returns the module name of the series
+         */
+        return 'StackingStepAreaSeries';
+    };
+    /**
+     * To get the nearest visible point
+     * @param points
+     * @param j
+     */
+    StackingStepAreaSeries.prototype.getNextVisiblePointIndex = function (points, j) {
+        var index;
+        for (index = j - 1; index >= 0; index--) {
+            if (!points[index].visible) {
+                continue;
+            }
+            else {
+                return index;
+            }
+        }
+        return 0;
+    };
+    return StackingStepAreaSeries;
+}(LineBase));
+
+var __extends$34 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+/**
  * `StackingLineSeries` module used to render the Stacking Line series.
  */
 var StackingLineSeries = /** @class */ (function (_super) {
-    __extends$33(StackingLineSeries, _super);
+    __extends$34(StackingLineSeries, _super);
     function StackingLineSeries() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -18156,7 +18387,7 @@ var ScatterSeries = /** @class */ (function () {
     return ScatterSeries;
 }());
 
-var __extends$34 = (undefined && undefined.__extends) || (function () {
+var __extends$35 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -18173,7 +18404,7 @@ var __extends$34 = (undefined && undefined.__extends) || (function () {
  * `RangeColumnSeries` module is used to render the range column series.
  */
 var RangeColumnSeries = /** @class */ (function (_super) {
-    __extends$34(RangeColumnSeries, _super);
+    __extends$35(RangeColumnSeries, _super);
     function RangeColumnSeries() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -18232,7 +18463,7 @@ var RangeColumnSeries = /** @class */ (function (_super) {
     return RangeColumnSeries;
 }(ColumnBase));
 
-var __extends$35 = (undefined && undefined.__extends) || (function () {
+var __extends$36 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -18249,7 +18480,7 @@ var __extends$35 = (undefined && undefined.__extends) || (function () {
  * `WaterfallSeries` module is used to render the waterfall series.
  */
 var WaterfallSeries = /** @class */ (function (_super) {
-    __extends$35(WaterfallSeries, _super);
+    __extends$36(WaterfallSeries, _super);
     function WaterfallSeries() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -18446,7 +18677,7 @@ var WaterfallSeries = /** @class */ (function (_super) {
     return WaterfallSeries;
 }(ColumnBase));
 
-var __extends$36 = (undefined && undefined.__extends) || (function () {
+var __extends$37 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -18463,7 +18694,7 @@ var __extends$36 = (undefined && undefined.__extends) || (function () {
  * `HiloSeries` module is used to render the hilo series.
  */
 var HiloSeries = /** @class */ (function (_super) {
-    __extends$36(HiloSeries, _super);
+    __extends$37(HiloSeries, _super);
     function HiloSeries() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -18539,7 +18770,7 @@ var HiloSeries = /** @class */ (function (_super) {
     return HiloSeries;
 }(ColumnBase));
 
-var __extends$37 = (undefined && undefined.__extends) || (function () {
+var __extends$38 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -18556,7 +18787,7 @@ var __extends$37 = (undefined && undefined.__extends) || (function () {
  * `HiloOpenCloseSeries` module is used to render the hiloOpenClose series.
  */
 var HiloOpenCloseSeries = /** @class */ (function (_super) {
-    __extends$37(HiloOpenCloseSeries, _super);
+    __extends$38(HiloOpenCloseSeries, _super);
     function HiloOpenCloseSeries() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -18687,7 +18918,7 @@ var HiloOpenCloseSeries = /** @class */ (function (_super) {
     return HiloOpenCloseSeries;
 }(ColumnBase));
 
-var __extends$38 = (undefined && undefined.__extends) || (function () {
+var __extends$39 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -18704,7 +18935,7 @@ var __extends$38 = (undefined && undefined.__extends) || (function () {
  * `RangeAreaSeries` module is used to render the range area series.
  */
 var RangeAreaSeries = /** @class */ (function (_super) {
-    __extends$38(RangeAreaSeries, _super);
+    __extends$39(RangeAreaSeries, _super);
     function RangeAreaSeries() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -18946,7 +19177,7 @@ var BubbleSeries = /** @class */ (function () {
     return BubbleSeries;
 }());
 
-var __extends$40 = (undefined && undefined.__extends) || (function () {
+var __extends$41 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -18963,7 +19194,7 @@ var __extends$40 = (undefined && undefined.__extends) || (function () {
  * render Line series
  */
 var SplineBase = /** @class */ (function (_super) {
-    __extends$40(SplineBase, _super);
+    __extends$41(SplineBase, _super);
     /** @private */
     function SplineBase(chartModule) {
         var _this = _super.call(this, chartModule) || this;
@@ -19250,7 +19481,7 @@ var SplineBase = /** @class */ (function (_super) {
     return SplineBase;
 }(LineBase));
 
-var __extends$39 = (undefined && undefined.__extends) || (function () {
+var __extends$40 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -19267,7 +19498,7 @@ var __extends$39 = (undefined && undefined.__extends) || (function () {
  * `SplineSeries` module is used to render the spline series.
  */
 var SplineSeries = /** @class */ (function (_super) {
-    __extends$39(SplineSeries, _super);
+    __extends$40(SplineSeries, _super);
     function SplineSeries() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -19362,7 +19593,7 @@ var SplineSeries = /** @class */ (function (_super) {
     return SplineSeries;
 }(SplineBase));
 
-var __extends$41 = (undefined && undefined.__extends) || (function () {
+var __extends$42 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -19379,7 +19610,7 @@ var __extends$41 = (undefined && undefined.__extends) || (function () {
  * `HistogramSeries` Module used to render the histogram series.
  */
 var HistogramSeries = /** @class */ (function (_super) {
-    __extends$41(HistogramSeries, _super);
+    __extends$42(HistogramSeries, _super);
     function HistogramSeries() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -19511,7 +19742,7 @@ var HistogramSeries = /** @class */ (function (_super) {
     return HistogramSeries;
 }(ColumnSeries));
 
-var __extends$42 = (undefined && undefined.__extends) || (function () {
+var __extends$43 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -19528,7 +19759,7 @@ var __extends$42 = (undefined && undefined.__extends) || (function () {
  * `SplineAreaSeries` module used to render the spline area series.
  */
 var SplineAreaSeries = /** @class */ (function (_super) {
-    __extends$42(SplineAreaSeries, _super);
+    __extends$43(SplineAreaSeries, _super);
     function SplineAreaSeries() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -19632,7 +19863,7 @@ var SplineAreaSeries = /** @class */ (function (_super) {
     return SplineAreaSeries;
 }(SplineBase));
 
-var __extends$44 = (undefined && undefined.__extends) || (function () {
+var __extends$45 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -19649,7 +19880,7 @@ var __extends$44 = (undefined && undefined.__extends) || (function () {
  * Technical Analysis module helps to predict the market trend
  */
 var TechnicalAnalysis = /** @class */ (function (_super) {
-    __extends$44(TechnicalAnalysis, _super);
+    __extends$45(TechnicalAnalysis, _super);
     function TechnicalAnalysis() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -19780,7 +20011,7 @@ var TechnicalAnalysis = /** @class */ (function (_super) {
     return TechnicalAnalysis;
 }(LineBase));
 
-var __extends$43 = (undefined && undefined.__extends) || (function () {
+var __extends$44 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -19797,7 +20028,7 @@ var __extends$43 = (undefined && undefined.__extends) || (function () {
  * `SmaIndicator` module is used to render SMA indicator.
  */
 var SmaIndicator = /** @class */ (function (_super) {
-    __extends$43(SmaIndicator, _super);
+    __extends$44(SmaIndicator, _super);
     function SmaIndicator() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -19857,7 +20088,7 @@ var SmaIndicator = /** @class */ (function (_super) {
     return SmaIndicator;
 }(TechnicalAnalysis));
 
-var __extends$45 = (undefined && undefined.__extends) || (function () {
+var __extends$46 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -19874,7 +20105,7 @@ var __extends$45 = (undefined && undefined.__extends) || (function () {
  * `EmaIndicator` module is used to render EMA indicator.
  */
 var EmaIndicator = /** @class */ (function (_super) {
-    __extends$45(EmaIndicator, _super);
+    __extends$46(EmaIndicator, _super);
     function EmaIndicator() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -19933,7 +20164,7 @@ var EmaIndicator = /** @class */ (function (_super) {
     return EmaIndicator;
 }(TechnicalAnalysis));
 
-var __extends$46 = (undefined && undefined.__extends) || (function () {
+var __extends$47 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -19950,7 +20181,7 @@ var __extends$46 = (undefined && undefined.__extends) || (function () {
  * `TmaIndicator` module is used to render TMA indicator.
  */
 var TmaIndicator = /** @class */ (function (_super) {
-    __extends$46(TmaIndicator, _super);
+    __extends$47(TmaIndicator, _super);
     function TmaIndicator() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -20034,7 +20265,7 @@ var TmaIndicator = /** @class */ (function (_super) {
     return TmaIndicator;
 }(TechnicalAnalysis));
 
-var __extends$47 = (undefined && undefined.__extends) || (function () {
+var __extends$48 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -20051,7 +20282,7 @@ var __extends$47 = (undefined && undefined.__extends) || (function () {
  * `AccumulationDistributionIndicator` module is used to render accumulation distribution indicator.
  */
 var AccumulationDistributionIndicator = /** @class */ (function (_super) {
-    __extends$47(AccumulationDistributionIndicator, _super);
+    __extends$48(AccumulationDistributionIndicator, _super);
     function AccumulationDistributionIndicator() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -20124,7 +20355,7 @@ var AccumulationDistributionIndicator = /** @class */ (function (_super) {
     return AccumulationDistributionIndicator;
 }(TechnicalAnalysis));
 
-var __extends$48 = (undefined && undefined.__extends) || (function () {
+var __extends$49 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -20141,7 +20372,7 @@ var __extends$48 = (undefined && undefined.__extends) || (function () {
  * `AtrIndicator` module is used to render ATR indicator.
  */
 var AtrIndicator = /** @class */ (function (_super) {
-    __extends$48(AtrIndicator, _super);
+    __extends$49(AtrIndicator, _super);
     function AtrIndicator() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -20227,7 +20458,7 @@ var AtrIndicator = /** @class */ (function (_super) {
     return AtrIndicator;
 }(TechnicalAnalysis));
 
-var __extends$49 = (undefined && undefined.__extends) || (function () {
+var __extends$50 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -20244,7 +20475,7 @@ var __extends$49 = (undefined && undefined.__extends) || (function () {
  * `MomentumIndicator` module is used to render Momentum indicator.
  */
 var MomentumIndicator = /** @class */ (function (_super) {
-    __extends$49(MomentumIndicator, _super);
+    __extends$50(MomentumIndicator, _super);
     function MomentumIndicator() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -20303,7 +20534,7 @@ var MomentumIndicator = /** @class */ (function (_super) {
     return MomentumIndicator;
 }(TechnicalAnalysis));
 
-var __extends$50 = (undefined && undefined.__extends) || (function () {
+var __extends$51 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -20320,7 +20551,7 @@ var __extends$50 = (undefined && undefined.__extends) || (function () {
  * `RsiIndicator` module is used to render RSI indicator.
  */
 var RsiIndicator = /** @class */ (function (_super) {
-    __extends$50(RsiIndicator, _super);
+    __extends$51(RsiIndicator, _super);
     function RsiIndicator() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -20415,7 +20646,7 @@ var RsiIndicator = /** @class */ (function (_super) {
     return RsiIndicator;
 }(TechnicalAnalysis));
 
-var __extends$51 = (undefined && undefined.__extends) || (function () {
+var __extends$52 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -20432,7 +20663,7 @@ var __extends$51 = (undefined && undefined.__extends) || (function () {
  * `StochasticIndicator` module is used to render stochastic indicator.
  */
 var StochasticIndicator = /** @class */ (function (_super) {
-    __extends$51(StochasticIndicator, _super);
+    __extends$52(StochasticIndicator, _super);
     function StochasticIndicator() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -20580,7 +20811,7 @@ var StochasticIndicator = /** @class */ (function (_super) {
     return StochasticIndicator;
 }(TechnicalAnalysis));
 
-var __extends$52 = (undefined && undefined.__extends) || (function () {
+var __extends$53 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -20597,7 +20828,7 @@ var __extends$52 = (undefined && undefined.__extends) || (function () {
  * `BollingerBands` module is used to render bollinger band indicator.
  */
 var BollingerBands = /** @class */ (function (_super) {
-    __extends$52(BollingerBands, _super);
+    __extends$53(BollingerBands, _super);
     function BollingerBands() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -20733,7 +20964,7 @@ var BollingerBands = /** @class */ (function (_super) {
     return BollingerBands;
 }(TechnicalAnalysis));
 
-var __extends$53 = (undefined && undefined.__extends) || (function () {
+var __extends$54 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -20750,7 +20981,7 @@ var __extends$53 = (undefined && undefined.__extends) || (function () {
  * `MacdIndicator` module is used to render MACD indicator.
  */
 var MacdIndicator = /** @class */ (function (_super) {
-    __extends$53(MacdIndicator, _super);
+    __extends$54(MacdIndicator, _super);
     function MacdIndicator() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -21940,7 +22171,7 @@ var Crosshair = /** @class */ (function () {
     return Crosshair;
 }());
 
-var __extends$54 = (undefined && undefined.__extends) || (function () {
+var __extends$55 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -21957,7 +22188,7 @@ var __extends$54 = (undefined && undefined.__extends) || (function () {
  * `Tooltip` module is used to render the tooltip for chart series.
  */
 var Tooltip$1 = /** @class */ (function (_super) {
-    __extends$54(Tooltip$$1, _super);
+    __extends$55(Tooltip$$1, _super);
     /**
      * Constructor for tooltip module.
      * @private.
@@ -22255,6 +22486,9 @@ var Tooltip$1 = /** @class */ (function (_super) {
             }
         }
         this.removeText();
+        var argument = {
+            text: [], cancel: false, name: sharedTooltipRender, data: [], headerText: '', textStyle: this.textStyle
+        };
         for (var _i = 0, _a = chart.visibleSeries; _i < _a.length; _i++) {
             var series = _a[_i];
             if (!series.enableTooltip || !series.visible) {
@@ -22270,7 +22504,16 @@ var Tooltip$1 = /** @class */ (function (_super) {
                 headerContent = this.findHeader(data);
             }
             if (data) {
-                this.triggerSharedTooltip(data, isFirst, this.getTooltipText(data), this.findHeader(data), extraPoints);
+                if (!chart.isBlazor) {
+                    this.triggerSharedTooltip(data, isFirst, this.getTooltipText(data), this.findHeader(data), extraPoints);
+                }
+                else {
+                    argument.data.push({ pointX: data.point.x, pointY: data.point.y, seriesIndex: data.series.index,
+                        seriesName: data.series.name, pointIndex: data.point.index, pointText: data.point.text });
+                    argument.headerText = this.findHeader(data);
+                    this.currentPoints.push(data);
+                    argument.text.push(this.getTooltipText(data));
+                }
             }
             // if (data && this.triggerEvent(data, isFirst, this.getTooltipText(data)), this.findHeader(data)) {
             //     this.findMouseValue(data, chart);
@@ -22280,12 +22523,37 @@ var Tooltip$1 = /** @class */ (function (_super) {
             //     extraPoints.push(data);
             // }
         }
+        if (chart.isBlazor) {
+            this.triggerBlazorSharedTooltip(argument, data, extraPoints, chart, isFirst);
+        }
         if (this.currentPoints.length > 0) {
             this.createTooltip(chart, isFirst, this.findSharedLocation(), this.currentPoints.length === 1 ? this.currentPoints[0].series.clipRect : null, null, this.findShapes(), this.findMarkerHeight(this.currentPoints[0]), chart.chartAxisLayoutPanel.seriesClipRect, extraPoints);
         }
         else if (this.getElement(this.element.id + '_tooltip_path')) {
             this.getElement(this.element.id + '_tooltip_path').setAttribute('d', '');
         }
+    };
+    Tooltip$$1.prototype.triggerBlazorSharedTooltip = function (argument, point, extraPoints, chart, isFirst) {
+        var _this = this;
+        var argsData = {
+            cancel: false, name: sharedTooltipRender, text: argument.text, headerText: argument.headerText,
+            textStyle: argument.textStyle,
+            data: argument.data
+        };
+        var blazorSharedTooltip = function (argsData) {
+            if (!argsData.cancel) {
+                _this.text = argsData.text;
+                _this.headerText = argsData.headerText;
+                _this.findMouseValue(point, _this.chart);
+                point = null;
+                _this.createTooltip(chart, isFirst, _this.findSharedLocation(), null, null, _this.findShapes(), _this.findMarkerHeight(_this.currentPoints[0]), chart.chartAxisLayoutPanel.seriesClipRect, extraPoints);
+            }
+            else {
+                extraPoints.push(point);
+            }
+        };
+        blazorSharedTooltip.bind(this, point, extraPoints);
+        this.chart.trigger(sharedTooltipRender, argsData, blazorSharedTooltip);
     };
     Tooltip$$1.prototype.triggerSharedTooltip = function (point, isFirst, textCollection, headerText, extraPoints) {
         var _this = this;
@@ -23988,7 +24256,7 @@ var BaseSelection = /** @class */ (function () {
     return BaseSelection;
 }());
 
-var __extends$55 = (undefined && undefined.__extends) || (function () {
+var __extends$56 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -24010,7 +24278,7 @@ var __extends$55 = (undefined && undefined.__extends) || (function () {
  * @private
  */
 var Selection = /** @class */ (function (_super) {
-    __extends$55(Selection, _super);
+    __extends$56(Selection, _super);
     /**
      * Constructor for selection module.
      * @private.
@@ -25547,7 +25815,7 @@ var DataEditing = /** @class */ (function () {
     return DataEditing;
 }());
 
-var __extends$56 = (undefined && undefined.__extends) || (function () {
+var __extends$57 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -25569,7 +25837,7 @@ var __extends$56 = (undefined && undefined.__extends) || (function () {
  * @private
  */
 var Highlight = /** @class */ (function (_super) {
-    __extends$56(Highlight, _super);
+    __extends$57(Highlight, _super);
     /**
      * Constructor for selection module.
      * @private.
@@ -26685,7 +26953,7 @@ var ErrorBar = /** @class */ (function () {
     return ErrorBar;
 }());
 
-var __extends$57 = (undefined && undefined.__extends) || (function () {
+var __extends$58 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -26705,7 +26973,7 @@ var __extends$57 = (undefined && undefined.__extends) || (function () {
  * `Legend` module is used to render legend for the chart.
  */
 var Legend = /** @class */ (function (_super) {
-    __extends$57(Legend, _super);
+    __extends$58(Legend, _super);
     function Legend(chart) {
         var _this = _super.call(this, chart) || this;
         _this.library = _this;
@@ -26867,18 +27135,10 @@ var Legend = /** @class */ (function (_super) {
         var series = chart.visibleSeries[seriesIndex];
         var legend = this.legendCollections[seriesIndex];
         var changeDetection = 'isProtectedOnChange';
-        var legendClickArgs = { legendText: legend.text, legendShape: legend.shape,
+        var legendClickArgs = {
+            legendText: legend.text, legendShape: legend.shape,
             chart: chart.isBlazor ? {} : chart, series: series, name: legendClick, cancel: false
         };
-        this.chart.trigger(legendClick, legendClickArgs);
-        series.legendShape = legendClickArgs.legendShape;
-        if (series.fill !== null) {
-            chart.visibleSeries[seriesIndex].interior = series.fill;
-        }
-        var selectedDataIndexes = [];
-        if (chart.selectionModule) {
-            selectedDataIndexes = sf.base.extend([], chart.selectionModule.selectedDataIndexes, null, true);
-        }
         if (chart.legendSettings.toggleVisibility) {
             if (series.category === 'TrendLine') {
                 if (!chart.series[series.sourceIndex].trendlines[series.index].visible) {
@@ -26892,6 +27152,17 @@ var Legend = /** @class */ (function (_super) {
                 series.chart[changeDetection] = true;
                 this.changeSeriesVisiblity(series, series.visible);
             }
+        }
+        this.chart.trigger(legendClick, legendClickArgs);
+        series.legendShape = legendClickArgs.legendShape;
+        if (series.fill !== null) {
+            chart.visibleSeries[seriesIndex].interior = series.fill;
+        }
+        var selectedDataIndexes = [];
+        if (chart.selectionModule) {
+            selectedDataIndexes = sf.base.extend([], chart.selectionModule.selectedDataIndexes, null, true);
+        }
+        if (chart.legendSettings.toggleVisibility) {
             legend.visible = series.category === 'TrendLine' ? chart.series[series.sourceIndex].trendlines[series.index].visible :
                 (series.visible);
             if ((chart.svgObject.childNodes.length > 0) && !chart.enableAnimation && !chart.enableCanvas) {
@@ -27131,7 +27402,7 @@ var AnnotationBase = /** @class */ (function () {
                     }
                     else if (xAxis.valueType === 'DateTime') {
                         var option = { skeleton: 'full', type: 'dateTime' };
-                        xValue = (typeof this.annotation.x === 'object') ?
+                        xValue = (typeof this.annotation.x === 'object' || typeof new Date(this.annotation.x) === 'object') ?
                             Date.parse(chart.intl.getDateParser(option)(chart.intl.getDateFormat(option)(new Date(sf.data.DataUtil.parse.parseJson({ val: annotation.x }).val)))) : 0;
                     }
                     else {
@@ -27266,7 +27537,7 @@ var AnnotationBase = /** @class */ (function () {
     return AnnotationBase;
 }());
 
-var __extends$58 = (undefined && undefined.__extends) || (function () {
+var __extends$59 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -27283,7 +27554,7 @@ var __extends$58 = (undefined && undefined.__extends) || (function () {
  * `ChartAnnotation` module handles the annotation for chart.
  */
 var ChartAnnotation = /** @class */ (function (_super) {
-    __extends$58(ChartAnnotation, _super);
+    __extends$59(ChartAnnotation, _super);
     /**
      * Constructor for chart annotation.
      * @private.
@@ -27329,7 +27600,7 @@ var ChartAnnotation = /** @class */ (function (_super) {
     return ChartAnnotation;
 }(AnnotationBase));
 
-var __extends$59 = (undefined && undefined.__extends) || (function () {
+var __extends$60 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -27346,7 +27617,7 @@ var __extends$59 = (undefined && undefined.__extends) || (function () {
  * `BoxAndWhiskerSeries` module is used to render the box and whisker series.
  */
 var BoxAndWhiskerSeries = /** @class */ (function (_super) {
-    __extends$59(BoxAndWhiskerSeries, _super);
+    __extends$60(BoxAndWhiskerSeries, _super);
     function BoxAndWhiskerSeries() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -27657,7 +27928,7 @@ var BoxAndWhiskerSeries = /** @class */ (function (_super) {
     return BoxAndWhiskerSeries;
 }(ColumnBase));
 
-var __extends$60 = (undefined && undefined.__extends) || (function () {
+var __extends$61 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -27674,7 +27945,7 @@ var __extends$60 = (undefined && undefined.__extends) || (function () {
  * `MultiColoredAreaSeries` module used to render the area series with multi color.
  */
 var MultiColoredAreaSeries = /** @class */ (function (_super) {
-    __extends$60(MultiColoredAreaSeries, _super);
+    __extends$61(MultiColoredAreaSeries, _super);
     function MultiColoredAreaSeries() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -27767,7 +28038,7 @@ var MultiColoredAreaSeries = /** @class */ (function (_super) {
     return MultiColoredAreaSeries;
 }(MultiColoredSeries));
 
-var __extends$61 = (undefined && undefined.__extends) || (function () {
+var __extends$62 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -27784,7 +28055,7 @@ var __extends$61 = (undefined && undefined.__extends) || (function () {
  * `MultiColoredLineSeries` used to render the line series with multi color.
  */
 var MultiColoredLineSeries = /** @class */ (function (_super) {
-    __extends$61(MultiColoredLineSeries, _super);
+    __extends$62(MultiColoredLineSeries, _super);
     function MultiColoredLineSeries() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -29242,7 +29513,7 @@ var ScrollBar = /** @class */ (function () {
     return ScrollBar;
 }());
 
-var __extends$62 = (undefined && undefined.__extends) || (function () {
+var __extends$63 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -29259,7 +29530,7 @@ var __extends$62 = (undefined && undefined.__extends) || (function () {
  * `Pareto series` module used to render the Pareto series.
  */
 var ParetoSeries = /** @class */ (function (_super) {
-    __extends$62(ParetoSeries, _super);
+    __extends$63(ParetoSeries, _super);
     function ParetoSeries() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.paretoAxes = [];
@@ -29486,6 +29757,7 @@ exports.StackingColumnSeries = StackingColumnSeries;
 exports.StepLineSeries = StepLineSeries;
 exports.StepAreaSeries = StepAreaSeries;
 exports.StackingAreaSeries = StackingAreaSeries;
+exports.StackingStepAreaSeries = StackingStepAreaSeries;
 exports.StackingLineSeries = StackingLineSeries;
 exports.ScatterSeries = ScatterSeries;
 exports.RangeColumnSeries = RangeColumnSeries;

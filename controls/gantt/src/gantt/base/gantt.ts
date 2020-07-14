@@ -2057,6 +2057,9 @@ export class Gantt extends Component<HTMLElement>
                     this.dataOperation.getNonWorkingDayIndex();
                     this.dataOperation.reUpdateGanttData();
                     this.chartRowsModule.initiateTemplates();
+                    if (this.taskFields.dependency) {
+                        this.predecessorModule.updatedRecordsDateByPredecessor();
+                    }
                     this.chartRowsModule.refreshGanttRows();
                     this.treeGrid.refreshColumns();
                     this.timelineModule.refreshTimeline();

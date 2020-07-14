@@ -497,6 +497,8 @@ const protectsheetHandler = 'protectsheetHandler';
 /** @hidden */
 const replaceAllDialog = 'replaceAllDialog';
 /** @hidden */
+const unprotectsheetHandler = 'unprotectsheetHandler';
+/** @hidden */
 const workBookeditAlert = 'editAlert';
 /** @hidden */
 const setLockCells = 'setLockCells';
@@ -878,26 +880,56 @@ class WorkbookNumberFormat {
         let dateObj;
         let intl = new Internationalization();
         let value = !isNullOrUndefined(args.value) ? args.value.toString() : '';
+        let checkedDate;
         let cell = getCell(args.rowIndex, args.colIndex, getSheet(this.parent, isNullOrUndefined(args.sheetIndex) ? this.parent.activeSheetIndex : args.sheetIndex));
-        if (value && value.indexOf('/') > -1 || value.indexOf('-') > 0 || value.indexOf(':') > -1) {
-            dateObj = toDate(value, intl);
-            if (!isNullOrUndefined(dateObj.dateObj) && dateObj.dateObj.toString() !== 'Invalid Date') {
-                cell = cell ? cell : {};
-                value = dateToInt(dateObj.dateObj, value.indexOf(':') > -1).toString();
-                if (!cell.format || cell.format === '') {
-                    if (dateObj.type === 'time') {
-                        cell.format = getFormatFromType('Time');
+        checkedDate = this.checkCustomDateFormat(value);
+        if (value && (value.indexOf('/') > -1 || value.indexOf('-') > 0 || value.indexOf(':') > -1) && checkedDate !== 'Invalid') {
+            value = checkedDate;
+            if (value && value.indexOf('/') > -1 || value.indexOf('-') > 0 || value.indexOf(':') > -1) {
+                dateObj = toDate(value, intl);
+                if (!isNullOrUndefined(dateObj.dateObj) && dateObj.dateObj.toString() !== 'Invalid Date') {
+                    cell = cell ? cell : {};
+                    value = dateToInt(dateObj.dateObj, value.indexOf(':') > -1).toString();
+                    if (!cell.format || cell.format === '') {
+                        if (dateObj.type === 'time') {
+                            cell.format = getFormatFromType('Time');
+                        }
+                        else {
+                            cell.format = getFormatFromType('ShortDate');
+                        }
                     }
-                    else {
-                        cell.format = getFormatFromType('ShortDate');
-                    }
+                    args.isDate = dateObj.type === 'date' || dateObj.type === 'datetime';
+                    args.isTime = dateObj.type === 'time';
+                    args.dateObj = dateObj.dateObj;
                 }
-                args.isDate = dateObj.type === 'date' || dateObj.type === 'datetime';
-                args.isTime = dateObj.type === 'time';
-                args.dateObj = dateObj.dateObj;
+            }
+            args.updatedVal = value;
+        }
+    }
+    checkCustomDateFormat(val) {
+        let dateArr = val.indexOf('/') > -1 ? val.split('/') : val.indexOf('-') > 0 ? val.split('-') : '';
+        let months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'sept', 'oct', 'nov', 'dec'];
+        if (dateArr.length === 2) {
+            if (months.indexOf(dateArr[0].toLowerCase()) > -1 && Number(dateArr[1]) <= 31) {
+                return '01-' + dateArr[0] + '-' + dateArr[1];
+            }
+            else if (months.indexOf(dateArr[1].toLowerCase()) > -1 && Number(dateArr[0]) <= 31) {
+                return dateArr[0] + '-' + dateArr[1] + '-' + new Date().getFullYear();
+            }
+            else if (dateArr[0] <= '31' && dateArr[1] <= '12') {
+                return dateArr[0] + '-' + dateArr[1] + '-' + new Date().getFullYear();
+            }
+            if (Number(dateArr[1]) <= 31 && Number(dateArr[0]) <= 12) {
+                return dateArr[0] + '-' + dateArr[1] + '-' + new Date().getFullYear();
+            }
+            if (Number(dateArr[0]) <= 12 && Number(dateArr[1]) <= 9999 && Number(dateArr[1]) >= 1900) {
+                return '01-' + dateArr[0] + '-' + dateArr[1];
+            }
+            else {
+                return 'Invalid';
             }
         }
-        args.updatedVal = value;
+        return val;
     }
     formattedBarText(args) {
         let type = getTypeFromFormat(args.cell ? args.cell.format : '');
@@ -1638,6 +1670,8 @@ const protectSheet = 'protectSheet';
 /** @hidden */
 const applyProtect = 'applyProtect';
 /** @hidden */
+const unprotectSheet = 'unprotectSheet';
+/** @hidden */
 const protectCellFormat = 'protectCellFormat';
 /** @hidden */
 const gotoDlg = 'renderGotoDlgt';
@@ -1969,7 +2003,7 @@ class WorkbookSave extends SaveWorker {
             'beforeSort', 'cellEdit', 'cellEditing', 'cellSave', 'beforeCellSave', 'contextMenuItemSelect', 'contextMenuBeforeClose',
             'contextMenuBeforeOpen', 'created', 'dataBound', 'fileMenuItemSelect', 'fileMenuBeforeClose', 'fileMenuBeforeOpen',
             'saveComplete', 'sortComplete', 'select', 'actionBegin', 'actionComplete', 'afterHyperlinkClick', 'afterHyperlinkCreate',
-            'beforeHyperlinkClick', 'beforeHyperlinkCreate', 'openComplete', 'openFailure', 'queryCellInfo']);
+            'beforeHyperlinkClick', 'beforeHyperlinkCreate', 'openComplete', 'openFailure', 'queryCellInfo', 'dialogBeforeOpen']);
         let basicSettings = JSON.parse(jsonStr);
         let sheetCount = this.parent.sheets.length;
         if (sheetCount) {
@@ -8182,7 +8216,6 @@ class WorkbookFormula {
                         this.calculateInstance.valueChanged(sheetName, tempArgs, true);
                     }
                 }
-                this.calculateInstance.cell = '';
             }
         }
         else {
@@ -8201,6 +8234,7 @@ class WorkbookFormula {
             this.calculateInstance.refresh(cellRef);
             this.calculateInstance.refreshRandValues(cellRef);
         }
+        this.calculateInstance.cell = '';
     }
     autoCorrectFormula(formula) {
         if (!isNullOrUndefined(formula)) {
@@ -9605,8 +9639,11 @@ class WorkbookDelete {
             }
         }
         mergeArgsCollection.forEach((merge$$1) => { this.parent.notify(setMerge, merge$$1); });
-        this.parent.notify(deleteAction, { startIndex: args.start, endIndex: args.end, modelType: args.modelType,
-            isAction: args.isAction, deletedModel: deletedModel, deletedCellsModel: deletedCells });
+        this.parent.notify(deleteAction, {
+            startIndex: args.start, endIndex: args.end, modelType: args.modelType,
+            isAction: args.isAction, deletedModel: deletedModel, deletedCellsModel: deletedCells,
+            activeSheetIndex: this.parent.activeSheetIndex
+        });
     }
     setDeleteInfo(startIndex, endIndex, totalKey, modelType = 'Row') {
         let total = (endIndex - startIndex) + 1;
@@ -10849,6 +10886,17 @@ class WorkbookProtectSheet {
         this.parent.notify(protectSheetWorkBook, sheet.protectSettings);
         this.parent.notify(updateToggle, { props: 'Protect' });
     }
+    unprotectsheetHandler(args) {
+        let sheet = this.parent.getActiveSheet();
+        if (args.sheet) {
+            sheet = this.parent.sheets[args.sheet];
+        }
+        sheet.protectSettings.formatCells = sheet.protectSettings.formatColumns = false;
+        sheet.protectSettings.formatRows = sheet.protectSettings.selectCells = false;
+        sheet.isProtected = false;
+        this.parent.notify(protectSheetWorkBook, sheet.protectSettings);
+        this.parent.notify(updateToggle, { props: 'Protect' });
+    }
     /**
      * To destroy the edit module.
      * @return {void}
@@ -10860,12 +10908,14 @@ class WorkbookProtectSheet {
     }
     addEventListener() {
         this.parent.on(protectsheetHandler, this.protectsheetHandler, this);
+        this.parent.on(unprotectsheetHandler, this.unprotectsheetHandler, this);
         this.parent.on(setLockCells, this.lockCells, this);
     }
     removeEventListener() {
         if (!this.parent.isDestroyed) {
             this.parent.off(protectsheetHandler, this.protectsheetHandler);
-            this.parent.on(setLockCells, this.lockCells);
+            this.parent.off(setLockCells, this.lockCells);
+            this.parent.off(protectsheetHandler, this.unprotectsheetHandler);
         }
     }
     lockCells(args) {
@@ -13751,8 +13801,16 @@ let Workbook = Workbook_1 = class Workbook extends Component {
      * Protect the active sheet based on the protect sheetings.
      * @param protectSettings - Specifies the protect settings of the sheet.
      */
-    protectSheet(sheetIndex, protectSettings) {
+    protectSheet(sheet, protectSettings) {
         this.notify(protectsheetHandler, protectSettings);
+    }
+    /**
+     * Unprotect the active sheet.
+     * @param sheet - Specifies the sheet to Unprotect.
+     */
+    unprotectSheet(sheet) {
+        let args = { sheet: sheet };
+        this.notify(unprotectsheetHandler, args);
     }
     /**
      * Sorts the range of cells in the active Spreadsheet.
@@ -15490,7 +15548,17 @@ class Clipboard {
             header: 'Spreadsheet',
             target: this.parent.element,
             height: 205, width: 340, isModal: true, showCloseIcon: true,
-            content: this.parent.serviceLocator.getService(locale).getConstant('PasteAlert')
+            content: this.parent.serviceLocator.getService(locale).getConstant('PasteAlert'),
+            beforeOpen: (args) => {
+                let dlgArgs = {
+                    dialogName: 'PasteDialog',
+                    element: args.element, target: args.target, cancel: args.cancel
+                };
+                this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                if (dlgArgs.cancel) {
+                    args.cancel = true;
+                }
+            }
         });
     }
     hidePaste(isShow) {
@@ -19342,12 +19410,20 @@ class SpreadsheetHyperlink {
             this.parent.notify(editAlert, null);
             return;
         }
-        if (!this.parent.element.querySelector('.e-dlg-container')) {
+        if (!this.parent.element.querySelector('.e-hyperlink-dlg')) {
             let dialogInst = this.parent.serviceLocator.getService(dialog);
             dialogInst.show({
                 width: 323, isModal: true, showCloseIcon: true, cssClass: 'e-hyperlink-dlg',
                 header: l10n.getConstant('InsertLink'),
-                beforeOpen: () => {
+                beforeOpen: (args) => {
+                    let dlgArgs = {
+                        dialogName: 'InsertLinkDialog',
+                        element: args.element, target: args.target, cancel: args.cancel
+                    };
+                    this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                    if (dlgArgs.cancel) {
+                        args.cancel = true;
+                    }
                     dialogInst.dialogInstance.content = this.hyperlinkContent();
                     dialogInst.dialogInstance.dataBind();
                     this.parent.element.focus();
@@ -19413,7 +19489,15 @@ class SpreadsheetHyperlink {
         dialogInst.show({
             width: 323, isModal: true, showCloseIcon: true, cssClass: 'e-edithyperlink-dlg',
             header: l10n.getConstant('EditLink'),
-            beforeOpen: () => {
+            beforeOpen: (args) => {
+                let dlgArgs = {
+                    dialogName: 'EditLinkDialog',
+                    element: args.element, target: args.target, cancel: args.cancel
+                };
+                this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                if (dlgArgs.cancel) {
+                    args.cancel = true;
+                }
                 dialogInst.dialogInstance.content = this.hyperEditContent();
                 dialogInst.dialogInstance.dataBind();
                 this.parent.element.focus();
@@ -20474,7 +20558,10 @@ class Delete {
             this.parent.notify(beginAction, { eventArgs: args, action: 'delete' });
         }
         if (args.modelType === 'Sheet') {
-            // Delete sheet code
+            this.parent.setProperties({ activeSheetIndex: args.activeSheetIndex - 1 }, true);
+            this.parent.notify(refreshSheetTabs, this);
+            this.parent.renderModule.refreshSheet();
+            this.parent.element.focus();
         }
         else if (args.modelType === 'Row') {
             if (!this.parent.scrollSettings.enableVirtualization || args.startIndex <= this.parent.viewport.bottomIndex) {
@@ -20625,20 +20712,9 @@ class DataValidation {
             let sheet = this.parent.getActiveSheet();
             let mainCont = this.parent.getMainContent();
             let indexes = getCellIndexes(sheet.activeCell);
-            let colIdx = indexes[1];
-            let rowIdx = indexes[0];
-            if (this.parent.scrollSettings.enableVirtualization) {
-                rowIdx = rowIdx >= this.parent.viewport.topIndex ?
-                    rowIdx - this.parent.viewport.topIndex : rowIdx;
-                colIdx = colIdx >= this.parent.viewport.leftIndex ?
-                    colIdx - this.parent.viewport.leftIndex : colIdx;
-            }
             let cell = getCell(indexes[0], indexes[1], sheet);
-            let tr = mainCont.getElementsByTagName('tr')[rowIdx];
             let tdEle;
-            if (tr) {
-                tdEle = tr.getElementsByClassName('e-cell')[colIdx];
-            }
+            tdEle = this.parent.getCell(indexes[0], indexes[1]);
             if (!tdEle) {
                 return;
             }
@@ -20713,9 +20789,18 @@ class DataValidation {
         listObj.dataSource = this.data;
     }
     listValueChange(value) {
-        let cellIdx = getIndexesFromAddress(this.parent.getActiveSheet().activeCell);
-        this.parent.notify(workbookEditOperation, { action: 'updateCellValue', address: this.parent.getActiveSheet().activeCell, value: value });
-        this.parent.serviceLocator.getService('cell').refreshRange(cellIdx);
+        let sheet = this.parent.getActiveSheet();
+        let cellIdx = getIndexesFromAddress(sheet.activeCell);
+        let cellObj = getCell(cellIdx[0], cellIdx[1], sheet);
+        let isLocked = cellObj ? !isNullOrUndefined(cellObj.isLocked) ? cellObj.isLocked
+            : sheet.isProtected : sheet.isProtected;
+        if (isLocked) {
+            this.parent.notify(editAlert, null);
+        }
+        else {
+            this.parent.notify(workbookEditOperation, { action: 'updateCellValue', address: sheet.activeCell, value: value });
+            this.parent.serviceLocator.getService('cell').refreshRange(cellIdx);
+        }
     }
     initiateDataValidationHandler() {
         let l10n = this.parent.serviceLocator.getService(locale);
@@ -20753,7 +20838,15 @@ class DataValidation {
                 width: 375, showCloseIcon: true, isModal: true, cssClass: 'e-datavalidation-dlg',
                 header: l10n.getConstant('DataValidation'),
                 target: document.querySelector('.e-control.e-spreadsheet'),
-                beforeOpen: () => {
+                beforeOpen: (args) => {
+                    let dlgArgs = {
+                        dialogName: 'ValidationDialog', element: args.element,
+                        target: args.target, cancel: args.cancel
+                    };
+                    this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                    if (dlgArgs.cancel) {
+                        args.cancel = true;
+                    }
                     dialogInst.dialogInstance.content =
                         this.dataValidationContent(isNew, type, operator, value1, value2, ignoreBlank, inCellDropDown);
                     dialogInst.dialogInstance.dataBind();
@@ -21411,7 +21504,16 @@ class DataValidation {
             let dlgModel = {
                 width: 400, height: 200, isModal: true, showCloseIcon: true, cssClass: 'e-validationerror-dlg',
                 target: document.querySelector('.e-control.e-spreadsheet'),
-                beforeOpen: () => {
+                beforeOpen: (args) => {
+                    let dlgArgs = {
+                        dialogName: 'ValidationErrorDialog',
+                        element: args.element, target: args.target, cancel: args.cancel
+                    };
+                    this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                    if (dlgArgs.cancel) {
+                        this.errorDlgHandler(erroDialogInst, 'Cancel');
+                        args.cancel = true;
+                    }
                     el.focus();
                     erroDialogInst.dialogInstance.content = error;
                     erroDialogInst.dialogInstance.dataBind();
@@ -21551,7 +21653,17 @@ class ProtectSheet {
             content: checkBoxElement.outerHTML + protectHeaderCntent.outerHTML + listViewElement.outerHTML,
             showCloseIcon: true, isModal: true,
             cssClass: 'e-protect-dlg',
-            beforeOpen: () => this.parent.element.focus(),
+            beforeOpen: (args) => {
+                let dlgArgs = {
+                    dialogName: 'ProtectSheetDialog',
+                    element: args.element, target: args.target, cancel: args.cancel
+                };
+                this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                if (dlgArgs.cancel) {
+                    args.cancel = true;
+                }
+                this.parent.element.focus();
+            },
             open: () => {
                 this.okBtnFocus();
             },
@@ -21642,17 +21754,25 @@ class ProtectSheet {
     editProtectedAlert() {
         let l10n = this.parent.serviceLocator.getService(locale);
         this.dialog = this.parent.serviceLocator.getService('dialog');
-        if (!this.dialog.dialogInstance) {
-            this.dialog.show({
-                content: l10n.getConstant('EditAlert'),
-                isModal: true,
-                closeOnEscape: true,
-                showCloseIcon: true,
-                width: '400px',
-                beforeOpen: () => this.parent.element.focus(),
-                close: () => this.parent.element.focus()
-            });
-        }
+        this.dialog.show({
+            content: l10n.getConstant('EditAlert'),
+            isModal: true,
+            closeOnEscape: true,
+            showCloseIcon: true,
+            width: '400px',
+            beforeOpen: (args) => {
+                let dlgArgs = {
+                    dialogName: 'EditAlertDialog',
+                    element: args.element, target: args.target, cancel: args.cancel
+                };
+                this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                if (dlgArgs.cancel) {
+                    args.cancel = true;
+                }
+                this.parent.element.focus();
+            },
+            close: () => this.parent.element.focus()
+        });
     }
     lockCellsHandler(args) {
         let sheet = this.parent.getActiveSheet();
@@ -21738,7 +21858,15 @@ class FindAndReplace {
             let dlg = {
                 isModal: false, showCloseIcon: true, cssClass: 'e-find-dlg', allowDragging: true,
                 header: l10n.getConstant('FindAndReplace'), closeOnEscape: false,
-                beforeOpen: () => {
+                beforeOpen: (args) => {
+                    let dlgArgs = {
+                        dialogName: 'FindAndReplaceDialog',
+                        element: args.element, target: args.target, cancel: args.cancel
+                    };
+                    this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                    if (dlgArgs.cancel) {
+                        args.cancel = true;
+                    }
                     dialogInst.dialogInstance.content = this.findandreplaceContent();
                     dialogInst.dialogInstance.dataBind();
                     this.parent.element.focus();
@@ -21809,7 +21937,15 @@ class FindAndReplace {
             let dlg = {
                 width: 300, isModal: false, showCloseIcon: true, cssClass: 'e-goto-dlg', allowDragging: true,
                 header: l10n.getConstant('GotoHeader'),
-                beforeOpen: () => {
+                beforeOpen: (args) => {
+                    let dlgArgs = {
+                        dialogName: 'GoToDialog',
+                        element: args.element, target: args.target, cancel: args.cancel
+                    };
+                    this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                    if (dlgArgs.cancel) {
+                        args.cancel = true;
+                    }
                     dialogInst.dialogInstance.content = this.GotoContent();
                     dialogInst.dialogInstance.dataBind();
                     this.parent.element.focus();
@@ -22153,7 +22289,17 @@ class Merge {
                 target: this.parent.element,
                 height: 180, width: 400, isModal: true, showCloseIcon: true,
                 content: this.parent.serviceLocator.getService(locale).getConstant('PasteMergeAlert'),
-                beforeOpen: () => this.parent.element.focus()
+                beforeOpen: (args) => {
+                    let dlgArgs = {
+                        dialogName: 'MergeDialog',
+                        element: args.element, target: args.target, cancel: args.cancel
+                    };
+                    this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                    if (dlgArgs.cancel) {
+                        args.cancel = true;
+                    }
+                    this.parent.element.focus();
+                },
             });
             return;
         }
@@ -22491,7 +22637,15 @@ class ConditionalFormatting {
             width: 375, showCloseIcon: true, isModal: true, cssClass: 'e-conditionalformatting-dlg',
             header: args.action.replace('...', ''),
             target: document.querySelector('.e-control.e-spreadsheet'),
-            beforeOpen: () => {
+            beforeOpen: (openArgs) => {
+                let dlgArgs = {
+                    dialogName: 'CFDialog', element: openArgs.element,
+                    target: openArgs.target, cancel: openArgs.cancel
+                };
+                this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                if (dlgArgs.cancel) {
+                    openArgs.cancel = true;
+                }
                 dialogInst.dialogInstance.content = this.cFDlgContent(args.action);
                 dialogInst.dialogInstance.dataBind();
                 this.parent.element.focus();
@@ -25291,7 +25445,17 @@ class Ribbon$$1 {
         dialogInst.show({
             target: this.parent.element, height: 200, width: 400, isModal: true, showCloseIcon: true,
             content: this.parent.serviceLocator.getService(locale).getConstant('MergeCellsAlert'),
-            beforeOpen: () => this.parent.element.focus(),
+            beforeOpen: (args) => {
+                let dlgArgs = {
+                    dialogName: 'MergeAlertDialog',
+                    element: args.element, target: args.target, cancel: args.cancel
+                };
+                this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                if (dlgArgs.cancel) {
+                    args.cancel = true;
+                }
+                this.parent.element.focus();
+            },
             buttons: [{
                     buttonModel: { content: this.parent.serviceLocator.getService(locale).getConstant('Ok'), isPrimary: true },
                     click: () => { dialogInst.hide(); this.performMerge(itemId); }
@@ -25934,7 +26098,17 @@ class Ribbon$$1 {
                     dialogInst.show({
                         height: 200, width: 400, isModal: true, showCloseIcon: true,
                         content: this.parent.serviceLocator.getService(locale).getConstant('DestroyAlert'),
-                        beforeOpen: () => this.parent.element.focus(),
+                        beforeOpen: (args) => {
+                            let dlgArgs = {
+                                dialogName: 'DestroySheetDialog',
+                                element: args.element, target: args.target, cancel: args.cancel
+                            };
+                            this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                            if (dlgArgs.cancel) {
+                                args.cancel = true;
+                            }
+                            this.parent.element.focus();
+                        },
                         buttons: [{
                                 buttonModel: {
                                     content: this.parent.serviceLocator.getService(locale).getConstant('Ok'), isPrimary: true
@@ -26716,10 +26890,17 @@ class FormulaBar {
                         descriptionContent.outerHTML + formulaDescription.outerHTML,
                     width: '320px', height: '485px', cssClass: 'e-spreadsheet-function-dlg',
                     showCloseIcon: true, isModal: true,
-                    beforeOpen: () => this.parent.element.focus(),
-                    open: this.dialogOpen.bind(this),
-                    beforeClose: this.dialogBeforeClose.bind(this),
-                    close: this.dialogClose.bind(this),
+                    beforeOpen: (args) => {
+                        let dlgArgs = {
+                            dialogName: 'InsertFunctionDialog', element: args.element, target: args.target, cancel: args.cancel
+                        };
+                        this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                        if (dlgArgs.cancel) {
+                            args.cancel = true;
+                        }
+                        this.parent.element.focus();
+                    },
+                    open: this.dialogOpen.bind(this), beforeClose: this.dialogBeforeClose.bind(this), close: this.dialogClose.bind(this),
                     buttons: [
                         {
                             click: (this.selectFormula.bind(this, this.dialog, this)),
@@ -26997,6 +27178,16 @@ class Formula {
                 dialogInst.show({
                     height: 180, width: 400, isModal: true, showCloseIcon: true,
                     content: l10n.getConstant('CircularReference'),
+                    beforeOpen: (args) => {
+                        let dlgArgs = {
+                            dialogName: 'CircularReferenceDialog',
+                            element: args.element, target: args.target, cancel: args.cancel
+                        };
+                        this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                        if (dlgArgs.cancel) {
+                            args.cancel = true;
+                        }
+                    },
                 });
                 args.argValue = '0';
                 break;
@@ -27298,14 +27489,34 @@ class Formula {
             if (!eventArgs.isAdded) {
                 this.parent.serviceLocator.getService(dialog).show({
                     content: this.parent.serviceLocator.getService(locale).getConstant('DefineNameExists'),
-                    width: '300'
+                    width: '300',
+                    beforeOpen: (args) => {
+                        let dlgArgs = {
+                            dialogName: 'DefineNameExistsDialog',
+                            element: args.element, target: args.target, cancel: args.cancel
+                        };
+                        this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                        if (dlgArgs.cancel) {
+                            args.cancel = true;
+                        }
+                    },
                 });
             }
         }
         else {
             this.parent.serviceLocator.getService(dialog).show({
                 content: this.parent.serviceLocator.getService(locale).getConstant('DefineNameInValid'),
-                width: '300'
+                width: '300',
+                beforeOpen: (args) => {
+                    let dlgArgs = {
+                        dialogName: 'DefineNameInValidDialog',
+                        element: args.element, target: args.target, cancel: args.cancel
+                    };
+                    this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                    if (dlgArgs.cancel) {
+                        args.cancel = true;
+                    }
+                },
             });
         }
         return isAdded;
@@ -27658,15 +27869,23 @@ class SheetTabs {
     }
     showRenameDialog(target, content) {
         let dialogInst = this.parent.serviceLocator.getService(dialog);
-        if (!dialogInst.dialogInstance) {
-            dialogInst.show({
-                target: document.getElementById(this.parent.element.id + '_sheet_panel'),
-                height: 180, width: 400, isModal: true, showCloseIcon: true,
-                content: content,
-                beforeOpen: () => target.focus(),
-                close: () => target.setSelectionRange(0, target.value.length)
-            });
-        }
+        dialogInst.show({
+            target: document.getElementById(this.parent.element.id + '_sheet_panel'),
+            height: 180, width: 400, isModal: true, showCloseIcon: true,
+            content: content,
+            beforeOpen: (args) => {
+                let dlgArgs = {
+                    dialogName: 'SheetRenameDialog',
+                    element: args.element, target: args.target, cancel: args.cancel
+                };
+                this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                if (dlgArgs.cancel) {
+                    args.cancel = true;
+                }
+                target.focus();
+            },
+            close: () => target.setSelectionRange(0, target.value.length)
+        });
     }
     focusRenameInput() {
         let input = document.getElementById(this.parent.element.id + '_rename_input');
@@ -27699,7 +27918,17 @@ class SheetTabs {
                     dialogInst.show({
                         height: 200, width: 400, isModal: true, showCloseIcon: true,
                         content: l10n.getConstant('DeleteSheetAlert'),
-                        beforeOpen: () => this.parent.element.focus(),
+                        beforeOpen: (args) => {
+                            let dlgArgs = {
+                                dialogName: 'DeleteSheetDialog',
+                                element: args.element, target: args.target, cancel: args.cancel
+                            };
+                            this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                            if (dlgArgs.cancel) {
+                                args.cancel = true;
+                            }
+                            this.parent.element.focus();
+                        },
                         buttons: [{
                                 buttonModel: {
                                     content: l10n.getConstant('Ok'), isPrimary: true
@@ -27735,7 +27964,17 @@ class SheetTabs {
                 target: document.getElementById(this.parent.element.id + '_sheet_panel'),
                 height: 180, width: 400, isModal: true, showCloseIcon: true,
                 content: l10n.getConstant('DeleteSingleLastSheetAlert'),
-                beforeOpen: () => this.parent.element.focus()
+                beforeOpen: (args) => {
+                    let dlgArgs = {
+                        dialogName: 'DeleteSingleSheetDialog',
+                        element: args.element, target: args.target, cancel: args.cancel
+                    };
+                    this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                    if (dlgArgs.cancel) {
+                        args.cancel = true;
+                    }
+                    this.parent.element.focus();
+                },
             });
         }
     }
@@ -27767,43 +28006,44 @@ class SheetTabs {
         if (isSingleCell(getRangeIndexes(this.parent.getActiveSheet().selectedRange))) {
             return;
         }
-        getUpdateUsingRaf(() => {
-            let eventArgs = { Count: 0, Sum: '0', Avg: '0', Min: '0', Max: '0', countOnly: true };
-            this.parent.notify(aggregateComputation, eventArgs);
-            if (eventArgs.Count > 1) {
-                this.aggregateContent = eventArgs.countOnly ? 'Count' : this.selaggregateCnt;
-                if (eventArgs.countOnly) {
-                    this.aggregateContent = 'Count';
-                    delete eventArgs.Sum;
-                    delete eventArgs.Avg;
-                    delete eventArgs.Min;
-                    delete eventArgs.Max;
-                }
-                let btnClass = eventArgs.countOnly ? 'e-aggregate-list e-flat e-aggregate-list-countonly e-caret-hide'
-                    : 'e-aggregate-list e-flat';
-                delete eventArgs.countOnly;
-                let key = this.aggregateContent;
-                let content = `${key}: ${eventArgs[key]}`;
-                if (!this.aggregateDropDown) {
-                    let aggregateEle = this.parent.createElement('button');
-                    document.getElementById(`${this.parent.element.id}_sheet_tab_panel`).appendChild(aggregateEle);
-                    this.aggregateDropDown = new DropDownButton({
-                        content: content,
-                        items: this.getAggregateItems(eventArgs),
-                        select: (args) => this.updateAggregateContent(args.item.text, eventArgs, true),
-                        beforeOpen: (args) => this.beforeOpenHandler(this.aggregateDropDown, args.element),
-                        open: (args) => this.openHandler(this.aggregateDropDown, args.element, 'right'),
-                        close: () => this.parent.element.focus(),
-                        cssClass: btnClass
-                    });
-                    this.aggregateDropDown.createElement = this.parent.createElement;
-                    this.aggregateDropDown.appendTo(aggregateEle);
-                }
-                else {
-                    this.updateAggregateContent(content, eventArgs);
-                }
+        let eventArgs = { Count: 0, Sum: '0', Avg: '0', Min: '0', Max: '0', countOnly: true };
+        this.parent.notify(aggregateComputation, eventArgs);
+        if (eventArgs.Count > 1) {
+            this.aggregateContent = eventArgs.countOnly ? 'Count' : this.selaggregateCnt;
+            if (eventArgs.countOnly) {
+                this.aggregateContent = 'Count';
+                delete eventArgs.Sum;
+                delete eventArgs.Avg;
+                delete eventArgs.Min;
+                delete eventArgs.Max;
             }
-        });
+            let btnClass = eventArgs.countOnly ? 'e-aggregate-list e-flat e-aggregate-list-countonly e-caret-hide'
+                : 'e-aggregate-list e-flat';
+            delete eventArgs.countOnly;
+            let key = this.aggregateContent;
+            let content = `${key}: ${eventArgs[key]}`;
+            if (!this.aggregateDropDown) {
+                let aggregateEle = this.parent.createElement('button');
+                document.getElementById(`${this.parent.element.id}_sheet_tab_panel`).appendChild(aggregateEle);
+                this.aggregateDropDown = new DropDownButton({
+                    content: content,
+                    items: this.getAggregateItems(eventArgs),
+                    select: (args) => this.updateAggregateContent(args.item.text, eventArgs, true),
+                    beforeOpen: (args) => this.beforeOpenHandler(this.aggregateDropDown, args.element),
+                    open: (args) => this.openHandler(this.aggregateDropDown, args.element, 'right'),
+                    close: () => this.parent.element.focus(),
+                    cssClass: btnClass
+                });
+                this.aggregateDropDown.createElement = this.parent.createElement;
+                this.aggregateDropDown.appendTo(aggregateEle);
+            }
+            else {
+                this.updateAggregateContent(content, eventArgs);
+            }
+        }
+        else {
+            this.removeAggregate();
+        }
     }
     getAggregateItems(args) {
         let items = [];
@@ -27828,7 +28068,7 @@ class SheetTabs {
         this.aggregateDropDown.setProperties({ 'items': this.getAggregateItems(eventArgs) }, true);
     }
     removeAggregate() {
-        if (this.aggregateDropDown) {
+        if (!isNullOrUndefined(this.aggregateDropDown)) {
             this.aggregateDropDown.destroy();
             remove(this.aggregateDropDown.element);
             this.aggregateDropDown = null;
@@ -27950,7 +28190,17 @@ class Open {
             this.parent.serviceLocator.getService(dialog).show({
                 content: this.parent.serviceLocator.getService('spreadsheetLocale')
                     .getConstant(response.data),
-                width: '300'
+                width: '300',
+                beforeOpen: (args) => {
+                    let dlgArgs = {
+                        dialogName: 'OpenDialog',
+                        element: args.element, target: args.target, cancel: args.cancel
+                    };
+                    this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                    if (dlgArgs.cancel) {
+                        args.cancel = true;
+                    }
+                },
             });
             this.parent.hideSpinner();
             return;
@@ -28593,7 +28843,17 @@ class Sort {
         let dialogInst = this.parent.serviceLocator.getService(dialog);
         dialogInst.show({
             height: 180, width: 400, isModal: true, showCloseIcon: true,
-            content: args.error
+            content: args.error,
+            beforeOpen: (args) => {
+                let dlgArgs = {
+                    dialogName: 'SortRangeDialog',
+                    element: args.element, target: args.target, cancel: args.cancel
+                };
+                this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                if (dlgArgs.cancel) {
+                    args.cancel = true;
+                }
+            },
         });
         this.parent.hideSpinner();
     }
@@ -28610,7 +28870,15 @@ class Sort {
         dialogInst.show({
             height: 400, width: 560, isModal: true, showCloseIcon: true, cssClass: 'e-customsort-dlg',
             header: l10n.getConstant('CustomSort'),
-            beforeOpen: () => {
+            beforeOpen: (args) => {
+                let dlgArgs = {
+                    dialogName: 'CustomSortDialog',
+                    element: args.element, target: args.target, cancel: args.cancel
+                };
+                this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                if (dlgArgs.cancel) {
+                    args.cancel = true;
+                }
                 dialogInst.dialogInstance.content = this.customSortContent();
                 dialogInst.dialogInstance.dataBind();
                 this.parent.element.focus();
@@ -29068,6 +29336,16 @@ class Filter {
         dialogInst.show({
             content: args.error, isModal: true,
             height: 180, width: 400, showCloseIcon: true,
+            beforeOpen: (args) => {
+                let dlgArgs = {
+                    dialogName: 'FilterRangeDialog',
+                    element: args.element, target: args.target, cancel: args.cancel
+                };
+                this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                if (dlgArgs.cancel) {
+                    args.cancel = true;
+                }
+            },
         });
         this.parent.hideSpinner();
     }
@@ -30275,7 +30553,7 @@ class SheetRender {
             }
             this.parent.notify(contentLoaded, null);
             this.parent.notify(editOperation, { action: 'renderEditor' });
-            if (!this.parent.isOpen) {
+            if (!args.initLoad && !this.parent.isOpen) {
                 this.parent.hideSpinner();
             }
             setAriaOptions(this.parent.getMainContent(), { busy: false });
@@ -30297,6 +30575,9 @@ class SheetRender {
         });
     }
     triggerCreatedEvent() {
+        if (!this.parent.isOpen) {
+            this.parent.hideSpinner();
+        }
         if (this.parent.createdHandler) {
             if (this.parent.createdHandler.observers) {
                 this.parent[created].observers = this.parent.createdHandler.observers;
@@ -31774,19 +32055,41 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
     hideSpinner() {
         hideSpinner(this.element);
     }
-    protectSheet(sheetIndex, protectSettings) {
-        if (typeof (sheetIndex) === 'string') {
-            sheetIndex = getSheetIndex(this, sheetIndex);
+    /**
+     * To protect the particular sheet.
+     * @param {number | string} sheet - Specifies the sheet to protect.
+     * @param {ProtectSettingsModel} protectSettings - Specifies the protect sheet options.
+     * @default { selectCells: 'false', formatCells: 'false', formatRows: 'false', formatColumns:'false', insertLink:'false' }
+     * @return {void}
+     */
+    protectSheet(sheet, protectSettings) {
+        if (typeof (sheet) === 'string') {
+            sheet = getSheetIndex(this, sheet);
+        }
+        if (sheet) {
+            this.sheets[sheet].isProtected = true;
+            this.sheets[sheet].protectSettings = protectSettings;
+        }
+        sheet = this.getActiveSheet().index;
+        this.getActiveSheet().isProtected = true;
+        super.protectSheet(sheet, protectSettings);
+    }
+    /**
+     * To unprotect the particular sheet.
+     * @param {number | string} sheet - Specifies the sheet to Unprotect.
+     * @return {void}
+     */
+    unprotectSheet(sheet) {
+        if (typeof (sheet) === 'string') {
+            sheet = getSheetIndex(this, sheet);
+        }
+        if (sheet) {
+            this.sheets[sheet].isProtected = false;
         }
         else {
-            if (sheetIndex) {
-                this.sheets[sheetIndex].isProtected = true;
-                this.sheets[sheetIndex].protectSettings = protectSettings;
-            }
-            sheetIndex = this.getActiveSheet().index;
-            this.getActiveSheet().isProtected = true;
+            this.getActiveSheet().isProtected = false;
         }
-        super.protectSheet(sheetIndex, protectSettings);
+        super.unprotectSheet(sheet);
     }
     /**
      * To find the specified cell value.
@@ -32220,7 +32523,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
             for (let colIdx = rangeIndexes[1]; colIdx <= rangeIndexes[3]; colIdx++) {
                 if (sheet && sheet.rows[rowIdx] && sheet.rows[rowIdx].cells[colIdx]) {
                     cellMod = sheet.rows[rowIdx].cells[colIdx];
-                    if (isNullOrUndefined(cellMod)) {
+                    if (cellMod) {
                         if (typeof (cellMod.hyperlink) === 'string') {
                             cellMod.value = cellMod.value ? cellMod.value : cellMod.hyperlink;
                         }
@@ -32623,19 +32926,6 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
     updateUndoRedoCollection(args) {
         this.notify(updateUndoRedoCollection, { args: args, isPublic: true });
     }
-    // /**
-    //  * To delete the sheet in spreadsheet.
-    //  * @param {number} sheetIdx - Provide the sheet index.
-    //  */
-    // public deleteSheet(sheetIdx:number): void {
-    //     this.notify(removeSheetTab, {
-    //         index: sheetIdx,
-    //             isAction: true,
-    //             count: this.sheets.length - 1,
-    //             clicked: true,
-    //             sheetName:  getSheetName(this, sheetIdx)
-    //     });
-    // }
     /**
      * Adds the defined name to the Spreadsheet.
      * @param {DefineNameModel} definedName - Specifies the name.
@@ -33050,6 +33340,9 @@ __decorate$9([
 ], Spreadsheet.prototype, "contextMenuBeforeClose", void 0);
 __decorate$9([
     Event$1()
+], Spreadsheet.prototype, "dialogBeforeOpen", void 0);
+__decorate$9([
+    Event$1()
 ], Spreadsheet.prototype, "fileMenuBeforeClose", void 0);
 __decorate$9([
     Event$1()
@@ -33121,5 +33414,5 @@ Spreadsheet = Spreadsheet_1 = __decorate$9([
  * Export Spreadsheet modules
  */
 
-export { Workbook, Range, UsedRange, Sheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, getSheetIndexByName, updateSelectedRange, getSelectedRange, getSheet, getSheetNameCount, getMaxSheetId, initSheet, getSheetName, Row, getRow, setRow, isHiddenRow, getRowHeight, setRowHeight, getRowsHeight, Column, getColumn, setColumn, getColumnWidth, getColumnsWidth, isHiddenCol, Format, Cell, getCell, setCell, skipDefaultValue, wrap, getData, getModel, processIdx, clearRange, getRangeIndexes, getCellIndexes, getColIndex, getCellAddress, getRangeAddress, getColumnHeaderText, getIndexesFromAddress, getRangeFromAddress, getAddressFromSelectedRange, getAddressInfo, getSwapRange, isSingleCell, executeTaskAsync, WorkbookBasicModule, WorkbookAllModule, getWorkbookRequiredModules, CellStyle, DefineName, ProtectSettings, Hyperlink, Validation, ConditionalFormat, workbookDestroyed, updateSheetFromDataSource, dataSourceChanged, workbookOpen, beginSave, saveCompleted, applyNumberFormatting, getFormattedCellObject, refreshCellElement, setCellFormat, findAllValues, textDecorationUpdate, applyCellFormat, updateUsedRange, workbookFormulaOperation, workbookEditOperation, checkDateFormat, getFormattedBarText, activeCellChanged, openSuccess, openFailure, sheetCreated, sheetsDestroyed, aggregateComputation, beforeSort, initiateSort, sortComplete, sortRangeAlert, initiatelink, beforeHyperlinkCreate, afterHyperlinkCreate, beforeHyperlinkClick, afterHyperlinkClick, addHyperlink, setLinkModel, beforeFilter, initiateFilter, filterComplete, filterRangeAlert, clearAllFilter, wrapEvent, onSave, insert, deleteAction, insertModel, deleteModel, isValidation, setValidation, addHighlight, dataValidate, findNext, findPrevious, goto, findWorkbookHandler, replaceHandler, replaceAllHandler, showDialog, findUndoRedo, findKeyUp, removeValidation, removeHighlight, queryCellInfo, count, findCount, protectSheetWorkBook, updateToggle, protectsheetHandler, replaceAllDialog, workBookeditAlert, setLockCells, applyLockCells, setMerge, applyMerge, mergedRange, activeCellMergedRange, insertMerge, pasteMerge, setCFRule, cFInitialCheck, clearCFRule, initiateClearCFRule, cFRender, cFDelete, clear, clearCF, clearCells, checkIsFormula, toFraction, getGcd, intToDate, dateToInt, isDateTime, isNumber, toDate, workbookLocale, localeData, DataBind, WorkbookOpen, WorkbookSave, WorkbookFormula, WorkbookNumberFormat, getFormatFromType, getTypeFromFormat, WorkbookSort, WorkbookFilter, WorkbookCellFormat, WorkbookEdit, WorkbookHyperlink, WorkbookInsert, WorkbookDelete, WorkbookDataValidation, WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookMerge, WorkbookConditionalFormat, getRequiredModules, ribbon, formulaBar, sheetTabs, refreshSheetTabs, dataRefresh, initialLoad, contentLoaded, mouseDown, spreadsheetDestroyed, editOperation, formulaOperation, formulaBarOperation, click, keyUp, keyDown, formulaKeyUp, formulaBarUpdate, onVerticalScroll, onHorizontalScroll, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, contextMenuOpen, cellNavigate, mouseUpAfterSelection, selectionComplete, cMenuBeforeOpen, insertSheetTab, removeSheetTab, renameSheetTab, ribbonClick, refreshRibbon, enableToolbarItems, tabSwitch, selectRange, cut, copy, paste, clearCopy, dataBound, beforeDataBound, addContextMenuItems, removeContextMenuItems, enableContextMenuItems, enableFileMenuItems, hideFileMenuItems, addFileMenuItems, hideRibbonTabs, enableRibbonTabs, addRibbonTabs, addToolbarItems, hideToolbarItems, beforeRibbonCreate, rowHeightChanged, colWidthChanged, beforeHeaderLoaded, onContentScroll, deInitProperties, activeSheetChanged, renameSheet, initiateCustomSort, applySort, collaborativeUpdate, hideShow, autoFit, updateToggleItem, initiateHyperlink, editHyperlink, openHyperlink, removeHyperlink, createHyperlinkElement, sheetNameUpdate, hideSheet, performUndoRedo, updateUndoRedoCollection, setActionData, getBeforeActionData, clearUndoRedoCollection, initiateFilterUI, renderFilterCell, reapplyFilter, filterByCellValue, clearFilter, getFilteredColumn, completeAction, beginAction, filterCellKeyDown, getFilterRange, setAutoFit, refreshFormulaDatasource, setScrollEvent, initiateDataValidation, validationError, startEdit, invalidData, clearInvalid, protectSheet, applyProtect, protectCellFormat, gotoDlg, findDlg, findHandler, replace, created, editAlert, setUndoRedo, enableFormulaInput, protectSelection, hiddenMerge, checkPrevMerge, checkMerge, removeDataValidation, showAggregate, initiateConditionalFormat, checkConditionalFormat, setCF, clearViewer, getUpdateUsingRaf, removeAllChildren, getColGroupWidth, getScrollBarWidth, inView, getCellPosition, locateElem, setStyleAttribute$1 as setStyleAttribute, getStartEvent, getMoveEvent, getEndEvent, isTouchStart, isTouchMove, isTouchEnd, getClientX, getClientY, setAriaOptions, destroyComponent, setResize, setWidthAndHeight, findMaxValue, updateAction, hasTemplate, setRowEleHeight, getTextHeight, getTextWidth, getLines, setMaxHgt, getMaxHgt, skipHiddenIdx, BasicModule, AllModule, ScrollSettings, SelectionSettings, DISABLED, WRAPTEXT, locale, dialog, actionEvents, overlay, fontColor, fillColor, defaultLocale, Spreadsheet, Clipboard, Edit, Selection, Scroll, VirtualScroll, KeyboardNavigation, KeyboardShortcut, CellFormat, Resize, CollaborativeEditing, ShowHide, SpreadsheetHyperlink, UndoRedo, WrapText, Insert, Delete, DataValidation, ProtectSheet, FindAndReplace, Merge, ConditionalFormatting, Ribbon$$1 as Ribbon, FormulaBar, Formula, SheetTabs, Open, Save, ContextMenu$1 as ContextMenu, NumberFormat, Sort, Filter, Render, SheetRender, RowRenderer, CellRenderer, Calculate, FormulaError, FormulaInfo, CalcSheetFamilyItem, getAlphalabel, ValueChangedArgs, Parser, CalculateCommon, isUndefined$1 as isUndefined, getModules, getValue$1 as getValue, setValue, ModuleLoader, CommonErrors, FormulasErrorsStrings, BasicFormulas };
+export { Workbook, Range, UsedRange, Sheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, getSheetIndexByName, updateSelectedRange, getSelectedRange, getSheet, getSheetNameCount, getMaxSheetId, initSheet, getSheetName, Row, getRow, setRow, isHiddenRow, getRowHeight, setRowHeight, getRowsHeight, Column, getColumn, setColumn, getColumnWidth, getColumnsWidth, isHiddenCol, Format, Cell, getCell, setCell, skipDefaultValue, wrap, getData, getModel, processIdx, clearRange, getRangeIndexes, getCellIndexes, getColIndex, getCellAddress, getRangeAddress, getColumnHeaderText, getIndexesFromAddress, getRangeFromAddress, getAddressFromSelectedRange, getAddressInfo, getSwapRange, isSingleCell, executeTaskAsync, WorkbookBasicModule, WorkbookAllModule, getWorkbookRequiredModules, CellStyle, DefineName, ProtectSettings, Hyperlink, Validation, ConditionalFormat, workbookDestroyed, updateSheetFromDataSource, dataSourceChanged, workbookOpen, beginSave, saveCompleted, applyNumberFormatting, getFormattedCellObject, refreshCellElement, setCellFormat, findAllValues, textDecorationUpdate, applyCellFormat, updateUsedRange, workbookFormulaOperation, workbookEditOperation, checkDateFormat, getFormattedBarText, activeCellChanged, openSuccess, openFailure, sheetCreated, sheetsDestroyed, aggregateComputation, beforeSort, initiateSort, sortComplete, sortRangeAlert, initiatelink, beforeHyperlinkCreate, afterHyperlinkCreate, beforeHyperlinkClick, afterHyperlinkClick, addHyperlink, setLinkModel, beforeFilter, initiateFilter, filterComplete, filterRangeAlert, clearAllFilter, wrapEvent, onSave, insert, deleteAction, insertModel, deleteModel, isValidation, setValidation, addHighlight, dataValidate, findNext, findPrevious, goto, findWorkbookHandler, replaceHandler, replaceAllHandler, showDialog, findUndoRedo, findKeyUp, removeValidation, removeHighlight, queryCellInfo, count, findCount, protectSheetWorkBook, updateToggle, protectsheetHandler, replaceAllDialog, unprotectsheetHandler, workBookeditAlert, setLockCells, applyLockCells, setMerge, applyMerge, mergedRange, activeCellMergedRange, insertMerge, pasteMerge, setCFRule, cFInitialCheck, clearCFRule, initiateClearCFRule, cFRender, cFDelete, clear, clearCF, clearCells, checkIsFormula, toFraction, getGcd, intToDate, dateToInt, isDateTime, isNumber, toDate, workbookLocale, localeData, DataBind, WorkbookOpen, WorkbookSave, WorkbookFormula, WorkbookNumberFormat, getFormatFromType, getTypeFromFormat, WorkbookSort, WorkbookFilter, WorkbookCellFormat, WorkbookEdit, WorkbookHyperlink, WorkbookInsert, WorkbookDelete, WorkbookDataValidation, WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookMerge, WorkbookConditionalFormat, getRequiredModules, ribbon, formulaBar, sheetTabs, refreshSheetTabs, dataRefresh, initialLoad, contentLoaded, mouseDown, spreadsheetDestroyed, editOperation, formulaOperation, formulaBarOperation, click, keyUp, keyDown, formulaKeyUp, formulaBarUpdate, onVerticalScroll, onHorizontalScroll, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, contextMenuOpen, cellNavigate, mouseUpAfterSelection, selectionComplete, cMenuBeforeOpen, insertSheetTab, removeSheetTab, renameSheetTab, ribbonClick, refreshRibbon, enableToolbarItems, tabSwitch, selectRange, cut, copy, paste, clearCopy, dataBound, beforeDataBound, addContextMenuItems, removeContextMenuItems, enableContextMenuItems, enableFileMenuItems, hideFileMenuItems, addFileMenuItems, hideRibbonTabs, enableRibbonTabs, addRibbonTabs, addToolbarItems, hideToolbarItems, beforeRibbonCreate, rowHeightChanged, colWidthChanged, beforeHeaderLoaded, onContentScroll, deInitProperties, activeSheetChanged, renameSheet, initiateCustomSort, applySort, collaborativeUpdate, hideShow, autoFit, updateToggleItem, initiateHyperlink, editHyperlink, openHyperlink, removeHyperlink, createHyperlinkElement, sheetNameUpdate, hideSheet, performUndoRedo, updateUndoRedoCollection, setActionData, getBeforeActionData, clearUndoRedoCollection, initiateFilterUI, renderFilterCell, reapplyFilter, filterByCellValue, clearFilter, getFilteredColumn, completeAction, beginAction, filterCellKeyDown, getFilterRange, setAutoFit, refreshFormulaDatasource, setScrollEvent, initiateDataValidation, validationError, startEdit, invalidData, clearInvalid, protectSheet, applyProtect, unprotectSheet, protectCellFormat, gotoDlg, findDlg, findHandler, replace, created, editAlert, setUndoRedo, enableFormulaInput, protectSelection, hiddenMerge, checkPrevMerge, checkMerge, removeDataValidation, showAggregate, initiateConditionalFormat, checkConditionalFormat, setCF, clearViewer, getUpdateUsingRaf, removeAllChildren, getColGroupWidth, getScrollBarWidth, inView, getCellPosition, locateElem, setStyleAttribute$1 as setStyleAttribute, getStartEvent, getMoveEvent, getEndEvent, isTouchStart, isTouchMove, isTouchEnd, getClientX, getClientY, setAriaOptions, destroyComponent, setResize, setWidthAndHeight, findMaxValue, updateAction, hasTemplate, setRowEleHeight, getTextHeight, getTextWidth, getLines, setMaxHgt, getMaxHgt, skipHiddenIdx, BasicModule, AllModule, ScrollSettings, SelectionSettings, DISABLED, WRAPTEXT, locale, dialog, actionEvents, overlay, fontColor, fillColor, defaultLocale, Spreadsheet, Clipboard, Edit, Selection, Scroll, VirtualScroll, KeyboardNavigation, KeyboardShortcut, CellFormat, Resize, CollaborativeEditing, ShowHide, SpreadsheetHyperlink, UndoRedo, WrapText, Insert, Delete, DataValidation, ProtectSheet, FindAndReplace, Merge, ConditionalFormatting, Ribbon$$1 as Ribbon, FormulaBar, Formula, SheetTabs, Open, Save, ContextMenu$1 as ContextMenu, NumberFormat, Sort, Filter, Render, SheetRender, RowRenderer, CellRenderer, Calculate, FormulaError, FormulaInfo, CalcSheetFamilyItem, getAlphalabel, ValueChangedArgs, Parser, CalculateCommon, isUndefined$1 as isUndefined, getModules, getValue$1 as getValue, setValue, ModuleLoader, CommonErrors, FormulasErrorsStrings, BasicFormulas };
 //# sourceMappingURL=ej2-spreadsheet.es2015.js.map

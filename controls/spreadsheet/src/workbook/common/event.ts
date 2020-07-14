@@ -138,6 +138,8 @@ export const protectsheetHandler: string = 'protectsheetHandler';
 /** @hidden */
 export const replaceAllDialog: string = 'replaceAllDialog';
 /** @hidden */
+export const unprotectsheetHandler: string = 'unprotectsheetHandler';
+/** @hidden */
 export const workBookeditAlert: string = 'editAlert';
 /** @hidden */
 export const setLockCells: string = 'setLockCells';

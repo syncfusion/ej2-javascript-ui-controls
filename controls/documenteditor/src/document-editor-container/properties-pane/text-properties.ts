@@ -365,6 +365,12 @@ export class Text {
 
     private createDropDownListForFamily(fontSelectElement: HTMLElement): void {
         let fontStyle: { [key: string]: Object; }[];
+        let isStringTemplate: boolean = false;
+        let itemTemplate: string = '';
+        if (!this.container.enableCsp) {
+            itemTemplate = '<span style="font-family: ${FontName};">${FontName}</span>';
+            isStringTemplate = true;
+        }
         this.fontFamily = new ComboBox({
             dataSource: fontStyle,
             query: new Query().select(['FontName']),
@@ -373,19 +379,16 @@ export class Text {
             cssClass: 'e-de-prop-dropdown',
             allowCustom: true,
             showClearButton: false,
-            enableRtl: this.isRtl
+            enableRtl: this.isRtl,
+            itemTemplate: itemTemplate,
         });
         this.fontFamily.appendTo(fontSelectElement);
+        this.fontFamily.isStringTemplate = isStringTemplate;
         let fontFamilyValue: string[] = this.container.documentEditorSettings.fontFamilies;
         for (let i: number = 0; i < fontFamilyValue.length; i++) {
             let fontValue: string = fontFamilyValue[i];
             let fontStyleValue: { [key: string]: Object; } = { 'FontName': fontValue, 'FontValue': fontValue };
             this.fontFamily.addItem(fontStyleValue, i);
-        }
-
-        if (!this.container.enableCsp) {
-            this.fontFamily.itemTemplate = '<span style="font-family: ${FontName};">${FontName}</span>';
-            this.fontFamily.isStringTemplate = true;
         }
         this.fontFamily.focus = (): void => { this.isRetrieving = false; (this.fontFamily.element as HTMLInputElement).select(); };
         this.fontFamily.element.parentElement.setAttribute('title', this.localObj.getConstant('Font'));

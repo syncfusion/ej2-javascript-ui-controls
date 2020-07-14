@@ -538,11 +538,11 @@ describe('IE 11 insert link', () => {
             (<any>rteObj).linkModule.onDocumentClick(eventsArgs);
             expect(document.body.contains((<any>rteObj).linkModule.dialogObj.element)).toBe(true);
 
-            eventsArgs = { target: document.querySelector('[title="Insert Hyperlink"]'), preventDefault: function () { } };
+            eventsArgs = { target: document.querySelector('[title="Insert Link"]'), preventDefault: function () { } };
             (<any>rteObj).linkModule.onDocumentClick(eventsArgs);
             expect(document.body.contains((<any>rteObj).linkModule.dialogObj.element)).toBe(true);
 
-            eventsArgs = { target: document.querySelector('[title="Insert Hyperlink"]').parentElement, preventDefault: function () { } };
+            eventsArgs = { target: document.querySelector('[title="Insert Link"]').parentElement, preventDefault: function () { } };
             (<any>rteObj).linkModule.onDocumentClick(eventsArgs);
             expect(document.body.contains((<any>rteObj).linkModule.dialogObj.element)).toBe(true);
 
@@ -1441,6 +1441,39 @@ describe('IE 11 insert link', () => {
                 expect(isNullOrUndefined(link)).toBe(true);
                 done();
             }, 100);
+        });
+    });
+
+    describe('EJ2-40770 - Insert link on the already pasted link throws console error', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<p><a href="https://www.syncfusion.com">https://www.syncfusion.com</a><br></p>',
+                toolbarSettings: {
+                    items: ['CreateLink', 'Bold']
+                }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('apply same url through inert link dialog', () => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let selectioncursor: NodeSelection = new NodeSelection();
+            let range: Range = document.createRange();
+            range.setStart(rteObj.element.querySelector('a'), 1);
+            selectioncursor.setRange(document, range);
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            expect((rteObj as any).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value).toBe("");
+            expect((<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkText').value).toBe("");
+            expect((<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkTitle').value).toBe("");
+            (rteObj as any).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'https://www.syncfusion.com';
+            let target: any = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
+            (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
+            expect(rteObj.contentModule.getEditPanel().querySelector('a').text === 'https://www.syncfusion.com').toBe(true);
+            expect(rteObj.contentModule.getEditPanel().querySelector('a').href === 'https://www.syncfusion.com/').toBe(true);
         });
     });
 });

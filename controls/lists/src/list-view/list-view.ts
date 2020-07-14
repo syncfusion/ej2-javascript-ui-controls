@@ -58,7 +58,8 @@ export const classNames: ClassNames = {
     checkboxRight: 'e-checkbox-right',
     checkboxLeft: 'e-checkbox-left',
     listviewCheckbox: 'e-listview-checkbox',
-    itemCheckList: 'e-checklist'
+    itemCheckList: 'e-checklist',
+    virtualElementContainer: 'e-list-virtualcontainer'
 };
 
 const LISTVIEW_TEMPLATE_PROPERTY: string = 'Template';
@@ -765,7 +766,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         this.initialization();
     }
     private updateLiELementHeight(): void {
-        let liContainer: Element = this.element.querySelector('#virtualUlContainer');
+        let liContainer: Element = this.element.querySelector('.' + classNames.virtualElementContainer);
         if (liContainer.children[0]) {
             this.liElementHeight = liContainer.children[0].getBoundingClientRect().height;
             // tslint:disable
@@ -775,7 +776,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
     private initialization(): void {
         if (isBlazor() && this.isServerRendered && this.enableVirtualization) {
-            let ulContainer: Element = this.element.querySelector('#virtualUlContainer');
+            let ulContainer: Element = this.element.querySelector('.' + classNames.virtualElementContainer);
             if (ulContainer !== null) {
                 if (this.height === '') {
                     // tslint:disable
@@ -1020,7 +1021,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             }
         }
         if (isBlazor() && this.isServerRendered && this.enableVirtualization) {
-            let ulElementContainer: Element = this.element.querySelector('#virtualUlContainer');
+            let ulElementContainer: Element = this.element.querySelector('.' + classNames.virtualElementContainer);
             if (ulElementContainer.querySelector('.e-active')) {
                 // tslint:disable-next-line:no-any
                 let selectedElements: any = ulElementContainer.querySelectorAll('.e-active');
@@ -1657,8 +1658,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         let listViewComponent: ListView = this;
         setTimeout(
             () => {
-                for (let i: number = 0; i < this.element.querySelector('#virtualUlContainer').childElementCount; i++) {
-                    let selectedElement: Element = this.element.querySelector('#virtualUlContainer').children[i];
+                let ulContainer: Element = listViewComponent.element.querySelector('.' + classNames.virtualElementContainer);
+                for (let i: number = 0; i < ulContainer.childElementCount; i++) {
+                    let selectedElement: Element = ulContainer.children[i];
                     let elementIndex: number;
                     let hiddenElementIndex: number;
                     if (listViewComponent.showCheckBox) {
@@ -2498,6 +2500,7 @@ export interface ClassNames {
     checkboxLeft: string;
     listviewCheckbox: string;
     itemCheckList: string;
+    virtualElementContainer: string;
 }
 
 /**

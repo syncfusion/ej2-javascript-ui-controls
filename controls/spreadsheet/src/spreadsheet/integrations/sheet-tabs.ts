@@ -3,16 +3,17 @@ import { Spreadsheet } from '../base/index';
 import { refreshSheetTabs, locale, insertSheetTab, cMenuBeforeOpen, dialog, renameSheet, hideSheet, beginAction } from '../common/index';
 import { sheetNameUpdate, clearUndoRedoCollection, completeAction, showAggregate } from '../common/index';
 import { sheetTabs, renameSheetTab, removeSheetTab, activeSheetChanged, onVerticalScroll, onHorizontalScroll } from '../common/index';
-import { getUpdateUsingRaf,  protectSheet } from '../common/index';
+import { protectSheet, DialogBeforeOpenEventArgs } from '../common/index';
 import { SheetModel, getSheetName, aggregateComputation, AggregateArgs } from '../../workbook/index';
 import { isSingleCell, getRangeIndexes, getSheet, getSheetIndex } from '../../workbook/index';
 import { DropDownButton, MenuEventArgs, BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { ItemModel } from '@syncfusion/ej2-splitbuttons';
 import { isCollide, OffsetPosition, calculatePosition } from '@syncfusion/ej2-popups';
-import { rippleEffect, L10n, closest, EventHandler, remove } from '@syncfusion/ej2-base';
+import { rippleEffect, L10n, closest, EventHandler, remove, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Dialog } from '../services/index';
 import { sheetsDestroyed, activeCellChanged, workbookFormulaOperation, InsertDeleteModelArgs } from '../../workbook/common/index';
 import { insertModel } from './../../workbook/common/index';
+import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 
 /**
  * Represents SheetTabs for Spreadsheet.
@@ -351,16 +352,24 @@ export class SheetTabs {
     }
 
     private showRenameDialog(target: HTMLInputElement, content: string): void {
-       let dialogInst: Dialog = this.parent.serviceLocator.getService(dialog) as Dialog;
-       if (!dialogInst.dialogInstance) {
-            dialogInst.show({
+        let dialogInst: Dialog = this.parent.serviceLocator.getService(dialog) as Dialog;
+        dialogInst.show({
             target: document.getElementById(this.parent.element.id + '_sheet_panel'),
             height: 180, width: 400, isModal: true, showCloseIcon: true,
             content: content,
-            beforeOpen: (): void => target.focus(),
+            beforeOpen: (args: BeforeOpenEventArgs): void => {
+                let dlgArgs: DialogBeforeOpenEventArgs = {
+                    dialogName: 'SheetRenameDialog',
+                    element: args.element, target: args.target, cancel: args.cancel
+                };
+                this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                if (dlgArgs.cancel) {
+                    args.cancel = true;
+                }
+                target.focus();
+            },
             close: (): void => target.setSelectionRange(0, target.value.length)
-            });
-        }
+        });
     }
 
     private focusRenameInput(): void {
@@ -395,7 +404,17 @@ export class SheetTabs {
                     dialogInst.show({
                         height: 200, width: 400, isModal: true, showCloseIcon: true,
                         content: l10n.getConstant('DeleteSheetAlert'),
-                        beforeOpen: (): void => this.parent.element.focus(),
+                        beforeOpen: (args: BeforeOpenEventArgs): void => {
+                            let dlgArgs: DialogBeforeOpenEventArgs = {
+                                dialogName: 'DeleteSheetDialog',
+                                element: args.element, target: args.target, cancel: args.cancel
+                            };
+                            this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                            if (dlgArgs.cancel) {
+                                args.cancel = true;
+                            }
+                            this.parent.element.focus();
+                        },
                         buttons: [{
                             buttonModel: {
                                 content: l10n.getConstant('Ok'), isPrimary: true
@@ -429,7 +448,17 @@ export class SheetTabs {
                 target: document.getElementById(this.parent.element.id + '_sheet_panel'),
                 height: 180, width: 400, isModal: true, showCloseIcon: true,
                 content: l10n.getConstant('DeleteSingleLastSheetAlert'),
-                beforeOpen: (): void => this.parent.element.focus()
+                beforeOpen: (args: BeforeOpenEventArgs): void => {
+                    let dlgArgs: DialogBeforeOpenEventArgs = {
+                        dialogName: 'DeleteSingleSheetDialog',
+                        element: args.element, target: args.target, cancel: args.cancel
+                    };
+                    this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                    if (dlgArgs.cancel) {
+                        args.cancel = true;
+                    }
+                    this.parent.element.focus();
+                },
             });
         }
     }
@@ -461,40 +490,40 @@ export class SheetTabs {
 
     private showAggregate(): void {
         if (isSingleCell(getRangeIndexes(this.parent.getActiveSheet().selectedRange))) { return; }
-        getUpdateUsingRaf((): void => {
-            let eventArgs: AggregateArgs = { Count: 0, Sum: '0', Avg: '0', Min: '0', Max: '0', countOnly: true };
-            this.parent.notify(aggregateComputation, eventArgs);
-            if (eventArgs.Count > 1) {
-                this.aggregateContent = eventArgs.countOnly ? 'Count' : this.selaggregateCnt;
-                if (eventArgs.countOnly) {
-                    this.aggregateContent = 'Count';
-                    delete eventArgs.Sum; delete eventArgs.Avg; delete eventArgs.Min; delete eventArgs.Max;
-                }
-                let btnClass: string = eventArgs.countOnly ? 'e-aggregate-list e-flat e-aggregate-list-countonly e-caret-hide'
-                    : 'e-aggregate-list e-flat';
-                delete eventArgs.countOnly;
-                let key: string = this.aggregateContent;
-                let content: string = `${key}: ${eventArgs[key]}`;
-                if (!this.aggregateDropDown) {
-                    let aggregateEle: HTMLElement = this.parent.createElement('button');
-                    document.getElementById(`${this.parent.element.id}_sheet_tab_panel`).appendChild(aggregateEle);
-                    this.aggregateDropDown = new DropDownButton({
-                        content: content,
-                        items: this.getAggregateItems(eventArgs),
-                        select: (args: MenuEventArgs): void => this.updateAggregateContent(args.item.text, eventArgs, true),
-                        beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void =>
-                            this.beforeOpenHandler(this.aggregateDropDown, args.element),
-                        open: (args: OpenCloseMenuEventArgs): void => this.openHandler(this.aggregateDropDown, args.element, 'right'),
-                        close: (): void => this.parent.element.focus(),
-                        cssClass: btnClass
-                    });
-                    this.aggregateDropDown.createElement = this.parent.createElement;
-                    this.aggregateDropDown.appendTo(aggregateEle);
-                } else {
-                    this.updateAggregateContent(content, eventArgs);
-                }
+        let eventArgs: AggregateArgs = { Count: 0, Sum: '0', Avg: '0', Min: '0', Max: '0', countOnly: true };
+        this.parent.notify(aggregateComputation, eventArgs);
+        if (eventArgs.Count > 1) {
+            this.aggregateContent = eventArgs.countOnly ? 'Count' : this.selaggregateCnt;
+            if (eventArgs.countOnly) {
+                this.aggregateContent = 'Count';
+                delete eventArgs.Sum; delete eventArgs.Avg; delete eventArgs.Min; delete eventArgs.Max;
             }
-        });
+            let btnClass: string = eventArgs.countOnly ? 'e-aggregate-list e-flat e-aggregate-list-countonly e-caret-hide'
+                : 'e-aggregate-list e-flat';
+            delete eventArgs.countOnly;
+            let key: string = this.aggregateContent;
+            let content: string = `${key}: ${eventArgs[key]}`;
+            if (!this.aggregateDropDown) {
+                let aggregateEle: HTMLElement = this.parent.createElement('button');
+                document.getElementById(`${this.parent.element.id}_sheet_tab_panel`).appendChild(aggregateEle);
+                this.aggregateDropDown = new DropDownButton({
+                    content: content,
+                    items: this.getAggregateItems(eventArgs),
+                    select: (args: MenuEventArgs): void => this.updateAggregateContent(args.item.text, eventArgs, true),
+                    beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void =>
+                        this.beforeOpenHandler(this.aggregateDropDown, args.element),
+                    open: (args: OpenCloseMenuEventArgs): void => this.openHandler(this.aggregateDropDown, args.element, 'right'),
+                    close: (): void => this.parent.element.focus(),
+                    cssClass: btnClass
+                });
+                this.aggregateDropDown.createElement = this.parent.createElement;
+                this.aggregateDropDown.appendTo(aggregateEle);
+            } else {
+                this.updateAggregateContent(content, eventArgs);
+            }
+        } else {
+            this.removeAggregate();
+        }
     }
 
     private getAggregateItems(args: AggregateArgs): ItemModel[] {
@@ -519,7 +548,7 @@ export class SheetTabs {
     }
 
     private removeAggregate(): void {
-        if (this.aggregateDropDown) {
+        if (!isNullOrUndefined(this.aggregateDropDown)) {
             this.aggregateDropDown.destroy();
             remove(this.aggregateDropDown.element);
             this.aggregateDropDown = null;

@@ -316,8 +316,14 @@ class ValueFormatter {
  */
 class CsvHelper {
     /* tslint:disable:no-any */
-    constructor(json) {
+    constructor(json, separator) {
         this.csvStr = '';
+        if (separator === null || separator === undefined) {
+            this.separator = ',';
+        }
+        else {
+            this.separator = separator;
+        }
         this.formatter = new ValueFormatter();
         this.isMicrosoftBrowser = !(!navigator.msSaveBlob);
         if (json.isServerRendered !== null && json.isServerRendered !== undefined) {
@@ -368,7 +374,7 @@ class CsvHelper {
                 //cell index
                 if (cell.index !== null && cell.index !== undefined) {
                     while (count < cell.index) {
-                        this.csvStr += ',';
+                        this.csvStr += this.separator;
                         count++;
                     }
                     this.parseCell(cell);
@@ -442,7 +448,7 @@ class CsvHelper {
             }
         }
         value = val;
-        if (value.indexOf(',') !== -1 || value.indexOf('\n') !== -1) {
+        if (value.indexOf(this.separator) !== -1 || value.indexOf('\n') !== -1) {
             return value = '\"' + value + '\"';
         }
         else {
@@ -501,7 +507,7 @@ class BlobHelper {
  */
 class Workbook {
     /* tslint:disable:no-any */
-    constructor(json, saveType, culture, currencyString) {
+    constructor(json, saveType, culture, currencyString, separator) {
         this.sharedStringCount = 0;
         this.unitsProportions = [
             96 / 75.0,
@@ -596,7 +602,7 @@ class Workbook {
             }
         }
         else {
-            this.csvHelper = new CsvHelper(json);
+            this.csvHelper = new CsvHelper(json, separator);
         }
     }
     /* tslint:disable:no-any */

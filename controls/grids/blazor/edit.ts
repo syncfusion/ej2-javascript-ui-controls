@@ -21,11 +21,12 @@ export class Edit {
                 gcontent = this.parent.getContent().querySelector('.e-movablecontent') as HTMLElement;
             }
             let name: string = results[i]['fieldName']; let message: string = results[i]['message'];
+            name = name.replace(/[.]/g, "___");
             let element: HTMLElement = this.parent.element.querySelector(`#${name}`) ||
                 document.querySelector(`#${name}`);
             let isScroll: boolean = gcontent.scrollHeight > gcontent.clientHeight || gcontent.scrollWidth > gcontent.clientWidth;
             let isInline: boolean = this.parent.options.editMode !== 'Dialog';
-            if (!this.parent.element.querySelector("#" + name) && !document.querySelector("#" + name)) { return; }
+            if (!element) { return; }
             let td: Element = closest(element, '.e-rowcell');
             let row: Element = closest(element, '.e-row');
             let fCont: Element = this.parent.getContent().querySelector('.e-frozencontent');

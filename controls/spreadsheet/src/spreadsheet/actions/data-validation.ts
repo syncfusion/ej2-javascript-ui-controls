@@ -1,4 +1,4 @@
-import { Spreadsheet } from '../index';
+import { Spreadsheet, DialogBeforeOpenEventArgs, editAlert } from '../index';
 import { isValidation, checkDateFormat, applyCellFormat, workbookEditOperation, activeCellChanged } from '../../workbook/common/event';
 import { getCell, setCell } from '../../workbook/base/cell';
 import { CellModel } from '../../workbook/base/cell-model';
@@ -13,7 +13,7 @@ import { SheetModel } from '../../workbook/base/sheet-model';
 import { getRangeIndexes, getIndexesFromAddress, getCellIndexes } from '../../workbook/common/address';
 import { CellFormatArgs } from '../../workbook/common/interface';
 import { DropDownList, PopupEventArgs } from '@syncfusion/ej2-dropdowns';
-import { DialogModel } from '@syncfusion/ej2-popups';
+import { DialogModel, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { ValidationModel, ValidationType, ValidationOperator, CellStyleModel } from '../../workbook';
 
 /**
@@ -121,18 +121,9 @@ export class DataValidation {
             let indexes: number[] = getCellIndexes(sheet.activeCell);
             let colIdx: number = indexes[1];
             let rowIdx: number = indexes[0];
-            if (this.parent.scrollSettings.enableVirtualization) {
-                rowIdx = rowIdx >= this.parent.viewport.topIndex ?
-                    rowIdx - this.parent.viewport.topIndex : rowIdx;
-                colIdx = colIdx >= this.parent.viewport.leftIndex ?
-                    colIdx - this.parent.viewport.leftIndex : colIdx;
-            }
             let cell: CellModel = getCell(indexes[0], indexes[1], sheet);
-            let tr: HTMLElement = mainCont.getElementsByTagName('tr')[rowIdx];
             let tdEle: HTMLElement;
-            if (tr) {
-                tdEle = tr.getElementsByClassName('e-cell')[colIdx] as HTMLElement;
-            }
+            tdEle = this.parent.getCell(indexes[0], indexes[1]);
             if (!tdEle) {
                 return;
             }
@@ -204,11 +195,19 @@ export class DataValidation {
     }
 
     private listValueChange(value: string): void {
-        let cellIdx: number[] = getIndexesFromAddress(this.parent.getActiveSheet().activeCell);
-        this.parent.notify(
-            workbookEditOperation,
-            { action: 'updateCellValue', address: this.parent.getActiveSheet().activeCell, value: value });
-        this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(cellIdx);
+        let sheet: SheetModel = this.parent.getActiveSheet();
+        let cellIdx: number[] = getIndexesFromAddress(sheet.activeCell);
+        let cellObj: CellModel = getCell(cellIdx[0], cellIdx[1], sheet);
+        let isLocked: boolean = cellObj ? !isNullOrUndefined(cellObj.isLocked) ? cellObj.isLocked
+            : sheet.isProtected : sheet.isProtected;
+        if (isLocked) {
+            this.parent.notify(editAlert, null);
+        } else {
+            this.parent.notify(
+                workbookEditOperation,
+                { action: 'updateCellValue', address: sheet.activeCell, value: value });
+            this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(cellIdx);
+        }
     }
 
     private initiateDataValidationHandler(): void {
@@ -247,7 +246,15 @@ export class DataValidation {
                 width: 375, showCloseIcon: true, isModal: true, cssClass: 'e-datavalidation-dlg',
                 header: l10n.getConstant('DataValidation'),
                 target: document.querySelector('.e-control.e-spreadsheet') as HTMLElement,
-                beforeOpen: (): void => {
+                beforeOpen: (args: BeforeOpenEventArgs): void => {
+                    let dlgArgs: DialogBeforeOpenEventArgs = {
+                        dialogName: 'ValidationDialog', element: args.element,
+                        target: args.target, cancel: args.cancel
+                    };
+                    this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                    if (dlgArgs.cancel) {
+                        args.cancel = true;
+                    }
                     dialogInst.dialogInstance.content =
                         this.dataValidationContent(isNew, type, operator, value1, value2, ignoreBlank, inCellDropDown);
                     dialogInst.dialogInstance.dataBind();
@@ -887,7 +894,16 @@ export class DataValidation {
             let dlgModel: DialogModel = {
                 width: 400, height: 200, isModal: true, showCloseIcon: true, cssClass: 'e-validationerror-dlg',
                 target: document.querySelector('.e-control.e-spreadsheet') as HTMLElement,
-                beforeOpen: (): void => {
+                beforeOpen: (args: BeforeOpenEventArgs): void => {
+                    let dlgArgs: DialogBeforeOpenEventArgs = {
+                        dialogName: 'ValidationErrorDialog',
+                        element: args.element, target: args.target, cancel: args.cancel
+                    };
+                    this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                    if (dlgArgs.cancel) {
+                        this.errorDlgHandler(erroDialogInst, 'Cancel');
+                        args.cancel = true;
+                    }
                     el.focus();
                     erroDialogInst.dialogInstance.content = error; erroDialogInst.dialogInstance.dataBind();
                 },

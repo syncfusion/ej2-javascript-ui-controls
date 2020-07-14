@@ -195,6 +195,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private target;
     private updatedRule;
     private ruleTemplateFn;
+    private isLocale;
     /**
      * Triggers when the component is created.
      * @event

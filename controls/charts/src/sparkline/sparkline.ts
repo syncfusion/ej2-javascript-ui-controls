@@ -734,12 +734,19 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
             switch (prop) {
                 case 'xName':
                 case 'yName':
-                case 'dataSource':
                 case 'axisSettings':
                 case 'rangeBandSettings':
                 case 'type':
                 case 'valueType':
                 case 'enableRtl':
+                    refresh = true;
+                    break;
+                case 'dataSource':
+                    if (this.isBlazor) {
+                        this.sparklineRenderer.processDataManager();
+                        this.createSVG();
+                        break;
+                    }
                     refresh = true;
                     break;
                 case 'border':

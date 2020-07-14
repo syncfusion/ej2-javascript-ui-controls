@@ -367,7 +367,6 @@ export class WorkbookFormula {
                         this.calculateInstance.valueChanged(sheetName, tempArgs, true);
                     }
                 }
-                this.calculateInstance.cell = '';
             }
         } else {
             let family: CalcSheetFamilyItem = this.calculateInstance.getSheetFamilyItem(sheetName);
@@ -385,6 +384,7 @@ export class WorkbookFormula {
             this.calculateInstance.refresh(cellRef);
             this.calculateInstance.refreshRandValues(cellRef);
         }
+        this.calculateInstance.cell = '';
     }
 
     private autoCorrectFormula(formula: string): string {

@@ -1103,6 +1103,30 @@ export interface IExecutionGroup {
 }
 
 /**
+ * Provides information about a image uploading event.
+ */
+export interface ImageUploadingEventArgs {
+    /**
+     * Defines whether the current action can be prevented.
+     */
+    cancel: boolean;
+    /**
+     * Defines the additional data in key and value pair format that will be submitted to the upload action.
+     * @blazorType object
+     */
+    customFormData: { [key: string]: Object; }[];
+    /**
+     * Returns the XMLHttpRequest instance that is associated with upload action.
+     * @blazorType object
+     */
+    currentRequest?: { [key: string]: string; }[];
+    /**
+     * Returns the list of files that will be uploaded.
+     */
+    filesData: FileInfo[];
+}
+
+/**
  * @hidden
  * @deprecated 
  */

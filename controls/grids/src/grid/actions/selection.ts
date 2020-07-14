@@ -109,7 +109,8 @@ export class Selection implements IAction {
     private bdrAFRight: HTMLElement;
     private bdrAFTop: HTMLElement;
     private bdrAFBottom: HTMLElement;
-    private isInteracted: boolean;
+    /** @hidden */
+    public isInteracted: boolean;
     private isHeaderCheckboxClicked: boolean;
     private checkSelectAllClicked: boolean;
     /**
@@ -329,6 +330,9 @@ export class Selection implements IAction {
             } else if (!isRowSelected && this.selectionSettings.persistSelection &&
                 this.selectionSettings.checkboxMode !== 'ResetOnRowClick') {
                 this.selectRowCallBack();
+            }
+            if (this.selectionSettings.checkboxMode === 'ResetOnRowClick') {
+                this.clearSelection();
             }
             if (!this.selectionSettings.persistSelection || this.selectionSettings.checkboxMode === 'ResetOnRowClick') {
                 this.selectRowCheck = true;
@@ -1524,6 +1528,7 @@ export class Selection implements IAction {
 
     private drawBorders(): void {
         if (this.selectionSettings.cellSelectionMode === 'BoxWithBorder' && this.selectedRowCellIndexes.length && !this.parent.isEdit) {
+            this.parent.element.classList.add('e-enabledboxbdr');
             if (!this.bdrElement) {
                 this.createBorders();
             }
@@ -2498,7 +2503,7 @@ export class Selection implements IAction {
             state = this.getCurrentBatchRecordChanges().some((data: Object) =>
                 data[this.primaryKey] in this.selectedRowState);
         }
-        if (this.parent.isPersistSelection) {
+        if (this.parent.isPersistSelection && this.parent.allowPaging) {
             this.totalRecordsCount = this.parent.pageSettings.totalRecordsCount;
         }
         this.checkSelectAllAction(!state);

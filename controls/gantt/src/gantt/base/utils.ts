@@ -48,10 +48,11 @@ export function isRemoteData(dataSource: object): boolean {
     return false;
 }
 
-export function getTaskData(records: IGanttData[]): object[] {
+export function getTaskData(records: IGanttData[], isNotExtend?: boolean): object[] {
     let result: object[] = [];
     for (let i: number = 0; i < records.length; i++) {
-        let data: object = extend({}, records[i].taskData, {}, true);
+        let data: object;
+        data = isNotExtend ? (data = records[i].taskData) : data = extend({}, records[i].taskData, {}, true);
         result.push(data);
     }
     return result;

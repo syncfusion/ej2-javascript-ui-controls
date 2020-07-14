@@ -1,4 +1,4 @@
-import { Spreadsheet, ICellRenderer, initiateCustomSort, locale, dialog, getFilterRange } from '../index';
+import { Spreadsheet, ICellRenderer, initiateCustomSort, locale, dialog, getFilterRange, DialogBeforeOpenEventArgs } from '../index';
 import { applySort, completeAction, beginAction } from '../index';
 import { sortComplete, beforeSort, getFormattedCellObject } from '../../workbook/common/event';
 import { getIndexesFromAddress, getSwapRange, SheetModel, getCell } from '../../workbook/index';
@@ -7,6 +7,7 @@ import { SortEventArgs, BeforeSortEventArgs, SortOptions } from '../../workbook/
 import { L10n, getUniqueID, getComponent, enableRipple } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { DropDownList, ChangeEventArgs as DropdownChangeEventArgs, FieldSettingsModel } from '@syncfusion/ej2-dropdowns';
+import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { RadioButton, CheckBox, ChangeEventArgs as CheckBoxChangeEventArgs, ChangeArgs } from '@syncfusion/ej2-buttons';
 import { ListView } from '@syncfusion/ej2-lists';
 
@@ -75,7 +76,17 @@ export class Sort {
         let dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
         dialogInst.show({
             height: 180, width: 400, isModal: true, showCloseIcon: true,
-            content: args.error
+            content: args.error,
+            beforeOpen: (args: BeforeOpenEventArgs): void => {
+                let dlgArgs: DialogBeforeOpenEventArgs = {
+                    dialogName: 'SortRangeDialog',
+                    element: args.element, target: args.target, cancel: args.cancel
+                };
+                this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                if (dlgArgs.cancel) {
+                    args.cancel = true;
+                }
+            },
         });
         this.parent.hideSpinner();
     }
@@ -93,7 +104,15 @@ export class Sort {
         dialogInst.show({
             height: 400, width: 560, isModal: true, showCloseIcon: true, cssClass: 'e-customsort-dlg',
             header: l10n.getConstant('CustomSort'),
-            beforeOpen: (): void => {
+            beforeOpen: (args: BeforeOpenEventArgs): void => {
+                let dlgArgs: DialogBeforeOpenEventArgs = {
+                    dialogName: 'CustomSortDialog',
+                    element: args.element, target: args.target, cancel: args.cancel
+                };
+                this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                if (dlgArgs.cancel) {
+                    args.cancel = true;
+                }
                 dialogInst.dialogInstance.content = this.customSortContent(); dialogInst.dialogInstance.dataBind();
                 this.parent.element.focus();
             },

@@ -16,6 +16,7 @@ import { Column } from '../../../src/grid/models/column';
 import { createGrid, destroy, getKeyUpObj, getClickObj } from '../base/specutil.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { InfiniteScroll } from '../../../src/grid/actions/infinite-scroll';
+import { RowSelectEventArgs, NotifyArgs } from '../../../src/grid/base/interface';
 
 Grid.Inject(Filter, Page, Selection, Group, Edit, Sort, Reorder, InfiniteScroll, Toolbar, Freeze);
 
@@ -799,6 +800,62 @@ describe('Infinite scroll cache mode with frozen rows => ', () => {
         expect(movableCntRows[movableCntRows.length - 1].getAttribute('aria-rowindex')).toBe(((visibleRowsCount + gridObj.pageSettings.pageSize) - 1).toString());
     });
 
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('EJ2-40801 - Infinite scrolling is not working properly while enabling editSettings => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: virtualData.slice(0, 150),
+                enableInfiniteScrolling: true,
+                pageSettings: { pageSize: 50 },
+                editSettings: { allowAdding: true, allowEditing: true, allowDeleting: true },
+                height: 400,
+                columns: [
+                    { field: 'FIELD2', headerText: 'FIELD2', isPrimaryKey: true, width: 120 },
+                    { field: 'FIELD1', headerText: 'FIELD1', width: 100 },
+                    { field: 'FIELD3', headerText: 'FIELD3', width: 120 },
+                    { field: 'FIELD4', headerText: 'FIELD4', width: 120 },
+                    { field: 'FIELD5', headerText: 'FIELD5', width: 120 }
+                ]
+            }, () => {
+                setTimeout(done, 200);
+            });
+    });
+    it('scroll to bottom', function (done) {
+        gridObj.getContent().firstElementChild.scrollTop = 15000;
+        setTimeout(done, 200);
+    });
+    it('check no records to display issue  while scroll', function () {
+        let visibleRowsCount = gridObj.infiniteScrollSettings.initialBlocks * gridObj.pageSettings.pageSize;
+        let rows = gridObj.element.querySelectorAll('.e-row');
+        expect(visibleRowsCount).toBe(rows.length);
+        expect(gridObj.pageSettings.currentPage).toBe(gridObj.infiniteScrollSettings.initialBlocks);
+    });
+    it('select row', function (done: Function) {
+        let rowSelected = function(args: RowSelectEventArgs) {
+            gridObj.rowSelected = null;
+            done();
+        }
+        gridObj.rowSelected = rowSelected;
+        gridObj.selectRow(1);
+    });
+    it('check no records to display issue  while delete', function (done: Function) {
+        let actionComplete = function (args: NotifyArgs) {
+            let visibleRowsCount = gridObj.infiniteScrollSettings.initialBlocks * gridObj.pageSettings.pageSize;
+            let rows = gridObj.element.querySelectorAll('.e-row');
+            expect(visibleRowsCount - 1).toBe(rows.length);
+            gridObj.actionComplete = null;
+            done();
+        }
+        gridObj.actionComplete = actionComplete;
+        gridObj.deleteRecord();
+    });
     afterAll(() => {
         destroy(gridObj);
         gridObj = null;

@@ -4737,7 +4737,7 @@ class PivotEngine {
                         }
                     }
                     cellValue = this.evaluate(actualFormula);
-                    (cellValue === Infinity ? Infinity : (cellValue === undefined || isNaN(cellValue)) ? undefined : JSON.parse(String(cellValue)));
+                    cellValue = (cellValue === Infinity || cellValue === -Infinity ? Infinity : (cellValue === undefined || isNaN(cellValue)) ? undefined : JSON.parse(String(cellValue)));
                 }
                 ri++;
             }
@@ -13786,16 +13786,16 @@ class PivotChart {
             let cKeys;
             if (!isNullOrUndefined(rows)) {
                 cKeys = Object.keys(rows);
-            }
-            for (let cellIndex of cKeys) {
-                let cell = rows[Number(cellIndex)];
-                if (!isNullOrUndefined(cell)) {
-                    if (cell.axis !== 'column') {
-                        return colIndexColl;
-                    }
-                    else if ((cell.type === 'sum' || (this.dataSourceSettings.columns.length === 0 ? false : cell.type === 'grand sum'))
-                        && cell.rowSpan !== -1) {
-                        colIndexColl[cell.colIndex] = cell.colIndex;
+                for (let cellIndex of cKeys) {
+                    let cell = rows[Number(cellIndex)];
+                    if (!isNullOrUndefined(cell)) {
+                        if (cell.axis !== 'column') {
+                            return colIndexColl;
+                        }
+                        else if ((cell.type === 'sum' || (this.dataSourceSettings.columns.length === 0 ? false : cell.type === 'grand sum'))
+                            && cell.rowSpan !== -1) {
+                            colIndexColl[cell.colIndex] = cell.colIndex;
+                        }
                     }
                 }
             }
@@ -16573,7 +16573,7 @@ class MDXQuery {
                 }
                 i++;
             }
-            query = '\nWHERE (' + query.replace(/DrilldownLevel/g, '') + ')';
+            query = query === '' ? '' : '\nWHERE (' + query.replace(/DrilldownLevel/g, '') + ')';
         }
         return query;
     }
@@ -16671,7 +16671,7 @@ class MDXQuery {
                     }
                 }
             }
-            if (isFound) {
+            if (!isFound) {
                 for (let row of this.rows) {
                     if (this.getDimensionUniqueName(row.name) === this.getDimensionUniqueName(field.name)) {
                         if (filters[field.name]) {

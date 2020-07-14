@@ -99,12 +99,16 @@ export class ImageCommand {
             }
         }
         if (e.callBack && (isNOU(e.selector) || !isNOU(e.selector) && e.selector !== 'pasteCleanupModule')) {
-            e.callBack({
-                requestType: 'Image',
-                editorMode: 'HTML',
-                event: e.event,
-                range: this.parent.nodeSelection.getRange(this.parent.currentDocument),
-                elements: this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument) as Element[]
+            let imgElm: Element = e.value === 'Replace' ? (e.item.selectParent[0] as Element) :
+            (this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument)[0] as Element).previousElementSibling;
+            imgElm.addEventListener('load', () => {
+                e.callBack({
+                    requestType: 'Image',
+                    editorMode: 'HTML',
+                    event: e.event,
+                    range: this.parent.nodeSelection.getRange(this.parent.currentDocument),
+                    elements: [imgElm]
+                });
             });
         }
     }

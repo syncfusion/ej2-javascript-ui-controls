@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 18.2.45 (2020-07-14)
+
+### PDF Viewer
+
+#### New Features
+
+- `#281898` - Provided the support to add comments programmatically for the newly added annotations.
+
+#### Bug Fixes
+
+- `#F155593`, `#283379` - Now, PDF Viewer control is working in IE.
+
 ## 18.2.44 (2020-07-07)
 
 ### PDF Viewer

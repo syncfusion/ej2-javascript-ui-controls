@@ -160,6 +160,9 @@ export class PdfExport {
                         parent.trigger(events.pdfExportComplete, this.isBlob ? { promise: this.blobPromise } : {});
                         this.parent.log('exporting_complete', this.getModuleName());
                         resolve(this.pdfDocument);
+                    }).catch((e: Error) => {
+                        reject(this.pdfDocument);
+                        this.parent.trigger(events.actionFailure, e);
                     });
                 });
             });

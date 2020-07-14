@@ -1893,6 +1893,7 @@ class GaugeTooltip {
         }
         this.gauge.on(Browser.touchMoveEvent, this.renderTooltip, this);
         this.gauge.on(Browser.touchEndEvent, this.mouseUpHandler, this);
+        this.gauge.element.addEventListener('contextmenu', this.removeTooltip);
     }
     /**
      * To unbind events for tooltip module

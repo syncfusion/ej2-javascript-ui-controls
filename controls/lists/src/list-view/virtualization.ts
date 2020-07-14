@@ -210,8 +210,8 @@ export class Virtualization {
         [this.topElementHeight, this.bottomElementHeight] : [this.totalHeight, 0];
         if (isBlazor() && this.listViewInstance.isServerRendered) {
             let listDiff: number;
-            if (!isNullOrUndefined(this.listViewInstance.liElementHeight)) {
-                let ulContainer: Element = this.listViewInstance.element.querySelector('#virtualUlContainer');
+            if (isNullOrUndefined(this.listViewInstance.liElementHeight)) {
+                let ulContainer: Element = this.listViewInstance.element.querySelector('.' + classNames.virtualElementContainer);
                 if (ulContainer.children[0]) {
                     this.listViewInstance.liElementHeight = ulContainer.children[0].getBoundingClientRect().height;
                 }
@@ -915,7 +915,7 @@ export class Virtualization {
                 }
                 this.listViewInstance.template = div.innerHTML;
             }
-            template.innerHTML =  this.listViewInstance.template;
+            template.innerHTML = this.listViewInstance.template;
             this.listViewInstance.template = virtualTemplate;
         } else {
             template.innerHTML = this.listViewInstance.template || commonTemplate;

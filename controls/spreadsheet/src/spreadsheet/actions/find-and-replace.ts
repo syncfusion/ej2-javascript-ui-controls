@@ -1,11 +1,12 @@
 import { Spreadsheet } from '../base/index';
 import { findDlg, locale, dialog, gotoDlg, replace, findHandler, beginAction, BeforeReplaceEventArgs } from '../common/index';
-import { ReplaceEventArgs, completeAction, ReplaceAllEventArgs } from '../common/index';
+import { ReplaceEventArgs, completeAction, ReplaceAllEventArgs, DialogBeforeOpenEventArgs } from '../common/index';
 import { L10n, getComponent, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { ToolbarFind, goto, FindOptions, showDialog, findUndoRedo, count, replaceAllDialog, findKeyUp } from '../../workbook/index';
 import { ReplaceAllArgs } from '../../workbook/index';
 import { CheckBox, Button } from '@syncfusion/ej2-buttons';
+import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { TextBox } from '@syncfusion/ej2-inputs';
 import { DialogModel } from '@syncfusion/ej2-popups';
@@ -79,7 +80,15 @@ export class FindAndReplace {
             let dlg: DialogModel = {
                 isModal: false, showCloseIcon: true, cssClass: 'e-find-dlg', allowDragging: true,
                 header: l10n.getConstant('FindAndReplace'), closeOnEscape: false,
-                beforeOpen: (): void => {
+                beforeOpen: (args: BeforeOpenEventArgs): void => {
+                    let dlgArgs: DialogBeforeOpenEventArgs = {
+                        dialogName: 'FindAndReplaceDialog',
+                        element: args.element, target: args.target, cancel: args.cancel
+                    };
+                    this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                    if (dlgArgs.cancel) {
+                        args.cancel = true;
+                    }
                     dialogInst.dialogInstance.content = this.findandreplaceContent(); dialogInst.dialogInstance.dataBind();
                     this.parent.element.focus();
                 },
@@ -149,7 +158,15 @@ export class FindAndReplace {
             let dlg: DialogModel = {
                 width: 300, isModal: false, showCloseIcon: true, cssClass: 'e-goto-dlg', allowDragging: true,
                 header: l10n.getConstant('GotoHeader'),
-                beforeOpen: (): void => {
+                beforeOpen: (args: BeforeOpenEventArgs): void => {
+                    let dlgArgs: DialogBeforeOpenEventArgs = {
+                        dialogName: 'GoToDialog',
+                        element: args.element, target: args.target, cancel: args.cancel
+                    };
+                    this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                    if (dlgArgs.cancel) {
+                        args.cancel = true;
+                    }
                     dialogInst.dialogInstance.content = this.GotoContent(); dialogInst.dialogInstance.dataBind();
                     this.parent.element.focus();
                 },

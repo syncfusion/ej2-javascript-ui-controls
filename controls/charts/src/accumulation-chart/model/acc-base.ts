@@ -299,7 +299,11 @@ export class AccPoints {
      public textSize: Size;
      /** @private */
      public isLabelUpdated: number = null;
+     /** @private */
      public initialLabelRegion: Rect = null;
+     /** @private */
+     public templateElement: HTMLElement;
+
 }
 
 /**

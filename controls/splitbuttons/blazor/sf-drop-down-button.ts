@@ -5,6 +5,8 @@ import { upDownKeyHandler } from '../src/common/common';
 const HIDDEN: string = 'hidden';
 const TRANSPARENT: string = 'e-transparent';
 const EMPTY: string = '';
+const PIXEL: string = 'px;';
+const ZERO: string = '0';
 const DOT: string = '.';
 const HASH: string = '#';
 const BTNCLICK: string = 'BtnClick';
@@ -40,35 +42,42 @@ class SfDropDownButton {
     }
 
     public calculatePosition(): Offset {
-        let borderWidth: number = parseInt(getComputedStyle(this.element).borderWidth, 10);
+        let btnOffset: ClientRect = this.element.getBoundingClientRect();
+        let left: number = btnOffset.left + pageXOffset;
+        let top: number = btnOffset.bottom + pageYOffset;
         this.popup.style.visibility = HIDDEN;
+        this.popup.style.top = pageYOffset ? pageYOffset + PIXEL : ZERO;
+        this.popup.style.left = pageXOffset ? pageXOffset + PIXEL : ZERO;
         this.popup.classList.remove(TRANSPARENT);
         let popupOffset: ClientRect = this.popup.getBoundingClientRect();
-        let left: number = 0 - borderWidth;
-        let bottom: number = -popupOffset.height - borderWidth;
-        let zIndex: number = getZindexPartial(this.popup);
-        let btnOffset: ClientRect = this.element.getBoundingClientRect();
-        if (popupOffset.height + btnOffset.bottom > document.documentElement.clientHeight) {
-            if (btnOffset.top - popupOffset.height > document.documentElement.clientTop) {
-                bottom = btnOffset.height - borderWidth;
-            }
-        }
-        if (popupOffset.width + btnOffset.right > document.documentElement.clientWidth) {
-            if (btnOffset.left - popupOffset.width > document.documentElement.clientLeft) {
-                left = btnOffset.width - popupOffset.width;
-            }
-        }
-        left = Math.ceil(left); bottom = Math.ceil(bottom);
         this.popup.classList.add(TRANSPARENT);
         this.popup.style.visibility = EMPTY;
+        let zIndex: number = getZindexPartial(this.element);
+        if (btnOffset.bottom + popupOffset.height > document.documentElement.clientHeight) {
+            if (top - btnOffset.height - popupOffset.height > document.documentElement.clientTop) {
+                top = top - btnOffset.height - popupOffset.height;
+            }
+        }
+        if (btnOffset.left + popupOffset.width > document.documentElement.clientWidth) {
+            if (btnOffset.right - popupOffset.width > document.documentElement.clientLeft) {
+                left = (left + btnOffset.width) - popupOffset.width;
+            }
+        }
+        left = Math.ceil(left); top = Math.ceil(top);
+        document.body.appendChild(this.popup);
         if (this.popup.firstElementChild) { (this.popup.firstElementChild as HTMLElement).focus(); }
+        EventHandler.remove(document, MOUSEDOWN, this.mouseDownHandler);
         this.addEventListener();
-        return <Offset>{ Left: left, Bottom: bottom, ZIndex: zIndex };
+        return <Offset>{ Left: left, Top: top, ZIndex: zIndex };
     }
 
     private mouseDownHandler(e: MouseEvent & TouchEvent): void {
-        if (!closest(e.target as Element, HASH + this.getDropDownButton().id)) {
-            this.dotNetRef.invokeMethodAsync(BTNCLICK, null);
+        if (this.popup.parentElement) {
+            if (!closest(e.target as Element, HASH + this.getDropDownButton().id) && !closest(e.target as Element, HASH + this.popup.id)) {
+                this.dotNetRef.invokeMethodAsync(BTNCLICK, null);
+                this.removeEventListener();
+            }
+        } else {
             this.removeEventListener();
         }
     }
@@ -90,14 +99,8 @@ class SfDropDownButton {
                 this.dotNetRef.invokeMethodAsync(BTNCLICK, null);
                 if (e.keyCode === ESC) {
                     e.preventDefault();
-                    element.focus();
-                } else {
-                    if (e.shiftKey) {
-                        EventHandler.add(element, FOCUS, this.preventFocus, this);
-                        element.tabIndex = -1;
-                        element.focus();
-                    }
                 }
+                element.focus();
                 this.removeEventListener();
             }
             if (!ul || !ul.classList.contains(DROPDOWN)) { return; }
@@ -121,13 +124,6 @@ class SfDropDownButton {
         }
     }
 
-    private preventFocus(e: FocusEvent): void {
-        let element: HTMLElement = this.getElement();
-        e.preventDefault();
-        EventHandler.remove(element, FOCUS, this.preventFocus);
-        element.removeAttribute(TABIDX);
-    }
-
     private getElement(): HTMLElement {
         return (this.element.classList.contains(WRAPPER) ? this.element.firstElementChild : this.element) as HTMLElement;
     }
@@ -137,20 +133,15 @@ class SfDropDownButton {
             this.element.getElementsByClassName(ELEMENT)[0] as HTMLElement : this.element;
     }
 
-    public btnClickHandler(e: MouseEvent): void {
-        if (closest(e.target as Element, HASH + this.popup.id)) {
-            if (closest(e.target as Element, DOT + ITEM)) {
-                this.removeEventListener();
-                this.getElement().focus();
-            }
-        } else {
-            this.removeEventListener();
+    public clickHandler(e: MouseEvent): void {
+        if (closest(e.target as Element, DOT + ITEM)) {
+            this.removeEventListener(); this.getElement().focus();
         }
     }
 
     public addEventListener(setFocus?: boolean): void {
         EventHandler.add(document, MOUSEDOWN, this.mouseDownHandler, this);
-        EventHandler.add(this.getDropDownButton(), CLICK, this.btnClickHandler, this);
+        EventHandler.add(this.popup, CLICK, this.clickHandler, this);
         EventHandler.add(this.popup, KEYDOWN, this.keydownHandler, this);
         if (setFocus && this.popup.firstElementChild) {
             let focusEle: HTMLElement = this.popup.querySelector(DOT + FOCUSED) as HTMLElement;
@@ -158,10 +149,13 @@ class SfDropDownButton {
         }
     }
 
-    public removeEventListener(): void {
+    public removeEventListener(reposition?: boolean): void {
         EventHandler.remove(document, MOUSEDOWN, this.mouseDownHandler);
-        EventHandler.remove(this.getDropDownButton(), CLICK, this.btnClickHandler);
-        if (this.popup.parentElement) { EventHandler.remove(this.popup, KEYDOWN, this.keydownHandler); }
+        if (this.popup.parentElement) {
+            EventHandler.remove(this.popup, CLICK, this.clickHandler);
+            EventHandler.remove(this.popup, KEYDOWN, this.keydownHandler);
+            if (reposition && this.element.parentElement) { this.element.appendChild(this.popup); }
+        }
     }
 }
 
@@ -176,10 +170,11 @@ let DropDownButton: object = {
         return element.blazor__instance.calculatePosition();
     },
     addEventListener(element: BlazorDropDownMenuElement): void {
+        element.blazor__instance.removeEventListener();
         element.blazor__instance.addEventListener(true);
     },
     removeEventListener(element: BlazorDropDownMenuElement): void {
-        element.blazor__instance.removeEventListener();
+        element.blazor__instance.removeEventListener(true);
     }
 };
 
@@ -189,7 +184,7 @@ interface BlazorDropDownMenuElement extends HTMLElement {
 
 interface Offset {
     Left: number;
-    Bottom: number;
+    Top: number;
     ZIndex: number;
 }
 

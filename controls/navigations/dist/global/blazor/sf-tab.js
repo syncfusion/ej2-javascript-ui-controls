@@ -28,6 +28,9 @@ var CLS_HSCRCNT = 'e-hscroll-content';
 var CLS_VSCRCNT = 'e-vscroll-content';
 var CLS_VTAB = 'e-vertical-tab';
 var CLS_HBOTTOM = 'e-horizontal-bottom';
+var CLS_VERTICAL_ICON = 'e-vertical-icon';
+var CLS_VLEFT = 'e-vertical-left';
+var CLS_VRIGHT = 'e-vertical-right';
 var SPACEBAR = 32;
 var END = 35;
 var SfTab = /** @class */ (function () {
@@ -357,12 +360,18 @@ var SfTab = /** @class */ (function () {
     };
     SfTab.prototype.serverChangeOrientation = function (newProp, tbarEle, isVertical, isChange) {
         this.setOrientation(newProp, this.hdrEle);
-        sf.base.removeClass([this.element], [CLS_VTAB]);
+        sf.base.removeClass([this.element], [CLS_VTAB, CLS_VLEFT, CLS_VRIGHT]);
         if (isChange) {
             this.changeToolbarOrientation(tbarEle, isVertical);
         }
         if (this.isVertical()) {
-            sf.base.addClass([this.element], [CLS_VTAB]);
+            var tbPos = (this.options.headerPlacement === 'Left') ? CLS_VLEFT : CLS_VRIGHT;
+            if (!this.element.classList.contains(CLS_NEST)) {
+                sf.base.addClass([this.element], [CLS_VTAB, tbPos]);
+            }
+            else {
+                sf.base.addClass([this.hdrEle], [CLS_VTAB, tbPos]);
+            }
         }
         this.setActiveBorder();
         this.focusItem();
@@ -831,10 +840,16 @@ var Tab = {
             }
         }
     },
-    serverItemsChanged: function (element, selectedItem, animation) {
+    serverItemsChanged: function (element, selectedItem, animation, isVerticalIcon) {
         if (element.blazor__instance) {
             element.blazor__instance.options.selectedItem = selectedItem;
             element.blazor__instance.options.animation = animation;
+            if (isVerticalIcon) {
+                sf.base.addClass([element], CLS_VERTICAL_ICON);
+            }
+            else {
+                sf.base.removeClass([element], CLS_VERTICAL_ICON);
+            }
             element.blazor__instance.serverItemsChanged();
         }
     },
@@ -898,8 +913,11 @@ var Tab = {
             element.blazor__instance.refreshActiveBorder();
         }
     },
-    destroy: function (element) {
+    destroy: function (element, elementId, selectedItem) {
         if (element.blazor__instance) {
+            if (element.blazor__instance.options.enablePersistence) {
+                window.localStorage.setItem(elementId, selectedItem);
+            }
             element.blazor__instance.destroy();
         }
     },

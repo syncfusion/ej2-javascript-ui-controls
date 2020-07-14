@@ -56,19 +56,45 @@ export class PdfNumbersConvertor {
      */
     private static arabicToRoman(intArabic : number) : string {
         let retval : string = '';
-        retval += this.generateNumber(intArabic, 1000, 'M');
-        retval += this.generateNumber(intArabic, 900, 'CM');
-        retval += this.generateNumber(intArabic, 500, 'D');
-        retval += this.generateNumber(intArabic, 400, 'CD');
-        retval += this.generateNumber(intArabic, 100, 'C');
-        retval += this.generateNumber(intArabic, 90, 'XC');
-        retval += this.generateNumber(intArabic, 50, 'L');
-        retval += this.generateNumber(intArabic, 40, 'XL');
-        retval += this.generateNumber(intArabic, 10, 'X');
-        retval += this.generateNumber(intArabic, 9, 'IX');
-        retval += this.generateNumber(intArabic, 5, 'V');
-        retval += this.generateNumber(intArabic, 4, 'IV');
-        retval += this.generateNumber(intArabic, 1, 'I');
+        let retvalM : {returnValue : string , intArabic : number } = this.generateNumber(intArabic, 1000, 'M');
+        retval += retvalM.returnValue;
+        intArabic = retvalM.intArabic;
+        let retvalCM : {returnValue : string , intArabic : number } = this.generateNumber(intArabic, 900, 'CM');
+        retval += retvalCM.returnValue;
+        intArabic = retvalCM.intArabic;
+        let retvalD : {returnValue : string , intArabic : number } = this.generateNumber(intArabic, 500, 'D');
+        retval += retvalD.returnValue;
+        intArabic = retvalD.intArabic;
+        let retvalCD : {returnValue : string , intArabic : number } = this.generateNumber(intArabic, 400, 'CD');
+        retval += retvalCD.returnValue;
+        intArabic = retvalCD.intArabic;
+        let retvalC : {returnValue : string , intArabic : number } = this.generateNumber(intArabic, 100, 'C');
+        retval += retvalC.returnValue;
+        intArabic = retvalC.intArabic;
+        let retvalXC : {returnValue : string , intArabic : number } = this.generateNumber(intArabic, 90, 'XC');
+        retval += retvalXC.returnValue;
+        intArabic = retvalXC.intArabic;
+        let retvalL : {returnValue : string , intArabic : number } = this.generateNumber(intArabic, 50, 'L');
+        retval += retvalL.returnValue;
+        intArabic = retvalL.intArabic;
+        let retvalXL : {returnValue : string , intArabic : number } = this.generateNumber(intArabic, 40, 'XL');
+        retval += retvalXL.returnValue;
+        intArabic = retvalXL.intArabic;
+        let retvalX : {returnValue : string , intArabic : number } = this.generateNumber(intArabic, 10, 'X');
+        retval += retvalX.returnValue;
+        intArabic = retvalX.intArabic;
+        let retvalIX : {returnValue : string , intArabic : number } = this.generateNumber(intArabic, 9, 'IX');
+        retval += retvalIX.returnValue;
+        intArabic = retvalIX.intArabic;
+        let retvalV : {returnValue : string , intArabic : number } = this.generateNumber(intArabic, 5, 'V');
+        retval += retvalV.returnValue;
+        intArabic = retvalV.intArabic;
+        let retvalIV: {returnValue : string , intArabic : number } = this.generateNumber(intArabic, 4, 'IV');
+        retval += retvalIV.returnValue;
+        intArabic = retvalIV.intArabic;
+        let retvalI: {returnValue : string , intArabic : number } = this.generateNumber(intArabic, 1, 'I');
+        retval += retvalI.returnValue;
+        intArabic = retvalI.intArabic;
 
         return retval.toString();
     }
@@ -89,13 +115,13 @@ export class PdfNumbersConvertor {
      * Generate a string value of an input number.
      * @private
      */
-    private static generateNumber(value : number, magnitude : number, letter : string) : string {
+    private static generateNumber(value : number, magnitude : number, letter : string) : { returnValue : string, intArabic : number } {
         let numberstring : string = '';
         while (value >= magnitude) {
             value -= magnitude;
             numberstring += letter;
         }
-        return numberstring.toString();
+        return {returnValue : numberstring.toString(), intArabic : value };
     }
     /**
      * Convert a input number into letters.

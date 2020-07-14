@@ -827,6 +827,15 @@ export class EventWindow {
         eventObj.Timezone = false;
         this.repeatStartDate = <Date>eventObj[this.fields.startTime];
         this.repeatRule = '';
+        if (!isNullOrUndefined(this.parent.eventSettings.fields.subject.default)) {
+            eventObj[this.fields.subject] = this.parent.eventSettings.fields.subject.default;
+        }
+        if (!isNullOrUndefined(this.parent.eventSettings.fields.location.default)) {
+            eventObj[this.fields.location] = this.parent.eventSettings.fields.location.default;
+        }
+        if (!isNullOrUndefined(this.parent.eventSettings.fields.description.default)) {
+            eventObj[this.fields.description] = this.parent.eventSettings.fields.description.default;
+        }
         this.showDetails(eventObj);
         if (eventObj[this.fields.recurrenceRule] && this.recurrenceEditor) {
             this.recurrenceEditor.setRecurrenceRule(<string>eventObj[this.fields.recurrenceRule], <Date>eventObj[this.fields.startTime]);

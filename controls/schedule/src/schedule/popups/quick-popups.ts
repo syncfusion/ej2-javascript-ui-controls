@@ -472,6 +472,9 @@ export class QuickPopups {
         if (subjectElement) {
             Input.createInput({ element: subjectElement, properties: { placeholder: this.l10n.getConstant('addTitle') } });
         }
+        if (!isNullOrUndefined(this.parent.eventSettings.fields.subject.default)) {
+            subjectElement.value = this.parent.eventSettings.fields.subject.default;
+        }
         let closeIcon: HTMLButtonElement = quickCellPopup.querySelector('.' + cls.CLOSE_CLASS) as HTMLButtonElement;
         if (closeIcon) {
             this.renderButton('e-flat e-round e-small', cls.ICON + ' ' + cls.CLOSE_ICON_CLASS, false, closeIcon, this.popupClose);

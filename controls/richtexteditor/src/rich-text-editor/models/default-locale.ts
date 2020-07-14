@@ -30,7 +30,7 @@ export let defaultLocale: { [key: string]: string } = {
     'redo': 'Redo',
     'superscript': 'Superscript',
     'subscript': 'Subscript',
-    'createLink': 'Insert Hyperlink',
+    'createLink': 'Insert Link',
     'openLink': 'Open Link',
     'editLink': 'Edit Link',
     'removeLink': 'Remove Link',

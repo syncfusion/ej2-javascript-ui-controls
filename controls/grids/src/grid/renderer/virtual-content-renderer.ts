@@ -1073,7 +1073,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
 
     private selectVirtualRow(args: { selectedIndex: number }): void {
         if (this.activeKey !== 'upArrow' && this.activeKey !== 'downArrow'
-            && !this.requestTypes.some((value: string) => value === this.requestType)) {
+            && !this.requestTypes.some((value: string) => value === this.requestType) && !this.parent.selectionModule.isInteracted) {
             let ele: Element = this.parent.getFrozenColumns() ? this.parent.getMovableVirtualContent()
                 : (this.parent.getContent() as HTMLElement).firstElementChild;
             let selectedRow: Element = this.parent.getRowByIndex(args.selectedIndex);

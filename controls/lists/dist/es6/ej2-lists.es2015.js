@@ -868,7 +868,8 @@ const classNames = {
     checkboxRight: 'e-checkbox-right',
     checkboxLeft: 'e-checkbox-left',
     listviewCheckbox: 'e-listview-checkbox',
-    itemCheckList: 'e-checklist'
+    itemCheckList: 'e-checklist',
+    virtualElementContainer: 'e-list-virtualcontainer'
 };
 const LISTVIEW_TEMPLATE_PROPERTY = 'Template';
 const LISTVIEW_GROUPTEMPLATE_PROPERTY = 'GroupTemplate';
@@ -1212,7 +1213,7 @@ let ListView = class ListView extends Component {
         this.initialization();
     }
     updateLiELementHeight() {
-        let liContainer = this.element.querySelector('#virtualUlContainer');
+        let liContainer = this.element.querySelector('.' + classNames.virtualElementContainer);
         if (liContainer.children[0]) {
             this.liElementHeight = liContainer.children[0].getBoundingClientRect().height;
             // tslint:disable
@@ -1222,7 +1223,7 @@ let ListView = class ListView extends Component {
     }
     initialization() {
         if (isBlazor() && this.isServerRendered && this.enableVirtualization) {
-            let ulContainer = this.element.querySelector('#virtualUlContainer');
+            let ulContainer = this.element.querySelector('.' + classNames.virtualElementContainer);
             if (ulContainer !== null) {
                 if (this.height === '') {
                     // tslint:disable
@@ -1467,7 +1468,7 @@ let ListView = class ListView extends Component {
             }
         }
         if (isBlazor() && this.isServerRendered && this.enableVirtualization) {
-            let ulElementContainer = this.element.querySelector('#virtualUlContainer');
+            let ulElementContainer = this.element.querySelector('.' + classNames.virtualElementContainer);
             if (ulElementContainer.querySelector('.e-active')) {
                 // tslint:disable-next-line:no-any
                 let selectedElements = ulElementContainer.querySelectorAll('.e-active');
@@ -2082,8 +2083,9 @@ let ListView = class ListView extends Component {
     removeActiveClass() {
         let listViewComponent = this;
         setTimeout(() => {
-            for (let i = 0; i < this.element.querySelector('#virtualUlContainer').childElementCount; i++) {
-                let selectedElement = this.element.querySelector('#virtualUlContainer').children[i];
+            let ulContainer = listViewComponent.element.querySelector('.' + classNames.virtualElementContainer);
+            for (let i = 0; i < ulContainer.childElementCount; i++) {
+                let selectedElement = ulContainer.children[i];
                 let elementIndex;
                 let hiddenElementIndex;
                 if (listViewComponent.showCheckBox) {
@@ -3127,8 +3129,8 @@ class Virtualization {
             [this.topElementHeight, this.bottomElementHeight] : [this.totalHeight, 0];
         if (isBlazor() && this.listViewInstance.isServerRendered) {
             let listDiff;
-            if (!isNullOrUndefined(this.listViewInstance.liElementHeight)) {
-                let ulContainer = this.listViewInstance.element.querySelector('#virtualUlContainer');
+            if (isNullOrUndefined(this.listViewInstance.liElementHeight)) {
+                let ulContainer = this.listViewInstance.element.querySelector('.' + classNames.virtualElementContainer);
                 if (ulContainer.children[0]) {
                     this.listViewInstance.liElementHeight = ulContainer.children[0].getBoundingClientRect().height;
                 }

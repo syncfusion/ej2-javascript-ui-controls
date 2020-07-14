@@ -12,7 +12,7 @@ import { setCellFormat, sheetCreated, deleteModel, ModelType, ProtectSettingsMod
 import { BeforeSaveEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs } from '../common/interface';
 import { SaveOptions, SetCellFormatArgs, ClearOptions } from '../common/interface';
 import { SortOptions, BeforeSortEventArgs, SortEventArgs, FindOptions, CellInfoEventArgs, ConditionalFormatModel } from '../common/index';
-import { FilterEventArgs, FilterOptions, BeforeFilterEventArgs, setMerge, MergeType, MergeArgs } from '../common/index';
+import { FilterEventArgs, FilterOptions, BeforeFilterEventArgs, setMerge, MergeType, MergeArgs, UnprotectArgs } from '../common/index';
 import { getCell, skipDefaultValue, setCell, wrap as wrapText } from './cell';
 import { DataBind, setRow, setColumn } from '../index';
 import { WorkbookSave, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookFilter } from '../integrations/index';
@@ -859,9 +859,18 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * Protect the active sheet based on the protect sheetings.
      * @param protectSettings - Specifies the protect settings of the sheet.
      */
-    public protectSheet(sheetIndex?: number | string, protectSettings?: ProtectSettingsModel): void {
+    public protectSheet(sheet?: number | string, protectSettings?: ProtectSettingsModel): void {
       this.notify(events.protectsheetHandler, protectSettings);
     }
+
+    /**
+     * Unprotect the active sheet.
+     * @param sheet - Specifies the sheet to Unprotect.
+     */
+    public unprotectSheet(sheet: number): void {
+        let args: UnprotectArgs = { sheet: sheet};
+        this.notify(events.unprotectsheetHandler, args);
+      }
 
     /**
      * Sorts the range of cells in the active Spreadsheet.

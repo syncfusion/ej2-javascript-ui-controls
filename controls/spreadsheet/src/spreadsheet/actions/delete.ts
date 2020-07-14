@@ -1,5 +1,5 @@
 import { Spreadsheet } from '../base/index';
-import { InsertDeleteEventArgs, beginAction, completeAction, skipHiddenIdx } from '../common/index';
+import { InsertDeleteEventArgs, beginAction, completeAction, skipHiddenIdx, refreshSheetTabs } from '../common/index';
 import { deleteAction } from '../../workbook/common/index';
 
 /**
@@ -20,7 +20,10 @@ export class Delete {
         if (args.isAction) { isAction = true; delete args.isAction; }
         if (isAction) { this.parent.notify(beginAction, { eventArgs: args, action: 'delete' }); }
         if (args.modelType === 'Sheet') {
-            // Delete sheet code
+            this.parent.setProperties({ activeSheetIndex: args.activeSheetIndex - 1 }, true);
+            this.parent.notify(refreshSheetTabs, this);
+            this.parent.renderModule.refreshSheet();
+            this.parent.element.focus();
         } else if (args.modelType === 'Row') {
             if (!this.parent.scrollSettings.enableVirtualization || args.startIndex <= this.parent.viewport.bottomIndex) {
                 if (this.parent.scrollSettings.enableVirtualization) {

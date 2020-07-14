@@ -27,10 +27,15 @@ export class InsertHtmlExec {
             this.parent.currentDocument,
             e.value as Node, this.parent.editableElement, true);
         if (e.subCommand === 'pasteCleanup') {
+            let pastedElements: NodeListOf<Element> = this.parent.editableElement.querySelectorAll('.pasteContent_RTE');
+            let allPastedElements: Element[] = [].slice.call(pastedElements);
+            let imgElements: NodeListOf<Element> = this.parent.editableElement.querySelectorAll('.pasteContent_Img');
+            let allImgElm: Element[] = [].slice.call(imgElements);
             e.callBack({
                 requestType: e.subCommand,
                 editorMode: 'HTML',
-                elements: e.value as Element
+                elements: allPastedElements,
+                imgElem: allImgElm
             });
         } else {
             if (e.callBack) {

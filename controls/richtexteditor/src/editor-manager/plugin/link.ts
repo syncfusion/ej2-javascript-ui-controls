@@ -54,7 +54,7 @@ export class LinkCommand {
             if (!isNOU(e.item.title)) {
                 anchorEle.setAttribute('title', e.item.title);
             }
-            if (!isNOU(e.item.text)) {
+            if (!isNOU(e.item.text) && e.item.text !== '') {
                 linkText = anchorEle.innerText;
                 anchorEle.innerText = e.item.text;
             }

@@ -14,7 +14,9 @@
   box-sizing: border-box;
 }
 
+// sass-lint:disable no-vendor-prefixes
 .e-multi-select-wrapper .e-chips>.e-chipcontent {
+  -webkit-text-fill-color: $ddl-chip-font-color;
   color: $ddl-chip-font-color;
   font-family: $ddl-chip-font-family;
   font-size: $ddl-chip-font-size;
@@ -43,6 +45,7 @@
 }
 
 .e-multi-select-wrapper .e-chips .e-chips-close::before {
+  -webkit-text-fill-color: $ddl-chip-close;
   color: $ddl-chip-close;
   font-size: $ddl-chip-close-font;
 }
@@ -219,8 +222,10 @@ e-ddl.e-popup.e-multi-select-list-wrapper.e-multiselct-group.e-checkbox .e-list-
 }
 
 .e-multi-select-wrapper .e-delim-values {
+  -webkit-text-fill-color: $ddl-chip-font-color;
   color: $ddl-chip-font-color;
   @if $ddl-multiselect-skin-name == 'bootstrap4' {
+    -webkit-text-fill-color: $gray-900;
     color: $gray-900;
   }
 }

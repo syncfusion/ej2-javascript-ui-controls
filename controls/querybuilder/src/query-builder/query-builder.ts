@@ -233,6 +233,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private target: Element;
     private updatedRule: ruleObj = { not: false, condition: 'and' };
     private ruleTemplateFn: Function;
+    private isLocale: boolean = false;
     /** 
      * Triggers when the component is created.
      * @event
@@ -444,7 +445,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     if (categories.indexOf(columns[i].category) < 0) {
                         categories.push(columns[i].category);
                     }
-                    if (!columns[i].operators) {
+                    if (!columns[i].operators || this.isLocale) {
                         columns[i].operators = this.customOperators[columns[i].type + 'Operator'];
                     }
                 }
@@ -477,7 +478,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     columns[i].category = this.l10n.getConstant('OtherFields');
                 }
                 this.updateCustomOperator(columns[i]);
-                if (!columns[i].operators) {
+                if (!columns[i].operators || this.isLocale) {
                     columns[i].operators = this.customOperators[columns[i].type + 'Operator'];
                 }
             }
@@ -2516,8 +2517,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     this.enablePersistence = newProp.enablePersistence;
                     break;
                 case 'dataSource':
-                    this.dataSource = newProp.dataSource;
-                    this.refresh();
+                    this.dataSource = newProp.dataSource; this.refresh();
                     break;
                 case 'columns':
                     if (isBlazor()) {
@@ -2552,8 +2552,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     this.element.style.width = this.width;
                     break;
                 case 'locale':
-                    this.locale = newProp.locale; this.intl = new Internationalization(this.locale); this.refresh();
-                    break;
+                    this.locale = newProp.locale; this.intl = new Internationalization(this.locale);
+                    this.isLocale = true; this.refresh(); this.isLocale = false; break;
                 case 'enableNotCondition':
                     this.onChangeNotGroup();
                     break;

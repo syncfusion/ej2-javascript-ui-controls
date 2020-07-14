@@ -897,6 +897,7 @@ var Double = /** @class */ (function () {
             var isLazyLoad = sf.base.isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
             if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad) {
                 axis.calculateVisibleRange(size);
+                axis.calculateAxisRange(size, this.chart);
                 axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming && axis.valueType !== 'Category') ?
                     this.calculateNumericNiceInterval(axis, axis.doubleRange.delta, size)
                     : axis.visibleRange.interval;
@@ -992,6 +993,8 @@ var animationComplete = 'animationComplete';
 var textRender = 'textRender';
 /** @private */
 var pointRender = 'pointRender';
+/** @private */
+
 /** @private */
 var seriesRender = 'seriesRender';
 /** @private */
@@ -1702,6 +1705,53 @@ var Axis = /** @class */ (function (_super) {
             this.doubleRange = new DoubleRange(start, end);
             this.visibleRange = { min: this.doubleRange.start, max: this.doubleRange.end,
                 delta: this.doubleRange.delta, interval: this.visibleRange.interval };
+        }
+    };
+    /**
+     * Calculate range for x and y axis after zoom.
+     * @return {void}
+     * @private
+     */
+    Axis.prototype.calculateAxisRange = function (size, chart) {
+        if (chart.enableAutoIntervalOnBothAxis) {
+            if (this.orientation === 'Horizontal' && chart.zoomSettings.mode === 'X') {
+                for (var i = 0; i < this.series.length; i++) {
+                    var yValue = [];
+                    for (var _i = 0, _a = this.series[i].visiblePoints; _i < _a.length; _i++) {
+                        var points = _a[_i];
+                        if ((points.xValue > this.visibleRange.min) && (points.xValue < this.visibleRange.max)) {
+                            yValue.push(points.yValue);
+                        }
+                    }
+                    for (var _b = 0, _c = chart.axisCollections; _b < _c.length; _b++) {
+                        var axis = _c[_b];
+                        if (axis.orientation === 'Vertical' && !sf.base.isNullOrUndefined(axis.series[i])) {
+                            axis.series[i].yMin = Math.min.apply(Math, yValue);
+                            axis.series[i].yMax = Math.max.apply(Math, yValue);
+                            axis.baseModule.calculateRangeAndInterval(size, axis);
+                        }
+                    }
+                }
+            }
+            if (this.orientation === 'Vertical' && chart.zoomSettings.mode === 'Y') {
+                for (var i = 0; i < this.series.length; i++) {
+                    var xValue = [];
+                    for (var _d = 0, _e = this.series[i].visiblePoints; _d < _e.length; _d++) {
+                        var points = _e[_d];
+                        if ((points.yValue > this.visibleRange.min) && (points.yValue < this.visibleRange.max)) {
+                            xValue.push(points.xValue);
+                        }
+                    }
+                    for (var _f = 0, _g = chart.axisCollections; _f < _g.length; _f++) {
+                        var axis = _g[_f];
+                        if (axis.orientation === 'Horizontal' && !sf.base.isNullOrUndefined(axis.series[i])) {
+                            axis.series[i].xMin = Math.min.apply(Math, xValue);
+                            axis.series[i].xMax = Math.max.apply(Math, xValue);
+                            axis.baseModule.calculateRangeAndInterval(size, axis);
+                        }
+                    }
+                }
+            }
         }
     };
     /**
@@ -2634,6 +2684,7 @@ function calculateShapes(location, size, shape, options, url, isChart, control) 
         case 'Waterfall':
         case 'BoxAndWhisker':
         case 'StepArea':
+        case 'StackingStepArea':
         case 'Square':
         case 'Flag':
             dir = 'M' + ' ' + x + ' ' + (ly + (-height / 2)) + ' ' +
@@ -3519,6 +3570,7 @@ var AccPoints = /** @class */ (function () {
         this.argsData = null;
         /** @private */
         this.isLabelUpdated = null;
+        /** @private */
         this.initialLabelRegion = null;
     }
     return AccPoints;
@@ -6401,6 +6453,9 @@ var AccumulationChart = /** @class */ (function (_super) {
         rect = new sf.svgbase.Rect(margin.left, 0, this.availableSize.width - margin.left - margin.right, 0);
         var options = new sf.svgbase.TextOption(this.element.id + '_title', titlePositionX(rect, this.titleStyle), this.margin.top + (titleSize.height * 3 / 4), getAnchor, this.titleCollection, '', 'auto');
         var element = textElement(this.renderer, options, this.titleStyle, this.titleStyle.color || this.themeStyle.chartTitle, this.svgObject, false, this.redraw);
+        if (element) {
+            element.setAttribute('aria-label', this.title);
+        }
         if (this.subTitle) {
             this.renderSubTitle(options);
         }
@@ -8108,7 +8163,6 @@ var AccumulationDataLabel = /** @class */ (function (_super) {
             });
         }
         this.marginValue = argsData.border.width ? (5 + argsData.border.width) : 1;
-        // Template element
         var childElement = sf.base.createElement('div', {
             id: this.accumulation.element.id + '_Series_' + 0 + '_DataLabel_' + point.index,
             styles: 'position: absolute;background-color:' + argsData.color + ';' +
@@ -8119,6 +8173,7 @@ var AccumulationDataLabel = /** @class */ (function (_super) {
         textSize.height += 4; // 4 for calculation with padding for smart label shape
         textSize.width += 4;
         point.textSize = textSize;
+        point.templateElement = childElement;
         this.getDataLabelPosition(point, dataLabel, textSize, points, datalabelGroup, id);
         if (point.labelRegion) {
             this.correctLabelRegion(point.labelRegion, point.textSize);
@@ -8144,21 +8199,11 @@ var AccumulationDataLabel = /** @class */ (function (_super) {
                 var datalabelGroup = this.accumulation.renderer.createGroup({ id: id + 'g_' + point.index });
                 var dataLabelElement = void 0;
                 var location_3 = void 0;
-                // tslint:disable-next-line:max-line-length
-                var childElement = sf.base.createElement('div', {
-                    id: this.accumulation.element.id + '_Series_' + 0 + '_DataLabel_' + point.index,
-                    styles: 'position: absolute;background-color:' + point.argsData.color + ';' +
-                        // tslint:disable-next-line:max-line-length
-                        getFontStyle(dataLabel.font) + ';border:' + point.argsData.border.width + 'px solid ' + point.argsData.border.color + ';'
-                });
-                var textSize = point.argsData ?
-                    this.getTemplateSize(childElement, point, point.argsData, redraw) :
-                    sf.svgbase.measureText(point.label, dataLabel.font);
                 var element = void 0;
                 if (point.visible && point.labelVisible) {
                     angle = degree = dataLabel.angle;
                     if (point.argsData.template) {
-                        this.setTemplateStyle(childElement, point, templateElement, dataLabel.font.color, point.color, redraw);
+                        this.setTemplateStyle(point.templateElement, point, templateElement, dataLabel.font.color, point.color, redraw);
                     }
                     else {
                         location_3 = new ChartLocation(
@@ -10133,7 +10178,7 @@ var AnnotationBase = /** @class */ (function () {
                     }
                     else if (xAxis.valueType === 'DateTime') {
                         var option = { skeleton: 'full', type: 'dateTime' };
-                        xValue = (typeof this.annotation.x === 'object') ?
+                        xValue = (typeof this.annotation.x === 'object' || typeof new Date(this.annotation.x) === 'object') ?
                             Date.parse(chart.intl.getDateParser(option)(chart.intl.getDateFormat(option)(new Date(sf.data.DataUtil.parse.parseJson({ val: annotation.x }).val)))) : 0;
                     }
                     else {

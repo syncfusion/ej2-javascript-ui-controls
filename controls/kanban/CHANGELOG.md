@@ -8,15 +8,15 @@
 
 #### New Features
 
-- **Sorting Order**: Arrange their cards in ascending or descending order based on `sortBy` property.
-- **Card Layout**: Improved the card layout by providing default colours, labels, and custom classes.
-- **Dialog Customization**: User can customize the particular property in the editing/adding dialog by using the `model` property.
-- **Toggle Column Count**: Provided cards count on collapsed column.
+- **Sorting Order**: Arrange the cards in ascending or descending order based on the `sortBy` property.
+- **Card Layout**: Improved the card layout by providing the default colours, labels, and custom classes.
+- **Dialog Customization**: Users can customize the particular property in the editing or adding dialog by using the `model` property.
+- **Toggle Column Count**: Provided cards count on the collapsed column.
 
 #### Breaking Changes
 
-- Removed the `priority` under the `cardSettings` property and included this functionalities to the sorting order feature by setting `sortBy` as `Index` under the `sortSettings` property.
-- Replaced `sortBy` into `sortDirection` under `swimlaneSettings` property.
+- Removed the `priority` under the `cardSettings` property and included these functionalities to the sorting order feature by setting the `sortBy` as `Index` under the `sortSettings` property.
+- Replaced the `sortBy` with `sortDirection` under the `swimlaneSettings` property.
 
 | **Previous API** | **Current API** |
 | ---- | ---- |

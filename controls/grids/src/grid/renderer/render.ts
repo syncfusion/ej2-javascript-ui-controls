@@ -450,6 +450,10 @@ export class Render {
                 gObj.hideSpinner();
                 return;
             }
+            if (this.isInfiniteEnd(args) && !len) {
+                this.parent.notify(events.infiniteEditHandler, { e: args, result: e.result, count: e.count, agg: e.aggregates });
+                return;
+            }
             this.parent.isEdit = false;
             this.parent.notify(events.editReset, {});
             this.parent.notify(events.tooltipDestroy, {});
@@ -486,7 +490,9 @@ export class Render {
                 this.updatesOnInitialRender(dataArgs);
             }
             if (!this.isColTypeDef && gObj.getCurrentViewRecords()) {
-                this.updateColumnType(gObj.getCurrentViewRecords()[0]);
+                if (this.data.dataManager.dataSource.offline && (gObj.dataSource as object[]).length) {
+                    this.updateColumnType(gObj.dataSource[0]);
+                } else { this.updateColumnType(gObj.getCurrentViewRecords()[0]); }
             }
             if (!this.parent.isInitialLoad && this.parent.groupSettings.disablePageWiseAggregates &&
                 !this.parent.groupSettings.columns.length) {
@@ -547,6 +553,10 @@ export class Render {
         this.parent.currentViewData = [];
         this.renderEmptyRow();
         this.parent.log('actionfailure', { error: e });
+    }
+
+    private isInfiniteEnd(args: NotifyArgs): boolean {
+        return this.parent.enableInfiniteScrolling && !this.parent.infiniteScrollSettings.enableCache && args.requestType === 'delete';
     }
 
     private updatesOnInitialRender(e: { result: Object, count: number }): void {

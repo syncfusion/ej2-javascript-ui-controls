@@ -1132,19 +1132,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             });
             this.formValidate.validate();
         } else {
-            args = {
-                errorMessage: '',
-                data: { name: this.name, primaryKey: this.primaryKey, value: this.checkValue(this.getSendValue()) }
-            };
-            this.trigger('validating', args, (validateArgs: ValidateEventArgs) => {
-                if (validateArgs.errorMessage) {
-                    select('.' + classes.EDITABLE_ERROR, this.formEle).innerHTML = validateArgs.errorMessage;
-                    this.toggleErrorClass(true);
-                } else {
-                    this.toggleErrorClass(false);
-                }
-                this.afterValidation(isValidate);
-            });
+            this.afterValidation(isValidate);
         }
     }
     private afterValidation(isValidate: boolean): void {
@@ -1413,11 +1401,6 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         this.editEle = <HTMLElement>select('.' + classes.INPUT, this.formEle);
         let errEle: HTMLElement = null;
         errEle = <HTMLElement>select('.' + classes.ERROR, this.editEle);
-        let type: string = this.type;
-        let calendarComp: boolean = type === 'Date' || type === 'DateTime' || type === 'DateRange' || type === 'Time';
-        if (errEle && calendarComp) {
-            return;
-        }
         if (!this.isTemplate) {
             this.setValue();
         }

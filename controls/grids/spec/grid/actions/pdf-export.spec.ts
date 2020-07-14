@@ -237,6 +237,7 @@ describe('pdf Export =>', () => {
 
     describe('Hierarchy pdf export => ', () => {
         let gridObj: Grid;
+        let Dummy: Boolean = true;
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -320,6 +321,17 @@ describe('pdf Export =>', () => {
             //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         });   
+
+        it('pdf-export -> catch method', (done) => {
+            gridObj.pdfExport({footer:{fromBottom: -300}}).then((doc) =>{} ).catch((e) =>{
+                Dummy = false;
+                done();
+            });
+        });
+
+        it('catch method check', () => {
+          expect(Dummy).toBeFalsy();
+        });
     
         afterAll(() => {
             destroy(gridObj);

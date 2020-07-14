@@ -5,13 +5,13 @@ window.sfBlazor.DropDownButton = (function () {
 var HIDDEN = 'hidden';
 var TRANSPARENT = 'e-transparent';
 var EMPTY = '';
+var PIXEL = 'px;';
+var ZERO = '0';
 var DOT = '.';
 var HASH = '#';
 var BTNCLICK = 'BtnClick';
-var FOCUS = 'focus';
 var DROPDOWN = 'e-dropdown-menu';
 var ITEM = 'e-item';
-var TABIDX = 'tabindex';
 var FOCUSED = 'e-focused';
 var WRAPPER = 'e-split-btn-wrapper';
 var ELEMENT = 'e-dropdown-btn';
@@ -34,37 +34,45 @@ var SfDropDownButton = /** @class */ (function () {
         this.element.blazor__instance = this;
     }
     SfDropDownButton.prototype.calculatePosition = function () {
-        var borderWidth = parseInt(getComputedStyle(this.element).borderWidth, 10);
+        var btnOffset = this.element.getBoundingClientRect();
+        var left = btnOffset.left + pageXOffset;
+        var top = btnOffset.bottom + pageYOffset;
         this.popup.style.visibility = HIDDEN;
+        this.popup.style.top = pageYOffset ? pageYOffset + PIXEL : ZERO;
+        this.popup.style.left = pageXOffset ? pageXOffset + PIXEL : ZERO;
         this.popup.classList.remove(TRANSPARENT);
         var popupOffset = this.popup.getBoundingClientRect();
-        var left = 0 - borderWidth;
-        var bottom = -popupOffset.height - borderWidth;
-        var zIndex = sf.popups.getZindexPartial(this.popup);
-        var btnOffset = this.element.getBoundingClientRect();
-        if (popupOffset.height + btnOffset.bottom > document.documentElement.clientHeight) {
-            if (btnOffset.top - popupOffset.height > document.documentElement.clientTop) {
-                bottom = btnOffset.height - borderWidth;
+        this.popup.classList.add(TRANSPARENT);
+        this.popup.style.visibility = EMPTY;
+        var zIndex = sf.popups.getZindexPartial(this.element);
+        if (btnOffset.bottom + popupOffset.height > document.documentElement.clientHeight) {
+            if (top - btnOffset.height - popupOffset.height > document.documentElement.clientTop) {
+                top = top - btnOffset.height - popupOffset.height;
             }
         }
-        if (popupOffset.width + btnOffset.right > document.documentElement.clientWidth) {
-            if (btnOffset.left - popupOffset.width > document.documentElement.clientLeft) {
-                left = btnOffset.width - popupOffset.width;
+        if (btnOffset.left + popupOffset.width > document.documentElement.clientWidth) {
+            if (btnOffset.right - popupOffset.width > document.documentElement.clientLeft) {
+                left = (left + btnOffset.width) - popupOffset.width;
             }
         }
         left = Math.ceil(left);
-        bottom = Math.ceil(bottom);
-        this.popup.classList.add(TRANSPARENT);
-        this.popup.style.visibility = EMPTY;
+        top = Math.ceil(top);
+        document.body.appendChild(this.popup);
         if (this.popup.firstElementChild) {
             this.popup.firstElementChild.focus();
         }
+        sf.base.EventHandler.remove(document, MOUSEDOWN, this.mouseDownHandler);
         this.addEventListener();
-        return { Left: left, Bottom: bottom, ZIndex: zIndex };
+        return { Left: left, Top: top, ZIndex: zIndex };
     };
     SfDropDownButton.prototype.mouseDownHandler = function (e) {
-        if (!sf.base.closest(e.target, HASH + this.getDropDownButton().id)) {
-            this.dotNetRef.invokeMethodAsync(BTNCLICK, null);
+        if (this.popup.parentElement) {
+            if (!sf.base.closest(e.target, HASH + this.getDropDownButton().id) && !sf.base.closest(e.target, HASH + this.popup.id)) {
+                this.dotNetRef.invokeMethodAsync(BTNCLICK, null);
+                this.removeEventListener();
+            }
+        }
+        else {
             this.removeEventListener();
         }
     };
@@ -86,15 +94,8 @@ var SfDropDownButton = /** @class */ (function () {
                 this.dotNetRef.invokeMethodAsync(BTNCLICK, null);
                 if (e.keyCode === ESC) {
                     e.preventDefault();
-                    element.focus();
                 }
-                else {
-                    if (e.shiftKey) {
-                        sf.base.EventHandler.add(element, FOCUS, this.preventFocus, this);
-                        element.tabIndex = -1;
-                        element.focus();
-                    }
-                }
+                element.focus();
                 this.removeEventListener();
             }
             if (!ul || !ul.classList.contains(DROPDOWN)) {
@@ -120,12 +121,6 @@ var SfDropDownButton = /** @class */ (function () {
             }
         }
     };
-    SfDropDownButton.prototype.preventFocus = function (e) {
-        var element = this.getElement();
-        e.preventDefault();
-        sf.base.EventHandler.remove(element, FOCUS, this.preventFocus);
-        element.removeAttribute(TABIDX);
-    };
     SfDropDownButton.prototype.getElement = function () {
         return (this.element.classList.contains(WRAPPER) ? this.element.firstElementChild : this.element);
     };
@@ -133,31 +128,29 @@ var SfDropDownButton = /** @class */ (function () {
         return this.element.classList.contains(WRAPPER) ?
             this.element.getElementsByClassName(ELEMENT)[0] : this.element;
     };
-    SfDropDownButton.prototype.btnClickHandler = function (e) {
-        if (sf.base.closest(e.target, HASH + this.popup.id)) {
-            if (sf.base.closest(e.target, DOT + ITEM)) {
-                this.removeEventListener();
-                this.getElement().focus();
-            }
-        }
-        else {
+    SfDropDownButton.prototype.clickHandler = function (e) {
+        if (sf.base.closest(e.target, DOT + ITEM)) {
             this.removeEventListener();
+            this.getElement().focus();
         }
     };
     SfDropDownButton.prototype.addEventListener = function (setFocus) {
         sf.base.EventHandler.add(document, MOUSEDOWN, this.mouseDownHandler, this);
-        sf.base.EventHandler.add(this.getDropDownButton(), CLICK, this.btnClickHandler, this);
+        sf.base.EventHandler.add(this.popup, CLICK, this.clickHandler, this);
         sf.base.EventHandler.add(this.popup, KEYDOWN, this.keydownHandler, this);
         if (setFocus && this.popup.firstElementChild) {
             var focusEle = this.popup.querySelector(DOT + FOCUSED);
             focusEle ? focusEle.focus() : this.popup.firstElementChild.focus();
         }
     };
-    SfDropDownButton.prototype.removeEventListener = function () {
+    SfDropDownButton.prototype.removeEventListener = function (reposition) {
         sf.base.EventHandler.remove(document, MOUSEDOWN, this.mouseDownHandler);
-        sf.base.EventHandler.remove(this.getDropDownButton(), CLICK, this.btnClickHandler);
         if (this.popup.parentElement) {
+            sf.base.EventHandler.remove(this.popup, CLICK, this.clickHandler);
             sf.base.EventHandler.remove(this.popup, KEYDOWN, this.keydownHandler);
+            if (reposition && this.element.parentElement) {
+                this.element.appendChild(this.popup);
+            }
         }
     };
     return SfDropDownButton;
@@ -173,10 +166,11 @@ var DropDownButton = {
         return element.blazor__instance.calculatePosition();
     },
     addEventListener: function (element) {
+        element.blazor__instance.removeEventListener();
         element.blazor__instance.addEventListener(true);
     },
     removeEventListener: function (element) {
-        element.blazor__instance.removeEventListener();
+        element.blazor__instance.removeEventListener(true);
     }
 };
 

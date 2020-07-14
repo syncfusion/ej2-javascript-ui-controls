@@ -2,7 +2,6 @@
   /*! splitbutton layout */
   .e-split-btn-wrapper {
     display: inline-flex;
-    position: relative;
     white-space: nowrap;
     width: min-content;
 
@@ -67,7 +66,6 @@
       border-bottom-left-radius: 0;
       border-top-left-radius: 0;
       margin-left: $split-btn-sec-btn-margin-left;
-      position: static;
       @if $skin-name == 'bootstrap4' {
         padding-left: $split-btn-icon-btn-padding;
         padding-right: $split-btn-icon-btn-padding;

@@ -26,6 +26,7 @@ export interface IHtmlFormatterCallBack {
     editorMode?: EditorMode;
     action?: string;
     elements?: Element | Element[];
+    imgElem?: Element | Element[];
     event?: KeyboardEvent | MouseEvent;
 }
 

@@ -1,5 +1,5 @@
 import { extend, isNullOrUndefined, setValue, getValue, Ajax, isBlazor, addClass, removeClass } from '@syncfusion/ej2-base';
-import { DataManager, Query, Group, DataUtil, QueryOptions, ReturnOption } from '@syncfusion/ej2-data';
+import { DataManager, Query, Group, DataUtil, QueryOptions, ReturnOption, ParamOption } from '@syncfusion/ej2-data';
 import { ITreeData, RowExpandedEventArgs } from './interface';
 import { TreeGrid } from './treegrid';
 import { showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
@@ -97,10 +97,11 @@ public isRemote(): boolean {
         this.parent.query = isNullOrUndefined(this.parent.query) ?
           new Query() : this.parent.query;
         if (this.parent.parentIdMapping) {
-          if (this.parent.initialRender) {
-            this.parent.query.where(this.parent.parentIdMapping, 'equal', null);
-            this.parent.query.addParams('IdMapping', this.parent.idMapping);
-          }
+            const filterKey: Object[] = this.parent.query.params.filter((param: ParamOption) => param.key === 'IdMapping');
+            if (this.parent.initialRender && !filterKey.length) {
+                this.parent.query.where(this.parent.parentIdMapping, 'equal', null);
+                this.parent.query.addParams('IdMapping', this.parent.idMapping);
+            }
         }
         let clientRender: string = 'isClientRender';
         if (!this.parent.hasChildMapping && !(this.parent.dataSource[adaptorName] === 'BlazorAdaptor' && !this.parent[clientRender])) {

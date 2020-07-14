@@ -78,8 +78,7 @@
         }
       }
 
-      & .e-btn.e-flat.e-icon-btn,
-      & .e-aggregate-list.e-flat {
+      & .e-btn.e-flat.e-icon-btn {
         border-color: transparent;
         box-shadow: none;
         color: $agg-clr;
@@ -97,12 +96,65 @@
     }
 
     & .e-sheets-list,
-    & .e-aggregate-list,
     & .e-add-sheet-tab.e-flat {
       background-color: transparent;
 
       @if $skin-name == 'bootstrap4' {
         color: $gray-900;
+      }
+    }
+
+    & .e-aggregate-list.e-flat {
+      background-color: transparent;
+      border-color: transparent;
+      box-shadow: none;
+      color: $agg-clr;
+
+      @if $skin-name == 'material' {
+        & .e-btn-icon {
+          color: $sheet-tab-btn-icon-color;
+        }
+      }
+
+      &:hover:not(.e-active) {
+        background: $tbar-hover-bg;
+        border-color: $ribbon-item-hover-border-color;
+
+        @if $skin-name == 'bootstrap4' {
+          color: $tbar-hover-font;
+
+          & .e-icons,
+          & .e-dropdown-btn {
+            color: $tbar-active-font-color;
+            }
+          }
+        }
+
+      &.e-active {
+        @if $skin-name != 'highcontrast' {
+          background: $tbar-focus-bg;
+          border-color: $ribbon-item-active-border-color;
+        }
+      }
+
+      @if $skin-name == 'bootstrap4' or $skin-name == 'highcontrast' {
+        &.e-active,
+        &:focus {
+          color: $tbar-active-font-color;
+
+          & .e-icons,
+          &.e-dropdown-btn {
+            color: $tbar-active-font-color;
+          }
+        }
+      }
+
+      @if $skin-name == 'highcontrast' {
+        &.e-active,
+        &:focus {
+          background: $hdr-selection-bg-color;
+          border-color: $hdr-selection-bg-color;
+        }
       }
     }
 

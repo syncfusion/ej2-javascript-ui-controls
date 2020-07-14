@@ -259,7 +259,9 @@ export class Scroll {
             if (this.parent.options.aggregatesCount) {
                 let footer: HTMLElement = this.parent.options.frozenColumns ? this.parent.element.querySelector('.e-movablefootercontent') :
                     this.parent.element.querySelector('.e-summarycontent');
-                EventHandler.add(footer, 'scroll', this.onContentScroll(this.content), this);
+                if (!isNullOrUndefined(footer)) {
+                    EventHandler.add(footer, 'scroll', this.onContentScroll(this.content), this);
+                }
             }
             this.refresh();
             this.oneTimeReady = false;

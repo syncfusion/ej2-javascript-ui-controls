@@ -2,9 +2,21 @@
 
 ## [Unreleased]
 
+## 18.2.45 (2020-07-14)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- Issue with 'locale' is fixed.
+
 ## 18.2.44 (2020-07-07)
 
 ### QueryBuilder
+
+#### New Features
+
+- Provided `Rule Template` support.
 
 #### Bug Fixes
 

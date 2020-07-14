@@ -303,15 +303,8 @@ describe('TimePicker module', () => {
                 buttonEle = <HTMLElement>select('.' + classes.BTN_SAVE, ele);
                 buttonEle.dispatchEvent(new MouseEvent('mousedown'));
                 let formEle: HTMLElement = <HTMLElement>select('.' + classes.FORM, ele);
-                expect(formEle.classList.contains(classes.ERROR)).toEqual(true);
-                ctrlGroup = <HTMLElement>select('.' + classes.CTRL_GROUP, ele);
-                editorError = <HTMLElement>select('.' + classes.EDITABLE_ERROR, ctrlGroup);
-                expect(editorError.childElementCount).toBe(0);
-                expect(errMsg).toBe(editorError.innerText);
-                expect(eventFieldName).toBe('');
-                expect(eventValue).toBe('Empty');
-                expect(eventPrimaryKey).toBe('');
-                done(name);
+                expect(formEle).toBe(null);
+                done();
             }, 400);
         });
     });

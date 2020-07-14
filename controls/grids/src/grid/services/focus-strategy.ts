@@ -669,7 +669,7 @@ export class ContentFocus implements IFocus {
         let [oRowIndex, oCellIndex]: number[] = this.matrix.current;
         let val: number = getValue(`${rowIndex}.${cellIndex}`, this.matrix.matrix);
         if (this.matrix.inValid(val) || (!force && oRowIndex === rowIndex && oCellIndex === cellIndex) ||
-            parentsUntil(e.target as Element, 'e-summarycell')) { return false; }
+            (!parentsUntil(e.target as Element, 'e-rowcell') && !parentsUntil(e.target as Element, 'e-groupcaption'))) { return false; }
         this.matrix.select(rowIndex, cellIndex);
     }
 

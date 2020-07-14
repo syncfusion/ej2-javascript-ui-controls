@@ -66,7 +66,8 @@ var classNames = {
     checkboxRight: 'e-checkbox-right',
     checkboxLeft: 'e-checkbox-left',
     listviewCheckbox: 'e-listview-checkbox',
-    itemCheckList: 'e-checklist'
+    itemCheckList: 'e-checklist',
+    virtualElementContainer: 'e-list-virtualcontainer'
 };
 var LISTVIEW_TEMPLATE_PROPERTY = 'Template';
 var LISTVIEW_GROUPTEMPLATE_PROPERTY = 'GroupTemplate';
@@ -419,7 +420,7 @@ var ListView = /** @class */ (function (_super) {
         this.initialization();
     };
     ListView.prototype.updateLiELementHeight = function () {
-        var liContainer = this.element.querySelector('#virtualUlContainer');
+        var liContainer = this.element.querySelector('.' + classNames.virtualElementContainer);
         if (liContainer.children[0]) {
             this.liElementHeight = liContainer.children[0].getBoundingClientRect().height;
             // tslint:disable
@@ -429,7 +430,7 @@ var ListView = /** @class */ (function (_super) {
     };
     ListView.prototype.initialization = function () {
         if (sf.base.isBlazor() && this.isServerRendered && this.enableVirtualization) {
-            var ulContainer = this.element.querySelector('#virtualUlContainer');
+            var ulContainer = this.element.querySelector('.' + classNames.virtualElementContainer);
             if (ulContainer !== null) {
                 if (this.height === '') {
                     // tslint:disable
@@ -674,7 +675,7 @@ var ListView = /** @class */ (function (_super) {
             }
         }
         if (sf.base.isBlazor() && this.isServerRendered && this.enableVirtualization) {
-            var ulElementContainer = this.element.querySelector('#virtualUlContainer');
+            var ulElementContainer = this.element.querySelector('.' + classNames.virtualElementContainer);
             if (ulElementContainer.querySelector('.e-active')) {
                 // tslint:disable-next-line:no-any
                 var selectedElements = ulElementContainer.querySelectorAll('.e-active');
@@ -1298,11 +1299,11 @@ var ListView = /** @class */ (function (_super) {
         }
     };
     ListView.prototype.removeActiveClass = function () {
-        var _this = this;
         var listViewComponent = this;
         setTimeout(function () {
-            for (var i = 0; i < _this.element.querySelector('#virtualUlContainer').childElementCount; i++) {
-                var selectedElement = _this.element.querySelector('#virtualUlContainer').children[i];
+            var ulContainer = listViewComponent.element.querySelector('.' + classNames.virtualElementContainer);
+            for (var i = 0; i < ulContainer.childElementCount; i++) {
+                var selectedElement = ulContainer.children[i];
                 var elementIndex = void 0;
                 var hiddenElementIndex = void 0;
                 if (listViewComponent.showCheckBox) {
@@ -2350,8 +2351,8 @@ var Virtualization = /** @class */ (function () {
             [this.topElementHeight, this.bottomElementHeight] : [this.totalHeight, 0], this.topElementHeight = _a[0], this.bottomElementHeight = _a[1];
         if (sf.base.isBlazor() && this.listViewInstance.isServerRendered) {
             var listDiff = void 0;
-            if (!sf.base.isNullOrUndefined(this.listViewInstance.liElementHeight)) {
-                var ulContainer = this.listViewInstance.element.querySelector('#virtualUlContainer');
+            if (sf.base.isNullOrUndefined(this.listViewInstance.liElementHeight)) {
+                var ulContainer = this.listViewInstance.element.querySelector('.' + classNames.virtualElementContainer);
                 if (ulContainer.children[0]) {
                     this.listViewInstance.liElementHeight = ulContainer.children[0].getBoundingClientRect().height;
                 }

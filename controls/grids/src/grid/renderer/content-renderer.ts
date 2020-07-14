@@ -352,7 +352,8 @@ export class ContentRender implements IRenderer {
             idx = this.parent.getFrozenColumns();
         }
         /* tslint:disable:no-any */
-        if ((this.parent as any).registeredTemplate && (this.parent as any).registeredTemplate.template && !args.isFrozen) {
+        if (args.requestType !== 'infiniteScroll' && (this.parent as any).registeredTemplate
+            && (this.parent as any).registeredTemplate.template && !args.isFrozen) {
             let templatetoclear: any = [];
             for (let i: number = 0; i < (this.parent as any).registeredTemplate.template.length; i++) {
                 for (let j: number = 0; j < (this.parent as any).registeredTemplate.template[i].rootNodes.length; j++) {
@@ -883,7 +884,11 @@ export class ContentRender implements IRenderer {
                 if (tr[trs[i]].querySelectorAll('td.e-rowcell')[idx].classList.contains('e-hide')) {
                     removeClass([tr[trs[i]].querySelectorAll('td.e-rowcell')[idx]], ['e-hide']);
                 }
-                rows[trs[i]].cells[idx].visible = displayVal === '' ? true : false;
+                if (this.parent.isRowDragable()) {
+                    rows[trs[i]].cells[idx + 1].visible = displayVal === '' ? true : false;
+                } else {
+                    rows[trs[i]].cells[idx].visible = displayVal === '' ? true : false;
+                }
             }
         }
         this.parent.notify(events.infiniteShowHide, { visible: displayVal, index: idx, isFreeze: this.isInfiniteFreeze });

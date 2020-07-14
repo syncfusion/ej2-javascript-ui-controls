@@ -9290,7 +9290,8 @@ var Layout = /** @__PURE__ @class */ (function () {
                     splittedWidget.height = splittedCell.height + splittedCell.margin.top + splittedCell.margin.bottom;
                 }
                 else {
-                    if (tableRowWidget.rowFormat.heightType !== 'Auto') {
+                    if (tableRowWidget.rowFormat.heightType === 'Exactly' || (tableRowWidget.rowFormat.heightType === 'AtLeast' &&
+                        splittedWidget.height < tableRowWidget.rowFormat.height)) {
                         //Sets the height for row widget if height type is exact or at least.
                         splittedWidget.height = tableRowWidget.rowFormat.height;
                     }
@@ -18049,6 +18050,10 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
         }
         if (this.restrictEditingPane.restrictPane && !this.isDocumentProtected) {
             this.restrictEditingPane.showHideRestrictPane(false);
+        }
+        if (!isNullOrUndefined(this.owner.selection) && this.owner.selection.isViewPasteOptions) {
+            this.owner.selection.isViewPasteOptions = false;
+            this.owner.selection.showHidePasteOptions(undefined, undefined);
         }
         this.owner.fireDocumentChange();
     };
@@ -36403,6 +36408,9 @@ var Selection = /** @__PURE__ @class */ (function () {
             if (includeHidden || !includeHidden && bookmarks.keys[i].indexOf('_') !== 0) {
                 bookmrkStart = bookmarks.get(bookmarks.keys[i]);
                 bookmrkEnd = bookmrkStart.reference;
+                if (isNullOrUndefined(bookmrkEnd)) {
+                    continue;
+                }
                 var bmStartPos = this.getElementPosition(bookmrkStart).startPosition;
                 var bmEndPos = this.getElementPosition(bookmrkEnd, true).startPosition;
                 if (bmStartPos.paragraph.isInsideTable || bmEndPos.paragraph.isInsideTable) {
@@ -61449,7 +61457,9 @@ var Editor = /** @__PURE__ @class */ (function () {
         }
         this.documentHelper.bookmarks.remove(bookmark.name);
         bookmark.line.children.splice(bookmark.indexInOwner, 1);
-        bookmark.reference.line.children.splice(bookmark.reference.indexInOwner, 1);
+        if (!isNullOrUndefined(bookmark.reference)) {
+            bookmark.reference.line.children.splice(bookmark.reference.indexInOwner, 1);
+        }
         // Remove bookmark from header footer collections
         var paragraph = bookmark.line.paragraph;
         if (bookmark.line.paragraph.isInHeaderFooter) {
@@ -89570,6 +89580,12 @@ var Text = /** @__PURE__ @class */ (function () {
     Text.prototype.createDropDownListForFamily = function (fontSelectElement) {
         var _this = this;
         var fontStyle;
+        var isStringTemplate = false;
+        var itemTemplate = '';
+        if (!this.container.enableCsp) {
+            itemTemplate = '<span style="font-family: ${FontName};">${FontName}</span>';
+            isStringTemplate = true;
+        }
         this.fontFamily = new ComboBox({
             dataSource: fontStyle,
             query: new Query().select(['FontName']),
@@ -89578,18 +89594,16 @@ var Text = /** @__PURE__ @class */ (function () {
             cssClass: 'e-de-prop-dropdown',
             allowCustom: true,
             showClearButton: false,
-            enableRtl: this.isRtl
+            enableRtl: this.isRtl,
+            itemTemplate: itemTemplate,
         });
         this.fontFamily.appendTo(fontSelectElement);
+        this.fontFamily.isStringTemplate = isStringTemplate;
         var fontFamilyValue = this.container.documentEditorSettings.fontFamilies;
         for (var i = 0; i < fontFamilyValue.length; i++) {
             var fontValue = fontFamilyValue[i];
             var fontStyleValue = { 'FontName': fontValue, 'FontValue': fontValue };
             this.fontFamily.addItem(fontStyleValue, i);
-        }
-        if (!this.container.enableCsp) {
-            this.fontFamily.itemTemplate = '<span style="font-family: ${FontName};">${FontName}</span>';
-            this.fontFamily.isStringTemplate = true;
         }
         this.fontFamily.focus = function () { _this.isRetrieving = false; _this.fontFamily.element.select(); };
         this.fontFamily.element.parentElement.setAttribute('title', this.localObj.getConstant('Font'));

@@ -1323,8 +1323,13 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             }
         }
         if (!isNOU(this.placeholder)) {
+            if ((!isNOU(this.placeHolderWrapper)) && (this.inputElement.textContent.length !== 1)) {
+                this.placeHolderWrapper.style.display = 'none';
+            } else {
             this.setPlaceHolder();
+            }
         }
+
         this.autoResize();
     }
 
@@ -1854,7 +1859,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                         this.inputElement.parentElement.insertBefore(this.placeHolderWrapper, this.inputElement);
                     }
                     attributes(this.placeHolderWrapper, {
-                        'style': 'font-size: 16px; padding: 16px; margin-left: 0px; margin-right: 0px;'
+                        'style': 'font-size: 14px; padding: 16px; margin-left: 0px; margin-right: 0px;'
                     });
                 }
                 this.placeHolderWrapper.innerHTML = this.placeholder;
