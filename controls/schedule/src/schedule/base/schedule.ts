@@ -1711,7 +1711,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         if (this.quickPopup) {
             this.quickPopup.onClosePopup();
         }
-        if (this.currentView === 'Month' || !this.activeViewOptions.timeScale.enable || this.activeView.isTimelineView()) {
+        if (this.currentView === 'Month' || ((this.currentView !== 'Agenda' && this.currentView !== 'MonthAgenda')
+            && !this.activeViewOptions.timeScale.enable) || this.activeView.isTimelineView()) {
             this.activeView.resetColWidth();
             this.notify(events.scrollUiUpdate, { cssProperties: this.getCssProperties(), isPreventScrollUpdate: true });
             this.notify(events.dataReady, {});

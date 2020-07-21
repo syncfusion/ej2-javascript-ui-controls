@@ -3,8 +3,8 @@
  */
 import { QueryBuilder , RuleModel} from './../../../src/query-builder/index';
 import { employeeData } from '../data-source';
-import { addClass, removeClass } from '@syncfusion/ej2-base';
-
+import { addClass, removeClass, getComponent } from '@syncfusion/ej2-base';
+import { DropDownList } from '@syncfusion/ej2-dropdowns';
 
 let importRules: RuleModel = {
     'condition': 'and',
@@ -50,11 +50,57 @@ let importRules: RuleModel = {
         }]
     }]
     };
-let qryBldrObj: QueryBuilder = new QueryBuilder({ dataSource: employeeData, rule: importRules, enableNotCondition: true,
-    displayMode: "Horizontal", allowValidation: true });
+let qryBldrObj: QueryBuilder = new QueryBuilder({ 
+	dataSource: employeeData, 
+	rule: importRules, 
+	enableNotCondition: true,
+    displayMode: "Horizontal", 
+	allowValidation: true,
+	created: created,
+	change: fieldChange
+});
 qryBldrObj.appendTo('#querybuilder');
 
+	function applyFilter(elem: HTMLElement): void {
+      var qbID = qryBldrObj.element.id + "_";
+      if (elem) {
+        var ddlgrp = elem.querySelectorAll("input[id *= 'filterkey']");
+        for (var i = 0; i < ddlgrp.length; i++) {
+          let ddlObj: DropDownList = getComponent(ddlgrp[i] as HTMLElement, "dropdownlist") as DropDownList;
+          ddlObj.allowFiltering = true;
+          ddlObj.dataBind();
+        }
+      }
+    }
 
+    function created(): void {
+      // let elem: HTMLElement = document as HTMLElement;
+      // applyFilter(elem as HTMLElement);
+    }
+    
+    function fieldChange(args: any): void {
+      var qbID = qryBldrObj.element.id + "_";
+       var ruleElem = document.getElementById(qbID + args.ruleID);
+       if (args.type === "insertRule") {
+        applyFilter(ruleElem);
+      }
+
+      // var qbID = this.qryBldrObj.element.id + "_";
+      // var ruleElem = document.getElementById(qbID + args.ruleID);
+      // if (args.type === "insertRule") {
+      //   this.applyFilter(ruleElem);
+      // }
+      // var elem = document.getElementById(qbID + args.ruleID + "_filterkey");
+      // var tempColumn = this.qryBldrObj.getColumn(args.value);
+      // if (args.type === 'field') {
+      //   this.qryBldrObj.getRule(elem).operator = '';
+      //   getComponent(document.getElementById(qbID + '' + args.ruleID + '_operatorkey'), 'dropdownlist').index = null;
+      //   addClass(closest(elem, '.e-rule-container').querySelectorAll('.e-rule-value'), 'e-hide');
+      // } else if (args.type === 'operator'){
+      //   removeClass(closest(elem, '.e-rule-container').querySelectorAll('.e-rule-value'), 'e-hide');
+      // }
+    }
+	
 document.getElementById('material').onclick = (e : Event) => {
     document.body.classList.remove('darkBG');
     removeClass([qryBldrObj.element], 'e-bigger');

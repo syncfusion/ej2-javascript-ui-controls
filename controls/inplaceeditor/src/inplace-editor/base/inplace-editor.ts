@@ -1251,7 +1251,6 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         (e.target as HTMLElement).nextElementSibling.tagName !== 'BUTTON')) {
             if (this.actionOnBlur === 'Submit') {
                 this.save();
-                this.cancelHandler();
             } else if (this.actionOnBlur === 'Cancel') {
                 this.cancelHandler();
             }
@@ -1341,7 +1340,6 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         if (e.keyCode === 9 && e.shiftKey === true && (e.target as HTMLElement).tagName !== 'BUTTON') {
             if (this.actionOnBlur === 'Submit') {
                 this.save();
-                this.cancelHandler();
             } else if (this.actionOnBlur === 'Cancel') {
                 this.cancelHandler();
             }

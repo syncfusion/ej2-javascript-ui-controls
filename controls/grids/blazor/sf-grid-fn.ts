@@ -496,7 +496,7 @@ export class SfGrid {
     public documentClickHandler(e: MouseEventArgs): void {
         let popupElement: Element = parentsUntil(<Element>e.target, 'e-popup-open');
         let CCButton: Element = parentsUntil(<Element>e.target,'e-cc-toolbar');
-        if (!popupElement && !((<Element>e.target).classList.contains('e-icon-filter')) && !CCButton && (this.element.querySelectorAll('.e-filter-popup.e-popup-open').length || this.element.querySelectorAll('.e-ccdlg.e-popup-open').length)) {
+        if (!popupElement && !((<Element>e.target).classList.contains('e-fltrcheck')) && !((<Element>e.target).classList.contains('e-icon-filter')) && !CCButton && (this.element.querySelectorAll('.e-filter-popup.e-popup-open').length || this.element.querySelectorAll('.e-ccdlg.e-popup-open').length)) {
             this.dotNetRef.invokeMethodAsync('FilterPopupClose');
         }
     }

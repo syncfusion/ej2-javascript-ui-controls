@@ -5245,6 +5245,9 @@ __decorate$4([
     Property(false)
 ], DataLabelSettings.prototype, "visible", void 0);
 __decorate$4([
+    Property(true)
+], DataLabelSettings.prototype, "showZero", void 0);
+__decorate$4([
     Property(null)
 ], DataLabelSettings.prototype, "name", void 0);
 __decorate$4([
@@ -6616,7 +6619,9 @@ class Marker extends MarkerExplode {
         for (let point of series.points) {
             if (point.visible && point.symbolLocations && point.symbolLocations.length) {
                 point.symbolLocations.map((location, index) => {
-                    this.renderMarker(series, point, location, index, redraw);
+                    if (series.marker.shape !== 'None') {
+                        this.renderMarker(series, point, location, index, redraw);
+                    }
                 });
             }
         }
@@ -8966,7 +8971,15 @@ let Chart = class Chart extends Component {
         let element = e.target;
         this.trigger(chartMouseClick, { target: element.id, x: this.mouseX, y: this.mouseY });
         this.clickCount++;
-        let timeInterval = this.pointDoubleClick ? 400 : 0;
+        let timeInterval = 0;
+        let isAngular = 'isAngular';
+        if (this[isAngular]) {
+            let observers = 'observers';
+            timeInterval = this.pointDoubleClick[observers].length > 0 ? 400 : 0;
+        }
+        else {
+            timeInterval = this.pointDoubleClick ? 400 : 0;
+        }
         if (this.clickCount === 1 && this.pointClick) {
             this.singleClickTimer = +setTimeout(() => {
                 this.clickCount = 0;
@@ -9490,12 +9503,14 @@ let Chart = class Chart extends Component {
             removeLength = 1;
         }
         // Fix for blazor resize issue
-        if (this.resizeTo !== this.checkResize && this.isBlazor && this.element.childElementCount) {
-            let containerCollection = document.querySelectorAll('.e-chart');
-            for (let index = 0; index < containerCollection.length; index++) {
-                let container = containerCollection[index];
-                while (container.firstChild) {
-                    remove(container.firstChild);
+        if (!isNullOrUndefined(this.resizeTo)) {
+            if (this.resizeTo !== this.checkResize && this.isBlazor && this.element.childElementCount) {
+                let containerCollection = document.querySelectorAll('.e-chart');
+                for (let index = 0; index < containerCollection.length; index++) {
+                    let container = containerCollection[index];
+                    while (container.firstChild) {
+                        remove(container.firstChild);
+                    }
                 }
             }
             this.checkResize = this.resizeTo;
@@ -18694,6 +18709,9 @@ class Toolkit {
         chart.zoomModule.touchMoveList = chart.zoomModule.touchStartList = [];
         chart.zoomModule.pinchTarget = null;
         chart.removeSvg();
+        if (chart.enableAutoIntervalOnBothAxis) {
+            chart.processData(false);
+        }
         chart.refreshAxis();
         chart.refreshBound();
         this.elementOpacity = '1';
@@ -21674,6 +21692,9 @@ class DataLabel {
         // Data label point iteration started
         for (let i = 0; i < visiblePoints.length; i++) {
             point = visiblePoints[i];
+            if (!dataLabel.showZero && ((point.y !== 0) || (point.y === 0 && series.emptyPointSettings.mode === 'Zero'))) {
+                return null;
+            }
             this.margin = dataLabel.margin;
             let labelText = [];
             let labelLength;
@@ -21812,8 +21833,8 @@ class DataLabel {
             ((Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000)) >= 128 ? 'black' : 'white');
         if (childElement.childElementCount && (!isCollide(rect, this.chart.dataLabelCollections, clip) ||
             dataLabel.labelIntersectAction === 'None') && (series.seriesType !== 'XY' || point.yValue === undefined ||
-            withIn(point.yValue, series.yAxis.visibleRange) || (series.type.indexOf('100') > -1 &&
-            withIn(series.stackedValues.endValues[point.index], series.yAxis.visibleRange))) &&
+            withIn(point.yValue, series.yAxis.visibleRange) || (series.type.indexOf('Stacking') > -1) ||
+            (series.type.indexOf('100') > -1 && withIn(series.stackedValues.endValues[point.index], series.yAxis.visibleRange))) &&
             withIn(point.xValue, series.xAxis.visibleRange) && parseFloat(childElement.style.top) >= vAxis.rect.y &&
             parseFloat(childElement.style.left) >= hAxis.rect.x &&
             parseFloat(childElement.style.top) <= vAxis.rect.y + vAxis.rect.height &&
@@ -25252,6 +25273,9 @@ __decorate$8([
     Property(false)
 ], AccumulationDataLabelSettings.prototype, "visible", void 0);
 __decorate$8([
+    Property(true)
+], AccumulationDataLabelSettings.prototype, "showZero", void 0);
+__decorate$8([
     Property(null)
 ], AccumulationDataLabelSettings.prototype, "name", void 0);
 __decorate$8([
@@ -25567,7 +25591,8 @@ class AccumulationSeries extends ChildProperty {
         let secondQuarter = [];
         for (let point of this.points) {
             if (point.visible) {
-                if ((point.y !== 0) || (point.y === 0 && this.emptyPointSettings.mode === 'Zero')) {
+                if (this.dataLabel.showZero || (!this.dataLabel.showZero && ((point.y !== 0) || (point.y === 0 &&
+                    this.emptyPointSettings.mode === 'Zero')))) {
                     accumulation.accumulationDataLabelModule.renderDataLabel(point, this.dataLabel, datalabelGroup, this.points, this.index, element, redraw);
                 }
             }

@@ -2315,9 +2315,11 @@ var Data = /** @class */ (function () {
         var sSettings = this.parent.searchSettings;
         var fields = sSettings.fields.length ? sSettings.fields : this.getSearchColumnFieldNames();
         var predicateList = [];
+        var needForeignKeySearch = false;
         if (this.parent.searchSettings.key.length) {
+            needForeignKeySearch = this.parent.getForeignKeyColumns().some(function (col) { return fields.indexOf(col.field) > -1; });
             var adaptor = !isForeignKey ? this.dataManager.adaptor : fcolumn.dataSource.adaptor;
-            if ((adaptor.getModuleName &&
+            if (needForeignKeySearch || (adaptor.getModuleName &&
                 adaptor.getModuleName() === 'ODataV4Adaptor')) {
                 fields = isForeignKey ? [fcolumn.foreignKeyValue] : fields;
                 for (var i = 0; i < fields.length; i++) {
@@ -8966,6 +8968,9 @@ var Selection = /** @class */ (function () {
             var target = this.focus.getPrevIndexes().cellIndex ?
                 selectedRow.cells[this.focus.getPrevIndexes().cellIndex] :
                 selectedRow.querySelector('.e-selectionbackground:not(.e-hide):not(.e-detailrowcollapse):not(.e-detailrowexpand)');
+            if (this.parent.contextMenuModule && this.mouseButton === 2) {
+                target = this.parent.contextMenuModule.cell;
+            }
             if (!target) {
                 return;
             }
@@ -9134,7 +9139,7 @@ var Selection = /** @class */ (function () {
                     rowDeselectObj[rowInString] = rowDeselectObj[rowInString][0];
                     rowDeselectObj[foreignKey] = rowDeselectObj[foreignKey][0];
                     if (this.isAddRowsToSelection) {
-                        rowDeselectObj[rowidxex] = this.parent.getSelectedRowIndexes();
+                        rowDeselectObj[rowidxex] = rowIndex;
                     }
                 }
             }
@@ -10242,6 +10247,7 @@ var Selection = /** @class */ (function () {
         }
     };
     Selection.prototype.mouseDownHandler = function (e) {
+        this.mouseButton = e.button;
         var target = e.target;
         var gObj = this.parent;
         var isDrag;

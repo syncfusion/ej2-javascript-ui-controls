@@ -1,5 +1,5 @@
 import { Spreadsheet } from '../index';
-import { EventHandler, KeyboardEventArgs, Browser, closest } from '@syncfusion/ej2-base';
+import { EventHandler, KeyboardEventArgs, Browser, closest, isUndefined } from '@syncfusion/ej2-base';
 import { getRangeIndexes, getRangeFromAddress, getIndexesFromAddress, getRangeAddress } from '../../workbook/common/address';
 import { keyDown, editOperation, clearCopy, mouseDown, selectionComplete, enableToolbarItems, completeAction } from '../common/event';
 import { formulaBarOperation, formulaOperation, setActionData, keyUp, getCellPosition } from '../common/index';
@@ -228,6 +228,9 @@ export class Edit {
             editor.contentEditable = 'true';
             editor.spellcheck = false;
             this.editorElem = editor;
+            if (this.parent.element.getElementsByClassName('e-spreadsheet-edit')[0]) {
+                this.parent.element.getElementsByClassName('e-spreadsheet-edit')[0].remove();
+            }
             this.parent.element.querySelector('.e-sheet-content').appendChild(this.editorElem);
         }
         this.parent.notify(formulaOperation, { action: 'renderAutoComplete' });
@@ -399,7 +402,7 @@ export class Edit {
                 } else {
                     this.isNewValueEdit = true;
                 }
-                if (value) { this.refreshEditor(value, false, true, false, false); }
+                if (!isUndefined(value)) { this.refreshEditor(value, false, true, false, false); }
                 if (refreshCurPos) { this.setCursorPosition(); }
                 if (this.triggerEvent('cellEdit')) {
                     this.cancelEdit(true, false);

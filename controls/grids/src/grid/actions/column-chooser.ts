@@ -380,6 +380,10 @@ export class ColumnChooser implements IAction {
                 this.getShowHideService.setVisible(this.stateChangeColumns, this.changedStateColumns);
                 this.clearActions();
                 this.parent.notify(events.tooltipDestroy, { module: 'edit' });
+                if (this.parent.getCurrentViewRecords().length === 0) {
+                    let emptyRowCell: HTMLElement = this.parent.element.querySelector('.e-emptyrow').querySelector('td');
+                    emptyRowCell.setAttribute('colSpan', this.parent.getVisibleColumns().length.toString());
+                }
             }
         }
     }

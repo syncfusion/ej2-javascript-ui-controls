@@ -481,7 +481,7 @@ export class TaskProcessor extends DateProcessor {
                 updatableValue = false;
             }
             this.parent.setRecordValue('taskData.' + expandStateMapping, updatableValue, ganttData);
-            this.parent.setRecordValue('expandStateMapping', updatableValue, ganttData);
+            this.parent.setRecordValue(expandStateMapping, updatableValue, ganttData);
             this.parent.setRecordValue('expanded', updatableValue, ganttData);
         }
     }

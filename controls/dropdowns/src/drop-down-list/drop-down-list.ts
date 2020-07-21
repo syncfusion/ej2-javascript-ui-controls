@@ -1491,6 +1491,10 @@ export class DropDownList extends DropDownBase implements IInput {
                 element: this.element
             };
             this.trigger('change', eventArgs);
+            if (this.isServerBlazor && this.enablePersistence) {
+                // tslint:disable-next-line
+                (this as any).interopAdaptor.invokeMethodAsync('ServerChange');
+            }
         }
         if ((isNullOrUndefined(this.value) || this.value === '') && this.floatLabelType !== 'Always') {
             removeClass([this.inputWrapper.container], 'e-valid-input');
@@ -2004,6 +2008,7 @@ export class DropDownList extends DropDownBase implements IInput {
             if (collision.length > 0) {
                 popupEle.style.marginTop = -parseInt(getComputedStyle(popupEle).marginTop, 10) + 'px';
             }
+            this.popupObj.resolveCollision();
         }
     }
     private serverBlazorUpdateSelection(): void {
@@ -2510,6 +2515,7 @@ export class DropDownList extends DropDownBase implements IInput {
             ((this.allowFiltering && !(Browser.isDevice && this.isFilterLayout())) || this.getModuleName() === 'autocomplete')) {
             removeClass([this.popupObj.element], 'e-popup-close');
             this.popupObj.refreshPosition(this.inputWrapper.container);
+            this.popupObj.resolveCollision();
         }
     }
     private checkDatasource(newProp?: DropDownListModel): void {

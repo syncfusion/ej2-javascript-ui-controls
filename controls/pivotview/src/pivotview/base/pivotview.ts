@@ -4508,7 +4508,11 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         let pivot: PivotView = this;
         //setTimeout(() => {
         pivot.engineModule.data = (e.result as IDataSet[]);
-        pivot.initEngine();
+        if (!isNullOrUndefined(pivot.engineModule.data) && pivot.engineModule.data.length > 0 ) {
+            pivot.initEngine();
+        } else {
+            this.hideWaitingPopup();
+        }
         //});
     }
 

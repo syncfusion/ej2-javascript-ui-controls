@@ -264,7 +264,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     protected maxColumnValue: number;
     protected checkColumnValue: number;
     protected spacedRowValue: number;
-    protected cellSize: number[] | string[];
+    protected cellSize: number[];
     protected table: HTMLElement;
     protected cloneObject: {
         [key: string]: {
@@ -623,13 +623,13 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         this.cellSize = [];
         if ((this.checkMediaQuery())) {
             this.cellSize[1] = this.element.parentElement
-                && Math.floor((this.element.parentElement.offsetWidth)) / this.cellAspectRatio;
+                && ((this.element.parentElement.offsetWidth)) / this.cellAspectRatio;
         } else {
 
             this.cellSize[0] = this.element.parentElement &&
-                Math.floor((this.element.parentElement.offsetWidth));
+                ((this.element.parentElement.offsetWidth));
             this.cellSize[0] = this.element.parentElement
-                && Math.floor((this.element.parentElement.offsetWidth - ((this.maxCol() - 1) * this.cellSpacing[0]))
+                && ((this.element.parentElement.offsetWidth - ((this.maxCol() - 1) * this.cellSpacing[0]))
                     / (this.maxCol()));
             this.cellSize[1] = <number>this.cellSize[0] / this.cellAspectRatio;
         }
@@ -821,8 +821,8 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         this.shadowEle.classList.add('e-holder');
         addClass([this.element], [preventSelect]);
         this.element.appendChild(this.shadowEle);
-        this.elementX = parseInt(el.style.left, 10);
-        this.elementY = parseInt(el.style.top, 10);
+        this.elementX = parseFloat(el.style.left);
+        this.elementY = parseFloat(el.style.top);
         this.elementWidth = el.offsetWidth;
         this.elementHeight = el.offsetHeight;
         this.originalWidth = this.getCellInstance(el.id).sizeX;
@@ -845,7 +845,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     }
 
     private getCellSize(): number[] {
-        return [parseInt(<string>(this.cellSize[0]), 10), parseInt(<string>this.cellSize[1], 10)];
+        return [this.cellSize[0], this.cellSize[1]];
     }
 
     protected updateMaxTopLeft(e: MouseEvent | TouchEvent): void {
@@ -1312,7 +1312,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         let heightValue: string; let widthValue: string;
         if (this.checkMediaQuery()) {
             heightValue = ((this.maxRow()) *
-                (this.element.parentElement && Math.floor((this.element.parentElement.offsetWidth)) / this.cellAspectRatio) +
+                (this.element.parentElement && ((this.element.parentElement.offsetWidth)) / this.cellAspectRatio) +
                 (this.maxRow() - 1) * this.cellSpacing[1]) + 'px';
         } else {
             heightValue = ((this.maxRow()) *
@@ -1370,8 +1370,8 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         }
         let heightValue: number | string = this.getCellSize()[1];
         let widthValue: number | string = this.getCellSize()[0];
-        let left: number = col === 0 ? 0 : (((col) * (parseInt(widthValue.toString(), 10) + this.cellSpacing[0])));
-        let top: number = row === 0 ? 0 : (((row) * (parseInt(heightValue.toString(), 10) + this.cellSpacing[1])));
+        let left: number = col === 0 ? 0 : (((col) * ((widthValue) + this.cellSpacing[0])));
+        let top: number = row === 0 ? 0 : (((row) * ((heightValue) + this.cellSpacing[1])));
         setStyle(cellElement, { 'left': left + 'px', 'top': top + 'px' });
     }
 
@@ -2271,8 +2271,8 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
 
     protected getRowColumnDragValues(args: DragEventArgs): number[] {
         let value: number[] = [];
-        let elementTop: number = parseInt(args.element.style.top, 10);
-        let elementLeft: number = parseInt(args.element.style.left, 10);
+        let elementTop: number = parseFloat(args.element.style.top);
+        let elementLeft: number = parseFloat(args.element.style.left);
         let row: number = Math.round(elementTop / (this.getCellSize()[1] + this.cellSpacing[1]));
         let col: number = Math.round(elementLeft / (this.getCellSize()[0] + + this.cellSpacing[0]));
         value = [row, col];
@@ -2554,8 +2554,8 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         let sizeX: number = parseInt(args.element.getAttribute('data-sizeX'), 10);
         let widthValue: number = this.getCellSize()[0];
         let heightValue: number = this.getCellSize()[1];
-        let top: number = row === 0 ? 0 : (((row) * (parseInt(heightValue.toString(), 10) + this.cellSpacing[1])));
-        let left: number = col === 0 ? 0 : (((col) * (parseInt(widthValue.toString(), 10) + this.cellSpacing[0])));
+        let top: number = row === 0 ? 0 : (((row) * (heightValue + this.cellSpacing[1])));
+        let left: number = col === 0 ? 0 : (((col) * (widthValue + this.cellSpacing[0])));
         cellSizeOne = this.getCellSize()[1];
         cellSizeZero = this.getCellSize()[0];
         this.elementRef.top = this.shadowEle.style.top = top + 'px';

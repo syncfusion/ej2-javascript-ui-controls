@@ -45,8 +45,6 @@ var SfContextMenu = /** @class */ (function () {
         this.filter = filter;
         this.dotnetRef = dotnetRef;
         this.wrapper.blazor__instance = this;
-        this.subMenuOpen = false;
-        this.openAsMenu = false;
         this.addContextMenuEvent();
         sf.base.EventHandler.add(this.wrapper, KEYDOWN, this.keyDownHandler, this);
     }
@@ -196,17 +194,10 @@ var SfContextMenu = /** @class */ (function () {
         if (!cmenu) {
             return { Left: 0, Top: 0, ZIndex: 0, Width: 0 };
         }
-        var zIndex = null;
-        if (left === null && top === null) {
-            this.openAsMenu = true;
+        if (this.wrapper.parentElement !== document.body) {
+            document.body.appendChild(this.wrapper);
         }
-        else {
-            this.openAsMenu = false;
-            if (this.wrapper.parentElement !== document.body) {
-                document.body.appendChild(this.wrapper);
-            }
-            zIndex = sf.popups.getZindexPartial(this.wrapper);
-        }
+        var zIndex = sf.popups.getZindexPartial(this.wrapper);
         cmenu.style.visibility = HIDDEN;
         cmenu.classList.remove(TRANSPARENT);
         var cmenuOffset = cmenu.getBoundingClientRect();
@@ -246,8 +237,7 @@ var SfContextMenu = /** @class */ (function () {
         }
         cmenu.style.visibility = EMPTY;
         cmenu.focus();
-        sf.base.EventHandler.add(document, MOUSEDOWN, this.mouseDownHandler, this);
-        sf.base.EventHandler.add(document, MOUSEOVER, this.mouseOverHandler, this);
+        this.addEventListener();
         return { Left: left, Top: top, ZIndex: zIndex, Width: Math.ceil(cmenuWidth) };
     };
     SfContextMenu.prototype.getMenuWidth = function (cmenu, width, isRtl) {
@@ -256,6 +246,10 @@ var SfContextMenu = /** @class */ (function () {
             width += parseInt(getComputedStyle(caretIcon)[isRtl ? 'marginRight' : 'marginLeft'], 10);
         }
         return width < 120 ? 120 : width;
+    };
+    SfContextMenu.prototype.addEventListener = function () {
+        sf.base.EventHandler.add(document, MOUSEDOWN, this.mouseDownHandler, this);
+        sf.base.EventHandler.add(document, MOUSEOVER, this.mouseOverHandler, this);
     };
     SfContextMenu.prototype.removeEventListener = function () {
         sf.base.EventHandler.remove(document, MOUSEDOWN, this.mouseDownHandler);
@@ -292,7 +286,7 @@ var SfContextMenu = /** @class */ (function () {
             }
         }
     };
-    SfContextMenu.prototype.subMenuPosition = function (isRtl, showOnClick) {
+    SfContextMenu.prototype.subMenuPosition = function (isRtl, showOnClick, isNull) {
         if (!this.wrapper.childElementCount || this.wrapper.childElementCount < 2) {
             return { Left: 0, Top: 0, Width: 0 };
         }
@@ -338,6 +332,11 @@ var SfContextMenu = /** @class */ (function () {
             }
         }
         this.subMenuOpen = !showOnClick;
+        if (isNull) {
+            this.openAsMenu = true;
+            this.removeEventListener();
+            this.addEventListener();
+        }
         return { Left: Math.ceil(left), Top: Math.ceil(top), Width: Math.ceil(cmenuWidth) };
     };
     SfContextMenu.prototype.onPropertyChanged = function (key, value) {
@@ -375,8 +374,8 @@ var ContextMenu = {
     contextMenuPosition: function (element, left, top, isRtl, subMenu) {
         return element.blazor__instance.contextMenuPosition(left, top, isRtl, subMenu);
     },
-    subMenuPosition: function (element, isRtl, showOnClick) {
-        return element.blazor__instance.subMenuPosition(isRtl, showOnClick);
+    subMenuPosition: function (element, isRtl, showOnClick, isNull) {
+        return element.blazor__instance.subMenuPosition(isRtl, showOnClick, isNull);
     },
     onPropertyChanged: function (element, key, value) {
         element.blazor__instance.onPropertyChanged(key, value);

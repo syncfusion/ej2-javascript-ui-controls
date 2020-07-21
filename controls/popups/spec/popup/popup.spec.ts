@@ -228,6 +228,13 @@ describe('Popup # ', () => {
             items.destroy();
             popup = new Popup(ele, { });
         });
+        /**
+         * To resolve resolveCollision public method coverage
+         */
+        it('resolveCollision method testing ', () => {
+            popup = new Popup(ele, { height: '250px'});
+            popup.resolveCollision();
+        });
     });
      describe("Animation show method test cases", function() {
         let originalTimeout:number;

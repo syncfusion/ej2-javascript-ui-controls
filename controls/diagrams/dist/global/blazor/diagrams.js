@@ -17217,9 +17217,9 @@ function findSegmentPoints(element) {
     var pts = [];
     var sample;
     var sampleLength;
-    var measureElement = 'measureElement';
-    window[measureElement].style.visibility = 'visible';
-    var svg = window[measureElement].children[2];
+    var measureWindowElement = 'measureElement';
+    window[measureWindowElement].style.visibility = 'visible';
+    var svg = window[measureWindowElement].children[2];
     var pathNode = getChildNode(svg)[0];
     pathNode.setAttributeNS(null, 'd', element.data);
     var pathBounds = element.absoluteBounds; // || pathNode.getBBox();
@@ -17230,7 +17230,7 @@ function findSegmentPoints(element) {
         sample = pathNode.getPointAtLength(sampleLength);
         pts.push({ x: sample.x, y: sample.y });
     }
-    window[measureElement].style.visibility = 'hidden';
+    window[measureWindowElement].style.visibility = 'hidden';
     return pts;
 }
 function getChildNode(node) {
@@ -17273,14 +17273,14 @@ function translatePoints(element, points) {
 /** @private */
 function measurePath(data) {
     if (data) {
-        var measureElement = 'measureElement';
-        window[measureElement].style.visibility = 'visible';
-        var svg = window[measureElement].children[2];
+        var measureWindowElement = 'measureElement';
+        window[measureWindowElement].style.visibility = 'visible';
+        var svg = window[measureWindowElement].children[2];
         var element = getChildNode(svg)[0];
         element.setAttribute('d', data);
         var bounds = element.getBBox();
         var svgBounds = new Rect(bounds.x, bounds.y, bounds.width, bounds.height);
-        window[measureElement].style.visibility = 'hidden';
+        window[measureWindowElement].style.visibility = 'hidden';
         return svgBounds;
     }
     return new Rect(0, 0, 0, 0);
@@ -17369,7 +17369,7 @@ function wordWrapping(text, textValue, laneWidth) {
     var existingWidth;
     var existingText;
     for (j = 0; j < eachLine.length; j++) {
-        words = text.textWrapping !== 'NoWrap' ? eachLine[j].split(' ') : eachLine;
+        words = text.textWrapping !== 'NoWrap' ? eachLine[j].split(' ') : (text.textWrapping === 'NoWrap') ? [eachLine[j]] : eachLine;
         for (i = 0; i < words.length; i++) {
             txtValue += (((i !== 0 || words.length === 1) && wrap && txtValue.length > 0) ? ' ' : '') + words[i];
             newText = txtValue + ' ' + (words[i + 1] || '');
@@ -17485,15 +17485,15 @@ function measureText(text, style, content, maxWidth, textValue) {
 }
 /** @private */
 function measureImage(source, contentSize, id, callback) {
-    var measureElement = 'measureElement';
-    window[measureElement].style.visibility = 'visible';
-    var imageElement = window[measureElement].children[1];
+    var measureWindowElement = 'measureElement';
+    window[measureWindowElement].style.visibility = 'visible';
+    var imageElement = window[measureWindowElement].children[1];
     imageElement.setAttribute('src', source);
     var bounds = imageElement.getBoundingClientRect();
     var width = bounds.width;
     var height = bounds.height;
     contentSize = new Size(width, height);
-    window[measureElement].style.visibility = 'hidden';
+    window[measureWindowElement].style.visibility = 'hidden';
     var element = document.createElement('img');
     element.setAttribute('src', source);
     setAttributeHtml(element, { id: id + 'sf-imageNode', style: 'display: none;' });
@@ -17509,9 +17509,9 @@ function measureImage(source, contentSize, id, callback) {
 }
 /** @private */
 function measureNativeContent(nativeContent) {
-    var measureElement = 'measureElement';
-    window[measureElement].style.visibility = 'visible';
-    var nativeSVG = window[measureElement].children[2];
+    var measureWindowElement = 'measureElement';
+    window[measureWindowElement].style.visibility = 'visible';
+    var nativeSVG = window[measureWindowElement].children[2];
     nativeSVG.appendChild(nativeContent);
     var bounds = nativeContent.getBoundingClientRect();
     var svgBounds = nativeSVG.getBoundingClientRect();
@@ -17519,20 +17519,20 @@ function measureNativeContent(nativeContent) {
     rect.x = bounds.left - svgBounds.left;
     rect.y = bounds.top - svgBounds.top;
     nativeSVG.removeChild(nativeContent);
-    window[measureElement].style.visibility = 'hidden';
+    window[measureWindowElement].style.visibility = 'hidden';
     return rect;
 }
 /**
  * @private
  */
 function measureNativeSvg(nativeContent) {
-    var measureElement = 'measureElement';
-    window[measureElement].style.visibility = 'visible';
-    var nativeSVG = window[measureElement].children[2];
+    var measureWindowElement = 'measureElement';
+    window[measureWindowElement].style.visibility = 'visible';
+    var nativeSVG = window[measureWindowElement].children[2];
     nativeSVG.appendChild(nativeContent);
     var svgBounds = nativeSVG.getBoundingClientRect();
     nativeSVG.removeChild(nativeContent);
-    window[measureElement].style.visibility = 'hidden';
+    window[measureWindowElement].style.visibility = 'hidden';
     return svgBounds;
 }
 /** @private */
@@ -17921,8 +17921,8 @@ function setAttributeHtml(element, attributes) {
 }
 /** @private */
 function createMeasureElements() {
-    var measureElement = 'measureElement';
-    if (!window[measureElement]) {
+    var measureWindowElement = 'measureElement';
+    if (!window[measureWindowElement]) {
         var divElement = createHtmlElement('div', {
             id: 'measureElement',
             style: 'visibility:hidden ; height: 0px ; width: 0px; overflow: hidden;'
@@ -17941,8 +17941,8 @@ function createMeasureElements() {
         var tSpan = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         tSpan.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:space', 'preserve');
         svg.appendChild(tSpan);
-        window[measureElement] = divElement;
-        window[measureElement].usageCount = 1;
+        window[measureWindowElement] = divElement;
+        window[measureWindowElement].usageCount = 1;
         document.body.appendChild(divElement);
         var measureElementCount = 'measureElementCount';
         if (!window[measureElementCount]) {
@@ -17953,7 +17953,7 @@ function createMeasureElements() {
         }
     }
     else {
-        window[measureElement].usageCount += 1;
+        window[measureWindowElement].usageCount += 1;
     }
 }
 /** @private */
@@ -18419,15 +18419,15 @@ function wordBreakToString(value) {
     return state;
 }
 function bBoxText(textContent, options) {
-    var measureElement = 'measureElement';
-    window[measureElement].style.visibility = 'visible';
-    var svg = window[measureElement].children[2];
+    var measureWindowElement = 'measureElement';
+    window[measureWindowElement].style.visibility = 'visible';
+    var svg = window[measureWindowElement].children[2];
     var text = getChildNode(svg)[1];
     text.textContent = textContent;
     applyStyleAgainstCsp(text, 'font-size:' + options.fontSize + 'px; font-family:'
         + options.fontFamily + ';font-weight:' + (options.bold ? 'bold' : 'normal'));
     var bBox = text.getBBox().width;
-    window[measureElement].style.visibility = 'hidden';
+    window[measureWindowElement].style.visibility = 'hidden';
     return bBox;
 }
 /** @private */
@@ -29084,6 +29084,7 @@ var CommandHandler = /** @class */ (function () {
                         this.updateBlazorSelectorModel(oldValue);
                         if (sf.base.isBlazor() && this.diagram.selectionChange) {
                             arg = this.updateSelectionChangeEventArgs(arg, obj, oldValue ? oldValue : []);
+                            this.updateBlazorSelector();
                         }
                         if (!!sf.base.isBlazor()) return [3 /*break*/, 1];
                         this.diagram.triggerEvent(exports.DiagramEvent.selectionChange, arg);
@@ -29106,12 +29107,12 @@ var CommandHandler = /** @class */ (function () {
                                 else {
                                     this.clearSelection(true, true);
                                 }
+                                this.updateBlazorSelector();
                             }
                         }
                         _a.label = 3;
                     case 3:
                         this.diagram.enableServerDataBinding(true);
-                        this.updateBlazorSelector();
                         _a.label = 4;
                     case 4: return [2 /*return*/];
                 }
@@ -29362,6 +29363,7 @@ var CommandHandler = /** @class */ (function () {
                 if (!this.diagram.currentSymbol) {
                     if (sf.base.isBlazor()) {
                         arg = this.updateSelectionChangeEventArgs(arg, [], objArray);
+                        this.updateBlazorSelector();
                     }
                     this.diagram.triggerEvent(exports.DiagramEvent.selectionChange, arg);
                 }
@@ -30030,6 +30032,7 @@ var CommandHandler = /** @class */ (function () {
                         };
                         if (sf.base.isBlazor()) {
                             arg = this.updateSelectionChangeEventArgs(arg, [], arrayNodes);
+                            this.updateBlazorSelector();
                         }
                         if (!!sf.base.isBlazor()) return [3 /*break*/, 1];
                         this.diagram.triggerEvent(exports.DiagramEvent.selectionChange, arg);
@@ -30048,10 +30051,10 @@ var CommandHandler = /** @class */ (function () {
                             if (selectNodes) {
                                 this.diagram.select(selectNodes);
                             }
+                            this.updateBlazorSelector();
                         }
                         _a.label = 3;
                     case 3:
-                        this.updateBlazorSelector();
                         this.diagram.enableServerDataBinding(enableServerDataBinding);
                         _a.label = 4;
                     case 4: return [2 /*return*/];
@@ -33918,9 +33921,9 @@ var Diagram = /** @class */ (function (_super) {
         this.serviceLocator = new ServiceLocator;
         this.initializeServices();
         this.setCulture();
-        var measureElement = 'measureElement';
-        if (window[measureElement]) {
-            window[measureElement] = null;
+        var measureWindowElement = 'measureElement';
+        if (window[measureWindowElement]) {
+            window[measureWindowElement] = null;
         }
         this.initDiagram();
         this.initViews();
@@ -34316,14 +34319,14 @@ var Diagram = /** @class */ (function (_super) {
             if (content) {
                 this.element.removeChild(content);
             }
-            var measureElement = 'measureElement';
-            if (window[measureElement]) {
-                window[measureElement].usageCount -= 1;
+            var measureWindowElement = 'measureElement';
+            if (window[measureWindowElement]) {
+                window[measureWindowElement].usageCount -= 1;
                 var measureElementCount = 'measureElementCount';
                 window[measureElementCount]--;
                 if (window[measureElementCount] === 0) {
-                    window[measureElement].parentNode.removeChild(window[measureElement]);
-                    window[measureElement] = null;
+                    window[measureWindowElement].parentNode.removeChild(window[measureWindowElement]);
+                    window[measureWindowElement] = null;
                 }
             }
         }
@@ -37094,9 +37097,9 @@ var Diagram = /** @class */ (function (_super) {
         this.scroller.scrollerWidth = scrollerSize;
         this.scroller.setViewPortSize(bounds.width, bounds.height);
         this.renderRulers();
-        var measureElement = 'measureElement';
-        if (window[measureElement]) {
-            window[measureElement] = null;
+        var measureWindowElement = 'measureElement';
+        if (window[measureWindowElement]) {
+            window[measureWindowElement] = null;
             var measureElements = document.getElementById('measureElement');
             measureElements.remove();
         }
@@ -39834,6 +39837,22 @@ var Diagram = /** @class */ (function (_super) {
                 if (actualAnnotation) {
                     var updateSize = actualObject.width ? true : false;
                     this.updateAnnotation(changedObject, actualAnnotation, actualObject.wrapper, actualObject, updateSize);
+                    var swimLaneNode = this.nameTable[actualObject.parentId];
+                    if ((swimLaneNode && swimLaneNode.shape.type === 'SwimLane')) {
+                        var laneHeader = 'LaneHeaderParent';
+                        var phaseHeader = 'PhaseHeaderParent';
+                        if ((actualObject.isLane || actualObject.isPhase)) {
+                            var collection = actualObject.isLane ?
+                                swimLaneNode.shape.lanes : swimLaneNode.shape.phases;
+                            for (var j_2 = 0; j_2 < collection.length; j_2++) {
+                                if (collection[j_2].id === (actualObject[laneHeader] || actualObject[phaseHeader])) {
+                                    collection[j_2].header.annotation.content = actualObject.annotations[0].content;
+                                    collection[j_2].header.annotation.style = actualObject.annotations[0].style;
+                                    break;
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -54170,9 +54189,9 @@ var SymbolPalette = /** @class */ (function (_super) {
             _this.allowServerDataBinding = isAllowDatabind;
         };
         this.element.appendChild(accordionDiv);
-        var measureElement = 'measureElement';
-        if (window[measureElement]) {
-            window[measureElement] = null;
+        var measureWindowElement = 'measureElement';
+        if (window[measureWindowElement]) {
+            window[measureWindowElement] = null;
         }
         createMeasureElements();
         this.unWireEvents();

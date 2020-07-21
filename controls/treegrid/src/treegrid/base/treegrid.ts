@@ -70,7 +70,7 @@ import { EditSettingsModel } from '../models/edit-settings-model';
 import { Edit} from '../actions/edit';
 import { SortSettings } from '../models/sort-settings';
 import { SortSettingsModel } from '../models/sort-settings-model';
-
+import { isHidden } from '../utils';
 
 
 /**
@@ -1871,18 +1871,41 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     this.bindGridDragEvents();
     this.bindCallBackEvents();
   }
+  private lastRowBorder(visiblerow: HTMLTableRowElement, isAddBorder: boolean): void {
+      for (let j: number = 0; j < visiblerow.cells.length; j++) {
+          isAddBorder ? addClass([visiblerow.cells[j]], 'e-lastrowcell') : removeClass([visiblerow.cells[j]], 'e-lastrowcell');
+      }
+  };
+  private isPixelHeight(): boolean {
+    if (this.height !== 'auto' && this.height.toString().indexOf('%') === -1) {
+        return true;
+    } else {
+        return false;
+    }
+  };
   private extendedGridDataBoundEvent(): void {
     let treeGrid: TreeGrid = this;
     this.grid.dataBound = (args: Object): void => {
       this.updateRowTemplate(args); this.updateColumnModel();
       this.updateAltRow(this.getRows()); this.notify('dataBoundArg', args);
-      this.trigger(events.dataBound, args);
       if (isRemoteData(this) && !isOffline(this) && !this.hasChildMapping) {
         let req: number = getObject('dataSource.requests', this).filter((e: Ajax) => {
           return e.httpRequest.statusText !== 'OK';
         }).length;
         setValue('grid.contentModule.isLoaded', !(req > 0), this);
       }
+      if (this.isPixelHeight() && this.initialRender) {
+        let totalRows: HTMLTableRowElement[]  = this.getRows();
+        for (let i: number = totalRows.length - 1; i > 0; i--) {
+          if (!isHidden(totalRows[i])) {
+            if (totalRows[i].nextElementSibling) {
+                this.lastRowBorder(totalRows[i], true);
+            }
+            break;
+          }
+        }
+      }
+      this.trigger(events.dataBound, args);
       this.initialRender = false;
     };
     this.grid.beforeDataBound = function (args: BeforeDataBoundArgs): void | Deferred  {
@@ -3300,6 +3323,9 @@ private getGridEditSettings(): GridEditModel {
    */
   public expandRow(row: HTMLTableRowElement, record?: Object): void {
     record = this.getCollapseExpandRecords(row, record);
+    if (!isNullOrUndefined(row) && row.cells[0].classList.contains('e-lastrowcell')) {
+        this.lastRowBorder(row, false);
+    }
     let args: RowExpandingEventArgs = {data: record, row: row, cancel: false};
     this.trigger(events.expanding, args, (expandingArgs: RowExpandingEventArgs) => {
       if (!expandingArgs.cancel) {
@@ -3439,7 +3465,7 @@ private getGridEditSettings(): GridEditModel {
   }
   private expandCollapse(action: string, row: HTMLTableRowElement, record?: ITreeData, isChild?: boolean): void {
     let expandingArgs: DataStateChangeEventArgs = { row: row, data: record, childData: [], requestType: action };
-    if (!isRemoteData(this) && action === 'expand' && this.isSelfReference) {
+    if (!isRemoteData(this) && action === 'expand' && this.isSelfReference && isCountRequired(this)) {
       this.updateChildOnDemand(expandingArgs);
     }
     let gridRows: HTMLTableRowElement[] = this.getRows();
@@ -3469,10 +3495,16 @@ private getGridEditSettings(): GridEditModel {
           this.uniqueIDCollection[record.uniqueID].expanded = record.expanded;
         }
         let targetEle: Element = row.getElementsByClassName('e-treegridcollapse')[0];
+        if (isChild && !isNullOrUndefined(record[this.expandStateMapping]) &&
+            record[this.expandStateMapping] && isNullOrUndefined(targetEle)) {
+              targetEle = row.getElementsByClassName('e-treegridexpand')[0];
+        }
         if (isNullOrUndefined(targetEle)) {
           return;
         }
-        addClass([targetEle], 'e-treegridexpand');
+        if (!targetEle.classList.contains('e-treegridexpand')) {
+          addClass([targetEle], 'e-treegridexpand');
+        }
         removeClass([targetEle], 'e-treegridcollapse');
       } else {
           displayAction = 'none';
@@ -3481,10 +3513,16 @@ private getGridEditSettings(): GridEditModel {
             this.uniqueIDCollection[record.uniqueID].expanded = record.expanded;
           }
           let targetEle: Element = row.getElementsByClassName('e-treegridexpand')[0];
+          if (isChild && !isNullOrUndefined(record[this.expandStateMapping]) &&
+              !record[this.expandStateMapping] && isNullOrUndefined(targetEle)) {
+              targetEle = row.getElementsByClassName('e-treegridcollapse')[0];
+          }
           if (isNullOrUndefined(targetEle)) {
             return;
           }
-          addClass([targetEle], 'e-treegridcollapse');
+          if (!targetEle.classList.contains('e-treegridcollapse')) {
+            addClass([targetEle], 'e-treegridcollapse');
+          }
           removeClass([targetEle], 'e-treegridexpand');
       }
       let detailrows: HTMLTableRowElement[] = gridRows.filter(
@@ -3498,6 +3536,18 @@ private getGridEditSettings(): GridEditModel {
       } else {
         if (!isCountRequired(this) || action === 'collapse') {
           this.localExpand(action, row, record, isChild);
+        }
+      }
+      if (this.isPixelHeight() && !row.cells[0].classList.contains('e-lastrowcell') ) {
+        let totalRows: HTMLTableRowElement[] = this.getRows();
+        for (let i: number = totalRows.length - 1; i > 0; i--) {
+          if (!isHidden(totalRows[i])) {
+            let table: Element = this.getContentTable();
+            let sHeight: number = table.scrollHeight;
+            let clientHeight: number = this.getContent().clientHeight;
+            this.lastRowBorder(totalRows[i], sHeight <= clientHeight);
+            break;
+          }
         }
       }
       this.notify('rowExpandCollapse', { detailrows: detailrows, action: displayAction, record: record, row: row });
@@ -3595,6 +3645,9 @@ private getGridEditSettings(): GridEditModel {
     let childRecords: ITreeData[] = this.getCurrentViewRecords().filter((e: ITreeData) => {
       return e.parentUniqueID === record.uniqueID ;
     });
+    if (this.isPixelHeight() && row.cells[0].classList.contains('e-lastrowcell')) {
+        this.lastRowBorder(row, false);
+    }
     let movableRows: HTMLTableRowElement[];
     let gridRows: HTMLTableRowElement[] = this.getRows();
     if (this.rowTemplate) {

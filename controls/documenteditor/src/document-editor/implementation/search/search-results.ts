@@ -1,4 +1,7 @@
 import { Search } from './search';
+import { TextSearchResultInfo, ParagraphInfo } from '../editor/editor-helper';
+import { TextSearchResult } from './text-search-result';
+import { TextPosition } from '../selection/selection-helper';
 /**
  * Search Result info
  */
@@ -38,6 +41,30 @@ export class SearchResults {
     constructor(search: Search) {
         this.searchModule = search;
     }
+    /**
+     * Get start and end offset of searched text results.
+     */
+    public getTextSearchResultsOffset(): TextSearchResultInfo[] {
+        let index: TextSearchResultInfo[] = [];
+        let searchIndex: TextSearchResultInfo;
+        for (let i: number = 0; i < this.searchModule.textSearchResults.innerList.length; i++) {
+            searchIndex = this.getOffset(this.searchModule.textSearchResults.innerList[i]);
+            index.push(searchIndex);
+        }
+        return index;
+    }
+    private getOffset(innerList: TextSearchResult): TextSearchResultInfo {
+        let start: TextPosition = innerList.start;
+        let end: TextPosition = innerList.end;
+        let blockInfo: ParagraphInfo = this.searchModule.documentHelper.owner.selection.getParagraphInfo(start);
+        // tslint:disable-next-line:max-line-length
+        let startIndex: string = this.searchModule.documentHelper.owner.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+        blockInfo = this.searchModule.documentHelper.owner.selection.getParagraphInfo(end);
+        // tslint:disable-next-line:max-line-length
+        let endIndex: string = this.searchModule.documentHelper.owner.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+        return { 'startOffset': startIndex, 'endOffset': endIndex };
+    }
+
     /**
      * Get the module name.
      */

@@ -1,5 +1,5 @@
 import { EventHandler, formatUnit, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
-import { createElement, remove, addClass, append, prepend } from '@syncfusion/ej2-base';
+import { createElement, remove, addClass, removeClass, append, prepend } from '@syncfusion/ej2-base';
 import { IRenderer, TdData, RenderCellEventArgs, CellTemplateArgs, NotifyEventArgs, CellClickEventArgs } from '../base/interface';
 import { Schedule } from '../base/schedule';
 import { View } from '../base/type';
@@ -140,6 +140,32 @@ export class Month extends ViewBase implements IRenderer {
         return 'wide';
     }
     public serverRenderLayout(): void {
+        let curElem: Element[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CURRENT_DAY_CLASS));
+        if (curElem.length > 0) {
+            removeClass(curElem, cls.CURRENT_DAY_CLASS);
+        }
+        let curDate: Date = util.addLocalOffset(new Date(new Date().setHours(0, 0, 0, 0)));
+        let queryString: string = '.' + cls.WORK_CELLS_CLASS + '[data-date="' + curDate.getTime().toString() + '"]';
+        if (this.parent.currentView === 'Month' || this.parent.currentView === 'MonthAgenda') {
+            curElem = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CURRENTDATE_CLASS));
+            if (curElem.length > 0) {
+                removeClass(curElem, cls.CURRENTDATE_CLASS);
+            }
+            let curEle: Element[] = [].slice.call(this.parent.element.querySelectorAll(queryString));
+            for (let ele of curEle) {
+                let index: number = (ele as HTMLTableCellElement).cellIndex;
+                let curHeader: Element = [].slice.call(this.parent.element.querySelectorAll('.' + cls.HEADER_CELLS_CLASS))[index];
+                addClass([ele], cls.CURRENTDATE_CLASS);
+                addClass([curHeader], cls.CURRENT_DAY_CLASS);
+            }
+        }
+        if (this.parent.currentView === 'TimelineMonth') {
+            let curEle: HTMLElement =
+                this.parent.element.querySelector('.' + cls.HEADER_CELLS_CLASS + '[data-date="' + curDate.getTime().toString() + '"]');
+            if (!isNullOrUndefined(curEle)) {
+                addClass([curEle], cls.CURRENT_DAY_CLASS);
+            }
+        }
         this.setPanel(this.parent.element.querySelector('.' + cls.TABLE_WRAP_CLASS));
         let target: HTMLElement = (this.parent.currentView === 'MonthAgenda') ? this.parent.activeView.getPanel() : this.parent.element;
         let headerCells: Element[] =
@@ -564,8 +590,9 @@ export class Month extends ViewBase implements IRenderer {
                     endDate.getFullYear();
                 return util.capitalizeFirstWord(text, 'single');
             }
+            let format: string = (this.parent.activeViewOptions.dateFormat) ? this.parent.activeViewOptions.dateFormat : 'MMMM y';
             return util.capitalizeFirstWord(
-                this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM y', calendar: this.parent.getCalendarMode() }),
+                this.parent.globalize.formatDate(this.parent.selectedDate, { format: format, calendar: this.parent.getCalendarMode() }),
                 'single');
         }
         return this.formatDateRange(this.parent.selectedDate);

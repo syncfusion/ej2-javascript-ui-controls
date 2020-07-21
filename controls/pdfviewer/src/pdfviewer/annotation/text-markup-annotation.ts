@@ -544,10 +544,10 @@ export class TextMarkupAnnotation {
                             this.renderHighlightAnnotation(annotBounds, opacity, color, context, factor);
                             break;
                         case 'Strikethrough':
-                            this.renderStrikeoutAnnotation(annotBounds, opacity, color, context, factor);
+                            this.renderStrikeoutAnnotation(annotBounds, opacity, color, context, factor, pageNumber);
                             break;
                         case 'Underline':
-                            this.renderUnderlineAnnotation(annotBounds, opacity, color, context, factor);
+                            this.renderUnderlineAnnotation(annotBounds, opacity, color, context, factor, pageNumber);
                             break;
                     }
                 }
@@ -987,7 +987,8 @@ export class TextMarkupAnnotation {
                     // tslint:disable-next-line:max-line-length
                     annotation = this.getAddedAnnotation(type, this.strikethroughColor, this.strikethroughOpacity, bounds, author, subject, modifiedDate, '', rect, pageNumber, textContent, startIndex, endIndex, isMultiSelect);
                     if (annotation) {
-                        this.renderStrikeoutAnnotation(annotation.bounds, annotation.opacity, annotation.color, context, factor);
+                        // tslint:disable-next-line:max-line-length
+                        this.renderStrikeoutAnnotation(annotation.bounds, annotation.opacity, annotation.color, context, factor, pageNumber);
                     }
                     break;
                 case 'Underline':
@@ -998,7 +999,8 @@ export class TextMarkupAnnotation {
                     // tslint:disable-next-line:max-line-length
                     annotation = this.getAddedAnnotation(type, this.underlineColor, this.underlineOpacity, bounds, author, subject, modifiedDate, '', rect, pageNumber, textContent, startIndex, endIndex, isMultiSelect);
                     if (annotation) {
-                        this.renderUnderlineAnnotation(annotation.bounds, annotation.opacity, annotation.color, context, factor);
+                    // tslint:disable-next-line:max-line-length   
+                        this.renderUnderlineAnnotation(annotation.bounds, annotation.opacity, annotation.color, context, factor, pageNumber);
                     }
                     break;
             }
@@ -1059,20 +1061,31 @@ export class TextMarkupAnnotation {
     }
 
     // tslint:disable-next-line
-    private renderStrikeoutAnnotation(bounds: any[], opacity: number, color: string, context: CanvasRenderingContext2D, factor: number): void {
+    private renderStrikeoutAnnotation(bounds: any[], opacity: number, color: string, context: CanvasRenderingContext2D, factor: number, pageNumber: number): void {
         for (let i: number = 0; i < bounds.length; i++) {
             // tslint:disable-next-line
             let bound: any = this.getProperBounds(bounds[i]);
-            this.drawLine(opacity, bound.x, bound.y, bound.width, (bound.height / 2), color, factor, context);
+            let pageDetails: ISize = this.pdfViewerBase.pageSize[pageNumber];
+            if (pageDetails.rotation === 1) {
+                // tslint:disable-next-line:max-line-length
+                this.drawLine(opacity, (bound.x + (bound.width / 2)), bound.y, bound.width, bound.height, color, factor, context, pageNumber);
+            } else if (pageDetails.rotation === 2) {
+                // tslint:disable-next-line:max-line-length
+                this.drawLine(opacity, bound.x, (bound.y + (bound.height / 2)), bound.width, bound.height, color, factor, context, pageNumber);
+            } else if (pageDetails.rotation === 3) {
+                this.drawLine(opacity, bound.x, bound.y, (bound.width / 2), bound.height, color, factor, context, pageNumber);
+            } else {
+                this.drawLine(opacity, bound.x, bound.y, bound.width, (bound.height / 2), color, factor, context, pageNumber);
+            }
         }
     }
 
     // tslint:disable-next-line
-    private renderUnderlineAnnotation(bounds: any[], opacity: number, color: string, context: CanvasRenderingContext2D, factor: number): void {
+    private renderUnderlineAnnotation(bounds: any[], opacity: number, color: string, context: CanvasRenderingContext2D, factor: number, pageNumber: number): void {
         for (let i: number = 0; i < bounds.length; i++) {
             // tslint:disable-next-line
             let boundValues: any = this.getProperBounds(bounds[i]);
-            this.drawLine(opacity, boundValues.x, boundValues.y, boundValues.width, boundValues.height, color, factor, context);
+            this.drawLine(opacity, boundValues.x, boundValues.y, boundValues.width, boundValues.height, color, factor, context, pageNumber);
         }
     }
 
@@ -1086,11 +1099,23 @@ export class TextMarkupAnnotation {
     }
 
     // tslint:disable-next-line:max-line-length
-    private drawLine(opacity: number, x: number, y: number, width: number, height: number, color: string, factor: number, context: CanvasRenderingContext2D): void {
+    private drawLine(opacity: number, x: number, y: number, width: number, height: number, color: string, factor: number, context: CanvasRenderingContext2D, pageNumber: number): void {
         context.globalAlpha = opacity;
         context.beginPath();
-        context.moveTo((x * factor), (y + height) * factor);
-        context.lineTo((width + x) * factor, (y + height) * factor);
+        let pageDetails: ISize = this.pdfViewerBase.pageSize[pageNumber];
+        if (pageDetails.rotation === 1) {
+            context.moveTo(( x * factor), (y * factor));
+            context.lineTo((x * factor), (y + height) * factor);
+        } else if (pageDetails.rotation === 2) {
+            context.moveTo(( x * factor), (y * factor));
+            context.lineTo((width + x) * factor, (y * factor));
+        } else if (pageDetails.rotation === 3) {
+            context.moveTo((width + x) * factor, (y * factor));
+            context.lineTo((width + x) * factor, (y + height) * factor);
+        } else {
+            context.moveTo((x * factor), (y + height) * factor);
+            context.lineTo((width + x) * factor, (y + height) * factor);
+        }
         context.lineWidth = 1;
         context.strokeStyle = color;
         context.closePath();

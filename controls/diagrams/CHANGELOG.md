@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 18.2.46 (2020-07-21)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#283962` - The issue of "Content of a text node is being duplicated when nowrap option is set" has been fixed.
+- `#282404` - The issue of "Phase header style changes to default style after save and load diagram" has been fixed.
+
 ## 18.2.45 (2020-07-14)
 
 ### Diagram

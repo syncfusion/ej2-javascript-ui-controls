@@ -290,9 +290,7 @@ export class Resize extends ActionBase {
                 isLastCell = cellIndex === tdCollections.length;
                 cellIndex = (cellIndex < 0) ? 0 : (cellIndex >= noOfDays) ? noOfDays - 1 : cellIndex;
             } else {
-                let cellWidth: number = this.parent.currentView === 'TimelineMonth' || !this.parent.activeViewOptions.timeScale.enable ?
-                    this.actionObj.cellWidth : this.actionObj.cellWidth - (this.actionObj.interval *
-                        (this.actionObj.cellWidth / this.actionObj.slotInterval));
+                let cellWidth: number = this.actionObj.cellWidth;
                 cellIndex = isLeft ? Math.floor(this.actionObj.clone.offsetLeft / this.actionObj.cellWidth) :
                     Math.ceil((this.actionObj.clone.offsetLeft + (this.actionObj.clone.offsetWidth - cellWidth)) /
                         this.actionObj.cellWidth);
@@ -326,7 +324,7 @@ export class Resize extends ActionBase {
                 }
                 let spanMinutes: number = Math.ceil((this.actionObj.slotInterval / this.actionObj.cellWidth) *
                     (offsetValue - Math.floor(offsetValue / this.actionObj.cellWidth) * this.actionObj.cellWidth));
-                spanMinutes = isLastCell ? this.actionObj.slotInterval : spanMinutes;
+                spanMinutes = (isLastCell || (!isLeft && spanMinutes === 0)) ? this.actionObj.slotInterval : spanMinutes;
                 resizeTime = new Date(resizeDate.getTime());
                 resizeTime.setMinutes(resizeTime.getMinutes() + spanMinutes);
                 this.updateTimePosition(resizeTime);

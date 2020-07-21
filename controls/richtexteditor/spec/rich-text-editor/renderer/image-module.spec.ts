@@ -3034,4 +3034,35 @@ client side. Customer easy to edit the contents and get the HTML content for
             }, 100);
         });
     });
+
+    describe('EJ2-39317 - beforeImageUpload event - ', () => {
+        let rteObj: RichTextEditor;
+        let beforeImageUploadSpy: jasmine.Spy = jasmine.createSpy('onBeforeImageUpload');
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                beforeImageUpload: beforeImageUploadSpy,
+            });
+            done();
+        })
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        })
+        it(' Event and arguments test ', (done) => {
+            let rteEle: HTMLElement = rteObj.element;
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let args = { preventDefault: function () { } };
+            let range = new NodeSelection().getRange(document);
+            let save = new NodeSelection().save(range, document);
+            let evnArg = { args: MouseEvent, self: (<any>rteObj).imageModule, selection: save, selectNode: new Array(), };
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[8] as HTMLElement).click();
+            let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "overide/mimetype" });
+            let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+            (<any>rteObj).imageModule.uploadObj.onSelectFiles(eventArgs);
+            expect(beforeImageUploadSpy).toHaveBeenCalled();
+            done();
+        });
+    });
 });

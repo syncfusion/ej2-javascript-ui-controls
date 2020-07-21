@@ -377,10 +377,13 @@ export class ListBox extends DropDownBase {
         this.renderComplete();
     }
 
-     private updateBlazorListData(data: { [key: string]: Object }[] | string[] | boolean[] | number[], isDataSource: boolean): void {
+    private updateBlazorListData(data: { [key: string]: Object }[] | string[] | boolean[] | number[], isDataSource: boolean): void {
         if (isDataSource) {
             this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.' + cssClass.li);
             this.mainList = this.ulElement = this.list.querySelector('ul');
+            if (this.allowDragAndDrop && !this.ulElement.classList.contains('e-sortable')) {
+                this.initDraggable();
+            }
         }
         if (!isNullOrUndefined(data)) {
             this.sortedData = this.jsonData = this.listData = data;
@@ -855,7 +858,14 @@ export class ListBox extends DropDownBase {
     public enableItems(items: string[], enable: boolean = true): void {
         let li: HTMLElement;
         items.forEach((item: string) => {
-            li = this.findListElement(this.list, 'li', 'data-value', this.getValueByText(item));
+            let text: string;
+            if (isBlazor() && typeof(item) === 'object') {
+                text = (item as { [key: string]: string })[this.fields.text || 'text'];
+                if (isNullOrUndefined(text)) { return; }
+            } else {
+                text = item;
+            }
+            li = this.findListElement(this.list, 'li', 'data-value', this.getValueByText(text));
             if (enable) {
                 removeClass([li], cssClass.disabled);
                 li.removeAttribute('aria-disabled');
@@ -1937,12 +1947,25 @@ export class ListBox extends DropDownBase {
         }
     };
 
-    private setSelection(values: (string | boolean | number)[] = this.value, isSelect: boolean = true, isText: boolean = false): void {
+    private setSelection(
+        values: (string | boolean | number | object)[] = this.value, isSelect: boolean = true, isText: boolean = false): void {
         let li: Element;
         let liselect: boolean;
         if (values) {
             values.forEach((value: string) => {
-                li = this.list.querySelector('[data-value="' + (isText ? this.getValueByText(value) : value) + '"]');
+                let text: string | number | boolean;
+                if (isText) {
+                    if (isBlazor() && typeof(value) === 'object') {
+                        text = (value as { [key: string]: string })[this.fields.text || 'text'];
+                        if (isNullOrUndefined(text)) { return; }
+                        text = this.getValueByText(text);
+                    } else {
+                        text = this.getValueByText(value);
+                    }
+                } else {
+                    text = value;
+                }
+                li = this.list.querySelector('[data-value="' + text + '"]');
                 if (li) {
                     if (this.selectionSettings.showCheckbox) {
                         liselect = li.getElementsByClassName('e-frame')[0].classList.contains('e-check');

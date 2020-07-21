@@ -4515,6 +4515,16 @@ describe('rowdeselect checking with persist selection and ResetOnRowClick', () =
             gridObj.rowSelecting = rowSelecting;
             gridObj.rowSelected = rowSelected;
             gridObj.selectRowsByRange(start, end);
+            gridObj.clearSelection();
+        });
+        it('EJ2-41198 => rowIndexes property single row deselected in header checkbox', (done: Function) => {
+            let rowDeselected = (args: RowDeselectEventArgs) => {
+                expect(args.rowIndexes.length).toBe(1);
+                done();
+            };
+            gridObj.rowDeselected = rowDeselected;
+            (gridObj.element.querySelectorAll('.e-frame.e-icons')[2] as HTMLElement).click();
+            (gridObj.element.querySelectorAll('.e-frame.e-icons')[2] as HTMLElement).click();
         });
         afterAll(() => {
             destroy(gridObj);

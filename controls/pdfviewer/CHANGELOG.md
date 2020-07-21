@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.2.46 (2020-07-21)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#282530` - The Script error will no longer be thrown if we select the handwritten signature in mobile devices.
+
 ## 18.2.45 (2020-07-14)
 
 ### PDF Viewer

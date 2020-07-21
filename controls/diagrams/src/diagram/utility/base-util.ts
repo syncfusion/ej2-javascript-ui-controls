@@ -399,15 +399,15 @@ export function wordBreakToString(value: TextWrap | TextDecoration): string {
 }
 
 export function bBoxText(textContent: string, options: TextAttributes): number {
-    let measureElement: string = 'measureElement';
-    window[measureElement].style.visibility = 'visible';
-    let svg: SVGElement = window[measureElement].children[2];
+    let measureWindowElement: string = 'measureElement';
+    window[measureWindowElement].style.visibility = 'visible';
+    let svg: SVGElement = window[measureWindowElement].children[2];
     let text: SVGTextElement = getChildNode(svg)[1] as SVGTextElement;
     text.textContent = textContent;
     applyStyleAgainstCsp(text, 'font-size:' + options.fontSize + 'px; font-family:'
         + options.fontFamily + ';font-weight:' + (options.bold ? 'bold' : 'normal'));
     let bBox: number = text.getBBox().width;
-    window[measureElement].style.visibility = 'hidden';
+    window[measureWindowElement].style.visibility = 'hidden';
     return bBox;
 }
 /** @private */

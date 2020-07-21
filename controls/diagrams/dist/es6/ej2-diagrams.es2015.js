@@ -16385,9 +16385,9 @@ function findSegmentPoints(element) {
     let pts = [];
     let sample;
     let sampleLength;
-    let measureElement = 'measureElement';
-    window[measureElement].style.visibility = 'visible';
-    let svg = window[measureElement].children[2];
+    let measureWindowElement = 'measureElement';
+    window[measureWindowElement].style.visibility = 'visible';
+    let svg = window[measureWindowElement].children[2];
     let pathNode = getChildNode(svg)[0];
     pathNode.setAttributeNS(null, 'd', element.data);
     let pathBounds = element.absoluteBounds; // || pathNode.getBBox();
@@ -16398,7 +16398,7 @@ function findSegmentPoints(element) {
         sample = pathNode.getPointAtLength(sampleLength);
         pts.push({ x: sample.x, y: sample.y });
     }
-    window[measureElement].style.visibility = 'hidden';
+    window[measureWindowElement].style.visibility = 'hidden';
     return pts;
 }
 function getChildNode(node) {
@@ -16440,14 +16440,14 @@ function translatePoints(element, points) {
 /** @private */
 function measurePath(data) {
     if (data) {
-        let measureElement = 'measureElement';
-        window[measureElement].style.visibility = 'visible';
-        let svg = window[measureElement].children[2];
+        let measureWindowElement = 'measureElement';
+        window[measureWindowElement].style.visibility = 'visible';
+        let svg = window[measureWindowElement].children[2];
         let element = getChildNode(svg)[0];
         element.setAttribute('d', data);
         let bounds = element.getBBox();
         let svgBounds = new Rect(bounds.x, bounds.y, bounds.width, bounds.height);
-        window[measureElement].style.visibility = 'hidden';
+        window[measureWindowElement].style.visibility = 'hidden';
         return svgBounds;
     }
     return new Rect(0, 0, 0, 0);
@@ -16536,7 +16536,7 @@ function wordWrapping(text, textValue, laneWidth) {
     let existingWidth;
     let existingText;
     for (j = 0; j < eachLine.length; j++) {
-        words = text.textWrapping !== 'NoWrap' ? eachLine[j].split(' ') : eachLine;
+        words = text.textWrapping !== 'NoWrap' ? eachLine[j].split(' ') : (text.textWrapping === 'NoWrap') ? [eachLine[j]] : eachLine;
         for (i = 0; i < words.length; i++) {
             txtValue += (((i !== 0 || words.length === 1) && wrap && txtValue.length > 0) ? ' ' : '') + words[i];
             newText = txtValue + ' ' + (words[i + 1] || '');
@@ -16652,15 +16652,15 @@ function measureText(text, style, content, maxWidth, textValue) {
 }
 /** @private */
 function measureImage(source, contentSize, id, callback) {
-    let measureElement = 'measureElement';
-    window[measureElement].style.visibility = 'visible';
-    let imageElement = window[measureElement].children[1];
+    let measureWindowElement = 'measureElement';
+    window[measureWindowElement].style.visibility = 'visible';
+    let imageElement = window[measureWindowElement].children[1];
     imageElement.setAttribute('src', source);
     let bounds = imageElement.getBoundingClientRect();
     let width = bounds.width;
     let height = bounds.height;
     contentSize = new Size(width, height);
-    window[measureElement].style.visibility = 'hidden';
+    window[measureWindowElement].style.visibility = 'hidden';
     let element = document.createElement('img');
     element.setAttribute('src', source);
     setAttributeHtml(element, { id: id + 'sf-imageNode', style: 'display: none;' });
@@ -16676,9 +16676,9 @@ function measureImage(source, contentSize, id, callback) {
 }
 /** @private */
 function measureNativeContent(nativeContent) {
-    let measureElement = 'measureElement';
-    window[measureElement].style.visibility = 'visible';
-    let nativeSVG = window[measureElement].children[2];
+    let measureWindowElement = 'measureElement';
+    window[measureWindowElement].style.visibility = 'visible';
+    let nativeSVG = window[measureWindowElement].children[2];
     nativeSVG.appendChild(nativeContent);
     let bounds = nativeContent.getBoundingClientRect();
     let svgBounds = nativeSVG.getBoundingClientRect();
@@ -16686,20 +16686,20 @@ function measureNativeContent(nativeContent) {
     rect.x = bounds.left - svgBounds.left;
     rect.y = bounds.top - svgBounds.top;
     nativeSVG.removeChild(nativeContent);
-    window[measureElement].style.visibility = 'hidden';
+    window[measureWindowElement].style.visibility = 'hidden';
     return rect;
 }
 /**
  * @private
  */
 function measureNativeSvg(nativeContent) {
-    let measureElement = 'measureElement';
-    window[measureElement].style.visibility = 'visible';
-    let nativeSVG = window[measureElement].children[2];
+    let measureWindowElement = 'measureElement';
+    window[measureWindowElement].style.visibility = 'visible';
+    let nativeSVG = window[measureWindowElement].children[2];
     nativeSVG.appendChild(nativeContent);
     let svgBounds = nativeSVG.getBoundingClientRect();
     nativeSVG.removeChild(nativeContent);
-    window[measureElement].style.visibility = 'hidden';
+    window[measureWindowElement].style.visibility = 'hidden';
     return svgBounds;
 }
 /** @private */
@@ -17087,8 +17087,8 @@ function setAttributeHtml(element, attributes) {
 }
 /** @private */
 function createMeasureElements() {
-    let measureElement = 'measureElement';
-    if (!window[measureElement]) {
+    let measureWindowElement = 'measureElement';
+    if (!window[measureWindowElement]) {
         let divElement = createHtmlElement('div', {
             id: 'measureElement',
             style: 'visibility:hidden ; height: 0px ; width: 0px; overflow: hidden;'
@@ -17107,8 +17107,8 @@ function createMeasureElements() {
         let tSpan = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         tSpan.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:space', 'preserve');
         svg.appendChild(tSpan);
-        window[measureElement] = divElement;
-        window[measureElement].usageCount = 1;
+        window[measureWindowElement] = divElement;
+        window[measureWindowElement].usageCount = 1;
         document.body.appendChild(divElement);
         let measureElementCount = 'measureElementCount';
         if (!window[measureElementCount]) {
@@ -17119,7 +17119,7 @@ function createMeasureElements() {
         }
     }
     else {
-        window[measureElement].usageCount += 1;
+        window[measureWindowElement].usageCount += 1;
     }
 }
 /** @private */
@@ -17581,15 +17581,15 @@ function wordBreakToString(value) {
     return state;
 }
 function bBoxText(textContent, options) {
-    let measureElement = 'measureElement';
-    window[measureElement].style.visibility = 'visible';
-    let svg = window[measureElement].children[2];
+    let measureWindowElement = 'measureElement';
+    window[measureWindowElement].style.visibility = 'visible';
+    let svg = window[measureWindowElement].children[2];
     let text = getChildNode(svg)[1];
     text.textContent = textContent;
     applyStyleAgainstCsp(text, 'font-size:' + options.fontSize + 'px; font-family:'
         + options.fontFamily + ';font-weight:' + (options.bold ? 'bold' : 'normal'));
     let bBox = text.getBBox().width;
-    window[measureElement].style.visibility = 'hidden';
+    window[measureWindowElement].style.visibility = 'hidden';
     return bBox;
 }
 /** @private */
@@ -27844,6 +27844,7 @@ class CommandHandler {
                 this.updateBlazorSelectorModel(oldValue);
                 if (isBlazor() && this.diagram.selectionChange) {
                     arg = this.updateSelectionChangeEventArgs(arg, obj, oldValue ? oldValue : []);
+                    this.updateBlazorSelector();
                 }
                 if (!isBlazor()) {
                     this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
@@ -27865,11 +27866,11 @@ class CommandHandler {
                             else {
                                 this.clearSelection(true, true);
                             }
+                            this.updateBlazorSelector();
                         }
                     }
                 }
                 this.diagram.enableServerDataBinding(true);
-                this.updateBlazorSelector();
             }
         });
     }
@@ -28117,6 +28118,7 @@ class CommandHandler {
                 if (!this.diagram.currentSymbol) {
                     if (isBlazor()) {
                         arg = this.updateSelectionChangeEventArgs(arg, [], objArray);
+                        this.updateBlazorSelector();
                     }
                     this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
                 }
@@ -28777,6 +28779,7 @@ class CommandHandler {
                         };
                         if (isBlazor()) {
                             arg = this.updateSelectionChangeEventArgs(arg, [], arrayNodes);
+                            this.updateBlazorSelector();
                         }
                         if (!isBlazor()) {
                             this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
@@ -28794,11 +28797,11 @@ class CommandHandler {
                                 if (selectNodes) {
                                     this.diagram.select(selectNodes);
                                 }
+                                this.updateBlazorSelector();
                             }
                         }
                     }
                 }
-                this.updateBlazorSelector();
                 this.diagram.enableServerDataBinding(enableServerDataBinding);
             }
         });
@@ -32524,9 +32527,9 @@ class Diagram extends Component {
         this.serviceLocator = new ServiceLocator;
         this.initializeServices();
         this.setCulture();
-        let measureElement = 'measureElement';
-        if (window[measureElement]) {
-            window[measureElement] = null;
+        let measureWindowElement = 'measureElement';
+        if (window[measureWindowElement]) {
+            window[measureWindowElement] = null;
         }
         this.initDiagram();
         this.initViews();
@@ -32918,14 +32921,14 @@ class Diagram extends Component {
             if (content) {
                 this.element.removeChild(content);
             }
-            let measureElement = 'measureElement';
-            if (window[measureElement]) {
-                window[measureElement].usageCount -= 1;
+            let measureWindowElement = 'measureElement';
+            if (window[measureWindowElement]) {
+                window[measureWindowElement].usageCount -= 1;
                 let measureElementCount = 'measureElementCount';
                 window[measureElementCount]--;
                 if (window[measureElementCount] === 0) {
-                    window[measureElement].parentNode.removeChild(window[measureElement]);
-                    window[measureElement] = null;
+                    window[measureWindowElement].parentNode.removeChild(window[measureWindowElement]);
+                    window[measureWindowElement] = null;
                 }
             }
         }
@@ -35670,9 +35673,9 @@ class Diagram extends Component {
         this.scroller.scrollerWidth = scrollerSize;
         this.scroller.setViewPortSize(bounds.width, bounds.height);
         this.renderRulers();
-        let measureElement = 'measureElement';
-        if (window[measureElement]) {
-            window[measureElement] = null;
+        let measureWindowElement = 'measureElement';
+        if (window[measureWindowElement]) {
+            window[measureWindowElement] = null;
             let measureElements = document.getElementById('measureElement');
             measureElements.remove();
         }
@@ -38358,6 +38361,22 @@ class Diagram extends Component {
                 if (actualAnnotation) {
                     let updateSize = actualObject.width ? true : false;
                     this.updateAnnotation(changedObject, actualAnnotation, actualObject.wrapper, actualObject, updateSize);
+                    let swimLaneNode = this.nameTable[actualObject.parentId];
+                    if ((swimLaneNode && swimLaneNode.shape.type === 'SwimLane')) {
+                        let laneHeader = 'LaneHeaderParent';
+                        var phaseHeader = 'PhaseHeaderParent';
+                        if ((actualObject.isLane || actualObject.isPhase)) {
+                            let collection = actualObject.isLane ?
+                                swimLaneNode.shape.lanes : swimLaneNode.shape.phases;
+                            for (let j = 0; j < collection.length; j++) {
+                                if (collection[j].id === (actualObject[laneHeader] || actualObject[phaseHeader])) {
+                                    collection[j].header.annotation.content = actualObject.annotations[0].content;
+                                    collection[j].header.annotation.style = actualObject.annotations[0].style;
+                                    break;
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -52533,9 +52552,9 @@ class SymbolPalette extends Component {
             this.allowServerDataBinding = isAllowDatabind;
         };
         this.element.appendChild(accordionDiv);
-        let measureElement = 'measureElement';
-        if (window[measureElement]) {
-            window[measureElement] = null;
+        let measureWindowElement = 'measureElement';
+        if (window[measureWindowElement]) {
+            window[measureWindowElement] = null;
         }
         createMeasureElements();
         this.unWireEvents();

@@ -498,6 +498,12 @@ let Popup = class Popup extends Component {
         return 'popup';
     }
     /**
+     * To resolve if any collision occurs.
+     */
+    resolveCollision() {
+        this.checkCollision();
+    }
+    /**
      * gets the persisted state properties of the Component.
      */
     getPersistData() {
@@ -1772,14 +1778,14 @@ let Dialog = class Dialog extends Component {
                 if (!isNullOrUndefined(this.btnObj)) {
                     buttonObj = this.btnObj[this.btnObj.length - 1];
                 }
-                if (!isNullOrUndefined(buttonObj) && document.activeElement === buttonObj.element && !event.shiftKey) {
-                    event.preventDefault();
-                    this.focusableElements(this.element).focus();
-                }
                 if ((isNullOrUndefined(this.btnObj)) && (!isNullOrUndefined(this.ftrTemplateContent))) {
                     let value = 'input,select,textarea,button,a,[contenteditable="true"],[tabindex]';
                     let items = this.ftrTemplateContent.querySelectorAll(value);
                     buttonObj = { element: items[items.length - 1] };
+                }
+                if (!isNullOrUndefined(buttonObj) && document.activeElement === buttonObj.element && !event.shiftKey) {
+                    event.preventDefault();
+                    this.focusableElements(this.element).focus();
                 }
                 if (document.activeElement === this.focusableElements(this.element) && event.shiftKey) {
                     event.preventDefault();

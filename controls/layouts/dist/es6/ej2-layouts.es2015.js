@@ -2400,13 +2400,13 @@ let DashboardLayout = class DashboardLayout extends Component {
         this.cellSize = [];
         if ((this.checkMediaQuery())) {
             this.cellSize[1] = this.element.parentElement
-                && Math.floor((this.element.parentElement.offsetWidth)) / this.cellAspectRatio;
+                && ((this.element.parentElement.offsetWidth)) / this.cellAspectRatio;
         }
         else {
             this.cellSize[0] = this.element.parentElement &&
-                Math.floor((this.element.parentElement.offsetWidth));
+                ((this.element.parentElement.offsetWidth));
             this.cellSize[0] = this.element.parentElement
-                && Math.floor((this.element.parentElement.offsetWidth - ((this.maxCol() - 1) * this.cellSpacing[0]))
+                && ((this.element.parentElement.offsetWidth - ((this.maxCol() - 1) * this.cellSpacing[0]))
                     / (this.maxCol()));
             this.cellSize[1] = this.cellSize[0] / this.cellAspectRatio;
         }
@@ -2599,8 +2599,8 @@ let DashboardLayout = class DashboardLayout extends Component {
         this.shadowEle.classList.add('e-holder');
         addClass([this.element], [preventSelect]);
         this.element.appendChild(this.shadowEle);
-        this.elementX = parseInt(el.style.left, 10);
-        this.elementY = parseInt(el.style.top, 10);
+        this.elementX = parseFloat(el.style.left);
+        this.elementY = parseFloat(el.style.top);
         this.elementWidth = el.offsetWidth;
         this.elementHeight = el.offsetHeight;
         this.originalWidth = this.getCellInstance(el.id).sizeX;
@@ -2621,7 +2621,7 @@ let DashboardLayout = class DashboardLayout extends Component {
         }
     }
     getCellSize() {
-        return [parseInt((this.cellSize[0]), 10), parseInt(this.cellSize[1], 10)];
+        return [this.cellSize[0], this.cellSize[1]];
     }
     updateMaxTopLeft(e) {
         this.moveTarget = this.downTarget;
@@ -3085,7 +3085,7 @@ let DashboardLayout = class DashboardLayout extends Component {
         let widthValue;
         if (this.checkMediaQuery()) {
             heightValue = ((this.maxRow()) *
-                (this.element.parentElement && Math.floor((this.element.parentElement.offsetWidth)) / this.cellAspectRatio) +
+                (this.element.parentElement && ((this.element.parentElement.offsetWidth)) / this.cellAspectRatio) +
                 (this.maxRow() - 1) * this.cellSpacing[1]) + 'px';
         }
         else {
@@ -3148,8 +3148,8 @@ let DashboardLayout = class DashboardLayout extends Component {
         }
         let heightValue = this.getCellSize()[1];
         let widthValue = this.getCellSize()[0];
-        let left = col === 0 ? 0 : (((col) * (parseInt(widthValue.toString(), 10) + this.cellSpacing[0])));
-        let top = row === 0 ? 0 : (((row) * (parseInt(heightValue.toString(), 10) + this.cellSpacing[1])));
+        let left = col === 0 ? 0 : (((col) * ((widthValue) + this.cellSpacing[0])));
+        let top = row === 0 ? 0 : (((row) * ((heightValue) + this.cellSpacing[1])));
         setStyleAttribute(cellElement, { 'left': left + 'px', 'top': top + 'px' });
     }
     getRowColumn() {
@@ -4059,8 +4059,8 @@ let DashboardLayout = class DashboardLayout extends Component {
     }
     getRowColumnDragValues(args) {
         let value = [];
-        let elementTop = parseInt(args.element.style.top, 10);
-        let elementLeft = parseInt(args.element.style.left, 10);
+        let elementTop = parseFloat(args.element.style.top);
+        let elementLeft = parseFloat(args.element.style.left);
         let row = Math.round(elementTop / (this.getCellSize()[1] + this.cellSpacing[1]));
         let col = Math.round(elementLeft / (this.getCellSize()[0] + +this.cellSpacing[0]));
         value = [row, col];
@@ -4341,8 +4341,8 @@ let DashboardLayout = class DashboardLayout extends Component {
         let sizeX = parseInt(args.element.getAttribute('data-sizeX'), 10);
         let widthValue = this.getCellSize()[0];
         let heightValue = this.getCellSize()[1];
-        let top = row === 0 ? 0 : (((row) * (parseInt(heightValue.toString(), 10) + this.cellSpacing[1])));
-        let left = col === 0 ? 0 : (((col) * (parseInt(widthValue.toString(), 10) + this.cellSpacing[0])));
+        let top = row === 0 ? 0 : (((row) * (heightValue + this.cellSpacing[1])));
+        let left = col === 0 ? 0 : (((col) * (widthValue + this.cellSpacing[0])));
         cellSizeOne = this.getCellSize()[1];
         cellSizeZero = this.getCellSize()[0];
         this.elementRef.top = this.shadowEle.style.top = top + 'px';

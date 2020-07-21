@@ -83,6 +83,9 @@ var SfDatePicker = /** @class */ (function () {
             };
         }
         this.dotNetRef.invokeMethodAsync(INPUT_HANDLER, keyEventsArgs);
+        if (e.action !== 'select' && this.popupObj && document.body.contains(this.popupObj.element)) {
+            e.preventDefault();
+        }
     };
     SfDatePicker.prototype.inputBlurHandler = function (e) {
         if (this.isCalendar() && document.activeElement === this.element) {
@@ -140,7 +143,6 @@ var SfDatePicker = /** @class */ (function () {
         }
         this.calendarElement.querySelector(TABLE + ' ' + TBODY).className = '';
         this.popupObj = new sf.popups.Popup(this.popupWrapper, {
-            content: this.calendarElement,
             relateTo: sf.base.Browser.isDevice ? document.body : this.wrapperElement,
             position: sf.base.Browser.isDevice ? { X: 'center', Y: 'center' } : { X: 'left', Y: 'bottom' },
             offsetY: OFFSETVALUE,

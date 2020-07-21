@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 18.2.46 (2020-07-21)
+
+### RichTextEditor
+
+#### New Features
+
+- `#272591` - Provided new event `beforeImageUpload` that triggers before the image upload process from Rich Text Editor component.
+
+#### Bug Fixes
+
+- `#282973` - The issue with "Selecting the transparent color from the FontColor in Rich Text Editor" has been resolved.
+
 ## 18.2.45 (2020-07-14)
 
 ### RichTextEditor

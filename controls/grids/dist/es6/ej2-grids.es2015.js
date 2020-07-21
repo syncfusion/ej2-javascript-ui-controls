@@ -1035,9 +1035,11 @@ class Data {
         let sSettings = this.parent.searchSettings;
         let fields = sSettings.fields.length ? sSettings.fields : this.getSearchColumnFieldNames();
         let predicateList = [];
+        let needForeignKeySearch = false;
         if (this.parent.searchSettings.key.length) {
+            needForeignKeySearch = this.parent.getForeignKeyColumns().some((col) => fields.indexOf(col.field) > -1);
             let adaptor = !isForeignKey ? this.dataManager.adaptor : fcolumn.dataSource.adaptor;
-            if ((adaptor.getModuleName &&
+            if (needForeignKeySearch || (adaptor.getModuleName &&
                 adaptor.getModuleName() === 'ODataV4Adaptor')) {
                 fields = isForeignKey ? [fcolumn.foreignKeyValue] : fields;
                 for (let i = 0; i < fields.length; i++) {
@@ -7340,6 +7342,9 @@ class Selection {
             let target = this.focus.getPrevIndexes().cellIndex ?
                 selectedRow.cells[this.focus.getPrevIndexes().cellIndex] :
                 selectedRow.querySelector('.e-selectionbackground:not(.e-hide):not(.e-detailrowcollapse):not(.e-detailrowexpand)');
+            if (this.parent.contextMenuModule && this.mouseButton === 2) {
+                target = this.parent.contextMenuModule.cell;
+            }
             if (!target) {
                 return;
             }
@@ -7506,7 +7511,7 @@ class Selection {
                     rowDeselectObj[rowInString] = rowDeselectObj[rowInString][0];
                     rowDeselectObj[foreignKey] = rowDeselectObj[foreignKey][0];
                     if (this.isAddRowsToSelection) {
-                        rowDeselectObj[rowidxex] = this.parent.getSelectedRowIndexes();
+                        rowDeselectObj[rowidxex] = rowIndex;
                     }
                 }
             }
@@ -8610,6 +8615,7 @@ class Selection {
         }
     }
     mouseDownHandler(e) {
+        this.mouseButton = e.button;
         let target = e.target;
         let gObj = this.parent;
         let isDrag;
@@ -20975,15 +20981,24 @@ class Filter {
         else {
             this.values[this.column.field] = filterValue; //this line should be above updateModel
         }
-        this.actualPredicate[this.fieldName] = [{
-                field: this.fieldName,
-                predicate: predicate,
-                matchCase: matchCase,
-                ignoreAccent: ignoreAccent,
-                operator: this.operator,
-                value: this.value,
-                type: this.column.type
-            }];
+        let predObj = {
+            field: this.fieldName,
+            predicate: predicate,
+            matchCase: matchCase,
+            ignoreAccent: ignoreAccent,
+            operator: this.operator,
+            value: this.value,
+            type: this.column.type
+        };
+        let filterColumn = this.parent.filterSettings.columns.filter((fColumn) => {
+            return (fColumn.field === this.fieldName);
+        });
+        if (filterColumn.length > 1 && !isNullOrUndefined(this.actualPredicate[this.fieldName])) {
+            this.actualPredicate[this.fieldName].push(predObj);
+        }
+        else {
+            this.actualPredicate[this.fieldName] = [predObj];
+        }
         this.addFilteredClass(this.fieldName);
         if (this.checkAlreadyColFiltered(this.column.field)) {
             return;
@@ -31378,6 +31393,10 @@ class ColumnChooser {
                 this.getShowHideService.setVisible(this.stateChangeColumns, this.changedStateColumns);
                 this.clearActions();
                 this.parent.notify(tooltipDestroy, { module: 'edit' });
+                if (this.parent.getCurrentViewRecords().length === 0) {
+                    let emptyRowCell = this.parent.element.querySelector('.e-emptyrow').querySelector('td');
+                    emptyRowCell.setAttribute('colSpan', this.parent.getVisibleColumns().length.toString());
+                }
             }
         }
     }
@@ -33008,6 +33027,7 @@ class PdfExport {
         this.isExporting = true;
         parent.id = getUid('main-grid');
         this.gridPool[parent.id] = false;
+        this.pdfPageSettings = new PdfPageSettings();
     }
     exportWithData(parent, pdfDoc, resolve, returnType, pdfExportProperties, isMultipleExport) {
         this.init(parent);
@@ -33137,11 +33157,10 @@ class PdfExport {
     processSectionExportProperties(section, pdfExportProperties) {
         if (!isNullOrUndefined(pdfExportProperties) && (!isNullOrUndefined(pdfExportProperties.pageOrientation)
             || !isNullOrUndefined(pdfExportProperties.pageSize))) {
-            let pdfPageSettings = new PdfPageSettings();
-            pdfPageSettings.orientation = (pdfExportProperties.pageOrientation === 'Landscape') ?
+            this.pdfPageSettings.orientation = (pdfExportProperties.pageOrientation === 'Landscape') ?
                 PdfPageOrientation.Landscape : PdfPageOrientation.Portrait;
-            pdfPageSettings.size = this.getPageSize(pdfExportProperties.pageSize);
-            section.setPageSettings(pdfPageSettings);
+            this.pdfPageSettings.size = this.getPageSize(pdfExportProperties.pageSize);
+            section.setPageSettings(this.pdfPageSettings);
         }
         return section;
     }
@@ -33442,7 +33461,7 @@ class PdfExport {
             if (!isNullOrUndefined(pdfExportProperties.theme)) {
                 this.gridTheme = pdfExportProperties.theme;
             }
-            let clientSize = this.pdfDocument.pageSettings.size;
+            let clientSize = this.pdfPageSettings.size;
             this.drawHeader(pdfExportProperties);
             if (!isNullOrUndefined(pdfExportProperties.footer)) {
                 /* tslint:disable-next-line:no-any */
@@ -33485,7 +33504,7 @@ class PdfExport {
         return dataSource;
     }
     drawHeader(pdfExportProperties) {
-        let clientSize = this.pdfDocument.pageSettings.size;
+        let clientSize = this.pdfPageSettings.size;
         if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.header)) {
             /* tslint:disable-next-line:no-any */
             let header = pdfExportProperties.header;

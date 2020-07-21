@@ -148,3 +148,8 @@ export function getParentData(parent: TreeGrid, value: string, requireFilter?: B
     return parent[id][value];
   }
 }
+
+export function isHidden(el: HTMLTableRowElement): boolean {
+  let style: CSSStyleDeclaration = window.getComputedStyle(el);
+  return ((style.display === 'none') || (style.visibility === 'hidden'));
+}

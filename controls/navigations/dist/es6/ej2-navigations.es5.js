@@ -1453,7 +1453,8 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                 var liElem_1 = e && e.target && this.getLI(e.target);
                 item_1 = this.navIdx.length ? this.getItem(this.navIdx) : null;
                 items_1 = item_1 ? item_1.items : this.items;
-                beforeCloseArgs = { element: ul_1, parentItem: item_1, items: items_1, event: e, cancel: false };
+                beforeCloseArgs = { element: ul_1, parentItem: this.isMenu && isBlazor() ? this.getMenuItemModel(item_1, ulIndex) : item_1,
+                    items: items_1, event: e, cancel: false };
                 this.trigger('beforeClose', beforeCloseArgs, function (observedCloseArgs) {
                     var popupEle;
                     var closeArgs;
@@ -1552,6 +1553,14 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                 });
             }
         }
+    };
+    MenuBase.prototype.getMenuItemModel = function (item, level) {
+        if (isNullOrUndefined(level)) {
+            level = 0;
+        }
+        var fields = this.getFields(level);
+        return { text: item[fields.text], id: item[fields.id], items: item[fields.child], separator: item[fields.separator],
+            iconCss: item[fields.iconCss], url: item[fields.url] };
     };
     MenuBase.prototype.destroyScrollObj = function (scrollObj, scrollEle) {
         if (scrollObj) {
@@ -1745,7 +1754,8 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
         var navIdx = this.getIndex(li ? li.id : null, true);
         var items = li ? item[this.getField('children', this.navIdx.length - 1)] : this.items;
         var eventArgs = {
-            element: ul, items: items, parentItem: item, event: e, cancel: false, top: top, left: left
+            element: ul, items: items, parentItem: this.isMenu && isBlazor() ? this.getMenuItemModel(item, this.navIdx.length - 1) :
+                item, event: e, cancel: false, top: top, left: left
         };
         var menuType = type;
         var collide;
@@ -2363,6 +2373,22 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
         }
         return closest(elem, 'li.e-menu-item');
     };
+    MenuBase.prototype.updateItemsByNavIdx = function () {
+        var items = this.items;
+        var count = 0;
+        for (var index = 0; index < this.navIdx.length; index++) {
+            items = items[index].items;
+            if (!items) {
+                break;
+            }
+            count++;
+            var ul = this.getUlByNavIdx(count);
+            if (!ul) {
+                break;
+            }
+            this.updateItem(ul, items);
+        }
+    };
     MenuBase.prototype.removeChildElement = function (elem) {
         while (elem.firstElementChild) {
             elem.removeChild(elem.firstElementChild);
@@ -2426,21 +2452,16 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                     var navIdx = void 0;
                     var item = void 0;
                     if (!Object.keys(oldProp.items).length) {
-                        var ul_4 = this_1.element;
-                        if (isBlazor()) {
-                            ul_4 = this_1.removeChildElement(this_1.element);
-                        }
-                        else {
-                            ul_4.innerHTML = '';
-                        }
-                        var lis = [].slice.call(this_1.createItems(this_1.items).children);
-                        lis.forEach(function (li) {
-                            ul_4.appendChild(li);
-                        });
+                        this_1.updateItem(this_1.element, this_1.items);
                         for (var i = 1, count = wrapper.childElementCount; i < count; i++) {
                             detach(wrapper.lastElementChild);
                         }
-                        this_1.navIdx = [];
+                        if (this_1.isMenu && isBlazor()) {
+                            this_1.updateItemsByNavIdx();
+                        }
+                        else {
+                            this_1.navIdx = [];
+                        }
                     }
                     else {
                         var keys = Object.keys(newProp.items);
@@ -2464,6 +2485,18 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
             var prop = _a[_i];
             _loop_2(prop);
         }
+    };
+    MenuBase.prototype.updateItem = function (ul, items) {
+        if (isBlazor()) {
+            ul = this.removeChildElement(ul);
+        }
+        else {
+            ul.innerHTML = '';
+        }
+        var lis = [].slice.call(this.createItems(items).children);
+        lis.forEach(function (li) {
+            ul.appendChild(li);
+        });
     };
     MenuBase.prototype.getChangedItemIndex = function (newProp, index, idx) {
         index.push(idx);
@@ -7360,7 +7393,8 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
             overflowMode: this.overflowMode,
             items: (tabItems.length !== 0) ? tabItems : [],
             clicked: this.clickHandler.bind(this),
-            scrollStep: this.scrollStep
+            scrollStep: this.scrollStep,
+            enableHtmlSanitizer: this.enableHtmlSanitizer
         });
         this.tbObj.isStringTemplate = true;
         this.tbObj.createElement = this.createElement;
@@ -7405,6 +7439,9 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                 return;
             }
             var txt = item.headerTemplate || item.header.text;
+            if (typeof txt === 'string' && _this.enableHtmlSanitizer) {
+                txt = SanitizeHtmlHelper.sanitize(txt);
+            }
             _this.lastIndex = ((tbCount === 0) ? i : ((_this.isReplace) ? (index + i) : (_this.lastIndex + 1)));
             var disabled = (item.disabled) ? ' ' + CLS_DISABLE$4 + ' ' + CLS_OVERLAY$2 : '';
             var hidden = (item.visible === false) ? ' ' + CLS_HIDDEN$1 : '';

@@ -3,7 +3,8 @@ import { IRichTextEditor, NotifyArgs, IRenderer, ImageUploadingEventArgs } from 
 import { Dialog, DialogModel, Popup } from '@syncfusion/ej2-popups';
 import { RadioButton } from '@syncfusion/ej2-buttons';
 import { RendererFactory } from '../services/renderer-factory';
-import { isNullOrUndefined as isNOU, L10n, isNullOrUndefined, detach, isBlazor, extend, addClass, getUniqueID } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, L10n, isNullOrUndefined, detach, isBlazor, extend, addClass } from '@syncfusion/ej2-base';
+import { getUniqueID, Browser } from '@syncfusion/ej2-base';
 import { CLS_RTE_PASTE_KEEP_FORMAT, CLS_RTE_PASTE_REMOVE_FORMAT, CLS_RTE_PASTE_PLAIN_FORMAT } from '../base/classes';
 import { CLS_RTE_PASTE_OK, CLS_RTE_PASTE_CANCEL, CLS_RTE_DIALOG_MIN_HEIGHT } from '../base/classes';
 import { pasteCleanupGroupingTags } from '../../common/config';
@@ -282,7 +283,9 @@ export class PasteCleanup {
                   (this.uploadObj as any).uploadFiles(rawFile, null);
                   /* tslint:enable */
               });
-          }
+            } else {
+                this.parent.trigger(events.beforeImageUpload, args);
+            }
        },
         failure: (e: Object) => {
           setTimeout(() => { this.uploadFailure(imgElem, uploadObj, popupObj, e); }, 900);
@@ -375,7 +378,13 @@ export class PasteCleanup {
     while (strLen--) {
         decodeArr[strLen] = decodeStr.charCodeAt(strLen);
     }
-    return new File([decodeArr], filename + '.' + (!isNOU(extension) ? extension : ''), {type: extension});
+    if (Browser.isIE || navigator.appVersion.indexOf('Edge') > -1) {
+        let blob: Blob = new Blob([decodeArr], {type: extension});
+        extend(blob, { name: filename + '.' + (!isNOU(extension) ? extension : '') });
+        return blob as File;
+    } else {
+        return new File([decodeArr], filename + '.' + (!isNOU(extension) ? extension : ''), {type: extension});
+    }
   }
   /**
    * Method for image formatting when pasting

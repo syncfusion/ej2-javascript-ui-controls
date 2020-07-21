@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 18.2.46 (2020-07-21)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#276968` - Column misalignment issue after editing has been fixed.
+- `F155689` - Issue on expanding records while mapping expand status of record has been fixed.
+
 ## 18.2.45 (2020-07-14)
 
 ### Gantt

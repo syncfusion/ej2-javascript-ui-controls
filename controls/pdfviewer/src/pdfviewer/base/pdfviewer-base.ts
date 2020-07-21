@@ -1370,11 +1370,12 @@ export class PdfViewerBase {
                 // tslint:disable-next-line
                 let browserSupportsKeepalive: any = 'keepalive' in new Request('');
                 if (browserSupportsKeepalive) {
+                    // tslint:disable-next-line
+                    let headerValue: any = this.setUnloadRequestHeaders();
                     fetch(window.sessionStorage.getItem('serviceURL') + '/' + actionName, {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        }, body: JSON.stringify(jsonObject)
+                        headers: headerValue,
+                        body: JSON.stringify(jsonObject)
                     });
                 }
             } catch (error) {
@@ -1400,6 +1401,19 @@ export class PdfViewerBase {
             window.sessionStorage.removeItem(this.documentId + '_annotations_ink');
         }
     }
+
+    // tslint:disable-next-line
+    private setUnloadRequestHeaders(): any {
+        // tslint:disable-next-line
+        let myHeaders: any = new Headers();
+        myHeaders.append('Content-Type', 'application/json;charset=UTF-8');
+        for (let i: number = 0; i < this.pdfViewer.ajaxRequestSettings.ajaxHeaders.length; i++) {
+            // tslint:disable-next-line:max-line-length
+            myHeaders.append(this.pdfViewer.ajaxRequestSettings.ajaxHeaders[i].headerName, this.pdfViewer.ajaxRequestSettings.ajaxHeaders[i].headerValue);
+        }
+        return myHeaders;
+    }
+
     /**
      * @private
      */
@@ -1806,11 +1820,12 @@ export class PdfViewerBase {
             // tslint:disable-next-line
             let browserSupportsKeepalive: any = 'keepalive' in new Request('');
             if (browserSupportsKeepalive) {
+                // tslint:disable-next-line
+                let headerValue: any = this.setUnloadRequestHeaders();
                 fetch(window.sessionStorage.getItem('serviceURL') + '/' + actionName, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }, body: JSON.stringify(jsonObject)
+                    headers: headerValue,
+                    body: JSON.stringify(jsonObject)
                 });
             }
         }

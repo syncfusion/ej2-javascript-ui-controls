@@ -6,7 +6,7 @@ import { WCharacterFormat } from '../format/character-format';
 import { WRowFormat } from '../format/row-format';
 import { Selection, TextPosition } from '../selection';
 import { ParagraphInfo } from '../editor/editor-helper';
-import { BaseHistoryInfo } from '../editor-history';
+import { BaseHistoryInfo, EditorHistory } from '../editor-history';
 /**
  * The revision class which holds the information related to changes made in the document 
  */
@@ -81,7 +81,8 @@ export class Revision {
         this.canSkipTableItems = false;
         this.skipUnLinkElement = false;
         // Implement to accept/reject the revision
-        if (this.revisionType === 'Insertion' || this.revisionType === 'Deletion') {
+         // tslint:disable-next-line:max-line-length
+        if (this.revisionType === 'Insertion' || this.revisionType === 'Deletion' || this.revisionType === 'MoveFrom' || this.revisionType === 'MoveTo') {
             let rangeIndex: number = 0;
             while (this.range.length > 0) {
                 // tslint:disable-next-line:max-line-length
@@ -111,7 +112,17 @@ export class Revision {
         }
         /* tslint:disable:max-func-body-length */
         if (this.owner.editorHistory) {
-            this.owner.editorHistory.updateHistory();
+            if (this.owner.trackChangesPane.isTrackingPageBreak) {
+                this.owner.editorHistory.currentBaseHistoryInfo.action = 'TrackingPageBreak';
+            }
+            let editorHistory: EditorHistory = this.owner.editorHistory;
+            // tslint:disable-next-line:max-line-length
+            if (editorHistory.currentHistoryInfo && (editorHistory.currentHistoryInfo.action === 'Accept All' || editorHistory.currentHistoryInfo.action === 'Reject All')) {
+                if (this.owner.documentHelper.blockToShift) {
+                    this.owner.documentHelper.layout.shiftLayoutedItems();
+                }
+            }
+            editorHistory.updateHistory();
         }
         this.owner.editor.reLayout(this.owner.selection);
     }
@@ -146,26 +157,26 @@ export class Revision {
             return false;
         }
         // tslint:disable-next-line:max-line-length
-        let removeChanges: boolean = (!isNullOrUndefined(isFromAccept)) && (revision.revisionType === 'Insertion' && !isFromAccept || revision.revisionType === 'Deletion' && isFromAccept);
+        let removeChanges: boolean = (!isNullOrUndefined(isFromAccept)) && ((revision.revisionType === 'MoveFrom'  || revision.revisionType === 'Deletion') && isFromAccept ) || ((revision.revisionType === 'Insertion' || revision.revisionType === 'MoveTo') && !isFromAccept);
         if (this.owner.selection.isTOC()) {
             if (removeChanges) {
-            this.owner.editor.deleteSelectedContents(this.owner.selection, true);
-            if (revision.range.length === 0) {
-                this.owner.revisions.remove(revision);
-            }
-            this.isContentRemoved = true;
-            this.owner.editorHistory.currentBaseHistoryInfo.action = 'BackSpace';
-        } else {
-            while (this.range.length > 0) {
-                let currentElement: ElementBox = this.range[0] as ElementBox;
-                this.removeRangeRevisionForItem(currentElement);
+                this.owner.editor.deleteSelectedContents(this.owner.selection, true);
                 if (revision.range.length === 0) {
                     this.owner.revisions.remove(revision);
                 }
+                this.isContentRemoved = true;
+                this.owner.editorHistory.currentBaseHistoryInfo.action = 'BackSpace';
+            } else {
+                while (this.range.length > 0) {
+                    let currentElement: ElementBox = this.range[0] as ElementBox;
+                    this.removeRangeRevisionForItem(currentElement);
+                    if (revision.range.length === 0) {
+                        this.owner.revisions.remove(revision);
+                    }
+                }
+                this.owner.editor.addRemovedNodes(this.revisionID);
+                this.owner.editorHistory.currentBaseHistoryInfo.action = 'AcceptTOC';
             }
-            this.owner.editor.addRemovedNodes(this.revisionID);
-            this.owner.editorHistory.currentBaseHistoryInfo.action = 'AcceptTOC';
-        }
             return false;
         }
         if (item instanceof ElementBox && !this.canSkipTableItems) {
@@ -269,8 +280,12 @@ export class Revision {
             }
         }
     }
+    /**
+     * @private
+     * Method to clear linked ranges in revision
+     */
     /* tslint:disable:no-any */
-    private removeRangeRevisionForItem(item: any): void {
+    public removeRangeRevisionForItem(item: any): void {
         let revisionIndex: number = item.revisions.indexOf(this);
         if (revisionIndex >= 0) {
             item.revisions.splice(revisionIndex, 1);

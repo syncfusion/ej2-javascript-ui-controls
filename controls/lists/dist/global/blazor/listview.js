@@ -175,7 +175,9 @@ var ListView = /** @class */ (function (_super) {
                 case 'fields':
                     this.listBaseOption.fields = this.fields.properties;
                     if (this.enableVirtualization) {
-                        this.virtualizationModule.reRenderUiVirtualization();
+                        if (!(this.isServerRendered && sf.base.isBlazor())) {
+                            this.virtualizationModule.reRenderUiVirtualization();
+                        }
                     }
                     else {
                         if (sf.base.isBlazor() && this.isServerRendered && !this.enableVirtualization) {
@@ -191,7 +193,9 @@ var ListView = /** @class */ (function (_super) {
                     break;
                 case 'query':
                     if (this.enableVirtualization) {
-                        this.virtualizationModule.reRenderUiVirtualization();
+                        if (!(sf.base.isBlazor() && this.isServerRendered)) {
+                            this.virtualizationModule.reRenderUiVirtualization();
+                        }
                     }
                     else {
                         if (sf.base.isBlazor() && this.isServerRendered && !this.enableVirtualization) {
@@ -222,7 +226,9 @@ var ListView = /** @class */ (function (_super) {
                     break;
                 case 'dataSource':
                     if (this.enableVirtualization) {
-                        this.virtualizationModule.reRenderUiVirtualization();
+                        if (!(this.isServerRendered && sf.base.isBlazor())) {
+                            this.virtualizationModule.reRenderUiVirtualization();
+                        }
                     }
                     else {
                         if (sf.base.isBlazor() && this.isServerRendered && !this.enableVirtualization) {
@@ -419,7 +425,7 @@ var ListView = /** @class */ (function (_super) {
         };
         this.initialization();
     };
-    ListView.prototype.updateLiELementHeight = function () {
+    ListView.prototype.updateLiElementHeight = function () {
         var liContainer = this.element.querySelector('.' + classNames.virtualElementContainer);
         if (liContainer.children[0]) {
             this.liElementHeight = liContainer.children[0].getBoundingClientRect().height;
@@ -617,6 +623,7 @@ var ListView = /** @class */ (function (_super) {
     ListView.prototype.clickHandler = function (e) {
         var target = e.target;
         var classList = target.classList;
+        var closestElement;
         if (classList.contains(classNames.backIcon) || classList.contains(classNames.headerText)) {
             if (this.showCheckBox && this.curDSLevel[this.curDSLevel.length - 1]) {
                 this.uncheckAllItems();
@@ -667,10 +674,11 @@ var ListView = /** @class */ (function (_super) {
             else {
                 this.setSelectLI(li, e);
             }
-            if (e.target.closest('li')) {
-                if (e.target.closest('li').classList.contains('e-has-child') &&
+            closestElement = sf.base.closest(e.target, 'li');
+            if (closestElement !== undefined) {
+                if (closestElement.classList.contains('e-has-child') &&
                     !e.target.parentElement.classList.contains('e-listview-checkbox')) {
-                    e.target.closest('li').classList.add(classNames.disable);
+                    closestElement.classList.add(classNames.disable);
                 }
             }
         }
@@ -2196,6 +2204,7 @@ var Virtualization = /** @class */ (function () {
      * @private
      */
     Virtualization.prototype.uiVirtualization = function () {
+        this.wireScrollEvent(false);
         var curViewDS = this.listViewInstance.curViewDS;
         var firstDs = curViewDS.slice(0, 1);
         if (!(sf.base.isBlazor() || this.listViewInstance.isServerRendered)) {
@@ -2209,7 +2218,6 @@ var Virtualization = /** @class */ (function () {
         this.domItemCount = this.ValidateItemCount(Object.keys(this.listViewInstance.curViewDS).length);
         this.uiFirstIndex = 0;
         this.uiLastIndex = this.domItemCount - 1;
-        this.wireScrollEvent(false);
         var otherDs = curViewDS.slice(1, this.domItemCount);
         if (!(sf.base.isBlazor() || this.listViewInstance.isServerRendered)) {
             var listItems = sf.lists.ListBase.createListItemFromJson(this.listViewInstance.createElement, otherDs, this.listViewInstance.listBaseOption);
@@ -2267,6 +2275,10 @@ var Virtualization = /** @class */ (function () {
     };
     Virtualization.prototype.updateUlContainer = function (e) {
         var listDiff;
+        var virtualElementContainer = this.listViewInstance.ulElement.querySelector('.' + classNames.virtualElementContainer);
+        if (sf.base.isNullOrUndefined(this.listViewInstance.liElementHeight)) {
+            this.listViewInstance.updateLiElementHeight();
+        }
         if (this.listViewInstance.isWindow) {
             // tslint:disable-next-line:no-any
             listDiff = Math.round(e.target.documentElement.scrollTop / this.listViewInstance.liElementHeight) - 2;
@@ -2277,7 +2289,6 @@ var Virtualization = /** @class */ (function () {
             listDiff = Math.round(e.target.scrollTop / this.listViewInstance.liElementHeight) - 2;
             // tslint:enable-next-line:no-any  
         }
-        var virtualElementContainer = this.listViewInstance.ulElement.children[0].children[0];
         if (((listDiff - 1) * this.listViewInstance.liElementHeight) < 0) {
             virtualElementContainer.style.top = '0px';
         }
@@ -2352,10 +2363,7 @@ var Virtualization = /** @class */ (function () {
         if (sf.base.isBlazor() && this.listViewInstance.isServerRendered) {
             var listDiff = void 0;
             if (sf.base.isNullOrUndefined(this.listViewInstance.liElementHeight)) {
-                var ulContainer = this.listViewInstance.element.querySelector('.' + classNames.virtualElementContainer);
-                if (ulContainer.children[0]) {
-                    this.listViewInstance.liElementHeight = ulContainer.children[0].getBoundingClientRect().height;
-                }
+                this.listViewInstance.updateLiElementHeight();
             }
             if (this.listViewInstance.isWindow) {
                 listDiff = Math.round(document.documentElement.scrollTop / this.listViewInstance.liElementHeight);

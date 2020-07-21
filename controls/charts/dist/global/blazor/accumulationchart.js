@@ -3493,6 +3493,9 @@ var AccumulationDataLabelSettings = /** @class */ (function (_super) {
         sf.base.Property(false)
     ], AccumulationDataLabelSettings.prototype, "visible", void 0);
     __decorate$2([
+        sf.base.Property(true)
+    ], AccumulationDataLabelSettings.prototype, "showZero", void 0);
+    __decorate$2([
         sf.base.Property(null)
     ], AccumulationDataLabelSettings.prototype, "name", void 0);
     __decorate$2([
@@ -3822,7 +3825,8 @@ var AccumulationSeries = /** @class */ (function (_super) {
         for (var _i = 0, _a = this.points; _i < _a.length; _i++) {
             var point = _a[_i];
             if (point.visible) {
-                if ((point.y !== 0) || (point.y === 0 && this.emptyPointSettings.mode === 'Zero')) {
+                if (this.dataLabel.showZero || (!this.dataLabel.showZero && ((point.y !== 0) || (point.y === 0 &&
+                    this.emptyPointSettings.mode === 'Zero')))) {
                     accumulation.accumulationDataLabelModule.renderDataLabel(point, this.dataLabel, datalabelGroup, this.points, this.index, element, redraw);
                 }
             }

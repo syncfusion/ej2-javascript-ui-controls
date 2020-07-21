@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-## 18.2.45 (2020-07-14)
+## 18.2.46 (2020-07-21)
 
 ### Dialog
 
@@ -10,11 +10,43 @@
 
 - `#278841` -  The issue  with "user interaction to parent application through keyboard(tab key) when modal dialog rendering with footer template" has been resolved.
 
+## 18.2.44 (2020-07-07)
+
 ### Tooltip
 
 #### Bug Fixes
 
 - `#154807` - Tooltip not opening more than once when target specified has been resolved.
+
+### Dialog
+
+#### Bug Fixes
+
+- `#268838`, `#154237` - Resolved the parent dialog button click action is not working while rendering the dialog within an Dialog.
+
+## 18.1.57 (2020-06-16)
+
+### Dialog
+
+#### Bug Fixes
+
+- `#278841` -  The issue  with "user interaction to parent application through keyboard(tab key) when modal dialog rendering with footer template" has been resolved.
+
+### Popup
+
+#### Bug Fixes
+
+- `#278055`, `#F154458`, `#278546`, `#278549`, `#278944`, `#F154458` - The issue with "popup closed when scroll action is performed" has been resolved.
+
+## 18.1.56 (2020-06-09)
+
+### Tooltip
+
+#### Bug Fixes
+
+- `#154807` - Tooltip not opening more than once when target specified has been resolved.
+
+## 18.1.55 (2020-06-02)
 
 ### Dialog
 

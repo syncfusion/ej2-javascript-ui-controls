@@ -137,6 +137,9 @@ var ListBox = /** @class */ (function (_super) {
         if (isDataSource) {
             this.liCollections = this.list.querySelectorAll('.' + sf.lists.cssClass.li);
             this.mainList = this.ulElement = this.list.querySelector('ul');
+            if (this.allowDragAndDrop && !this.ulElement.classList.contains('e-sortable')) {
+                this.initDraggable();
+            }
         }
         if (!sf.base.isNullOrUndefined(data)) {
             this.sortedData = this.jsonData = this.listData = data;
@@ -615,7 +618,17 @@ var ListBox = /** @class */ (function (_super) {
         if (enable === void 0) { enable = true; }
         var li;
         items.forEach(function (item) {
-            li = _this.findListElement(_this.list, 'li', 'data-value', _this.getValueByText(item));
+            var text;
+            if (sf.base.isBlazor() && typeof (item) === 'object') {
+                text = item[_this.fields.text || 'text'];
+                if (sf.base.isNullOrUndefined(text)) {
+                    return;
+                }
+            }
+            else {
+                text = item;
+            }
+            li = _this.findListElement(_this.list, 'li', 'data-value', _this.getValueByText(text));
             if (enable) {
                 sf.base.removeClass([li], sf.lists.cssClass.disabled);
                 li.removeAttribute('aria-disabled');
@@ -1728,7 +1741,23 @@ var ListBox = /** @class */ (function (_super) {
         var liselect;
         if (values) {
             values.forEach(function (value) {
-                li = _this.list.querySelector('[data-value="' + (isText ? _this.getValueByText(value) : value) + '"]');
+                var text;
+                if (isText) {
+                    if (sf.base.isBlazor() && typeof (value) === 'object') {
+                        text = value[_this.fields.text || 'text'];
+                        if (sf.base.isNullOrUndefined(text)) {
+                            return;
+                        }
+                        text = _this.getValueByText(text);
+                    }
+                    else {
+                        text = _this.getValueByText(value);
+                    }
+                }
+                else {
+                    text = value;
+                }
+                li = _this.list.querySelector('[data-value="' + text + '"]');
                 if (li) {
                     if (_this.selectionSettings.showCheckbox) {
                         liselect = li.getElementsByClassName('e-frame')[0].classList.contains('e-check');

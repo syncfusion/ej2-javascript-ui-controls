@@ -265,6 +265,12 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
         return 'popup';
     }
     /**
+     * To resolve if any collision occurs.
+     */
+    public resolveCollision(): void {
+        this.checkCollision();
+    }
+    /**
      * gets the persisted state properties of the Component.
      */
     protected getPersistData(): string {

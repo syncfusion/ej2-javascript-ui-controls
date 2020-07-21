@@ -1354,7 +1354,7 @@ export class Selection {
                 this.selectPrevNextFormField(true, formField);
             }
         }
-                }
+    }
     /**
      * Move to next paragraph
      * @private
@@ -1391,7 +1391,7 @@ export class Selection {
                 this.selectPrevNextFormField(false, formField);
             }
         }
-            }
+    }
     /**
      * Move to previous paragraph
      * @private
@@ -3806,7 +3806,7 @@ export class Selection {
             if (!bidi) {
                 for (let j: number = 0; j < lineWidget.children.length; j++) {
                     let inline: ElementBox = lineWidget.children[j] as ElementBox;
-                    if (inline.length === 0) {
+                    if (inline.length === 0 || inline instanceof ListTextElementBox) {
                         continue;
                     }
                     if (offset <= count + inline.length) {
@@ -8453,7 +8453,7 @@ export class Selection {
             if (formField && (formField as FieldElementBox).formFieldData instanceof DropDownFormField) {
                 // tslint:disable-next-line:max-line-length
                 formField = (event.keyCode === 37 || event.keyCode === 38 || event.keyCode === 40) ? formField : formField.nextElement instanceof BookmarkElementBox ? formField.nextElement.reference : (formField as FieldElementBox).fieldEnd;
-                let index: number = event.keyCode === 39 ? 1 : 0 ;
+                let index: number = event.keyCode === 39 ? 1 : 0;
                 let offset: number = formField.line.getOffset(formField, index);
                 let point: Point = this.getPhysicalPositionInternal(formField.line, offset, false);
                 this.selectInternal(formField.line, formField, index, point);
@@ -8903,8 +8903,13 @@ export class Selection {
                 let endPosition: TextPosition = new TextPosition(this.owner);
                 if (lastElement instanceof WCharacterFormat) {
                     let currentPara: ParagraphWidget = lastElement.ownerBase as ParagraphWidget;
-                    offset = currentPara.getLength();
-                    endPosition.setPositionParagraph(currentPara.lastChild as LineWidget, offset + 1);
+                    if (currentPara.isEndsWithPageBreak) {
+                        this.owner.trackChangesPane.isTrackingPageBreak = true;
+                        endPosition.setPositionParagraph(currentPara.nextRenderedWidget.childWidgets[0] as LineWidget, 0);
+                    } else {
+                        offset = currentPara.getLength();
+                        endPosition.setPositionParagraph(currentPara.lastChild as LineWidget, offset + 1);
+                    }
                 } else {
                     offset = lastElement.line.getOffset(lastElement, 0) + lastElement.length;
                     if (this.isTOC()) {

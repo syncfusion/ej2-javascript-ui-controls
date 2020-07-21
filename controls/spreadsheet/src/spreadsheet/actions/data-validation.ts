@@ -691,7 +691,7 @@ export class DataValidation {
                     }
                     let updatedVal: string = dateEventArgs.updatedVal as string;
                     if (idx === 0) {
-                        value = type === 'Date' ? updatedVal : updatedVal.slice(updatedVal.indexOf('.') + 1, updatedVal.length);
+                        value = type === 'Date' ? args.value : updatedVal.slice(updatedVal.indexOf('.') + 1, updatedVal.length);
                     } else if (idx === 1) {
                         value1 = type === 'Date' ? updatedVal : updatedVal.slice(updatedVal.indexOf('.') + 1, updatedVal.length);
                     } else {

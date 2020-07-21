@@ -867,6 +867,7 @@ export class DocumentHelper {
             let eventArgs: BeforePaneSwitchEventArgs = { type: 'Comment' };
             this.owner.trigger('beforePaneSwitch', eventArgs);
         }
+        this.owner.commentReviewPane.reviewTab.hideTab(0, false);
         this.owner.commentReviewPane.showHidePane(show && this.owner.enableComment, 'Comments');
     }
     /**
@@ -878,9 +879,11 @@ export class DocumentHelper {
             this.owner.trigger('beforePaneSwitch', eventArgs);
         }
         if (!show && this.owner.showComments) {
+            this.owner.commentReviewPane.reviewTab.hideTab(0, false);
             this.owner.commentReviewPane.showHidePane(true, 'Comments');
         } else {
             this.owner.commentReviewPane.showHidePane(show, 'Changes');
+            this.owner.commentReviewPane.reviewTab.hideTab(0, true);
         }
     }
     /**

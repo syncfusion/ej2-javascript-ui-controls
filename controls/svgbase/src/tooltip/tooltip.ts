@@ -560,15 +560,17 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         let groupElement: Element = getElement(this.element.id + '_group');
         let x: number = (this.marginX * 2) + (size / 2) + (isRight ? this.arrowPadding : 0);
         for (let shape of this.shapes) {
-            shapeOption = new PathOption(
-                this.element.id + '_Trackball_' + count, this.palette[count],
-                1, '#cccccc', 1, null);
-            if (this.markerPoint[count]) {
-                markerGroup.appendChild(drawSymbol(
-                    new TooltipLocation(x, this.markerPoint[count] - this.padding + (isBottom ? this.arrowPadding : 0)),
-                    shape, new Size(size, size), '', shapeOption, null));
+            if (shape !== 'None') {
+                shapeOption = new PathOption(
+                    this.element.id + '_Trackball_' + count, this.palette[count],
+                    1, '#cccccc', 1, null);
+                if (this.markerPoint[count]) {
+                    markerGroup.appendChild(drawSymbol(
+                        new TooltipLocation(x, this.markerPoint[count] - this.padding + (isBottom ? this.arrowPadding : 0)),
+                        shape, new Size(size, size), '', shapeOption, null));
+                }
+                count++;
             }
-            count++;
         }
         groupElement.appendChild(markerGroup);
     }

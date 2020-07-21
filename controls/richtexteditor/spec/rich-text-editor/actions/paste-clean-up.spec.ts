@@ -10,7 +10,7 @@ import {
 import {
   CLS_RTE_PASTE_OK, CLS_RTE_PASTE_CANCEL
 } from "../../../src/rich-text-editor/base/classes";
-import { renderRTE, destroy, setCursorPoint } from "../render.spec";
+import { renderRTE, destroy, setCursorPoint, dispatchEvent } from "../render.spec";
 
 describe("paste cleanup testing", () => {
   let editorObj: EditorManager;
@@ -1285,6 +1285,119 @@ describe("Image paste", () => {
     });
 
     afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
+describe("EJ2-40047 - When pasting content in RichTextEditor the font-size of text is changed, when changing the font-color from toolbar", () => {
+    let rteObj: RichTextEditor;
+    let controlId: string;
+    let keyBoardEvent: any = {
+        preventDefault: () => { },
+        type: "keydown",
+        stopPropagation: () => { },
+        ctrlKey: false,
+        shiftKey: false,
+        action: null,
+        which: 64,
+        key: ""
+    };
+
+    beforeEach((done: Function) => {
+        rteObj = renderRTE({
+            toolbarSettings: {
+                items: ['fontColor', 'BackgroundColor', 'FontSize']
+            },
+            pasteCleanupSettings: {
+                prompt: false
+            },
+            fontColor: {
+                colorCode: {
+                    'Custom': ['', '#000000', '#ffff00', '#00ff00']
+                }
+            },
+            backgroundColor: {
+                colorCode: {
+                    'Custom': ['', '#000000', '#ffff00', '#00ff00']
+                }
+            },
+            fontSize: {
+                items: [
+                    { text: '36 pt', value: '36pt' },
+                    { text: '10 pt', value: '10pt' },
+                    { text: '12 pt', value: '12pt' },
+                ]
+            }
+        });
+        controlId = rteObj.element.id;
+        done();
+    });
+
+    it(" font-color with existing style availability testing", () => {
+        keyBoardEvent.clipboardData = {
+            getData: () => { return `<span id='targetEle' style="color: rgb(32, 33, 34); font-family: sans-serif; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; white-space: normal; background-color: rgb(255, 255, 255); display: inline !important; float: none;">Wikipedia was launched on January 15, 2001, and was created by</span>` },
+            types: ['text/html'],
+            items: { 0: { kind: 'string', type: 'text/html' } }
+        };
+        setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
+        rteObj.onPaste(keyBoardEvent);
+        let pEle: HTMLElement = rteObj.element.querySelector('#targetEle');
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#targetEle').childNodes[0], rteObj.element.querySelector('#targetEle').childNodes[0], 0, 3);
+        let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_FontColor');
+        item = (item.querySelector('.e-rte-color-content') as HTMLElement);
+        dispatchEvent(item, 'mousedown');
+        item.click();
+        dispatchEvent(item, 'mousedown');
+        let span: HTMLElement = rteObj.element.querySelector('.e-content span');
+        expect(span.style.color === 'rgb(255, 0, 0)').toBe(true);
+        expect(span.style.fontSize === '14px').toBe(true);
+        expect(span.style.fontWeight === '400').toBe(true);
+    });
+
+    it(" background-color with existing style availability testing", () => {
+        keyBoardEvent.clipboardData = {
+            getData: () => { return `<span id='targetEle' style="color: rgb(32, 33, 34); font-family: sans-serif; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; white-space: normal; background-color: rgb(255, 255, 255); display: inline !important; float: none;">Wikipedia was launched on January 15, 2001, and was created by</span>` },
+            types: ['text/html'],
+            items: { 0: { kind: 'string', type: 'text/html' } }
+        };
+        setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
+        rteObj.onPaste(keyBoardEvent);
+        let pEle: HTMLElement = rteObj.element.querySelector('#targetEle');
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#targetEle').childNodes[0], rteObj.element.querySelector('#targetEle').childNodes[0], 0, 3);
+        let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_BackgroundColor');
+        item = (item.querySelector('.e-rte-color-content') as HTMLElement);
+        dispatchEvent(item, 'mousedown');
+        item.click();
+        dispatchEvent(item, 'mousedown');
+        let span: HTMLElement = rteObj.element.querySelector('.e-content span');
+        expect(span.style.color === 'rgb(32, 33, 34)').toBe(true);
+        expect(span.style.backgroundColor === 'rgb(255, 255, 0)').toBe(true);
+        expect(span.style.fontSize === '14px').toBe(true);
+        expect(span.style.fontWeight === '400').toBe(true);
+    });
+
+    it(" font-size with existing style availability testing", () => {
+        keyBoardEvent.clipboardData = {
+            getData: () => { return `<span id='targetEle' style="color: rgb(32, 33, 34); font-family: sans-serif; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; white-space: normal; background-color: rgb(255, 255, 255); display: inline !important; float: none;">Wikipedia was launched on January 15, 2001, and was created by</span>` },
+            types: ['text/html'],
+            items: { 0: { kind: 'string', type: 'text/html' } }
+        };
+        setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
+        rteObj.onPaste(keyBoardEvent);
+        let pEle: HTMLElement = rteObj.element.querySelector('#targetEle');
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#targetEle').childNodes[0], rteObj.element.querySelector('#targetEle').childNodes[0], 0, 3);
+        let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_FontSize');
+        item.click();
+        let popup: HTMLElement = document.getElementById(controlId + '_toolbar_FontSize-popup');
+        dispatchEvent((popup.querySelectorAll('.e-item')[0] as HTMLElement), 'mousedown');
+        (popup.querySelectorAll('.e-item')[0] as HTMLElement).click();
+        let span: HTMLElement = rteObj.element.querySelector('.e-content span');
+        expect(span.style.color === 'rgb(32, 33, 34)').toBe(true);
+        expect(span.style.fontSize === '36pt').toBe(true);
+        expect(span.style.fontWeight === '400').toBe(true);
+    });
+
+    afterEach(() => {
         destroy(rteObj);
     });
 });

@@ -533,7 +533,7 @@ class SfDialog {
             this.refElement = undefined;
         }
         if (!isNOU(this.element.children)) {
-            for (let i: number = 0; i < this.element.children.length; i++) {
+            for (let i: number = 0; i <= this.element.children.length; i++) {
                 i = i - i;
                 detach(this.element.children[i]);
             }
@@ -658,7 +658,9 @@ let Dialog: object = {
         element.blazor__instance.hide();
     },
     destroy(dlgObj: { [key: string]: Object }): void {
-        (dlgObj.element as BlazorDialogElement).blazor__instance.destroy(dlgObj);
+        if (!isNOU(dlgObj.element)) {
+            (dlgObj.element as BlazorDialogElement).blazor__instance.destroy(dlgObj);
+        }
     }
 };
 

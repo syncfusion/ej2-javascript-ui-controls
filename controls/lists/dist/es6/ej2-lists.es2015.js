@@ -969,7 +969,9 @@ let ListView = class ListView extends Component {
                 case 'fields':
                     this.listBaseOption.fields = this.fields.properties;
                     if (this.enableVirtualization) {
-                        this.virtualizationModule.reRenderUiVirtualization();
+                        if (!(this.isServerRendered && isBlazor())) {
+                            this.virtualizationModule.reRenderUiVirtualization();
+                        }
                     }
                     else {
                         if (isBlazor() && this.isServerRendered && !this.enableVirtualization) {
@@ -985,7 +987,9 @@ let ListView = class ListView extends Component {
                     break;
                 case 'query':
                     if (this.enableVirtualization) {
-                        this.virtualizationModule.reRenderUiVirtualization();
+                        if (!(isBlazor() && this.isServerRendered)) {
+                            this.virtualizationModule.reRenderUiVirtualization();
+                        }
                     }
                     else {
                         if (isBlazor() && this.isServerRendered && !this.enableVirtualization) {
@@ -1016,7 +1020,9 @@ let ListView = class ListView extends Component {
                     break;
                 case 'dataSource':
                     if (this.enableVirtualization) {
-                        this.virtualizationModule.reRenderUiVirtualization();
+                        if (!(this.isServerRendered && isBlazor())) {
+                            this.virtualizationModule.reRenderUiVirtualization();
+                        }
                     }
                     else {
                         if (isBlazor() && this.isServerRendered && !this.enableVirtualization) {
@@ -1212,7 +1218,7 @@ let ListView = class ListView extends Component {
         };
         this.initialization();
     }
-    updateLiELementHeight() {
+    updateLiElementHeight() {
         let liContainer = this.element.querySelector('.' + classNames.virtualElementContainer);
         if (liContainer.children[0]) {
             this.liElementHeight = liContainer.children[0].getBoundingClientRect().height;
@@ -1410,6 +1416,7 @@ let ListView = class ListView extends Component {
     clickHandler(e) {
         let target = e.target;
         let classList = target.classList;
+        let closestElement;
         if (classList.contains(classNames.backIcon) || classList.contains(classNames.headerText)) {
             if (this.showCheckBox && this.curDSLevel[this.curDSLevel.length - 1]) {
                 this.uncheckAllItems();
@@ -1460,10 +1467,11 @@ let ListView = class ListView extends Component {
             else {
                 this.setSelectLI(li, e);
             }
-            if (e.target.closest('li')) {
-                if (e.target.closest('li').classList.contains('e-has-child') &&
+            closestElement = closest(e.target, 'li');
+            if (closestElement !== undefined) {
+                if (closestElement.classList.contains('e-has-child') &&
                     !e.target.parentElement.classList.contains('e-listview-checkbox')) {
-                    e.target.closest('li').classList.add(classNames.disable);
+                    closestElement.classList.add(classNames.disable);
                 }
             }
         }
@@ -2975,6 +2983,7 @@ class Virtualization {
      * @private
      */
     uiVirtualization() {
+        this.wireScrollEvent(false);
         let curViewDS = this.listViewInstance.curViewDS;
         let firstDs = curViewDS.slice(0, 1);
         if (!(isBlazor() || this.listViewInstance.isServerRendered)) {
@@ -2988,7 +2997,6 @@ class Virtualization {
         this.domItemCount = this.ValidateItemCount(Object.keys(this.listViewInstance.curViewDS).length);
         this.uiFirstIndex = 0;
         this.uiLastIndex = this.domItemCount - 1;
-        this.wireScrollEvent(false);
         let otherDs = curViewDS.slice(1, this.domItemCount);
         if (!(isBlazor() || this.listViewInstance.isServerRendered)) {
             let listItems = ListBase.createListItemFromJson(this.listViewInstance.createElement, otherDs, this.listViewInstance.listBaseOption);
@@ -3046,6 +3054,10 @@ class Virtualization {
     }
     updateUlContainer(e) {
         let listDiff;
+        let virtualElementContainer = this.listViewInstance.ulElement.querySelector('.' + classNames.virtualElementContainer);
+        if (isNullOrUndefined(this.listViewInstance.liElementHeight)) {
+            this.listViewInstance.updateLiElementHeight();
+        }
         if (this.listViewInstance.isWindow) {
             // tslint:disable-next-line:no-any
             listDiff = Math.round(e.target.documentElement.scrollTop / this.listViewInstance.liElementHeight) - 2;
@@ -3056,7 +3068,6 @@ class Virtualization {
             listDiff = Math.round(e.target.scrollTop / this.listViewInstance.liElementHeight) - 2;
             // tslint:enable-next-line:no-any  
         }
-        let virtualElementContainer = this.listViewInstance.ulElement.children[0].children[0];
         if (((listDiff - 1) * this.listViewInstance.liElementHeight) < 0) {
             virtualElementContainer.style.top = '0px';
         }
@@ -3130,10 +3141,7 @@ class Virtualization {
         if (isBlazor() && this.listViewInstance.isServerRendered) {
             let listDiff;
             if (isNullOrUndefined(this.listViewInstance.liElementHeight)) {
-                let ulContainer = this.listViewInstance.element.querySelector('.' + classNames.virtualElementContainer);
-                if (ulContainer.children[0]) {
-                    this.listViewInstance.liElementHeight = ulContainer.children[0].getBoundingClientRect().height;
-                }
+                this.listViewInstance.updateLiElementHeight();
             }
             if (this.listViewInstance.isWindow) {
                 listDiff = Math.round(document.documentElement.scrollTop / this.listViewInstance.liElementHeight);

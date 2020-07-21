@@ -522,7 +522,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 case 'fields':
                     this.listBaseOption.fields = (this.fields as ListViewModel & { properties: Object }).properties;
                     if (this.enableVirtualization) {
-                        this.virtualizationModule.reRenderUiVirtualization();
+                        if (!(this.isServerRendered && isBlazor())) { this.virtualizationModule.reRenderUiVirtualization(); }
                     } else {
                         if (isBlazor() && this.isServerRendered && !this.enableVirtualization) {
                             this.itemReRender = true;
@@ -537,7 +537,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                     break;
                 case 'query':
                     if (this.enableVirtualization) {
-                        this.virtualizationModule.reRenderUiVirtualization();
+                        if (!(isBlazor() && this.isServerRendered)) { this.virtualizationModule.reRenderUiVirtualization(); }
                     } else {
                         if (isBlazor() && this.isServerRendered && !this.enableVirtualization) {
                             this.itemReRender = true;
@@ -566,7 +566,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                     break;
                 case 'dataSource':
                     if (this.enableVirtualization) {
-                        this.virtualizationModule.reRenderUiVirtualization();
+                        if (!(this.isServerRendered && isBlazor())) { this.virtualizationModule.reRenderUiVirtualization(); }
                     } else {
                         if (isBlazor() && this.isServerRendered && !this.enableVirtualization) {
                             this.itemReRender = true;
@@ -765,7 +765,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         };
         this.initialization();
     }
-    private updateLiELementHeight(): void {
+    private updateLiElementHeight(): void {
         let liContainer: Element = this.element.querySelector('.' + classNames.virtualElementContainer);
         if (liContainer.children[0]) {
             this.liElementHeight = liContainer.children[0].getBoundingClientRect().height;
@@ -970,6 +970,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     private clickHandler(e: MouseEvent): void {
         let target: Element = <Element>e.target;
         let classList: DOMTokenList = target.classList;
+        let closestElement: HTMLElement;
         if (classList.contains(classNames.backIcon) || classList.contains(classNames.headerText)) {
             if (this.showCheckBox && this.curDSLevel[this.curDSLevel.length - 1]) {
                 this.uncheckAllItems();
@@ -1013,10 +1014,11 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             } else {
                 this.setSelectLI(li, e);
             }
-            if ((e.target as HTMLElement).closest('li')) {
-                if ((e.target as HTMLElement).closest('li').classList.contains('e-has-child') &&
+            closestElement = closest((e.target as HTMLElement), 'li') as HTMLElement;
+            if (closestElement !== undefined) {
+                if (closestElement.classList.contains('e-has-child') &&
                     !(e.target as HTMLElement).parentElement.classList.contains('e-listview-checkbox')) {
-                    (e.target as HTMLElement).closest('li').classList.add(classNames.disable);
+                        closestElement.classList.add(classNames.disable);
                 }
             }
         }

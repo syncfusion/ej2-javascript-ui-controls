@@ -1420,6 +1420,8 @@ export class Image {
                         (this.uploadObj as any).uploadFiles(rawFile, null);
                         /* tslint:enable */
                     });
+                } else {
+                    this.parent.trigger(events.beforeImageUpload, args);
                 }
             },
             uploading: (e: UploadingEventArgs) => {
@@ -1724,6 +1726,8 @@ export class Image {
                         this.parent.inputElement.contentEditable = 'false';
                         /* tslint:enable */
                     });
+                } else {
+                    this.parent.trigger(events.beforeImageUpload, args);
                 }
             },
             uploading: (e: UploadingEventArgs) => {

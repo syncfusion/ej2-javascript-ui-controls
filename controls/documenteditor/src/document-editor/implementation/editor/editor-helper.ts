@@ -636,6 +636,13 @@ export class Base64 {
         return output;
     }
 }
+/**
+ * TextSearchResultInfo
+ */
+export interface TextSearchResultInfo {
+    startOffset: string;
+    endOffset: string;
+}
 /** 
  * @private
  */

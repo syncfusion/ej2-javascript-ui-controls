@@ -1,5 +1,7 @@
 import { createElement, remove, isBlazor, extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { EventFieldsMapping } from '../base/interface';
+import { ResourcesModel } from '../models/resources-model';
+
 /**
  * Schedule common utilities
  */
@@ -132,10 +134,22 @@ export function getScrollBarWidth(): number {
     return scrollWidth = value;
 }
 
-export function findIndexInData(data: { [key: string]: Object }[], property: string, value: string): number {
+export function findIndexInData(
+    data: { [key: string]: Object }[], property: string, value: string, event?: { [key: string]: Object }, resourceCollection?: Object[])
+    : number {
     for (let i: number = 0, length: number = data.length; i < length; i++) {
         if (data[i][property] === value) {
-            return i;
+            if (event) {
+                let field: string = (resourceCollection.slice(-2)[0] as ResourcesModel).field;
+                let res: string[] = (event[field] instanceof Array ? event[field] : [event[field]]) as string[];
+                let resData: string = res.join(',');
+                // tslint:disable-next-line:no-any
+                if (resData.includes(data[i][(resourceCollection.slice(-1)[0] as any).groupIDField] as string)) {
+                    return i;
+                }
+            } else {
+                return i;
+            }
         }
     }
     return -1;

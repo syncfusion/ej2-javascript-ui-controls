@@ -1518,6 +1518,7 @@ export class CommandHandler {
             this.updateBlazorSelectorModel(oldValue);
             if (isBlazor() && this.diagram.selectionChange) {
                 arg = this.updateSelectionChangeEventArgs(arg, obj, oldValue ? oldValue : []);
+                this.updateBlazorSelector();
             }
             if (!isBlazor()) {
                 this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
@@ -1537,11 +1538,11 @@ export class CommandHandler {
                         } else {
                             this.clearSelection(true, true);
                         }
+                        this.updateBlazorSelector();
                     }
                 }
             }
             this.diagram.enableServerDataBinding(true);
-            this.updateBlazorSelector();
         }
     }
 
@@ -1781,6 +1782,7 @@ export class CommandHandler {
                 if (!this.diagram.currentSymbol) {
                     if (isBlazor()) {
                         arg = this.updateSelectionChangeEventArgs(arg, [], objArray);
+                        this.updateBlazorSelector();
                     }
                     this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
                 }
@@ -2459,6 +2461,7 @@ export class CommandHandler {
                     };
                     if (isBlazor()) {
                         arg = this.updateSelectionChangeEventArgs(arg, [], arrayNodes);
+                        this.updateBlazorSelector();
                     }
                     if (!isBlazor()) {
                         this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
@@ -2476,11 +2479,11 @@ export class CommandHandler {
                             if (selectNodes) {
                                 this.diagram.select(selectNodes);
                             }
+                            this.updateBlazorSelector();
                         }
                     }
                 }
             }
-            this.updateBlazorSelector();
             this.diagram.enableServerDataBinding(enableServerDataBinding);
         }
     }

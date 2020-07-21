@@ -574,7 +574,7 @@ var SfDialog = /** @class */ (function () {
             this.refElement = undefined;
         }
         if (!sf.base.isNullOrUndefined(this.element.children)) {
-            for (var i = 0; i < this.element.children.length; i++) {
+            for (var i = 0; i <= this.element.children.length; i++) {
                 i = i - i;
                 sf.base.detach(this.element.children[i]);
             }
@@ -708,7 +708,9 @@ var Dialog = {
         element.blazor__instance.hide();
     },
     destroy: function (dlgObj) {
-        dlgObj.element.blazor__instance.destroy(dlgObj);
+        if (!sf.base.isNullOrUndefined(dlgObj.element)) {
+            dlgObj.element.blazor__instance.destroy(dlgObj);
+        }
     }
 };
 

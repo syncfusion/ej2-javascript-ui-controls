@@ -287,7 +287,7 @@ export class ActionBase {
                 () => {
                     if (this.autoScrollValidation(e) && !this.actionObj.clone.classList.contains(cls.ALLDAY_APPOINTMENT_CLASS)) {
                         if (this.parent.activeView.isTimelineView() && this.parent.activeViewOptions.group.resources.length > 0
-                            && this.actionObj.groupIndex === 0) {
+                            && this.actionObj.groupIndex < 0) {
                             return;
                         }
                         this.autoScroll();

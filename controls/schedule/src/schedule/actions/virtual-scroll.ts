@@ -168,12 +168,15 @@ export class VirtualScroll {
         }
         if (!isBlazor()) {
             if (!isNullOrUndefined(resCollection) && resCollection.length > 0) {
+                this.parent.showSpinner();
                 this.updateContent(resWrap, conWrap, eventWrap, resCollection);
                 this.setTranslate(resWrap, conWrap, eventWrap, timeIndicator);
                 this.parent.notify(events.dataReady, {});
                 if (this.parent.dragAndDropModule && this.parent.dragAndDropModule.actionObj.action === 'drag') {
                     this.parent.dragAndDropModule.navigationWrapper();
                 }
+                window.clearTimeout(this.timeValue);
+                this.timeValue = window.setTimeout(() => { this.parent.hideSpinner(); }, 250);
             }
         }
     }

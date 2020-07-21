@@ -39,7 +39,9 @@ export class Marker extends MarkerExplode {
         for (let point of series.points) {
             if (point.visible && point.symbolLocations && point.symbolLocations.length) {
                 point.symbolLocations.map((location: ChartLocation, index: number) => {
-                    this.renderMarker(series, point, location, index, redraw);
+                    if (series.marker.shape !== 'None') {
+                        this.renderMarker(series, point, location, index, redraw);
+                    }
                 });
             }
         }

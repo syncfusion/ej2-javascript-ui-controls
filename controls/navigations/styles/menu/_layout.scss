@@ -101,7 +101,7 @@
           }
 
           & .e-menu-icon {
-            width: auto;
+            width: 1em;
           }
         }
       }
@@ -343,7 +343,7 @@
 
         & .e-menu-icon {
           margin-right: $cmenu-icon-margin-right;
-          width: auto;
+          width: 1em;
         }
       }
     }
@@ -469,6 +469,10 @@
           & .e-menu-icon {
             display: inline;
             text-indent: 0;
+          }
+
+          &.e-menu-hide {
+            display: none;
           }
         }
 

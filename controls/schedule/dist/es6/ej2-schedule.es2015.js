@@ -213,10 +213,21 @@ function getScrollBarWidth() {
     document.body.removeChild(divNode);
     return scrollWidth = value;
 }
-function findIndexInData(data, property, value) {
+function findIndexInData(data, property, value, event, resourceCollection) {
     for (let i = 0, length = data.length; i < length; i++) {
         if (data[i][property] === value) {
-            return i;
+            if (event) {
+                let field = resourceCollection.slice(-2)[0].field;
+                let res = (event[field] instanceof Array ? event[field] : [event[field]]);
+                let resData = res.join(',');
+                // tslint:disable-next-line:no-any
+                if (resData.includes(data[i][resourceCollection.slice(-1)[0].groupIDField])) {
+                    return i;
+                }
+            }
+            else {
+                return i;
+            }
         }
     }
     return -1;
@@ -4542,7 +4553,7 @@ class EventBase {
         return target;
     }
     getGroupIndexFromEvent(eventData) {
-        let levelName = name || this.parent.resourceCollection.slice(-1)[0].name;
+        let levelName = this.parent.resourceCollection.slice(-1)[0].name;
         let levelIndex = this.parent.resourceCollection.length - 1;
         let idField = this.parent.resourceCollection.slice(-1)[0].field;
         let id = ((eventData[idField] instanceof Array) ?
@@ -4554,7 +4565,13 @@ class EventBase {
             }
             return null;
         })[0];
-        return this.parent.resourceBase.getIndexFromResourceId(id, levelName, resource);
+        if (levelIndex > 0) {
+            let parentField = this.parent.resourceCollection[levelIndex - 1].field;
+            return this.parent.resourceBase.getIndexFromResourceId(id, levelName, resource, eventData, parentField);
+        }
+        else {
+            return this.parent.resourceBase.getIndexFromResourceId(id, levelName, resource);
+        }
     }
     isAllDayAppointment(event) {
         let fieldMapping = this.parent.eventFields;
@@ -11150,7 +11167,15 @@ class EventWindow {
             };
             if (this.parent.activeViewOptions.group.byGroupID && (!isNullOrUndefined(lastlevel))) {
                 let lastResource = lastResouceData.dataSource;
-                let index = findIndexInData(lastResource, lastResouceData.idField, resourceData[i]);
+                let resCol = this.parent.resourceCollection;
+                let index;
+                if (resCol.length > 1) {
+                    index =
+                        findIndexInData(lastResource, lastResouceData.idField, resourceData[i], events, resCol);
+                }
+                else {
+                    index = findIndexInData(lastResource, lastResouceData.idField, resourceData[i]);
+                }
                 if (index < 0) {
                     return;
                 }
@@ -11574,12 +11599,15 @@ class VirtualScroll {
         }
         if (!isBlazor()) {
             if (!isNullOrUndefined(resCollection) && resCollection.length > 0) {
+                this.parent.showSpinner();
                 this.updateContent(resWrap, conWrap, eventWrap, resCollection);
                 this.setTranslate(resWrap, conWrap, eventWrap, timeIndicator);
                 this.parent.notify(dataReady, {});
                 if (this.parent.dragAndDropModule && this.parent.dragAndDropModule.actionObj.action === 'drag') {
                     this.parent.dragAndDropModule.navigationWrapper();
                 }
+                window.clearTimeout(this.timeValue);
+                this.timeValue = window.setTimeout(() => { this.parent.hideSpinner(); }, 250);
             }
         }
     }
@@ -13676,9 +13704,7 @@ class ResourceBase {
         let resourceDates = [].concat.apply([], this.lastResourceLevel.map((e) => e.renderDates));
         let removeDuplicateDates = (dateColl) => dateColl.filter((date, index, dates) => dates.map((dateObj) => dateObj.getTime()).indexOf(date.getTime()) === index);
         let renderDates = removeDuplicateDates(resourceDates);
-        renderDates.sort((a, b) => {
-            return a.getDay() - b.getDay();
-        });
+        renderDates.sort((a, b) => a.getTime() - b.getTime());
         return renderDates;
     }
     filterData(dataSource, field, value) {
@@ -13725,8 +13751,18 @@ class ResourceBase {
         }
         this.refreshLayout(true);
     }
-    getIndexFromResourceId(id, name, resourceData) {
-        let resource = resourceData.dataSource.filter((e) => e[resourceData.idField] === id)[0];
+    getIndexFromResourceId(id, name, resourceData, event, parentField) {
+        let resource = resourceData.dataSource.filter((e) => {
+            if (event && e[resourceData.idField] === id) {
+                if (e[resourceData.groupIDField] === event[parentField]) {
+                    return e[resourceData.idField] === id;
+                }
+                return null;
+            }
+            else {
+                return e[resourceData.idField] === id;
+            }
+        })[0];
         return (this.lastResourceLevel.map((e) => e.resourceData).indexOf(resource));
     }
     resourceExpand(id, name, hide) {
@@ -14790,7 +14826,8 @@ let Schedule = class Schedule extends Component {
         if (this.quickPopup) {
             this.quickPopup.onClosePopup();
         }
-        if (this.currentView === 'Month' || !this.activeViewOptions.timeScale.enable || this.activeView.isTimelineView()) {
+        if (this.currentView === 'Month' || ((this.currentView !== 'Agenda' && this.currentView !== 'MonthAgenda')
+            && !this.activeViewOptions.timeScale.enable) || this.activeView.isTimelineView()) {
             this.activeView.resetColWidth();
             this.notify(scrollUiUpdate, { cssProperties: this.getCssProperties(), isPreventScrollUpdate: true });
             this.notify(dataReady, {});
@@ -16311,7 +16348,7 @@ class ActionBase {
             this.actionObj.scrollInterval = window.setInterval(() => {
                 if (this.autoScrollValidation(e) && !this.actionObj.clone.classList.contains(ALLDAY_APPOINTMENT_CLASS)) {
                     if (this.parent.activeView.isTimelineView() && this.parent.activeViewOptions.group.resources.length > 0
-                        && this.actionObj.groupIndex === 0) {
+                        && this.actionObj.groupIndex < 0) {
                         return;
                     }
                     this.autoScroll();
@@ -16667,9 +16704,7 @@ class Resize extends ActionBase {
                 cellIndex = (cellIndex < 0) ? 0 : (cellIndex >= noOfDays) ? noOfDays - 1 : cellIndex;
             }
             else {
-                let cellWidth = this.parent.currentView === 'TimelineMonth' || !this.parent.activeViewOptions.timeScale.enable ?
-                    this.actionObj.cellWidth : this.actionObj.cellWidth - (this.actionObj.interval *
-                    (this.actionObj.cellWidth / this.actionObj.slotInterval));
+                let cellWidth = this.actionObj.cellWidth;
                 cellIndex = isLeft ? Math.floor(this.actionObj.clone.offsetLeft / this.actionObj.cellWidth) :
                     Math.ceil((this.actionObj.clone.offsetLeft + (this.actionObj.clone.offsetWidth - cellWidth)) /
                         this.actionObj.cellWidth);
@@ -16705,7 +16740,7 @@ class Resize extends ActionBase {
                 }
                 let spanMinutes = Math.ceil((this.actionObj.slotInterval / this.actionObj.cellWidth) *
                     (offsetValue - Math.floor(offsetValue / this.actionObj.cellWidth) * this.actionObj.cellWidth));
-                spanMinutes = isLastCell ? this.actionObj.slotInterval : spanMinutes;
+                spanMinutes = (isLastCell || (!isLeft && spanMinutes === 0)) ? this.actionObj.slotInterval : spanMinutes;
                 resizeTime = new Date(resizeDate.getTime());
                 resizeTime.setMinutes(resizeTime.getMinutes() + spanMinutes);
                 this.updateTimePosition(resizeTime);
@@ -18049,7 +18084,8 @@ class ViewBase {
     }
     getDateRangeText() {
         if (this.parent.isAdaptive) {
-            return capitalizeFirstWord(this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM y', calendar: this.parent.getCalendarMode() }), 'single');
+            let formatDate = (this.parent.activeViewOptions.dateFormat) ? this.parent.activeViewOptions.dateFormat : 'MMMM y';
+            return capitalizeFirstWord(this.parent.globalize.formatDate(this.parent.selectedDate, { format: formatDate, calendar: this.parent.getCalendarMode() }), 'single');
         }
         return this.formatDateRange(this.renderDates[0], this.renderDates[this.renderDates.length - 1]);
     }
@@ -18382,6 +18418,18 @@ class VerticalView extends ViewBase {
         if (this.parent.activeViewOptions.headerRows.length > 0 &&
             this.parent.activeViewOptions.headerRows.slice(-1)[0].option !== 'Hour') {
             return;
+        }
+        if (this.parent.isServerRenderer()) {
+            let curEle = [].slice.call(this.element.querySelectorAll('.' + CURRENT_DAY_CLASS));
+            if (curEle.length > 0) {
+                removeClass(curEle, CURRENT_DAY_CLASS);
+            }
+            let curDate = addLocalOffset(new Date(new Date().setHours(0, 0, 0, 0)));
+            let queryString = '.' + DATE_HEADER_CLASS + '[data-date="' + curDate.getTime().toString() + '"]';
+            curEle = [].slice.call(this.element.querySelectorAll(queryString));
+            for (let ele of curEle) {
+                addClass([ele], CURRENT_DAY_CLASS);
+            }
         }
         if (this.parent.showTimeIndicator && this.isWorkHourRange(this.parent.getCurrentTime())) {
             let currentDateIndex = this.getCurrentTimeIndicatorIndex();
@@ -19190,6 +19238,31 @@ class Month extends ViewBase {
         return 'wide';
     }
     serverRenderLayout() {
+        let curElem = [].slice.call(this.parent.element.querySelectorAll('.' + CURRENT_DAY_CLASS));
+        if (curElem.length > 0) {
+            removeClass(curElem, CURRENT_DAY_CLASS);
+        }
+        let curDate = addLocalOffset(new Date(new Date().setHours(0, 0, 0, 0)));
+        let queryString = '.' + WORK_CELLS_CLASS + '[data-date="' + curDate.getTime().toString() + '"]';
+        if (this.parent.currentView === 'Month' || this.parent.currentView === 'MonthAgenda') {
+            curElem = [].slice.call(this.parent.element.querySelectorAll('.' + CURRENTDATE_CLASS));
+            if (curElem.length > 0) {
+                removeClass(curElem, CURRENTDATE_CLASS);
+            }
+            let curEle = [].slice.call(this.parent.element.querySelectorAll(queryString));
+            for (let ele of curEle) {
+                let index = ele.cellIndex;
+                let curHeader = [].slice.call(this.parent.element.querySelectorAll('.' + HEADER_CELLS_CLASS))[index];
+                addClass([ele], CURRENTDATE_CLASS);
+                addClass([curHeader], CURRENT_DAY_CLASS);
+            }
+        }
+        if (this.parent.currentView === 'TimelineMonth') {
+            let curEle = this.parent.element.querySelector('.' + HEADER_CELLS_CLASS + '[data-date="' + curDate.getTime().toString() + '"]');
+            if (!isNullOrUndefined(curEle)) {
+                addClass([curEle], CURRENT_DAY_CLASS);
+            }
+        }
         this.setPanel(this.parent.element.querySelector('.' + TABLE_WRAP_CLASS));
         let target = (this.parent.currentView === 'MonthAgenda') ? this.parent.activeView.getPanel() : this.parent.element;
         let headerCells = [].slice.call(this.element.querySelectorAll('.' + DATE_HEADER_WRAP_CLASS + ' td.' + HEADER_CELLS_CLASS));
@@ -19604,7 +19677,8 @@ class Month extends ViewBase {
                     endDate.getFullYear();
                 return capitalizeFirstWord(text, 'single');
             }
-            return capitalizeFirstWord(this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM y', calendar: this.parent.getCalendarMode() }), 'single');
+            let format = (this.parent.activeViewOptions.dateFormat) ? this.parent.activeViewOptions.dateFormat : 'MMMM y';
+            return capitalizeFirstWord(this.parent.globalize.formatDate(this.parent.selectedDate, { format: format, calendar: this.parent.getCalendarMode() }), 'single');
         }
         return this.formatDateRange(this.parent.selectedDate);
     }

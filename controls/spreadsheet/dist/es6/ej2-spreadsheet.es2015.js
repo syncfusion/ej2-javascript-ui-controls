@@ -9167,6 +9167,9 @@ class WorkbookEdit {
             sheet.rows[range[0]] = {};
             sheet.rows[range[0]].cells = [];
         }
+        if (!sheet.rows[range[0]].cells) {
+            sheet.rows[range[0]].cells = [];
+        }
         if (!sheet.rows[range[0]].cells[range[1]]) {
             sheet.rows[range[0]].cells[range[1]] = {};
         }
@@ -9517,7 +9520,8 @@ class WorkbookDelete {
                             mergeArgs = null;
                         }
                     }
-                    if (args.model.rows[curIdx].cells[i] && args.model.rows[curIdx].cells[i].rowSpan !== undefined &&
+                    if (args.model.rows[curIdx].cells && args.model.rows[curIdx].cells[i] &&
+                        args.model.rows[curIdx].cells[i].rowSpan !== undefined &&
                         args.model.rows[curIdx].cells[i].rowSpan < 0 && args.model.rows[curIdx].cells[i].colSpan === undefined) {
                         if (!mergeArgs) {
                             mergeArgs = { range: [curIdx, i, curIdx, i] };
@@ -12513,6 +12517,60 @@ __decorate$3([
  */
 function checkIsFormula(text) {
     return text && text[0] === '=' && text.length > 1;
+}
+/**
+ * Check whether the value is cell reference or not.
+ * @param {string} value - Specify the value to check.
+ */
+function isCellReference(value) {
+    let text = value;
+    let startNum = 0;
+    let endNum = 0;
+    let j = 0;
+    let numArr = [89, 71, 69];
+    // XFD is the last column, for that we are using ascii values of Z, G, E (89, 71, 69) to restrict the flow.
+    let cellText = '';
+    let textLength = text.length;
+    for (let i = 0; i < textLength; i++) {
+        if (isChar(text[i])) {
+            endNum++;
+        }
+    }
+    cellText = text.substring(startNum, endNum);
+    let cellTextLength = cellText.length;
+    if (cellTextLength !== textLength) {
+        if (cellTextLength < 4) {
+            if (textLength !== 1 && (isNaN(parseInt(text, 10)))) {
+                while (j < cellTextLength) {
+                    if ((cellText[j]) && cellText[j].charCodeAt(0) < numArr[j]) {
+                        j++;
+                        continue;
+                    }
+                    else if (!(cellText[j]) && j > 0) {
+                        break;
+                    }
+                    else {
+                        return false;
+                    }
+                }
+                let cellNumber = parseFloat(text.substring(endNum, textLength));
+                if (cellNumber > 0 && cellNumber < 1048577) { // 1048576 - Maximum number of rows in excel.
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+/**
+ * Check whether the value is character or not.
+ * @param {string} value - Specify the value to check.
+ */
+function isChar(value) {
+    if ((value.charCodeAt(0) >= 65 && value.charCodeAt(0) <= 90) || (value.charCodeAt(0) >= 97 && value.charCodeAt(0) <= 122)) {
+        return true;
+    }
+    return false;
 }
 
 /** @hidden */
@@ -15909,6 +15967,9 @@ class Edit {
             editor.contentEditable = 'true';
             editor.spellcheck = false;
             this.editorElem = editor;
+            if (this.parent.element.getElementsByClassName('e-spreadsheet-edit')[0]) {
+                this.parent.element.getElementsByClassName('e-spreadsheet-edit')[0].remove();
+            }
             this.parent.element.querySelector('.e-sheet-content').appendChild(this.editorElem);
         }
         this.parent.notify(formulaOperation, { action: 'renderAutoComplete' });
@@ -16075,7 +16136,7 @@ class Edit {
                 else {
                     this.isNewValueEdit = true;
                 }
-                if (value) {
+                if (!isUndefined(value)) {
                     this.refreshEditor(value, false, true, false, false);
                 }
                 if (refreshCurPos) {
@@ -19384,6 +19445,23 @@ class SpreadsheetHyperlink {
     }
     keyUpHandler(e) {
         let trgt = e.target;
+        if (closest(trgt, '.e-document')) {
+            let hyperlinkText = document.querySelector('.e-hyp-text');
+            let hyperlinkSpan = this.parent.element.querySelector('.e-hyperlink-alert-span');
+            let dlgElement = closest(trgt, '.e-hyperlink-dlg') || closest(trgt, '.e-edithyperlink-dlg');
+            let footerEle = dlgElement.getElementsByClassName('e-footer-content')[0];
+            let insertBut = footerEle.firstChild;
+            if (hyperlinkText && hyperlinkText.value) {
+                if (!isCellReference(hyperlinkText.value.toUpperCase())) {
+                    this.showDialog();
+                    insertBut.setAttribute('disabled', 'true');
+                }
+                else if (hyperlinkSpan) {
+                    hyperlinkSpan.remove();
+                    insertBut.removeAttribute('disabled');
+                }
+            }
+        }
         if (trgt.classList.contains('e-text') && closest(trgt, '.e-cont')) {
             if (closest(trgt, '.e-webpage') && closest(trgt, '.e-webpage').getElementsByClassName('e-cont')[1] === trgt.parentElement) {
                 let dlgEle = closest(trgt, '.e-hyperlink-dlg') || closest(trgt, '.e-edithyperlink-dlg');
@@ -19483,6 +19561,17 @@ class SpreadsheetHyperlink {
             }
         }
     }
+    showDialog() {
+        if (this.parent.element.querySelector('.e-hyperlink-alert-span')) {
+            this.parent.element.querySelector('.e-hyperlink-alert-span').remove();
+        }
+        let l10n = this.parent.serviceLocator.getService(locale);
+        let hyperlinkSpan = this.parent.createElement('span', {
+            className: 'e-hyperlink-alert-span',
+            innerHTML: l10n.getConstant('HyperlinkAlert')
+        });
+        (this.parent.element.querySelector('.e-hyperlink-dlg').querySelector('.e-dlg-content')).appendChild(hyperlinkSpan);
+    }
     editHyperlinkHandler() {
         let l10n = this.parent.serviceLocator.getService(locale);
         let dialogInst = this.parent.serviceLocator.getService(dialog);
@@ -19552,6 +19641,7 @@ class SpreadsheetHyperlink {
             if (typeof (rangeAddr) === 'object') {
                 address = rangeAddr.address;
             }
+            let definedNameCheck = address;
             if (address.indexOf('http://') === -1 && address.indexOf('https://') === -1 && address.indexOf('ftp://') === -1) {
                 if (!isNullOrUndefined(address)) {
                     if (this.parent.definedNames) {
@@ -19600,24 +19690,36 @@ class SpreadsheetHyperlink {
                             isEmpty = false;
                         }
                     }
-                    rangeIndexes = isEmpty ? getRangeIndexes(range[1]) : rangeIndexes;
-                    if (this.parent.scrollSettings.enableVirtualization) {
-                        rangeIndexes[0] = rangeIndexes[0] >= this.parent.viewport.topIndex ?
-                            rangeIndexes[0] - this.parent.viewport.topIndex : rangeIndexes[0];
-                        rangeIndexes[1] = rangeIndexes[1] >= this.parent.viewport.leftIndex ?
-                            rangeIndexes[1] - this.parent.viewport.leftIndex : rangeIndexes[1];
-                    }
-                    if (!isNullOrUndefined(sheet)) {
-                        let rangeAddr = getRangeAddress(rangeIndexes);
-                        if (sheet === this.parent.getActiveSheet()) {
-                            getUpdateUsingRaf(() => { this.parent.goTo(rangeAddr); });
-                        }
-                        else {
-                            if (rangeAddr.indexOf(':') >= 0) {
-                                let addArr = rangeAddr.split(':');
-                                rangeAddr = addArr[0] === addArr[1] ? addArr[0] : rangeAddr;
+                    let isDefinedNamed;
+                    let definedname = this.parent.definedNames;
+                    if (!isNullOrUndefined(definedname)) {
+                        for (let idx = 0; idx < definedname.length; idx++) {
+                            if (definedname[idx].name === definedNameCheck) {
+                                isDefinedNamed = true;
+                                break;
                             }
-                            getUpdateUsingRaf(() => { this.parent.goTo(this.parent.sheets[sheetIdx].name + '!' + rangeAddr); });
+                        }
+                    }
+                    if (isCellReference(range[1]) || isDefinedNamed) {
+                        rangeIndexes = isEmpty ? getRangeIndexes(range[1]) : rangeIndexes;
+                        if (this.parent.scrollSettings.enableVirtualization) {
+                            rangeIndexes[0] = rangeIndexes[0] >= this.parent.viewport.topIndex ?
+                                rangeIndexes[0] - this.parent.viewport.topIndex : rangeIndexes[0];
+                            rangeIndexes[1] = rangeIndexes[1] >= this.parent.viewport.leftIndex ?
+                                rangeIndexes[1] - this.parent.viewport.leftIndex : rangeIndexes[1];
+                        }
+                        if (!isNullOrUndefined(sheet)) {
+                            let rangeAddr = getRangeAddress(rangeIndexes);
+                            if (sheet === this.parent.getActiveSheet()) {
+                                getUpdateUsingRaf(() => { this.parent.goTo(rangeAddr); });
+                            }
+                            else {
+                                if (rangeAddr.indexOf(':') >= 0) {
+                                    let addArr = rangeAddr.split(':');
+                                    rangeAddr = addArr[0] === addArr[1] ? addArr[0] : rangeAddr;
+                                }
+                                getUpdateUsingRaf(() => { this.parent.goTo(this.parent.sheets[sheetIdx].name + '!' + rangeAddr); });
+                            }
                         }
                     }
                 }
@@ -19981,7 +20083,10 @@ class SpreadsheetHyperlink {
         });
         let cellrefCont = this.parent.createElement('div', { className: 'e-cont' });
         let cellrefH = this.parent.createElement('div', { className: 'e-header', innerHTML: 'Cell Reference' });
-        let cellrefInput = this.parent.createElement('input', { className: 'e-input e-text', attrs: { 'type': 'Text' } });
+        let cellrefInput = this.parent.createElement('input', {
+            className: 'e-input e-text e-hyp-text',
+            attrs: { 'type': 'Text' }
+        });
         cellrefInput.setAttribute('value', 'A1');
         cellrefCont.appendChild(cellrefInput);
         cellrefCont.insertBefore(cellrefH, cellrefInput);
@@ -21284,7 +21389,7 @@ class DataValidation {
                     }
                     let updatedVal = dateEventArgs.updatedVal;
                     if (idx === 0) {
-                        value = type === 'Date' ? updatedVal : updatedVal.slice(updatedVal.indexOf('.') + 1, updatedVal.length);
+                        value = type === 'Date' ? args.value : updatedVal.slice(updatedVal.indexOf('.') + 1, updatedVal.length);
                     }
                     else if (idx === 1) {
                         value1 = type === 'Date' ? updatedVal : updatedVal.slice(updatedVal.indexOf('.') + 1, updatedVal.length);
@@ -27128,6 +27233,9 @@ class Formula {
         this.removeEventListener();
         if (this.autocompleteInstance) {
             this.autocompleteInstance.destroy();
+            if (this.autocompleteInstance.element) {
+                this.autocompleteInstance.element.remove();
+            }
         }
         this.autocompleteInstance = null;
         this.parent = null;
@@ -33198,6 +33306,11 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
                 case 'cellStyle':
                     this.renderModule.refreshSheet();
                     break;
+                case 'allowEditing':
+                    if (this.allowEditing) {
+                        this.notify(editOperation, { action: 'renderEditor' });
+                    }
+                    break;
                 case 'sheets':
                     // Object.keys(newProp.sheets).forEach((sheetIdx: string): void => {
                     // if (this.activeSheetIndex === Number(sheetIdx)) {
@@ -33414,5 +33527,5 @@ Spreadsheet = Spreadsheet_1 = __decorate$9([
  * Export Spreadsheet modules
  */
 
-export { Workbook, Range, UsedRange, Sheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, getSheetIndexByName, updateSelectedRange, getSelectedRange, getSheet, getSheetNameCount, getMaxSheetId, initSheet, getSheetName, Row, getRow, setRow, isHiddenRow, getRowHeight, setRowHeight, getRowsHeight, Column, getColumn, setColumn, getColumnWidth, getColumnsWidth, isHiddenCol, Format, Cell, getCell, setCell, skipDefaultValue, wrap, getData, getModel, processIdx, clearRange, getRangeIndexes, getCellIndexes, getColIndex, getCellAddress, getRangeAddress, getColumnHeaderText, getIndexesFromAddress, getRangeFromAddress, getAddressFromSelectedRange, getAddressInfo, getSwapRange, isSingleCell, executeTaskAsync, WorkbookBasicModule, WorkbookAllModule, getWorkbookRequiredModules, CellStyle, DefineName, ProtectSettings, Hyperlink, Validation, ConditionalFormat, workbookDestroyed, updateSheetFromDataSource, dataSourceChanged, workbookOpen, beginSave, saveCompleted, applyNumberFormatting, getFormattedCellObject, refreshCellElement, setCellFormat, findAllValues, textDecorationUpdate, applyCellFormat, updateUsedRange, workbookFormulaOperation, workbookEditOperation, checkDateFormat, getFormattedBarText, activeCellChanged, openSuccess, openFailure, sheetCreated, sheetsDestroyed, aggregateComputation, beforeSort, initiateSort, sortComplete, sortRangeAlert, initiatelink, beforeHyperlinkCreate, afterHyperlinkCreate, beforeHyperlinkClick, afterHyperlinkClick, addHyperlink, setLinkModel, beforeFilter, initiateFilter, filterComplete, filterRangeAlert, clearAllFilter, wrapEvent, onSave, insert, deleteAction, insertModel, deleteModel, isValidation, setValidation, addHighlight, dataValidate, findNext, findPrevious, goto, findWorkbookHandler, replaceHandler, replaceAllHandler, showDialog, findUndoRedo, findKeyUp, removeValidation, removeHighlight, queryCellInfo, count, findCount, protectSheetWorkBook, updateToggle, protectsheetHandler, replaceAllDialog, unprotectsheetHandler, workBookeditAlert, setLockCells, applyLockCells, setMerge, applyMerge, mergedRange, activeCellMergedRange, insertMerge, pasteMerge, setCFRule, cFInitialCheck, clearCFRule, initiateClearCFRule, cFRender, cFDelete, clear, clearCF, clearCells, checkIsFormula, toFraction, getGcd, intToDate, dateToInt, isDateTime, isNumber, toDate, workbookLocale, localeData, DataBind, WorkbookOpen, WorkbookSave, WorkbookFormula, WorkbookNumberFormat, getFormatFromType, getTypeFromFormat, WorkbookSort, WorkbookFilter, WorkbookCellFormat, WorkbookEdit, WorkbookHyperlink, WorkbookInsert, WorkbookDelete, WorkbookDataValidation, WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookMerge, WorkbookConditionalFormat, getRequiredModules, ribbon, formulaBar, sheetTabs, refreshSheetTabs, dataRefresh, initialLoad, contentLoaded, mouseDown, spreadsheetDestroyed, editOperation, formulaOperation, formulaBarOperation, click, keyUp, keyDown, formulaKeyUp, formulaBarUpdate, onVerticalScroll, onHorizontalScroll, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, contextMenuOpen, cellNavigate, mouseUpAfterSelection, selectionComplete, cMenuBeforeOpen, insertSheetTab, removeSheetTab, renameSheetTab, ribbonClick, refreshRibbon, enableToolbarItems, tabSwitch, selectRange, cut, copy, paste, clearCopy, dataBound, beforeDataBound, addContextMenuItems, removeContextMenuItems, enableContextMenuItems, enableFileMenuItems, hideFileMenuItems, addFileMenuItems, hideRibbonTabs, enableRibbonTabs, addRibbonTabs, addToolbarItems, hideToolbarItems, beforeRibbonCreate, rowHeightChanged, colWidthChanged, beforeHeaderLoaded, onContentScroll, deInitProperties, activeSheetChanged, renameSheet, initiateCustomSort, applySort, collaborativeUpdate, hideShow, autoFit, updateToggleItem, initiateHyperlink, editHyperlink, openHyperlink, removeHyperlink, createHyperlinkElement, sheetNameUpdate, hideSheet, performUndoRedo, updateUndoRedoCollection, setActionData, getBeforeActionData, clearUndoRedoCollection, initiateFilterUI, renderFilterCell, reapplyFilter, filterByCellValue, clearFilter, getFilteredColumn, completeAction, beginAction, filterCellKeyDown, getFilterRange, setAutoFit, refreshFormulaDatasource, setScrollEvent, initiateDataValidation, validationError, startEdit, invalidData, clearInvalid, protectSheet, applyProtect, unprotectSheet, protectCellFormat, gotoDlg, findDlg, findHandler, replace, created, editAlert, setUndoRedo, enableFormulaInput, protectSelection, hiddenMerge, checkPrevMerge, checkMerge, removeDataValidation, showAggregate, initiateConditionalFormat, checkConditionalFormat, setCF, clearViewer, getUpdateUsingRaf, removeAllChildren, getColGroupWidth, getScrollBarWidth, inView, getCellPosition, locateElem, setStyleAttribute$1 as setStyleAttribute, getStartEvent, getMoveEvent, getEndEvent, isTouchStart, isTouchMove, isTouchEnd, getClientX, getClientY, setAriaOptions, destroyComponent, setResize, setWidthAndHeight, findMaxValue, updateAction, hasTemplate, setRowEleHeight, getTextHeight, getTextWidth, getLines, setMaxHgt, getMaxHgt, skipHiddenIdx, BasicModule, AllModule, ScrollSettings, SelectionSettings, DISABLED, WRAPTEXT, locale, dialog, actionEvents, overlay, fontColor, fillColor, defaultLocale, Spreadsheet, Clipboard, Edit, Selection, Scroll, VirtualScroll, KeyboardNavigation, KeyboardShortcut, CellFormat, Resize, CollaborativeEditing, ShowHide, SpreadsheetHyperlink, UndoRedo, WrapText, Insert, Delete, DataValidation, ProtectSheet, FindAndReplace, Merge, ConditionalFormatting, Ribbon$$1 as Ribbon, FormulaBar, Formula, SheetTabs, Open, Save, ContextMenu$1 as ContextMenu, NumberFormat, Sort, Filter, Render, SheetRender, RowRenderer, CellRenderer, Calculate, FormulaError, FormulaInfo, CalcSheetFamilyItem, getAlphalabel, ValueChangedArgs, Parser, CalculateCommon, isUndefined$1 as isUndefined, getModules, getValue$1 as getValue, setValue, ModuleLoader, CommonErrors, FormulasErrorsStrings, BasicFormulas };
+export { Workbook, Range, UsedRange, Sheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, getSheetIndexByName, updateSelectedRange, getSelectedRange, getSheet, getSheetNameCount, getMaxSheetId, initSheet, getSheetName, Row, getRow, setRow, isHiddenRow, getRowHeight, setRowHeight, getRowsHeight, Column, getColumn, setColumn, getColumnWidth, getColumnsWidth, isHiddenCol, Format, Cell, getCell, setCell, skipDefaultValue, wrap, getData, getModel, processIdx, clearRange, getRangeIndexes, getCellIndexes, getColIndex, getCellAddress, getRangeAddress, getColumnHeaderText, getIndexesFromAddress, getRangeFromAddress, getAddressFromSelectedRange, getAddressInfo, getSwapRange, isSingleCell, executeTaskAsync, WorkbookBasicModule, WorkbookAllModule, getWorkbookRequiredModules, CellStyle, DefineName, ProtectSettings, Hyperlink, Validation, ConditionalFormat, workbookDestroyed, updateSheetFromDataSource, dataSourceChanged, workbookOpen, beginSave, saveCompleted, applyNumberFormatting, getFormattedCellObject, refreshCellElement, setCellFormat, findAllValues, textDecorationUpdate, applyCellFormat, updateUsedRange, workbookFormulaOperation, workbookEditOperation, checkDateFormat, getFormattedBarText, activeCellChanged, openSuccess, openFailure, sheetCreated, sheetsDestroyed, aggregateComputation, beforeSort, initiateSort, sortComplete, sortRangeAlert, initiatelink, beforeHyperlinkCreate, afterHyperlinkCreate, beforeHyperlinkClick, afterHyperlinkClick, addHyperlink, setLinkModel, beforeFilter, initiateFilter, filterComplete, filterRangeAlert, clearAllFilter, wrapEvent, onSave, insert, deleteAction, insertModel, deleteModel, isValidation, setValidation, addHighlight, dataValidate, findNext, findPrevious, goto, findWorkbookHandler, replaceHandler, replaceAllHandler, showDialog, findUndoRedo, findKeyUp, removeValidation, removeHighlight, queryCellInfo, count, findCount, protectSheetWorkBook, updateToggle, protectsheetHandler, replaceAllDialog, unprotectsheetHandler, workBookeditAlert, setLockCells, applyLockCells, setMerge, applyMerge, mergedRange, activeCellMergedRange, insertMerge, pasteMerge, setCFRule, cFInitialCheck, clearCFRule, initiateClearCFRule, cFRender, cFDelete, clear, clearCF, clearCells, checkIsFormula, isCellReference, isChar, toFraction, getGcd, intToDate, dateToInt, isDateTime, isNumber, toDate, workbookLocale, localeData, DataBind, WorkbookOpen, WorkbookSave, WorkbookFormula, WorkbookNumberFormat, getFormatFromType, getTypeFromFormat, WorkbookSort, WorkbookFilter, WorkbookCellFormat, WorkbookEdit, WorkbookHyperlink, WorkbookInsert, WorkbookDelete, WorkbookDataValidation, WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookMerge, WorkbookConditionalFormat, getRequiredModules, ribbon, formulaBar, sheetTabs, refreshSheetTabs, dataRefresh, initialLoad, contentLoaded, mouseDown, spreadsheetDestroyed, editOperation, formulaOperation, formulaBarOperation, click, keyUp, keyDown, formulaKeyUp, formulaBarUpdate, onVerticalScroll, onHorizontalScroll, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, contextMenuOpen, cellNavigate, mouseUpAfterSelection, selectionComplete, cMenuBeforeOpen, insertSheetTab, removeSheetTab, renameSheetTab, ribbonClick, refreshRibbon, enableToolbarItems, tabSwitch, selectRange, cut, copy, paste, clearCopy, dataBound, beforeDataBound, addContextMenuItems, removeContextMenuItems, enableContextMenuItems, enableFileMenuItems, hideFileMenuItems, addFileMenuItems, hideRibbonTabs, enableRibbonTabs, addRibbonTabs, addToolbarItems, hideToolbarItems, beforeRibbonCreate, rowHeightChanged, colWidthChanged, beforeHeaderLoaded, onContentScroll, deInitProperties, activeSheetChanged, renameSheet, initiateCustomSort, applySort, collaborativeUpdate, hideShow, autoFit, updateToggleItem, initiateHyperlink, editHyperlink, openHyperlink, removeHyperlink, createHyperlinkElement, sheetNameUpdate, hideSheet, performUndoRedo, updateUndoRedoCollection, setActionData, getBeforeActionData, clearUndoRedoCollection, initiateFilterUI, renderFilterCell, reapplyFilter, filterByCellValue, clearFilter, getFilteredColumn, completeAction, beginAction, filterCellKeyDown, getFilterRange, setAutoFit, refreshFormulaDatasource, setScrollEvent, initiateDataValidation, validationError, startEdit, invalidData, clearInvalid, protectSheet, applyProtect, unprotectSheet, protectCellFormat, gotoDlg, findDlg, findHandler, replace, created, editAlert, setUndoRedo, enableFormulaInput, protectSelection, hiddenMerge, checkPrevMerge, checkMerge, removeDataValidation, showAggregate, initiateConditionalFormat, checkConditionalFormat, setCF, clearViewer, getUpdateUsingRaf, removeAllChildren, getColGroupWidth, getScrollBarWidth, inView, getCellPosition, locateElem, setStyleAttribute$1 as setStyleAttribute, getStartEvent, getMoveEvent, getEndEvent, isTouchStart, isTouchMove, isTouchEnd, getClientX, getClientY, setAriaOptions, destroyComponent, setResize, setWidthAndHeight, findMaxValue, updateAction, hasTemplate, setRowEleHeight, getTextHeight, getTextWidth, getLines, setMaxHgt, getMaxHgt, skipHiddenIdx, BasicModule, AllModule, ScrollSettings, SelectionSettings, DISABLED, WRAPTEXT, locale, dialog, actionEvents, overlay, fontColor, fillColor, defaultLocale, Spreadsheet, Clipboard, Edit, Selection, Scroll, VirtualScroll, KeyboardNavigation, KeyboardShortcut, CellFormat, Resize, CollaborativeEditing, ShowHide, SpreadsheetHyperlink, UndoRedo, WrapText, Insert, Delete, DataValidation, ProtectSheet, FindAndReplace, Merge, ConditionalFormatting, Ribbon$$1 as Ribbon, FormulaBar, Formula, SheetTabs, Open, Save, ContextMenu$1 as ContextMenu, NumberFormat, Sort, Filter, Render, SheetRender, RowRenderer, CellRenderer, Calculate, FormulaError, FormulaInfo, CalcSheetFamilyItem, getAlphalabel, ValueChangedArgs, Parser, CalculateCommon, isUndefined$1 as isUndefined, getModules, getValue$1 as getValue, setValue, ModuleLoader, CommonErrors, FormulasErrorsStrings, BasicFormulas };
 //# sourceMappingURL=ej2-spreadsheet.es2015.js.map

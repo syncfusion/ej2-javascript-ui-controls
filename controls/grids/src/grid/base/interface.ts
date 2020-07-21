@@ -44,6 +44,7 @@ import { Scroll } from '../actions/scroll';
 import { Aggregate } from '../actions/aggregate';
 import { InfiniteScroll } from '../actions/infinite-scroll';
 import { Filter } from '../actions/filter';
+import { ContextMenu } from '../actions/context-menu';
 
 /**
  * Specifies grid interfaces.
@@ -485,6 +486,13 @@ export interface IGrid extends Component<HTMLElement> {
     isAutoGen?: boolean;
     pageTemplateChange?: boolean;
     enableHeaderFocus?: boolean;
+
+    /**
+     * @hidden
+     * It used to render pager template
+     * @default null
+     */
+    contextMenuModule?: ContextMenu;
 
     //public methods
     getHeaderContent?(): Element;

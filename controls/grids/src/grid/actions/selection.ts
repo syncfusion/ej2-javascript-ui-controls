@@ -136,7 +136,7 @@ export class Selection implements IAction {
      * @hidden
      */
     public autoFillRLselection: boolean = true;
-
+    private mouseButton: number;
     /**
      * Constructor for the Grid selection module
      * @hidden
@@ -712,6 +712,9 @@ export class Selection implements IAction {
             let target: Element = this.focus.getPrevIndexes().cellIndex ?
                 (<HTMLTableRowElement>selectedRow).cells[this.focus.getPrevIndexes().cellIndex] :
                 selectedRow.querySelector('.e-selectionbackground:not(.e-hide):not(.e-detailrowcollapse):not(.e-detailrowexpand)');
+            if (this.parent.contextMenuModule && this.mouseButton === 2) {
+                target = this.parent.contextMenuModule.cell;
+            }
             if (!target) { return; }
             this.focus.onClick({ target }, true);
         }
@@ -879,7 +882,7 @@ export class Selection implements IAction {
                     rowDeselectObj[rowInString] = rowDeselectObj[rowInString][0];
                     rowDeselectObj[foreignKey] = rowDeselectObj[foreignKey][0];
                     if (this.isAddRowsToSelection) {
-                        rowDeselectObj[rowidxex] = this.parent.getSelectedRowIndexes();
+                        rowDeselectObj[rowidxex] = rowIndex;
                     }
                 }
             } else {
@@ -2036,6 +2039,7 @@ export class Selection implements IAction {
     }
 
     private mouseDownHandler(e: MouseEventArgs): void {
+        this.mouseButton = e.button;
         let target: Element = e.target as Element;
         let gObj: IGrid = this.parent;
         let isDrag: boolean;

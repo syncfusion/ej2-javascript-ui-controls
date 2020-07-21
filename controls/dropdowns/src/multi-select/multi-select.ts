@@ -1523,6 +1523,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (this.popupObj && this.mobFilter) {
             this.popupObj.setProperties({ width: this.calcPopupWidth() });
             this.popupObj.refreshPosition(this.overAllWrapper);
+            this.popupObj.resolveCollision();
         }
     }
     private checkTextLength(): boolean {
@@ -2439,6 +2440,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                             }
                         },
                         open: () => {
+                            this.popupObj.resolveCollision();
                             if (!this.isFirstClick) {
                                 let ulElement: HTMLElement = this.list.querySelector('ul');
                                 if (ulElement) {
@@ -2534,6 +2536,9 @@ export class MultiSelect extends DropDownBase implements IInput {
                     this.removeIndex = 0;
                     for (temp = this.value[this.removeIndex]; this.removeIndex < this.value.length; temp = this.value[this.removeIndex]) {
                         this.removeValue(temp, e, null, true);
+                        if (this.value === null && isBlazor() && this.isServerRendered) {
+                            break;
+                        }
                     }
                 }
             } else {

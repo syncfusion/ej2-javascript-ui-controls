@@ -523,6 +523,11 @@ var drop = 'drop';
  * @deprecated
  */
 var xhtmlValidation = 'xhtmlValidation';
+/**
+ * @hidden
+ * @deprecated
+ */
+var beforeImageUpload = 'beforeImageUpload';
 
 /**
  * Rich Text Editor classes defined here.
@@ -1037,6 +1042,11 @@ var CLS_TABLE_BORDER = 'e-rte-table-border';
  * @deprecated
  */
 var CLS_RTE_TABLE_RESIZE = 'e-rte-table-resize';
+/**
+ * @hidden
+ * @deprecated
+ */
+var CLS_RTE_FIXED_TB_EXPAND = 'e-rte-fixed-tb-expand';
 
 /**
  * Defines types of Render
@@ -2556,15 +2566,15 @@ var ToolbarRenderer = /** @__PURE__ @class */ (function () {
      * @deprecated
      */
     ToolbarRenderer.prototype.renderColorPicker = function (args, item) {
-        var _this = this;
         var proxy = this;
-        this.colorPicker = new ColorPicker({
+        var value;
+        var colorPicker = new ColorPicker({
             enablePersistence: this.parent.enablePersistence,
             enableRtl: this.parent.enableRtl,
             inline: true,
             created: function () {
                 var value = (item === 'backgroundcolor') ? proxy.parent.backgroundColor.default : proxy.parent.fontColor.default;
-                _this.colorPicker.setProperties({ value: value });
+                colorPicker.setProperties({ value: value });
             },
             mode: ((item === 'backgroundcolor') ? proxy.parent.backgroundColor.mode : proxy.parent.fontColor.mode),
             modeSwitcher: ((item === 'backgroundcolor') ? proxy.parent.backgroundColor.modeSwitcher : proxy.parent.fontColor.modeSwitcher),
@@ -2595,17 +2605,21 @@ var ToolbarRenderer = /** @__PURE__ @class */ (function () {
                 proxy.currentDropdown.toggle();
             },
             beforeModeSwitch: function (args) {
-                _this.colorPicker.showButtons = args.mode === 'Palette' ? false : true;
+                value = colorPicker.value;
+                if (value === '') {
+                    colorPicker.setProperties({ value: ((args.mode === 'Picker') ? '#008000ff' : '') }, true);
+                }
+                colorPicker.showButtons = args.mode === 'Palette' ? false : true;
             }
         });
-        this.colorPicker.isStringTemplate = true;
-        this.colorPicker.columns = (item === 'backgroundcolor') ? this.parent.backgroundColor.columns : this.parent.fontColor.columns;
-        this.colorPicker.presetColors = (item === 'backgroundcolor') ? this.parent.backgroundColor.colorCode :
+        colorPicker.isStringTemplate = true;
+        colorPicker.columns = (item === 'backgroundcolor') ? this.parent.backgroundColor.columns : this.parent.fontColor.columns;
+        colorPicker.presetColors = (item === 'backgroundcolor') ? this.parent.backgroundColor.colorCode :
             this.parent.fontColor.colorCode;
-        this.colorPicker.cssClass = (item === 'backgroundcolor') ? CLS_BACKGROUND_COLOR_PICKER : CLS_FONT_COLOR_PICKER;
-        this.colorPicker.createElement = this.parent.createElement;
-        this.colorPicker.appendTo(document.body.querySelector(args.target));
-        return this.colorPicker;
+        colorPicker.cssClass = (item === 'backgroundcolor') ? CLS_BACKGROUND_COLOR_PICKER : CLS_FONT_COLOR_PICKER;
+        colorPicker.createElement = this.parent.createElement;
+        colorPicker.appendTo(document.body.querySelector(args.target));
+        return colorPicker;
     };
     /**
      * The function is used to render Rich Text Editor toolbar
@@ -12089,10 +12103,12 @@ var SelectionCommands = /** @__PURE__ @class */ (function () {
                 bgStyle = bg.style.backgroundColor;
             }
         }
+        var formatNodeStyles = formatNode.getAttribute('style');
+        var formatNodeTagName = formatNode.tagName;
         var child = InsertMethods.unwrap(formatNode);
         if (child.length > 0 && isFontStyle) {
             for (var num = 0; num < child.length; num++) {
-                child[num] = InsertMethods.Wrap(child[num], this.GetFormatNode(format, value));
+                child[num] = InsertMethods.Wrap(child[num], this.GetFormatNode(format, value, formatNodeTagName, formatNodeStyles));
             }
             var currentNodeElem = nodes[index].parentElement;
             if (!isNullOrUndefined(fontStyle) && fontStyle !== '') {
@@ -12223,7 +12239,7 @@ var SelectionCommands = /** @__PURE__ @class */ (function () {
         }
         return domSelection;
     };
-    SelectionCommands.GetFormatNode = function (format, value) {
+    SelectionCommands.GetFormatNode = function (format, value, tagName, styles) {
         var node;
         switch (format) {
             case 'bold':
@@ -12232,10 +12248,12 @@ var SelectionCommands = /** @__PURE__ @class */ (function () {
                 return document.createElement('em');
             case 'underline':
                 node = document.createElement('span');
+                this.updateStyles(node, tagName, styles);
                 node.style.textDecoration = 'underline';
                 return node;
             case 'strikethrough':
                 node = document.createElement('span');
+                this.updateStyles(node, tagName, styles);
                 node.style.textDecoration = 'line-through';
                 return node;
             case 'superscript':
@@ -12244,21 +12262,30 @@ var SelectionCommands = /** @__PURE__ @class */ (function () {
                 return document.createElement('sub');
             case 'fontcolor':
                 node = document.createElement('span');
+                this.updateStyles(node, tagName, styles);
                 node.style.color = value;
                 node.style.textDecoration = 'inherit';
                 return node;
             case 'fontname':
                 node = document.createElement('span');
+                this.updateStyles(node, tagName, styles);
                 node.style.fontFamily = value;
                 return node;
             case 'fontsize':
                 node = document.createElement('span');
+                this.updateStyles(node, tagName, styles);
                 node.style.fontSize = value;
                 return node;
             default:
                 node = document.createElement('span');
+                this.updateStyles(node, tagName, styles);
                 node.style.backgroundColor = value;
                 return node;
+        }
+    };
+    SelectionCommands.updateStyles = function (ele, tag, styles) {
+        if (styles !== null && tag === 'SPAN') {
+            ele.setAttribute('style', styles);
         }
     };
     return SelectionCommands;
@@ -14814,6 +14841,9 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
                         /* tslint:enable */
                     });
                 }
+                else {
+                    _this.parent.trigger(beforeImageUpload, args);
+                }
             },
             failure: function (e) {
                 setTimeout(function () { _this.uploadFailure(imgElem, uploadObj, popupObj, e); }, 900);
@@ -14907,7 +14937,14 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
         while (strLen--) {
             decodeArr[strLen] = decodeStr.charCodeAt(strLen);
         }
-        return new File([decodeArr], filename + '.' + (!isNullOrUndefined(extension) ? extension : ''), { type: extension });
+        if (Browser.isIE || navigator.appVersion.indexOf('Edge') > -1) {
+            var blob = new Blob([decodeArr], { type: extension });
+            extend(blob, { name: filename + '.' + (!isNullOrUndefined(extension) ? extension : '') });
+            return blob;
+        }
+        else {
+            return new File([decodeArr], filename + '.' + (!isNullOrUndefined(extension) ? extension : ''), { type: extension });
+        }
     };
     /**
      * Method for image formatting when pasting
@@ -17597,6 +17634,9 @@ var Image = /** @__PURE__ @class */ (function () {
                         /* tslint:enable */
                     });
                 }
+                else {
+                    _this.parent.trigger(beforeImageUpload, args);
+                }
             },
             uploading: function (e) {
                 if (!_this.parent.isServerRendered) {
@@ -17918,6 +17958,9 @@ var Image = /** @__PURE__ @class */ (function () {
                         _this.parent.inputElement.contentEditable = 'false';
                         /* tslint:enable */
                     });
+                }
+                else {
+                    _this.parent.trigger(beforeImageUpload, args);
                 }
             },
             uploading: function (e) {
@@ -21076,6 +21119,13 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         else {
             this.element.style.height = 'auto';
         }
+        if (this.toolbarSettings.type === 'Expand' && (typeof (this.height) === 'string' &&
+            this.height.indexOf('px') > -1 || typeof (this.height) === 'number')) {
+            this.element.classList.add(CLS_RTE_FIXED_TB_EXPAND);
+        }
+        else {
+            this.element.classList.remove(CLS_RTE_FIXED_TB_EXPAND);
+        }
     };
     /**
      * setPlaceHolder method
@@ -21381,12 +21431,8 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
             setStyleAttribute(codeElement, { height: heightValue, marginTop: topValue + 'px' });
         }
         if (this.toolbarSettings.enableFloating && this.getToolbar() && !this.inlineMode.enable) {
-            if (isExpand) {
-                setStyleAttribute(this.getToolbar().parentElement, { height: (tbHeight + expandPopHeight) + 'px' });
-            }
-            else {
-                setStyleAttribute(this.getToolbar().parentElement, { height: tbHeight + 'px' });
-            }
+            var tbWrapHeight = (isExpand ? (tbHeight + expandPopHeight) : tbHeight) + 'px';
+            setStyleAttribute(this.getToolbar().parentElement, { height: tbWrapHeight });
         }
         if (rzHeight === 0) {
             this.autoResize();
@@ -21988,6 +22034,9 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
     ], RichTextEditor.prototype, "imageSelected", void 0);
     __decorate$1([
         Event()
+    ], RichTextEditor.prototype, "beforeImageUpload", void 0);
+    __decorate$1([
+        Event()
     ], RichTextEditor.prototype, "imageUploading", void 0);
     __decorate$1([
         Event()
@@ -22084,5 +22133,5 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
  * Rich Text Editor component exported items
  */
 
-export { Toolbar$1 as Toolbar, KeyboardEvents$1 as KeyboardEvents, BaseToolbar, BaseQuickToolbar, QuickToolbar, Count, ColorPickerInput, MarkdownToolbarStatus, ExecCommandCallBack, ToolbarAction, MarkdownEditor, HtmlEditor, PasteCleanup, Resize, DropDownButtons, FullScreen, setAttributes, HtmlToolbarStatus, XhtmlValidation, HTMLFormatter, Formatter, MarkdownFormatter, ContentRender, Render, ToolbarRenderer, Link, Image, ViewSource, Table, DialogRenderer, IframeContentRender, MarkdownRender, PopupRenderer, RichTextEditor, RenderType, ToolbarType, executeGroup, created, destroyed, load, initialLoad, contentChanged, initialEnd, iframeMouseDown, destroy, toolbarClick, toolbarRefresh, refreshBegin, toolbarUpdated, bindOnEnd, renderColorPicker, htmlToolbarClick, markdownToolbarClick, destroyColorPicker, modelChanged, keyUp, keyDown, mouseUp, toolbarCreated, toolbarRenderComplete, enableFullScreen, disableFullScreen, dropDownSelect, beforeDropDownItemRender, execCommandCallBack, imageToolbarAction, linkToolbarAction, resizeStart, onResize, resizeStop, undo, redo, insertLink, unLink, editLink, openLink, actionBegin, actionComplete, toolbarStatusUpdate, actionSuccess, updateToolbarItem, insertImage, insertCompleted, imageLeft, imageRight, imageCenter, imageBreak, imageInline, imageLink, imageAlt, imageDelete, imageCaption, imageSize, sourceCode, updateSource, toolbarOpen, beforeDropDownOpen, selectionSave, selectionRestore, expandPopupClick, count, contentFocus, contentBlur, mouseDown, sourceCodeMouseDown, editAreaClick, scroll, contentscroll, colorPickerChanged, tableColorPickerChanged, focusChange, selectAll$1 as selectAll, selectRange, getSelectedHtml, renderInlineToolbar, paste, imgModule, rtlMode, createTable, docClick, tableToolbarAction, checkUndo, readOnlyMode, pasteClean, beforeDialogOpen, dialogOpen, beforeDialogClose, dialogClose, beforeQuickToolbarOpen, quickToolbarOpen, quickToolbarClose, popupHide, imageSelected, imageUploading, imageUploadSuccess, imageUploadFailed, imageRemoving, afterImageDelete, drop, xhtmlValidation, CLS_RTE, CLS_RTL, CLS_CONTENT, CLS_DISABLED, CLS_SCRIPT_SHEET, CLS_STYLE_SHEET, CLS_TOOLBAR, CLS_TB_FIXED, CLS_TB_FLOAT, CLS_TB_ABS_FLOAT, CLS_INLINE, CLS_TB_INLINE, CLS_RTE_EXPAND_TB, CLS_FULL_SCREEN, CLS_QUICK_TB, CLS_POP, CLS_QUICK_POP, CLS_QUICK_DROPDOWN, CLS_IMAGE_POP, CLS_INLINE_POP, CLS_INLINE_DROPDOWN, CLS_DROPDOWN_POPUP, CLS_DROPDOWN_ICONS, CLS_DROPDOWN_ITEMS, CLS_DROPDOWN_BTN, CLS_RTE_CONTENT, CLS_TB_ITEM, CLS_TB_EXTENDED, CLS_TB_WRAP, CLS_POPUP, CLS_SEPARATOR, CLS_MINIMIZE, CLS_MAXIMIZE, CLS_BACK, CLS_SHOW, CLS_HIDE, CLS_VISIBLE, CLS_FOCUS, CLS_RM_WHITE_SPACE, CLS_IMGRIGHT, CLS_IMGLEFT, CLS_IMGCENTER, CLS_IMGBREAK, CLS_CAPTION, CLS_RTE_CAPTION, CLS_CAPINLINE, CLS_IMGINLINE, CLS_COUNT, CLS_WARNING, CLS_ERROR, CLS_ICONS, CLS_ACTIVE, CLS_EXPAND_OPEN, CLS_RTE_ELEMENTS, CLS_TB_BTN, CLS_HR_SEPARATOR, CLS_TB_IOS_FIX, CLS_TB_STATIC, CLS_FORMATS_TB_BTN, CLS_FONT_NAME_TB_BTN, CLS_FONT_SIZE_TB_BTN, CLS_FONT_COLOR_TARGET, CLS_BACKGROUND_COLOR_TARGET, CLS_COLOR_CONTENT, CLS_FONT_COLOR_DROPDOWN, CLS_BACKGROUND_COLOR_DROPDOWN, CLS_COLOR_PALETTE, CLS_FONT_COLOR_PICKER, CLS_BACKGROUND_COLOR_PICKER, CLS_RTE_READONLY, CLS_TABLE_SEL, CLS_TB_DASH_BOR, CLS_TB_ALT_BOR, CLS_TB_COL_RES, CLS_TB_ROW_RES, CLS_TB_BOX_RES, CLS_RTE_HIDDEN, CLS_RTE_PASTE_KEEP_FORMAT, CLS_RTE_PASTE_REMOVE_FORMAT, CLS_RTE_PASTE_PLAIN_FORMAT, CLS_RTE_PASTE_OK, CLS_RTE_PASTE_CANCEL, CLS_RTE_DIALOG_MIN_HEIGHT, CLS_RTE_RES_HANDLE, CLS_RTE_RES_EAST, CLS_RTE_IMAGE, CLS_RESIZE, CLS_IMG_FOCUS, CLS_RTE_DRAG_IMAGE, CLS_RTE_UPLOAD_POPUP, CLS_POPUP_OPEN, CLS_IMG_RESIZE, CLS_DROPAREA, CLS_IMG_INNER, CLS_UPLOAD_FILES, CLS_RTE_DIALOG_UPLOAD, CLS_RTE_RES_CNT, CLS_CUSTOM_TILE, CLS_NOCOLOR_ITEM, CLS_TABLE, CLS_TABLE_BORDER, CLS_RTE_TABLE_RESIZE, getIndex, hasClass, getDropDownValue, isIDevice, getFormattedFontSize, pageYOffset, getTooltipText, setToolbarStatus, getCollection, getTBarItemsIndex, updateUndoRedoStatus, dispatchEvent, parseHtml, getTextNodesUnder, toObjectLowerCase, getEditValue, updateTextNode, isEditableValueEmpty, decode, sanitizeHelper, convertToBlob, ServiceLocator, RendererFactory, EditorManager, IMAGE, TABLE, LINK, INSERT_ROW, INSERT_COLUMN, DELETEROW, DELETECOLUMN, REMOVETABLE, TABLEHEADER, TABLE_VERTICAL_ALIGN, ALIGNMENT_TYPE, INDENT_TYPE, DEFAULT_TAG, BLOCK_TAGS, IGNORE_BLOCK_TAGS, TABLE_BLOCK_TAGS, SELECTION_TYPE, INSERTHTML_TYPE, INSERT_TEXT_TYPE, CLEAR_TYPE, CLASS_IMAGE_RIGHT, CLASS_IMAGE_LEFT, CLASS_IMAGE_CENTER, CLASS_IMAGE_BREAK, CLASS_CAPTION, CLASS_RTE_CAPTION, CLASS_CAPTION_INLINE, CLASS_IMAGE_INLINE, Lists, markerClassName, DOMNode, Alignments, Indents, Formats, LinkCommand, InsertMethods, InsertTextExec, InsertHtmlExec, InsertHtml, IsFormatted, MsWordPaste, NodeCutter, ImageCommand, SelectionCommands, SelectionBasedExec, ClearFormatExec, UndoRedoManager, TableCommand, statusCollection, ToolbarStatus, NodeSelection, MarkdownParser, LISTS_COMMAND, selectionCommand, LINK_COMMAND, CLEAR_COMMAND, MD_TABLE, ClearFormat, MDLists, MDFormats, MarkdownSelection, UndoRedoCommands, MDSelectionFormats, MDLink, MDTable, markdownFormatTags, markdownSelectionTags, markdownListsTags, htmlKeyConfig, markdownKeyConfig, pasteCleanupGroupingTags, listConversionFilters, selfClosingTags, KEY_DOWN, ACTION, FORMAT_TYPE, KEY_DOWN_HANDLER, LIST_TYPE, KEY_UP_HANDLER, KEY_UP, MODEL_CHANGED_PLUGIN, MODEL_CHANGED, MS_WORD_CLEANUP_PLUGIN, MS_WORD_CLEANUP };
+export { Toolbar$1 as Toolbar, KeyboardEvents$1 as KeyboardEvents, BaseToolbar, BaseQuickToolbar, QuickToolbar, Count, ColorPickerInput, MarkdownToolbarStatus, ExecCommandCallBack, ToolbarAction, MarkdownEditor, HtmlEditor, PasteCleanup, Resize, DropDownButtons, FullScreen, setAttributes, HtmlToolbarStatus, XhtmlValidation, HTMLFormatter, Formatter, MarkdownFormatter, ContentRender, Render, ToolbarRenderer, Link, Image, ViewSource, Table, DialogRenderer, IframeContentRender, MarkdownRender, PopupRenderer, RichTextEditor, RenderType, ToolbarType, executeGroup, created, destroyed, load, initialLoad, contentChanged, initialEnd, iframeMouseDown, destroy, toolbarClick, toolbarRefresh, refreshBegin, toolbarUpdated, bindOnEnd, renderColorPicker, htmlToolbarClick, markdownToolbarClick, destroyColorPicker, modelChanged, keyUp, keyDown, mouseUp, toolbarCreated, toolbarRenderComplete, enableFullScreen, disableFullScreen, dropDownSelect, beforeDropDownItemRender, execCommandCallBack, imageToolbarAction, linkToolbarAction, resizeStart, onResize, resizeStop, undo, redo, insertLink, unLink, editLink, openLink, actionBegin, actionComplete, toolbarStatusUpdate, actionSuccess, updateToolbarItem, insertImage, insertCompleted, imageLeft, imageRight, imageCenter, imageBreak, imageInline, imageLink, imageAlt, imageDelete, imageCaption, imageSize, sourceCode, updateSource, toolbarOpen, beforeDropDownOpen, selectionSave, selectionRestore, expandPopupClick, count, contentFocus, contentBlur, mouseDown, sourceCodeMouseDown, editAreaClick, scroll, contentscroll, colorPickerChanged, tableColorPickerChanged, focusChange, selectAll$1 as selectAll, selectRange, getSelectedHtml, renderInlineToolbar, paste, imgModule, rtlMode, createTable, docClick, tableToolbarAction, checkUndo, readOnlyMode, pasteClean, beforeDialogOpen, dialogOpen, beforeDialogClose, dialogClose, beforeQuickToolbarOpen, quickToolbarOpen, quickToolbarClose, popupHide, imageSelected, imageUploading, imageUploadSuccess, imageUploadFailed, imageRemoving, afterImageDelete, drop, xhtmlValidation, beforeImageUpload, CLS_RTE, CLS_RTL, CLS_CONTENT, CLS_DISABLED, CLS_SCRIPT_SHEET, CLS_STYLE_SHEET, CLS_TOOLBAR, CLS_TB_FIXED, CLS_TB_FLOAT, CLS_TB_ABS_FLOAT, CLS_INLINE, CLS_TB_INLINE, CLS_RTE_EXPAND_TB, CLS_FULL_SCREEN, CLS_QUICK_TB, CLS_POP, CLS_QUICK_POP, CLS_QUICK_DROPDOWN, CLS_IMAGE_POP, CLS_INLINE_POP, CLS_INLINE_DROPDOWN, CLS_DROPDOWN_POPUP, CLS_DROPDOWN_ICONS, CLS_DROPDOWN_ITEMS, CLS_DROPDOWN_BTN, CLS_RTE_CONTENT, CLS_TB_ITEM, CLS_TB_EXTENDED, CLS_TB_WRAP, CLS_POPUP, CLS_SEPARATOR, CLS_MINIMIZE, CLS_MAXIMIZE, CLS_BACK, CLS_SHOW, CLS_HIDE, CLS_VISIBLE, CLS_FOCUS, CLS_RM_WHITE_SPACE, CLS_IMGRIGHT, CLS_IMGLEFT, CLS_IMGCENTER, CLS_IMGBREAK, CLS_CAPTION, CLS_RTE_CAPTION, CLS_CAPINLINE, CLS_IMGINLINE, CLS_COUNT, CLS_WARNING, CLS_ERROR, CLS_ICONS, CLS_ACTIVE, CLS_EXPAND_OPEN, CLS_RTE_ELEMENTS, CLS_TB_BTN, CLS_HR_SEPARATOR, CLS_TB_IOS_FIX, CLS_TB_STATIC, CLS_FORMATS_TB_BTN, CLS_FONT_NAME_TB_BTN, CLS_FONT_SIZE_TB_BTN, CLS_FONT_COLOR_TARGET, CLS_BACKGROUND_COLOR_TARGET, CLS_COLOR_CONTENT, CLS_FONT_COLOR_DROPDOWN, CLS_BACKGROUND_COLOR_DROPDOWN, CLS_COLOR_PALETTE, CLS_FONT_COLOR_PICKER, CLS_BACKGROUND_COLOR_PICKER, CLS_RTE_READONLY, CLS_TABLE_SEL, CLS_TB_DASH_BOR, CLS_TB_ALT_BOR, CLS_TB_COL_RES, CLS_TB_ROW_RES, CLS_TB_BOX_RES, CLS_RTE_HIDDEN, CLS_RTE_PASTE_KEEP_FORMAT, CLS_RTE_PASTE_REMOVE_FORMAT, CLS_RTE_PASTE_PLAIN_FORMAT, CLS_RTE_PASTE_OK, CLS_RTE_PASTE_CANCEL, CLS_RTE_DIALOG_MIN_HEIGHT, CLS_RTE_RES_HANDLE, CLS_RTE_RES_EAST, CLS_RTE_IMAGE, CLS_RESIZE, CLS_IMG_FOCUS, CLS_RTE_DRAG_IMAGE, CLS_RTE_UPLOAD_POPUP, CLS_POPUP_OPEN, CLS_IMG_RESIZE, CLS_DROPAREA, CLS_IMG_INNER, CLS_UPLOAD_FILES, CLS_RTE_DIALOG_UPLOAD, CLS_RTE_RES_CNT, CLS_CUSTOM_TILE, CLS_NOCOLOR_ITEM, CLS_TABLE, CLS_TABLE_BORDER, CLS_RTE_TABLE_RESIZE, CLS_RTE_FIXED_TB_EXPAND, getIndex, hasClass, getDropDownValue, isIDevice, getFormattedFontSize, pageYOffset, getTooltipText, setToolbarStatus, getCollection, getTBarItemsIndex, updateUndoRedoStatus, dispatchEvent, parseHtml, getTextNodesUnder, toObjectLowerCase, getEditValue, updateTextNode, isEditableValueEmpty, decode, sanitizeHelper, convertToBlob, ServiceLocator, RendererFactory, EditorManager, IMAGE, TABLE, LINK, INSERT_ROW, INSERT_COLUMN, DELETEROW, DELETECOLUMN, REMOVETABLE, TABLEHEADER, TABLE_VERTICAL_ALIGN, ALIGNMENT_TYPE, INDENT_TYPE, DEFAULT_TAG, BLOCK_TAGS, IGNORE_BLOCK_TAGS, TABLE_BLOCK_TAGS, SELECTION_TYPE, INSERTHTML_TYPE, INSERT_TEXT_TYPE, CLEAR_TYPE, CLASS_IMAGE_RIGHT, CLASS_IMAGE_LEFT, CLASS_IMAGE_CENTER, CLASS_IMAGE_BREAK, CLASS_CAPTION, CLASS_RTE_CAPTION, CLASS_CAPTION_INLINE, CLASS_IMAGE_INLINE, Lists, markerClassName, DOMNode, Alignments, Indents, Formats, LinkCommand, InsertMethods, InsertTextExec, InsertHtmlExec, InsertHtml, IsFormatted, MsWordPaste, NodeCutter, ImageCommand, SelectionCommands, SelectionBasedExec, ClearFormatExec, UndoRedoManager, TableCommand, statusCollection, ToolbarStatus, NodeSelection, MarkdownParser, LISTS_COMMAND, selectionCommand, LINK_COMMAND, CLEAR_COMMAND, MD_TABLE, ClearFormat, MDLists, MDFormats, MarkdownSelection, UndoRedoCommands, MDSelectionFormats, MDLink, MDTable, markdownFormatTags, markdownSelectionTags, markdownListsTags, htmlKeyConfig, markdownKeyConfig, pasteCleanupGroupingTags, listConversionFilters, selfClosingTags, KEY_DOWN, ACTION, FORMAT_TYPE, KEY_DOWN_HANDLER, LIST_TYPE, KEY_UP_HANDLER, KEY_UP, MODEL_CHANGED_PLUGIN, MODEL_CHANGED, MS_WORD_CLEANUP_PLUGIN, MS_WORD_CLEANUP };
 //# sourceMappingURL=ej2-richtexteditor.es5.js.map

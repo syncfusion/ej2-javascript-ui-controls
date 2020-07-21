@@ -22,7 +22,7 @@ describe('Diagram Control', () => {
 
     let secondOutput: object[] = [{ width: 100, height: 100 }, { width: 318, height: 15 },
     { width: 219, height: 44 }, { width: 150, height: 100 }, { width: 150, height: 100 },
-    { width: 100, height: 100 }, { width: 513, height: 44 }, { width: 166, height: 29 }];
+    { width: 100, height: 100 }, { width: 287, height: 44 }, { width: 166, height: 29 }];
 
     let thirdOutput: object[] = [
         { width: 100, height: 60 }, { width: 100, height: 60 },

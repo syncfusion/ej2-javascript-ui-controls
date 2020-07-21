@@ -285,7 +285,9 @@ export type ChartShape =
     /** Render a InvertedTriangle. */
     'InvertedTriangle' |
     /** Render a Image. */
-    'Image';
+    'Image' |
+    /** Render a none */
+    'None';
 
 /**
  * Defines the type of axis. They are

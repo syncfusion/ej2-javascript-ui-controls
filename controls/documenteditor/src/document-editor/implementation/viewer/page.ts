@@ -3948,19 +3948,6 @@ export abstract class ElementBox {
     }
     /**
      * @private
-     * Method to clear linked ranges in revision
-     */
-    public clearElementRevisions(): void {
-        let revisions: Revision[] = this.revisions;
-        for (let i: number = 0; i < revisions.length; i++) {
-            let currentRevision: Revision = revisions[i];
-            while (currentRevision.range.length > 0) {
-                revisions[i].unlinkRangeItem(currentRevision.range[0], currentRevision, undefined);
-            }
-        }
-    }
-    /**
-     * @private
      */
     public linkFieldTraversingBackward(line: LineWidget, fieldEnd: FieldElementBox, previousNode: ElementBox): boolean {
         let k: number = line.children.length - 1;

@@ -2535,6 +2535,10 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                 element: this.element
             };
             this.trigger('change', eventArgs);
+            if (this.isServerBlazor && this.enablePersistence) {
+                // tslint:disable-next-line
+                this.interopAdaptor.invokeMethodAsync('ServerChange');
+            }
         }
         if ((isNullOrUndefined(this.value) || this.value === '') && this.floatLabelType !== 'Always') {
             removeClass([this.inputWrapper.container], 'e-valid-input');
@@ -3070,6 +3074,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
             if (collision.length > 0) {
                 popupEle.style.marginTop = -parseInt(getComputedStyle(popupEle).marginTop, 10) + 'px';
             }
+            this.popupObj.resolveCollision();
         }
     };
     DropDownList.prototype.serverBlazorUpdateSelection = function () {
@@ -3579,6 +3584,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
             ((this.allowFiltering && !(Browser.isDevice && this.isFilterLayout())) || this.getModuleName() === 'autocomplete')) {
             removeClass([this.popupObj.element], 'e-popup-close');
             this.popupObj.refreshPosition(this.inputWrapper.container);
+            this.popupObj.resolveCollision();
         }
     };
     DropDownList.prototype.checkDatasource = function (newProp) {
@@ -9131,6 +9137,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         if (this.popupObj && this.mobFilter) {
             this.popupObj.setProperties({ width: this.calcPopupWidth() });
             this.popupObj.refreshPosition(this.overAllWrapper);
+            this.popupObj.resolveCollision();
         }
     };
     MultiSelect.prototype.checkTextLength = function () {
@@ -10090,6 +10097,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                             }
                         },
                         open: function () {
+                            _this.popupObj.resolveCollision();
                             if (!_this.isFirstClick) {
                                 var ulElement = _this.list.querySelector('ul');
                                 if (ulElement) {
@@ -10190,6 +10198,9 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                     this.removeIndex = 0;
                     for (temp = this.value[this.removeIndex]; this.removeIndex < this.value.length; temp = this.value[this.removeIndex]) {
                         this.removeValue(temp, e, null, true);
+                        if (this.value === null && isBlazor() && this.isServerRendered) {
+                            break;
+                        }
                     }
                 }
             }
@@ -12615,6 +12626,9 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         if (isDataSource) {
             this.liCollections = this.list.querySelectorAll('.' + cssClass.li);
             this.mainList = this.ulElement = this.list.querySelector('ul');
+            if (this.allowDragAndDrop && !this.ulElement.classList.contains('e-sortable')) {
+                this.initDraggable();
+            }
         }
         if (!isNullOrUndefined(data)) {
             this.sortedData = this.jsonData = this.listData = data;
@@ -13093,7 +13107,17 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         if (enable === void 0) { enable = true; }
         var li;
         items.forEach(function (item) {
-            li = _this.findListElement(_this.list, 'li', 'data-value', _this.getValueByText(item));
+            var text;
+            if (isBlazor() && typeof (item) === 'object') {
+                text = item[_this.fields.text || 'text'];
+                if (isNullOrUndefined(text)) {
+                    return;
+                }
+            }
+            else {
+                text = item;
+            }
+            li = _this.findListElement(_this.list, 'li', 'data-value', _this.getValueByText(text));
             if (enable) {
                 removeClass([li], cssClass.disabled);
                 li.removeAttribute('aria-disabled');
@@ -14206,7 +14230,23 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         var liselect;
         if (values) {
             values.forEach(function (value) {
-                li = _this.list.querySelector('[data-value="' + (isText ? _this.getValueByText(value) : value) + '"]');
+                var text;
+                if (isText) {
+                    if (isBlazor() && typeof (value) === 'object') {
+                        text = value[_this.fields.text || 'text'];
+                        if (isNullOrUndefined(text)) {
+                            return;
+                        }
+                        text = _this.getValueByText(text);
+                    }
+                    else {
+                        text = _this.getValueByText(value);
+                    }
+                }
+                else {
+                    text = value;
+                }
+                li = _this.list.querySelector('[data-value="' + text + '"]');
                 if (li) {
                     if (_this.selectionSettings.showCheckbox) {
                         liselect = li.getElementsByClassName('e-frame')[0].classList.contains('e-check');

@@ -58,6 +58,7 @@ var SfTooltip = /** @class */ (function () {
         this.contentEvent = null;
         this.contentAnimation = null;
         this.beforeCloseAnimation = null;
+        this.isPopupHidden = true;
         this.element = element;
         this.ctrlId = this.element.id;
         this.properties = properties;
@@ -228,7 +229,7 @@ var SfTooltip = /** @class */ (function () {
             sf.base.removeClass([this.tooltipEle], POPUP_CLOSE);
             sf.base.addClass([this.tooltipEle], POPUP_OPEN);
         }
-        if (this.isHidden()) {
+        if (this.isPopupHidden) {
             if (this.popupObj) {
                 this.popupObj.destroy();
             }
@@ -286,7 +287,7 @@ var SfTooltip = /** @class */ (function () {
         this.showTooltip(target, this.properties.animation.open, e);
     };
     SfTooltip.prototype.isHidden = function () {
-        return this.tooltipEle ? this.tooltipEle.classList.contains(POPUP_OPEN) : true;
+        return this.tooltipEle ? !this.tooltipEle.classList.contains(POPUP_OPEN) : true;
     };
     SfTooltip.prototype.showTooltip = function (target, showAnimation, e) {
         this.isContiniousOpen = !sf.base.isNullOrUndefined(this.tooltipEle);
@@ -306,9 +307,11 @@ var SfTooltip = /** @class */ (function () {
     };
     SfTooltip.prototype.beforeRenderCallBack = function (cancel) {
         if (cancel) {
+            this.isPopupHidden = true;
             this.clear();
         }
         else {
+            this.isPopupHidden = false;
             if (sf.base.isNullOrUndefined(this.tooltipEle)) {
                 this.dotnetRef.invokeMethodAsync('CreateTooltip', JSON.stringify(true));
             }
@@ -416,12 +419,16 @@ var SfTooltip = /** @class */ (function () {
         if (!cancel) {
             this.popupHide(this.beforeCloseAnimation, this.beforeCloseTarget);
         }
+        else {
+            this.isPopupHidden = false;
+        }
     };
     SfTooltip.prototype.popupHide = function (hideAnimation, target) {
         var _this = this;
         if (target) {
             this.restoreElement(target);
         }
+        this.isPopupHidden = true;
         var closeAnimation = {
             name: hideAnimation.effect,
             duration: hideAnimation.duration,
@@ -716,8 +723,8 @@ var SfTooltip = /** @class */ (function () {
             }
             sf.base.addClass([this.tooltipEle], POPUP_OPEN);
             document.body.appendChild(this.tooltipEle);
-            this.renderPopup(this.contentTargetValue);
             if (this.contentTargetValue) {
+                this.renderPopup(this.contentTargetValue);
                 var pos = this.properties.position;
                 this.adjustArrow(this.contentTargetValue, pos, this.tooltipPositionX, this.tooltipPositionY);
                 this.addDescribedBy(this.contentTargetValue, this.ctrlId + '_content');
@@ -743,6 +750,7 @@ var SfTooltip = /** @class */ (function () {
     SfTooltip.prototype.beforeOpenCallBack = function (cancel) {
         var _this = this;
         if (cancel) {
+            this.isPopupHidden = true;
             this.clear();
             this.restoreElement(this.contentTargetValue);
         }
@@ -880,6 +888,13 @@ var Tooltip = {
     },
     destroy: function (element) {
         element.blazor__instance.destroy();
+    },
+    refreshPosition: function (element, targetEle, targetProp) {
+        var instance = element.blazor__instance;
+        if (targetEle === null) {
+            targetEle = targetProp !== null && targetProp !== '' ? instance.element.querySelector(targetProp) : instance.element;
+        }
+        instance.reposition(targetEle);
     },
     updateProperties: function (element, completeProps, props) {
         var blazInstance = element.blazor__instance;

@@ -5536,6 +5536,9 @@ var DataLabelSettings = /** @class */ (function (_super) {
         sf.base.Property(false)
     ], DataLabelSettings.prototype, "visible", void 0);
     __decorate$4([
+        sf.base.Property(true)
+    ], DataLabelSettings.prototype, "showZero", void 0);
+    __decorate$4([
         sf.base.Property(null)
     ], DataLabelSettings.prototype, "name", void 0);
     __decorate$4([
@@ -6996,7 +6999,9 @@ var Marker = /** @class */ (function (_super) {
         var _loop_1 = function (point) {
             if (point.visible && point.symbolLocations && point.symbolLocations.length) {
                 point.symbolLocations.map(function (location, index) {
-                    _this.renderMarker(series, point, location, index, redraw);
+                    if (series.marker.shape !== 'None') {
+                        _this.renderMarker(series, point, location, index, redraw);
+                    }
                 });
             }
         };
@@ -9446,7 +9451,15 @@ var Chart = /** @class */ (function (_super) {
         var element = e.target;
         this.trigger(chartMouseClick, { target: element.id, x: this.mouseX, y: this.mouseY });
         this.clickCount++;
-        var timeInterval = this.pointDoubleClick ? 400 : 0;
+        var timeInterval = 0;
+        var isAngular = 'isAngular';
+        if (this[isAngular]) {
+            var observers = 'observers';
+            timeInterval = this.pointDoubleClick[observers].length > 0 ? 400 : 0;
+        }
+        else {
+            timeInterval = this.pointDoubleClick ? 400 : 0;
+        }
         if (this.clickCount === 1 && this.pointClick) {
             this.singleClickTimer = +setTimeout(function () {
                 _this.clickCount = 0;
@@ -9979,12 +9992,14 @@ var Chart = /** @class */ (function (_super) {
             removeLength = 1;
         }
         // Fix for blazor resize issue
-        if (this.resizeTo !== this.checkResize && this.isBlazor && this.element.childElementCount) {
-            var containerCollection = document.querySelectorAll('.e-chart');
-            for (var index = 0; index < containerCollection.length; index++) {
-                var container = containerCollection[index];
-                while (container.firstChild) {
-                    sf.base.remove(container.firstChild);
+        if (!sf.base.isNullOrUndefined(this.resizeTo)) {
+            if (this.resizeTo !== this.checkResize && this.isBlazor && this.element.childElementCount) {
+                var containerCollection = document.querySelectorAll('.e-chart');
+                for (var index = 0; index < containerCollection.length; index++) {
+                    var container = containerCollection[index];
+                    while (container.firstChild) {
+                        sf.base.remove(container.firstChild);
+                    }
                 }
             }
             this.checkResize = this.resizeTo;
@@ -20026,6 +20041,9 @@ var Toolkit = /** @class */ (function () {
         chart.zoomModule.touchMoveList = chart.zoomModule.touchStartList = [];
         chart.zoomModule.pinchTarget = null;
         chart.removeSvg();
+        if (chart.enableAutoIntervalOnBothAxis) {
+            chart.processData(false);
+        }
         chart.refreshAxis();
         chart.refreshBound();
         this.elementOpacity = '1';
@@ -23081,6 +23099,9 @@ var DataLabel = /** @class */ (function () {
         // Data label point iteration started
         for (var i = 0; i < visiblePoints.length; i++) {
             point = visiblePoints[i];
+            if (!dataLabel.showZero && ((point.y !== 0) || (point.y === 0 && series.emptyPointSettings.mode === 'Zero'))) {
+                return null;
+            }
             this.margin = dataLabel.margin;
             var labelText = [];
             var labelLength = void 0;
@@ -23220,8 +23241,8 @@ var DataLabel = /** @class */ (function () {
             ((Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000)) >= 128 ? 'black' : 'white');
         if (childElement.childElementCount && (!isCollide(rect, this.chart.dataLabelCollections, clip) ||
             dataLabel.labelIntersectAction === 'None') && (series.seriesType !== 'XY' || point.yValue === undefined ||
-            withIn(point.yValue, series.yAxis.visibleRange) || (series.type.indexOf('100') > -1 &&
-            withIn(series.stackedValues.endValues[point.index], series.yAxis.visibleRange))) &&
+            withIn(point.yValue, series.yAxis.visibleRange) || (series.type.indexOf('Stacking') > -1) ||
+            (series.type.indexOf('100') > -1 && withIn(series.stackedValues.endValues[point.index], series.yAxis.visibleRange))) &&
             withIn(point.xValue, series.xAxis.visibleRange) && parseFloat(childElement.style.top) >= vAxis.rect.y &&
             parseFloat(childElement.style.left) >= hAxis.rect.x &&
             parseFloat(childElement.style.top) <= vAxis.rect.y + vAxis.rect.height &&

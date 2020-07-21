@@ -1,5 +1,5 @@
 import { Component, Property, NotifyPropertyChanges, Browser, Complex, Event, Collection, EventHandler } from '@syncfusion/ej2-base';
-import { EmitType, INotifyPropertyChanged, createElement, remove, ModuleDeclaration, } from '@syncfusion/ej2-base';
+import { EmitType, INotifyPropertyChanged, createElement, remove, ModuleDeclaration, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ProgressBarModel } from './progressbar-model';
 import { Rect, Size, RectOption, stringToNumber } from './utils/helper';
 import { MarginModel, AnimationModel, FontModel, RangeColorModel } from './model/progress-base-model';
@@ -758,12 +758,13 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
                         this.trigger(valueChanged, this.argsData);
                     }
                     if (this.type === 'Circular') {
-                        this.circular.renderCircularProgress(this.previousEndAngle, this.previousTotalEnd, true);
+                        this.circular.renderCircularProgress(
+                            this.previousEndAngle, this.previousTotalEnd, !isNullOrUndefined(oldProp.value));
                         if (this.progressAnnotationModule && this.animation.enable && !this.isIndeterminate) {
                             this.annotateAnimation.doAnnotationAnimation(this.clipPath, this, this.annotateEnd, this.annotateTotal);
                         }
                     } else {
-                        this.linear.renderLinearProgress(true, this.previousWidth);
+                        this.linear.renderLinearProgress(!isNullOrUndefined(oldProp.value), this.previousWidth);
                     }
                     break;
                 case 'animation':
@@ -794,22 +795,25 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     }
 
     public show(): void {
-        this.svgObject.setAttribute('visibility', 'Visible');
-        if (this.isIndeterminate) {
-            this.destroyIndeterminate = false;
-            if (this.type === 'Linear') {
-                this.linear.renderLinearProgress(true);
-            } else {
-                this.circular.renderCircularProgress(null, null, true);
+        if (!isNullOrUndefined(this.svgObject)) {
+            this.svgObject.setAttribute('visibility', 'Visible');
+            if (this.isIndeterminate) {
+                this.destroyIndeterminate = false;
+                if (this.type === 'Linear') {
+                    this.linear.renderLinearProgress(true);
+                } else {
+                    this.circular.renderCircularProgress(null, null, true);
+                }
             }
         }
-
     }
 
     public hide(): void {
-        this.svgObject.setAttribute('visibility', 'Hidden');
-        if (this.isIndeterminate) {
-            this.destroyIndeterminate = true;
+        if (!isNullOrUndefined(this.svgObject)) {
+            this.svgObject.setAttribute('visibility', 'Hidden');
+            if (this.isIndeterminate) {
+                this.destroyIndeterminate = true;
+            }
         }
     }
 

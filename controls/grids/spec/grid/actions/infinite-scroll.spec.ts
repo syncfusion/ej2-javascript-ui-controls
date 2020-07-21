@@ -861,3 +861,465 @@ describe('EJ2-40801 - Infinite scrolling is not working properly while enabling 
         gridObj = null;
     });
 });
+
+describe('Infinite scroll normal mode with edit feature teating => ', () => {
+    let gridObj: Grid;
+    let data1: Object; let data2; let rowindex = 1;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: virtualData,
+                enableInfiniteScrolling: true,
+                pageSettings: { pageSize: 50 },
+                editSettings: { allowAdding: true, allowEditing: true, allowDeleting: true },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                height: 400,
+                columns: [
+                    { field: 'FIELD2', headerText: 'FIELD2', isPrimaryKey: true, width: 120 },
+                    { field: 'FIELD1', headerText: 'FIELD1', width: 100 },
+                    { field: 'FIELD3', headerText: 'FIELD3', width: 120 },
+                    { field: 'FIELD4', headerText: 'FIELD4', width: 120 },
+                    { field: 'FIELD5', headerText: 'FIELD5', width: 120 }
+                ]
+            }, () => {
+                setTimeout(done, 200);
+            });
+    });
+    it('collect row data before editing', function(done: Function){
+        data1 = gridObj.dataSource[rowindex];
+        let rowSelected = function(args: RowSelectEventArgs) {
+            expect(gridObj.getSelectedRecords()[0][(gridObj.columns[1] as Column).field]).toBe(data1[(gridObj.columns[1] as Column).field]);
+            gridObj.rowSelected = null;
+            done();
+        }
+        gridObj.rowSelected = rowSelected;
+        gridObj.selectRow(rowindex);
+    });
+    it('start edit', function (done: Function) {
+        let actionComplete = function (args: NotifyArgs) {
+            if (args.requestType === 'beginEdit') {
+                expect((gridObj.editModule as any).editModule.editRowIndex).toBe(rowindex);
+                expect(gridObj.element.querySelectorAll('.e-editedrow').length).toBe(1);
+                expect(gridObj.element.querySelectorAll('.e-normaledit').length).toBe(1);
+                expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(1);
+                expect(gridObj.element.querySelectorAll('form').length).toBe(1);
+                let cells = gridObj.element.querySelector('.e-editedrow').querySelectorAll('.e-rowcell');
+                expect(cells.length).toBe(gridObj.columns.length);
+                //primary key check
+                expect(cells[0].querySelectorAll('input.e-disabled').length).toBe(1);
+                //focus check
+                expect(document.activeElement.id).toBe(gridObj.element.id + (gridObj.columns[rowindex] as Column).field);
+                //toolbar status check
+                expect(gridObj.element.querySelectorAll('.e-overlay').length).toBe(4);
+                expect(gridObj.isEdit).toBeTruthy();
+                gridObj.actionComplete = null;
+                done();
+            }
+        }
+        let actionBegin = function (args: NotifyArgs) {
+            if (args.requestType === 'beginEdit') {
+                expect(gridObj.isEdit).toBeFalsy();
+                gridObj.actionBegin = null;
+            }
+        }
+        gridObj.actionBegin = actionBegin;
+        gridObj.actionComplete = actionComplete;
+        gridObj.startEdit();
+    });
+    it('scroll to bottom', function (done) {
+        gridObj.getContent().firstElementChild.scrollTop = 15000;
+        setTimeout(done, 200);
+    });
+    it('Ensure grid edit form after scroll', function(done: Function){
+        (gridObj.element.querySelector('#' + gridObj.element.id + (gridObj.columns[rowindex] as Column).field) as any).value = 'updated';
+        expect(gridObj.element.querySelectorAll('form').length).toBe(1);
+        expect((gridObj as any).infiniteScrollModule.editRowIndex).toBe(rowindex);
+        expect(Object.keys((gridObj as any).infiniteScrollModule.virtualInfiniteData).length).toBe(0);
+        let actionComplete = function(args: NotifyArgs) {
+            if (args.requestType === 'save') {
+                expect(gridObj.dataSource[rowindex][(gridObj.columns[rowindex] as Column).field]).toBe('updated');
+                gridObj.actionComplete = null;
+                done();
+            }
+        }
+        gridObj.actionComplete = actionComplete;
+        gridObj.endEdit();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('Infinite scroll normal mode with edit feature teating => ', () => {
+    let gridObj: Grid;
+    let dataLength = virtualData.length; let data1: number;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: virtualData,
+                enableInfiniteScrolling: true,
+                pageSettings: { pageSize: 50 },
+                editSettings: { allowAdding: true, allowEditing: true, allowDeleting: true },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                height: 400,
+                columns: [
+                    { field: 'FIELD2', headerText: 'FIELD2', isPrimaryKey: true, width: 120 },
+                    { field: 'FIELD1', headerText: 'FIELD1', width: 100 },
+                    { field: 'FIELD3', headerText: 'FIELD3', width: 120 },
+                    { field: 'FIELD4', headerText: 'FIELD4', width: 120 },
+                    { field: 'FIELD5', headerText: 'FIELD5', width: 120 }
+                ]
+            }, () => {
+                setTimeout(done, 200);
+            });
+    });
+    it('scroll to bottom', function (done) {
+        gridObj.getContent().firstElementChild.scrollTop = 15000;
+        setTimeout(done, 200);
+    });
+    it('start add', function (done: Function) {
+        let actionBegin = function (args: NotifyArgs) {
+            if (args.requestType === 'add') {
+                expect(gridObj.isEdit).toBeFalsy();
+                gridObj.actionBegin = null;
+            }
+        }
+        let actionComplete = function (args: NotifyArgs) {
+            if (args.requestType === 'add') {
+                expect(gridObj.element.querySelectorAll('.e-addedrow').length).toBe(1);
+                expect(gridObj.element.querySelectorAll('.e-normaledit').length).toBe(1);
+                expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(1);
+                expect(gridObj.element.querySelectorAll('form').length).toBe(1);
+                let cells = gridObj.element.querySelector('.e-addedrow').querySelectorAll('.e-rowcell');
+                expect(cells.length).toBe(gridObj.columns.length);
+                //primary key check
+                expect(cells[0].querySelectorAll('input.e-disabled').length).toBe(0);
+                //focus check
+                expect(document.activeElement.id).toBe(gridObj.element.id + (gridObj.columns[0] as Column).field);
+                //toolbar status check
+                expect(gridObj.element.querySelectorAll('.e-overlay').length).toBe(4);
+                expect(gridObj.isEdit).toBeTruthy();
+                expect(gridObj.getContent().firstElementChild.scrollTop).toBe(0);
+                data1 = gridObj.dataSource[199][(gridObj.columns[0] as Column).field];
+                gridObj.actionComplete = null;
+                done();
+            }
+        };
+        gridObj.actionBegin = actionBegin;
+        gridObj.actionComplete = actionComplete;
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+    });
+    it('scroll to bottom', function (done) {
+        gridObj.getContent().firstElementChild.scrollTop = 15000;
+        setTimeout(done, 200);
+    });
+    it('Save add', function(done: Function){
+        let actionComplete = function(args: NotifyArgs) {
+            if (args.requestType === 'save') {
+                expect(gridObj.dataSource[0][(gridObj.columns[0] as Column).field]).toBe(897654);
+                expect(gridObj.dataSource[0][(gridObj.columns[1] as Column).field]).toBe('updated');
+                expect((gridObj.dataSource as any).length).toBe(dataLength + 1);
+                expect(gridObj.isEdit).toBeFalsy();
+                expect(gridObj.dataSource[199][(gridObj.columns[0] as Column).field]).not.toBe(data1);
+                expect(gridObj.dataSource[199][(gridObj.columns[0] as Column).field]).toBe(data1 - 1);
+                expect((gridObj.element.querySelector('.e-row')as any).getAttribute('aria-rowindex')).toBe('0');
+                gridObj.actionComplete = null;
+                done();
+            }
+        };
+        expect(gridObj.element.querySelectorAll('.e-addedrow').length).toBe(1);
+        (gridObj.element.querySelector('#' + gridObj.element.id + (gridObj.columns[0] as Column).field) as any).value = 897654;
+        (gridObj.element.querySelector('#' + gridObj.element.id + (gridObj.columns[1] as Column).field) as any).value = 'updated';
+        let beforeDataBound = function(args: any) {
+            expect(args.result.length).toBe(1);
+            expect(args.result[0][(gridObj.columns[0] as Column).field]).toBe(897654);
+            gridObj.beforeDataBound = null;
+        };
+        gridObj.beforeDataBound = beforeDataBound;
+        gridObj.actionComplete = actionComplete;
+        (gridObj.editModule as any).editModule.endEdit();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('Infinite scroll normal mode with edit feature teating => ', () => {
+    let gridObj: Grid;
+    let dataLength = virtualData.length; let data1: number; let data2: number; let rowIndex: number = 149; let scrollTop: number;
+    let rowsCount: number;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: virtualData,
+                enableInfiniteScrolling: true,
+                pageSettings: { pageSize: 50 },
+                editSettings: { allowAdding: true, allowEditing: true, allowDeleting: true },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                height: 400,
+                columns: [
+                    { field: 'FIELD2', headerText: 'FIELD2', isPrimaryKey: true, width: 120 },
+                    { field: 'FIELD1', headerText: 'FIELD1', width: 100 },
+                    { field: 'FIELD3', headerText: 'FIELD3', width: 120 },
+                    { field: 'FIELD4', headerText: 'FIELD4', width: 120 },
+                    { field: 'FIELD5', headerText: 'FIELD5', width: 120 }
+                ]
+            }, () => {
+                setTimeout(done, 200);
+            });
+    });
+    it('scroll to bottom', function (done) {
+        gridObj.getContent().firstElementChild.scrollTop = 15000;
+        setTimeout(done, 200);
+    });
+    it('select row for delete', function(done: Function){
+        let rowSelected = function(args: RowSelectEventArgs) {
+            scrollTop = gridObj.getContent().firstElementChild.scrollTop;
+            rowsCount = (gridObj.element.querySelectorAll('.e-row') as any).length;
+            data1 = gridObj.dataSource[rowIndex][(gridObj.columns[0] as Column).field];
+            data2 = gridObj.dataSource[199][(gridObj.columns[0] as Column).field];
+            gridObj.rowSelected = null;
+            done();
+        }
+        gridObj.rowSelected = rowSelected;
+        gridObj.selectRow(rowIndex);
+    });
+    it('delete record', function(done: Function){
+        let actionComplete = function(args: NotifyArgs) {
+            if (args.requestType === 'delete') {
+                expect((gridObj.dataSource as any).length).toBe(dataLength - 1);
+                expect((gridObj.element.querySelectorAll('.e-row') as any).length).toBe(rowsCount);
+                expect((gridObj.element.querySelectorAll('.e-row')[rowIndex] as any).getAttribute('aria-rowindex')).toBe(rowIndex.toString());
+                expect(gridObj.dataSource[rowIndex][(gridObj.columns[0] as Column).field]).toBe(data1 + 1);
+                expect(gridObj.dataSource[199][(gridObj.columns[0] as Column).field]).toBe(data2 + 1);
+                expect(gridObj.getContent().firstElementChild.scrollTop).toBe(scrollTop);
+                gridObj.actionComplete = null;
+                done();
+            }
+        }
+        let beforeDataBound = function(args: any) {
+            expect(args.result.length).toBe(1);
+            expect(args.result[0][(gridObj.columns[0] as Column).field]).toBe(200);
+        }
+        gridObj.beforeDataBound = beforeDataBound;
+        gridObj.actionComplete = actionComplete;
+        gridObj.deleteRecord();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('Infinite scroll cache mode with edit feature teating => ', () => {
+    let gridObj: Grid;
+    let rowindex = 149;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: virtualData,
+                enableInfiniteScrolling: true,
+                infiniteScrollSettings: { enableCache: true },
+                pageSettings: { pageSize: 50 },
+                editSettings: { allowAdding: true, allowEditing: true, allowDeleting: true },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                height: 400,
+                columns: [
+                    { field: 'FIELD2', headerText: 'FIELD2', isPrimaryKey: true, width: 120 },
+                    { field: 'FIELD1', headerText: 'FIELD1', width: 100 },
+                    { field: 'FIELD3', headerText: 'FIELD3', width: 120 },
+                    { field: 'FIELD4', headerText: 'FIELD4', width: 120 },
+                    { field: 'FIELD5', headerText: 'FIELD5', width: 120 }
+                ]
+            }, () => {
+                setTimeout(done, 200);
+            });
+    });
+    it('scroll to bottom', function (done) {
+        gridObj.getContent().firstElementChild.scrollTop = 15000;
+        setTimeout(done, 200);
+    });
+    it('collect row data before editing', function(done: Function){
+        let rowSelected = function(args: RowSelectEventArgs) {
+            gridObj.rowSelected = null;
+            done();
+        }
+        gridObj.rowSelected = rowSelected;
+        gridObj.selectRow(rowindex);
+    });
+    it('start edit', function (done: Function) {
+        let actionComplete = function (args: NotifyArgs) {
+            if (args.requestType === 'beginEdit') {
+                expect((gridObj.editModule as any).editModule.editRowIndex).toBe(rowindex);
+                expect(gridObj.element.querySelectorAll('.e-editedrow').length).toBe(1);
+                expect(gridObj.element.querySelectorAll('.e-normaledit').length).toBe(1);
+                expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(1);
+                expect(gridObj.element.querySelectorAll('form').length).toBe(1);
+                let cells = gridObj.element.querySelector('.e-editedrow').querySelectorAll('.e-rowcell');
+                expect(cells.length).toBe(gridObj.columns.length);
+                //primary key check
+                expect(cells[0].querySelectorAll('input.e-disabled').length).toBe(1);
+                //focus check
+                expect(document.activeElement.id).toBe(gridObj.element.id + (gridObj.columns[1] as Column).field);
+                //toolbar status check
+                expect(gridObj.element.querySelectorAll('.e-overlay').length).toBe(4);
+                expect(gridObj.isEdit).toBeTruthy();
+                expect((gridObj.element.querySelector('#' + gridObj.element.id + (gridObj.columns[1] as Column).field) as any).value).toBe(gridObj.dataSource[rowindex][(gridObj.columns[1] as Column).field]);
+                (gridObj.element.querySelector('#' + gridObj.element.id + (gridObj.columns[1] as Column).field) as any).value = 'updated';
+                gridObj.actionComplete = null;
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.startEdit();
+    });
+    it('Save edit', function(done: Function){
+        let actionComplete = function(args: NotifyArgs) {
+            if (args.requestType === 'save') {
+                expect(gridObj.dataSource[rowindex][(gridObj.columns[1] as Column).field]).toBe('updated');
+                gridObj.actionComplete = null;
+                done();
+            }
+        };
+        gridObj.actionComplete =actionComplete;
+        gridObj.endEdit();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('Infinite scroll cache mode with edit feature teating => ', () => {
+    let gridObj: Grid;
+    let dataLength = virtualData.length; let data1: number;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: virtualData,
+                enableInfiniteScrolling: true,
+                infiniteScrollSettings: { enableCache: true },
+                pageSettings: { pageSize: 50 },
+                editSettings: { allowAdding: true, allowEditing: true, allowDeleting: true },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                height: 400,
+                columns: [
+                    { field: 'FIELD2', headerText: 'FIELD2', isPrimaryKey: true, width: 120 },
+                    { field: 'FIELD1', headerText: 'FIELD1', width: 100 },
+                    { field: 'FIELD3', headerText: 'FIELD3', width: 120 },
+                    { field: 'FIELD4', headerText: 'FIELD4', width: 120 },
+                    { field: 'FIELD5', headerText: 'FIELD5', width: 120 }
+                ]
+            }, () => {
+                setTimeout(done, 200);
+            });
+    });
+    it('scroll to bottom', function (done) {
+        gridObj.getContent().firstElementChild.scrollTop = 15000;
+        setTimeout(done, 200);
+    });
+    it('start add', function (done: Function) {
+        let actionComplete = function (args: NotifyArgs) {
+            if (args.requestType === 'add') {
+                expect(gridObj.pageSettings.currentPage).toBe(1);
+                expect(gridObj.getContent().firstElementChild.scrollTop).toBe(0);
+                expect(gridObj.element.querySelectorAll('.e-addedrow').length).toBe(1);
+                expect(gridObj.element.querySelectorAll('.e-normaledit').length).toBe(1);
+                expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(1);
+                expect(gridObj.element.querySelectorAll('form').length).toBe(1);
+                let cells = gridObj.element.querySelector('.e-addedrow').querySelectorAll('.e-rowcell');
+                expect(cells.length).toBe(gridObj.columns.length);
+                //primary key check
+                expect(cells[0].querySelectorAll('input.e-disabled').length).toBe(0);
+                //focus check
+                expect(document.activeElement.id).toBe(gridObj.element.id + (gridObj.columns[0] as Column).field);
+                //toolbar status check
+                expect(gridObj.element.querySelectorAll('.e-overlay').length).toBe(4);
+                expect(gridObj.isEdit).toBeTruthy();
+                gridObj.actionComplete = null;
+                done();
+            }
+        }
+        gridObj.actionComplete = actionComplete;
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+    });
+    it('Save edit', function(done: Function){
+        let actionComplete = function(args: NotifyArgs) {
+            if (args.requestType === 'save') {
+                expect(gridObj.dataSource[0][(gridObj.columns[0] as Column).field]).toBe(897654);
+                expect(gridObj.dataSource[0][(gridObj.columns[1] as Column).field]).toBe('updated');
+                expect((gridObj.dataSource as any).length).toBe(dataLength + 1);
+                expect(gridObj.isEdit).toBeFalsy();
+                gridObj.actionComplete = null;
+                done();
+            }
+        };
+        expect(gridObj.element.querySelectorAll('.e-addedrow').length).toBe(1);
+        (gridObj.element.querySelector('#' + gridObj.element.id + (gridObj.columns[0] as Column).field) as any).value = 897654;
+        (gridObj.element.querySelector('#' + gridObj.element.id + (gridObj.columns[1] as Column).field) as any).value = 'updated';
+        gridObj.actionComplete = actionComplete;
+        (gridObj.editModule as any).editModule.endEdit();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('Infinite scroll normal mode with edit feature teating => ', () => {
+    let gridObj: Grid;
+    let dataLength = virtualData.length; let data1: number; let rowIndex: number = 149; let scrollTop: number;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: virtualData,
+                enableInfiniteScrolling: true,
+                pageSettings: { pageSize: 50 },
+                editSettings: { allowAdding: true, allowEditing: true, allowDeleting: true },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                height: 400,
+                columns: [
+                    { field: 'FIELD2', headerText: 'FIELD2', isPrimaryKey: true, width: 120 },
+                    { field: 'FIELD1', headerText: 'FIELD1', width: 100 },
+                    { field: 'FIELD3', headerText: 'FIELD3', width: 120 },
+                    { field: 'FIELD4', headerText: 'FIELD4', width: 120 },
+                    { field: 'FIELD5', headerText: 'FIELD5', width: 120 }
+                ]
+            }, () => {
+                setTimeout(done, 200);
+            });
+    });
+    it('scroll to bottom', function (done) {
+        gridObj.getContent().firstElementChild.scrollTop = 15000;
+        setTimeout(done, 200);
+    });
+    it('select row for delete', function(done: Function){
+        let rowSelected = function(args: RowSelectEventArgs) {
+            scrollTop = gridObj.getContent().firstElementChild.scrollTop;
+            data1 = gridObj.dataSource[rowIndex][(gridObj.columns[0] as Column).field];
+            gridObj.rowSelected = null;
+            done();
+        }
+        gridObj.rowSelected = rowSelected;
+        gridObj.selectRow(rowIndex);
+    });
+    it('delete record', function(done: Function){
+        let actionComplete = function(args: NotifyArgs) {
+            if (args.requestType === 'delete') {
+                expect((gridObj.dataSource as any).length).toBe(dataLength - 1);
+                expect(gridObj.dataSource[rowIndex][(gridObj.columns[0] as Column).field]).toBe(data1 + 1);
+                expect(gridObj.getContent().firstElementChild.scrollTop).toBe(scrollTop);
+                gridObj.actionComplete = null;
+                done();
+            }
+        }
+        gridObj.actionComplete = actionComplete;
+        gridObj.deleteRecord();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

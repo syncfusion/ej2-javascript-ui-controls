@@ -895,7 +895,7 @@ class SfSplitter {
         if (this.collapseFlag) {
             this.collapsePane(e);
         } else {
-            this.dotNetRef.invokeMethodAsync(ONCOLLAPSED_EVENT, {
+            this.dotNetRef.invokeMethodAsync(ONCOLLAPSED_EVENT, -1 , {
                 event: this.getMouseEvtArgs(e as MouseEvent),
                 index: [this.getPreviousPaneIndex(), this.getNextPaneIndex()],
                 cancel: false,
@@ -1292,7 +1292,7 @@ class SfSplitter {
             }
             let event: Object = { target: targetEle };
             this.splitterDetails(event as Event);
-            this.dotNetRef.invokeMethodAsync(ONCOLLAPSED_EVENT, {
+            this.dotNetRef.invokeMethodAsync(ONCOLLAPSED_EVENT, index , {
                 index: [this.getPreviousPaneIndex(), this.getNextPaneIndex()],
                 cancel: false
             });
@@ -1520,8 +1520,8 @@ let Splitter: object = {
     onCollapseEvent(element: BlazorSplitterElement, event: BeforeExpandEventArgs): void {
         element.blazor__instance.onCollapseEvent(event);
     },
-    collapseMethodEvent(element: BlazorSplitterElement, event: BeforeExpandEventArgs): void {
-        element.blazor__instance.collapseMethodEvent(event.index[0], event);
+    collapseMethodEvent(element: BlazorSplitterElement, event: BeforeExpandEventArgs , index : number): void {
+        element.blazor__instance.collapseMethodEvent(index, event);
     },
     onExpandEvent(element: BlazorSplitterElement, event: BeforeExpandEventArgs): void {
         element.blazor__instance.onExpandEvent(event);

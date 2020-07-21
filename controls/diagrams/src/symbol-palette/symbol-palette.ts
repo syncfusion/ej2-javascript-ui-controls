@@ -595,9 +595,9 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             this.allowServerDataBinding = isAllowDatabind;
         };
         this.element.appendChild(accordionDiv);
-        let measureElement: string = 'measureElement';
-        if (window[measureElement]) {
-            window[measureElement] = null;
+        let measureWindowElement: string = 'measureElement';
+        if (window[measureWindowElement]) {
+            window[measureWindowElement] = null;
         }
         createMeasureElements();
         this.unWireEvents();

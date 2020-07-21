@@ -512,3 +512,8 @@ export const CLS_TABLE_BORDER: string = 'e-rte-table-border';
  * @deprecated
  */
 export const CLS_RTE_TABLE_RESIZE: string = 'e-rte-table-resize';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const CLS_RTE_FIXED_TB_EXPAND: string = 'e-rte-fixed-tb-expand';

@@ -840,9 +840,7 @@ export class ResourceBase {
         let removeDuplicateDates: Function = (dateColl: Date[]) => dateColl.filter((date: Date, index: number, dates: Date[]) =>
             dates.map((dateObj: Date) => dateObj.getTime()).indexOf(date.getTime()) === index);
         let renderDates: Date[] = removeDuplicateDates(resourceDates);
-        renderDates.sort((a: Date, b: Date) => {
-            return a.getDay() - b.getDay();
-        });
+        renderDates.sort((a: Date, b: Date) => a.getTime() - b.getTime());
         return renderDates;
     }
 
@@ -895,9 +893,20 @@ export class ResourceBase {
         this.refreshLayout(true);
     }
 
-    public getIndexFromResourceId(id: string | number, name: string, resourceData?: ResourcesModel): number {
-        let resource: { [key: string]: Object } = (resourceData.dataSource as Object[]).filter((e: { [key: string]: Object }) =>
-            e[resourceData.idField] === id)[0] as { [key: string]: Object };
+    public getIndexFromResourceId(
+        id: string | number, name: string, resourceData?: ResourcesModel, event?: { [key: string]: Object }, parentField?: string)
+        : number {
+        let resource: { [key: string]: Object } = (resourceData.dataSource as Object[]).filter((e: { [key: string]: Object }) => {
+            if (event && e[resourceData.idField] === id) {
+                if (e[resourceData.groupIDField] === event[parentField]) {
+                    return e[resourceData.idField] === id;
+                }
+                return null;
+            } else {
+                return e[resourceData.idField] === id;
+            }
+        })[0] as { [key: string]: Object };
+
         return (this.lastResourceLevel.map((e: TdData) => e.resourceData).indexOf(resource));
     }
 

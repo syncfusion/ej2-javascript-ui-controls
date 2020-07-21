@@ -51,6 +51,7 @@ export class PdfExport {
     private gridPool: Object;
     private headerOnPages: number[] = [];
     private drawPosition: Object = { xPosition: 0, yPosition: 0 };
+    private pdfPageSettings: PdfPageSettings;
 
     /**
      * Constructor for the Grid PDF Export module
@@ -77,6 +78,7 @@ export class PdfExport {
         this.isExporting = true;
         parent.id = getUid('main-grid');
         this.gridPool[parent.id] = false;
+        this.pdfPageSettings = new PdfPageSettings();
     }
 
     private exportWithData(parent: IGrid, pdfDoc: Object, resolve: Function, returnType: Object,
@@ -207,11 +209,10 @@ export class PdfExport {
     private processSectionExportProperties(section: PdfSection, pdfExportProperties: PdfExportProperties): PdfSection {
         if (!isNullOrUndefined(pdfExportProperties) && (!isNullOrUndefined(pdfExportProperties.pageOrientation)
             || !isNullOrUndefined(pdfExportProperties.pageSize))) {
-            let pdfPageSettings: PdfPageSettings = new PdfPageSettings();
-            pdfPageSettings.orientation = (pdfExportProperties.pageOrientation === 'Landscape') ?
+            this.pdfPageSettings.orientation = (pdfExportProperties.pageOrientation === 'Landscape') ?
             PdfPageOrientation.Landscape : PdfPageOrientation.Portrait;
-            pdfPageSettings.size = this.getPageSize(pdfExportProperties.pageSize);
-            section.setPageSettings(pdfPageSettings);
+            this.pdfPageSettings.size = this.getPageSize(pdfExportProperties.pageSize);
+            section.setPageSettings(this.pdfPageSettings);
         }
         return section;
     }
@@ -523,7 +524,7 @@ export class PdfExport {
             if (!isNullOrUndefined(pdfExportProperties.theme)) {
                 this.gridTheme = pdfExportProperties.theme;
             }
-            let clientSize: SizeF = this.pdfDocument.pageSettings.size;
+            let clientSize: SizeF = this.pdfPageSettings.size;
             this.drawHeader(pdfExportProperties);
             if (!isNullOrUndefined(pdfExportProperties.footer)) {
                 /* tslint:disable-next-line:no-any */
@@ -563,7 +564,7 @@ export class PdfExport {
     }
 
     private drawHeader(pdfExportProperties: PdfExportProperties): void {
-        let clientSize: SizeF = this.pdfDocument.pageSettings.size;
+        let clientSize: SizeF = this.pdfPageSettings.size;
         if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.header)) {
              /* tslint:disable-next-line:no-any */
             let header: any = pdfExportProperties.header;

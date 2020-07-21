@@ -419,7 +419,8 @@ var Tab = /** @class */ (function (_super) {
             overflowMode: this.overflowMode,
             items: (tabItems.length !== 0) ? tabItems : [],
             clicked: this.clickHandler.bind(this),
-            scrollStep: this.scrollStep
+            scrollStep: this.scrollStep,
+            enableHtmlSanitizer: this.enableHtmlSanitizer
         });
         this.tbObj.isStringTemplate = true;
         this.tbObj.createElement = this.createElement;
@@ -464,6 +465,9 @@ var Tab = /** @class */ (function (_super) {
                 return;
             }
             var txt = item.headerTemplate || item.header.text;
+            if (typeof txt === 'string' && _this.enableHtmlSanitizer) {
+                txt = sf.base.SanitizeHtmlHelper.sanitize(txt);
+            }
             _this.lastIndex = ((tbCount === 0) ? i : ((_this.isReplace) ? (index + i) : (_this.lastIndex + 1)));
             var disabled = (item.disabled) ? ' ' + CLS_DISABLE + ' ' + CLS_OVERLAY : '';
             var hidden = (item.visible === false) ? ' ' + CLS_HIDDEN : '';

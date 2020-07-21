@@ -41,9 +41,9 @@ export function removeElementsByClass(className: string, id?: string): void {
 export function findSegmentPoints(element: PathElement): PointModel[] {
     let pts: PointModel[] = [];
     let sample: SVGPoint; let sampleLength: number;
-    let measureElement: string = 'measureElement';
-    window[measureElement].style.visibility = 'visible';
-    let svg: SVGSVGElement = window[measureElement].children[2];
+    let measureWindowElement: string = 'measureElement';
+    window[measureWindowElement].style.visibility = 'visible';
+    let svg: SVGSVGElement = window[measureWindowElement].children[2];
     let pathNode: SVGPathElement = getChildNode(svg)[0] as SVGPathElement;
     pathNode.setAttributeNS(null, 'd', element.data);
     let pathBounds: Rect = element.absoluteBounds; // || pathNode.getBBox();
@@ -54,7 +54,7 @@ export function findSegmentPoints(element: PathElement): PointModel[] {
         sample = pathNode.getPointAtLength(sampleLength);
         pts.push({ x: sample.x, y: sample.y });
     }
-    window[measureElement].style.visibility = 'hidden';
+    window[measureWindowElement].style.visibility = 'hidden';
     return pts;
 
 }
@@ -98,14 +98,14 @@ export function translatePoints(element: PathElement, points: PointModel[]): Poi
 /** @private */
 export function measurePath(data: string): Rect {
     if (data) {
-        let measureElement: string = 'measureElement';
-        window[measureElement].style.visibility = 'visible';
-        let svg: SVGSVGElement = window[measureElement].children[2];
+        let measureWindowElement: string = 'measureElement';
+        window[measureWindowElement].style.visibility = 'visible';
+        let svg: SVGSVGElement = window[measureWindowElement].children[2];
         let element: SVGPathElement = getChildNode(svg)[0] as SVGPathElement;
         element.setAttribute('d', data);
         let bounds: SVGRect = element.getBBox();
         let svgBounds: Rect = new Rect(bounds.x, bounds.y, bounds.width, bounds.height);
-        window[measureElement].style.visibility = 'hidden';
+        window[measureWindowElement].style.visibility = 'hidden';
         return svgBounds;
     }
     return new Rect(0, 0, 0, 0);
@@ -190,7 +190,7 @@ function wordWrapping(text: TextAttributes, textValue?: string, laneWidth?: numb
     let existingText: string;
     for (j = 0; j < eachLine.length; j++) {
         txt = '';
-        words = text.textWrapping !== 'NoWrap' ? eachLine[j].split(' ') : eachLine;
+        words = text.textWrapping !== 'NoWrap' ? eachLine[j].split(' ') : ( text.textWrapping === 'NoWrap') ? [eachLine[j]] : eachLine;
         for (i = 0; i < words.length; i++) {
             txtValue += (((i !== 0 || words.length === 1) && wrap && txtValue.length > 0) ? ' ' : '') + words[i];
             newText = txtValue + ' ' + (words[i + 1] || '');
@@ -305,15 +305,15 @@ export function measureText(
 
 /** @private */
 export function measureImage(source: string, contentSize: Size, id?: string, callback?: Function): Size {
-    let measureElement: string = 'measureElement';
-    window[measureElement].style.visibility = 'visible';
-    let imageElement: HTMLImageElement = window[measureElement].children[1];
+    let measureWindowElement: string = 'measureElement';
+    window[measureWindowElement].style.visibility = 'visible';
+    let imageElement: HTMLImageElement = window[measureWindowElement].children[1];
     imageElement.setAttribute('src', source);
     let bounds: ClientRect = imageElement.getBoundingClientRect();
     let width: number = bounds.width;
     let height: number = bounds.height;
     contentSize = new Size(width, height);
-    window[measureElement].style.visibility = 'hidden';
+    window[measureWindowElement].style.visibility = 'hidden';
 
     let element: HTMLElement = document.createElement('img');
     element.setAttribute('src', source);
@@ -331,9 +331,9 @@ export function measureImage(source: string, contentSize: Size, id?: string, cal
 
 /** @private */
 export function measureNativeContent(nativeContent: SVGElement): Rect {
-    let measureElement: string = 'measureElement';
-    window[measureElement].style.visibility = 'visible';
-    let nativeSVG: SVGSVGElement = window[measureElement].children[2];
+    let measureWindowElement: string = 'measureElement';
+    window[measureWindowElement].style.visibility = 'visible';
+    let nativeSVG: SVGSVGElement = window[measureWindowElement].children[2];
     nativeSVG.appendChild(nativeContent);
     let bounds: ClientRect = nativeContent.getBoundingClientRect();
     let svgBounds: ClientRect = nativeSVG.getBoundingClientRect();
@@ -341,7 +341,7 @@ export function measureNativeContent(nativeContent: SVGElement): Rect {
     rect.x = bounds.left - svgBounds.left;
     rect.y = bounds.top - svgBounds.top;
     nativeSVG.removeChild(nativeContent);
-    window[measureElement].style.visibility = 'hidden';
+    window[measureWindowElement].style.visibility = 'hidden';
     return rect;
 }
 
@@ -349,13 +349,13 @@ export function measureNativeContent(nativeContent: SVGElement): Rect {
  * @private
  */
 export function measureNativeSvg(nativeContent: SVGElement): Rect {
-    let measureElement: string = 'measureElement';
-    window[measureElement].style.visibility = 'visible';
-    let nativeSVG: SVGSVGElement = window[measureElement].children[2];
+    let measureWindowElement: string = 'measureElement';
+    window[measureWindowElement].style.visibility = 'visible';
+    let nativeSVG: SVGSVGElement = window[measureWindowElement].children[2];
     nativeSVG.appendChild(nativeContent);
     let svgBounds: Rect = nativeSVG.getBoundingClientRect() as Rect;
     nativeSVG.removeChild(nativeContent);
-    window[measureElement].style.visibility = 'hidden';
+    window[measureWindowElement].style.visibility = 'hidden';
     return svgBounds;
 }
 
@@ -767,8 +767,8 @@ export function setAttributeHtml(element: HTMLElement, attributes: Object): void
 
 /** @private */
 export function createMeasureElements(): void {
-    let measureElement: string = 'measureElement';
-    if (!window[measureElement]) {
+    let measureWindowElement: string = 'measureElement';
+    if (!window[measureWindowElement]) {
         let divElement: HTMLElement = createHtmlElement('div', {
             id: 'measureElement',
             style: 'visibility:hidden ; height: 0px ; width: 0px; overflow: hidden;'
@@ -790,8 +790,8 @@ export function createMeasureElements(): void {
         let tSpan: SVGTextElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         tSpan.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:space', 'preserve');
         svg.appendChild(tSpan);
-        window[measureElement] = divElement;
-        window[measureElement].usageCount = 1;
+        window[measureWindowElement] = divElement;
+        window[measureWindowElement].usageCount = 1;
         document.body.appendChild(divElement);
         let measureElementCount: string = 'measureElementCount';
         if (!window[measureElementCount]) {
@@ -802,7 +802,7 @@ export function createMeasureElements(): void {
 
 
     } else {
-        window[measureElement].usageCount += 1;
+        window[measureWindowElement].usageCount += 1;
     }
 }
 

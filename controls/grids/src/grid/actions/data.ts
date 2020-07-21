@@ -220,9 +220,11 @@ export class Data implements IDataProcessor {
         let sSettings: SearchSettingsModel = this.parent.searchSettings;
         let fields: string[] = sSettings.fields.length ? sSettings.fields : this.getSearchColumnFieldNames();
         let predicateList: Predicate[] = [];
+        let needForeignKeySearch: boolean = false;
         if (this.parent.searchSettings.key.length) {
+            needForeignKeySearch = this.parent.getForeignKeyColumns().some((col: Column) => fields.indexOf(col.field) > -1);
             let adaptor: AdaptorOptions = !isForeignKey ? this.dataManager.adaptor : (fcolumn.dataSource as DataManager).adaptor;
-            if (((<{ getModuleName?: Function }>adaptor).getModuleName &&
+            if (needForeignKeySearch || ((<{ getModuleName?: Function }>adaptor).getModuleName &&
                 (<{ getModuleName?: Function }>adaptor).getModuleName() === 'ODataV4Adaptor')) {
                 fields = isForeignKey ? [fcolumn.foreignKeyValue] : fields;
                 for (let i: number = 0; i < fields.length; i++) {

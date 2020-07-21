@@ -2,13 +2,20 @@
  * CheckBox Default Sample
  */
 import { QueryBuilder ,RuleModel} from './../../../src/query-builder/index';
-import { orderData } from '../data-source';
+import { DataManager, ODataAdaptor } from '@syncfusion/ej2-data';
+
 import { Dialog } from '@syncfusion/ej2-popups';
+
+let data: DataManager = new DataManager({
+    url: 'https://js.syncfusion.com/ejServices/Wcf/Northwind.svc/Orders/',
+    adaptor: new ODataAdaptor
+});
+
 let importRules: RuleModel = {
     'condition': 'and',
     'rules': [{
-        'label': 'CustomerName',
-        'field': 'CustomerName',
+        'label': 'CustomerID',
+        'field': 'CustomerID',
         'type': 'string',
         'operator': 'notequal',
         'value': 'VINET'
@@ -32,13 +39,6 @@ let importRules: RuleModel = {
         {
         'condition': 'and',
             'rules': [{
-                'label': 'in stock',
-                'field': 'in_stock',
-                'type': 'string',
-                'operator': 'equal',
-                'value': ['Yes']
-            },
-            {
                 'label': 'OrderID',
                 'field': 'OrderID',
                 'type': 'number',
@@ -48,7 +48,10 @@ let importRules: RuleModel = {
         }]
     }]
     };
-let queryBldrObj: QueryBuilder = new QueryBuilder({ dataSource: orderData, rule:importRules  });
+let queryBldrObj: QueryBuilder = new QueryBuilder({ 
+	dataSource: data,
+	rule:importRules
+});
 queryBldrObj.appendTo('#querybuilder');
 
 

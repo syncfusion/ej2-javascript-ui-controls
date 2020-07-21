@@ -518,4 +518,8 @@ export const drop: string = 'drop';
  * @deprecated
  */
 export const xhtmlValidation: string = 'xhtmlValidation';
-
+/** 
+ * @hidden
+ * @deprecated
+ */
+export const beforeImageUpload: string = 'beforeImageUpload';

@@ -1250,7 +1250,6 @@ export class Layout {
             text = text === '\uf0b7' ? '\u25CF' : text === '\uf06f' + '\u0020' ? '\u25CB' : text;
             if (text !== element.text) {
                 element.text = text;
-                element.listLevel.characterFormat.fontFamily = '';
             }
         }
         documentHelper.textHelper.updateTextSize(element, paragraph);
@@ -4374,6 +4373,7 @@ export class Layout {
         //Update Client area for current position
         this.viewer.cutFromTop(currentTable.y);
         this.clearTableWidget(currentTable, true, true, true);
+        this.isBidiReLayout = true;
         this.layoutBlock(currentTable, 0, true);
         this.viewer.updateClientAreaForBlock(currentTable, false);
         this.layoutNextItemsBlock(currentTable, this.viewer);

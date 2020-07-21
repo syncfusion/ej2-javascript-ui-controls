@@ -89,6 +89,9 @@ export class WorkbookEdit {
             sheet.rows[range[0]] = {};
             sheet.rows[range[0]].cells = [];
         }
+        if (!sheet.rows[range[0]].cells) {
+            sheet.rows[range[0]].cells = [];
+        }
         if (!sheet.rows[range[0]].cells[range[1]]) {
             sheet.rows[range[0]].cells[range[1]] = {};
         }

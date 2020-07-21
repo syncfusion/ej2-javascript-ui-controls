@@ -5541,6 +5541,9 @@ var DataLabelSettings = /** @__PURE__ @class */ (function (_super) {
         Property(false)
     ], DataLabelSettings.prototype, "visible", void 0);
     __decorate$4([
+        Property(true)
+    ], DataLabelSettings.prototype, "showZero", void 0);
+    __decorate$4([
         Property(null)
     ], DataLabelSettings.prototype, "name", void 0);
     __decorate$4([
@@ -7001,7 +7004,9 @@ var Marker = /** @__PURE__ @class */ (function (_super) {
         var _loop_1 = function (point) {
             if (point.visible && point.symbolLocations && point.symbolLocations.length) {
                 point.symbolLocations.map(function (location, index) {
-                    _this.renderMarker(series, point, location, index, redraw);
+                    if (series.marker.shape !== 'None') {
+                        _this.renderMarker(series, point, location, index, redraw);
+                    }
                 });
             }
         };
@@ -9451,7 +9456,15 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         var element = e.target;
         this.trigger(chartMouseClick, { target: element.id, x: this.mouseX, y: this.mouseY });
         this.clickCount++;
-        var timeInterval = this.pointDoubleClick ? 400 : 0;
+        var timeInterval = 0;
+        var isAngular = 'isAngular';
+        if (this[isAngular]) {
+            var observers = 'observers';
+            timeInterval = this.pointDoubleClick[observers].length > 0 ? 400 : 0;
+        }
+        else {
+            timeInterval = this.pointDoubleClick ? 400 : 0;
+        }
         if (this.clickCount === 1 && this.pointClick) {
             this.singleClickTimer = +setTimeout(function () {
                 _this.clickCount = 0;
@@ -9984,12 +9997,14 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
             removeLength = 1;
         }
         // Fix for blazor resize issue
-        if (this.resizeTo !== this.checkResize && this.isBlazor && this.element.childElementCount) {
-            var containerCollection = document.querySelectorAll('.e-chart');
-            for (var index = 0; index < containerCollection.length; index++) {
-                var container = containerCollection[index];
-                while (container.firstChild) {
-                    remove(container.firstChild);
+        if (!isNullOrUndefined(this.resizeTo)) {
+            if (this.resizeTo !== this.checkResize && this.isBlazor && this.element.childElementCount) {
+                var containerCollection = document.querySelectorAll('.e-chart');
+                for (var index = 0; index < containerCollection.length; index++) {
+                    var container = containerCollection[index];
+                    while (container.firstChild) {
+                        remove(container.firstChild);
+                    }
                 }
             }
             this.checkResize = this.resizeTo;
@@ -20031,6 +20046,9 @@ var Toolkit = /** @__PURE__ @class */ (function () {
         chart.zoomModule.touchMoveList = chart.zoomModule.touchStartList = [];
         chart.zoomModule.pinchTarget = null;
         chart.removeSvg();
+        if (chart.enableAutoIntervalOnBothAxis) {
+            chart.processData(false);
+        }
         chart.refreshAxis();
         chart.refreshBound();
         this.elementOpacity = '1';
@@ -23086,6 +23104,9 @@ var DataLabel = /** @__PURE__ @class */ (function () {
         // Data label point iteration started
         for (var i = 0; i < visiblePoints.length; i++) {
             point = visiblePoints[i];
+            if (!dataLabel.showZero && ((point.y !== 0) || (point.y === 0 && series.emptyPointSettings.mode === 'Zero'))) {
+                return null;
+            }
             this.margin = dataLabel.margin;
             var labelText = [];
             var labelLength = void 0;
@@ -23225,8 +23246,8 @@ var DataLabel = /** @__PURE__ @class */ (function () {
             ((Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000)) >= 128 ? 'black' : 'white');
         if (childElement.childElementCount && (!isCollide(rect, this.chart.dataLabelCollections, clip) ||
             dataLabel.labelIntersectAction === 'None') && (series.seriesType !== 'XY' || point.yValue === undefined ||
-            withIn(point.yValue, series.yAxis.visibleRange) || (series.type.indexOf('100') > -1 &&
-            withIn(series.stackedValues.endValues[point.index], series.yAxis.visibleRange))) &&
+            withIn(point.yValue, series.yAxis.visibleRange) || (series.type.indexOf('Stacking') > -1) ||
+            (series.type.indexOf('100') > -1 && withIn(series.stackedValues.endValues[point.index], series.yAxis.visibleRange))) &&
             withIn(point.xValue, series.xAxis.visibleRange) && parseFloat(childElement.style.top) >= vAxis.rect.y &&
             parseFloat(childElement.style.left) >= hAxis.rect.x &&
             parseFloat(childElement.style.top) <= vAxis.rect.y + vAxis.rect.height &&
@@ -26815,6 +26836,9 @@ var AccumulationDataLabelSettings = /** @__PURE__ @class */ (function (_super) {
         Property(false)
     ], AccumulationDataLabelSettings.prototype, "visible", void 0);
     __decorate$8([
+        Property(true)
+    ], AccumulationDataLabelSettings.prototype, "showZero", void 0);
+    __decorate$8([
         Property(null)
     ], AccumulationDataLabelSettings.prototype, "name", void 0);
     __decorate$8([
@@ -27144,7 +27168,8 @@ var AccumulationSeries = /** @__PURE__ @class */ (function (_super) {
         for (var _i = 0, _a = this.points; _i < _a.length; _i++) {
             var point = _a[_i];
             if (point.visible) {
-                if ((point.y !== 0) || (point.y === 0 && this.emptyPointSettings.mode === 'Zero')) {
+                if (this.dataLabel.showZero || (!this.dataLabel.showZero && ((point.y !== 0) || (point.y === 0 &&
+                    this.emptyPointSettings.mode === 'Zero')))) {
                     accumulation.accumulationDataLabelModule.renderDataLabel(point, this.dataLabel, datalabelGroup, this.points, this.index, element, redraw);
                 }
             }

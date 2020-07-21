@@ -116,6 +116,12 @@ var Popup = /** @class */ (function (_super) {
         return 'popup';
     };
     /**
+     * To resolve if any collision occurs.
+     */
+    Popup.prototype.resolveCollision = function () {
+        this.checkCollision();
+    };
+    /**
      * gets the persisted state properties of the Component.
      */
     Popup.prototype.getPersistData = function () {

@@ -1199,6 +1199,10 @@ var DropDownList = /** @class */ (function (_super) {
                 element: this.element
             };
             this.trigger('change', eventArgs);
+            if (this.isServerBlazor && this.enablePersistence) {
+                // tslint:disable-next-line
+                this.interopAdaptor.invokeMethodAsync('ServerChange');
+            }
         }
         if ((sf.base.isNullOrUndefined(this.value) || this.value === '') && this.floatLabelType !== 'Always') {
             sf.base.removeClass([this.inputWrapper.container], 'e-valid-input');
@@ -1734,6 +1738,7 @@ var DropDownList = /** @class */ (function (_super) {
             if (collision.length > 0) {
                 popupEle.style.marginTop = -parseInt(getComputedStyle(popupEle).marginTop, 10) + 'px';
             }
+            this.popupObj.resolveCollision();
         }
     };
     DropDownList.prototype.serverBlazorUpdateSelection = function () {
@@ -2243,6 +2248,7 @@ var DropDownList = /** @class */ (function (_super) {
             ((this.allowFiltering && !(sf.base.Browser.isDevice && this.isFilterLayout())) || this.getModuleName() === 'autocomplete')) {
             sf.base.removeClass([this.popupObj.element], 'e-popup-close');
             this.popupObj.refreshPosition(this.inputWrapper.container);
+            this.popupObj.resolveCollision();
         }
     };
     DropDownList.prototype.checkDatasource = function (newProp) {

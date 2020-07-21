@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.2.46 (2020-07-21)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+`#I282937`- Edit element is not showing the boolean value 'false' issue is fixed.
+
 ## 18.2.45 (2020-07-14)
 
 ### Spreadsheet

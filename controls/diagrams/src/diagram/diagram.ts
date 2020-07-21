@@ -1851,9 +1851,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.serviceLocator = new ServiceLocator;
         this.initializeServices();
         this.setCulture();
-        let measureElement: string = 'measureElement';
-        if (window[measureElement]) {
-            window[measureElement] = null;
+        let measureWindowElement: string = 'measureElement';
+        if (window[measureWindowElement]) {
+            window[measureWindowElement] = null;
         }
         this.initDiagram();
         this.initViews();
@@ -2272,14 +2272,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             if (content) {
                 this.element.removeChild(content);
             }
-            let measureElement: string = 'measureElement';
-            if (window[measureElement]) {
-                window[measureElement].usageCount -= 1;
+            let measureWindowElement: string = 'measureElement';
+            if (window[measureWindowElement]) {
+                window[measureWindowElement].usageCount -= 1;
                 let measureElementCount: string = 'measureElementCount';
                 window[measureElementCount]--;
                 if (window[measureElementCount] === 0) {
-                    window[measureElement].parentNode.removeChild(window[measureElement]);
-                    window[measureElement] = null;
+                    window[measureWindowElement].parentNode.removeChild(window[measureWindowElement]);
+                    window[measureWindowElement] = null;
                 }
             }
         }
@@ -5128,9 +5128,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.scroller.scrollerWidth = scrollerSize;
         this.scroller.setViewPortSize(bounds.width, bounds.height);
         this.renderRulers();
-        let measureElement: string = 'measureElement';
-        if (window[measureElement]) {
-            window[measureElement] = null;
+        let measureWindowElement: string = 'measureElement';
+        if (window[measureWindowElement]) {
+            window[measureWindowElement] = null;
             let measureElements: HTMLElement = document.getElementById('measureElement');
             measureElements.remove();
         }
@@ -7803,6 +7803,22 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 if (actualAnnotation) {
                     let updateSize: boolean = actualObject.width ? true : false;
                     this.updateAnnotation(changedObject, actualAnnotation, actualObject.wrapper, actualObject, updateSize);
+                    let swimLaneNode: Node = this.nameTable[actualObject.parentId];
+                    if ((swimLaneNode && swimLaneNode.shape.type === 'SwimLane')) {
+                        let laneHeader: string = 'LaneHeaderParent';
+                        var phaseHeader: string = 'PhaseHeaderParent';
+                        if ((actualObject.isLane || actualObject.isPhase)) {
+                            let collection: (PhaseModel | LaneModel)[] = actualObject.isLane ?
+                            (swimLaneNode.shape as SwimLaneModel).lanes : (swimLaneNode.shape as SwimLaneModel).phases;
+                        for (let j: number = 0; j < collection.length; j++) {
+                            if (collection[j].id === (actualObject[laneHeader] || actualObject[phaseHeader])) {
+                                collection[j].header.annotation.content = actualObject.annotations[0].content;
+                                collection[j].header.annotation.style = actualObject.annotations[0].style;
+                                break;
+                            }
+                        }
+                        }
+                    }
                 }
             }
         }

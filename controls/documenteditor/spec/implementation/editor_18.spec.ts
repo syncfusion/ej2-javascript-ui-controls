@@ -847,3 +847,46 @@ describe('Update Revision Collection validation', () => {
 
   });
 });
+
+describe('Validate Track Change have Page Break',()=>{
+  let container : DocumentEditor;
+  beforeAll(() => {
+      document.body.innerHTML = '';
+      let ele: HTMLElement = createElement('div', { id: 'container' });
+      document.body.appendChild(ele);
+      DocumentEditor.Inject(Editor, Selection, EditorHistory);
+      container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true });
+      (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+      (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+      (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+      (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+      container.appendTo('#container');
+       });
+  afterAll((done): void => {
+      container.destroy();
+      document.body.removeChild(document.getElementById('container'));
+      container = undefined;
+      document.body.innerHTML = '';
+      setTimeout(function () {
+          done();
+      }, 1000);
+  });
+  it('Rejected page break revision Validation', function () {
+      container.editor.insertText('Hello World');
+      container.selection.handleControlLeftKey();
+      container.enableTrackChanges = true;
+      container.showRevisions = true;
+      container.editor.insertPageBreak();
+      expect(container.documentHelper.pages.length).toBe(2);
+      expect(container.selection.start.currentWidget.children.length).toBe(1);
+      expect(container.revisions.length).toBe(1);
+      container.revisions.rejectAll();
+      expect(container.trackChangesPane.isTrackingPageBreak).toBe(true);
+      expect(container.selection.start.currentWidget.children.length).toBe(2);
+      expect(container.revisions.length).toBe(0);
+      container.editorHistory.undo();
+      expect(container.revisions.length).toBe(1);
+      container.editorHistory.redo();
+      expect(container.revisions.length).toBe(0);
+  });
+});

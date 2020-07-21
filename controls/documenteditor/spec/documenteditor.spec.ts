@@ -1652,4 +1652,8 @@ describe('Form field API validation', () => {
         documentEditor.documentHelper.selection.selectCurrentWord();
         expect(() => { documentEditor.documentHelper.selection.bookmarks }).not.toThrowError();
     });
+    it('Restrict editing pane public api validation', () => {
+        documentEditor.openBlank();
+        expect(() => { documentEditor.showRestrictEditingPane() }).not.toThrowError();
+    });
 });

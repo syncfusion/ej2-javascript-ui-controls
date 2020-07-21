@@ -651,6 +651,10 @@ function getParentData(parent, value, requireFilter) {
         return parent[id][value];
     }
 }
+function isHidden(el) {
+    var style = window.getComputedStyle(el);
+    return ((style.display === 'none') || (style.visibility === 'hidden'));
+}
 
 /**
  * TreeGrid Selection module
@@ -3058,6 +3062,21 @@ var TreeGrid = /** @class */ (function (_super) {
         this.bindGridDragEvents();
         this.bindCallBackEvents();
     };
+    TreeGrid.prototype.lastRowBorder = function (visiblerow, isAddBorder) {
+        for (var j = 0; j < visiblerow.cells.length; j++) {
+            isAddBorder ? sf.base.addClass([visiblerow.cells[j]], 'e-lastrowcell') : sf.base.removeClass([visiblerow.cells[j]], 'e-lastrowcell');
+        }
+    };
+    
+    TreeGrid.prototype.isPixelHeight = function () {
+        if (this.height !== 'auto' && this.height.toString().indexOf('%') === -1) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    };
+    
     TreeGrid.prototype.extendedGridDataBoundEvent = function () {
         var _this = this;
         var treeGrid = this;
@@ -3066,13 +3085,24 @@ var TreeGrid = /** @class */ (function (_super) {
             _this.updateColumnModel();
             _this.updateAltRow(_this.getRows());
             _this.notify('dataBoundArg', args);
-            _this.trigger(dataBound, args);
             if (isRemoteData(_this) && !isOffline(_this) && !_this.hasChildMapping) {
                 var req = sf.grids.getObject('dataSource.requests', _this).filter(function (e) {
                     return e.httpRequest.statusText !== 'OK';
                 }).length;
                 sf.base.setValue('grid.contentModule.isLoaded', !(req > 0), _this);
             }
+            if (_this.isPixelHeight() && _this.initialRender) {
+                var totalRows = _this.getRows();
+                for (var i = totalRows.length - 1; i > 0; i--) {
+                    if (!isHidden(totalRows[i])) {
+                        if (totalRows[i].nextElementSibling) {
+                            _this.lastRowBorder(totalRows[i], true);
+                        }
+                        break;
+                    }
+                }
+            }
+            _this.trigger(dataBound, args);
             _this.initialRender = false;
         };
         this.grid.beforeDataBound = function (args) {
@@ -4495,6 +4525,9 @@ var TreeGrid = /** @class */ (function (_super) {
     TreeGrid.prototype.expandRow = function (row, record) {
         var _this = this;
         record = this.getCollapseExpandRecords(row, record);
+        if (!sf.base.isNullOrUndefined(row) && row.cells[0].classList.contains('e-lastrowcell')) {
+            this.lastRowBorder(row, false);
+        }
         var args = { data: record, row: row, cancel: false };
         this.trigger(expanding, args, function (expandingArgs) {
             if (!expandingArgs.cancel) {
@@ -4637,7 +4670,7 @@ var TreeGrid = /** @class */ (function (_super) {
     };
     TreeGrid.prototype.expandCollapse = function (action, row, record, isChild) {
         var expandingArgs = { row: row, data: record, childData: [], requestType: action };
-        if (!isRemoteData(this) && action === 'expand' && this.isSelfReference) {
+        if (!isRemoteData(this) && action === 'expand' && this.isSelfReference && isCountRequired(this)) {
             this.updateChildOnDemand(expandingArgs);
         }
         var gridRows = this.getRows();
@@ -4669,10 +4702,16 @@ var TreeGrid = /** @class */ (function (_super) {
                     this.uniqueIDCollection[record.uniqueID].expanded = record.expanded;
                 }
                 var targetEle = row.getElementsByClassName('e-treegridcollapse')[0];
+                if (isChild && !sf.base.isNullOrUndefined(record[this.expandStateMapping]) &&
+                    record[this.expandStateMapping] && sf.base.isNullOrUndefined(targetEle)) {
+                    targetEle = row.getElementsByClassName('e-treegridexpand')[0];
+                }
                 if (sf.base.isNullOrUndefined(targetEle)) {
                     return;
                 }
-                sf.base.addClass([targetEle], 'e-treegridexpand');
+                if (!targetEle.classList.contains('e-treegridexpand')) {
+                    sf.base.addClass([targetEle], 'e-treegridexpand');
+                }
                 sf.base.removeClass([targetEle], 'e-treegridcollapse');
             }
             else {
@@ -4682,10 +4721,16 @@ var TreeGrid = /** @class */ (function (_super) {
                     this.uniqueIDCollection[record.uniqueID].expanded = record.expanded;
                 }
                 var targetEle = row.getElementsByClassName('e-treegridexpand')[0];
+                if (isChild && !sf.base.isNullOrUndefined(record[this.expandStateMapping]) &&
+                    !record[this.expandStateMapping] && sf.base.isNullOrUndefined(targetEle)) {
+                    targetEle = row.getElementsByClassName('e-treegridcollapse')[0];
+                }
                 if (sf.base.isNullOrUndefined(targetEle)) {
                     return;
                 }
-                sf.base.addClass([targetEle], 'e-treegridcollapse');
+                if (!targetEle.classList.contains('e-treegridcollapse')) {
+                    sf.base.addClass([targetEle], 'e-treegridcollapse');
+                }
                 sf.base.removeClass([targetEle], 'e-treegridexpand');
             }
             var detailrows = gridRows.filter(function (r) {
@@ -4697,6 +4742,18 @@ var TreeGrid = /** @class */ (function (_super) {
             else {
                 if (!isCountRequired(this) || action === 'collapse') {
                     this.localExpand(action, row, record, isChild);
+                }
+            }
+            if (this.isPixelHeight() && !row.cells[0].classList.contains('e-lastrowcell')) {
+                var totalRows = this.getRows();
+                for (var i = totalRows.length - 1; i > 0; i--) {
+                    if (!isHidden(totalRows[i])) {
+                        var table = this.getContentTable();
+                        var sHeight = table.scrollHeight;
+                        var clientHeight = this.getContent().clientHeight;
+                        this.lastRowBorder(totalRows[i], sHeight <= clientHeight);
+                        break;
+                    }
                 }
             }
             this.notify('rowExpandCollapse', { detailrows: detailrows, action: displayAction, record: record, row: row });
@@ -4792,6 +4849,9 @@ var TreeGrid = /** @class */ (function (_super) {
         var childRecords = this.getCurrentViewRecords().filter(function (e) {
             return e.parentUniqueID === record.uniqueID;
         });
+        if (this.isPixelHeight() && row.cells[0].classList.contains('e-lastrowcell')) {
+            this.lastRowBorder(row, false);
+        }
         var movableRows;
         var gridRows = this.getRows();
         if (this.rowTemplate) {
@@ -10446,6 +10506,7 @@ exports.isOffline = isOffline;
 exports.extendArray = extendArray;
 exports.getPlainData = getPlainData;
 exports.getParentData = getParentData;
+exports.isHidden = isHidden;
 exports.Filter = Filter$1;
 exports.ExcelExport = ExcelExport$1;
 exports.PdfExport = PdfExport$1;

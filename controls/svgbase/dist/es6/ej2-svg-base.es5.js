@@ -1473,11 +1473,13 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         var x = (this.marginX * 2) + (size / 2) + (isRight ? this.arrowPadding : 0);
         for (var _i = 0, _a = this.shapes; _i < _a.length; _i++) {
             var shape = _a[_i];
-            shapeOption = new PathOption(this.element.id + '_Trackball_' + count, this.palette[count], 1, '#cccccc', 1, null);
-            if (this.markerPoint[count]) {
-                markerGroup.appendChild(drawSymbol(new TooltipLocation(x, this.markerPoint[count] - this.padding + (isBottom ? this.arrowPadding : 0)), shape, new Size(size, size), '', shapeOption, null));
+            if (shape !== 'None') {
+                shapeOption = new PathOption(this.element.id + '_Trackball_' + count, this.palette[count], 1, '#cccccc', 1, null);
+                if (this.markerPoint[count]) {
+                    markerGroup.appendChild(drawSymbol(new TooltipLocation(x, this.markerPoint[count] - this.padding + (isBottom ? this.arrowPadding : 0)), shape, new Size(size, size), '', shapeOption, null));
+                }
+                count++;
             }
-            count++;
         }
         groupElement.appendChild(markerGroup);
     };

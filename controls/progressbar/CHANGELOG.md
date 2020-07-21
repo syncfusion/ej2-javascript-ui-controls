@@ -2,13 +2,38 @@
 
 ## [Unreleased]
 
-## 18.2.45 (2020-07-14)
+## 18.2.46 (2020-07-21)
 
 ### ProgressBar
 
 #### Bug Fixes
 
-- Progress bar label not render at end of the progress has been fixed..
+- `#16027` - Progress bar not updating when initially having value null or zero issue fixed.
+
+## 18.2.45 (2020-07-14)
+
+### ProgressBar
+
+#### New Features
+
+- Provided support to indicate the active state of the progress.
+- Provided support for striped progress bar.
+- Provided support to place the labels at the center and far ends of the track.
+- Provided support to segment the progress of a task.
+- Provided support to indicate success, info, warning, and danger of using different colors.
+
+#### Bug Fixes
+
+- Progress bar label not render at end of the progress has been fixed.
+- SetAttribute of undefined issue raised when calling show() method has been fixed.
+
+## 18.2.44 (2020-07-07)
+
+### ProgressBar
+
+#### Bug Fixes
+
+- Progress bar label not render at end of the progress has been fixed.
 
 ## 18.1.42 (2020-04-01)
 

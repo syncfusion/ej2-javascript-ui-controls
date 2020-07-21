@@ -746,7 +746,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             if (!isClose) {
                 let liElem: Element = e && e.target && this.getLI(e.target as Element);
                 item = this.navIdx.length ? this.getItem(this.navIdx) : null; items = item ? item.items : this.items as objColl;
-                beforeCloseArgs = { element: ul, parentItem: item, items: items, event: e, cancel: false };
+                beforeCloseArgs = { element: ul, parentItem: this.isMenu && isBlazor() ? this.getMenuItemModel(<obj>item, ulIndex) : item,
+                    items: items, event: e, cancel: false };
                 this.trigger('beforeClose', beforeCloseArgs, (observedCloseArgs: BeforeOpenCloseMenuEventArgs) => {
                     let popupEle: HTMLElement; let closeArgs: OpenCloseMenuEventArgs; let popupId: string = '';
                     let popupObj: Popup; let isOpen: boolean = !observedCloseArgs.cancel;
@@ -823,6 +824,12 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 });
             }
         }
+    }
+    private getMenuItemModel(item: obj, level: number): MenuItemModel {
+        if (isNullOrUndefined(level)) { level = 0; }
+        let fields: FieldsMap = this.getFields(level);
+        return <MenuItemModel>{ text: item[fields.text], id: item[fields.id], items: item[fields.child], separator: item[fields.separator],
+            iconCss: item[fields.iconCss], url: item[fields.url] };
     }
     private destroyScrollObj(scrollObj: VScroll | HScroll, scrollEle: Element): void {
         if (scrollObj) {
@@ -1011,7 +1018,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         let navIdx: number[] = this.getIndex(li ? li.id : null, true);
         let items: MenuItemModel[] = li ? (<obj>item)[this.getField('children', this.navIdx.length - 1)] as objColl : this.items as objColl;
         let eventArgs: BeforeOpenCloseMenuEventArgs = {
-            element: ul, items: items, parentItem: item, event: e, cancel: false, top: top, left: left
+            element: ul, items: items, parentItem: this.isMenu && isBlazor() ? this.getMenuItemModel(<obj>item, this.navIdx.length - 1) :
+            item, event: e, cancel: false, top: top, left: left
         };
         let menuType: string = type; let collide: string[];
         this.trigger('beforeOpen', eventArgs, (observedOpenArgs: BeforeOpenCloseMenuEventArgs) => {
@@ -1603,6 +1611,18 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         return closest(elem, 'li.e-menu-item');
     }
 
+    private updateItemsByNavIdx(): void {
+        let items: MenuItemModel[] = this.items; let count: number = 0;
+        for (let index: number = 0; index < this.navIdx.length; index++) {
+            items = items[index].items;
+            if (!items) { break; }
+            count++;
+            let ul: HTMLUListElement = <HTMLUListElement>this.getUlByNavIdx(count);
+            if (!ul) { break; }
+            this.updateItem(ul, items);
+        }
+    }
+
     private removeChildElement(elem: HTMLUListElement): HTMLUListElement {
         while (elem.firstElementChild) {
             elem.removeChild(elem.firstElementChild);
@@ -1664,20 +1684,15 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     let navIdx: number[];
                     let item: MenuItemModel[];
                     if (!Object.keys(oldProp.items).length) {
-                        let ul: HTMLElement = this.element;
-                        if (isBlazor()) {
-                            ul = this.removeChildElement(this.element);
-                        } else {
-                            ul.innerHTML = '';
-                        }
-                        let lis: HTMLElement[] = [].slice.call(this.createItems(this.items).children);
-                        lis.forEach((li: HTMLElement): void => {
-                            ul.appendChild(li);
-                        });
+                        this.updateItem(this.element, this.items);
                         for (let i: number = 1, count: number = wrapper.childElementCount; i < count; i++) {
                             detach(wrapper.lastElementChild);
                         }
-                        this.navIdx = [];
+                        if (this.isMenu && isBlazor()) {
+                            this.updateItemsByNavIdx();
+                        } else {
+                            this.navIdx = [];
+                        }
                     } else {
                         let keys: string[] = Object.keys(newProp.items);
                         for (let i: number = 0; i < keys.length; i++) {
@@ -1695,6 +1710,18 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     break;
             }
         }
+    }
+
+    private updateItem(ul: HTMLUListElement, items: MenuItemModel[]): void {
+        if (isBlazor()) {
+            ul = this.removeChildElement(ul);
+        } else {
+            ul.innerHTML = '';
+        }
+        let lis: HTMLElement[] = [].slice.call(this.createItems(items).children);
+        lis.forEach((li: HTMLElement): void => {
+            ul.appendChild(li);
+        });
     }
 
     private getChangedItemIndex(newProp: MenuBaseModel, index: number[], idx: number): number[] {

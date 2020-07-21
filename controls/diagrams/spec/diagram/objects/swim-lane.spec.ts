@@ -7893,7 +7893,18 @@ describe('Swimlane - Enable Line Routing', () => {
                 diagram.destroy();
                 ele.remove();
             });
-    
+
+            it('style change and serilaziation', (done: Function) => {
+                let diagramCanvas = document.getElementById(diagram.element.id + 'content');
+                diagram.select([diagram.nameTable["swimlanestackCanvas1_0_header"]]);
+                diagram.selectedItems.nodes[0].annotations[0].style.color = "red";
+                diagram.dataBind()
+                let savedDiagram: string = diagram.saveDiagram();
+                diagram.loadDiagram(savedDiagram);
+
+                expect(diagram.nameTable['swimlane'].shape.lanes[0].header.annotation.style.color === "red").toBe(true);
+                done();
+            });
             it('node constraint node not deleted', (done: Function) => {
                 let diagramCanvas = document.getElementById(diagram.element.id + 'content');
                 let phase = diagram.nameTable["swimlanephase1_header"];

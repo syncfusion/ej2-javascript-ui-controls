@@ -29,10 +29,17 @@ export class SfdtReader {
     private commentStarts: Dictionary<string, CommentCharacterElementBox> = undefined;
     private commentEnds: Dictionary<string, CommentCharacterElementBox> = undefined;
     private commentsCollection: Dictionary<string, CommentElementBox> = undefined;
-    private revisionCollection: Dictionary<string, Revision> = undefined;
+    /**
+     * @private
+     */
+    public revisionCollection: Dictionary<string, Revision> = undefined;
     private isPageBreakInsideTable: boolean = false;
     private editableRanges: Dictionary<string, EditRangeStartElementBox>;
     private isParseHeader: boolean = false;
+    /**
+     * @private
+     */
+    public isCutPerformed: boolean = false;
     /**
      * @private
      */
@@ -124,18 +131,44 @@ export class SfdtReader {
             }
         }
     }
-    private parseRevisions(data: any, revisions: Revision[]): void {
+    /**
+     * @private
+     */
+    public parseRevisions(data: any, revisions: Revision[]): void {
         for (let i: number = 0; i < data.revisions.length; i++) {
             let revisionData: any = data.revisions[i];
             if (!isNullOrUndefined(revisionData.revisionId)) {
                 let revision: Revision = this.parseRevision(revisionData);
-                this.revisionCollection.add(revisionData.revisionId, revision);
-                revisions.push(revision);
+                let revisionCheck: boolean = true;
+                if (!this.documentHelper.owner.sfdtExportModule.copyWithTrackChange && this.isPaste) {
+                    // tslint:disable-next-line:max-line-length
+                    if (revisionData.revisionType === 'Insertion' && this.isPaste && this.documentHelper.owner.enableTrackChanges) {
+                        continue;
+                    } else {
+                        if (!this. revisionCollection.containsKey(revisionData.revisionId)) {
+                            this.revisionCollection.add(revisionData.revisionId, revision);
+                        }
+                    }
+                } else {
+                    this.revisionCollection.add(revisionData.revisionId, revision);
+                }
+                for (let j: number = 0; j < revisions.length; j++) {
+                    if (revisions[j].revisionID === revision.revisionID) {
+                        revisionCheck = false;
+                    }
+                }
+                if (revisionCheck) {
+                    revisions.push(revision);
+                }
             }
         }
         this.documentHelper.revisionsInternal = this.revisionCollection;
+        this.documentHelper.owner.sfdtExportModule.copyWithTrackChange = false;
     }
-    private parseRevision(data: any): Revision {
+    /**
+     * @private
+     */
+    public parseRevision(data: any): Revision {
         if (!isNullOrUndefined(data)) {
             let revision: Revision = new Revision(this.viewer.owner, data.author, data.date);
             revision.revisionID = data.revisionId;
@@ -550,6 +583,8 @@ export class SfdtReader {
     private parseParagraph(data: any, paragraph: ParagraphWidget, writeInlineFormat?: boolean): boolean {
         let lineWidget: LineWidget = new LineWidget(paragraph);
         let hasValidElmts: boolean = false;
+        let revision: Revision;
+        let trackChange: boolean = this.viewer.owner.enableTrackChanges;
         for (let i: number = 0; i < data.length; i++) {
             let inline: any = data[i];
             if (inline.hasOwnProperty('text')) {
@@ -570,8 +605,33 @@ export class SfdtReader {
                 this.parseCharacterFormat(inline.characterFormat, textElement.characterFormat, writeInlineFormat);
                 this.applyCharacterStyle(inline, textElement);
                 textElement.text = inline.text;
+                if (this.documentHelper.owner.parser.isPaste && !(this.isCutPerformed)) {
+                    if (!isNullOrUndefined(inline.revisionIds)) {
+                        for (let j: number = 0; j < inline.revisionIds.length; j++) {
+                            if (this.revisionCollection.containsKey(inline.revisionIds[j])) {
+                                if  (trackChange) {
+                                    revision = this.revisionCollection.get(inline.revisionIds[j]);
+                                }
+                                // tslint:disable-next-line:max-line-length
+                                if (!isNullOrUndefined(revision) && !isNullOrUndefined(lineWidget.children[i - 1].revisions[j]) && ((!trackChange) || (trackChange && (revision.revisionType === 'Deletion')))) {
+                                    if (revision.revisionID === inline.revisionIds[j]) {
+                                        inline.revisionIds[j] = lineWidget.children[i - 1].revisions[j].revisionID;
+                                        this.checkAndApplyRevision(inline, textElement);
+                                        continue;
+                                    }
+                                }
+                                if (!trackChange) {
+                                    revision = this.documentHelper.revisionsInternal.get(inline.revisionIds[j]);
+                                }
+                                this.documentHelper.owner.editorModule.insertRevision(textElement, revision.revisionType, revision.author);
+                                inline.revisionIds[j] = textElement.revisions[j].revisionID;
+                            }
+                        }
+                    }
+                } else {
+                    this.checkAndApplyRevision(inline, textElement);
+                }
                 textElement.line = lineWidget;
-                this.checkAndApplyRevision(inline, textElement);
                 lineWidget.children.push(textElement);
                 hasValidElmts = true;
             } else if (inline.hasOwnProperty('chartType')) {
@@ -834,6 +894,7 @@ export class SfdtReader {
                 paragraph.floatingElements.push(shape);
             }
         }
+        this.isCutPerformed = false;
         paragraph.childWidgets.push(lineWidget);
         return hasValidElmts;
     }

@@ -2487,6 +2487,10 @@ let DropDownList = class DropDownList extends DropDownBase {
                 element: this.element
             };
             this.trigger('change', eventArgs);
+            if (this.isServerBlazor && this.enablePersistence) {
+                // tslint:disable-next-line
+                this.interopAdaptor.invokeMethodAsync('ServerChange');
+            }
         }
         if ((isNullOrUndefined(this.value) || this.value === '') && this.floatLabelType !== 'Always') {
             removeClass([this.inputWrapper.container], 'e-valid-input');
@@ -3016,6 +3020,7 @@ let DropDownList = class DropDownList extends DropDownBase {
             if (collision.length > 0) {
                 popupEle.style.marginTop = -parseInt(getComputedStyle(popupEle).marginTop, 10) + 'px';
             }
+            this.popupObj.resolveCollision();
         }
     }
     serverBlazorUpdateSelection() {
@@ -3520,6 +3525,7 @@ let DropDownList = class DropDownList extends DropDownBase {
             ((this.allowFiltering && !(Browser.isDevice && this.isFilterLayout())) || this.getModuleName() === 'autocomplete')) {
             removeClass([this.popupObj.element], 'e-popup-close');
             this.popupObj.refreshPosition(this.inputWrapper.container);
+            this.popupObj.resolveCollision();
         }
     }
     checkDatasource(newProp) {
@@ -8977,6 +8983,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         if (this.popupObj && this.mobFilter) {
             this.popupObj.setProperties({ width: this.calcPopupWidth() });
             this.popupObj.refreshPosition(this.overAllWrapper);
+            this.popupObj.resolveCollision();
         }
     }
     checkTextLength() {
@@ -9931,6 +9938,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                             }
                         },
                         open: () => {
+                            this.popupObj.resolveCollision();
                             if (!this.isFirstClick) {
                                 let ulElement = this.list.querySelector('ul');
                                 if (ulElement) {
@@ -10031,6 +10039,9 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                     this.removeIndex = 0;
                     for (temp = this.value[this.removeIndex]; this.removeIndex < this.value.length; temp = this.value[this.removeIndex]) {
                         this.removeValue(temp, e, null, true);
+                        if (this.value === null && isBlazor() && this.isServerRendered) {
+                            break;
+                        }
                     }
                 }
             }
@@ -12419,6 +12430,9 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
         if (isDataSource) {
             this.liCollections = this.list.querySelectorAll('.' + cssClass.li);
             this.mainList = this.ulElement = this.list.querySelector('ul');
+            if (this.allowDragAndDrop && !this.ulElement.classList.contains('e-sortable')) {
+                this.initDraggable();
+            }
         }
         if (!isNullOrUndefined(data)) {
             this.sortedData = this.jsonData = this.listData = data;
@@ -12891,7 +12905,17 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
     enableItems(items, enable = true) {
         let li;
         items.forEach((item) => {
-            li = this.findListElement(this.list, 'li', 'data-value', this.getValueByText(item));
+            let text;
+            if (isBlazor() && typeof (item) === 'object') {
+                text = item[this.fields.text || 'text'];
+                if (isNullOrUndefined(text)) {
+                    return;
+                }
+            }
+            else {
+                text = item;
+            }
+            li = this.findListElement(this.list, 'li', 'data-value', this.getValueByText(text));
             if (enable) {
                 removeClass([li], cssClass.disabled);
                 li.removeAttribute('aria-disabled');
@@ -13979,7 +14003,23 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
         let liselect;
         if (values) {
             values.forEach((value) => {
-                li = this.list.querySelector('[data-value="' + (isText ? this.getValueByText(value) : value) + '"]');
+                let text;
+                if (isText) {
+                    if (isBlazor() && typeof (value) === 'object') {
+                        text = value[this.fields.text || 'text'];
+                        if (isNullOrUndefined(text)) {
+                            return;
+                        }
+                        text = this.getValueByText(text);
+                    }
+                    else {
+                        text = this.getValueByText(value);
+                    }
+                }
+                else {
+                    text = value;
+                }
+                li = this.list.querySelector('[data-value="' + text + '"]');
                 if (li) {
                     if (this.selectionSettings.showCheckbox) {
                         liselect = li.getElementsByClassName('e-frame')[0].classList.contains('e-check');

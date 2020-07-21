@@ -2,13 +2,38 @@
 
 ## [Unreleased]
 
+## 18.2.46 (2020-07-21)
+
+### Document Editor
+
+#### New Features
+
+- `#284937`- Added API show restrict editing pane.
+
+#### Bug Fixes
+
+- `#284486` - Comment Tab in pane is removed when enable comment is false.
+- `#283344` - Resolved the initial delay in pasting images.
+- `#282707`,`#284035` - Resolved bullet list exporting issue in MAC devices.
+- `#284412` - Comment mark is now deleted properly when comment is deleted.
+- `#281339` - Resolved RTL issue when editing a list content.
+- `#276616` - Paragraph maintained when inserting text in whole paragraph similar to MS Word.
+
 ## 18.2.45 (2020-07-14)
 
 ### Document Editor
 
+#### New Features
+
+- Added API to delete bookmark.
+- `#267515`- Added API to get searched item hierarchical index.
+
 #### Bug Fixes
 
 - `#283180` - Resolved font family no records found issue.
+- `#282303` - Paste dropdown now hides when creating or opening new document.
+- `#280951` - Table content renders properly now for table with merged cells.
+- `#280973` - Resolved script while getting bookmarks from selection.
 
 ## 18.2.44 (2020-07-07)
 

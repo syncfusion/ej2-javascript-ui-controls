@@ -2317,13 +2317,13 @@ let ProgressBar = class ProgressBar extends Component {
                         this.trigger(valueChanged, this.argsData);
                     }
                     if (this.type === 'Circular') {
-                        this.circular.renderCircularProgress(this.previousEndAngle, this.previousTotalEnd, true);
+                        this.circular.renderCircularProgress(this.previousEndAngle, this.previousTotalEnd, !isNullOrUndefined(oldProp.value));
                         if (this.progressAnnotationModule && this.animation.enable && !this.isIndeterminate) {
                             this.annotateAnimation.doAnnotationAnimation(this.clipPath, this, this.annotateEnd, this.annotateTotal);
                         }
                     }
                     else {
-                        this.linear.renderLinearProgress(true, this.previousWidth);
+                        this.linear.renderLinearProgress(!isNullOrUndefined(oldProp.value), this.previousWidth);
                     }
                     break;
                 case 'animation':
@@ -2351,21 +2351,25 @@ let ProgressBar = class ProgressBar extends Component {
         return ' ';
     }
     show() {
-        this.svgObject.setAttribute('visibility', 'Visible');
-        if (this.isIndeterminate) {
-            this.destroyIndeterminate = false;
-            if (this.type === 'Linear') {
-                this.linear.renderLinearProgress(true);
-            }
-            else {
-                this.circular.renderCircularProgress(null, null, true);
+        if (!isNullOrUndefined(this.svgObject)) {
+            this.svgObject.setAttribute('visibility', 'Visible');
+            if (this.isIndeterminate) {
+                this.destroyIndeterminate = false;
+                if (this.type === 'Linear') {
+                    this.linear.renderLinearProgress(true);
+                }
+                else {
+                    this.circular.renderCircularProgress(null, null, true);
+                }
             }
         }
     }
     hide() {
-        this.svgObject.setAttribute('visibility', 'Hidden');
-        if (this.isIndeterminate) {
-            this.destroyIndeterminate = true;
+        if (!isNullOrUndefined(this.svgObject)) {
+            this.svgObject.setAttribute('visibility', 'Hidden');
+            if (this.isIndeterminate) {
+                this.destroyIndeterminate = true;
+            }
         }
     }
     /**

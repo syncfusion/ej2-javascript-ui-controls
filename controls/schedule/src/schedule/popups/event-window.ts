@@ -1502,7 +1502,14 @@ export class EventWindow {
             };
             if (this.parent.activeViewOptions.group.byGroupID && (!isNullOrUndefined(lastlevel))) {
                 let lastResource: { [key: string]: Object }[] = lastResouceData.dataSource as { [key: string]: Object }[];
-                let index: number = util.findIndexInData(lastResource, lastResouceData.idField, resourceData[i] as string);
+                let resCol: Object[] = this.parent.resourceCollection;
+                let index: number;
+                if (resCol.length > 1) {
+                    index =
+                        util.findIndexInData(lastResource, lastResouceData.idField, resourceData[i] as string, events, resCol);
+                } else {
+                    index = util.findIndexInData(lastResource, lastResouceData.idField, resourceData[i] as string);
+                }
                 if (index < 0) {
                     return;
                 }

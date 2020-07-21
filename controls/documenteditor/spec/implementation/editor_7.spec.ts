@@ -1168,3 +1168,85 @@ describe('form field validation', () => {
         expect(formfields[0].resultText).toBe('result');
     });
 });
+
+describe('Track changes Validation For FormField', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Inserting form fields Validation For revision content  ', function () {
+        container.openBlank();
+        container.enableTrackChanges = true;
+        container.editor.insertText("hello");
+        container.editor.insertFormField("Text");
+        (container.documentHelper.formFields[0].formFieldData as TextFormField).name = 'Text1';
+        container.editor.updateFormField(container.documentHelper.formFields[0], 'TEXT', true);
+        container.showRevisions = true;
+        let count: number = container.revisions.changes[0].range.length;
+        expect(count).toBe(6);
+    });
+
+    it('form fields undo and redo Validation For revision content  ', function () {
+        container.openBlank();
+        container.enableTrackChanges = true;
+        container.editor.insertText("hello");
+        container.editor.insertFormField("Text");
+        (container.documentHelper.formFields[0].formFieldData as TextFormField).name = 'Text1';
+        container.editor.updateFormField(container.documentHelper.formFields[0], 'TEXT', true);
+        container.showRevisions = true;
+        container.editorHistory.undo();
+        container.editorHistory.undo();
+        container.editorHistory.undo();
+        container.editorHistory.redo();
+        container.editorHistory.redo();
+        container.editorHistory.redo();
+        let count: number =  container.revisions.changes[0].range.length;
+        expect(count).toBe(6);
+    });
+    it('form fields BackSpace Validation For revision content  ', function () {
+        container.openBlank();
+        container.enableTrackChanges = true;
+        container.editor.insertText("hello");
+        container.showRevisions = true;
+        container.editor.insertFormField("Text");
+        (container.documentHelper.formFields[0].formFieldData as TextFormField).name = 'Text1';
+        container.editor.updateFormField(container.documentHelper.formFields[0], 'TEXT', true);
+        container.editor.onBackSpace();
+        container.editor.onBackSpace();
+        container.editorHistory.undo();
+        let count: number =  container.revisions.changes[0].range.length;
+        expect(count).toBe(6);
+    });
+    it('form fields Delete Validation For revision content  ', function () {
+        container.openBlank();
+        container.enableTrackChanges = true;
+        container.editor.insertText("hello");
+        container.showRevisions = true;
+        container.editor.insertFormField("Text");
+        (container.documentHelper.formFields[0].formFieldData as TextFormField).name = 'Text1';
+        container.editor.updateFormField(container.documentHelper.formFields[0], 'TEXT', true);
+        container.selection.selectAll();
+        container.editor.delete();
+        container.editorHistory.undo();
+        let count: number =  container.revisions.changes[0].range.length;
+        expect(count).toBe(6);
+    });
+});

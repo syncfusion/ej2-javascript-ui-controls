@@ -38,6 +38,7 @@ export class TrackChangesPane {
     public revisions: Revision[];
     private sortedRevisions: Revision[] = [];
     private noChangesVisibleInternal: boolean = true;
+    public isTrackingPageBreak: boolean = false;
 
     get setNoChangesVisibility(): boolean {
         return this.noChangesVisibleInternal;
@@ -485,6 +486,16 @@ export class ChangesSingleView {
             this.revisionType = 'Deleted';
             revisionTypeLabel.innerHTML = this.locale.getConstant('Deleted').toUpperCase();
             revisionTypeLabel.classList.add('e-de-track-delete');
+        } else if (revision.revisionType === 'MoveFrom') {
+            this.revisionType = 'MoveFrom';
+            revisionTypeLabel.innerHTML = this.locale.getConstant('Move From').toUpperCase();
+            revisionTypeLabel.classList.add('e-de-track-delete');
+            revisionTypeLabel.style.whiteSpace = 'nowrap';
+        } else if (revision.revisionType === 'MoveTo') {
+            this.revisionType = 'MoveTo';
+            revisionTypeLabel.innerHTML = this.locale.getConstant('Move To').toUpperCase();
+            revisionTypeLabel.classList.add('e-de-track-insert');
+            revisionTypeLabel.style.whiteSpace = 'nowrap';
         }
         userNameTotalDiv.appendChild(revisionTypeLabel);
         this.singleInnerDiv.appendChild(userNameTotalDiv);
@@ -565,10 +576,8 @@ export class ChangesSingleView {
                     text += '<Table of Content>';
                     changesText.appendChild(this.addSpan(text));
                     return;
-                //tslint:disable-next-line:max-line-length
+                    //tslint:disable-next-line:max-line-length
                 } else if (fieldCode.match('HYPERLINK ') || fieldCode.match('MERGEFIELD') || fieldCode.match('FORMTEXT') || fieldCode.match('PAGE ')) {
-                    text = this.owner.editor.retrieveFieldResultantText(element.fieldEnd);
-                } else if (fieldCode.match('PAGE ')) {
                     text += this.owner.editor.retrieveFieldResultantText(element.fieldEnd);
                 } else if (element.formFieldData) {
                     let emptyChar: string = this.owner.documentHelper.textHelper.repeatChar(

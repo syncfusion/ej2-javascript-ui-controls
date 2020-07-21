@@ -1896,7 +1896,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             this.selectionModule.redrawSelection(this, this.selectionMode);
         }
     }
-    private processData(render: boolean = true): void {
+    public processData(render: boolean = true): void {
         this.visibleSeriesCount = 0;
         let check: boolean = true;
         for (let series of this.visibleSeries) {
@@ -2622,7 +2622,14 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         let element: Element = <Element>e.target;
         this.trigger(chartMouseClick, { target: element.id, x: this.mouseX, y: this.mouseY });
         this.clickCount++;
-        let timeInterval: number = this.pointDoubleClick ? 400 : 0;
+        let timeInterval: number = 0;
+        let isAngular: string = 'isAngular';
+        if (this[isAngular]) {
+            let observers: string = 'observers';
+            timeInterval = this.pointDoubleClick[observers].length > 0 ? 400 : 0;
+        } else {
+            timeInterval = this.pointDoubleClick ? 400 : 0;
+        }
         if (this.clickCount === 1 && this.pointClick) {
             this.singleClickTimer = +setTimeout(
                 (): void => {
@@ -3172,12 +3179,14 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             removeLength = 1;
         }
         // Fix for blazor resize issue
-        if (this.resizeTo !== this.checkResize && this.isBlazor && this.element.childElementCount) {
-            let containerCollection: NodeListOf<Element> = document.querySelectorAll('.e-chart');
-            for (let index: number = 0; index < containerCollection.length; index++) {
-                let container: Element = containerCollection[index];
-                while (container.firstChild) {
-                    remove(container.firstChild);
+        if (!isNullOrUndefined(this.resizeTo)) {
+            if (this.resizeTo !== this.checkResize && this.isBlazor && this.element.childElementCount) {
+                let containerCollection: NodeListOf<Element> = document.querySelectorAll('.e-chart');
+                for (let index: number = 0; index < containerCollection.length; index++) {
+                    let container: Element = containerCollection[index];
+                    while (container.firstChild) {
+                        remove(container.firstChild);
+                    }
                 }
             }
             this.checkResize = this.resizeTo;

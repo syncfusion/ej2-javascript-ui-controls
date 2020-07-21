@@ -857,7 +857,7 @@ var SfSplitter = /** @class */ (function () {
             this.collapsePane(e);
         }
         else {
-            this.dotNetRef.invokeMethodAsync(ONCOLLAPSED_EVENT, {
+            this.dotNetRef.invokeMethodAsync(ONCOLLAPSED_EVENT, -1, {
                 event: this.getMouseEvtArgs(e),
                 index: [this.getPreviousPaneIndex(), this.getNextPaneIndex()],
                 cancel: false,
@@ -1256,7 +1256,7 @@ var SfSplitter = /** @class */ (function () {
             }
             var event_1 = { target: targetEle };
             this.splitterDetails(event_1);
-            this.dotNetRef.invokeMethodAsync(ONCOLLAPSED_EVENT, {
+            this.dotNetRef.invokeMethodAsync(ONCOLLAPSED_EVENT, index, {
                 index: [this.getPreviousPaneIndex(), this.getNextPaneIndex()],
                 cancel: false
             });
@@ -1431,8 +1431,8 @@ var Splitter = {
     onCollapseEvent: function (element, event) {
         element.blazor__instance.onCollapseEvent(event);
     },
-    collapseMethodEvent: function (element, event) {
-        element.blazor__instance.collapseMethodEvent(event.index[0], event);
+    collapseMethodEvent: function (element, event, index) {
+        element.blazor__instance.collapseMethodEvent(index, event);
     },
     onExpandEvent: function (element, event) {
         element.blazor__instance.onExpandEvent(event);

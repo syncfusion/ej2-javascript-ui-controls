@@ -44,7 +44,7 @@ import * as CONSTANT from '../../common/constant';
 import { IHtmlKeyboardEvent } from '../../editor-manager/base/interface';
 import { dispatchEvent, getEditValue, isIDevice, decode, isEditableValueEmpty } from '../base/util';
 import { DialogRenderer } from '../renderer/dialog-renderer';
-import { SelectedEventArgs, RemovingEventArgs, UploadingEventArgs } from '@syncfusion/ej2-inputs';
+import { SelectedEventArgs, RemovingEventArgs, UploadingEventArgs, BeforeUploadEventArgs } from '@syncfusion/ej2-inputs';
 import { Resize } from '../actions/resize';
 
 /**
@@ -754,6 +754,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Event()
     public imageSelected: EmitType<SelectedEventArgs>;
+    /**
+     * Event triggers before the image upload process.
+     * @event
+     */
+    @Event()
+    public beforeImageUpload: EmitType<BeforeUploadEventArgs>;
     /**
      * Event triggers when the selected image begins to upload in the insert image dialog.
      * @event
@@ -1844,6 +1850,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         } else {
             this.element.style.height = 'auto';
         }
+        if (this.toolbarSettings.type === 'Expand' && (typeof (this.height) === 'string' &&
+            this.height.indexOf('px') > -1 || typeof (this.height) === 'number')) {
+            this.element.classList.add(classes.CLS_RTE_FIXED_TB_EXPAND);
+        } else {
+            this.element.classList.remove(classes.CLS_RTE_FIXED_TB_EXPAND);
+        }
     }
     /**
      * setPlaceHolder method
@@ -2143,11 +2155,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             setStyleAttribute(codeElement, { height: heightValue, marginTop: topValue + 'px' });
         }
         if (this.toolbarSettings.enableFloating && this.getToolbar() && !this.inlineMode.enable) {
-            if (isExpand) {
-                setStyleAttribute(this.getToolbar().parentElement, { height: (tbHeight + expandPopHeight) + 'px' });
-            } else {
-                setStyleAttribute(this.getToolbar().parentElement, { height: tbHeight + 'px' });
-            }
+            let tbWrapHeight: string = (isExpand ? (tbHeight + expandPopHeight) : tbHeight) + 'px';
+            setStyleAttribute(this.getToolbar().parentElement, { height: tbWrapHeight });
         }
         if (rzHeight === 0) {
             this.autoResize();

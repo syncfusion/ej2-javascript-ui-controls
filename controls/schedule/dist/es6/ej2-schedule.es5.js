@@ -213,10 +213,21 @@ function getScrollBarWidth() {
     document.body.removeChild(divNode);
     return scrollWidth = value;
 }
-function findIndexInData(data, property, value) {
+function findIndexInData(data, property, value, event, resourceCollection) {
     for (var i = 0, length_1 = data.length; i < length_1; i++) {
         if (data[i][property] === value) {
-            return i;
+            if (event) {
+                var field = resourceCollection.slice(-2)[0].field;
+                var res = (event[field] instanceof Array ? event[field] : [event[field]]);
+                var resData = res.join(',');
+                // tslint:disable-next-line:no-any
+                if (resData.includes(data[i][resourceCollection.slice(-1)[0].groupIDField])) {
+                    return i;
+                }
+            }
+            else {
+                return i;
+            }
         }
     }
     return -1;
@@ -4599,7 +4610,7 @@ var EventBase = /** @__PURE__ @class */ (function () {
         return target;
     };
     EventBase.prototype.getGroupIndexFromEvent = function (eventData) {
-        var levelName = name || this.parent.resourceCollection.slice(-1)[0].name;
+        var levelName = this.parent.resourceCollection.slice(-1)[0].name;
         var levelIndex = this.parent.resourceCollection.length - 1;
         var idField = this.parent.resourceCollection.slice(-1)[0].field;
         var id = ((eventData[idField] instanceof Array) ?
@@ -4611,7 +4622,13 @@ var EventBase = /** @__PURE__ @class */ (function () {
             }
             return null;
         })[0];
-        return this.parent.resourceBase.getIndexFromResourceId(id, levelName, resource);
+        if (levelIndex > 0) {
+            var parentField = this.parent.resourceCollection[levelIndex - 1].field;
+            return this.parent.resourceBase.getIndexFromResourceId(id, levelName, resource, eventData, parentField);
+        }
+        else {
+            return this.parent.resourceBase.getIndexFromResourceId(id, levelName, resource);
+        }
     };
     EventBase.prototype.isAllDayAppointment = function (event) {
         var fieldMapping = this.parent.eventFields;
@@ -11415,7 +11432,15 @@ var EventWindow = /** @__PURE__ @class */ (function () {
             };
             if (this_2.parent.activeViewOptions.group.byGroupID && (!isNullOrUndefined(lastlevel))) {
                 var lastResource = lastResouceData.dataSource;
-                var index = findIndexInData(lastResource, lastResouceData.idField, resourceData[i]);
+                var resCol = this_2.parent.resourceCollection;
+                var index = void 0;
+                if (resCol.length > 1) {
+                    index =
+                        findIndexInData(lastResource, lastResouceData.idField, resourceData[i], events, resCol);
+                }
+                else {
+                    index = findIndexInData(lastResource, lastResouceData.idField, resourceData[i]);
+                }
                 if (index < 0) {
                     return { value: void 0 };
                 }
@@ -11822,6 +11847,7 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
         }
     };
     VirtualScroll.prototype.virtualScrolling = function () {
+        var _this = this;
         this.parent.quickPopup.quickPopupHide();
         this.parent.quickPopup.morePopup.hide();
         var resWrap = this.parent.element.querySelector('.' + RESOURCE_COLUMN_WRAP_CLASS);
@@ -11850,12 +11876,15 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
         }
         if (!isBlazor()) {
             if (!isNullOrUndefined(resCollection) && resCollection.length > 0) {
+                this.parent.showSpinner();
                 this.updateContent(resWrap, conWrap, eventWrap, resCollection);
                 this.setTranslate(resWrap, conWrap, eventWrap, timeIndicator);
                 this.parent.notify(dataReady, {});
                 if (this.parent.dragAndDropModule && this.parent.dragAndDropModule.actionObj.action === 'drag') {
                     this.parent.dragAndDropModule.navigationWrapper();
                 }
+                window.clearTimeout(this.timeValue);
+                this.timeValue = window.setTimeout(function () { _this.parent.hideSpinner(); }, 250);
             }
         }
     };
@@ -14199,9 +14228,7 @@ var ResourceBase = /** @__PURE__ @class */ (function () {
             return dates.map(function (dateObj) { return dateObj.getTime(); }).indexOf(date.getTime()) === index;
         }); };
         var renderDates = removeDuplicateDates(resourceDates);
-        renderDates.sort(function (a, b) {
-            return a.getDay() - b.getDay();
-        });
+        renderDates.sort(function (a, b) { return a.getTime() - b.getTime(); });
         return renderDates;
     };
     ResourceBase.prototype.filterData = function (dataSource, field, value) {
@@ -14265,9 +14292,17 @@ var ResourceBase = /** @__PURE__ @class */ (function () {
         }
         this.refreshLayout(true);
     };
-    ResourceBase.prototype.getIndexFromResourceId = function (id, name, resourceData) {
+    ResourceBase.prototype.getIndexFromResourceId = function (id, name, resourceData, event, parentField) {
         var resource = resourceData.dataSource.filter(function (e) {
-            return e[resourceData.idField] === id;
+            if (event && e[resourceData.idField] === id) {
+                if (e[resourceData.groupIDField] === event[parentField]) {
+                    return e[resourceData.idField] === id;
+                }
+                return null;
+            }
+            else {
+                return e[resourceData.idField] === id;
+            }
         })[0];
         return (this.lastResourceLevel.map(function (e) { return e.resourceData; }).indexOf(resource));
     };
@@ -15363,7 +15398,8 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
         if (this.quickPopup) {
             this.quickPopup.onClosePopup();
         }
-        if (this.currentView === 'Month' || !this.activeViewOptions.timeScale.enable || this.activeView.isTimelineView()) {
+        if (this.currentView === 'Month' || ((this.currentView !== 'Agenda' && this.currentView !== 'MonthAgenda')
+            && !this.activeViewOptions.timeScale.enable) || this.activeView.isTimelineView()) {
             this.activeView.resetColWidth();
             this.notify(scrollUiUpdate, { cssProperties: this.getCssProperties(), isPreventScrollUpdate: true });
             this.notify(dataReady, {});
@@ -16899,7 +16935,7 @@ var ActionBase = /** @__PURE__ @class */ (function () {
             this.actionObj.scrollInterval = window.setInterval(function () {
                 if (_this.autoScrollValidation(e) && !_this.actionObj.clone.classList.contains(ALLDAY_APPOINTMENT_CLASS)) {
                     if (_this.parent.activeView.isTimelineView() && _this.parent.activeViewOptions.group.resources.length > 0
-                        && _this.actionObj.groupIndex === 0) {
+                        && _this.actionObj.groupIndex < 0) {
                         return;
                     }
                     _this.autoScroll();
@@ -17287,9 +17323,7 @@ var Resize = /** @__PURE__ @class */ (function (_super) {
                 cellIndex = (cellIndex < 0) ? 0 : (cellIndex >= noOfDays) ? noOfDays - 1 : cellIndex;
             }
             else {
-                var cellWidth = this.parent.currentView === 'TimelineMonth' || !this.parent.activeViewOptions.timeScale.enable ?
-                    this.actionObj.cellWidth : this.actionObj.cellWidth - (this.actionObj.interval *
-                    (this.actionObj.cellWidth / this.actionObj.slotInterval));
+                var cellWidth = this.actionObj.cellWidth;
                 cellIndex = isLeft ? Math.floor(this.actionObj.clone.offsetLeft / this.actionObj.cellWidth) :
                     Math.ceil((this.actionObj.clone.offsetLeft + (this.actionObj.clone.offsetWidth - cellWidth)) /
                         this.actionObj.cellWidth);
@@ -17325,7 +17359,7 @@ var Resize = /** @__PURE__ @class */ (function (_super) {
                 }
                 var spanMinutes = Math.ceil((this.actionObj.slotInterval / this.actionObj.cellWidth) *
                     (offsetValue - Math.floor(offsetValue / this.actionObj.cellWidth) * this.actionObj.cellWidth));
-                spanMinutes = isLastCell ? this.actionObj.slotInterval : spanMinutes;
+                spanMinutes = (isLastCell || (!isLeft && spanMinutes === 0)) ? this.actionObj.slotInterval : spanMinutes;
                 resizeTime = new Date(resizeDate.getTime());
                 resizeTime.setMinutes(resizeTime.getMinutes() + spanMinutes);
                 this.updateTimePosition(resizeTime);
@@ -18697,7 +18731,8 @@ var ViewBase = /** @__PURE__ @class */ (function () {
     };
     ViewBase.prototype.getDateRangeText = function () {
         if (this.parent.isAdaptive) {
-            return capitalizeFirstWord(this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM y', calendar: this.parent.getCalendarMode() }), 'single');
+            var formatDate = (this.parent.activeViewOptions.dateFormat) ? this.parent.activeViewOptions.dateFormat : 'MMMM y';
+            return capitalizeFirstWord(this.parent.globalize.formatDate(this.parent.selectedDate, { format: formatDate, calendar: this.parent.getCalendarMode() }), 'single');
         }
         return this.formatDateRange(this.renderDates[0], this.renderDates[this.renderDates.length - 1]);
     };
@@ -19053,6 +19088,19 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
         if (this.parent.activeViewOptions.headerRows.length > 0 &&
             this.parent.activeViewOptions.headerRows.slice(-1)[0].option !== 'Hour') {
             return;
+        }
+        if (this.parent.isServerRenderer()) {
+            var curEle = [].slice.call(this.element.querySelectorAll('.' + CURRENT_DAY_CLASS));
+            if (curEle.length > 0) {
+                removeClass(curEle, CURRENT_DAY_CLASS);
+            }
+            var curDate = addLocalOffset(new Date(new Date().setHours(0, 0, 0, 0)));
+            var queryString = '.' + DATE_HEADER_CLASS + '[data-date="' + curDate.getTime().toString() + '"]';
+            curEle = [].slice.call(this.element.querySelectorAll(queryString));
+            for (var _i = 0, curEle_1 = curEle; _i < curEle_1.length; _i++) {
+                var ele = curEle_1[_i];
+                addClass([ele], CURRENT_DAY_CLASS);
+            }
         }
         if (this.parent.showTimeIndicator && this.isWorkHourRange(this.parent.getCurrentTime())) {
             var currentDateIndex = this.getCurrentTimeIndicatorIndex();
@@ -19934,11 +19982,37 @@ var Month = /** @__PURE__ @class */ (function (_super) {
         return 'wide';
     };
     Month.prototype.serverRenderLayout = function () {
+        var curElem = [].slice.call(this.parent.element.querySelectorAll('.' + CURRENT_DAY_CLASS));
+        if (curElem.length > 0) {
+            removeClass(curElem, CURRENT_DAY_CLASS);
+        }
+        var curDate = addLocalOffset(new Date(new Date().setHours(0, 0, 0, 0)));
+        var queryString = '.' + WORK_CELLS_CLASS + '[data-date="' + curDate.getTime().toString() + '"]';
+        if (this.parent.currentView === 'Month' || this.parent.currentView === 'MonthAgenda') {
+            curElem = [].slice.call(this.parent.element.querySelectorAll('.' + CURRENTDATE_CLASS));
+            if (curElem.length > 0) {
+                removeClass(curElem, CURRENTDATE_CLASS);
+            }
+            var curEle = [].slice.call(this.parent.element.querySelectorAll(queryString));
+            for (var _i = 0, curEle_1 = curEle; _i < curEle_1.length; _i++) {
+                var ele = curEle_1[_i];
+                var index = ele.cellIndex;
+                var curHeader = [].slice.call(this.parent.element.querySelectorAll('.' + HEADER_CELLS_CLASS))[index];
+                addClass([ele], CURRENTDATE_CLASS);
+                addClass([curHeader], CURRENT_DAY_CLASS);
+            }
+        }
+        if (this.parent.currentView === 'TimelineMonth') {
+            var curEle = this.parent.element.querySelector('.' + HEADER_CELLS_CLASS + '[data-date="' + curDate.getTime().toString() + '"]');
+            if (!isNullOrUndefined(curEle)) {
+                addClass([curEle], CURRENT_DAY_CLASS);
+            }
+        }
         this.setPanel(this.parent.element.querySelector('.' + TABLE_WRAP_CLASS));
         var target = (this.parent.currentView === 'MonthAgenda') ? this.parent.activeView.getPanel() : this.parent.element;
         var headerCells = [].slice.call(this.element.querySelectorAll('.' + DATE_HEADER_WRAP_CLASS + ' td.' + HEADER_CELLS_CLASS));
-        for (var _i = 0, headerCells_1 = headerCells; _i < headerCells_1.length; _i++) {
-            var cell = headerCells_1[_i];
+        for (var _a = 0, headerCells_1 = headerCells; _a < headerCells_1.length; _a++) {
+            var cell = headerCells_1[_a];
             EventHandler.clearEvents(cell);
             this.wireCellEvents(cell);
         }
@@ -20352,7 +20426,8 @@ var Month = /** @__PURE__ @class */ (function (_super) {
                     endDate.getFullYear();
                 return capitalizeFirstWord(text, 'single');
             }
-            return capitalizeFirstWord(this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM y', calendar: this.parent.getCalendarMode() }), 'single');
+            var format = (this.parent.activeViewOptions.dateFormat) ? this.parent.activeViewOptions.dateFormat : 'MMMM y';
+            return capitalizeFirstWord(this.parent.globalize.formatDate(this.parent.selectedDate, { format: format, calendar: this.parent.getCalendarMode() }), 'single');
         }
         return this.formatDateRange(this.parent.selectedDate);
     };

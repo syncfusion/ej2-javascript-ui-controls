@@ -175,10 +175,14 @@ export class SelectionCommands {
                 bgStyle = (bg as HTMLElement).style.backgroundColor;
             }
         }
+        let formatNodeStyles: string = (formatNode as HTMLElement).getAttribute('style');
+        let formatNodeTagName: string = (formatNode as HTMLElement).tagName;
         let child: Node[] = InsertMethods.unwrap(formatNode);
         if (child.length > 0 && isFontStyle) {
             for (let num: number = 0; num < child.length; num++) {
-                child[num] = InsertMethods.Wrap(child[num] as HTMLElement, this.GetFormatNode(format, value));
+                child[num] = InsertMethods.Wrap(
+                    child[num] as HTMLElement,
+                    this.GetFormatNode(format, value, formatNodeTagName, formatNodeStyles));
             }
             let currentNodeElem: HTMLElement = nodes[index].parentElement;
             if (!isNOU(fontStyle) && fontStyle !== '') {
@@ -329,7 +333,7 @@ export class SelectionCommands {
         return domSelection;
     }
 
-    private static GetFormatNode(format: string, value?: string): HTMLElement {
+    private static GetFormatNode(format: string, value?: string, tagName?: string, styles?: string): HTMLElement {
         let node: HTMLElement;
         switch (format) {
             case 'bold':
@@ -338,10 +342,12 @@ export class SelectionCommands {
                 return document.createElement('em');
             case 'underline':
                 node = document.createElement('span');
+                this.updateStyles(node, tagName, styles);
                 node.style.textDecoration = 'underline';
                 return node;
             case 'strikethrough':
                 node = document.createElement('span');
+                this.updateStyles(node, tagName, styles);
                 node.style.textDecoration = 'line-through';
                 return node;
             case 'superscript':
@@ -350,22 +356,31 @@ export class SelectionCommands {
                 return document.createElement('sub');
             case 'fontcolor':
                 node = document.createElement('span');
+                this.updateStyles(node, tagName, styles);
                 node.style.color = value;
                 node.style.textDecoration = 'inherit';
                 return node;
             case 'fontname':
                 node = document.createElement('span');
+                this.updateStyles(node, tagName, styles);
                 node.style.fontFamily = value;
                 return node;
             case 'fontsize':
                 node = document.createElement('span');
+                this.updateStyles(node, tagName, styles);
                 node.style.fontSize = value;
                 return node;
             default:
                 node = document.createElement('span');
+                this.updateStyles(node, tagName, styles);
                 node.style.backgroundColor = value;
                 return node;
         }
     }
 
+    private static updateStyles(ele: HTMLElement, tag: string, styles: string): void {
+        if (styles !== null && tag === 'SPAN') {
+            ele.setAttribute('style', styles);
+        }
+    }
 }

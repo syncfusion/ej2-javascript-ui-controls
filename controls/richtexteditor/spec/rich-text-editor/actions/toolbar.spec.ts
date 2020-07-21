@@ -838,6 +838,7 @@ describe("Toolbar - Actions Module", () => {
                 rteObj.enabled = false;
                 rteObj.dataBind();
                 expect(document.querySelector(".e-richtexteditor .e-toolbar").classList.contains("e-rte-tb-float")).toBe(false);
+                (rteObj.element.querySelector('.e-toolbar-item') as HTMLElement).click();
                 window.scrollTo(0, 0);
                 done();
             }, 500);

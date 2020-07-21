@@ -300,6 +300,9 @@ export class Toolkit {
         chart.zoomModule.touchMoveList = chart.zoomModule.touchStartList = [];
         chart.zoomModule.pinchTarget = null;
         chart.removeSvg();
+        if (chart.enableAutoIntervalOnBothAxis) {
+            chart.processData(false);
+        }
         chart.refreshAxis();
         chart.refreshBound();
         this.elementOpacity = '1';

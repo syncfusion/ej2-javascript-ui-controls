@@ -7,6 +7,7 @@ import { SheetModel } from '../../workbook/base/sheet-model';
 import { getRangeIndexes, getCellIndexes, getCellAddress, getRangeAddress } from '../../workbook/common/address';
 import { CellModel, HyperlinkModel, BeforeHyperlinkArgs, AfterHyperlinkArgs, getTypeFromFormat, getCell } from '../../workbook/index';
 import { beforeHyperlinkClick, afterHyperlinkClick } from '../../workbook/common/event';
+import { isCellReference, DefineNameModel } from '../../workbook/index';
 import { Tab, TreeView } from '@syncfusion/ej2-navigations';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 
@@ -65,6 +66,22 @@ export class SpreadsheetHyperlink {
 
     private keyUpHandler(e: MouseEvent): void {
         let trgt: Element = e.target as Element;
+        if (closest(trgt, '.e-document')) {
+            let hyperlinkText: HTMLInputElement = document.querySelector('.e-hyp-text') as HTMLInputElement;
+            let hyperlinkSpan: HTMLElement = this.parent.element.querySelector('.e-hyperlink-alert-span');
+            let dlgElement: Element = closest(trgt, '.e-hyperlink-dlg') || closest(trgt, '.e-edithyperlink-dlg');
+            let footerEle: HTMLElement = dlgElement.getElementsByClassName('e-footer-content')[0] as HTMLElement;
+            let insertBut: HTMLElement = footerEle.firstChild as HTMLElement;
+            if (hyperlinkText && hyperlinkText.value) {
+                if (!isCellReference(hyperlinkText.value.toUpperCase())) {
+                    this.showDialog();
+                    insertBut.setAttribute('disabled', 'true');
+                } else if (hyperlinkSpan) {
+                    hyperlinkSpan.remove();
+                    insertBut.removeAttribute('disabled');
+                }
+            }
+        }
         if (trgt.classList.contains('e-text') && closest(trgt, '.e-cont')) {
             if (closest(trgt, '.e-webpage') && closest(trgt, '.e-webpage').getElementsByClassName('e-cont')[1] === trgt.parentElement) {
                 let dlgEle: Element = closest(trgt, '.e-hyperlink-dlg') || closest(trgt, '.e-edithyperlink-dlg');
@@ -165,7 +182,17 @@ export class SpreadsheetHyperlink {
             }
         }
     }
-
+    private showDialog(): void {
+        if (this.parent.element.querySelector('.e-hyperlink-alert-span')) {
+            this.parent.element.querySelector('.e-hyperlink-alert-span').remove();
+        }
+        let l10n: L10n = this.parent.serviceLocator.getService(locale);
+        let hyperlinkSpan: Element = this.parent.createElement('span', {
+            className: 'e-hyperlink-alert-span',
+            innerHTML: l10n.getConstant('HyperlinkAlert')
+        });
+        (this.parent.element.querySelector('.e-hyperlink-dlg').querySelector('.e-dlg-content')).appendChild(hyperlinkSpan);
+    }
     private editHyperlinkHandler(): void {
         let isWeb: boolean = true;
         let l10n: L10n = this.parent.serviceLocator.getService(locale);
@@ -232,6 +259,7 @@ export class SpreadsheetHyperlink {
             aftArgs = { hyperlink: rangeAddr, cell: this.parent.getActiveSheet().activeCell };
             if (typeof (rangeAddr) === 'string') { address = rangeAddr; }
             if (typeof (rangeAddr) === 'object') { address = rangeAddr.address; }
+            let definedNameCheck: string = address;
             if (address.indexOf('http://') === -1 && address.indexOf('https://') === -1 && address.indexOf('ftp://') === -1) {
                 if (!isNullOrUndefined(address)) {
                     if (this.parent.definedNames) {
@@ -278,23 +306,35 @@ export class SpreadsheetHyperlink {
                             isEmpty = false;
                         }
                     }
-                    rangeIndexes = isEmpty ? getRangeIndexes(range[1]) : rangeIndexes;
-                    if (this.parent.scrollSettings.enableVirtualization) {
-                        rangeIndexes[0] = rangeIndexes[0] >= this.parent.viewport.topIndex ?
-                            rangeIndexes[0] - this.parent.viewport.topIndex : rangeIndexes[0];
-                        rangeIndexes[1] = rangeIndexes[1] >= this.parent.viewport.leftIndex ?
-                            rangeIndexes[1] - this.parent.viewport.leftIndex : rangeIndexes[1];
-                    }
-                    if (!isNullOrUndefined(sheet)) {
-                        let rangeAddr: string = getRangeAddress(rangeIndexes);
-                        if (sheet === this.parent.getActiveSheet()) {
-                            getUpdateUsingRaf((): void => { this.parent.goTo(rangeAddr); });
-                        } else {
-                            if (rangeAddr.indexOf(':') >= 0) {
-                                let addArr: string[] = rangeAddr.split(':');
-                                rangeAddr = addArr[0] === addArr[1] ? addArr[0] : rangeAddr;
+                    let isDefinedNamed: boolean;
+                    let definedname: DefineNameModel[] = this.parent.definedNames;
+                    if (!isNullOrUndefined(definedname)) {
+                        for (let idx: number = 0; idx < definedname.length; idx++) {
+                            if (definedname[idx].name === definedNameCheck) {
+                                isDefinedNamed = true;
+                                break;
                             }
-                            getUpdateUsingRaf((): void => { this.parent.goTo(this.parent.sheets[sheetIdx].name + '!' + rangeAddr); });
+                        }
+                    }
+                    if (isCellReference(range[1]) || isDefinedNamed) {
+                        rangeIndexes = isEmpty ? getRangeIndexes(range[1]) : rangeIndexes;
+                        if (this.parent.scrollSettings.enableVirtualization) {
+                            rangeIndexes[0] = rangeIndexes[0] >= this.parent.viewport.topIndex ?
+                                rangeIndexes[0] - this.parent.viewport.topIndex : rangeIndexes[0];
+                            rangeIndexes[1] = rangeIndexes[1] >= this.parent.viewport.leftIndex ?
+                                rangeIndexes[1] - this.parent.viewport.leftIndex : rangeIndexes[1];
+                        }
+                        if (!isNullOrUndefined(sheet)) {
+                            let rangeAddr: string = getRangeAddress(rangeIndexes);
+                            if (sheet === this.parent.getActiveSheet()) {
+                                getUpdateUsingRaf((): void => { this.parent.goTo(rangeAddr); });
+                            } else {
+                                if (rangeAddr.indexOf(':') >= 0) {
+                                    let addArr: string[] = rangeAddr.split(':');
+                                    rangeAddr = addArr[0] === addArr[1] ? addArr[0] : rangeAddr;
+                                }
+                                getUpdateUsingRaf((): void => { this.parent.goTo(this.parent.sheets[sheetIdx].name + '!' + rangeAddr); });
+                            }
                         }
                     }
                 }
@@ -641,7 +681,10 @@ export class SpreadsheetHyperlink {
         });
         let cellrefCont: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
         let cellrefH: HTMLElement = this.parent.createElement('div', { className: 'e-header', innerHTML: 'Cell Reference' });
-        let cellrefInput: HTMLElement = this.parent.createElement('input', { className: 'e-input e-text', attrs: { 'type': 'Text' } });
+        let cellrefInput: HTMLElement = this.parent.createElement('input', {
+            className: 'e-input e-text e-hyp-text',
+            attrs: { 'type': 'Text' }
+        });
         cellrefInput.setAttribute('value', 'A1');
         cellrefCont.appendChild(cellrefInput);
         cellrefCont.insertBefore(cellrefH, cellrefInput);

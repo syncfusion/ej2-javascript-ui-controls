@@ -304,14 +304,14 @@ export class BaseHistoryInfo {
                     sel.selectPosition(insertTextPosition, currentPosition);
                 }
                 if (this.editorHistory.isUndoing) {
-                this.owner.editor.deleteSelectedContents(sel, true);
+                    this.owner.editor.deleteSelectedContents(sel, true);
                 }
             }
             if (!insertTextPosition.isAtSamePosition(endTextPosition)) {
                 isRemoveContent = this.action === 'BackSpace' || this.action === 'Delete' || this.action === 'ClearCells'
                     || this.action === 'DeleteCells';
                 // tslint:disable-next-line:max-line-length
-                let skipDelete: boolean = (deletedNodes.length > 0 && this.action === 'ParaMarkTrack') || this.action === 'ClearRevisions'  || this.action === 'AcceptTOC';
+                let skipDelete: boolean = (deletedNodes.length > 0 && this.action === 'ParaMarkTrack') || this.action === 'ClearRevisions' || this.action === 'AcceptTOC';
                 if (!(isRemoveContent) && this.action !== 'MergeCells' && this.action !== 'InsertRowAbove'
                     && this.action !== 'InsertRowBelow' && this.action !== 'InsertColumnLeft'
                     && this.action !== 'InsertColumnRight' && this.action !== 'Borders'
@@ -346,19 +346,31 @@ export class BaseHistoryInfo {
             updateSelection = true;
         }
         // tslint:disable-next-line:max-line-length
-        if (((this.editorHistory.isUndoing || this.endRevisionLogicalIndex || this.action === 'RemoveRowTrack' || updateSelection) && isNullOrUndefined(this.editorHistory.currentHistoryInfo) || updateSelection) ||
+        if (!this.owner.trackChangesPane.isTrackingPageBreak && ((this.editorHistory.isUndoing || this.endRevisionLogicalIndex || this.action === 'RemoveRowTrack' || updateSelection) && isNullOrUndefined(this.editorHistory.currentHistoryInfo) || updateSelection) ||
             ((this.action === 'InsertRowAbove' || this.action === 'Borders' || this.action === 'InsertRowBelow'
                 || this.action === 'InsertColumnLeft'
                 || this.action === 'InsertColumnRight' || this.action === 'Accept Change') && (this.editorHistory.isRedoing
                     || this.editorHistory.currentHistoryInfo.action === 'Paste'))) {
-            selectionStartTextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(start);
-            selectionEndTextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(end);
-            this.owner.selection.selectRange(selectionStartTextPosition, selectionEndTextPosition);
-            isSelectionChanged = true;
+                        if (this.action === 'RemoveRowTrack' && this.editorHistory.isRedoing) {
+                            selectionStartTextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(this.selectionStart);
+                            selectionEndTextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(this.selectionEnd);
+                        } else {
+                            selectionStartTextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(start);
+                            selectionEndTextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(end);
+                        }
+                        this.owner.selection.selectRange(selectionStartTextPosition, selectionEndTextPosition);
+                        isSelectionChanged = true;
         }
+        this.owner.trackChangesPane.isTrackingPageBreak = false;
         // Updates insert position of history info instance.
         this.insertPosition = start;
         this.endPosition = end;
+        // tslint:disable-next-line:max-line-length
+        if (!isNullOrUndefined(this.editorHistory.currentHistoryInfo) && (this.editorHistory.currentHistoryInfo.action === 'Accept All' || this.editorHistory.currentHistoryInfo.action === 'Reject All')) {
+            if (this.owner.documentHelper.blockToShift) {
+                this.owner.documentHelper.layout.shiftLayoutedItems();
+            }
+        }
         this.owner.editorModule.reLayout(this.owner.selection, this.owner.selection.isEmpty);
         if (isSelectionChanged) {
             this.documentHelper.scrollToPosition(this.owner.selection.start, this.owner.selection.end);
@@ -545,9 +557,9 @@ export class BaseHistoryInfo {
                 if (deletedNodes.length > 0 && (this.action === 'BackSpace' && isEmptySelection
                     || (!(block instanceof TableWidget) && !(block instanceof HeaderFooterWidget)))) {
                     let lastNode: IWidget = deletedNodes[0];
-                    if (this.action === 'SectionBreak' && lastNode instanceof BodyWidget ||
+                    if (this.action === 'TrackingPageBreak' || (this.action === 'SectionBreak' && lastNode instanceof BodyWidget ||
                         !isNullOrUndefined(this.editorHistory.currentHistoryInfo) &&
-                        this.editorHistory.currentHistoryInfo.action === 'PageBreak') {
+                        this.editorHistory.currentHistoryInfo.action === 'PageBreak')) {
                         lastNode = deletedNodes[1];
                     }
                     if (lastNode instanceof ParagraphWidget && this.owner.selection.start.offset > 0) {
@@ -667,7 +679,7 @@ export class BaseHistoryInfo {
                 }
             } else if (node instanceof BodyWidget) {
                 this.owner.editorModule.insertSection(this.owner.selection, false);
-            } else if (typeof(node) === 'string' && this.action === 'AcceptTOC') {
+            } else if (typeof (node) === 'string' && this.action === 'AcceptTOC') {
                 let insertIndex: string = this.selectionStart;
                 let widget: BlockWidget = this.owner.editorModule.getBlock({ index: insertIndex }).node as BlockWidget;
                 let endWidget: BlockWidget = this.owner.editorModule.getBlock({ index: this.selectionEnd }).node as BlockWidget;
@@ -706,7 +718,7 @@ export class BaseHistoryInfo {
         let currentPara: ParagraphWidget = start.paragraph;
         let endPara: ParagraphWidget = end.paragraph;
         let currentRevision: Revision = this.documentHelper.revisionsInternal.get(id);
-        let startoffset: number =  this.owner.selection.getParagraphInfo(start).offset;
+        let startoffset: number = this.owner.selection.getParagraphInfo(start).offset;
         let endoffset: number = this.owner.selection.getParagraphInfo(end).offset;
         let isSamePara: boolean = start.paragraph === end.paragraph;
         if (this.editorHistory.isUndoing) {
@@ -719,7 +731,7 @@ export class BaseHistoryInfo {
             }
             if (currentPara === endPara) {
                 if (!isSamePara) {
-                startoffset = 0;
+                    startoffset = 0;
                 }
                 this.owner.editor.applyRevisionForCurrentPara(currentPara, startoffset, endoffset, id, false);
             }

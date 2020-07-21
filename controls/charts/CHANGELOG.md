@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 18.2.46 (2020-07-21)
+
+### Chart
+
+#### Bug Fixes
+
+- `#285003` - Chart DataSource is not updating when the page has more number of chart issue fixed.
+- `#155963` - Added new API showZero to show data labels for value zero.
+- `#283698` - point click event is not working in some random cases.
+
 ## 18.2.45 (2020-07-14)
 
 - `#278688` - Added sharedTooltipRender event for shared tooltip in blazor.

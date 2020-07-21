@@ -53,6 +53,7 @@ export class Virtualization {
      * @private
      */
     public uiVirtualization(): void {
+        this.wireScrollEvent(false);
         let curViewDS: { [key: string]: Object; }[] = this.listViewInstance.curViewDS as { [key: string]: Object; }[];
         let firstDs: { [key: string]: Object; }[] = curViewDS.slice(0, 1);
         if (!(isBlazor() || this.listViewInstance.isServerRendered)) {
@@ -67,7 +68,6 @@ export class Virtualization {
         this.domItemCount = this.ValidateItemCount(Object.keys(this.listViewInstance.curViewDS).length);
         this.uiFirstIndex = 0;
         this.uiLastIndex = this.domItemCount - 1;
-        this.wireScrollEvent(false);
         let otherDs: { [key: string]: Object; }[] = curViewDS.slice(1, this.domItemCount);
         if (!(isBlazor() || this.listViewInstance.isServerRendered)) {
             let listItems: HTMLElement[] = ListBase.createListItemFromJson(
@@ -126,6 +126,11 @@ export class Virtualization {
 
     private updateUlContainer(e: Event): void {
         let listDiff: number;
+        let virtualElementContainer: HTMLElement = this.listViewInstance.ulElement.querySelector('.' + classNames.virtualElementContainer);
+        if (isNullOrUndefined(this.listViewInstance.liElementHeight)) {
+            this.listViewInstance.updateLiElementHeight();
+        }
+
         if (this.listViewInstance.isWindow) {
             // tslint:disable-next-line:no-any
             listDiff = Math.round((e as any).target.documentElement.scrollTop / this.listViewInstance.liElementHeight) - 2;
@@ -135,7 +140,6 @@ export class Virtualization {
             listDiff = Math.round((e as any).target.scrollTop / this.listViewInstance.liElementHeight) - 2;
             // tslint:enable-next-line:no-any  
         }
-        let virtualElementContainer: HTMLElement = this.listViewInstance.ulElement.children[0].children[0];
         if (((listDiff - 1) * this.listViewInstance.liElementHeight) < 0) {
             virtualElementContainer.style.top = '0px';
         } else {
@@ -211,10 +215,7 @@ export class Virtualization {
         if (isBlazor() && this.listViewInstance.isServerRendered) {
             let listDiff: number;
             if (isNullOrUndefined(this.listViewInstance.liElementHeight)) {
-                let ulContainer: Element = this.listViewInstance.element.querySelector('.' + classNames.virtualElementContainer);
-                if (ulContainer.children[0]) {
-                    this.listViewInstance.liElementHeight = ulContainer.children[0].getBoundingClientRect().height;
-                }
+                this.listViewInstance.updateLiElementHeight();
             }
             if (this.listViewInstance.isWindow) {
                 listDiff = Math.round(document.documentElement.scrollTop / this.listViewInstance.liElementHeight);

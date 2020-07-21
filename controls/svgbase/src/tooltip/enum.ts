@@ -31,7 +31,9 @@ export type TooltipShape =
 /** Render a InvertedTriangle. */
 'InvertedTriangle' |
 /** Render a Image. */
-'Image';
+'Image' |
+/** Render a None */
+'None';
 
 /** 
  * Defines Theme of the chart. They are

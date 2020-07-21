@@ -1705,7 +1705,7 @@ var TaskProcessor = /** @class */ (function (_super) {
                 updatableValue = false;
             }
             this.parent.setRecordValue('taskData.' + expandStateMapping, updatableValue, ganttData);
-            this.parent.setRecordValue('expandStateMapping', updatableValue, ganttData);
+            this.parent.setRecordValue(expandStateMapping, updatableValue, ganttData);
             this.parent.setRecordValue('expanded', updatableValue, ganttData);
         }
     };
@@ -5586,6 +5586,7 @@ var GanttTreeGrid = /** @class */ (function () {
         this.parent.treeGrid.treeColumnIndex = this.parent.treeColumnIndex;
         this.parent.treeGrid.columns = this.treeGridColumns;
         this.parent.treeGrid.dataSource = this.parent.flatData;
+        this.parent.treeGrid.expandStateMapping = this.parent.taskFields.expandState;
         var isGantt = 'isGantt';
         this.parent.treeGrid[isGantt] = true;
         this.parent.treeGrid.rowHeight = this.parent.rowHeight;

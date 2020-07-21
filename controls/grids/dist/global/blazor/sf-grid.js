@@ -4992,7 +4992,7 @@ var SfGrid = /** @class */ (function () {
     SfGrid.prototype.documentClickHandler = function (e) {
         var popupElement = parentsUntil(e.target, 'e-popup-open');
         var CCButton = parentsUntil(e.target, 'e-cc-toolbar');
-        if (!popupElement && !(e.target.classList.contains('e-icon-filter')) && !CCButton && (this.element.querySelectorAll('.e-filter-popup.e-popup-open').length || this.element.querySelectorAll('.e-ccdlg.e-popup-open').length)) {
+        if (!popupElement && !(e.target.classList.contains('e-fltrcheck')) && !(e.target.classList.contains('e-icon-filter')) && !CCButton && (this.element.querySelectorAll('.e-filter-popup.e-popup-open').length || this.element.querySelectorAll('.e-ccdlg.e-popup-open').length)) {
             this.dotNetRef.invokeMethodAsync('FilterPopupClose');
         }
     };

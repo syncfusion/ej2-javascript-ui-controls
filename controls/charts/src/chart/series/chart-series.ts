@@ -40,6 +40,14 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
     public visible: boolean;
 
     /**
+     * If set true, data label for zero values in series renders.
+     * @default true
+     */
+
+    @Property(true)
+    public showZero: boolean;
+
+    /**
      * The DataSource field that contains the data label value.
      * @default null
      */

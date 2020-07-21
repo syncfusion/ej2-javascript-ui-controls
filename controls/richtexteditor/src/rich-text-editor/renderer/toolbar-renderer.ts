@@ -25,7 +25,6 @@ export class ToolbarRenderer implements IRenderer {
     private currentElement: HTMLElement;
     private currentDropdown: DropDownButton;
     private popupOverlay: HTMLElement;
-    private colorPicker: ColorPicker;
     /**
      * Constructor for toolbar renderer module
      */
@@ -359,13 +358,14 @@ export class ToolbarRenderer implements IRenderer {
      */
     public renderColorPicker(args: IColorPickerModel, item: string): ColorPicker {
         let proxy: this = this;
-        this.colorPicker = new ColorPicker({
+        let value: string;
+        let colorPicker: ColorPicker = new ColorPicker({
             enablePersistence: this.parent.enablePersistence,
             enableRtl: this.parent.enableRtl,
             inline: true,
             created: () => {
                 let value: string = (item === 'backgroundcolor') ? proxy.parent.backgroundColor.default : proxy.parent.fontColor.default;
-                this.colorPicker.setProperties({ value: value });
+                colorPicker.setProperties({ value: value });
             },
             mode: ((item === 'backgroundcolor') ? proxy.parent.backgroundColor.mode : proxy.parent.fontColor.mode),
             modeSwitcher: ((item === 'backgroundcolor') ? proxy.parent.backgroundColor.modeSwitcher : proxy.parent.fontColor.modeSwitcher),
@@ -395,17 +395,21 @@ export class ToolbarRenderer implements IRenderer {
                 proxy.currentDropdown.toggle();
             },
             beforeModeSwitch: (args: ModeSwitchEventArgs): void => {
-                this.colorPicker.showButtons = args.mode === 'Palette' ? false : true;
+                value = colorPicker.value;
+                if (value === '') {
+                    colorPicker.setProperties({ value: ((args.mode === 'Picker') ? '#008000ff' : '') }, true);
+                }
+                colorPicker.showButtons = args.mode === 'Palette' ? false : true;
             }
         });
-        this.colorPicker.isStringTemplate = true;
-        this.colorPicker.columns = (item === 'backgroundcolor') ? this.parent.backgroundColor.columns : this.parent.fontColor.columns;
-        this.colorPicker.presetColors = (item === 'backgroundcolor') ? this.parent.backgroundColor.colorCode :
+        colorPicker.isStringTemplate = true;
+        colorPicker.columns = (item === 'backgroundcolor') ? this.parent.backgroundColor.columns : this.parent.fontColor.columns;
+        colorPicker.presetColors = (item === 'backgroundcolor') ? this.parent.backgroundColor.colorCode :
           this.parent.fontColor.colorCode;
-        this.colorPicker.cssClass = (item === 'backgroundcolor') ? CLS_BACKGROUND_COLOR_PICKER : CLS_FONT_COLOR_PICKER;
-        this.colorPicker.createElement = this.parent.createElement;
-        this.colorPicker.appendTo(document.body.querySelector(args.target) as HTMLElement);
-        return this.colorPicker;
+        colorPicker.cssClass = (item === 'backgroundcolor') ? CLS_BACKGROUND_COLOR_PICKER : CLS_FONT_COLOR_PICKER;
+        colorPicker.createElement = this.parent.createElement;
+        colorPicker.appendTo(document.body.querySelector(args.target) as HTMLElement);
+        return colorPicker;
     }
 
     /**

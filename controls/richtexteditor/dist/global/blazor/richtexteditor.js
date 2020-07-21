@@ -520,6 +520,11 @@ var drop = 'drop';
  * @deprecated
  */
 var xhtmlValidation = 'xhtmlValidation';
+/**
+ * @hidden
+ * @deprecated
+ */
+var beforeImageUpload = 'beforeImageUpload';
 
 /**
  * Rich Text Editor classes defined here.
@@ -1034,6 +1039,11 @@ var CLS_TABLE_BORDER = 'e-rte-table-border';
  * @deprecated
  */
 var CLS_RTE_TABLE_RESIZE = 'e-rte-table-resize';
+/**
+ * @hidden
+ * @deprecated
+ */
+var CLS_RTE_FIXED_TB_EXPAND = 'e-rte-fixed-tb-expand';
 
 /**
  * Defines types of Render
@@ -2553,15 +2563,15 @@ var ToolbarRenderer = /** @class */ (function () {
      * @deprecated
      */
     ToolbarRenderer.prototype.renderColorPicker = function (args, item) {
-        var _this = this;
         var proxy = this;
-        this.colorPicker = new sf.inputs.ColorPicker({
+        var value;
+        var colorPicker = new sf.inputs.ColorPicker({
             enablePersistence: this.parent.enablePersistence,
             enableRtl: this.parent.enableRtl,
             inline: true,
             created: function () {
                 var value = (item === 'backgroundcolor') ? proxy.parent.backgroundColor.default : proxy.parent.fontColor.default;
-                _this.colorPicker.setProperties({ value: value });
+                colorPicker.setProperties({ value: value });
             },
             mode: ((item === 'backgroundcolor') ? proxy.parent.backgroundColor.mode : proxy.parent.fontColor.mode),
             modeSwitcher: ((item === 'backgroundcolor') ? proxy.parent.backgroundColor.modeSwitcher : proxy.parent.fontColor.modeSwitcher),
@@ -2592,17 +2602,21 @@ var ToolbarRenderer = /** @class */ (function () {
                 proxy.currentDropdown.toggle();
             },
             beforeModeSwitch: function (args) {
-                _this.colorPicker.showButtons = args.mode === 'Palette' ? false : true;
+                value = colorPicker.value;
+                if (value === '') {
+                    colorPicker.setProperties({ value: ((args.mode === 'Picker') ? '#008000ff' : '') }, true);
+                }
+                colorPicker.showButtons = args.mode === 'Palette' ? false : true;
             }
         });
-        this.colorPicker.isStringTemplate = true;
-        this.colorPicker.columns = (item === 'backgroundcolor') ? this.parent.backgroundColor.columns : this.parent.fontColor.columns;
-        this.colorPicker.presetColors = (item === 'backgroundcolor') ? this.parent.backgroundColor.colorCode :
+        colorPicker.isStringTemplate = true;
+        colorPicker.columns = (item === 'backgroundcolor') ? this.parent.backgroundColor.columns : this.parent.fontColor.columns;
+        colorPicker.presetColors = (item === 'backgroundcolor') ? this.parent.backgroundColor.colorCode :
             this.parent.fontColor.colorCode;
-        this.colorPicker.cssClass = (item === 'backgroundcolor') ? CLS_BACKGROUND_COLOR_PICKER : CLS_FONT_COLOR_PICKER;
-        this.colorPicker.createElement = this.parent.createElement;
-        this.colorPicker.appendTo(document.body.querySelector(args.target));
-        return this.colorPicker;
+        colorPicker.cssClass = (item === 'backgroundcolor') ? CLS_BACKGROUND_COLOR_PICKER : CLS_FONT_COLOR_PICKER;
+        colorPicker.createElement = this.parent.createElement;
+        colorPicker.appendTo(document.body.querySelector(args.target));
+        return colorPicker;
     };
     /**
      * The function is used to render Rich Text Editor toolbar
@@ -12082,10 +12096,12 @@ var SelectionCommands = /** @class */ (function () {
                 bgStyle = bg.style.backgroundColor;
             }
         }
+        var formatNodeStyles = formatNode.getAttribute('style');
+        var formatNodeTagName = formatNode.tagName;
         var child = InsertMethods.unwrap(formatNode);
         if (child.length > 0 && isFontStyle) {
             for (var num = 0; num < child.length; num++) {
-                child[num] = InsertMethods.Wrap(child[num], this.GetFormatNode(format, value));
+                child[num] = InsertMethods.Wrap(child[num], this.GetFormatNode(format, value, formatNodeTagName, formatNodeStyles));
             }
             var currentNodeElem = nodes[index].parentElement;
             if (!sf.base.isNullOrUndefined(fontStyle) && fontStyle !== '') {
@@ -12216,7 +12232,7 @@ var SelectionCommands = /** @class */ (function () {
         }
         return domSelection;
     };
-    SelectionCommands.GetFormatNode = function (format, value) {
+    SelectionCommands.GetFormatNode = function (format, value, tagName, styles) {
         var node;
         switch (format) {
             case 'bold':
@@ -12225,10 +12241,12 @@ var SelectionCommands = /** @class */ (function () {
                 return document.createElement('em');
             case 'underline':
                 node = document.createElement('span');
+                this.updateStyles(node, tagName, styles);
                 node.style.textDecoration = 'underline';
                 return node;
             case 'strikethrough':
                 node = document.createElement('span');
+                this.updateStyles(node, tagName, styles);
                 node.style.textDecoration = 'line-through';
                 return node;
             case 'superscript':
@@ -12237,21 +12255,30 @@ var SelectionCommands = /** @class */ (function () {
                 return document.createElement('sub');
             case 'fontcolor':
                 node = document.createElement('span');
+                this.updateStyles(node, tagName, styles);
                 node.style.color = value;
                 node.style.textDecoration = 'inherit';
                 return node;
             case 'fontname':
                 node = document.createElement('span');
+                this.updateStyles(node, tagName, styles);
                 node.style.fontFamily = value;
                 return node;
             case 'fontsize':
                 node = document.createElement('span');
+                this.updateStyles(node, tagName, styles);
                 node.style.fontSize = value;
                 return node;
             default:
                 node = document.createElement('span');
+                this.updateStyles(node, tagName, styles);
                 node.style.backgroundColor = value;
                 return node;
+        }
+    };
+    SelectionCommands.updateStyles = function (ele, tag, styles) {
+        if (styles !== null && tag === 'SPAN') {
+            ele.setAttribute('style', styles);
         }
     };
     return SelectionCommands;
@@ -14807,6 +14834,9 @@ var PasteCleanup = /** @class */ (function () {
                         /* tslint:enable */
                     });
                 }
+                else {
+                    _this.parent.trigger(beforeImageUpload, args);
+                }
             },
             failure: function (e) {
                 setTimeout(function () { _this.uploadFailure(imgElem, uploadObj, popupObj, e); }, 900);
@@ -14900,7 +14930,14 @@ var PasteCleanup = /** @class */ (function () {
         while (strLen--) {
             decodeArr[strLen] = decodeStr.charCodeAt(strLen);
         }
-        return new File([decodeArr], filename + '.' + (!sf.base.isNullOrUndefined(extension) ? extension : ''), { type: extension });
+        if (sf.base.Browser.isIE || navigator.appVersion.indexOf('Edge') > -1) {
+            var blob = new Blob([decodeArr], { type: extension });
+            sf.base.extend(blob, { name: filename + '.' + (!sf.base.isNullOrUndefined(extension) ? extension : '') });
+            return blob;
+        }
+        else {
+            return new File([decodeArr], filename + '.' + (!sf.base.isNullOrUndefined(extension) ? extension : ''), { type: extension });
+        }
     };
     /**
      * Method for image formatting when pasting
@@ -17590,6 +17627,9 @@ var Image = /** @class */ (function () {
                         /* tslint:enable */
                     });
                 }
+                else {
+                    _this.parent.trigger(beforeImageUpload, args);
+                }
             },
             uploading: function (e) {
                 if (!_this.parent.isServerRendered) {
@@ -17911,6 +17951,9 @@ var Image = /** @class */ (function () {
                         _this.parent.inputElement.contentEditable = 'false';
                         /* tslint:enable */
                     });
+                }
+                else {
+                    _this.parent.trigger(beforeImageUpload, args);
                 }
             },
             uploading: function (e) {
@@ -21069,6 +21112,13 @@ var RichTextEditor = /** @class */ (function (_super) {
         else {
             this.element.style.height = 'auto';
         }
+        if (this.toolbarSettings.type === 'Expand' && (typeof (this.height) === 'string' &&
+            this.height.indexOf('px') > -1 || typeof (this.height) === 'number')) {
+            this.element.classList.add(CLS_RTE_FIXED_TB_EXPAND);
+        }
+        else {
+            this.element.classList.remove(CLS_RTE_FIXED_TB_EXPAND);
+        }
     };
     /**
      * setPlaceHolder method
@@ -21374,12 +21424,8 @@ var RichTextEditor = /** @class */ (function (_super) {
             sf.base.setStyleAttribute(codeElement, { height: heightValue, marginTop: topValue + 'px' });
         }
         if (this.toolbarSettings.enableFloating && this.getToolbar() && !this.inlineMode.enable) {
-            if (isExpand) {
-                sf.base.setStyleAttribute(this.getToolbar().parentElement, { height: (tbHeight + expandPopHeight) + 'px' });
-            }
-            else {
-                sf.base.setStyleAttribute(this.getToolbar().parentElement, { height: tbHeight + 'px' });
-            }
+            var tbWrapHeight = (isExpand ? (tbHeight + expandPopHeight) : tbHeight) + 'px';
+            sf.base.setStyleAttribute(this.getToolbar().parentElement, { height: tbWrapHeight });
         }
         if (rzHeight === 0) {
             this.autoResize();
@@ -21981,6 +22027,9 @@ var RichTextEditor = /** @class */ (function (_super) {
     ], RichTextEditor.prototype, "imageSelected", void 0);
     __decorate$1([
         sf.base.Event()
+    ], RichTextEditor.prototype, "beforeImageUpload", void 0);
+    __decorate$1([
+        sf.base.Event()
     ], RichTextEditor.prototype, "imageUploading", void 0);
     __decorate$1([
         sf.base.Event()
@@ -22185,6 +22234,7 @@ exports.imageRemoving = imageRemoving;
 exports.afterImageDelete = afterImageDelete;
 exports.drop = drop;
 exports.xhtmlValidation = xhtmlValidation;
+exports.beforeImageUpload = beforeImageUpload;
 exports.CLS_RTE = CLS_RTE;
 exports.CLS_RTL = CLS_RTL;
 exports.CLS_CONTENT = CLS_CONTENT;
@@ -22287,6 +22337,7 @@ exports.CLS_NOCOLOR_ITEM = CLS_NOCOLOR_ITEM;
 exports.CLS_TABLE = CLS_TABLE;
 exports.CLS_TABLE_BORDER = CLS_TABLE_BORDER;
 exports.CLS_RTE_TABLE_RESIZE = CLS_RTE_TABLE_RESIZE;
+exports.CLS_RTE_FIXED_TB_EXPAND = CLS_RTE_FIXED_TB_EXPAND;
 exports.getIndex = getIndex;
 exports.hasClass = hasClass;
 exports.getDropDownValue = getDropDownValue;

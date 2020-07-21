@@ -74,6 +74,7 @@ class SfTooltip {
     public contentAnimation: TooltipAnimationSettings = null;
     public beforeCloseAnimation: TooltipAnimationSettings = null;
     public ctrlId: string;
+    public isPopupHidden: boolean = true;
     public tooltipEventArgs: TooltipEventArgs;
     constructor(element: BlazorTooltipElement, ref: BlazorDotnetObject, properties: InitProps, eventList: EventList) {
         this.element = element;
@@ -215,7 +216,7 @@ class SfTooltip {
             removeClass([this.tooltipEle], POPUP_CLOSE);
             addClass([this.tooltipEle], POPUP_OPEN);
         }
-        if (this.isHidden()) {
+        if (this.isPopupHidden) {
             if (this.popupObj) { this.popupObj.destroy(); }
             if (this.tooltipEle) {
                 setStyleAttribute(this.tooltipEle, { 'display': 'none' });
@@ -265,7 +266,7 @@ class SfTooltip {
         this.showTooltip(target, this.properties.animation.open, e);
     }
     public isHidden(): boolean {
-        return this.tooltipEle ? this.tooltipEle.classList.contains(POPUP_OPEN) : true;
+        return this.tooltipEle ? !this.tooltipEle.classList.contains(POPUP_OPEN) : true;
     }
     public showTooltip(target: HTMLElement, showAnimation: TooltipAnimationSettings, e?: Event): void {
         this.isContiniousOpen = !NOU(this.tooltipEle);
@@ -283,8 +284,10 @@ class SfTooltip {
     }
     public beforeRenderCallBack(cancel: boolean): void {
         if (cancel) {
+            this.isPopupHidden = true;
             this.clear();
         } else {
+            this.isPopupHidden = false;
             if (NOU(this.tooltipEle)) {
                 this.dotnetRef.invokeMethodAsync('CreateTooltip', JSON.stringify(true));
             } else if (this.isContiniousOpen && !this.isRestrictUpdate) {
@@ -382,10 +385,15 @@ class SfTooltip {
             this.beforeCloseCallBack(false);
     }
     public beforeCloseCallBack(cancel: boolean): void {
-        if (!cancel) { this.popupHide(this.beforeCloseAnimation, this.beforeCloseTarget); }
+        if (!cancel) {
+            this.popupHide(this.beforeCloseAnimation, this.beforeCloseTarget);
+        } else {
+            this.isPopupHidden = false;
+        }
     }
     private popupHide(hideAnimation: TooltipAnimationSettings, target: HTMLElement): void {
         if (target) { this.restoreElement(target); }
+        this.isPopupHidden = true;
         let closeAnimation: Object = {
             name: hideAnimation.effect,
             duration: hideAnimation.duration,
@@ -653,8 +661,8 @@ class SfTooltip {
             }
             addClass([this.tooltipEle], POPUP_OPEN);
             document.body.appendChild(this.tooltipEle);
-            this.renderPopup(this.contentTargetValue);
             if (this.contentTargetValue) {
+                this.renderPopup(this.contentTargetValue);
                 let pos: Position = this.properties.position as Position;
                 this.adjustArrow(this.contentTargetValue, pos, this.tooltipPositionX, this.tooltipPositionY);
                 this.addDescribedBy(this.contentTargetValue, this.ctrlId + '_content');
@@ -679,6 +687,7 @@ class SfTooltip {
     }
     public beforeOpenCallBack(cancel: boolean): void {
         if (cancel) {
+            this.isPopupHidden = true;
             this.clear();
             this.restoreElement(this.contentTargetValue);
         } else {
@@ -798,6 +807,13 @@ let Tooltip: object = {
     },
     destroy(element: BlazorTooltipElement): void {
         element.blazor__instance.destroy();
+    },
+    refreshPosition(element: BlazorTooltipElement, targetEle: HTMLElement, targetProp: string): void {
+        let instance: SfTooltip = element.blazor__instance;
+        if (targetEle === null) {
+            targetEle = targetProp !== null && targetProp !== '' ? instance.element.querySelector(targetProp) : instance.element;
+        }
+        instance.reposition(targetEle);
     },
     updateProperties(element: BlazorTooltipElement, completeProps: InitProps, props: InitProps): void {
         let blazInstance: SfTooltip = element.blazor__instance;

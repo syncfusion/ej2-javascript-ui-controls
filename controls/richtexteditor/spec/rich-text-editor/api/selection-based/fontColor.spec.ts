@@ -484,4 +484,62 @@ describe('RTE SELECTION BASED - fontColor - ', () => {
             done();
         });
     });
+
+    describe('EJ2-41061 - Issue with selecting the transparent color from the FontColor in Rich Text Editor ', () => {
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                value: '<p id="rte">RTE</p>',
+                toolbarSettings: {
+                    items: ['FontColor', 'BackgroundColor']
+                },
+                fontColor: {
+                    default: '',
+                    colorCode: {
+                        'Custom': ['', '#000000', '#ffff00', '#00ff00']
+                    },
+                    modeSwitcher: true
+                },
+                backgroundColor: {
+                    default: '',
+                    colorCode: {
+                        'Custom': ['', '#000000', '#ffff00', '#00ff00']
+                    },
+                    modeSwitcher: true
+                }
+            });
+            controlId = rteObj.element.id;
+            rteObj.focusIn();
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            done();
+        })
+        it(' Test the FontColor ', (done) => {
+            let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_FontColor');
+            (item.querySelector('.e-btn-icon.e-caret') as HTMLElement).click();
+            let fontColorPopup: Element = document.querySelector('#' + controlId + '_toolbar_FontColor-popup');
+            expect(fontColorPopup.classList.contains('e-popup-open')).toBe(true);
+            expect(fontColorPopup.querySelector('.e-custom-palette .e-row > .e-selected').getAttribute('aria-label')).toBe('');
+            expect(fontColorPopup.querySelector('.e-custom-palette .e-row > .e-selected').classList.contains('e-nocolor-item')).toBe(true);
+            (fontColorPopup.querySelector('.e-mode-switch-btn') as HTMLElement).click();
+            expect(fontColorPopup.querySelectorAll('.e-custom-palette').length > 0).toBe(false);
+            expect(fontColorPopup.querySelectorAll('.e-color-picker').length > 0).toBe(true);
+            done();
+        });
+        it(' Test the BackgroundColor ', (done) => {
+            let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_BackgroundColor');
+            (item.querySelector('.e-btn-icon.e-caret') as HTMLElement).click();
+            let bgColorPopup: Element = document.querySelector('#' + controlId +'_toolbar_BackgroundColor-popup');
+            expect(bgColorPopup.classList.contains('e-popup-open')).toBe(true);
+            expect(bgColorPopup.querySelector('.e-custom-palette .e-row > .e-selected').getAttribute('aria-label')).toBe('');
+            expect(bgColorPopup.querySelector('.e-custom-palette .e-row > .e-selected').classList.contains('e-nocolor-item')).toBe(true);
+            (bgColorPopup.querySelector('.e-mode-switch-btn') as HTMLElement).click();
+            expect(bgColorPopup.querySelectorAll('.e-custom-palette').length > 0).toBe(false);
+            expect(bgColorPopup.querySelectorAll('.e-color-picker').length > 0).toBe(true);
+            done();
+        });
+    });
 });

@@ -550,7 +550,7 @@ export class EventBase {
     }
 
     public getGroupIndexFromEvent(eventData: { [key: string]: Object }): number {
-        let levelName: string = name || this.parent.resourceCollection.slice(-1)[0].name;
+        let levelName: string = this.parent.resourceCollection.slice(-1)[0].name;
         let levelIndex: number = this.parent.resourceCollection.length - 1;
         let idField: string = this.parent.resourceCollection.slice(-1)[0].field;
         let id: number = ((eventData[idField] instanceof Array) ?
@@ -562,7 +562,12 @@ export class EventBase {
             }
             return null;
         })[0];
-        return this.parent.resourceBase.getIndexFromResourceId(id, levelName, resource);
+        if (levelIndex > 0) {
+            let parentField: string = this.parent.resourceCollection[levelIndex - 1].field;
+            return this.parent.resourceBase.getIndexFromResourceId(id, levelName, resource, eventData, parentField);
+        } else {
+            return this.parent.resourceBase.getIndexFromResourceId(id, levelName, resource);
+        }
     }
 
     public isAllDayAppointment(event: { [key: string]: Object }): boolean {

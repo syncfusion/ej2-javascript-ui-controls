@@ -65,6 +65,7 @@ export class GanttTreeGrid {
         this.parent.treeGrid.treeColumnIndex = this.parent.treeColumnIndex;
         this.parent.treeGrid.columns = this.treeGridColumns;
         this.parent.treeGrid.dataSource = this.parent.flatData;
+        this.parent.treeGrid.expandStateMapping = this.parent.taskFields.expandState;
         let isGantt: string = 'isGantt';
         this.parent.treeGrid[isGantt] = true;
         this.parent.treeGrid.rowHeight = this.parent.rowHeight;

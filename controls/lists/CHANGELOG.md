@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.2.46 (2020-07-21)
+
+### ListView
+
+#### Bug Fixes
+
+- The issue with `The closest undefined error throws in the IE 11 browser` has been resolved.
+
 ## 18.2.44 (2020-07-07)
 
 ### ListView

@@ -13,6 +13,13 @@ export interface DataLabelSettingsModel {
     visible?: boolean;
 
     /**
+     * If set true, data label for zero values in series renders.
+     * @default true
+     */
+
+    showZero?: boolean;
+
+    /**
      * The DataSource field that contains the data label value.
      * @default null
      */

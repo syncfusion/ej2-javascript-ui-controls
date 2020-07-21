@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.2.46 (2020-07-21)
+
+### Tab
+
+#### Bug Fixes
+
+- `#279134` - An issue with cross side scripting validation has been fixed.
+
 ## 18.2.44 (2020-07-07)
 
 ### Menu

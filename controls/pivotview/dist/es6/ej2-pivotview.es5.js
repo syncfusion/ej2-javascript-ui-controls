@@ -23889,7 +23889,12 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         var pivot = this;
         //setTimeout(() => {
         pivot.engineModule.data = e.result;
-        pivot.initEngine();
+        if (!isNullOrUndefined(pivot.engineModule.data) && pivot.engineModule.data.length > 0) {
+            pivot.initEngine();
+        }
+        else {
+            this.hideWaitingPopup();
+        }
         //});
     };
     /** @hidden */

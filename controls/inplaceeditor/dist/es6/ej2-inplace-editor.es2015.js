@@ -1083,7 +1083,6 @@ let InPlaceEditor = class InPlaceEditor extends Component {
                 e.target.nextElementSibling.tagName !== 'BUTTON')) {
             if (this.actionOnBlur === 'Submit') {
                 this.save();
-                this.cancelHandler();
             }
             else if (this.actionOnBlur === 'Cancel') {
                 this.cancelHandler();
@@ -1178,7 +1177,6 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         if (e.keyCode === 9 && e.shiftKey === true && e.target.tagName !== 'BUTTON') {
             if (this.actionOnBlur === 'Submit') {
                 this.save();
-                this.cancelHandler();
             }
             else if (this.actionOnBlur === 'Cancel') {
                 this.cancelHandler();

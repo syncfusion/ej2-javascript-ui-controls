@@ -2449,13 +2449,13 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         this.cellSize = [];
         if ((this.checkMediaQuery())) {
             this.cellSize[1] = this.element.parentElement
-                && Math.floor((this.element.parentElement.offsetWidth)) / this.cellAspectRatio;
+                && ((this.element.parentElement.offsetWidth)) / this.cellAspectRatio;
         }
         else {
             this.cellSize[0] = this.element.parentElement &&
-                Math.floor((this.element.parentElement.offsetWidth));
+                ((this.element.parentElement.offsetWidth));
             this.cellSize[0] = this.element.parentElement
-                && Math.floor((this.element.parentElement.offsetWidth - ((this.maxCol() - 1) * this.cellSpacing[0]))
+                && ((this.element.parentElement.offsetWidth - ((this.maxCol() - 1) * this.cellSpacing[0]))
                     / (this.maxCol()));
             this.cellSize[1] = this.cellSize[0] / this.cellAspectRatio;
         }
@@ -2649,8 +2649,8 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         this.shadowEle.classList.add('e-holder');
         addClass([this.element], [preventSelect]);
         this.element.appendChild(this.shadowEle);
-        this.elementX = parseInt(el.style.left, 10);
-        this.elementY = parseInt(el.style.top, 10);
+        this.elementX = parseFloat(el.style.left);
+        this.elementY = parseFloat(el.style.top);
         this.elementWidth = el.offsetWidth;
         this.elementHeight = el.offsetHeight;
         this.originalWidth = this.getCellInstance(el.id).sizeX;
@@ -2671,7 +2671,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         }
     };
     DashboardLayout.prototype.getCellSize = function () {
-        return [parseInt((this.cellSize[0]), 10), parseInt(this.cellSize[1], 10)];
+        return [this.cellSize[0], this.cellSize[1]];
     };
     DashboardLayout.prototype.updateMaxTopLeft = function (e) {
         this.moveTarget = this.downTarget;
@@ -3142,7 +3142,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         var widthValue;
         if (this.checkMediaQuery()) {
             heightValue = ((this.maxRow()) *
-                (this.element.parentElement && Math.floor((this.element.parentElement.offsetWidth)) / this.cellAspectRatio) +
+                (this.element.parentElement && ((this.element.parentElement.offsetWidth)) / this.cellAspectRatio) +
                 (this.maxRow() - 1) * this.cellSpacing[1]) + 'px';
         }
         else {
@@ -3205,8 +3205,8 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         }
         var heightValue = this.getCellSize()[1];
         var widthValue = this.getCellSize()[0];
-        var left = col === 0 ? 0 : (((col) * (parseInt(widthValue.toString(), 10) + this.cellSpacing[0])));
-        var top = row === 0 ? 0 : (((row) * (parseInt(heightValue.toString(), 10) + this.cellSpacing[1])));
+        var left = col === 0 ? 0 : (((col) * ((widthValue) + this.cellSpacing[0])));
+        var top = row === 0 ? 0 : (((row) * ((heightValue) + this.cellSpacing[1])));
         setStyleAttribute(cellElement, { 'left': left + 'px', 'top': top + 'px' });
     };
     DashboardLayout.prototype.getRowColumn = function () {
@@ -4131,8 +4131,8 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
     };
     DashboardLayout.prototype.getRowColumnDragValues = function (args) {
         var value = [];
-        var elementTop = parseInt(args.element.style.top, 10);
-        var elementLeft = parseInt(args.element.style.left, 10);
+        var elementTop = parseFloat(args.element.style.top);
+        var elementLeft = parseFloat(args.element.style.left);
         var row = Math.round(elementTop / (this.getCellSize()[1] + this.cellSpacing[1]));
         var col = Math.round(elementLeft / (this.getCellSize()[0] + +this.cellSpacing[0]));
         value = [row, col];
@@ -4414,8 +4414,8 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         var sizeX = parseInt(args.element.getAttribute('data-sizeX'), 10);
         var widthValue = this.getCellSize()[0];
         var heightValue = this.getCellSize()[1];
-        var top = row === 0 ? 0 : (((row) * (parseInt(heightValue.toString(), 10) + this.cellSpacing[1])));
-        var left = col === 0 ? 0 : (((col) * (parseInt(widthValue.toString(), 10) + this.cellSpacing[0])));
+        var top = row === 0 ? 0 : (((row) * (heightValue + this.cellSpacing[1])));
+        var left = col === 0 ? 0 : (((col) * (widthValue + this.cellSpacing[0])));
         cellSizeOne = this.getCellSize()[1];
         cellSizeZero = this.getCellSize()[0];
         this.elementRef.top = this.shadowEle.style.top = top + 'px';

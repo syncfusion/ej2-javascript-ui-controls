@@ -9432,6 +9432,9 @@ var WorkbookEdit = /** @class */ (function () {
             sheet.rows[range[0]] = {};
             sheet.rows[range[0]].cells = [];
         }
+        if (!sheet.rows[range[0]].cells) {
+            sheet.rows[range[0]].cells = [];
+        }
         if (!sheet.rows[range[0]].cells[range[1]]) {
             sheet.rows[range[0]].cells[range[1]] = {};
         }
@@ -9789,7 +9792,8 @@ var WorkbookDelete = /** @class */ (function () {
                             mergeArgs = null;
                         }
                     }
-                    if (args.model.rows[curIdx].cells[i] && args.model.rows[curIdx].cells[i].rowSpan !== undefined &&
+                    if (args.model.rows[curIdx].cells && args.model.rows[curIdx].cells[i] &&
+                        args.model.rows[curIdx].cells[i].rowSpan !== undefined &&
                         args.model.rows[curIdx].cells[i].rowSpan < 0 && args.model.rows[curIdx].cells[i].colSpan === undefined) {
                         if (!mergeArgs) {
                             mergeArgs = { range: [curIdx, i, curIdx, i] };
@@ -12838,6 +12842,60 @@ var ConditionalFormat = /** @class */ (function (_super) {
  */
 function checkIsFormula(text) {
     return text && text[0] === '=' && text.length > 1;
+}
+/**
+ * Check whether the value is cell reference or not.
+ * @param {string} value - Specify the value to check.
+ */
+function isCellReference(value) {
+    var text = value;
+    var startNum = 0;
+    var endNum = 0;
+    var j = 0;
+    var numArr = [89, 71, 69];
+    // XFD is the last column, for that we are using ascii values of Z, G, E (89, 71, 69) to restrict the flow.
+    var cellText = '';
+    var textLength = text.length;
+    for (var i = 0; i < textLength; i++) {
+        if (isChar(text[i])) {
+            endNum++;
+        }
+    }
+    cellText = text.substring(startNum, endNum);
+    var cellTextLength = cellText.length;
+    if (cellTextLength !== textLength) {
+        if (cellTextLength < 4) {
+            if (textLength !== 1 && (isNaN(parseInt(text, 10)))) {
+                while (j < cellTextLength) {
+                    if ((cellText[j]) && cellText[j].charCodeAt(0) < numArr[j]) {
+                        j++;
+                        continue;
+                    }
+                    else if (!(cellText[j]) && j > 0) {
+                        break;
+                    }
+                    else {
+                        return false;
+                    }
+                }
+                var cellNumber = parseFloat(text.substring(endNum, textLength));
+                if (cellNumber > 0 && cellNumber < 1048577) { // 1048576 - Maximum number of rows in excel.
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+/**
+ * Check whether the value is character or not.
+ * @param {string} value - Specify the value to check.
+ */
+function isChar(value) {
+    if ((value.charCodeAt(0) >= 65 && value.charCodeAt(0) <= 90) || (value.charCodeAt(0) >= 97 && value.charCodeAt(0) <= 122)) {
+        return true;
+    }
+    return false;
 }
 
 /** @hidden */
@@ -16383,6 +16441,9 @@ var Edit = /** @class */ (function () {
             editor.contentEditable = 'true';
             editor.spellcheck = false;
             this.editorElem = editor;
+            if (this.parent.element.getElementsByClassName('e-spreadsheet-edit')[0]) {
+                this.parent.element.getElementsByClassName('e-spreadsheet-edit')[0].remove();
+            }
             this.parent.element.querySelector('.e-sheet-content').appendChild(this.editorElem);
         }
         this.parent.notify(formulaOperation, { action: 'renderAutoComplete' });
@@ -16552,7 +16613,7 @@ var Edit = /** @class */ (function () {
                 else {
                     _this.isNewValueEdit = true;
                 }
-                if (value) {
+                if (!sf.base.isUndefined(value)) {
                     _this.refreshEditor(value, false, true, false, false);
                 }
                 if (refreshCurPos) {
@@ -19894,6 +19955,23 @@ var SpreadsheetHyperlink = /** @class */ (function () {
     };
     SpreadsheetHyperlink.prototype.keyUpHandler = function (e) {
         var trgt = e.target;
+        if (sf.base.closest(trgt, '.e-document')) {
+            var hyperlinkText = document.querySelector('.e-hyp-text');
+            var hyperlinkSpan = this.parent.element.querySelector('.e-hyperlink-alert-span');
+            var dlgElement = sf.base.closest(trgt, '.e-hyperlink-dlg') || sf.base.closest(trgt, '.e-edithyperlink-dlg');
+            var footerEle = dlgElement.getElementsByClassName('e-footer-content')[0];
+            var insertBut = footerEle.firstChild;
+            if (hyperlinkText && hyperlinkText.value) {
+                if (!isCellReference(hyperlinkText.value.toUpperCase())) {
+                    this.showDialog();
+                    insertBut.setAttribute('disabled', 'true');
+                }
+                else if (hyperlinkSpan) {
+                    hyperlinkSpan.remove();
+                    insertBut.removeAttribute('disabled');
+                }
+            }
+        }
         if (trgt.classList.contains('e-text') && sf.base.closest(trgt, '.e-cont')) {
             if (sf.base.closest(trgt, '.e-webpage') && sf.base.closest(trgt, '.e-webpage').getElementsByClassName('e-cont')[1] === trgt.parentElement) {
                 var dlgEle = sf.base.closest(trgt, '.e-hyperlink-dlg') || sf.base.closest(trgt, '.e-edithyperlink-dlg');
@@ -19994,6 +20072,17 @@ var SpreadsheetHyperlink = /** @class */ (function () {
             }
         }
     };
+    SpreadsheetHyperlink.prototype.showDialog = function () {
+        if (this.parent.element.querySelector('.e-hyperlink-alert-span')) {
+            this.parent.element.querySelector('.e-hyperlink-alert-span').remove();
+        }
+        var l10n = this.parent.serviceLocator.getService(locale);
+        var hyperlinkSpan = this.parent.createElement('span', {
+            className: 'e-hyperlink-alert-span',
+            innerHTML: l10n.getConstant('HyperlinkAlert')
+        });
+        (this.parent.element.querySelector('.e-hyperlink-dlg').querySelector('.e-dlg-content')).appendChild(hyperlinkSpan);
+    };
     SpreadsheetHyperlink.prototype.editHyperlinkHandler = function () {
         var _this = this;
         var l10n = this.parent.serviceLocator.getService(locale);
@@ -20065,6 +20154,7 @@ var SpreadsheetHyperlink = /** @class */ (function () {
             if (typeof (rangeAddr) === 'object') {
                 address = rangeAddr.address;
             }
+            var definedNameCheck = address;
             if (address.indexOf('http://') === -1 && address.indexOf('https://') === -1 && address.indexOf('ftp://') === -1) {
                 if (!sf.base.isNullOrUndefined(address)) {
                     if (this.parent.definedNames) {
@@ -20113,24 +20203,36 @@ var SpreadsheetHyperlink = /** @class */ (function () {
                             isEmpty = false;
                         }
                     }
-                    rangeIndexes = isEmpty ? getRangeIndexes(range[1]) : rangeIndexes;
-                    if (this.parent.scrollSettings.enableVirtualization) {
-                        rangeIndexes[0] = rangeIndexes[0] >= this.parent.viewport.topIndex ?
-                            rangeIndexes[0] - this.parent.viewport.topIndex : rangeIndexes[0];
-                        rangeIndexes[1] = rangeIndexes[1] >= this.parent.viewport.leftIndex ?
-                            rangeIndexes[1] - this.parent.viewport.leftIndex : rangeIndexes[1];
-                    }
-                    if (!sf.base.isNullOrUndefined(sheet)) {
-                        var rangeAddr_1 = getRangeAddress(rangeIndexes);
-                        if (sheet === this.parent.getActiveSheet()) {
-                            getUpdateUsingRaf(function () { _this.parent.goTo(rangeAddr_1); });
-                        }
-                        else {
-                            if (rangeAddr_1.indexOf(':') >= 0) {
-                                var addArr = rangeAddr_1.split(':');
-                                rangeAddr_1 = addArr[0] === addArr[1] ? addArr[0] : rangeAddr_1;
+                    var isDefinedNamed = void 0;
+                    var definedname = this.parent.definedNames;
+                    if (!sf.base.isNullOrUndefined(definedname)) {
+                        for (var idx = 0; idx < definedname.length; idx++) {
+                            if (definedname[idx].name === definedNameCheck) {
+                                isDefinedNamed = true;
+                                break;
                             }
-                            getUpdateUsingRaf(function () { _this.parent.goTo(_this.parent.sheets[sheetIdx_1].name + '!' + rangeAddr_1); });
+                        }
+                    }
+                    if (isCellReference(range[1]) || isDefinedNamed) {
+                        rangeIndexes = isEmpty ? getRangeIndexes(range[1]) : rangeIndexes;
+                        if (this.parent.scrollSettings.enableVirtualization) {
+                            rangeIndexes[0] = rangeIndexes[0] >= this.parent.viewport.topIndex ?
+                                rangeIndexes[0] - this.parent.viewport.topIndex : rangeIndexes[0];
+                            rangeIndexes[1] = rangeIndexes[1] >= this.parent.viewport.leftIndex ?
+                                rangeIndexes[1] - this.parent.viewport.leftIndex : rangeIndexes[1];
+                        }
+                        if (!sf.base.isNullOrUndefined(sheet)) {
+                            var rangeAddr_1 = getRangeAddress(rangeIndexes);
+                            if (sheet === this.parent.getActiveSheet()) {
+                                getUpdateUsingRaf(function () { _this.parent.goTo(rangeAddr_1); });
+                            }
+                            else {
+                                if (rangeAddr_1.indexOf(':') >= 0) {
+                                    var addArr = rangeAddr_1.split(':');
+                                    rangeAddr_1 = addArr[0] === addArr[1] ? addArr[0] : rangeAddr_1;
+                                }
+                                getUpdateUsingRaf(function () { _this.parent.goTo(_this.parent.sheets[sheetIdx_1].name + '!' + rangeAddr_1); });
+                            }
                         }
                     }
                 }
@@ -20494,7 +20596,10 @@ var SpreadsheetHyperlink = /** @class */ (function () {
         });
         var cellrefCont = this.parent.createElement('div', { className: 'e-cont' });
         var cellrefH = this.parent.createElement('div', { className: 'e-header', innerHTML: 'Cell Reference' });
-        var cellrefInput = this.parent.createElement('input', { className: 'e-input e-text', attrs: { 'type': 'Text' } });
+        var cellrefInput = this.parent.createElement('input', {
+            className: 'e-input e-text e-hyp-text',
+            attrs: { 'type': 'Text' }
+        });
         cellrefInput.setAttribute('value', 'A1');
         cellrefCont.appendChild(cellrefInput);
         cellrefCont.insertBefore(cellrefH, cellrefInput);
@@ -21807,7 +21912,7 @@ var DataValidation = /** @class */ (function () {
                     }
                     var updatedVal = dateEventArgs.updatedVal;
                     if (idx === 0) {
-                        value = type === 'Date' ? updatedVal : updatedVal.slice(updatedVal.indexOf('.') + 1, updatedVal.length);
+                        value = type === 'Date' ? args.value : updatedVal.slice(updatedVal.indexOf('.') + 1, updatedVal.length);
                     }
                     else if (idx === 1) {
                         value1 = type === 'Date' ? updatedVal : updatedVal.slice(updatedVal.indexOf('.') + 1, updatedVal.length);
@@ -27750,6 +27855,9 @@ var Formula = /** @class */ (function () {
         this.removeEventListener();
         if (this.autocompleteInstance) {
             this.autocompleteInstance.destroy();
+            if (this.autocompleteInstance.element) {
+                this.autocompleteInstance.element.remove();
+            }
         }
         this.autocompleteInstance = null;
         this.parent = null;
@@ -33937,6 +34045,11 @@ var Spreadsheet = /** @class */ (function (_super) {
                 case 'cellStyle':
                     this.renderModule.refreshSheet();
                     break;
+                case 'allowEditing':
+                    if (this.allowEditing) {
+                        this.notify(editOperation, { action: 'renderEditor' });
+                    }
+                    break;
                 case 'sheets':
                     // Object.keys(newProp.sheets).forEach((sheetIdx: string): void => {
                     // if (this.activeSheetIndex === Number(sheetIdx)) {
@@ -34305,6 +34418,8 @@ exports.clear = clear;
 exports.clearCF = clearCF;
 exports.clearCells = clearCells;
 exports.checkIsFormula = checkIsFormula;
+exports.isCellReference = isCellReference;
+exports.isChar = isChar;
 exports.toFraction = toFraction;
 exports.getGcd = getGcd;
 exports.intToDate = intToDate;

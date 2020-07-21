@@ -307,3 +307,37 @@ describe('Text Search module testing', () => {
         expect((optionsPane as any).results.innerList.length).toBe(3);
     });
 });
+
+describe('Get text search item hierarchical index', () => {
+    let editor: DocumentEditor = undefined;
+    beforeEach(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, Search, OptionsPane, EditorHistory);
+        editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false, enableSearch: true, enableOptionsPane: true, enableEditorHistory: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterEach((done) => {
+        document.body.removeChild(document.getElementById('container'));
+        editor.destroy();
+        editor = undefined;
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('field end validation testing', () => {
+        editor.open(getJson());
+        let optionsPane = editor.optionsPaneModule;
+        editor.showOptionsPane();
+        (optionsPane as any).searchInput.value = 'https';
+        optionsPane.searchIconClickInternal();
+        let length: number = editor.search.textSearchResults.innerList.length;
+        expect(editor.search.searchResultsInternal.getTextSearchResultsOffset().length).toBe(length);
+
+    });
+});
+

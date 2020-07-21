@@ -704,7 +704,9 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             overflowMode: this.overflowMode,
             items: (tabItems.length !== 0) ? tabItems : [],
             clicked: this.clickHandler.bind(this),
-            scrollStep: this.scrollStep
+            scrollStep: this.scrollStep,
+            enableHtmlSanitizer: this.enableHtmlSanitizer
+
         });
         this.tbObj.isStringTemplate = true;
         this.tbObj.createElement = this.createElement;
@@ -749,6 +751,9 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 return;
             }
             let txt: Str | HTEle = item.headerTemplate || item.header.text;
+            if (typeof txt === 'string' && this.enableHtmlSanitizer) {
+                   txt = SanitizeHtmlHelper.sanitize(<Str>txt);
+            }
             this.lastIndex = ((tbCount === 0) ? i : ((this.isReplace) ? (index + i) : (this.lastIndex + 1)));
             let disabled: Str = (item.disabled) ? ' ' + CLS_DISABLE + ' ' + CLS_OVERLAY : '';
             let hidden: Str = (item.visible === false) ? ' ' + CLS_HIDDEN : '';

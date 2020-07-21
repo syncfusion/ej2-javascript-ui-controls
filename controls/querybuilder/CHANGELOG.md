@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.2.46 (2020-07-21)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- Issue with 'boolean' type value is fixed.
+
 ## 18.2.45 (2020-07-14)
 
 ### QueryBuilder

@@ -269,9 +269,9 @@ describe('GridLayout', () => {
             });
             gridLayOut.appendTo('#gridlayout');
             expect(document.getElementById('container').style.width).toEqual('1264px');
-            expect(gridLayOut.element.querySelector('#first').style.width).toEqual('248px');
-            expect(gridLayOut.element.querySelector('#second').style.width).toEqual('754px');
-            expect(gridLayOut.element.querySelector('#fifth').style.width).toEqual('501px');
+            expect(gridLayOut.element.querySelector('#first').style.width).toEqual('248.8px');
+            expect(gridLayOut.element.querySelector('#second').style.width).toEqual('756.4px');
+            expect(gridLayOut.element.querySelector('#fifth').style.width).toEqual('502.6px');
             (document.querySelectorAll('#container')[1] as HTMLElement).style.width = "800px";
             gridLayOut.refresh();
             expect(gridLayOut.element.querySelector('#first').style.width).not.toEqual('248px');
@@ -632,7 +632,7 @@ describe('GridLayout', () => {
                 ]
             });
             gridLayOut.appendTo('#gridlayout');
-            expect(gridLayOut.element.children[0].offsetHeight).toBe(gridLayOut.element.offsetHeight - 1);
+            expect(gridLayOut.element.children[0].offsetHeight).toBe(gridLayOut.element.offsetHeight);
             expect(gridLayOut.element.children[0].offsetWidth).toBe(gridLayOut.element.offsetWidth);
         });
 
@@ -676,7 +676,7 @@ describe('GridLayout', () => {
             });
             gridLayOut.appendTo('#gridlayout');
             gridLayOut.addPanel({ "id": '0', "sizeX": 2, "sizeY": 1, "row": 0, "col": 0, content: content });
-            expect(gridLayOut.element.children[0].offsetHeight).toBe(100);
+            expect(gridLayOut.element.children[0].offsetHeight).toBe(101);
             expect(gridLayOut.element.offsetHeight).toBe(gridLayOut.element.children[0].offsetHeight);
         });
 
@@ -1628,7 +1628,7 @@ describe('GridLayout', () => {
             let movingElemnt: HTMLElement = resizingElement.querySelector('.e-west');
             let targetElemnt: HTMLElement = document.getElementById('0');
             movingElemnt.style.display = "block";
-            let mousedown: any = getTouchEventObject(movingElemnt, 'touchstart', 110, 58);
+            let mousedown: any = getTouchEventObject(movingElemnt, 'touchstart', 114, 58);
             EventHandler.trigger(<HTMLElement>movingElemnt, 'touchstart', mousedown);
             let mousemove: any = getTouchEventObject(movingElemnt, 'touchmove', 105, 59);
             EventHandler.trigger(<any>(document), 'touchmove', mousemove);
@@ -1787,7 +1787,7 @@ describe('GridLayout', () => {
             resizingElement.classList.add('e-item-hover');
             let movingElemnt: HTMLElement = resizingElement.querySelector('.e-west');
             let targetElemnt: HTMLElement = document.getElementById('0');
-            let mousedown: any = getEventObject('MouseEvents', 'mousedown', movingElemnt, targetElemnt, 110, 58);
+            let mousedown: any = getEventObject('MouseEvents', 'mousedown', movingElemnt, targetElemnt, 114, 58);
             EventHandler.trigger(<HTMLElement>movingElemnt, 'mousedown', mousedown);
             let mousemove: any = getEventObject('MouseEvents', 'mousemove', movingElemnt, targetElemnt, 105, 59);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
@@ -2570,7 +2570,7 @@ describe('GridLayout', () => {
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             mousemove = setMouseCordinates(mousemove, 300, 150);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-            mousemove = setMouseCordinates(mousemove, 320, 150);
+            mousemove = setMouseCordinates(mousemove, 320, 160);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
@@ -2874,8 +2874,8 @@ describe('GridLayout', () => {
             setCss(CellElements);
             expect(gridLayOut.element.classList.contains('e-dashboardlayout')).toBe(true);
             expect(gridLayOut.element.childElementCount == 6).toBe(true);
-            expect((<HTMLElement>gridLayOut.element.querySelector('#one')).style.width).toBe('417px');
-            expect((<HTMLElement>gridLayOut.element.querySelector('#one')).style.height).toBe('206px');
+            expect((<HTMLElement>gridLayOut.element.querySelector('#one')).style.width).toBe('418px');
+            expect((<HTMLElement>gridLayOut.element.querySelector('#one')).style.height).toBe('206.5px');
         });
 
         it('cellSpacing test case', () => {
@@ -2959,8 +2959,8 @@ describe('GridLayout', () => {
             // onProperty test case 
             gridLayOut.cellSpacing = [10, 10];
             gridLayOut.dataBind();
-            expect((<HTMLElement>gridLayOut.element.querySelector('#one')).style.width).toBe('414px');
-            expect((<HTMLElement>gridLayOut.element.querySelector('#one')).style.height).toBe('202px');
+            expect((<HTMLElement>gridLayOut.element.querySelector('#one')).style.width).toBe('414.667px');
+            expect((<HTMLElement>gridLayOut.element.querySelector('#one')).style.height).toBe('202.333px');
         });
 
 
@@ -4626,16 +4626,16 @@ describe('GridLayout', () => {
             expect(gridLayOut.element.classList.contains('e-dashboardlayout')).toBe(true);
             expect(gridLayOut.element.childElementCount == 6).toBe(true);
             expect((<HTMLElement>gridLayOut.element.querySelector('#one')).style.left == "0px").toBe(true);
-            expect((<HTMLElement>gridLayOut.element.querySelector('#one')).style.top).toBe('105px');
+            expect((<HTMLElement>gridLayOut.element.querySelector('#one')).style.top).toBe('105.75px');
             expect((<HTMLElement>gridLayOut.element.querySelector('#two')).style.left == "0px").toBe(true);
             expect((<HTMLElement>gridLayOut.element.querySelector('#two')).style.top == "0px").toBe(true);
-            expect((<HTMLElement>gridLayOut.element.querySelector('#three')).style.left == "210px").toBe(true);
+            expect((<HTMLElement>gridLayOut.element.querySelector('#three')).style.left == "211.5px").toBe(true);
             expect((<HTMLElement>gridLayOut.element.querySelector('#three')).style.top == "0px").toBe(true);
             expect((<HTMLElement>gridLayOut.element.querySelector('#four')).style.left == "0px").toBe(true);
-            expect((<HTMLElement>gridLayOut.element.querySelector('#four')).style.top).toBe('210px');
-            expect((<HTMLElement>gridLayOut.element.querySelector('#five')).style.left == "210px").toBe(true);
-            expect((<HTMLElement>gridLayOut.element.querySelector('#five')).style.top).toBe('105px');
-            expect((<HTMLElement>gridLayOut.element.querySelector('#six')).style.left == "315px").toBe(true);
+            expect((<HTMLElement>gridLayOut.element.querySelector('#four')).style.top).toBe('211.5px');
+            expect((<HTMLElement>gridLayOut.element.querySelector('#five')).style.left == "211.5px").toBe(true);
+            expect((<HTMLElement>gridLayOut.element.querySelector('#five')).style.top).toBe('105.75px');
+            expect((<HTMLElement>gridLayOut.element.querySelector('#six')).style.left == "317.25px").toBe(true);
             expect((<HTMLElement>gridLayOut.element.querySelector('#six')).style.top == "0px").toBe(true);
 
         });
@@ -4716,21 +4716,21 @@ describe('GridLayout', () => {
             expect(gridLayOut.element.childElementCount == 6).toBe(true);
             expect((<HTMLElement>gridLayOut.element.querySelector('#one')).classList.contains('e-rtl')).toBe(true);
             expect((<HTMLElement>gridLayOut.element.querySelector('#one')).style.left == "0px").toBe(true);
-            expect((<HTMLElement>gridLayOut.element.querySelector('#one')).style.top).toBe('105px');
+            expect((<HTMLElement>gridLayOut.element.querySelector('#one')).style.top).toBe('105.75px');
             expect((<HTMLElement>gridLayOut.element.querySelector('#two')).classList.contains('e-rtl')).toBe(true);
             expect((<HTMLElement>gridLayOut.element.querySelector('#two')).style.left == "0px").toBe(true);
             expect((<HTMLElement>gridLayOut.element.querySelector('#two')).style.top == "0px").toBe(true);
             expect((<HTMLElement>gridLayOut.element.querySelector('#three')).classList.contains('e-rtl')).toBe(true);
-            expect((<HTMLElement>gridLayOut.element.querySelector('#three')).style.left == "210px").toBe(true);
+            expect((<HTMLElement>gridLayOut.element.querySelector('#three')).style.left == "211.5px").toBe(true);
             expect((<HTMLElement>gridLayOut.element.querySelector('#three')).style.top == "0px").toBe(true);
             expect((<HTMLElement>gridLayOut.element.querySelector('#four')).classList.contains('e-rtl')).toBe(true);
             expect((<HTMLElement>gridLayOut.element.querySelector('#four')).style.left == "0px").toBe(true);
-            expect((<HTMLElement>gridLayOut.element.querySelector('#four')).style.top).toBe('210px');
+            expect((<HTMLElement>gridLayOut.element.querySelector('#four')).style.top).toBe('211.5px');
             expect((<HTMLElement>gridLayOut.element.querySelector('#five')).classList.contains('e-rtl')).toBe(true);
-            expect((<HTMLElement>gridLayOut.element.querySelector('#five')).style.left == "210px").toBe(true);
-            expect((<HTMLElement>gridLayOut.element.querySelector('#five')).style.top).toBe('105px');
+            expect((<HTMLElement>gridLayOut.element.querySelector('#five')).style.left == "211.5px").toBe(true);
+            expect((<HTMLElement>gridLayOut.element.querySelector('#five')).style.top).toBe('105.75px');
             expect((<HTMLElement>gridLayOut.element.querySelector('#six')).classList.contains('e-rtl')).toBe(true);
-            expect((<HTMLElement>gridLayOut.element.querySelector('#six')).style.left == "315px").toBe(true);
+            expect((<HTMLElement>gridLayOut.element.querySelector('#six')).style.left == "317.25px").toBe(true);
             expect((<HTMLElement>gridLayOut.element.querySelector('#six')).style.top == "0px").toBe(true);
         });
 

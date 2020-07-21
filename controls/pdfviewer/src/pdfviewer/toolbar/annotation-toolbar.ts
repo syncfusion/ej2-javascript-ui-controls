@@ -2414,7 +2414,9 @@ export class AnnotationToolbar {
      * @private
      */
     public selectAnnotationDeleteItem(isEnable: boolean): void {
-        this.toolbar.enableItems(this.deleteItem.parentElement, isEnable);
+        if (this.toolbar) {
+            this.toolbar.enableItems(this.deleteItem.parentElement, isEnable);
+        }
     }
 
     /**

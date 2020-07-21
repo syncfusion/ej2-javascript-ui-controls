@@ -2428,13 +2428,13 @@ var ProgressBar = /** @class */ (function (_super) {
                         this.trigger(valueChanged, this.argsData);
                     }
                     if (this.type === 'Circular') {
-                        this.circular.renderCircularProgress(this.previousEndAngle, this.previousTotalEnd, true);
+                        this.circular.renderCircularProgress(this.previousEndAngle, this.previousTotalEnd, !sf.base.isNullOrUndefined(oldProp.value));
                         if (this.progressAnnotationModule && this.animation.enable && !this.isIndeterminate) {
                             this.annotateAnimation.doAnnotationAnimation(this.clipPath, this, this.annotateEnd, this.annotateTotal);
                         }
                     }
                     else {
-                        this.linear.renderLinearProgress(true, this.previousWidth);
+                        this.linear.renderLinearProgress(!sf.base.isNullOrUndefined(oldProp.value), this.previousWidth);
                     }
                     break;
                 case 'animation':
@@ -2462,21 +2462,25 @@ var ProgressBar = /** @class */ (function (_super) {
         return ' ';
     };
     ProgressBar.prototype.show = function () {
-        this.svgObject.setAttribute('visibility', 'Visible');
-        if (this.isIndeterminate) {
-            this.destroyIndeterminate = false;
-            if (this.type === 'Linear') {
-                this.linear.renderLinearProgress(true);
-            }
-            else {
-                this.circular.renderCircularProgress(null, null, true);
+        if (!sf.base.isNullOrUndefined(this.svgObject)) {
+            this.svgObject.setAttribute('visibility', 'Visible');
+            if (this.isIndeterminate) {
+                this.destroyIndeterminate = false;
+                if (this.type === 'Linear') {
+                    this.linear.renderLinearProgress(true);
+                }
+                else {
+                    this.circular.renderCircularProgress(null, null, true);
+                }
             }
         }
     };
     ProgressBar.prototype.hide = function () {
-        this.svgObject.setAttribute('visibility', 'Hidden');
-        if (this.isIndeterminate) {
-            this.destroyIndeterminate = true;
+        if (!sf.base.isNullOrUndefined(this.svgObject)) {
+            this.svgObject.setAttribute('visibility', 'Hidden');
+            if (this.isIndeterminate) {
+                this.destroyIndeterminate = true;
+            }
         }
     };
     /**

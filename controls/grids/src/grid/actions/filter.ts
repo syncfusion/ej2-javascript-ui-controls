@@ -393,7 +393,7 @@ export class Filter implements IAction {
         } else {
             this.values[this.column.field] = filterValue; //this line should be above updateModel
         }
-        this.actualPredicate[this.fieldName] = [{
+        let predObj: PredicateModel = {
             field: this.fieldName,
             predicate: predicate,
             matchCase: matchCase,
@@ -401,7 +401,15 @@ export class Filter implements IAction {
             operator: this.operator,
             value: this.value,
             type: this.column.type
-        }];
+        };
+        let filterColumn: PredicateModel[] = this.parent.filterSettings.columns.filter((fColumn: PredicateModel) => {
+            return (fColumn.field === this.fieldName);
+        });
+        if (filterColumn.length > 1 && !isNullOrUndefined(this.actualPredicate[this.fieldName])) {
+            this.actualPredicate[this.fieldName].push(predObj);
+        } else {
+            this.actualPredicate[this.fieldName] = [predObj];
+        }
         this.addFilteredClass(this.fieldName);
         if (this.checkAlreadyColFiltered(this.column.field)) {
             return;

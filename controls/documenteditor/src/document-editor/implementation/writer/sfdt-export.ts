@@ -42,6 +42,10 @@ export class SfdtExport {
     private documentHelper: DocumentHelper;
     private checkboxOrDropdown: boolean = false;
     /**
+     * @private
+     */
+    public copyWithTrackChange: boolean = false;
+    /**
      * documentHelper definition
      */
     constructor(documentHelper: DocumentHelper) {
@@ -341,11 +345,6 @@ export class SfdtExport {
             if (element instanceof ListTextElementBox) {
                 continue;
             }
-            if (element.removedIds.length > 0) {
-                for (let i: number = 0 ; i < element.removedIds.length; i++) {
-                    element.revisions[i] = this.documentHelper.revisionsInternal.get(element.removedIds[i]);
-                }
-            }
             let inline: any = this.writeInline(element);
             if (!isNullOrUndefined(inline)) {
                 inlines.push(inline);
@@ -359,6 +358,11 @@ export class SfdtExport {
     /* tslint:disable:max-func-body-length */
     private writeInline(element: ElementBox): any {
         let inline: any = {};
+        if (element.removedIds.length > 0) {
+            for (let i: number = 0 ; i < element.removedIds.length; i++) {
+                element.revisions[i] = this.documentHelper.revisionsInternal.get(element.removedIds[i]);
+            }
+        }
         inline.characterFormat = this.writeCharacterFormat(element.characterFormat);
         if (element instanceof FieldElementBox) {
             inline.fieldType = element.fieldType;
@@ -410,29 +414,21 @@ export class SfdtExport {
             } else if (element.text.indexOf('\u001f') !== -1) {
                 inline.text = element.text.replace('\u001f', '');
             } else if (element.revisions.length !== 0) {
-               if (this.isExport === false && this.owner.enableTrackChanges === true) {
-                for (let x: number = 0; x < element.revisions.length; x++) {
-                    //let insertionFlag, deletionFlag: boolean = false;
-                    if (element.revisions.length > 1) {
-                        for (let i: number = 0; i < element.revisions.length; i++) {
-                            if (element.revisions[x].revisionType === 'Deletion') {
-                                inline.text = element.text;
-                            } else if (element.revisions[x].revisionType === 'Insertion') {
-                                element.revisions.pop();
-                            }
+                if (!this.isExport && this.owner.enableTrackChanges) {
+                    this.copyWithTrackChange = true;
+                    for (let x: number = 0; x < element.revisions.length; x++) {
+                        if (element.revisions[x].revisionType === 'Deletion') {
+                            element.revisions.pop();
+                        } else if (element.revisions[x].revisionType === 'Insertion') {
+                            element.revisions.pop();
+                            inline.text = element.text;
+                        } else {
+                            inline.text = element.text;
                         }
-                    } else if (element.revisions[x].revisionType === 'Deletion') {
-                        element.revisions.pop();
-                    } else if (element.revisions[x].revisionType === 'Insertion') {
-                        element.revisions.pop();
-                        inline.text = element.text;
-                    } else {
-                        inline.text = element.text;
                     }
-                    }
-               } else {
+                } else {
                    inline.text = element.text;
-               }
+                }
             } else {
                 inline.text = element.text;
             }
@@ -756,6 +752,10 @@ export class SfdtExport {
                     inline.text = inline.text.substring(indexInInline, endIndex);
                 }
                 offset = -1;
+            }
+            if (!this.isExport && !inline.hasOwnProperty('text') && this.owner.enableTrackChanges) {
+                let index: number = inlines.length - 1;
+                inlines.splice(index, 1);
             }
             if (ended) {
                 break;

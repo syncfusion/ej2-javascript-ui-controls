@@ -1117,6 +1117,7 @@ var MultiSelect = /** @class */ (function (_super) {
         if (this.popupObj && this.mobFilter) {
             this.popupObj.setProperties({ width: this.calcPopupWidth() });
             this.popupObj.refreshPosition(this.overAllWrapper);
+            this.popupObj.resolveCollision();
         }
     };
     MultiSelect.prototype.checkTextLength = function () {
@@ -2076,6 +2077,7 @@ var MultiSelect = /** @class */ (function (_super) {
                             }
                         },
                         open: function () {
+                            _this.popupObj.resolveCollision();
                             if (!_this.isFirstClick) {
                                 var ulElement = _this.list.querySelector('ul');
                                 if (ulElement) {
@@ -2176,6 +2178,9 @@ var MultiSelect = /** @class */ (function (_super) {
                     this.removeIndex = 0;
                     for (temp = this.value[this.removeIndex]; this.removeIndex < this.value.length; temp = this.value[this.removeIndex]) {
                         this.removeValue(temp, e, null, true);
+                        if (this.value === null && sf.base.isBlazor() && this.isServerRendered) {
+                            break;
+                        }
                     }
                 }
             }

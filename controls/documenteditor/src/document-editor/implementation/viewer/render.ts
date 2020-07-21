@@ -628,6 +628,9 @@ export class Renderer {
         let bold: string = '';
         let italic: string = '';
         let fontFamily: string = format.hasValue('fontFamily') ? format.fontFamily : breakCharacterFormat.fontFamily;
+        if (this.documentHelper.isIosDevice && (elementBox.text === '\u25CF' || elementBox.text === '\u25CB')) {
+            fontFamily = '';
+        }
         let fontSize: number = format.fontSize === 11 ? breakCharacterFormat.fontSize : format.fontSize;
         // tslint:disable-next-line:max-line-length
         let baselineAlignment: BaselineAlignment = format.baselineAlignment === 'Normal' ? breakCharacterFormat.baselineAlignment : format.baselineAlignment;
@@ -759,7 +762,7 @@ export class Renderer {
         }
         let currentInfo: RevisionInfo = this.getRevisionType(revisionInfo, true);
         // tslint:disable-next-line:max-line-length
-        if (format.underline !== 'None' && !isNullOrUndefined(format.underline) || (!isNullOrUndefined(currentInfo) && (currentInfo.type === 'Insertion' || currentInfo.type === 'MoveTo' ))) {
+        if (format.underline !== 'None' && !isNullOrUndefined(format.underline) || (!isNullOrUndefined(currentInfo) && (currentInfo.type === 'Insertion' || currentInfo.type === 'MoveTo'))) {
             // tslint:disable-next-line:max-line-length
             this.renderUnderline(elementBox, left, top, underlineY, color, format.underline, format.baselineAlignment, currentInfo);
         }
@@ -1039,9 +1042,9 @@ export class Renderer {
         }
         while (lineCount < (underline === 'Double' ? 2 : 1)) {
             lineCount++;
-        // tslint:disable-next-line:max-line-length
-        this.pageContext.fillRect(this.getScaledValue(left + elementBox.margin.left, 1), this.getScaledValue(y, 2), this.getScaledValue(elementBox.width), this.getScaledValue(underlineHeight));
-        y += 2 * lineHeight;
+            // tslint:disable-next-line:max-line-length
+            this.pageContext.fillRect(this.getScaledValue(left + elementBox.margin.left, 1), this.getScaledValue(y, 2), this.getScaledValue(elementBox.width), this.getScaledValue(underlineHeight));
+            y += 2 * lineHeight;
         }
     }
     /**
@@ -1136,13 +1139,13 @@ export class Renderer {
             }
         }
         this.pageContext.fillStyle = HelperMethods.getColor(color);
-        let currentRevision: RevisionInfo = this.getRevisionType(revisionInfo, false); 
+        let currentRevision: RevisionInfo = this.getRevisionType(revisionInfo, false);
         // tslint:disable-next-line:max-line-length
         if (!isNullOrUndefined(currentRevision) && (currentRevision.type === 'Deletion' || currentRevision.type === 'MoveFrom')) {
             // tslint:disable-next-line:max-line-length
             this.renderStrikeThrough(elementBox, left, top, 'SingleStrike', color, 'Normal', currentRevision);
         }
-        currentRevision = this.getRevisionType(revisionInfo, true); 
+        currentRevision = this.getRevisionType(revisionInfo, true);
         // tslint:disable-next-line:max-line-length
         if (!isNullOrUndefined(currentRevision) && (currentRevision.type === 'Insertion' || currentRevision.type === 'MoveTo')) {
             let y: number = this.getUnderlineYPosition(elementBox.line);
@@ -1328,8 +1331,8 @@ export class Renderer {
         let topMargin: number = cellWidget.topMargin ? HelperMethods.convertPointToPixel(cellWidget.topMargin) : 0;
         let top: number = cellWidget.y - topMargin;
         let width: number = cellWidget.width + leftMargin + cellWidget.margin.right - lineWidth;
-        if(cellWidget.ownerRow.rowFormat.revisions.length > 0) {
-            let revision: Revision = cellWidget.ownerRow.rowFormat.revisions[cellWidget.ownerRow.rowFormat.revisions.length -1]; 
+        if (cellWidget.ownerRow.rowFormat.revisions.length > 0) {
+            let revision: Revision = cellWidget.ownerRow.rowFormat.revisions[cellWidget.ownerRow.rowFormat.revisions.length - 1];
             bgColor = (revision.revisionType === 'Insertion') ? '#e1f2fa' : '#fce6f4';
         }
         this.pageContext.beginPath();
@@ -1391,8 +1394,8 @@ export class Renderer {
     }
     private checkRevisionType(elementBox: ElementBox): RevisionInfo[] {
         let revisions: RevisionInfo[] = [];
-        let count: number = elementBox.revisions.length
-        for (let i: number = 0 ; i < count; i++) {
+        let count: number = elementBox.revisions.length;
+        for (let i: number = 0; i < count; i++) {
             let currentRevision: Revision = elementBox.revisions[i];
             let color: string = this.documentHelper.authors.get(currentRevision.author);
             revisions.push({ 'type': currentRevision.revisionType, 'color': color });
@@ -1403,22 +1406,22 @@ export class Renderer {
         if (revisionInfo.length === 1) {
             return revisionInfo[0].color;
         }
-        
+
         for (let i = 0; i < revisionInfo.length; i++) {
-              if(revisionInfo[i].type === 'Deletion' || revisionInfo[i].type === 'MoveFrom') {
-               return revisionInfo[i].color;
-              }
+            if (revisionInfo[i].type === 'Deletion' || revisionInfo[i].type === 'MoveFrom') {
+                return revisionInfo[i].color;
+            }
         }
         return undefined;
 
     }
     private getRevisionType(revisionInfo: RevisionInfo[], checkInsert: boolean): RevisionInfo {
-        if(revisionInfo.length === 0) {
+        if (revisionInfo.length === 0) {
             return undefined;
         }
-        for(let i: number = 0; i < revisionInfo.length; i++) {
+        for (let i: number = 0; i < revisionInfo.length; i++) {
             let type: RevisionInfo = undefined;
-            if(checkInsert && (revisionInfo[i].type === 'Insertion' || revisionInfo[i].type === 'MoveTo')) {
+            if (checkInsert && (revisionInfo[i].type === 'Insertion' || revisionInfo[i].type === 'MoveTo')) {
                 type = revisionInfo[i];
                 this.pageContext.fillStyle = HelperMethods.getColor(type.color);
                 revisionInfo.splice(i, 1);

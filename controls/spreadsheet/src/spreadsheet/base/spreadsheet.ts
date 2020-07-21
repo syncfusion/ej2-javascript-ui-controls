@@ -1950,6 +1950,11 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                 case 'cellStyle':
                     this.renderModule.refreshSheet();
                     break;
+                case 'allowEditing':
+                    if (this.allowEditing) {
+                        this.notify(editOperation, { action: 'renderEditor' });
+                    }
+                break;
                 case 'sheets':
                     // Object.keys(newProp.sheets).forEach((sheetIdx: string): void => {
                     // if (this.activeSheetIndex === Number(sheetIdx)) {

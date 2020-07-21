@@ -453,6 +453,13 @@
         z-index: 100;
       }
     }
+
+    &.e-rte-tb-expand {
+      &.e-rte-fixed-tb-expand {
+        overflow: hidden;
+        transition: none;
+      }
+    }
   }
 
   .e-rte-linkcontent .e-rte-label {

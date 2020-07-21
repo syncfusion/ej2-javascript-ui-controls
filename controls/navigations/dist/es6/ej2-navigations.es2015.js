@@ -1374,7 +1374,8 @@ let MenuBase = class MenuBase extends Component {
                 let liElem = e && e.target && this.getLI(e.target);
                 item = this.navIdx.length ? this.getItem(this.navIdx) : null;
                 items = item ? item.items : this.items;
-                beforeCloseArgs = { element: ul, parentItem: item, items: items, event: e, cancel: false };
+                beforeCloseArgs = { element: ul, parentItem: this.isMenu && isBlazor() ? this.getMenuItemModel(item, ulIndex) : item,
+                    items: items, event: e, cancel: false };
                 this.trigger('beforeClose', beforeCloseArgs, (observedCloseArgs) => {
                     let popupEle;
                     let closeArgs;
@@ -1473,6 +1474,14 @@ let MenuBase = class MenuBase extends Component {
                 });
             }
         }
+    }
+    getMenuItemModel(item, level) {
+        if (isNullOrUndefined(level)) {
+            level = 0;
+        }
+        let fields = this.getFields(level);
+        return { text: item[fields.text], id: item[fields.id], items: item[fields.child], separator: item[fields.separator],
+            iconCss: item[fields.iconCss], url: item[fields.url] };
     }
     destroyScrollObj(scrollObj, scrollEle) {
         if (scrollObj) {
@@ -1658,7 +1667,8 @@ let MenuBase = class MenuBase extends Component {
         let navIdx = this.getIndex(li ? li.id : null, true);
         let items = li ? item[this.getField('children', this.navIdx.length - 1)] : this.items;
         let eventArgs = {
-            element: ul, items: items, parentItem: item, event: e, cancel: false, top: top, left: left
+            element: ul, items: items, parentItem: this.isMenu && isBlazor() ? this.getMenuItemModel(item, this.navIdx.length - 1) :
+                item, event: e, cancel: false, top: top, left: left
         };
         let menuType = type;
         let collide;
@@ -2268,6 +2278,22 @@ let MenuBase = class MenuBase extends Component {
         }
         return closest(elem, 'li.e-menu-item');
     }
+    updateItemsByNavIdx() {
+        let items = this.items;
+        let count = 0;
+        for (let index = 0; index < this.navIdx.length; index++) {
+            items = items[index].items;
+            if (!items) {
+                break;
+            }
+            count++;
+            let ul = this.getUlByNavIdx(count);
+            if (!ul) {
+                break;
+            }
+            this.updateItem(ul, items);
+        }
+    }
     removeChildElement(elem) {
         while (elem.firstElementChild) {
             elem.removeChild(elem.firstElementChild);
@@ -2330,21 +2356,16 @@ let MenuBase = class MenuBase extends Component {
                     let navIdx;
                     let item;
                     if (!Object.keys(oldProp.items).length) {
-                        let ul = this.element;
-                        if (isBlazor()) {
-                            ul = this.removeChildElement(this.element);
-                        }
-                        else {
-                            ul.innerHTML = '';
-                        }
-                        let lis = [].slice.call(this.createItems(this.items).children);
-                        lis.forEach((li) => {
-                            ul.appendChild(li);
-                        });
+                        this.updateItem(this.element, this.items);
                         for (let i = 1, count = wrapper.childElementCount; i < count; i++) {
                             detach(wrapper.lastElementChild);
                         }
-                        this.navIdx = [];
+                        if (this.isMenu && isBlazor()) {
+                            this.updateItemsByNavIdx();
+                        }
+                        else {
+                            this.navIdx = [];
+                        }
                     }
                     else {
                         let keys = Object.keys(newProp.items);
@@ -2363,6 +2384,18 @@ let MenuBase = class MenuBase extends Component {
                     break;
             }
         }
+    }
+    updateItem(ul, items) {
+        if (isBlazor()) {
+            ul = this.removeChildElement(ul);
+        }
+        else {
+            ul.innerHTML = '';
+        }
+        let lis = [].slice.call(this.createItems(items).children);
+        lis.forEach((li) => {
+            ul.appendChild(li);
+        });
     }
     getChangedItemIndex(newProp, index, idx) {
         index.push(idx);
@@ -7092,7 +7125,8 @@ let Tab = class Tab extends Component {
             overflowMode: this.overflowMode,
             items: (tabItems.length !== 0) ? tabItems : [],
             clicked: this.clickHandler.bind(this),
-            scrollStep: this.scrollStep
+            scrollStep: this.scrollStep,
+            enableHtmlSanitizer: this.enableHtmlSanitizer
         });
         this.tbObj.isStringTemplate = true;
         this.tbObj.createElement = this.createElement;
@@ -7136,6 +7170,9 @@ let Tab = class Tab extends Component {
                 return;
             }
             let txt = item.headerTemplate || item.header.text;
+            if (typeof txt === 'string' && this.enableHtmlSanitizer) {
+                txt = SanitizeHtmlHelper.sanitize(txt);
+            }
             this.lastIndex = ((tbCount === 0) ? i : ((this.isReplace) ? (index + i) : (this.lastIndex + 1)));
             let disabled = (item.disabled) ? ' ' + CLS_DISABLE$4 + ' ' + CLS_OVERLAY$2 : '';
             let hidden = (item.visible === false) ? ' ' + CLS_HIDDEN$1 : '';

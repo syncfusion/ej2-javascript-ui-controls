@@ -6,9 +6,9 @@ import { isNullOrUndefined, getValue } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { Border, Font, Animation, Index, EmptyPointSettings, Connector } from '../../common/model/base';
 import { Rect, Size, PathOption } from '@syncfusion/ej2-svg-base';
-import { ChartLocation, stringToNumber, appendChildElement} from '../../common/utils/helper';
+import { ChartLocation, stringToNumber, appendChildElement } from '../../common/utils/helper';
 import { AccumulationType, AccumulationLabelPosition, PyramidModes } from '../model/enum';
-import { IAccSeriesRenderEventArgs, IAccPointRenderEventArgs, IAccTextRenderEventArgs  } from '../model/pie-interface';
+import { IAccSeriesRenderEventArgs, IAccPointRenderEventArgs, IAccTextRenderEventArgs } from '../model/pie-interface';
 import { LegendShape } from '../../chart/utils/enum';
 import { AccumulationDataLabelSettingsModel } from '../model/acc-base-model';
 import { Data } from '../../common/model/data';
@@ -112,6 +112,14 @@ export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDat
 
     @Property(false)
     public visible: boolean;
+
+    /**
+     * If set true, data label for zero values in series gets render.
+     * @default true
+     */
+
+    @Property(true)
+    public showZero: boolean;
 
     /**
      * The DataSource field which contains the data label value.
@@ -287,22 +295,22 @@ export class AccPoints {
     public degree: number;
     /** @private */
     public transform: string;
-     /** @private */
-     public separatorY: string;
-     /** @private */
-     public adjustedLabel: boolean;
-     /** @private */
-     public connectorLength: number;
-     /** @private  */
-     public argsData: IAccTextRenderEventArgs = null;
-     /** @private  */
-     public textSize: Size;
-     /** @private */
-     public isLabelUpdated: number = null;
-     /** @private */
-     public initialLabelRegion: Rect = null;
-     /** @private */
-     public templateElement: HTMLElement;
+    /** @private */
+    public separatorY: string;
+    /** @private */
+    public adjustedLabel: boolean;
+    /** @private */
+    public connectorLength: number;
+    /** @private  */
+    public argsData: IAccTextRenderEventArgs = null;
+    /** @private  */
+    public textSize: Size;
+    /** @private */
+    public isLabelUpdated: number = null;
+    /** @private */
+    public initialLabelRegion: Rect = null;
+    /** @private */
+    public templateElement: HTMLElement;
 
 }
 
@@ -608,7 +616,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public isRectSeries: boolean = true;
     /** @private */
     public clipRect: Rect = new Rect(0, 0, 0, 0);
-     /** @private */
+    /** @private */
     public category: SeriesCategories = 'Series';
     /** @private */
     public rightSidePoints: AccPoints[] = [];
@@ -637,7 +645,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
      */
     public neckSize: Size;
     /** @private To refresh the Datamanager for series */
-    public refreshDataManager(accumulation: AccumulationChart, render : boolean): void {
+    public refreshDataManager(accumulation: AccumulationChart, render: boolean): void {
         let dateSource: Object | DataManager = this.dataSource || accumulation.dataSource;
         if (!(dateSource instanceof DataManager) && isNullOrUndefined(this.query)) {
             this.dataManagerSuccess({ result: dateSource, count: (dateSource as Object[]).length }, accumulation, render);
@@ -650,7 +658,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
      * To get points on dataManager is success
      * @private
      */
-    public dataManagerSuccess(e: { result: Object, count: number }, accumulation: AccumulationChart, render : boolean = true): void {
+    public dataManagerSuccess(e: { result: Object, count: number }, accumulation: AccumulationChart, render: boolean = true): void {
         let argsData: IAccSeriesRenderEventArgs = {
             name: seriesRender, series: this, data: e.result,
         };
@@ -737,7 +745,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
             if (this.groupMode === 'Value' && Math.abs(point.y) <= clubValue) {
                 this.sumOfClub += Math.abs(point.y);
                 return true;
-            } else if (this.groupMode === 'Point' && index >= clubValue ) {
+            } else if (this.groupMode === 'Point' && index >= clubValue) {
                 this.sumOfClub += Math.abs(point.y);
                 return true;
             }
@@ -767,7 +775,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
         point.text = point.originalText = getValue(this.dataLabel.name || '', data[i]);
         point.tooltip = getValue(this.tooltipMappingName || '', data[i]);
         point.sliceRadius = getValue(this.radius, data[i]);
-        point.sliceRadius =  isNullOrUndefined(point.sliceRadius) ? '80%' : point.sliceRadius;
+        point.sliceRadius = isNullOrUndefined(point.sliceRadius) ? '80%' : point.sliceRadius;
         point.separatorY = accumulation.intl.formatNumber(point.y, { useGrouping: accumulation.useGroupingSeparator });
         this.setAccEmptyPoint(point, i, data, colors);
         return point;
@@ -780,7 +788,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
 
         let seriesGroup: Element = redraw ? getElement(accumulation.element.id + '_Series_' + this.index) :
             accumulation.renderer.createGroup({ id: accumulation.element.id + '_Series_' + this.index });
-            
+
 
         this.renderPoints(accumulation, seriesGroup, redraw);
 
@@ -821,11 +829,11 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
             accumulation.trigger(pointRender, argsData);
             point.color = argsData.fill;
             option = new PathOption(
-                    pointId + point.index, point.color, argsData.border.width || 1, argsData.border.color || point.color, this.opacity,
-                    '', ''
-                );
+                pointId + point.index, point.color, argsData.border.width || 1, argsData.border.color || point.color, this.opacity,
+                '', ''
+            );
             accumulation[(firstToLowerCase(this.type) + 'SeriesModule')].
-                    renderPoint(point, this, accumulation, option, seriesGroup, redraw);
+                renderPoint(point, this, accumulation, option, seriesGroup, redraw);
         }
         appendChildElement(false, accumulation.getSeriesElement(), seriesGroup, redraw);
     }
@@ -838,16 +846,17 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
             id: accumulation.element.id + '_Series_0' + '_DataLabelCollections'
         });
         this.leftSidePoints = [], this.rightSidePoints = [];
-        let firstQuarter: AccPoints[]= [];
+        let firstQuarter: AccPoints[] = [];
         let secondQuarter: AccPoints[] = [];
         for (let point of this.points) {
             if (point.visible) {
-                if ((point.y !== 0) || (point.y === 0 && this.emptyPointSettings.mode === 'Zero')) {
+                if (this.dataLabel.showZero || (!this.dataLabel.showZero && ((point.y !== 0) || (point.y === 0 &&
+                    this.emptyPointSettings.mode === 'Zero')))) {
                     accumulation.accumulationDataLabelModule.renderDataLabel(
                         point, this.dataLabel, datalabelGroup, this.points, this.index, element,
                         redraw
                     );
-                }                
+                }
             }
             if (point.midAngle >= 90 && point.midAngle <= 270) {
                 this.leftSidePoints.push(point);
@@ -887,7 +896,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
      * @private
      */
     public setAccEmptyPoint(point: AccPoints, i: number, data: Object, colors: string[]): void {
-        if (!(isNullOrUndefined(point.y) || isNaN(point.y))){
+        if (!(isNullOrUndefined(point.y) || isNaN(point.y))) {
             return null;
         }
         point.color = this.emptyPointSettings.fill || point.color;
@@ -903,7 +912,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
                 this.sumOfPoints += point.y;
                 point.visible = true;
                 break;
-            default :
+            default:
                 point.visible = false;
                 break;
         }

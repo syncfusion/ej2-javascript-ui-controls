@@ -97,6 +97,9 @@ class SfDatePicker {
             };
         }
         this.dotNetRef.invokeMethodAsync(INPUT_HANDLER, keyEventsArgs);
+        if (e.action !== 'select' && this.popupObj && document.body.contains(this.popupObj.element)) {
+            e.preventDefault();
+        }
     }
     private inputBlurHandler(e: MouseEvent): void {
         if (this.isCalendar() && document.activeElement === this.element) {
@@ -152,7 +155,6 @@ class SfDatePicker {
         }
         this.calendarElement.querySelector(TABLE + ' ' + TBODY).className = '';
         this.popupObj = new Popup(this.popupWrapper as HTMLElement, {
-            content: this.calendarElement,
             relateTo: Browser.isDevice ? document.body : this.wrapperElement,
             position: Browser.isDevice ? { X: 'center', Y: 'center' } : { X: 'left', Y: 'bottom' },
             offsetY: OFFSETVALUE,

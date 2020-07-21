@@ -178,6 +178,18 @@ export class VerticalView extends ViewBase implements IRenderer {
             this.parent.activeViewOptions.headerRows.slice(-1)[0].option !== 'Hour') {
             return;
         }
+        if (this.parent.isServerRenderer()) {
+            let curEle: Element[] = [].slice.call(this.element.querySelectorAll('.' + cls.CURRENT_DAY_CLASS));
+            if (curEle.length > 0) {
+                removeClass(curEle, cls.CURRENT_DAY_CLASS);
+            }
+            let curDate: Date = util.addLocalOffset(new Date(new Date().setHours(0, 0, 0, 0)));
+            let queryString: string = '.' + cls.DATE_HEADER_CLASS + '[data-date="' + curDate.getTime().toString() + '"]';
+            curEle = [].slice.call(this.element.querySelectorAll(queryString));
+            for (let ele of curEle) {
+                addClass([ele], cls.CURRENT_DAY_CLASS);
+            }
+        }
         if (this.parent.showTimeIndicator && this.isWorkHourRange(this.parent.getCurrentTime())) {
             let currentDateIndex: number[] = this.getCurrentTimeIndicatorIndex();
             if (currentDateIndex.length > 0) {

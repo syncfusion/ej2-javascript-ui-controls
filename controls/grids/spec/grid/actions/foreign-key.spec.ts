@@ -1,7 +1,7 @@
 import { getValue } from '@syncfusion/ej2-base';
 import { createGrid, destroy } from '../base/specutil.spec';
 import { Grid } from '../../../src/grid/base/grid';
-import { fdata, employeeSelectData, fCustomerData, data, customerData } from '../base/datasource.spec';
+import { fdata, employeeSelectData, fCustomerData, data, customerData, employeeData } from '../base/datasource.spec';
 import { DataManager, Predicate, Query, Deferred } from '@syncfusion/ej2-data';
 import { Column } from '../../../src/grid/models/column';
 import { PredicateModel } from '../../../src/grid/base/grid-model';
@@ -522,6 +522,34 @@ describe('EJ2-38633 - additional params issue =>', () => {
         }
         gridObj.selectRow(1);
         gridObj.startEdit();
+    });
+    afterAll((done) => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('EJ2-41126 - foreignkey search =>', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        let options: Object = {
+            dataSource: fdata,
+            toolbar: ["Search"],
+            columns: [
+                { field: 'OrderID', width: 120 },
+                { field: 'ShipCity', width: 120 },
+                { field: 'EmployeeID', width: 100, foreignKeyValue: 'FirstName', dataSource: employeeData },
+            ]
+        };
+        gridObj = createGrid(options, done);
+    });
+    it('Search with foreignkey value', (done: Function) => {
+        gridObj.dataBound = (args: any) => {
+            expect(gridObj.currentViewData.length).not.toBe(0);
+            gridObj.dataBound = null;
+            done();
+        }
+        gridObj.search("Steven");
     });
     afterAll((done) => {
         destroy(gridObj);

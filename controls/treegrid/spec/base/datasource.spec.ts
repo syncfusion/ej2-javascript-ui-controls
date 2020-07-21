@@ -827,6 +827,44 @@ export let sampleBlankData: Object[] = [
         'parentID': 3
     },
     ];
+
+
+    export let expandStateData: Object[] = [{
+        'TaskID': 1,
+        'TaskName': 'Parent Task 1',
+        'StartDate': new Date('02/23/2014'),
+        'EndDate': new Date('02/27/2014'),
+        'Progress': '40',
+        'isExpand': false,
+        'parentID': null
+    },
+    {
+        'TaskID': 2,
+        'TaskName': 'Child Task 1',
+        'StartDate': new Date('02/23/2014'),
+        'EndDate': new Date('02/27/2014'),
+        'Progress': '40',
+        'parentID': 1
+    },
+    {
+        'TaskID': 3,
+        'TaskName': 'Parent Task 2',
+        'StartDate': new Date('02/23/2014'),
+        'EndDate': new Date('02/27/2014'),
+        'Progress': '30',
+        'isExpand': true,
+        'parentID': 1
+    },
+    {
+        'TaskID': 4,
+        'TaskName': 'Child Task 1',
+        'StartDate': new Date('02/23/2014'),
+        'EndDate': new Date('02/27/2014'),
+        'Progress': '60',
+        'parentID': 3
+    },
+    ];
+
     
      export let projectDatas: Object[] = [{
         'TaskID': 1,

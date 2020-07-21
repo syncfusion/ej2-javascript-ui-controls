@@ -2534,25 +2534,25 @@ export class Annotation {
     }
 
     private enableBasedOnType(): void {
-        if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Stamp' ||
-            this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Image') {
-            this.pdfViewer.toolbar.annotationToolbarModule.enableStampAnnotationPropertiesTools(true);
-        } else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'StickyNotes') {
-            this.pdfViewer.toolbar.annotationToolbarModule.enableStampAnnotationPropertiesTools(true);
-        } else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Path') {
-            if (Browser.isDevice) {
-                this.pdfViewer.toolbarModule.annotationToolbarModule.createMobileAnnotationToolbar(true, true);
-            } else {
+        if (!Browser.isDevice) {
+            if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Stamp' ||
+                this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Image') {
+                this.pdfViewer.toolbar.annotationToolbarModule.enableStampAnnotationPropertiesTools(true);
+            } else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'StickyNotes') {
+                this.pdfViewer.toolbar.annotationToolbarModule.enableStampAnnotationPropertiesTools(true);
+            } else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Path') {
                 this.pdfViewer.toolbar.annotationToolbarModule.enableAnnotationPropertiesTools(false);
+            } else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'FreeText') {
+                this.pdfViewer.toolbar.annotationToolbarModule.enableFreeTextAnnotationPropertiesTools(true);
+            } else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'HandWrittenSignature') {
+                this.pdfViewer.toolbar.annotationToolbarModule.enableSignaturePropertiesTools(true);
+            } else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Ink') {
+                this.pdfViewer.toolbar.annotationToolbarModule.enableSignaturePropertiesTools(true);
+            } else {
+                this.pdfViewer.toolbar.annotationToolbarModule.enableAnnotationPropertiesTools(true);
             }
-        } else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'FreeText') {
-            this.pdfViewer.toolbar.annotationToolbarModule.enableFreeTextAnnotationPropertiesTools(true);
-        } else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'HandWrittenSignature') {
-            this.pdfViewer.toolbar.annotationToolbarModule.enableSignaturePropertiesTools(true);
-        } else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Ink') {
-            this.pdfViewer.toolbar.annotationToolbarModule.enableSignaturePropertiesTools(true);
-        } else {
-            this.pdfViewer.toolbar.annotationToolbarModule.enableAnnotationPropertiesTools(true);
+        } else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Path' && Browser.isDevice) {
+            this.pdfViewer.toolbarModule.annotationToolbarModule.createMobileAnnotationToolbar(true, true);
         }
     }
 
@@ -3348,6 +3348,17 @@ export class Annotation {
             if (annotation.shapeAnnotationType === 'textMarkup') {
                 annotationType = 'textMarkup';
             }
+            if (annotation && annotation.note !== '') {
+                if (annotationType) {
+                    currentAnnotation.note = annotation.note;
+                    // tslint:disable-next-line:max-line-length
+                    this.pdfViewer.annotationModule.stickyNotesAnnotationModule.addTextToComments(currentAnnotation.annotName, currentAnnotation.note);
+                } else {
+                    currentAnnotation.notes = annotation.note;
+                    // tslint:disable-next-line:max-line-length
+                    this.pdfViewer.annotationModule.stickyNotesAnnotationModule.addTextToComments(currentAnnotation.annotName, currentAnnotation.notes);
+                }
+            }
             if (annotation.type === 'TextMarkup' || annotation.shapeAnnotationType === 'textMarkup') {
                 if (currentAnnotation.annotationSettings && annotation.annotationSettings) {
                     if (currentAnnotation.annotationSettings.isLock !== annotation.annotationSettings.isLock) {
@@ -3611,6 +3622,9 @@ export class Annotation {
 
     // tslint:disable-next-line
     private modifyAnnotationProperties(newAnnotation: any, annotation: any, annotationType: string): any {
+        if (annotation && annotation.note !== '') {
+            newAnnotation.note = annotation.note;
+        }
         if (annotationType === 'textMarkup') {
             newAnnotation.opacity = annotation.opacity;
             newAnnotation.color = annotation.color;

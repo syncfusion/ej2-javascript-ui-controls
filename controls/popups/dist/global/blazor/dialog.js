@@ -267,14 +267,14 @@ var Dialog = /** @class */ (function (_super) {
                 if (!sf.base.isNullOrUndefined(this.btnObj)) {
                     buttonObj = this.btnObj[this.btnObj.length - 1];
                 }
-                if (!sf.base.isNullOrUndefined(buttonObj) && document.activeElement === buttonObj.element && !event.shiftKey) {
-                    event.preventDefault();
-                    this.focusableElements(this.element).focus();
-                }
                 if ((sf.base.isNullOrUndefined(this.btnObj)) && (!sf.base.isNullOrUndefined(this.ftrTemplateContent))) {
                     var value = 'input,select,textarea,button,a,[contenteditable="true"],[tabindex]';
                     var items = this.ftrTemplateContent.querySelectorAll(value);
                     buttonObj = { element: items[items.length - 1] };
+                }
+                if (!sf.base.isNullOrUndefined(buttonObj) && document.activeElement === buttonObj.element && !event.shiftKey) {
+                    event.preventDefault();
+                    this.focusableElements(this.element).focus();
                 }
                 if (document.activeElement === this.focusableElements(this.element) && event.shiftKey) {
                     event.preventDefault();

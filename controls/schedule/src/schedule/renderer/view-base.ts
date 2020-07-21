@@ -308,8 +308,9 @@ export class ViewBase {
     }
     public getDateRangeText(): string {
         if (this.parent.isAdaptive) {
+            let formatDate: string = (this.parent.activeViewOptions.dateFormat) ? this.parent.activeViewOptions.dateFormat : 'MMMM y';
             return util.capitalizeFirstWord(
-                this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM y', calendar: this.parent.getCalendarMode() }),
+                this.parent.globalize.formatDate(this.parent.selectedDate, { format: formatDate, calendar: this.parent.getCalendarMode() }),
                 'single');
         }
         return this.formatDateRange(this.renderDates[0], this.renderDates[this.renderDates.length - 1]);

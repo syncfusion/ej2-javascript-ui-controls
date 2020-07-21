@@ -112,7 +112,7 @@ let importRules: RuleModel = {
                             'field': 'in_stock',
                             'type': 'boolean',
                             'operator': 'equal',
-                            'value': ['Yes']
+                            'value': false
                         },
                         {
                             'label': 'OrderID',

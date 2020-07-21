@@ -68,6 +68,9 @@ export class Formula {
         this.removeEventListener();
         if (this.autocompleteInstance) {
             this.autocompleteInstance.destroy();
+            if (this.autocompleteInstance.element) {
+            this.autocompleteInstance.element.remove();
+            }
         }
         this.autocompleteInstance = null;
         this.parent = null;

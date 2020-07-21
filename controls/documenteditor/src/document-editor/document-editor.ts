@@ -1777,6 +1777,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Next Changes': 'Next Changes',
         'Inserted': 'Inserted',
         'Deleted': 'Deleted',
+        'Move From': 'Move From',
+        'Move To' : 'Move To',
         'Changes': 'Changes',
         'Accept all': 'Accept all',
         'Reject all': 'Reject all',
@@ -2220,6 +2222,14 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public showOptionsPane(): void {
         if (!isNullOrUndefined(this.optionsPaneModule) && !isNullOrUndefined(this.viewer)) {
             this.optionsPaneModule.showHideOptionsPane(true);
+        }
+    }
+    /**
+     * Shows the restrict editing pane.
+     */
+    public showRestrictEditingPane(): void {
+        if (this.documentHelper && this.documentHelper.restrictEditingPane) {
+            this.documentHelper.restrictEditingPane.showHideRestrictPane(true);
         }
     }
     /**

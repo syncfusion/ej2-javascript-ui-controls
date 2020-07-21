@@ -188,4 +188,28 @@ describe('Paste formatting with underline validation', () => {
         editor.editor.insertText('check');
         expect((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).paragraphFormat.textAlignment).toBe('Center');
     });
+    it('Replacing a paragraph with text validation', () => {
+        editor.openBlank();
+        editor.editor.insertText('hello');
+        editor.editor.handleEnterKey();
+        editor.editor.insertText('syncfusion');
+        editor.editor.handleEnterKey();
+        editor.editor.insertText('world');
+        editor.documentHelper.selection.handleHomeKey();
+        editor.documentHelper.selection.handleUpKey();
+        editor.documentHelper.selection.handleUpKey();
+        editor.documentHelper.selection.handleControlShiftRightKey();
+        editor.documentHelper.selection.handleControlShiftDownKey();
+        editor.editor.insertText('check');
+        expect(editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(2);
+    });
+    it('Comment mark is not removed after deleting the comment validation', () => {
+        editor.openBlank();
+        editor.enableTrackChanges = true;
+        editor.editor.insertComment('hello');
+        editor.selection.selectAll();
+        editor.editor.deleteComment();
+        expect(editor.documentHelper.comments.length).toBe(0);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(0);
+    }); 
 });

@@ -1041,9 +1041,11 @@ var Data = /** @__PURE__ @class */ (function () {
         var sSettings = this.parent.searchSettings;
         var fields = sSettings.fields.length ? sSettings.fields : this.getSearchColumnFieldNames();
         var predicateList = [];
+        var needForeignKeySearch = false;
         if (this.parent.searchSettings.key.length) {
+            needForeignKeySearch = this.parent.getForeignKeyColumns().some(function (col) { return fields.indexOf(col.field) > -1; });
             var adaptor = !isForeignKey ? this.dataManager.adaptor : fcolumn.dataSource.adaptor;
-            if ((adaptor.getModuleName &&
+            if (needForeignKeySearch || (adaptor.getModuleName &&
                 adaptor.getModuleName() === 'ODataV4Adaptor')) {
                 fields = isForeignKey ? [fcolumn.foreignKeyValue] : fields;
                 for (var i = 0; i < fields.length; i++) {
@@ -7717,6 +7719,9 @@ var Selection = /** @__PURE__ @class */ (function () {
             var target = this.focus.getPrevIndexes().cellIndex ?
                 selectedRow.cells[this.focus.getPrevIndexes().cellIndex] :
                 selectedRow.querySelector('.e-selectionbackground:not(.e-hide):not(.e-detailrowcollapse):not(.e-detailrowexpand)');
+            if (this.parent.contextMenuModule && this.mouseButton === 2) {
+                target = this.parent.contextMenuModule.cell;
+            }
             if (!target) {
                 return;
             }
@@ -7885,7 +7890,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                     rowDeselectObj[rowInString] = rowDeselectObj[rowInString][0];
                     rowDeselectObj[foreignKey] = rowDeselectObj[foreignKey][0];
                     if (this.isAddRowsToSelection) {
-                        rowDeselectObj[rowidxex] = this.parent.getSelectedRowIndexes();
+                        rowDeselectObj[rowidxex] = rowIndex;
                     }
                 }
             }
@@ -8993,6 +8998,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
     };
     Selection.prototype.mouseDownHandler = function (e) {
+        this.mouseButton = e.button;
         var target = e.target;
         var gObj = this.parent;
         var isDrag;
@@ -21573,6 +21579,7 @@ var Filter = /** @__PURE__ @class */ (function () {
      * @return {void}
      */
     Filter.prototype.filterByColumn = function (fieldName, filterOperator, filterValue, predicate, matchCase, ignoreAccent, actualFilterValue, actualOperator) {
+        var _this = this;
         var gObj = this.parent;
         var filterCell;
         this.column = gObj.grabColumnByFieldFromAllCols(fieldName);
@@ -21624,15 +21631,24 @@ var Filter = /** @__PURE__ @class */ (function () {
         else {
             this.values[this.column.field] = filterValue; //this line should be above updateModel
         }
-        this.actualPredicate[this.fieldName] = [{
-                field: this.fieldName,
-                predicate: predicate,
-                matchCase: matchCase,
-                ignoreAccent: ignoreAccent,
-                operator: this.operator,
-                value: this.value,
-                type: this.column.type
-            }];
+        var predObj = {
+            field: this.fieldName,
+            predicate: predicate,
+            matchCase: matchCase,
+            ignoreAccent: ignoreAccent,
+            operator: this.operator,
+            value: this.value,
+            type: this.column.type
+        };
+        var filterColumn = this.parent.filterSettings.columns.filter(function (fColumn) {
+            return (fColumn.field === _this.fieldName);
+        });
+        if (filterColumn.length > 1 && !isNullOrUndefined(this.actualPredicate[this.fieldName])) {
+            this.actualPredicate[this.fieldName].push(predObj);
+        }
+        else {
+            this.actualPredicate[this.fieldName] = [predObj];
+        }
         this.addFilteredClass(this.fieldName);
         if (this.checkAlreadyColFiltered(this.column.field)) {
             return;
@@ -32231,6 +32247,10 @@ var ColumnChooser = /** @__PURE__ @class */ (function () {
                 this.getShowHideService.setVisible(this.stateChangeColumns, this.changedStateColumns);
                 this.clearActions();
                 this.parent.notify(tooltipDestroy, { module: 'edit' });
+                if (this.parent.getCurrentViewRecords().length === 0) {
+                    var emptyRowCell = this.parent.element.querySelector('.e-emptyrow').querySelector('td');
+                    emptyRowCell.setAttribute('colSpan', this.parent.getVisibleColumns().length.toString());
+                }
             }
         }
     };
@@ -33887,6 +33907,7 @@ var PdfExport = /** @__PURE__ @class */ (function () {
         this.isExporting = true;
         parent.id = getUid('main-grid');
         this.gridPool[parent.id] = false;
+        this.pdfPageSettings = new PdfPageSettings();
     };
     PdfExport.prototype.exportWithData = function (parent, pdfDoc, resolve, returnType, pdfExportProperties, isMultipleExport) {
         var _this = this;
@@ -34019,11 +34040,10 @@ var PdfExport = /** @__PURE__ @class */ (function () {
     PdfExport.prototype.processSectionExportProperties = function (section, pdfExportProperties) {
         if (!isNullOrUndefined(pdfExportProperties) && (!isNullOrUndefined(pdfExportProperties.pageOrientation)
             || !isNullOrUndefined(pdfExportProperties.pageSize))) {
-            var pdfPageSettings = new PdfPageSettings();
-            pdfPageSettings.orientation = (pdfExportProperties.pageOrientation === 'Landscape') ?
+            this.pdfPageSettings.orientation = (pdfExportProperties.pageOrientation === 'Landscape') ?
                 PdfPageOrientation.Landscape : PdfPageOrientation.Portrait;
-            pdfPageSettings.size = this.getPageSize(pdfExportProperties.pageSize);
-            section.setPageSettings(pdfPageSettings);
+            this.pdfPageSettings.size = this.getPageSize(pdfExportProperties.pageSize);
+            section.setPageSettings(this.pdfPageSettings);
         }
         return section;
     };
@@ -34331,7 +34351,7 @@ var PdfExport = /** @__PURE__ @class */ (function () {
             if (!isNullOrUndefined(pdfExportProperties.theme)) {
                 this.gridTheme = pdfExportProperties.theme;
             }
-            var clientSize = this.pdfDocument.pageSettings.size;
+            var clientSize = this.pdfPageSettings.size;
             this.drawHeader(pdfExportProperties);
             if (!isNullOrUndefined(pdfExportProperties.footer)) {
                 /* tslint:disable-next-line:no-any */
@@ -34375,7 +34395,7 @@ var PdfExport = /** @__PURE__ @class */ (function () {
     };
     PdfExport.prototype.drawHeader = function (pdfExportProperties) {
         var _this = this;
-        var clientSize = this.pdfDocument.pageSettings.size;
+        var clientSize = this.pdfPageSettings.size;
         if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.header)) {
             /* tslint:disable-next-line:no-any */
             var header = pdfExportProperties.header;

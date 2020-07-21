@@ -64,7 +64,6 @@ let spreadsheet: Spreadsheet = new Spreadsheet({
 spreadsheet.appendTo('#spreadsheet');
 
 window.addEventListener('resize', onResize);
-document.getElementById('shape').addEventListener('click', renderOverlay);
 (window as any).fn = async () => {
     let arr: String[] = [];
     let val: number = 0;

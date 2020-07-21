@@ -54,8 +54,6 @@ class SfContextMenu {
         this.filter = filter;
         this.dotnetRef = dotnetRef;
         this.wrapper.blazor__instance = this;
-        this.subMenuOpen = false;
-        this.openAsMenu = false;
         this.addContextMenuEvent();
         EventHandler.add(this.wrapper, KEYDOWN, this.keyDownHandler, this);
     }
@@ -183,14 +181,8 @@ class SfContextMenu {
         this.removeEventListener();
         let cmenu: HTMLElement = this.wrapper.firstElementChild as HTMLElement;
         if (!cmenu) { return <Offset>{ Left: 0, Top: 0, ZIndex: 0, Width: 0 }; }
-        let zIndex: number = null;
-        if (left === null && top === null) {
-            this.openAsMenu = true;
-        } else {
-            this.openAsMenu = false;
-            if (this.wrapper.parentElement !== document.body) { document.body.appendChild(this.wrapper); }
-            zIndex = getZindexPartial(this.wrapper);
-        }
+        if (this.wrapper.parentElement !== document.body) { document.body.appendChild(this.wrapper); }
+        let zIndex: number = getZindexPartial(this.wrapper);
         cmenu.style.visibility = HIDDEN;
         cmenu.classList.remove(TRANSPARENT);
         let cmenuOffset: ClientRect = cmenu.getBoundingClientRect();
@@ -222,8 +214,7 @@ class SfContextMenu {
         if (left != null) { this.wrapper.style.left = left + PIXEL; }
         cmenu.style.visibility = EMPTY;
         cmenu.focus();
-        EventHandler.add(document, MOUSEDOWN, this.mouseDownHandler, this);
-        EventHandler.add(document, MOUSEOVER, this.mouseOverHandler, this);
+        this.addEventListener();
         return <Offset>{ Left: left, Top: top, ZIndex: zIndex, Width: Math.ceil(cmenuWidth) };
     }
 
@@ -231,6 +222,11 @@ class SfContextMenu {
         let caretIcon: HTMLElement = cmenu.getElementsByClassName(CARET)[0] as HTMLElement;
         if (caretIcon) { width += parseInt(getComputedStyle(caretIcon)[isRtl ? 'marginRight' : 'marginLeft'], 10); }
         return width < 120 ? 120 : width;
+    }
+
+    private addEventListener(): void {
+        EventHandler.add(document, MOUSEDOWN, this.mouseDownHandler, this);
+        EventHandler.add(document, MOUSEOVER, this.mouseOverHandler, this);
     }
 
     private removeEventListener(): void {
@@ -263,7 +259,7 @@ class SfContextMenu {
         }
     }
 
-    public subMenuPosition(isRtl: boolean, showOnClick: boolean): Offset {
+    public subMenuPosition(isRtl: boolean, showOnClick: boolean, isNull: boolean): Offset {
         if (!this.wrapper.childElementCount || this.wrapper.childElementCount < 2) { return <Offset>{ Left: 0, Top: 0, Width: 0 }; }
         let parentLi: Element = this.wrapper.children[this.wrapper.childElementCount - 2].querySelector(`.${MENUITEM}.${SELECTED}`);
         let parentOffset: ClientRect = parentLi.getBoundingClientRect();
@@ -304,6 +300,7 @@ class SfContextMenu {
             }
         }
         this.subMenuOpen = !showOnClick;
+        if (isNull) { this.openAsMenu = true; this.removeEventListener(); this.addEventListener(); }
         return <Offset>{ Left: Math.ceil(left), Top: Math.ceil(top), Width: Math.ceil(cmenuWidth) };
     }
 
@@ -352,8 +349,8 @@ let ContextMenu: object = {
     contextMenuPosition(element: BlazorMenuElement, left: number, top: number, isRtl: boolean, subMenu?: boolean): Offset {
         return element.blazor__instance.contextMenuPosition(left, top, isRtl, subMenu);
     },
-    subMenuPosition(element: BlazorMenuElement, isRtl: boolean, showOnClick: boolean): Offset {
-        return element.blazor__instance.subMenuPosition(isRtl, showOnClick);
+    subMenuPosition(element: BlazorMenuElement, isRtl: boolean, showOnClick: boolean, isNull?: boolean): Offset {
+        return element.blazor__instance.subMenuPosition(isRtl, showOnClick, isNull);
     },
     onPropertyChanged(element: BlazorMenuElement, key: string, value: string): void {
         element.blazor__instance.onPropertyChanged(key, value);
