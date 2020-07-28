@@ -45,9 +45,11 @@ export function dateToInt(val: any, isTime?: boolean): number {
     let startDateUTC: string = new Date('01/01/1900').toUTCString().replace(' GMT', '');
     let startDate: Date = new Date(startDateUTC);
     let date: Date = isDateTime(val) ? val : new Date(val);
-    let timeDiff: number;
     let dateDiff: number = (new Date(date.toUTCString().replace(' GMT', '')).getTime() - startDate.getTime());
-    timeDiff = (timeZoneOffset > 0) ? dateDiff + (timeZoneOffset * 60 * 1000) : (dateDiff - (timeZoneOffset * 60 * 1000));
+    let timeDiff: number = dateDiff;
+    if (!isTime) {
+        timeDiff = (timeZoneOffset > 0) ? dateDiff + (timeZoneOffset * 60 * 1000) : (dateDiff - (timeZoneOffset * 60 * 1000));
+    }
     let diffDays: number = (timeDiff / (1000 * 3600 * 24));
     return isTime ? diffDays : parseInt(diffDays.toString(), 10) + 2;
 }

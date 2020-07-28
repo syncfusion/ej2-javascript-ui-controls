@@ -215,9 +215,11 @@ export class Edit {
                     if (sheet.protectSettings.insertLink && keyCode === 75) {
                       return;
                     }
-                    this.parent.notify(editAlert, null);
-                 }
+                    if (!this.parent.element.querySelector('.e-editAlert-dlg')) {
+                        this.parent.notify(editAlert, null);
+                    }
                 }
+            }
         }
     }
     private renderEditor(): void {

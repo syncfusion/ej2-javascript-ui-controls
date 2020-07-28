@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.2.47 (2020-07-28)
+
+### ProgressBar
+
+#### Bug Fixes
+
+- `#156094` - ShowProgressValue is now working properly on dynamic update.
+
 ## 18.2.46 (2020-07-21)
 
 ### ProgressBar

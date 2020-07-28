@@ -686,6 +686,7 @@ export class Editor {
         if (result.name === 'onError') {
             DialogUtility.alert(localeValue.getConstant('Error in establishing connection with web server'));
         } else {
+            this.owner.fireServiceFailure(result);
             console.error(result.statusText);
         }
     }
@@ -3701,6 +3702,7 @@ export class Editor {
         setTimeout((): void => { this.viewer.updateScrollBars(); }, 0);
     }
     private onPasteFailure(result: any): void {
+        this.owner.fireServiceFailure(result);
         console.error(result.status, result.statusText);
         hideSpinner(this.owner.element);
         this.documentHelper.updateFocus();
@@ -9030,7 +9032,7 @@ export class Editor {
                 //Checks whether this is last paragraph of owner text body and previousBlock is not paragraph.
                 if (this.owner.enableTrackChanges && !this.skipTracking() && this.editorHistory.currentBaseHistoryInfo && this.editorHistory.currentBaseHistoryInfo.action !== 'TOC') {
                     this.insertRevisionForBlock(paragraph, 'Deletion');
-                    if (paragraph.isEmpty()) {
+                    if (paragraph.isEmpty() && !(end.paragraph.previousRenderedWidget instanceof TableWidget)) {
                         newParagraph = this.checkAndInsertBlock(paragraph, start, end, editAction, prevParagraph);
                         this.removeBlock(paragraph);
                     } else {
@@ -9200,6 +9202,12 @@ export class Editor {
             this.documentHelper.layout.layoutBodyWidgetCollection(block.index, containerWidget, block, false);
         } else {
             containerWidget = block.containerWidget;
+            for (let i: number = 0; i < block.childWidgets.length; i++) {
+                if (block.childWidgets[i] instanceof TableRowWidget && !this.skipTracking()) {
+                    let tableDelete: IWidget = block.childWidgets[i];
+                    this.removeDeletedCellRevision(tableDelete as TableRowWidget);
+                }
+            }
             index = containerWidget.childWidgets.indexOf(block);
             blockCollection = containerWidget.childWidgets;
             this.updateNextBlocksIndex(block, false);
@@ -9371,12 +9379,15 @@ export class Editor {
         }
     }
     // tslint:disable-next-line:max-line-length
-    private deleteCellsInTable(table: TableWidget, selection: Selection, start: TextPosition, end: TextPosition, editAction: number): void {
+    private deleteCellsInTable(table: TableWidget, selection: Selection, start: TextPosition, end: TextPosition, editAction: number, endCells?: TableCellWidget): void {
         let clonedTable: TableWidget = undefined;
         let action: Action = 'Delete';
         let isDeleteCells: boolean = false;
         let startCell: TableCellWidget = start.paragraph.associatedCell;
         let endCell: TableCellWidget = end.paragraph.associatedCell;
+        if (!isNullOrUndefined(endCells)) {
+            endCell = endCells;
+        }
         if (this.editorHistory && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)) {
             action = this.editorHistory.currentBaseHistoryInfo.action;
             //tslint:disable-next-line:max-line-length
@@ -9736,9 +9747,17 @@ export class Editor {
             if (selection.containsRow((table.firstChild as TableRowWidget), start.paragraph.associatedCell)) {
                 this.deleteContent(table, selection, editAction);
             } else {
-                let newTable: TableWidget = this.splitTable(table, start.paragraph.associatedCell.ownerRow);
-                this.deleteContent(table, selection, editAction);
-                this.documentHelper.layout.layoutBodyWidgetCollection(newTable.index, newTable.containerWidget, newTable, false);
+                if (this.owner.enableTrackChanges) {
+                    if (isNullOrUndefined(end.paragraph.associatedCell) && !end.paragraph.isInsideTable) {
+                        let previousChild: TableCellWidget = end.paragraph.previousRenderedWidget.lastChild as TableCellWidget;
+                        let endCells: TableCellWidget = previousChild.lastChild as TableCellWidget;
+                        this.deleteCellsInTable(table, selection, start, end, editAction, endCells);
+                    }
+                } else {
+                    let newTable: TableWidget = this.splitTable(table, start.paragraph.associatedCell.ownerRow);
+                    this.deleteContent(table, selection, editAction);
+                    this.documentHelper.layout.layoutBodyWidgetCollection(newTable.index, newTable.containerWidget, newTable, false);
+                }
             }
             if (!isNullOrUndefined(previousBlock)) {
                 selection.editPosition = this.selection.getHierarchicalIndex(previousBlock, '0');

@@ -12,6 +12,7 @@ import { getRowHeight, setColumnIndex, Global } from './util';
 import * as events from '../base/constant';
 import { ReturnType } from '../base/type';
 import { IDialogUI, ScrollPositionType, ActionArgs, ExportGroupCaptionEventArgs, FilterUI } from './interface';
+import {AggregateQueryCellInfoEventArgs } from './interface';
 import { IRenderer, IValueFormatter, IFilterOperator, IIndex, RowDataBoundEventArgs, QueryCellInfoEventArgs } from './interface';
 import { CellDeselectEventArgs, CellSelectEventArgs, CellSelectingEventArgs, ParentDetails, ContextMenuItemModel } from './interface';
 import { PdfQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs, ExcelExportProperties, PdfExportProperties } from './interface';
@@ -1743,6 +1744,23 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     @Event()
     public pdfHeaderQueryCellInfo: EmitType<PdfHeaderQueryCellInfoEventArgs>;
+
+    /** 
+     * Triggers before exporting aggregate cell to PDF document. You can also customize the PDF cells.
+     * @event
+     * @deprecated 
+     */
+    @Event()
+    public pdfAggregateQueryCellInfo: EmitType<AggregateQueryCellInfoEventArgs>;
+
+    /** 
+     * Triggers before exporting aggregate cell to Excel document. You can also customize the PDF cells.
+     * @event
+     * @deprecated 
+     */
+    @Event()
+    public excelAggregateQueryCellInfo: EmitType<AggregateQueryCellInfoEventArgs>;
+
 
     /** 
      * Triggers before exporting each detail Grid to PDF document.

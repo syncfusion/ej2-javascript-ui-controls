@@ -1140,6 +1140,12 @@ var closeFilterDialog = 'close-filter-dialog';
 
 /** @hidden */
 
+/** @hidden */
+var resetColumns = 'reset-columns';
+/** @hidden */
+
+/** @hidden */
+
 /**
  * Defines types of Cell
  * @hidden
@@ -1215,6 +1221,18 @@ var ToolbarItem;
     ToolbarItem[ToolbarItem["CsvExport"] = 10] = "CsvExport";
     ToolbarItem[ToolbarItem["WordExport"] = 11] = "WordExport";
 })(ToolbarItem || (ToolbarItem = {}));
+/**
+ * Defines the Aggregate Template Type
+ * * groupCaptionTemplate
+ * * groupFooterTemplate
+ * * footerTemplate
+ */
+var AggregateTemplateType;
+(function (AggregateTemplateType) {
+    AggregateTemplateType["GroupCaption"] = "GroupCaption";
+    AggregateTemplateType["GroupFooter"] = "GroupFooter";
+    AggregateTemplateType["Footer"] = "Footer";
+})(AggregateTemplateType || (AggregateTemplateType = {}));
 
 /* tslint:disable-next-line:max-line-length */
 /**
@@ -1772,29 +1790,13 @@ var CheckBoxFilterBase = /** @class */ (function () {
     };
     CheckBoxFilterBase.prototype.filterEvent = function (args, query) {
         var _this = this;
-        var def = this.eventPromise(args, query);
+        var defObj = eventPromise(args, query);
+        this.parent.trigger(dataStateChange, defObj.state);
+        var def = defObj.deffered;
         def.promise.then(function (e) {
             _this.dataSuccess(e);
         });
     };
-    CheckBoxFilterBase.prototype.eventPromise = function (args, query) {
-        var state;
-        state = this.getStateEventArgument(query);
-        var def = new sf.data.Deferred();
-        state.dataSource = def.resolve;
-        state.action = args;
-        this.parent.trigger(dataStateChange, state);
-        return def;
-    };
-    
-    CheckBoxFilterBase.prototype.getStateEventArgument = function (query) {
-        var adaptr = new sf.data.UrlAdaptor();
-        var dm = new sf.data.DataManager({ url: '', adaptor: new sf.data.UrlAdaptor });
-        var state = adaptr.processQuery(dm, query);
-        var data = JSON.parse(state.data);
-        return data;
-    };
-    
     CheckBoxFilterBase.prototype.processDataOperation = function (query, isInitial) {
         var _this = this;
         this.options.dataSource = this.options.dataSource instanceof sf.data.DataManager ?
@@ -2670,7 +2672,7 @@ var Data = /** @class */ (function () {
                 })
                     .catch(function () { return void 0; });
             }
-            else if (args.requestType !== 'reorder') {
+            else {
                 this.setState({ isPending: true, resolver: def.resolve, group: state.group, aggregates: state.aggregates });
                 this.parent.trigger(dataStateChange, state);
             }
@@ -6315,6 +6317,9 @@ var Render = /** @class */ (function () {
                     _this.parent.allowServerDataBinding = false;
                 }
             }
+            else if (args.requestType === 'reorder' && _this.parent.dataSource && 'result' in _this.parent.dataSource) {
+                _this.contentRenderer.refreshContentRows(args);
+            }
             else {
                 _this.refreshDataManager(args);
             }
@@ -7250,7 +7255,9 @@ var FocusStrategy = /** @class */ (function () {
             return;
         }
         this.setActive(!this.parent.enableHeaderFocus && this.parent.frozenRows === 0, this.parent.frozenColumns !== 0);
-        if (!this.parent.enableHeaderFocus && !this.parent.getCurrentViewRecords().length) {
+        var added = 'addedRecords';
+        if (!this.parent.enableHeaderFocus && !this.parent.getCurrentViewRecords().length && ((this.parent.editSettings.mode !== 'Batch')
+            || (this.parent.editSettings.mode === 'Batch' && !this.parent.editModule.getBatchChanges()[added].length))) {
             this.getContent().matrix.
                 generate(this.rowModelGen.generateRows({ rows: [new Row({ isDataRow: true })] }), this.getContent().selector, false);
         }
@@ -10163,7 +10170,7 @@ var Selection = /** @class */ (function () {
         else {
             this.mUPTarget = null;
         }
-        if (this.isDragged && !this.isAutoFillSel) {
+        if (this.isDragged && !this.isAutoFillSel && this.selectionSettings.mode === 'Cell') {
             var target = e.target;
             var rowIndex = parseInt(target.parentElement.getAttribute('aria-rowindex'), 10);
             var cellIndex = parseInt(target.getAttribute('aria-colindex'), 10);
@@ -11555,9 +11562,7 @@ var ShowHide = /** @class */ (function () {
             var currentViewCols = _this.parent.getColumns();
             columns = sf.base.isNullOrUndefined(columns) ? currentViewCols : columns;
             if (showHideArgs[cancel]) {
-                if (_this.parent.columnChooserModule) {
-                    _this.parent.columnChooserModule.resetColumnState();
-                }
+                _this.parent.notify(resetColumns, { showHideArgs: showHideArgs });
                 if (columns.length > 0) {
                     columns[0].visible = true;
                 }
@@ -16514,6 +16519,12 @@ var Grid = /** @class */ (function (_super) {
     ], Grid.prototype, "pdfHeaderQueryCellInfo", void 0);
     __decorate$2([
         sf.base.Event()
+    ], Grid.prototype, "pdfAggregateQueryCellInfo", void 0);
+    __decorate$2([
+        sf.base.Event()
+    ], Grid.prototype, "excelAggregateQueryCellInfo", void 0);
+    __decorate$2([
+        sf.base.Event()
     ], Grid.prototype, "exportDetailDataBound", void 0);
     __decorate$2([
         sf.base.Event()
@@ -17604,6 +17615,17 @@ var Global;
 
 /** @hidden */
 
+/** @hidden */
+
+/** @hidden */
+function eventPromise(args, query) {
+    var state;
+    state = this.getStateEventArgument(query);
+    var def = new sf.data.Deferred();
+    state.dataSource = def.resolve;
+    state.action = args;
+    return { state: state, deffered: def };
+}
 /** @hidden */
 
 var __extends = (undefined && undefined.__extends) || (function () {

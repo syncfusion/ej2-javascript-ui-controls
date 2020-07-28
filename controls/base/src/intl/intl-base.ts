@@ -1027,7 +1027,7 @@ export namespace IntlBase {
      * @param {Object} cldr 
      * @returns {string}
      */
-    export function getActualNumberFormat(culture: string, options: NumberFormatOptions, cldr?: Object): string {
+    export function getActualNumberFormat(culture: string, options: NumberFormatOptions, cldr?: Object, isExcel?: Boolean): string {
         let dependable: Dependables = getDependables(cldr, culture, '', true);
         let parseOptions: NumericParts = { custom: true };
         let numrericObject: Object = dependable.numericObject;
@@ -1094,7 +1094,7 @@ export namespace IntlBase {
             actualPattern = options.format.replace(/\'/g, '"');
         }
         if (Object.keys(dOptions).length > 0) {
-            actualPattern = processSymbol(actualPattern, dOptions);
+            actualPattern = !isExcel ? processSymbol(actualPattern, dOptions) : actualPattern;
         }
         return actualPattern;
     }

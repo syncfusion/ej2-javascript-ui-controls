@@ -674,30 +674,35 @@ var Dialog = {
         }
     },
     getClassList: function (element) {
-        return element.classList.toString();
+        return element && element.classList.toString();
     },
     getMaxHeight: function (element) {
-        if (element) {
-            return element.blazor__instance.getMaxHeight(element);
-        }
-        else {
-            return null;
-        }
+        return element ? element.blazor__instance.getMaxHeight(element) : null;
     },
     changePosition: function (dlgObj) {
-        dlgObj.element.blazor__instance.changePosition(dlgObj);
+        if (!sf.base.isNullOrUndefined(dlgObj.element)) {
+            dlgObj.element.blazor__instance.changePosition(dlgObj);
+        }
     },
     focusContent: function (element) {
-        element.blazor__instance.focusContent(element);
+        if (!sf.base.isNullOrUndefined(element)) {
+            element.blazor__instance.focusContent(element);
+        }
     },
     refreshPosition: function (element) {
-        element.blazor__instance.refreshPosition();
+        if (!sf.base.isNullOrUndefined(element)) {
+            element.blazor__instance.refreshPosition();
+        }
     },
     popupCloseHandler: function (element) {
-        element.blazor__instance.popupCloseHandler();
+        if (!sf.base.isNullOrUndefined(element)) {
+            element.blazor__instance.popupCloseHandler();
+        }
     },
     propertyChanged: function (dlgObj, changedProps) {
-        dlgObj.element.blazor__instance.OnPropertyChanged(dlgObj, changedProps);
+        if (!sf.base.isNullOrUndefined(dlgObj.element)) {
+            dlgObj.element.blazor__instance.OnPropertyChanged(dlgObj, changedProps);
+        }
     },
     show: function (isFullScreen, maxHeight, dlgObj) {
         if (dlgObj.element) {
@@ -705,7 +710,9 @@ var Dialog = {
         }
     },
     hide: function (element) {
-        element.blazor__instance.hide();
+        if (!sf.base.isNullOrUndefined(element)) {
+            element.blazor__instance.hide();
+        }
     },
     destroy: function (dlgObj) {
         if (!sf.base.isNullOrUndefined(dlgObj.element)) {

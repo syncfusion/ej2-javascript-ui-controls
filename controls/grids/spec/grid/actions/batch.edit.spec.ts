@@ -3523,3 +3523,30 @@ describe('EJ2-40007- cell did not save the empty value for complex field', () =>
         gridObj = localdata = null ;
     });
 });
+
+describe('EJ2-41463-Column resize icon not displayed after double-clicking the primary key cell', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowPaging: true,
+                allowResizing: true,
+                editSettings : { allowEditing: true, allowAdding: true, allowDeleting: true , mode: "Batch" },
+                toolbar : ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID',isPrimaryKey: true , width: 120, textAlign: 'Right' },
+                    { field: 'EmployeeID', type: 'number', allowEditing: false},
+                    { field: 'Freight', type: 'number' },
+                    { field: 'ShipCity', type: 'string' },
+                ]
+            }, done);
+    });
+    it('editing the primary key cell', () => {
+        gridObj.editCell(0,'OrderID');
+        expect((gridObj.element as any).classList.contains('e-editing')).toBeFalsy();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});

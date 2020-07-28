@@ -1489,7 +1489,13 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         }
     }
     private afterCloseMenu(e: MouseEvent): void {
+        let isHeader: Element;
         if (this.showSubMenu) {
+            if (this.showItemOnClick && this.navIdx.length === 0) {
+                isHeader = closest(e.target as Element, '.e-menu-parent.e-control');
+            } else {
+                isHeader = closest(this.element, '.e-menu-parent.e-control');
+            }
             let idx: number[] = this.navIdx.concat(this.cliIdx);
             let item: MenuItemModel = this.getItem(idx);
             if (item && (<objColl>(<obj>item)[this.getField('children', idx.length - 1)]) &&
@@ -1497,7 +1503,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 if (e.type === 'mouseover' || (Browser.isDevice && this.isMenu)) {
                     this.setLISelected(this.cli);
                 }
-                if (!this.hamburgerMode || (this.hamburgerMode && this.cli.getAttribute('aria-expanded') === 'false')) {
+                if ((!this.hamburgerMode && isHeader) || (this.hamburgerMode && this.cli.getAttribute('aria-expanded') === 'false')) {
                     this.cli.setAttribute('aria-expanded', 'true');
                     this.navIdx.push(this.cliIdx);
                     this.openMenu(this.cli, item, null, null, e);
@@ -1505,6 +1511,14 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             } else {
                 if (e.type !== 'mouseover') {
                     this.closeMenu(null, e);
+                }
+            }
+            if (!isHeader) {
+                let cul: Element = this.getUlByNavIdx();
+                let sli: Element = this.getLIByClass(cul, SELECTED);
+                if (sli) {
+                    sli.setAttribute('aria-expanded', 'false');
+                    sli.classList.remove(SELECTED);
                 }
             }
         }

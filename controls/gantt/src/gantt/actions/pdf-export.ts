@@ -20,6 +20,7 @@ export class PdfExport {
     private helper: ExportHelper;
     private pdfDocument: PdfDocument;
     public gantt: PdfGantt;
+    public isPdfExport: boolean = false;
     /**
      * @hidden
      */

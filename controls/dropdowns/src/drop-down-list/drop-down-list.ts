@@ -1866,9 +1866,9 @@ export class DropDownList extends DropDownBase implements IInput {
         }
     }
 
-    protected updateActionCompleteData(li: HTMLElement, item: { [key: string]: Object }): void {
+    protected updateActionCompleteData(li: HTMLElement, item: { [key: string]: Object }, index?: number): void {
         if (this.getModuleName() !== 'autocomplete' && this.actionCompleteData.ulElement) {
-            this.actionCompleteData.ulElement.appendChild(li.cloneNode(true));
+            this.actionCompleteData.ulElement.insertBefore(li.cloneNode(true), this.actionCompleteData.ulElement.childNodes[index]);
             if (this.isFiltering() && this.actionCompleteData.list.indexOf(item) < 0) {
                 this.actionCompleteData.list.push(item);
             }

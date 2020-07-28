@@ -13,7 +13,7 @@ import { RowDropSettingsModel, GroupSettingsModel, GridModel, EditSettingsModel 
 import { Cell } from '../models/cell';
 import { Row } from '../models/row';
 import { GridLine, Action, CellType, SortDirection, PrintMode, ToolbarItems, CommandButtonType, ContextMenuItem, ClipMode } from './enum';
-import { MultipleExportType, ExportType, ExcelHAlign, ExcelVAlign, BorderLineStyle, ToolbarItem } from './enum';
+import { MultipleExportType, ExportType, ExcelHAlign, ExcelVAlign, BorderLineStyle, ToolbarItem, AggregateTemplateType } from './enum';
 import { PredicateModel } from './grid-model';
 import { SentinelType, Offsets } from './type';
 import { CheckState, ColumnQueryModeType, HierarchyGridPrintMode } from './enum';
@@ -1209,6 +1209,14 @@ export interface ExportDetailDataBoundEventArgs {
     /** Defines the export properties */
     exportProperties?: PdfExportProperties | ExcelExportProperties;
 }
+
+export interface AggregateQueryCellInfoEventArgs {
+    row?: Object ;
+    type?: AggregateTemplateType ;
+    data?: object ;
+    style?: object;
+}
+
 
 export interface PdfHeaderQueryCellInfoEventArgs {
     /** Defines the PDF grid current cell. */

@@ -8,7 +8,15 @@
 
 ## [Unreleased]
 
-## 18.2.46 (2020-07-21)
+## 18.2.47 (2020-07-28)
+
+### Maps
+
+#### Bug Fixes
+
+- `#285727` - Outline for the shapes will no longer appear when clicking on it.
+
+## 18.2.44 (2020-07-07)
 
 ### Maps
 

@@ -3553,11 +3553,13 @@ var RowDD = /** @class */ (function () {
                 if (stRow) {
                     stRow.classList.remove('e-dragstartrow');
                 }
-                var toIdx = _this.dragTarget;
-                var targetClass = target.classList.value;
-                var targetID = target.id;
-                var fromIdx = parseInt(_this.startedRow.getAttribute('aria-rowindex'), 10);
-                gObj.dotNetRef.invokeMethodAsync("ReorderRows", fromIdx, toIdx, 'delete', true, targetClass, targetID, null);
+                var toIdx_1 = _this.dragTarget;
+                var targetClass_1 = target.classList.value;
+                var targetID_1 = target.id;
+                var fromIdx_1 = parseInt(_this.startedRow.getAttribute('aria-rowindex'), 10);
+                setTimeout(function () {
+                    gObj.dotNetRef.invokeMethodAsync("ReorderRows", fromIdx_1, toIdx_1, 'delete', true, targetClass_1, targetID_1, null);
+                }, 10);
                 _this.dragTarget = null;
             }
         };
@@ -4589,7 +4591,12 @@ var SfGrid = /** @class */ (function () {
         this.inViewIndexes = [];
         this.isRendered = false;
         this.element = element;
-        this.element.blazor__instance = this;
+        if (sf.base.isNullOrUndefined(element)) {
+            return;
+        }
+        if (!sf.base.isNullOrUndefined(element)) {
+            this.element.blazor__instance = this;
+        }
         this.dotNetRef = dotnetRef;
         this.options = options;
         this.header = this.element.querySelector('.e-headercontent');
@@ -5050,7 +5057,8 @@ var SfGrid = /** @class */ (function () {
         else {
             var target = null;
             var cellUid = null;
-            if (parentsUntil(e.target, 'e-editcell') || parentsUntil(e.target, 'e-gridform')) {
+            var editForm = parentsUntil(parentsUntil(e.target, 'e-gridform'), 'e-grid');
+            if (parentsUntil(e.target, 'e-editcell') || editForm && editForm.id == gridElement.id) {
                 target = "Edit";
             }
             else if (parentsUntil(e.target, 'e-pager')) {
@@ -5187,49 +5195,74 @@ var Grid = {
         new SfGrid(element, options, dotnetRef);
     },
     contentReady: function (element, options, action) {
-        var instance = element.blazor__instance;
-        instance.setOptions(options, instance.options);
-        instance.options = options;
-        instance.contentReady(action);
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
+            var instance = element.blazor__instance;
+            instance.setOptions(options, instance.options);
+            instance.options = options;
+            instance.contentReady(action);
+        }
     },
     reorderColumns: function (element, fromFName, toFName) {
-        element.blazor__instance.reorderModule.reorderColumns(fromFName, toFName);
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
+            element.blazor__instance.reorderModule.reorderColumns(fromFName, toFName);
+        }
     },
     reorderColumnByIndex: function (element, fromIndex, toIndex) {
-        element.blazor__instance.reorderModule.reorderColumnByIndex(fromIndex, toIndex);
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
+            element.blazor__instance.reorderModule.reorderColumnByIndex(fromIndex, toIndex);
+        }
     },
     reorderColumnByTargetIndex: function (element, fieldName, toIndex) {
-        element.blazor__instance.reorderModule.reorderColumnByTargetIndex(fieldName, toIndex);
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
+            element.blazor__instance.reorderModule.reorderColumnByTargetIndex(fieldName, toIndex);
+        }
     },
     renderColumnChooser: function (element) {
-        element.blazor__instance.columnChooserModule.renderColumnChooser();
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
+            element.blazor__instance.columnChooserModule.renderColumnChooser();
+        }
     },
     renderColumnMenu: function (element, uid, isFilter, key) {
-        return element.blazor__instance.columnMenuModule.renderColumnMenu(uid, isFilter, key);
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
+            return element.blazor__instance.columnMenuModule.renderColumnMenu(uid, isFilter, key);
+        }
+        else {
+            return { Left: 1, Top: 1 };
+        }
     },
     filterPopupRender: function filterPopupRender(element, dlgID, uid, type, isColumnMenu) {
-        element.blazor__instance.filterModule.filterPopupRender(dlgID, uid, type, isColumnMenu);
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
+            element.blazor__instance.filterModule.filterPopupRender(dlgID, uid, type, isColumnMenu);
+        }
     },
     autoFitColumns: function (element, fieldNames) {
-        element.blazor__instance.resizeModule.autoFitColumns(fieldNames);
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
+            element.blazor__instance.resizeModule.autoFitColumns(fieldNames);
+        }
     },
     refreshColumnIndex: function (element, columns) {
-        var instance = element.blazor__instance;
-        instance.options.columns = columns;
-        instance.virtualContentModule.refreshColumnIndexes();
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
+            var instance = element.blazor__instance;
+            instance.options.columns = columns;
+            instance.virtualContentModule.refreshColumnIndexes();
+        }
     },
     focus: function (element, rowuid, celluid, action) {
         var cell = element.querySelector("[data-uid=\"" + celluid + "\"]");
-        var instance = element.blazor__instance;
-        if (!instance.options.enableVirtualization) {
-            cell.focus();
-        }
-        else {
-            instance.virtualContentModule.focusCell(cell, action);
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
+            var instance = element.blazor__instance;
+            if (!instance.options.enableVirtualization) {
+                cell.focus();
+            }
+            else {
+                instance.virtualContentModule.focusCell(cell, action);
+            }
         }
     },
     refreshOnDataChange: function (element) {
-        element.blazor__instance.virtualContentModule.refreshOnDataChange();
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
+            element.blazor__instance.virtualContentModule.refreshOnDataChange();
+        }
     },
     focusChild: function (element, rowuid, celluid) {
         var query = 'button, [href], input:not([type="hidden"]), select, textarea, [tabindex]:not([tabindex="-1"])';
@@ -5262,13 +5295,17 @@ var Grid = {
         }
     },
     destroy: function (element) {
-        element.blazor__instance.destroy();
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
+            element.blazor__instance.destroy();
+        }
     },
     validation: function (element, results, isAdd) {
-        element.blazor__instance.editModule.createTooltip(results, isAdd);
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
+            element.blazor__instance.editModule.createTooltip(results, isAdd);
+        }
     },
     focusCell: function (element, field, isAdd) {
-        if (isAdd && element.blazor__instance.options.frozenColumns) {
+        if (isAdd && !sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance) && element.blazor__instance.options.frozenColumns) {
             element.querySelector('.e-frozencontent').style.height =
                 element.querySelector('.e-movablecontent').getBoundingClientRect().height + 'px';
         }
@@ -5285,13 +5322,19 @@ var Grid = {
             element.querySelector('.e-movablecontent').offsetHeight - getScrollBarWidth() + 'px';
     },
     printGrid: function (element) {
-        element.blazor__instance.print();
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
+            element.blazor__instance.print();
+        }
     },
     updateMediaColumns: function (element, mediaColumnsUid) {
-        element.blazor__instance.columnChooserModule.updateMediaColumns(mediaColumnsUid);
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
+            element.blazor__instance.columnChooserModule.updateMediaColumns(mediaColumnsUid);
+        }
     },
     copyToClipBoard: function (element, withHeader) {
-        element.blazor__instance.clipboardModule.copy(withHeader);
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
+            element.blazor__instance.clipboardModule.copy(withHeader);
+        }
     }
 };
 

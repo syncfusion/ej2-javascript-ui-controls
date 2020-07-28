@@ -2,6 +2,19 @@ import { HyperlinkType } from './types';
 import { DocumentEditor } from '../document-editor';
 import { DocumentEditorContainer } from '../../document-editor-container';
 
+/**
+ * ServiceFailureArgs
+ */
+export interface ServiceFailureArgs {
+    /** Defines the status. */
+    status: string;
+    /** Defines the status text. */
+    statusText: string;
+    /** Defines the response url. */
+    url: string;
+
+}
+
 /** 
  * This event arguments provides the necessary information about form field fill event.
  */

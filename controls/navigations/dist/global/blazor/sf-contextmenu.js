@@ -366,22 +366,36 @@ var SfContextMenu = /** @class */ (function () {
 // tslint:disable-next-line:variable-name
 var ContextMenu = {
     initialize: function (element, target, filter, dotnetRef) {
-        if (element) {
+        if (!sf.base.isNullOrUndefined(element)) {
             new SfContextMenu(element, target, filter, dotnetRef);
         }
         return sf.base.Browser.isDevice;
     },
     contextMenuPosition: function (element, left, top, isRtl, subMenu) {
-        return element.blazor__instance.contextMenuPosition(left, top, isRtl, subMenu);
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
+            return element.blazor__instance.contextMenuPosition(left, top, isRtl, subMenu);
+        }
+        else {
+            return { Left: 0, Top: 0, ZIndex: 0, Width: 0 };
+        }
     },
     subMenuPosition: function (element, isRtl, showOnClick, isNull) {
-        return element.blazor__instance.subMenuPosition(isRtl, showOnClick, isNull);
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
+            return element.blazor__instance.subMenuPosition(isRtl, showOnClick, isNull);
+        }
+        else {
+            return { Left: 0, Top: 0, Width: 0 };
+        }
     },
     onPropertyChanged: function (element, key, value) {
-        element.blazor__instance.onPropertyChanged(key, value);
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
+            element.blazor__instance.onPropertyChanged(key, value);
+        }
     },
     destroy: function (element, refElement) {
-        element.blazor__instance.destroy(refElement);
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
+            element.blazor__instance.destroy(refElement);
+        }
     }
 };
 

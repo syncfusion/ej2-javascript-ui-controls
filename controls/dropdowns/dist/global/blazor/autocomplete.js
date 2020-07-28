@@ -69,7 +69,7 @@ var AutoComplete = /** @class */ (function (_super) {
         if (this.isFiltered) {
             return filterQuery;
         }
-        if (this.queryString !== null) {
+        if (this.queryString !== null && this.queryString !== '') {
             var dataType = this.typeOfData(this.dataSource).typeof;
             if (!(this.dataSource instanceof sf.data.DataManager) && dataType === 'string' || dataType === 'number') {
                 filterQuery.where('', filterType, queryString, this.ignoreCase, this.ignoreAccent);
@@ -200,7 +200,7 @@ var AutoComplete = /** @class */ (function (_super) {
             this.setHoverList(li);
             this.selectedLI = li;
             this.setScrollPosition(e);
-            if (this.autofill) {
+            if (this.autofill && this.isPopupOpen) {
                 this.preventAutoFill = false;
                 _super.prototype.setAutoFill.call(this, li);
             }

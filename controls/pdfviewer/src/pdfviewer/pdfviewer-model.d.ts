@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex, isBlazor } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';import { PdfViewerBase } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { FormFields } from './index';import { Print, CalibrationUnit } from './index';import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs, AnnotationMouseoverEventArgs, PageMouseoverEventArgs, AnnotationMouseLeaveEventArgs } from './index';import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs, ExtractTextCompletedEventArgs, PrintStartEventArgs, PrintEndEventArgs } from './index';import { TextSearchStartEventArgs, TextSearchCompleteEventArgs, TextSearchHighlightEventArgs } from './index';import { PdfAnnotationBase, ZOrderPageTable } from './drawing/pdf-annotation';import { PdfAnnotationBaseModel } from './drawing/pdf-annotation-model';import { Drawing, ClipBoardObject } from './drawing/drawing';import { Selector } from './drawing/selector';import { SelectorModel } from './drawing/selector-model';import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';import { renderAdornerLayer } from './drawing/dom-util';import { ThumbnailClickEventArgs } from './index';import { ValidateFormFieldsArgs } from './base';import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs } from './base';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex, isBlazor } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';import { PdfViewerBase } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { FormFields } from './index';import { Print, CalibrationUnit } from './index';import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs, AnnotationMouseoverEventArgs, PageMouseoverEventArgs, AnnotationMouseLeaveEventArgs } from './index';import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs, ExtractTextCompletedEventArgs, PrintStartEventArgs, PrintEndEventArgs } from './index';import { TextSearchStartEventArgs, TextSearchCompleteEventArgs, TextSearchHighlightEventArgs } from './index';import { PdfAnnotationBase, ZOrderPageTable } from './drawing/pdf-annotation';import { PdfAnnotationBaseModel } from './drawing/pdf-annotation-model';import { Drawing, ClipBoardObject } from './drawing/drawing';import { Selector } from './drawing/selector';import { SelectorModel } from './drawing/selector-model';import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';import { renderAdornerLayer } from './drawing/dom-util';import { ThumbnailClickEventArgs } from './index';import { ValidateFormFieldsArgs } from './base';import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs } from './base';
 import {IAjaxHeaders} from "./pdfviewer";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -189,6 +189,13 @@ export interface StrikethroughSettingsModel {
      */
     enableTextMarkupResizer?: boolean;
 
+    /**
+     * Gets or sets the allowed interactions for the locked strikethrough annotations.
+     * IsLock can be configured using strikethrough settings.
+     * @default ['None']
+     */
+    allowedInteractions?: AllowedInteraction[];
+
 }
 
 /**
@@ -238,6 +245,13 @@ export interface UnderlineSettingsModel {
      */
     enableTextMarkupResizer?: boolean;
 
+    /**
+     * Gets or sets the allowed interactions for the locked underline annotations.
+     * IsLock can be configured using underline settings.
+     * @default ['None']
+     */
+    allowedInteractions?: AllowedInteraction[];
+
 }
 
 /**
@@ -286,6 +300,13 @@ export interface HighlightSettingsModel {
      * @default false
      */
     enableTextMarkupResizer?: boolean;
+
+    /**
+     * Gets or sets the allowed interactions for the locked highlight annotations.
+     * IsLock can be configured using highlight settings.
+     * @default ['None']
+     */
+    allowedInteractions?: AllowedInteraction[];
 
 }
 
@@ -369,6 +390,13 @@ export interface LineSettingsModel {
      */
     customData?: object;
 
+    /**
+     * Gets or sets the allowed interactions for the locked highlight annotations.
+     * IsLock can be configured using line settings.
+     * @default ['None']
+     */
+    allowedInteractions?: AllowedInteraction[];
+
 }
 
 /**
@@ -451,6 +479,13 @@ export interface ArrowSettingsModel {
      */
     customData?: object;
 
+    /**
+     * Gets or sets the allowed interactions for the locked arrow annotations.
+     * IsLock can be configured using arrow settings.
+     * @default ['None']
+     */
+    allowedInteractions?: AllowedInteraction[];
+
 }
 
 /**
@@ -518,6 +553,13 @@ export interface RectangleSettingsModel {
      */
     customData?: object;
 
+    /**
+     * Gets or sets the allowed interactions for the locked rectangle annotations.
+     * IsLock can be configured using rectangle settings.
+     * @default ['None']
+     */
+    allowedInteractions?: AllowedInteraction[];
+
 }
 
 /**
@@ -584,6 +626,13 @@ export interface CircleSettingsModel {
      * specifies the custom data of the annotation.
      */
     customData?: object;
+
+    /**
+     * Gets or sets the allowed interactions for the locked circle annotations.
+     * IsLock can be configured using circle settings.
+     * @default ['None']
+     */
+    allowedInteractions?: AllowedInteraction[];
 
 }
 
@@ -694,6 +743,13 @@ export interface PolygonSettingsModel {
      */
     customData?: object;
 
+    /**
+     * Gets or sets the allowed interactions for the locked polygon annotations.
+     * IsLock can be configured using polygon settings.
+     * @default ['None']
+     */
+    allowedInteractions?: AllowedInteraction[];
+
 }
 
 /**
@@ -760,6 +816,13 @@ export interface StampSettingsModel {
      * Provide option to define the required standard business stamp items to be displayed in annotation toolbar menu.
      */
     standardBusinessStamps?: StandardBusinessStampItem[];
+
+    /**
+     * Gets or sets the allowed interactions for the locked stamp annotations.
+     * IsLock can be configured using stamp settings.
+     * @default ['None']
+     */
+    allowedInteractions?: AllowedInteraction[];
 
 }
 
@@ -837,6 +900,13 @@ export interface CustomStampSettingsModel {
      * If it is set as false. then the custom stamp items won't be visible in the annotation toolbar stamp menu items.
      */
     enableCustomStamp?: boolean;
+
+    /**
+     * Gets or sets the allowed interactions for the locked custom stamp annotations.
+     * IsLock can be configured using custom stamp settings.
+     * @default ['None']
+     */
+    allowedInteractions?: AllowedInteraction[];
 
 }
 
@@ -930,6 +1000,13 @@ export interface DistanceSettingsModel {
      */
     resizeCursorType?: CursorType;
 
+    /**
+     * Gets or sets the allowed interactions for the locked distance annotations.
+     * IsLock can be configured using distance settings.
+     * @default ['None']
+     */
+    allowedInteractions?: AllowedInteraction[];
+
 }
 
 /**
@@ -1007,6 +1084,13 @@ export interface PerimeterSettingsModel {
      */
     annotationSelectorSettings?: AnnotationSelectorSettingsModel;
 
+    /**
+     * Gets or sets the allowed interactions for the locked perimeter annotations.
+     * IsLock can be configured using perimeter settings.
+     * @default ['None']
+     */
+    allowedInteractions?: AllowedInteraction[];
+
 }
 
 /**
@@ -1068,6 +1152,13 @@ export interface AreaSettingsModel {
      * specifies the annotation selector settings of the annotation.
      */
     annotationSelectorSettings?: AnnotationSelectorSettingsModel;
+
+    /**
+     * Gets or sets the allowed interactions for the locked area annotations.
+     * IsLock can be configured using area settings.
+     * @default ['None']
+     */
+    allowedInteractions?: AllowedInteraction[];
 
 }
 
@@ -1136,6 +1227,13 @@ export interface RadiusSettingsModel {
      */
     customData?: object;
 
+    /**
+     * Gets or sets the allowed interactions for the locked radius annotations.
+     * IsLock can be configured using area settings.
+     * @default ['None']
+     */
+    allowedInteractions?: AllowedInteraction[];
+
 }
 
 /**
@@ -1198,6 +1296,13 @@ export interface VolumeSettingsModel {
      */
     annotationSelectorSettings?: AnnotationSelectorSettingsModel;
 
+    /**
+     * Gets or sets the allowed interactions for the locked volume annotations.
+     * IsLock can be configured using volume settings.
+     * @default ['None']
+     */
+    allowedInteractions?: AllowedInteraction[];
+
 }
 
 /**
@@ -1235,6 +1340,13 @@ export interface InkAnnotationSettingsModel {
      */
     author?: string;
 
+    /**
+     * Gets or sets the allowed interactions for the locked ink annotations.
+     * IsLock can be configured using ink settings.
+     * @default ['None']
+     */
+    allowedInteractions?: AllowedInteraction[];
+
 }
 
 /**
@@ -1266,6 +1378,13 @@ export interface StickyNotesSettingsModel {
      * specifies the lock action of the annotation.
      */
     isLock?: boolean;
+
+    /**
+     * Gets or sets the allowed interactions for the locked sticky notes annotations.
+     * IsLock can be configured using sticky notes settings.
+     * @default ['None']
+     */
+    allowedInteractions?: AllowedInteraction[];
 
 }
 
@@ -1410,6 +1529,13 @@ export interface FreeTextSettingsModel {
      * specifies the custom data of the annotation.
      */
     customData?: object;
+
+    /**
+     * Gets or sets the allowed interactions for the locked free text annotations.
+     * IsLock can be configured using free text settings.
+     * @default ['None']
+     */
+    allowedInteractions?: AllowedInteraction[];
 
 }
 
@@ -1571,6 +1697,13 @@ export interface AnnotationSettingsModel {
      * specifies the custom data of the annotation.
      */
     customData?: object;
+
+    /**
+     * Gets or sets the allowed interactions for the locked annotations.
+     * IsLock can be configured using annotation settings.
+     * @default ['None']
+     */
+    allowedInteractions?: AllowedInteraction[];
 
 }
 

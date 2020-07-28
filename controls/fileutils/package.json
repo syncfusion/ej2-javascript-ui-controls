@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-file-utils",
-	"version": "17.2.48",
+	"version": "18.2.44",
 	"description": "Essential Javascript 2 File library",
 	"keywords": [
 		"ej2",
@@ -12,7 +12,7 @@
 		"file"
 	],
 	"author": "Syncfusion Inc.",
-	"license": "UNLICENSED",
+	"license": "SEE LICENSE IN license",
 	"devDependencies": {
 		"@types/chai": "^3.4.28",
 		"@types/es6-promise": "0.0.28",

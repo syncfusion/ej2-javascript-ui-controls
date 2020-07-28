@@ -2,7 +2,6 @@ import { Property, ChildProperty } from '@syncfusion/ej2-base';
 import { SortDirection, SortOrderBy } from '../base/type';
 
 /**
- * @deprecated
  * Holds the configuration of sort settings in kanban board.
  */
 export class SortSettings extends ChildProperty<SortSettings> {
@@ -12,7 +11,6 @@ export class SortSettings extends ChildProperty<SortSettings> {
      * * DataSourceOrder
      * * Index
      * * Custom
-     * @deprecated
      * @default 'DataSourceOrder'
      */
     @Property('DataSourceOrder')
@@ -20,7 +18,6 @@ export class SortSettings extends ChildProperty<SortSettings> {
 
     /**
      * Defines the sort field
-     * @deprecated
      * @default null
      */
     @Property()
@@ -30,7 +27,6 @@ export class SortSettings extends ChildProperty<SortSettings> {
      * Sort the cards. The possible values are:
      * * Ascending
      * * Descending
-     * @deprecated
      * @default 'Ascending'
      */
     @Property('Ascending')

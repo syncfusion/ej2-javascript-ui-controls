@@ -107,6 +107,7 @@ export class ContextMenu {
         this.pdfViewerBase.getElement('_context_menu_comment_separator').classList.remove('e-menu-hide');
         // tslint:disable-next-line:max-line-length
         this.contextMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Cut'), this.pdfViewer.localeObj.getConstant('Copy'), this.pdfViewer.localeObj.getConstant('Paste'), this.pdfViewer.localeObj.getConstant('Delete Context')], true);
+        this.pdfViewer.annotationModule.checkContextMenuDeleteItem(this.contextMenuObj);
         if (this.pdfViewer.textSelectionModule || this.pdfViewerBase.isShapeBasedAnnotationsEnabled()) {
             if (args.event) {
                 let isClickWithinSelectionBounds: boolean = this.isClickWithinSelectionBounds(args.event);

@@ -4,10 +4,9 @@ import { ITreeData, RowExpandedEventArgs } from './interface';
 import { TreeGrid } from './treegrid';
 import { showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { getObject, BeforeDataBoundArgs, VirtualContentRenderer, getUid } from '@syncfusion/ej2-grids';
-import { NotifyArgs, SaveEventArgs, Action, VirtualInfo } from '@syncfusion/ej2-grids';
+import { ColumnModel as GridColumnModel, NotifyArgs, SaveEventArgs, Action, VirtualInfo } from '@syncfusion/ej2-grids';
 import { isRemoteData, isOffline, isCountRequired } from '../utils';
 import * as events from './constant';
-import { Column } from '../models';
 
 /**
  * Internal dataoperations for tree grid
@@ -496,7 +495,7 @@ public isRemote(): boolean {
       parentData = this.parent.parentData; let sortedData: Object[];
       let query: Query = getObject('query', args); let srtQry: Query = new Query();
       for (let srt: number = this.parent.grid.sortSettings.columns.length - 1; srt >= 0; srt--) {
-        let col: Column = this.parent.getColumnByField(this.parent.grid.sortSettings.columns[srt].field);
+        let col: GridColumnModel = this.parent.grid.getColumnByField(this.parent.grid.sortSettings.columns[srt].field);
         let compFun: Function | string = col.sortComparer && !this.isRemote() ?
           (col.sortComparer as Function).bind(col) :
           this.parent.grid.sortSettings.columns[srt].direction;

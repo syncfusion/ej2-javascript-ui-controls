@@ -372,27 +372,41 @@ export class SelectTool extends ToolBase {
         }
         // tslint:disable-next-line
         let object: IElement = findActiveElement(args as any, this.pdfViewerBase, this.commandHandler);
+        let isLock: boolean = false;
         // tslint:disable-next-line
-        let currentSelctor: any;
-        if ((args.source as PdfAnnotationBaseModel) && (args as PdfAnnotationBaseModel).annotationSelectorSettings !== null) {
-        currentSelctor = (args.source as PdfAnnotationBaseModel).annotationSelectorSettings;
-        } else {
-            currentSelctor = '';
-        }
-        if (this.commandHandler) {
-            let selectedObject: SelectorModel = this.commandHandler.selectedItems;
-            let currentSource: PdfAnnotationBaseModel = args.source as PdfAnnotationBaseModel;
-            if ((selectedObject.annotations.length) && args.info && !args.info.ctrlKey
-                // tslint:disable-next-line
-                && this.commandHandler.annotationModule && this.commandHandler.annotationModule.freeTextAnnotationModule.isInuptBoxInFocus === false) {
-                this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
-                // tslint:disable-next-line:max-line-length
-            } else if (args.info && args.info.ctrlKey && ((currentSource && currentSource.shapeAnnotationType === 'FreeText') || (this.commandHandler.selectedItems.annotations[0] && this.commandHandler.selectedItems.annotations[0].shapeAnnotationType === 'FreeText'))) {
-                this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
+        if (object && (object as any).shapeAnnotationType === 'StickyNotes') {
+            // tslint:disable-next-line
+            if ((object as any).annotationSettings && (object as any).annotationSettings.isLock) {
+                if (this.commandHandler.annotationModule.checkAllowedInteractions('Select', object)) {
+                    isLock = false;
+                } else {
+                    isLock = true;
+                }
             }
-            if (object) {
-                this.commandHandler.select([(object as PdfAnnotationBaseModel).id], currentSelctor);
-                this.commandHandler.viewerBase.isAnnotationMouseDown = true;
+        }
+        if (!isLock) {
+            // tslint:disable-next-line
+            let currentSelctor: any;
+            if ((args.source as PdfAnnotationBaseModel) && (args as PdfAnnotationBaseModel).annotationSelectorSettings !== null) {
+                currentSelctor = (args.source as PdfAnnotationBaseModel).annotationSelectorSettings;
+            } else {
+                currentSelctor = '';
+            }
+            if (this.commandHandler) {
+                let selectedObject: SelectorModel = this.commandHandler.selectedItems;
+                let currentSource: PdfAnnotationBaseModel = args.source as PdfAnnotationBaseModel;
+                if ((selectedObject.annotations.length) && args.info && !args.info.ctrlKey
+                    // tslint:disable-next-line
+                    && this.commandHandler.annotationModule && this.commandHandler.annotationModule.freeTextAnnotationModule.isInuptBoxInFocus === false) {
+                    this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
+                    // tslint:disable-next-line:max-line-length
+                } else if (args.info && args.info.ctrlKey && ((currentSource && currentSource.shapeAnnotationType === 'FreeText') || (this.commandHandler.selectedItems.annotations[0] && this.commandHandler.selectedItems.annotations[0].shapeAnnotationType === 'FreeText'))) {
+                    this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
+                }
+                if (object) {
+                    this.commandHandler.select([(object as PdfAnnotationBaseModel).id], currentSelctor);
+                    this.commandHandler.viewerBase.isAnnotationMouseDown = true;
+                }
             }
         }
     }
@@ -1294,7 +1308,7 @@ export class NodeDrawingTool extends ToolBase {
         if (this.drawingObject && this.dragging) {
             this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
             this.commandHandler.select([this.drawingObject.id], this.commandHandler.annotationSelectorSettings);
-            this.commandHandler.annotation.updateCalibrateValues(this.drawingObject);
+            this.commandHandler.annotation.updateCalibrateValues(this.drawingObject, true);
             if (this.commandHandler) {
                 // tslint:disable-next-line
                 this.commandHandler.annotation.addAction((this as any).pageIndex, null, this.drawingObject, 'Addition', '', this.drawingObject as any, this.drawingObject);

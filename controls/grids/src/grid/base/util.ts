@@ -4,10 +4,10 @@ import { setStyleAttribute, addClass, attributes, remove, createElement, DateFor
 import { isObject, IKeyValue, isBlazor } from '@syncfusion/ej2-base';
 import {
     IPosition, IGrid, IValueFormatter, IRow, ICell, IExpandedRow, PdfExportProperties,
-    ExcelExportProperties
+    ExcelExportProperties, DataStateChangeEventArgs
 } from './interface';
 import { ServiceLocator } from '../services/service-locator';
-import { DataUtil, Query, DataManager, Predicate } from '@syncfusion/ej2-data';
+import { DataUtil, Query, DataManager, Predicate, UrlAdaptor, Deferred } from '@syncfusion/ej2-data';
 import { Column } from '../models/column';
 import { Row } from '../models/row';
 import { ColumnModel, AggregateColumnModel } from '../models/models';
@@ -15,8 +15,7 @@ import { AggregateType, HierarchyGridPrintMode } from './enum';
 import { Dialog, calculateRelativeBasedPosition, Popup, calculatePosition } from '@syncfusion/ej2-popups';
 import { PredicateModel } from './grid-model';
 import { Print } from '../actions/print';
-import { IXLFilter } from '../common/filter-interface';
-
+import { IXLFilter, FilterStateObj } from '../common/filter-interface';
 
 //https://typescript.codeplex.com/discussions/401501
 /**
@@ -1013,4 +1012,23 @@ export function getEditedDataIndex(gObj: IGrid, data: Object): number {
         }
     });
     return dataIndex;
+}
+
+/** @hidden */
+export function eventPromise(args: Object, query: Query): FilterStateObj {
+    let state: DataStateChangeEventArgs;
+    state = this.getStateEventArgument(query);
+    let def: Deferred = new Deferred();
+    state.dataSource = def.resolve;
+    state.action = args;
+    return {state: state, deffered: def};
+}
+
+/** @hidden */
+export function getStateEventArgument(query: Query): Object {
+    let adaptr: UrlAdaptor = new UrlAdaptor();
+    let dm: DataManager = new DataManager({ url: '', adaptor: new UrlAdaptor });
+    let state: { data?: string } = adaptr.processQuery(dm, query);
+    let data: Object = JSON.parse(state.data);
+    return data;
 }

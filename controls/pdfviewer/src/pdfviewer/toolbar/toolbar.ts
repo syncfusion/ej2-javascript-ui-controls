@@ -36,6 +36,10 @@ export class Toolbar {
     private totalPageItem: HTMLElement;
     private downloadItem: HTMLElement;
     private zoomDropdownItem: HTMLElement;
+    /**
+     * @private
+     */
+    public submitItem: HTMLElement;
     private fileInputElement: HTMLElement;
     private textSelectItem: HTMLElement;
     private panItem: HTMLElement;
@@ -73,6 +77,7 @@ export class Toolbar {
     private isUndoRedoBtnsVisible: boolean = true;
     private isAnnotationEditBtnVisible: boolean = true;
     private isCommentBtnVisible: boolean = true;
+    private isSubmitbtnvisible: boolean = true;
     /**
      * @private
      */
@@ -214,6 +219,9 @@ export class Toolbar {
                 case 'CommentTool':
                     this.showCommentOption(isVisible);
                     break;
+                case 'SubmitForm':
+                    this.showSubmitForm(isVisible);
+                    break;
             }
         }
         this.applyHideToToolbar(true, 1, 1);
@@ -300,7 +308,7 @@ export class Toolbar {
     private showDownloadOption(enableDownloadOption: boolean): void {
         this.isDownloadBtnVisible = enableDownloadOption;
         if (!Browser.isDevice) {
-        this.applyHideToToolbar(enableDownloadOption, 23, 23);
+        this.applyHideToToolbar(enableDownloadOption, 25, 25);
         }else {
             this.applyHideToToolbar(enableDownloadOption, 5, 5);
         }
@@ -308,13 +316,13 @@ export class Toolbar {
 
     private showPrintOption(enablePrintOption: boolean): void {
         this.isPrintBtnVisible = enablePrintOption;
-        this.applyHideToToolbar(enablePrintOption, 22, 22);
+        this.applyHideToToolbar(enablePrintOption, 24, 24);
     }
 
     private showSearchOption(enableSearchOption: boolean): void {
         this.isSearchBtnVisible = enableSearchOption;
         if (!Browser.isDevice) {
-            this.applyHideToToolbar(enableSearchOption, 20, 20);
+            this.applyHideToToolbar(enableSearchOption, 22, 22);
             }else {
             this.applyHideToToolbar(enableSearchOption, 4, 4);
             }
@@ -341,7 +349,12 @@ export class Toolbar {
 
     private showAnnotationEditTool(isEnable: boolean): void {
         this.isAnnotationEditBtnVisible = isEnable;
-        this.applyHideToToolbar(isEnable, 21, 21);
+        this.applyHideToToolbar(isEnable, 23, 23);
+    }
+
+    private showSubmitForm(isEnable : boolean): void  {
+        this.isSubmitbtnvisible = isEnable;
+        this.applyHideToToolbar(isEnable, 20, 21);
     }
 
     private enableOpenOption(enableOpenOption: boolean): void {
@@ -427,6 +440,7 @@ export class Toolbar {
                 if (this.pdfViewer.magnificationModule) {
                     this.zoomDropDown.readonly = true;
                 }
+                this.toolbar.enableItems(this.submitItem.parentElement, false);
                 this.toolbar.enableItems(this.pdfViewerBase.getElement('_currentPageInputContainer'), false);
                 this.toolbar.enableItems(this.pdfViewerBase.getElement('_zoomDropDownContainer'), false);
                 this.toolbar.enableItems(this.textSelectItem.parentElement, false);
@@ -654,6 +668,7 @@ export class Toolbar {
         let zoomDropDownTemplateString: string = this.createZoomDropdownElement();
         // tslint:disable-next-line
         let items: any[] = [];
+        let submitButton : string = '<button id="' + this.pdfViewer.element.id + '_submitForm" class="e-tbar-btn"> Submit Form</button>';
         // tslint:disable-next-line:max-line-length
         items.push({ prefixIcon: 'e-pv-open-document-icon e-pv-icon', cssClass: 'e-pv-open-document-container', id: this.pdfViewer.element.id + '_open', text: this.pdfViewer.localeObj.getConstant('Open text'), align: 'Left' });
         items.push({ type: 'Separator', align: 'Left' });
@@ -692,6 +707,8 @@ export class Toolbar {
         items.push({ type: 'Separator', align: 'Left' });
         // tslint:disable-next-line:max-line-length
         items.push({ prefixIcon: 'e-pv-comment-icon e-pv-icon', cssClass: 'e-pv-comment-container', id: this.pdfViewer.element.id + '_comment', text: this.pdfViewer.localeObj.getConstant('Add Comments'), align: 'Left' });
+        items.push({ type: 'Separator', align: 'Left' });
+        items.push({template: submitButton, cssClass: 'e-pv-submit' , align:  'Left' });
         // tslint:disable-next-line:max-line-length
         items.push({ prefixIcon: 'e-pv-text-search-icon e-pv-icon', cssClass: 'e-pv-text-search-container', id: this.pdfViewer.element.id + '_search', text: this.pdfViewer.localeObj.getConstant('Search text'), align: 'Right' });
         items.push({ prefixIcon: 'e-pv-annotation-icon e-pv-icon', cssClass: 'e-pv-annotation-container', id: this.pdfViewer.element.id + '_annotation', text: this.pdfViewer.localeObj.getConstant('Annotation Edit text'), align: 'Right' });
@@ -742,6 +759,9 @@ export class Toolbar {
         this.pdfViewerBase.getElement('_zoomDropDownContainer').style.minWidth = '';
         this.createTooltip(this.currentPageBoxElement, this.pdfViewer.localeObj.getConstant('Page Number'));
         this.currentPageBoxElement.setAttribute('aria-label', this.pdfViewer.localeObj.getConstant('Page Number'));
+        this.submitItem = this.pdfViewerBase.getElement('_submitForm');
+        this.addPropertiesToolItemContainer(this.submitItem.parentElement, 'e-pv-submit', '_submitForm');
+        this.createTooltip(this.submitItem, this.pdfViewer.localeObj.getConstant('SubmitForm'));
         // tslint:disable-next-line:max-line-length
         this.addPropertiesToolItemContainer(this.currentPageBoxElement.parentElement.parentElement, 'e-pv-current-page-container', '_currentPageInputContainer');
         this.pdfViewerBase.getElement('_currentPageInputContainer').style.minWidth = '20px';
@@ -1038,7 +1058,7 @@ export class Toolbar {
         }
     }
 
-    // tslint:disable-next-line:max-line
+    // tslint:disable-next-line
     private handleToolbarBtnClick(args: ClickEventArgs): void {
         this.addInkAnnotation();
         switch ((args.originalEvent.target as HTMLElement).id) {
@@ -1138,8 +1158,11 @@ export class Toolbar {
                 this.isCommentIconAdded = true;
                 this.addComments(args.originalEvent.target as HTMLElement);
                 break;
+            case this.pdfViewer.element.id + '_submitForm':
+                this.pdfViewerBase.exportFormFields();
+                break;
+            }
         }
-    }
     private addInkAnnotation(): void {
         if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.inkAnnotationModule) {
             // tslint:disable-next-line
@@ -1488,6 +1511,11 @@ export class Toolbar {
                 this.showCommentOption(true);
             } else {
                 this.showCommentOption(false);
+            }
+            if (toolbarSettingsItems.indexOf('SubmitForm') !== -1) {
+                this.showSubmitForm(true);
+            } else {
+                this.showSubmitForm(false);
             }
             this.showSeparator(toolbarSettingsItems);
         }

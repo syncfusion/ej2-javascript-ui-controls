@@ -1,6 +1,7 @@
 import {
     IGrid, PdfExportProperties, PdfHeader, PdfFooter, PdfHeaderFooterContent,
-    PdfTheme, PdfThemeStyle, PdfBorder, PdfQueryCellInfoEventArgs, ExportDetailDataBoundEventArgs, ExportGroupCaptionEventArgs
+    PdfTheme, PdfThemeStyle, PdfBorder, PdfQueryCellInfoEventArgs, ExportDetailDataBoundEventArgs, ExportGroupCaptionEventArgs,
+     AggregateQueryCellInfoEventArgs
 } from '../base/interface';
 import { Column } from './../models/column';
 import { Row } from './../models/row';
@@ -18,7 +19,7 @@ import { ReturnType } from '../base/type';
 import { SummaryModelGenerator, GroupSummaryModelGenerator, CaptionSummaryModelGenerator } from '../services/summary-model-generator';
 import { AggregateColumnModel } from '../models/aggregate-model';
 import { compile, getEnumValue, isNullOrUndefined, detach, isBlazor } from '@syncfusion/ej2-base';
-import { CellType, PdfPageSize, PdfDashStyle, PdfPageNumberType, ExportType } from '../base/enum';
+import { CellType, PdfPageSize, PdfDashStyle, PdfPageNumberType, ExportType, AggregateTemplateType } from '../base/enum';
 import { DataManager, Query, Group } from '@syncfusion/ej2-data';
 import { getValue } from '@syncfusion/ej2-base';
 import { Grid } from '../base/grid';
@@ -446,7 +447,8 @@ export class PdfExport {
                                                pdfGrid, (groupIndex + 1), pdfExportProperties, helper, index);
                     let groupSummaryModel: GroupSummaryModelGenerator = new GroupSummaryModelGenerator(gObj);
                     sRows = groupSummaryModel.generateRows(dataSourceItems.items, dataSourceItems);
-                    this.processAggregates(sRows, pdfGrid, border, font, brush, backgroundBrush, false);
+                    let isGroupedFooter: boolean = true ;
+                    this.processAggregates(sRows, pdfGrid, border, font, brush, backgroundBrush, false, null, null, isGroupedFooter);
                 }
             });
         }
@@ -691,6 +693,7 @@ export class PdfExport {
         if (!isNullOrUndefined(content.format)) {
             if ((content.format as string).indexOf('$total') !== -1 && (content.format as string).indexOf('$current') !== -1) {
                 let pageCount: PdfPageCountField = new PdfPageCountField(font);
+                pageCount.numberStyle = this.getPageNumberStyle(content.pageNumberType);
                 if ((content.format as string).indexOf('$total') > (content.format as string).indexOf('$current')) {
                     format = (content.format as string).replace('$current', '0');
                     format = format.replace('$total', '1');
@@ -750,7 +753,7 @@ export class PdfExport {
     }
     /* tslint:disable-next-line:no-any *//* tslint:disable-next-line:max-line-length */
     private processAggregates(sRows: Row<AggregateColumnModel>[], pdfGrid: PdfGrid, border: PdfBorders, font: PdfFont,
-                              brush: PdfSolidBrush, backgroundBrush: PdfSolidBrush, isCaption: boolean, captionRow?: PdfGridRow, groupIndex?: number): void {
+                              brush: PdfSolidBrush, backgroundBrush: PdfSolidBrush, isCaption: boolean, captionRow?: PdfGridRow, groupIndex?: number, isGroupedFooter?: boolean): void {
         for (let row of sRows) {
             let startIndex: number = 0;
             let leastCaptionSummaryIndex: number = -1;
@@ -771,6 +774,9 @@ export class PdfExport {
                         }
                         if (!isNullOrUndefined(captionRow)) {
                             if (!isNullOrUndefined(captionRow.cells.getCell(i).value)) {
+                                /* tslint:disable-next-line:max-line-length */
+                                let args: AggregateQueryCellInfoEventArgs = { row: row, type: AggregateTemplateType.GroupCaption, style: captionRow.cells };
+                                this.parent.trigger(events.pdfAggregateQueryCellInfo, args);
                                 value.push('');
                                 value.push(captionRow.cells.getCell(i).value);
                                 isEmpty = false;
@@ -821,9 +827,7 @@ export class PdfExport {
             }
             if (isCaption) {
                 for (let i: number = (this.parent.groupSettings.columns.length) + 1; i < value.length - 1; i++) {
-                    value[i] = value[i + 1];
-                }
-            }
+                    value[i] = value[i + 1]; }}
             if (!isEmpty) {
                 if (!isCaption) {
                     let gridRow: PdfGridRow = pdfGrid.rows.addRow();
@@ -831,6 +835,9 @@ export class PdfExport {
                     gridRow.style.setFont(font);
                     gridRow.style.setTextBrush(brush);
                     gridRow.style.setBackgroundBrush(backgroundBrush);
+                     /* tslint:disable-next-line:max-line-length */
+                    let args: AggregateQueryCellInfoEventArgs = { row: row, type: isGroupedFooter ? AggregateTemplateType.GroupFooter : AggregateTemplateType.Footer, style: gridRow.cells };
+                    this.parent.trigger(events.pdfAggregateQueryCellInfo, args);
                     for (let i: number = 0; i < pdfGrid.columns.count; i++) {
                         gridRow.cells.getCell(i).value = value[i].toString();
                     }

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.2.47 (2020-07-28)
+
+### Menu
+
+#### Bug Fixes
+
+- An issue with 'showItemOnClick' option has been fixed.
+
 ## 18.2.46 (2020-07-21)
 
 ### Tab

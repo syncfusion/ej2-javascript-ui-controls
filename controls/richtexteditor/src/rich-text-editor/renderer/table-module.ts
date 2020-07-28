@@ -683,10 +683,10 @@ export class Table {
                 let rteWidth: number = (this.contentModule.getEditPanel() as HTMLElement).offsetWidth - paddingSize * 2;
                 if (this.resizeBtnStat.column) {
                     let cellColl: NodeListOf<Element> = this.curTable.rows[0].cells;
-                    let width: number = parseFloat(this.columnEle.offsetWidth.toLocaleString());
+                    let width: number = parseFloat(this.columnEle.offsetWidth.toString());
                     let actualwid: number = width - mouseX;
-                    let totalwid: number = parseFloat(this.columnEle.offsetWidth.toLocaleString()) +
-                        parseFloat((cellColl[this.colIndex - 1] as HTMLElement).offsetWidth.toLocaleString());
+                    let totalwid: number = parseFloat(this.columnEle.offsetWidth.toString()) +
+                        parseFloat((cellColl[this.colIndex - 1] as HTMLElement).offsetWidth.toString());
                     for (let i: number = 0; i < this.curTable.rows.length; i++) {
                         if ((totalwid - actualwid) > 20 && actualwid > 20) {
                             let leftColumnWidth: number = totalwid - actualwid;

@@ -16,6 +16,7 @@ export class CellEdit {
      * @private
      */
     public isCellEdit: boolean = false;
+    public editedColumn: ColumnModel;
     constructor(ganttObj: Gantt) {
         this.parent = ganttObj;
         this.bindTreeGridProperties();
@@ -38,6 +39,7 @@ export class CellEdit {
     private ensureEditCell(args: CellEditArgs): void | Deferred {
         let data: IGanttData = args.rowData;
         let field: string = args.columnName;
+        this.editedColumn = this.parent.getColumnByField(field, this.parent.ganttColumns);
         let taskSettings: TaskFieldsModel = this.parent.taskFields;
         if (this.parent.readOnly) {
             args.cancel = true;

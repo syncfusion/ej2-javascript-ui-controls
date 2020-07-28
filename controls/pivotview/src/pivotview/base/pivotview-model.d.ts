@@ -86,6 +86,13 @@ export interface CellEditSettingsModel {
     allowCommandColumns?: boolean;
 
     /**
+    * Allows direct editing of a value cell without opening the edit dialog. NOTE: It is applicable only if the value cell is made by a single raw data. Otherwise editing dialog will be shown. 
+    * > The `allowInlineEditing` property supports all modes of editing.
+    * @default false
+    */
+    allowInlineEditing?: boolean;
+
+    /**
      * Allow options for performing CRUD operations with different modes in the data grid that used to update the appropriate cells in the pivot table. 
      * The available modes are as follows: 
      * * `Normal`: Allows the currently selected row alone will be completely changed to edit state. You can change the cell values and save it to the data source by clicking “Update” toolbar button.
@@ -451,10 +458,11 @@ export interface PivotViewModel extends ComponentModel{
      * * `allowEditOnDblClick`: Allows you to restrict CRUD operations by double-clicking the appropriate value cell in the pivot table.
      * * `showConfirmDialog`: Allows you to show the confirmation dialog to save and discard CRUD operations performed in the data grid that used to update the appropriate cells in the pivot table.
      * * `showDeleteConfirmDialog`: Allows you to show the confirmation dialog to delete any records from the data grid.
+     * * `allowInlineEditing`: Allows direct editing of a value cell without opening the edit dialog. NOTE: It is applicable only if the value cell is made by a single raw data. Otherwise editing dialog will be shown.
      * 
      * > This feature is applicable only for the relational data source.
      * @default { allowAdding: false, allowEditing: false, allowDeleting: false, allowCommandColumns: false, 
-     * mode:'Normal', allowEditOnDblClick: true, showConfirmDialog: true, showDeleteConfirmDialog: false }
+     * mode:'Normal', allowEditOnDblClick: true, showConfirmDialog: true, showDeleteConfirmDialog: false, allowInlineEditing: false }
      */
     editSettings?: CellEditSettingsModel;
 

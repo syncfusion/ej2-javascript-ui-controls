@@ -6915,6 +6915,9 @@ var MarkerExplode = /** @__PURE__ @class */ (function (_super) {
         var marker = point.marker;
         var seriesMarker = series.marker;
         var shape = marker.shape || seriesMarker.shape;
+        if (shape === 'None') {
+            return null;
+        }
         var element = series.symbolElement || series.seriesElement;
         var className;
         if (this.chart.highlightModule && this.chart.highlightMode !== 'None') {
@@ -16040,11 +16043,12 @@ var SplineBase = /** @__PURE__ @class */ (function (_super) {
                     // fix for Y-Axis of Spline chart not adjusting scale to suit dataSource issue 
                     var delta = series.yMax - series.yMin;
                     if (point_1.yValue && value.controlPoint1.y && value.controlPoint2.y && delta > 1) {
-                        series.yMin = Math.floor(Math.min(series.yMin, point_1.yValue, value.controlPoint1.y, value.controlPoint2.y));
+                        series.yMin = Math.min(series.yMin, point_1.yValue, value.controlPoint1.y, value.controlPoint2.y);
                         series.yMax = Math.ceil(Math.max(series.yMax, point_1.yValue, value.controlPoint1.y, value.controlPoint2.y));
                     }
                 }
             }
+            series.yMin = series.yAxis.valueType !== 'Logarithmic' ? Math.floor(series.yMin) : series.yMin;
             if (series.chart.chartAreaType === 'PolarRadar' && series.isClosed) {
                 value = this.getControlPoints({ xValue: points[points.length - 1].xValue, yValue: points[points.length - 1].yValue }, { xValue: points[points.length - 1].xValue + 1, yValue: points[0].yValue }, this.splinePoints[0], this.splinePoints[points[points.length - 1].index], series);
                 series.drawPoints.push(value);
@@ -26307,14 +26311,14 @@ var ScrollBar = /** @__PURE__ @class */ (function () {
             this.previousEnd = end;
         }
         else if (isCurrentStartEnd) {
-            this.previousStart = Math.ceil(start);
+            this.previousStart = Math.round(start);
             this.previousEnd = Math.ceil(end);
         }
         switch (valueType) {
             case 'Double':
             case 'Category':
             case 'Logarithmic':
-                start = Math.ceil(start);
+                start = Math.round(start);
                 end = Math.ceil(end);
                 break;
             case 'DateTime':

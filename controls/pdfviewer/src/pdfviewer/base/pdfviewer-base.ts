@@ -270,7 +270,8 @@ export class PdfViewerBase {
      * @private
      */
     public tool: ToolBase = null;
-    public action: | string = 'Select';
+    // tslint:disable-next-line
+    public action: | any = 'Select';
     /**
      * @private
      */
@@ -988,7 +989,7 @@ export class PdfViewerBase {
 
     private setFileName(): void {
         if (this.pdfViewer.fileName === null) {
-            if (this.pdfViewer.toolbarModule && this.pdfViewer.toolbarModule.uploadedDocumentName !== null) {
+            if (this.pdfViewer.toolbarModule && this.pdfViewer.toolbarModule.uploadedDocumentName) {
                 this.pdfViewer.fileName = this.pdfViewer.toolbarModule.uploadedDocumentName;
                 this.jsonDocumentId = this.pdfViewer.fileName;
             } else {
@@ -1013,10 +1014,22 @@ export class PdfViewerBase {
     // tslint:disable-next-line
     private saveFormfieldsData(data: any): void {
         this.pdfViewer.isFormFieldDocument = false;
+        this.enableFormFieldButton(false);
         if (data && data.PdfRenderedFormFields && data.PdfRenderedFormFields.length > 0) {
-            this.pdfViewer.isFormFieldDocument = true;
             window.sessionStorage.setItem(this.documentId + '_formfields', JSON.stringify(data.PdfRenderedFormFields));
-            this.pdfViewer.formFieldsModule.formFieldCollections();
+            if (this.pdfViewer.enableFormFields) {
+                this.pdfViewer.formFieldsModule.formFieldCollections();
+            }
+            if (this.pdfViewer.formFieldCollections.length > 0) {
+            this.pdfViewer.isFormFieldDocument = true;
+
+            this.enableFormFieldButton(true);
+            }
+        }
+    }
+    private enableFormFieldButton(isEnable: boolean): void {
+        if (this.pdfViewer.toolbarModule && this.pdfViewer.toolbarModule.submitItem) {
+            this.pdfViewer.toolbarModule.toolbar.enableItems(this.pdfViewer.toolbarModule.submitItem.parentElement, isEnable);
         }
     }
     private updateWaitingPopup(pageNumber: number): void {
@@ -2115,9 +2128,8 @@ export class PdfViewerBase {
                 }
                 // tslint:disable-next-line:max-line-length
                 if (eventTarget && eventTarget.classList && !eventTarget.classList.contains('e-pv-hyperlink') && !eventTarget.classList.contains('e-pv-page-container')) {
-                    let idStringArray: string[] = eventTarget.id.split('_');
                     // tslint:disable-next-line
-                    this.pdfViewer.firePageClick(offsetX, offsetY, parseInt(idStringArray[idStringArray.length - 1]) + 1);
+                    this.pdfViewer.firePageClick(offsetX, offsetY, pageIndex + 1);
                 }
                 if (this.isTextMarkupAnnotationModule() && !this.isToolbarInkClicked) {
                     this.pdfViewer.annotationModule.textMarkupAnnotationModule.onTextMarkupAnnotationMouseUp(event);
@@ -2243,9 +2255,18 @@ export class PdfViewerBase {
                         if (this.isTextMarkupAnnotationModule() && !this.getPopupNoteVisibleStatus()) {
                             this.pdfViewer.annotationModule.deleteAnnotation();
                         }
-                        if (this.pdfViewer.selectedItems.annotations.length) {
-                            this.pdfViewer.remove(this.pdfViewer.selectedItems.annotations[0]);
-                            this.pdfViewer.renderSelector(this.pdfViewer.annotation.getEventPageNumber(event));
+                        if (this.pdfViewer.selectedItems.annotations.length > 0) {
+                            // tslint:disable-next-line
+                            let annotation: any = this.pdfViewer.selectedItems.annotations[0];
+                            if (annotation.annotationSettings && annotation.annotationSettings.isLock) {
+                                if (this.pdfViewer.annotationModule.checkAllowedInteractions('Delete', annotation)) {
+                                    this.pdfViewer.remove(annotation);
+                                    this.pdfViewer.renderSelector(this.pdfViewer.annotation.getEventPageNumber(event));
+                                }
+                            } else {
+                                this.pdfViewer.remove(annotation);
+                                this.pdfViewer.renderSelector(this.pdfViewer.annotation.getEventPageNumber(event));
+                            }
                         }
                     }
                     break;
@@ -5332,6 +5353,33 @@ export class PdfViewerBase {
                 let eventTarget: HTMLElement = evt.target as HTMLElement;
 
                 this.action = this.findToolToActivate(obj, this.currentPosition);
+                // tslint:disable-next-line
+                if (obj && (obj as any).annotationSettings && (obj as any).annotationSettings.isLock) {     
+                    if (this.action === 'Select') {
+                        if (this.pdfViewer.annotationModule.checkAllowedInteractions('Select', obj)) {
+                            this.action = this.action;
+                        } else {
+                            this.action = '';
+                        }
+                    }
+                    if (this.action === 'Drag') {
+                        if (this.pdfViewer.annotationModule.checkAllowedInteractions('Move', obj)) {
+                            this.action = this.action;
+                        } else {
+                            this.action = 'Select';
+                        }
+                    }
+                    // tslint:disable-next-line:max-line-length
+                    if (this.action === 'ResizeSouthEast' || this.action === 'ResizeNorthEast' || this.action === 'ResizeNorthWest' || this.action === 'ResizeSouthWest' ||
+                    // tslint:disable-next-line:max-line-length
+                    this.action === 'ResizeNorth' || this.action === 'ResizeWest' || this.action === 'ResizeEast' || this.action === 'ResizeSouth' || this.action.includes('ConnectorSegmentPoint') || this.action.includes('Leader')) {
+                        if (this.pdfViewer.annotationModule.checkAllowedInteractions('Resize', obj)) {
+                            this.action = this.action;
+                        } else {
+                            this.action = 'Select';
+                        }
+                    }
+                }
                 this.tool = this.getTool(this.action);
                 this.setCursor(eventTarget, evt);
             } else {
@@ -5820,6 +5868,33 @@ export class PdfViewerBase {
         if (!this.tool || (this.tool && !(this.tool as PolygonDrawingTool).drawingObject)) {
             if (!isStamp) {
                 this.action = this.findToolToActivate(obj, this.currentPosition);
+                // tslint:disable-next-line
+                if (obj && (obj as any).annotationSettings && (obj as any).annotationSettings.isLock) {
+                    if (this.action === 'Select') {
+                        if (this.pdfViewer.annotationModule.checkAllowedInteractions('Select', obj)) {
+                            this.action = this.action;
+                        } else {
+                            this.action = '';
+                        }
+                    }
+                    if (this.action === 'Drag') {
+                        if (this.pdfViewer.annotationModule.checkAllowedInteractions('Move', obj)) {
+                            this.action = this.action;
+                        } else {
+                            this.action = 'Select';
+                        }
+                    }
+                    // tslint:disable-next-line:max-line-length
+                    if (this.action === 'ResizeSouthEast' || this.action === 'ResizeNorthEast' || this.action === 'ResizeNorthWest' || this.action === 'ResizeSouth' ||
+                    // tslint:disable-next-line:max-line-length
+                    this.action === 'ResizeNorth' || this.action === 'ResizeWest' || this.action === 'ResizeEast' || this.action.includes('ConnectorSegmentPoint') || this.action.includes('Leader')) {
+                        if (this.pdfViewer.annotationModule.checkAllowedInteractions('Resize', obj)) {
+                            this.action = this.action;
+                        } else {
+                            this.action = 'Select';
+                        }
+                    }
+                }
                 this.tool = this.getTool(this.action);
                 if (!this.tool) {
                     this.action = this.pdfViewer.tool || 'Select';

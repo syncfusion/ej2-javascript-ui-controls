@@ -151,6 +151,7 @@ var Uploader = /** @class */ (function (_super) {
         _this.uploaderName = 'UploadFiles';
         _this.fileStreams = [];
         _this.newFileRef = 0;
+        _this.isFirstFileOnSelection = false;
         /**
          * Get the file item(li) which are shown in file list.
          * @private
@@ -721,6 +722,7 @@ var Uploader = /** @class */ (function (_super) {
             ++this.count;
             var isFileListCreated = this.showFileList ? false : true;
             if (typeof this.filesData[this.count] === 'object') {
+                this.isFirstFileOnSelection = false;
                 this.upload(this.filesData[this.count], isFileListCreated);
                 if (this.filesData[this.count].statusCode === '0') {
                     this.sequenceUpload(fileData);
@@ -1325,7 +1327,6 @@ var Uploader = /** @class */ (function (_super) {
             fileDetails.validationMessages.maxSize !== '' ? this.localizedTexts('invalidMaxFileSize') : fileDetails.status;
         if (fileDetails.validationMessages.minSize !== '' || fileDetails.validationMessages.maxSize !== '') {
             fileDetails.statusCode = '0';
-            this.checkActionComplete(true);
         }
         fileData.push(fileDetails);
     };
@@ -1381,6 +1382,7 @@ var Uploader = /** @class */ (function (_super) {
                 }
             }
             this.raiseActionComplete();
+            this.isFirstFileOnSelection = true;
         }
     };
     Uploader.prototype.allowUpload = function () {
@@ -1827,6 +1829,12 @@ var Uploader = /** @class */ (function (_super) {
                     this.listParent.appendChild(liElement);
                     this.fileList.push(liElement);
                     this.truncateName(textElement);
+                    var preventActionComplete = this.flag;
+                    if (this.isPreLoadFile(listItem)) {
+                        this.flag = false;
+                        this.checkActionComplete(true);
+                        this.flag = preventActionComplete;
+                    }
                 }
             }
         }
@@ -2895,22 +2903,27 @@ var Uploader = /** @class */ (function (_super) {
     Uploader.prototype.upload = function (files, custom) {
         var _this = this;
         files = files ? files : this.filesData;
-        var uploadFiles = this.getFilesInArray(files);
-        var eventArgs = {
-            customFormData: [],
-            currentRequest: null,
-            cancel: false
-        };
-        this.trigger('beforeUpload', eventArgs, function (eventArgs) {
-            if (!eventArgs.cancel) {
-                if (sf.base.isBlazor()) {
-                    _this.currentRequestHeader = eventArgs.currentRequest ? eventArgs.currentRequest : _this.currentRequestHeader;
-                    _this.customFormDatas = (eventArgs.customFormData && eventArgs.customFormData.length > 0) ?
-                        eventArgs.customFormData : _this.customFormDatas;
+        if (this.sequentialUpload && this.isFirstFileOnSelection) {
+            this.sequenceUpload(files);
+        }
+        else {
+            var uploadFiles_1 = this.getFilesInArray(files);
+            var eventArgs = {
+                customFormData: [],
+                currentRequest: null,
+                cancel: false
+            };
+            this.trigger('beforeUpload', eventArgs, function (eventArgs) {
+                if (!eventArgs.cancel) {
+                    if (sf.base.isBlazor()) {
+                        _this.currentRequestHeader = eventArgs.currentRequest ? eventArgs.currentRequest : _this.currentRequestHeader;
+                        _this.customFormDatas = (eventArgs.customFormData && eventArgs.customFormData.length > 0) ?
+                            eventArgs.customFormData : _this.customFormDatas;
+                    }
+                    _this.uploadFiles(uploadFiles_1, custom);
                 }
-                _this.uploadFiles(uploadFiles, custom);
-            }
-        });
+            });
+        }
     };
     Uploader.prototype.getFilesInArray = function (files) {
         var uploadFiles = [];
@@ -3210,13 +3223,7 @@ var Uploader = /** @class */ (function (_super) {
                                 _this.removeFilesData(files, customTemplate);
                             }
                         }
-                        if (_this.sequentialUpload) {
-                            /* istanbul ignore next */
-                            if (index <= _this.actionCompleteCount) {
-                                _this.checkActionComplete(false);
-                            }
-                        }
-                        else {
+                        if (args && !args.target.classList.contains(REMOVE_ICON)) {
                             _this.checkActionComplete(false);
                         }
                     };

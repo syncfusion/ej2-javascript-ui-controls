@@ -455,7 +455,7 @@ export class Resize implements IAction {
         let width: number = this.getWidth(colData.width, colData.minWidth, colData.maxWidth);
         this.parent.log('resize_min_max', { column: this.column, width });
         if ((!this.parent.enableRtl && this.minMove >= pageX) || (this.parent.enableRtl && this.minMove <= pageX)) {
-            width = this.column.minWidth ? parseFloat(this.column.minWidth.toString()) : 0;
+            width = this.column.minWidth ? parseFloat(this.column.minWidth.toString()) : 10;
             this.pageX = pageX = this.minMove;
         }
         if (width !== parseFloat(isNullOrUndefined(this.column.width) || this.column.width === 'auto' ?

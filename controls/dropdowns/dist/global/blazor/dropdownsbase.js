@@ -1097,8 +1097,13 @@ var DropDownBase = /** @class */ (function (_super) {
             var newList = [].slice.call(this.listData);
             newList.push(items);
             newList = this.getSortedDataSource(newList);
-            var newIndex = newList.indexOf(items);
-            itemIndex = newIndex;
+            if (this.fields.groupBy) {
+                newList = sf.lists.ListBase.groupDataSource(newList, this.fields.properties, this.sortOrder);
+                itemIndex = newList.indexOf(items);
+            }
+            else {
+                itemIndex = newList.indexOf(items);
+            }
         }
         this.DropDownBaseresetBlazorTemplates(true, false, false, false);
         var itemsCount = this.getItems().length;
@@ -1132,7 +1137,7 @@ var DropDownBase = /** @class */ (function (_super) {
             this.notify('addItem', { module: 'CheckBoxSelection', item: li });
             liCollections.push(li);
             this.listData.push(item);
-            this.updateActionCompleteData(li, item);
+            this.updateActionCompleteData(li, item, index);
             //Listbox event
             this.trigger('beforeItemRender', { element: li, item: item });
         }
@@ -1157,7 +1162,12 @@ var DropDownBase = /** @class */ (function (_super) {
                 if (attr.indexOf(liCollections[i].innerText) > -1 && fields.groupBy) {
                     for (var j = 0; j < listGroupItem.length; j++) {
                         if (attr[j] === liCollections[i].innerText) {
-                            this.ulElement.insertBefore(liCollections[i + 1], listGroupItem[j + 1]);
+                            if (this.sortOrder === 'None') {
+                                this.ulElement.insertBefore(liCollections[i + 1], listGroupItem[j + 1]);
+                            }
+                            else {
+                                this.ulElement.insertBefore(liCollections[i + 1], this.ulElement.childNodes[itemIndex]);
+                            }
                             i = i + 1;
                             break;
                         }
@@ -1201,7 +1211,7 @@ var DropDownBase = /** @class */ (function (_super) {
     DropDownBase.prototype.setZIndex = function () {
         // this is for component wise
     };
-    DropDownBase.prototype.updateActionCompleteData = function (li, item) {
+    DropDownBase.prototype.updateActionCompleteData = function (li, item, index) {
         // this is for ComboBox custom value
     };
     DropDownBase.prototype.updateAddItemList = function (list, itemCount) {

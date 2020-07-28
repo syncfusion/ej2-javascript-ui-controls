@@ -6091,6 +6091,12 @@ let Maps = class Maps extends Component {
                 this.annotationsModule.renderAnnotationElements();
             }
         }
+        this.element.style.outline = 'none';
+        for (let i = 0; i < document.getElementsByTagName('path').length - 1; i++) {
+            if (document.getElementsByTagName('path')[i].id.indexOf('shapeIndex') > -1) {
+                document.getElementsByTagName('path')[i].style.outline = 'none';
+            }
+        }
         this.zoomingChange();
         this.trigger(loaded, this.isBlazor ? { isResized: this.isResize } : { maps: this, isResized: this.isResize });
         this.isResize = false;
@@ -10995,6 +11001,7 @@ class MapsTooltip {
         else {
             this.maps.on(Browser.touchMoveEvent, this.renderTooltip, this);
         }
+        this.maps.element.addEventListener('contextmenu', this.removeTooltip);
         this.maps.on(Browser.touchCancelEvent, this.removeTooltip, this);
     }
     removeEventListener() {

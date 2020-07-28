@@ -104,9 +104,11 @@ export class FormFields {
                 let currentData: any = formFieldsData[i];
                 // tslint:disable-next-line
                 let type: FormFieldType = currentData['Name'];
+                if (currentData.Name !== 'ink') {
                 // tslint:disable-next-line
                 let formFieldCollection: FormFieldModel = { name: this.retriveFieldName(currentData), id: this.pdfViewer.element.id + 'input_' + parseFloat(currentData['PageIndex']) + '_' + i, isReadOnly: false, type: type, value: this.retriveCurrentValue(currentData) };
                 this.pdfViewer.formFieldCollections.push(formFieldCollection);
+                }
             }
         }
     }

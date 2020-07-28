@@ -1736,10 +1736,14 @@ export class Drawing {
                         annotationSettings = obj.annotationSettings;
                         annotationSettings.isLock = JSON.parse(annotationSettings.isLock);
                     } else {
-                     annotationSettings = this.pdfViewer.annotationModule.findAnnotationSettings(obj, true);
-                     obj.annotationSettings = annotationSettings;
+                        annotationSettings = this.pdfViewer.annotationModule.findAnnotationSettings(obj, true);
+                        obj.annotationSettings = annotationSettings;
                     }
-                    if (!annotationSettings.isLock) {
+                    let isLock: boolean = annotationSettings.isLock;
+                    if (annotationSettings.isLock && this.pdfViewer.annotationModule.checkAllowedInteractions('Select', obj)) {
+                        isLock = false;
+                    }
+                    if (!isLock) {
                         selectorModel.annotations.push(obj);
                         this.initSelectorWrapper();
                         selectorModel.wrapper.rotateAngle = selectorModel.rotateAngle = 0;

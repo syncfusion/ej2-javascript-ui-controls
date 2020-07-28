@@ -74,12 +74,13 @@ export class XmlHttpRequestHandler {
                 status: proxyReq.xmlHttpRequest.status
             };
             proxyReq.successHandler(result);
-        } else if (proxyReq.xmlHttpRequest.readyState === 4 && proxyReq.xmlHttpRequest.status === 400) { // jshint ignore:line)
+        } else if (proxyReq.xmlHttpRequest.readyState === 4 && !(proxyReq.xmlHttpRequest.status === 200)) { // jshint ignore:line)
             // tslint:disable-next-line
             let result: any = {
                 name: 'onFailure',
                 status: proxyReq.xmlHttpRequest.status,
-                statusText: proxyReq.xmlHttpRequest.statusText
+                statusText: proxyReq.xmlHttpRequest.statusText,
+                url: proxyReq.url
             };
             proxyReq.failureHandler(result);
         }

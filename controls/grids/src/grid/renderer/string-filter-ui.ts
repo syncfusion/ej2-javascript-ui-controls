@@ -3,12 +3,14 @@ import { Column } from '../models/column';
 import { FilterSettings } from '../base/grid';
 import { PredicateModel } from '../base/grid-model';
 import { AutoComplete } from '@syncfusion/ej2-dropdowns';
-import { DataManager } from '@syncfusion/ej2-data';
+import { DataManager, Query, Deferred } from '@syncfusion/ej2-data';
 import { Browser, isNullOrUndefined, extend, getValue } from '@syncfusion/ej2-base';
 import { ServiceLocator } from '../services/service-locator';
 import { Filter } from '../actions/filter';
 import { Dialog, Popup } from '@syncfusion/ej2-popups';
-import { getZIndexCalcualtion } from '../base/util';
+import { getZIndexCalcualtion, eventPromise } from '../base/util';
+import * as events from '../base/constant';
+import { FilterStateObj } from '../common/filter-interface';
 
 /**
  * `string filterui` render string column.
@@ -69,6 +71,15 @@ export class StringFilterUI implements IFilterMUI {
         },
         args.column.filter.params
         ));
+        if (dataSource && 'result' in dataSource) {
+            let query: Query = this.parent.getQuery ? this.parent.getQuery().clone() : new Query();
+            let defObj: FilterStateObj = eventPromise({ requestType: 'stringfilterrequest' }, query);
+            this.parent.trigger(events.dataStateChange, defObj.state);
+            let def: Deferred = defObj.deffered;
+            def.promise.then((e: Object[]) => {
+                autoComplete.dataSource = new DataManager(e);
+            });
+        }
         return autoComplete;
     }
 

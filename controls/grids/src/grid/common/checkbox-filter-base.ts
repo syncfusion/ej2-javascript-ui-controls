@@ -1,12 +1,12 @@
 /* tslint:disable-next-line:max-line-length */
 import { EventHandler, L10n, isNullOrUndefined, extend, classList, addClass, removeClass, Browser, getValue, setValue, isBlazor } from '@syncfusion/ej2-base';
-import { parentsUntil, getUid, appendChildren, getDatePredicate, getObject, extendObjWithFn } from '../base/util';
+import { parentsUntil, getUid, appendChildren, getDatePredicate, getObject, extendObjWithFn, eventPromise } from '../base/util';
 import { remove, debounce } from '@syncfusion/ej2-base';
 import { Button } from '@syncfusion/ej2-buttons';
-import { DataUtil, Query, DataManager, Predicate, UrlAdaptor, Deferred, QueryOptions } from '@syncfusion/ej2-data';
+import { DataUtil, Query, DataManager, Predicate, Deferred, QueryOptions } from '@syncfusion/ej2-data';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 import { ReturnType } from '../base/type';
-import { IFilterArgs, FilterSearchBeginEventArgs, DataStateChangeEventArgs } from '../base/interface';
+import { IFilterArgs, FilterSearchBeginEventArgs } from '../base/interface';
 import * as events from '../base/constant';
 import { PredicateModel } from '../base/grid-model';
 import { ValueFormatter } from '../services/value-formatter';
@@ -18,7 +18,7 @@ import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups'
 import { getFilterMenuPostion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, getColumnByForeignKeyValue } from '../base/util';
 import { InputArgs } from '@syncfusion/ej2-inputs';
 import { SearchSettingsModel } from '../base/grid-model';
-import { IXLFilter } from '../common/filter-interface';
+import { IXLFilter, FilterStateObj } from '../common/filter-interface';
 import { DataResult } from '../base/interface';
 
 /**
@@ -638,29 +638,13 @@ export class CheckBoxFilterBase {
     }
 
     private filterEvent(args: Object, query: Query): void {
-        let def: Deferred = this.eventPromise(args, query);
+        let defObj: FilterStateObj = eventPromise(args, query);
+        this.parent.trigger(events.dataStateChange, defObj.state);
+        let def: Deferred = defObj.deffered;
         def.promise.then((e: ReturnType[]) => {
             this.dataSuccess(e);
         });
     }
-
-    private eventPromise(args: Object, query: Query): Deferred {
-        let state: DataStateChangeEventArgs;
-        state = this.getStateEventArgument(query);
-        let def: Deferred = new Deferred();
-        state.dataSource = def.resolve;
-        state.action = args;
-        this.parent.trigger(events.dataStateChange, state);
-        return def;
-    };
-
-    public getStateEventArgument(query: Query): Object {
-        let adaptr: UrlAdaptor = new UrlAdaptor();
-        let dm: DataManager = new DataManager({ url: '', adaptor: new UrlAdaptor });
-        let state: { data?: string } = adaptr.processQuery(dm, query);
-        let data: Object = JSON.parse(state.data);
-        return data;
-    };
 
     private processDataOperation(query: Query, isInitial?: boolean): void {
 

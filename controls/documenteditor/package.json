@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-documenteditor",
-	"version": "18.2.45",
+	"version": "18.2.46",
 	"description": "Feature-rich document editor control with built-in support for context menu, options pane and dialogs.",
 	"keywords": [
 		"ej2",
@@ -15,7 +15,7 @@
 	],
 	"homepage": "https://www.syncfusion.com/products/javascript/document-editor",
 	"author": "Syncfusion Inc.",
-	"license": "UNLICENSED",
+	"license": "SEE LICENSE IN license",
 	"main": "./dist/ej2-documenteditor.umd.min.js",
 	"module": "./index.js",
 	"es2015": "./dist/es6/ej2-documenteditor.es2015.js",

@@ -671,3 +671,15 @@ export type ColumnType =
     'dateTime' |
     /**  Defines ColumnType as checkBox */
     'checkBox';
+
+/**
+ * Defines the Aggregate Template Type
+ * * groupCaptionTemplate
+ * * groupFooterTemplate 
+ * * footerTemplate
+ */
+export enum AggregateTemplateType {
+    GroupCaption = 'GroupCaption',
+    GroupFooter = 'GroupFooter',
+    Footer = 'Footer',
+}

@@ -59,7 +59,6 @@ var __generator = (undefined && undefined.__generator) || function (thisArg, bod
 /**
  * Query Builder Source
  */
-sf.dropdowns.MultiSelect.Inject(sf.dropdowns.CheckBoxSelection);
 /**
  * Defines the Columns of Query Builder
  */
@@ -167,6 +166,7 @@ var QueryBuilder = /** @class */ (function (_super) {
         _this.fields = { text: 'label', value: 'field' };
         _this.updatedRule = { not: false, condition: 'and' };
         _this.isLocale = false;
+        sf.dropdowns.MultiSelect.Inject(sf.dropdowns.CheckBoxSelection);
         return _this;
     }
     QueryBuilder.prototype.getPersistData = function () {

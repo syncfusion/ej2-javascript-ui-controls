@@ -5342,4 +5342,86 @@ describe('DDList', () => {
             expect(listObj.inputWrapper.container.classList.contains('custom-class-two')).toBe(true);
         });   
     });
+    describe('EJ2-39852', () => {
+        let ddlObj: any;
+        let ddlEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'ddl' });
+        let empList: { [key: string]: Object }[] = [
+            { Id: 'Game1', Game: 'American Football' },
+            { Id: 'Game2', Game: 'Badminton' },
+            { Id: 'Game3', Game: 'Basketball' },
+            { Id: 'Game4', Game: 'Cricket' },
+            { Id: 'Game5', Game: 'Football' }
+        ];
+        beforeAll(() => {
+            document.body.appendChild(ddlEle);
+            ddlObj = new DropDownList({
+                dataSource: empList,
+                fields: { text: 'Game', value: 'Id' },
+                allowFiltering: true
+            });
+            ddlObj.appendTo(ddlEle);
+        });
+        afterAll(() => {
+            ddlObj.destroy();
+            ddlEle.remove();
+        });
+        it('Newly added item position changes on popup open and close action when allowfiltring is enabled', () => {
+            ddlObj.sortOrder = "Ascending";
+            ddlObj.dataBind();
+            ddlObj.addItem({Id: 'Game6', Game: 'Baseball' });
+            ddlObj.showPopup();
+            expect((ddlObj as any).ulElement.querySelectorAll('li').length).toBe(6);
+            ddlObj.hidePopup();
+            ddlObj.addItem({Id: 'Game7', Game: 'Archery' });
+            ddlObj.showPopup();
+            expect((ddlObj as any).ulElement.querySelectorAll('li').length).toBe(7);
+            ddlObj.hidePopup();
+            ddlObj.showPopup();
+            expect((ddlObj as any).list.querySelectorAll('li')[1].textContent).toBe('Archery');
+            expect((ddlObj as any).list.querySelectorAll('li')[3].textContent).toBe('Baseball');
+        });
+    });
+    describe('EJ2-39852', () => {
+        let keyEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            metaKey: false
+        };
+        let Country: { [key: string]: Object }[] = [
+            { id: 'list1', text: 'Australia'}, { id: 'list2', text: 'Belgium' },
+            { id: 'list3', text: 'Canada' }, { id: 'list4', text: 'France'}, 
+            { id: 'list5', text: 'India' }];
+        let listObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+        beforeAll(() => {
+            document.body.appendChild(element);
+            listObj = new DropDownList({
+                dataSource: Country,
+                fields: { text: "text", value: "id" },
+                popupHeight: "200px",
+                allowFiltering: true,
+                filtering: function (e: FilteringEventArgs) {
+                    let query = new Query();
+                    query = (e.text != "") ? query.where("text", "startswith", e.text, true) : query;
+                    listObj.filter(((listObj).actionCompleteData.list), query);
+                }
+            });
+            listObj.appendTo(element);
+        });
+        afterAll(() => {
+            listObj.destroy();
+            element.remove();
+        });
+        it('Filter newly added item from the list', () => {
+            listObj.sortOrder = "Ascending";
+            listObj.dataBind();
+            listObj.addItem({id: 'list6', text: 'Brazil' });
+            listObj.showPopup();
+            listObj.filterInput.value = "b";
+            keyEventArgs.keyCode = 66;
+            listObj.onInput(keyEventArgs)
+            listObj.onFilterUp(keyEventArgs);
+            expect((listObj as any).list.querySelectorAll('li')[0].textContent).toBe('Belgium');
+            expect((listObj as any).list.querySelectorAll('li')[1].textContent).toBe('Brazil');
+        });
+    });
 });

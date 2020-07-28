@@ -2369,8 +2369,8 @@ class Internationalization {
      * @returns {string}
      * @private
      */
-    getNumberPattern(option) {
-        return IntlBase.getActualNumberFormat(this.getCulture(), option, cldrData);
+    getNumberPattern(option, isExcel) {
+        return IntlBase.getActualNumberFormat(this.getCulture(), option, cldrData, isExcel);
     }
     /**
      * Returns the First Day of the Week
@@ -3443,7 +3443,7 @@ var IntlBase;
      * @param {Object} cldr
      * @returns {string}
      */
-    function getActualNumberFormat(culture, options, cldr) {
+    function getActualNumberFormat(culture, options, cldr, isExcel) {
         let dependable = getDependables(cldr, culture, '', true);
         let parseOptions = { custom: true };
         let numrericObject = dependable.numericObject;
@@ -3508,7 +3508,7 @@ var IntlBase;
             actualPattern = options.format.replace(/\'/g, '"');
         }
         if (Object.keys(dOptions).length > 0) {
-            actualPattern = processSymbol(actualPattern, dOptions);
+            actualPattern = !isExcel ? processSymbol(actualPattern, dOptions) : actualPattern;
         }
         return actualPattern;
     }

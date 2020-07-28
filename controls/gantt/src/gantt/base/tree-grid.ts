@@ -449,7 +449,8 @@ export class GanttTreeGrid {
         } else if (taskSettings.duration === column.field) {
             column.width = column.width ? column.width : 150;
             column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('duration');
-            column.valueAccessor = column.valueAccessor ? column.valueAccessor : this.durationValueAccessor.bind(this);
+            column.valueAccessor = column.valueAccessor ? column.valueAccessor : !isNullOrUndefined(column.edit) ? null :
+            this.durationValueAccessor.bind(this);
             column.editType = column.editType ? column.editType : 'stringedit';
             column.type = 'string';
         } else if (taskSettings.progress === column.field) {

@@ -164,7 +164,6 @@ export class Kanban extends Component<HTMLElement> {
 
     /**
      * Defines the sort settings such as field and direction.
-     * @deprecated
      * @default {}
      */
     @Complex<SortSettingsModel>({}, SortSettings)

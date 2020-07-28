@@ -1359,8 +1359,13 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             let newList: { [key: string]: Object }[] = [].slice.call(this.listData as { [key: string]: Object }[]);
             newList.push(items as { [key: string]: Object });
             newList = this.getSortedDataSource(newList);
-            let newIndex: number = newList.indexOf(items as { [key: string]: Object });
-            itemIndex = newIndex;
+            if (this.fields.groupBy) {
+                newList = ListBase.groupDataSource(
+                    newList, (this.fields as FieldSettingsModel & { properties: Object }).properties, this.sortOrder);
+                itemIndex = newList.indexOf(items as { [key: string]: Object });
+            } else {
+                itemIndex = newList.indexOf(items as { [key: string]: Object });
+            }
         }
         this.DropDownBaseresetBlazorTemplates(true, false, false, false);
         let itemsCount: number = this.getItems().length;
@@ -1394,7 +1399,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             this.notify('addItem', { module: 'CheckBoxSelection', item: li });
             liCollections.push(li);
             (this.listData as { [key: string]: Object }[]).push(item as { [key: string]: Object });
-            this.updateActionCompleteData(li, item as { [key: string]: Object });
+            this.updateActionCompleteData(li, item as { [key: string]: Object }, index);
             //Listbox event
             this.trigger('beforeItemRender', {element: li, item: item});
         }
@@ -1418,7 +1423,11 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 if (attr.indexOf(liCollections[i].innerText) > -1 && fields.groupBy) {
                     for (let j: number = 0; j < listGroupItem.length; j++) {
                         if (attr[j] === liCollections[i].innerText ) {
-                            this.ulElement.insertBefore(liCollections[i + 1], listGroupItem[j + 1]);
+                            if (this.sortOrder === 'None') {
+                                this.ulElement.insertBefore(liCollections[i + 1], listGroupItem[j + 1]);
+                                } else {
+                                    this.ulElement.insertBefore(liCollections[i + 1], this.ulElement.childNodes[itemIndex]);
+                                }
                             i = i + 1;
                             break;
                         }
@@ -1460,7 +1469,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         // this is for component wise
     }
 
-    protected updateActionCompleteData(li: HTMLElement, item: { [key: string]: Object }): void {
+    protected updateActionCompleteData(li: HTMLElement, item: { [key: string]: Object }, index?: number): void {
         // this is for ComboBox custom value
     }
     protected updateAddItemList(list: HTMLElement, itemCount: number): void {

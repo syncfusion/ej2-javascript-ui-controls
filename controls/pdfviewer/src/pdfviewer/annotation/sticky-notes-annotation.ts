@@ -859,7 +859,6 @@ export class StickyNotesAnnotation {
 
     // tslint:disable-next-line
     private createCommentDiv(args: any): void {
-        this.pdfViewer.isDocumentEdited = true;
         let commentsContainer: HTMLElement;
         let titleContainer: HTMLElement;
         // tslint:disable-next-line
@@ -1577,6 +1576,7 @@ export class StickyNotesAnnotation {
             if (event.currentTarget.className === 'e-pv-more-options-button e-btn') {
                 event.currentTarget.parentElement.nextSibling.lastChild.firstChild.click();
             }
+            this.pdfViewer.annotationModule.checkContextMenuDeleteItem(this.commentMenuObj);
             this.commentMenuObj.open(event.clientY, event.clientX, event.currentTarget);
         }
         if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.inkAnnotationModule) {
@@ -1595,6 +1595,13 @@ export class StickyNotesAnnotation {
         }
         if (event.currentTarget.parentElement.parentElement) {
             let isLocked : boolean = this.checkAnnotationSettings(event.currentTarget.parentElement.parentElement.id);
+            if (isLocked) {
+                // tslint:disable-next-line
+                let annotation: any = this.findAnnotationObject(event.currentTarget.parentElement.parentElement.id);
+                if (this.pdfViewer.annotationModule.checkAllowedInteractions('Select', annotation)) {
+                    isLocked = false;
+                }
+            }
             if (!isLocked) {
                 event.currentTarget.nextSibling.ej2_instances[0].enableEditMode = true;
             }
@@ -1612,6 +1619,13 @@ export class StickyNotesAnnotation {
         }
         if (event.currentTarget.parentElement.parentElement) {
             let isLocked : boolean = this.checkAnnotationSettings(event.currentTarget.parentElement.parentElement.id);
+            if (isLocked) {
+                // tslint:disable-next-line
+                let annotation: any = this.findAnnotationObject(event.currentTarget.parentElement.parentElement.id);
+                if (this.pdfViewer.annotationModule.checkAllowedInteractions('Select', annotation)) {
+                    isLocked = false;
+                }
+            }
             if (!isLocked) {
                 event.currentTarget.ej2_instances[0].enableEditMode = true;
             }
@@ -1623,6 +1637,13 @@ export class StickyNotesAnnotation {
     // tslint:disable-next-line
     private commentsDivClickEvent(event: any): void {
         let isLocked : boolean = this.checkAnnotationSettings(event.currentTarget.parentElement.id);
+        if (isLocked) {
+            // tslint:disable-next-line
+            let annotation: any = this.findAnnotationObject(event.currentTarget.parentElement.id);
+            if (this.pdfViewer.annotationModule.checkAllowedInteractions('Select', annotation)) {
+                isLocked = false;
+            }
+        }
         if (!isLocked) {
             let isCommentsSelect: boolean = false;
             if (event.clientX === 0 && event.clientY === 0) {
@@ -1830,7 +1851,14 @@ export class StickyNotesAnnotation {
     // tslint:disable-next-line
     private commentsAnnotationSelect(event: any): void {
         let element: HTMLElement = event.currentTarget;
-        let isLocked : boolean = this.checkAnnotationSettings(element.id);
+        let isLocked: boolean = this.checkAnnotationSettings(element.id);
+        if (isLocked) {
+            // tslint:disable-next-line
+            let annotation: any = this.findAnnotationObject(element.id);
+            if (this.pdfViewer.annotationModule.checkAllowedInteractions('Select', annotation)) {
+                isLocked = false;
+            }
+        }
         if (!isLocked) {
             if (element.classList.contains('e-pv-comments-border')) {
                 // tslint:disable-next-line
@@ -1914,7 +1942,35 @@ export class StickyNotesAnnotation {
                     this.selectAnnotationObj = { id: element.id, annotType: annotType, pageNumber: pageNumber };
                 }
             }
-            this.isSetAnnotationType = false;
+        }
+        this.isSetAnnotationType = false;
+    }
+
+    // tslint:disable-next-line
+    private findAnnotationObject(id: string): any {
+        // tslint:disable-next-line:max-line-length
+        if (this.pdfViewer.annotationModule.textMarkupAnnotationModule && this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
+            return this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation;
+        } else if (this.pdfViewer.selectedItems.annotations[0]) {
+            return this.pdfViewer.selectedItems.annotations[0];
+        }
+        // tslint:disable-next-line
+        let annotationCollection: any = this.pdfViewer.annotationCollection;
+        if (annotationCollection) {
+            for (let i: number = 0; i < annotationCollection.length; i++) {
+                if (annotationCollection[i].annotationId && (annotationCollection[i].annotationId === id)) {
+                    if (annotationCollection[i].shapeAnnotationType === 'textMarkup') {
+                        return annotationCollection[i];
+                    } else {
+                        annotationCollection = this.pdfViewer.annotations;
+                        for (let j: number = 0; j < annotationCollection.length; j++) {
+                            if (annotationCollection[j].annotName && (annotationCollection[j].annotName === id)) {
+                                return annotationCollection[j];
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -2082,10 +2138,13 @@ export class StickyNotesAnnotation {
                         }
                     }
                     if (!isTextAdded) {
-                        this.pdfViewer.annotation.modifyDynamicTextValue(text, currentAnnotation.annotName);
                         if (currentAnnotation.shapeAnnotationType === 'FreeText') {
+                            if (currentAnnotation.dynamicText !== text) {
+                                this.pdfViewer.annotation.modifyDynamicTextValue(text, currentAnnotation.annotName);
+                            }
                             currentAnnotation.dynamicText = text;
                         } else {
+                            this.pdfViewer.annotation.modifyDynamicTextValue(text, currentAnnotation.annotName);
                             currentAnnotation.labelContent = text;
                             currentAnnotation.notes = text;
                         }
@@ -2164,15 +2223,19 @@ export class StickyNotesAnnotation {
             let clonedObject: any = cloneObject(currentAnnotation);
             let date: Date = new Date();
             if (currentAnnotation.comments.length > 0) {
+                let isComment: boolean = false;
                 for (let j: number = 0; j < currentAnnotation.comments.length; j++) {
                     if (currentAnnotation.comments[j].annotName === annotName) {
+                        isComment = true;
                         currentAnnotation.comments[j].note = text;
                         currentAnnotation.comments[j].modifiedDate = date.toLocaleString();
                     }
                 }
                 // tslint:disable-next-line:max-line-length
                 let newArray: ICommentsCollection = { annotName: annotName, parentId: parentElement, subject: 'Comments', comments: [], author: author, note: text, shapeAnnotationType: '', state: '', stateModel: '', modifiedDate: date.toLocaleString(), review: { state: '', stateModel: '', modifiedDate: date.toLocaleString(), author: author } };
-                currentAnnotation.comments[currentAnnotation.comments.length] = newArray;
+                if (!isComment) {
+                    currentAnnotation.comments[currentAnnotation.comments.length] = newArray;
+                }
             } else {
                 // tslint:disable-next-line:max-line-length
                 let newArray: ICommentsCollection = { annotName: annotName, parentId: parentElement, subject: 'Comments', comments: [], author: author, note: text, shapeAnnotationType: '', state: '', stateModel: '', modifiedDate: date.toLocaleString(), review: { state: '', stateModel: '', modifiedDate: date.toLocaleString(), author: author } };

@@ -9148,17 +9148,19 @@ export class Selection {
         }
         return this.checkSelectionIsAtEditRegion();
     }
-    public checkSelectionIsAtEditRegion(): boolean {
+    public checkSelectionIsAtEditRegion(start?: TextPosition, end?: TextPosition): boolean {
         for (let i: number = 0; i < this.editRangeCollection.length; i++) {
             let editRangeStart: EditRangeStartElementBox = this.editRangeCollection[i];
             let positionInfo: PositionInfo = this.getPosition(editRangeStart);
             let startPosition: TextPosition = positionInfo.startPosition;
             let endPosition: TextPosition = positionInfo.endPosition;
-            let start: TextPosition = this.start;
-            let end: TextPosition = this.end;
-            if (!this.isForward) {
-                start = this.end;
-                end = this.start;
+            if (isNullOrUndefined(start) && isNullOrUndefined(end)) {
+                start = this.start;
+                end = this.end;
+                if (!this.isForward) {
+                    start = this.end;
+                    end = this.start;
+                }
             }
             if ((start.isExistAfter(startPosition) || start.isAtSamePosition(startPosition))
                 && (end.isExistBefore(endPosition) || end.isAtSamePosition(endPosition))) {

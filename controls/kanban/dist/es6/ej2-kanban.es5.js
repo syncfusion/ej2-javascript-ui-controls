@@ -1462,7 +1462,7 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
         this.parent.trigger(dragStop, dragArgs, function (dragEventArgs) {
             if (!dragEventArgs.cancel) {
                 if (contentCell || columnKey) {
-                    _this.parent.crudModule.updateCard(_this.dragObj.modifiedData);
+                    _this.parent.crudModule.updateCard(dragEventArgs.data);
                 }
             }
             _this.removeElement(_this.dragObj.draggedClone);
@@ -3433,7 +3433,6 @@ var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, 
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 /**
- * @deprecated
  * Holds the configuration of sort settings in kanban board.
  */
 var SortSettings = /** @__PURE__ @class */ (function (_super) {

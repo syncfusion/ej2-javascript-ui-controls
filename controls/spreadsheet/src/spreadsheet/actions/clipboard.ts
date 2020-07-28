@@ -482,6 +482,7 @@ export class Clipboard {
         if (ele.querySelector('table')) {
             ele.querySelectorAll('tr').forEach((tr: Element) => {
                 tr.querySelectorAll('td').forEach((td: Element, j: number) => {
+                    td.textContent = td.textContent.replace(/(\r\n|\n|\r)/gm, '');
                     cells[j] = { value: td.textContent, style: this.getStyle(td, ele) };
                 });
                 rows.push({ cells: cells });

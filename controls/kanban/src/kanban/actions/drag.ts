@@ -296,7 +296,7 @@ export class DragAndDrop {
         this.parent.trigger(events.dragStop, dragArgs, (dragEventArgs: DragEventArgs) => {
             if (!dragEventArgs.cancel) {
                 if (contentCell || columnKey) {
-                    this.parent.crudModule.updateCard(this.dragObj.modifiedData);
+                    this.parent.crudModule.updateCard(dragEventArgs.data);
                 }
             }
             this.removeElement(this.dragObj.draggedClone);

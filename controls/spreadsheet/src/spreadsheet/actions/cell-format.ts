@@ -84,7 +84,6 @@ export class CellFormat {
     }
     private updateRowHeight(rowIdx: number, colIdx: number, isLastCell: boolean, onActionUpdate: boolean, borderSize: number = 0): void {
         if (this.checkHeight) {
-            this.checkHeight = false;
             let hgt: number = 0;
             let maxHgt: number;
             let sheet: SheetModel = this.parent.getActiveSheet();
@@ -93,6 +92,7 @@ export class CellFormat {
                 getLines(this.parent.getDisplayText(cell), getColumnWidth(sheet, colIdx), cell.style, this.parent.cellStyle) : 1);
             setMaxHgt(sheet, rowIdx, colIdx, hgt + borderSize);
             if (isLastCell) {
+                this.checkHeight = false;
                 let row: HTMLElement = this.parent.getRow(rowIdx);
                 if (!row) { return; }
                 let prevHeight: number = getRowHeight(sheet, rowIdx);

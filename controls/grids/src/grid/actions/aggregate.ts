@@ -43,7 +43,7 @@ export class Aggregate implements IAction {
         this.footerRenderer.renderTable();
 
         let footerContent: Element = this.footerRenderer.getPanel();
-        if (this.parent.element.scrollHeight > this.parent.height && footerContent) {
+        if (this.parent.element.scrollHeight > this.parent.element.querySelector('.e-content').scrollHeight && footerContent) {
             addClass([footerContent], ['e-footerpadding']);
         }
 

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 18.2.47 (2020-07-28)
+
+### Chart
+
+#### Bug Fixes
+
+- `#284735` - Primary y axis Lograthmic values are not rendering based on the data issue fixed.
+- `#285055` - When we scroll to end some of the data is missing issue fixed.
+
 ## 18.2.46 (2020-07-21)
 
 ### Chart

@@ -1276,7 +1276,9 @@ export class MultiSelect extends DropDownBase implements IInput {
                 }
             }
         }
-        e.preventDefault();
+        if (!(this.targetElement() && this.targetElement() !== '')) {
+            e.preventDefault();
+        }
     }
     private enable(state: boolean): void {
         if (state) {

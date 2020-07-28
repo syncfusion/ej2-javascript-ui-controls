@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 18.2.47 (2020-07-28)
+
+### PDF Viewer
+
+#### New Features
+
+- `#267670` - Exposed the toolbar option to retrieve the form field data in JSON format.
+
+#### Bug Fixes
+
+- `#282486` - Now, undo and redo is working properly for the freetext annotations.
+- `#F155593`- Exception will no longer be thrown while exporting the formfields.
+
 ## 18.2.46 (2020-07-21)
 
 ### PDF Viewer

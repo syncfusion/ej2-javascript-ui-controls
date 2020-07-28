@@ -647,4 +647,42 @@ describe('filter menu module =>', () => {
             destroy(gridObj);
         });
     });
+
+    describe('EJ2-41242 ==> filtering menu with custom data  =>', () => {
+        let gridObj: Grid;
+        let dataStateChange: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: { result: filterData, count: filterData.length},
+                    allowFiltering: true,
+                    allowPaging: true,
+                    filterSettings: { type: 'Menu' },
+                    allowReordering: true,
+                    columns: [{ field: 'OrderID', type: 'number' },
+                    { field: 'CustomerID' }
+                    ],
+                    dataStateChange: dataStateChange,
+                },
+                done);
+        });
+        it('filtering menu open based on its column type =>', (done: Function) => {
+            dataStateChange = (args?: any): void => {
+                expect(args.action.requestType).toBe('stringfilterrequest');
+                gridObj.dataStateChange = null;
+                done();
+            };
+            gridObj.dataStateChange = dataStateChange;
+            (gridObj.filterModule as any).filterIconClickHandler(
+                getClickObj(gridObj.getColumnHeaderByField('CustomerID').querySelector('.e-filtermenudiv')));
+        });
+
+        it('autocomplete data check =>', () => {
+            expect((document.querySelector('.e-autocomplete') as any).ej2_instances[0].dataSource).not.toBe(0);
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
 });

@@ -202,6 +202,7 @@ export class ProtectSheet {
             closeOnEscape: true,
             showCloseIcon: true,
             width: '400px',
+            cssClass: 'e-editAlert-dlg',
             beforeOpen: (args: BeforeOpenEventArgs): void => {
                 let dlgArgs: DialogBeforeOpenEventArgs = {
                     dialogName: 'EditAlertDialog',

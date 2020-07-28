@@ -584,7 +584,8 @@ export class Filter implements IAction {
         }
         this.filterModule = new this.type[col.filter.type || this.parent.filterSettings.type]
             (this.parent, gObj.filterSettings, this.serviceLocator, this.customOperators, this);
-        let dataSource: Object = col.filter.dataSource || gObj.getDataModule().dataManager;
+        let dataSource: Object = col.filter.dataSource || gObj.dataSource && 'result' in gObj.dataSource ? gObj.dataSource :
+            gObj.getDataModule().dataManager;
         this.filterModule.openDialog({
             type: col.type, field: col.field, displayName: col.headerText,
             dataSource: dataSource, format: col.format, height: 800, columns: gObj.getColumns(),
@@ -1160,5 +1161,4 @@ export class Filter implements IAction {
     private getOperatorName(field: string): string {
         return (<EJ2Intance>document.getElementById(this.parent.getColumnByField(field).uid)).ej2_instances[0].value;
     }
-
 }

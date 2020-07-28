@@ -47,7 +47,9 @@ export class FocusStrategy {
     protected onFocus(): void {
         if (this.parent.isDestroyed || Browser.isDevice || this.parent.enableVirtualization) { return; }
         this.setActive(!this.parent.enableHeaderFocus && this.parent.frozenRows === 0, this.parent.frozenColumns !== 0);
-        if (!this.parent.enableHeaderFocus && !this.parent.getCurrentViewRecords().length) {
+        let added: string = 'addedRecords';
+        if (!this.parent.enableHeaderFocus && !this.parent.getCurrentViewRecords().length && ((this.parent.editSettings.mode !== 'Batch')
+            || (this.parent.editSettings.mode === 'Batch' && !this.parent.editModule.getBatchChanges()[added].length))) {
             this.getContent().matrix.
                 generate(
                     this.rowModelGen.generateRows({ rows: [new Row<Column>({ isDataRow: true })] }),

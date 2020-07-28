@@ -7077,4 +7077,53 @@ describe('MultiSelect', () => {
             listObj.destroy();
         });
     });
+    describe('EJ2-41323: Not able to select the text and edit', () => {
+        let listObj: MultiSelect;
+        let divElement: HTMLElement = createElement('div', { id: 'divElement' });
+        divElement.style.width = '300px';
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { 'type': 'text' } });
+        beforeAll(() => {
+            document.body.innerHTML = '';
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+        it('Check the cursor position in the filtering action', () => {
+            let listObj: MultiSelect = new MultiSelect({
+                dataSource: ['Badminton', 'Cricket', 'Football', 'Golf', 'Tennis'],
+                showDropDownIcon: true,
+                width: '300px'
+            });
+            listObj.appendTo(element);
+            (<any>listObj).focusInHandler();
+            (<any>listObj).inputElement.value = "syncfusion";
+            (<any>listObj).inputElement.selectionStart = 2;
+            (<any>listObj).inputElement.selectionEnd = 3;
+            expect((<any>listObj).inputElement.selectionStart).toBe(2);
+            expect((<any>listObj).inputElement.selectionEnd).toBe(3);
+            listObj.destroy();
+        });
+        it('Check the cursor position on checkbox selection', () => {
+            let listObj: MultiSelect = new MultiSelect({
+                dataSource: ['Badminton', 'Cricket', 'Football', 'Golf', 'Tennis'],
+                showDropDownIcon: true,
+                width: '300px',
+                mode: 'CheckBox'
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            (<any>listObj).checkBoxSelectionModule.filterInput.value = "syncfusion";
+            (<any>listObj).checkBoxSelectionModule.filterInput.value = "syncfusion";
+            (<any>listObj).checkBoxSelectionModule.filterInput.selectionStart = 2;
+            (<any>listObj).checkBoxSelectionModule.filterInput.selectionEnd = 3;
+            expect((<any>listObj).checkBoxSelectionModule.filterInput.selectionStart).toBe(2);
+            expect((<any>listObj).checkBoxSelectionModule.filterInput.selectionEnd).toBe(3);
+            listObj.destroy();
+        });       
+    }); 
+
 });

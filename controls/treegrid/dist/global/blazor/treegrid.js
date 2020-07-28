@@ -1936,7 +1936,7 @@ var DataManipulation = /** @class */ (function () {
             var query = sf.grids.getObject('query', args);
             var srtQry = new sf.data.Query();
             for (var srt = this.parent.grid.sortSettings.columns.length - 1; srt >= 0; srt--) {
-                var col = this.parent.getColumnByField(this.parent.grid.sortSettings.columns[srt].field);
+                var col = this.parent.grid.getColumnByField(this.parent.grid.sortSettings.columns[srt].field);
                 var compFun = col.sortComparer && !this.isRemote() ?
                     col.sortComparer.bind(col) :
                     this.parent.grid.sortSettings.columns[srt].direction;

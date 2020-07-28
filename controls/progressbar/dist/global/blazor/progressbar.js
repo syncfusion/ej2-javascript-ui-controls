@@ -1941,6 +1941,9 @@ var Circular = /** @class */ (function () {
         var progress = this.progress;
         var labelText = progress.labelStyle.text;
         circularLabelGroup = progress.renderer.createGroup({ 'id': progress.element.id + '_CircularLabelGroup' });
+        if (document.getElementById(circularLabelGroup.id)) {
+            document.getElementById(circularLabelGroup.id).remove();
+        }
         labelValue = ((progress.value - progress.minimum) / (progress.maximum - progress.minimum)) * percentage;
         circularValue = (progress.value < progress.minimum || progress.value > progress.maximum) ? 0 : Math.round(labelValue);
         argsData = {
@@ -2429,6 +2432,9 @@ var ProgressBar = /** @class */ (function (_super) {
                     }
                     if (this.type === 'Circular') {
                         this.circular.renderCircularProgress(this.previousEndAngle, this.previousTotalEnd, !sf.base.isNullOrUndefined(oldProp.value));
+                        if (this.showProgressValue) {
+                            this.circular.renderCircularLabel();
+                        }
                         if (this.progressAnnotationModule && this.animation.enable && !this.isIndeterminate) {
                             this.annotateAnimation.doAnnotationAnimation(this.clipPath, this, this.annotateEnd, this.annotateTotal);
                         }

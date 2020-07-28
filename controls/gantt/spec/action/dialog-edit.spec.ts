@@ -94,6 +94,7 @@ let ganttModel: Object = {
                         floatLabelType: 'Auto'
                     });
                     dropDownObj.appendTo(dropDownElement);
+                    return dropDownObj;
                 }
             }
         }

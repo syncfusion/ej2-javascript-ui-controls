@@ -807,8 +807,11 @@ export class DialogEdit {
         let tempValue: string | Date | number;
         if (col.editType === 'stringedit') {
             let textBox: TextBox = <TextBox>(<EJ2Instance>dialog.querySelector('#' + ganttId + columnName)).ej2_instances[0];
-            tempValue = this.parent.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
-            if (textBox.value !== tempValue) {
+            tempValue = !isNullOrUndefined(col.edit) && !isNullOrUndefined(col.edit.read) ? (col.edit.read as Function)() :
+            !isNullOrUndefined(col.valueAccessor) ? (col.valueAccessor as Function)
+            (columnName, ganttObj.editModule.dialogModule.editedRecord, col) :
+            this.parent.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
+            if (textBox.value !== tempValue.toString()) {
                 textBox.value = tempValue as string;
                 textBox.dataBind();
             }
@@ -1387,8 +1390,12 @@ export class DialogEdit {
         }
         inputModel.enabled = !this.isCheckIsDisabled(column);
         if (column.field === this.parent.taskFields.duration) {
-            let ganttProp: ITaskData = ganttData.ganttProperties;
-            inputModel.value = this.parent.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
+            if (!isNullOrUndefined(column.valueAccessor)) {
+                inputModel.value = (column.valueAccessor as Function)(column.field, ganttData, column);
+            } else if (isNullOrUndefined(column.edit)) {
+                let ganttProp: ITaskData = ganttData.ganttProperties;
+                inputModel.value = this.parent.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
+            }
         } else {
             if (column.editType === 'booleanedit') {
                 if (ganttData[column.field] === true) {
@@ -1403,7 +1410,12 @@ export class DialogEdit {
         if (!isNullOrUndefined(column.edit) && isNullOrUndefined(column.edit.params)) {
             let write: Function = column.edit.write as Function;
             if (typeof write !== 'string') {
-                (column.edit.write as Function)({ column: column, rowData: ganttData, element: inputElement });
+                let inputObj: Inputs = (column.edit.write as Function)({ column: column, rowData: ganttData, element: inputElement });
+                if (column.field === this.parent.taskFields.duration) {
+                inputObj.change = (args: CObject): void => {
+                    this.validateScheduleFields(args, column, this.parent);
+                };
+            }
             }
         } else {
             let inputObj: Inputs = new this.inputs[column.editType](inputModel);

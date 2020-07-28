@@ -58,7 +58,10 @@ export class SfGrid {
 
     constructor(element: BlazorGridElement, options: IGridOptions, dotnetRef: BlazorDotnetObject) {
         this.element = element;
-        this.element.blazor__instance = this;
+        if (isNullOrUndefined(element)) { return; }
+        if (!isNullOrUndefined(element)) {
+            this.element.blazor__instance = this;
+        }
         this.dotNetRef = dotnetRef;
         this.options = options;
         this.header = this.element.querySelector('.e-headercontent');
@@ -557,7 +560,8 @@ export class SfGrid {
         } else {
             let target: string = null;
             let cellUid: string = null;
-            if (parentsUntil(<Element>e.target, 'e-editcell') || parentsUntil(<Element>e.target, 'e-gridform')) {
+            let editForm: Element = parentsUntil(parentsUntil(<Element>e.target, 'e-gridform'), 'e-grid');
+            if (parentsUntil(<Element>e.target, 'e-editcell') || editForm && editForm.id == gridElement.id) {
                 target = "Edit"
             } else if (parentsUntil(<Element>e.target, 'e-pager')) {
                 target = "Pager"

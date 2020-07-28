@@ -10,14 +10,12 @@ export interface SortSettingsModel {
      * * DataSourceOrder
      * * Index
      * * Custom
-     * @deprecated
      * @default 'DataSourceOrder'
      */
     sortBy?: SortOrderBy;
 
     /**
      * Defines the sort field
-     * @deprecated
      * @default null
      */
     field?: string;
@@ -26,7 +24,6 @@ export interface SortSettingsModel {
      * Sort the cards. The possible values are:
      * * Ascending
      * * Descending
-     * @deprecated
      * @default 'Ascending'
      */
     direction?: SortDirection;

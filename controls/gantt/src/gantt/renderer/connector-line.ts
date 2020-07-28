@@ -63,7 +63,8 @@ export class ConnectorLine {
     public createConnectorLineObject(parentGanttData: IGanttData, childGanttData: IGanttData, predecessor: IPredecessor):
         IConnectorLineObject {
         let connectorObj: IConnectorLineObject = {} as IConnectorLineObject;
-        let updatedRecords: IGanttData[] = this.expandedRecords;
+        let updatedRecords: IGanttData[] = this.parent.pdfExportModule && this.parent.pdfExportModule.isPdfExport ?
+            this.parent.currentViewData : this.expandedRecords;
         let parentIndex: number = updatedRecords.indexOf(parentGanttData);
         let childIndex: number = updatedRecords.indexOf(childGanttData);
         let parentGanttRecord: ITaskData = parentGanttData.ganttProperties;

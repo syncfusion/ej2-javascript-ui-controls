@@ -1,4 +1,4 @@
-import { BlazorDotnetObject, EventHandler, enableBlazorMode } from '@syncfusion/ej2-base';
+import { BlazorDotnetObject, EventHandler, isNullOrUndefined, enableBlazorMode } from '@syncfusion/ej2-base';
 import { SfGrid } from './sf-grid-fn';
 import { getScrollBarWidth } from './util';
 import { BlazorGridElement, IGridOptions, Column } from './interfaces';
@@ -12,53 +12,78 @@ let Grid: object = {
         new SfGrid(element, options, dotnetRef);
     },
 
-    contentReady (element: BlazorGridElement, options: IGridOptions, action: string) {
-        var instance = element.blazor__instance;
-        instance.setOptions(options, instance.options);
-        instance.options = options;
-        instance.contentReady(action);
+    contentReady(element: BlazorGridElement, options: IGridOptions, action: string) {
+        if (!isNullOrUndefined(element) && !isNullOrUndefined(element.blazor__instance)) {
+            var instance = element.blazor__instance;
+            instance.setOptions(options, instance.options);
+            instance.options = options;
+            instance.contentReady(action);
+        }
     },
 
     reorderColumns(element: BlazorGridElement, fromFName: string | string[], toFName: string) { //NEW
-        element.blazor__instance.reorderModule.reorderColumns(fromFName, toFName);
+        if (!isNullOrUndefined(element) && !isNullOrUndefined(element.blazor__instance)) {
+            element.blazor__instance.reorderModule.reorderColumns(fromFName, toFName);
+        }
     },
 
     reorderColumnByIndex(element: BlazorGridElement, fromIndex: number, toIndex: number) {
-        element.blazor__instance.reorderModule.reorderColumnByIndex(fromIndex, toIndex);
+        if (!isNullOrUndefined(element) && !isNullOrUndefined(element.blazor__instance)) {
+            element.blazor__instance.reorderModule.reorderColumnByIndex(fromIndex, toIndex);
+        }
     },
 
     reorderColumnByTargetIndex(element: BlazorGridElement, fieldName: string, toIndex: number) {
-        element.blazor__instance.reorderModule.reorderColumnByTargetIndex(fieldName, toIndex);
+        if (!isNullOrUndefined(element) && !isNullOrUndefined(element.blazor__instance)) {
+            element.blazor__instance.reorderModule.reorderColumnByTargetIndex(fieldName, toIndex);
+        }
     },
     renderColumnChooser: function (element: BlazorGridElement) {
-        element.blazor__instance.columnChooserModule.renderColumnChooser();
+        if (!isNullOrUndefined(element) && !isNullOrUndefined(element.blazor__instance)) {
+            element.blazor__instance.columnChooserModule.renderColumnChooser();
+        }
     },
-    renderColumnMenu: function (element : BlazorGridElement, uid: string, isFilter: boolean, key: string) {
-        return element.blazor__instance.columnMenuModule.renderColumnMenu(uid, isFilter, key);
+    renderColumnMenu: function (element: BlazorGridElement, uid: string, isFilter: boolean, key: string) {
+        if (!isNullOrUndefined(element) && !isNullOrUndefined(element.blazor__instance)) {
+            return element.blazor__instance.columnMenuModule.renderColumnMenu(uid, isFilter, key);
+        }
+        else {
+            return { Left: 1, Top: 1 };
+        }
     },
     filterPopupRender: function filterPopupRender(element: BlazorGridElement, dlgID: string, uid: string, type: string, isColumnMenu: boolean) {
-        element.blazor__instance.filterModule.filterPopupRender(dlgID, uid, type, isColumnMenu);
+        if (!isNullOrUndefined(element) && !isNullOrUndefined(element.blazor__instance)) {
+            element.blazor__instance.filterModule.filterPopupRender(dlgID, uid, type, isColumnMenu);
+        }
     },
     autoFitColumns(element: BlazorGridElement, fieldNames: string | string[]) {
-        element.blazor__instance.resizeModule.autoFitColumns(fieldNames);
+        if (!isNullOrUndefined(element) && !isNullOrUndefined(element.blazor__instance)) {
+            element.blazor__instance.resizeModule.autoFitColumns(fieldNames);
+        }
     },
     refreshColumnIndex(element: BlazorGridElement, columns: Column[]) {
-        var instance = element.blazor__instance;
-        instance.options.columns = columns;
-		instance.virtualContentModule.refreshColumnIndexes();
-	},
+        if (!isNullOrUndefined(element) && !isNullOrUndefined(element.blazor__instance)) {
+            var instance = element.blazor__instance;
+            instance.options.columns = columns;
+            instance.virtualContentModule.refreshColumnIndexes();
+        }
+    },
     focus(element: BlazorGridElement, rowuid: string, celluid: string, action: string) {
         let cell: HTMLElement = element.querySelector("[data-uid=\"" + celluid + "\"]");
-		var instance = element.blazor__instance;
-		if (!instance.options.enableVirtualization) {
-			cell.focus();
-		} else {
-            instance.virtualContentModule.focusCell(cell, action);
-		}
+        if (!isNullOrUndefined(element) && !isNullOrUndefined(element.blazor__instance)) {
+            var instance = element.blazor__instance;
+            if (!instance.options.enableVirtualization) {
+                cell.focus();
+            } else {
+                instance.virtualContentModule.focusCell(cell, action);
+            }
+        }
     },
-	refreshOnDataChange(element: BlazorGridElement) {
-		element.blazor__instance.virtualContentModule.refreshOnDataChange();
-	},
+    refreshOnDataChange(element: BlazorGridElement) {
+        if (!isNullOrUndefined(element) && !isNullOrUndefined(element.blazor__instance)) {
+            element.blazor__instance.virtualContentModule.refreshOnDataChange();
+        }
+    },
     focusChild(element: BlazorGridElement, rowuid: string, celluid: string) {
         let query = 'button, [href], input:not([type="hidden"]), select, textarea, [tabindex]:not([tabindex="-1"])';
         let child = [].slice.call(element.querySelector("[data-uid=\"" + celluid + "\"]").querySelectorAll(query));
@@ -91,39 +116,49 @@ let Grid: object = {
         }
     },
     destroy(element: BlazorGridElement) {
-        element.blazor__instance.destroy();
+        if (!isNullOrUndefined(element) && !isNullOrUndefined(element.blazor__instance)) {
+            element.blazor__instance.destroy();
+        }
     },
 
     validation(element: BlazorGridElement, results: object[], isAdd: boolean) {
-        element.blazor__instance.editModule.createTooltip(results, isAdd);
-    },
-      
-    focusCell(element: BlazorGridElement, field: string, isAdd: boolean) {
-        if (isAdd && element.blazor__instance.options.frozenColumns) {
-            (element.querySelector('.e-frozencontent') as HTMLElement).style.height = 
-            element.querySelector('.e-movablecontent').getBoundingClientRect().height + 'px'; 
+        if (!isNullOrUndefined(element) && !isNullOrUndefined(element.blazor__instance)) {
+            element.blazor__instance.editModule.createTooltip(results, isAdd);
         }
-        let complexField: string = `#${field.replace(/[.]/g, "___")}`; 
+    },
+
+    focusCell(element: BlazorGridElement, field: string, isAdd: boolean) {
+        if (isAdd && !isNullOrUndefined(element) && !isNullOrUndefined(element.blazor__instance) && element.blazor__instance.options.frozenColumns) {
+            (element.querySelector('.e-frozencontent') as HTMLElement).style.height =
+                element.querySelector('.e-movablecontent').getBoundingClientRect().height + 'px';
+        }
+        let complexField: string = `#${field.replace(/[.]/g, "___")}`;
         if (field === "" && element.querySelector("input.e-boolcell")) {
             (element.querySelector("input.e-boolcell") as HTMLElement).focus();
         } else if (field !== "" && element.querySelector(complexField)) {
             (element.querySelector(complexField) as HTMLElement).focus();
         }
     },
-      
+
     setFrozenHeight(element: BlazorGridElement) {
-        (element.querySelector('.e-frozencontent') as HTMLElement).style.height = 
-        (element.querySelector('.e-movablecontent')as HTMLElement).offsetHeight - getScrollBarWidth() + 'px'; 
+        (element.querySelector('.e-frozencontent') as HTMLElement).style.height =
+            (element.querySelector('.e-movablecontent') as HTMLElement).offsetHeight - getScrollBarWidth() + 'px';
     },
 
     printGrid(element: BlazorGridElement) {
-        element.blazor__instance.print();
+        if (!isNullOrUndefined(element) && !isNullOrUndefined(element.blazor__instance)) {
+            element.blazor__instance.print();
+        }
     },
     updateMediaColumns(element: BlazorGridElement, mediaColumnsUid: { [uid: string]: boolean }) {
-        element.blazor__instance.columnChooserModule.updateMediaColumns(mediaColumnsUid);
+        if (!isNullOrUndefined(element) && !isNullOrUndefined(element.blazor__instance)) {
+            element.blazor__instance.columnChooserModule.updateMediaColumns(mediaColumnsUid);
+        }
     },
-    copyToClipBoard(element: BlazorGridElement, withHeader?: boolean){
-        element.blazor__instance.clipboardModule.copy(withHeader);
+    copyToClipBoard(element: BlazorGridElement, withHeader?: boolean) {
+        if (!isNullOrUndefined(element) && !isNullOrUndefined(element.blazor__instance)) {
+            element.blazor__instance.clipboardModule.copy(withHeader);
+        }
     }
 };
 

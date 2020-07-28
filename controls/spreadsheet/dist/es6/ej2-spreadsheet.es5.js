@@ -290,9 +290,11 @@ function dateToInt(val, isTime) {
     var startDateUTC = new Date('01/01/1900').toUTCString().replace(' GMT', '');
     var startDate = new Date(startDateUTC);
     var date = isDateTime(val) ? val : new Date(val);
-    var timeDiff;
     var dateDiff = (new Date(date.toUTCString().replace(' GMT', '')).getTime() - startDate.getTime());
-    timeDiff = (timeZoneOffset > 0) ? dateDiff + (timeZoneOffset * 60 * 1000) : (dateDiff - (timeZoneOffset * 60 * 1000));
+    var timeDiff = dateDiff;
+    if (!isTime) {
+        timeDiff = (timeZoneOffset > 0) ? dateDiff + (timeZoneOffset * 60 * 1000) : (dateDiff - (timeZoneOffset * 60 * 1000));
+    }
     var diffDays = (timeDiff / (1000 * 3600 * 24));
     return isTime ? diffDays : parseInt(diffDays.toString(), 10) + 2;
 }
@@ -12818,6 +12820,19 @@ var Validation = /** @__PURE__ @class */ (function (_super) {
     return Validation;
 }(ChildProperty));
 /**
+ * Represents the Format.
+ */
+var Format = /** @__PURE__ @class */ (function (_super) {
+    __extends$4(Format, _super);
+    function Format() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Complex({}, CellStyle)
+    ], Format.prototype, "style", void 0);
+    return Format;
+}(ChildProperty));
+/**
  * Represents the Conditional Formatting.
  */
 var ConditionalFormat = /** @__PURE__ @class */ (function (_super) {
@@ -12829,7 +12844,7 @@ var ConditionalFormat = /** @__PURE__ @class */ (function (_super) {
         Property('GreaterThan')
     ], ConditionalFormat.prototype, "type", void 0);
     __decorate$3([
-        Collection([], Format)
+        Complex({}, Format)
     ], ConditionalFormat.prototype, "format", void 0);
     __decorate$3([
         Property('RedFT')
@@ -13060,19 +13075,6 @@ var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, 
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 /**
- * Represents the Format.
- */
-var Format = /** @__PURE__ @class */ (function (_super) {
-    __extends$5(Format, _super);
-    function Format() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    __decorate$4([
-        Complex({}, CellStyle)
-    ], Format.prototype, "style", void 0);
-    return Format;
-}(ChildProperty));
-/**
  * Represents the cell.
  */
 var Cell = /** @__PURE__ @class */ (function (_super) {
@@ -13114,7 +13116,7 @@ var Cell = /** @__PURE__ @class */ (function (_super) {
         Property(1)
     ], Cell.prototype, "rowSpan", void 0);
     return Cell;
-}(Format));
+}(ChildProperty));
 /**
  * @hidden
  */
@@ -16174,6 +16176,7 @@ var Clipboard = /** @__PURE__ @class */ (function () {
         if (ele.querySelector('table')) {
             ele.querySelectorAll('tr').forEach(function (tr) {
                 tr.querySelectorAll('td').forEach(function (td, j) {
+                    td.textContent = td.textContent.replace(/(\r\n|\n|\r)/gm, '');
                     cells[j] = { value: td.textContent, style: _this.getStyle(td, ele) };
                 });
                 rows.push({ cells: cells });
@@ -16436,7 +16439,9 @@ var Edit = /** @__PURE__ @class */ (function () {
                     if (sheet.protectSettings.insertLink && keyCode === 75) {
                         return;
                     }
-                    this.parent.notify(editAlert, null);
+                    if (!this.parent.element.querySelector('.e-editAlert-dlg')) {
+                        this.parent.notify(editAlert, null);
+                    }
                 }
             }
         }
@@ -18483,7 +18488,6 @@ var CellFormat = /** @__PURE__ @class */ (function () {
     CellFormat.prototype.updateRowHeight = function (rowIdx, colIdx, isLastCell, onActionUpdate, borderSize) {
         if (borderSize === void 0) { borderSize = 0; }
         if (this.checkHeight) {
-            this.checkHeight = false;
             var hgt = 0;
             var maxHgt = void 0;
             var sheet = this.parent.getActiveSheet();
@@ -18492,6 +18496,7 @@ var CellFormat = /** @__PURE__ @class */ (function () {
                 getLines(this.parent.getDisplayText(cell), getColumnWidth(sheet, colIdx), cell.style, this.parent.cellStyle) : 1);
             setMaxHgt(sheet, rowIdx, colIdx, hgt + borderSize);
             if (isLastCell) {
+                this.checkHeight = false;
                 var row = this.parent.getRow(rowIdx);
                 if (!row) {
                     return;
@@ -22400,6 +22405,7 @@ var ProtectSheet = /** @__PURE__ @class */ (function () {
             closeOnEscape: true,
             showCloseIcon: true,
             width: '400px',
+            cssClass: 'e-editAlert-dlg',
             beforeOpen: function (args) {
                 var dlgArgs = {
                     dialogName: 'EditAlertDialog',
@@ -23569,12 +23575,12 @@ var ConditionalFormatting = /** @__PURE__ @class */ (function () {
             cFRule.cFColor = cFRule.cFColor || 'RedFT';
             td.classList.add('e-' + cFRule.cFColor.toLowerCase());
             this.setFormat(td, cFRule);
-            if (cFRule && cFRule.format[0] && cFRule.format[0].style) {
-                if (cFRule.format[0].style.backgroundColor) {
-                    td.style.setProperty('background-color', cFRule.format[0].style.backgroundColor);
+            if (cFRule && cFRule.format && cFRule.format.style) {
+                if (cFRule.format.style.backgroundColor) {
+                    td.style.setProperty('background-color', cFRule.format.style.backgroundColor);
                 }
-                if (cFRule.format[0].style.color) {
-                    td.style.setProperty('color', cFRule.format[0].style.color);
+                if (cFRule.format.style.color) {
+                    td.style.setProperty('color', cFRule.format.style.color);
                 }
             }
         }
@@ -23674,7 +23680,7 @@ var ConditionalFormatting = /** @__PURE__ @class */ (function () {
             td.classList.add('e-' + cFRules[cFRuleIdx].cFColor.toLowerCase());
             this.setFormat(td, sheet.conditionalFormats[cFRuleIdx]);
             this.parent.notify(applyCellFormat, {
-                style: sheet.conditionalFormats[cFRuleIdx].format[0].style, rowIdx: rIdx, colIdx: cIdx,
+                style: sheet.conditionalFormats[cFRuleIdx].format.style, rowIdx: rIdx, colIdx: cIdx,
                 lastCell: true, isHeightCheckNeeded: true, manualUpdate: true
             });
         }
@@ -24404,29 +24410,28 @@ var ConditionalFormatting = /** @__PURE__ @class */ (function () {
     };
     ConditionalFormatting.prototype.setFormat = function (td, cFRule) {
         if (!cFRule.format) {
-            cFRule.format = [];
-            cFRule.format[0] = {};
+            cFRule.format = {};
         }
-        if (!cFRule.format[0].style) {
-            cFRule.format[0].style = {};
+        if (!cFRule.format.style) {
+            cFRule.format.style = {};
         }
         if (td.classList.contains('e-redft')) {
-            cFRule.format[0].style.backgroundColor = '#ffc7ce';
-            cFRule.format[0].style.color = '#9c0055';
+            cFRule.format.style.backgroundColor = '#ffc7ce';
+            cFRule.format.style.color = '#9c0055';
         }
         else if (td.classList.contains('e-yellowft')) {
-            cFRule.format[0].style.backgroundColor = '#ffeb9c';
-            cFRule.format[0].style.color = '#9c6500';
+            cFRule.format.style.backgroundColor = '#ffeb9c';
+            cFRule.format.style.color = '#9c6500';
         }
         else if (td.classList.contains('e-greenft')) {
-            cFRule.format[0].style.backgroundColor = '#c6efce';
-            cFRule.format[0].style.color = '#006100';
+            cFRule.format.style.backgroundColor = '#c6efce';
+            cFRule.format.style.color = '#006100';
         }
         else if (td.classList.contains('e-redf')) {
-            cFRule.format[0].style.backgroundColor = '#ffc7ce';
+            cFRule.format.style.backgroundColor = '#ffc7ce';
         }
         else if (td.classList.contains('e-redt')) {
-            cFRule.format[0].style.color = '#9c0055';
+            cFRule.format.style.color = '#9c0055';
         }
     };
     /**
@@ -34275,5 +34280,5 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
  * Export Spreadsheet modules
  */
 
-export { Workbook, Range, UsedRange, Sheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, getSheetIndexByName, updateSelectedRange, getSelectedRange, getSheet, getSheetNameCount, getMaxSheetId, initSheet, getSheetName, Row, getRow, setRow, isHiddenRow, getRowHeight, setRowHeight, getRowsHeight, Column, getColumn, setColumn, getColumnWidth, getColumnsWidth, isHiddenCol, Format, Cell, getCell, setCell, skipDefaultValue, wrap, getData, getModel, processIdx, clearRange, getRangeIndexes, getCellIndexes, getColIndex, getCellAddress, getRangeAddress, getColumnHeaderText, getIndexesFromAddress, getRangeFromAddress, getAddressFromSelectedRange, getAddressInfo, getSwapRange, isSingleCell, executeTaskAsync, WorkbookBasicModule, WorkbookAllModule, getWorkbookRequiredModules, CellStyle, DefineName, ProtectSettings, Hyperlink, Validation, ConditionalFormat, workbookDestroyed, updateSheetFromDataSource, dataSourceChanged, workbookOpen, beginSave, saveCompleted, applyNumberFormatting, getFormattedCellObject, refreshCellElement, setCellFormat, findAllValues, textDecorationUpdate, applyCellFormat, updateUsedRange, workbookFormulaOperation, workbookEditOperation, checkDateFormat, getFormattedBarText, activeCellChanged, openSuccess, openFailure, sheetCreated, sheetsDestroyed, aggregateComputation, beforeSort, initiateSort, sortComplete, sortRangeAlert, initiatelink, beforeHyperlinkCreate, afterHyperlinkCreate, beforeHyperlinkClick, afterHyperlinkClick, addHyperlink, setLinkModel, beforeFilter, initiateFilter, filterComplete, filterRangeAlert, clearAllFilter, wrapEvent, onSave, insert, deleteAction, insertModel, deleteModel, isValidation, setValidation, addHighlight, dataValidate, findNext, findPrevious, goto, findWorkbookHandler, replaceHandler, replaceAllHandler, showDialog, findUndoRedo, findKeyUp, removeValidation, removeHighlight, queryCellInfo, count, findCount, protectSheetWorkBook, updateToggle, protectsheetHandler, replaceAllDialog, unprotectsheetHandler, workBookeditAlert, setLockCells, applyLockCells, setMerge, applyMerge, mergedRange, activeCellMergedRange, insertMerge, pasteMerge, setCFRule, cFInitialCheck, clearCFRule, initiateClearCFRule, cFRender, cFDelete, clear, clearCF, clearCells, checkIsFormula, isCellReference, isChar, toFraction, getGcd, intToDate, dateToInt, isDateTime, isNumber, toDate, workbookLocale, localeData, DataBind, WorkbookOpen, WorkbookSave, WorkbookFormula, WorkbookNumberFormat, getFormatFromType, getTypeFromFormat, WorkbookSort, WorkbookFilter, WorkbookCellFormat, WorkbookEdit, WorkbookHyperlink, WorkbookInsert, WorkbookDelete, WorkbookDataValidation, WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookMerge, WorkbookConditionalFormat, getRequiredModules, ribbon, formulaBar, sheetTabs, refreshSheetTabs, dataRefresh, initialLoad, contentLoaded, mouseDown, spreadsheetDestroyed, editOperation, formulaOperation, formulaBarOperation, click, keyUp, keyDown, formulaKeyUp, formulaBarUpdate, onVerticalScroll, onHorizontalScroll, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, contextMenuOpen, cellNavigate, mouseUpAfterSelection, selectionComplete, cMenuBeforeOpen, insertSheetTab, removeSheetTab, renameSheetTab, ribbonClick, refreshRibbon, enableToolbarItems, tabSwitch, selectRange, cut, copy, paste, clearCopy, dataBound, beforeDataBound, addContextMenuItems, removeContextMenuItems, enableContextMenuItems, enableFileMenuItems, hideFileMenuItems, addFileMenuItems, hideRibbonTabs, enableRibbonTabs, addRibbonTabs, addToolbarItems, hideToolbarItems, beforeRibbonCreate, rowHeightChanged, colWidthChanged, beforeHeaderLoaded, onContentScroll, deInitProperties, activeSheetChanged, renameSheet, initiateCustomSort, applySort, collaborativeUpdate, hideShow, autoFit, updateToggleItem, initiateHyperlink, editHyperlink, openHyperlink, removeHyperlink, createHyperlinkElement, sheetNameUpdate, hideSheet, performUndoRedo, updateUndoRedoCollection, setActionData, getBeforeActionData, clearUndoRedoCollection, initiateFilterUI, renderFilterCell, reapplyFilter, filterByCellValue, clearFilter, getFilteredColumn, completeAction, beginAction, filterCellKeyDown, getFilterRange, setAutoFit, refreshFormulaDatasource, setScrollEvent, initiateDataValidation, validationError, startEdit, invalidData, clearInvalid, protectSheet, applyProtect, unprotectSheet, protectCellFormat, gotoDlg, findDlg, findHandler, replace, created, editAlert, setUndoRedo, enableFormulaInput, protectSelection, hiddenMerge, checkPrevMerge, checkMerge, removeDataValidation, showAggregate, initiateConditionalFormat, checkConditionalFormat, setCF, clearViewer, getUpdateUsingRaf, removeAllChildren, getColGroupWidth, getScrollBarWidth, inView, getCellPosition, locateElem, setStyleAttribute$1 as setStyleAttribute, getStartEvent, getMoveEvent, getEndEvent, isTouchStart, isTouchMove, isTouchEnd, getClientX, getClientY, setAriaOptions, destroyComponent, setResize, setWidthAndHeight, findMaxValue, updateAction, hasTemplate, setRowEleHeight, getTextHeight, getTextWidth, getLines, setMaxHgt, getMaxHgt, skipHiddenIdx, BasicModule, AllModule, ScrollSettings, SelectionSettings, DISABLED, WRAPTEXT, locale, dialog, actionEvents, overlay, fontColor, fillColor, defaultLocale, Spreadsheet, Clipboard, Edit, Selection, Scroll, VirtualScroll, KeyboardNavigation, KeyboardShortcut, CellFormat, Resize, CollaborativeEditing, ShowHide, SpreadsheetHyperlink, UndoRedo, WrapText, Insert, Delete, DataValidation, ProtectSheet, FindAndReplace, Merge, ConditionalFormatting, Ribbon$$1 as Ribbon, FormulaBar, Formula, SheetTabs, Open, Save, ContextMenu$1 as ContextMenu, NumberFormat, Sort, Filter, Render, SheetRender, RowRenderer, CellRenderer, Calculate, FormulaError, FormulaInfo, CalcSheetFamilyItem, getAlphalabel, ValueChangedArgs, Parser, CalculateCommon, isUndefined$1 as isUndefined, getModules, getValue$1 as getValue, setValue, ModuleLoader, CommonErrors, FormulasErrorsStrings, BasicFormulas };
+export { Workbook, Range, UsedRange, Sheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, getSheetIndexByName, updateSelectedRange, getSelectedRange, getSheet, getSheetNameCount, getMaxSheetId, initSheet, getSheetName, Row, getRow, setRow, isHiddenRow, getRowHeight, setRowHeight, getRowsHeight, Column, getColumn, setColumn, getColumnWidth, getColumnsWidth, isHiddenCol, Cell, getCell, setCell, skipDefaultValue, wrap, getData, getModel, processIdx, clearRange, getRangeIndexes, getCellIndexes, getColIndex, getCellAddress, getRangeAddress, getColumnHeaderText, getIndexesFromAddress, getRangeFromAddress, getAddressFromSelectedRange, getAddressInfo, getSwapRange, isSingleCell, executeTaskAsync, WorkbookBasicModule, WorkbookAllModule, getWorkbookRequiredModules, CellStyle, DefineName, ProtectSettings, Hyperlink, Validation, Format, ConditionalFormat, workbookDestroyed, updateSheetFromDataSource, dataSourceChanged, workbookOpen, beginSave, saveCompleted, applyNumberFormatting, getFormattedCellObject, refreshCellElement, setCellFormat, findAllValues, textDecorationUpdate, applyCellFormat, updateUsedRange, workbookFormulaOperation, workbookEditOperation, checkDateFormat, getFormattedBarText, activeCellChanged, openSuccess, openFailure, sheetCreated, sheetsDestroyed, aggregateComputation, beforeSort, initiateSort, sortComplete, sortRangeAlert, initiatelink, beforeHyperlinkCreate, afterHyperlinkCreate, beforeHyperlinkClick, afterHyperlinkClick, addHyperlink, setLinkModel, beforeFilter, initiateFilter, filterComplete, filterRangeAlert, clearAllFilter, wrapEvent, onSave, insert, deleteAction, insertModel, deleteModel, isValidation, setValidation, addHighlight, dataValidate, findNext, findPrevious, goto, findWorkbookHandler, replaceHandler, replaceAllHandler, showDialog, findUndoRedo, findKeyUp, removeValidation, removeHighlight, queryCellInfo, count, findCount, protectSheetWorkBook, updateToggle, protectsheetHandler, replaceAllDialog, unprotectsheetHandler, workBookeditAlert, setLockCells, applyLockCells, setMerge, applyMerge, mergedRange, activeCellMergedRange, insertMerge, pasteMerge, setCFRule, cFInitialCheck, clearCFRule, initiateClearCFRule, cFRender, cFDelete, clear, clearCF, clearCells, checkIsFormula, isCellReference, isChar, toFraction, getGcd, intToDate, dateToInt, isDateTime, isNumber, toDate, workbookLocale, localeData, DataBind, WorkbookOpen, WorkbookSave, WorkbookFormula, WorkbookNumberFormat, getFormatFromType, getTypeFromFormat, WorkbookSort, WorkbookFilter, WorkbookCellFormat, WorkbookEdit, WorkbookHyperlink, WorkbookInsert, WorkbookDelete, WorkbookDataValidation, WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookMerge, WorkbookConditionalFormat, getRequiredModules, ribbon, formulaBar, sheetTabs, refreshSheetTabs, dataRefresh, initialLoad, contentLoaded, mouseDown, spreadsheetDestroyed, editOperation, formulaOperation, formulaBarOperation, click, keyUp, keyDown, formulaKeyUp, formulaBarUpdate, onVerticalScroll, onHorizontalScroll, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, contextMenuOpen, cellNavigate, mouseUpAfterSelection, selectionComplete, cMenuBeforeOpen, insertSheetTab, removeSheetTab, renameSheetTab, ribbonClick, refreshRibbon, enableToolbarItems, tabSwitch, selectRange, cut, copy, paste, clearCopy, dataBound, beforeDataBound, addContextMenuItems, removeContextMenuItems, enableContextMenuItems, enableFileMenuItems, hideFileMenuItems, addFileMenuItems, hideRibbonTabs, enableRibbonTabs, addRibbonTabs, addToolbarItems, hideToolbarItems, beforeRibbonCreate, rowHeightChanged, colWidthChanged, beforeHeaderLoaded, onContentScroll, deInitProperties, activeSheetChanged, renameSheet, initiateCustomSort, applySort, collaborativeUpdate, hideShow, autoFit, updateToggleItem, initiateHyperlink, editHyperlink, openHyperlink, removeHyperlink, createHyperlinkElement, sheetNameUpdate, hideSheet, performUndoRedo, updateUndoRedoCollection, setActionData, getBeforeActionData, clearUndoRedoCollection, initiateFilterUI, renderFilterCell, reapplyFilter, filterByCellValue, clearFilter, getFilteredColumn, completeAction, beginAction, filterCellKeyDown, getFilterRange, setAutoFit, refreshFormulaDatasource, setScrollEvent, initiateDataValidation, validationError, startEdit, invalidData, clearInvalid, protectSheet, applyProtect, unprotectSheet, protectCellFormat, gotoDlg, findDlg, findHandler, replace, created, editAlert, setUndoRedo, enableFormulaInput, protectSelection, hiddenMerge, checkPrevMerge, checkMerge, removeDataValidation, showAggregate, initiateConditionalFormat, checkConditionalFormat, setCF, clearViewer, getUpdateUsingRaf, removeAllChildren, getColGroupWidth, getScrollBarWidth, inView, getCellPosition, locateElem, setStyleAttribute$1 as setStyleAttribute, getStartEvent, getMoveEvent, getEndEvent, isTouchStart, isTouchMove, isTouchEnd, getClientX, getClientY, setAriaOptions, destroyComponent, setResize, setWidthAndHeight, findMaxValue, updateAction, hasTemplate, setRowEleHeight, getTextHeight, getTextWidth, getLines, setMaxHgt, getMaxHgt, skipHiddenIdx, BasicModule, AllModule, ScrollSettings, SelectionSettings, DISABLED, WRAPTEXT, locale, dialog, actionEvents, overlay, fontColor, fillColor, defaultLocale, Spreadsheet, Clipboard, Edit, Selection, Scroll, VirtualScroll, KeyboardNavigation, KeyboardShortcut, CellFormat, Resize, CollaborativeEditing, ShowHide, SpreadsheetHyperlink, UndoRedo, WrapText, Insert, Delete, DataValidation, ProtectSheet, FindAndReplace, Merge, ConditionalFormatting, Ribbon$$1 as Ribbon, FormulaBar, Formula, SheetTabs, Open, Save, ContextMenu$1 as ContextMenu, NumberFormat, Sort, Filter, Render, SheetRender, RowRenderer, CellRenderer, Calculate, FormulaError, FormulaInfo, CalcSheetFamilyItem, getAlphalabel, ValueChangedArgs, Parser, CalculateCommon, isUndefined$1 as isUndefined, getModules, getValue$1 as getValue, setValue, ModuleLoader, CommonErrors, FormulasErrorsStrings, BasicFormulas };
 //# sourceMappingURL=ej2-spreadsheet.es5.js.map

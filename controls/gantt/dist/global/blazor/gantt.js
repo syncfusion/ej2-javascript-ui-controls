@@ -345,6 +345,20 @@ var DateProcessor = /** @class */ (function () {
         var ganttProperties = ganttData.ganttProperties;
         var tDuration = this.getDuration(ganttProperties.startDate, ganttProperties.endDate, ganttProperties.durationUnit, ganttProperties.isAutoSchedule, ganttProperties.isMilestone);
         this.parent.setRecordValue('duration', tDuration, ganttProperties, true);
+        var col = this.parent.columnByField[this.parent.columnMapping.duration];
+        if (!sf.base.isNullOrUndefined(this.parent.editModule) && !sf.base.isNullOrUndefined(this.parent.editModule.cellEditModule) &&
+            !this.parent.editModule.cellEditModule.isCellEdit && !sf.base.isNullOrUndefined(col.edit)
+            && !sf.base.isNullOrUndefined(col.edit.read)) {
+            var dialog = this.parent.editModule.dialogModule.dialog;
+            if (!sf.base.isNullOrUndefined(dialog)) {
+                var textBox = dialog.querySelector('#' + this.parent.element.id + 'Duration')
+                    .ej2_instances[0];
+                if (!sf.base.isNullOrUndefined(textBox) && textBox.value !== tDuration.toString()) {
+                    textBox.value = tDuration.toString();
+                    textBox.dataBind();
+                }
+            }
+        }
         if (this.parent.taskFields.duration) {
             this.parent.dataOperation.updateMappingData(ganttData, 'duration');
             if (this.parent.taskFields.durationUnit) {
@@ -5966,7 +5980,8 @@ var GanttTreeGrid = /** @class */ (function () {
         else if (taskSettings.duration === column.field) {
             column.width = column.width ? column.width : 150;
             column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('duration');
-            column.valueAccessor = column.valueAccessor ? column.valueAccessor : this.durationValueAccessor.bind(this);
+            column.valueAccessor = column.valueAccessor ? column.valueAccessor : !sf.base.isNullOrUndefined(column.edit) ? null :
+                this.durationValueAccessor.bind(this);
             column.editType = column.editType ? column.editType : 'stringedit';
             column.type = 'string';
         }
@@ -8881,7 +8896,8 @@ var ConnectorLine = /** @class */ (function () {
      */
     ConnectorLine.prototype.createConnectorLineObject = function (parentGanttData, childGanttData, predecessor) {
         var connectorObj = {};
-        var updatedRecords = this.expandedRecords;
+        var updatedRecords = this.parent.pdfExportModule && this.parent.pdfExportModule.isPdfExport ?
+            this.parent.currentViewData : this.expandedRecords;
         var parentIndex = updatedRecords.indexOf(parentGanttData);
         var childIndex = updatedRecords.indexOf(childGanttData);
         var parentGanttRecord = parentGanttData.ganttProperties;
@@ -10311,6 +10327,24 @@ var Gantt = /** @class */ (function (_super) {
                 this.expandCollapseKey(e);
                 break;
             case 'saveRequest':
+                if (this.editModule.cellEditModule.isCellEdit) {
+                    var col = this.editModule.cellEditModule.editedColumn;
+                    if (col.field === this.columnMapping.duration && !sf.base.isNullOrUndefined(col.edit) && !sf.base.isNullOrUndefined(col.edit.read)) {
+                        var textBox = e.target.ej2_instances[0];
+                        var textValue = e.target.value;
+                        var ganttProp = this.currentViewData[this.selectedRowIndex].ganttProperties;
+                        var tempValue = void 0;
+                        if (col.field === this.columnMapping.duration) {
+                            tempValue = !sf.base.isNullOrUndefined(col.edit) && !sf.base.isNullOrUndefined(col.edit.read) ? col.edit.read() :
+                                !sf.base.isNullOrUndefined(col.valueAccessor) ? col.valueAccessor(this.columnMapping.duration, this.editedRecords, col) :
+                                    this.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
+                            if (textValue !== tempValue.toString()) {
+                                textBox.value = textValue;
+                                textBox.dataBind();
+                            }
+                        }
+                    }
+                }
                 if (!sf.base.isNullOrUndefined(this.editModule) && !sf.base.isNullOrUndefined(this.editModule.cellEditModule) &&
                     this.editModule.cellEditModule.isCellEdit === true) {
                     if (this.editModule.dialogModule.dialogObj && sf.base.getValue('dialogOpen', this.editModule.dialogModule.dialogObj)) {
@@ -13154,6 +13188,7 @@ var CellEdit = /** @class */ (function () {
         var _this = this;
         var data = args.rowData;
         var field = args.columnName;
+        this.editedColumn = this.parent.getColumnByField(field, this.parent.ganttColumns);
         var taskSettings = this.parent.taskFields;
         if (this.parent.readOnly) {
             args.cancel = true;
@@ -15889,8 +15924,10 @@ var DialogEdit = /** @class */ (function () {
         var tempValue;
         if (col.editType === 'stringedit') {
             var textBox = dialog.querySelector('#' + ganttId + columnName).ej2_instances[0];
-            tempValue = this.parent.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
-            if (textBox.value !== tempValue) {
+            tempValue = !sf.base.isNullOrUndefined(col.edit) && !sf.base.isNullOrUndefined(col.edit.read) ? col.edit.read() :
+                !sf.base.isNullOrUndefined(col.valueAccessor) ? col.valueAccessor(columnName, ganttObj.editModule.dialogModule.editedRecord, col) :
+                    this.parent.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
+            if (textBox.value !== tempValue.toString()) {
                 textBox.value = tempValue;
                 textBox.dataBind();
             }
@@ -16481,6 +16518,7 @@ var DialogEdit = /** @class */ (function () {
         return divElement;
     };
     DialogEdit.prototype.renderInputElements = function (inputModel, column) {
+        var _this = this;
         var ganttId = this.parent.element.id;
         var ganttData = this.editedRecord;
         var divElement = this.createDivElement('e-edit-form-column');
@@ -16504,8 +16542,13 @@ var DialogEdit = /** @class */ (function () {
         }
         inputModel.enabled = !this.isCheckIsDisabled(column);
         if (column.field === this.parent.taskFields.duration) {
-            var ganttProp = ganttData.ganttProperties;
-            inputModel.value = this.parent.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
+            if (!sf.base.isNullOrUndefined(column.valueAccessor)) {
+                inputModel.value = column.valueAccessor(column.field, ganttData, column);
+            }
+            else if (sf.base.isNullOrUndefined(column.edit)) {
+                var ganttProp = ganttData.ganttProperties;
+                inputModel.value = this.parent.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
+            }
         }
         else {
             if (column.editType === 'booleanedit') {
@@ -16523,7 +16566,12 @@ var DialogEdit = /** @class */ (function () {
         if (!sf.base.isNullOrUndefined(column.edit) && sf.base.isNullOrUndefined(column.edit.params)) {
             var write = column.edit.write;
             if (typeof write !== 'string') {
-                column.edit.write({ column: column, rowData: ganttData, element: inputElement });
+                var inputObj = column.edit.write({ column: column, rowData: ganttData, element: inputElement });
+                if (column.field === this.parent.taskFields.duration) {
+                    inputObj.change = function (args) {
+                        _this.validateScheduleFields(args, column, _this.parent);
+                    };
+                }
             }
         }
         else {
@@ -25195,6 +25243,7 @@ var PdfTreeGridCell = /** @class */ (function () {
      */
     PdfTreeGridCell.prototype.draw = function (graphics, bounds, cancelSubsequentSpans, leftAdjustment) {
         var result = null;
+        var padding = 10;
         if (cancelSubsequentSpans) {
             // Cancel all subsequent cell spans, if no space exists.
             var currentCellIndex = this.row.cells.indexOf(this);
@@ -25249,7 +25298,7 @@ var PdfTreeGridCell = /** @class */ (function () {
             if (this.finishedDrawingCell) {
                 temp = (this.remainingString === '') ? this.remainingString : this.value;
                 /* tslint:disable-next-line */
-                graphics.drawString(temp, font, textPen, textBrush, (innerLayoutArea.x + leftAdjustment), innerLayoutArea.y, this.style.format);
+                graphics.drawString(temp, font, textPen, textBrush, (innerLayoutArea.x + leftAdjustment), innerLayoutArea.y, (innerLayoutArea.width - leftAdjustment - padding), (innerLayoutArea.height - padding), this.style.format);
             }
             else {
                 /* tslint:disable-next-line */
@@ -26019,6 +26068,7 @@ var ExportHelper = /** @class */ (function () {
     ExportHelper.prototype.processPredecessor = function () {
         var _this = this;
         if (sf.base.isNullOrUndefined(this.exportProps.showPredecessorLines) || this.exportProps.showPredecessorLines) {
+            this.parent.pdfExportModule.isPdfExport = true;
             this.parent.predecessorModule.createConnectorLinesCollection();
             this.parent.updatedConnectorLineCollection.forEach(function (data) {
                 var predecessor = _this.gantt.predecessor.add();
@@ -26036,6 +26086,7 @@ var ExportHelper = /** @class */ (function () {
                 predecessor.connectorLineColor = _this.ganttStyle.connectorLineColor;
                 _this.gantt.predecessorCollection.push(predecessor);
             });
+            this.parent.pdfExportModule.isPdfExport = false;
         }
     };
     ExportHelper.prototype.processRecordRow = function (data) {
@@ -26275,7 +26326,8 @@ var ExportHelper = /** @class */ (function () {
         cell.style.borderColor = new sf.pdfexport.PdfColor(style.borderColor);
         cell.style.fontSize = style.fontSize;
         cell.style.fontStyle = style.fontStyle;
-        cell.style.format = sf.base.extend({}, {}, style.format, true);
+        /* tslint:disable-next-line */
+        cell.style.format = Object.assign(new sf.pdfexport.PdfStringFormat(), style.format);
         cell.style.borders = new PdfBorders();
         cell.style.borders.all = new sf.pdfexport.PdfPen(cell.style.borderColor);
         cell.style.padding = new PdfPaddings();
@@ -27619,6 +27671,7 @@ var PdfExport = /** @class */ (function () {
      * @hidden
      */
     function PdfExport(parent) {
+        this.isPdfExport = false;
         this.parent = parent;
         this.helper = new ExportHelper(this.parent);
         this.pdfDocument = undefined;

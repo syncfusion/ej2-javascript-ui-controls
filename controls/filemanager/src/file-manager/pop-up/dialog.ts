@@ -434,8 +434,8 @@ function getOptions(parent: IFileManager, text: string, e?: ReadArgs | SelectedE
                     .replace('{0}', parent.selectedItems.length.toString());
                 options.header = getLocaleText(parent, 'Header-Multiple-Delete');
             } else {
-                options.content = '<div>' + getLocaleText(parent, 'Content-Delete') + '</div>';
-                options.header = getLocaleText(parent, 'Header-Delete');
+                options.content = '<div>' + getLocaleText(parent, parent.isFile ? 'Content-Delete' : 'Content-Folder-Delete') + '</div>';
+                options.header = getLocaleText(parent, parent.isFile ? 'Header-Delete' : 'Header-Folder-Delete');
             }
             options.buttons = [
                 {

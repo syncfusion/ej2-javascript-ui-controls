@@ -172,6 +172,8 @@ export class Render {
                     this.parent.serverDataBind();
                     this.parent.allowServerDataBinding = false;
                 }
+            } else if (args.requestType === 'reorder' && this.parent.dataSource && 'result' in this.parent.dataSource ) {
+                this.contentRenderer.refreshContentRows(args);
             } else {
                 this.refreshDataManager(args);
             }

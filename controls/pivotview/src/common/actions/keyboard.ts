@@ -167,6 +167,12 @@ export class CommonKeyboardInteraction {
                     return;
                 }
             }
+        } else if (target && target.id === this.parent.parentID + '_inputbox') {
+            if (e.action === 'upArrow') {
+                (target.parentElement.querySelector('.e-spin-up') as HTMLElement).click();
+            } else if (e.action === 'downArrow') {
+                (target.parentElement.querySelector('.e-spin-down') as HTMLElement).click();
+            }
         }
     }
     private processDelete(e: Event): void {

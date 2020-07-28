@@ -88,15 +88,17 @@ var Clipboard = /** @class */ (function () {
     Clipboard.prototype.parentContentData = function (currentRecords, selectedIndex, rows, withHeader, index) {
         var getCopyData = 'getCopyData';
         var copyContent = 'copyContent';
-        var parentItem = 'parentRecord';
         var uniqueID = 'uniqueID';
+        var parentUniqueID = 'parentUniqueID';
         var level = 'level';
-        if (!sf.base.isNullOrUndefined(currentRecords[selectedIndex][parentItem])) {
-            var treeLevel = currentRecords[selectedIndex][parentItem][level];
+        var parentItem = currentRecords.filter(function (a) {
+            return (a[uniqueID] === currentRecords[selectedIndex][parentUniqueID]);
+        })[0];
+        if (!sf.base.isNullOrUndefined(parentItem)) {
+            var treeLevel = parentItem[level];
             for (var i = 0; i < treeLevel + 1; i++) {
                 for (var j = 0; j < currentRecords.length; j++) {
-                    if (!sf.base.isNullOrUndefined(currentRecords[selectedIndex][parentItem]) &&
-                        currentRecords[j][uniqueID] === currentRecords[selectedIndex][parentItem][uniqueID]) {
+                    if (currentRecords[j][uniqueID] === parentItem[uniqueID]) {
                         selectedIndex = j;
                         var cells = [].slice.call(rows[selectedIndex].querySelectorAll('.e-rowcell'));
                         var uniqueid = currentRecords[j][uniqueID];

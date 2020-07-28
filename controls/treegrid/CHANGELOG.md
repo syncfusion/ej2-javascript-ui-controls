@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.2.47 (2020-07-28)
+
+### TreeGrid
+
+#### Bug Fixes
+
+- `#285434`- Column SortComparer function works fine with null values in datasource.
+
 ## 18.2.45 (2020-07-14)
 
 ### TreeGrid

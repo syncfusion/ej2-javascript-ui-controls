@@ -174,7 +174,8 @@ export class DrillThrough {
             rowHeaders: pivotValue.rowHeaders === '' ? '' : pivotValue.rowHeaders.toString().split('.').join(' - '),
             columnHeaders: pivotValue.columnHeaders === '' ? '' : pivotValue.columnHeaders.toString().split('.').join(' - '),
             value: valuetText + '(' + pivotValue.formattedText + ')',
-            gridColumns: this.drillThroughDialog.frameGridColumns(rawData)
+            gridColumns: this.drillThroughDialog.frameGridColumns(rawData),
+            cancel: false
         };
         if (this.parent.dataSourceSettings.type === 'CSV') {
             eventArgs = this.frameData(eventArgs);
@@ -196,7 +197,9 @@ export class DrillThrough {
                 }
                 observedArgs.gridColumns = gridColumns;
             }
-            drillThrough.drillThroughDialog.showDrillThroughDialog(observedArgs);
+            if (!eventArgs.cancel) {
+                drillThrough.drillThroughDialog.showDrillThroughDialog(observedArgs);
+            }
         });
     }
 }

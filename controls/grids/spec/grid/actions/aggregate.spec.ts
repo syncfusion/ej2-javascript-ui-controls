@@ -1568,4 +1568,32 @@ describe('Aggregates Functionality testing', () => {
         });
     });
 
+    describe('EJ2-41305 - Footer cell was not aligned properly when the height value was not in number format', () => {
+        let grid: Grid;
+        beforeAll((done: Function) => {
+            grid = createGrid(
+                {
+                    dataSource: data,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                    ],
+                    height:'300px',
+                    aggregates: [{
+                        columns: [{
+                                type: 'Sum',
+                                field: 'OrderID',
+                                footerTemplate: '${Sum}'
+                            }]
+                    }]
+                },done);
+        });
+        it('check footercontent padding', () => {
+            expect(grid.getFooterContent().classList.contains('e-footerpadding')).toBeTruthy();
+        });
+        afterAll(() => {
+            destroy(grid);
+            grid = null;
+        });
+    });
+
 });

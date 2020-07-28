@@ -154,6 +154,9 @@ export class MarkerExplode extends ChartData {
         let marker: MarkerSettingsModel = point.marker;
         let seriesMarker: MarkerSettingsModel = series.marker;
         let shape: ChartShape = marker.shape || seriesMarker.shape;
+        if (shape === 'None') {
+            return null;
+        }
         let element: Element = series.symbolElement || series.seriesElement;
         let className: string;
         if (this.chart.highlightModule && this.chart.highlightMode !== 'None') {

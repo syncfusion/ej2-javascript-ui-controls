@@ -1077,12 +1077,13 @@ class XmlHttpRequestHandler {
             };
             proxyReq.successHandler(result);
         }
-        else if (proxyReq.xmlHttpRequest.readyState === 4 && proxyReq.xmlHttpRequest.status === 400) { // jshint ignore:line)
+        else if (proxyReq.xmlHttpRequest.readyState === 4 && !(proxyReq.xmlHttpRequest.status === 200)) { // jshint ignore:line)
             // tslint:disable-next-line
             let result = {
                 name: 'onFailure',
                 status: proxyReq.xmlHttpRequest.status,
-                statusText: proxyReq.xmlHttpRequest.statusText
+                statusText: proxyReq.xmlHttpRequest.statusText,
+                url: proxyReq.url
             };
             proxyReq.failureHandler(result);
         }
@@ -6041,6 +6042,7 @@ class Layout {
             }
             else {
                 this.shiftChildLocationForTableWidget(childWidget, shiftTop);
+                childTop += childWidget.height;
             }
         }
     }
@@ -16065,7 +16067,13 @@ class DocumentHelper {
                         let xPosition = touchPoint.x;
                         let yPosition = touchPoint.y;
                         if (!this.owner.isReadOnlyMode && this.isRowOrCellResizing) {
-                            this.owner.editorModule.tableResize.handleResizing(touchPoint);
+                            let table = this.owner.editorModule.tableResize.currentResizingTable;
+                            let startPosition = this.selection.setPositionForBlock(table, true);
+                            let endPosition = this.selection.setPositionForBlock(table, false);
+                            // tslint:disable-next-line:max-line-length
+                            if (!(this.owner.documentHelper.isDocumentProtected) || this.selection.checkSelectionIsAtEditRegion(startPosition, endPosition)) {
+                                this.owner.editorModule.tableResize.handleResizing(touchPoint);
+                            }
                         }
                         else {
                             if (!(this.isTouchInput || this.isSelectionChangedOnMouseMoved || this.touchDownOnSelectionMark > 0)) {
@@ -43585,17 +43593,19 @@ class Selection {
         }
         return this.checkSelectionIsAtEditRegion();
     }
-    checkSelectionIsAtEditRegion() {
+    checkSelectionIsAtEditRegion(start, end) {
         for (let i = 0; i < this.editRangeCollection.length; i++) {
             let editRangeStart = this.editRangeCollection[i];
             let positionInfo = this.getPosition(editRangeStart);
             let startPosition = positionInfo.startPosition;
             let endPosition = positionInfo.endPosition;
-            let start = this.start;
-            let end = this.end;
-            if (!this.isForward) {
-                start = this.end;
-                end = this.start;
+            if (isNullOrUndefined(start) && isNullOrUndefined(end)) {
+                start = this.start;
+                end = this.end;
+                if (!this.isForward) {
+                    start = this.end;
+                    end = this.start;
+                }
             }
             if ((start.isExistAfter(startPosition) || start.isAtSamePosition(startPosition))
                 && (end.isExistBefore(endPosition) || end.isAtSamePosition(endPosition))) {
@@ -47716,6 +47726,7 @@ class Editor {
             DialogUtility.alert(localeValue.getConstant('Error in establishing connection with web server'));
         }
         else {
+            this.owner.fireServiceFailure(result);
             console.error(result.statusText);
         }
     }
@@ -50671,6 +50682,7 @@ class Editor {
         setTimeout(() => { this.viewer.updateScrollBars(); }, 0);
     }
     onPasteFailure(result) {
+        this.owner.fireServiceFailure(result);
         console.error(result.status, result.statusText);
         hideSpinner(this.owner.element);
         this.documentHelper.updateFocus();
@@ -56163,7 +56175,7 @@ class Editor {
                 //Checks whether this is last paragraph of owner text body and previousBlock is not paragraph.
                 if (this.owner.enableTrackChanges && !this.skipTracking() && this.editorHistory.currentBaseHistoryInfo && this.editorHistory.currentBaseHistoryInfo.action !== 'TOC') {
                     this.insertRevisionForBlock(paragraph, 'Deletion');
-                    if (paragraph.isEmpty()) {
+                    if (paragraph.isEmpty() && !(end.paragraph.previousRenderedWidget instanceof TableWidget)) {
                         newParagraph = this.checkAndInsertBlock(paragraph, start, end, editAction, prevParagraph);
                         this.removeBlock(paragraph);
                     }
@@ -56336,6 +56348,12 @@ class Editor {
         }
         else {
             containerWidget = block.containerWidget;
+            for (let i = 0; i < block.childWidgets.length; i++) {
+                if (block.childWidgets[i] instanceof TableRowWidget && !this.skipTracking()) {
+                    let tableDelete = block.childWidgets[i];
+                    this.removeDeletedCellRevision(tableDelete);
+                }
+            }
             index = containerWidget.childWidgets.indexOf(block);
             blockCollection = containerWidget.childWidgets;
             this.updateNextBlocksIndex(block, false);
@@ -56516,12 +56534,15 @@ class Editor {
         }
     }
     // tslint:disable-next-line:max-line-length
-    deleteCellsInTable(table, selection, start, end, editAction) {
+    deleteCellsInTable(table, selection, start, end, editAction, endCells) {
         let clonedTable = undefined;
         let action = 'Delete';
         let isDeleteCells = false;
         let startCell = start.paragraph.associatedCell;
         let endCell = end.paragraph.associatedCell;
+        if (!isNullOrUndefined(endCells)) {
+            endCell = endCells;
+        }
         if (this.editorHistory && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)) {
             action = this.editorHistory.currentBaseHistoryInfo.action;
             //tslint:disable-next-line:max-line-length
@@ -56892,9 +56913,18 @@ class Editor {
                 this.deleteContent(table, selection, editAction);
             }
             else {
-                let newTable = this.splitTable(table, start.paragraph.associatedCell.ownerRow);
-                this.deleteContent(table, selection, editAction);
-                this.documentHelper.layout.layoutBodyWidgetCollection(newTable.index, newTable.containerWidget, newTable, false);
+                if (this.owner.enableTrackChanges) {
+                    if (isNullOrUndefined(end.paragraph.associatedCell) && !end.paragraph.isInsideTable) {
+                        let previousChild = end.paragraph.previousRenderedWidget.lastChild;
+                        let endCells = previousChild.lastChild;
+                        this.deleteCellsInTable(table, selection, start, end, editAction, endCells);
+                    }
+                }
+                else {
+                    let newTable = this.splitTable(table, start.paragraph.associatedCell.ownerRow);
+                    this.deleteContent(table, selection, editAction);
+                    this.documentHelper.layout.layoutBodyWidgetCollection(newTable.index, newTable.containerWidget, newTable, false);
+                }
             }
             if (!isNullOrUndefined(previousBlock)) {
                 selection.editPosition = this.selection.getHierarchicalIndex(previousBlock, '0');
@@ -82824,6 +82854,7 @@ class SpellChecker {
     /* tslint:disable:no-any */
     // tslint:disable-next-line:max-line-length
     CallSpellChecker(languageID, word, checkSpelling, checkSuggestion, addWord, isByPage) {
+        let spellchecker = this;
         return new Promise((resolve, reject) => {
             if (!isNullOrUndefined(this)) {
                 let httpRequest = new XMLHttpRequest();
@@ -82843,6 +82874,13 @@ class SpellChecker {
                             resolve(httpRequest.response);
                         }
                         else {
+                            let result = {
+                                name: 'onFailure',
+                                status: httpRequest.status,
+                                statusText: httpRequest.responseText,
+                                url: service
+                            };
+                            spellchecker.documentHelper.owner.fireServiceFailure(result);
                             reject(httpRequest.response);
                         }
                     }
@@ -85084,6 +85122,12 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
     /**
      * @private
      */
+    fireServiceFailure(eventArgs) {
+        this.trigger('serviceFailure', eventArgs);
+    }
+    /**
+     * @private
+     */
     fireViewChange() {
         if (this.viewer && this.documentHelper.pages.length > 0) {
             if (this.viewer.visiblePages.length > 0) {
@@ -86804,6 +86848,7 @@ class Toolbar$1 {
         }
         else {
             alert('Failed to load the file');
+            this.documentEditor.fireServiceFailure(args);
         }
         hideSpinner(this.container.containerTarget);
     }

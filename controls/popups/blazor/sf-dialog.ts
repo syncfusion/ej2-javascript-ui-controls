@@ -625,29 +625,35 @@ let Dialog: object = {
         }
     },
     getClassList(element: BlazorDialogElement): string {
-        return element.classList.toString();
+        return element && element.classList.toString();
     },
     getMaxHeight(element: BlazorDialogElement): string {
-        if (element) {
-            return element.blazor__instance.getMaxHeight(element);
-        } else {
-            return null;
-        }
+        return element ? element.blazor__instance.getMaxHeight(element) : null;
     },
     changePosition(dlgObj: { [key: string]: Object }): void {
-        (dlgObj.element as BlazorDialogElement).blazor__instance.changePosition(dlgObj);
+        if (!isNOU(dlgObj.element)) {
+            (dlgObj.element as BlazorDialogElement).blazor__instance.changePosition(dlgObj);
+        }
     },
     focusContent(element: BlazorDialogElement): void {
-        element.blazor__instance.focusContent(element);
+        if (!isNOU(element)) {
+            element.blazor__instance.focusContent(element);
+        }
     },
     refreshPosition(element: BlazorDialogElement): void {
-        element.blazor__instance.refreshPosition();
+        if (!isNOU(element)) {
+            element.blazor__instance.refreshPosition();
+        }
     },
     popupCloseHandler(element: BlazorDialogElement): void {
-        element.blazor__instance.popupCloseHandler();
+        if (!isNOU(element)) {
+            element.blazor__instance.popupCloseHandler();
+        }
     },
     propertyChanged(dlgObj: { [key: string]: Object }, changedProps: string[]): void {
-        (dlgObj.element as BlazorDialogElement).blazor__instance.OnPropertyChanged(dlgObj, changedProps);
+        if (!isNOU(dlgObj.element)) {
+            (dlgObj.element as BlazorDialogElement).blazor__instance.OnPropertyChanged(dlgObj, changedProps);
+        }
     },
     show(isFullScreen: boolean, maxHeight: string, dlgObj: { [key: string]: Object }): void {
         if (dlgObj.element) {
@@ -655,7 +661,9 @@ let Dialog: object = {
         }
     },
     hide(element: BlazorDialogElement): void {
-        element.blazor__instance.hide();
+        if (!isNOU(element)) {
+            element.blazor__instance.hide();
+        }
     },
     destroy(dlgObj: { [key: string]: Object }): void {
         if (!isNOU(dlgObj.element)) {

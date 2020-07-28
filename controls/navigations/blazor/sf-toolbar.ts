@@ -95,7 +95,9 @@ class SfToolbar {
     public options: IToolbarOptions;
     constructor(element: BlazorToolbarElement, options: IToolbarOptions, dotnetRef: BlazorDotnetObject) {
         this.element = element;
-        this.element.blazor__instance = this;
+        if (!isNOU(element)) {
+            this.element.blazor__instance = this;
+        }
         this.dotNetRef = dotnetRef;
         this.options = options;
     }
@@ -1320,17 +1322,17 @@ let Toolbar: object = {
         instance.dotNetRef.invokeMethodAsync("CreatedEvent", null);
     },
     hidePopup(element: BlazorToolbarElement): void {
-        if (element && element.blazor__instance && !isNOU(element.blazor__instance.popObj)) {
+        if (!isNOU(element) && !isNOU(element.blazor__instance) && !isNOU(element.blazor__instance.popObj)) {
             element.blazor__instance.popObj.hide({ name: 'FadeOut', duration: 100 });
         }
     },
     setCssClass(element: BlazorToolbarElement, cssClass: string): void {
-        if (element.blazor__instance) {
+        if (!isNOU(element) && !isNOU(element.blazor__instance)) {
             element.blazor__instance.setCssClass(cssClass);
         }
     },
     setWidth(element: BlazorToolbarElement, width: string): void {
-        if (element.blazor__instance) {
+        if (!isNOU(element) && !isNOU(element.blazor__instance)) {
             element.blazor__instance.options.width = width;
             element.blazor__instance.extendedOpen();
             let wid: number = element.offsetWidth;
@@ -1342,14 +1344,14 @@ let Toolbar: object = {
         }
     },
     setHeight(element: BlazorToolbarElement, height: string): void {
-        if (element.blazor__instance) {
+        if (!isNOU(element) && !isNOU(element.blazor__instance)) {
             element.blazor__instance.options.height = height;
             element.blazor__instance.extendedOpen();
             setStyle(element, { 'height': formatUnit(height) });
         }
     },
     setOverflowMode(element: BlazorToolbarElement, overflowMode: OverflowMode) {
-        if (element.blazor__instance) {
+        if (!isNOU(element) && !isNOU(element.blazor__instance)) {
             element.blazor__instance.options.overflowMode = overflowMode;
             element.blazor__instance.extendedOpen();
             element.blazor__instance.destroyMode();
@@ -1361,7 +1363,7 @@ let Toolbar: object = {
         }
     },
     setEnableRTL(element: BlazorToolbarElement, enableRtl: boolean): void {
-        if (element.blazor__instance) {
+        if (!isNOU(element) && !isNOU(element.blazor__instance)) {
             element.blazor__instance.options.enableRtl = enableRtl;
             element.blazor__instance.extendedOpen();
             enableRtl ? addClass([element], CLS_RTL) : removeClass([element], CLS_RTL);
@@ -1375,7 +1377,7 @@ let Toolbar: object = {
         }
     },
     setScrollStep(element: BlazorToolbarElement, scrollStep: number): void {
-        if (element.blazor__instance) {
+        if (!isNOU(element) && !isNOU(element.blazor__instance)) {
             element.blazor__instance.options.scrollStep = scrollStep;
             element.blazor__instance.extendedOpen();
             if (element.blazor__instance.scrollModule) {
@@ -1384,7 +1386,7 @@ let Toolbar: object = {
         }
     },
     setEnableCollision(element: BlazorToolbarElement, enableCollision: boolean): void {
-        if (element.blazor__instance) {
+        if (!isNOU(element) && !isNOU(element.blazor__instance)) {
             element.blazor__instance.options.enableCollision = enableCollision;
             element.blazor__instance.extendedOpen();
             if (element.blazor__instance.popObj) {
@@ -1393,7 +1395,7 @@ let Toolbar: object = {
         }
     },
     setAllowKeyboard(element: BlazorToolbarElement, allowKeyboard: boolean): void {
-        if (element.blazor__instance) {
+        if (!isNOU(element) && !isNOU(element.blazor__instance)) {
             element.blazor__instance.options.allowKeyboard = allowKeyboard;
             element.blazor__instance.extendedOpen();
             element.blazor__instance.unwireKeyboardEvent();
@@ -1403,7 +1405,7 @@ let Toolbar: object = {
         }
     },
     serverItemsRerender(element: BlazorToolbarElement, items: ItemModel[]): void {
-        if (!isNOU(element) && element.blazor__instance) {
+        if (!isNOU(element) && !isNOU(element.blazor__instance)) {
             element.blazor__instance.options.items = items;
             element.blazor__instance.destroyMode();
             element.blazor__instance.resetServerItems();
@@ -1411,23 +1413,23 @@ let Toolbar: object = {
         }
     },
     hideItem(element: BlazorToolbarElement, items: ItemModel[]): void {
-        if (element.blazor__instance) {
+        if (!isNOU(element) && !isNOU(element.blazor__instance)) {
             element.blazor__instance.options.items = items;
             element.blazor__instance.refreshOverflow();
         }
     },
     disable(element: BlazorToolbarElement, value: boolean): void {
-        if (element.blazor__instance) {
+        if (!isNOU(element) && !isNOU(element.blazor__instance)) {
             element.blazor__instance.disable(value);
         }
     },
     refreshOverflow(element: BlazorToolbarElement): void {
-        if (element.blazor__instance) {
+        if (!isNOU(element) && !isNOU(element.blazor__instance)) {
             element.blazor__instance.refreshOverflow();
         }
     },
     destroy(element: BlazorToolbarElement): void {
-        if (element.blazor__instance) {
+        if (!isNOU(element) && !isNOU(element.blazor__instance)) {
             element.blazor__instance.destroy();
         }
     },
@@ -1435,7 +1437,7 @@ let Toolbar: object = {
         if (options.scrollStep === 0) {
             options.scrollStep = null;
         }
-        if (element.blazor__instance) {
+        if (!isNOU(element) && !isNOU(element.blazor__instance)) {
             element.blazor__instance.options = options;
             element.blazor__instance.destroyMode();
             element.blazor__instance.resetServerItems();

@@ -412,7 +412,9 @@ export class CheckBoxSelection {
         if (this.parent.getLocaleName() !== 'listbox') {
         let target: HTMLElement = <HTMLElement>e.target;
         if (!isNullOrUndefined(this.parent.popupObj) && closest(target, '#' + this.parent.popupObj.element.id)) {
-            e.preventDefault();
+            if (!(this.filterInput && this.filterInput.value !== '')) {
+                e.preventDefault();
+            }
         }
         if (!(!isNullOrUndefined(this.parent.popupObj) && closest(target, '#' + this.parent.popupObj.element.id)) &&
             !this.parent.overAllWrapper.contains(e.target as Node)) {

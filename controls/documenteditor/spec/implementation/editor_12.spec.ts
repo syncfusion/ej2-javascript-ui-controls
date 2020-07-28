@@ -1,5 +1,5 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
-import { TableOfContentsSettings, ParagraphWidget, SfdtExport } from '../../src/document-editor/index';
+import { TableOfContentsSettings, ParagraphWidget, SfdtExport, Widget } from '../../src/document-editor/index';
 import { createElement } from '@syncfusion/ej2-base';
 import { Editor, TableCellWidget, TextElementBox, TextHelper, RtlInfo, ListTextElementBox, LineWidget, TabElementBox, TextPosition } from '../../src/index';
 import { TestHelper } from '../test-helper.spec';
@@ -1604,5 +1604,12 @@ describe('apply list to rtl paragraph with history validation', () => {
         editor.editorHistory.redo();
         expect(editor.selection.paragraphFormat.listLevelNumber).toBe(1);
 
+    });
+    it('Footer widgets y position validation', () => {
+        editor.openBlank();
+        editor.selection.goToFooter();
+        editor.editor.insertTable(2,2);
+        editor.editor.insertText('Check');
+        expect((editor.documentHelper.pages[0].footerWidget.childWidgets[0] as Widget).y).toBeLessThan((editor.documentHelper.pages[0].footerWidget.childWidgets[1] as Widget).y);
     });
 });

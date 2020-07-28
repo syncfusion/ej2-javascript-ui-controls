@@ -760,6 +760,9 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
                     if (this.type === 'Circular') {
                         this.circular.renderCircularProgress(
                             this.previousEndAngle, this.previousTotalEnd, !isNullOrUndefined(oldProp.value));
+                        if (this.showProgressValue) {
+                            this.circular.renderCircularLabel();
+                        }
                         if (this.progressAnnotationModule && this.animation.enable && !this.isIndeterminate) {
                             this.annotateAnimation.doAnnotationAnimation(this.clipPath, this, this.annotateEnd, this.annotateTotal);
                         }

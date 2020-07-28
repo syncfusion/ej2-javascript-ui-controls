@@ -1,6 +1,6 @@
 import { EventHandler, remove, Browser, isBlazor, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { Query, DataManager, Predicate } from '@syncfusion/ej2-data';
+import { Query, DataManager, Predicate, Deferred } from '@syncfusion/ej2-data';
 import { Dialog, Popup } from '@syncfusion/ej2-popups';
 import { DropDownList, AutoComplete, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
@@ -9,13 +9,13 @@ import { distinctStringValues, isComplexField, getComplexFieldID, getCustomDateF
 import { Column } from '../models/column';
 import { DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
 import { OffsetPosition } from '@syncfusion/ej2-popups';
-import { parentsUntil, appendChildren, extend } from '../base/util';
+import { parentsUntil, appendChildren, extend, eventPromise } from '../base/util';
 import { IFilterArgs, EJ2Intance, FilterUI } from '../base/interface';
 import * as events from '../base/constant';
 import { ContextMenu, MenuItemModel, ContextMenuModel, MenuEventArgs, BeforeOpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
 import { PredicateModel } from '../base/grid-model';
 import { CheckBoxFilterBase } from '../common/checkbox-filter-base';
-import { IXLFilter } from '../common/filter-interface';
+import { IXLFilter, FilterStateObj } from '../common/filter-interface';
 
 /**
  * @hidden
@@ -833,6 +833,14 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 value: fValue as string
             },
             colObj.filter.params));
+        if (dataSource && 'result' in dataSource) {
+            let defObj: FilterStateObj = eventPromise({ requestType: 'stringfilterrequest' }, this.getQuery());
+            this.parent.trigger(events.dataStateChange, defObj.state);
+            let def: Deferred = defObj.deffered;
+            def.promise.then((e: Object[]) => {
+                actObj.dataSource = new DataManager(e);
+            });
+        }
         actObj.appendTo(inputValue);
         this.actObj = actObj;
     }

@@ -238,8 +238,8 @@ export class Internationalization {
      * @returns {string}
      * @private
      */
-    public getNumberPattern(option: NumberFormatOptions): string {
-        return IntlBase.getActualNumberFormat(this.getCulture(), option, cldrData);
+    public getNumberPattern(option: NumberFormatOptions, isExcel?: Boolean): string {
+        return IntlBase.getActualNumberFormat(this.getCulture(), option, cldrData, isExcel);
     }
     /**
      * Returns the First Day of the Week

@@ -1017,7 +1017,12 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 this.annotationsModule.renderAnnotationElements();
             }
         }
-
+        this.element.style.outline = 'none';
+        for (let i: number = 0; i < document.getElementsByTagName('path').length - 1; i++) {
+            if (document.getElementsByTagName('path')[i].id.indexOf('shapeIndex') > -1) {
+                document.getElementsByTagName('path')[i].style.outline = 'none';
+            }
+        }
         this.zoomingChange();
         this.trigger(loaded, this.isBlazor ? { isResized: this.isResize } : { maps: this, isResized: this.isResize });
         this.isResize = false;

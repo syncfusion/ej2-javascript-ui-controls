@@ -2404,8 +2404,8 @@ function getOptions(parent, text, e, details, replaceItems) {
                 options.header = getLocaleText(parent, 'Header-Multiple-Delete');
             }
             else {
-                options.content = '<div>' + getLocaleText(parent, 'Content-Delete') + '</div>';
-                options.header = getLocaleText(parent, 'Header-Delete');
+                options.content = '<div>' + getLocaleText(parent, parent.isFile ? 'Content-Delete' : 'Content-Folder-Delete') + '</div>';
+                options.header = getLocaleText(parent, parent.isFile ? 'Header-Delete' : 'Header-Folder-Delete');
             }
             options.buttons = [
                 {
@@ -5201,8 +5201,10 @@ let defaultLocale = {
         'Are you sure you want to change it?',
     'Header-Delete': 'Delete File',
     'Content-Delete': 'Are you sure you want to delete this file?',
-    'Header-Multiple-Delete': 'Delete Multiple Files',
-    'Content-Multiple-Delete': 'Are you sure you want to delete these {0} files?',
+    'Header-Folder-Delete': 'Delete Folder',
+    'Content-Folder-Delete': 'Are you sure you want to delete this folder?',
+    'Header-Multiple-Delete': 'Delete Multiple Items',
+    'Content-Multiple-Delete': 'Are you sure you want to delete these {0} items?',
     'Header-Duplicate': 'File/Folder exists',
     'Content-Duplicate': '{0} already exists. Do you want to rename and paste?',
     'Header-Upload': 'Upload Files',
@@ -6553,9 +6555,12 @@ class Toolbar$1 {
                 { id: this.getPupupId('size'), text: getLocaleText(this.parent, 'Size') },
                 { id: this.getPupupId('date'), text: getLocaleText(this.parent, 'DateModified') },
                 { separator: true },
-                { id: this.getPupupId('ascending'), text: getLocaleText(this.parent, 'Ascending'), iconCss: TB_OPTION_TICK },
-                { id: this.getPupupId('descending'), text: getLocaleText(this.parent, 'Descending'), },
-                { id: this.getPupupId('none'), text: getLocaleText(this.parent, 'None'), }
+                { id: this.getPupupId('ascending'), text: getLocaleText(this.parent, 'Ascending'),
+                    iconCss: this.parent.sortOrder === 'Ascending' ? TB_OPTION_TICK : '' },
+                { id: this.getPupupId('descending'), text: getLocaleText(this.parent, 'Descending'),
+                    iconCss: this.parent.sortOrder === 'Descending' ? TB_OPTION_TICK : '' },
+                { id: this.getPupupId('none'), text: getLocaleText(this.parent, 'None'),
+                    iconCss: this.parent.sortOrder === 'None' ? TB_OPTION_TICK : '' }
             ];
             this.buttonObj = new DropDownButton({
                 items: items, cssClass: getCssClass(this.parent, ROOT_POPUP),

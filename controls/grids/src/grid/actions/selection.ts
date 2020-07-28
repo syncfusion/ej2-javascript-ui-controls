@@ -1952,7 +1952,7 @@ export class Selection implements IAction {
         } else {
             this.mUPTarget = null;
         }
-        if (this.isDragged && !this.isAutoFillSel) {
+        if (this.isDragged && !this.isAutoFillSel && this.selectionSettings.mode === 'Cell' ) {
             let target: Element = e.target as Element;
             let rowIndex: number = parseInt(target.parentElement.getAttribute('aria-rowindex'), 10);
             let cellIndex: number =  parseInt(target.getAttribute('aria-colindex'), 10);

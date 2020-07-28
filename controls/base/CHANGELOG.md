@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.2.47 (2020-07-28)
+
+### Common
+
+#### Bug Fixes
+
+- `F154691` - Resolved the issue wrong separator for group and decimal in number format.
+
 ## 17.4.51 (2020-02-25)
 
 ### Common

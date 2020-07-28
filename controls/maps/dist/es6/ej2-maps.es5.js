@@ -6364,6 +6364,12 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
                 this.annotationsModule.renderAnnotationElements();
             }
         }
+        this.element.style.outline = 'none';
+        for (var i = 0; i < document.getElementsByTagName('path').length - 1; i++) {
+            if (document.getElementsByTagName('path')[i].id.indexOf('shapeIndex') > -1) {
+                document.getElementsByTagName('path')[i].style.outline = 'none';
+            }
+        }
         this.zoomingChange();
         this.trigger(loaded, this.isBlazor ? { isResized: this.isResize } : { maps: this, isResized: this.isResize });
         this.isResize = false;
@@ -11317,6 +11323,7 @@ var MapsTooltip = /** @__PURE__ @class */ (function () {
         else {
             this.maps.on(Browser.touchMoveEvent, this.renderTooltip, this);
         }
+        this.maps.element.addEventListener('contextmenu', this.removeTooltip);
         this.maps.on(Browser.touchCancelEvent, this.removeTooltip, this);
     };
     MapsTooltip.prototype.removeEventListener = function () {

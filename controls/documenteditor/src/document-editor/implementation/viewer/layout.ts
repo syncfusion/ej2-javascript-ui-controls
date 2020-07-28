@@ -362,6 +362,7 @@ export class Layout {
                 childTop += childWidget.height;
             } else {
                 this.shiftChildLocationForTableWidget(childWidget as TableWidget, shiftTop);
+                childTop += (childWidget as Widget).height;
             }
         }
     }

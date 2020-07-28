@@ -803,7 +803,6 @@ export class BatchEdit {
         this.isAdd = isAdd;
         let checkEdit: boolean  = gObj.isEdit && !(this.cellDetails.column.field === field
             && (this.cellDetails.rowIndex === index && this.parent.getDataRows().length - 1 !== index));
-        this.parent.element.classList.add('e-editing');
         if (isBlazor() && col.template && !isAdd) {
             resetBlazorTemplate(this.parent.element.id + col.uid, 'Template', index);
         }
@@ -843,6 +842,7 @@ export class BatchEdit {
             return;
         }
         this.parent.isLastCellPrimaryKey = false;
+        this.parent.element.classList.add('e-editing');
         let rowObj: Row<Column> = gObj.getRowObjectFromUID(row.getAttribute('data-uid'));
         let cells: Element[] = [].slice.apply((row as HTMLTableRowElement).cells);
         let args: CellEditArgs = {

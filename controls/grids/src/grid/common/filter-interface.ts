@@ -2,7 +2,8 @@
  * Defines the excel filter interface.
  */
 import { Component } from '@syncfusion/ej2-base';
-import { DataManager } from '@syncfusion/ej2-data';
+import { DataManager, Deferred } from '@syncfusion/ej2-data';
+import { DataStateChangeEventArgs } from '../base/interface';
 
 /** @hidden */
 export interface XLColumn {
@@ -33,3 +34,8 @@ export interface IXLFilter extends Component<HTMLElement> {
     getForeignKeyColumns?: Function;
 }
 
+/** @hidden */
+export interface FilterStateObj {
+    state: DataStateChangeEventArgs;
+    deffered: Deferred;
+}

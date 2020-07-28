@@ -348,6 +348,7 @@ export class MapsTooltip {
         } else {
             this.maps.on(Browser.touchMoveEvent, this.renderTooltip, this);
         }
+        this.maps.element.addEventListener('contextmenu', this.removeTooltip);
         this.maps.on(Browser.touchCancelEvent, this.removeTooltip, this);
     }
     public removeEventListener(): void {

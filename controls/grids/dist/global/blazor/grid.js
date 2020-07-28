@@ -769,6 +769,12 @@ var closeFilterDialog = 'close-filter-dialog';
 var columnChooserCancelBtnClick = 'columnChooserCancelBtnClick';
 /** @hidden */
 var getFilterBarOperator = 'get-filterbar-operator';
+/** @hidden */
+var resetColumns = 'reset-columns';
+/** @hidden */
+var pdfAggregateQueryCellInfo = 'pdfAggregateQueryCellInfo';
+/** @hidden */
+var excelAggregateQueryCellInfo = 'excelAggregateQueryCellInfo';
 
 /**
  * Defines types of Cell
@@ -845,6 +851,18 @@ var getFilterBarOperator = 'get-filterbar-operator';
     ToolbarItem[ToolbarItem["CsvExport"] = 10] = "CsvExport";
     ToolbarItem[ToolbarItem["WordExport"] = 11] = "WordExport";
 })(exports.ToolbarItem || (exports.ToolbarItem = {}));
+/**
+ * Defines the Aggregate Template Type
+ * * groupCaptionTemplate
+ * * groupFooterTemplate
+ * * footerTemplate
+ */
+
+(function (AggregateTemplateType) {
+    AggregateTemplateType["GroupCaption"] = "GroupCaption";
+    AggregateTemplateType["GroupFooter"] = "GroupFooter";
+    AggregateTemplateType["Footer"] = "Footer";
+})(exports.AggregateTemplateType || (exports.AggregateTemplateType = {}));
 
 /**
  * Grid data module is used to generate query and data source.
@@ -1389,7 +1407,7 @@ var Data = /** @class */ (function () {
                 })
                     .catch(function () { return void 0; });
             }
-            else if (args.requestType !== 'reorder') {
+            else {
                 this.setState({ isPending: true, resolver: def.resolve, group: state.group, aggregates: state.aggregates });
                 this.parent.trigger(dataStateChange, state);
             }
@@ -5034,6 +5052,9 @@ var Render = /** @class */ (function () {
                     _this.parent.allowServerDataBinding = false;
                 }
             }
+            else if (args.requestType === 'reorder' && _this.parent.dataSource && 'result' in _this.parent.dataSource) {
+                _this.contentRenderer.refreshContentRows(args);
+            }
             else {
                 _this.refreshDataManager(args);
             }
@@ -5969,7 +5990,9 @@ var FocusStrategy = /** @class */ (function () {
             return;
         }
         this.setActive(!this.parent.enableHeaderFocus && this.parent.frozenRows === 0, this.parent.frozenColumns !== 0);
-        if (!this.parent.enableHeaderFocus && !this.parent.getCurrentViewRecords().length) {
+        var added = 'addedRecords';
+        if (!this.parent.enableHeaderFocus && !this.parent.getCurrentViewRecords().length && ((this.parent.editSettings.mode !== 'Batch')
+            || (this.parent.editSettings.mode === 'Batch' && !this.parent.editModule.getBatchChanges()[added].length))) {
             this.getContent().matrix.
                 generate(this.rowModelGen.generateRows({ rows: [new Row({ isDataRow: true })] }), this.getContent().selector, false);
         }
@@ -8907,7 +8930,7 @@ var Selection = /** @class */ (function () {
         else {
             this.mUPTarget = null;
         }
-        if (this.isDragged && !this.isAutoFillSel) {
+        if (this.isDragged && !this.isAutoFillSel && this.selectionSettings.mode === 'Cell') {
             var target = e.target;
             var rowIndex = parseInt(target.parentElement.getAttribute('aria-rowindex'), 10);
             var cellIndex = parseInt(target.getAttribute('aria-colindex'), 10);
@@ -10299,9 +10322,7 @@ var ShowHide = /** @class */ (function () {
             var currentViewCols = _this.parent.getColumns();
             columns = sf.base.isNullOrUndefined(columns) ? currentViewCols : columns;
             if (showHideArgs[cancel]) {
-                if (_this.parent.columnChooserModule) {
-                    _this.parent.columnChooserModule.resetColumnState();
-                }
+                _this.parent.notify(resetColumns, { showHideArgs: showHideArgs });
                 if (columns.length > 0) {
                     columns[0].visible = true;
                 }
@@ -15635,6 +15656,12 @@ var Grid = /** @class */ (function (_super) {
     ], Grid.prototype, "pdfHeaderQueryCellInfo", void 0);
     __decorate$1([
         sf.base.Event()
+    ], Grid.prototype, "pdfAggregateQueryCellInfo", void 0);
+    __decorate$1([
+        sf.base.Event()
+    ], Grid.prototype, "excelAggregateQueryCellInfo", void 0);
+    __decorate$1([
+        sf.base.Event()
     ], Grid.prototype, "exportDetailDataBound", void 0);
     __decorate$1([
         sf.base.Event()
@@ -16966,6 +16993,23 @@ function getEditedDataIndex(gObj, data) {
     });
     return dataIndex;
 }
+/** @hidden */
+function eventPromise(args, query) {
+    var state;
+    state = this.getStateEventArgument(query);
+    var def = new sf.data.Deferred();
+    state.dataSource = def.resolve;
+    state.action = args;
+    return { state: state, deffered: def };
+}
+/** @hidden */
+function getStateEventArgument(query) {
+    var adaptr = new sf.data.UrlAdaptor();
+    var dm = new sf.data.DataManager({ url: '', adaptor: new sf.data.UrlAdaptor });
+    var state = adaptr.processQuery(dm, query);
+    var data = JSON.parse(state.data);
+    return data;
+}
 
 /* tslint:disable-next-line:max-line-length */
 /**
@@ -17523,29 +17567,13 @@ var CheckBoxFilterBase = /** @class */ (function () {
     };
     CheckBoxFilterBase.prototype.filterEvent = function (args, query) {
         var _this = this;
-        var def = this.eventPromise(args, query);
+        var defObj = eventPromise(args, query);
+        this.parent.trigger(dataStateChange, defObj.state);
+        var def = defObj.deffered;
         def.promise.then(function (e) {
             _this.dataSuccess(e);
         });
     };
-    CheckBoxFilterBase.prototype.eventPromise = function (args, query) {
-        var state;
-        state = this.getStateEventArgument(query);
-        var def = new sf.data.Deferred();
-        state.dataSource = def.resolve;
-        state.action = args;
-        this.parent.trigger(dataStateChange, state);
-        return def;
-    };
-    
-    CheckBoxFilterBase.prototype.getStateEventArgument = function (query) {
-        var adaptr = new sf.data.UrlAdaptor();
-        var dm = new sf.data.DataManager({ url: '', adaptor: new sf.data.UrlAdaptor });
-        var state = adaptr.processQuery(dm, query);
-        var data = JSON.parse(state.data);
-        return data;
-    };
-    
     CheckBoxFilterBase.prototype.processDataOperation = function (query, isInitial) {
         var _this = this;
         this.options.dataSource = this.options.dataSource instanceof sf.data.DataManager ?
@@ -18617,6 +18645,14 @@ var ExcelFilterBase = /** @class */ (function (_super) {
             },
             value: fValue
         }, colObj.filter.params));
+        if (dataSource && 'result' in dataSource) {
+            var defObj = eventPromise({ requestType: 'stringfilterrequest' }, this.getQuery());
+            this.parent.trigger(dataStateChange, defObj.state);
+            var def = defObj.deffered;
+            def.promise.then(function (e) {
+                actObj.dataSource = new sf.data.DataManager(e);
+            });
+        }
         actObj.appendTo(inputValue);
         this.actObj = actObj;
     };
@@ -20720,6 +20756,15 @@ var StringFilterUI = /** @class */ (function () {
                 });
             }
         }, args.column.filter.params));
+        if (dataSource && 'result' in dataSource) {
+            var query = this.parent.getQuery ? this.parent.getQuery().clone() : new sf.data.Query();
+            var defObj = eventPromise({ requestType: 'stringfilterrequest' }, query);
+            this.parent.trigger(dataStateChange, defObj.state);
+            var def = defObj.deffered;
+            def.promise.then(function (e) {
+                autoComplete.dataSource = new sf.data.DataManager(e);
+            });
+        }
         return autoComplete;
     };
     StringFilterUI.prototype.write = function (args) {
@@ -21812,7 +21857,8 @@ var Filter = /** @class */ (function () {
             this.filterModule.closeDialog();
         }
         this.filterModule = new this.type[col.filter.type || this.parent.filterSettings.type](this.parent, gObj.filterSettings, this.serviceLocator, this.customOperators, this);
-        var dataSource = col.filter.dataSource || gObj.getDataModule().dataManager;
+        var dataSource = col.filter.dataSource || gObj.dataSource && 'result' in gObj.dataSource ? gObj.dataSource :
+            gObj.getDataModule().dataManager;
         this.filterModule.openDialog({
             type: col.type, field: col.field, displayName: col.headerText,
             dataSource: dataSource, format: col.format, height: 800, columns: gObj.getColumns(),
@@ -22788,7 +22834,7 @@ var Resize = /** @class */ (function () {
         var width = this.getWidth(colData.width, colData.minWidth, colData.maxWidth);
         this.parent.log('resize_min_max', { column: this.column, width: width });
         if ((!this.parent.enableRtl && this.minMove >= pageX) || (this.parent.enableRtl && this.minMove <= pageX)) {
-            width = this.column.minWidth ? parseFloat(this.column.minWidth.toString()) : 0;
+            width = this.column.minWidth ? parseFloat(this.column.minWidth.toString()) : 10;
             this.pageX = pageX = this.minMove;
         }
         if (width !== parseFloat(sf.base.isNullOrUndefined(this.column.width) || this.column.width === 'auto' ?
@@ -26306,7 +26352,7 @@ var Aggregate = /** @class */ (function () {
         this.footerRenderer.renderPanel();
         this.footerRenderer.renderTable();
         var footerContent = this.footerRenderer.getPanel();
-        if (this.parent.element.scrollHeight > this.parent.height && footerContent) {
+        if (this.parent.element.scrollHeight > this.parent.element.querySelector('.e-content').scrollHeight && footerContent) {
             sf.base.addClass([footerContent], ['e-footerpadding']);
         }
         this.locator.register('footerRenderer', this.footerRenderer);
@@ -30434,7 +30480,6 @@ var BatchEdit = /** @class */ (function () {
         this.isAdd = isAdd;
         var checkEdit = gObj.isEdit && !(this.cellDetails.column.field === field
             && (this.cellDetails.rowIndex === index && this.parent.getDataRows().length - 1 !== index));
-        this.parent.element.classList.add('e-editing');
         if (sf.base.isBlazor() && col.template && !isAdd) {
             sf.base.resetBlazorTemplate(this.parent.element.id + col.uid, 'Template', index);
         }
@@ -30476,6 +30521,7 @@ var BatchEdit = /** @class */ (function () {
             return;
         }
         this.parent.isLastCellPrimaryKey = false;
+        this.parent.element.classList.add('e-editing');
         var rowObj = gObj.getRowObjectFromUID(row.getAttribute('data-uid'));
         var cells = [].slice.apply(row.cells);
         var args = {
@@ -31978,6 +32024,7 @@ var ColumnChooser = /** @class */ (function () {
         this.parent.on(destroy, this.destroy, this);
         this.parent.on(rtlUpdated, this.rtlUpdate, this);
         this.parent.on(keyPressed, this.keyUpHandler, this);
+        this.parent.on(resetColumns, this.onResetColumns, this);
     };
     /**
      * @hidden
@@ -31992,6 +32039,7 @@ var ColumnChooser = /** @class */ (function () {
         this.parent.off(uiUpdate, this.enableAfterRenderEle);
         this.parent.off(rtlUpdated, this.rtlUpdate);
         this.parent.on(keyPressed, this.keyUpHandler, this);
+        this.parent.off(resetColumns, this.onResetColumns);
     };
     ColumnChooser.prototype.render = function () {
         this.l10n = this.serviceLocator.getService('localization');
@@ -32245,6 +32293,14 @@ var ColumnChooser = /** @class */ (function () {
                     emptyRowCell.setAttribute('colSpan', this.parent.getVisibleColumns().length.toString());
                 }
             }
+        }
+    };
+    ColumnChooser.prototype.onResetColumns = function (e) {
+        if (e.requestType === 'columnstate') {
+            this.showColumn = [];
+            this.hideColumn = [];
+            this.hideDialog();
+            return;
         }
     };
     ColumnChooser.prototype.resetColumnState = function () {
@@ -33526,14 +33582,17 @@ var ExcelExport = /** @class */ (function () {
                 if ((cell.visible || this.includeHiddenColumn)) {
                     index++;
                     if (cell.isDataCell) {
+                        var footerTemplate = !sf.base.isNullOrUndefined(cell.column.footerTemplate);
+                        var groupFooterTemplate = !sf.base.isNullOrUndefined(cell.column.groupFooterTemplate);
+                        var groupCaptionTemplate = !sf.base.isNullOrUndefined(cell.column.groupCaptionTemplate);
                         eCell.index = index + indent + gObj.childGridLevel;
-                        if (!sf.base.isNullOrUndefined(cell.column.footerTemplate)) {
+                        if (footerTemplate) {
                             eCell.value = this.getAggreateValue(exports.CellType.Summary, cell.column.footerTemplate, cell, row);
                         }
-                        else if (!sf.base.isNullOrUndefined(cell.column.groupFooterTemplate)) {
+                        else if (groupFooterTemplate) {
                             eCell.value = this.getAggreateValue(exports.CellType.GroupSummary, cell.column.groupFooterTemplate, cell, row);
                         }
-                        else if (!sf.base.isNullOrUndefined(cell.column.groupCaptionTemplate)) {
+                        else if (groupCaptionTemplate) {
                             eCell.value = this.getAggreateValue(exports.CellType.CaptionSummary, cell.column.groupCaptionTemplate, cell, row);
                         }
                         else {
@@ -33573,6 +33632,13 @@ var ExcelExport = /** @class */ (function () {
                         if (gridCellStyle.textAlign) {
                             eCell.style.hAlign = gridCellStyle.textAlign.toLowerCase();
                         }
+                        var args = {
+                            row: row,
+                            type: footerTemplate ? exports.AggregateTemplateType.Footer : groupFooterTemplate ?
+                                exports.AggregateTemplateType.GroupFooter : exports.AggregateTemplateType.GroupCaption,
+                            style: eCell
+                        };
+                        this.parent.trigger(excelAggregateQueryCellInfo, args);
                         cells.push(eCell);
                     }
                     else {
@@ -34262,7 +34328,8 @@ var PdfExport = /** @class */ (function () {
                     index = _this.processRecord(border, gridColumns, gObj, dataSourceItems.items, pdfGrid, (groupIndex + 1), pdfExportProperties, helper, index);
                     var groupSummaryModel = new GroupSummaryModelGenerator(gObj);
                     sRows = groupSummaryModel.generateRows(dataSourceItems.items, dataSourceItems);
-                    _this.processAggregates(sRows, pdfGrid, border, font, brush, backgroundBrush, false);
+                    var isGroupedFooter = true;
+                    _this.processAggregates(sRows, pdfGrid, border, font, brush, backgroundBrush, false, null, null, isGroupedFooter);
                 }
             });
         };
@@ -34521,6 +34588,7 @@ var PdfExport = /** @class */ (function () {
         if (!sf.base.isNullOrUndefined(content.format)) {
             if (content.format.indexOf('$total') !== -1 && content.format.indexOf('$current') !== -1) {
                 var pageCount = new sf.pdfexport.PdfPageCountField(font);
+                pageCount.numberStyle = this.getPageNumberStyle(content.pageNumberType);
                 if (content.format.indexOf('$total') > content.format.indexOf('$current')) {
                     format = content.format.replace('$current', '0');
                     format = format.replace('$total', '1');
@@ -34584,7 +34652,7 @@ var PdfExport = /** @class */ (function () {
         documentHeader.graphics.drawLine(pen, x1, y1, x2, y2);
     };
     /* tslint:disable-next-line:no-any */ /* tslint:disable-next-line:max-line-length */
-    PdfExport.prototype.processAggregates = function (sRows, pdfGrid, border, font, brush, backgroundBrush, isCaption, captionRow, groupIndex) {
+    PdfExport.prototype.processAggregates = function (sRows, pdfGrid, border, font, brush, backgroundBrush, isCaption, captionRow, groupIndex, isGroupedFooter) {
         for (var _i = 0, sRows_1 = sRows; _i < sRows_1.length; _i++) {
             var row = sRows_1[_i];
             var leastCaptionSummaryIndex = -1;
@@ -34606,6 +34674,9 @@ var PdfExport = /** @class */ (function () {
                         }
                         if (!sf.base.isNullOrUndefined(captionRow)) {
                             if (!sf.base.isNullOrUndefined(captionRow.cells.getCell(i).value)) {
+                                /* tslint:disable-next-line:max-line-length */
+                                var args = { row: row, type: exports.AggregateTemplateType.GroupCaption, style: captionRow.cells };
+                                this.parent.trigger(pdfAggregateQueryCellInfo, args);
                                 value.push('');
                                 value.push(captionRow.cells.getCell(i).value);
                                 isEmpty = false;
@@ -34670,6 +34741,9 @@ var PdfExport = /** @class */ (function () {
                     gridRow.style.setFont(font);
                     gridRow.style.setTextBrush(brush);
                     gridRow.style.setBackgroundBrush(backgroundBrush);
+                    /* tslint:disable-next-line:max-line-length */
+                    var args = { row: row, type: isGroupedFooter ? exports.AggregateTemplateType.GroupFooter : exports.AggregateTemplateType.Footer, style: gridRow.cells };
+                    this.parent.trigger(pdfAggregateQueryCellInfo, args);
                     for (var i = 0; i < pdfGrid.columns.count; i++) {
                         gridRow.cells.getCell(i).value = value[i].toString();
                     }
@@ -39179,6 +39253,8 @@ exports.alignFrozenEditForm = alignFrozenEditForm;
 exports.ensureLastRow = ensureLastRow;
 exports.ensureFirstRow = ensureFirstRow;
 exports.getEditedDataIndex = getEditedDataIndex;
+exports.eventPromise = eventPromise;
+exports.getStateEventArgument = getStateEventArgument;
 exports.created = created;
 exports.destroyed = destroyed;
 exports.load = load;
@@ -39393,6 +39469,9 @@ exports.getAggregateQuery = getAggregateQuery;
 exports.closeFilterDialog = closeFilterDialog;
 exports.columnChooserCancelBtnClick = columnChooserCancelBtnClick;
 exports.getFilterBarOperator = getFilterBarOperator;
+exports.resetColumns = resetColumns;
+exports.pdfAggregateQueryCellInfo = pdfAggregateQueryCellInfo;
+exports.excelAggregateQueryCellInfo = excelAggregateQueryCellInfo;
 exports.Data = Data;
 exports.Sort = Sort;
 exports.Page = Page;

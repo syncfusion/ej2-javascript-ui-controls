@@ -580,7 +580,7 @@ export class Data implements IDataProcessor {
                     this.parent.trigger(events.dataStateChange, state);
                 })
                 .catch(() => void 0);
-            } else if (args.requestType !== 'reorder') {
+            } else {
                 this.setState({ isPending: true, resolver: def.resolve, group: state.group, aggregates: state.aggregates });
                 this.parent.trigger(events.dataStateChange, state);
             }

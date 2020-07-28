@@ -13,7 +13,8 @@ export type ToolbarItem =
     'DownloadOption' |
     'UndoRedoTool' |
     'AnnotationEditTool' |
-    'CommentTool';
+    'CommentTool' |
+    'SubmitForm';
 
 /**
  * Enum AnnotationToolbarItem for annotation toolbar settings
@@ -192,4 +193,16 @@ export enum StandardBusinessStampItem {
     Void = 512,
     PreliminaryResults = 1024,
     InformationOnly = 2048
+}
+
+/**
+ * Enum type for allowed interactions for locked annotations
+ */
+export enum AllowedInteraction  {
+    Select =  'Select',
+    Move = 'Move',
+    Resize = 'Resize',
+    Delete = 'Delete',
+    None = 'None',
+    PropertyChange = 'PropertyChange'
 }

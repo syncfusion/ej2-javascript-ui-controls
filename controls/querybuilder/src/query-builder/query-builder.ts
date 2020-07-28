@@ -20,7 +20,6 @@ import { resetBlazorTemplate, updateBlazorTemplate, blazorTemplates, compile as 
 type ReturnType = { result: Object[], count: number, aggregates?: Object };
 type ruleObj = { condition: string, not: boolean };
 
-MultiSelect.Inject(CheckBoxSelection);
 /**
  * Defines the Columns of Query Builder
  */
@@ -382,6 +381,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
 
     constructor(options?: QueryBuilderModel, element?: string | HTMLDivElement) {
         super(options, <string | HTMLDivElement>element);
+        MultiSelect.Inject(CheckBoxSelection);
     }
 
     protected getPersistData(): string {

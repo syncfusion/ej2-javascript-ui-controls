@@ -918,7 +918,7 @@ describe('FileManager control Grid view', () => {
                 feObj.detailsviewModule.gridObj.selectRows([2]);
                 document.getElementById('file_tb_delete').click();
                 let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
-                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Delete File");
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Delete Folder");
                 done();
             }, 500);
         });

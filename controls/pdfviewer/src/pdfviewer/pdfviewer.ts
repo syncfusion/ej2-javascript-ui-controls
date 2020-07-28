@@ -12,7 +12,7 @@ import { Magnification } from './index';
 import { Toolbar } from './index';
 import { ToolbarItem } from './index';
 // tslint:disable-next-line:max-line-length
-import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType } from './base/types';
+import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction } from './base/types';
 import { Annotation } from './index';
 import { LinkAnnotation } from './index';
 import { ThumbnailView } from './index';
@@ -259,8 +259,13 @@ export class StrikethroughSettings extends ChildProperty<StrikethroughSettings> 
     @Property(false)
     public enableTextMarkupResizer: boolean;
 
-
-
+    /**
+     * Gets or sets the allowed interactions for the locked strikethrough annotations.
+     * IsLock can be configured using strikethrough settings.
+     * @default ['None']
+     */
+    @Property(['None'])
+    public allowedInteractions: AllowedInteraction[];
 }
 
 /**
@@ -317,6 +322,13 @@ export class UnderlineSettings extends ChildProperty<UnderlineSettings> {
     @Property(false)
     public enableTextMarkupResizer: boolean;
 
+    /**
+     * Gets or sets the allowed interactions for the locked underline annotations.
+     * IsLock can be configured using underline settings.
+     * @default ['None']
+     */
+    @Property(['None'])
+    public allowedInteractions: AllowedInteraction[];
 }
 
 /**
@@ -372,6 +384,14 @@ export class HighlightSettings extends ChildProperty<HighlightSettings> {
      */
     @Property(false)
     public enableTextMarkupResizer: boolean;
+
+    /**
+     * Gets or sets the allowed interactions for the locked highlight annotations.
+     * IsLock can be configured using highlight settings.
+     * @default ['None']
+     */
+    @Property(['None'])
+    public allowedInteractions: AllowedInteraction[];
 }
 
 /**
@@ -468,6 +488,13 @@ export class LineSettings extends ChildProperty<LineSettings> {
     @Property(null)
     public customData: object;
 
+    /**
+     * Gets or sets the allowed interactions for the locked highlight annotations.
+     * IsLock can be configured using line settings.
+     * @default ['None']
+     */
+    @Property(['None'])
+    public allowedInteractions: AllowedInteraction[];
 }
 
 /**
@@ -564,6 +591,13 @@ export class ArrowSettings extends ChildProperty<ArrowSettings> {
     @Property(null)
     public customData: object;
 
+    /**
+     * Gets or sets the allowed interactions for the locked arrow annotations.
+     * IsLock can be configured using arrow settings.
+     * @default ['None']
+     */
+    @Property(['None'])
+    public allowedInteractions: AllowedInteraction[];
 }
 
 /**
@@ -641,6 +675,14 @@ export class RectangleSettings extends ChildProperty<RectangleSettings> {
      */
     @Property(null)
     public customData: object;
+
+    /**
+     * Gets or sets the allowed interactions for the locked rectangle annotations.
+     * IsLock can be configured using rectangle settings.
+     * @default ['None']
+     */
+    @Property(['None'])
+    public allowedInteractions: AllowedInteraction[];
 }
 
 /**
@@ -719,6 +761,13 @@ export class CircleSettings extends ChildProperty<CircleSettings> {
     @Property(null)
     public customData: object;
 
+    /**
+     * Gets or sets the allowed interactions for the locked circle annotations.
+     * IsLock can be configured using circle settings.
+     * @default ['None']
+     */
+    @Property(['None'])
+    public allowedInteractions: AllowedInteraction[];
 }
 
 /**
@@ -840,6 +889,13 @@ export class PolygonSettings extends ChildProperty<PolygonSettings> {
     @Property(null)
     public customData: object;
 
+    /**
+     * Gets or sets the allowed interactions for the locked polygon annotations.
+     * IsLock can be configured using polygon settings.
+     * @default ['None']
+     */
+    @Property(['None'])
+    public allowedInteractions: AllowedInteraction[];
 }
 
 /**
@@ -917,6 +973,14 @@ export class StampSettings extends ChildProperty<StampSettings> {
      */
     @Property([])
     public standardBusinessStamps: StandardBusinessStampItem[];
+
+    /**
+     * Gets or sets the allowed interactions for the locked stamp annotations.
+     * IsLock can be configured using stamp settings.
+     * @default ['None']
+     */
+    @Property(['None'])
+    public allowedInteractions: AllowedInteraction[];
 }
 
 /**
@@ -1005,6 +1069,13 @@ export class CustomStampSettings extends ChildProperty<CustomStampSettings> {
     @Property(true)
     public enableCustomStamp: boolean;
 
+    /**
+     * Gets or sets the allowed interactions for the locked custom stamp annotations.
+     * IsLock can be configured using custom stamp settings.
+     * @default ['None']
+     */
+    @Property(['None'])
+    public allowedInteractions: AllowedInteraction[];
 }
 
 /**
@@ -1113,6 +1184,13 @@ export class DistanceSettings extends ChildProperty<DistanceSettings> {
     @Property(CursorType.move)
     public resizeCursorType: CursorType;
 
+    /**
+     * Gets or sets the allowed interactions for the locked distance annotations.
+     * IsLock can be configured using distance settings.
+     * @default ['None']
+     */
+    @Property(['None'])
+    public allowedInteractions: AllowedInteraction[];
 }
 
 /**
@@ -1203,6 +1281,13 @@ export class PerimeterSettings extends ChildProperty<PerimeterSettings> {
     @Property('')
     public annotationSelectorSettings: AnnotationSelectorSettingsModel;
 
+    /**
+     * Gets or sets the allowed interactions for the locked perimeter annotations.
+     * IsLock can be configured using perimeter settings.
+     * @default ['None']
+     */
+    @Property(['None'])
+    public allowedInteractions: AllowedInteraction[];
 }
 
 /**
@@ -1275,6 +1360,13 @@ export class AreaSettings extends ChildProperty<AreaSettings> {
     @Property('')
     public annotationSelectorSettings: AnnotationSelectorSettingsModel;
 
+    /**
+     * Gets or sets the allowed interactions for the locked area annotations.
+     * IsLock can be configured using area settings.
+     * @default ['None']
+     */
+    @Property(['None'])
+    public allowedInteractions: AllowedInteraction[];
 }
 
 /**
@@ -1352,6 +1444,14 @@ export class RadiusSettings extends ChildProperty<RadiusSettings> {
      */
     @Property(null)
     public customData: object;
+
+    /**
+     * Gets or sets the allowed interactions for the locked radius annotations.
+     * IsLock can be configured using area settings.
+     * @default ['None']
+     */
+    @Property(['None'])
+    public allowedInteractions: AllowedInteraction[];
 }
 
 /**
@@ -1424,6 +1524,13 @@ export class VolumeSettings extends ChildProperty<VolumeSettings> {
     @Property('')
     public annotationSelectorSettings: AnnotationSelectorSettingsModel;
 
+    /**
+     * Gets or sets the allowed interactions for the locked volume annotations.
+     * IsLock can be configured using volume settings.
+     * @default ['None']
+     */
+    @Property(['None'])
+    public allowedInteractions: AllowedInteraction[];
 }
 /**
  * The `Ink` module is used to provide the properties to Ink annotation.
@@ -1465,6 +1572,13 @@ export class InkAnnotationSettings extends ChildProperty<InkAnnotationSettings> 
     @Property('Guest')
     public author: string;
 
+    /**
+     * Gets or sets the allowed interactions for the locked ink annotations.
+     * IsLock can be configured using ink settings.
+     * @default ['None']
+     */
+    @Property(['None'])
+    public allowedInteractions: AllowedInteraction[];
 }
 /**
  * The `stickyNotesSettings` module is used to provide the properties to sticky notes annotation.
@@ -1501,6 +1615,13 @@ export class StickyNotesSettings extends ChildProperty<StickyNotesSettings> {
     @Property(false)
     public isLock: boolean;
 
+    /**
+     * Gets or sets the allowed interactions for the locked sticky notes annotations.
+     * IsLock can be configured using sticky notes settings.
+     * @default ['None']
+     */
+    @Property(['None'])
+    public allowedInteractions: AllowedInteraction[];
 }
 
 /**
@@ -1667,6 +1788,13 @@ export class FreeTextSettings extends ChildProperty<FreeTextSettings> {
     @Property(null)
     public customData: object;
 
+    /**
+     * Gets or sets the allowed interactions for the locked free text annotations.
+     * IsLock can be configured using free text settings.
+     * @default ['None']
+     */
+    @Property(['None'])
+    public allowedInteractions: AllowedInteraction[];
 }
 
 /**
@@ -1848,6 +1976,13 @@ export class AnnotationSettings extends ChildProperty<AnnotationSettings> {
     @Property(null)
     public customData: object;
 
+    /**
+     * Gets or sets the allowed interactions for the locked annotations.
+     * IsLock can be configured using annotation settings.
+     * @default ['None']
+     */
+    @Property(['None'])
+    public allowedInteractions: AllowedInteraction[];
 }
 
 /**
@@ -2257,7 +2392,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     @Property(true)
     public restrictZoomRequest: boolean;
-
     /**
      * Specifies the open state of the hyperlink in the PDF document.
      * @default CurrentTab
@@ -2465,7 +2599,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Defines the settings of the PdfViewer toolbar.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ showTooltip: true, toolbarItems: ['OpenOption', 'UndoRedoTool', 'PageNavigationTool', 'MagnificationTool', 'PanTool', 'SelectionTool', 'CommentTool', 'AnnotationEditTool', 'FreeTextAnnotationOption', 'InkAnnotationOption', 'ShapeAnnotationOption', 'StampAnnotation', 'SignatureOption', 'SearchOption', 'PrintOption', 'DownloadOption'], annotationToolbarItems: ['HighlightTool', 'UnderlineTool', 'StrikethroughTool', 'ColorEditTool', 'OpacityEditTool', 'AnnotationDeleteTool', 'StampAnnotationTool', 'HandWrittenSignatureTool', 'InkAnnotationTool', 'ShapeTool', 'CalibrateTool', 'StrokeColorEditTool', 'ThicknessEditTool', 'FreeTextAnnotationTool', 'FontFamilyAnnotationTool', 'FontSizeAnnotationTool', 'FontStylesAnnotationTool', 'FontAlignAnnotationTool', 'FontColorAnnotationTool', 'CommentPanelTool'] })
+    @Property({ showTooltip: true, toolbarItems: ['OpenOption', 'UndoRedoTool', 'PageNavigationTool', 'MagnificationTool', 'PanTool', 'SelectionTool', 'CommentTool', 'SubmitForm', 'AnnotationEditTool', 'FreeTextAnnotationOption', 'InkAnnotationOption', 'ShapeAnnotationOption', 'StampAnnotation', 'SignatureOption', 'SearchOption', 'PrintOption', 'DownloadOption'], annotationToolbarItems: ['HighlightTool', 'UnderlineTool', 'StrikethroughTool', 'ColorEditTool', 'OpacityEditTool', 'AnnotationDeleteTool', 'StampAnnotationTool', 'HandWrittenSignatureTool', 'InkAnnotationTool', 'ShapeTool', 'CalibrateTool', 'StrokeColorEditTool', 'ThicknessEditTool', 'FreeTextAnnotationTool', 'FontFamilyAnnotationTool', 'FontSizeAnnotationTool', 'FontStylesAnnotationTool', 'FontAlignAnnotationTool', 'FontColorAnnotationTool', 'CommentPanelTool'] })
     public toolbarSettings: ToolbarSettingsModel;
 
     /**
@@ -2494,42 +2628,42 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Defines the settings of highlight annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, color: '#FFDF56', author: 'Guest', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, isLock: false, enableMultiPageAnnotation: false, enableTextMarkupResizer: false })
+    @Property({ opacity: 1, color: '#FFDF56', author: 'Guest', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, isLock: false, enableMultiPageAnnotation: false, enableTextMarkupResizer: false, allowedInteractions: ['None'] })
     public highlightSettings: HighlightSettingsModel;
 
     /**
      * Defines the settings of strikethrough annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, color: '#ff0000', author: 'Guest', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, isLock: false, enableMultiPageAnnotation: false, enableTextMarkupResizer: false })
+    @Property({ opacity: 1, color: '#ff0000', author: 'Guest', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, isLock: false, enableMultiPageAnnotation: false, enableTextMarkupResizer: false, allowedInteractions: ['None'] })
     public strikethroughSettings: StrikethroughSettingsModel;
 
     /**
      * Defines the settings of underline annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, color: '#00ff00', author: 'Guest', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, isLock: false, enableMultiPageAnnotation: false, enableTextMarkupResizer: false })
+    @Property({ opacity: 1, color: '#00ff00', author: 'Guest', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, isLock: false, enableMultiPageAnnotation: false, enableTextMarkupResizer: false, allowedInteractions: ['None'] })
     public underlineSettings: UnderlineSettingsModel;
 
     /**
      * Defines the settings of line annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'None', lineHeadEndStyle: 'None', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false })
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'None', lineHeadEndStyle: 'None', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'] })
     public lineSettings: LineSettingsModel;
 
     /**
      * Defines the settings of arrow annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'Closed', lineHeadEndStyle: 'Closed', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false })
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'Closed', lineHeadEndStyle: 'Closed', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'] })
     public arrowSettings: ArrowSettingsModel;
 
     /**
      * Defines the settings of rectangle annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false })
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'] })
     public rectangleSettings: RectangleSettingsModel;
 
     /**
@@ -2543,76 +2677,76 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Defines the settings of circle annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false })
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'] })
     public circleSettings: CircleSettingsModel;
 
     /**
      * Defines the settings of polygon annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false })
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'] })
     public polygonSettings: PolygonSettingsModel;
 
     /**
      * Defines the settings of stamp annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, author: 'Guest', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, dynamicStamps: [DynamicStampItem.Revised, DynamicStampItem.Reviewed, DynamicStampItem.Received, DynamicStampItem.Confidential, DynamicStampItem.Approved, DynamicStampItem.NotApproved], signStamps: [SignStampItem.Witness, SignStampItem.InitialHere, SignStampItem.SignHere, SignStampItem.Accepted, SignStampItem.Rejected], standardBusinessStamps: [StandardBusinessStampItem.Approved, StandardBusinessStampItem.NotApproved, StandardBusinessStampItem.Draft, StandardBusinessStampItem.Final, StandardBusinessStampItem.Completed, StandardBusinessStampItem.Confidential, StandardBusinessStampItem.ForPublicRelease, StandardBusinessStampItem.NotForPublicRelease, StandardBusinessStampItem.ForComment, StandardBusinessStampItem.Void, StandardBusinessStampItem.PreliminaryResults, StandardBusinessStampItem.InformationOnly] })
+    @Property({ opacity: 1, author: 'Guest', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, dynamicStamps: [DynamicStampItem.Revised, DynamicStampItem.Reviewed, DynamicStampItem.Received, DynamicStampItem.Confidential, DynamicStampItem.Approved, DynamicStampItem.NotApproved], signStamps: [SignStampItem.Witness, SignStampItem.InitialHere, SignStampItem.SignHere, SignStampItem.Accepted, SignStampItem.Rejected], standardBusinessStamps: [StandardBusinessStampItem.Approved, StandardBusinessStampItem.NotApproved, StandardBusinessStampItem.Draft, StandardBusinessStampItem.Final, StandardBusinessStampItem.Completed, StandardBusinessStampItem.Confidential, StandardBusinessStampItem.ForPublicRelease, StandardBusinessStampItem.NotForPublicRelease, StandardBusinessStampItem.ForComment, StandardBusinessStampItem.Void, StandardBusinessStampItem.PreliminaryResults, StandardBusinessStampItem.InformationOnly], allowedInteractions: ['None'] })
     public stampSettings: StampSettingsModel;
 
     /**
      * Defines the settings of customStamp annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, author: 'Guest', width: 0, height: 0, left: 0, top: 0, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, enableCustomStamp: true })
+    @Property({ opacity: 1, author: 'Guest', width: 0, height: 0, left: 0, top: 0, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, enableCustomStamp: true, allowedInteractions: ['None'] })
     public customStampSettings: CustomStampSettingsModel;
 
     /**
      * Defines the settings of distance annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'Closed', lineHeadEndStyle: 'Closed', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, leaderLength: 40, resizeCursorType: CursorType.move })
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'Closed', lineHeadEndStyle: 'Closed', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, leaderLength: 40, resizeCursorType: CursorType.move, allowedInteractions: ['None'] })
     public distanceSettings: DistanceSettingsModel;
 
     /**
      * Defines the settings of perimeter annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'Open', lineHeadEndStyle: 'Open', minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null } })
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'Open', lineHeadEndStyle: 'Open', minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, allowedInteractions: ['None'] })
     public perimeterSettings: PerimeterSettingsModel;
 
     /**
      * Defines the settings of area annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null } })
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, allowedInteractions: ['None'] })
     public areaSettings: AreaSettingsModel;
 
     /**
      * Defines the settings of radius annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false })
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'] })
     public radiusSettings: RadiusSettingsModel;
 
     /**
      * Defines the settings of volume annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null } })
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, allowedInteractions: ['None'] })
     public volumeSettings: VolumeSettingsModel;
 
     /**
      * Defines the settings of stickyNotes annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ author: 'Guest', opacity: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, isLock: false })
+    @Property({ author: 'Guest', opacity: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, isLock: false, allowedInteractions: ['None'] })
     public stickyNotesSettings: StickyNotesSettingsModel;
     /**
      * Defines the settings of free text annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, fillColor: '#ffffff00', borderColor: '#ffffff00', author: 'Guest', borderWidth: 1, width: 151, fontSize: 16, height: 24.6, fontColor: '#000', fontFamily: 'Helvetica', defaultText: 'Type Here', textAlignment: 'Left', fontStyle: FontStyle.None, allowTextOnly: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false })
+    @Property({ opacity: 1, fillColor: '#ffffff00', borderColor: '#ffffff00', author: 'Guest', borderWidth: 1, width: 151, fontSize: 16, height: 24.6, fontColor: '#000', fontFamily: 'Helvetica', defaultText: 'Type Here', textAlignment: 'Left', fontStyle: FontStyle.None, allowTextOnly: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'] })
     public freeTextSettings: FreeTextSettingsModel;
 
     /**
@@ -2638,21 +2772,21 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Defines the settings of handWrittenSignature.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, strokeColor: '#000000', width: 100, height: 100, thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null } })
+    @Property({ opacity: 1, strokeColor: '#000000', width: 100, height: 100, thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, allowedInteractions: ['None'] })
     public handWrittenSignatureSettings: HandWrittenSignatureSettingsModel;
 
     /**
      * Defines the ink annotation settings for PDF Viewer.It used to customize the strokeColor, thickness, opacity of the ink annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ author: 'Guest', opacity: 1, strokeColor: '#ff0000', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, isLock: false })
+    @Property({ author: 'Guest', opacity: 1, strokeColor: '#ff0000', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, isLock: false, allowedInteractions: ['None'] })
     public inkAnnotationSettings: InkAnnotationSettingsModel;
 
     /**
      * Defines the settings of the annotations.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ author: 'Guest', minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, skipPrint: false, skipDownload: false })
+    @Property({ author: 'Guest', minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, skipPrint: false, skipDownload: false, allowedInteractions: ['None'] })
     public annotationSettings: AnnotationSettingsModel;
 
     /**
@@ -3504,6 +3638,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Add polygon': 'Add Polygon',
         'Add Comments': 'Add Comments',
         'Comments': 'Comments',
+        'SubmitForm': 'Submit Form',
         'No Comments Yet': 'No Comments Yet',
         'Accepted': 'Accepted',
         'Completed': 'Completed',
@@ -4328,18 +4463,16 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     // tslint:disable-next-line:max-line-length
     public select(objArray: string[], currentSelector?: AnnotationSelectorSettingsModel, multipleSelection?: boolean, preventUpdate?: boolean): void {
-        if (!this.annotationSettings.isLock || this.tool === 'Stamp') {
-            let annotationSelect: number = this.annotationModule.textMarkupAnnotationModule.selectTextMarkupCurrentPage;
-            if (annotationSelect) {
-                this.annotationModule.textMarkupAnnotationModule.clearCurrentAnnotationSelection(annotationSelect, true);
-            }
-            if (!multipleSelection) {
-                if (this.viewerBase.activeElements && this.viewerBase.activeElements.activePageID >= 0) {
-                    this.clearSelection(this.viewerBase.activeElements.activePageID);
-                }
-            }
-            this.drawing.select(objArray, currentSelector, multipleSelection, preventUpdate);
+        let annotationSelect: number = this.annotationModule.textMarkupAnnotationModule.selectTextMarkupCurrentPage;
+        if (annotationSelect) {
+            this.annotationModule.textMarkupAnnotationModule.clearCurrentAnnotationSelection(annotationSelect, true);
         }
+        if (!multipleSelection) {
+            if (this.viewerBase.activeElements && this.viewerBase.activeElements.activePageID >= 0) {
+                this.clearSelection(this.viewerBase.activeElements.activePageID);
+            }
+        }
+        this.drawing.select(objArray, currentSelector, multipleSelection, preventUpdate);
     }
     /**
      * @private

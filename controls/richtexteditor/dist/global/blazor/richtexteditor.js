@@ -9974,6 +9974,7 @@ var Formats = /** @class */ (function () {
     }
     Formats.prototype.addEventListener = function () {
         this.parent.observer.on(FORMAT_TYPE, this.applyFormats, this);
+        this.parent.observer.on(KEY_UP_HANDLER, this.onKeyUp, this);
         this.parent.observer.on(KEY_DOWN_HANDLER, this.onKeyDown, this);
     };
     Formats.prototype.getParentNode = function (node) {
@@ -9981,6 +9982,26 @@ var Formats = /** @class */ (function () {
             node = node.parentNode;
         }
         return node;
+    };
+    Formats.prototype.onKeyUp = function (e) {
+        var range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+        var endCon = range.endContainer;
+        var lastChild = endCon.lastChild;
+        if (e.event.which === 13 && range.startContainer === endCon && endCon.nodeType !== 3) {
+            var pTag = sf.base.createElement('p');
+            pTag.innerHTML = '<br>';
+            if (lastChild.nodeName === 'BR' && (lastChild.previousSibling && lastChild.previousSibling.nodeName === 'TABLE')) {
+                endCon.replaceChild(pTag, lastChild);
+                this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, pTag, 0);
+            }
+            else {
+                var brNode = this.parent.nodeSelection.getSelectionNodeCollectionBr(range)[0];
+                if (brNode.nodeName === 'BR' && (brNode.previousSibling && brNode.previousSibling.nodeName === 'TABLE')) {
+                    endCon.replaceChild(pTag, brNode);
+                    this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, pTag, 0);
+                }
+            }
+        }
     };
     Formats.prototype.onKeyDown = function (e) {
         if (e.event.which === 13) {
@@ -10133,7 +10154,7 @@ var Formats = /** @class */ (function () {
         var isSelectAll = false;
         if (this.parent.editableElement === range.endContainer &&
             !sf.base.isNullOrUndefined(this.parent.editableElement.children[range.endOffset - 1]) &&
-            this.parent.editableElement.children[range.endOffset - 1].tagName === 'TABLE') {
+            this.parent.editableElement.children[range.endOffset - 1].tagName === 'TABLE' && !range.collapsed) {
             isSelectAll = true;
         }
         var save = this.parent.nodeSelection.save(range, this.parent.currentDocument);
@@ -13960,7 +13981,7 @@ var ContentRender = /** @class */ (function () {
      * @return {string}
      */
     ContentRender.prototype.getText = function () {
-        return this.getEditPanel().textContent;
+        return this.getEditPanel().innerText;
     };
     /**
      * Set the content div element of RichTextEditor
@@ -18996,10 +19017,10 @@ var Table = /** @class */ (function () {
                 var rteWidth = _this.contentModule.getEditPanel().offsetWidth - paddingSize * 2;
                 if (_this.resizeBtnStat.column) {
                     var cellColl = _this.curTable.rows[0].cells;
-                    var width = parseFloat(_this.columnEle.offsetWidth.toLocaleString());
+                    var width = parseFloat(_this.columnEle.offsetWidth.toString());
                     var actualwid = width - mouseX;
-                    var totalwid = parseFloat(_this.columnEle.offsetWidth.toLocaleString()) +
-                        parseFloat(cellColl[_this.colIndex - 1].offsetWidth.toLocaleString());
+                    var totalwid = parseFloat(_this.columnEle.offsetWidth.toString()) +
+                        parseFloat(cellColl[_this.colIndex - 1].offsetWidth.toString());
                     for (var i = 0; i < _this.curTable.rows.length; i++) {
                         if ((totalwid - actualwid) > 20 && actualwid > 20) {
                             var leftColumnWidth = totalwid - actualwid;

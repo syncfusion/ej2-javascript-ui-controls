@@ -133,12 +133,15 @@ var ListBox = /** @class */ (function (_super) {
         }
         this.renderComplete();
     };
-    ListBox.prototype.updateBlazorListData = function (data, isDataSource) {
+    ListBox.prototype.updateBlazorListData = function (data, isDataSource, select$$1) {
         if (isDataSource) {
             this.liCollections = this.list.querySelectorAll('.' + sf.lists.cssClass.li);
             this.mainList = this.ulElement = this.list.querySelector('ul');
             if (this.allowDragAndDrop && !this.ulElement.classList.contains('e-sortable')) {
                 this.initDraggable();
+            }
+            if (select$$1) {
+                this.selectItems(this.listData, false);
             }
         }
         if (!sf.base.isNullOrUndefined(data)) {
@@ -188,6 +191,9 @@ var ListBox = /** @class */ (function (_super) {
     };
     ListBox.prototype.initDraggable = function () {
         var _this = this;
+        if (this.ulElement) {
+            this.ulElement.id = this.element.id + '_parent';
+        }
         if (this.allowDragAndDrop) {
             new sf.lists.Sortable(this.ulElement, {
                 scope: this.scope,
@@ -348,12 +354,21 @@ var ListBox = /** @class */ (function (_super) {
     };
     ListBox.prototype.onActionComplete = function (ulElement, list, e) {
         var searchEle;
-        if (this.allowFiltering) {
-            searchEle = this.list.getElementsByClassName('e-filter-parent')[0];
+        if (this.allowFiltering && this.list.getElementsByClassName('e-filter-parent')[0]) {
+            if (sf.base.isBlazor() && this.isServerRendered) {
+                searchEle = this.list.getElementsByClassName('e-filter-parent')[0];
+            }
+            else {
+                searchEle = this.list.getElementsByClassName('e-filter-parent')[0].cloneNode(true);
+            }
         }
         _super.prototype.onActionComplete.call(this, ulElement, list, e);
         if (this.allowFiltering && !sf.base.isNullOrUndefined(searchEle)) {
             this.list.insertBefore(searchEle, this.list.firstElementChild);
+            if (!sf.base.isBlazor() && !this.isServerRendered) {
+                this.filterParent = this.list.getElementsByClassName('e-filter-parent')[0];
+                this.filterWireEvents(searchEle);
+            }
         }
         this.initWrapper();
         this.setSelection();
@@ -373,7 +388,11 @@ var ListBox = /** @class */ (function (_super) {
         }
         else {
             if (this.allowFiltering) {
-                this.list.getElementsByClassName('e-input-filter')[0].focus();
+                var filterElem = this.list.getElementsByClassName('e-input-filter')[0];
+                var txtLength = this.filterInput.value.length;
+                filterElem.selectionStart = txtLength;
+                filterElem.selectionEnd = txtLength;
+                filterElem.focus();
             }
         }
         this.initLoad = false;
@@ -458,9 +477,11 @@ var ListBox = /** @class */ (function (_super) {
             var jsonIdx = jsonData.indexOf(this.getDataByValue(dropValue));
             var sIdx = sortedData.indexOf(this.getDataByValue(dropValue));
             listData.splice(toIdx_1, 0, listData.splice(rIdx, 1)[0]);
-            jsonData.splice(toIdx_1, 0, jsonData.splice(jsonIdx, 1)[0]);
             sortedData.splice(toSortIdx_1, 0, sortedData.splice(sIdx, 1)[0]);
-            liColl.splice(toIdx_1, 0, liColl.splice(rIdx, 1)[0]);
+            jsonData.splice(toIdx_1, 0, jsonData.splice(jsonIdx, 1)[0]);
+            if (!sf.base.isBlazor()) {
+                liColl.splice(toIdx_1, 0, liColl.splice(rIdx, 1)[0]);
+            }
             if (this.allowDragAll) {
                 selectedOptions = this.value && Array.prototype.indexOf.call(this.value, dropValue) > -1 ? this.value : [dropValue];
                 selectedOptions.forEach(function (value) {
@@ -471,11 +492,19 @@ var ListBox = /** @class */ (function (_super) {
                         if (idx > toIdx_1) {
                             toIdx_1++;
                         }
-                        listData.splice(toIdx_1, 0, listData.splice(idx, 1)[0]);
                         jsonData.splice(toIdx_1, 0, jsonData.splice(jsonIdx_1, 1)[0]);
+                        listData.splice(toIdx_1, 0, listData.splice(idx, 1)[0]);
                         sortedData.splice(toSortIdx_1, 0, sortedData.splice(sIdx_1, 1)[0]);
-                        liColl.splice(toIdx_1, 0, liColl.splice(idx, 1)[0]);
-                        ul_1.insertBefore(_this.getItems()[_this.getIndexByValue(value)], ul_1.getElementsByClassName('e-placeholder')[0]);
+                        if (!sf.base.isBlazor()) {
+                            liColl.splice(toIdx_1, 0, liColl.splice(idx, 1)[0]);
+                            ul_1.insertBefore(_this.getItems()[_this.getIndexByValue(value)], ul_1.getElementsByClassName('e-placeholder')[0]);
+                        }
+                    }
+                    else if (sf.base.isBlazor()) {
+                        var lists = [].slice.call(_this.ulElement.getElementsByClassName(sf.lists.cssClass.li));
+                        var refChild = _this.ulElement.removeChild(lists[args.currentIndex]);
+                        lists.splice(args.currentIndex, 1);
+                        _this.ulElement.insertBefore(refChild, lists[args.previousIndex]);
                     }
                 });
             }
@@ -483,6 +512,15 @@ var ListBox = /** @class */ (function (_super) {
             this.jsonData = jsonData;
             this.sortedData = sortedData;
             this.liCollections = liColl;
+            if (sf.base.isBlazor()) {
+                var value_1 = this.value;
+                // tslint:disable-next-line:no-any
+                this.interopAdaptor.invokeMethodAsync('UpdateListData', this.listData).then(function () {
+                    _this.updateBlazorListData(null, true);
+                    _this.selectItems(_this.listData, false);
+                    _this.selectItems(value_1);
+                });
+            }
         }
         else {
             var li_1;
@@ -497,7 +535,7 @@ var ListBox = /** @class */ (function (_super) {
                 ? this.value : [dropValue];
             var fListData_1 = [].slice.call(this.listData);
             var fSortData_1 = [].slice.call(this.sortedData);
-            selectedOptions.forEach(function (value) {
+            selectedOptions.forEach(function (value, index) {
                 droppedData = _this.getDataByValue(value);
                 var srcIdx = _this.listData.indexOf(droppedData);
                 var jsonSrcIdx = _this.jsonData.indexOf(droppedData);
@@ -507,12 +545,13 @@ var ListBox = /** @class */ (function (_super) {
                 fSortData_1.splice(sortIdx, 1);
                 _this.listData = fListData_1;
                 _this.sortedData = fSortData_1;
-                var rLi = fLiColl_1.splice(srcIdx, 1)[0];
                 var destIdx = value === dropValue ? args.currentIndex : currIdx_1;
                 listData.splice(destIdx, 0, droppedData);
                 jsonData.splice(destIdx, 0, droppedData);
-                liColl.splice(destIdx, 0, rLi);
                 sortedData.splice(destIdx, 0, droppedData);
+                if (!sf.base.isBlazor()) {
+                    liColl.splice(destIdx, 0, fLiColl_1.splice(srcIdx, 1)[0]);
+                }
                 if (!value) {
                     var liCollElem = _this.getItems();
                     for (var i = 0; i < liCollElem.length; i++) {
@@ -526,26 +565,52 @@ var ListBox = /** @class */ (function (_super) {
                     li_1 = _this.getItems()[_this.getIndexByValue(value)];
                 }
                 _this.removeSelected(_this, value === dropValue ? [args.droppedElement] : [li_1]);
-                ul_2.insertBefore(li_1, ul_2.getElementsByClassName('e-placeholder')[0]);
+                if (sf.base.isBlazor()) {
+                    if (index === 0) {
+                        _this.ulElement.insertBefore(ul_2.getElementsByClassName(sf.lists.cssClass.li)[args.currentIndex], _this.ulElement.getElementsByClassName(sf.lists.cssClass.li)[args.previousIndex]);
+                    }
+                }
+                else {
+                    ul_2.insertBefore(li_1, ul_2.getElementsByClassName('e-placeholder')[0]);
+                }
                 currIdx_1++;
             });
-            this.updateSelectedOptions();
-            if (this.fields.groupBy) {
-                this.ulElement.innerHTML = this.renderItems(this.listData, this.fields).innerHTML;
-                this.setSelection();
+            if (sf.base.isBlazor()) {
+                // tslint:disable
+                this.interopAdaptor.invokeMethodAsync('UpdateListData', this.listData).then(function () {
+                    _this.updateSelectedOptions();
+                    if (_this.fields.groupBy) {
+                        _this.setSelection();
+                    }
+                    _this.updateBlazorListData(null, true, _this.value == null || !_this.value.length);
+                });
+                listObj.interopAdaptor.invokeMethodAsync('UpdateListData', listData).then(function () {
+                    if (listObj.sortOrder !== 'None' || _this.selectionSettings.showCheckbox
+                        !== listObj.selectionSettings.showCheckbox || listObj.fields.groupBy) {
+                        listObj.setSelection();
+                    }
+                    listObj.updateBlazorListData(null, true, listObj.value == null || !listObj.value.length);
+                });
+                // tslint:enable
             }
-            if (listObj.sortOrder !== 'None' || this.selectionSettings.showCheckbox
-                !== listObj.selectionSettings.showCheckbox || listObj.fields.groupBy) {
-                var sortabale = sf.base.getComponent(ul_2, 'sortable');
-                ul_2.innerHTML = listObj.renderItems(listData, listObj.fields).innerHTML;
-                if (sortabale.placeHolderElement) {
-                    ul_2.appendChild(sortabale.placeHolderElement);
+            else {
+                if (this.fields.groupBy) {
+                    this.ulElement.innerHTML = this.renderItems(this.listData, this.fields).innerHTML;
+                    this.setSelection();
                 }
-                ul_2.appendChild(args.helper);
-                listObj.setSelection();
+                if (listObj.sortOrder !== 'None' || this.selectionSettings.showCheckbox
+                    !== listObj.selectionSettings.showCheckbox || listObj.fields.groupBy) {
+                    var sortabale = sf.base.getComponent(ul_2, 'sortable');
+                    ul_2.innerHTML = listObj.renderItems(listData, listObj.fields).innerHTML;
+                    if (sortabale.placeHolderElement) {
+                        ul_2.appendChild(sortabale.placeHolderElement);
+                    }
+                    ul_2.appendChild(args.helper);
+                    listObj.setSelection();
+                }
+                this.liCollections = fLiColl_1;
+                listObj.liCollections = liColl;
             }
-            this.liCollections = fLiColl_1;
-            listObj.liCollections = liColl;
             listObj.jsonData = sf.base.extend([], [], jsonData, false);
             listObj.listData = sf.base.extend([], [], listData, false);
             listObj.sortedData = sf.base.extend([], [], sortedData, false);
@@ -944,7 +1009,7 @@ var ListBox = /** @class */ (function (_super) {
         sf.base.EventHandler.remove(this.list, 'click', this.clickHandler);
         sf.base.EventHandler.remove(wrapper, 'keydown', this.keyDownHandler);
         sf.base.EventHandler.remove(wrapper, 'focusout', this.focusOutHandler);
-        if (this.allowFiltering) {
+        if (this.allowFiltering && this.clearFilterIconElem) {
             sf.base.EventHandler.remove(this.clearFilterIconElem, 'click', this.clearText);
         }
         if (this.toolbarSettings.items.length) {
@@ -1031,16 +1096,24 @@ var ListBox = /** @class */ (function (_super) {
                 sf.base.addClass([this.list], 'e-filter-list');
             }
             this.inputString = this.filterInput.value;
-            this.clearFilterIconElem = this.filterInput.parentElement.querySelector('.' + listBoxClasses.clearIcon);
-            if (this.clearFilterIconElem) {
-                sf.base.EventHandler.add(this.clearFilterIconElem, 'click', this.clearText, this);
-                this.clearFilterIconElem.style.visibility = 'hidden';
-            }
-            sf.base.EventHandler.add(this.filterInput, 'input', this.onInput, this);
-            sf.base.EventHandler.add(this.filterInput, 'keyup', this.KeyUp, this);
-            sf.base.EventHandler.add(this.filterInput, 'keydown', this.onKeyDown, this);
+            this.filterWireEvents();
             return filterInputObj;
         }
+    };
+    ListBox.prototype.filterWireEvents = function (filterElem) {
+        if (filterElem) {
+            this.filterInput = filterElem.querySelector('.e-input-filter');
+        }
+        this.clearFilterIconElem = this.filterInput.parentElement.querySelector('.' + listBoxClasses.clearIcon);
+        if (this.clearFilterIconElem) {
+            sf.base.EventHandler.add(this.clearFilterIconElem, 'click', this.clearText, this);
+            if (!filterElem) {
+                this.clearFilterIconElem.style.visibility = 'hidden';
+            }
+        }
+        sf.base.EventHandler.add(this.filterInput, 'input', this.onInput, this);
+        sf.base.EventHandler.add(this.filterInput, 'keyup', this.KeyUp, this);
+        sf.base.EventHandler.add(this.filterInput, 'keydown', this.onKeyDown, this);
     };
     ListBox.prototype.selectHandler = function (e, isKey) {
         var isSelect = true;
@@ -1251,6 +1324,7 @@ var ListBox = /** @class */ (function (_super) {
      */
     // tslint:disable-next-line:max-func-body-length
     ListBox.prototype.moveData = function (fListBox, tListBox, isKey, value, index) {
+        var _this = this;
         var idx = [];
         var dataIdx = [];
         var jsonIdx = [];
@@ -1299,22 +1373,24 @@ var ListBox = /** @class */ (function (_super) {
             if (localDataArgs.cancel) {
                 return;
             }
-            var rLiCollection_1 = [];
-            dataLiIdx.sort(function (n1, n2) { return n1 - n2; }).reverse().forEach(function (i) {
-                rLiCollection_1.push(fliCollections.splice(i, 1)[0]);
-            });
-            fListBox.liCollections = fliCollections;
-            if (index) {
-                var toColl = tliCollections.splice(0, index);
-                tListBox.liCollections = toColl.concat(rLiCollection_1.reverse()).concat(tliCollections);
-            }
-            else {
-                tListBox.liCollections = tliCollections.concat(rLiCollection_1.reverse());
-            }
-            if (tListBox.listData.length === 0) {
-                var noRecElem = tListBox.ulElement.getElementsByClassName('e-list-nrt')[0];
-                if (noRecElem) {
-                    tListBox.ulElement.removeChild(noRecElem);
+            if (!sf.base.isBlazor()) {
+                var rLiCollection_1 = [];
+                dataLiIdx.sort(function (n1, n2) { return n1 - n2; }).reverse().forEach(function (i) {
+                    rLiCollection_1.push(fliCollections.splice(i, 1)[0]);
+                });
+                fListBox.liCollections = fliCollections;
+                if (index) {
+                    var toColl = tliCollections.splice(0, index);
+                    tListBox.liCollections = toColl.concat(rLiCollection_1.reverse()).concat(tliCollections);
+                }
+                else {
+                    tListBox.liCollections = tliCollections.concat(rLiCollection_1.reverse());
+                }
+                if (tListBox.listData.length === 0) {
+                    var noRecElem = tListBox.ulElement.getElementsByClassName('e-list-nrt')[0];
+                    if (noRecElem) {
+                        tListBox.ulElement.removeChild(noRecElem);
+                    }
                 }
             }
             dataIdx.sort(function (n1, n2) { return n2 - n1; }).forEach(function (i) {
@@ -1326,34 +1402,28 @@ var ListBox = /** @class */ (function (_super) {
             jsonIdx.slice().reverse().forEach(function (i) {
                 data.push(fListBox.jsonData.splice(i, 1)[0]);
             });
-            if (isRefresh) {
-                if (fListBox.fields.groupBy) {
-                    fListBox.ulElement.innerHTML = fListBox.renderItems(listData, fListBox.fields).innerHTML;
+            if (!sf.base.isBlazor()) {
+                if (isRefresh) {
+                    if (fListBox.fields.groupBy) {
+                        fListBox.ulElement.innerHTML = fListBox.renderItems(listData, fListBox.fields).innerHTML;
+                    }
+                    else {
+                        elems.forEach(function (ele) { sf.base.detach(ele); });
+                    }
                 }
                 else {
-                    elems.forEach(function (ele) { sf.base.detach(ele); });
+                    sf.lists.moveTo(fListBox.ulElement, tListBox.ulElement, idx, index);
+                    fListBox.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
                 }
+                if (tListBox.mainList.childElementCount !== tListBox.jsonData.length) {
+                    tListBox.mainList = tListBox.ulElement;
+                }
+                fListBox.updateMainList();
             }
-            else {
-                sf.lists.moveTo(fListBox.ulElement, tListBox.ulElement, idx, index);
-                this.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
-            }
-            if (tListBox.mainList.childElementCount !== tListBox.jsonData.length) {
-                tListBox.mainList = tListBox.ulElement;
-            }
-            fListBox.updateMainList();
-            var childCnt = fListBox.ulElement.querySelectorAll('.e-list-item').length;
-            var ele = void 0;
-            var liIdx = void 0;
             var tJsonData = [].slice.call(tListBox.jsonData);
             tSortData = [].slice.call(tListBox.sortedData);
-            if (elems.length === 1 && childCnt && !fListBox.selectionSettings.showCheckbox) {
-                liIdx = childCnt <= dataLiIdx[0] ? childCnt - 1 : dataLiIdx[0];
-                ele = fListBox.ulElement.querySelectorAll('.e-list-item')[liIdx];
-                var validIdx = fListBox.getValidIndex(ele, liIdx, childCnt === dataIdx[0] ? 38 : 40);
-                if (validIdx > -1) {
-                    (fListBox.ulElement.querySelectorAll('.e-list-item')[validIdx].classList.add(sf.lists.cssClass.selected));
-                }
+            if (!sf.base.isBlazor()) {
+                this.selectNextList(elems, dataLiIdx, dataIdx, fListBox);
             }
             if (isKey) {
                 this.list.focus();
@@ -1369,11 +1439,29 @@ var ListBox = /** @class */ (function (_super) {
             tListBox.listData = tListData;
             tListBox.jsonData = tJsonData;
             tListBox.sortedData = tSortData;
-            if (isRefresh) {
-                tListBox.ulElement.innerHTML = tListBox.renderItems(tListData, tListBox.fields).innerHTML;
-                tListBox.setSelection();
+            if (sf.base.isBlazor()) {
+                // tslint:disable
+                fListBox.interopAdaptor.invokeMethodAsync('UpdateListData', fListBox.listData).then(function () {
+                    fListBox.updateBlazorListData(null, true);
+                    _this.selectNextList(elems, dataLiIdx, dataIdx, fListBox);
+                    fListBox.updateSelectedOptions();
+                });
+                tListBox.interopAdaptor.invokeMethodAsync('UpdateListData', tListBox.listData).then(function () {
+                    if (isRefresh) {
+                        tListBox.setSelection();
+                    }
+                    tListBox.updateBlazorListData(null, true);
+                    fListBox.trigger('actionComplete', { items: tempItems, eventName: _this.toolbarAction });
+                });
+                // tslint:enable
             }
-            fListBox.updateSelectedOptions();
+            else {
+                if (isRefresh) {
+                    tListBox.ulElement.innerHTML = tListBox.renderItems(tListData, tListBox.fields).innerHTML;
+                    tListBox.setSelection();
+                }
+                fListBox.updateSelectedOptions();
+            }
             if (fListBox.listData.length === 0) {
                 // tslint:disable-next-line
                 fListBox.l10nUpdate();
@@ -1383,6 +1471,20 @@ var ListBox = /** @class */ (function (_super) {
             fListBox.value[0] = fListBox.getFormattedValue(fListBox.getSelectedItems()[0].getAttribute('data-value'));
         }
     };
+    ListBox.prototype.selectNextList = function (elems, dataLiIdx, dataIdx, inst) {
+        var childCnt = inst.ulElement.querySelectorAll('.e-list-item').length;
+        var ele;
+        var liIdx;
+        var validIdx = -1;
+        if (elems.length === 1 && childCnt && !inst.selectionSettings.showCheckbox) {
+            liIdx = childCnt <= dataLiIdx[0] ? childCnt - 1 : dataLiIdx[0];
+            ele = inst.ulElement.querySelectorAll('.e-list-item')[liIdx];
+            validIdx = inst.getValidIndex(ele, liIdx, childCnt === dataIdx[0] ? 38 : 40);
+            if (validIdx > -1) {
+                (inst.ulElement.querySelectorAll('.e-list-item')[validIdx].classList.add(sf.lists.cssClass.selected));
+            }
+        }
+    };
     ListBox.prototype.moveAllItemTo = function () {
         this.moveAllData(this, this.getScopedListBox());
     };
@@ -1390,6 +1492,7 @@ var ListBox = /** @class */ (function (_super) {
         this.moveAllData(this.getScopedListBox(), this);
     };
     ListBox.prototype.moveAllData = function (fListBox, tListBox, isKey, index) {
+        var _this = this;
         var listData = [].slice.call(tListBox.listData);
         var jsonData = [].slice.call(tListBox.jsonData);
         var isRefresh = tListBox.sortOrder !== 'None' ||
@@ -1401,21 +1504,23 @@ var ListBox = /** @class */ (function (_super) {
         if (localDataArgs.cancel) {
             return;
         }
-        if (tListBox.listData.length === 0) {
-            var noRecElem = tListBox.ulElement.getElementsByClassName('e-list-nrt')[0];
-            if (noRecElem) {
-                tListBox.ulElement.removeChild(noRecElem);
+        if (!sf.base.isBlazor()) {
+            if (tListBox.listData.length === 0) {
+                var noRecElem = tListBox.ulElement.getElementsByClassName('e-list-nrt')[0];
+                if (noRecElem) {
+                    tListBox.ulElement.removeChild(noRecElem);
+                }
             }
-        }
-        if (isRefresh) {
-            var noRecElem = fListBox.ulElement.getElementsByClassName('e-list-nrt')[0];
-            if (noRecElem) {
-                fListBox.ulElement.removeChild(noRecElem);
+            if (isRefresh) {
+                var noRecElem = fListBox.ulElement.getElementsByClassName('e-list-nrt')[0];
+                if (noRecElem) {
+                    fListBox.ulElement.removeChild(noRecElem);
+                }
             }
-        }
-        else {
-            sf.lists.moveTo(fListBox.ulElement, tListBox.ulElement, Array.apply(null, { length: fListBox.ulElement.childElementCount }).map(Number.call, Number), index);
-            this.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
+            else {
+                sf.lists.moveTo(fListBox.ulElement, tListBox.ulElement, Array.apply(null, { length: fListBox.ulElement.childElementCount }).map(Number.call, Number), index);
+                this.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
+            }
         }
         if (isKey) {
             this.list.focus();
@@ -1427,30 +1532,49 @@ var ListBox = /** @class */ (function (_super) {
         for (var i = 0; i < fListBox.jsonData.length; i++) {
             jsonData.splice(index + i, 0, fListBox.jsonData[i]);
         }
-        var fliCollections = [].slice.call(fListBox.liCollections);
-        var tliCollections = [].slice.call(tListBox.liCollections);
-        fListBox.liCollections = [];
+        if (!sf.base.isBlazor()) {
+            var fliCollections = [].slice.call(fListBox.liCollections);
+            var tliCollections = [].slice.call(tListBox.liCollections);
+            fListBox.liCollections = [];
+            if (index) {
+                var toColl = tliCollections.splice(0, index);
+                tListBox.liCollections = toColl.concat(fliCollections).concat(tliCollections);
+            }
+            else {
+                tListBox.liCollections = tliCollections.concat(fliCollections);
+            }
+        }
         fListBox.value = [];
-        if (index) {
-            var toColl = tliCollections.splice(0, index);
-            tListBox.liCollections = toColl.concat(fliCollections).concat(tliCollections);
-        }
-        else {
-            tListBox.liCollections = tliCollections.concat(fliCollections);
-        }
         listData = listData
             .filter(function (data) { return data.isHeader !== true; });
         tListBox.listData = listData;
         tListBox.jsonData = jsonData;
         fListBox.listData = fListBox.sortedData = fListBox.jsonData = [];
-        if (isRefresh) {
-            tListBox.ulElement.innerHTML = tListBox.renderItems(listData, tListBox.fields).innerHTML;
-            this.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
+        if (sf.base.isBlazor()) {
+            if (!isRefresh) {
+                tListBox.sortedData = listData;
+            }
+            // tslint:disable
+            fListBox.interopAdaptor.invokeMethodAsync('UpdateListData', fListBox.listData).then(function () {
+                fListBox.updateBlazorListData(null, true);
+            });
+            tListBox.interopAdaptor.invokeMethodAsync('UpdateListData', tListBox.listData).then(function () {
+                tListBox.updateBlazorListData(null, true);
+                fListBox.updateSelectedOptions();
+                fListBox.trigger('actionComplete', { items: tempItems, eventName: _this.toolbarAction });
+            });
+            // tslint:enable
         }
         else {
-            tListBox.sortedData = listData;
+            if (isRefresh) {
+                tListBox.ulElement.innerHTML = tListBox.renderItems(listData, tListBox.fields).innerHTML;
+                this.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
+            }
+            else {
+                tListBox.sortedData = listData;
+            }
+            fListBox.updateSelectedOptions();
         }
-        fListBox.updateSelectedOptions();
         if (fListBox.listData.length === 0) {
             // tslint:disable-next-line
             fListBox.l10nUpdate();
@@ -1797,6 +1921,9 @@ var ListBox = /** @class */ (function (_super) {
         }
         this.checkSelectAll();
     };
+    ListBox.prototype.checkDisabledState = function (inst) {
+        return (sf.base.isBlazor() ? inst.ulElement.querySelectorAll('.' + sf.lists.cssClass.li).length : inst.ulElement.childElementCount) === 0;
+    };
     ListBox.prototype.updateToolBarState = function () {
         var _this = this;
         if (this.toolbarSettings.items.length) {
@@ -1806,10 +1933,10 @@ var ListBox = /** @class */ (function (_super) {
                 var btn = wrap_1.querySelector('[data-value="' + value + '"]');
                 switch (value) {
                     case 'moveAllTo':
-                        btn.disabled = _this.ulElement.childElementCount ? false : true;
+                        btn.disabled = _this.checkDisabledState(_this);
                         break;
                     case 'moveAllFrom':
-                        btn.disabled = listObj_1.ulElement.childElementCount ? false : true;
+                        btn.disabled = _this.checkDisabledState(listObj_1);
                         break;
                     case 'moveFrom':
                         btn.disabled = listObj_1.value && listObj_1.value.length ? false : true;
@@ -1843,10 +1970,12 @@ var ListBox = /** @class */ (function (_super) {
         var liColl = this.list.lastElementChild.querySelectorAll('li');
         var liCollLen = this.list.lastElementChild.getElementsByClassName('e-list-item').length;
         if (showCheckbox) {
-            this.ulElement = this.renderItems(this.listData, this.fields);
-            this.mainList = this.ulElement;
-            this.list.removeChild(this.list.getElementsByTagName('ul')[0]);
-            this.list.appendChild(this.ulElement);
+            if (!sf.base.isBlazor()) {
+                this.ulElement = this.renderItems(this.listData, this.fields);
+                this.mainList = this.ulElement;
+                this.list.removeChild(this.list.getElementsByTagName('ul')[0]);
+                this.list.appendChild(this.ulElement);
+            }
             if (this.selectionSettings.showSelectAll && !this.list.getElementsByClassName('e-selectall-parent')[0]) {
                 var l10nShow = new sf.base.L10n(this.getModuleName(), { selectAllText: 'Select All', unSelectAllText: 'Unselect All' }, this.locale);
                 this.showSelectAll = true;
@@ -1862,15 +1991,17 @@ var ListBox = /** @class */ (function (_super) {
             if (this.list.getElementsByClassName('e-selectall-parent')[0]) {
                 this.list.removeChild(this.list.getElementsByClassName('e-selectall-parent')[0]);
             }
-            for (index; index < liCollLen; index++) {
-                if (liColl[index].classList.contains('e-list-item')) {
-                    liColl[index].removeChild(liColl[index].getElementsByClassName('e-checkbox-wrapper')[0]);
+            if (!sf.base.isBlazor()) {
+                for (index; index < liCollLen; index++) {
+                    if (liColl[index].classList.contains('e-list-item')) {
+                        liColl[index].removeChild(liColl[index].getElementsByClassName('e-checkbox-wrapper')[0]);
+                    }
+                    if (liColl[index].hasAttribute('aria-selected')) {
+                        liColl[index].removeAttribute('aria-selected');
+                    }
                 }
-                if (liColl[index].hasAttribute('aria-selected')) {
-                    liColl[index].removeAttribute('aria-selected');
-                }
+                this.mainList = this.ulElement;
             }
-            this.mainList = this.ulElement;
         }
         this.value = [];
     };
@@ -2549,7 +2680,9 @@ var CheckBoxSelection = /** @class */ (function () {
         if (this.parent.getLocaleName() !== 'listbox') {
             var target = e.target;
             if (!sf.base.isNullOrUndefined(this.parent.popupObj) && sf.base.closest(target, '#' + this.parent.popupObj.element.id)) {
-                e.preventDefault();
+                if (!(this.filterInput && this.filterInput.value !== '')) {
+                    e.preventDefault();
+                }
             }
             if (!(!sf.base.isNullOrUndefined(this.parent.popupObj) && sf.base.closest(target, '#' + this.parent.popupObj.element.id)) &&
                 !this.parent.overAllWrapper.contains(e.target)) {

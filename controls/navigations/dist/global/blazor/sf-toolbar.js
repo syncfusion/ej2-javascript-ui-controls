@@ -62,7 +62,9 @@ var SfToolbar = /** @class */ (function () {
             end: 'end',
         };
         this.element = element;
-        this.element.blazor__instance = this;
+        if (!sf.base.isNullOrUndefined(element)) {
+            this.element.blazor__instance = this;
+        }
         this.dotNetRef = dotnetRef;
         this.options = options;
     }
@@ -1407,17 +1409,17 @@ var Toolbar = {
         instance.dotNetRef.invokeMethodAsync("CreatedEvent", null);
     },
     hidePopup: function (element) {
-        if (element && element.blazor__instance && !sf.base.isNullOrUndefined(element.blazor__instance.popObj)) {
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance) && !sf.base.isNullOrUndefined(element.blazor__instance.popObj)) {
             element.blazor__instance.popObj.hide({ name: 'FadeOut', duration: 100 });
         }
     },
     setCssClass: function (element, cssClass) {
-        if (element.blazor__instance) {
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
             element.blazor__instance.setCssClass(cssClass);
         }
     },
     setWidth: function (element, width) {
-        if (element.blazor__instance) {
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
             element.blazor__instance.options.width = width;
             element.blazor__instance.extendedOpen();
             var wid = element.offsetWidth;
@@ -1429,14 +1431,14 @@ var Toolbar = {
         }
     },
     setHeight: function (element, height) {
-        if (element.blazor__instance) {
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
             element.blazor__instance.options.height = height;
             element.blazor__instance.extendedOpen();
             sf.base.setStyleAttribute(element, { 'height': sf.base.formatUnit(height) });
         }
     },
     setOverflowMode: function (element, overflowMode) {
-        if (element.blazor__instance) {
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
             element.blazor__instance.options.overflowMode = overflowMode;
             element.blazor__instance.extendedOpen();
             element.blazor__instance.destroyMode();
@@ -1448,7 +1450,7 @@ var Toolbar = {
         }
     },
     setEnableRTL: function (element, enableRtl) {
-        if (element.blazor__instance) {
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
             element.blazor__instance.options.enableRtl = enableRtl;
             element.blazor__instance.extendedOpen();
             enableRtl ? sf.base.addClass([element], CLS_RTL) : sf.base.removeClass([element], CLS_RTL);
@@ -1464,7 +1466,7 @@ var Toolbar = {
         }
     },
     setScrollStep: function (element, scrollStep) {
-        if (element.blazor__instance) {
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
             element.blazor__instance.options.scrollStep = scrollStep;
             element.blazor__instance.extendedOpen();
             if (element.blazor__instance.scrollModule) {
@@ -1473,7 +1475,7 @@ var Toolbar = {
         }
     },
     setEnableCollision: function (element, enableCollision) {
-        if (element.blazor__instance) {
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
             element.blazor__instance.options.enableCollision = enableCollision;
             element.blazor__instance.extendedOpen();
             if (element.blazor__instance.popObj) {
@@ -1482,7 +1484,7 @@ var Toolbar = {
         }
     },
     setAllowKeyboard: function (element, allowKeyboard) {
-        if (element.blazor__instance) {
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
             element.blazor__instance.options.allowKeyboard = allowKeyboard;
             element.blazor__instance.extendedOpen();
             element.blazor__instance.unwireKeyboardEvent();
@@ -1492,7 +1494,7 @@ var Toolbar = {
         }
     },
     serverItemsRerender: function (element, items) {
-        if (!sf.base.isNullOrUndefined(element) && element.blazor__instance) {
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
             element.blazor__instance.options.items = items;
             element.blazor__instance.destroyMode();
             element.blazor__instance.resetServerItems();
@@ -1500,23 +1502,23 @@ var Toolbar = {
         }
     },
     hideItem: function (element, items) {
-        if (element.blazor__instance) {
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
             element.blazor__instance.options.items = items;
             element.blazor__instance.refreshOverflow();
         }
     },
     disable: function (element, value) {
-        if (element.blazor__instance) {
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
             element.blazor__instance.disable(value);
         }
     },
     refreshOverflow: function (element) {
-        if (element.blazor__instance) {
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
             element.blazor__instance.refreshOverflow();
         }
     },
     destroy: function (element) {
-        if (element.blazor__instance) {
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
             element.blazor__instance.destroy();
         }
     },
@@ -1524,7 +1526,7 @@ var Toolbar = {
         if (options.scrollStep === 0) {
             options.scrollStep = null;
         }
-        if (element.blazor__instance) {
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
             element.blazor__instance.options = options;
             element.blazor__instance.destroyMode();
             element.blazor__instance.resetServerItems();

@@ -791,6 +791,9 @@ describe('FileManager control Grid view', () => {
                 responseText: JSON.stringify(ascendingData)
             });
             setTimeout(function () {
+                let items: any = document.getElementById('file_tb_sortby');
+                items.click();
+                expect(document.getElementById('file_ddl_ascending').children[0].classList.contains('e-fe-tick')).toBe(true);
                 expect(document.getElementById('file_grid').querySelectorAll('.e-row').length).toEqual(3);
                 expect(document.getElementById('file_grid').querySelectorAll('.e-row')[0].children[2].textContent).toBe('Apple');
                 expect(document.getElementById('file_grid').querySelectorAll('.e-row')[1].children[2].textContent).toBe('Music');
@@ -814,6 +817,9 @@ describe('FileManager control Grid view', () => {
                 responseText: JSON.stringify(descendingData)
             });
             setTimeout(function () {
+                let items: any = document.getElementById('file_tb_sortby');
+                items.click();
+                expect(document.getElementById('file_ddl_descending').children[0].classList.contains('e-fe-tick')).toBe(true);
                 expect(document.getElementById('file_grid').querySelectorAll('.e-row').length).toEqual(3);
                 expect(document.getElementById('file_grid').querySelectorAll('.e-row')[0].children[2].textContent).toBe('Videos');
                 expect(document.getElementById('file_grid').querySelectorAll('.e-row')[2].children[2].textContent).toBe('Apple');
@@ -836,6 +842,9 @@ describe('FileManager control Grid view', () => {
                 responseText: JSON.stringify(noSorting)
             });
             setTimeout(function () {
+                let items: any = document.getElementById('file_tb_sortby');
+                items.click();
+                expect(document.getElementById('file_ddl_none').children[0].classList.contains('e-fe-tick')).toBe(true);
                 expect(document.getElementById('file_grid').querySelectorAll('.e-row').length).toEqual(3);
                 expect(document.getElementById('file_grid').querySelectorAll('.e-row')[0].children[2].textContent).toBe('Music');
                 expect(document.getElementById('file_grid').querySelectorAll('.e-row')[1].children[2].textContent).toBe('Videos');

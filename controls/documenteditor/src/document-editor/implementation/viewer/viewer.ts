@@ -1658,7 +1658,13 @@ export class DocumentHelper {
                     let xPosition: number = touchPoint.x;
                     let yPosition: number = touchPoint.y;
                     if (!this.owner.isReadOnlyMode && this.isRowOrCellResizing) {
-                        this.owner.editorModule.tableResize.handleResizing(touchPoint);
+                        let table: TableWidget = this.owner.editorModule.tableResize.currentResizingTable;
+                        let startPosition: TextPosition = this.selection.setPositionForBlock(table, true);
+                        let endPosition: TextPosition = this.selection.setPositionForBlock(table, false);
+                        // tslint:disable-next-line:max-line-length
+                        if (!(this.owner.documentHelper.isDocumentProtected) || this.selection.checkSelectionIsAtEditRegion(startPosition, endPosition)) {
+                            this.owner.editorModule.tableResize.handleResizing(touchPoint);
+                        }
                     } else {
                         if (!(this.isTouchInput || this.isSelectionChangedOnMouseMoved || this.touchDownOnSelectionMark > 0)) {
                             this.updateTextPositionForSelection(touchPoint, 1);

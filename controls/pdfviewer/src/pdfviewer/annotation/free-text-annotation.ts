@@ -172,6 +172,10 @@ export class FreeTextAnnotation {
      */
     public textAlign: string;
     private defaultText: string;
+    /**
+     * @private
+     */
+    public previousText: string = 'Type Here';
 
 
 
@@ -195,7 +199,7 @@ export class FreeTextAnnotation {
         this.inputBoxElement.style.borderRadius = '2px';
         this.inputBoxElement.style.fontFamily = this.fontFamily;
         this.inputBoxElement.style.color = this.pdfViewer.freeTextSettings.fontColor ?
-            this.pdfViewer.freeTextSettings.fontColor : '#000';
+        this.pdfViewer.freeTextSettings.fontColor : '#000';
         this.inputBoxElement.style.overflow = 'hidden';
         this.inputBoxElement.style.wordBreak = 'break-all';
         this.inputBoxElement.addEventListener('focusout', this.onFocusOutInputBox.bind(this));
@@ -365,8 +369,10 @@ export class FreeTextAnnotation {
      * @private
      */
     // tslint:disable-next-line
-    public modifyInCollection(property: string, pageNumber: number, annotationBase: any): IFreeTextAnnotation {
-        this.pdfViewer.isDocumentEdited = true;
+    public modifyInCollection(property: string, pageNumber: number, annotationBase: any, isNewAdded?: boolean): IFreeTextAnnotation {
+        if (!isNewAdded) {
+            this.pdfViewer.isDocumentEdited = true;
+        }
         let currentAnnotObject: IFreeTextAnnotation = null;
         let pageAnnotations: IFreeTextAnnotation[] = this.getAnnotations(pageNumber, null);
         if (pageAnnotations != null && annotationBase) {
@@ -576,10 +582,12 @@ export class FreeTextAnnotation {
             let inputEleTop: number = parseFloat(this.inputBoxElement.style.top);
             let zoomFactor: number = this.pdfViewerBase.getZoomFactor();
             let inputValue: string = this.inputBoxElement.value;
+            let isNewlyAdded: boolean = false;
             if (this.isNewFreeTextAnnot === true) {
                 let currentDateString: string = new Date().toLocaleString();
                 let annotationName: string = this.pdfViewer.annotation.createGUID();
                 this.isNewFreeTextAnnot = false;
+                isNewlyAdded = true;
                 let annot: PdfAnnotationBaseModel;
                 let commentsDivid: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.addComments('freeText', pageIndex + 1);
                 if (commentsDivid) {
@@ -593,10 +601,10 @@ export class FreeTextAnnotation {
                 annot = {
                     author: this.author, modifiedDate: currentDateString, subject: 'Text Box', id: 'free_text' + this.inputBoxCount,
                     // tslint:disable-next-line:max-line-length
-                    rotateAngle: 0, dynamicText: '', strokeColor: this.borderColor, thickness: this.borderWidth, fillColor: this.fillColor,
+                    rotateAngle: 0, dynamicText: inputValue, strokeColor: this.borderColor, thickness: this.borderWidth, fillColor: this.fillColor,
                     bounds: {
                         left: inputEleLeft / zoomFactor, top: inputEleTop / zoomFactor, x: inputEleLeft / zoomFactor,
-                        y: inputEleTop / zoomFactor, width: this.defautWidth, height: this.defaultHeight,
+                        y: inputEleTop / zoomFactor, width: inputEleWidth, height: inputEleHeight,
                     }, annotName: annotationName,
                     shapeAnnotationType: 'FreeText', pageIndex: pageIndex, fontColor: this.fontColor, fontSize: this.fontSize,
                     fontFamily: this.fontFamily, opacity: this.opacity, comments: [], textAlign: this.textAlign,
@@ -613,7 +621,6 @@ export class FreeTextAnnotation {
                 let annotation: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
                 // tslint:disable-next-line
                 let bounds: any = { left: annot.bounds.x, top: annot.bounds.y, width: annot.bounds.width, height: annot.bounds.height };
-                this.pdfViewer.isDocumentEdited = true;
                 // tslint:disable-next-line
                 let settings: any = {
                     opacity: annot.opacity, borderColor: annot.strokeColor, borderWidth: annot.thickness, author: annotation.author, subject: annotation.subject, modifiedDate: annotation.modifiedDate,
@@ -643,7 +650,7 @@ export class FreeTextAnnotation {
                 this.selectedAnnotation.bounds.height = inputEleHeight;
                 this.pdfViewer.annotation.modifyDynamicTextValue(inputValue, this.selectedAnnotation.annotName);
                 this.selectedAnnotation.dynamicText = inputValue;
-                this.modifyInCollection('dynamicText', pageIndex, this.selectedAnnotation);
+                this.modifyInCollection('dynamicText', pageIndex, this.selectedAnnotation, isNewlyAdded);
                 // tslint:disable-next-line
                 this.pdfViewer.nodePropertyChange(this.selectedAnnotation, { bounds: { width: this.selectedAnnotation.bounds.width, height: this.selectedAnnotation.bounds.height, y: y } });
                 // tslint:disable-next-line
@@ -807,6 +814,7 @@ export class FreeTextAnnotation {
             // tslint:disable-next-line:max-line-length
             this.inputBoxElement.style.width = annotation.wrapper.bounds.width ? (annotation.wrapper.bounds.width * zoomFactor) + 1 + 'px' : (this.defautWidth * zoomFactor) + 'px';
             this.selectedAnnotation = annotation;
+            this.previousText = this.selectedAnnotation.dynamicText;
             this.selectedAnnotation.dynamicText = '';
             this.inputBoxElement.style.borderColor = this.selectedAnnotation.strokeColor;
             this.inputBoxElement.style.color = this.selectedAnnotation.fontColor;

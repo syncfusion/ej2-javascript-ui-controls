@@ -731,5 +731,120 @@ describe('AutoComplete', () => {
             }, 400)
         });
     });
+    describe('EJ2-39738', () => {
+        let e: any = { preventDefault: function () { }, target: null };
+        let autocompleteObj: any;
+        let autocompleteEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'auto' });
+        let countries: { [key: string]: Object; }[] = [
+            { Name: 'Australia', Code: 'AU' },
+            { Name: 'Bermuda', Code: 'BM' },
+            { Name: 'Canada', Code: 'CA' },
+            { Name: 'Cameroon', Code: 'CM' },
+            { Name: 'Denmark', Code: 'DK' },
+            { Name: 'France', Code: 'FR' },
+            { Name: 'Finland', Code: 'FI' },
+            { Name: 'Germany', Code: 'DE' },
+            { Name: 'Greenland', Code: 'GL' },
+            { Name: 'Hong Kong', Code: 'HK' },
+            { Name: 'India', Code: 'IN' },
+            { Name: 'Italy', Code: 'IT' },
+            { Name: 'Japan', Code: 'JP' },
+            { Name: 'Mexico', Code: 'MX' },
+            { Name: 'Norway', Code: 'NO' },
+            { Name: 'Poland', Code: 'PL' },
+            { Name: 'Switzerland', Code: 'CH' },
+            { Name: 'United Kingdom', Code: 'GB' },
+            { Name: 'United States', Code: 'US' }
+        ];
+        beforeAll(() => {
+            document.body.appendChild(autocompleteEle);
+        });
+        afterAll(() => {
+            autocompleteObj.destroy();
+            autocompleteEle.remove();
+        });
+
+        it('Popup shows only previously selected value when clicking down icon if autofill enabled - testcase', (done) => {
+            autocompleteObj = new AutoComplete({
+                dataSource: countries,
+                fields: { value: 'Name' },
+                autofill : true,
+                select: (args) => {
+                    autocompleteObj.inputElement.value = '';
+                    expect(autocompleteObj.inputElement.value === '').toBe(true);
+                    autocompleteObj.onFilterUp(e);
+                    expect(autocompleteObj.list.querySelectorAll('li').length).toBe(19);
+                }
+            });
+            autocompleteObj.appendTo(autocompleteEle);
+            e.key = 'ArrowDown';
+            e.keyCode = 40;
+            e.action = 'down';
+            e.ctrlKey = false;
+            e.altKey = false;
+            e.type = 'keydown'
+            autocompleteObj.onFilterUp(e);
+            setTimeout(() => {
+                expect(autocompleteObj.isPopupOpen).toBe(true);
+                expect(autocompleteObj.list.querySelectorAll('li').length).toBe(19);
+                autocompleteObj.keyActionHandler(e);
+                expect(autocompleteObj.inputElement.value === 'Australia').toBe(true);
+                done();
+            }, 200)
+        });
+    });
+    describe('EJ2-39738', () => {
+        let e: any = { preventDefault: function () { }, target: null };
+        let autocompleteObj: any;
+        let autocompleteEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'auto' });
+        let countries: { [key: string]: Object; }[] = [
+            { Name: 'Australia', Code: 'AU' },
+            { Name: 'Bermuda', Code: 'BM' },
+            { Name: 'Canada', Code: 'CA' },
+            { Name: 'Cameroon', Code: 'CM' },
+            { Name: 'Denmark', Code: 'DK' },
+            { Name: 'France', Code: 'FR' },
+            { Name: 'Finland', Code: 'FI' },
+            { Name: 'Germany', Code: 'DE' },
+            { Name: 'Greenland', Code: 'GL' },
+            { Name: 'Hong Kong', Code: 'HK' },
+            { Name: 'India', Code: 'IN' },
+            { Name: 'Italy', Code: 'IT' },
+            { Name: 'Japan', Code: 'JP' },
+            { Name: 'Mexico', Code: 'MX' },
+            { Name: 'Norway', Code: 'NO' },
+            { Name: 'Poland', Code: 'PL' },
+            { Name: 'Switzerland', Code: 'CH' },
+            { Name: 'United Kingdom', Code: 'GB' },
+            { Name: 'United States', Code: 'US' }
+        ];
+        beforeAll(() => {
+            document.body.appendChild(autocompleteEle);
+        });
+        afterAll(() => {
+            autocompleteObj.destroy();
+            autocompleteEle.remove();
+        });
+        it('Alt+Down shows no records found issue - testcase', (done) => {
+            autocompleteObj = new AutoComplete({
+                dataSource: countries,
+                fields: { value: 'Name' },
+                autofill : true,
+            });
+            autocompleteObj.appendTo(autocompleteEle);
+            e.key = 'ArrowDown';
+            e.keyCode = 40;
+            e.action = 'open';
+            e.ctrlKey = false;
+            e.altKey = true;
+            e.type = 'keydown'
+            autocompleteObj.onFilterUp(e);
+            setTimeout(() => {
+                expect(autocompleteObj.isPopupOpen).toBe(true);
+                expect(autocompleteObj.list.querySelectorAll('li').length).toBe(19);
+                done();
+            }, 300)
+        });
+    });
 
 });

@@ -492,12 +492,12 @@ export class ConditionalFormatting {
             cFRule.cFColor = cFRule.cFColor || 'RedFT';
             td.classList.add('e-' + cFRule.cFColor.toLowerCase());
             this.setFormat(td, cFRule);
-            if (cFRule && cFRule.format[0] && cFRule.format[0].style) {
-                if (cFRule.format[0].style.backgroundColor) {
-                    td.style.setProperty('background-color', cFRule.format[0].style.backgroundColor);
+            if (cFRule && cFRule.format && cFRule.format.style) {
+                if (cFRule.format.style.backgroundColor) {
+                    td.style.setProperty('background-color', cFRule.format.style.backgroundColor);
                 }
-                if (cFRule.format[0].style.color) {
-                    td.style.setProperty('color', cFRule.format[0].style.color);
+                if (cFRule.format.style.color) {
+                    td.style.setProperty('color', cFRule.format.style.color);
                 }
             }
         }
@@ -594,7 +594,7 @@ export class ConditionalFormatting {
             td.classList.add('e-' + cFRules[cFRuleIdx].cFColor.toLowerCase());
             this.setFormat(td, sheet.conditionalFormats[cFRuleIdx]);
             this.parent.notify(applyCellFormat, <CellFormatArgs>{
-                style: sheet.conditionalFormats[cFRuleIdx].format[0].style, rowIdx: rIdx, colIdx: cIdx,
+                style: sheet.conditionalFormats[cFRuleIdx].format.style, rowIdx: rIdx, colIdx: cIdx,
                 lastCell: true, isHeightCheckNeeded: true, manualUpdate: true
             });
         } else {
@@ -1333,25 +1333,24 @@ export class ConditionalFormatting {
 
     private setFormat(td: HTMLElement, cFRule: ConditionalFormatModel): void {
         if (!cFRule.format) {
-            cFRule.format = [];
-            cFRule.format[0] = {};
+            cFRule.format = {};
         }
-        if (!cFRule.format[0].style) {
-            cFRule.format[0].style = {};
+        if (!cFRule.format.style) {
+            cFRule.format.style = {};
         }
         if (td.classList.contains('e-redft')) {
-            cFRule.format[0].style.backgroundColor = '#ffc7ce';
-            cFRule.format[0].style.color = '#9c0055';
+            cFRule.format.style.backgroundColor = '#ffc7ce';
+            cFRule.format.style.color = '#9c0055';
         } else if (td.classList.contains('e-yellowft')) {
-            cFRule.format[0].style.backgroundColor = '#ffeb9c';
-            cFRule.format[0].style.color = '#9c6500';
+            cFRule.format.style.backgroundColor = '#ffeb9c';
+            cFRule.format.style.color = '#9c6500';
         } else if (td.classList.contains('e-greenft')) {
-            cFRule.format[0].style.backgroundColor = '#c6efce';
-            cFRule.format[0].style.color = '#006100';
+            cFRule.format.style.backgroundColor = '#c6efce';
+            cFRule.format.style.color = '#006100';
         } else if (td.classList.contains('e-redf')) {
-            cFRule.format[0].style.backgroundColor = '#ffc7ce';
+            cFRule.format.style.backgroundColor = '#ffc7ce';
         } else if (td.classList.contains('e-redt')) {
-            cFRule.format[0].style.color = '#9c0055';
+            cFRule.format.style.color = '#9c0055';
         }
     }
 

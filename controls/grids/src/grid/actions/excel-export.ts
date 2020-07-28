@@ -1,6 +1,7 @@
 import {
     IGrid, ExcelExportProperties, ExcelHeader, ExcelFooter, ExcelRow,
-    ExcelCell, ExcelTheme, ExcelHeaderQueryCellInfoEventArgs, ExcelStyle, ExportDetailDataBoundEventArgs, ExportGroupCaptionEventArgs
+    ExcelCell, ExcelTheme, ExcelHeaderQueryCellInfoEventArgs, ExcelStyle, ExportDetailDataBoundEventArgs, ExportGroupCaptionEventArgs,
+     AggregateQueryCellInfoEventArgs
 } from '../base/interface';
 import * as events from '../base/constant';
 import { Workbook, Worksheets, Worksheet, Column as ExcelColumn } from '@syncfusion/ej2-excel-export';
@@ -12,7 +13,7 @@ import { Row } from '../models/row';
 import { Column } from '../models/column';
 import { SummaryModelGenerator, GroupSummaryModelGenerator, CaptionSummaryModelGenerator } from '../services/summary-model-generator';
 import { AggregateColumnModel } from '../models/aggregate-model';
-import { CellType, MultipleExportType, ExcelHAlign, ExportType } from '../base/enum';
+import { CellType, MultipleExportType, ExcelHAlign, ExportType, AggregateTemplateType } from '../base/enum';
 import { Query, DataManager, Group } from '@syncfusion/ej2-data';
 import { Grid } from '../base/grid';
 import { Cell } from '../models/cell';
@@ -622,12 +623,15 @@ export class ExcelExport {
                 if ((cell.visible || this.includeHiddenColumn)) {
                     index++;
                     if (cell.isDataCell) {
+                        let footerTemplate: boolean = !isNullOrUndefined(cell.column.footerTemplate);
+                        let groupFooterTemplate: boolean = !isNullOrUndefined(cell.column.groupFooterTemplate);
+                        let groupCaptionTemplate: boolean = !isNullOrUndefined(cell.column.groupCaptionTemplate);
                         eCell.index = index + indent + (<{childGridLevel?: number}>gObj).childGridLevel;
-                        if (!isNullOrUndefined(cell.column.footerTemplate)) {
+                        if (footerTemplate) {
                             eCell.value = this.getAggreateValue(CellType.Summary, cell.column.footerTemplate, cell, row);
-                        } else if (!isNullOrUndefined(cell.column.groupFooterTemplate)) {
+                        } else if (groupFooterTemplate) {
                             eCell.value = this.getAggreateValue(CellType.GroupSummary, cell.column.groupFooterTemplate, cell, row);
-                        } else if (!isNullOrUndefined(cell.column.groupCaptionTemplate)) {
+                        } else if (groupCaptionTemplate) {
                             eCell.value = this.getAggreateValue(CellType.CaptionSummary, cell.column.groupCaptionTemplate, cell, row);
                         } else {
                             for (let key of Object.keys(row.data[cell.column.field])) {
@@ -658,6 +662,13 @@ export class ExcelExport {
                         if (gridCellStyle.textAlign) {
                             eCell.style.hAlign = gridCellStyle.textAlign.toLowerCase() as ExcelHAlign;
                         }
+                        let args: AggregateQueryCellInfoEventArgs = {
+                            row: row,
+                            type: footerTemplate ? AggregateTemplateType.Footer : groupFooterTemplate ?
+                             AggregateTemplateType.GroupFooter : AggregateTemplateType.GroupCaption ,
+                            style: eCell
+                        };
+                        this.parent.trigger(events.excelAggregateQueryCellInfo, args);
                         cells.push(eCell);
 
                     } else {

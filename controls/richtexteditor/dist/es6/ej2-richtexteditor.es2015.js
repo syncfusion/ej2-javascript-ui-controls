@@ -9881,6 +9881,7 @@ class Formats {
     }
     addEventListener() {
         this.parent.observer.on(FORMAT_TYPE, this.applyFormats, this);
+        this.parent.observer.on(KEY_UP_HANDLER, this.onKeyUp, this);
         this.parent.observer.on(KEY_DOWN_HANDLER, this.onKeyDown, this);
     }
     getParentNode(node) {
@@ -9888,6 +9889,26 @@ class Formats {
             node = node.parentNode;
         }
         return node;
+    }
+    onKeyUp(e) {
+        let range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+        let endCon = range.endContainer;
+        let lastChild = endCon.lastChild;
+        if (e.event.which === 13 && range.startContainer === endCon && endCon.nodeType !== 3) {
+            let pTag = createElement('p');
+            pTag.innerHTML = '<br>';
+            if (lastChild.nodeName === 'BR' && (lastChild.previousSibling && lastChild.previousSibling.nodeName === 'TABLE')) {
+                endCon.replaceChild(pTag, lastChild);
+                this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, pTag, 0);
+            }
+            else {
+                let brNode = this.parent.nodeSelection.getSelectionNodeCollectionBr(range)[0];
+                if (brNode.nodeName === 'BR' && (brNode.previousSibling && brNode.previousSibling.nodeName === 'TABLE')) {
+                    endCon.replaceChild(pTag, brNode);
+                    this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, pTag, 0);
+                }
+            }
+        }
     }
     onKeyDown(e) {
         if (e.event.which === 13) {
@@ -10040,7 +10061,7 @@ class Formats {
         let isSelectAll = false;
         if (this.parent.editableElement === range.endContainer &&
             !isNullOrUndefined(this.parent.editableElement.children[range.endOffset - 1]) &&
-            this.parent.editableElement.children[range.endOffset - 1].tagName === 'TABLE') {
+            this.parent.editableElement.children[range.endOffset - 1].tagName === 'TABLE' && !range.collapsed) {
             isSelectAll = true;
         }
         let save = this.parent.nodeSelection.save(range, this.parent.currentDocument);
@@ -13820,7 +13841,7 @@ class ContentRender {
      * @return {string}
      */
     getText() {
-        return this.getEditPanel().textContent;
+        return this.getEditPanel().innerText;
     }
     /**
      * Set the content div element of RichTextEditor
@@ -18878,10 +18899,10 @@ class Table {
                 let rteWidth = this.contentModule.getEditPanel().offsetWidth - paddingSize * 2;
                 if (this.resizeBtnStat.column) {
                     let cellColl = this.curTable.rows[0].cells;
-                    let width = parseFloat(this.columnEle.offsetWidth.toLocaleString());
+                    let width = parseFloat(this.columnEle.offsetWidth.toString());
                     let actualwid = width - mouseX;
-                    let totalwid = parseFloat(this.columnEle.offsetWidth.toLocaleString()) +
-                        parseFloat(cellColl[this.colIndex - 1].offsetWidth.toLocaleString());
+                    let totalwid = parseFloat(this.columnEle.offsetWidth.toString()) +
+                        parseFloat(cellColl[this.colIndex - 1].offsetWidth.toString());
                     for (let i = 0; i < this.curTable.rows.length; i++) {
                         if ((totalwid - actualwid) > 20 && actualwid > 20) {
                             let leftColumnWidth = totalwid - actualwid;

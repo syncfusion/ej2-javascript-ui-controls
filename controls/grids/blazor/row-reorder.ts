@@ -176,7 +176,9 @@ export class RowDD {
             let targetClass: string = (target.classList as any).value;
             let targetID: string = target.id;
             let fromIdx: number = parseInt(this.startedRow.getAttribute('aria-rowindex'), 10);
-            gObj.dotNetRef.invokeMethodAsync("ReorderRows", fromIdx, toIdx, 'delete', true, targetClass, targetID, null);
+            setTimeout(() => {
+                gObj.dotNetRef.invokeMethodAsync("ReorderRows", fromIdx, toIdx, 'delete', true, targetClass, targetID, null);
+            }, 10);
             this.dragTarget = null;
         }
     }

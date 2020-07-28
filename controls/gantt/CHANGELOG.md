@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 18.2.47 (2020-07-28)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#284995` - Issue in predecessor lines of exported pdf document has been fixed.
+- `#284995` - Content overflow issue in exported pdf document has been fixed.
+
+#### New Features
+
+- `#280004` - Given support to render edit template fields in Gantt edit dialog.
+
 ## 18.2.46 (2020-07-21)
 
 ### Gantt

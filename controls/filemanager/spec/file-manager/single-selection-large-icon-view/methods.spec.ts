@@ -272,7 +272,7 @@ describe('FileManager control single selection LargeIcons view', () => {
                 expect(feObj.selectedItems).toEqual(jasmine.arrayContaining(["6175"]));
                 feObj.deleteFiles();
                 let dialogObj: any = (document.getElementById("file1_dialog") as any).ej2_instances[0];
-                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Delete File");
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Delete Folder");
                 (document.getElementById('file1_dialog').querySelectorAll('.e-btn')[2] as HTMLElement).click();
                 feObj.deleteFiles([]);
                 feObj.deleteFiles(["6171", "2.png"]);

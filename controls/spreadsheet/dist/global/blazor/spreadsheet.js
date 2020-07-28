@@ -283,9 +283,11 @@ function dateToInt(val, isTime) {
     var startDateUTC = new Date('01/01/1900').toUTCString().replace(' GMT', '');
     var startDate = new Date(startDateUTC);
     var date = isDateTime(val) ? val : new Date(val);
-    var timeDiff;
     var dateDiff = (new Date(date.toUTCString().replace(' GMT', '')).getTime() - startDate.getTime());
-    timeDiff = (timeZoneOffset > 0) ? dateDiff + (timeZoneOffset * 60 * 1000) : (dateDiff - (timeZoneOffset * 60 * 1000));
+    var timeDiff = dateDiff;
+    if (!isTime) {
+        timeDiff = (timeZoneOffset > 0) ? dateDiff + (timeZoneOffset * 60 * 1000) : (dateDiff - (timeZoneOffset * 60 * 1000));
+    }
     var diffDays = (timeDiff / (1000 * 3600 * 24));
     return isTime ? diffDays : parseInt(diffDays.toString(), 10) + 2;
 }
@@ -12811,6 +12813,19 @@ var Validation = /** @class */ (function (_super) {
     return Validation;
 }(sf.base.ChildProperty));
 /**
+ * Represents the Format.
+ */
+var Format = /** @class */ (function (_super) {
+    __extends$4(Format, _super);
+    function Format() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        sf.base.Complex({}, CellStyle)
+    ], Format.prototype, "style", void 0);
+    return Format;
+}(sf.base.ChildProperty));
+/**
  * Represents the Conditional Formatting.
  */
 var ConditionalFormat = /** @class */ (function (_super) {
@@ -12822,7 +12837,7 @@ var ConditionalFormat = /** @class */ (function (_super) {
         sf.base.Property('GreaterThan')
     ], ConditionalFormat.prototype, "type", void 0);
     __decorate$3([
-        sf.base.Collection([], Format)
+        sf.base.Complex({}, Format)
     ], ConditionalFormat.prototype, "format", void 0);
     __decorate$3([
         sf.base.Property('RedFT')
@@ -13053,19 +13068,6 @@ var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, 
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 /**
- * Represents the Format.
- */
-var Format = /** @class */ (function (_super) {
-    __extends$5(Format, _super);
-    function Format() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    __decorate$4([
-        sf.base.Complex({}, CellStyle)
-    ], Format.prototype, "style", void 0);
-    return Format;
-}(sf.base.ChildProperty));
-/**
  * Represents the cell.
  */
 var Cell = /** @class */ (function (_super) {
@@ -13107,7 +13109,7 @@ var Cell = /** @class */ (function (_super) {
         sf.base.Property(1)
     ], Cell.prototype, "rowSpan", void 0);
     return Cell;
-}(Format));
+}(sf.base.ChildProperty));
 /**
  * @hidden
  */
@@ -16167,6 +16169,7 @@ var Clipboard = /** @class */ (function () {
         if (ele.querySelector('table')) {
             ele.querySelectorAll('tr').forEach(function (tr) {
                 tr.querySelectorAll('td').forEach(function (td, j) {
+                    td.textContent = td.textContent.replace(/(\r\n|\n|\r)/gm, '');
                     cells[j] = { value: td.textContent, style: _this.getStyle(td, ele) };
                 });
                 rows.push({ cells: cells });
@@ -16429,7 +16432,9 @@ var Edit = /** @class */ (function () {
                     if (sheet.protectSettings.insertLink && keyCode === 75) {
                         return;
                     }
-                    this.parent.notify(editAlert, null);
+                    if (!this.parent.element.querySelector('.e-editAlert-dlg')) {
+                        this.parent.notify(editAlert, null);
+                    }
                 }
             }
         }
@@ -18476,7 +18481,6 @@ var CellFormat = /** @class */ (function () {
     CellFormat.prototype.updateRowHeight = function (rowIdx, colIdx, isLastCell, onActionUpdate, borderSize) {
         if (borderSize === void 0) { borderSize = 0; }
         if (this.checkHeight) {
-            this.checkHeight = false;
             var hgt = 0;
             var maxHgt = void 0;
             var sheet = this.parent.getActiveSheet();
@@ -18485,6 +18489,7 @@ var CellFormat = /** @class */ (function () {
                 getLines(this.parent.getDisplayText(cell), getColumnWidth(sheet, colIdx), cell.style, this.parent.cellStyle) : 1);
             setMaxHgt(sheet, rowIdx, colIdx, hgt + borderSize);
             if (isLastCell) {
+                this.checkHeight = false;
                 var row = this.parent.getRow(rowIdx);
                 if (!row) {
                     return;
@@ -22393,6 +22398,7 @@ var ProtectSheet = /** @class */ (function () {
             closeOnEscape: true,
             showCloseIcon: true,
             width: '400px',
+            cssClass: 'e-editAlert-dlg',
             beforeOpen: function (args) {
                 var dlgArgs = {
                     dialogName: 'EditAlertDialog',
@@ -23562,12 +23568,12 @@ var ConditionalFormatting = /** @class */ (function () {
             cFRule.cFColor = cFRule.cFColor || 'RedFT';
             td.classList.add('e-' + cFRule.cFColor.toLowerCase());
             this.setFormat(td, cFRule);
-            if (cFRule && cFRule.format[0] && cFRule.format[0].style) {
-                if (cFRule.format[0].style.backgroundColor) {
-                    td.style.setProperty('background-color', cFRule.format[0].style.backgroundColor);
+            if (cFRule && cFRule.format && cFRule.format.style) {
+                if (cFRule.format.style.backgroundColor) {
+                    td.style.setProperty('background-color', cFRule.format.style.backgroundColor);
                 }
-                if (cFRule.format[0].style.color) {
-                    td.style.setProperty('color', cFRule.format[0].style.color);
+                if (cFRule.format.style.color) {
+                    td.style.setProperty('color', cFRule.format.style.color);
                 }
             }
         }
@@ -23667,7 +23673,7 @@ var ConditionalFormatting = /** @class */ (function () {
             td.classList.add('e-' + cFRules[cFRuleIdx].cFColor.toLowerCase());
             this.setFormat(td, sheet.conditionalFormats[cFRuleIdx]);
             this.parent.notify(applyCellFormat, {
-                style: sheet.conditionalFormats[cFRuleIdx].format[0].style, rowIdx: rIdx, colIdx: cIdx,
+                style: sheet.conditionalFormats[cFRuleIdx].format.style, rowIdx: rIdx, colIdx: cIdx,
                 lastCell: true, isHeightCheckNeeded: true, manualUpdate: true
             });
         }
@@ -24397,29 +24403,28 @@ var ConditionalFormatting = /** @class */ (function () {
     };
     ConditionalFormatting.prototype.setFormat = function (td, cFRule) {
         if (!cFRule.format) {
-            cFRule.format = [];
-            cFRule.format[0] = {};
+            cFRule.format = {};
         }
-        if (!cFRule.format[0].style) {
-            cFRule.format[0].style = {};
+        if (!cFRule.format.style) {
+            cFRule.format.style = {};
         }
         if (td.classList.contains('e-redft')) {
-            cFRule.format[0].style.backgroundColor = '#ffc7ce';
-            cFRule.format[0].style.color = '#9c0055';
+            cFRule.format.style.backgroundColor = '#ffc7ce';
+            cFRule.format.style.color = '#9c0055';
         }
         else if (td.classList.contains('e-yellowft')) {
-            cFRule.format[0].style.backgroundColor = '#ffeb9c';
-            cFRule.format[0].style.color = '#9c6500';
+            cFRule.format.style.backgroundColor = '#ffeb9c';
+            cFRule.format.style.color = '#9c6500';
         }
         else if (td.classList.contains('e-greenft')) {
-            cFRule.format[0].style.backgroundColor = '#c6efce';
-            cFRule.format[0].style.color = '#006100';
+            cFRule.format.style.backgroundColor = '#c6efce';
+            cFRule.format.style.color = '#006100';
         }
         else if (td.classList.contains('e-redf')) {
-            cFRule.format[0].style.backgroundColor = '#ffc7ce';
+            cFRule.format.style.backgroundColor = '#ffc7ce';
         }
         else if (td.classList.contains('e-redt')) {
-            cFRule.format[0].style.color = '#9c0055';
+            cFRule.format.style.color = '#9c0055';
         }
     };
     /**
@@ -34298,7 +34303,6 @@ exports.setColumn = setColumn;
 exports.getColumnWidth = getColumnWidth;
 exports.getColumnsWidth = getColumnsWidth;
 exports.isHiddenCol = isHiddenCol;
-exports.Format = Format;
 exports.Cell = Cell;
 exports.getCell = getCell;
 exports.setCell = setCell;
@@ -34329,6 +34333,7 @@ exports.DefineName = DefineName;
 exports.ProtectSettings = ProtectSettings;
 exports.Hyperlink = Hyperlink;
 exports.Validation = Validation;
+exports.Format = Format;
 exports.ConditionalFormat = ConditionalFormat;
 exports.workbookDestroyed = workbookDestroyed;
 exports.updateSheetFromDataSource = updateSheetFromDataSource;

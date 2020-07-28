@@ -473,14 +473,14 @@ private getStartEnd(start: number | Date, end: number | Date, isCurrentStartEnd:
         this.previousStart = start as number;
         this.previousEnd = end as number;
     } else if (isCurrentStartEnd) {
-        this.previousStart = Math.ceil(start as number);
+        this.previousStart = Math.round(start as number);
         this.previousEnd = Math.ceil(end as number);
     }
     switch (valueType) {
         case 'Double':
         case 'Category':
         case 'Logarithmic':
-            start = Math.ceil(start as number);
+            start = Math.round(start as number);
             end = Math.ceil(end as number);
             break;
         case 'DateTime':

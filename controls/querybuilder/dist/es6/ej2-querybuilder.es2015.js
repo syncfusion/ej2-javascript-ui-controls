@@ -24,7 +24,6 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 /**
  * Query Builder Source
  */
-MultiSelect.Inject(CheckBoxSelection);
 /**
  * Defines the Columns of Query Builder
  */
@@ -116,6 +115,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         this.fields = { text: 'label', value: 'field' };
         this.updatedRule = { not: false, condition: 'and' };
         this.isLocale = false;
+        MultiSelect.Inject(CheckBoxSelection);
     }
     getPersistData() {
         return this.addOnPersist(['rule']);

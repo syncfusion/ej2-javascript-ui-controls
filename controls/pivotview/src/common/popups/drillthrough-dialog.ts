@@ -8,7 +8,7 @@ import { VirtualScroll, Selection, Edit, Page, CommandColumn } from '@syncfusion
 import { IDataSet, INumberIndex, IDataOptions, PivotEngine } from '../../base/engine';
 import * as events from '../../common/base/constant';
 import { OlapEngine } from '../../base/olap/engine';
-
+import { NumericTextBox } from '@syncfusion/ej2-inputs';
 
 /**
  * `DrillThroughDialog` module to create drill-through dialog.
@@ -26,7 +26,7 @@ export class DrillThroughDialog {
     private gridIndexObjects: INumberIndex = {};
     private engine: PivotEngine | OlapEngine;
     private gridData: IDataSet[] = [];
-
+    private numericTextBox: NumericTextBox;
     /**
      * Constructor for the dialog action.
      * @hidden
@@ -39,106 +39,147 @@ export class DrillThroughDialog {
     /** @hidden */
     public showDrillThroughDialog(eventArgs: DrillThroughEventArgs): void {
         this.gridData = eventArgs.rawData;
-        this.removeDrillThroughDialog();
-        let drillThroughDialog: HTMLElement = createElement('div', {
-            id: this.parent.element.id + '_drillthrough',
-            className: cls.DRILLTHROUGH_DIALOG
-        });
-        this.parent.element.appendChild(drillThroughDialog);
-        this.dialogPopUp = new Dialog({
-            animationSettings: { effect: 'Fade' },
-            allowDragging: false,
-            header: this.parent.localeObj.getConstant('details'),
-            content: this.createDrillThroughGrid(eventArgs),
-            beforeOpen: () => {
-                /* tslint:disable:align */
-                this.drillThroughGrid.setProperties({
-                    dataSource: this.parent.editSettings.allowEditing ?
-                        this.dataWithPrimarykey(eventArgs) : this.gridData,
-                    height: !this.parent.editSettings.allowEditing ? 300 : 220,
-                    rowHeight: this.parent.gridSettings.rowHeight
-                }, false);
-            },
-            beforeClose: () => {
-                if (this.parent.editSettings.allowEditing && this.isUpdated) {
-                    if (this.parent.dataSourceSettings.type === 'CSV') {
-                        this.updateData(this.drillThroughGrid.dataSource as IDataSet[]);
-                    }
-                    let count: number = Object.keys(this.gridIndexObjects).length;
-                    let addItems: IDataSet[] = [];
-                    /* tslint:disable:no-string-literal */
-                    for (let item of this.drillThroughGrid.dataSource as IDataSet[]) {
-                        if (isNullOrUndefined(item['__index']) || item['__index'] === '') {
-                            for (let field of this.engine.fields) {
-                                if (isNullOrUndefined(item[field])) {
-                                    delete item[field];
+        let actualText: string = eventArgs.currentCell.actualText.toString();
+        if (this.engine.fieldList[actualText].aggregateType !== 'Count' && this.parent.editSettings.allowInlineEditing &&
+            this.parent.editSettings.allowEditing && eventArgs.rawData.length === 1 &&
+            this.engine.fieldList[actualText].aggregateType !== 'DistinctCount' && typeof (eventArgs.rawData[0][actualText]) !== 'string') {
+            this.editCell(eventArgs);
+        } else {
+            this.removeDrillThroughDialog();
+            let drillThroughDialog: HTMLElement = createElement('div', {
+                id: this.parent.element.id + '_drillthrough',
+                className: cls.DRILLTHROUGH_DIALOG
+            });
+            this.parent.element.appendChild(drillThroughDialog);
+            this.dialogPopUp = new Dialog({
+                animationSettings: { effect: 'Fade' },
+                allowDragging: false,
+                header: this.parent.localeObj.getConstant('details'),
+                content: this.createDrillThroughGrid(eventArgs),
+                beforeOpen: () => {
+                    /* tslint:disable:align */
+                    this.drillThroughGrid.setProperties({
+                        dataSource: this.parent.editSettings.allowEditing ?
+                            this.dataWithPrimarykey(eventArgs) : this.gridData,
+                        height: !this.parent.editSettings.allowEditing ? 300 : 220,
+                        rowHeight: this.parent.gridSettings.rowHeight
+                    }, false);
+                },
+                beforeClose: () => {
+                    if (this.parent.editSettings.allowEditing && this.isUpdated) {
+                        if (this.parent.dataSourceSettings.type === 'CSV') {
+                            this.updateData(this.drillThroughGrid.dataSource as IDataSet[]);
+                        }
+                        let count: number = Object.keys(this.gridIndexObjects).length;
+                        let addItems: IDataSet[] = [];
+                        /* tslint:disable:no-string-literal */
+                        for (let item of this.drillThroughGrid.dataSource as IDataSet[]) {
+                            if (isNullOrUndefined(item['__index']) || item['__index'] === '') {
+                                for (let field of this.engine.fields) {
+                                    if (isNullOrUndefined(item[field])) {
+                                        delete item[field];
+                                    }
                                 }
+                                delete item['__index'];
+                                addItems.push(item);
+                            } else if (count > 0) {
+                                if (isBlazor() && this.parent.editSettings.allowCommandColumns) {
+                                    this.parent.engineModule.data[Number(item['__index'])] = item;
+                                }
+                                delete this.gridIndexObjects[item['__index'].toString()];
+                                count--;
                             }
-                            delete item['__index'];
-                            addItems.push(item);
-                        } else if (count > 0) {
-                            if (isBlazor() && this.parent.editSettings.allowCommandColumns) {
-                                this.parent.engineModule.data[Number(item['__index'])] = item;
+                        }
+                        count = 0;
+                        if (isBlazor() && this.parent.enableVirtualization) {
+                            let currModule: DrillThroughDialog = this;
+                            /* tslint:disable:no-any */
+                            (currModule.parent as any).interopAdaptor.invokeMethodAsync(
+                                'PivotInteropMethod', 'updateRawData', {
+                                'AddItem': addItems, 'RemoveItem': currModule.gridIndexObjects, 'ModifiedItem': currModule.gridData
+                            }).then((data: any) => {
+                                currModule.parent.updateBlazorData(data, currModule.parent);
+                                currModule.parent.allowServerDataBinding = false;
+                                currModule.parent.setProperties({ pivotValues: currModule.parent.engineModule.pivotValues }, true);
+                                delete (currModule.parent as any).bulkChanges.pivotValues;
+                                currModule.parent.allowServerDataBinding = true;
+                                currModule.isUpdated = false;
+                                currModule.gridIndexObjects = {};
+                            });
+                            /* tslint:enable:no-any */
+                        } else {
+                            let items: IDataSet[] = [];
+                            let data: IDataSet[] | string[][] = (this.parent.allowDataCompression && this.parent.enableVirtualization) ?
+                                this.parent.engineModule.actualData : this.parent.engineModule.data;
+                            for (let item of data as IDataSet[]) {
+                                delete item['__index'];
+                                if (this.gridIndexObjects[count.toString()] === undefined) {
+                                    items.push(item);
+                                }
+                                count++;
                             }
-                            delete this.gridIndexObjects[item['__index'].toString()];
-                            count--;
+                            /* tslint:enable:no-string-literal */
+                            items = items.concat(addItems);
+                            this.parent.setProperties({ dataSourceSettings: { dataSource: items } }, true);
+                            (this.engine as PivotEngine).updateGridData(this.parent.dataSourceSettings as IDataOptions);
+                            this.parent.pivotValues = this.engine.pivotValues;
                         }
                     }
-                    count = 0;
-                    if (isBlazor() && this.parent.enableVirtualization) {
-                        let currModule: DrillThroughDialog = this;
-                        /* tslint:disable:no-any */
-                        (currModule.parent as any).interopAdaptor.invokeMethodAsync(
-                            'PivotInteropMethod', 'updateRawData', {
-                            'AddItem': addItems, 'RemoveItem': currModule.gridIndexObjects, 'ModifiedItem': currModule.gridData
-                        }).then((data: any) => {
-                            currModule.parent.updateBlazorData(data, currModule.parent);
-                            currModule.parent.allowServerDataBinding = false;
-                            currModule.parent.setProperties({ pivotValues: currModule.parent.engineModule.pivotValues }, true);
-                            delete (currModule.parent as any).bulkChanges.pivotValues;
-                            currModule.parent.allowServerDataBinding = true;
-                            currModule.isUpdated = false;
-                            currModule.gridIndexObjects = {};
-                        });
-                        /* tslint:enable:no-any */
-                    } else {
-                        let items: IDataSet[] = [];
-                        let data: IDataSet[] | string[][] = (this.parent.allowDataCompression && this.parent.enableVirtualization) ?
-                            this.parent.engineModule.actualData : this.parent.engineModule.data;
-                        for (let item of data as IDataSet[]) {
-                            delete item['__index'];
-                            if (this.gridIndexObjects[count.toString()] === undefined) {
-                                items.push(item);
-                            }
-                            count++;
-                        }
-                        /* tslint:enable:no-string-literal */
-                        items = items.concat(addItems);
-                        this.parent.setProperties({ dataSourceSettings: { dataSource: items } }, true);
-                        (this.engine as PivotEngine).updateGridData(this.parent.dataSourceSettings as IDataOptions);
-                        this.parent.pivotValues = this.engine.pivotValues;
+                    if (!(isBlazor() && this.parent.enableVirtualization)) {
+                        this.isUpdated = false;
+                        this.gridIndexObjects = {};
                     }
-                }
-                if (!(isBlazor() && this.parent.enableVirtualization)) {
-                    this.isUpdated = false;
-                    this.gridIndexObjects = {};
-                }
-            },
-            isModal: true,
-            visible: true,
-            showCloseIcon: true,
-            locale: this.parent.locale,
+                },
+                isModal: true,
+                visible: true,
+                showCloseIcon: true,
+                locale: this.parent.locale,
+                enableRtl: this.parent.enableRtl,
+                width: this.parent.isAdaptive ? '100%' : '60%',
+                position: { X: 'center', Y: 'center' },
+                closeOnEscape: true,
+                target: document.body,
+                close: this.removeDrillThroughDialog.bind(this)
+            });
+            this.dialogPopUp.isStringTemplate = true;
+            this.dialogPopUp.appendTo(drillThroughDialog);
+            // this.dialogPopUp.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('details');
+            setStyleAttribute(this.dialogPopUp.element, { 'visibility': 'visible' });
+        }
+    }
+
+    private editCell(eventArgs: DrillThroughEventArgs): void {
+        let actualText: string = eventArgs.currentCell.actualText.toString();
+        let indexObject: number = Number(Object.keys(eventArgs.currentCell.indexObject));
+        (eventArgs.currentTarget.firstElementChild as HTMLElement).style.display = 'none';
+        let cellValue: number = Number(eventArgs.rawData[0][actualText]);
+        this.numericTextBox = new NumericTextBox({
+            value: cellValue,
             enableRtl: this.parent.enableRtl,
-            width: this.parent.isAdaptive ? '100%' : '60%',
-            position: { X: 'center', Y: 'center' },
-            closeOnEscape: true,
-            target: document.body,
-            close: this.removeDrillThroughDialog.bind(this)
+            enabled: true,
+            format: '####.##',
+            locale: this.parent.locale,
+            change: () => {
+                let textBoxValue: number = this.numericTextBox.value;
+                let indexValue: number = eventArgs.currentCell.indexObject[indexObject];
+                eventArgs.rawData[0][actualText] = textBoxValue;
+                this.parent.engineModule.data[indexValue] = eventArgs.rawData[0];
+            },
+            blur: () => {
+                this.parent.setProperties({ dataSourceSettings: { dataSource: this.parent.engineModule.data } }, true);
+                (this.engine as PivotEngine).updateGridData(this.parent.dataSourceSettings as IDataOptions);
+                this.parent.pivotValues = this.engine.pivotValues;
+                this.parent.gridSettings.allowResizing = true;
+            },
         });
-        this.dialogPopUp.isStringTemplate = true;
-        this.dialogPopUp.appendTo(drillThroughDialog);
-        // this.dialogPopUp.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('details');
-        setStyleAttribute(this.dialogPopUp.element, { 'visibility': 'visible' });
+        let textBoxElement: HTMLElement = createElement('input', {
+            id: this.parent.element.id + '_inputbox',
+        });
+        eventArgs.currentTarget.appendChild(textBoxElement);
+        this.numericTextBox.appendTo(textBoxElement);
+        eventArgs.currentCell.value = this.numericTextBox.value;
+        this.numericTextBox.focusIn();
+        this.parent.gridSettings.allowResizing = false;
     }
 
     /* tslint:disable:typedef no-any */

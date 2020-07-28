@@ -80,7 +80,9 @@ class SfTab {
     public options: ITabOptions;
     constructor(element: BlazorTabElement, options: ITabOptions, dotnetRef: BlazorDotnetObject) {
         this.element = element;
-        this.element.blazor__instance = this;
+        if (!isNOU(element)) {
+            this.element.blazor__instance = this;
+        }
         this.dotNetRef = dotnetRef;
         this.options = options;
     }
@@ -380,7 +382,7 @@ class SfTab {
         this.focusItem();
     }
     private changeToolbarOrientation(toolbarEle: BlazorToolbarElement, isVertical: boolean): void {
-        if (toolbarEle.blazor__instance) {
+        if (!isNOU(toolbarEle) && !isNOU(toolbarEle.blazor__instance)) {
             // tslint:disable:no-any
             (toolbarEle.blazor__instance as any).options.width = (isVertical ? 'auto' : '100%');
             (toolbarEle.blazor__instance as any).options.height = (isVertical ? '100%' : 'auto');
@@ -781,7 +783,7 @@ let Tab: object = {
         instance.render();
     },
     headerReady(element: BlazorTabElement, isCreatedEvent: boolean): void {
-        if (element.blazor__instance) {
+        if (!isNOU(element) && !isNOU(element.blazor__instance)) {
             element.blazor__instance.headerReady();
             if (!isCreatedEvent) {
                 element.blazor__instance.dotNetRef.invokeMethodAsync("CreatedEvent", null);
@@ -789,7 +791,7 @@ let Tab: object = {
         }
     },
     contentReady(element: BlazorTabElement, selectingIndex: number, isPopup: boolean): void {
-        if (element.blazor__instance) {
+        if (!isNOU(element) && !isNOU(element.blazor__instance)) {
             element.classList.remove(CLS_FOCUS);
             element.blazor__instance.isPopup = isPopup;
             element.blazor__instance.headerItemsUpdate(selectingIndex);
@@ -799,7 +801,7 @@ let Tab: object = {
         }
     },
     selectingContent(element: BlazorTabElement, selectingIndex: number): void {
-        if (element.blazor__instance) {
+        if (!isNOU(element) && !isNOU(element.blazor__instance)) {
             element.blazor__instance.selectingContent(selectingIndex);
             if (element.blazor__instance.options.loadOn !== 'Init') {
                 element.blazor__instance.contentReady();
@@ -807,7 +809,7 @@ let Tab: object = {
         }
     },
     serverItemsChanged(element: BlazorTabElement, selectedItem: number, animation: TabAnimationSettingsModel, isVerticalIcon: boolean): void {
-        if (element.blazor__instance) {
+        if (!isNOU(element) && !isNOU(element.blazor__instance)) {
             element.blazor__instance.options.selectedItem = selectedItem;
             element.blazor__instance.options.animation = animation;
             if (isVerticalIcon) {
@@ -819,27 +821,27 @@ let Tab: object = {
         }
     },
     enableTab(element: BlazorTabElement, index: number, value: boolean): void {
-        if (element.blazor__instance) {
+        if (!isNOU(element) && !isNOU(element.blazor__instance)) {
             element.blazor__instance.enableTab(index, value);
         }
     },
     hideTab(element: BlazorTabElement, index: number, value: boolean): void {
-        if (element.blazor__instance) {
+        if (!isNOU(element) && !isNOU(element.blazor__instance)) {
             element.blazor__instance.hideTab(index, value);
         }
     },
     select(element: BlazorTabElement, index: number): void {
-        if (element.blazor__instance) {
+        if (!isNOU(element) && !isNOU(element.blazor__instance)) {
             element.blazor__instance.select(index);
         }
     },
     disable(element: BlazorTabElement, value: boolean): void {
-        if (element.blazor__instance) {
+        if (!isNOU(element) && !isNOU(element.blazor__instance)) {
             element.blazor__instance.disable(value);
         }
     },
     setCssClass(element: BlazorTabElement, cssClass: string): void {
-        if (element.blazor__instance) {
+        if (!isNOU(element) && !isNOU(element.blazor__instance)) {
             if (element.blazor__instance.options.cssClass !== '') {
                 element.blazor__instance.setCssClass(element, element.blazor__instance.options.cssClass, false);
             }
@@ -848,39 +850,41 @@ let Tab: object = {
         }
     },
     showCloseButton(element: BlazorTabElement, showCloseButton: boolean): void {
-        if (element.blazor__instance) {
+        if (!isNOU(element) && !isNOU(element.blazor__instance)) {
             element.blazor__instance.options.showCloseButton = showCloseButton;
             element.blazor__instance.refreshActElePosition();
         }
     },
     headerPlacement(element: BlazorTabElement, headerPlacement: HeaderPosition, selectedItem: number,
         toolbarEle: BlazorToolbarElement, toolbarCssClass: string, isVertical: boolean, isOrientationChange: boolean): void {
-        element.blazor__instance.options.headerPlacement = headerPlacement;
-        element.blazor__instance.options.selectedItem = selectedItem;
-        if (toolbarEle.blazor__instance) {
-            // tslint:disable-next-line:no-any
-            (toolbarEle.blazor__instance as any).setCssClass(toolbarCssClass);
+        if (!isNOU(element) && !isNOU(element.blazor__instance)) {
+            element.blazor__instance.options.headerPlacement = headerPlacement;
+            element.blazor__instance.options.selectedItem = selectedItem;
+            if (!isNOU(toolbarEle) && !isNOU(toolbarEle.blazor__instance)) {
+                // tslint:disable-next-line:no-any
+                (toolbarEle.blazor__instance as any).setCssClass(toolbarCssClass);
+            }
+            element.blazor__instance.serverChangeOrientation(headerPlacement, toolbarEle, isVertical, isOrientationChange)
         }
-        element.blazor__instance.serverChangeOrientation(headerPlacement, toolbarEle, isVertical, isOrientationChange)
     },
     enableRtl(element: BlazorTabElement, enableRtl: boolean): void {
-        if (element.blazor__instance) {
+        if (!isNOU(element) && !isNOU(element.blazor__instance)) {
             element.blazor__instance.options.enableRtl = enableRtl;
             element.blazor__instance.setRTL(enableRtl);
         }
     },
     overflowMode(element: BlazorTabElement): void {
-        if (element.blazor__instance) {
+        if (!isNOU(element) && !isNOU(element.blazor__instance)) {
             element.blazor__instance.refreshActElePosition();
         }
     },
     refresh(element: BlazorTabElement): void {
-        if (element.blazor__instance) {
+        if (!isNOU(element) && !isNOU(element.blazor__instance)) {
             element.blazor__instance.refreshActiveBorder();
         }
     },
     destroy(element: BlazorTabElement, elementId: string, selectedItem: string): void {
-        if (element.blazor__instance) {
+        if (!isNOU(element) && !isNOU(element.blazor__instance)) {
             if (element.blazor__instance.options.enablePersistence) {
                 window.localStorage.setItem(elementId, selectedItem);
             }
@@ -888,15 +892,17 @@ let Tab: object = {
         }
     },
     getTabItem(element: HTMLElement, index: number): string {
-        let dom: HTMLElement = element.querySelector('.' + CLS_TB_ITEM + '[data-index="' + index + '"]');
-        if (dom) {
-            // tslint:disable-next-line:no-any
-            return JSON.stringify((window as any).sfBlazor.getDomObject("tabitem", dom));
+        if (!isNOU(element)) {
+            let dom: HTMLElement = element.querySelector('.' + CLS_TB_ITEM + '[data-index="' + index + '"]');
+            if (dom) {
+                // tslint:disable-next-line:no-any
+                return JSON.stringify((window as any).sfBlazor.getDomObject("tabitem", dom));
+            }
         }
         return null;
     },
     getTabContent(element: BlazorTabElement, index: number): string {
-        if (element.blazor__instance) {
+        if (!isNOU(element) && !isNOU(element.blazor__instance)) {
             let dom: HTMLElement = element.blazor__instance.getContentElement(index);
             if (dom) {
                 // tslint:disable-next-line:no-any

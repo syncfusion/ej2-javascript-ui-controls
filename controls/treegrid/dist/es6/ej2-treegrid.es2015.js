@@ -1830,7 +1830,7 @@ class DataManipulation {
             let query = getObject('query', args);
             let srtQry = new Query();
             for (let srt = this.parent.grid.sortSettings.columns.length - 1; srt >= 0; srt--) {
-                let col = this.parent.getColumnByField(this.parent.grid.sortSettings.columns[srt].field);
+                let col = this.parent.grid.getColumnByField(this.parent.grid.sortSettings.columns[srt].field);
                 let compFun = col.sortComparer && !this.isRemote() ?
                     col.sortComparer.bind(col) :
                     this.parent.grid.sortSettings.columns[srt].direction;

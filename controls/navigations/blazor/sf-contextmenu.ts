@@ -343,20 +343,32 @@ interface Offset {
 // tslint:disable-next-line:variable-name
 let ContextMenu: object = {
     initialize(element: BlazorMenuElement, target: string, filter: string, dotnetRef: BlazorDotnetObject): Boolean {
-        if (element) { new SfContextMenu(element, target, filter, dotnetRef); }
+        if (!isNullOrUndefined(element)) { new SfContextMenu(element, target, filter, dotnetRef); }
         return Browser.isDevice;
     },
     contextMenuPosition(element: BlazorMenuElement, left: number, top: number, isRtl: boolean, subMenu?: boolean): Offset {
-        return element.blazor__instance.contextMenuPosition(left, top, isRtl, subMenu);
+        if (!isNullOrUndefined(element) && !isNullOrUndefined(element.blazor__instance)) {
+            return element.blazor__instance.contextMenuPosition(left, top, isRtl, subMenu);
+        } else {
+            return <Offset>{ Left: 0, Top: 0, ZIndex: 0, Width: 0 };
+        }
     },
     subMenuPosition(element: BlazorMenuElement, isRtl: boolean, showOnClick: boolean, isNull?: boolean): Offset {
-        return element.blazor__instance.subMenuPosition(isRtl, showOnClick, isNull);
+        if (!isNullOrUndefined(element) && !isNullOrUndefined(element.blazor__instance)) {
+            return element.blazor__instance.subMenuPosition(isRtl, showOnClick, isNull);
+        } else {
+            return <Offset>{ Left: 0, Top: 0, Width: 0 };
+        }
     },
     onPropertyChanged(element: BlazorMenuElement, key: string, value: string): void {
-        element.blazor__instance.onPropertyChanged(key, value);
+        if (!isNullOrUndefined(element) && !isNullOrUndefined(element.blazor__instance)) {
+            element.blazor__instance.onPropertyChanged(key, value);
+        }
     },
     destroy(element: BlazorMenuElement, refElement: HTMLElement): void {
-        element.blazor__instance.destroy(refElement);
+        if (!isNullOrUndefined(element) && !isNullOrUndefined(element.blazor__instance)) {
+            element.blazor__instance.destroy(refElement);
+        }
     }
 };
 

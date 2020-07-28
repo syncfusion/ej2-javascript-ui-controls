@@ -24,6 +24,7 @@ export class Formats {
     }
     private addEventListener(): void {
         this.parent.observer.on(EVENTS.FORMAT_TYPE, this.applyFormats, this);
+        this.parent.observer.on(EVENTS.KEY_UP_HANDLER, this.onKeyUp, this);
         this.parent.observer.on(EVENTS.KEY_DOWN_HANDLER, this.onKeyDown, this);
     }
 
@@ -32,6 +33,26 @@ export class Formats {
             node = node.parentNode;
         }
         return node;
+    }
+
+    private onKeyUp(e: IHtmlSubCommands): void {
+        let range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+        let endCon: Node = range.endContainer;
+        let lastChild: Node = endCon.lastChild;
+        if (e.event.which === 13 && range.startContainer === endCon && endCon.nodeType !== 3) {
+            let pTag: HTMLElement = createElement('p');
+            pTag.innerHTML = '<br>';
+            if (lastChild.nodeName === 'BR' && (lastChild.previousSibling && lastChild.previousSibling.nodeName === 'TABLE')) {
+                endCon.replaceChild(pTag, lastChild);
+                this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, pTag, 0);
+            } else {
+                let brNode: Node = this.parent.nodeSelection.getSelectionNodeCollectionBr(range)[0];
+                if (brNode.nodeName === 'BR' && (brNode.previousSibling && brNode.previousSibling.nodeName === 'TABLE')) {
+                    endCon.replaceChild(pTag, brNode);
+                    this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, pTag, 0);
+                }
+            }
+        }
     }
 
     private onKeyDown(e: IHtmlSubCommands): void {
@@ -182,8 +203,8 @@ export class Formats {
         let range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
         let isSelectAll: boolean = false;
         if (this.parent.editableElement === range.endContainer &&
-        !isNOU(this.parent.editableElement.children[range.endOffset - 1]) &&
-        this.parent.editableElement.children[range.endOffset - 1].tagName === 'TABLE') {
+            !isNOU(this.parent.editableElement.children[range.endOffset - 1]) &&
+            this.parent.editableElement.children[range.endOffset - 1].tagName === 'TABLE' && !range.collapsed) {
             isSelectAll = true;
         }
         let save: NodeSelection = this.parent.nodeSelection.save(range, this.parent.currentDocument);

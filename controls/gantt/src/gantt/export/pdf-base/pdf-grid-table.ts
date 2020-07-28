@@ -151,7 +151,7 @@ export class PdfTreeGridCell {
      * @private
      */
     public draw(graphics: PdfGraphics, bounds: RectangleF, cancelSubsequentSpans: boolean, leftAdjustment: number): PdfStringLayoutResult {
-        let result: PdfStringLayoutResult = null;
+        let result: PdfStringLayoutResult = null; let padding: number = 10;
         if (cancelSubsequentSpans) {
             // Cancel all subsequent cell spans, if no space exists.
             let currentCellIndex: number = this.row.cells.indexOf(this);
@@ -203,7 +203,7 @@ export class PdfTreeGridCell {
             if (this.finishedDrawingCell) {
                 temp = (this.remainingString === '') ? this.remainingString : this.value as string;
                 /* tslint:disable-next-line */
-                graphics.drawString(temp, font, textPen, textBrush, (innerLayoutArea.x + leftAdjustment), innerLayoutArea.y, this.style.format);
+                graphics.drawString(temp, font, textPen, textBrush, (innerLayoutArea.x + leftAdjustment), innerLayoutArea.y, (innerLayoutArea.width - leftAdjustment - padding), (innerLayoutArea.height - padding), this.style.format);
             } else {
                 /* tslint:disable-next-line */
                 graphics.drawString(this.remainingString, font, textPen, textBrush, (innerLayoutArea.x + leftAdjustment), innerLayoutArea.y, this.style.format);

@@ -7507,6 +7507,7 @@ let Uploader = class Uploader extends Component {
         this.uploaderName = 'UploadFiles';
         this.fileStreams = [];
         this.newFileRef = 0;
+        this.isFirstFileOnSelection = false;
         /**
          * Get the file item(li) which are shown in file list.
          * @private
@@ -8071,6 +8072,7 @@ let Uploader = class Uploader extends Component {
             ++this.count;
             let isFileListCreated = this.showFileList ? false : true;
             if (typeof this.filesData[this.count] === 'object') {
+                this.isFirstFileOnSelection = false;
                 this.upload(this.filesData[this.count], isFileListCreated);
                 if (this.filesData[this.count].statusCode === '0') {
                     this.sequenceUpload(fileData);
@@ -8657,7 +8659,6 @@ let Uploader = class Uploader extends Component {
             fileDetails.validationMessages.maxSize !== '' ? this.localizedTexts('invalidMaxFileSize') : fileDetails.status;
         if (fileDetails.validationMessages.minSize !== '' || fileDetails.validationMessages.maxSize !== '') {
             fileDetails.statusCode = '0';
-            this.checkActionComplete(true);
         }
         fileData.push(fileDetails);
     }
@@ -8713,6 +8714,7 @@ let Uploader = class Uploader extends Component {
                 }
             }
             this.raiseActionComplete();
+            this.isFirstFileOnSelection = true;
         }
     }
     allowUpload() {
@@ -9150,6 +9152,12 @@ let Uploader = class Uploader extends Component {
                     this.listParent.appendChild(liElement);
                     this.fileList.push(liElement);
                     this.truncateName(textElement);
+                    let preventActionComplete = this.flag;
+                    if (this.isPreLoadFile(listItem)) {
+                        this.flag = false;
+                        this.checkActionComplete(true);
+                        this.flag = preventActionComplete;
+                    }
                 }
             }
         }
@@ -10202,22 +10210,27 @@ let Uploader = class Uploader extends Component {
      */
     upload(files, custom) {
         files = files ? files : this.filesData;
-        let uploadFiles = this.getFilesInArray(files);
-        let eventArgs = {
-            customFormData: [],
-            currentRequest: null,
-            cancel: false
-        };
-        this.trigger('beforeUpload', eventArgs, (eventArgs) => {
-            if (!eventArgs.cancel) {
-                if (isBlazor()) {
-                    this.currentRequestHeader = eventArgs.currentRequest ? eventArgs.currentRequest : this.currentRequestHeader;
-                    this.customFormDatas = (eventArgs.customFormData && eventArgs.customFormData.length > 0) ?
-                        eventArgs.customFormData : this.customFormDatas;
+        if (this.sequentialUpload && this.isFirstFileOnSelection) {
+            this.sequenceUpload(files);
+        }
+        else {
+            let uploadFiles = this.getFilesInArray(files);
+            let eventArgs = {
+                customFormData: [],
+                currentRequest: null,
+                cancel: false
+            };
+            this.trigger('beforeUpload', eventArgs, (eventArgs) => {
+                if (!eventArgs.cancel) {
+                    if (isBlazor()) {
+                        this.currentRequestHeader = eventArgs.currentRequest ? eventArgs.currentRequest : this.currentRequestHeader;
+                        this.customFormDatas = (eventArgs.customFormData && eventArgs.customFormData.length > 0) ?
+                            eventArgs.customFormData : this.customFormDatas;
+                    }
+                    this.uploadFiles(uploadFiles, custom);
                 }
-                this.uploadFiles(uploadFiles, custom);
-            }
-        });
+            });
+        }
     }
     getFilesInArray(files) {
         let uploadFiles = [];
@@ -10508,13 +10521,7 @@ let Uploader = class Uploader extends Component {
                                 this.removeFilesData(files, customTemplate);
                             }
                         }
-                        if (this.sequentialUpload) {
-                            /* istanbul ignore next */
-                            if (index <= this.actionCompleteCount) {
-                                this.checkActionComplete(false);
-                            }
-                        }
-                        else {
+                        if (args && !args.target.classList.contains(REMOVE_ICON)) {
                             this.checkActionComplete(false);
                         }
                     }

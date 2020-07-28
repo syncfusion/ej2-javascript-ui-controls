@@ -319,6 +319,8 @@ export interface DrillThroughEventArgs {
      * @blazorType List<Syncfusion.Blazor.Grids.ColumnModel>
      */
     gridColumns?: ColumnModel[];
+    /** Defines an option to restrict the drill-through operation. */
+    cancel?: boolean;
 }
 
 /**

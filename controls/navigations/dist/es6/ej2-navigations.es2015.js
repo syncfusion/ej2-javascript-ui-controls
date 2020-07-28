@@ -2162,7 +2162,14 @@ let MenuBase = class MenuBase extends Component {
         }
     }
     afterCloseMenu(e) {
+        let isHeader;
         if (this.showSubMenu) {
+            if (this.showItemOnClick && this.navIdx.length === 0) {
+                isHeader = closest(e.target, '.e-menu-parent.e-control');
+            }
+            else {
+                isHeader = closest(this.element, '.e-menu-parent.e-control');
+            }
             let idx = this.navIdx.concat(this.cliIdx);
             let item = this.getItem(idx);
             if (item && item[this.getField('children', idx.length - 1)] &&
@@ -2170,7 +2177,7 @@ let MenuBase = class MenuBase extends Component {
                 if (e.type === 'mouseover' || (Browser.isDevice && this.isMenu)) {
                     this.setLISelected(this.cli);
                 }
-                if (!this.hamburgerMode || (this.hamburgerMode && this.cli.getAttribute('aria-expanded') === 'false')) {
+                if ((!this.hamburgerMode && isHeader) || (this.hamburgerMode && this.cli.getAttribute('aria-expanded') === 'false')) {
                     this.cli.setAttribute('aria-expanded', 'true');
                     this.navIdx.push(this.cliIdx);
                     this.openMenu(this.cli, item, null, null, e);
@@ -2179,6 +2186,14 @@ let MenuBase = class MenuBase extends Component {
             else {
                 if (e.type !== 'mouseover') {
                     this.closeMenu(null, e);
+                }
+            }
+            if (!isHeader) {
+                let cul = this.getUlByNavIdx();
+                let sli = this.getLIByClass(cul, SELECTED);
+                if (sli) {
+                    sli.setAttribute('aria-expanded', 'false');
+                    sli.classList.remove(SELECTED);
                 }
             }
         }

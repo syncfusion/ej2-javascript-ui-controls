@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 18.2.47 (2020-07-28)
+
+### Document Editor
+
+#### New Features
+
+- `#280089`, `#283427`, `#250760` - Added event to notify service failure.
+
+#### Bug Fixes
+
+- `#284775` - Resolved table resize enabled issue in protected mode.
+- `#282504` - Resolved footer content overlapping issue when inserting image and table in footer.
+
 ## 18.2.46 (2020-07-21)
 
 ### Document Editor

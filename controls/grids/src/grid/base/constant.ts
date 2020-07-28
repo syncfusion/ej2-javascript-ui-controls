@@ -430,3 +430,9 @@ export const closeFilterDialog: string = 'close-filter-dialog';
 export const columnChooserCancelBtnClick: string = 'columnChooserCancelBtnClick';
 /** @hidden */
 export const getFilterBarOperator: string = 'get-filterbar-operator';
+/** @hidden */
+export const resetColumns: string = 'reset-columns';
+/** @hidden */
+export const pdfAggregateQueryCellInfo: string = 'pdfAggregateQueryCellInfo';
+/** @hidden */
+export const excelAggregateQueryCellInfo: string = 'excelAggregateQueryCellInfo';

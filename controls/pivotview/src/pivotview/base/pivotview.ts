@@ -184,6 +184,14 @@ export class CellEditSettings extends ChildProperty<CellEditSettings> implements
     public allowCommandColumns: boolean;
 
     /**
+    * Allows direct editing of a value cell without opening the edit dialog. NOTE: It is applicable only if the value cell is made by a single raw data. Otherwise editing dialog will be shown. 
+    * > The `allowInlineEditing` property supports all modes of editing.
+    * @default false
+    */
+    @Property(false)
+    public allowInlineEditing: boolean;
+
+    /**
      * Allow options for performing CRUD operations with different modes in the data grid that used to update the appropriate cells in the pivot table. 
      * The available modes are as follows: 
      * * `Normal`: Allows the currently selected row alone will be completely changed to edit state. You can change the cell values and save it to the data source by clicking “Update” toolbar button.
@@ -757,10 +765,11 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      * * `allowEditOnDblClick`: Allows you to restrict CRUD operations by double-clicking the appropriate value cell in the pivot table.
      * * `showConfirmDialog`: Allows you to show the confirmation dialog to save and discard CRUD operations performed in the data grid that used to update the appropriate cells in the pivot table.
      * * `showDeleteConfirmDialog`: Allows you to show the confirmation dialog to delete any records from the data grid.
+     * * `allowInlineEditing`: Allows direct editing of a value cell without opening the edit dialog. NOTE: It is applicable only if the value cell is made by a single raw data. Otherwise editing dialog will be shown.
      * 
      * > This feature is applicable only for the relational data source.
      * @default { allowAdding: false, allowEditing: false, allowDeleting: false, allowCommandColumns: false, 
-     * mode:'Normal', allowEditOnDblClick: true, showConfirmDialog: true, showDeleteConfirmDialog: false }
+     * mode:'Normal', allowEditOnDblClick: true, showConfirmDialog: true, showDeleteConfirmDialog: false, allowInlineEditing: false }
      */
     @Complex<CellEditSettingsModel>({}, CellEditSettings)
     public editSettings: CellEditSettingsModel;
@@ -3698,7 +3707,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
 
     /** @hidden */
     public setGridColumns(gridcolumns: ColumnModel[]): void {
-        if (this.element.offsetWidth < this.totColWidth) {
+        if (!isNullOrUndefined(this.totColWidth) && this.totColWidth > 0) {
             for (let column of gridcolumns) {
                 if (column.columns && column.columns.length > 0) {
                     this.setGridColumns(column.columns as ColumnModel[]);
@@ -3757,8 +3766,13 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             dataSourceSettings: this.dataSourceSettings as IDataOptions
         };
         this.trigger(events.beforeColumnsRender, eventArgs);
-        if (firstColWidth !== this.pivotColumns[0].width && this.element.offsetWidth < this.totColWidth) {
+        if (firstColWidth !== this.pivotColumns[0].width) {
             this.firstColWidth = this.pivotColumns[0].width;
+            this.renderModule.resColWidth = parseInt(this.firstColWidth.toString());
+            let colWidth: number = this.renderModule.calculateColWidth(this.pivotColumns ? this.pivotColumns.length : 0);
+            for (let i: number = 1; i < this.pivotColumns.length; i++) {
+                this.pivotColumns[i].width = colWidth;
+            }
         }
         this.posCount = 0;
         this.setGridColumns(gridcolumns);
@@ -4508,7 +4522,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         let pivot: PivotView = this;
         //setTimeout(() => {
         pivot.engineModule.data = (e.result as IDataSet[]);
-        if (!isNullOrUndefined(pivot.engineModule.data) && pivot.engineModule.data.length > 0 ) {
+        if (!isNullOrUndefined(pivot.engineModule.data) && pivot.engineModule.data.length > 0) {
             pivot.initEngine();
         } else {
             this.hideWaitingPopup();

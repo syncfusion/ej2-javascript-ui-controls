@@ -569,6 +569,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     private isBlazorTemplate: boolean;
     private fileStreams: FileInfo[] = [];
     private newFileRef: number = 0;
+    private isFirstFileOnSelection: boolean = false;
     /**
      * Get the file item(li) which are shown in file list.
      * @private
@@ -1609,6 +1610,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             ++this.count;
             let isFileListCreated: boolean =  this.showFileList ? false : true;
             if (typeof this.filesData[this.count] === 'object') {
+                this.isFirstFileOnSelection = false;
                 this.upload(this.filesData[this.count], isFileListCreated);
                 if (this.filesData[this.count].statusCode === '0') {
                     this.sequenceUpload(fileData);
@@ -2183,7 +2185,6 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             fileDetails.validationMessages.maxSize !== '' ? this.localizedTexts('invalidMaxFileSize') : fileDetails.status;
         if (fileDetails.validationMessages.minSize !== '' || fileDetails.validationMessages.maxSize !== '') {
             fileDetails.statusCode = '0';
-            this.checkActionComplete(true);
         }
         fileData.push(fileDetails);
     }
@@ -2238,6 +2239,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 }
             }
             this.raiseActionComplete();
+            this.isFirstFileOnSelection = true;
         }
     }
 
@@ -2676,6 +2678,12 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                     this.listParent.appendChild(liElement);
                     this.fileList.push(liElement);
                     this.truncateName(textElement);
+                    let preventActionComplete: boolean = this.flag;
+                    if (this.isPreLoadFile(listItem)) {
+                        this.flag = false;
+                        this.checkActionComplete(true);
+                        this.flag = preventActionComplete;
+                    }
                 }
             }
         }
@@ -3735,22 +3743,26 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
      */
     public upload(files?: FileInfo | FileInfo[], custom?: boolean): void {
         files = files ? files : this.filesData;
-        let uploadFiles: FileInfo[] = this.getFilesInArray(files);
-        let eventArgs: BeforeUploadEventArgs = {
-            customFormData: [],
-            currentRequest: null,
-            cancel: false
-        };
-        this.trigger('beforeUpload', eventArgs, (eventArgs: BeforeUploadEventArgs) => {
-            if (!eventArgs.cancel) {
-                if (isBlazor()) {
-                    this.currentRequestHeader = eventArgs.currentRequest ? eventArgs.currentRequest : this.currentRequestHeader;
-                    this.customFormDatas = (eventArgs.customFormData && eventArgs.customFormData.length > 0) ?
-                        eventArgs.customFormData : this.customFormDatas;
+        if (this.sequentialUpload && this.isFirstFileOnSelection) {
+            this.sequenceUpload(files as FileInfo[]);
+        } else {
+            let uploadFiles: FileInfo[] = this.getFilesInArray(files);
+            let eventArgs: BeforeUploadEventArgs = {
+                customFormData: [],
+                currentRequest: null,
+                cancel: false
+            };
+            this.trigger('beforeUpload', eventArgs, (eventArgs: BeforeUploadEventArgs) => {
+                if (!eventArgs.cancel) {
+                    if (isBlazor()) {
+                        this.currentRequestHeader = eventArgs.currentRequest ? eventArgs.currentRequest : this.currentRequestHeader;
+                        this.customFormDatas = (eventArgs.customFormData && eventArgs.customFormData.length > 0) ?
+                            eventArgs.customFormData : this.customFormDatas;
+                    }
+                    this.uploadFiles(uploadFiles, custom);
                 }
-                this.uploadFiles(uploadFiles, custom);
-            }
-        });
+            });
+        }
     }
     private getFilesInArray(files: FileInfo | FileInfo[]):  FileInfo[] {
         let  uploadFiles:  FileInfo[]  =  [];
@@ -4035,12 +4047,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                                 this.removeFilesData(files, customTemplate);
                             }
                         }
-                        if (this.sequentialUpload) {
-                            /* istanbul ignore next */
-                            if (index <= this.actionCompleteCount) {
-                                this.checkActionComplete(false);
-                            }
-                        } else {
+                        if (args && !(args.target as Element).classList.contains(REMOVE_ICON)) {
                             this.checkActionComplete(false);
                         }
                     }

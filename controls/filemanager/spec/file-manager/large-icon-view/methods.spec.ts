@@ -215,7 +215,7 @@ describe('FileManager control LargeIcons view', () => {
                 expect(feObj.selectedItems).toEqual(jasmine.arrayContaining(["Documents", "1.png"]));
                 feObj.deleteFiles();
                 let dialogObj: any = (document.getElementById("file1_dialog") as any).ej2_instances[0];
-                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Delete Multiple Files");
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Delete Multiple Items");
                 (document.getElementById('file1_dialog').querySelectorAll('.e-btn')[2] as HTMLElement).click();
                 feObj.deleteFiles([]);
                 feObj.deleteFiles(["Documents", "2.png", "1.png"]);
@@ -267,7 +267,7 @@ describe('FileManager control LargeIcons view', () => {
                 expect(feObj.selectedItems).toEqual(jasmine.arrayContaining(["6171", "6175"]));
                 feObj.deleteFiles();
                 let dialogObj: any = (document.getElementById("file1_dialog") as any).ej2_instances[0];
-                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Delete Multiple Files");
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Delete Multiple Items");
                 (document.getElementById('file1_dialog').querySelectorAll('.e-btn')[2] as HTMLElement).click();
                 feObj.deleteFiles([]);
                 feObj.deleteFiles(["6171", "2.png"]);

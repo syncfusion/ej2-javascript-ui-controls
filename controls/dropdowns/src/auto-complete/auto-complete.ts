@@ -243,7 +243,7 @@ export class AutoComplete extends ComboBox {
         if (this.isFiltered) {
             return filterQuery;
         }
-        if (this.queryString !== null) {
+        if (this.queryString !== null && this.queryString !== '') {
             let dataType: string = <string>this.typeOfData(this.dataSource as { [key: string]: Object; }[]).typeof;
             if (!(this.dataSource instanceof DataManager) && dataType === 'string' || dataType === 'number') {
                 filterQuery.where('', filterType, queryString, this.ignoreCase, this.ignoreAccent);
@@ -377,7 +377,7 @@ export class AutoComplete extends ComboBox {
             this.setHoverList(li);
             this.selectedLI = <HTMLElement>li;
             this.setScrollPosition(e as KeyboardEventArgs);
-            if (this.autofill) {
+            if (this.autofill && this.isPopupOpen) {
                 this.preventAutoFill = false;
                 super.setAutoFill(li);
             }

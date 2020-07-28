@@ -161,7 +161,7 @@ export interface DocumentEditorContainerModel extends ComponentModel{
     beforePaneSwitch?: EmitType<BeforePaneSwitchEventArgs>;
 
     /**
-     * Triggers after inserting comment.
+     * Triggers on deleting a comment.
      * @blazorproperty 'OnCommentDelete'
      * @event
      */

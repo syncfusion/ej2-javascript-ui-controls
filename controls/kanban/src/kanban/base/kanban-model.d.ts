@@ -99,7 +99,6 @@ export interface KanbanModel extends ComponentModel{
 
     /**
      * Defines the sort settings such as field and direction.
-     * @deprecated
      * @default {}
      */
     sortSettings?: SortSettingsModel;

@@ -245,6 +245,9 @@ export class Circular {
         let progress: ProgressBar = this.progress;
         let labelText: string = progress.labelStyle.text;
         circularLabelGroup = progress.renderer.createGroup({ 'id': progress.element.id + '_CircularLabelGroup' });
+        if (document.getElementById(circularLabelGroup.id)) {
+            document.getElementById(circularLabelGroup.id).remove();
+        }
         labelValue = ((progress.value - progress.minimum) / (progress.maximum - progress.minimum)) * percentage;
         circularValue = (progress.value < progress.minimum || progress.value > progress.maximum) ? 0 : Math.round(labelValue);
         argsData = {

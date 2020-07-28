@@ -600,6 +600,7 @@ export class Toolbar {
             DialogUtility.alert({ content: this.container.localObj.getConstant('Error in establishing connection with web server'), closeOnEscape: true, showCloseIcon: true, position: { X: 'Center', Y: 'Center' } });
         } else {
             alert('Failed to load the file');
+            this.documentEditor.fireServiceFailure(args);
         }
         hideSpinner(this.container.containerTarget);
     }

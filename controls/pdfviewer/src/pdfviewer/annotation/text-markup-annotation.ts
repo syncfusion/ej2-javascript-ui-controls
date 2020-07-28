@@ -1202,58 +1202,68 @@ export class TextMarkupAnnotation {
      */
     public deleteTextMarkupAnnotation(): void {
         if (this.currentTextMarkupAnnotation) {
-            let deletedAnnotation: ITextMarkupAnnotation = null;
-            this.showHideDropletDiv(true);
-            // tslint:disable-next-line
-            let annotation: any = this.currentTextMarkupAnnotation;
-            if (this.currentTextMarkupAnnotation.isMultiSelect && annotation.annotNameCollection) {
-                this.deletMultiPageAnnotation(annotation);
+            let isLock: boolean = false;
+            if (this.currentTextMarkupAnnotation.annotationSettings) {
+                // tslint:disable-next-line
+                isLock = this.currentTextMarkupAnnotation.annotationSettings.isLock;
+                if (this.pdfViewer.annotationModule.checkAllowedInteractions('Delete', this.currentTextMarkupAnnotation)) {
+                    isLock = false;
+                }
             }
-            let pageAnnotations: ITextMarkupAnnotation[] = this.getAnnotations(this.selectTextMarkupCurrentPage, null);
-            if (pageAnnotations) {
-                for (let i: number = 0; i < pageAnnotations.length; i++) {
-                    if (JSON.stringify(this.currentTextMarkupAnnotation) === JSON.stringify(pageAnnotations[i])) {
-                        deletedAnnotation = pageAnnotations.splice(i, 1)[0];
-                        // tslint:disable-next-line:max-line-length
-                        this.pdfViewer.annotationModule.addAction(this.selectTextMarkupCurrentPage, i, deletedAnnotation, 'Text Markup Deleted', null);
-                        this.currentAnnotationIndex = i;
-                        this.pdfViewer.annotation.stickyNotesAnnotationModule.findPosition(deletedAnnotation, 'textMarkup');
-                        let removeDiv: HTMLElement = document.getElementById(deletedAnnotation.annotName);
-                        if (removeDiv) {
-                            if (removeDiv.parentElement.childElementCount === 1) {
-                                this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateAccordionContainer(removeDiv);
-                            } else {
-                                removeDiv.remove();
+            if (!isLock) {
+                let deletedAnnotation: ITextMarkupAnnotation = null;
+                this.showHideDropletDiv(true);
+                // tslint:disable-next-line
+                let annotation: any = this.currentTextMarkupAnnotation;
+                if (this.currentTextMarkupAnnotation.isMultiSelect && annotation.annotNameCollection) {
+                    this.deletMultiPageAnnotation(annotation);
+                }
+                let pageAnnotations: ITextMarkupAnnotation[] = this.getAnnotations(this.selectTextMarkupCurrentPage, null);
+                if (pageAnnotations) {
+                    for (let i: number = 0; i < pageAnnotations.length; i++) {
+                        if (JSON.stringify(this.currentTextMarkupAnnotation) === JSON.stringify(pageAnnotations[i])) {
+                            deletedAnnotation = pageAnnotations.splice(i, 1)[0];
+                            // tslint:disable-next-line:max-line-length
+                            this.pdfViewer.annotationModule.addAction(this.selectTextMarkupCurrentPage, i, deletedAnnotation, 'Text Markup Deleted', null);
+                            this.currentAnnotationIndex = i;
+                            this.pdfViewer.annotation.stickyNotesAnnotationModule.findPosition(deletedAnnotation, 'textMarkup');
+                            let removeDiv: HTMLElement = document.getElementById(deletedAnnotation.annotName);
+                            if (removeDiv) {
+                                if (removeDiv.parentElement.childElementCount === 1) {
+                                    this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateAccordionContainer(removeDiv);
+                                } else {
+                                    removeDiv.remove();
+                                }
                             }
                         }
                     }
-                }
-                this.pdfViewer.annotationModule.updateAnnotationCollection(this.currentTextMarkupAnnotation);
-                this.manageAnnotations(pageAnnotations, this.selectTextMarkupCurrentPage);
-                // tslint:disable-next-line:max-line-length
-                this.pdfViewer.annotationModule.updateImportAnnotationCollection(this.currentTextMarkupAnnotation, this.currentTextMarkupAnnotation.pageNumber, 'textMarkupAnnotation');
-                let annotationId: string = this.currentTextMarkupAnnotation.annotName;
-                // tslint:disable-next-line
-                let annotationBounds: any = this.currentTextMarkupAnnotation.bounds;
-                this.currentTextMarkupAnnotation = null;
-                this.pdfViewer.annotationModule.renderAnnotations(this.selectTextMarkupCurrentPage, null, null, null);
-                this.pdfViewer.isDocumentEdited = true;
-                // tslint:disable-next-line:max-line-length
-                let multiPageCollection: ITextMarkupAnnotation[] = this.multiPageCollectionList(annotation);
-                if (multiPageCollection.length > 0) {
-                    multiPageCollection.push(deletedAnnotation);
+                    this.pdfViewer.annotationModule.updateAnnotationCollection(this.currentTextMarkupAnnotation);
+                    this.manageAnnotations(pageAnnotations, this.selectTextMarkupCurrentPage);
                     // tslint:disable-next-line:max-line-length
-                    this.pdfViewer.fireAnnotationRemove(this.selectTextMarkupCurrentPage, annotationId, deletedAnnotation.textMarkupAnnotationType as AnnotationType, annotationBounds, deletedAnnotation.textMarkupContent, deletedAnnotation.textMarkupStartIndex, deletedAnnotation.textMarkupEndIndex, multiPageCollection);
-                } else {
+                    this.pdfViewer.annotationModule.updateImportAnnotationCollection(this.currentTextMarkupAnnotation, this.currentTextMarkupAnnotation.pageNumber, 'textMarkupAnnotation');
+                    let annotationId: string = this.currentTextMarkupAnnotation.annotName;
+                    // tslint:disable-next-line
+                    let annotationBounds: any = this.currentTextMarkupAnnotation.bounds;
+                    this.currentTextMarkupAnnotation = null;
+                    this.pdfViewer.annotationModule.renderAnnotations(this.selectTextMarkupCurrentPage, null, null, null);
+                    this.pdfViewer.isDocumentEdited = true;
                     // tslint:disable-next-line:max-line-length
-                    this.pdfViewer.fireAnnotationRemove(this.selectTextMarkupCurrentPage, annotationId, deletedAnnotation.textMarkupAnnotationType as AnnotationType, annotationBounds, deletedAnnotation.textMarkupContent, deletedAnnotation.textMarkupStartIndex, deletedAnnotation.textMarkupEndIndex);
-                }
-                this.currentAnnotationIndex = null;
-                this.selectTextMarkupCurrentPage = null;
-                if (Browser.isDevice) {
-                    // tslint:disable-next-line:max-line-length
-                    this.pdfViewer.toolbarModule.annotationToolbarModule.hideMobileAnnotationToolbar();
-                    this.pdfViewer.toolbarModule.showToolbar(true);
+                    let multiPageCollection: ITextMarkupAnnotation[] = this.multiPageCollectionList(annotation);
+                    if (multiPageCollection.length > 0) {
+                        multiPageCollection.push(deletedAnnotation);
+                        // tslint:disable-next-line:max-line-length
+                        this.pdfViewer.fireAnnotationRemove(this.selectTextMarkupCurrentPage, annotationId, deletedAnnotation.textMarkupAnnotationType as AnnotationType, annotationBounds, deletedAnnotation.textMarkupContent, deletedAnnotation.textMarkupStartIndex, deletedAnnotation.textMarkupEndIndex, multiPageCollection);
+                    } else {
+                        // tslint:disable-next-line:max-line-length
+                        this.pdfViewer.fireAnnotationRemove(this.selectTextMarkupCurrentPage, annotationId, deletedAnnotation.textMarkupAnnotationType as AnnotationType, annotationBounds, deletedAnnotation.textMarkupContent, deletedAnnotation.textMarkupStartIndex, deletedAnnotation.textMarkupEndIndex);
+                    }
+                    this.currentAnnotationIndex = null;
+                    this.selectTextMarkupCurrentPage = null;
+                    if (Browser.isDevice) {
+                        // tslint:disable-next-line:max-line-length
+                        this.pdfViewer.toolbarModule.annotationToolbarModule.hideMobileAnnotationToolbar();
+                        this.pdfViewer.toolbarModule.showToolbar(true);
+                    }
                 }
             }
         }
@@ -1774,8 +1784,17 @@ export class TextMarkupAnnotation {
             let currentAnnot: ITextMarkupAnnotation = this.getCurrentMarkupAnnotation(event.clientX, event.clientY, pageNumber, canvas);
             if (currentAnnot && !window.getSelection().toString()) {
                 let isLock: boolean = false;
+                let isSelection: boolean = false;
                 if (currentAnnot.annotationSettings && currentAnnot.annotationSettings.isLock) {
                     isLock = currentAnnot.annotationSettings.isLock;
+                    if (isLock && this.pdfViewer.annotationModule.checkAllowedInteractions('Select', currentAnnot)) {
+                        isLock = false;
+                        if (this.pdfViewer.annotationModule.checkAllowedInteractions('PropertyChange', currentAnnot)) {
+                            isSelection = false;
+                        } else {
+                            isSelection = true;
+                        }
+                    }
                 }
                 if (!isLock) {
                     let canvasParentPosition: ClientRect = canvas.parentElement.getBoundingClientRect();
@@ -1785,7 +1804,9 @@ export class TextMarkupAnnotation {
                     this.selectAnnotation(currentAnnot, canvas, pageNumber, event);
                     this.currentTextMarkupAnnotation = currentAnnot;
                     this.selectTextMarkupCurrentPage = pageNumber;
-                    this.enableAnnotationPropertiesTool(true);
+                    if (!isSelection) {
+                        this.enableAnnotationPropertiesTool(true);
+                    }
                     let commentPanelDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_commantPanel');
                     if (commentPanelDiv && commentPanelDiv.style.display === 'block') {
                         // tslint:disable-next-line
@@ -2027,6 +2048,9 @@ export class TextMarkupAnnotation {
         let isLock: boolean = false;
         if (annotation.annotationSettings && annotation.annotationSettings.isLock) {
             isLock = annotation.annotationSettings.isLock;
+            if (isLock && this.pdfViewer.annotationModule.checkAllowedInteractions('Select', annotation)) {
+                isLock = false;
+            }
         }
         if (!isLock) {
             let isCurrentTextMarkup: boolean = false;
@@ -2349,7 +2373,15 @@ export class TextMarkupAnnotation {
                 if (annotation.annotationSettings && annotation.annotationSettings.isLock) {
                     isLock = annotation.annotationSettings.isLock;
                 }
-                if (!isLock) {
+                if (isLock) {
+                    if (this.pdfViewer.annotationModule.checkAllowedInteractions('PropertyChange', annotation)) {
+                        this.pdfViewer.toolbarModule.annotationToolbarModule.enableTextMarkupAnnotationPropertiesTools(true);
+                        this.pdfViewer.toolbarModule.annotationToolbarModule.setCurrentColorInPicker();
+                    }
+                    if (this.pdfViewer.annotationModule.checkAllowedInteractions('Delete', annotation)) {
+                        this.pdfViewer.toolbarModule.annotationToolbarModule.selectAnnotationDeleteItem(true);
+                    }
+                } else {
                     this.pdfViewer.toolbarModule.annotationToolbarModule.enableTextMarkupAnnotationPropertiesTools(true);
                     this.pdfViewer.toolbarModule.annotationToolbarModule.selectAnnotationDeleteItem(true);
                     this.pdfViewer.toolbarModule.annotationToolbarModule.setCurrentColorInPicker();

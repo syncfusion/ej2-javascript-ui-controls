@@ -36,7 +36,7 @@ import { PasteOptions } from './index';
 import { CommentReviewPane, CheckBoxFormFieldDialog, DropDownFormField, TextFormField, CheckBoxFormField, FieldElementBox, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo } from './implementation/index';
 import { TextFormFieldDialog } from './implementation/dialogs/form-field-text-dialog';
 import { DropDownFormFieldDialog } from './implementation/dialogs/form-field-drop-down-dialog';
-import { FormFillingMode, TrackChangeEventArgs } from './base';
+import { FormFillingMode, TrackChangeEventArgs, ServiceFailureArgs } from './base';
 import { TrackChangesPane } from './implementation/track-changes/track-changes-pane';
 import { RevisionCollection } from './implementation/track-changes/track-changes';
 
@@ -667,6 +667,12 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     @Event()
     public beforeFormFieldFill: EmitType<FormFieldFillEventArgs>;
     /**
+     * Triggers when the server side action fails.
+     * @event
+     */
+    public serviceFailure: EmitType<ServiceFailureArgs>;
+
+    /**
      * Triggers after form field fill.
      * @event
      */
@@ -1128,6 +1134,13 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * @private
      */
+    public fireServiceFailure(eventArgs: ServiceFailureArgs): void {
+        this.trigger('serviceFailure', eventArgs);
+    }
+    /**
+     * @private
+     */
+
     public fireViewChange(): void {
         if (this.viewer && this.documentHelper.pages.length > 0) {
             if ((this.viewer as PageLayoutViewer).visiblePages.length > 0) {

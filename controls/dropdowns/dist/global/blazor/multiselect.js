@@ -871,7 +871,9 @@ var MultiSelect = /** @class */ (function (_super) {
                 }
             }
         }
-        e.preventDefault();
+        if (!(this.targetElement() && this.targetElement() !== '')) {
+            e.preventDefault();
+        }
     };
     MultiSelect.prototype.enable = function (state) {
         if (state) {
@@ -4360,7 +4362,9 @@ var CheckBoxSelection = /** @class */ (function () {
         if (this.parent.getLocaleName() !== 'listbox') {
             var target = e.target;
             if (!sf.base.isNullOrUndefined(this.parent.popupObj) && sf.base.closest(target, '#' + this.parent.popupObj.element.id)) {
-                e.preventDefault();
+                if (!(this.filterInput && this.filterInput.value !== '')) {
+                    e.preventDefault();
+                }
             }
             if (!(!sf.base.isNullOrUndefined(this.parent.popupObj) && sf.base.closest(target, '#' + this.parent.popupObj.element.id)) &&
                 !this.parent.overAllWrapper.contains(e.target)) {

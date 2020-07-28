@@ -64,7 +64,6 @@ var __generator = (undefined && undefined.__generator) || function (thisArg, bod
 /**
  * Query Builder Source
  */
-MultiSelect.Inject(CheckBoxSelection);
 /**
  * Defines the Columns of Query Builder
  */
@@ -172,6 +171,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         _this.fields = { text: 'label', value: 'field' };
         _this.updatedRule = { not: false, condition: 'and' };
         _this.isLocale = false;
+        MultiSelect.Inject(CheckBoxSelection);
         return _this;
     }
     QueryBuilder.prototype.getPersistData = function () {

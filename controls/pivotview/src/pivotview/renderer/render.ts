@@ -38,13 +38,13 @@ export class Render {
     /** @hidden */
     public maxIndent: number;
     /** @hidden */
+    public resColWidth: number;
     public indentCollection: { [key: number]: number } = {};
     private formatList: { [key: string]: string };
     private colPos: number = 0;
     private colGrandPos: number;
     private rowGrandPos: number;
     private lastSpan: number = 0;
-    private resColWidth: number;
     private aggMenu: AggregateMenu;
     private field: string;
     private fieldCaption: string;
@@ -208,6 +208,7 @@ export class Render {
         this.parent.grid.on('header-refreshed', this.headerRefreshed.bind(this));
         this.parent.grid.on('export-DataBound', this.excelDataBound.bind(this));
     }
+
     /* tslint:disable-next-line */
     private headerRefreshed(args: any): void {
         if (this.parent.lastGridSettings && Object.keys(this.parent.lastGridSettings).indexOf('allowResizing') > -1) {

@@ -51,7 +51,9 @@ var SfTab = /** @class */ (function () {
             moveDown: 'downarrow'
         };
         this.element = element;
-        this.element.blazor__instance = this;
+        if (!sf.base.isNullOrUndefined(element)) {
+            this.element.blazor__instance = this;
+        }
         this.dotNetRef = dotnetRef;
         this.options = options;
     }
@@ -377,7 +379,7 @@ var SfTab = /** @class */ (function () {
         this.focusItem();
     };
     SfTab.prototype.changeToolbarOrientation = function (toolbarEle, isVertical) {
-        if (toolbarEle.blazor__instance) {
+        if (!sf.base.isNullOrUndefined(toolbarEle) && !sf.base.isNullOrUndefined(toolbarEle.blazor__instance)) {
             // tslint:disable:no-any
             toolbarEle.blazor__instance.options.width = (isVertical ? 'auto' : '100%');
             toolbarEle.blazor__instance.options.height = (isVertical ? '100%' : 'auto');
@@ -815,7 +817,7 @@ var Tab = {
         instance.render();
     },
     headerReady: function (element, isCreatedEvent) {
-        if (element.blazor__instance) {
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
             element.blazor__instance.headerReady();
             if (!isCreatedEvent) {
                 element.blazor__instance.dotNetRef.invokeMethodAsync("CreatedEvent", null);
@@ -823,7 +825,7 @@ var Tab = {
         }
     },
     contentReady: function (element, selectingIndex, isPopup) {
-        if (element.blazor__instance) {
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
             element.classList.remove(CLS_FOCUS);
             element.blazor__instance.isPopup = isPopup;
             element.blazor__instance.headerItemsUpdate(selectingIndex);
@@ -833,7 +835,7 @@ var Tab = {
         }
     },
     selectingContent: function (element, selectingIndex) {
-        if (element.blazor__instance) {
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
             element.blazor__instance.selectingContent(selectingIndex);
             if (element.blazor__instance.options.loadOn !== 'Init') {
                 element.blazor__instance.contentReady();
@@ -841,7 +843,7 @@ var Tab = {
         }
     },
     serverItemsChanged: function (element, selectedItem, animation, isVerticalIcon) {
-        if (element.blazor__instance) {
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
             element.blazor__instance.options.selectedItem = selectedItem;
             element.blazor__instance.options.animation = animation;
             if (isVerticalIcon) {
@@ -854,27 +856,27 @@ var Tab = {
         }
     },
     enableTab: function (element, index, value) {
-        if (element.blazor__instance) {
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
             element.blazor__instance.enableTab(index, value);
         }
     },
     hideTab: function (element, index, value) {
-        if (element.blazor__instance) {
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
             element.blazor__instance.hideTab(index, value);
         }
     },
     select: function (element, index) {
-        if (element.blazor__instance) {
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
             element.blazor__instance.select(index);
         }
     },
     disable: function (element, value) {
-        if (element.blazor__instance) {
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
             element.blazor__instance.disable(value);
         }
     },
     setCssClass: function (element, cssClass) {
-        if (element.blazor__instance) {
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
             if (element.blazor__instance.options.cssClass !== '') {
                 element.blazor__instance.setCssClass(element, element.blazor__instance.options.cssClass, false);
             }
@@ -883,38 +885,40 @@ var Tab = {
         }
     },
     showCloseButton: function (element, showCloseButton) {
-        if (element.blazor__instance) {
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
             element.blazor__instance.options.showCloseButton = showCloseButton;
             element.blazor__instance.refreshActElePosition();
         }
     },
     headerPlacement: function (element, headerPlacement, selectedItem, toolbarEle, toolbarCssClass, isVertical, isOrientationChange) {
-        element.blazor__instance.options.headerPlacement = headerPlacement;
-        element.blazor__instance.options.selectedItem = selectedItem;
-        if (toolbarEle.blazor__instance) {
-            // tslint:disable-next-line:no-any
-            toolbarEle.blazor__instance.setCssClass(toolbarCssClass);
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
+            element.blazor__instance.options.headerPlacement = headerPlacement;
+            element.blazor__instance.options.selectedItem = selectedItem;
+            if (!sf.base.isNullOrUndefined(toolbarEle) && !sf.base.isNullOrUndefined(toolbarEle.blazor__instance)) {
+                // tslint:disable-next-line:no-any
+                toolbarEle.blazor__instance.setCssClass(toolbarCssClass);
+            }
+            element.blazor__instance.serverChangeOrientation(headerPlacement, toolbarEle, isVertical, isOrientationChange);
         }
-        element.blazor__instance.serverChangeOrientation(headerPlacement, toolbarEle, isVertical, isOrientationChange);
     },
     enableRtl: function (element, enableRtl) {
-        if (element.blazor__instance) {
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
             element.blazor__instance.options.enableRtl = enableRtl;
             element.blazor__instance.setRTL(enableRtl);
         }
     },
     overflowMode: function (element) {
-        if (element.blazor__instance) {
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
             element.blazor__instance.refreshActElePosition();
         }
     },
     refresh: function (element) {
-        if (element.blazor__instance) {
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
             element.blazor__instance.refreshActiveBorder();
         }
     },
     destroy: function (element, elementId, selectedItem) {
-        if (element.blazor__instance) {
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
             if (element.blazor__instance.options.enablePersistence) {
                 window.localStorage.setItem(elementId, selectedItem);
             }
@@ -922,15 +926,17 @@ var Tab = {
         }
     },
     getTabItem: function (element, index) {
-        var dom = element.querySelector('.' + CLS_TB_ITEM + '[data-index="' + index + '"]');
-        if (dom) {
-            // tslint:disable-next-line:no-any
-            return JSON.stringify(window.sfBlazor.getDomObject("tabitem", dom));
+        if (!sf.base.isNullOrUndefined(element)) {
+            var dom = element.querySelector('.' + CLS_TB_ITEM + '[data-index="' + index + '"]');
+            if (dom) {
+                // tslint:disable-next-line:no-any
+                return JSON.stringify(window.sfBlazor.getDomObject("tabitem", dom));
+            }
         }
         return null;
     },
     getTabContent: function (element, index) {
-        if (element.blazor__instance) {
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
             var dom = element.blazor__instance.getContentElement(index);
             if (dom) {
                 // tslint:disable-next-line:no-any

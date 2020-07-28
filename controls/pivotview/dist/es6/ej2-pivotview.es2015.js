@@ -6134,7 +6134,6 @@ class AggregateMenu {
 class Render {
     /** Constructor for render module */
     constructor(parent) {
-        /** @hidden */
         this.indentCollection = {};
         this.colPos = 0;
         this.lastSpan = 0;
@@ -8056,6 +8055,14 @@ class CommonKeyboardInteraction {
                     e.preventDefault();
                     return;
                 }
+            }
+        }
+        else if (target && target.id === this.parent.parentID + '_inputbox') {
+            if (e.action === 'upArrow') {
+                target.parentElement.querySelector('.e-spin-up').click();
+            }
+            else if (e.action === 'downArrow') {
+                target.parentElement.querySelector('.e-spin-down').click();
             }
         }
     }
@@ -11673,7 +11680,7 @@ class KeyboardInteraction {
         return target;
     }
     allpivotButtons(target) {
-        let Buttons;
+        let buttons;
         let columnFilterValueGroup = closest(target, '.' + GRID_GROUPING_BAR_CLASS);
         let rowGroup = closest(target, '.' + GROUP_PIVOT_ROW);
         let chartGroup = closest(target, '.' + CHART_GROUPING_BAR_CLASS);
@@ -11694,13 +11701,13 @@ class KeyboardInteraction {
             /* tslint:disable */
             let groupingbarButton = [].slice.call(this.parent.element.querySelector('.' + GRID_GROUPING_BAR_CLASS).querySelectorAll('.' + PIVOT_BUTTON_CLASS));
             let headerButton = [].slice.call(this.parent.element.querySelector('.' + GROUP_PIVOT_ROW).querySelectorAll('.' + PIVOT_BUTTON_CLASS));
-            Buttons = groupingbarButton.concat(headerButton);
+            buttons = groupingbarButton.concat(headerButton);
         }
         else if (chartAxis) {
-            Buttons = [].slice.call(this.parent.element.querySelector('.' + CHART_GROUPING_BAR_CLASS).querySelectorAll('.' + PIVOT_BUTTON_CLASS));
+            buttons = [].slice.call(this.parent.element.querySelector('.' + CHART_GROUPING_BAR_CLASS).querySelectorAll('.' + PIVOT_BUTTON_CLASS));
         }
         /* tslint:enable */
-        return Buttons;
+        return buttons;
     }
     processTab(e) {
         let target = e.target;
@@ -11783,6 +11790,14 @@ class KeyboardInteraction {
                 }
             });
         }
+        else if (target.classList.contains('e-numerictextbox')) {
+            let gridFocus = this.parent.grid.serviceLocator.getService('focus');
+            gridFocus.focus();
+            let element = gridFocus.getFocusedElement();
+            removeClass([element], ['e-focused', 'e-focus']);
+            element.setAttribute('tabindex', '0');
+            e.preventDefault();
+        }
     }
     processShiftTab(e) {
         let target = e.target;
@@ -11847,6 +11862,14 @@ class KeyboardInteraction {
                 }
             });
         }
+        else if (target.classList.contains('e-numerictextbox')) {
+            let gridFocus = this.parent.grid.serviceLocator.getService('focus');
+            gridFocus.focus();
+            let element = gridFocus.getFocusedElement();
+            removeClass([element], ['e-focused', 'e-focus']);
+            element.setAttribute('tabindex', '0');
+            e.preventDefault();
+        }
     }
     processEnter(e) {
         let target = e.target;
@@ -11867,6 +11890,14 @@ class KeyboardInteraction {
                         'bubbles': true,
                         'cancelable': true
                     }));
+                    if (target.querySelector('.e-numerictextbox')) {
+                        target.click();
+                    }
+                }
+                else if (target.classList.contains('e-numerictextbox')) {
+                    gridFocus.focus();
+                    let element = gridFocus.getFocusedElement();
+                    removeClass([element], ['e-focused', 'e-focus']);
                 }
             }
             else if (e.keyCode === 13 && e.shiftKey && !e.ctrlKey) {
@@ -11897,7 +11928,8 @@ class KeyboardInteraction {
     }
     processSelection(e) {
         let target = e.target;
-        if (this.parent.grid && this.parent.gridSettings.allowSelection && this.parent.gridSettings.selectionSettings.mode !== 'Row') {
+        if (this.parent.grid && this.parent.gridSettings.allowSelection && this.parent.gridSettings.selectionSettings.mode !== 'Row' &&
+            !target.classList.contains('e-numerictextbox')) {
             let control = this.parent;
             let colIndex = Number(e.target.getAttribute('aria-colIndex'));
             let rowIndex = Number(e.target.getAttribute('index'));
@@ -11955,7 +11987,7 @@ class KeyboardInteraction {
             }
         }
         else if (target && (e.keyCode === 37 || e.keyCode === 38) &&
-            this.parent && this.parent.showGroupingBar && this.parent.groupingBarModule) {
+            this.parent && this.parent.showGroupingBar && this.parent.groupingBarModule && !target.classList.contains('e-numerictextbox')) {
             if (this.parent.grid && this.parent.element.querySelector('.e-frozenheader') && this.parent.element.querySelector('.e-frozenheader').querySelectorAll('.e-focus').length > 0) {
                 removeClass(this.parent.element.querySelector('.e-frozenheader').querySelectorAll('.e-focus'), 'e-focus');
                 removeClass(this.parent.element.querySelector('.e-frozenheader').querySelectorAll('.e-focused'), 'e-focused');
@@ -11968,6 +12000,9 @@ class KeyboardInteraction {
                 e.preventDefault();
                 return;
             }
+        }
+        else if (target.classList.contains('e-numerictextbox') && e.action === 'rightArrow' || e.action === 'leftArrow') {
+            target.click();
         }
         /* tslint:enable */
     }
@@ -12531,107 +12566,148 @@ class DrillThroughDialog {
     /** @hidden */
     showDrillThroughDialog(eventArgs) {
         this.gridData = eventArgs.rawData;
-        this.removeDrillThroughDialog();
-        let drillThroughDialog = createElement('div', {
-            id: this.parent.element.id + '_drillthrough',
-            className: DRILLTHROUGH_DIALOG
-        });
-        this.parent.element.appendChild(drillThroughDialog);
-        this.dialogPopUp = new Dialog({
-            animationSettings: { effect: 'Fade' },
-            allowDragging: false,
-            header: this.parent.localeObj.getConstant('details'),
-            content: this.createDrillThroughGrid(eventArgs),
-            beforeOpen: () => {
-                /* tslint:disable:align */
-                this.drillThroughGrid.setProperties({
-                    dataSource: this.parent.editSettings.allowEditing ?
-                        this.dataWithPrimarykey(eventArgs) : this.gridData,
-                    height: !this.parent.editSettings.allowEditing ? 300 : 220,
-                    rowHeight: this.parent.gridSettings.rowHeight
-                }, false);
-            },
-            beforeClose: () => {
-                if (this.parent.editSettings.allowEditing && this.isUpdated) {
-                    if (this.parent.dataSourceSettings.type === 'CSV') {
-                        this.updateData(this.drillThroughGrid.dataSource);
-                    }
-                    let count = Object.keys(this.gridIndexObjects).length;
-                    let addItems = [];
-                    /* tslint:disable:no-string-literal */
-                    for (let item of this.drillThroughGrid.dataSource) {
-                        if (isNullOrUndefined(item['__index']) || item['__index'] === '') {
-                            for (let field of this.engine.fields) {
-                                if (isNullOrUndefined(item[field])) {
-                                    delete item[field];
+        let actualText = eventArgs.currentCell.actualText.toString();
+        if (this.engine.fieldList[actualText].aggregateType !== 'Count' && this.parent.editSettings.allowInlineEditing &&
+            this.parent.editSettings.allowEditing && eventArgs.rawData.length === 1 &&
+            this.engine.fieldList[actualText].aggregateType !== 'DistinctCount' && typeof (eventArgs.rawData[0][actualText]) !== 'string') {
+            this.editCell(eventArgs);
+        }
+        else {
+            this.removeDrillThroughDialog();
+            let drillThroughDialog = createElement('div', {
+                id: this.parent.element.id + '_drillthrough',
+                className: DRILLTHROUGH_DIALOG
+            });
+            this.parent.element.appendChild(drillThroughDialog);
+            this.dialogPopUp = new Dialog({
+                animationSettings: { effect: 'Fade' },
+                allowDragging: false,
+                header: this.parent.localeObj.getConstant('details'),
+                content: this.createDrillThroughGrid(eventArgs),
+                beforeOpen: () => {
+                    /* tslint:disable:align */
+                    this.drillThroughGrid.setProperties({
+                        dataSource: this.parent.editSettings.allowEditing ?
+                            this.dataWithPrimarykey(eventArgs) : this.gridData,
+                        height: !this.parent.editSettings.allowEditing ? 300 : 220,
+                        rowHeight: this.parent.gridSettings.rowHeight
+                    }, false);
+                },
+                beforeClose: () => {
+                    if (this.parent.editSettings.allowEditing && this.isUpdated) {
+                        if (this.parent.dataSourceSettings.type === 'CSV') {
+                            this.updateData(this.drillThroughGrid.dataSource);
+                        }
+                        let count = Object.keys(this.gridIndexObjects).length;
+                        let addItems = [];
+                        /* tslint:disable:no-string-literal */
+                        for (let item of this.drillThroughGrid.dataSource) {
+                            if (isNullOrUndefined(item['__index']) || item['__index'] === '') {
+                                for (let field of this.engine.fields) {
+                                    if (isNullOrUndefined(item[field])) {
+                                        delete item[field];
+                                    }
                                 }
+                                delete item['__index'];
+                                addItems.push(item);
                             }
-                            delete item['__index'];
-                            addItems.push(item);
+                            else if (count > 0) {
+                                if (isBlazor() && this.parent.editSettings.allowCommandColumns) {
+                                    this.parent.engineModule.data[Number(item['__index'])] = item;
+                                }
+                                delete this.gridIndexObjects[item['__index'].toString()];
+                                count--;
+                            }
                         }
-                        else if (count > 0) {
-                            if (isBlazor() && this.parent.editSettings.allowCommandColumns) {
-                                this.parent.engineModule.data[Number(item['__index'])] = item;
+                        count = 0;
+                        if (isBlazor() && this.parent.enableVirtualization) {
+                            let currModule = this;
+                            /* tslint:disable:no-any */
+                            currModule.parent.interopAdaptor.invokeMethodAsync('PivotInteropMethod', 'updateRawData', {
+                                'AddItem': addItems, 'RemoveItem': currModule.gridIndexObjects, 'ModifiedItem': currModule.gridData
+                            }).then((data) => {
+                                currModule.parent.updateBlazorData(data, currModule.parent);
+                                currModule.parent.allowServerDataBinding = false;
+                                currModule.parent.setProperties({ pivotValues: currModule.parent.engineModule.pivotValues }, true);
+                                delete currModule.parent.bulkChanges.pivotValues;
+                                currModule.parent.allowServerDataBinding = true;
+                                currModule.isUpdated = false;
+                                currModule.gridIndexObjects = {};
+                            });
+                            /* tslint:enable:no-any */
+                        }
+                        else {
+                            let items = [];
+                            let data = (this.parent.allowDataCompression && this.parent.enableVirtualization) ?
+                                this.parent.engineModule.actualData : this.parent.engineModule.data;
+                            for (let item of data) {
+                                delete item['__index'];
+                                if (this.gridIndexObjects[count.toString()] === undefined) {
+                                    items.push(item);
+                                }
+                                count++;
                             }
-                            delete this.gridIndexObjects[item['__index'].toString()];
-                            count--;
+                            /* tslint:enable:no-string-literal */
+                            items = items.concat(addItems);
+                            this.parent.setProperties({ dataSourceSettings: { dataSource: items } }, true);
+                            this.engine.updateGridData(this.parent.dataSourceSettings);
+                            this.parent.pivotValues = this.engine.pivotValues;
                         }
                     }
-                    count = 0;
-                    if (isBlazor() && this.parent.enableVirtualization) {
-                        let currModule = this;
-                        /* tslint:disable:no-any */
-                        currModule.parent.interopAdaptor.invokeMethodAsync('PivotInteropMethod', 'updateRawData', {
-                            'AddItem': addItems, 'RemoveItem': currModule.gridIndexObjects, 'ModifiedItem': currModule.gridData
-                        }).then((data) => {
-                            currModule.parent.updateBlazorData(data, currModule.parent);
-                            currModule.parent.allowServerDataBinding = false;
-                            currModule.parent.setProperties({ pivotValues: currModule.parent.engineModule.pivotValues }, true);
-                            delete currModule.parent.bulkChanges.pivotValues;
-                            currModule.parent.allowServerDataBinding = true;
-                            currModule.isUpdated = false;
-                            currModule.gridIndexObjects = {};
-                        });
-                        /* tslint:enable:no-any */
+                    if (!(isBlazor() && this.parent.enableVirtualization)) {
+                        this.isUpdated = false;
+                        this.gridIndexObjects = {};
                     }
-                    else {
-                        let items = [];
-                        let data = (this.parent.allowDataCompression && this.parent.enableVirtualization) ?
-                            this.parent.engineModule.actualData : this.parent.engineModule.data;
-                        for (let item of data) {
-                            delete item['__index'];
-                            if (this.gridIndexObjects[count.toString()] === undefined) {
-                                items.push(item);
-                            }
-                            count++;
-                        }
-                        /* tslint:enable:no-string-literal */
-                        items = items.concat(addItems);
-                        this.parent.setProperties({ dataSourceSettings: { dataSource: items } }, true);
-                        this.engine.updateGridData(this.parent.dataSourceSettings);
-                        this.parent.pivotValues = this.engine.pivotValues;
-                    }
-                }
-                if (!(isBlazor() && this.parent.enableVirtualization)) {
-                    this.isUpdated = false;
-                    this.gridIndexObjects = {};
-                }
-            },
-            isModal: true,
-            visible: true,
-            showCloseIcon: true,
-            locale: this.parent.locale,
+                },
+                isModal: true,
+                visible: true,
+                showCloseIcon: true,
+                locale: this.parent.locale,
+                enableRtl: this.parent.enableRtl,
+                width: this.parent.isAdaptive ? '100%' : '60%',
+                position: { X: 'center', Y: 'center' },
+                closeOnEscape: true,
+                target: document.body,
+                close: this.removeDrillThroughDialog.bind(this)
+            });
+            this.dialogPopUp.isStringTemplate = true;
+            this.dialogPopUp.appendTo(drillThroughDialog);
+            // this.dialogPopUp.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('details');
+            setStyleAttribute(this.dialogPopUp.element, { 'visibility': 'visible' });
+        }
+    }
+    editCell(eventArgs) {
+        let actualText = eventArgs.currentCell.actualText.toString();
+        let indexObject = Number(Object.keys(eventArgs.currentCell.indexObject));
+        eventArgs.currentTarget.firstElementChild.style.display = 'none';
+        let cellValue = Number(eventArgs.rawData[0][actualText]);
+        this.numericTextBox = new NumericTextBox({
+            value: cellValue,
             enableRtl: this.parent.enableRtl,
-            width: this.parent.isAdaptive ? '100%' : '60%',
-            position: { X: 'center', Y: 'center' },
-            closeOnEscape: true,
-            target: document.body,
-            close: this.removeDrillThroughDialog.bind(this)
+            enabled: true,
+            format: '####.##',
+            locale: this.parent.locale,
+            change: () => {
+                let textBoxValue = this.numericTextBox.value;
+                let indexValue = eventArgs.currentCell.indexObject[indexObject];
+                eventArgs.rawData[0][actualText] = textBoxValue;
+                this.parent.engineModule.data[indexValue] = eventArgs.rawData[0];
+            },
+            blur: () => {
+                this.parent.setProperties({ dataSourceSettings: { dataSource: this.parent.engineModule.data } }, true);
+                this.engine.updateGridData(this.parent.dataSourceSettings);
+                this.parent.pivotValues = this.engine.pivotValues;
+                this.parent.gridSettings.allowResizing = true;
+            },
         });
-        this.dialogPopUp.isStringTemplate = true;
-        this.dialogPopUp.appendTo(drillThroughDialog);
-        // this.dialogPopUp.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('details');
-        setStyleAttribute(this.dialogPopUp.element, { 'visibility': 'visible' });
+        let textBoxElement = createElement('input', {
+            id: this.parent.element.id + '_inputbox',
+        });
+        eventArgs.currentTarget.appendChild(textBoxElement);
+        this.numericTextBox.appendTo(textBoxElement);
+        eventArgs.currentCell.value = this.numericTextBox.value;
+        this.numericTextBox.focusIn();
+        this.parent.gridSettings.allowResizing = false;
     }
     /* tslint:disable:typedef no-any */
     updateData(dataSource) {
@@ -13025,7 +13101,8 @@ class DrillThrough {
             rowHeaders: pivotValue.rowHeaders === '' ? '' : pivotValue.rowHeaders.toString().split('.').join(' - '),
             columnHeaders: pivotValue.columnHeaders === '' ? '' : pivotValue.columnHeaders.toString().split('.').join(' - '),
             value: valuetText + '(' + pivotValue.formattedText + ')',
-            gridColumns: this.drillThroughDialog.frameGridColumns(rawData)
+            gridColumns: this.drillThroughDialog.frameGridColumns(rawData),
+            cancel: false
         };
         if (this.parent.dataSourceSettings.type === 'CSV') {
             eventArgs = this.frameData(eventArgs);
@@ -13047,7 +13124,9 @@ class DrillThrough {
                 }
                 observedArgs.gridColumns = gridColumns;
             }
-            drillThrough$$1.drillThroughDialog.showDrillThroughDialog(observedArgs);
+            if (!eventArgs.cancel) {
+                drillThrough$$1.drillThroughDialog.showDrillThroughDialog(observedArgs);
+            }
         });
     }
 }
@@ -20090,6 +20169,9 @@ __decorate([
     Property(false)
 ], CellEditSettings.prototype, "allowCommandColumns", void 0);
 __decorate([
+    Property(false)
+], CellEditSettings.prototype, "allowInlineEditing", void 0);
+__decorate([
     Property('Normal')
 ], CellEditSettings.prototype, "mode", void 0);
 __decorate([
@@ -22377,7 +22459,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
     }
     /** @hidden */
     setGridColumns(gridcolumns) {
-        if (this.element.offsetWidth < this.totColWidth) {
+        if (!isNullOrUndefined(this.totColWidth) && this.totColWidth > 0) {
             for (let column of gridcolumns) {
                 if (column.columns && column.columns.length > 0) {
                     this.setGridColumns(column.columns);
@@ -22436,8 +22518,13 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             dataSourceSettings: this.dataSourceSettings
         };
         this.trigger(beforeColumnsRender, eventArgs);
-        if (firstColWidth !== this.pivotColumns[0].width && this.element.offsetWidth < this.totColWidth) {
+        if (firstColWidth !== this.pivotColumns[0].width) {
             this.firstColWidth = this.pivotColumns[0].width;
+            this.renderModule.resColWidth = parseInt(this.firstColWidth.toString());
+            let colWidth = this.renderModule.calculateColWidth(this.pivotColumns ? this.pivotColumns.length : 0);
+            for (let i = 1; i < this.pivotColumns.length; i++) {
+                this.pivotColumns[i].width = colWidth;
+            }
         }
         this.posCount = 0;
         this.setGridColumns(gridcolumns);

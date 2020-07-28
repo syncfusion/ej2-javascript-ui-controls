@@ -4119,4 +4119,21 @@ describe('Check destroy method', () => {
             destroy(rteObj);
         });
     });
+    describe('BLAZ-5899: getText public method with new line test', () => {
+        let rteObj: RichTextEditor;
+        let innerHTML: string = `<p>Test</p><p><br></p><p>Multiline</p><p><br></p><p>More lines</p>`;
+        beforeEach(() => {
+        });
+        it(' DIV', () => {
+            rteObj = renderRTE({ value: innerHTML });
+            expect(rteObj.getText() === 'Test\n\n\n\n\nMultiline\n\n\n\n\nMore lines').toBe(true);
+        });
+        it(' IFrame', () => {
+            rteObj = renderRTE({ iframeSettings: { enable: true }, value: innerHTML });
+            expect(rteObj.getText() === 'Test\n\n\n\n\nMultiline\n\n\n\n\nMore lines').toBe(true);
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+    });
 });

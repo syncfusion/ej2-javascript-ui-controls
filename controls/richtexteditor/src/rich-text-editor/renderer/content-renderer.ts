@@ -69,7 +69,7 @@ export class ContentRender implements IRenderer {
      * @return {string} 
      */
     public getText(): string {
-        return this.getEditPanel().textContent;
+        return (this.getEditPanel() as HTMLElement).innerText;
     }
 
     /**

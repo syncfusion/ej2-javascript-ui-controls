@@ -105,7 +105,7 @@ export class KeyboardInteraction {
         return target;
     }
     private allpivotButtons(target: HTMLElement): HTMLElement[] {
-        let Buttons: HTMLElement[];
+        let buttons: HTMLElement[];
         let columnFilterValueGroup: HTMLElement = closest(target, '.' + cls.GRID_GROUPING_BAR_CLASS) as HTMLElement;
         let rowGroup: HTMLElement = closest(target, '.' + cls.GROUP_PIVOT_ROW) as HTMLElement;
         let chartGroup: HTMLElement = closest(target, '.' + cls.CHART_GROUPING_BAR_CLASS) as HTMLElement;
@@ -115,24 +115,22 @@ export class KeyboardInteraction {
         let columnFilterValueAxis: Boolean;
         if (columnFilterValueGroup !== null) {
             rowAxis = columnFilterValueGroup.classList.contains(cls.GRID_GROUPING_BAR_CLASS);
-        }
-        else if (rowGroup !== null) {
+        } else if (rowGroup !== null) {
             columnFilterValueAxis = rowGroup.classList.contains(cls.GROUP_PIVOT_ROW);
-        }
-        else if (chartGroup !== null) {
+        } else if (chartGroup !== null) {
             chartAxis = chartGroup.classList.contains(cls.CHART_GROUPING_BAR_CLASS);
         }
         if (rowAxis || columnFilterValueAxis || tableAxis) {
             /* tslint:disable */
             let groupingbarButton: HTMLElement[] = [].slice.call(this.parent.element.querySelector('.' + cls.GRID_GROUPING_BAR_CLASS).querySelectorAll('.' + cls.PIVOT_BUTTON_CLASS));
             let headerButton: HTMLElement[] = [].slice.call(this.parent.element.querySelector('.' + cls.GROUP_PIVOT_ROW).querySelectorAll('.' + cls.PIVOT_BUTTON_CLASS));
-            Buttons = groupingbarButton.concat(headerButton);
+            buttons = groupingbarButton.concat(headerButton);
         }
         else if (chartAxis) {
-            Buttons = [].slice.call(this.parent.element.querySelector('.' + cls.CHART_GROUPING_BAR_CLASS).querySelectorAll('.' + cls.PIVOT_BUTTON_CLASS));
+            buttons = [].slice.call(this.parent.element.querySelector('.' + cls.CHART_GROUPING_BAR_CLASS).querySelectorAll('.' + cls.PIVOT_BUTTON_CLASS));
         }
         /* tslint:enable */
-        return Buttons;
+        return buttons;
     }
     private processTab(e: Event): void {
         let target: Element = (e.target as HTMLElement);
@@ -199,8 +197,7 @@ export class KeyboardInteraction {
                     return;
                 }
             }
-        }
-        else if (target && closest(target, '.' + cls.GRID_TOOLBAR) && this.parent.toolbar && this.parent.toolbarModule) {
+        } else if (target && closest(target, '.' + cls.GRID_TOOLBAR) && this.parent.toolbar && this.parent.toolbarModule) {
             clearTimeout(this.timeOutObj);
             this.timeOutObj = setTimeout(() => {
                 removeClass(closest(target, '.' + cls.GRID_TOOLBAR).querySelectorAll('.e-menu-item.e-focused'), 'e-focused');
@@ -208,6 +205,13 @@ export class KeyboardInteraction {
                     addClass([document.activeElement], 'e-focused');
                 }
             });
+        } else if (target.classList.contains('e-numerictextbox')) {
+            let gridFocus: FocusStrategy = this.parent.grid.serviceLocator.getService<FocusStrategy>('focus');
+            gridFocus.focus();
+            let element: HTMLElement = gridFocus.getFocusedElement();
+            removeClass([element], ['e-focused', 'e-focus']);
+            element.setAttribute('tabindex', '0');
+            e.preventDefault();
         }
     }
     private processShiftTab(e: Event): void {
@@ -219,7 +223,7 @@ export class KeyboardInteraction {
                     target = target.querySelector('.e-btn-focused');
                 } else if (target.classList.contains('e-group-row')) {
                     target = this.parent.element.querySelector('.e-btn-focused') ? this.parent.element.querySelector('.e-btn-focused') :
-                    this.parent.element.querySelector('.' + cls.GRID_GROUPING_BAR_CLASS);
+                        this.parent.element.querySelector('.' + cls.GRID_GROUPING_BAR_CLASS);
                     let allPivotButtons: HTMLElement[] = this.allpivotButtons(target as HTMLElement);
                     if (allPivotButtons.length > 0 && allPivotButtons[allPivotButtons.length - 1]) {
                         gridFocus.currentInfo.skipAction = true;
@@ -246,8 +250,8 @@ export class KeyboardInteraction {
                 target = (this.parent.element.querySelector('.' + cls.GROUP_ROW_CLASS + ' .e-btn-focused')) ?
                     (this.parent.element.querySelector('.' + cls.GROUP_ROW_CLASS + ' .e-btn-focused')) :
                     (this.parent.element.querySelector('.' + cls.GROUP_ROW_CLASS));
-                    let element: HTMLElement = gridFocus.getFocusedElement();
-                    removeClass([element], ['e-focused', 'e-focus']);
+                let element: HTMLElement = gridFocus.getFocusedElement();
+                removeClass([element], ['e-focused', 'e-focus']);
             }
             let allPivotButtons: HTMLElement[] = this.allpivotButtons(target as HTMLElement);
             if (allPivotButtons.length > 0) {
@@ -269,6 +273,13 @@ export class KeyboardInteraction {
                     addClass([document.activeElement], 'e-focused');
                 }
             });
+        } else if (target.classList.contains('e-numerictextbox')) {
+            let gridFocus: FocusStrategy = this.parent.grid.serviceLocator.getService<FocusStrategy>('focus');
+            gridFocus.focus();
+            let element: HTMLElement = gridFocus.getFocusedElement();
+            removeClass([element], ['e-focused', 'e-focus']);
+            element.setAttribute('tabindex', '0');
+            e.preventDefault();
         }
     }
     private processEnter(e: KeyboardEventArgs): void {
@@ -289,6 +300,13 @@ export class KeyboardInteraction {
                         'bubbles': true,
                         'cancelable': true
                     }));
+                    if (target.querySelector('.e-numerictextbox')) {
+                        (target as HTMLElement).click();
+                    }
+                } else if (target.classList.contains('e-numerictextbox')) {
+                    gridFocus.focus();
+                    let element: HTMLElement = gridFocus.getFocusedElement();
+                    removeClass([element], ['e-focused', 'e-focus']);
                 }
             } else if (e.keyCode === 13 && e.shiftKey && !e.ctrlKey) {
                 if (this.parent.enableValueSorting) {
@@ -317,7 +335,8 @@ export class KeyboardInteraction {
     }
     private processSelection(e: KeyboardEventArgs): void {
         let target: HTMLElement = e.target as HTMLElement;
-        if (this.parent.grid && this.parent.gridSettings.allowSelection && this.parent.gridSettings.selectionSettings.mode !== 'Row') {
+        if (this.parent.grid && this.parent.gridSettings.allowSelection && this.parent.gridSettings.selectionSettings.mode !== 'Row' &&
+            !target.classList.contains('e-numerictextbox')) {
             let control: PivotView = this.parent as PivotView;
             let colIndex: number = Number((e.target as HTMLElement).getAttribute('aria-colIndex'));
             let rowIndex: number = Number((e.target as HTMLElement).getAttribute('index'));
@@ -371,8 +390,9 @@ export class KeyboardInteraction {
                     control.clearSelection(ele, e, colIndex, rowIndex);
                 }
             }
-        } else if (target && (e.keyCode === 37 || e.keyCode === 38) &&
-            this.parent && this.parent.showGroupingBar && this.parent.groupingBarModule) {
+        }
+        else if (target && (e.keyCode === 37 || e.keyCode === 38) &&
+            this.parent && this.parent.showGroupingBar && this.parent.groupingBarModule && !target.classList.contains('e-numerictextbox')) {
             if (this.parent.grid && this.parent.element.querySelector('.e-frozenheader') && this.parent.element.querySelector('.e-frozenheader').querySelectorAll('.e-focus').length > 0) {
                 removeClass(this.parent.element.querySelector('.e-frozenheader').querySelectorAll('.e-focus'), 'e-focus');
                 removeClass(this.parent.element.querySelector('.e-frozenheader').querySelectorAll('.e-focused'), 'e-focused');
@@ -385,6 +405,8 @@ export class KeyboardInteraction {
                 e.preventDefault();
                 return;
             }
+        } else if (target.classList.contains('e-numerictextbox') && e.action === 'rightArrow' || e.action === 'leftArrow') {
+            (target as HTMLElement).click();
         }
 
         /* tslint:enable */

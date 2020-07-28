@@ -1033,5 +1033,78 @@ describe('RTE CR issues', () => {
         });
     });
 
-
+    describe('BLAZ-5932 - Cannot set font-style after inserting a table', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyboardEventArgs = {
+            preventDefault: function () { },
+            keyCode: 13, which: 13, shiftKey: false
+        };
+        it(' Empty container with table insert after font style apply check ', () => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable', 'Formats']
+                }
+            });
+            rteEle = rteObj.element;
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            expect(rteObj.tableModule.popupObj.element.querySelectorAll('.e-rte-table-row').length === 3).toBe(true);
+            expect(rteObj.tableModule.popupObj.element.querySelectorAll('.e-rte-tablecell').length === 30).toBe(true);
+            let event: any = {
+                target: (rteObj as any).tableModule.popupObj.element.querySelectorAll('.e-rte-table-row')[1].querySelectorAll('.e-rte-tablecell')[3],
+                preventDefault: function () { }
+            };
+            (rteObj as any).tableModule.tableCellSelect(event);
+            (rteObj as any).tableModule.tableCellLeave(event);
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mouseup", false, true);
+            event.target.dispatchEvent(clickEvent);
+            let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+            expect(table).not.toBe(null);
+            expect(table.querySelectorAll('tr').length === 2).toBe(true);
+            expect(table.querySelectorAll('td').length === 8).toBe(true);
+            let brTag: Element = document.createElement('br');
+            rteObj.contentModule.getEditPanel().appendChild(brTag);
+            rteObj.formatter.editorManager.nodeSelection.setCursorPoint(document, rteObj.contentModule.getEditPanel(), 1);
+            (rteObj.formatter.editorManager as any).formatObj.onKeyUp({ event: keyboardEventArgs });
+            expect(rteObj.contentModule.getEditPanel().querySelectorAll('p').length === 1).toBe(true);
+        });
+        it(' Text container with table insert after font style apply check ', () => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable', 'Formats']
+                },
+                value: '<p>Sample content</p>'
+            });
+            rteEle = rteObj.element;
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            expect(rteObj.tableModule.popupObj.element.querySelectorAll('.e-rte-table-row').length === 3).toBe(true);
+            expect(rteObj.tableModule.popupObj.element.querySelectorAll('.e-rte-tablecell').length === 30).toBe(true);
+            let event: any = {
+                target: (rteObj as any).tableModule.popupObj.element.querySelectorAll('.e-rte-table-row')[1].querySelectorAll('.e-rte-tablecell')[3],
+                preventDefault: function () { }
+            };
+            (rteObj as any).tableModule.tableCellSelect(event);
+            (rteObj as any).tableModule.tableCellLeave(event);
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mouseup", false, true);
+            event.target.dispatchEvent(clickEvent);
+            let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+            expect(table).not.toBe(null);
+            expect(table.querySelectorAll('tr').length === 2).toBe(true);
+            expect(table.querySelectorAll('td').length === 8).toBe(true);
+            let brTag: Element = document.createElement('br');
+            rteObj.contentModule.getEditPanel().insertBefore(brTag, rteObj.contentModule.getEditPanel().querySelector('p'));
+            rteObj.formatter.editorManager.nodeSelection.setCursorPoint(document, rteObj.contentModule.getEditPanel(), 1);
+            (rteObj.formatter.editorManager as any).formatObj.onKeyUp({ event: keyboardEventArgs });
+            expect(rteObj.contentModule.getEditPanel().querySelectorAll('p').length === 2).toBe(true);
+            expect(rteObj.contentModule.getEditPanel().childNodes[1].textContent === '').toBe(true);
+            expect(rteObj.contentModule.getEditPanel().querySelectorAll('p')[0].textContent === '').toBe(true);
+            expect(rteObj.contentModule.getEditPanel().childNodes[2].textContent === 'Sample content').toBe(true);
+            expect(rteObj.contentModule.getEditPanel().querySelectorAll('p')[1].textContent === 'Sample content').toBe(true);
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+    });
 });

@@ -2413,8 +2413,8 @@ var Internationalization = /** @class */ (function () {
      * @returns {string}
      * @private
      */
-    Internationalization.prototype.getNumberPattern = function (option) {
-        return exports.IntlBase.getActualNumberFormat(this.getCulture(), option, cldrData);
+    Internationalization.prototype.getNumberPattern = function (option, isExcel) {
+        return exports.IntlBase.getActualNumberFormat(this.getCulture(), option, cldrData, isExcel);
     };
     /**
      * Returns the First Day of the Week
@@ -3494,7 +3494,7 @@ var blazorCultureFormats = {
      * @param {Object} cldr
      * @returns {string}
      */
-    function getActualNumberFormat(culture, options, cldr) {
+    function getActualNumberFormat(culture, options, cldr, isExcel) {
         var dependable = getDependables(cldr, culture, '', true);
         var parseOptions = { custom: true };
         var numrericObject = dependable.numericObject;
@@ -3559,7 +3559,7 @@ var blazorCultureFormats = {
             actualPattern = options.format.replace(/\'/g, '"');
         }
         if (Object.keys(dOptions).length > 0) {
-            actualPattern = processSymbol(actualPattern, dOptions);
+            actualPattern = !isExcel ? processSymbol(actualPattern, dOptions) : actualPattern;
         }
         return actualPattern;
     }

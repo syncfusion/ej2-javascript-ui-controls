@@ -2415,7 +2415,24 @@ export class AnnotationToolbar {
      */
     public selectAnnotationDeleteItem(isEnable: boolean): void {
         if (this.toolbar) {
-            this.toolbar.enableItems(this.deleteItem.parentElement, isEnable);
+            if (isEnable) {
+                // tslint:disable-next-line
+                let annotation: any = this.pdfViewer.annotationModule.findCurrentAnnotation();
+                if (annotation) {
+                    // tslint:disable-next-line
+                    if (annotation.annotationSettings && annotation.annotationSettings.isLock) {
+                        if (this.pdfViewer.annotationModule.checkAllowedInteractions('Delete', annotation)) {
+                            this.toolbar.enableItems(this.deleteItem.parentElement, isEnable);
+                        } else {
+                            this.toolbar.enableItems(this.deleteItem.parentElement, false);
+                        }
+                    } else {
+                        this.toolbar.enableItems(this.deleteItem.parentElement, isEnable);
+                    }
+                }
+            } else {
+                this.toolbar.enableItems(this.deleteItem.parentElement, isEnable);
+            }
         }
     }
 
@@ -2436,37 +2453,66 @@ export class AnnotationToolbar {
         }
     }
 
+    private checkAnnotationPropertiesChange(): boolean {
+        // tslint:disable-next-line
+        let annotation: any = this.pdfViewer.selectedItems.annotations[0];
+        if (annotation && annotation.annotationSettings) {
+            // tslint:disable-next-line
+            let isLock: boolean = annotation.annotationSettings.isLock;
+            if (isLock) {
+                if (this.pdfViewer.annotationModule.checkAllowedInteractions('PropertyChange', annotation)) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     /**
      * @private
      */
     public enableAnnotationPropertiesTools(isEnable: boolean): void {
-        this.toolbar.enableItems(this.colorDropDownElement.parentElement, isEnable);
-        this.toolbar.enableItems(this.opacityDropDownElement.parentElement, isEnable);
-        this.toolbar.enableItems(this.strokeDropDownElement.parentElement, isEnable);
-        this.toolbar.enableItems(this.thicknessElement.parentElement, isEnable);
-        if (this.pdfViewer.enableShapeLabel) {
-            this.toolbar.enableItems(this.fontFamilyElement.parentElement, isEnable);
-            this.toolbar.enableItems(this.fontSizeElement.parentElement, isEnable);
-            this.toolbar.enableItems(this.fontColorElement.parentElement, isEnable);
+        let isPropertiesChanges: boolean = this.checkAnnotationPropertiesChange();
+        if (!isEnable) {
+            isPropertiesChanges = true;
         }
-        this.toolbar.enableItems(this.textAlignElement.parentElement, false);
-        this.toolbar.enableItems(this.textPropElement.parentElement, false);
+        if (isPropertiesChanges) {
+            this.toolbar.enableItems(this.colorDropDownElement.parentElement, isEnable);
+            this.toolbar.enableItems(this.opacityDropDownElement.parentElement, isEnable);
+            this.toolbar.enableItems(this.strokeDropDownElement.parentElement, isEnable);
+            this.toolbar.enableItems(this.thicknessElement.parentElement, isEnable);
+            if (this.pdfViewer.enableShapeLabel) {
+                this.toolbar.enableItems(this.fontFamilyElement.parentElement, isEnable);
+                this.toolbar.enableItems(this.fontSizeElement.parentElement, isEnable);
+                this.toolbar.enableItems(this.fontColorElement.parentElement, isEnable);
+            }
+            this.toolbar.enableItems(this.textAlignElement.parentElement, false);
+            this.toolbar.enableItems(this.textPropElement.parentElement, false);
+        }
     }
 
     /**
      * @private
      */
     public enableSignaturePropertiesTools(isEnable: boolean): void {
-        this.toolbar.enableItems(this.colorDropDownElement.parentElement, false);
-        this.toolbar.enableItems(this.opacityDropDownElement.parentElement, isEnable);
-        this.toolbar.enableItems(this.strokeDropDownElement.parentElement, isEnable);
-        this.toolbar.enableItems(this.thicknessElement.parentElement, isEnable);
-        this.toolbar.enableItems(this.textAlignElement.parentElement, false);
-        this.toolbar.enableItems(this.textPropElement.parentElement, false);
-        this.toolbar.enableItems(this.fontFamilyElement.parentElement, false);
-        this.toolbar.enableItems(this.fontSizeElement.parentElement, false);
-        this.toolbar.enableItems(this.fontColorElement.parentElement, false);
-        this.toolbar.enableItems(this.textAlignElement.parentElement, false);
+        let isPropertiesChanges: boolean = this.checkAnnotationPropertiesChange();
+        if (!isEnable) {
+            isPropertiesChanges = true;
+        }
+        if (isPropertiesChanges) {
+            this.toolbar.enableItems(this.colorDropDownElement.parentElement, false);
+            this.toolbar.enableItems(this.opacityDropDownElement.parentElement, isEnable);
+            this.toolbar.enableItems(this.strokeDropDownElement.parentElement, isEnable);
+            this.toolbar.enableItems(this.thicknessElement.parentElement, isEnable);
+            this.toolbar.enableItems(this.textAlignElement.parentElement, false);
+            this.toolbar.enableItems(this.textPropElement.parentElement, false);
+            this.toolbar.enableItems(this.fontFamilyElement.parentElement, false);
+            this.toolbar.enableItems(this.fontSizeElement.parentElement, false);
+            this.toolbar.enableItems(this.fontColorElement.parentElement, false);
+            this.toolbar.enableItems(this.textAlignElement.parentElement, false);
+        }
     }
 
 
@@ -2474,30 +2520,42 @@ export class AnnotationToolbar {
      * @private
      */
     public enableStampAnnotationPropertiesTools(isEnable: boolean): void {
-        this.toolbar.enableItems(this.opacityDropDownElement.parentElement, isEnable);
-        this.toolbar.enableItems(this.colorDropDownElement.parentElement, false);
-        this.toolbar.enableItems(this.strokeDropDownElement.parentElement, false);
-        this.toolbar.enableItems(this.thicknessElement.parentElement, false);
-        this.toolbar.enableItems(this.fontFamilyElement.parentElement, false);
-        this.toolbar.enableItems(this.fontSizeElement.parentElement, false);
-        this.toolbar.enableItems(this.fontColorElement.parentElement, false);
-        this.toolbar.enableItems(this.textAlignElement.parentElement, false);
-        this.toolbar.enableItems(this.textPropElement.parentElement, false);
+        let isPropertiesChanges: boolean = this.checkAnnotationPropertiesChange();
+        if (!isEnable) {
+            isPropertiesChanges = true;
+        }
+        if (isPropertiesChanges) {
+            this.toolbar.enableItems(this.opacityDropDownElement.parentElement, isEnable);
+            this.toolbar.enableItems(this.colorDropDownElement.parentElement, false);
+            this.toolbar.enableItems(this.strokeDropDownElement.parentElement, false);
+            this.toolbar.enableItems(this.thicknessElement.parentElement, false);
+            this.toolbar.enableItems(this.fontFamilyElement.parentElement, false);
+            this.toolbar.enableItems(this.fontSizeElement.parentElement, false);
+            this.toolbar.enableItems(this.fontColorElement.parentElement, false);
+            this.toolbar.enableItems(this.textAlignElement.parentElement, false);
+            this.toolbar.enableItems(this.textPropElement.parentElement, false);
+        }
     }
 
     /**
      * @private
      */
     public enableFreeTextAnnotationPropertiesTools(isEnable: boolean): void {
-        this.toolbar.enableItems(this.opacityDropDownElement.parentElement, isEnable);
-        this.toolbar.enableItems(this.colorDropDownElement.parentElement, isEnable);
-        this.toolbar.enableItems(this.strokeDropDownElement.parentElement, isEnable);
-        this.toolbar.enableItems(this.thicknessElement.parentElement, isEnable);
-        this.toolbar.enableItems(this.fontFamilyElement.parentElement, isEnable);
-        this.toolbar.enableItems(this.fontSizeElement.parentElement, isEnable);
-        this.toolbar.enableItems(this.fontColorElement.parentElement, isEnable);
-        this.toolbar.enableItems(this.textAlignElement.parentElement, isEnable);
-        this.toolbar.enableItems(this.textPropElement.parentElement, isEnable);
+        let isPropertiesChanges: boolean = this.checkAnnotationPropertiesChange();
+        if (!isEnable) {
+            isPropertiesChanges = true;
+        }
+        if (isPropertiesChanges) {
+            this.toolbar.enableItems(this.opacityDropDownElement.parentElement, isEnable);
+            this.toolbar.enableItems(this.colorDropDownElement.parentElement, isEnable);
+            this.toolbar.enableItems(this.strokeDropDownElement.parentElement, isEnable);
+            this.toolbar.enableItems(this.thicknessElement.parentElement, isEnable);
+            this.toolbar.enableItems(this.fontFamilyElement.parentElement, isEnable);
+            this.toolbar.enableItems(this.fontSizeElement.parentElement, isEnable);
+            this.toolbar.enableItems(this.fontColorElement.parentElement, isEnable);
+            this.toolbar.enableItems(this.textAlignElement.parentElement, isEnable);
+            this.toolbar.enableItems(this.textPropElement.parentElement, isEnable);
+        }
     }
 
 

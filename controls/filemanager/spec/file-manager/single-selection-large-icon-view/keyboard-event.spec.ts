@@ -1657,7 +1657,7 @@ describe('FileManager control single selection LargeIcons view', () => {
                 keyboardEventArgs.target = largeLi[2];
                 feObj.largeiconsviewModule.keyActionHandler(keyboardEventArgs);
                 let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
-                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Delete File");
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Delete Folder");
                 done();
             }, 500);
         });

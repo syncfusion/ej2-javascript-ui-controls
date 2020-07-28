@@ -100,15 +100,16 @@ export class Clipboard {
                               withHeader?: boolean, index?: number): void {
         let getCopyData: string = 'getCopyData';
         let copyContent: string = 'copyContent';
-        let parentItem: string = 'parentRecord';
         let uniqueID: string = 'uniqueID';
+        let parentUniqueID: string = 'parentUniqueID';
         let level: string = 'level';
-        if (!isNullOrUndefined(currentRecords[selectedIndex][parentItem])) {
-            let treeLevel: number = currentRecords[selectedIndex][parentItem][level];
+        let parentItem: object = currentRecords.filter((a: object) => {
+            return (a[uniqueID] === currentRecords[selectedIndex][parentUniqueID]); })[0];
+        if (!isNullOrUndefined(parentItem)) {
+            let treeLevel: number = parentItem[level];
             for (let i: number = 0; i < treeLevel + 1; i++) {
                 for (let j: number = 0; j < currentRecords.length; j++) {
-                    if (!isNullOrUndefined(currentRecords[selectedIndex][parentItem]) &&
-                        currentRecords[j][uniqueID] === currentRecords[selectedIndex][parentItem][uniqueID]) {
+                    if (currentRecords[j][uniqueID] === parentItem[uniqueID]) {
                         selectedIndex = j;
                         let cells: HTMLElement[] = [].slice.call(rows[selectedIndex].querySelectorAll('.e-rowcell'));
                         let uniqueid: string = currentRecords[j][uniqueID];

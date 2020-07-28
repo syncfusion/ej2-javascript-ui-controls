@@ -30,6 +30,7 @@ import { Dependency } from '../actions/dependency';
 import * as cls from './css-constants';
 import { Query, DataManager } from '@syncfusion/ej2-data';
 import { Column, ColumnModel } from '../models/column';
+import { TextBox } from '@syncfusion/ej2-inputs';
 import { TreeGrid, FilterSettingsModel as TreeGridFilterSettingModel } from '@syncfusion/ej2-treegrid';
 import { Sort } from '../actions/sort';
 import { CellSelectEventArgs, ISelectedCell, ContextMenuItemModel } from '@syncfusion/ej2-grids';
@@ -60,7 +61,9 @@ import { ColumnMenu } from '../actions/column-menu';
 import { ITaskbarClickEventArgs, RecordDoubleClickEventArgs, IMouseMoveEventArgs } from './interface';
 import { PdfExport } from '../actions/pdf-export';
 import { WorkUnit, TaskType } from './enum';
-
+interface EJ2Instance extends HTMLElement {
+    ej2_instances: Object[];
+}
 /**
  *
  * Represents the Gantt chart component.
@@ -1335,6 +1338,25 @@ export class Gantt extends Component<HTMLElement>
                 this.expandCollapseKey(e);
                 break;
             case 'saveRequest':
+                if (this.editModule.cellEditModule.isCellEdit) {
+                let col: ColumnModel = this.editModule.cellEditModule.editedColumn;
+                if (col.field === this.columnMapping.duration && !isNullOrUndefined(col.edit) && !isNullOrUndefined(col.edit.read)) {
+                    let textBox: TextBox = <TextBox>(<EJ2Instance>e.target).ej2_instances[0];
+                    let textValue: string = (e.target as HTMLInputElement).value;
+                    let ganttProp: ITaskData = this.currentViewData[this.selectedRowIndex].ganttProperties;
+                    let tempValue: string | Date | number;
+                    if (col.field === this.columnMapping.duration) {
+                        tempValue = !isNullOrUndefined(col.edit) && !isNullOrUndefined(col.edit.read) ? (col.edit.read as Function)() :
+                        !isNullOrUndefined(col.valueAccessor) ? (col.valueAccessor as Function)
+                        (this.columnMapping.duration,  this.editedRecords, col) :
+                        this.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
+                        if (textValue !== tempValue.toString()) {
+                            textBox.value = textValue;
+                            textBox.dataBind();
+                        }
+                    }
+                }
+            }
                 if (!isNullOrUndefined(this.editModule) && !isNullOrUndefined(this.editModule.cellEditModule) &&
                     this.editModule.cellEditModule.isCellEdit === true) {
                     if (this.editModule.dialogModule.dialogObj && getValue('dialogOpen', this.editModule.dialogModule.dialogObj)) {

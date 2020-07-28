@@ -1340,7 +1340,7 @@ class DragAndDrop {
         this.parent.trigger(dragStop, dragArgs, (dragEventArgs) => {
             if (!dragEventArgs.cancel) {
                 if (contentCell || columnKey) {
-                    this.parent.crudModule.updateCard(this.dragObj.modifiedData);
+                    this.parent.crudModule.updateCard(dragEventArgs.data);
                 }
             }
             this.removeElement(this.dragObj.draggedClone);
@@ -3219,7 +3219,6 @@ var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, 
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 /**
- * @deprecated
  * Holds the configuration of sort settings in kanban board.
  */
 class SortSettings extends ChildProperty {

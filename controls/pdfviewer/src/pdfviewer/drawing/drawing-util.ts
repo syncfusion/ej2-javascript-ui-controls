@@ -192,7 +192,7 @@ export function isLeader(obj: PdfAnnotationBaseModel, position: string): Leader 
                 let center: PointModel = obj.wrapper.children[0].bounds.center;
                 if (leaderCount === 0) {
                     newPoint1 = { x: obj.sourcePoint.x, y: obj.sourcePoint.y - obj.leaderHeight };
-                    let center: PointModel = obj.sourcePoint;
+                    center = obj.sourcePoint;
                 } else {
                     newPoint1 = { x: obj.targetPoint.x, y: obj.targetPoint.y - obj.leaderHeight };
                     center = obj.targetPoint;

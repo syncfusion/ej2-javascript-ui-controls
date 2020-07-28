@@ -913,6 +913,7 @@ export class SpellChecker {
     /* tslint:disable:no-any */
     // tslint:disable-next-line:max-line-length
     public CallSpellChecker(languageID: number, word: string, checkSpelling: boolean, checkSuggestion: boolean, addWord?: boolean, isByPage?: boolean): Promise<any> {
+        let spellchecker : any = this;
         return new Promise((resolve: Function, reject: Function) => {
             if (!isNullOrUndefined(this)) {
                 let httpRequest: XMLHttpRequest = new XMLHttpRequest();
@@ -931,6 +932,13 @@ export class SpellChecker {
                         if (httpRequest.status === 200 || httpRequest.status === 304) {
                             resolve(httpRequest.response);
                         } else {
+                            let result: any = {
+                                name: 'onFailure',
+                                status: httpRequest.status,
+                                statusText: httpRequest.responseText,
+                                url: service
+                            };
+                            spellchecker.documentHelper.owner.fireServiceFailure(result);
                             reject(httpRequest.response);
                         }
                     }

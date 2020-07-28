@@ -1,7 +1,7 @@
-import { ChildProperty, Property, Collection } from '@syncfusion/ej2-base';
+import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';
 import { FontFamily, TextAlign, VerticalAlign, FontWeight, FontStyle, TextDecoration, HighlightCell } from './enum';
 import { ValidationType, ValidationOperator, TopBottom, DataBar, ColorScale, IconSet, CFColor } from './enum';
-import { FormatModel, Format } from '../base/index';
+import { CellStyleModel, FormatModel } from './class-model';
 
 /**
  * Represents the cell style.
@@ -259,6 +259,25 @@ export class Validation extends ChildProperty<Validation> {
 
 }
 
+/**
+ * Represents the Format.
+ */
+export class Format extends ChildProperty<FormatModel> {
+    /**
+     * Specifies the number format code to display value in specified number format.
+     * @default 'General'
+     */
+    public format: string;
+
+    /**
+     * Specifies the cell style options.
+     * @default {}
+     */
+    @Complex<CellStyleModel>({}, CellStyle)
+    public style: CellStyleModel;
+
+}
+
 /**    
  * Represents the Conditional Formatting.
  */
@@ -273,10 +292,10 @@ export class ConditionalFormat extends ChildProperty<ConditionalFormat> {
 
     /**
      * Specifies format.
-     * @default []
+     * @default {}
      */
-    @Collection([], Format)
-    public format: FormatModel[];
+    @Complex<FormatModel>({}, Format)
+    public format: FormatModel;
 
     /**
      * Specifies Conditional formatting Highlight Color.

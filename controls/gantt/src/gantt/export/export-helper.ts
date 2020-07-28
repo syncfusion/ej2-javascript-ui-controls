@@ -151,6 +151,7 @@ export class ExportHelper {
      */
     private processPredecessor(): void {
         if (isNullOrUndefined(this.exportProps.showPredecessorLines) || this.exportProps.showPredecessorLines) {
+            this.parent.pdfExportModule.isPdfExport = true;
             this.parent.predecessorModule.createConnectorLinesCollection();
             this.parent.updatedConnectorLineCollection.forEach((data: IConnectorLineObject) => {
                 let predecessor: PdfGanttPredecessor = this.gantt.predecessor.add();
@@ -168,6 +169,7 @@ export class ExportHelper {
                 predecessor.connectorLineColor = this.ganttStyle.connectorLineColor;
                 this.gantt.predecessorCollection.push(predecessor);
             });
+            this.parent.pdfExportModule.isPdfExport = false;
         }
     }
 
@@ -406,7 +408,8 @@ export class ExportHelper {
         cell.style.borderColor = new PdfColor(style.borderColor);
         cell.style.fontSize = style.fontSize;
         cell.style.fontStyle = style.fontStyle;
-        cell.style.format = extend({}, {}, style.format, true) as PdfStringFormat;
+        /* tslint:disable-next-line */
+        cell.style.format  = (<any>Object).assign(new PdfStringFormat(), style.format);
         cell.style.borders = new PdfBorders();
         cell.style.borders.all = new PdfPen(cell.style.borderColor);
         cell.style.padding = new PdfPaddings();

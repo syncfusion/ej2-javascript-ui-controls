@@ -6248,7 +6248,6 @@ var AggregateMenu = /** @__PURE__ @class */ (function () {
 var Render = /** @__PURE__ @class */ (function () {
     /** Constructor for render module */
     function Render(parent) {
-        /** @hidden */
         this.indentCollection = {};
         this.colPos = 0;
         this.lastSpan = 0;
@@ -8182,6 +8181,14 @@ var CommonKeyboardInteraction = /** @__PURE__ @class */ (function () {
                     e.preventDefault();
                     return;
                 }
+            }
+        }
+        else if (target && target.id === this.parent.parentID + '_inputbox') {
+            if (e.action === 'upArrow') {
+                target.parentElement.querySelector('.e-spin-up').click();
+            }
+            else if (e.action === 'downArrow') {
+                target.parentElement.querySelector('.e-spin-down').click();
             }
         }
     };
@@ -11950,7 +11957,7 @@ var KeyboardInteraction = /** @__PURE__ @class */ (function () {
         return target;
     };
     KeyboardInteraction.prototype.allpivotButtons = function (target) {
-        var Buttons;
+        var buttons;
         var columnFilterValueGroup = closest(target, '.' + GRID_GROUPING_BAR_CLASS);
         var rowGroup = closest(target, '.' + GROUP_PIVOT_ROW);
         var chartGroup = closest(target, '.' + CHART_GROUPING_BAR_CLASS);
@@ -11971,13 +11978,13 @@ var KeyboardInteraction = /** @__PURE__ @class */ (function () {
             /* tslint:disable */
             var groupingbarButton = [].slice.call(this.parent.element.querySelector('.' + GRID_GROUPING_BAR_CLASS).querySelectorAll('.' + PIVOT_BUTTON_CLASS));
             var headerButton = [].slice.call(this.parent.element.querySelector('.' + GROUP_PIVOT_ROW).querySelectorAll('.' + PIVOT_BUTTON_CLASS));
-            Buttons = groupingbarButton.concat(headerButton);
+            buttons = groupingbarButton.concat(headerButton);
         }
         else if (chartAxis) {
-            Buttons = [].slice.call(this.parent.element.querySelector('.' + CHART_GROUPING_BAR_CLASS).querySelectorAll('.' + PIVOT_BUTTON_CLASS));
+            buttons = [].slice.call(this.parent.element.querySelector('.' + CHART_GROUPING_BAR_CLASS).querySelectorAll('.' + PIVOT_BUTTON_CLASS));
         }
         /* tslint:enable */
-        return Buttons;
+        return buttons;
     };
     KeyboardInteraction.prototype.processTab = function (e) {
         var target = e.target;
@@ -12060,6 +12067,14 @@ var KeyboardInteraction = /** @__PURE__ @class */ (function () {
                 }
             });
         }
+        else if (target.classList.contains('e-numerictextbox')) {
+            var gridFocus = this.parent.grid.serviceLocator.getService('focus');
+            gridFocus.focus();
+            var element = gridFocus.getFocusedElement();
+            removeClass([element], ['e-focused', 'e-focus']);
+            element.setAttribute('tabindex', '0');
+            e.preventDefault();
+        }
     };
     KeyboardInteraction.prototype.processShiftTab = function (e) {
         var target = e.target;
@@ -12124,6 +12139,14 @@ var KeyboardInteraction = /** @__PURE__ @class */ (function () {
                 }
             });
         }
+        else if (target.classList.contains('e-numerictextbox')) {
+            var gridFocus = this.parent.grid.serviceLocator.getService('focus');
+            gridFocus.focus();
+            var element = gridFocus.getFocusedElement();
+            removeClass([element], ['e-focused', 'e-focus']);
+            element.setAttribute('tabindex', '0');
+            e.preventDefault();
+        }
     };
     KeyboardInteraction.prototype.processEnter = function (e) {
         var target = e.target;
@@ -12144,6 +12167,14 @@ var KeyboardInteraction = /** @__PURE__ @class */ (function () {
                         'bubbles': true,
                         'cancelable': true
                     }));
+                    if (target.querySelector('.e-numerictextbox')) {
+                        target.click();
+                    }
+                }
+                else if (target.classList.contains('e-numerictextbox')) {
+                    gridFocus.focus();
+                    var element = gridFocus.getFocusedElement();
+                    removeClass([element], ['e-focused', 'e-focus']);
                 }
             }
             else if (e.keyCode === 13 && e.shiftKey && !e.ctrlKey) {
@@ -12174,7 +12205,8 @@ var KeyboardInteraction = /** @__PURE__ @class */ (function () {
     };
     KeyboardInteraction.prototype.processSelection = function (e) {
         var target = e.target;
-        if (this.parent.grid && this.parent.gridSettings.allowSelection && this.parent.gridSettings.selectionSettings.mode !== 'Row') {
+        if (this.parent.grid && this.parent.gridSettings.allowSelection && this.parent.gridSettings.selectionSettings.mode !== 'Row' &&
+            !target.classList.contains('e-numerictextbox')) {
             var control_1 = this.parent;
             var colIndex_1 = Number(e.target.getAttribute('aria-colIndex'));
             var rowIndex_1 = Number(e.target.getAttribute('index'));
@@ -12232,7 +12264,7 @@ var KeyboardInteraction = /** @__PURE__ @class */ (function () {
             }
         }
         else if (target && (e.keyCode === 37 || e.keyCode === 38) &&
-            this.parent && this.parent.showGroupingBar && this.parent.groupingBarModule) {
+            this.parent && this.parent.showGroupingBar && this.parent.groupingBarModule && !target.classList.contains('e-numerictextbox')) {
             if (this.parent.grid && this.parent.element.querySelector('.e-frozenheader') && this.parent.element.querySelector('.e-frozenheader').querySelectorAll('.e-focus').length > 0) {
                 removeClass(this.parent.element.querySelector('.e-frozenheader').querySelectorAll('.e-focus'), 'e-focus');
                 removeClass(this.parent.element.querySelector('.e-frozenheader').querySelectorAll('.e-focused'), 'e-focused');
@@ -12245,6 +12277,9 @@ var KeyboardInteraction = /** @__PURE__ @class */ (function () {
                 e.preventDefault();
                 return;
             }
+        }
+        else if (target.classList.contains('e-numerictextbox') && e.action === 'rightArrow' || e.action === 'leftArrow') {
+            target.click();
         }
         /* tslint:enable */
     };
@@ -12822,110 +12857,152 @@ var DrillThroughDialog = /** @__PURE__ @class */ (function () {
     DrillThroughDialog.prototype.showDrillThroughDialog = function (eventArgs) {
         var _this = this;
         this.gridData = eventArgs.rawData;
-        this.removeDrillThroughDialog();
-        var drillThroughDialog = createElement('div', {
-            id: this.parent.element.id + '_drillthrough',
-            className: DRILLTHROUGH_DIALOG
-        });
-        this.parent.element.appendChild(drillThroughDialog);
-        this.dialogPopUp = new Dialog({
-            animationSettings: { effect: 'Fade' },
-            allowDragging: false,
-            header: this.parent.localeObj.getConstant('details'),
-            content: this.createDrillThroughGrid(eventArgs),
-            beforeOpen: function () {
-                /* tslint:disable:align */
-                _this.drillThroughGrid.setProperties({
-                    dataSource: _this.parent.editSettings.allowEditing ?
-                        _this.dataWithPrimarykey(eventArgs) : _this.gridData,
-                    height: !_this.parent.editSettings.allowEditing ? 300 : 220,
-                    rowHeight: _this.parent.gridSettings.rowHeight
-                }, false);
-            },
-            beforeClose: function () {
-                if (_this.parent.editSettings.allowEditing && _this.isUpdated) {
-                    if (_this.parent.dataSourceSettings.type === 'CSV') {
-                        _this.updateData(_this.drillThroughGrid.dataSource);
-                    }
-                    var count = Object.keys(_this.gridIndexObjects).length;
-                    var addItems = [];
-                    /* tslint:disable:no-string-literal */
-                    for (var _i = 0, _a = _this.drillThroughGrid.dataSource; _i < _a.length; _i++) {
-                        var item = _a[_i];
-                        if (isNullOrUndefined(item['__index']) || item['__index'] === '') {
-                            for (var _b = 0, _c = _this.engine.fields; _b < _c.length; _b++) {
-                                var field = _c[_b];
-                                if (isNullOrUndefined(item[field])) {
-                                    delete item[field];
+        var actualText = eventArgs.currentCell.actualText.toString();
+        if (this.engine.fieldList[actualText].aggregateType !== 'Count' && this.parent.editSettings.allowInlineEditing &&
+            this.parent.editSettings.allowEditing && eventArgs.rawData.length === 1 &&
+            this.engine.fieldList[actualText].aggregateType !== 'DistinctCount' && typeof (eventArgs.rawData[0][actualText]) !== 'string') {
+            this.editCell(eventArgs);
+        }
+        else {
+            this.removeDrillThroughDialog();
+            var drillThroughDialog = createElement('div', {
+                id: this.parent.element.id + '_drillthrough',
+                className: DRILLTHROUGH_DIALOG
+            });
+            this.parent.element.appendChild(drillThroughDialog);
+            this.dialogPopUp = new Dialog({
+                animationSettings: { effect: 'Fade' },
+                allowDragging: false,
+                header: this.parent.localeObj.getConstant('details'),
+                content: this.createDrillThroughGrid(eventArgs),
+                beforeOpen: function () {
+                    /* tslint:disable:align */
+                    _this.drillThroughGrid.setProperties({
+                        dataSource: _this.parent.editSettings.allowEditing ?
+                            _this.dataWithPrimarykey(eventArgs) : _this.gridData,
+                        height: !_this.parent.editSettings.allowEditing ? 300 : 220,
+                        rowHeight: _this.parent.gridSettings.rowHeight
+                    }, false);
+                },
+                beforeClose: function () {
+                    if (_this.parent.editSettings.allowEditing && _this.isUpdated) {
+                        if (_this.parent.dataSourceSettings.type === 'CSV') {
+                            _this.updateData(_this.drillThroughGrid.dataSource);
+                        }
+                        var count = Object.keys(_this.gridIndexObjects).length;
+                        var addItems = [];
+                        /* tslint:disable:no-string-literal */
+                        for (var _i = 0, _a = _this.drillThroughGrid.dataSource; _i < _a.length; _i++) {
+                            var item = _a[_i];
+                            if (isNullOrUndefined(item['__index']) || item['__index'] === '') {
+                                for (var _b = 0, _c = _this.engine.fields; _b < _c.length; _b++) {
+                                    var field = _c[_b];
+                                    if (isNullOrUndefined(item[field])) {
+                                        delete item[field];
+                                    }
                                 }
+                                delete item['__index'];
+                                addItems.push(item);
                             }
-                            delete item['__index'];
-                            addItems.push(item);
+                            else if (count > 0) {
+                                if (isBlazor() && _this.parent.editSettings.allowCommandColumns) {
+                                    _this.parent.engineModule.data[Number(item['__index'])] = item;
+                                }
+                                delete _this.gridIndexObjects[item['__index'].toString()];
+                                count--;
+                            }
                         }
-                        else if (count > 0) {
-                            if (isBlazor() && _this.parent.editSettings.allowCommandColumns) {
-                                _this.parent.engineModule.data[Number(item['__index'])] = item;
+                        count = 0;
+                        if (isBlazor() && _this.parent.enableVirtualization) {
+                            var currModule_1 = _this;
+                            /* tslint:disable:no-any */
+                            currModule_1.parent.interopAdaptor.invokeMethodAsync('PivotInteropMethod', 'updateRawData', {
+                                'AddItem': addItems, 'RemoveItem': currModule_1.gridIndexObjects, 'ModifiedItem': currModule_1.gridData
+                            }).then(function (data) {
+                                currModule_1.parent.updateBlazorData(data, currModule_1.parent);
+                                currModule_1.parent.allowServerDataBinding = false;
+                                currModule_1.parent.setProperties({ pivotValues: currModule_1.parent.engineModule.pivotValues }, true);
+                                delete currModule_1.parent.bulkChanges.pivotValues;
+                                currModule_1.parent.allowServerDataBinding = true;
+                                currModule_1.isUpdated = false;
+                                currModule_1.gridIndexObjects = {};
+                            });
+                            /* tslint:enable:no-any */
+                        }
+                        else {
+                            var items = [];
+                            var data = (_this.parent.allowDataCompression && _this.parent.enableVirtualization) ?
+                                _this.parent.engineModule.actualData : _this.parent.engineModule.data;
+                            for (var _d = 0, _e = data; _d < _e.length; _d++) {
+                                var item = _e[_d];
+                                delete item['__index'];
+                                if (_this.gridIndexObjects[count.toString()] === undefined) {
+                                    items.push(item);
+                                }
+                                count++;
                             }
-                            delete _this.gridIndexObjects[item['__index'].toString()];
-                            count--;
+                            /* tslint:enable:no-string-literal */
+                            items = items.concat(addItems);
+                            _this.parent.setProperties({ dataSourceSettings: { dataSource: items } }, true);
+                            _this.engine.updateGridData(_this.parent.dataSourceSettings);
+                            _this.parent.pivotValues = _this.engine.pivotValues;
                         }
                     }
-                    count = 0;
-                    if (isBlazor() && _this.parent.enableVirtualization) {
-                        var currModule_1 = _this;
-                        /* tslint:disable:no-any */
-                        currModule_1.parent.interopAdaptor.invokeMethodAsync('PivotInteropMethod', 'updateRawData', {
-                            'AddItem': addItems, 'RemoveItem': currModule_1.gridIndexObjects, 'ModifiedItem': currModule_1.gridData
-                        }).then(function (data) {
-                            currModule_1.parent.updateBlazorData(data, currModule_1.parent);
-                            currModule_1.parent.allowServerDataBinding = false;
-                            currModule_1.parent.setProperties({ pivotValues: currModule_1.parent.engineModule.pivotValues }, true);
-                            delete currModule_1.parent.bulkChanges.pivotValues;
-                            currModule_1.parent.allowServerDataBinding = true;
-                            currModule_1.isUpdated = false;
-                            currModule_1.gridIndexObjects = {};
-                        });
-                        /* tslint:enable:no-any */
+                    if (!(isBlazor() && _this.parent.enableVirtualization)) {
+                        _this.isUpdated = false;
+                        _this.gridIndexObjects = {};
                     }
-                    else {
-                        var items = [];
-                        var data = (_this.parent.allowDataCompression && _this.parent.enableVirtualization) ?
-                            _this.parent.engineModule.actualData : _this.parent.engineModule.data;
-                        for (var _d = 0, _e = data; _d < _e.length; _d++) {
-                            var item = _e[_d];
-                            delete item['__index'];
-                            if (_this.gridIndexObjects[count.toString()] === undefined) {
-                                items.push(item);
-                            }
-                            count++;
-                        }
-                        /* tslint:enable:no-string-literal */
-                        items = items.concat(addItems);
-                        _this.parent.setProperties({ dataSourceSettings: { dataSource: items } }, true);
-                        _this.engine.updateGridData(_this.parent.dataSourceSettings);
-                        _this.parent.pivotValues = _this.engine.pivotValues;
-                    }
-                }
-                if (!(isBlazor() && _this.parent.enableVirtualization)) {
-                    _this.isUpdated = false;
-                    _this.gridIndexObjects = {};
-                }
-            },
-            isModal: true,
-            visible: true,
-            showCloseIcon: true,
-            locale: this.parent.locale,
+                },
+                isModal: true,
+                visible: true,
+                showCloseIcon: true,
+                locale: this.parent.locale,
+                enableRtl: this.parent.enableRtl,
+                width: this.parent.isAdaptive ? '100%' : '60%',
+                position: { X: 'center', Y: 'center' },
+                closeOnEscape: true,
+                target: document.body,
+                close: this.removeDrillThroughDialog.bind(this)
+            });
+            this.dialogPopUp.isStringTemplate = true;
+            this.dialogPopUp.appendTo(drillThroughDialog);
+            // this.dialogPopUp.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('details');
+            setStyleAttribute(this.dialogPopUp.element, { 'visibility': 'visible' });
+        }
+    };
+    DrillThroughDialog.prototype.editCell = function (eventArgs) {
+        var _this = this;
+        var actualText = eventArgs.currentCell.actualText.toString();
+        var indexObject = Number(Object.keys(eventArgs.currentCell.indexObject));
+        eventArgs.currentTarget.firstElementChild.style.display = 'none';
+        var cellValue = Number(eventArgs.rawData[0][actualText]);
+        this.numericTextBox = new NumericTextBox({
+            value: cellValue,
             enableRtl: this.parent.enableRtl,
-            width: this.parent.isAdaptive ? '100%' : '60%',
-            position: { X: 'center', Y: 'center' },
-            closeOnEscape: true,
-            target: document.body,
-            close: this.removeDrillThroughDialog.bind(this)
+            enabled: true,
+            format: '####.##',
+            locale: this.parent.locale,
+            change: function () {
+                var textBoxValue = _this.numericTextBox.value;
+                var indexValue = eventArgs.currentCell.indexObject[indexObject];
+                eventArgs.rawData[0][actualText] = textBoxValue;
+                _this.parent.engineModule.data[indexValue] = eventArgs.rawData[0];
+            },
+            blur: function () {
+                _this.parent.setProperties({ dataSourceSettings: { dataSource: _this.parent.engineModule.data } }, true);
+                _this.engine.updateGridData(_this.parent.dataSourceSettings);
+                _this.parent.pivotValues = _this.engine.pivotValues;
+                _this.parent.gridSettings.allowResizing = true;
+            },
         });
-        this.dialogPopUp.isStringTemplate = true;
-        this.dialogPopUp.appendTo(drillThroughDialog);
-        // this.dialogPopUp.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('details');
-        setStyleAttribute(this.dialogPopUp.element, { 'visibility': 'visible' });
+        var textBoxElement = createElement('input', {
+            id: this.parent.element.id + '_inputbox',
+        });
+        eventArgs.currentTarget.appendChild(textBoxElement);
+        this.numericTextBox.appendTo(textBoxElement);
+        eventArgs.currentCell.value = this.numericTextBox.value;
+        this.numericTextBox.focusIn();
+        this.parent.gridSettings.allowResizing = false;
     };
     /* tslint:disable:typedef no-any */
     DrillThroughDialog.prototype.updateData = function (dataSource) {
@@ -13326,7 +13403,8 @@ var DrillThrough = /** @__PURE__ @class */ (function () {
             rowHeaders: pivotValue.rowHeaders === '' ? '' : pivotValue.rowHeaders.toString().split('.').join(' - '),
             columnHeaders: pivotValue.columnHeaders === '' ? '' : pivotValue.columnHeaders.toString().split('.').join(' - '),
             value: valuetText + '(' + pivotValue.formattedText + ')',
-            gridColumns: this.drillThroughDialog.frameGridColumns(rawData)
+            gridColumns: this.drillThroughDialog.frameGridColumns(rawData),
+            cancel: false
         };
         if (this.parent.dataSourceSettings.type === 'CSV') {
             eventArgs = this.frameData(eventArgs);
@@ -13348,7 +13426,9 @@ var DrillThrough = /** @__PURE__ @class */ (function () {
                 }
                 observedArgs.gridColumns = gridColumns;
             }
-            drillThrough$$1.drillThroughDialog.showDrillThroughDialog(observedArgs);
+            if (!eventArgs.cancel) {
+                drillThrough$$1.drillThroughDialog.showDrillThroughDialog(observedArgs);
+            }
         });
     };
     return DrillThrough;
@@ -20729,6 +20809,9 @@ var CellEditSettings = /** @__PURE__ @class */ (function (_super) {
         Property(false)
     ], CellEditSettings.prototype, "allowCommandColumns", void 0);
     __decorate([
+        Property(false)
+    ], CellEditSettings.prototype, "allowInlineEditing", void 0);
+    __decorate([
         Property('Normal')
     ], CellEditSettings.prototype, "mode", void 0);
     __decorate([
@@ -23047,7 +23130,7 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
     };
     /** @hidden */
     PivotView.prototype.setGridColumns = function (gridcolumns) {
-        if (this.element.offsetWidth < this.totColWidth) {
+        if (!isNullOrUndefined(this.totColWidth) && this.totColWidth > 0) {
             for (var _i = 0, gridcolumns_2 = gridcolumns; _i < gridcolumns_2.length; _i++) {
                 var column = gridcolumns_2[_i];
                 if (column.columns && column.columns.length > 0) {
@@ -23108,8 +23191,13 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
             dataSourceSettings: this.dataSourceSettings
         };
         this.trigger(beforeColumnsRender, eventArgs);
-        if (firstColWidth !== this.pivotColumns[0].width && this.element.offsetWidth < this.totColWidth) {
+        if (firstColWidth !== this.pivotColumns[0].width) {
             this.firstColWidth = this.pivotColumns[0].width;
+            this.renderModule.resColWidth = parseInt(this.firstColWidth.toString());
+            var colWidth = this.renderModule.calculateColWidth(this.pivotColumns ? this.pivotColumns.length : 0);
+            for (var i = 1; i < this.pivotColumns.length; i++) {
+                this.pivotColumns[i].width = colWidth;
+            }
         }
         this.posCount = 0;
         this.setGridColumns(gridcolumns);

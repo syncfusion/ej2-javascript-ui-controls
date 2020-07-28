@@ -3,7 +3,6 @@ import { Column } from '../models/column';
 import { iterateArrayOrObject } from '../base/util';
 import * as events from '../base/constant';
 import { IGrid } from '../base/interface';
-import { Grid } from '../base/grid';
 
 /**
  * The `ShowHide` module is used to control column visibility.
@@ -107,9 +106,7 @@ export class ShowHide {
             let currentViewCols: Column[] = this.parent.getColumns();
             columns = isNullOrUndefined(columns) ? currentViewCols : columns;
             if (showHideArgs[cancel]) {
-                if ((this.parent as Grid).columnChooserModule) {
-                    (this.parent as Grid).columnChooserModule.resetColumnState();
-                }
+                this.parent.notify(events.resetColumns, {showHideArgs: showHideArgs});
                 if (columns.length > 0) {
                     columns[0].visible = true;
                 }
