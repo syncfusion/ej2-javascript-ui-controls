@@ -151,14 +151,14 @@ var Input;
             attributes(args.element, { 'aria-labelledby': floatLabelElement.id });
         }
         if (!isNullOrUndefined(args.element.placeholder) && args.element.placeholder !== '') {
-            floatLabelElement.innerHTML = args.element.placeholder;
+            floatLabelElement.innerText = encodePlaceHolder(args.element.placeholder);
             args.element.removeAttribute('placeholder');
         }
         if (!isNullOrUndefined(args.properties) && !isNullOrUndefined(args.properties.placeholder) &&
             args.properties.placeholder !== '') {
-            floatLabelElement.innerHTML = args.properties.placeholder;
+            floatLabelElement.innerText = encodePlaceHolder(args.properties.placeholder);
         }
-        if (!floatLabelElement.innerHTML) {
+        if (!floatLabelElement.innerText) {
             inputObject.container.classList.add(CLASSNAMES.NOFLOATLABEL);
         }
         if (inputObject.container.classList.contains('e-float-icon-left')) {

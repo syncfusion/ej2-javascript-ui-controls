@@ -198,6 +198,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
         this.defaultConstants = {
             currentPageInfo: '{0} of {1} pages',
             totalItemsInfo: '({0} items)',
+            totalItemInfo: '({0} item)',
             firstPageTooltip: 'Go to first page',
             lastPageTooltip: 'Go to last page',
             nextPageTooltip: 'Go to next page',

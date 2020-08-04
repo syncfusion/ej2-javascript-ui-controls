@@ -328,7 +328,7 @@ var PagerMessage = /** @class */ (function () {
         else {
             this.pageNoMsgElem.textContent = this.format(pagerObj.getLocalizedLabel('currentPageInfo'), [pagerObj.totalRecordsCount === 0 ? 0 :
                     pagerObj.currentPage, pagerObj.totalPages || 0]) + ' ';
-            this.pageCountMsgElem.textContent = this.format(pagerObj.getLocalizedLabel('totalItemsInfo'), [pagerObj.totalRecordsCount || 0]);
+            this.pageCountMsgElem.textContent = this.format(pagerObj.getLocalizedLabel(pagerObj.totalRecordsCount <= 1 ? 'totalItemInfo' : 'totalItemsInfo'), [pagerObj.totalRecordsCount || 0]);
         }
         this.pageNoMsgElem.parentElement.setAttribute('aria-label', this.pageNoMsgElem.textContent + this.pageCountMsgElem.textContent);
     };
@@ -3224,7 +3224,7 @@ var SummaryModelGenerator = /** @class */ (function () {
         columns.push.apply(columns, this.parent.getColumns());
         return sf.base.isNullOrUndefined(start) ? columns : columns.slice(start, end);
     };
-    SummaryModelGenerator.prototype.generateRows = function (input, args, start, end) {
+    SummaryModelGenerator.prototype.generateRows = function (input, args, start, end, columns) {
         if (input.length === 0) {
             if (args === undefined || !args.count) {
                 return [];
@@ -3234,11 +3234,11 @@ var SummaryModelGenerator = /** @class */ (function () {
         var rows = [];
         var row = this.getData();
         for (var i = 0; i < row.length; i++) {
-            rows.push(this.getGeneratedRow(row[i], data[i], args ? args.level : undefined, start, end, args ? args.parentUid : undefined));
+            rows.push(this.getGeneratedRow(row[i], data[i], args ? args.level : undefined, start, end, args ? args.parentUid : undefined, columns));
         }
         return rows;
     };
-    SummaryModelGenerator.prototype.getGeneratedRow = function (summaryRow, data, raw, start, end, parentUid) {
+    SummaryModelGenerator.prototype.getGeneratedRow = function (summaryRow, data, raw, start, end, parentUid, columns) {
         var tmp = [];
         var indents = this.getIndentByLevel(raw);
         var isDetailGridAlone = !sf.base.isNullOrUndefined(this.parent.childGrid);
@@ -3246,7 +3246,7 @@ var SummaryModelGenerator = /** @class */ (function () {
         if (this.parent.isRowDragable()) {
             indents = ['e-indentcelltop'];
         }
-        var values = this.getColumns(start, end);
+        var values = columns ? columns : this.getColumns(start, end);
         for (var i = 0; i < values.length; i++) {
             tmp.push(this.getGeneratedCell(values[i], summaryRow, i >= indentLength ? this.getCellType() :
                 i < this.parent.groupSettings.columns.length ? CellType.Indent : CellType.DetailFooterIntent, indents[i], isDetailGridAlone));
@@ -8467,7 +8467,9 @@ var Selection = /** @class */ (function () {
         var deleted = 'deletedRecords';
         if (gObj.editSettings.mode === 'Batch' && gObj.editModule) {
             var currentRecords = iterateExtend(this.parent.getCurrentViewRecords());
-            currentRecords = this.parent.editModule.getBatchChanges()[added].concat(currentRecords);
+            currentRecords = gObj.editSettings.newRowPosition === 'Bottom' ?
+                currentRecords.concat(this.parent.editModule.getBatchChanges()[added]) :
+                this.parent.editModule.getBatchChanges()[added].concat(currentRecords);
             var deletedRecords = this.parent.editModule.getBatchChanges()[deleted];
             var primaryKey = this.parent.getPrimaryKeyFieldNames()[0];
             for (var i = 0; i < (deletedRecords.length); i++) {
@@ -12826,6 +12828,11 @@ var Grid = /** @class */ (function (_super) {
             }
         }
         this.pageSettings.template = undefined;
+        /* tslint:disable-next-line:no-any */
+        if (this.isAngular) {
+            /* tslint:disable:no-string-literal */
+            delete this.groupSettings['properties']['captionTemplate'];
+        }
         this.pageTemplateChange = !sf.base.isNullOrUndefined(this.pagerTemplate);
         return this.addOnPersist(keyEntity);
     };
@@ -17697,6 +17704,7 @@ var Pager = /** @class */ (function (_super) {
         this.defaultConstants = {
             currentPageInfo: '{0} of {1} pages',
             totalItemsInfo: '({0} items)',
+            totalItemInfo: '({0} item)',
             firstPageTooltip: 'Go to first page',
             lastPageTooltip: 'Go to last page',
             nextPageTooltip: 'Go to next page',

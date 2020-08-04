@@ -2678,6 +2678,19 @@ function clearCanvas(view, barcodeCanvas) {
 function refreshCanvasBarcode(qrCodeGenerator, barcodeCanvas) {
     clearCanvas(qrCodeGenerator, barcodeCanvas);
 }
+/** @private */
+
+/** @private */
+function exportAsImage(exportType, fileName, element, isReturnBase64, code) {
+    let returnValue = this.imageExport(exportType, fileName, element, isReturnBase64, code);
+    if (returnValue instanceof Promise) {
+        returnValue.then((data) => {
+            return data;
+        });
+    }
+    return returnValue;
+}
+/** @private */
 
 var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -2743,13 +2756,29 @@ class BarcodeGenerator extends Component {
         this.element.style.height = this.getElementSize(this.height);
         //Initialize the width of the barcode generator
         this.element.style.width = this.getElementSize(this.width);
-        let svgMode = this.mode;
+        let height = this.mode === 'SVG' ? this.element.offsetHeight : this.element.offsetHeight * 1.5;
+        let width = this.mode === 'SVG' ? this.element.offsetWidth : this.element.offsetWidth * 1.5;
         this.barcodeCanvas = this.barcodeRenderer.renderRootElement({
             id: this.element.id + 'content',
-            height: svgMode === 'SVG' ? this.element.offsetHeight : this.element.offsetHeight * 1.5,
-            width: svgMode === 'SVG' ? this.element.offsetWidth : this.element.offsetWidth * 1.5
-        }, this.backgroundColor, this.element.offsetWidth, this.element.offsetHeight);
+            height, width
+        }, this.backgroundColor, width, height);
         this.element.appendChild(this.barcodeCanvas);
+    }
+    /**
+     * Export the barcode as an image in the specified image type and downloads it in the browser.
+     *  @param {string} fileName - Specifies the filename of the barcode image to be download.
+     *  @param {BarcodeExportType} exportType - Defines the format of the barcode to be exported
+     */
+    exportImage(filename, exportType) {
+        exportAsImage(exportType, filename, this.element, false, this);
+    }
+    /**
+     * Export the barcode as an image in the specified image type and returns it as base64 string.
+     *  @param {BarcodeExportType} barcodeExportType - Defines the format of the barcode to be exported
+     */
+    exportAsBase64Image(exportType) {
+        let returnValue = exportAsImage(exportType, '', this.element, true, this);
+        return returnValue;
     }
     renderElements() {
         let barCode;
@@ -6710,6 +6739,22 @@ class QRCodeGenerator extends Component {
     initializePrivateVariables() {
         this.defaultLocale = {};
     }
+    /**
+     * Export the qrcode as an image in the specified image type and downloads it in the browser.
+     *  @param {string} fileName - Specifies the filename of the qrcode image to be download.
+     *  @param {BarcodeExportType} barcodeExportType - Defines the format of the qrcode to be exported
+     */
+    exportImage(filename, barcodeExportType) {
+        exportAsImage(barcodeExportType, filename, this.element, false, this);
+    }
+    /**
+     * Export the qrcode as an image in the specified image type and returns it as base64 string.
+     *  @param {BarcodeExportType} barcodeExportType - Defines the format of the qrcode to be exported
+     */
+    exportAsBase64Image(barcodeExportType) {
+        let returnValue = exportAsImage(barcodeExportType, '', this.element, true, this);
+        return returnValue;
+    }
     onPropertyChanged(newProp, oldProp) {
         let width;
         let height;
@@ -7632,13 +7677,14 @@ class DataMatrixGenerator extends Component {
         this.element.style.width = this.getElementSize(this.width);
         //Initialize the hieght of the datamatrix generator
         this.element.style.height = this.getElementSize(this.height);
-        let mode = this.mode;
+        //set height and width of the canvas element
+        let height = this.mode === 'SVG' ? this.element.offsetHeight : this.element.offsetHeight * 1.5;
+        let width = this.mode === 'SVG' ? this.element.offsetWidth : this.element.offsetWidth * 1.5;
         //initialize the canvas element
         this.barcodeCanvas = this.barcodeRenderer.renderRootElement({
             id: this.element.id + 'content',
-            height: mode === 'SVG' ? this.element.offsetHeight : this.element.offsetHeight * 1.5,
-            width: mode === 'SVG' ? this.element.offsetWidth : this.element.offsetWidth * 1.5
-        }, this.backgroundColor, this.element.offsetWidth, this.element.offsetHeight);
+            height, width
+        }, this.backgroundColor, width, height);
         this.element.appendChild(this.barcodeCanvas);
     }
     triggerEvent(eventName, message) {
@@ -7702,6 +7748,22 @@ class DataMatrixGenerator extends Component {
             }
         }
         return validData;
+    }
+    /**
+     * Export the datamatrix as an image in the specified image type and downloads it in the browser.
+     *  @param {string} fileName - Specifies the filename of the datamatrix image to be download.
+     *  @param {BarcodeExportType} exportType - Defines the format of the datamatrix to be exported
+     */
+    exportImage(fileName, exportType) {
+        exportAsImage(exportType, fileName, this.element, false, this);
+    }
+    /**
+     * Export the datamatrix as an image in the specified image type and returns it as base64 string.
+     *  @param {BarcodeExportType} barcodeExportType - Defines the format of the datamatrix to be exported
+     */
+    exportAsBase64Image(barcodeExportType) {
+        let returnValue = exportAsImage(barcodeExportType, '', this.element, true, this);
+        return returnValue;
     }
     renderElements() {
         let dataMatrix = new DataMatrix();

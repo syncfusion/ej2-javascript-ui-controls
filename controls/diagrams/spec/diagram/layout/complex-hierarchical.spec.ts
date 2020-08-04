@@ -7,7 +7,7 @@ import { DataManager, Query } from '@syncfusion/ej2-data';
 import { SpatialSearch } from '../../../src/diagram/interaction/spatial-search/spatial-search';
 import {
     ConnectorModel, Node,
-    DataBinding, PointModel, GraphLayoutManager, Layout, IConnector,
+    DataBinding, PointModel, GraphLayoutManager, Layout, IConnector, IDataLoadedEventArgs,
     HierarchicalTree, NodeModel, Rect, BasicShapeModel, ComplexHierarchicalTree, ShapeModel, SnapSettingsModel, SnapConstraints, TextModel, ImageElement, StackPanel, TextElement
 } from '../../../src/diagram/index';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
@@ -2428,4 +2428,143 @@ describe('Layout nodes and connectors overllaping issues', () => {
         })
     });
 
+});
+
+
+let data1: object[] = [
+    {
+        "Name": "Diagram",
+        "fillColor": "#916DAF"
+    },
+    {
+        "Name": "Layout",
+        "Category": "Diagram"
+    },
+    {
+        "Name": "Tree Layout",
+        "Category": "Layout"
+    },
+    {
+        "Name": "Organizational Chart",
+        "Category": "Layout"
+    },
+]
+let data2: object[] = [
+    {
+        "Name": "Diagram",
+        "fillColor": "#916DAF"
+    },
+    {
+        "Name": "Layout",
+        "Category": "Diagram"
+    },
+    {
+        "Name": "Tree Layout",
+        "Category": "Layout"
+    },
+    {
+        "Name": "Organizational Chart",
+        "Category": "Layout"
+    },
+    {
+        "Name": "Hierarchical Tree",
+        "Category": "Tree Layout"
+    },
+    {
+        "Name": "Radial Tree",
+        "Category": "Tree Layout"
+    },
+    {
+        "Name": "Mind Map",
+        "Category": "Hierarchical Tree"
+    },
+    {
+        "Name": "Family Tree",
+        "Category": "Hierarchical Tree"
+    },
+    {
+        "Name": "Management",
+        "Category": "Organizational Chart"
+    },
+    {
+        "Name": "Human Resources",
+        "Category": "Management"
+    },
+    {
+        "Name": "University",
+        "Category": "Management"
+    },
+    {
+        "Name": "Business",
+        "Category": "Management"
+    }
+]
+describe('DataLoaded event do not gets trigger after data loaded', () => {
+    describe('Hierarchical Tree Layout', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;   
+        function load2(){
+            diagram.dataSourceSettings.dataManager = new DataManager(data2);
+            diagram.dataBind();    
+           }     
+        beforeAll(() => {
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            diagram = new Diagram({                
+                width: '100%', height: 490,
+                //Configures data source
+                dataSourceSettings: {
+                    id: 'Name', parentId: 'Category', dataManager: new DataManager(data1),
+                    //binds the external data with node
+                    doBinding: (nodeModel: NodeModel, data: DataInfo, diagram: Diagram) => {
+                        nodeModel.annotations = [{
+                            /* tslint:disable:no-string-literal */
+                            content: data['Name'], margin: { top: 10, left: 10, right: 10, bottom: 0 },
+                            style: { color: 'black' }
+                        }
+                        ];
+                        /* tslint:disable:no-string-literal */
+                        nodeModel.style = { fill: '#ffeec7', strokeColor: '#f5d897', strokeWidth: 1 };
+                    }
+                },
+                //Configrues HierarchicalTree layout
+                layout: {
+                    type: 'HierarchicalTree', horizontalSpacing: 15, verticalSpacing: 50,
+                    margin: { top: 10, left: 10, right: 10, bottom: 0 },
+                },    
+                //Sets the default values of nodes
+                getNodeDefaults: (obj: Node, diagram: Diagram) => {
+                    //Initialize shape
+                    obj.shape = { type: 'Basic', shape: 'Rectangle' };
+                    obj.style = { strokeWidth: 1 };
+                    obj.width = 95;
+                    obj.height = 30;
+                },
+                //Sets the default values of connectors
+                getConnectorDefaults: (connector: ConnectorModel, diagram: Diagram) => {
+                    connector.type = 'Orthogonal';
+                    connector.style.strokeColor = '#4d4d4d';
+                    connector.targetDecorator.shape = 'None';
+                },
+            });
+            diagram.appendTo('#diagram');
+            
+            interface DataInfo {
+                [key: string]: string;
+            }
+        });
+        afterAll(() => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('DataLoaded event do not gets trigger after data loaded', (done: Function) => {
+            debugger
+            load2();
+            diagram.dataLoaded= (args: IDataLoadedEventArgs) => {                  
+                expect(args.diagram !== null).toBe(true);            
+            };
+            done();
+        });
+       
+    });
 });

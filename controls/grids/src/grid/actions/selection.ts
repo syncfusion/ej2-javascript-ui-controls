@@ -227,7 +227,9 @@ export class Selection implements IAction {
         let deleted: string = 'deletedRecords';
         if (gObj.editSettings.mode === 'Batch' && gObj.editModule) {
             let currentRecords: Object[] = iterateExtend(this.parent.getCurrentViewRecords());
-            currentRecords = this.parent.editModule.getBatchChanges()[added].concat(currentRecords);
+            currentRecords = gObj.editSettings.newRowPosition === 'Bottom' ?
+                currentRecords.concat(this.parent.editModule.getBatchChanges()[added]) :
+                this.parent.editModule.getBatchChanges()[added].concat(currentRecords);
             let deletedRecords: Object[] = this.parent.editModule.getBatchChanges()[deleted];
             let primaryKey: string = this.parent.getPrimaryKeyFieldNames()[0];
             for (let i: number = 0; i < (deletedRecords.length); i++) {

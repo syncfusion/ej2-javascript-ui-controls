@@ -213,7 +213,7 @@ describe('Recurrence Editor Base Module', () => {
         let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll(() => {
             document.body.appendChild(elem);
-            schObj = new RecurrenceEditor();
+            schObj = new RecurrenceEditor({ cssClass: "recDemo" });
             schObj.appendTo('#Schedule');
         });
         afterAll(() => {
@@ -236,9 +236,14 @@ describe('Recurrence Editor Base Module', () => {
             expect(schObj.element.classList.contains(RTLCLASS)).toBe(false);
         });
         it('ensuring cssClass property change.', () => {
+            expect(schObj.element.classList.contains("recDemo")).toBe(true);
             let cssClass: string = 'e-check';
             schObj.setProperties({ cssClass: cssClass });
             expect(schObj.element.classList.contains(cssClass)).toBe(true);
+            schObj.setProperties({ cssClass: 'customSchedule productSchedule' });
+            expect(schObj.element.classList.contains('e-check')).toBe(false);
+            expect(schObj.element.classList.contains('customSchedule')).toBe(true);
+            expect(schObj.element.classList.contains('productSchedule')).toBe(true);
         });
         it('ensuring the property channge option-selectedType', () => {
             schObj.setProperties({ selectedType: 1 });

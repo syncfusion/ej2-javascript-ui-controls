@@ -908,6 +908,10 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             this.createChip();
         }
         this.wireEvents();
+        let firstUl: Element = select('.' + PARENTITEM, this.treeObj.element);
+        if (firstUl && firstUl.getAttribute('aria-multiselectable')) {
+            firstUl.removeAttribute('aria-multiselectable');
+        }
         this.oldValue = this.value;
         this.isInitialized = true;
         this.renderComplete();

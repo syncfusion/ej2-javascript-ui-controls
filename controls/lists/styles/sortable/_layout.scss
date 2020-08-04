@@ -11,12 +11,6 @@
       opacity: .35;
     }
 
-    // sass-lint:disable-all
-    .e-sortableclone {
-      position: fixed !important;
-    }
-    // sass-lint:enable-all
-
     * {
       box-sizing: border-box;
 
@@ -25,4 +19,10 @@
       }
     }
   }
+
+  // sass-lint:disable-all
+  .e-sortableclone {
+    position: fixed !important;
+  }
+  // sass-lint:enable-all
 }

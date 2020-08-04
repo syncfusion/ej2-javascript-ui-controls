@@ -4535,4 +4535,42 @@ describe('rowdeselect checking with persist selection and ResetOnRowClick', () =
             gridObj.rowSelected = null;
         });
     });
+    describe('EJ2-41468 - row data in rowSelected event args is not maintained properly with Batch edit mode', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0,5),
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID' },
+                        { field: 'CustomerID', headerText: 'CustomerID' },
+                        { field: 'EmployeeID', headerText: 'Employee ID' },
+                        { field: 'ShipCity', headerText: 'Ship City' },
+                        { field: 'ShipCountry', headerText: 'Ship Country' }],
+                        editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode:'Batch', newRowPosition:'Bottom' },
+                        allowPaging: true,
+                        pageSettings: { pageCount: 5 },
+                        toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+                }, done);
+        });
+    
+        it('Adding new record in bottom ', () => {
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+        });
+
+        it('Check selected data', () => {
+            let rowSelected = (e: RowSelectEventArgs) => {
+                expect(e.data["OrderID"].toString()).toBe(dataCell.innerText);
+            }
+            gridObj.rowSelected = rowSelected;
+            let dataCell: HTMLElement = (gridObj.getRows()[1].querySelector('.e-rowcell') as HTMLElement);
+            dataCell.click();
+        });
+    
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+            gridObj.rowDeselected = null;
+        });
+    });
 });

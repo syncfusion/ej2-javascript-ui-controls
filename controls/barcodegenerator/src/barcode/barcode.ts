@@ -1,6 +1,6 @@
 import { Component, Property, L10n, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { INotifyPropertyChanged, Complex, Event, EmitType } from '@syncfusion/ej2-base';
-import { RenderingMode, BarcodeType, BarcodeEvent, } from './enum/enum';
+import { RenderingMode, BarcodeType, BarcodeEvent, BarcodeExportType} from './enum/enum';
 import { BarcodeRenderer } from './rendering/renderer';
 import { BarcodeCanvasRenderer } from './rendering/canvas-renderer';
 import { Code128B } from './one-dimension/code128B';
@@ -24,7 +24,7 @@ import { Code93Extension } from './one-dimension/code93Extension';
 import { ValidateEvent } from './rendering/canvas-interface';
 import { Code32 } from './one-dimension/code32';
 import { Code39Extension } from './one-dimension/code39Extension';
-import { removeChildElements } from './utility/barcode-util';
+import { removeChildElements, exportAsImage } from './utility/barcode-util';
 
 
 /**
@@ -198,18 +198,34 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
         this.element.style.height = this.getElementSize(this.height);
         //Initialize the width of the barcode generator
         this.element.style.width = this.getElementSize(this.width);
-        let svgMode: string = this.mode;
+        let height: number = this.mode === 'SVG' ? this.element.offsetHeight : this.element.offsetHeight * 1.5;
+        let width: number = this.mode === 'SVG' ? this.element.offsetWidth : this.element.offsetWidth * 1.5;
         this.barcodeCanvas = this.barcodeRenderer.renderRootElement(
             {
                 id: this.element.id + 'content',
-                height: svgMode === 'SVG' ? this.element.offsetHeight : this.element.offsetHeight * 1.5,
-                width: svgMode === 'SVG' ? this.element.offsetWidth : this.element.offsetWidth * 1.5
+                height, width
             },
-            this.backgroundColor, this.element.offsetWidth, this.element.offsetHeight) as HTMLElement;
+            this.backgroundColor, width, height) as HTMLElement;
         this.element.appendChild(this.barcodeCanvas);
     }
 
+    /**
+     * Export the barcode as an image in the specified image type and downloads it in the browser.
+     *  @param {string} fileName - Specifies the filename of the barcode image to be download. 
+     *  @param {BarcodeExportType} exportType - Defines the format of the barcode to be exported
+     */
+    public exportImage(filename: string, exportType: BarcodeExportType ): void {
+        exportAsImage(exportType, filename, this.element, false, this);
+    }
 
+    /**
+     * Export the barcode as an image in the specified image type and returns it as base64 string.
+     *  @param {BarcodeExportType} barcodeExportType - Defines the format of the barcode to be exported
+     */
+    public exportAsBase64Image(exportType: BarcodeExportType): Promise<string> {
+        let returnValue: Promise<string> =  exportAsImage(exportType, '', this.element, true, this);
+        return returnValue;
+    }
 
     private renderElements(): void {
         let barCode: Code39Extension | Code32 | Code39 | CodaBar | Code128A | Code128 | Ean8 |

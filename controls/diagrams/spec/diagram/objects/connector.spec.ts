@@ -1759,7 +1759,8 @@ describe('Diagram Control', () => {
             
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 200, 200);
-            mouseEvents.dragAndDropEvent(diagramCanvas, 200, 200, 100, 160);
+            mouseEvents.dragAndDropEvent(diagramCanvas, 200, 200, 205, 205);
+            mouseEvents.dragAndDropEvent(diagramCanvas, 205, 205, 100, 160);
             expect((diagram.nameTable['connector3'].targetPortID === 'ggg'));
             done();
 
@@ -1773,6 +1774,15 @@ describe('Diagram Control', () => {
             done();
 
         });
-
+        it('checking connector with none', function (done) {
+            var diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            diagram.select([diagram.nodes[1]]);
+            diagram.copy();
+            diagram.paste();
+            mouseEvents.clickEvent(diagramCanvas, 200, 200);
+            mouseEvents.dragAndDropEvent(diagramCanvas, 200, 200, 205, 205);
+            expect((diagram.nameTable['connector2'].targetPortID === 'ggg'));
+            done();
+        });
     });
 });

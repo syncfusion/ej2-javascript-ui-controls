@@ -4258,7 +4258,7 @@ var Sortable = /** @__PURE__ @class */ (function (_super) {
                 element.style.height = target.offsetHeight + "px";
             }
             addClass([element], ['e-sortableclone']);
-            _this.element.appendChild(element);
+            document.body.appendChild(element);
             return element;
         };
         _this.onDrag = function (e) {
@@ -4294,8 +4294,8 @@ var Sortable = /** @__PURE__ @class */ (function (_super) {
                     newInst.element.insertBefore(_this.target, newInst.element.children[idx]);
                     _this.refreshDisabled(oldIdx, newIdx, newInst);
                     _this.curTarget = _this.target;
-                    _this.trigger('drop', { event: e.event, element: newInst.element, previousIndex: oldIdx, currentIndex: newIdx,
-                        target: e.target, helper: newInst.element.lastChild, droppedElement: _this.target, scope: _this.scope });
+                    _this.trigger('drop', { droppedElement: _this.target, element: newInst.element, previousIndex: oldIdx, currentIndex: newIdx,
+                        target: e.target, helper: document.getElementsByClassName('e-sortableclone')[0], event: e.event, scope: _this.scope });
                 }
             }
             newInst = _this.getSortableInstance(_this.curTarget);

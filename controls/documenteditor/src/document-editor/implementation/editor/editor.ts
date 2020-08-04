@@ -6599,6 +6599,9 @@ export class Editor {
             case 'ClearCharacterFormat':
                 this.updateCharacterFormat(undefined, values);
                 break;
+            case 'allCaps':
+                this.updateCharacterFormat('allCaps', values);
+                break;
         }
         this.reLayout(this.documentHelper.selection);
     }
@@ -6804,6 +6807,16 @@ export class Editor {
         }
         let value: boolean = this.getCurrentSelectionValue('italic');
         this.selection.characterFormat.italic = value;
+    }
+    /**
+     * Toggle All Caps formatting for the selected content.
+     */
+    public toggleAllCaps(): void {
+        if (this.documentHelper.owner.isReadOnlyMode && !this.selection.isInlineFormFillMode()) {
+            return;
+        }
+        let value: boolean = this.getCurrentSelectionValue('allCaps');
+        this.selection.characterFormat.allCaps = value;
     }
     private getCurrentSelectionValue(property: string): boolean {
         let value: boolean = false;
@@ -7155,6 +7168,8 @@ export class Editor {
             format.underline = value as Underline;
         } else if (property === 'styleName') {
             format.baseCharStyle = value as WStyle;
+        } else if (property === 'allCaps') {
+            format.allCaps = value as boolean;
         }
     }
     /**
@@ -11229,6 +11244,7 @@ export class Editor {
             }
             if (elementBox.revisions.length > 0) {
                 let revision: Revision = this.retrieveRevisionInOder(elementBox);
+                let index: number = this.owner.revisions.changes.indexOf(revision);
                 if (revision.revisionType === 'Insertion') {
                     if (this.isRevisionMatched(elementBox, undefined)) {
                         // inserted revision same author as delete revision so we can delete
@@ -11293,6 +11309,25 @@ export class Editor {
                         }
                     }
                 } else if (revision.revisionType === 'Deletion') {
+                    if (index !== -1 && revision.author !== this.owner.currentUser) {
+                        let range: Object[] = revision.range;
+                        let startOff: number = (range[0] as ElementBox).line.getOffset(range[0] as ElementBox, 0);
+                        let lastEle: ElementBox = range[range.length - 1] as ElementBox;
+                        let endOff: number = lastEle.line.getOffset(lastEle, lastEle.length);
+
+                        if (startOff === indexInInline && endOff === endOffset) {
+                            elementBox.revisions.splice(elementBox.revisions.indexOf(revision), 1);
+                            if (!this.checkToCombineRevisionsInSides(elementBox as ElementBox, 'Deletion')) {
+                                this.insertRevision(elementBox, 'Deletion');
+                                this.updateLastElementRevision(elementBox);
+                            } else {
+                                this.combineElementRevision(elementBox.revisions, elementBox.revisions);
+                            }
+                            if (elementBox.line.getOffset(elementBox, 0) === startOff) {
+                                this.owner.revisions.changes.splice(index, 1);
+                            }
+                        }
+                    }
                     if (endOffset === 1) {
                         if (isDelete) {
                             this.selection.start.moveNextPosition();
@@ -11302,8 +11337,28 @@ export class Editor {
                             this.selection.end.setPositionInternal(this.selection.start);
                         }
                     } else {
-                        this.updateCursorForInsertRevision(elementBox, indexInInline, endOffset);
-                        //this.handleDeleteBySplitting(elementBox, indexInInline, endOffset);
+                        if (this.isRevisionMatched(elementBox, 'Deletion')) {
+                            this.updateCursorForInsertRevision(elementBox, indexInInline, endOffset);
+                        } else {
+                            let rangeIndex: number = revision.range.indexOf(elementBox);
+                            let endOff: number = elementBox.line.getOffset(elementBox, elementBox.length);
+                            if (endOff >= endOffset && (revision.range.length > (rangeIndex + 1))) {
+                                this.updateRevisionForSpittedTextElement(elementBox as TextElementBox,
+                                    revision.range[(rangeIndex + 1)] as TextElementBox);
+                                revision.range.splice(revision.range.indexOf(elementBox), 1);
+                                this.toCombineOrInsertRevision(elementBox, 'Deletion');
+                            } else if (revision.range.length === 1 || indexInInline === 0) {
+                                this.handleDeleteBySplitting(elementBox, indexInInline, endOffset);
+                                if (rangeIndex !== -1 && revision.range.length !== 1) {
+                                    this.updateRevisionForSpittedTextElement(revision.range[(rangeIndex - 1)] as TextElementBox,
+                                        revision.range[rangeIndex] as TextElementBox);
+                                    revision.range.splice(revision.range.indexOf(elementBox), 1);
+                                }
+                            } else {
+                                revision.range.splice(revision.range.indexOf(elementBox), 1);
+                                this.toCombineOrInsertRevision(elementBox, 'Deletion');
+                            }
+                        }
                     }
                     this.updateLastElementRevision(elementBox);
                 }
@@ -11323,6 +11378,16 @@ export class Editor {
         }
 
         return removedNode;
+    }
+
+
+    private toCombineOrInsertRevision(elementBox: ElementBox, type: RevisionType): void {
+        if (!this.checkToCombineRevisionsInSides(elementBox as ElementBox, type)) {
+            this.insertRevision(elementBox, type);
+            this.updateLastElementRevision(elementBox);
+        } else {
+            this.combineElementRevision(elementBox.revisions, elementBox.revisions);
+        }
     }
     /**
      * @private
@@ -14993,6 +15058,10 @@ export interface CharacterFormatProperties {
      * Defines the bidirectional property
      */
     bidi?: boolean;
+    /**
+     * Defines the allCaps formatting
+     */
+    allCaps?: boolean;
 }
 
 /**

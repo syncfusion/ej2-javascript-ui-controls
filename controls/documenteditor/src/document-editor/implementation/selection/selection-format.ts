@@ -34,6 +34,7 @@ export class SelectionCharacterFormat {
     private fontSizeIn: number = 0;
     private fontFamilyIn: string;
     private fontColorIn: string = undefined;
+    private allCapsIn: boolean = undefined;
     /**
      * @private
      */
@@ -226,7 +227,26 @@ export class SelectionCharacterFormat {
         this.highlightColorIn = value;
         this.notifyPropertyChanged('highlightColor');
     }
-
+    /**
+     * Gets or sets the allCaps formatting of selected contents.
+     * @aspType bool
+     * @blazorType bool
+     */
+    public get allCaps(): boolean {
+        return this.allCapsIn;
+    }
+    /**
+     * Sets the allCaps formatting of selected contents.
+     * @aspType bool
+     * @blazorType bool
+     */
+    public set allCaps(value: boolean) {
+        if (value === this.allCapsIn) {
+            return;
+        }
+        this.allCapsIn = value;
+        this.notifyPropertyChanged('allCaps');
+    }
     /**
      * @private
      */
@@ -256,6 +276,8 @@ export class SelectionCharacterFormat {
                 return this.underline;
             case 'fontColor':
                 return this.fontColor;
+            case 'allCaps':
+                return this.allCaps;
             default:
                 return undefined;
         }
@@ -300,6 +322,7 @@ export class SelectionCharacterFormat {
         this.italicBidi = format.italicBidi;
         this.fontFamilyBidi = format.fontFamilyBidi;
         this.fontSizeBidi = format.fontSizeBidi;
+        this.allCaps = format.allCaps;
     }
     /**
      * Combines the format.
@@ -352,6 +375,9 @@ export class SelectionCharacterFormat {
         if (!isNullOrUndefined(this.bdo) && this.bdo !== format.bdo) {
             this.bdo = undefined;
         }
+        if (!isNullOrUndefined(this.allCaps) && this.allCaps !== format.allCaps) {
+            this.allCaps = undefined;
+        }
     }
     /**
      * Clones the format.
@@ -376,6 +402,7 @@ export class SelectionCharacterFormat {
         this.italicBidi = selectionCharacterFormat.italicBidi;
         this.fontSizeBidi = selectionCharacterFormat.fontSizeBidi;
         this.fontFamilyBidi = selectionCharacterFormat.fontFamilyBidi;
+        this.allCaps = selectionCharacterFormat.allCaps;
     }
     /**
      * Checks whether current format is equal to the source format or not.
@@ -392,7 +419,8 @@ export class SelectionCharacterFormat {
             && this.highlightColor === format.highlightColor
             && this.italic === format.italic
             && this.baselineAlignment === format.baselineAlignment
-            && this.fontColor === format.fontColor);
+            && this.fontColor === format.fontColor
+            && this.allCaps === format.allCaps);
 
     }
     /**
@@ -417,6 +445,7 @@ export class SelectionCharacterFormat {
         this.italicBidi = undefined;
         this.fontFamilyBidi = undefined;
         this.fontSizeBidi = undefined;
+        this.allCapsIn = undefined;
     }
     /**
      * Destroys the maintained resources.
@@ -441,6 +470,7 @@ export class SelectionCharacterFormat {
         this.italicBidi = undefined;
         this.fontFamilyBidi = undefined;
         this.fontSizeBidi = undefined;
+        this.allCapsIn = undefined;
     }
 }
 /**

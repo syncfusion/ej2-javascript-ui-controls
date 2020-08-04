@@ -17945,7 +17945,7 @@ var StickyNotesAnnotation = /** @__PURE__ @class */ (function () {
     // tslint:disable-next-line
     StickyNotesAnnotation.prototype.createPageAccordion = function (pageIndex) {
         var pageAccordionContainer = document.getElementById(this.pdfViewer.element.id + '_accordionContainer' + pageIndex);
-        if (pageAccordionContainer === null) {
+        if (pageAccordionContainer === null && this.pdfViewer.enableCommentPanel) {
             this.accordionContent = createElement('div', { id: this.pdfViewer.element.id + '_accordioncontent' + pageIndex });
             this.accordionContent.style.zIndex = '1000';
             // tslint:disable-next-line:max-line-length

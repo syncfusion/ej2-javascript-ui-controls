@@ -2,7 +2,7 @@
  * Image module spec 
  */
 import { Browser, isNullOrUndefined, closest, detach, createElement } from '@syncfusion/ej2-base';
-import { RichTextEditor, QuickToolbar, IRenderer, actionComplete } from './../../../src/index';
+import { RichTextEditor, QuickToolbar, IRenderer } from './../../../src/index';
 import { NodeSelection } from './../../../src/selection/index';
 import { renderRTE, destroy, setCursorPoint, dispatchEvent, androidUA, iPhoneUA, currentBrowserUA } from "./../render.spec";
 
@@ -3062,6 +3062,40 @@ client side. Customer easy to edit the contents and get the HTML content for
             let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
             (<any>rteObj).imageModule.uploadObj.onSelectFiles(eventArgs);
             expect(beforeImageUploadSpy).toHaveBeenCalled();
+            done();
+        });
+    });
+
+    describe('BLAZ-5933 - Images change aspect ratio when resized to smallest possible and back larger again - ', () => {
+        let rteObj: RichTextEditor;
+        let clickEvent: MouseEvent;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                value: '<p><img id="rteImageID" style="width: 300px; height: 300px; transform: rotate(0deg);" alt="Logo" src="https://ej2.syncfusion.com/javascript/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-resize"></p>'
+            });
+            done();
+        })
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        })
+        it(' Resizing with offsetHeight test ', (done: Function) => {
+            let rteEle: HTMLElement = rteObj.element;
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let trg = (rteEle.querySelector('#rteImageID') as HTMLElement);
+            clickEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            trg.dispatchEvent(clickEvent);
+            (rteObj.imageModule as any).resizeStart({ target: trg, pageX: 0 });
+            let resizeBot: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('.e-rte-botRight') as HTMLElement;
+            clickEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            resizeBot.dispatchEvent(clickEvent);
+            (rteObj.imageModule as any).resizeStart(clickEvent);
+            (<any>rteObj.imageModule).resizeBtnStat.botRight = true;
+            let imgHeight: number = trg.offsetHeight;
+            (rteObj.imageModule as any).resizing({ target: document.body, pageX: 200 });
+            expect(imgHeight < document.querySelector('img').offsetHeight).toBe(true);
             done();
         });
     });

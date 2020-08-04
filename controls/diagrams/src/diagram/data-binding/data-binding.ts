@@ -68,7 +68,7 @@ export class DataBinding {
         }
         if (dataSource && (dataSource as Object[]).length) {
             this.applyDataSource(data, dataSource as Object[], diagram);
-
+            diagram.trigger('dataLoaded', { diagram: cloneBlazorObject(diagram) });
         }
     }
 

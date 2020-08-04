@@ -1,4 +1,4 @@
-import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';import { Margin } from '../core/appearance';import { MarginModel } from '../core/appearance-model';import { DiagramTooltipModel } from './tooltip-model';import { DiagramTooltip } from './tooltip';import { FlipDirection } from '../enum/enum';
+import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';import { Margin } from '../core/appearance';import { MarginModel } from '../core/appearance-model';import { DiagramTooltipModel } from './tooltip-model';import { DiagramTooltip } from './tooltip';import { FlipDirection } from '../enum/enum';import { SymbolPaletteInfoModel } from './preview-model';import { SymbolPaletteInfo } from './preview';
 
 /**
  * Interface for a class NodeBase
@@ -56,5 +56,13 @@ export interface NodeBaseModel {
      * @default None
      */
     flip?: FlipDirection;
+
+    /**
+     * Defines the symbol info of a connector
+     * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
+     * @default undefined
+     */
+    symbolInfo?: SymbolPaletteInfoModel;
 
 }

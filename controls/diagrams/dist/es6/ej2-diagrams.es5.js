@@ -3891,8 +3891,12 @@ var DiagramNativeElement = /** @__PURE__ @class */ (function (_super) {
          */
         set: function (value) {
             this.data = value;
-            this.template = getContent(this, false);
-            this.isDirt = true;
+            if (!this.canReset) {
+                this.canReset = true;
+                this.template = getContent(this, false);
+                this.canReset = false;
+                this.isDirt = true;
+            }
         },
         enumerable: true,
         configurable: true
@@ -7163,6 +7167,70 @@ function updateTooltipContent(tooltip, tooltipObject) {
     return tooltipObject;
 }
 
+var __extends$15 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate$9 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * customize the size of the individual palette items.
+ */
+var SymbolSize = /** @__PURE__ @class */ (function (_super) {
+    __extends$15(SymbolSize, _super);
+    function SymbolSize() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$9([
+        Property()
+    ], SymbolSize.prototype, "width", void 0);
+    __decorate$9([
+        Property()
+    ], SymbolSize.prototype, "height", void 0);
+    return SymbolSize;
+}(ChildProperty));
+/**
+ * Defines the size and description of a symbol
+ */
+var SymbolPaletteInfo = /** @__PURE__ @class */ (function (_super) {
+    __extends$15(SymbolPaletteInfo, _super);
+    function SymbolPaletteInfo() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$9([
+        Property()
+    ], SymbolPaletteInfo.prototype, "width", void 0);
+    __decorate$9([
+        Property()
+    ], SymbolPaletteInfo.prototype, "height", void 0);
+    __decorate$9([
+        Property()
+    ], SymbolPaletteInfo.prototype, "fit", void 0);
+    __decorate$9([
+        Property()
+    ], SymbolPaletteInfo.prototype, "description", void 0);
+    __decorate$9([
+        Property()
+    ], SymbolPaletteInfo.prototype, "template", void 0);
+    __decorate$9([
+        Property()
+    ], SymbolPaletteInfo.prototype, "tooltip", void 0);
+    return SymbolPaletteInfo;
+}(ChildProperty));
+
 var __extends$13 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -7214,10 +7282,13 @@ var NodeBase = /** @__PURE__ @class */ (function (_super) {
     __decorate$7([
         Property('None')
     ], NodeBase.prototype, "flip", void 0);
+    __decorate$7([
+        Complex({}, SymbolPaletteInfo)
+    ], NodeBase.prototype, "symbolInfo", void 0);
     return NodeBase;
 }(ChildProperty));
 
-var __extends$15 = (undefined && undefined.__extends) || (function () {
+var __extends$16 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -7234,7 +7305,7 @@ var __extends$15 = (undefined && undefined.__extends) || (function () {
  * HTMLElement defines the basic html elements
  */
 var DiagramHtmlElement = /** @__PURE__ @class */ (function (_super) {
-    __extends$15(DiagramHtmlElement, _super);
+    __extends$16(DiagramHtmlElement, _super);
     /**
      * set the id for each element
      */
@@ -7286,42 +7357,6 @@ var DiagramHtmlElement = /** @__PURE__ @class */ (function (_super) {
     });
     return DiagramHtmlElement;
 }(DiagramElement));
-
-var __extends$16 = (undefined && undefined.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __decorate$9 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-/**
- * customize the size of the individual palette items.
- */
-var SymbolSize = /** @__PURE__ @class */ (function (_super) {
-    __extends$16(SymbolSize, _super);
-    function SymbolSize() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    __decorate$9([
-        Property()
-    ], SymbolSize.prototype, "width", void 0);
-    __decorate$9([
-        Property()
-    ], SymbolSize.prototype, "height", void 0);
-    return SymbolSize;
-}(ChildProperty));
 
 var __extends$12 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -17839,7 +17874,19 @@ function getContent(element, isHtml, nodeObject) {
     if (node instanceof Node) {
         sentNode = node;
         if (node.shape.type === 'Native') {
-            
+            var svgContent = void 0;
+            var div_1 = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            document.body.appendChild(div_1);
+            /* tslint:disable */
+            div_1.innerHTML = (node.shape.content);
+            /* tslint:disable */
+            svgContent = (div_1.getElementsByTagName('svg').length > 0)
+                ? div_1.getElementsByTagName('svg')[0].outerHTML : div_1.getElementsByTagName('g')[0].outerHTML;
+            /* tslint:disable */
+            node.shape.content = svgContent;
+            /* tslint:disable */
+            element.content = svgContent;
+            div_1.parentElement.removeChild(div_1);
         }
         if (isBlazor()) {
             content = 'diagramsf_node_template';
@@ -26760,14 +26807,29 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
         var wrapper;
         if (obj) {
             wrapper = this.diagram.findElementUnderMouse(obj, this.currentPosition, padding);
-            if (wrapper && obj.ports && obj.ports.length &&
-                !checkPort(obj, wrapper) && (source instanceof Selector) && source.connectors.length) {
-                var currentConnector = source.connectors[0];
-                if ((currentConnector.constraints & ConnectorConstraints.ConnectToNearByPort) &&
-                    !(currentConnector.constraints & ConnectorConstraints.ConnectToNearByNode)) {
-                    wrapper = this.diagram.findElementUnderMouse(obj, this.currentPosition, 0);
-                    if (!wrapper) {
-                        obj = null;
+            var currentConnector = void 0;
+            var nearNode = void 0;
+            var i = void 0;
+            if ((wrapper && obj.ports && obj.ports.length && !checkPort(obj, wrapper) || !wrapper ||
+                !obj) && objects && objects.length && (source instanceof Selector)) {
+                currentConnector = source.connectors[0];
+                for (i = objects.length - 1; i >= 0; i--) {
+                    nearNode = objects[i];
+                    if ((nearNode instanceof Node) && currentConnector && currentConnector.connectionPadding) {
+                        obj = nearNode;
+                        wrapper = this.diagram.findElementUnderMouse(obj, this.currentPosition, padding);
+                        if (((currentConnector.constraints & ConnectorConstraints.ConnectToNearByPort) && obj &&
+                            obj.ports && obj.ports.length && checkPort(obj, wrapper))) {
+                            break;
+                        }
+                        if ((nearNode instanceof Node) && currentConnector && currentConnector.connectionPadding
+                            && nearNode.wrapper.outerBounds.containsPoint(this.currentPosition) &&
+                            (currentConnector.constraints & ConnectorConstraints.ConnectToNearByNode) &&
+                            !(currentConnector.constraints & ConnectorConstraints.ConnectToNearByPort)) {
+                            obj = nearNode;
+                            wrapper = this.diagram.findElementUnderMouse(obj, this.currentPosition, 0);
+                            break;
+                        }
                     }
                 }
             }
@@ -42533,6 +42595,7 @@ var DataBinding = /** @__PURE__ @class */ (function () {
         }
         if (dataSource && dataSource.length) {
             this.applyDataSource(data, dataSource, diagram);
+            diagram.trigger('dataLoaded', { diagram: cloneBlazorObject(diagram) });
         }
     };
     /**
@@ -53995,6 +54058,7 @@ var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
         _this.isExpandMode = false;
         _this.isMethod = false;
         _this.paletteid = 88123;
+        _this.checkOnRender = false;
         /**
          * helper method for draggable
          * @return {void}
@@ -54181,6 +54245,9 @@ var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
         if (!this.enableAnimation) {
             this.accordionElement.animation = { expand: { duration: 0 }, collapse: { duration: 0 } };
         }
+        this.accordionElement.created = function () {
+            _this.checkOnRender = true;
+        };
         this.accordionElement.expanded = function (args) {
             var index = _this.accordionElement.items.indexOf(args.item);
             var isAllowDatabind = _this.allowServerDataBinding;
@@ -54188,6 +54255,15 @@ var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
             _this.palettes[index].expanded = args.isExpanded;
             _this.palettes[index].isInteraction = true;
             _this.allowServerDataBinding = isAllowDatabind;
+        };
+        this.accordionElement.expanding = function (args) {
+            if (_this.checkOnRender) {
+                var diagramArgs = { element: args.element, content: args.content, index: args.index, cancel: false,
+                    isExpanded: args.isExpanded, palette: _this.palettes[args.index] };
+                var event_1 = 'paletteExpanding';
+                _this.trigger(event_1, diagramArgs);
+                args.cancel = diagramArgs.cancel;
+            }
         };
         this.element.appendChild(accordionDiv);
         var measureWindowElement = 'measureElement';
@@ -54525,9 +54601,7 @@ var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
                 symbolInfo = getSymbolInfo(symbol);
             }
             else if (isBlazor()) {
-                symbolInfo.fit = this.symbolInfo.fit;
-                symbolInfo.width = this.symbolInfo.width;
-                symbolInfo.height = this.symbolInfo.height;
+                symbolInfo = this.getBlazorSymbolInfo(symbol, symbolInfo);
             }
             symbolInfo = symbolInfo || this.symbolInfo || {};
             if (symbol.shape && symbol.shape.isPhase) {
@@ -54613,6 +54687,19 @@ var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
             container.measure(new Size(obj.width, obj.height));
             container.arrange(container.desiredSize);
         }
+    };
+    SymbolPalette.prototype.getBlazorSymbolInfo = function (symbol, symbolInfo) {
+        var node = symbol;
+        var shapeSymbolInfo = node.symbolInfo;
+        if (shapeSymbolInfo) {
+            symbolInfo.description = shapeSymbolInfo.description || this.symbolInfo.description;
+            symbolInfo.fit = shapeSymbolInfo.fit || this.symbolInfo.fit;
+            symbolInfo.height = shapeSymbolInfo.height || this.symbolInfo.height;
+            symbolInfo.width = shapeSymbolInfo.width || this.symbolInfo.width;
+            symbolInfo.tooltip = shapeSymbolInfo.tooltip || this.symbolInfo.tooltip;
+            symbolInfo.template = shapeSymbolInfo.template || this.symbolInfo.template;
+        }
+        return symbolInfo;
     };
     SymbolPalette.prototype.getContainer = function (obj, container) {
         container.measureChildren = false;
@@ -54963,8 +55050,8 @@ var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
                 var id = evt.target.id.split('_container')[0];
                 if (id && this.selectedSymbol) {
                     var args = { oldValue: this.oldObject, newValue: id };
-                    var event_1 = 'paletteSelectionChange';
-                    this.trigger(event_1, args);
+                    var event_2 = 'paletteSelectionChange';
+                    this.trigger(event_2, args);
                     this.oldObject = id;
                     evt.preventDefault();
                 }
@@ -55383,6 +55470,9 @@ var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
     __decorate$25([
         Event()
     ], SymbolPalette.prototype, "paletteSelectionChange", void 0);
+    __decorate$25([
+        Event()
+    ], SymbolPalette.prototype, "paletteExpanding", void 0);
     __decorate$25([
         Property()
     ], SymbolPalette.prototype, "getNodeDefaults", void 0);
@@ -56339,5 +56429,5 @@ var Overview = /** @__PURE__ @class */ (function (_super) {
  * Diagram component exported items
  */
 
-export { Diagram, PrintAndExport, Size, Rect, MatrixTypes, Matrix, identityMatrix, transformPointByMatrix, transformPointsByMatrix, rotateMatrix, scaleMatrix, translateMatrix, multiplyMatrix, Point, BlazorAction, PortVisibility, SnapConstraints, SelectorConstraints, ConnectorConstraints, AnnotationConstraints, NodeConstraints, ElementAction, ThumbsConstraints, DiagramConstraints, DiagramTools, Transform, RenderMode, KeyModifiers, Keys, DiagramAction, RendererAction, RealAction, NoOfSegments, DiagramEvent, PortConstraints, contextMenuClick, contextMenuOpen, contextMenuBeforeItemRender, Thickness, Margin, Shadow, Stop, Gradient, DiagramGradient, LinearGradient, RadialGradient, ShapeStyle, StrokeStyle, TextStyle, DiagramShapeStyle, DiagramElement, PathElement, ImageElement, TextElement, Container, Canvas, GridPanel, RowDefinition, ColumnDefinition, GridRow, GridCell, StackPanel, findConnectorPoints, swapBounds, findAngle, findPoint, getIntersection, getIntersectionPoints, orthoConnection2Segment, getPortDirection, getOuterBounds, getOppositeDirection, processPathData, parsePathData, getRectanglePath, getPolygonPath, pathSegmentCollection, transformPath, updatedSegment, scalePathData, splitArrayCollection, getPathString, getString, randomId, getIndex, templateCompiler, cornersPointsBeforeRotation, getBounds, cloneObject, getInternalProperties, cloneArray, extendObject, extendArray, textAlignToString, wordBreakToString, bBoxText, middleElement, overFlow, whiteSpaceToString, rotateSize, rotatePoint, getOffset, getFunction, completeRegion, findNodeByName, findObjectType, setSwimLaneDefaults, getSpaceValue, getInterval, setUMLActivityDefaults, setConnectorDefaults, findNearestPoint, isDiagramChild, groupHasType, updateDefaultValues, updateLayoutValue, isPointOverConnector, intersect3, intersect2, getLineSegment, getPoints, getTooltipOffset, sort, getAnnotationPosition, getOffsetOfConnector, getAlignedPosition, alignLabelOnSegments, getBezierDirection, removeChildNodes, serialize, deserialize, upgrade, updateStyle, updateHyperlink, updateShapeContent, updateShape, updateContent, updateUmlActivityNode, getUMLFinalNode, getUMLActivityShapes, removeGradient, removeItem, updateConnector, getUserHandlePosition, canResizeCorner, canShowCorner, checkPortRestriction, findAnnotation, findPort, getInOutConnectPorts, findObjectIndex, getObjectFromCollection, scaleElement, arrangeChild, insertObject, getElement, getCollectionChangeEventArguements, getDropEventArguements, getPoint, getObjectType, flipConnector, updatePortEdges, alignElement, cloneSelectedObjects, updatePathElement, checkPort, findPath, findDistance, cloneBlazorObject, checkBrowserInfo, canMeasureDecoratorPath, CanvasRenderer, DiagramRenderer, DataBinding, getBasicShape, getPortShape, getDecoratorShape, getIconShape, getFlowShape, Hyperlink, Annotation, ShapeAnnotation, PathAnnotation, Port, PointPort, menuClass, DiagramContextMenu, Shape, Path, Native, Html, Image$1 as Image, Text$1 as Text, BasicShape, FlowShape, BpmnGateway, BpmnDataObject, BpmnTask, BpmnEvent, BpmnSubEvent, BpmnTransactionSubProcess, BpmnSubProcess, BpmnActivity, BpmnAnnotation, BpmnShape, UmlActivityShape, MethodArguments, UmlClassAttribute, UmlClassMethod, UmlClass, UmlInterface, UmlEnumerationMember, UmlEnumeration, UmlClassifierShape, DiagramShape, Node, Header, Lane, Phase, SwimLane, ChildContainer, Selector, BpmnDiagrams, getBpmnShapePathData, getBpmnTriggerShapePathData, getBpmnGatewayShapePathData, getBpmnTaskShapePathData, getBpmnLoopShapePathData, Decorator, Vector, ConnectorShape, ActivityFlow, BpmnFlow, ConnectorSegment, StraightSegment, BezierSegment, OrthogonalSegment, DiagramConnectorSegment, getDirection, isEmptyVector, getBezierPoints, getBezierBounds, bezierPoints, MultiplicityLabel, ClassifierMultiplicity, RelationShip, DiagramConnectorShape, Connector, ConnectorBridging, Snapping, UndoRedo, DiagramTooltip, initTooltip, updateTooltip, LayoutAnimation, SymbolSize, UserHandle, ToolBase, SelectTool, ConnectTool, MoveTool, RotateTool, ResizeTool, NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, ZoomPanTool, ExpandTool, LabelTool, PolygonDrawingTool, PolyLineDrawingTool, LabelDragTool, LabelResizeTool, LabelRotateTool, DiagramEventHandler, CommandHandler, findToolToActivate, findPortToolToActivate, contains, hasSelection, hasSingleConnection, isSelected, getCursor, ConnectorEditing, updateCanvasBounds, removeChildInContainer, findBounds, createHelper, renderContainerHelper, checkParentAsContainer, checkChildNodeInContainer, addChildToContainer, updateLaneBoundsAfterAddChild, renderStackHighlighter, moveChildInStack, LineRouting, CrudAction, ConnectionDataSource, DataSource, Gridlines, SnapSettings, KeyGesture, Command, CommandManager, ContextMenuSettings, CustomCursorAction, DataMappingItems, Layout, MindMap, HierarchicalTree, RadialTree, GraphForceNode, SymmetricLayout, GraphLayoutManager, ComplexHierarchicalTree, Palette, SymbolDragSize, SymbolPreview, SymbolPalette, Ruler, Overview };
+export { Diagram, PrintAndExport, Size, Rect, MatrixTypes, Matrix, identityMatrix, transformPointByMatrix, transformPointsByMatrix, rotateMatrix, scaleMatrix, translateMatrix, multiplyMatrix, Point, BlazorAction, PortVisibility, SnapConstraints, SelectorConstraints, ConnectorConstraints, AnnotationConstraints, NodeConstraints, ElementAction, ThumbsConstraints, DiagramConstraints, DiagramTools, Transform, RenderMode, KeyModifiers, Keys, DiagramAction, RendererAction, RealAction, NoOfSegments, DiagramEvent, PortConstraints, contextMenuClick, contextMenuOpen, contextMenuBeforeItemRender, Thickness, Margin, Shadow, Stop, Gradient, DiagramGradient, LinearGradient, RadialGradient, ShapeStyle, StrokeStyle, TextStyle, DiagramShapeStyle, DiagramElement, PathElement, ImageElement, TextElement, Container, Canvas, GridPanel, RowDefinition, ColumnDefinition, GridRow, GridCell, StackPanel, findConnectorPoints, swapBounds, findAngle, findPoint, getIntersection, getIntersectionPoints, orthoConnection2Segment, getPortDirection, getOuterBounds, getOppositeDirection, processPathData, parsePathData, getRectanglePath, getPolygonPath, pathSegmentCollection, transformPath, updatedSegment, scalePathData, splitArrayCollection, getPathString, getString, randomId, getIndex, templateCompiler, cornersPointsBeforeRotation, getBounds, cloneObject, getInternalProperties, cloneArray, extendObject, extendArray, textAlignToString, wordBreakToString, bBoxText, middleElement, overFlow, whiteSpaceToString, rotateSize, rotatePoint, getOffset, getFunction, completeRegion, findNodeByName, findObjectType, setSwimLaneDefaults, getSpaceValue, getInterval, setUMLActivityDefaults, setConnectorDefaults, findNearestPoint, isDiagramChild, groupHasType, updateDefaultValues, updateLayoutValue, isPointOverConnector, intersect3, intersect2, getLineSegment, getPoints, getTooltipOffset, sort, getAnnotationPosition, getOffsetOfConnector, getAlignedPosition, alignLabelOnSegments, getBezierDirection, removeChildNodes, serialize, deserialize, upgrade, updateStyle, updateHyperlink, updateShapeContent, updateShape, updateContent, updateUmlActivityNode, getUMLFinalNode, getUMLActivityShapes, removeGradient, removeItem, updateConnector, getUserHandlePosition, canResizeCorner, canShowCorner, checkPortRestriction, findAnnotation, findPort, getInOutConnectPorts, findObjectIndex, getObjectFromCollection, scaleElement, arrangeChild, insertObject, getElement, getCollectionChangeEventArguements, getDropEventArguements, getPoint, getObjectType, flipConnector, updatePortEdges, alignElement, cloneSelectedObjects, updatePathElement, checkPort, findPath, findDistance, cloneBlazorObject, checkBrowserInfo, canMeasureDecoratorPath, CanvasRenderer, DiagramRenderer, DataBinding, getBasicShape, getPortShape, getDecoratorShape, getIconShape, getFlowShape, Hyperlink, Annotation, ShapeAnnotation, PathAnnotation, Port, PointPort, menuClass, DiagramContextMenu, Shape, Path, Native, Html, Image$1 as Image, Text$1 as Text, BasicShape, FlowShape, BpmnGateway, BpmnDataObject, BpmnTask, BpmnEvent, BpmnSubEvent, BpmnTransactionSubProcess, BpmnSubProcess, BpmnActivity, BpmnAnnotation, BpmnShape, UmlActivityShape, MethodArguments, UmlClassAttribute, UmlClassMethod, UmlClass, UmlInterface, UmlEnumerationMember, UmlEnumeration, UmlClassifierShape, DiagramShape, Node, Header, Lane, Phase, SwimLane, ChildContainer, Selector, BpmnDiagrams, getBpmnShapePathData, getBpmnTriggerShapePathData, getBpmnGatewayShapePathData, getBpmnTaskShapePathData, getBpmnLoopShapePathData, Decorator, Vector, ConnectorShape, ActivityFlow, BpmnFlow, ConnectorSegment, StraightSegment, BezierSegment, OrthogonalSegment, DiagramConnectorSegment, getDirection, isEmptyVector, getBezierPoints, getBezierBounds, bezierPoints, MultiplicityLabel, ClassifierMultiplicity, RelationShip, DiagramConnectorShape, Connector, ConnectorBridging, Snapping, UndoRedo, DiagramTooltip, initTooltip, updateTooltip, LayoutAnimation, SymbolSize, SymbolPaletteInfo, UserHandle, ToolBase, SelectTool, ConnectTool, MoveTool, RotateTool, ResizeTool, NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, ZoomPanTool, ExpandTool, LabelTool, PolygonDrawingTool, PolyLineDrawingTool, LabelDragTool, LabelResizeTool, LabelRotateTool, DiagramEventHandler, CommandHandler, findToolToActivate, findPortToolToActivate, contains, hasSelection, hasSingleConnection, isSelected, getCursor, ConnectorEditing, updateCanvasBounds, removeChildInContainer, findBounds, createHelper, renderContainerHelper, checkParentAsContainer, checkChildNodeInContainer, addChildToContainer, updateLaneBoundsAfterAddChild, renderStackHighlighter, moveChildInStack, LineRouting, CrudAction, ConnectionDataSource, DataSource, Gridlines, SnapSettings, KeyGesture, Command, CommandManager, ContextMenuSettings, CustomCursorAction, DataMappingItems, Layout, MindMap, HierarchicalTree, RadialTree, GraphForceNode, SymmetricLayout, GraphLayoutManager, ComplexHierarchicalTree, Palette, SymbolDragSize, SymbolPreview, SymbolPalette, Ruler, Overview };
 //# sourceMappingURL=ej2-diagrams.es5.js.map

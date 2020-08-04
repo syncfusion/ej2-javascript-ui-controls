@@ -346,7 +346,7 @@ export class GanttTreeGrid {
         this.parent.columnByField = {};
         this.parent.customColumns = [];
         let tasksMapping: string[] = ['id', 'name', 'startDate', 'endDate', 'duration', 'dependency',
-            'progress', 'baselineStartDate', 'baselineEndDate', 'resourceInfo', 'notes', 'work', 'manual'];
+            'progress', 'baselineStartDate', 'baselineEndDate', 'resourceInfo', 'notes', 'work', 'manual', 'type'];
         for (let i: number = 0; i < length; i++) {
             let column: GanttColumnModel = {};
             if (typeof ganttObj.columns[i] === 'string') {
@@ -357,11 +357,7 @@ export class GanttTreeGrid {
             let columnName: string[] = [];
             if (tasksMapping.length > 0) {
                 columnName = tasksMapping.filter((name: string) => {
-                    if (column.field === 'taskType' && !isNullOrUndefined(tasks.work)) {
-                        return column.field;
-                    } else {
-                        return column.field === tasks[name];
-                    }
+                    return column.field === tasks[name];
                 });
             }
             if (columnName.length === 0) {
@@ -376,15 +372,10 @@ export class GanttTreeGrid {
                 this.bindTreeGridColumnProperties(column, true);
                 continue;
             } else {
-                if (column.field === 'taskType') {
-                    this.createTreeGridColumn(column, true);
-                    this.parent.columnMapping[column.field] = column.field;
-                } else {
-                    let index: number = tasksMapping.indexOf(columnName[0]);
-                    tasksMapping.splice(index, 1);
-                    this.createTreeGridColumn(column, true);
-                    this.parent.columnMapping[columnName[0]] = column.field;
-                }
+                let index: number = tasksMapping.indexOf(columnName[0]);
+                tasksMapping.splice(index, 1);
+                this.createTreeGridColumn(column, true);
+                this.parent.columnMapping[columnName[0]] = column.field;
             }
         }
 
@@ -395,12 +386,6 @@ export class GanttTreeGrid {
                 column.field = tasks[tasksMapping[j]];
                 this.createTreeGridColumn(column, length === 0);
                 this.parent.columnMapping[tasksMapping[j]] = column.field;
-                if (column.field === tasks.work) {
-                    let column: GanttColumnModel = {};
-                    column.field = 'taskType';
-                    this.createTreeGridColumn(column, length === 0);
-                    this.parent.columnMapping[column.field] = column.field;
-                }
             }
         }
         if (this.parent.viewType !== 'ProjectView') {
@@ -493,7 +478,7 @@ export class GanttTreeGrid {
             column.valueAccessor = column.valueAccessor ? column.valueAccessor : this.workValueAccessor.bind(this);
             column.editType = column.editType ? column.editType : 'numericedit';
 
-        } else if (column.field === 'taskType') {
+        } else if (taskSettings.type === column.field) {
             column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('taskType');
             column.width = column.width ? column.width : 150;
             //column.type = 'string';

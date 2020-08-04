@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-compression",
-	"version": "17.2.48",
+	"version": "18.2.44",
 	"description": "Essential Javascript 2 Compression library",
 	"keywords": [
 		"ej2",
@@ -11,7 +11,7 @@
 		"compression"
 	],
 	"author": "Syncfusion Inc.",
-	"license": "UNLICENSED",
+	"license": "SEE LICENSE IN license",
 	"dependencies": {
 		"@syncfusion/ej2-file-utils": "*"
 	},

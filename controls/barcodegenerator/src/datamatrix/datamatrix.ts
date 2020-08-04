@@ -1,13 +1,13 @@
 import { Component, Property, L10n } from '@syncfusion/ej2-base';
 import { INotifyPropertyChanged, Complex, Event, EmitType } from '@syncfusion/ej2-base';
-import { RenderingMode, BarcodeEvent, DataMatrixEncoding, DataMatrixSize } from '../barcode/enum/enum';
+import { RenderingMode, BarcodeEvent, DataMatrixEncoding, DataMatrixSize, BarcodeExportType } from '../barcode/enum/enum';
 import { ValidateEvent } from '../barcode/rendering/canvas-interface';
 import { DisplayTextModel } from '../barcode/primitives/displaytext-model';
 import { MarginModel } from '../barcode/primitives/margin-model';
 import { DisplayText } from '../barcode/primitives/displaytext';
 import { Margin } from '../barcode/primitives/margin';
 import { BarcodeRenderer } from '../barcode/rendering/renderer';
-import { removeChildElements, refreshCanvasBarcode } from '../barcode/utility/barcode-util';
+import { removeChildElements, refreshCanvasBarcode, exportAsImage } from '../barcode/utility/barcode-util';
 import { DataMatrix } from './datamatrix-util';
 import { DataMatrixGeneratorModel } from './datamatrix-model';
 
@@ -173,15 +173,16 @@ export class DataMatrixGenerator extends Component<HTMLElement> implements INoti
         this.element.style.width = this.getElementSize(this.width);
         //Initialize the hieght of the datamatrix generator
         this.element.style.height = this.getElementSize(this.height);
-        let mode: string = this.mode;
+        //set height and width of the canvas element
+        let height: number = this.mode === 'SVG' ? this.element.offsetHeight : this.element.offsetHeight * 1.5;
+        let width: number = this.mode === 'SVG' ? this.element.offsetWidth : this.element.offsetWidth * 1.5;
         //initialize the canvas element
         this.barcodeCanvas = this.barcodeRenderer.renderRootElement(
             {
                 id: this.element.id + 'content',
-                height: mode === 'SVG' ? this.element.offsetHeight : this.element.offsetHeight * 1.5,
-                width: mode === 'SVG' ? this.element.offsetWidth : this.element.offsetWidth * 1.5
+                height, width
             },
-            this.backgroundColor, this.element.offsetWidth, this.element.offsetHeight) as HTMLElement;
+            this.backgroundColor, width, height) as HTMLElement;
         this.element.appendChild(this.barcodeCanvas);
     }
 
@@ -252,6 +253,24 @@ export class DataMatrixGenerator extends Component<HTMLElement> implements INoti
             }
         }
         return validData;
+    }
+
+    /**
+     * Export the datamatrix as an image in the specified image type and downloads it in the browser.
+     *  @param {string} fileName - Specifies the filename of the datamatrix image to be download. 
+     *  @param {BarcodeExportType} exportType - Defines the format of the datamatrix to be exported
+     */
+    public exportImage(fileName: string, exportType: BarcodeExportType ): void {
+        exportAsImage(exportType, fileName, this.element, false, this);
+    }
+
+    /**
+     * Export the datamatrix as an image in the specified image type and returns it as base64 string.
+     *  @param {BarcodeExportType} barcodeExportType - Defines the format of the datamatrix to be exported
+     */
+    public exportAsBase64Image(barcodeExportType: BarcodeExportType): Promise<string> {
+        let returnValue: Promise<string> = exportAsImage(barcodeExportType, '', this.element, true, this);
+        return returnValue;
     }
 
 

@@ -13,7 +13,7 @@ import { Tooltip, TooltipEventArgs, createSpinner, showSpinner, hideSpinner } fr
 import * as events from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
 import { AxisFields } from '../../common/grouping-bar/axis-field-renderer';
-import { LoadEventArgs, EnginePopulatingEventArgs, DrillThroughEventArgs, PivotColumn, ChartLabelInfo } from '../../common/base/interface';
+import { LoadEventArgs, EnginePopulatingEventArgs, DrillThroughEventArgs, PivotColumn, ChartLabelInfo, EditCompleteEventArgs } from '../../common/base/interface';
 import { FetchReportArgs, LoadReportArgs, RenameReportArgs, RemoveReportArgs, ToolbarArgs } from '../../common/base/interface';
 import { PdfCellRenderArgs, NewReportArgs, ChartSeriesCreatedEventArgs, AggregateEventArgs } from '../../common/base/interface';
 import { ResizeInfo, ScrollInfo, ColumnRenderEventArgs, PivotCellSelectedEventArgs, SaveReportArgs } from '../../common/base/interface';
@@ -1460,6 +1460,14 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      */
     @Event()
     public drillThrough: EmitType<DrillThroughEventArgs>;
+
+     /** 
+     * It triggers when editing is made in the raw data of pivot table.
+     * @event
+     * @blazorproperty 'EditComplete'
+     */
+    @Event()
+    public editComplete: EmitType<EditCompleteEventArgs>;
 
     /** 
      * It triggers when a value cell is clicked in the pivot table for Editing.

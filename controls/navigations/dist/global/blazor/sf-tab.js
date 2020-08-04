@@ -118,6 +118,9 @@ var SfTab = /** @class */ (function () {
         this.cntEle = sf.base.select('.' + CLS_TAB + ' > .' + CLS_CONTENT, this.element);
         if (!sf.base.isNullOrUndefined(this.cntEle)) {
             this.touchModule = new sf.base.Touch(this.cntEle, { swipe: this.swipeHandler.bind(this) });
+            if (this.options.height !== 'auto' && !this.isVertical()) {
+                this.cntEle.style.height = 'calc(100% - ' + this.hdrEle.offsetHeight + 'px)';
+            }
         }
         if (this.options.loadOn === 'Demand') {
             var id = this.setActiveContent();

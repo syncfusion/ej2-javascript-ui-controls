@@ -666,6 +666,74 @@ describe('Touch event validation', () => {
     });
 });
 
+describe('Touch event Zoom validation', () => {
+    let editor: DocumentEditor;
+    let documentHelper: DocumentHelper;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:600px' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Selection, Editor, EditorHistory, ContextMenu);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true,
+            enableContextMenu: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        documentHelper = editor.documentHelper;
+    });
+    afterAll((done) => {
+        editor.destroy();
+        editor = undefined;
+        document.body.removeChild(document.getElementById('container'));
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('on zoom context menu prevention', () => {
+        editor.openBlank();
+        let point = editor.selection.start.location;
+        let pageX: number = point.x + documentHelper.currentPage.boundingRectangle.x;
+        let pageY: number = point.y + documentHelper.currentPage.boundingRectangle.y;
+        let touches: any[] = [{
+            pageX: pageX,
+            pageY: pageY,
+            clientX: point.x,
+            clientY: point.y
+        }, {
+            pageX: pageX,
+            pageY: pageY,
+            clientX: point.x + 50,
+            clientY: point.y + 50
+        }];
+        let event: any = {
+            type: "touchstart",
+            target: documentHelper.viewerContainer,
+            preventDefault: () => { return true; },
+            altKey: false,
+            changedTouches: touches,
+            ctrlKey: false,
+            metaKey: false,
+            shiftKey: false,
+            targetTouches: touches,
+            touches: touches
+        }
+        editor.documentHelper.zoomFactor = 2;
+        documentHelper.onTouchStartInternal(event);
+        event.touches[1].clientX = event.touches[1].clientX - 10;
+        event.touches[1].clientY = event.touches[1].clientY - 10;
+        documentHelper.onTouchMoveInternal(event);
+        event.touches[1].clientX = event.touches[1].clientX - 10;
+        event.touches[1].clientY = event.touches[1].clientY - 10;
+        documentHelper.onTouchMoveInternal(event);
+        event.touches[1].clientX = event.touches[1].clientX - 10;
+        event.touches[1].clientY = event.touches[1].clientY - 10;
+        documentHelper.onTouchMoveInternal(event);
+        documentHelper.onTouchUpInternal(event);
+        expect(editor.contextMenuModule.contextMenuInstance.element.style.display).toBe('none');
+    });
+});
 
 /**
  * Viewer Spec

@@ -304,7 +304,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      */
     @Property([])
     public headers: object[];
-
     /**
      * Gets DocumentEditor instance.
      * @aspType DocumentEditor
@@ -484,7 +483,8 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         'Update Fields': 'Update Fields',
         'Update cross reference fields': 'Update cross reference fields',
         'Track Changes': 'Keep track of the changes made in the document',
-        'TrackChanges': 'Track Changes'
+        'TrackChanges': 'Track Changes',
+        'AllCaps' : 'AllCaps'
     };
 
     /**

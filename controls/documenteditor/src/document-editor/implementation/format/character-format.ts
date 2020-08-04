@@ -118,6 +118,12 @@ export class WCharacterFormat {
     set fontFamilyBidi(value: string) {
         this.setPropertyValue('fontFamilyBidi', value);
     }
+    get allCaps(): boolean {
+        return this.getPropertyValue('allCaps') as boolean;
+    }
+    set allCaps(value: boolean) {
+        this.setPropertyValue('allCaps', value);
+    }
 
     constructor(node?: Object) {
         this.ownerBase = node;
@@ -269,6 +275,7 @@ export class WCharacterFormat {
         this.addUniqueCharacterFormat('fontSizeBidi', property, propValue, uniqueCharFormatTemp);
         this.addUniqueCharacterFormat('boldBidi', property, propValue, uniqueCharFormatTemp);
         this.addUniqueCharacterFormat('italicBidi', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('allCaps', property, propValue, uniqueCharFormatTemp);
         // tslint:disable-next-line:max-line-length
         this.uniqueCharacterFormat = WCharacterFormat.uniqueCharacterFormats.addUniqueFormat(uniqueCharFormatTemp, WCharacterFormat.uniqueFormatType);
     }
@@ -331,6 +338,9 @@ export class WCharacterFormat {
             case 'fontFamilyBidi':
                 value = 'Calibri';
                 break;
+            case 'allCaps':
+                value = false;
+                break;
         }
         return value;
     }
@@ -344,7 +354,8 @@ export class WCharacterFormat {
             && this.fontColor === format.fontColor
             && this.strikethrough === format.strikethrough
             && this.highlightColor === format.highlightColor && this.bidi === format.bidi
-            && this.bdo === format.bdo);
+            && this.bdo === format.bdo)
+            && this.allCaps === format.allCaps;
     }
     public isSameFormat(format: WCharacterFormat): boolean {
         return this.baseCharStyle === format.baseCharStyle &&
@@ -463,6 +474,9 @@ export class WCharacterFormat {
         }
         if (isNullOrUndefined(this.getValue('bdo'))) {
             this.bdo = format.getValue('bdo') as BiDirectionalOverride;
+        }
+        if (isNullOrUndefined(this.getValue('allCaps'))) {
+            this.allCaps = format.getValue('allCaps') as boolean;
         }
     }
 }

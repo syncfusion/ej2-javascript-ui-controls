@@ -67,6 +67,37 @@ function isValidLI(ul, li, index, keyCode, count = 0) {
     }
     return index;
 }
+/** @hidden */
+function setBlankIconStyle(popup) {
+    let blankIconList = [].slice.call(popup.getElementsByClassName('e-blank-icon'));
+    if (!blankIconList.length) {
+        return;
+    }
+    let iconLi = popup.querySelector('.e-item:not(.e-blank-icon):not(.e-separator)');
+    if (iconLi.classList.contains('e-url')) {
+        iconLi = iconLi.querySelector('.e-menu-url');
+    }
+    let icon = iconLi.querySelector('.e-menu-icon');
+    let cssProp;
+    if (this.enableRtl) {
+        cssProp = { padding: 'paddingRight', margin: 'marginLeft' };
+    }
+    else {
+        cssProp = { padding: 'paddingLeft', margin: 'marginRight' };
+    }
+    // tslint:disable
+    let size = `${parseInt(getComputedStyle(icon).fontSize, 10) + parseInt((this.enableRtl ? getComputedStyle(icon)[cssProp.margin] : getComputedStyle(icon)[cssProp.margin]), 10)
+        + parseInt(getComputedStyle(iconLi).paddingLeft, 10)}px`;
+    blankIconList.forEach((li) => {
+        if (li.classList.contains('e-url')) {
+            li.querySelector('.e-menu-url').style[cssProp.padding] = size;
+        }
+        else {
+            li.style[cssProp.padding] = size;
+        }
+    });
+    // tslint:enable
+}
 /**
  * Defines the items of Split Button/DropDownButton.
  */
@@ -278,23 +309,7 @@ let DropDownButton = class DropDownButton extends Component {
             this.getPopUpElement().appendChild(ul);
         }
         if (showIcon) {
-            let blankIconLi = [].slice.call(this.getPopUpElement().getElementsByClassName('e-blank-icon'));
-            let iconLi = this.getPopUpElement().querySelector('.e-item:not(.e-blank-icon)');
-            let icon = iconLi.querySelector('.e-menu-icon');
-            let cssProp;
-            if (this.enableRtl) {
-                cssProp = { padding: 'paddingRight', margin: 'marginLeft' };
-            }
-            else {
-                cssProp = { padding: 'paddingLeft', margin: 'marginRight' };
-            }
-            // tslint:disable
-            let size = `${parseInt(getComputedStyle(icon).fontSize, 10) + parseInt((this.enableRtl ? getComputedStyle(icon)[cssProp.margin] : getComputedStyle(icon)[cssProp.margin]), 10)
-                + parseInt(getComputedStyle(iconLi).paddingLeft, 10)}px`;
-            blankIconLi.forEach((li) => {
-                li.style[cssProp.padding] = size;
-            });
-            // tslint:enable
+            setBlankIconStyle(this.getPopUpElement());
         }
     }
     hasIcon(items, field) {
@@ -1613,5 +1628,5 @@ ProgressButton = __decorate$3([
  * SplitButton all module
  */
 
-export { getModel, upDownKeyHandler, Item, DropDownButton, SplitButton, Deferred, createButtonGroup, SpinSettings, AnimationSettings, ProgressButton };
+export { getModel, upDownKeyHandler, setBlankIconStyle, Item, DropDownButton, SplitButton, Deferred, createButtonGroup, SpinSettings, AnimationSettings, ProgressButton };
 //# sourceMappingURL=ej2-splitbuttons.es2015.js.map

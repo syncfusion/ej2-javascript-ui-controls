@@ -6,7 +6,7 @@ import { classList, remove, removeClass } from '@syncfusion/ej2-base';
 import { Button } from '@syncfusion/ej2-buttons';
 import { Popup } from '@syncfusion/ej2-popups';
 import { MenuEventArgs, BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs, upDownKeyHandler } from './../common/common';
-import { getModel, SplitButtonIconPosition, Item } from './../common/common';
+import { getModel, SplitButtonIconPosition, Item, setBlankIconStyle } from './../common/common';
 import { ItemModel } from './../common/common-model';
 import { DropDownButtonModel } from './drop-down-button-model';
 
@@ -304,25 +304,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
         if (appendItems) {
             this.getPopUpElement().appendChild(ul);
         }
-        if (showIcon) {
-            let blankIconLi: HTMLElement[] = [].slice.call(this.getPopUpElement().getElementsByClassName('e-blank-icon'));
-            let iconLi: HTMLElement = this.getPopUpElement().querySelector('.e-item:not(.e-blank-icon)') as HTMLElement;
-            let icon: HTMLElement = iconLi.querySelector('.e-menu-icon') as HTMLElement;
-            let cssProp: { padding: string, margin: string };
-            if (this.enableRtl) {
-                cssProp = { padding: 'paddingRight', margin: 'marginLeft' };
-            } else {
-                cssProp = { padding: 'paddingLeft', margin: 'marginRight' };
-            }
-            // tslint:disable
-            let size: string = `${parseInt(getComputedStyle(icon).fontSize, 10) + parseInt(
-                (this.enableRtl ? (getComputedStyle(icon) as any)[cssProp.margin] : (getComputedStyle(icon) as any)[cssProp.margin]), 10)
-                + parseInt(getComputedStyle(iconLi).paddingLeft, 10)}px`;
-            blankIconLi.forEach((li: HTMLElement): void => {
-                (li.style as any)[cssProp.padding] = size;
-            });
-            // tslint:enable
-        }
+        if (showIcon) { setBlankIconStyle(this.getPopUpElement()); }
     }
 
     private hasIcon(items: ItemModel[], field: string): boolean {

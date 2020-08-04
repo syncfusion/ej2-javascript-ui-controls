@@ -60,11 +60,13 @@ var SfTooltip = /** @class */ (function () {
         this.beforeCloseAnimation = null;
         this.isPopupHidden = true;
         this.element = element;
-        this.ctrlId = this.element.id;
         this.properties = properties;
         this.dotnetRef = ref;
-        this.element.blazor__instance = this;
-        this.element.eventList = eventList;
+        if (!sf.base.isNullOrUndefined(this.element)) {
+            this.ctrlId = this.element.id;
+            this.element.blazor__instance = this;
+            this.element.eventList = eventList;
+        }
     }
     SfTooltip.prototype.getTriggerList = function (trigger) {
         if (trigger === 'Auto') {
@@ -856,40 +858,60 @@ var Tooltip = {
     wireEvents: function (element, dotnetRef, properties, eventList) {
         this.updateAnimation(properties.animation);
         new SfTooltip(element, dotnetRef, properties, eventList);
-        element.blazor__instance.formatPosition();
-        element.blazor__instance.wireEvents(properties.opensOn);
+        if (this.isValid(element)) {
+            element.blazor__instance.formatPosition();
+            element.blazor__instance.wireEvents(properties.opensOn);
+        }
         // tslint:disable-next-line
         window.sfBlazor.renderComplete(element);
     },
     contentUpdated: function (element) {
-        element.blazor__instance.contentUpdated();
+        if (this.isValid(element)) {
+            element.blazor__instance.contentUpdated();
+        }
     },
     updateAnimation: function (animation) {
         animation.open.duration = animation.open.duration ? animation.open.duration : undefined;
         animation.close.duration = animation.close.duration ? animation.close.duration : undefined;
     },
     beforeRenderCallBack: function (element, cancel) {
-        element.blazor__instance.beforeRenderCallBack(cancel);
+        if (this.isValid(element)) {
+            element.blazor__instance.beforeRenderCallBack(cancel);
+        }
     },
     beforeOpenCallBack: function (element, cancel) {
-        element.blazor__instance.beforeOpenCallBack(cancel);
+        if (this.isValid(element)) {
+            element.blazor__instance.beforeOpenCallBack(cancel);
+        }
     },
     beforeCloseCallBack: function (element, cancel) {
-        element.blazor__instance.beforeCloseCallBack(cancel);
+        if (this.isValid(element)) {
+            element.blazor__instance.beforeCloseCallBack(cancel);
+        }
     },
     showTooltip: function (element, target, animation, targetProp) {
+        if (!this.isValid(element)) {
+            return;
+        }
         if (targetProp !== null && targetProp !== '' && element.blazor__instance.element.querySelector(targetProp)) {
             target = element.blazor__instance.element.querySelector(targetProp);
         }
         element.blazor__instance.showTooltip(target, animation, null);
     },
     hideTooltip: function (element, animation) {
-        element.blazor__instance.hideTooltip(animation);
+        if (this.isValid(element)) {
+            element.blazor__instance.hideTooltip(animation);
+        }
     },
     destroy: function (element) {
-        element.blazor__instance.destroy();
+        if (this.isValid(element)) {
+            element.blazor__instance.destroy();
+        }
     },
     refreshPosition: function (element, targetEle, targetProp) {
+        if (!this.isValid(element)) {
+            return;
+        }
         var instance = element.blazor__instance;
         if (targetEle === null) {
             targetEle = targetProp !== null && targetProp !== '' ? instance.element.querySelector(targetProp) : instance.element;
@@ -897,6 +919,9 @@ var Tooltip = {
         instance.reposition(targetEle);
     },
     updateProperties: function (element, completeProps, props) {
+        if (!this.isValid(element)) {
+            return;
+        }
         var blazInstance = element.blazor__instance;
         var prevBlazProp = element.blazor__instance.properties;
         blazInstance.isRestrictUpdate = true;
@@ -956,6 +981,9 @@ var Tooltip = {
             blazInstance.isPositionUpdate = false;
             blazInstance.isRestrictUpdate = false;
         }
+    },
+    isValid: function (element) {
+        return (element && element.blazor__instance) ? true : false;
     }
 };
 

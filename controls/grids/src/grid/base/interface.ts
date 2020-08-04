@@ -1444,6 +1444,8 @@ export interface ExcelExportProperties {
     fileName?: string;
     /** Defines the hierarchy export mode for the pdf grid */
     hierarchyExportMode?: 'Expanded' | 'All' | 'None';
+    /** Defines the delimiter for CSV file export */
+    separator?: string;
 }
 
 export interface RowDragEventArgs {

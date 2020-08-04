@@ -538,3 +538,46 @@ describe('Strikethrough and basline alignment validation', () => {
         dialog.onInsertFontFormat();
     });
 });
+
+describe('Font dialog validation for allCaps', () => {
+    let editor: DocumentEditor;
+    let dialog: FontDialog;
+    let menu: ContextMenu;
+    beforeAll((): void => {
+        editor = undefined;
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, FontDialog, ContextMenu, EditorHistory);
+        editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false, enableContextMenu: true, enableFontDialog: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        dialog = editor.fontDialogModule;
+        menu = editor.contextMenuModule;
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        dialog = undefined;
+        setTimeout(function () {
+            done();
+        }, 2000);
+    });
+    it('allCaps property value apply testing', () => {
+        createDocument(editor)
+        let event: any;
+        event = { keyCode: 35, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
+        editor.documentHelper.onKeyDownInternal(event);
+        dialog.showFontDialog();
+        dialog.loadFontDialog();
+        let allCaps: any = document.getElementById((dialog as any).target.id + '_allCaps');
+        allCaps.checked = true;
+        event = { preventDefault: function () { }, checked: true, event: { currentTarget: allCaps } };
+        (dialog as any).allcaps.change(event);
+        dialog.onInsertFontFormat();
+        expect(editor.selection.characterFormat.allCaps).toBe(true);
+    });
+});

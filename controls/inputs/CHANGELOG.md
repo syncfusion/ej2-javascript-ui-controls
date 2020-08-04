@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.2.48 (2020-08-04)
+
+### TextBox
+
+#### Bug Fixes
+
+`282905` - Now, Cross-Site Scripting issues will no longer occurs for placeholder property.
+
 ## 18.1.56 (2020-06-09)
 
 ### Uploader

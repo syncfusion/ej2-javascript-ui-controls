@@ -1,11 +1,11 @@
 import { BlazorDotnetObject, closest, isNullOrUndefined, EventHandler } from '@syncfusion/ej2-base';
 import { getZindexPartial } from '@syncfusion/ej2-popups';
-import { upDownKeyHandler } from '../src/common/common';
+import { upDownKeyHandler, setBlankIconStyle } from '../src/common/common';
 
 const HIDDEN: string = 'hidden';
 const TRANSPARENT: string = 'e-transparent';
 const EMPTY: string = '';
-const PIXEL: string = 'px;';
+const PIXEL: string = 'px';
 const ZERO: string = '0';
 const DOT: string = '.';
 const HASH: string = '#';
@@ -41,17 +41,15 @@ class SfDropDownButton {
         this.element.blazor__instance = this;
     }
 
-    public calculatePosition(): Offset {
+    public calculatePosition(blankIcon: boolean): void {
         let btnOffset: ClientRect = this.element.getBoundingClientRect();
         let left: number = btnOffset.left + pageXOffset;
         let top: number = btnOffset.bottom + pageYOffset;
         this.popup.style.visibility = HIDDEN;
-        this.popup.style.top = pageYOffset ? pageYOffset + PIXEL : ZERO;
-        this.popup.style.left = pageXOffset ? pageXOffset + PIXEL : ZERO;
+        document.body.appendChild(this.popup);
+        if (blankIcon) { setBlankIconStyle(this.popup); }
         this.popup.classList.remove(TRANSPARENT);
         let popupOffset: ClientRect = this.popup.getBoundingClientRect();
-        this.popup.classList.add(TRANSPARENT);
-        this.popup.style.visibility = EMPTY;
         let zIndex: number = getZindexPartial(this.element);
         if (btnOffset.bottom + popupOffset.height > document.documentElement.clientHeight) {
             if (top - btnOffset.height - popupOffset.height > document.documentElement.clientTop) {
@@ -64,11 +62,13 @@ class SfDropDownButton {
             }
         }
         left = Math.ceil(left); top = Math.ceil(top);
-        document.body.appendChild(this.popup);
-        if (this.popup.firstElementChild) { (this.popup.firstElementChild as HTMLElement).focus(); }
         EventHandler.remove(document, MOUSEDOWN, this.mouseDownHandler);
         this.addEventListener();
-        return <Offset>{ Left: left, Top: top, ZIndex: zIndex };
+        this.popup.style.left = left + PIXEL;
+        this.popup.style.top = top + PIXEL;
+        this.popup.style.zIndex = zIndex + EMPTY;
+        this.popup.style.visibility = EMPTY;
+        if (this.popup.firstElementChild) { (this.popup.firstElementChild as HTMLElement).focus(); }
     }
 
     private mouseDownHandler(e: MouseEvent & TouchEvent): void {
@@ -161,13 +161,15 @@ class SfDropDownButton {
 
 // tslint:disable-next-line:variable-name
 let DropDownButton: object = {
-    calculatePosition(element: BlazorDropDownMenuElement, popup: HTMLElement, dotnetRef: BlazorDotnetObject): Offset {
-        if (isNullOrUndefined(element.blazor__instance)) {
-            new SfDropDownButton(element, popup, dotnetRef);
-            return element.blazor__instance.calculatePosition();
+    calculatePosition(element: BlazorDropDownMenuElement, popup: HTMLElement, dotnetRef: BlazorDotnetObject, blankIcon: boolean): void {
+        if (!isNullOrUndefined(element)) {
+            if (isNullOrUndefined(element.blazor__instance)) {
+                new SfDropDownButton(element, popup, dotnetRef);
+            } else {
+                element.blazor__instance.popup = popup;
+            }
+            element.blazor__instance.calculatePosition(blankIcon);
         }
-        element.blazor__instance.popup = popup;
-        return element.blazor__instance.calculatePosition();
     },
     addEventListener(element: BlazorDropDownMenuElement): void {
         element.blazor__instance.removeEventListener();

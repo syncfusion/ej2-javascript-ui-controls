@@ -17,6 +17,7 @@ import { HierarchyGridPrintMode } from '../../../src/grid/base/enum';
 import { PdfDocument, PdfGrid, PdfStandardFont, PdfFontFamily, PdfFontStyle } from '@syncfusion/ej2-pdf-export';
 import { DataManager } from '@syncfusion/ej2-data';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
+import { PdfExportProperties } from '../../../src/grid/base/interface';
 
 Grid.Inject(Page, Group, Selection, Toolbar, PdfExport, DetailRow, ForeignKey);
 
@@ -237,7 +238,12 @@ describe('pdf Export =>', () => {
 
     describe('Hierarchy pdf export => ', () => {
         let gridObj: Grid;
-        let Dummy: Boolean = true;
+        let catchEvent: boolean = true;
+        let localData: Object[] = [{ OrderID: "100", CustomerID: "Vinet", Freight: "2.00", OrderDate: new Date() },
+            { OrderID: "101", CustomerID: "Hanar", Freight: "2.01", OrderDate: new Date() },
+            { OrderID: "102", CustomerID: "Mega", Freight: "4.48", OrderDate: new Date() },
+            { OrderID: "103", CustomerID: "Sam", Freight: "19.23", OrderDate: new Date() }];
+        let pdfpropery: PdfExportProperties = {dataSource: localData, footer: { fromBottom: -300 }};
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -324,18 +330,29 @@ describe('pdf Export =>', () => {
 
         it('pdf-export -> catch method', (done) => {
             gridObj.pdfExport({footer:{fromBottom: -300}}).then((doc) =>{} ).catch((e) =>{
-                Dummy = false;
+                catchEvent = false;
                 done();
             });
         });
 
         it('catch method check', () => {
-          expect(Dummy).toBeFalsy();
+          expect(catchEvent).toBeFalsy();
+        });
+
+        it('custom datasource catch method', (done) => {
+            gridObj.pdfExport(pdfpropery).then((doc) =>{} ).catch((e) =>{
+                catchEvent = true;
+                done();
+            });
+        });
+
+        it('catch method check', () => {
+          expect(catchEvent).toBeTruthy();
         });
     
         afterAll(() => {
             destroy(gridObj);
-            gridObj = null;
+            gridObj = catchEvent = pdfpropery = localData = null;
         });
     });
 });

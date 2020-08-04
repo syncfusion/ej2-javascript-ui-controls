@@ -9178,6 +9178,20 @@ class Lists {
         if (e.event.which === 8) {
             this.backspaceList(e);
         }
+        if (e.event.which === 46 && e.event.action === 'delete') {
+            let range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+            let commonAncestor = range.commonAncestorContainer;
+            let startEle = range.startContainer;
+            let endEle = range.endContainer;
+            let startNode = startEle.nodeType === 3 ? startEle.parentElement : startEle;
+            let endNode = endEle.nodeType === 3 ? endEle.parentElement : endEle;
+            if ((commonAncestor.nodeName === 'UL' || commonAncestor.nodeName === 'OL') && startNode !== endNode
+                && (!isNullOrUndefined(closest(startNode, 'ul')) || !isNullOrUndefined(closest(startNode, 'ol')))
+                && (!isNullOrUndefined(closest(endNode, 'ul')) || !isNullOrUndefined(closest(endNode, 'ol')))
+                && (commonAncestor.lastElementChild === closest(endNode, 'li')) && !range.collapsed) {
+                detach(commonAncestor);
+            }
+        }
         if (e.event.which === 9) {
             let range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
             if (!(e.event.action && e.event.action === 'indent')) {
@@ -16459,6 +16473,17 @@ class Image {
             }
         }
     }
+    getMaxWidth() {
+        let maxWidth = this.parent.insertImageSettings.maxWidth;
+        let imgPadding = 12;
+        let imgResizeBorder = 2;
+        let editEle = this.parent.contentModule.getEditPanel();
+        let eleStyle = window.getComputedStyle(editEle);
+        let editEleMaxWidth = editEle.offsetWidth - (imgPadding + imgResizeBorder +
+            parseFloat(eleStyle.paddingLeft.split('px')[0]) + parseFloat(eleStyle.paddingRight.split('px')[0]) +
+            parseFloat(eleStyle.marginLeft.split('px')[0]) + parseFloat(eleStyle.marginRight.split('px')[0]));
+        return isNullOrUndefined(maxWidth) ? editEleMaxWidth : maxWidth;
+    }
     pixToPerc(expected, parentEle) {
         return expected / parseFloat(getComputedStyle(parentEle).width) * 100;
     }
@@ -16470,7 +16495,7 @@ class Image {
             }
             else {
                 if ((parseInt(this.parent.insertImageSettings.minWidth, 10) >= parseInt(width, 10) ||
-                    parseInt(this.parent.insertImageSettings.maxWidth, 10) <= parseInt(width, 10))) {
+                    parseInt(this.getMaxWidth(), 10) <= parseInt(width, 10))) {
                     return;
                 }
                 if (!this.parent.insertImageSettings.resizeByPercent &&
@@ -16487,6 +16512,9 @@ class Image {
         });
     }
     resizing(e) {
+        if (this.imgEle.offsetWidth >= this.getMaxWidth()) {
+            this.imgEle.style.maxHeight = this.imgEle.offsetHeight + 'px';
+        }
         let pageX = this.getPointX(e);
         let pageY = this.getPointY(e);
         let mouseX = (this.resizeBtnStat.botLeft || this.resizeBtnStat.topLeft) ? -(pageX - this.pageX) : (pageX - this.pageX);
@@ -17358,7 +17386,7 @@ class Image {
                 url: url, selection: this.selection, altText: matchUrl,
                 selectParent: this.selectParent, width: {
                     width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
-                    maxWidth: proxy.parent.insertImageSettings.maxWidth
+                    maxWidth: proxy.getMaxWidth()
                 },
                 height: {
                     height: proxy.parent.insertImageSettings.height, minHeight: proxy.parent.insertImageSettings.minHeight,
@@ -17390,7 +17418,7 @@ class Image {
         imgSizeWrap.appendChild(contentElem);
         let widthNum = new NumericTextBox({
             format: '###.### px', min: this.parent.insertImageSettings.minWidth,
-            max: this.parent.insertImageSettings.maxWidth,
+            max: this.getMaxWidth(),
             enableRtl: this.parent.enableRtl, locale: this.parent.locale
         });
         widthNum.isStringTemplate = true;
@@ -17511,7 +17539,7 @@ class Image {
                                 selectParent: selectParent,
                                 width: {
                                     width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
-                                    maxWidth: proxy.parent.insertImageSettings.maxWidth
+                                    maxWidth: proxy.getMaxWidth()
                                 }, height: {
                                     height: proxy.parent.insertImageSettings.height, minHeight: proxy.parent.insertImageSettings.minHeight,
                                     maxHeight: proxy.parent.insertImageSettings.maxHeight
@@ -17558,7 +17586,7 @@ class Image {
                             url: url, selection: save, altText: altText, selectParent: selectParent,
                             width: {
                                 width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
-                                maxWidth: proxy.parent.insertImageSettings.maxWidth
+                                maxWidth: proxy.getMaxWidth()
                             }, height: {
                                 height: proxy.parent.insertImageSettings.height, minHeight: proxy.parent.insertImageSettings.minHeight,
                                 maxHeight: proxy.parent.insertImageSettings.maxHeight
@@ -17966,7 +17994,7 @@ class Image {
                         reader.result : URL.createObjectURL(convertToBlob(reader.result)),
                     width: {
                         width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
-                        maxWidth: proxy.parent.insertImageSettings.maxWidth
+                        maxWidth: proxy.getMaxWidth()
                     },
                     height: {
                         height: proxy.parent.insertImageSettings.height, minHeight: proxy.parent.insertImageSettings.minHeight,

@@ -1,7 +1,7 @@
 import { Animation, Browser, ChildProperty, Complex, Component, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, classList, closest, compile, createElement, detach, extend, formatUnit, getComponent, getUniqueID, getValue, isBlazor, isNullOrUndefined, isUndefined, matches, prepend, remove, removeClass, resetBlazorTemplate, rippleEffect, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { DataManager, DataUtil, Predicate, Query } from '@syncfusion/ej2-data';
 import { ListBase, Sortable, cssClass, moveTo } from '@syncfusion/ej2-lists';
-import { Popup, createSpinner, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
+import { Popup, createSpinner, getZindexPartial, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
 import { Input, TextBox } from '@syncfusion/ej2-inputs';
 import { Button, createCheckBox } from '@syncfusion/ej2-buttons';
 import { TreeView } from '@syncfusion/ej2-navigations';
@@ -3449,6 +3449,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
             if (this.element.hasAttribute('autofocus')) {
                 this.focusIn();
             }
+            this.initial = false;
         }
         else {
             if (this.element.tagName === 'INPUT') {
@@ -4463,6 +4464,10 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
             this.createChip();
         }
         this.wireEvents();
+        var firstUl = select('.' + PARENTITEM, this.treeObj.element);
+        if (firstUl && firstUl.getAttribute('aria-multiselectable')) {
+            firstUl.removeAttribute('aria-multiselectable');
+        }
         this.oldValue = this.value;
         this.isInitialized = true;
         this.renderComplete();
@@ -8575,6 +8580,10 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             this.updateVal(this.value, null, 'value');
             this.addValidInputClass();
             this.isDynamicDataChange = false;
+        }
+        if (this.dataSource instanceof DataManager && this.mode === 'CheckBox' && this.allowFiltering &&
+            !(isBlazor() && this.isServerRendered)) {
+            this.removeFocus();
         }
     };
     MultiSelect.prototype.updateActionList = function (ulElement, list, e, isUpdated) {
@@ -12707,14 +12716,19 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
                 drop: this.dragEnd.bind(this),
                 placeHolder: function () { return _this.createElement('span', { className: 'e-placeholder' }); },
                 helper: function (e) {
+                    var wrapper = _this.list.cloneNode();
                     var ele = e.sender.cloneNode(true);
-                    ele.style.width = _this.getItems()[0].offsetWidth + 'px';
+                    wrapper.appendChild(ele);
+                    var refEle = _this.getItems()[0];
+                    wrapper.style.width = refEle.offsetWidth + 'px';
+                    wrapper.style.height = refEle.offsetHeight + 'px';
                     if ((_this.value && _this.value.length) > 1 && _this.isSelected(ele)) {
                         ele.appendChild(_this.createElement('span', {
                             className: 'e-list-badge', innerHTML: _this.value.length + ''
                         }));
                     }
-                    return ele;
+                    wrapper.style.zIndex = getZindexPartial(_this.element) + '';
+                    return wrapper;
                 }
             });
         }
@@ -13067,6 +13081,9 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
                 else {
                     li_1 = _this.getItems()[_this.getIndexByValue(value)];
                 }
+                if (!li_1) {
+                    li_1 = args.helper;
+                }
                 _this.removeSelected(_this, value === dropValue ? [args.droppedElement] : [li_1]);
                 if (isBlazor()) {
                     if (index === 0) {
@@ -13179,16 +13196,17 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
      * This method is used to enable or disable the items in the ListBox based on the items and enable argument.
      * @param items Text items that needs to be enabled/disabled.
      * @param enable Set `true`/`false` to enable/disable the list items.
+     * @param isValue - Set `true` if `items` parameter is a array of unique values.
      * @returns void
      */
-    ListBox.prototype.enableItems = function (items, enable) {
+    ListBox.prototype.enableItems = function (items, enable, isValue) {
         var _this = this;
         if (enable === void 0) { enable = true; }
         var li;
         items.forEach(function (item) {
             var text;
             if (isBlazor() && typeof (item) === 'object') {
-                text = item[_this.fields.text || 'text'];
+                text = getValue(isValue ? _this.fields.value : _this.fields.text, item);
                 if (isNullOrUndefined(text)) {
                     return;
                 }
@@ -13196,7 +13214,10 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             else {
                 text = item;
             }
-            li = _this.findListElement(_this.list, 'li', 'data-value', _this.getValueByText(text));
+            li = _this.findListElement(_this.list, 'li', 'data-value', isValue ? text : _this.getValueByText(text));
+            if (!li) {
+                return;
+            }
             if (enable) {
                 removeClass([li], cssClass.disabled);
                 li.removeAttribute('aria-disabled');
@@ -13211,11 +13232,12 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
      * Based on the state parameter, specified list item will be selected/deselected.
      * @param items Array of text value of the item.
      * @param state Set `true`/`false` to select/un select the list items.
+     * @param isValue - Set `true` if `items` parameter is a array of unique values.
      * @returns void
      */
-    ListBox.prototype.selectItems = function (items, state) {
+    ListBox.prototype.selectItems = function (items, state, isValue) {
         if (state === void 0) { state = true; }
-        this.setSelection(items, state, true);
+        this.setSelection(items, state, !isValue);
         this.updateSelectedOptions();
     };
     /**
@@ -14060,6 +14082,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             // tslint:disable
             fListBox.interopAdaptor.invokeMethodAsync('UpdateListData', fListBox.listData).then(function () {
                 fListBox.updateBlazorListData(null, true);
+                fListBox.updateSelectedOptions();
             });
             tListBox.interopAdaptor.invokeMethodAsync('UpdateListData', tListBox.listData).then(function () {
                 tListBox.updateBlazorListData(null, true);

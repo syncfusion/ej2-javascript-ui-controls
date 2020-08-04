@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.2.48 (2020-08-04)
+
+### Compression
+
+#### Bug Fixes
+
+- Updated the license configuration.
+
 ## 15.4.26-preview (2018-01-23)
 
 ### Compression

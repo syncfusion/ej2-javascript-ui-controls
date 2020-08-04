@@ -28,6 +28,7 @@ export class GanttChart {
     public isExpandCollapseFromChart: boolean = false;
     public isExpandAll: boolean = false;
     private focusedElement: HTMLElement;
+    private isGanttElement: boolean = false;
     public keyboardModule: KeyboardEvents;
     constructor(parent: Gantt) {
         this.parent = parent;
@@ -297,7 +298,19 @@ export class GanttChart {
      * @return {void}
      * @private
      */
+    private mouseUp(e: PointerEvent): void {
+        if (!this.isGanttElement) {
+            this.parent.notify('chartMouseUp', e);
+        }
+        this.isGanttElement = false;
+    }
+    /**
+     *  Method trigger while perform mouse up action.
+     * @return {void}
+     * @private
+     */
     private documentMouseUp(e: PointerEvent): void {
+        this.isGanttElement = true;
         if (this.parent.allowRowDragAndDrop) {
             let ganttDragElemet: HTMLElement = this.parent.element.querySelector('.e-ganttdrag');
             if (ganttDragElemet) {
@@ -750,9 +763,10 @@ export class GanttChart {
             }
         }
         if (!this.parent.isAdaptive) {
-            EventHandler.add(document, mouseUp, this.documentMouseUp, this);
+            EventHandler.add(this.parent.element, mouseUp, this.documentMouseUp, this);
+            EventHandler.add(document, mouseUp, this.mouseUp, this);
         }
-        EventHandler.add(document.body, 'mousemove', this.mouseMoveHandler, this);
+        EventHandler.add(this.parent.element, 'mousemove', this.mouseMoveHandler, this);
         EventHandler.add(document.body, 'contextmenu', this.contextClick, this);
         EventHandler.add(this.parent.chartRowsModule.ganttChartTableBody, 'dblclick', this.doubleClickHandler, this);
     }
@@ -773,9 +787,10 @@ export class GanttChart {
             }
         }
         if (!this.parent.isAdaptive) {
-            EventHandler.remove(document, mouseUp, this.documentMouseUp);
+            EventHandler.remove(this.parent.element, mouseUp, this.documentMouseUp);
+            EventHandler.remove(document, mouseUp, this.mouseUp);
         }
-        EventHandler.remove(document.body, 'mousemove', this.mouseMoveHandler);
+        EventHandler.remove(this.parent.element, 'mousemove', this.mouseMoveHandler);
         EventHandler.remove(document.body, 'contextmenu', this.contextClick);
         EventHandler.remove(this.parent.chartRowsModule.ganttChartTableBody, 'dblclick', this.doubleClickHandler);
     }

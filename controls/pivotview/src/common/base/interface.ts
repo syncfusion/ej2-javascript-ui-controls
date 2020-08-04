@@ -324,6 +324,20 @@ export interface DrillThroughEventArgs {
 }
 
 /**
+ * The event argument which holds the editing information of the raw data made in corresponding aggregated cell.
+ */
+export interface EditCompleteEventArgs {
+    /** Defines the edited raw data */
+    currentData: IDataSet[];
+    /** Defines the actual raw data */
+    previousData: IDataSet[];
+    /** Defines an option to restrict the pivot table update */
+    cancel?: boolean;
+    /** Defines the index position of the actual raw data */
+    previousPosition: number[];
+}
+
+/**
  * The member filtering event arguments provides the necessary information about the filtering which is performing.
  */
 export interface MemberFilteringEventArgs {

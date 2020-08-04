@@ -955,6 +955,10 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.addValidInputClass();
             this.isDynamicDataChange = false;
         }
+        if (this.dataSource instanceof DataManager && this.mode === 'CheckBox' && this.allowFiltering &&
+           !(isBlazor() && this.isServerRendered)) {
+            this.removeFocus();
+        }
     }
 
     private updateActionList(

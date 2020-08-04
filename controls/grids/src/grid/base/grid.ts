@@ -2142,6 +2142,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             }
         }
         this.pageSettings.template = undefined;
+        /* tslint:disable-next-line:no-any */
+        if ((this as any).isAngular) {
+        /* tslint:disable:no-string-literal */
+        delete this.groupSettings['properties']['captionTemplate']; }
         this.pageTemplateChange = !isNullOrUndefined(this.pagerTemplate);
         return this.addOnPersist(keyEntity);
     }

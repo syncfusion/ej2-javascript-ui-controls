@@ -26,6 +26,7 @@ export class FontDialog {
     private doublestrikethrough: CheckBox = undefined;
     private superscript: CheckBox = undefined;
     private subscript: CheckBox = undefined;
+    private allcaps: CheckBox = undefined;
     //Character Format Property
     private bold: boolean = undefined;
     private italic: boolean = undefined;
@@ -35,6 +36,7 @@ export class FontDialog {
     private fontSize: number = undefined;
     private fontFamily: string = undefined;
     private fontColor: string = undefined;
+    private allCaps: boolean = undefined;
     /**
      * @private
      */
@@ -100,6 +102,7 @@ export class FontDialog {
         let superScriptElement: HTMLInputElement;
         let subScriptElement: HTMLInputElement;
         let doubleStrikeThroughElement: HTMLInputElement;
+        let allCapsElement: HTMLInputElement;
         let id: string = this.documentHelper.owner.containerId;
         this.target = createElement('div', { id: id + '_insertFontDialog', className: 'e-de-font-dlg' });
         let fontDiv: HTMLElement = this.getFontDiv(locale, isRtl);
@@ -141,6 +144,11 @@ export class FontDialog {
         doubleStrikeThroughElement = this.createInputElement('checkbox', this.target.id + '_doubleStrikeThrough', '') as HTMLInputElement;
         fontEffectSubDiv2.appendChild(doubleStrikeThroughElement);
         fontEffectsDiv.appendChild(fontEffectSubDiv2);
+        // tslint:disable-next-line:max-line-length
+        let fontEffectSubDiv3: HTMLElement = createElement('div', { className: 'e-de-font-checkbox-transform-label e-de-font-checkbox-transform', id: id + '_fontEffectsSubDiv3' });
+        allCapsElement = this.createInputElement('checkbox', this.target.id + '_allCaps', '') as HTMLInputElement;
+        fontEffectSubDiv3.appendChild(allCapsElement);
+        fontEffectsDiv.appendChild(fontEffectSubDiv3);
         this.target.appendChild(fontEffectsDiv);
         this.colorPicker = new ColorPicker({
             change: this.fontColorUpdate, value: '#000000', enableRtl: isRtl, locale: this.documentHelper.owner.locale
@@ -173,6 +181,13 @@ export class FontDialog {
             enableRtl: isRtl
         });
         this.superscript.appendTo(superScriptElement);
+        this.allcaps = new CheckBox({
+            label: locale.getConstant('All caps'),
+            cssClass: 'e-de-font-content-label-caps',
+            change: this.allcapsUpdate,
+            enableRtl: isRtl
+        });
+        this.allcaps.appendTo(allCapsElement);
         if (isRtl) {
             fontEffectSubDiv2.classList.add('e-de-rtl');
             this.doublestrikethrough.cssClass = 'e-de-font-content-checkbox-label-rtl';
@@ -348,6 +363,11 @@ export class FontDialog {
         if (this.documentHelper.selection.caret.style.display !== 'none') {
             this.documentHelper.selection.caret.style.display = 'none';
         }
+        if (characterFormat.allCaps) {
+            this.allcaps.checked = true;
+        } else {
+            this.allcaps.checked = false;
+        }
     }
     /**
      * @private
@@ -397,6 +417,9 @@ export class FontDialog {
         }
         if (!isNullOrUndefined(this.fontFamily)) {
             format.fontFamily = this.fontFamily;
+        }
+        if (!isNullOrUndefined(this.allCaps)) {
+            format.allCaps = this.allCaps;
         }
         if (!this.characterFormat) {
             this.onCharacterFormat(this.documentHelper.selection, format);
@@ -500,6 +523,15 @@ export class FontDialog {
         }
 
     }
+    private allcapsUpdate = (args: any): void => {
+        this.enableCheckBoxProperty(args);
+        if (args.checked) {
+            this.allCaps = true;
+        } else {
+            this.allCaps = false;
+        }
+
+    }
     /**
      * @private
      */
@@ -511,6 +543,7 @@ export class FontDialog {
         this.doublestrikethrough.checked = false;
         this.superscript.checked = false;
         this.subscript.checked = false;
+        this.allcaps.checked = false;
         this.bold = undefined;
         this.italic = undefined;
         this.underline = undefined;
@@ -575,6 +608,10 @@ export class FontDialog {
             this.subscript.destroy();
         }
         this.subscript = undefined;
+        if (this.allcaps) {
+            this.allcaps.destroy();
+        }
+        this.allcaps = undefined;
     }
 }
 /* tslint:enable:no-any */

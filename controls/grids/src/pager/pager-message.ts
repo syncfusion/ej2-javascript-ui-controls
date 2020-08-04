@@ -50,7 +50,8 @@ export class PagerMessage implements IRender {
                 pagerObj.getLocalizedLabel('currentPageInfo'), [pagerObj.totalRecordsCount === 0 ? 0 :
                     pagerObj.currentPage, pagerObj.totalPages || 0]) + ' ';
             this.pageCountMsgElem.textContent = this.format(
-                pagerObj.getLocalizedLabel('totalItemsInfo'), [pagerObj.totalRecordsCount || 0]);
+                pagerObj.getLocalizedLabel(pagerObj.totalRecordsCount <= 1 ? 'totalItemInfo' : 'totalItemsInfo'),
+                [pagerObj.totalRecordsCount || 0]);
         }
         this.pageNoMsgElem.parentElement.setAttribute('aria-label', this.pageNoMsgElem.textContent + this.pageCountMsgElem.textContent);
     }

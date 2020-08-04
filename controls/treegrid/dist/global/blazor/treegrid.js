@@ -3725,7 +3725,8 @@ var TreeGrid = /** @class */ (function (_super) {
                             this.grid.dataSource = { result: this.flatData, count: count };
                         }
                         else {
-                            this.grid.dataSource = this.flatData;
+                            this.grid.dataSource = !(this.dataSource instanceof sf.data.DataManager) ?
+                                this.flatData : new sf.data.DataManager(this.dataSource.dataSource, this.dataSource.defaultQuery, this.dataSource.adaptor);
                         }
                     }
                     else {

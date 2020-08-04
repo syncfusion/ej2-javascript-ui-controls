@@ -1966,7 +1966,7 @@ var SummaryModelGenerator = /** @__PURE__ @class */ (function () {
         columns.push.apply(columns, this.parent.getColumns());
         return isNullOrUndefined(start) ? columns : columns.slice(start, end);
     };
-    SummaryModelGenerator.prototype.generateRows = function (input, args, start, end) {
+    SummaryModelGenerator.prototype.generateRows = function (input, args, start, end, columns) {
         if (input.length === 0) {
             if (args === undefined || !args.count) {
                 return [];
@@ -1976,11 +1976,11 @@ var SummaryModelGenerator = /** @__PURE__ @class */ (function () {
         var rows = [];
         var row = this.getData();
         for (var i = 0; i < row.length; i++) {
-            rows.push(this.getGeneratedRow(row[i], data[i], args ? args.level : undefined, start, end, args ? args.parentUid : undefined));
+            rows.push(this.getGeneratedRow(row[i], data[i], args ? args.level : undefined, start, end, args ? args.parentUid : undefined, columns));
         }
         return rows;
     };
-    SummaryModelGenerator.prototype.getGeneratedRow = function (summaryRow, data, raw, start, end, parentUid) {
+    SummaryModelGenerator.prototype.getGeneratedRow = function (summaryRow, data, raw, start, end, parentUid, columns) {
         var tmp = [];
         var indents = this.getIndentByLevel(raw);
         var isDetailGridAlone = !isNullOrUndefined(this.parent.childGrid);
@@ -1988,7 +1988,7 @@ var SummaryModelGenerator = /** @__PURE__ @class */ (function () {
         if (this.parent.isRowDragable()) {
             indents = ['e-indentcelltop'];
         }
-        var values = this.getColumns(start, end);
+        var values = columns ? columns : this.getColumns(start, end);
         for (var i = 0; i < values.length; i++) {
             tmp.push(this.getGeneratedCell(values[i], summaryRow, i >= indentLength ? this.getCellType() :
                 i < this.parent.groupSettings.columns.length ? CellType.Indent : CellType.DetailFooterIntent, indents[i], isDetailGridAlone));
@@ -7234,7 +7234,9 @@ var Selection = /** @__PURE__ @class */ (function () {
         var deleted = 'deletedRecords';
         if (gObj.editSettings.mode === 'Batch' && gObj.editModule) {
             var currentRecords = iterateExtend(this.parent.getCurrentViewRecords());
-            currentRecords = this.parent.editModule.getBatchChanges()[added].concat(currentRecords);
+            currentRecords = gObj.editSettings.newRowPosition === 'Bottom' ?
+                currentRecords.concat(this.parent.editModule.getBatchChanges()[added]) :
+                this.parent.editModule.getBatchChanges()[added].concat(currentRecords);
             var deletedRecords = this.parent.editModule.getBatchChanges()[deleted];
             var primaryKey = this.parent.getPrimaryKeyFieldNames()[0];
             for (var i = 0; i < (deletedRecords.length); i++) {
@@ -11970,6 +11972,11 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
             }
         }
         this.pageSettings.template = undefined;
+        /* tslint:disable-next-line:no-any */
+        if (this.isAngular) {
+            /* tslint:disable:no-string-literal */
+            delete this.groupSettings['properties']['captionTemplate'];
+        }
         this.pageTemplateChange = !isNullOrUndefined(this.pagerTemplate);
         return this.addOnPersist(keyEntity);
     };
@@ -19492,7 +19499,7 @@ var PagerMessage = /** @__PURE__ @class */ (function () {
         else {
             this.pageNoMsgElem.textContent = this.format(pagerObj.getLocalizedLabel('currentPageInfo'), [pagerObj.totalRecordsCount === 0 ? 0 :
                     pagerObj.currentPage, pagerObj.totalPages || 0]) + ' ';
-            this.pageCountMsgElem.textContent = this.format(pagerObj.getLocalizedLabel('totalItemsInfo'), [pagerObj.totalRecordsCount || 0]);
+            this.pageCountMsgElem.textContent = this.format(pagerObj.getLocalizedLabel(pagerObj.totalRecordsCount <= 1 ? 'totalItemInfo' : 'totalItemsInfo'), [pagerObj.totalRecordsCount || 0]);
         }
         this.pageNoMsgElem.parentElement.setAttribute('aria-label', this.pageNoMsgElem.textContent + this.pageCountMsgElem.textContent);
     };
@@ -19606,6 +19613,7 @@ var Pager = /** @__PURE__ @class */ (function (_super) {
         this.defaultConstants = {
             currentPageInfo: '{0} of {1} pages',
             totalItemsInfo: '({0} items)',
+            totalItemInfo: '({0} item)',
             firstPageTooltip: 'Go to first page',
             lastPageTooltip: 'Go to last page',
             nextPageTooltip: 'Go to next page',
@@ -20615,6 +20623,7 @@ var FilterCellRenderer = /** @__PURE__ @class */ (function (_super) {
             width: '0px',
             enabled: column.allowFiltering,
             popupWidth: 'auto',
+            enableRtl: this.parent.enableRtl,
             change: this.internalEvent.bind(this),
             beforeOpen: function () {
                 var operator = gObj.filterModule.customOperators;
@@ -20629,12 +20638,7 @@ var FilterCellRenderer = /** @__PURE__ @class */ (function (_super) {
         });
         this.dropOptr.appendTo(fbicon);
         var spanElmt = closest(this.dropOptr.element, 'span');
-        if (!gObj.enableRtl) {
-            spanElmt.style.marginRight = '15px';
-        }
-        else {
-            spanElmt.style.marginLeft = '15px';
-        }
+        spanElmt.classList.add('e-filterbardropdown');
         spanElmt.removeAttribute('tabindex');
     };
     FilterCellRenderer.prototype.internalEvent = function (e) {
@@ -33156,8 +33160,10 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
         var _this = this;
         this.groupedColLength = gObj.groupSettings.columns.length;
         var blankRows = 5;
+        var separator;
         var rows = [];
-        if (!isNullOrUndefined(exportProperties) && !isNullOrUndefined(exportProperties.multipleExport)) {
+        var isExportPropertiesPresent = !isNullOrUndefined(exportProperties);
+        if (isExportPropertiesPresent && !isNullOrUndefined(exportProperties.multipleExport)) {
             /* tslint:disable-next-line:max-line-length */
             this.expType = (!isNullOrUndefined(exportProperties.multipleExport.type) ? exportProperties.multipleExport.type : 'AppendToSheet');
             if (!isNullOrUndefined(exportProperties.multipleExport.blankRows)) {
@@ -33184,7 +33190,7 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
             this.rowLength = (this.rows[this.rows.length - 1].index + blankRows);
             this.rowLength++;
         }
-        if (!isNullOrUndefined(exportProperties)) {
+        if (isExportPropertiesPresent) {
             if (!isNullOrUndefined(isMultipleExport)) {
                 if (!isNullOrUndefined(exportProperties.header) && (isMultipleExport || this.expType === 'NewSheet')) {
                     this.processExcelHeader(JSON.parse(JSON.stringify(exportProperties.header)));
@@ -33209,7 +33215,7 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
                 }
             }
         }
-        this.includeHiddenColumn = (!isNullOrUndefined(exportProperties) ? exportProperties.includeHiddenColumn : false);
+        this.includeHiddenColumn = (isExportPropertiesPresent ? exportProperties.includeHiddenColumn : false);
         return new Promise(function (resolve, reject) {
             gObj.childGridLevel = 0;
             rows = _this.processGridExport(gObj, exportProperties, r);
@@ -33241,9 +33247,14 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
                     if (isBlazor() && gObj.isServerRendered) {
                         _this.book.isServerRendered = gObj.isServerRendered;
                     }
-                    var book = new Workbook(_this.book, 'csv', gObj.locale, gObj.currencyCode);
+                    if (isExportPropertiesPresent && !isNullOrUndefined(exportProperties.separator)
+                        && exportProperties.separator !== ',') {
+                        separator = exportProperties.separator;
+                    }
+                    /* tslint:disable-next-line:max-line-length */
+                    var book = new Workbook(_this.book, 'csv', gObj.locale, gObj.currencyCode, separator);
                     if (!_this.isBlob) {
-                        if (!isNullOrUndefined(exportProperties) && exportProperties.fileName) {
+                        if (isExportPropertiesPresent && exportProperties.fileName) {
                             book.save(exportProperties.fileName);
                         }
                         else {
@@ -33257,7 +33268,7 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
                 else {
                     var book = new Workbook(_this.book, 'xlsx', gObj.locale, gObj.currencyCode);
                     if (!_this.isBlob) {
-                        if (!isNullOrUndefined(exportProperties) && exportProperties.fileName) {
+                        if (isExportPropertiesPresent && exportProperties.fileName) {
                             book.save(exportProperties.fileName);
                         }
                         else {
@@ -33345,7 +33356,7 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
             else {
                 var result = returnType.result.GroupGuid ?
                     returnType.result.records : returnType.result;
-                this.processAggregates(gObj, result, excelRow);
+                this.processAggregates(gObj, result, excelRow, null, null, null, headerRow.columns);
             }
         }
         return excelRow;
@@ -33542,7 +33553,7 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
         };
     };
     // tslint:disable-next-line:max-line-length
-    ExcelExport.prototype.processAggregates = function (gObj, rec, excelRows, currentViewRecords, indent, byGroup) {
+    ExcelExport.prototype.processAggregates = function (gObj, rec, excelRows, currentViewRecords, indent, byGroup, columns) {
         var summaryModel = new SummaryModelGenerator(gObj);
         if (gObj.aggregates.length && this.parent !== gObj) {
             gObj.aggregateModule.prepareSummaryInfo();
@@ -33566,7 +33577,7 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
         }
         else {
             indent = gObj.groupSettings.columns.length > 0 && !byGroup ? gObj.groupSettings.columns.length : indent;
-            var sRows = summaryModel.generateRows(data, rec.aggregates);
+            var sRows = summaryModel.generateRows(data, rec.aggregates, null, null, columns);
             if (sRows.length > 0 && !byGroup) {
                 excelRows = this.fillAggregates(gObj, sRows, indent, excelRows);
             }
@@ -33975,7 +33986,7 @@ var PdfExport = /** @__PURE__ @class */ (function () {
         this.gridPool[parent.id] = false;
         this.pdfPageSettings = new PdfPageSettings();
     };
-    PdfExport.prototype.exportWithData = function (parent, pdfDoc, resolve, returnType, pdfExportProperties, isMultipleExport) {
+    PdfExport.prototype.exportWithData = function (parent, pdfDoc, resolve, returnType, pdfExportProperties, isMultipleExport, reject) {
         var _this = this;
         this.init(parent);
         if (!isNullOrUndefined(pdfDoc)) {
@@ -33989,6 +34000,9 @@ var PdfExport = /** @__PURE__ @class */ (function () {
             parent.trigger(pdfExportComplete, _this.isBlob ? { promise: _this.blobPromise } : {});
             _this.parent.log('exporting_complete', _this.getModuleName());
             resolve(_this.pdfDocument);
+        }).catch(function (e) {
+            reject(_this.pdfDocument);
+            _this.parent.trigger(actionFailure, e);
         });
     };
     /**
@@ -34032,13 +34046,13 @@ var PdfExport = /** @__PURE__ @class */ (function () {
             }
             return new Promise(function (resolve, reject) {
                 pdfExportProperties.dataSource.executeQuery(new Query()).then(function (returnType) {
-                    _this.exportWithData(parent, pdfDoc, resolve, returnType, pdfExportProperties, isMultipleExport);
+                    _this.exportWithData(parent, pdfDoc, resolve, returnType, pdfExportProperties, isMultipleExport, reject);
                 });
             });
         }
         else if (!isNullOrUndefined(pdfExportProperties) && pdfExportProperties.exportType === 'CurrentPage') {
             return new Promise(function (resolve, reject) {
-                _this.exportWithData(parent, pdfDoc, resolve, _this.parent.getCurrentViewRecords(), pdfExportProperties, isMultipleExport);
+                _this.exportWithData(parent, pdfDoc, resolve, _this.parent.getCurrentViewRecords(), pdfExportProperties, isMultipleExport, reject);
             });
         }
         else {
@@ -34178,7 +34192,7 @@ var PdfExport = /** @__PURE__ @class */ (function () {
                     sRows = summaryModel.generateRows(dataSource.records, returnType.aggregates);
                 }
                 else {
-                    sRows = summaryModel.generateRows(returnType.result, returnType.aggregates);
+                    sRows = summaryModel.generateRows(returnType.result, returnType.aggregates, null, null, columns);
                 }
                 this.processAggregates(sRows, pdfGrid, border, captionThemeStyle.font, captionThemeStyle.brush, captionThemeStyle.backgroundBrush, false);
             }

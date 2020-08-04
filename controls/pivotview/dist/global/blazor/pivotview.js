@@ -5058,6 +5058,8 @@ var rowDeselected = 'rowDeselected';
 /** @hidden */
 var beginDrillThrough = 'beginDrillThrough';
 /** @hidden */
+var editComplete = 'editComplete';
+/** @hidden */
 var saveReport = 'saveReport';
 /** @hidden */
 var fetchReport = 'fetchReport';
@@ -12837,16 +12839,30 @@ var DrillThroughDialog = /** @class */ (function () {
     function DrillThroughDialog(parent) {
         /** @hidden */
         this.indexString = [];
+        this.clonedData = [];
         this.isUpdated = false;
         this.gridIndexObjects = {};
         this.gridData = [];
         this.parent = parent;
         this.engine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
     }
+    DrillThroughDialog.prototype.frameHeaderWithKeys = function (header) {
+        var keys = Object.keys(header);
+        var keyPos = 0;
+        var framedHeader = {};
+        while (keyPos < keys.length) {
+            framedHeader[keys[keyPos]] = header[keys[keyPos]];
+            keyPos++;
+        }
+        return framedHeader;
+    };
     /** @hidden */
     DrillThroughDialog.prototype.showDrillThroughDialog = function (eventArgs) {
         var _this = this;
         this.gridData = eventArgs.rawData;
+        for (var i = 0; i < eventArgs.rawData.length; i++) {
+            this.clonedData.push(this.frameHeaderWithKeys(eventArgs.rawData[i]));
+        }
         var actualText = eventArgs.currentCell.actualText.toString();
         if (this.engine.fieldList[actualText].aggregateType !== 'Count' && this.parent.editSettings.allowInlineEditing &&
             this.parent.editSettings.allowEditing && eventArgs.rawData.length === 1 &&
@@ -12879,14 +12895,20 @@ var DrillThroughDialog = /** @class */ (function () {
                         if (_this.parent.dataSourceSettings.type === 'CSV') {
                             _this.updateData(_this.drillThroughGrid.dataSource);
                         }
+                        var gridIndexObjectsValue = Object.keys(_this.gridIndexObjects);
+                        var previousPosition = [];
+                        for (var _i = 0, gridIndexObjectsValue_1 = gridIndexObjectsValue; _i < gridIndexObjectsValue_1.length; _i++) {
+                            var value = gridIndexObjectsValue_1[_i];
+                            previousPosition.push(_this.gridIndexObjects[value]);
+                        }
                         var count = Object.keys(_this.gridIndexObjects).length;
                         var addItems = [];
                         /* tslint:disable:no-string-literal */
-                        for (var _i = 0, _a = _this.drillThroughGrid.dataSource; _i < _a.length; _i++) {
-                            var item = _a[_i];
+                        for (var _a = 0, _b = _this.drillThroughGrid.dataSource; _a < _b.length; _a++) {
+                            var item = _b[_a];
                             if (sf.base.isNullOrUndefined(item['__index']) || item['__index'] === '') {
-                                for (var _b = 0, _c = _this.engine.fields; _b < _c.length; _b++) {
-                                    var field = _c[_b];
+                                for (var _c = 0, _d = _this.engine.fields; _c < _d.length; _c++) {
+                                    var field = _d[_c];
                                     if (sf.base.isNullOrUndefined(item[field])) {
                                         delete item[field];
                                     }
@@ -12923,8 +12945,8 @@ var DrillThroughDialog = /** @class */ (function () {
                             var items = [];
                             var data = (_this.parent.allowDataCompression && _this.parent.enableVirtualization) ?
                                 _this.parent.engineModule.actualData : _this.parent.engineModule.data;
-                            for (var _d = 0, _e = data; _d < _e.length; _d++) {
-                                var item = _e[_d];
+                            for (var _e = 0, _f = data; _e < _f.length; _e++) {
+                                var item = _f[_e];
                                 delete item['__index'];
                                 if (_this.gridIndexObjects[count.toString()] === undefined) {
                                     items.push(item);
@@ -12933,9 +12955,18 @@ var DrillThroughDialog = /** @class */ (function () {
                             }
                             /* tslint:enable:no-string-literal */
                             items = items.concat(addItems);
-                            _this.parent.setProperties({ dataSourceSettings: { dataSource: items } }, true);
-                            _this.engine.updateGridData(_this.parent.dataSourceSettings);
-                            _this.parent.pivotValues = _this.engine.pivotValues;
+                            var eventArgs_1 = {
+                                currentData: _this.drillThroughGrid.dataSource,
+                                previousData: _this.clonedData,
+                                previousPosition: previousPosition,
+                                cancel: false
+                            };
+                            _this.parent.trigger(editComplete, eventArgs_1);
+                            if (!eventArgs_1.cancel) {
+                                _this.parent.setProperties({ dataSourceSettings: { dataSource: eventArgs_1.currentData } }, true);
+                                _this.engine.updateGridData(_this.parent.dataSourceSettings);
+                                _this.parent.pivotValues = _this.engine.pivotValues;
+                            }
                         }
                     }
                     if (!(sf.base.isBlazor() && _this.parent.enableVirtualization)) {
@@ -24625,6 +24656,9 @@ var PivotView = /** @class */ (function (_super) {
     ], PivotView.prototype, "drillThrough", void 0);
     __decorate([
         sf.base.Event()
+    ], PivotView.prototype, "editComplete", void 0);
+    __decorate([
+        sf.base.Event()
     ], PivotView.prototype, "beginDrillThrough", void 0);
     __decorate([
         sf.base.Event()
@@ -35038,6 +35072,7 @@ exports.cellDeselected = cellDeselected;
 exports.rowSelected = rowSelected;
 exports.rowDeselected = rowDeselected;
 exports.beginDrillThrough = beginDrillThrough;
+exports.editComplete = editComplete;
 exports.saveReport = saveReport;
 exports.fetchReport = fetchReport;
 exports.loadReport = loadReport;

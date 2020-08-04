@@ -3890,8 +3890,12 @@ var DiagramNativeElement = /** @class */ (function (_super) {
          */
         set: function (value) {
             this.data = value;
-            this.template = getContent(this, false);
-            this.isDirt = true;
+            if (!this.canReset) {
+                this.canReset = true;
+                this.template = getContent(this, false);
+                this.canReset = false;
+                this.isDirt = true;
+            }
         },
         enumerable: true,
         configurable: true
@@ -7162,6 +7166,70 @@ function updateTooltipContent(tooltip, tooltipObject) {
     return tooltipObject;
 }
 
+var __extends$15 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate$9 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * customize the size of the individual palette items.
+ */
+var SymbolSize = /** @class */ (function (_super) {
+    __extends$15(SymbolSize, _super);
+    function SymbolSize() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$9([
+        sf.base.Property()
+    ], SymbolSize.prototype, "width", void 0);
+    __decorate$9([
+        sf.base.Property()
+    ], SymbolSize.prototype, "height", void 0);
+    return SymbolSize;
+}(sf.base.ChildProperty));
+/**
+ * Defines the size and description of a symbol
+ */
+var SymbolPaletteInfo = /** @class */ (function (_super) {
+    __extends$15(SymbolPaletteInfo, _super);
+    function SymbolPaletteInfo() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$9([
+        sf.base.Property()
+    ], SymbolPaletteInfo.prototype, "width", void 0);
+    __decorate$9([
+        sf.base.Property()
+    ], SymbolPaletteInfo.prototype, "height", void 0);
+    __decorate$9([
+        sf.base.Property()
+    ], SymbolPaletteInfo.prototype, "fit", void 0);
+    __decorate$9([
+        sf.base.Property()
+    ], SymbolPaletteInfo.prototype, "description", void 0);
+    __decorate$9([
+        sf.base.Property()
+    ], SymbolPaletteInfo.prototype, "template", void 0);
+    __decorate$9([
+        sf.base.Property()
+    ], SymbolPaletteInfo.prototype, "tooltip", void 0);
+    return SymbolPaletteInfo;
+}(sf.base.ChildProperty));
+
 var __extends$13 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -7213,10 +7281,13 @@ var NodeBase = /** @class */ (function (_super) {
     __decorate$7([
         sf.base.Property('None')
     ], NodeBase.prototype, "flip", void 0);
+    __decorate$7([
+        sf.base.Complex({}, SymbolPaletteInfo)
+    ], NodeBase.prototype, "symbolInfo", void 0);
     return NodeBase;
 }(sf.base.ChildProperty));
 
-var __extends$15 = (undefined && undefined.__extends) || (function () {
+var __extends$16 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -7233,7 +7304,7 @@ var __extends$15 = (undefined && undefined.__extends) || (function () {
  * HTMLElement defines the basic html elements
  */
 var DiagramHtmlElement = /** @class */ (function (_super) {
-    __extends$15(DiagramHtmlElement, _super);
+    __extends$16(DiagramHtmlElement, _super);
     /**
      * set the id for each element
      */
@@ -7285,42 +7356,6 @@ var DiagramHtmlElement = /** @class */ (function (_super) {
     });
     return DiagramHtmlElement;
 }(DiagramElement));
-
-var __extends$16 = (undefined && undefined.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __decorate$9 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-/**
- * customize the size of the individual palette items.
- */
-var SymbolSize = /** @class */ (function (_super) {
-    __extends$16(SymbolSize, _super);
-    function SymbolSize() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    __decorate$9([
-        sf.base.Property()
-    ], SymbolSize.prototype, "width", void 0);
-    __decorate$9([
-        sf.base.Property()
-    ], SymbolSize.prototype, "height", void 0);
-    return SymbolSize;
-}(sf.base.ChildProperty));
 
 var __extends$12 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -17838,7 +17873,19 @@ function getContent(element, isHtml, nodeObject) {
     if (node instanceof Node) {
         sentNode = node;
         if (node.shape.type === 'Native') {
-            
+            var svgContent = void 0;
+            var div_1 = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            document.body.appendChild(div_1);
+            /* tslint:disable */
+            div_1.innerHTML = (node.shape.content);
+            /* tslint:disable */
+            svgContent = (div_1.getElementsByTagName('svg').length > 0)
+                ? div_1.getElementsByTagName('svg')[0].outerHTML : div_1.getElementsByTagName('g')[0].outerHTML;
+            /* tslint:disable */
+            node.shape.content = svgContent;
+            /* tslint:disable */
+            element.content = svgContent;
+            div_1.parentElement.removeChild(div_1);
         }
         if (sf.base.isBlazor()) {
             content = 'diagramsf_node_template';
@@ -26759,14 +26806,29 @@ var DiagramEventHandler = /** @class */ (function () {
         var wrapper;
         if (obj) {
             wrapper = this.diagram.findElementUnderMouse(obj, this.currentPosition, padding);
-            if (wrapper && obj.ports && obj.ports.length &&
-                !checkPort(obj, wrapper) && (source instanceof Selector) && source.connectors.length) {
-                var currentConnector = source.connectors[0];
-                if ((currentConnector.constraints & exports.ConnectorConstraints.ConnectToNearByPort) &&
-                    !(currentConnector.constraints & exports.ConnectorConstraints.ConnectToNearByNode)) {
-                    wrapper = this.diagram.findElementUnderMouse(obj, this.currentPosition, 0);
-                    if (!wrapper) {
-                        obj = null;
+            var currentConnector = void 0;
+            var nearNode = void 0;
+            var i = void 0;
+            if ((wrapper && obj.ports && obj.ports.length && !checkPort(obj, wrapper) || !wrapper ||
+                !obj) && objects && objects.length && (source instanceof Selector)) {
+                currentConnector = source.connectors[0];
+                for (i = objects.length - 1; i >= 0; i--) {
+                    nearNode = objects[i];
+                    if ((nearNode instanceof Node) && currentConnector && currentConnector.connectionPadding) {
+                        obj = nearNode;
+                        wrapper = this.diagram.findElementUnderMouse(obj, this.currentPosition, padding);
+                        if (((currentConnector.constraints & exports.ConnectorConstraints.ConnectToNearByPort) && obj &&
+                            obj.ports && obj.ports.length && checkPort(obj, wrapper))) {
+                            break;
+                        }
+                        if ((nearNode instanceof Node) && currentConnector && currentConnector.connectionPadding
+                            && nearNode.wrapper.outerBounds.containsPoint(this.currentPosition) &&
+                            (currentConnector.constraints & exports.ConnectorConstraints.ConnectToNearByNode) &&
+                            !(currentConnector.constraints & exports.ConnectorConstraints.ConnectToNearByPort)) {
+                            obj = nearNode;
+                            wrapper = this.diagram.findElementUnderMouse(obj, this.currentPosition, 0);
+                            break;
+                        }
                     }
                 }
             }
@@ -42532,6 +42594,7 @@ var DataBinding = /** @class */ (function () {
         }
         if (dataSource && dataSource.length) {
             this.applyDataSource(data, dataSource, diagram);
+            diagram.trigger('dataLoaded', { diagram: cloneBlazorObject(diagram) });
         }
     };
     /**
@@ -53994,6 +54057,7 @@ var SymbolPalette = /** @class */ (function (_super) {
         _this.isExpandMode = false;
         _this.isMethod = false;
         _this.paletteid = 88123;
+        _this.checkOnRender = false;
         /**
          * helper method for draggable
          * @return {void}
@@ -54180,6 +54244,9 @@ var SymbolPalette = /** @class */ (function (_super) {
         if (!this.enableAnimation) {
             this.accordionElement.animation = { expand: { duration: 0 }, collapse: { duration: 0 } };
         }
+        this.accordionElement.created = function () {
+            _this.checkOnRender = true;
+        };
         this.accordionElement.expanded = function (args) {
             var index = _this.accordionElement.items.indexOf(args.item);
             var isAllowDatabind = _this.allowServerDataBinding;
@@ -54187,6 +54254,15 @@ var SymbolPalette = /** @class */ (function (_super) {
             _this.palettes[index].expanded = args.isExpanded;
             _this.palettes[index].isInteraction = true;
             _this.allowServerDataBinding = isAllowDatabind;
+        };
+        this.accordionElement.expanding = function (args) {
+            if (_this.checkOnRender) {
+                var diagramArgs = { element: args.element, content: args.content, index: args.index, cancel: false,
+                    isExpanded: args.isExpanded, palette: _this.palettes[args.index] };
+                var event_1 = 'paletteExpanding';
+                _this.trigger(event_1, diagramArgs);
+                args.cancel = diagramArgs.cancel;
+            }
         };
         this.element.appendChild(accordionDiv);
         var measureWindowElement = 'measureElement';
@@ -54524,9 +54600,7 @@ var SymbolPalette = /** @class */ (function (_super) {
                 symbolInfo = getSymbolInfo(symbol);
             }
             else if (sf.base.isBlazor()) {
-                symbolInfo.fit = this.symbolInfo.fit;
-                symbolInfo.width = this.symbolInfo.width;
-                symbolInfo.height = this.symbolInfo.height;
+                symbolInfo = this.getBlazorSymbolInfo(symbol, symbolInfo);
             }
             symbolInfo = symbolInfo || this.symbolInfo || {};
             if (symbol.shape && symbol.shape.isPhase) {
@@ -54612,6 +54686,19 @@ var SymbolPalette = /** @class */ (function (_super) {
             container.measure(new Size(obj.width, obj.height));
             container.arrange(container.desiredSize);
         }
+    };
+    SymbolPalette.prototype.getBlazorSymbolInfo = function (symbol, symbolInfo) {
+        var node = symbol;
+        var shapeSymbolInfo = node.symbolInfo;
+        if (shapeSymbolInfo) {
+            symbolInfo.description = shapeSymbolInfo.description || this.symbolInfo.description;
+            symbolInfo.fit = shapeSymbolInfo.fit || this.symbolInfo.fit;
+            symbolInfo.height = shapeSymbolInfo.height || this.symbolInfo.height;
+            symbolInfo.width = shapeSymbolInfo.width || this.symbolInfo.width;
+            symbolInfo.tooltip = shapeSymbolInfo.tooltip || this.symbolInfo.tooltip;
+            symbolInfo.template = shapeSymbolInfo.template || this.symbolInfo.template;
+        }
+        return symbolInfo;
     };
     SymbolPalette.prototype.getContainer = function (obj, container) {
         container.measureChildren = false;
@@ -54962,8 +55049,8 @@ var SymbolPalette = /** @class */ (function (_super) {
                 var id = evt.target.id.split('_container')[0];
                 if (id && this.selectedSymbol) {
                     var args = { oldValue: this.oldObject, newValue: id };
-                    var event_1 = 'paletteSelectionChange';
-                    this.trigger(event_1, args);
+                    var event_2 = 'paletteSelectionChange';
+                    this.trigger(event_2, args);
                     this.oldObject = id;
                     evt.preventDefault();
                 }
@@ -55382,6 +55469,9 @@ var SymbolPalette = /** @class */ (function (_super) {
     __decorate$25([
         sf.base.Event()
     ], SymbolPalette.prototype, "paletteSelectionChange", void 0);
+    __decorate$25([
+        sf.base.Event()
+    ], SymbolPalette.prototype, "paletteExpanding", void 0);
     __decorate$25([
         sf.base.Property()
     ], SymbolPalette.prototype, "getNodeDefaults", void 0);
@@ -56575,6 +56665,7 @@ exports.initTooltip = initTooltip;
 exports.updateTooltip = updateTooltip;
 exports.LayoutAnimation = LayoutAnimation;
 exports.SymbolSize = SymbolSize;
+exports.SymbolPaletteInfo = SymbolPaletteInfo;
 exports.UserHandle = UserHandle;
 exports.ToolBase = ToolBase;
 exports.SelectTool = SelectTool;

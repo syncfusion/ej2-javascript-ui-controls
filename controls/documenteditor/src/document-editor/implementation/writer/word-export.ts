@@ -4517,6 +4517,9 @@ export class WordExport {
             writer.writeStartElement(undefined, 'rtl', this.wNamespace);
             writer.writeEndElement();
         }
+        if (characterFormat.allCaps) {
+            this.serializeBoolProperty(writer, 'caps', characterFormat.allCaps);
+        }
         if (!isNullOrUndefined(characterFormat.strikethrough)) {
             switch (characterFormat.strikethrough) {
                 case 'SingleStrike':

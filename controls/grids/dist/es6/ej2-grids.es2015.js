@@ -1919,7 +1919,7 @@ class SummaryModelGenerator {
         columns.push(...this.parent.getColumns());
         return isNullOrUndefined(start) ? columns : columns.slice(start, end);
     }
-    generateRows(input, args, start, end) {
+    generateRows(input, args, start, end, columns) {
         if (input.length === 0) {
             if (args === undefined || !args.count) {
                 return [];
@@ -1929,11 +1929,11 @@ class SummaryModelGenerator {
         let rows = [];
         let row = this.getData();
         for (let i = 0; i < row.length; i++) {
-            rows.push(this.getGeneratedRow(row[i], data[i], args ? args.level : undefined, start, end, args ? args.parentUid : undefined));
+            rows.push(this.getGeneratedRow(row[i], data[i], args ? args.level : undefined, start, end, args ? args.parentUid : undefined, columns));
         }
         return rows;
     }
-    getGeneratedRow(summaryRow, data, raw, start, end, parentUid) {
+    getGeneratedRow(summaryRow, data, raw, start, end, parentUid, columns) {
         let tmp = [];
         let indents = this.getIndentByLevel(raw);
         let isDetailGridAlone = !isNullOrUndefined(this.parent.childGrid);
@@ -1941,7 +1941,7 @@ class SummaryModelGenerator {
         if (this.parent.isRowDragable()) {
             indents = ['e-indentcelltop'];
         }
-        let values = this.getColumns(start, end);
+        let values = columns ? columns : this.getColumns(start, end);
         for (let i = 0; i < values.length; i++) {
             tmp.push(this.getGeneratedCell(values[i], summaryRow, i >= indentLength ? this.getCellType() :
                 i < this.parent.groupSettings.columns.length ? CellType.Indent : CellType.DetailFooterIntent, indents[i], isDetailGridAlone));
@@ -6872,7 +6872,9 @@ class Selection {
         let deleted = 'deletedRecords';
         if (gObj.editSettings.mode === 'Batch' && gObj.editModule) {
             let currentRecords = iterateExtend(this.parent.getCurrentViewRecords());
-            currentRecords = this.parent.editModule.getBatchChanges()[added].concat(currentRecords);
+            currentRecords = gObj.editSettings.newRowPosition === 'Bottom' ?
+                currentRecords.concat(this.parent.editModule.getBatchChanges()[added]) :
+                this.parent.editModule.getBatchChanges()[added].concat(currentRecords);
             let deletedRecords = this.parent.editModule.getBatchChanges()[deleted];
             let primaryKey = this.parent.getPrimaryKeyFieldNames()[0];
             for (let i = 0; i < (deletedRecords.length); i++) {
@@ -11466,6 +11468,11 @@ let Grid = Grid_1 = class Grid extends Component {
             }
         }
         this.pageSettings.template = undefined;
+        /* tslint:disable-next-line:no-any */
+        if (this.isAngular) {
+            /* tslint:disable:no-string-literal */
+            delete this.groupSettings['properties']['captionTemplate'];
+        }
         this.pageTemplateChange = !isNullOrUndefined(this.pagerTemplate);
         return this.addOnPersist(keyEntity);
     }
@@ -18908,7 +18915,7 @@ class PagerMessage {
         else {
             this.pageNoMsgElem.textContent = this.format(pagerObj.getLocalizedLabel('currentPageInfo'), [pagerObj.totalRecordsCount === 0 ? 0 :
                     pagerObj.currentPage, pagerObj.totalPages || 0]) + ' ';
-            this.pageCountMsgElem.textContent = this.format(pagerObj.getLocalizedLabel('totalItemsInfo'), [pagerObj.totalRecordsCount || 0]);
+            this.pageCountMsgElem.textContent = this.format(pagerObj.getLocalizedLabel(pagerObj.totalRecordsCount <= 1 ? 'totalItemInfo' : 'totalItemsInfo'), [pagerObj.totalRecordsCount || 0]);
         }
         this.pageNoMsgElem.parentElement.setAttribute('aria-label', this.pageNoMsgElem.textContent + this.pageCountMsgElem.textContent);
     }
@@ -19007,6 +19014,7 @@ let Pager = class Pager extends Component {
         this.defaultConstants = {
             currentPageInfo: '{0} of {1} pages',
             totalItemsInfo: '({0} items)',
+            totalItemInfo: '({0} item)',
             firstPageTooltip: 'Go to first page',
             lastPageTooltip: 'Go to last page',
             nextPageTooltip: 'Go to next page',
@@ -19995,6 +20003,7 @@ class FilterCellRenderer extends CellRenderer {
             width: '0px',
             enabled: column.allowFiltering,
             popupWidth: 'auto',
+            enableRtl: this.parent.enableRtl,
             change: this.internalEvent.bind(this),
             beforeOpen: function () {
                 let operator = gObj.filterModule.customOperators;
@@ -20009,12 +20018,7 @@ class FilterCellRenderer extends CellRenderer {
         });
         this.dropOptr.appendTo(fbicon);
         let spanElmt = closest(this.dropOptr.element, 'span');
-        if (!gObj.enableRtl) {
-            spanElmt.style.marginRight = '15px';
-        }
-        else {
-            spanElmt.style.marginLeft = '15px';
-        }
+        spanElmt.classList.add('e-filterbardropdown');
         spanElmt.removeAttribute('tabindex');
     }
     internalEvent(e) {
@@ -32287,8 +32291,10 @@ class ExcelExport {
     isMultipleExport, workbook, r) {
         this.groupedColLength = gObj.groupSettings.columns.length;
         let blankRows = 5;
+        let separator;
         let rows = [];
-        if (!isNullOrUndefined(exportProperties) && !isNullOrUndefined(exportProperties.multipleExport)) {
+        let isExportPropertiesPresent = !isNullOrUndefined(exportProperties);
+        if (isExportPropertiesPresent && !isNullOrUndefined(exportProperties.multipleExport)) {
             /* tslint:disable-next-line:max-line-length */
             this.expType = (!isNullOrUndefined(exportProperties.multipleExport.type) ? exportProperties.multipleExport.type : 'AppendToSheet');
             if (!isNullOrUndefined(exportProperties.multipleExport.blankRows)) {
@@ -32315,7 +32321,7 @@ class ExcelExport {
             this.rowLength = (this.rows[this.rows.length - 1].index + blankRows);
             this.rowLength++;
         }
-        if (!isNullOrUndefined(exportProperties)) {
+        if (isExportPropertiesPresent) {
             if (!isNullOrUndefined(isMultipleExport)) {
                 if (!isNullOrUndefined(exportProperties.header) && (isMultipleExport || this.expType === 'NewSheet')) {
                     this.processExcelHeader(JSON.parse(JSON.stringify(exportProperties.header)));
@@ -32340,7 +32346,7 @@ class ExcelExport {
                 }
             }
         }
-        this.includeHiddenColumn = (!isNullOrUndefined(exportProperties) ? exportProperties.includeHiddenColumn : false);
+        this.includeHiddenColumn = (isExportPropertiesPresent ? exportProperties.includeHiddenColumn : false);
         return new Promise((resolve, reject) => {
             gObj.childGridLevel = 0;
             rows = this.processGridExport(gObj, exportProperties, r);
@@ -32372,9 +32378,14 @@ class ExcelExport {
                     if (isBlazor() && gObj.isServerRendered) {
                         this.book.isServerRendered = gObj.isServerRendered;
                     }
-                    let book = new Workbook(this.book, 'csv', gObj.locale, gObj.currencyCode);
+                    if (isExportPropertiesPresent && !isNullOrUndefined(exportProperties.separator)
+                        && exportProperties.separator !== ',') {
+                        separator = exportProperties.separator;
+                    }
+                    /* tslint:disable-next-line:max-line-length */
+                    let book = new Workbook(this.book, 'csv', gObj.locale, gObj.currencyCode, separator);
                     if (!this.isBlob) {
-                        if (!isNullOrUndefined(exportProperties) && exportProperties.fileName) {
+                        if (isExportPropertiesPresent && exportProperties.fileName) {
                             book.save(exportProperties.fileName);
                         }
                         else {
@@ -32388,7 +32399,7 @@ class ExcelExport {
                 else {
                     let book = new Workbook(this.book, 'xlsx', gObj.locale, gObj.currencyCode);
                     if (!this.isBlob) {
-                        if (!isNullOrUndefined(exportProperties) && exportProperties.fileName) {
+                        if (isExportPropertiesPresent && exportProperties.fileName) {
                             book.save(exportProperties.fileName);
                         }
                         else {
@@ -32476,7 +32487,7 @@ class ExcelExport {
             else {
                 let result = returnType.result.GroupGuid ?
                     returnType.result.records : returnType.result;
-                this.processAggregates(gObj, result, excelRow);
+                this.processAggregates(gObj, result, excelRow, null, null, null, headerRow.columns);
             }
         }
         return excelRow;
@@ -32668,7 +32679,7 @@ class ExcelExport {
         };
     }
     // tslint:disable-next-line:max-line-length
-    processAggregates(gObj, rec, excelRows, currentViewRecords, indent, byGroup) {
+    processAggregates(gObj, rec, excelRows, currentViewRecords, indent, byGroup, columns) {
         let summaryModel = new SummaryModelGenerator(gObj);
         if (gObj.aggregates.length && this.parent !== gObj) {
             gObj.aggregateModule.prepareSummaryInfo();
@@ -32692,7 +32703,7 @@ class ExcelExport {
         }
         else {
             indent = gObj.groupSettings.columns.length > 0 && !byGroup ? gObj.groupSettings.columns.length : indent;
-            let sRows = summaryModel.generateRows(data, rec.aggregates);
+            let sRows = summaryModel.generateRows(data, rec.aggregates, null, null, columns);
             if (sRows.length > 0 && !byGroup) {
                 excelRows = this.fillAggregates(gObj, sRows, indent, excelRows);
             }
@@ -33095,7 +33106,7 @@ class PdfExport {
         this.gridPool[parent.id] = false;
         this.pdfPageSettings = new PdfPageSettings();
     }
-    exportWithData(parent, pdfDoc, resolve, returnType, pdfExportProperties, isMultipleExport) {
+    exportWithData(parent, pdfDoc, resolve, returnType, pdfExportProperties, isMultipleExport, reject) {
         this.init(parent);
         if (!isNullOrUndefined(pdfDoc)) {
             this.pdfDocument = pdfDoc;
@@ -33108,6 +33119,9 @@ class PdfExport {
             parent.trigger(pdfExportComplete, this.isBlob ? { promise: this.blobPromise } : {});
             this.parent.log('exporting_complete', this.getModuleName());
             resolve(this.pdfDocument);
+        }).catch((e) => {
+            reject(this.pdfDocument);
+            this.parent.trigger(actionFailure, e);
         });
     }
     /**
@@ -33150,13 +33164,13 @@ class PdfExport {
             }
             return new Promise((resolve, reject) => {
                 pdfExportProperties.dataSource.executeQuery(new Query()).then((returnType) => {
-                    this.exportWithData(parent, pdfDoc, resolve, returnType, pdfExportProperties, isMultipleExport);
+                    this.exportWithData(parent, pdfDoc, resolve, returnType, pdfExportProperties, isMultipleExport, reject);
                 });
             });
         }
         else if (!isNullOrUndefined(pdfExportProperties) && pdfExportProperties.exportType === 'CurrentPage') {
             return new Promise((resolve, reject) => {
-                this.exportWithData(parent, pdfDoc, resolve, this.parent.getCurrentViewRecords(), pdfExportProperties, isMultipleExport);
+                this.exportWithData(parent, pdfDoc, resolve, this.parent.getCurrentViewRecords(), pdfExportProperties, isMultipleExport, reject);
             });
         }
         else {
@@ -33295,7 +33309,7 @@ class PdfExport {
                     sRows = summaryModel.generateRows(dataSource.records, returnType.aggregates);
                 }
                 else {
-                    sRows = summaryModel.generateRows(returnType.result, returnType.aggregates);
+                    sRows = summaryModel.generateRows(returnType.result, returnType.aggregates, null, null, columns);
                 }
                 this.processAggregates(sRows, pdfGrid, border, captionThemeStyle.font, captionThemeStyle.brush, captionThemeStyle.backgroundBrush, false);
             }

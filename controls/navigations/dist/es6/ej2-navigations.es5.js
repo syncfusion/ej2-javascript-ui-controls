@@ -1555,6 +1555,9 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
         }
     };
     MenuBase.prototype.getMenuItemModel = function (item, level) {
+        if (isNullOrUndefined(item)) {
+            return null;
+        }
         if (isNullOrUndefined(level)) {
             level = 0;
         }
@@ -11786,9 +11789,11 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                 var dropTarget = e.target;
                 var preventTargetExpand = false;
                 var dropRoot = (closest(dropTarget, '.' + DROPPABLE));
+                var isHelperElement = true;
                 if (!dropTarget || !dropRoot) {
                     detach(e.helper);
                     document.body.style.cursor = '';
+                    isHelperElement = false;
                 }
                 var listItem = closest(dropTarget, '.e-list-item');
                 var level;
@@ -11806,9 +11811,10 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                                 detach(e.helper);
                             }
                             document.body.style.cursor = '';
+                            isHelperElement = false;
                         }
                         _this.dragStartAction = false;
-                        if (_this.isBlazorPlatform) {
+                        if (_this.isBlazorPlatform && isHelperElement) {
                             _this.dropAction(e, true);
                         }
                     });
@@ -12576,8 +12582,8 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         for (var i = 0, objlen = obj.length; i < objlen; i++) {
             var nodeId = getValue(mapper.id, obj[i]);
             if (obj[i] && nodeId && nodeId.toString() === id) {
-                if ((typeof mapper.child === 'string' && obj[i].hasOwnProperty(mapper.child)) ||
-                    (this.fields.dataSource instanceof DataManager && obj[i].hasOwnProperty('child'))) {
+                if ((typeof mapper.child === 'string' && (obj[i].hasOwnProperty(mapper.child) && obj[i][mapper.child] !== null)) ||
+                    ((this.fields.dataSource instanceof DataManager && (this.fields.dataSource.adaptorName !== 'BlazorAdaptor')) && obj[i].hasOwnProperty('child'))) {
                     var key = (typeof mapper.child === 'string') ? mapper.child : 'child';
                     var childData = getValue(key, obj[i]);
                     if (isNullOrUndefined(childData)) {
@@ -12602,7 +12608,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                     break;
                 }
             }
-            else if (this.fields.dataSource instanceof DataManager && !isNullOrUndefined(getValue('child', obj[i]))) {
+            else if ((this.fields.dataSource instanceof DataManager && (this.fields.dataSource.adaptorName !== 'BlazorAdaptor')) && !isNullOrUndefined(getValue('child', obj[i]))) {
                 var childData = getValue('child', obj[i]);
                 updated = this.addChildData(childData, this.getChildMapper(mapper), id, data, index);
                 if (updated !== undefined) {

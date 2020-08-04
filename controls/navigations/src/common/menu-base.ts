@@ -826,6 +826,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         }
     }
     private getMenuItemModel(item: obj, level: number): MenuItemModel {
+        if (isNullOrUndefined(item)) { return null; }
         if (isNullOrUndefined(level)) { level = 0; }
         let fields: FieldsMap = this.getFields(level);
         return <MenuItemModel>{ text: item[fields.text], id: item[fields.id], items: item[fields.child], separator: item[fields.separator],

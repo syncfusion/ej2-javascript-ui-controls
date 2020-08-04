@@ -1,6 +1,6 @@
 import { Dialog } from '@syncfusion/ej2-popups';
 import { PivotView } from '../../pivotview';
-import { DrillThroughEventArgs } from '../base/interface';
+import { DrillThroughEventArgs, EditCompleteEventArgs } from '../base/interface';
 import { createElement, setStyleAttribute, remove, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
 import * as cls from '../../common/base/css-constant';
 import { Grid, ColumnModel, Reorder, Resize, ColumnChooser, Toolbar } from '@syncfusion/ej2-grids';
@@ -22,6 +22,7 @@ export class DrillThroughDialog {
     public drillThroughGrid: Grid;
     /** @hidden */
     public indexString: string[] = [];
+    private clonedData: IDataSet[] = [];
     private isUpdated: boolean = false;
     private gridIndexObjects: INumberIndex = {};
     private engine: PivotEngine | OlapEngine;
@@ -36,9 +37,23 @@ export class DrillThroughDialog {
         this.engine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
     }
 
+    private frameHeaderWithKeys(header: any): IDataSet {
+        let keys: string[] = Object.keys(header);
+        let keyPos: number = 0;
+        let framedHeader: any = {};
+        while (keyPos < keys.length) {
+            framedHeader[keys[keyPos]] = header[keys[keyPos]];
+            keyPos++;
+        }
+        return framedHeader;
+    }
+
     /** @hidden */
     public showDrillThroughDialog(eventArgs: DrillThroughEventArgs): void {
         this.gridData = eventArgs.rawData;
+        for (let i: number = 0; i < eventArgs.rawData.length; i++) {
+            this.clonedData.push(this.frameHeaderWithKeys(eventArgs.rawData[i]));
+        }
         let actualText: string = eventArgs.currentCell.actualText.toString();
         if (this.engine.fieldList[actualText].aggregateType !== 'Count' && this.parent.editSettings.allowInlineEditing &&
             this.parent.editSettings.allowEditing && eventArgs.rawData.length === 1 &&
@@ -69,6 +84,11 @@ export class DrillThroughDialog {
                     if (this.parent.editSettings.allowEditing && this.isUpdated) {
                         if (this.parent.dataSourceSettings.type === 'CSV') {
                             this.updateData(this.drillThroughGrid.dataSource as IDataSet[]);
+                        }
+                        let gridIndexObjectsValue: string[] = Object.keys(this.gridIndexObjects);
+                        let previousPosition: number[] = [];
+                        for (let value of gridIndexObjectsValue) {
+                            previousPosition.push(this.gridIndexObjects[value])
                         }
                         let count: number = Object.keys(this.gridIndexObjects).length;
                         let addItems: IDataSet[] = [];
@@ -120,9 +140,18 @@ export class DrillThroughDialog {
                             }
                             /* tslint:enable:no-string-literal */
                             items = items.concat(addItems);
-                            this.parent.setProperties({ dataSourceSettings: { dataSource: items } }, true);
-                            (this.engine as PivotEngine).updateGridData(this.parent.dataSourceSettings as IDataOptions);
-                            this.parent.pivotValues = this.engine.pivotValues;
+                            let eventArgs: EditCompleteEventArgs = {
+                                currentData: this.drillThroughGrid.dataSource as IDataSet[],
+                                previousData: this.clonedData,
+                                previousPosition: previousPosition,
+                                cancel: false
+                            };
+                            this.parent.trigger(events.editComplete, eventArgs);
+                            if (!eventArgs.cancel) {
+                                this.parent.setProperties({ dataSourceSettings: { dataSource: eventArgs.currentData } }, true);
+                                (this.engine as PivotEngine).updateGridData(this.parent.dataSourceSettings as IDataOptions);
+                                this.parent.pivotValues = this.engine.pivotValues;
+                            }
                         }
                     }
                     if (!(isBlazor() && this.parent.enableVirtualization)) {

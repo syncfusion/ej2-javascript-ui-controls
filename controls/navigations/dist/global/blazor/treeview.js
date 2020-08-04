@@ -2908,9 +2908,11 @@ var TreeView = /** @class */ (function (_super) {
                 var dropTarget = e.target;
                 var preventTargetExpand = false;
                 var dropRoot = (sf.base.closest(dropTarget, '.' + DROPPABLE));
+                var isHelperElement = true;
                 if (!dropTarget || !dropRoot) {
                     sf.base.detach(e.helper);
                     document.body.style.cursor = '';
+                    isHelperElement = false;
                 }
                 var listItem = sf.base.closest(dropTarget, '.e-list-item');
                 var level;
@@ -2928,9 +2930,10 @@ var TreeView = /** @class */ (function (_super) {
                                 sf.base.detach(e.helper);
                             }
                             document.body.style.cursor = '';
+                            isHelperElement = false;
                         }
                         _this.dragStartAction = false;
-                        if (_this.isBlazorPlatform) {
+                        if (_this.isBlazorPlatform && isHelperElement) {
                             _this.dropAction(e, true);
                         }
                     });
@@ -3698,8 +3701,8 @@ var TreeView = /** @class */ (function (_super) {
         for (var i = 0, objlen = obj.length; i < objlen; i++) {
             var nodeId = sf.base.getValue(mapper.id, obj[i]);
             if (obj[i] && nodeId && nodeId.toString() === id) {
-                if ((typeof mapper.child === 'string' && obj[i].hasOwnProperty(mapper.child)) ||
-                    (this.fields.dataSource instanceof sf.data.DataManager && obj[i].hasOwnProperty('child'))) {
+                if ((typeof mapper.child === 'string' && (obj[i].hasOwnProperty(mapper.child) && obj[i][mapper.child] !== null)) ||
+                    ((this.fields.dataSource instanceof sf.data.DataManager && (this.fields.dataSource.adaptorName !== 'BlazorAdaptor')) && obj[i].hasOwnProperty('child'))) {
                     var key = (typeof mapper.child === 'string') ? mapper.child : 'child';
                     var childData = sf.base.getValue(key, obj[i]);
                     if (sf.base.isNullOrUndefined(childData)) {
@@ -3724,7 +3727,7 @@ var TreeView = /** @class */ (function (_super) {
                     break;
                 }
             }
-            else if (this.fields.dataSource instanceof sf.data.DataManager && !sf.base.isNullOrUndefined(sf.base.getValue('child', obj[i]))) {
+            else if ((this.fields.dataSource instanceof sf.data.DataManager && (this.fields.dataSource.adaptorName !== 'BlazorAdaptor')) && !sf.base.isNullOrUndefined(sf.base.getValue('child', obj[i]))) {
                 var childData = sf.base.getValue('child', obj[i]);
                 updated = this.addChildData(childData, this.getChildMapper(mapper), id, data, index);
                 if (updated !== undefined) {

@@ -667,6 +667,15 @@ export class Selection {
         }
     }
     /**
+     * Toggles the allCaps property of selected contents.
+     * @private
+     */
+    public toggleAllCaps(): void {
+        if (this.owner.editorModule) {
+            this.owner.editorModule.toggleAllCaps();
+        }
+    }
+    /**
      * Toggles the underline property of selected contents.
      * @param underline Default value of ‘underline’ parameter is Single.
      * @private

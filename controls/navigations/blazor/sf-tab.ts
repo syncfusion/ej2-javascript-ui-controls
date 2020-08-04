@@ -144,7 +144,12 @@ class SfTab {
             this.select(this.options.selectedItem);
         }
         this.cntEle = <HTEle>select('.' + CLS_TAB + ' > .' + CLS_CONTENT, this.element);
-        if (!isNOU(this.cntEle)) { this.touchModule = new Touch(this.cntEle, { swipe: this.swipeHandler.bind(this) }); }
+        if (!isNOU(this.cntEle)) {
+            this.touchModule = new Touch(this.cntEle, { swipe: this.swipeHandler.bind(this) });
+            if (this.options.height !== 'auto' && !this.isVertical()) {
+                this.cntEle.style.height = 'calc(100% - ' + this.hdrEle.offsetHeight + 'px)';
+            }
+        }
         if (this.options.loadOn === 'Demand') {
             let id: string = this.setActiveContent();
             this.triggerAnimation(id, false);

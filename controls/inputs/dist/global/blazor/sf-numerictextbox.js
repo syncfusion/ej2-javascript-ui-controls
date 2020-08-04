@@ -241,25 +241,34 @@ var SfNumericTextBox = /** @class */ (function () {
 var NumericTextBox = {
     initialize: function (wrapperElement, element, dotnetRef, options) {
         new SfNumericTextBox(wrapperElement, element, dotnetRef, options);
-        element.blazor__instance.initialize();
-    },
-    isDevice: function (element) {
-        return element.blazor__instance.isDevice();
+        if (element && element.blazor__instance) {
+            element.blazor__instance.initialize();
+        }
     },
     selectRange: function (inputEle, formatValue) {
-        inputEle.blazor__instance.selectRange(formatValue);
+        if (inputEle && inputEle.blazor__instance) {
+            inputEle.blazor__instance.selectRange(formatValue);
+        }
     },
     propertyChanges: function (element, options) {
-        element.blazor__instance.options = options;
+        if (element && element.blazor__instance) {
+            element.blazor__instance.options = options;
+        }
     },
     focusIn: function (inputEle) {
-        inputEle.focus();
+        if (inputEle) {
+            inputEle.focus();
+        }
     },
     focusOut: function (inputEle) {
-        inputEle.blur();
+        if (inputEle) {
+            inputEle.blur();
+        }
     },
     spinButtonEvents: function (inputEle) {
-        inputEle.blazor__instance.spinButtonEvents();
+        if (inputEle && inputEle.blazor__instance) {
+            inputEle.blazor__instance.spinButtonEvents();
+        }
     }
 };
 

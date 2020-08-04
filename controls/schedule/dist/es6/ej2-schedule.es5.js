@@ -9071,7 +9071,7 @@ var RecurrenceEditor = /** @__PURE__ @class */ (function (_super) {
     };
     RecurrenceEditor.prototype.applyCustomClass = function (cssClass) {
         if (cssClass) {
-            addClass([this.element], cssClass);
+            addClass([this.element], cssClass.split(' '));
         }
     };
     RecurrenceEditor.prototype.initialize = function () {
@@ -9908,7 +9908,12 @@ var RecurrenceEditor = /** @__PURE__ @class */ (function (_super) {
                     this.rtlClass(newProp.enableRtl);
                     break;
                 case 'cssClass':
-                    this.applyCustomClass(newProp.cssClass);
+                    if (oldProp.cssClass) {
+                        removeClass([this.element], oldProp.cssClass.split(' '));
+                    }
+                    if (newProp.cssClass) {
+                        addClass([this.element], newProp.cssClass.split(' '));
+                    }
                     break;
                 case 'selectedType':
                     this.repeatType.setProperties({ index: this.selectedType });
@@ -12145,7 +12150,7 @@ var Render = /** @__PURE__ @class */ (function () {
             return;
         }
         // tslint:disable:no-any
-        this.parent.trigger(actionFailure, { error: isBlazor() ? e.error.toString() : e }, function () { return _this.parent.hideSpinner(); });
+        this.parent.trigger(actionFailure, { error: isBlazor() ? e.error ? e.error.toString() : e.toString() : e }, function () { return _this.parent.hideSpinner(); });
         // tslint:disable:no-any
     };
     return Render;
@@ -14485,7 +14490,11 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
             removeClasses.push(DEVICE_CLASS);
         }
         if (this.cssClass) {
-            addClasses.push(this.cssClass);
+            var cssClass = this.cssClass.split(' ');
+            for (var _i = 0, cssClass_1 = cssClass; _i < cssClass_1.length; _i++) {
+                var cls_1 = cssClass_1[_i];
+                addClasses.push(cls_1);
+            }
         }
         classList(this.element, addClasses, removeClasses);
         this.validateDate();
@@ -15619,10 +15628,10 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
                 break;
             case 'cssClass':
                 if (oldProp.cssClass) {
-                    removeClass([this.element], oldProp.cssClass);
+                    removeClass([this.element], oldProp.cssClass.split(' '));
                 }
                 if (newProp.cssClass) {
-                    addClass([this.element], newProp.cssClass);
+                    addClass([this.element], newProp.cssClass.split(' '));
                 }
                 break;
             case 'hideEmptyAgendaDays':
@@ -17382,6 +17391,9 @@ var Resize = /** @__PURE__ @class */ (function (_super) {
             }
         }
         if (isLeft) {
+            if ((this.actionObj.event[this.parent.eventFields.endTime].getTime() - resizeTime.getTime()) <= 0) {
+                resizeTime = new Date(this.actionObj.event[this.parent.eventFields.startTime].getTime());
+            }
             this.actionObj.start = this.parent.activeViewOptions.timeScale.enable ? this.calculateIntervalTime(resizeTime) : resizeTime;
         }
         else {

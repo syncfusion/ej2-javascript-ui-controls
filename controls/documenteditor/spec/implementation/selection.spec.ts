@@ -6138,3 +6138,52 @@ describe('Text form field Inline validation', () => {
         expect(currentFormField).toBe(formFields[0]);
     });
 });
+
+describe('Track changes Enabled deletion', () => {
+    let editor: DocumentEditor = undefined;
+    let documentHelper: DocumentHelper;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        editor = new DocumentEditor({
+            height: '500px', enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true
+        });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        documentHelper = editor.documentHelper;
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+
+    it('Bulleted deletion', () => {
+        editor.openBlank();
+        editor.editorModule.insertText('Sync');
+        editor.editorModule.applyBulletOrNumbering('%1.', 'Arabic', 'Verdana');
+        editor.enableTrackChanges = true;
+        editor.editorModule.onBackSpace();
+        editor.editorModule.onBackSpace();
+        editor.editorModule.onBackSpace();
+        editor.editorModule.onBackSpace();
+        let range: Object[] = editor.revisions.changes[0].range;
+        expect((range[0] as TextElementBox).text).toBe('S');
+        expect((range[1] as TextElementBox).text).toBe('y');
+        expect((range[2] as TextElementBox).text).toBe('n');
+        expect((range[3] as TextElementBox).text).toBe('c');
+        let elementBox: ElementBox[] = ((documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children;
+        expect((elementBox[2] as TextElementBox).text).toBe('S');
+        expect((elementBox[3] as TextElementBox).text).toBe('y');
+        expect((elementBox[4] as TextElementBox).text).toBe('n');
+        expect((elementBox[5] as TextElementBox).text).toBe('c');
+    });
+});

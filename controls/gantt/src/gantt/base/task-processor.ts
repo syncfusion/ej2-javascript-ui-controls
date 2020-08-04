@@ -222,7 +222,9 @@ export class TaskProcessor extends DateProcessor {
                 let parentWork: number = parentProp.work;
                 this.parent.setRecordValue('work', parentWork, parentProp, true);
                 this.parent.setRecordValue('taskType', 'FixedDuration', parentProp, true);
-                this.updateMappingData(parentData, 'taskType');
+                if (!isNullOrUndefined(this.parent.taskFields.type)) {
+                    this.updateMappingData(parentData, 'type');
+                }
                 this.parent.setRecordValue('progress', Math.floor(parentProgress), parentProp, true);
                 this.parent.setRecordValue('totalProgress', 0, parentProp, true);
                 this.parent.setRecordValue('totalDuration', 0, parentProp, true);
@@ -561,7 +563,9 @@ export class TaskProcessor extends DateProcessor {
                         this.updateDurationWithWork(ganttData);
                         break;
                 }
-                this.parent.dataOperation.updateMappingData(ganttData, 'taskType');
+                if (!isNullOrUndefined(taskSettings.type)) {
+                    this.parent.dataOperation.updateMappingData(ganttData, 'type');
+                }
                 if (ganttProperties.duration === 0) {
                     this.parent.setRecordValue('isMilestone', true, ganttProperties, true);
                     this.parent.setRecordValue('endDate', ganttProperties.startDate, ganttProperties, true);
@@ -571,8 +575,8 @@ export class TaskProcessor extends DateProcessor {
                 }
             }
             this.parent.dataOperation.updateMappingData(ganttData, 'work');
-        } else if (ganttProperties.taskType) {
-            this.parent.dataOperation.updateMappingData(ganttData, 'taskType');
+        } else if (taskSettings.type && ganttProperties.taskType) {
+            this.parent.dataOperation.updateMappingData(ganttData, 'type');
         }
     }
     /**
@@ -904,9 +908,9 @@ export class TaskProcessor extends DateProcessor {
                 'taskData.' + columnMapping[fieldName],
                 this.getWorkString(ganttProp.work, ganttProp.workUnit), ganttData);
             this.parent.setRecordValue(columnMapping[fieldName], ganttProp[fieldName], ganttData);
-        } else if (fieldName === 'taskType') {
-            this.parent.setRecordValue('taskData.' + 'taskType', ganttProp[fieldName], ganttData);
-            this.parent.setRecordValue('taskType', ganttProp[fieldName], ganttData);
+        } else if (fieldName === 'type') {
+            this.parent.setRecordValue('taskData.' + columnMapping[fieldName], ganttProp[fieldName], ganttData);
+            this.parent.setRecordValue(columnMapping[fieldName], ganttProp[fieldName], ganttData);
         } else if (fieldName === 'manual') {
             this.parent.setRecordValue('taskData.' + columnMapping[fieldName], !ganttProp.isAutoSchedule, ganttData);
             this.parent.setRecordValue(columnMapping[fieldName], !ganttProp.isAutoSchedule, ganttData);
@@ -1075,6 +1079,10 @@ export class TaskProcessor extends DateProcessor {
                     'taskData.' + dataMapping.work,
                     this.getWorkString(ganttProperties.work, ganttProperties.workUnit), ganttData);
                 this.parent.setRecordValue(dataMapping.work, ganttProperties.work, ganttData);
+            }
+            if (dataMapping.type) {
+                this.parent.setRecordValue('taskData.' + dataMapping.type, ganttProperties.taskType, ganttData);
+                this.parent.setRecordValue(dataMapping.type, ganttProperties.taskType, ganttData);
             }
         }
     }
@@ -1667,9 +1675,9 @@ export class TaskProcessor extends DateProcessor {
             let progressValues: Object = {};
             let minStartDate: Date = null; let maxEndDate: Date = null;
             let milestoneCount: number = 0; let totalProgress: number = 0; let childCompletedWorks: number = 0;
-
+            let childData: IGanttData;
             for (let count: number = 0; count < childLength; count++) {
-                let childData: IGanttData = childRecords[count] as IGanttData;
+                childData = childRecords[count] as IGanttData;
                 if (this.parent.isOnDelete && childData.isDelete) {
                     if (childLength === 1 && this.parent.viewType === 'ProjectView') {
                         if (isBlazor()) {
@@ -1719,7 +1727,7 @@ export class TaskProcessor extends DateProcessor {
                         maxEndDate, parentData.ganttProperties, true);
                 }
                 let taskCount: number;
-                if (this.parent.isOnDelete) {
+                if (this.parent.isOnDelete && childData.isDelete) {
                     taskCount = childLength - milestoneCount - 1;
                 } else {
                     taskCount = childLength - milestoneCount;
@@ -1737,7 +1745,9 @@ export class TaskProcessor extends DateProcessor {
                 parentWork += childCompletedWorks;
                 this.parent.setRecordValue('work', parentWork, parentProp, true);
                 this.parent.setRecordValue('taskType', 'FixedDuration', parentProp, true);
-                this.updateMappingData(parentData, 'taskType');
+                if (!isNullOrUndefined(this.parent.taskFields.type)) {
+                    this.updateMappingData(parentData, 'type');
+                }
                 this.parent.setRecordValue('progress', Math.floor(parentProgress), parentProp, true);
                 this.parent.setRecordValue('totalProgress', totalProgress, parentProp, true);
                 this.parent.setRecordValue('totalDuration', totalDuration, parentProp, true);

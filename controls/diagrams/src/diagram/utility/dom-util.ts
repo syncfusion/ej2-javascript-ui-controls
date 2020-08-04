@@ -686,6 +686,19 @@ export function getContent(
         sentNode = node;
         if (node.shape.type === 'Native') {
             isSvg = true;
+            let svgContent: string;
+            let div: SVGSVGElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            document.body.appendChild(div);
+            /* tslint:disable */
+            div.innerHTML = ((node.shape as any).content) as string ;            
+            /* tslint:disable */
+            svgContent = (div.getElementsByTagName('svg').length > 0)
+            ? div.getElementsByTagName('svg')[0].outerHTML : div.getElementsByTagName('g')[0].outerHTML;
+            /* tslint:disable */
+            (node.shape as any).content = svgContent;            
+            /* tslint:disable */
+            element.content = svgContent;
+            div.parentElement.removeChild(div);
         }
         let blazor: string = 'Blazor';
         if (isBlazor()) {

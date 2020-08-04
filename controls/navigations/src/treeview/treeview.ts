@@ -3706,9 +3706,11 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 let dropTarget: Element = e.target;
                 let preventTargetExpand: boolean = false;
                 let dropRoot: Element = (closest(dropTarget, '.' + DROPPABLE));
+                let isHelperElement: boolean = true;
                 if (!dropTarget || !dropRoot) {
                     detach(e.helper);
                     document.body.style.cursor = '';
+                    isHelperElement = false;
                 }
                 let listItem: Element = closest(dropTarget, '.e-list-item'); let level: number;
                 if (listItem) { level = parseInt(listItem.getAttribute('aria-level'), 10); }
@@ -3724,9 +3726,10 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                                 detach(e.helper);
                             }
                             document.body.style.cursor = '';
+                            isHelperElement = false;
                         }
                         this.dragStartAction = false;
-                        if( this.isBlazorPlatform) {
+                        if( this.isBlazorPlatform && isHelperElement) {
                             this.dropAction(e, true );
                         }
                     });
@@ -4500,8 +4503,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         for (let i: number = 0, objlen: number = obj.length; i < objlen; i++) {
             let nodeId: Object = getValue(mapper.id, obj[i]);
             if (obj[i] && nodeId && nodeId.toString() === id) {
-                if ((typeof mapper.child === 'string' && obj[i].hasOwnProperty(mapper.child)) ||
-                (this.fields.dataSource instanceof DataManager && obj[i].hasOwnProperty('child'))) {
+                if ((typeof mapper.child === 'string' && (obj[i].hasOwnProperty(mapper.child) && obj[i][mapper.child] !== null)) ||
+                ((this.fields.dataSource instanceof DataManager && ((this.fields.dataSource as any).adaptorName !== 'BlazorAdaptor')) && obj[i].hasOwnProperty('child'))) {
                     let key: string = (typeof mapper.child === 'string') ? mapper.child : 'child';
                     let childData: { [key: string]: Object }[] = <{ [key: string]: Object }[]>getValue(key, obj[i]);
                     if (isNOU(childData)) {
@@ -4523,7 +4526,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 if (updated !== undefined) {
                     break;
                 }
-            } else if (this.fields.dataSource instanceof DataManager && !isNOU(getValue('child', obj[i]))) {
+            } else if ((this.fields.dataSource instanceof DataManager && ((this.fields.dataSource as any).adaptorName !== 'BlazorAdaptor')) && !isNOU(getValue('child', obj[i]))) {
                 let childData: { [key: string]: Object }[] = <{ [key: string]: Object }[]>getValue('child', obj[i]);
                 updated = this.addChildData(childData, this.getChildMapper(mapper), id, data, index);
                 if (updated !== undefined) {

@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 18.2.47 (2020-07-28)
+## 18.2.48 (2020-08-04)
+
+### Common
+
+#### Bug Fixes
+
+- Sortable helper element hide inside the sidebar issue resolved.
+
+## 18.2.46 (2020-07-21)
 
 ### ListView
 

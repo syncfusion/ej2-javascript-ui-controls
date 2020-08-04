@@ -9,7 +9,7 @@ import { prepend, append , isBlazor, BlazorDragEventArgs, resetBlazorTemplate} f
 import { cssClass, Sortable, moveTo, } from '@syncfusion/ej2-lists';
 import { SelectionSettingsModel, ListBoxModel, ToolbarSettingsModel } from './list-box-model';
 import { Button } from '@syncfusion/ej2-buttons';
-import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
+import { createSpinner, showSpinner, hideSpinner, getZindexPartial } from '@syncfusion/ej2-popups';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 /**
  * Defines the selection mode of List Box.
@@ -448,14 +448,19 @@ export class ListBox extends DropDownBase {
                 drop: this.dragEnd.bind(this),
                 placeHolder: () => { return this.createElement('span', { className: 'e-placeholder' }); },
                 helper: (e: { sender: Element }) => {
+                    let wrapper: HTMLElement = this.list.cloneNode() as HTMLElement;
                     let ele: HTMLElement = e.sender.cloneNode(true) as HTMLElement;
-                    ele.style.width = (this.getItems()[0] as HTMLElement).offsetWidth + 'px';
+                    wrapper.appendChild(ele);
+                    let refEle: HTMLElement = this.getItems()[0] as HTMLElement;
+                    wrapper.style.width = refEle.offsetWidth + 'px';
+                    wrapper.style.height = refEle.offsetHeight + 'px';
                     if ((this.value && this.value.length) > 1 && this.isSelected(ele)) {
                         ele.appendChild(this.createElement('span', {
                             className: 'e-list-badge', innerHTML: this.value.length + ''
                         }));
                     }
-                    return ele;
+                    wrapper.style.zIndex = getZindexPartial(this.element) + '';
+                    return wrapper;
                 }
             }
             );
@@ -797,6 +802,7 @@ export class ListBox extends DropDownBase {
                 } else {
                     li = this.getItems()[this.getIndexByValue(value)];
                 }
+                if (!li) { li = args.helper; }
                 this.removeSelected(this, value === dropValue ? [args.droppedElement] : [li]);
                 if (isBlazor()) {
                     if (index === 0) {
@@ -912,19 +918,21 @@ export class ListBox extends DropDownBase {
      * This method is used to enable or disable the items in the ListBox based on the items and enable argument.
      * @param items Text items that needs to be enabled/disabled.
      * @param enable Set `true`/`false` to enable/disable the list items.
+     * @param isValue - Set `true` if `items` parameter is a array of unique values.
      * @returns void
      */
-    public enableItems(items: string[], enable: boolean = true): void {
+    public enableItems(items: string[], enable: boolean = true, isValue?: boolean): void {
         let li: HTMLElement;
         items.forEach((item: string) => {
             let text: string;
             if (isBlazor() && typeof(item) === 'object') {
-                text = (item as { [key: string]: string })[this.fields.text || 'text'];
+                text = getValue(isValue ? this.fields.value : this.fields.text, item);
                 if (isNullOrUndefined(text)) { return; }
             } else {
                 text = item;
             }
-            li = this.findListElement(this.list, 'li', 'data-value', this.getValueByText(text));
+            li = this.findListElement(this.list, 'li', 'data-value', isValue ? text : this.getValueByText(text));
+            if (!li) { return; }
             if (enable) {
                 removeClass([li], cssClass.disabled);
                 li.removeAttribute('aria-disabled');
@@ -939,10 +947,11 @@ export class ListBox extends DropDownBase {
      * Based on the state parameter, specified list item will be selected/deselected.
      * @param items Array of text value of the item.
      * @param state Set `true`/`false` to select/un select the list items.
+     * @param isValue - Set `true` if `items` parameter is a array of unique values.
      * @returns void
      */
-    public selectItems(items: string[], state: boolean = true): void {
-        this.setSelection(items, state, true);
+    public selectItems(items: string[], state: boolean = true, isValue?: boolean): void {
+        this.setSelection(items, state, !isValue);
         this.updateSelectedOptions();
     }
 
@@ -1749,6 +1758,7 @@ export class ListBox extends DropDownBase {
             // tslint:disable
             (<any>fListBox).interopAdaptor.invokeMethodAsync('UpdateListData', fListBox.listData).then((): void => {
                 fListBox.updateBlazorListData(null, true);
+                fListBox.updateSelectedOptions();
             });
             (<any>tListBox).interopAdaptor.invokeMethodAsync('UpdateListData', tListBox.listData).then((): void => {
                 tListBox.updateBlazorListData(null, true);

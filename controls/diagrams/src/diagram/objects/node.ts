@@ -61,9 +61,8 @@ import { UserHandleModel } from '../interaction/selector-model';
 import { UserHandle } from '../interaction/selector';
 import { LayoutInfo } from '../diagram/layoutinfo';
 import { LayoutInfoModel } from '../diagram/layoutinfo-model';
-import { SymbolSizeModel } from './preview-model';
+import { SymbolSizeModel} from './preview-model';
 import { SymbolSize } from './preview';
-
 
 let getShapeType: Function = (obj: Shape): Object => {
     if (obj) {

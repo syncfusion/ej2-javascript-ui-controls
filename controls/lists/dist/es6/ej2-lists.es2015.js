@@ -4185,7 +4185,7 @@ let Sortable = Sortable_1 = class Sortable extends Base {
                 element.style.height = `${target.offsetHeight}px`;
             }
             addClass([element], ['e-sortableclone']);
-            this.element.appendChild(element);
+            document.body.appendChild(element);
             return element;
         };
         this.onDrag = (e) => {
@@ -4221,8 +4221,8 @@ let Sortable = Sortable_1 = class Sortable extends Base {
                     newInst.element.insertBefore(this.target, newInst.element.children[idx]);
                     this.refreshDisabled(oldIdx, newIdx, newInst);
                     this.curTarget = this.target;
-                    this.trigger('drop', { event: e.event, element: newInst.element, previousIndex: oldIdx, currentIndex: newIdx,
-                        target: e.target, helper: newInst.element.lastChild, droppedElement: this.target, scope: this.scope });
+                    this.trigger('drop', { droppedElement: this.target, element: newInst.element, previousIndex: oldIdx, currentIndex: newIdx,
+                        target: e.target, helper: document.getElementsByClassName('e-sortableclone')[0], event: e.event, scope: this.scope });
                 }
             }
             newInst = this.getSortableInstance(this.curTarget);

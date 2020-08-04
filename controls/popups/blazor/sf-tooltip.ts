@@ -78,11 +78,13 @@ class SfTooltip {
     public tooltipEventArgs: TooltipEventArgs;
     constructor(element: BlazorTooltipElement, ref: BlazorDotnetObject, properties: InitProps, eventList: EventList) {
         this.element = element;
-        this.ctrlId = this.element.id;
         this.properties = properties;
         this.dotnetRef = ref;
-        this.element.blazor__instance = this;
-        this.element.eventList = eventList;
+        if (!NOU(this.element)) {
+            this.ctrlId = this.element.id;
+            this.element.blazor__instance = this;
+            this.element.eventList = eventList;
+        }
     }
     private getTriggerList(trigger: string): string[] {
         if (trigger === 'Auto') {
@@ -775,40 +777,56 @@ let Tooltip: object = {
     wireEvents(element: BlazorTooltipElement, dotnetRef: BlazorDotnetObject, properties: InitProps, eventList: EventList): void {
         this.updateAnimation(properties.animation);
         new SfTooltip(element, dotnetRef, properties, eventList);
-        element.blazor__instance.formatPosition();
-        element.blazor__instance.wireEvents(properties.opensOn);
+        if (this.isValid(element)) {
+            element.blazor__instance.formatPosition();
+            element.blazor__instance.wireEvents(properties.opensOn);
+        }
         // tslint:disable-next-line
         (<any>window).sfBlazor.renderComplete(element);
     },
     contentUpdated(element: BlazorTooltipElement): void {
-        element.blazor__instance.contentUpdated();
+        if (this.isValid(element)) {
+            element.blazor__instance.contentUpdated();
+        }
     },
     updateAnimation(animation: Animation): void {
         animation.open.duration = animation.open.duration ? animation.open.duration : undefined;
         animation.close.duration = animation.close.duration ? animation.close.duration : undefined;
     },
     beforeRenderCallBack(element: BlazorTooltipElement, cancel: boolean): void {
-        element.blazor__instance.beforeRenderCallBack(cancel);
+        if (this.isValid(element)) {
+            element.blazor__instance.beforeRenderCallBack(cancel);
+        }
     },
     beforeOpenCallBack(element: BlazorTooltipElement, cancel: boolean): void {
-        element.blazor__instance.beforeOpenCallBack(cancel);
+        if (this.isValid(element)) {
+            element.blazor__instance.beforeOpenCallBack(cancel);
+        }
     },
     beforeCloseCallBack(element: BlazorTooltipElement, cancel: boolean): void {
-        element.blazor__instance.beforeCloseCallBack(cancel);
+        if (this.isValid(element)) {
+            element.blazor__instance.beforeCloseCallBack(cancel);
+        }
     },
     showTooltip(element: BlazorTooltipElement, target: HTMLElement, animation: TooltipAnimationSettings, targetProp: string): void {
+        if (!this.isValid(element)) { return; }
         if (targetProp !== null && targetProp !== '' && element.blazor__instance.element.querySelector(targetProp)) {
             target = element.blazor__instance.element.querySelector(targetProp);
         }
         element.blazor__instance.showTooltip(target, animation, null);
     },
     hideTooltip(element: BlazorTooltipElement, animation: TooltipAnimationSettings): void {
-        element.blazor__instance.hideTooltip(animation);
+        if (this.isValid(element)) {
+            element.blazor__instance.hideTooltip(animation);
+        }
     },
     destroy(element: BlazorTooltipElement): void {
-        element.blazor__instance.destroy();
+        if (this.isValid(element)) {
+            element.blazor__instance.destroy();
+        }
     },
     refreshPosition(element: BlazorTooltipElement, targetEle: HTMLElement, targetProp: string): void {
+        if (!this.isValid(element)) { return; }
         let instance: SfTooltip = element.blazor__instance;
         if (targetEle === null) {
             targetEle = targetProp !== null && targetProp !== '' ? instance.element.querySelector(targetProp) : instance.element;
@@ -816,6 +834,7 @@ let Tooltip: object = {
         instance.reposition(targetEle);
     },
     updateProperties(element: BlazorTooltipElement, completeProps: InitProps, props: InitProps): void {
+        if (!this.isValid(element)) { return; }
         let blazInstance: SfTooltip = element.blazor__instance;
         let prevBlazProp: InitProps = element.blazor__instance.properties;
         blazInstance.isRestrictUpdate = true;
@@ -867,6 +886,9 @@ let Tooltip: object = {
             blazInstance.isPositionUpdate = false;
             blazInstance.isRestrictUpdate = false;
         }
+    },
+    isValid(element: BlazorTooltipElement): boolean {
+        return (element && element.blazor__instance) ? true : false;
     }
 };
 

@@ -137,14 +137,22 @@ export class Lists {
         }
     }
     private keyDownHandler(e: IHtmlKeyboardEvent): void {
-        if (e.event.which === 13) {
-            this.enterList(e);
-        }
-        if (e.event.which === 32) {
-            this.spaceList(e);
-        }
-        if (e.event.which === 8) {
-            this.backspaceList(e);
+        if (e.event.which === 13) { this.enterList(e); }
+        if (e.event.which === 32) { this.spaceList(e); }
+        if (e.event.which === 8) { this.backspaceList(e); }
+        if (e.event.which === 46 && e.event.action === 'delete') {
+            let range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+            let commonAncestor: Node = range.commonAncestorContainer;
+            let startEle: Node = range.startContainer;
+            let endEle: Node = range.endContainer;
+            let startNode: Node = startEle.nodeType === 3 ? startEle.parentElement : startEle;
+            let endNode: Node = endEle.nodeType === 3 ? endEle.parentElement : endEle;
+            if ((commonAncestor.nodeName === 'UL' || commonAncestor.nodeName === 'OL') && startNode !== endNode
+                && (!isNullOrUndefined(closest(startNode, 'ul')) || !isNullOrUndefined(closest(startNode, 'ol')))
+                && (!isNullOrUndefined(closest(endNode, 'ul')) || !isNullOrUndefined(closest(endNode, 'ol')))
+                && ((commonAncestor as HTMLElement).lastElementChild === closest(endNode, 'li')) && !range.collapsed) {
+                detach(commonAncestor);
+            }
         }
         if (e.event.which === 9) {
             let range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);

@@ -238,22 +238,6 @@
       }
     }
 
-    .e-list-item .e-list-badge {
-      align-items: center;
-      background-color: $badge-bgcolor;
-      border: 1px solid $badge-color;
-      border-radius: 50%;
-      color: $badge-color;
-      display: flex;
-      font-size: 12px;
-      height: 22px;
-      justify-content: center;
-      position: absolute;
-      right: -10px;
-      top: -10px;
-      width: 22px;
-    }
-
     .e-checkbox-wrapper {
       margin: $listview-checkbox-left-margin;
       text-indent: 0;
@@ -288,18 +272,43 @@
       display: block;
       height: 1px;
     }
-
-    .e-sortableclone {
-      z-index: 10000;
-
-      &.e-ripple {
-        overflow: visible;
-      }
-    }
   }
 
   ejs-listbox {
     display: block;
+  }
+
+  .e-listbox-wrapper.e-sortableclone {
+    border-width: 0;
+    overflow: visible;
+
+    .e-list-item {
+      list-style-type: none;
+    }
+
+    .e-ripple {
+      overflow: visible;
+
+      .e-ripple-element {
+        display: none;
+      }
+    }
+
+    .e-list-badge {
+      align-items: center;
+      background-color: $badge-bgcolor;
+      border: 1px solid $badge-color;
+      border-radius: 50%;
+      color: $badge-color;
+      display: flex;
+      font-size: 12px;
+      height: 22px;
+      justify-content: center;
+      position: absolute;
+      right: -10px;
+      top: -10px;
+      width: 22px;
+    }
   }
 
   #{&}.e-listboxtool-wrapper {

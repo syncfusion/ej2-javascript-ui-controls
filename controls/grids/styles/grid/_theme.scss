@@ -473,6 +473,10 @@
       .e-tableborder {
         border-left-color: $grid-header-border-color;
       }
+
+      .e-filterbardropdown {
+        margin-left: $grid-filterbar-dropdown;
+      }
     }
 
     &.sf-grid {
@@ -510,4 +514,11 @@
     color: $grid-dropitemscount-color;
    }
 
+  .e-filterbaroperator.e-dropdownlist {
+    position: absolute;
+  }
+
+  .e-filterbardropdown:not(.e-rtl) {
+    margin-right: $grid-filterbar-dropdown;
+  }
 }

@@ -427,6 +427,15 @@ describe('selection character format property applying validation', () => {
         editor.editorModule.onBackSpace();
         expect(editor.selection.start.paragraph.isEmpty()).not.toBe(true);
     });
+    it('allCaps validation', () => {
+        editor.openBlank();
+        editor.editorModule.insertText('Sample document');
+        let prevFormat = editor.selection.characterFormat;
+        event = { keyCode: 65, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
+        editor.documentHelper.onKeyDownInternal(event);
+        editor.selection.characterFormat.allCaps = true;
+        expect(prevFormat.allCaps).toBe(editor.selection.characterFormat.allCaps);
+    });
 });
 //#endregion
 

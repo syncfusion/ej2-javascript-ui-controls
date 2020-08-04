@@ -481,3 +481,73 @@ describe('Barcode Control ', () => {
 
 
 });
+
+describe('barcode export - SVG mode', () => {
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'codabar2' });
+        document.body.appendChild(ele);
+        barcode = new BarcodeGenerator({
+            width: '200px', height: '150px',
+            type: 'Code39',
+            value: "ABCD",
+            displayText: { visibility: true, size: 9,  text: "ABCD"},
+        });
+        barcode.appendTo('#codabar2');
+    });
+
+    afterAll((): void => {
+        barcode.destroy();
+        ele.remove();
+    });
+    
+    it('barcode export - - return Base64 in JPG format', (done: Function) => {
+        barcode.exportAsBase64Image('JPG');
+        done()
+        console.log('########################################################################');
+    });
+    it('barcode export - return Base64 in PNG format', (done: Function) => {
+        barcode.exportAsBase64Image('PNG');
+        done()
+    });
+    it('barcode export - Download the image in JPG format', (done: Function) => {
+        let svg: any; 
+        svg = barcode.exportImage('Export','JPG');
+        expect(svg).not.toBeNull();
+        done()
+    });
+});
+
+describe('barcode export - Canvas mode', () => {
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'codabar2' });
+        document.body.appendChild(ele);
+        barcode = new BarcodeGenerator({
+            width: '200px', height: '150px',
+            type: 'Code39',
+            mode:'Canvas',
+            value: "ABCD",
+            displayText: { visibility: true, size: 9,  text: ""},
+        });
+        barcode.appendTo('#codabar2');
+    });
+
+    afterAll((): void => {
+        barcode.destroy();
+        ele.remove();
+    });
+    
+    it('barcode export - return Base64 in JPG format', (done: Function) => {
+        barcode.exportAsBase64Image('JPG') ;
+        done()
+    });
+    it('barcode export - return Base64 in PNG format' ,(done: Function) => {
+        barcode.exportAsBase64Image('PNG');
+        done()
+    });
+    it('barcode export - Download the image in JPG format', (done: Function) => {
+        let svg: any; 
+        svg = barcode.exportImage('Export','JPG');
+        expect(svg).not.toBeNull();
+        done()
+    });
+});

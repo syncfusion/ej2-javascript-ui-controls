@@ -1476,6 +1476,9 @@ let MenuBase = class MenuBase extends Component {
         }
     }
     getMenuItemModel(item, level) {
+        if (isNullOrUndefined(item)) {
+            return null;
+        }
         if (isNullOrUndefined(level)) {
             level = 0;
         }
@@ -11458,9 +11461,11 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                 let dropTarget = e.target;
                 let preventTargetExpand = false;
                 let dropRoot = (closest(dropTarget, '.' + DROPPABLE));
+                let isHelperElement = true;
                 if (!dropTarget || !dropRoot) {
                     detach(e.helper);
                     document.body.style.cursor = '';
+                    isHelperElement = false;
                 }
                 let listItem = closest(dropTarget, '.e-list-item');
                 let level;
@@ -11478,9 +11483,10 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                                 detach(e.helper);
                             }
                             document.body.style.cursor = '';
+                            isHelperElement = false;
                         }
                         this.dragStartAction = false;
-                        if (this.isBlazorPlatform) {
+                        if (this.isBlazorPlatform && isHelperElement) {
                             this.dropAction(e, true);
                         }
                     });
@@ -12246,8 +12252,8 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         for (let i = 0, objlen = obj.length; i < objlen; i++) {
             let nodeId = getValue(mapper.id, obj[i]);
             if (obj[i] && nodeId && nodeId.toString() === id) {
-                if ((typeof mapper.child === 'string' && obj[i].hasOwnProperty(mapper.child)) ||
-                    (this.fields.dataSource instanceof DataManager && obj[i].hasOwnProperty('child'))) {
+                if ((typeof mapper.child === 'string' && (obj[i].hasOwnProperty(mapper.child) && obj[i][mapper.child] !== null)) ||
+                    ((this.fields.dataSource instanceof DataManager && (this.fields.dataSource.adaptorName !== 'BlazorAdaptor')) && obj[i].hasOwnProperty('child'))) {
                     let key = (typeof mapper.child === 'string') ? mapper.child : 'child';
                     let childData = getValue(key, obj[i]);
                     if (isNullOrUndefined(childData)) {
@@ -12272,7 +12278,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                     break;
                 }
             }
-            else if (this.fields.dataSource instanceof DataManager && !isNullOrUndefined(getValue('child', obj[i]))) {
+            else if ((this.fields.dataSource instanceof DataManager && (this.fields.dataSource.adaptorName !== 'BlazorAdaptor')) && !isNullOrUndefined(getValue('child', obj[i]))) {
                 let childData = getValue('child', obj[i]);
                 updated = this.addChildData(childData, this.getChildMapper(mapper), id, data, index);
                 if (updated !== undefined) {

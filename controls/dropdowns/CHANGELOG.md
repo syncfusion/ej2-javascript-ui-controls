@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 18.2.48 (2020-08-04)
+
+### ListBox
+
+#### New Features
+
+- `#285392` - Enable / disable list items based on unique value support provided.
+
+### Dropdown Tree
+
+#### Bug Fixes
+
+- The accessibility issue with “The Dropdown Tree text is not reading properly when enabling the multi-selection support” has been resolved.
+
 ## 18.2.47 (2020-07-28)
 
 ### DropDownList

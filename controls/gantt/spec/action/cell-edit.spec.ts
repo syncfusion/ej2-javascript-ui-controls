@@ -830,10 +830,6 @@ describe('Work', () => {
         expect(ganttObj.currentViewData[0].ganttProperties.workUnit).toBe('hour');
         expect(ganttObj.currentViewData[0].ganttProperties.taskType).toBe('FixedDuration');
     });
-    it('Checking column collection with tasktype', () => {
-        ganttObj.dataBind();
-        expect(ganttObj.ganttColumns[12].field).toBe('taskType');
-    });
     // it('Editing Work column with fixed work', () => {
     //     ganttObj.dataBind();
     //     expect(ganttObj.currentViewData[2].ganttProperties.resourceNames).toBe('Resource 3[40%],Resource 1');

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.2.48 (2020-08-04)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+`#I282749`- Cell alignment issue while applying data validation has been fixed.
+
 ## 18.2.46 (2020-07-21)
 
 ### Spreadsheet

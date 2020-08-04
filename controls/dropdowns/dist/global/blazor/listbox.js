@@ -204,14 +204,19 @@ var ListBox = /** @class */ (function (_super) {
                 drop: this.dragEnd.bind(this),
                 placeHolder: function () { return _this.createElement('span', { className: 'e-placeholder' }); },
                 helper: function (e) {
+                    var wrapper = _this.list.cloneNode();
                     var ele = e.sender.cloneNode(true);
-                    ele.style.width = _this.getItems()[0].offsetWidth + 'px';
+                    wrapper.appendChild(ele);
+                    var refEle = _this.getItems()[0];
+                    wrapper.style.width = refEle.offsetWidth + 'px';
+                    wrapper.style.height = refEle.offsetHeight + 'px';
                     if ((_this.value && _this.value.length) > 1 && _this.isSelected(ele)) {
                         ele.appendChild(_this.createElement('span', {
                             className: 'e-list-badge', innerHTML: _this.value.length + ''
                         }));
                     }
-                    return ele;
+                    wrapper.style.zIndex = sf.popups.getZindexPartial(_this.element) + '';
+                    return wrapper;
                 }
             });
         }
@@ -564,6 +569,9 @@ var ListBox = /** @class */ (function (_super) {
                 else {
                     li_1 = _this.getItems()[_this.getIndexByValue(value)];
                 }
+                if (!li_1) {
+                    li_1 = args.helper;
+                }
                 _this.removeSelected(_this, value === dropValue ? [args.droppedElement] : [li_1]);
                 if (sf.base.isBlazor()) {
                     if (index === 0) {
@@ -676,16 +684,17 @@ var ListBox = /** @class */ (function (_super) {
      * This method is used to enable or disable the items in the ListBox based on the items and enable argument.
      * @param items Text items that needs to be enabled/disabled.
      * @param enable Set `true`/`false` to enable/disable the list items.
+     * @param isValue - Set `true` if `items` parameter is a array of unique values.
      * @returns void
      */
-    ListBox.prototype.enableItems = function (items, enable) {
+    ListBox.prototype.enableItems = function (items, enable, isValue) {
         var _this = this;
         if (enable === void 0) { enable = true; }
         var li;
         items.forEach(function (item) {
             var text;
             if (sf.base.isBlazor() && typeof (item) === 'object') {
-                text = item[_this.fields.text || 'text'];
+                text = sf.base.getValue(isValue ? _this.fields.value : _this.fields.text, item);
                 if (sf.base.isNullOrUndefined(text)) {
                     return;
                 }
@@ -693,7 +702,10 @@ var ListBox = /** @class */ (function (_super) {
             else {
                 text = item;
             }
-            li = _this.findListElement(_this.list, 'li', 'data-value', _this.getValueByText(text));
+            li = _this.findListElement(_this.list, 'li', 'data-value', isValue ? text : _this.getValueByText(text));
+            if (!li) {
+                return;
+            }
             if (enable) {
                 sf.base.removeClass([li], sf.lists.cssClass.disabled);
                 li.removeAttribute('aria-disabled');
@@ -708,11 +720,12 @@ var ListBox = /** @class */ (function (_super) {
      * Based on the state parameter, specified list item will be selected/deselected.
      * @param items Array of text value of the item.
      * @param state Set `true`/`false` to select/un select the list items.
+     * @param isValue - Set `true` if `items` parameter is a array of unique values.
      * @returns void
      */
-    ListBox.prototype.selectItems = function (items, state) {
+    ListBox.prototype.selectItems = function (items, state, isValue) {
         if (state === void 0) { state = true; }
-        this.setSelection(items, state, true);
+        this.setSelection(items, state, !isValue);
         this.updateSelectedOptions();
     };
     /**
@@ -1557,6 +1570,7 @@ var ListBox = /** @class */ (function (_super) {
             // tslint:disable
             fListBox.interopAdaptor.invokeMethodAsync('UpdateListData', fListBox.listData).then(function () {
                 fListBox.updateBlazorListData(null, true);
+                fListBox.updateSelectedOptions();
             });
             tListBox.interopAdaptor.invokeMethodAsync('UpdateListData', tListBox.listData).then(function () {
                 tListBox.updateBlazorListData(null, true);

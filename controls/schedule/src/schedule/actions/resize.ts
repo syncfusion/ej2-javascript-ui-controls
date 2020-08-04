@@ -345,6 +345,9 @@ export class Resize extends ActionBase {
             }
         }
         if (isLeft) {
+            if (((this.actionObj.event[this.parent.eventFields.endTime] as Date).getTime() - resizeTime.getTime()) <= 0) {
+                resizeTime = new Date((<Date>this.actionObj.event[this.parent.eventFields.startTime]).getTime());
+            }
             this.actionObj.start = this.parent.activeViewOptions.timeScale.enable ? this.calculateIntervalTime(resizeTime) : resizeTime;
         } else {
             let isTimeViews: boolean = ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'].indexOf(this.parent.currentView) > -1 &&

@@ -1,5 +1,5 @@
 import { attributes, createElement, isNullOrUndefined, getUniqueID, Browser, EventHandler, KeyboardEventArgs } from "@syncfusion/ej2-base";
-import { calculateRelativeBasedPosition, OffsetPosition } from "@syncfusion/ej2-popups";
+import { OffsetPosition, calculatePosition } from "@syncfusion/ej2-popups";
 import { SfGrid } from "./sf-grid-fn";
 import { parentsUntil } from "./util";
 import { Column } from "./interfaces";
@@ -50,7 +50,6 @@ export class CustomToolTip {
         let content: HTMLElement = createElement('div', { className: "e-tip-content" });
         content.innerHTML = this.content;
         this.toolTipElement.appendChild(content);
-
         let arrow: HTMLElement = createElement('div', { className: "e-arrow-tip e-tip-bottom", styles: 'top: 99.9%' });
         arrow.appendChild(createElement('div', { className: "e-arrow-tip-outer e-tip-bottom" }));
         arrow.appendChild(createElement('div', { className: "e-arrow-tip-inner e-tip-bottom", styles: 'top: -6px' }));
@@ -59,12 +58,13 @@ export class CustomToolTip {
     }
 
     private setPosition(target: HTMLElement): void {
+        let tooltipPostion:  {left: number; top: number;}= { top: 0, left: 0 };
         let arrow: HTMLElement = this.toolTipElement.querySelector('.e-arrow-tip');
-        let popUpPosition: OffsetPosition = calculateRelativeBasedPosition(target, this.parent.element);
-        this.toolTipElement.style.top = popUpPosition.top - arrow.offsetHeight - this.toolTipElement.offsetHeight + 'px';
-        let toolTipWidthBy2: number = this.toolTipElement.offsetWidth / 2;
-        this.toolTipElement.style.left = popUpPosition.left + (target.offsetWidth / 2) - toolTipWidthBy2 + 'px';
-        arrow.style.left = toolTipWidthBy2 - (arrow.offsetWidth / 2) + 'px';
+        let popUpPosition: OffsetPosition = calculatePosition(target, 'Center', 'Top');
+        tooltipPostion.top -= this.toolTipElement.offsetHeight + arrow.offsetHeight;
+        tooltipPostion.left -= this.toolTipElement.offsetWidth / 2;
+        this.toolTipElement.style.top = popUpPosition.top + tooltipPostion.top + 'px';
+        this.toolTipElement.style.left = popUpPosition.left + tooltipPostion.left + 'px';
     }
 
     public close(): void {

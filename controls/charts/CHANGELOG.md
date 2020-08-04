@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.2.48 (2020-08-04)
+
+### Accumulation chart
+
+#### Bug Fixes
+
+- `#286597` - Tooltip showing out of the chart area issue fixed.
+
 ## 18.2.47 (2020-07-28)
 
 ### Chart

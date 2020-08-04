@@ -64,6 +64,8 @@ export const rowDeselected: string = 'rowDeselected';
 /** @hidden */
 export const beginDrillThrough: string = 'beginDrillThrough';
 /** @hidden */
+export const editComplete: string = 'editComplete';
+/** @hidden */
 export const saveReport: string = 'saveReport';
 /** @hidden */
 export const fetchReport: string = 'fetchReport';

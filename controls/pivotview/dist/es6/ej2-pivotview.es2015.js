@@ -4959,6 +4959,8 @@ const rowDeselected = 'rowDeselected';
 /** @hidden */
 const beginDrillThrough = 'beginDrillThrough';
 /** @hidden */
+const editComplete = 'editComplete';
+/** @hidden */
 const saveReport = 'saveReport';
 /** @hidden */
 const fetchReport = 'fetchReport';
@@ -12557,15 +12559,29 @@ class DrillThroughDialog {
     constructor(parent) {
         /** @hidden */
         this.indexString = [];
+        this.clonedData = [];
         this.isUpdated = false;
         this.gridIndexObjects = {};
         this.gridData = [];
         this.parent = parent;
         this.engine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
     }
+    frameHeaderWithKeys(header) {
+        let keys = Object.keys(header);
+        let keyPos = 0;
+        let framedHeader = {};
+        while (keyPos < keys.length) {
+            framedHeader[keys[keyPos]] = header[keys[keyPos]];
+            keyPos++;
+        }
+        return framedHeader;
+    }
     /** @hidden */
     showDrillThroughDialog(eventArgs) {
         this.gridData = eventArgs.rawData;
+        for (let i = 0; i < eventArgs.rawData.length; i++) {
+            this.clonedData.push(this.frameHeaderWithKeys(eventArgs.rawData[i]));
+        }
         let actualText = eventArgs.currentCell.actualText.toString();
         if (this.engine.fieldList[actualText].aggregateType !== 'Count' && this.parent.editSettings.allowInlineEditing &&
             this.parent.editSettings.allowEditing && eventArgs.rawData.length === 1 &&
@@ -12597,6 +12613,11 @@ class DrillThroughDialog {
                     if (this.parent.editSettings.allowEditing && this.isUpdated) {
                         if (this.parent.dataSourceSettings.type === 'CSV') {
                             this.updateData(this.drillThroughGrid.dataSource);
+                        }
+                        let gridIndexObjectsValue = Object.keys(this.gridIndexObjects);
+                        let previousPosition = [];
+                        for (let value of gridIndexObjectsValue) {
+                            previousPosition.push(this.gridIndexObjects[value]);
                         }
                         let count = Object.keys(this.gridIndexObjects).length;
                         let addItems = [];
@@ -12649,9 +12670,18 @@ class DrillThroughDialog {
                             }
                             /* tslint:enable:no-string-literal */
                             items = items.concat(addItems);
-                            this.parent.setProperties({ dataSourceSettings: { dataSource: items } }, true);
-                            this.engine.updateGridData(this.parent.dataSourceSettings);
-                            this.parent.pivotValues = this.engine.pivotValues;
+                            let eventArgs = {
+                                currentData: this.drillThroughGrid.dataSource,
+                                previousData: this.clonedData,
+                                previousPosition: previousPosition,
+                                cancel: false
+                            };
+                            this.parent.trigger(editComplete, eventArgs);
+                            if (!eventArgs.cancel) {
+                                this.parent.setProperties({ dataSourceSettings: { dataSource: eventArgs.currentData } }, true);
+                                this.engine.updateGridData(this.parent.dataSourceSettings);
+                                this.parent.pivotValues = this.engine.pivotValues;
+                            }
                         }
                     }
                     if (!(isBlazor() && this.parent.enableVirtualization)) {
@@ -23947,6 +23977,9 @@ __decorate([
 ], PivotView.prototype, "drillThrough", void 0);
 __decorate([
     Event()
+], PivotView.prototype, "editComplete", void 0);
+__decorate([
+    Event()
 ], PivotView.prototype, "beginDrillThrough", void 0);
 __decorate([
     Event()
@@ -34161,5 +34194,5 @@ class Grouping {
  * Export PivotGrid components
  */
 
-export { GroupingBarSettings, CellEditSettings, ConditionalSettings, HyperlinkSettings, DisplayOption, PivotView, Render, ExcelExport$1 as ExcelExport, PDFExport, KeyboardInteraction, VirtualScroll$1 as VirtualScroll, DrillThrough, PivotChart, PivotFieldList, TreeViewRenderer, AxisFieldRenderer, AxisTableRenderer, DialogRenderer, EventBase, NodeStateModified, DataSourceUpdate, FieldList, CommonKeyboardInteraction, Common, GroupingBar, CalculatedField, ConditionalFormatting, PivotCommon, load, enginePopulating, enginePopulated, onFieldDropped, fieldDrop, beforePivotTableRender, afterPivotTableRender, beforeExport, excelHeaderQueryCellInfo, pdfHeaderQueryCellInfo, excelQueryCellInfo, pdfQueryCellInfo, onPdfCellRender, dataBound, queryCellInfo, headerCellInfo, hyperlinkCellClick, resizing, resizeStop, cellClick, drillThrough, beforeColumnsRender, selected, cellSelecting, drill, cellSelected, cellDeselected, rowSelected, rowDeselected, beginDrillThrough, saveReport, fetchReport, loadReport, renameReport, removeReport, newReport, toolbarRender, toolbarClick, chartTooltipRender, chartLoaded, chartLoad, chartResized, chartAxisLabelRender, chartSeriesCreated, aggregateCellInfo, contextMenuClick, contextMenuOpen, fieldListRefreshed, conditionalFormatting, beforePdfExport, beforeExcelExport, memberFiltering, calculatedFieldCreate, memberEditorOpen, fieldRemove, numberFormatting, aggregateMenuOpen, fieldDragStart, chartPointClick, initialLoad, uiUpdate, scroll, contentReady, dataReady, initSubComponent, treeViewUpdate, pivotButtonUpdate, initCalculatedField, click, initToolbar, initFormatting, initGrouping, Theme, ErrorDialog, FilterDialog, PivotContextMenu, AggregateMenu, Toolbar$2 as Toolbar, NumberFormatting, Grouping, PivotEngine, PivotUtil, OlapEngine, MDXQuery };
+export { GroupingBarSettings, CellEditSettings, ConditionalSettings, HyperlinkSettings, DisplayOption, PivotView, Render, ExcelExport$1 as ExcelExport, PDFExport, KeyboardInteraction, VirtualScroll$1 as VirtualScroll, DrillThrough, PivotChart, PivotFieldList, TreeViewRenderer, AxisFieldRenderer, AxisTableRenderer, DialogRenderer, EventBase, NodeStateModified, DataSourceUpdate, FieldList, CommonKeyboardInteraction, Common, GroupingBar, CalculatedField, ConditionalFormatting, PivotCommon, load, enginePopulating, enginePopulated, onFieldDropped, fieldDrop, beforePivotTableRender, afterPivotTableRender, beforeExport, excelHeaderQueryCellInfo, pdfHeaderQueryCellInfo, excelQueryCellInfo, pdfQueryCellInfo, onPdfCellRender, dataBound, queryCellInfo, headerCellInfo, hyperlinkCellClick, resizing, resizeStop, cellClick, drillThrough, beforeColumnsRender, selected, cellSelecting, drill, cellSelected, cellDeselected, rowSelected, rowDeselected, beginDrillThrough, editComplete, saveReport, fetchReport, loadReport, renameReport, removeReport, newReport, toolbarRender, toolbarClick, chartTooltipRender, chartLoaded, chartLoad, chartResized, chartAxisLabelRender, chartSeriesCreated, aggregateCellInfo, contextMenuClick, contextMenuOpen, fieldListRefreshed, conditionalFormatting, beforePdfExport, beforeExcelExport, memberFiltering, calculatedFieldCreate, memberEditorOpen, fieldRemove, numberFormatting, aggregateMenuOpen, fieldDragStart, chartPointClick, initialLoad, uiUpdate, scroll, contentReady, dataReady, initSubComponent, treeViewUpdate, pivotButtonUpdate, initCalculatedField, click, initToolbar, initFormatting, initGrouping, Theme, ErrorDialog, FilterDialog, PivotContextMenu, AggregateMenu, Toolbar$2 as Toolbar, NumberFormatting, Grouping, PivotEngine, PivotUtil, OlapEngine, MDXQuery };
 //# sourceMappingURL=ej2-pivotview.es2015.js.map

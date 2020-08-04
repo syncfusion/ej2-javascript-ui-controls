@@ -36,7 +36,6 @@ import { DiagramConnectorSegmentModel } from './connector-model';
 import { getTemplateContent } from '../utility/dom-util';
 import { SymbolSizeModel } from './preview-model';
 import { SymbolSize } from './preview';
-
 let getConnectorType: Function = (obj: ConnectorShape): Object => {
     if (isBlazor()) {
         return DiagramConnectorShape;
@@ -1121,6 +1120,7 @@ export class Connector extends NodeBase implements IElement {
      */
     @Complex<SymbolSizeModel>({}, SymbolSize)
     public dragSize: SymbolSizeModel;
+
     /**
      * Sets the target padding of the connector
      * @default 0

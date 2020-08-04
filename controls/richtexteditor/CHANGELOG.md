@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.2.48 (2020-08-04)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#266152` - The issue with "List selection with delete key action does not remove lists properly" has been resolved.
+
 ## 18.2.46 (2020-07-21)
 
 ### RichTextEditor

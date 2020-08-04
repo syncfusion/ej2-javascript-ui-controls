@@ -9266,6 +9266,20 @@ var Lists = /** @class */ (function () {
         if (e.event.which === 8) {
             this.backspaceList(e);
         }
+        if (e.event.which === 46 && e.event.action === 'delete') {
+            var range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+            var commonAncestor = range.commonAncestorContainer;
+            var startEle = range.startContainer;
+            var endEle = range.endContainer;
+            var startNode = startEle.nodeType === 3 ? startEle.parentElement : startEle;
+            var endNode = endEle.nodeType === 3 ? endEle.parentElement : endEle;
+            if ((commonAncestor.nodeName === 'UL' || commonAncestor.nodeName === 'OL') && startNode !== endNode
+                && (!sf.base.isNullOrUndefined(sf.base.closest(startNode, 'ul')) || !sf.base.isNullOrUndefined(sf.base.closest(startNode, 'ol')))
+                && (!sf.base.isNullOrUndefined(sf.base.closest(endNode, 'ul')) || !sf.base.isNullOrUndefined(sf.base.closest(endNode, 'ol')))
+                && (commonAncestor.lastElementChild === sf.base.closest(endNode, 'li')) && !range.collapsed) {
+                sf.base.detach(commonAncestor);
+            }
+        }
         if (e.event.which === 9) {
             var range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
             if (!(e.event.action && e.event.action === 'indent')) {
@@ -16559,6 +16573,17 @@ var Image = /** @class */ (function () {
             }
         }
     };
+    Image.prototype.getMaxWidth = function () {
+        var maxWidth = this.parent.insertImageSettings.maxWidth;
+        var imgPadding = 12;
+        var imgResizeBorder = 2;
+        var editEle = this.parent.contentModule.getEditPanel();
+        var eleStyle = window.getComputedStyle(editEle);
+        var editEleMaxWidth = editEle.offsetWidth - (imgPadding + imgResizeBorder +
+            parseFloat(eleStyle.paddingLeft.split('px')[0]) + parseFloat(eleStyle.paddingRight.split('px')[0]) +
+            parseFloat(eleStyle.marginLeft.split('px')[0]) + parseFloat(eleStyle.marginRight.split('px')[0]));
+        return sf.base.isNullOrUndefined(maxWidth) ? editEleMaxWidth : maxWidth;
+    };
     Image.prototype.pixToPerc = function (expected, parentEle) {
         return expected / parseFloat(getComputedStyle(parentEle).width) * 100;
     };
@@ -16571,7 +16596,7 @@ var Image = /** @class */ (function () {
             }
             else {
                 if ((parseInt(_this.parent.insertImageSettings.minWidth, 10) >= parseInt(width, 10) ||
-                    parseInt(_this.parent.insertImageSettings.maxWidth, 10) <= parseInt(width, 10))) {
+                    parseInt(_this.getMaxWidth(), 10) <= parseInt(width, 10))) {
                     return;
                 }
                 if (!_this.parent.insertImageSettings.resizeByPercent &&
@@ -16588,6 +16613,9 @@ var Image = /** @class */ (function () {
         });
     };
     Image.prototype.resizing = function (e) {
+        if (this.imgEle.offsetWidth >= this.getMaxWidth()) {
+            this.imgEle.style.maxHeight = this.imgEle.offsetHeight + 'px';
+        }
         var pageX = this.getPointX(e);
         var pageY = this.getPointY(e);
         var mouseX = (this.resizeBtnStat.botLeft || this.resizeBtnStat.topLeft) ? -(pageX - this.pageX) : (pageX - this.pageX);
@@ -17464,7 +17492,7 @@ var Image = /** @class */ (function () {
                 url: url, selection: this.selection, altText: matchUrl,
                 selectParent: this.selectParent, width: {
                     width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
-                    maxWidth: proxy.parent.insertImageSettings.maxWidth
+                    maxWidth: proxy.getMaxWidth()
                 },
                 height: {
                     height: proxy.parent.insertImageSettings.height, minHeight: proxy.parent.insertImageSettings.minHeight,
@@ -17496,7 +17524,7 @@ var Image = /** @class */ (function () {
         imgSizeWrap.appendChild(contentElem);
         var widthNum = new sf.inputs.NumericTextBox({
             format: '###.### px', min: this.parent.insertImageSettings.minWidth,
-            max: this.parent.insertImageSettings.maxWidth,
+            max: this.getMaxWidth(),
             enableRtl: this.parent.enableRtl, locale: this.parent.locale
         });
         widthNum.isStringTemplate = true;
@@ -17618,7 +17646,7 @@ var Image = /** @class */ (function () {
                                 selectParent: selectParent,
                                 width: {
                                     width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
-                                    maxWidth: proxy.parent.insertImageSettings.maxWidth
+                                    maxWidth: proxy.getMaxWidth()
                                 }, height: {
                                     height: proxy.parent.insertImageSettings.height, minHeight: proxy.parent.insertImageSettings.minHeight,
                                     maxHeight: proxy.parent.insertImageSettings.maxHeight
@@ -17665,7 +17693,7 @@ var Image = /** @class */ (function () {
                             url: url, selection: save, altText: altText, selectParent: selectParent,
                             width: {
                                 width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
-                                maxWidth: proxy.parent.insertImageSettings.maxWidth
+                                maxWidth: proxy.getMaxWidth()
                             }, height: {
                                 height: proxy.parent.insertImageSettings.height, minHeight: proxy.parent.insertImageSettings.minHeight,
                                 maxHeight: proxy.parent.insertImageSettings.maxHeight
@@ -18079,7 +18107,7 @@ var Image = /** @class */ (function () {
                         reader_2.result : URL.createObjectURL(convertToBlob(reader_2.result)),
                     width: {
                         width: proxy_1.parent.insertImageSettings.width, minWidth: proxy_1.parent.insertImageSettings.minWidth,
-                        maxWidth: proxy_1.parent.insertImageSettings.maxWidth
+                        maxWidth: proxy_1.getMaxWidth()
                     },
                     height: {
                         height: proxy_1.parent.insertImageSettings.height, minHeight: proxy_1.parent.insertImageSettings.minHeight,

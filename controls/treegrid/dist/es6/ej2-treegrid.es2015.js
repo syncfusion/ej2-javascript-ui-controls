@@ -3508,7 +3508,8 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
                             this.grid.dataSource = { result: this.flatData, count: count };
                         }
                         else {
-                            this.grid.dataSource = this.flatData;
+                            this.grid.dataSource = !(this.dataSource instanceof DataManager) ?
+                                this.flatData : new DataManager(this.dataSource.dataSource, this.dataSource.defaultQuery, this.dataSource.adaptor);
                         }
                     }
                     else {

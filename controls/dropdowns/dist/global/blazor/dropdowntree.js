@@ -282,6 +282,10 @@ var DropDownTree = /** @class */ (function (_super) {
             this.createChip();
         }
         this.wireEvents();
+        var firstUl = sf.base.select('.' + PARENTITEM, this.treeObj.element);
+        if (firstUl && firstUl.getAttribute('aria-multiselectable')) {
+            firstUl.removeAttribute('aria-multiselectable');
+        }
         this.oldValue = this.value;
         this.isInitialized = true;
         this.renderComplete();

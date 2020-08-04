@@ -193,6 +193,16 @@ export interface CommentDeleteEventArgs {
      */
     cancel: boolean;
 }
+export interface BeforeFileOpenArgs {
+    /**
+     * The size of opened file in bytes.
+     */
+    fileSize: number;
+    /**
+     * Specifies file open is canceled.
+     */
+    isCanceled?: boolean;
+}
 /**
  * This event args provides the necessary information about track change.
  */

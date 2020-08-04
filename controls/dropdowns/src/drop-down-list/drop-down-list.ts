@@ -2373,6 +2373,7 @@ export class DropDownList extends DropDownBase implements IInput {
             if (this.element.hasAttribute('autofocus')) {
                 this.focusIn();
             }
+            this.initial = false;
         } else {
             if (this.element.tagName === 'INPUT') {
                 this.inputElement = this.element as HTMLInputElement;

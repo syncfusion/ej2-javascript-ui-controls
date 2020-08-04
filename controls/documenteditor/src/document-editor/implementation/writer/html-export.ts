@@ -689,6 +689,12 @@ export class HtmlExport {
             charStyle += 'underline';
             charStyle += ';';
         }
+        if (!isNullOrUndefined(characterFormat.allCaps)) {
+            charStyle += 'text-transform';
+            charStyle += ':';
+            charStyle += 'uppercase';
+            charStyle += ';';
+        }
         propertyValue = characterFormat.fontSize;
         if (!isNullOrUndefined(propertyValue)) {
             charStyle += 'font-size';

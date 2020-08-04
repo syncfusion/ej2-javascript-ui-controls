@@ -1457,7 +1457,9 @@ var TaskProcessor = /** @class */ (function (_super) {
                 var parentWork = parentProp.work;
                 this.parent.setRecordValue('work', parentWork, parentProp, true);
                 this.parent.setRecordValue('taskType', 'FixedDuration', parentProp, true);
-                this.updateMappingData(parentData, 'taskType');
+                if (!sf.base.isNullOrUndefined(this.parent.taskFields.type)) {
+                    this.updateMappingData(parentData, 'type');
+                }
                 this.parent.setRecordValue('progress', Math.floor(parentProgress), parentProp, true);
                 this.parent.setRecordValue('totalProgress', 0, parentProp, true);
                 this.parent.setRecordValue('totalDuration', 0, parentProp, true);
@@ -1802,7 +1804,9 @@ var TaskProcessor = /** @class */ (function (_super) {
                         this.updateDurationWithWork(ganttData);
                         break;
                 }
-                this.parent.dataOperation.updateMappingData(ganttData, 'taskType');
+                if (!sf.base.isNullOrUndefined(taskSettings.type)) {
+                    this.parent.dataOperation.updateMappingData(ganttData, 'type');
+                }
                 if (ganttProperties.duration === 0) {
                     this.parent.setRecordValue('isMilestone', true, ganttProperties, true);
                     this.parent.setRecordValue('endDate', ganttProperties.startDate, ganttProperties, true);
@@ -1814,8 +1818,8 @@ var TaskProcessor = /** @class */ (function (_super) {
             }
             this.parent.dataOperation.updateMappingData(ganttData, 'work');
         }
-        else if (ganttProperties.taskType) {
-            this.parent.dataOperation.updateMappingData(ganttData, 'taskType');
+        else if (taskSettings.type && ganttProperties.taskType) {
+            this.parent.dataOperation.updateMappingData(ganttData, 'type');
         }
     };
     /**
@@ -2156,9 +2160,9 @@ var TaskProcessor = /** @class */ (function (_super) {
             this.parent.setRecordValue('taskData.' + columnMapping[fieldName], this.getWorkString(ganttProp.work, ganttProp.workUnit), ganttData);
             this.parent.setRecordValue(columnMapping[fieldName], ganttProp[fieldName], ganttData);
         }
-        else if (fieldName === 'taskType') {
-            this.parent.setRecordValue('taskData.' + 'taskType', ganttProp[fieldName], ganttData);
-            this.parent.setRecordValue('taskType', ganttProp[fieldName], ganttData);
+        else if (fieldName === 'type') {
+            this.parent.setRecordValue('taskData.' + columnMapping[fieldName], ganttProp[fieldName], ganttData);
+            this.parent.setRecordValue(columnMapping[fieldName], ganttProp[fieldName], ganttData);
         }
         else if (fieldName === 'manual') {
             this.parent.setRecordValue('taskData.' + columnMapping[fieldName], !ganttProp.isAutoSchedule, ganttData);
@@ -2337,6 +2341,10 @@ var TaskProcessor = /** @class */ (function (_super) {
             if (dataMapping.work) {
                 this.parent.setRecordValue('taskData.' + dataMapping.work, this.getWorkString(ganttProperties.work, ganttProperties.workUnit), ganttData);
                 this.parent.setRecordValue(dataMapping.work, ganttProperties.work, ganttData);
+            }
+            if (dataMapping.type) {
+                this.parent.setRecordValue('taskData.' + dataMapping.type, ganttProperties.taskType, ganttData);
+                this.parent.setRecordValue(dataMapping.type, ganttProperties.taskType, ganttData);
             }
         }
     };
@@ -2940,8 +2948,9 @@ var TaskProcessor = /** @class */ (function (_super) {
             var milestoneCount = 0;
             var totalProgress = 0;
             var childCompletedWorks = 0;
+            var childData = void 0;
             for (var count = 0; count < childLength; count++) {
-                var childData = childRecords[count];
+                childData = childRecords[count];
                 if (this.parent.isOnDelete && childData.isDelete) {
                     if (childLength === 1 && this.parent.viewType === 'ProjectView') {
                         if (sf.base.isBlazor()) {
@@ -2987,7 +2996,7 @@ var TaskProcessor = /** @class */ (function (_super) {
                     this.parent.setRecordValue(ganttProp.isAutoSchedule ? 'endDate' : 'autoEndDate', maxEndDate, parentData.ganttProperties, true);
                 }
                 var taskCount = void 0;
-                if (this.parent.isOnDelete) {
+                if (this.parent.isOnDelete && childData.isDelete) {
                     taskCount = childLength - milestoneCount - 1;
                 }
                 else {
@@ -3006,7 +3015,9 @@ var TaskProcessor = /** @class */ (function (_super) {
                 parentWork += childCompletedWorks;
                 this.parent.setRecordValue('work', parentWork, parentProp, true);
                 this.parent.setRecordValue('taskType', 'FixedDuration', parentProp, true);
-                this.updateMappingData(parentData, 'taskType');
+                if (!sf.base.isNullOrUndefined(this.parent.taskFields.type)) {
+                    this.updateMappingData(parentData, 'type');
+                }
                 this.parent.setRecordValue('progress', Math.floor(parentProgress), parentProp, true);
                 this.parent.setRecordValue('totalProgress', totalProgress, parentProp, true);
                 this.parent.setRecordValue('totalDuration', totalDuration, parentProp, true);
@@ -3292,6 +3303,7 @@ var GanttChart = /** @class */ (function () {
     function GanttChart(parent) {
         this.isExpandCollapseFromChart = false;
         this.isExpandAll = false;
+        this.isGanttElement = false;
         this.parent = parent;
         this.chartTimelineContainer = null;
         this.rangeViewContainer =
@@ -3547,7 +3559,19 @@ var GanttChart = /** @class */ (function () {
      * @return {void}
      * @private
      */
+    GanttChart.prototype.mouseUp = function (e) {
+        if (!this.isGanttElement) {
+            this.parent.notify('chartMouseUp', e);
+        }
+        this.isGanttElement = false;
+    };
+    /**
+     *  Method trigger while perform mouse up action.
+     * @return {void}
+     * @private
+     */
     GanttChart.prototype.documentMouseUp = function (e) {
+        this.isGanttElement = true;
         if (this.parent.allowRowDragAndDrop) {
             var ganttDragElemet = this.parent.element.querySelector('.e-ganttdrag');
             if (ganttDragElemet) {
@@ -3992,9 +4016,10 @@ var GanttChart = /** @class */ (function () {
             }
         }
         if (!this.parent.isAdaptive) {
-            sf.base.EventHandler.add(document, mouseUp, this.documentMouseUp, this);
+            sf.base.EventHandler.add(this.parent.element, mouseUp, this.documentMouseUp, this);
+            sf.base.EventHandler.add(document, mouseUp, this.mouseUp, this);
         }
-        sf.base.EventHandler.add(document.body, 'mousemove', this.mouseMoveHandler, this);
+        sf.base.EventHandler.add(this.parent.element, 'mousemove', this.mouseMoveHandler, this);
         sf.base.EventHandler.add(document.body, 'contextmenu', this.contextClick, this);
         sf.base.EventHandler.add(this.parent.chartRowsModule.ganttChartTableBody, 'dblclick', this.doubleClickHandler, this);
     };
@@ -4014,9 +4039,10 @@ var GanttChart = /** @class */ (function () {
             }
         }
         if (!this.parent.isAdaptive) {
-            sf.base.EventHandler.remove(document, mouseUp, this.documentMouseUp);
+            sf.base.EventHandler.remove(this.parent.element, mouseUp, this.documentMouseUp);
+            sf.base.EventHandler.remove(document, mouseUp, this.mouseUp);
         }
-        sf.base.EventHandler.remove(document.body, 'mousemove', this.mouseMoveHandler);
+        sf.base.EventHandler.remove(this.parent.element, 'mousemove', this.mouseMoveHandler);
         sf.base.EventHandler.remove(document.body, 'contextmenu', this.contextClick);
         sf.base.EventHandler.remove(this.parent.chartRowsModule.ganttChartTableBody, 'dblclick', this.doubleClickHandler);
     };
@@ -5867,7 +5893,7 @@ var GanttTreeGrid = /** @class */ (function () {
         this.parent.columnByField = {};
         this.parent.customColumns = [];
         var tasksMapping = ['id', 'name', 'startDate', 'endDate', 'duration', 'dependency',
-            'progress', 'baselineStartDate', 'baselineEndDate', 'resourceInfo', 'notes', 'work', 'manual'];
+            'progress', 'baselineStartDate', 'baselineEndDate', 'resourceInfo', 'notes', 'work', 'manual', 'type'];
         var _loop_1 = function (i) {
             var column = {};
             if (typeof ganttObj.columns[i] === 'string') {
@@ -5879,12 +5905,7 @@ var GanttTreeGrid = /** @class */ (function () {
             var columnName = [];
             if (tasksMapping.length > 0) {
                 columnName = tasksMapping.filter(function (name) {
-                    if (column.field === 'taskType' && !sf.base.isNullOrUndefined(tasks.work)) {
-                        return column.field;
-                    }
-                    else {
-                        return column.field === tasks[name];
-                    }
+                    return column.field === tasks[name];
                 });
             }
             if (columnName.length === 0) {
@@ -5900,16 +5921,10 @@ var GanttTreeGrid = /** @class */ (function () {
                 return "continue";
             }
             else {
-                if (column.field === 'taskType') {
-                    this_1.createTreeGridColumn(column, true);
-                    this_1.parent.columnMapping[column.field] = column.field;
-                }
-                else {
-                    var index = tasksMapping.indexOf(columnName[0]);
-                    tasksMapping.splice(index, 1);
-                    this_1.createTreeGridColumn(column, true);
-                    this_1.parent.columnMapping[columnName[0]] = column.field;
-                }
+                var index = tasksMapping.indexOf(columnName[0]);
+                tasksMapping.splice(index, 1);
+                this_1.createTreeGridColumn(column, true);
+                this_1.parent.columnMapping[columnName[0]] = column.field;
             }
         };
         var this_1 = this;
@@ -5923,12 +5938,6 @@ var GanttTreeGrid = /** @class */ (function () {
                 column.field = tasks[tasksMapping[j]];
                 this.createTreeGridColumn(column, length === 0);
                 this.parent.columnMapping[tasksMapping[j]] = column.field;
-                if (column.field === tasks.work) {
-                    var column_1 = {};
-                    column_1.field = 'taskType';
-                    this.createTreeGridColumn(column_1, length === 0);
-                    this.parent.columnMapping[column_1.field] = column_1.field;
-                }
             }
         }
         if (this.parent.viewType !== 'ProjectView') {
@@ -6031,7 +6040,7 @@ var GanttTreeGrid = /** @class */ (function () {
             column.valueAccessor = column.valueAccessor ? column.valueAccessor : this.workValueAccessor.bind(this);
             column.editType = column.editType ? column.editType : 'numericedit';
         }
-        else if (column.field === 'taskType') {
+        else if (taskSettings.type === column.field) {
             column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('taskType');
             column.width = column.width ? column.width : 150;
             //column.type = 'string';
@@ -11262,6 +11271,11 @@ var Gantt = /** @class */ (function (_super) {
                     break;
                 case 'showOverAllocation':
                     this.updateOverAllocationCotainer();
+                    break;
+                case 'viewType':
+                    if (newProp.viewType === 'ProjectView' || newProp.viewType === 'ResourceView') {
+                        this.refresh();
+                    }
                     break;
             }
         }

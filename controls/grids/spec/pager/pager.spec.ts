@@ -171,7 +171,7 @@ describe('Pager base module', () => {
         });
 
         it('pager message testing', () => {
-            expect(pagerObj.element.querySelectorAll('.e-parentmsgbar')[0].textContent).toBe('0 of 0 pages (0 items)');
+            expect(pagerObj.element.querySelectorAll('.e-parentmsgbar')[0].textContent).toBe('0 of 0 pages (0 item)');
         });
 
         it('disabled element testing', () => {

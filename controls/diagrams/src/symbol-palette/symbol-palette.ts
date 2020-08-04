@@ -3,7 +3,8 @@ import { isBlazor, BlazorDragEventArgs } from '@syncfusion/ej2-base';
 import { Browser, EventHandler, Draggable, INotifyPropertyChanged, Collection, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { remove, EmitType } from '@syncfusion/ej2-base';
 import { Accordion, AccordionItemModel, ExpandMode, ExpandEventArgs } from '@syncfusion/ej2-navigations';
-import { NodeModel, ConnectorModel, Node, Connector, Shape, Size, Transform, SwimLane, PathModel } from '../diagram/index';
+import { NodeModel, ConnectorModel, Node, Connector, Shape, Size } from '../diagram/index';
+import { Transform, SwimLane, PathModel, IPaletteExpandArgs } from '../diagram/index';
 import { DiagramRenderer, Container, StackPanel, Margin, BpmnDiagrams, ShapeStyleModel, TextStyleModel } from '../diagram/index';
 import { DiagramElement, TextElement, MarginModel, Canvas, PointModel, IElement } from '../diagram/index';
 import { SymbolPaletteModel, SymbolPreviewModel, PaletteModel, SymbolDragSizeModel } from './symbol-palette-model';
@@ -17,7 +18,7 @@ import { getOuterBounds } from '../diagram/utility/connector';
 import { Point } from '../diagram/primitives/point';
 import { CanvasRenderer } from '../diagram/rendering/canvas-renderer';
 import { Rect } from '../diagram/primitives/rect';
-import { SymbolSizeModel } from '../diagram/objects/preview-model';
+import { SymbolSizeModel, SymbolPaletteInfoModel } from '../diagram/objects/preview-model';
 let getObjectType: Function = (obj: Object): Object => {
     let conn: Connector = obj as Connector;
     if (conn.sourcePoint || conn.targetPoint || conn.sourceID || conn.targetID
@@ -354,6 +355,14 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     public paletteSelectionChange: EmitType<IPaletteSelectionChangeArgs>;
 
     /**
+     * Triggers when the icon is expanded
+     * @event
+     * @blazorProperty 'OnPaletteExpanding'
+     */
+    @Event()
+    public paletteExpanding: EmitType<IPaletteExpandArgs>;
+
+    /**
      * `bpmnModule` is used to add built-in BPMN Shapes to diagrams
      * @private
      */
@@ -411,6 +420,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     private isExpandMode: boolean = false;
     private isMethod: boolean = false;
     private paletteid: number = 88123;
+    private checkOnRender: boolean = false;
 
     //region - protected methods 
 
@@ -586,6 +596,9 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         if (!this.enableAnimation) {
             this.accordionElement.animation = { expand: { duration: 0 }, collapse: { duration: 0 } };
         }
+        this.accordionElement.created = () => {
+            this.checkOnRender = true;
+        };
         this.accordionElement.expanded = (args: ExpandEventArgs) => {
             let index: number = this.accordionElement.items.indexOf(args.item);
             let isAllowDatabind: boolean = this.allowServerDataBinding;
@@ -593,6 +606,15 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             this.palettes[index].expanded = args.isExpanded;
             (this.palettes[index] as Palette).isInteraction = true;
             this.allowServerDataBinding = isAllowDatabind;
+        };
+        this.accordionElement.expanding = (args: ExpandEventArgs) => {
+            if (this.checkOnRender) {
+                let diagramArgs: IPaletteExpandArgs  = {element: args.element, content: args.content, index: args.index, cancel: false,
+                isExpanded: args.isExpanded, palette: this.palettes[args.index]};
+                let event: string = 'paletteExpanding';
+                this.trigger(event, diagramArgs);
+                args.cancel = diagramArgs.cancel;
+            }
         };
         this.element.appendChild(accordionDiv);
         let measureWindowElement: string = 'measureElement';
@@ -919,9 +941,9 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             let symbolInfo: SymbolInfo = { width: this.symbolWidth, height: this.symbolHeight };
             let getSymbolInfo: Function = getFunction(this.getSymbolInfo);
             if (getSymbolInfo) {
-                symbolInfo = getSymbolInfo(symbol);
+            symbolInfo = getSymbolInfo(symbol);
             } else if (isBlazor()) {
-                symbolInfo.fit = this.symbolInfo.fit; symbolInfo.width = this.symbolInfo.width; symbolInfo.height = this.symbolInfo.height;
+                symbolInfo = this.getBlazorSymbolInfo(symbol, symbolInfo);
             }
             symbolInfo = symbolInfo || this.symbolInfo || {};
             if (symbol.shape && (symbol.shape as SwimLaneModel).isPhase) {
@@ -995,7 +1017,19 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             container.arrange(container.desiredSize);
         }
     }
-
+    private getBlazorSymbolInfo(symbol: NodeModel | ConnectorModel, symbolInfo: SymbolInfo): SymbolInfo {
+        let node: NodeModel | ConnectorModel = symbol as NodeModel | ConnectorModel;
+        let shapeSymbolInfo: SymbolPaletteInfoModel = node.symbolInfo;
+        if (shapeSymbolInfo) {
+        symbolInfo.description = shapeSymbolInfo.description || this.symbolInfo.description;
+        symbolInfo.fit = shapeSymbolInfo.fit || this.symbolInfo.fit;
+        symbolInfo.height = shapeSymbolInfo.height || this.symbolInfo.height;
+        symbolInfo.width = shapeSymbolInfo.width || this.symbolInfo.width;
+        symbolInfo.tooltip = shapeSymbolInfo.tooltip || this.symbolInfo.tooltip;
+        symbolInfo.template = shapeSymbolInfo.template || this.symbolInfo.template;
+        }
+        return symbolInfo;
+    }
     private getContainer(obj: Node, container: Container): Container {
         container.measureChildren = false;
         let bounds: Rect;

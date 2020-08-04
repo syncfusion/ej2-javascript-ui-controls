@@ -60,7 +60,8 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
         return isNullOrUndefined(start) ? columns : columns.slice(start, end);
     }
 
-    public generateRows(input: Object[] | Group, args?: Object, start?: number, end?: number): Row<AggregateColumnModel>[] {
+    public generateRows(input: Object[] | Group, args?: Object, start?: number, end?: number,
+                        columns?: Column[]): Row<AggregateColumnModel>[] {
         if ((input as Object[]).length === 0) {
             if (args === undefined || !(args as ReturnType).count) {
                 return [];
@@ -74,14 +75,14 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
                 this.getGeneratedRow(
                     row[i], data[i],
                     args ? (<SummaryData>args).level : undefined, start, end,
-                    args ? (<SummaryData>args).parentUid : undefined));
+                    args ? (<SummaryData>args).parentUid : undefined, columns));
         }
         return rows;
     }
 
     public getGeneratedRow(
         summaryRow: AggregateRowModel,
-        data: Object, raw: number, start: number, end: number, parentUid?: string): Row<AggregateColumnModel> {
+        data: Object, raw: number, start: number, end: number, parentUid?: string, columns?: Column[]): Row<AggregateColumnModel> {
         let tmp: Cell<AggregateColumnModel>[] = [];
         let indents: string[] = this.getIndentByLevel(raw);
         let isDetailGridAlone: boolean = !isNullOrUndefined(this.parent.childGrid);
@@ -90,7 +91,7 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
             indents = ['e-indentcelltop'];
         }
 
-        let values: Column[] = this.getColumns(start, end);
+        let values: Column[] = columns ? columns : this.getColumns(start, end);
         for (let i: number = 0; i < values.length; i++) {
             tmp.push(
                 this.getGeneratedCell(

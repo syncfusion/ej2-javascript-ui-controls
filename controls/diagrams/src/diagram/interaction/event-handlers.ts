@@ -765,10 +765,10 @@ export class DiagramEventHandler {
             }
             if (!touches) { evt.preventDefault(); }
             this.diagram.currentDrawingObject = undefined; let selector: SelectorModel = this.diagram.selectedItems;
-            let disbleRenderSelector:boolean=false;
-            if(this.commandHandler.isUserHandle(this.currentPosition)){
-                if(this.isForeignObject(evt.target as HTMLElement)){
-                    disbleRenderSelector=true;
+            let disbleRenderSelector: boolean = false;
+            if (this.commandHandler.isUserHandle(this.currentPosition)) {
+                if (this.isForeignObject(evt.target as HTMLElement)) {
+                    disbleRenderSelector = true;
                 }
             }
             if (!this.inAction && selector.wrapper && selector.userHandles.length > 0 && !disbleRenderSelector) {
@@ -1501,13 +1501,30 @@ export class DiagramEventHandler {
         let wrapper: DiagramElement;
         if (obj) {
             wrapper = this.diagram.findElementUnderMouse(obj, this.currentPosition, padding);
-            if (wrapper && (obj as Node).ports && (obj as Node).ports.length &&
-                !checkPort(obj, wrapper) && (source instanceof Selector) && source.connectors.length) {
-                let currentConnector: ConnectorModel = source.connectors[0];
-                if ((currentConnector.constraints & ConnectorConstraints.ConnectToNearByPort) &&
-                    !(currentConnector.constraints & ConnectorConstraints.ConnectToNearByNode)) {
-                    wrapper = this.diagram.findElementUnderMouse(obj, this.currentPosition, 0);
-                    if (!wrapper) { obj = null; }
+            let currentConnector: ConnectorModel;
+            let nearNode: IElement;
+            let i: number;
+            if ((wrapper &&  (obj as Node).ports &&  (obj as Node).ports.length && !checkPort(obj, wrapper) || !wrapper ||
+            !(obj as Node)) && objects && objects.length && (source instanceof Selector)) {
+                currentConnector = source.connectors[0];
+                for (i = objects.length - 1; i >= 0; i--) {
+                    nearNode = objects[i];
+                    if ((nearNode instanceof Node) && currentConnector && currentConnector.connectionPadding ) {
+                        obj = nearNode;
+                        wrapper = this.diagram.findElementUnderMouse(obj, this.currentPosition, padding);
+                        if (((currentConnector.constraints & ConnectorConstraints.ConnectToNearByPort) && (obj as Node) &&
+                        (obj as Node).ports && (obj as Node).ports.length && checkPort(obj, wrapper))) {
+                            break;
+                        }
+                        if ((nearNode instanceof Node) && currentConnector && currentConnector.connectionPadding
+                        && nearNode.wrapper.outerBounds.containsPoint(this.currentPosition) &&
+                        (currentConnector.constraints & ConnectorConstraints.ConnectToNearByNode) &&
+                        !(currentConnector.constraints & ConnectorConstraints.ConnectToNearByPort)) {
+                            obj = nearNode;
+                            wrapper = this.diagram.findElementUnderMouse(obj, this.currentPosition, 0);
+                            break;
+                        }
+                    }
                 }
             }
         }
@@ -1523,6 +1540,7 @@ export class DiagramEventHandler {
         args.moveTouches = this.touchMoveList;
         return args;
     }
+
     /** @private */
     public resetTool(): void {
         this.action = 'Select';
@@ -1970,7 +1988,7 @@ class ObjectFinder {
         let container: Container; let bounds: Rect; let child: DiagramElement; let matrix: Matrix;
         let endPadding: number = (source && (source instanceof Connector) &&
             ((source.constraints & ConnectorConstraints.ConnectToNearByNode) ||
-            (source.constraints & ConnectorConstraints.ConnectToNearByPort)) && source.connectionPadding) || 0;
+                (source.constraints & ConnectorConstraints.ConnectToNearByPort)) && source.connectionPadding) || 0;
         let objArray: Object[] = diagram.spatialSearch.findObjects(
             new Rect(pt.x - 50 - endPadding, pt.y - 50 - endPadding, 100 + endPadding, 100 + endPadding));
         let layerObjTable: {} = {}; let layerTarger: (NodeModel | ConnectorModel)[];

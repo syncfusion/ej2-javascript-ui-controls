@@ -563,3 +563,18 @@ export enum ErrorCorrectionLevel {
      */
     High = 30
 }
+
+/**
+ * Defines the format of the barcode to be exported
+ * JPG - Barcode will be exported as JPG file.
+ * PNG - Barcode will be exported as PNG file.
+ * @IgnoreSingular
+ */
+ export type BarcodeExportType  =
+    /** Barcode will be exported as JPG file. */
+    'JPG' |
+
+    /** Barcode will be exported as PNG file */
+    'PNG';
+
+ 

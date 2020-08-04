@@ -183,6 +183,10 @@ export class DocumentHelper {
     /**
      * @private
      */
+    public isTouchMoved: boolean = false;
+    /**
+     * @private
+     */
     public useTouchSelectionMark: boolean = false;
     /**
      * @private
@@ -447,6 +451,10 @@ export class DocumentHelper {
     /**
      * @private
      */
+    public isMobileDevice: boolean = false;
+    /**
+     * @private
+     */
     public visibleBoundsIn: Rect;
 
     /**
@@ -663,6 +671,7 @@ export class DocumentHelper {
         this.bookmarks = new Dictionary<string, BookmarkElementBox>();
         this.editRanges = new Dictionary<string, EditRangeStartElementBox[]>();
         this.isIosDevice = /Mac|iPad|iPod/i.test(navigator.userAgent);
+        this.isMobileDevice = /Android|Windows Phone|webOS/i.test(navigator.userAgent);
         this.formFillPopup = new FormFieldPopUp(this.owner);
     }
     private initalizeStyles(): void {
@@ -779,6 +788,7 @@ export class DocumentHelper {
         characterFormat.baselineAlignment = 'Normal';
         characterFormat.highlightColor = 'NoColor';
         characterFormat.fontColor = '#000000';
+        characterFormat.allCaps = false;
     }
     private setDefaultParagraphValue(paragraphFormat: WParagraphFormat): void {
         paragraphFormat.leftIndent = 0;
@@ -1370,7 +1380,7 @@ export class DocumentHelper {
      * @private
      */
     public updateFocus = (): void => {
-        if (this.selection) {
+        if (this.selection && !(this.isMobileDevice && this.owner.isReadOnly)) {
             if (!Browser.isDevice) {
                 this.iframe.focus();
             }
@@ -1520,7 +1530,7 @@ export class DocumentHelper {
     private initTouchEllipse(): void {
         let style: string = 'height: 30px;width: 30px;position: absolute;background-color: transparent;margin: 0px;padding: 0px;z-index:5';
         // tslint:disable-next-line:max-line-length
-        let ellipse: string = ' height: 12px;width: 12px;border-radius: 50%;background-color: white;position: absolute;margin: 0px 6px 0px 6px;border-width: 2px;border-style: solid;border-color: #000000;';
+        let ellipse: string = ' height: 12px;width: 12px;border-radius: 50%;background-color: white;position: absolute;margin: 0px 6px 0px 6px;border-width: 2px;border-style: solid;border-color: #000000;box-sizing: unset;';
         this.touchStart = createElement('div', { className: 'e-touch-ellipse', styles: style });
         let start: HTMLElement = createElement('div', { styles: ellipse });
         this.touchEnd = createElement('div', { className: 'e-touch-ellipse', styles: style });
@@ -1996,6 +2006,7 @@ export class DocumentHelper {
      */
     public onTouchStartInternal = (event: Event): void => {
         if (this.selection) {
+            this.isTouchMoved = false;
             this.isCompositionStart = false;
             this.isCompositionEnd = false;
             this.isCompositionUpdated = false;
@@ -2064,7 +2075,7 @@ export class DocumentHelper {
      * @private
      */
     public onLongTouch = (event: TouchEvent): void => {
-        if (isNullOrUndefined(this.owner) || isNullOrUndefined(this.viewerContainer)) {
+        if (isNullOrUndefined(this.owner) || isNullOrUndefined(this.viewerContainer) || this.isTouchMoved || event.touches.length !== 1) {
             return;
         }
         let point: Point = this.getTouchOffsetValue(event);
@@ -2105,6 +2116,7 @@ export class DocumentHelper {
      * @private
      */
     public onTouchMoveInternal = (event: TouchEvent): void => {
+        this.isTouchMoved = true;
         let touch: TouchList = (event as TouchEvent).touches;
         let cursorPoint: Point;
         if (!isNullOrUndefined(this.selection)) {
@@ -2136,6 +2148,7 @@ export class DocumentHelper {
                     this.isSelectionChangedOnMouseMoved = true;
                 }
                 this.selection.checkForCursorVisibility();
+                this.updateTouchMarkPosition();
             }
         }
         if (touch.length > 1) {
@@ -2181,12 +2194,14 @@ export class DocumentHelper {
             let point: Point = this.getTouchOffsetValue(event);
             let touchPoint: Point = this.owner.viewer.findFocusedPage(point, true);
             if (event.changedTouches.length === 1) {
-                this.updateSelectionOnTouch(point, touchPoint);
-                if (!isNullOrUndefined(this.currentPage) && !isNullOrUndefined(this.selection.start)
-                    && !this.isSelectionChangedOnMouseMoved && (this.selection.isEmpty ||
-                        this.selection.isImageField() && (!this.owner.enableImageResizerMode ||
-                            this.owner.enableImageResizerMode && !this.owner.imageResizerModule.isImageResizing))) {
-                    this.selection.navigateHyperLinkOnEvent(touchPoint, true);
+                if (!this.isTouchMoved || (this.owner.enableImageResizerMode && this.owner.imageResizerModule.isImageResizing)) {
+                    this.updateSelectionOnTouch(point, touchPoint);
+                    if (!isNullOrUndefined(this.currentPage) && !isNullOrUndefined(this.selection.start)
+                        && !this.isSelectionChangedOnMouseMoved && (this.selection.isEmpty ||
+                            this.selection.isImageField() && (!this.owner.enableImageResizerMode ||
+                                this.owner.enableImageResizerMode && !this.owner.imageResizerModule.isImageResizing))) {
+                        this.selection.navigateHyperLinkOnEvent(touchPoint, true);
+                    }
                 }
                 this.isMouseDown = false;
                 this.touchDownOnSelectionMark = 0;

@@ -8848,7 +8848,7 @@ let RecurrenceEditor = class RecurrenceEditor extends Component {
     }
     applyCustomClass(cssClass) {
         if (cssClass) {
-            addClass([this.element], cssClass);
+            addClass([this.element], cssClass.split(' '));
         }
     }
     initialize() {
@@ -9668,7 +9668,12 @@ let RecurrenceEditor = class RecurrenceEditor extends Component {
                     this.rtlClass(newProp.enableRtl);
                     break;
                 case 'cssClass':
-                    this.applyCustomClass(newProp.cssClass);
+                    if (oldProp.cssClass) {
+                        removeClass([this.element], oldProp.cssClass.split(' '));
+                    }
+                    if (newProp.cssClass) {
+                        addClass([this.element], newProp.cssClass.split(' '));
+                    }
                     break;
                 case 'selectedType':
                     this.repeatType.setProperties({ index: this.selectedType });
@@ -11862,7 +11867,7 @@ class Render {
             return;
         }
         // tslint:disable:no-any
-        this.parent.trigger(actionFailure, { error: isBlazor() ? e.error.toString() : e }, () => this.parent.hideSpinner());
+        this.parent.trigger(actionFailure, { error: isBlazor() ? e.error ? e.error.toString() : e.toString() : e }, () => this.parent.hideSpinner());
         // tslint:disable:no-any
     }
 }
@@ -13925,7 +13930,10 @@ let Schedule = class Schedule extends Component {
             removeClasses.push(DEVICE_CLASS);
         }
         if (this.cssClass) {
-            addClasses.push(this.cssClass);
+            let cssClass = this.cssClass.split(' ');
+            for (let cls of cssClass) {
+                addClasses.push(cls);
+            }
         }
         classList(this.element, addClasses, removeClasses);
         this.validateDate();
@@ -15046,10 +15054,10 @@ let Schedule = class Schedule extends Component {
                 break;
             case 'cssClass':
                 if (oldProp.cssClass) {
-                    removeClass([this.element], oldProp.cssClass);
+                    removeClass([this.element], oldProp.cssClass.split(' '));
                 }
                 if (newProp.cssClass) {
-                    addClass([this.element], newProp.cssClass);
+                    addClass([this.element], newProp.cssClass.split(' '));
                 }
                 break;
             case 'hideEmptyAgendaDays':
@@ -16763,6 +16771,9 @@ class Resize extends ActionBase {
             }
         }
         if (isLeft) {
+            if ((this.actionObj.event[this.parent.eventFields.endTime].getTime() - resizeTime.getTime()) <= 0) {
+                resizeTime = new Date(this.actionObj.event[this.parent.eventFields.startTime].getTime());
+            }
             this.actionObj.start = this.parent.activeViewOptions.timeScale.enable ? this.calculateIntervalTime(resizeTime) : resizeTime;
         }
         else {

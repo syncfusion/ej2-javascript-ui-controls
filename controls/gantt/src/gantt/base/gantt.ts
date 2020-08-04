@@ -2262,6 +2262,11 @@ export class Gantt extends Component<HTMLElement>
                 case 'showOverAllocation':
                     this.updateOverAllocationCotainer();
                     break;
+                case 'viewType':
+                    if (newProp.viewType === 'ProjectView' || newProp.viewType === 'ResourceView') {
+                        this.refresh();
+                    }
+                    break;
             }
         }
         if (isRefresh) {

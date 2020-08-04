@@ -461,6 +461,9 @@ class WUniqueFormat {
         if (property === 'fontSizeBidi') {
             return 15;
         }
+        if (property === 'allCaps') {
+            return 16;
+        }
         return 0;
     }
     static getParaFormatPropertyType(property) {
@@ -615,6 +618,9 @@ class WUniqueFormat {
             return false;
         }
         if (this.isNotEqual('italicBidi', source, modifiedProperty, modifiedValue, 2)) {
+            return false;
+        }
+        if (this.isNotEqual('allCaps', source, modifiedProperty, modifiedValue, 2)) {
             return false;
         }
         return true;
@@ -3782,6 +3788,12 @@ class WCharacterFormat {
     set fontFamilyBidi(value) {
         this.setPropertyValue('fontFamilyBidi', value);
     }
+    get allCaps() {
+        return this.getPropertyValue('allCaps');
+    }
+    set allCaps(value) {
+        this.setPropertyValue('allCaps', value);
+    }
     getPropertyValue(property) {
         if (!this.hasValue(property)) {
             let charStyleValue = this.checkCharacterStyle(property);
@@ -3937,6 +3949,7 @@ class WCharacterFormat {
         this.addUniqueCharacterFormat('fontSizeBidi', property, propValue, uniqueCharFormatTemp);
         this.addUniqueCharacterFormat('boldBidi', property, propValue, uniqueCharFormatTemp);
         this.addUniqueCharacterFormat('italicBidi', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('allCaps', property, propValue, uniqueCharFormatTemp);
         // tslint:disable-next-line:max-line-length
         this.uniqueCharacterFormat = WCharacterFormat.uniqueCharacterFormats.addUniqueFormat(uniqueCharFormatTemp, WCharacterFormat.uniqueFormatType);
     }
@@ -3999,6 +4012,9 @@ class WCharacterFormat {
             case 'fontFamilyBidi':
                 value = 'Calibri';
                 break;
+            case 'allCaps':
+                value = false;
+                break;
         }
         return value;
     }
@@ -4012,7 +4028,8 @@ class WCharacterFormat {
             && this.fontColor === format.fontColor
             && this.strikethrough === format.strikethrough
             && this.highlightColor === format.highlightColor && this.bidi === format.bidi
-            && this.bdo === format.bdo);
+            && this.bdo === format.bdo)
+            && this.allCaps === format.allCaps;
     }
     isSameFormat(format) {
         return this.baseCharStyle === format.baseCharStyle &&
@@ -4131,6 +4148,9 @@ class WCharacterFormat {
         }
         if (isNullOrUndefined(this.getValue('bdo'))) {
             this.bdo = format.getValue('bdo');
+        }
+        if (isNullOrUndefined(this.getValue('allCaps'))) {
+            this.allCaps = format.getValue('allCaps');
         }
     }
 }
@@ -4413,6 +4433,7 @@ class HelperMethods {
         characterFormat.italicBidi = isInline ? format.italicBidi : format.getValue('italicBidi');
         characterFormat.fontSizeBidi = isInline ? format.fontSizeBidi : format.getValue('fontSizeBidi');
         characterFormat.fontFamilyBidi = isInline ? format.fontFamilyBidi : format.getValue('fontFamilyBidi');
+        characterFormat.allCaps = isInline ? format.allCaps : format.getValue('allCaps');
     }
     static toWriteInline(format, propertyName) {
         if (!isNullOrUndefined(format.ownerBase) && (format.ownerBase instanceof ElementBox)) {
@@ -12804,6 +12825,9 @@ class Renderer {
         }
         let isRTL = format.bidi || this.documentHelper.textHelper.isRTLText(elementBox.text);
         text = this.documentHelper.textHelper.setText(text, isRTL, format.bdo, true);
+        if (format.allCaps) {
+            text = text.toUpperCase();
+        }
         // tslint:disable-next-line:max-line-length
         this.pageContext.fillText(text, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), scaledWidth);
         // tslint:disable-next-line:max-line-length
@@ -13673,6 +13697,9 @@ class TextHelper {
         fontFamily = characterFormat.fontFamily;
         fontSize = fontSize === 0 ? 0.5 : fontSize / (characterFormat.baselineAlignment === 'Normal' ? 1 : 1.5);
         this.context.font = bold + ' ' + italic + ' ' + fontSize + 'pt' + ' ' + fontFamily;
+        if (characterFormat.allCaps) {
+            text = text.toUpperCase();
+        }
         return this.context.measureText(text).width;
     }
     setText(textToRender, isBidi, bdo, isRender) {
@@ -15559,6 +15586,10 @@ class DocumentHelper {
         /**
          * @private
          */
+        this.isTouchMoved = false;
+        /**
+         * @private
+         */
         this.useTouchSelectionMark = false;
         /**
          * @private
@@ -15733,6 +15764,10 @@ class DocumentHelper {
         /**
          * @private
          */
+        this.isMobileDevice = false;
+        /**
+         * @private
+         */
         this.isFormFilling = false;
         this.onIframeLoad = () => {
             if (!isNullOrUndefined(this.iframe) && this.iframe.contentDocument.body.children.length === 0) {
@@ -15894,7 +15929,7 @@ class DocumentHelper {
          * @private
          */
         this.updateFocus = () => {
-            if (this.selection) {
+            if (this.selection && !(this.isMobileDevice && this.owner.isReadOnly)) {
                 if (!Browser.isDevice) {
                     this.iframe.focus();
                 }
@@ -16328,6 +16363,7 @@ class DocumentHelper {
          */
         this.onTouchStartInternal = (event) => {
             if (this.selection) {
+                this.isTouchMoved = false;
                 this.isCompositionStart = false;
                 this.isCompositionEnd = false;
                 this.isCompositionUpdated = false;
@@ -16398,7 +16434,7 @@ class DocumentHelper {
          * @private
          */
         this.onLongTouch = (event) => {
-            if (isNullOrUndefined(this.owner) || isNullOrUndefined(this.viewerContainer)) {
+            if (isNullOrUndefined(this.owner) || isNullOrUndefined(this.viewerContainer) || this.isTouchMoved || event.touches.length !== 1) {
                 return;
             }
             let point = this.getTouchOffsetValue(event);
@@ -16440,6 +16476,7 @@ class DocumentHelper {
          * @private
          */
         this.onTouchMoveInternal = (event) => {
+            this.isTouchMoved = true;
             let touch = event.touches;
             let cursorPoint;
             if (!isNullOrUndefined(this.selection)) {
@@ -16471,6 +16508,7 @@ class DocumentHelper {
                         this.isSelectionChangedOnMouseMoved = true;
                     }
                     this.selection.checkForCursorVisibility();
+                    this.updateTouchMarkPosition();
                 }
             }
             if (touch.length > 1) {
@@ -16519,12 +16557,14 @@ class DocumentHelper {
                 let point = this.getTouchOffsetValue(event);
                 let touchPoint = this.owner.viewer.findFocusedPage(point, true);
                 if (event.changedTouches.length === 1) {
-                    this.updateSelectionOnTouch(point, touchPoint);
-                    if (!isNullOrUndefined(this.currentPage) && !isNullOrUndefined(this.selection.start)
-                        && !this.isSelectionChangedOnMouseMoved && (this.selection.isEmpty ||
-                        this.selection.isImageField() && (!this.owner.enableImageResizerMode ||
-                            this.owner.enableImageResizerMode && !this.owner.imageResizerModule.isImageResizing))) {
-                        this.selection.navigateHyperLinkOnEvent(touchPoint, true);
+                    if (!this.isTouchMoved || (this.owner.enableImageResizerMode && this.owner.imageResizerModule.isImageResizing)) {
+                        this.updateSelectionOnTouch(point, touchPoint);
+                        if (!isNullOrUndefined(this.currentPage) && !isNullOrUndefined(this.selection.start)
+                            && !this.isSelectionChangedOnMouseMoved && (this.selection.isEmpty ||
+                            this.selection.isImageField() && (!this.owner.enableImageResizerMode ||
+                                this.owner.enableImageResizerMode && !this.owner.imageResizerModule.isImageResizing))) {
+                            this.selection.navigateHyperLinkOnEvent(touchPoint, true);
+                        }
                     }
                     this.isMouseDown = false;
                     this.touchDownOnSelectionMark = 0;
@@ -16630,6 +16670,7 @@ class DocumentHelper {
         this.bookmarks = new Dictionary();
         this.editRanges = new Dictionary();
         this.isIosDevice = /Mac|iPad|iPod/i.test(navigator.userAgent);
+        this.isMobileDevice = /Android|Windows Phone|webOS/i.test(navigator.userAgent);
         this.formFillPopup = new FormFieldPopUp(this.owner);
     }
     /**
@@ -16921,6 +16962,7 @@ class DocumentHelper {
         characterFormat.baselineAlignment = 'Normal';
         characterFormat.highlightColor = 'NoColor';
         characterFormat.fontColor = '#000000';
+        characterFormat.allCaps = false;
     }
     setDefaultParagraphValue(paragraphFormat) {
         paragraphFormat.leftIndent = 0;
@@ -17430,7 +17472,7 @@ class DocumentHelper {
     initTouchEllipse() {
         let style = 'height: 30px;width: 30px;position: absolute;background-color: transparent;margin: 0px;padding: 0px;z-index:5';
         // tslint:disable-next-line:max-line-length
-        let ellipse = ' height: 12px;width: 12px;border-radius: 50%;background-color: white;position: absolute;margin: 0px 6px 0px 6px;border-width: 2px;border-style: solid;border-color: #000000;';
+        let ellipse = ' height: 12px;width: 12px;border-radius: 50%;background-color: white;position: absolute;margin: 0px 6px 0px 6px;border-width: 2px;border-style: solid;border-color: #000000;box-sizing: unset;';
         this.touchStart = createElement('div', { className: 'e-touch-ellipse', styles: style });
         let start = createElement('div', { styles: ellipse });
         this.touchEnd = createElement('div', { className: 'e-touch-ellipse', styles: style });
@@ -28611,6 +28653,9 @@ class SfdtReader {
             if (!isNullOrUndefined(sourceFormat.revisionIds) && sourceFormat.revisionIds.length > 0) {
                 this.checkAndApplyRevision(sourceFormat, characterFormat);
             }
+            if (!isNullOrUndefined(sourceFormat.allCaps)) {
+                characterFormat.allCaps = sourceFormat.allCaps;
+            }
         }
     }
     getColor(color) {
@@ -28776,6 +28821,7 @@ class SelectionCharacterFormat {
         this.highlightColorIn = undefined;
         this.fontSizeIn = 0;
         this.fontColorIn = undefined;
+        this.allCapsIn = undefined;
         /**
          * @private
          */
@@ -28962,6 +29008,26 @@ class SelectionCharacterFormat {
         this.highlightColorIn = value;
         this.notifyPropertyChanged('highlightColor');
     }
+    /**
+     * Gets or sets the allCaps formatting of selected contents.
+     * @aspType bool
+     * @blazorType bool
+     */
+    get allCaps() {
+        return this.allCapsIn;
+    }
+    /**
+     * Sets the allCaps formatting of selected contents.
+     * @aspType bool
+     * @blazorType bool
+     */
+    set allCaps(value) {
+        if (value === this.allCapsIn) {
+            return;
+        }
+        this.allCapsIn = value;
+        this.notifyPropertyChanged('allCaps');
+    }
     getPropertyValue(property) {
         switch (property) {
             case 'bold':
@@ -28985,6 +29051,8 @@ class SelectionCharacterFormat {
                 return this.underline;
             case 'fontColor':
                 return this.fontColor;
+            case 'allCaps':
+                return this.allCaps;
             default:
                 return undefined;
         }
@@ -29029,6 +29097,7 @@ class SelectionCharacterFormat {
         this.italicBidi = format.italicBidi;
         this.fontFamilyBidi = format.fontFamilyBidi;
         this.fontSizeBidi = format.fontSizeBidi;
+        this.allCaps = format.allCaps;
     }
     /**
      * Combines the format.
@@ -29081,6 +29150,9 @@ class SelectionCharacterFormat {
         if (!isNullOrUndefined(this.bdo) && this.bdo !== format.bdo) {
             this.bdo = undefined;
         }
+        if (!isNullOrUndefined(this.allCaps) && this.allCaps !== format.allCaps) {
+            this.allCaps = undefined;
+        }
     }
     /**
      * Clones the format.
@@ -29105,6 +29177,7 @@ class SelectionCharacterFormat {
         this.italicBidi = selectionCharacterFormat.italicBidi;
         this.fontSizeBidi = selectionCharacterFormat.fontSizeBidi;
         this.fontFamilyBidi = selectionCharacterFormat.fontFamilyBidi;
+        this.allCaps = selectionCharacterFormat.allCaps;
     }
     /**
      * Checks whether current format is equal to the source format or not.
@@ -29121,7 +29194,8 @@ class SelectionCharacterFormat {
             && this.highlightColor === format.highlightColor
             && this.italic === format.italic
             && this.baselineAlignment === format.baselineAlignment
-            && this.fontColor === format.fontColor);
+            && this.fontColor === format.fontColor
+            && this.allCaps === format.allCaps);
     }
     /**
      * Clears the format.
@@ -29145,6 +29219,7 @@ class SelectionCharacterFormat {
         this.italicBidi = undefined;
         this.fontFamilyBidi = undefined;
         this.fontSizeBidi = undefined;
+        this.allCapsIn = undefined;
     }
     /**
      * Destroys the maintained resources.
@@ -29169,6 +29244,7 @@ class SelectionCharacterFormat {
         this.italicBidi = undefined;
         this.fontFamilyBidi = undefined;
         this.fontSizeBidi = undefined;
+        this.allCapsIn = undefined;
     }
 }
 /**
@@ -31712,6 +31788,12 @@ class HtmlExport {
             charStyle += 'text-decoration';
             charStyle += ':';
             charStyle += 'underline';
+            charStyle += ';';
+        }
+        if (!isNullOrUndefined(characterFormat.allCaps)) {
+            charStyle += 'text-transform';
+            charStyle += ':';
+            charStyle += 'uppercase';
             charStyle += ';';
         }
         propertyValue = characterFormat.fontSize;
@@ -34887,6 +34969,15 @@ class Selection {
     toggleItalic() {
         if (this.owner.editorModule) {
             this.owner.editorModule.toggleItalic();
+        }
+    }
+    /**
+     * Toggles the allCaps property of selected contents.
+     * @private
+     */
+    toggleAllCaps() {
+        if (this.owner.editorModule) {
+            this.owner.editorModule.toggleAllCaps();
         }
     }
     /**
@@ -53642,6 +53733,9 @@ class Editor {
             case 'ClearCharacterFormat':
                 this.updateCharacterFormat(undefined, values);
                 break;
+            case 'allCaps':
+                this.updateCharacterFormat('allCaps', values);
+                break;
         }
         this.reLayout(this.documentHelper.selection);
     }
@@ -53851,6 +53945,16 @@ class Editor {
         }
         let value = this.getCurrentSelectionValue('italic');
         this.selection.characterFormat.italic = value;
+    }
+    /**
+     * Toggle All Caps formatting for the selected content.
+     */
+    toggleAllCaps() {
+        if (this.documentHelper.owner.isReadOnlyMode && !this.selection.isInlineFormFillMode()) {
+            return;
+        }
+        let value = this.getCurrentSelectionValue('allCaps');
+        this.selection.characterFormat.allCaps = value;
     }
     getCurrentSelectionValue(property) {
         let value = false;
@@ -54229,6 +54333,9 @@ class Editor {
         }
         else if (property === 'styleName') {
             format.baseCharStyle = value;
+        }
+        else if (property === 'allCaps') {
+            format.allCaps = value;
         }
     }
     /**
@@ -58438,6 +58545,7 @@ class Editor {
             }
             if (elementBox.revisions.length > 0) {
                 let revision = this.retrieveRevisionInOder(elementBox);
+                let index = this.owner.revisions.changes.indexOf(revision);
                 if (revision.revisionType === 'Insertion') {
                     if (this.isRevisionMatched(elementBox, undefined)) {
                         // inserted revision same author as delete revision so we can delete
@@ -58511,6 +58619,25 @@ class Editor {
                     }
                 }
                 else if (revision.revisionType === 'Deletion') {
+                    if (index !== -1 && revision.author !== this.owner.currentUser) {
+                        let range = revision.range;
+                        let startOff = range[0].line.getOffset(range[0], 0);
+                        let lastEle = range[range.length - 1];
+                        let endOff = lastEle.line.getOffset(lastEle, lastEle.length);
+                        if (startOff === indexInInline && endOff === endOffset) {
+                            elementBox.revisions.splice(elementBox.revisions.indexOf(revision), 1);
+                            if (!this.checkToCombineRevisionsInSides(elementBox, 'Deletion')) {
+                                this.insertRevision(elementBox, 'Deletion');
+                                this.updateLastElementRevision(elementBox);
+                            }
+                            else {
+                                this.combineElementRevision(elementBox.revisions, elementBox.revisions);
+                            }
+                            if (elementBox.line.getOffset(elementBox, 0) === startOff) {
+                                this.owner.revisions.changes.splice(index, 1);
+                            }
+                        }
+                    }
                     if (endOffset === 1) {
                         if (isDelete) {
                             this.selection.start.moveNextPosition();
@@ -58522,8 +58649,29 @@ class Editor {
                         }
                     }
                     else {
-                        this.updateCursorForInsertRevision(elementBox, indexInInline, endOffset);
-                        //this.handleDeleteBySplitting(elementBox, indexInInline, endOffset);
+                        if (this.isRevisionMatched(elementBox, 'Deletion')) {
+                            this.updateCursorForInsertRevision(elementBox, indexInInline, endOffset);
+                        }
+                        else {
+                            let rangeIndex = revision.range.indexOf(elementBox);
+                            let endOff = elementBox.line.getOffset(elementBox, elementBox.length);
+                            if (endOff >= endOffset && (revision.range.length > (rangeIndex + 1))) {
+                                this.updateRevisionForSpittedTextElement(elementBox, revision.range[(rangeIndex + 1)]);
+                                revision.range.splice(revision.range.indexOf(elementBox), 1);
+                                this.toCombineOrInsertRevision(elementBox, 'Deletion');
+                            }
+                            else if (revision.range.length === 1 || indexInInline === 0) {
+                                this.handleDeleteBySplitting(elementBox, indexInInline, endOffset);
+                                if (rangeIndex !== -1 && revision.range.length !== 1) {
+                                    this.updateRevisionForSpittedTextElement(revision.range[(rangeIndex - 1)], revision.range[rangeIndex]);
+                                    revision.range.splice(revision.range.indexOf(elementBox), 1);
+                                }
+                            }
+                            else {
+                                revision.range.splice(revision.range.indexOf(elementBox), 1);
+                                this.toCombineOrInsertRevision(elementBox, 'Deletion');
+                            }
+                        }
                     }
                     this.updateLastElementRevision(elementBox);
                 }
@@ -58545,6 +58693,15 @@ class Editor {
             removedNode = this.removeCharacterInLine(elementBox, indexInInline, endOffset);
         }
         return removedNode;
+    }
+    toCombineOrInsertRevision(elementBox, type) {
+        if (!this.checkToCombineRevisionsInSides(elementBox, type)) {
+            this.insertRevision(elementBox, type);
+            this.updateLastElementRevision(elementBox);
+        }
+        else {
+            this.combineElementRevision(elementBox.revisions, elementBox.revisions);
+        }
     }
     /**
      * @private
@@ -70097,6 +70254,9 @@ class WordExport {
             writer.writeStartElement(undefined, 'rtl', this.wNamespace);
             writer.writeEndElement();
         }
+        if (characterFormat.allCaps) {
+            this.serializeBoolProperty(writer, 'caps', characterFormat.allCaps);
+        }
         if (!isNullOrUndefined(characterFormat.strikethrough)) {
             switch (characterFormat.strikethrough) {
                 case 'SingleStrike':
@@ -76970,6 +77130,7 @@ class FontDialog {
         this.doublestrikethrough = undefined;
         this.superscript = undefined;
         this.subscript = undefined;
+        this.allcaps = undefined;
         //Character Format Property
         this.bold = undefined;
         this.italic = undefined;
@@ -76979,6 +77140,7 @@ class FontDialog {
         this.fontSize = undefined;
         this.fontFamily = undefined;
         this.fontColor = undefined;
+        this.allCaps = undefined;
         /**
          * @private
          */
@@ -77058,6 +77220,12 @@ class FontDialog {
             if (this.documentHelper.selection.caret.style.display !== 'none') {
                 this.documentHelper.selection.caret.style.display = 'none';
             }
+            if (characterFormat.allCaps) {
+                this.allcaps.checked = true;
+            }
+            else {
+                this.allcaps.checked = false;
+            }
         };
         /**
          * @private
@@ -77108,6 +77276,9 @@ class FontDialog {
             }
             if (!isNullOrUndefined(this.fontFamily)) {
                 format.fontFamily = this.fontFamily;
+            }
+            if (!isNullOrUndefined(this.allCaps)) {
+                format.allCaps = this.allCaps;
             }
             if (!this.characterFormat) {
                 this.onCharacterFormat(this.documentHelper.selection, format);
@@ -77170,6 +77341,15 @@ class FontDialog {
                 this.baselineAlignment = 'Normal';
             }
         };
+        this.allcapsUpdate = (args) => {
+            this.enableCheckBoxProperty(args);
+            if (args.checked) {
+                this.allCaps = true;
+            }
+            else {
+                this.allCaps = false;
+            }
+        };
         this.documentHelper = documentHelper;
     }
     /**
@@ -77225,6 +77405,7 @@ class FontDialog {
         let superScriptElement;
         let subScriptElement;
         let doubleStrikeThroughElement;
+        let allCapsElement;
         let id = this.documentHelper.owner.containerId;
         this.target = createElement('div', { id: id + '_insertFontDialog', className: 'e-de-font-dlg' });
         let fontDiv = this.getFontDiv(locale, isRtl);
@@ -77266,6 +77447,11 @@ class FontDialog {
         doubleStrikeThroughElement = this.createInputElement('checkbox', this.target.id + '_doubleStrikeThrough', '');
         fontEffectSubDiv2.appendChild(doubleStrikeThroughElement);
         fontEffectsDiv.appendChild(fontEffectSubDiv2);
+        // tslint:disable-next-line:max-line-length
+        let fontEffectSubDiv3 = createElement('div', { className: 'e-de-font-checkbox-transform-label e-de-font-checkbox-transform', id: id + '_fontEffectsSubDiv3' });
+        allCapsElement = this.createInputElement('checkbox', this.target.id + '_allCaps', '');
+        fontEffectSubDiv3.appendChild(allCapsElement);
+        fontEffectsDiv.appendChild(fontEffectSubDiv3);
         this.target.appendChild(fontEffectsDiv);
         this.colorPicker = new ColorPicker({
             change: this.fontColorUpdate, value: '#000000', enableRtl: isRtl, locale: this.documentHelper.owner.locale
@@ -77298,6 +77484,13 @@ class FontDialog {
             enableRtl: isRtl
         });
         this.superscript.appendTo(superScriptElement);
+        this.allcaps = new CheckBox({
+            label: locale.getConstant('All caps'),
+            cssClass: 'e-de-font-content-label-caps',
+            change: this.allcapsUpdate,
+            enableRtl: isRtl
+        });
+        this.allcaps.appendTo(allCapsElement);
         if (isRtl) {
             fontEffectSubDiv2.classList.add('e-de-rtl');
             this.doublestrikethrough.cssClass = 'e-de-font-content-checkbox-label-rtl';
@@ -77467,6 +77660,7 @@ class FontDialog {
         this.doublestrikethrough.checked = false;
         this.superscript.checked = false;
         this.subscript.checked = false;
+        this.allcaps.checked = false;
         this.bold = undefined;
         this.italic = undefined;
         this.underline = undefined;
@@ -77531,6 +77725,10 @@ class FontDialog {
             this.subscript.destroy();
         }
         this.subscript = undefined;
+        if (this.allcaps) {
+            this.allcaps.destroy();
+        }
+        this.allcaps = undefined;
     }
 }
 /* tslint:enable:no-any */
@@ -84681,7 +84879,8 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
             'User': 'User',
             'View': 'View',
             'Insertion': 'Insertion',
-            'Deletion': 'Deletion'
+            'Deletion': 'Deletion',
+            'All caps': 'All caps'
         };
         this.documentHelper = new DocumentHelper(this);
         if (this.layoutType === 'Pages') {
@@ -86213,6 +86412,9 @@ __decorate([
 ], DocumentEditor.prototype, "commentEnd", void 0);
 __decorate([
     Event()
+], DocumentEditor.prototype, "beforeFileOpen", void 0);
+__decorate([
+    Event()
 ], DocumentEditor.prototype, "commentDelete", void 0);
 __decorate([
     Event()
@@ -86815,6 +87017,13 @@ class Toolbar$1 {
     }
     onFileChange() {
         let file = this.filePicker.files[0];
+        let filesize = file.size;
+        let check;
+        let eventArgs = { fileSize: filesize, isCanceled: check };
+        this.documentEditor.trigger('beforeFileOpen', eventArgs);
+        if (eventArgs.isCanceled) {
+            return;
+        }
         if (file) {
             if (file.name.substr(file.name.lastIndexOf('.')) === '.sfdt') {
                 let fileReader = new FileReader();
@@ -90380,7 +90589,8 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
             'Update Fields': 'Update Fields',
             'Update cross reference fields': 'Update cross reference fields',
             'Track Changes': 'Keep track of the changes made in the document',
-            'TrackChanges': 'Track Changes'
+            'TrackChanges': 'Track Changes',
+            'AllCaps': 'AllCaps'
         };
     }
     /**

@@ -14674,3 +14674,36 @@ describe('Barcode Control', () => {
     });
 
 });
+
+describe('QRCode export', () => {
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'QRCode' });
+        document.body.appendChild(ele);
+        barcode = new QRCodeGenerator({
+            width: '200px', height: '150px',
+            value: "ABCD",
+            displayText: { visibility: true, size: 9,  text: "ABCD"},
+        });
+        barcode.appendTo('#QRCode');
+    });
+
+    afterAll((): void => {
+        barcode.destroy();
+        ele.remove();
+    });
+    
+    it('QRcode export - return Base64 in PNG format',(done: Function) => {
+        barcode.exportAsBase64Image('PNG');
+        done()
+    });
+    it('QRcode export - return Base64 in JPG format', (done: Function) => {
+        barcode.exportAsBase64Image('JPG');
+        done()
+    });
+    it('QRCode export - Download the image in JPG format', (done: Function) => {
+        let svg: any; 
+        svg = barcode.exportImage('Export','JPG');
+        expect(svg).not.toBeNull();
+        done()
+    });
+});

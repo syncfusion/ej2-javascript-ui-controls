@@ -161,7 +161,11 @@ export class Render {
     public dataManagerFailure(e: { result: Object[] }): void {
         if (this.parent.isDestroyed) { return; }
         // tslint:disable:no-any
-        this.parent.trigger(events.actionFailure, { error: isBlazor() ? (e as any).error.toString() : e }, () => this.parent.hideSpinner());
+        this.parent.trigger(
+            events.actionFailure,
+            { error: isBlazor() ? (e as any).error ? (e as any).error.toString() : (e as any).toString() : e},
+            () => this.parent.hideSpinner()
+        );
         // tslint:disable:no-any
     }
 }

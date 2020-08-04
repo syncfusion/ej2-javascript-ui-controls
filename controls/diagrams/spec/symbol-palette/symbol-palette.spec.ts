@@ -1774,5 +1774,64 @@ describe('Symbol Palette', () => {
         });
         
     });
-
+    describe('Cancel support for symbol palette ', () => {
+        let symbolPalette: SymbolPalette
+        let ele: HTMLElement;
+        let clickedPalette: boolean;
+        beforeAll((): void => {
+            ele = createElement('div');
+            ele.appendChild(createElement('div', { id: 'symbolPalette', styles: 'width:25%;float:left;' }));
+            document.body.appendChild(ele);
+            symbolPalette = new SymbolPalette ({
+                palettes:  [
+                    {
+                        id: 'swimlaneShapes', expanded: true,
+                        title: 'Swimlane Shapes',
+                        symbols: [
+                            {
+                                id: 'stackCanvas1',
+                                shape: {
+                                    type: 'SwimLane',lanes: [
+                                        {
+                                            id: 'lane1',
+                                            style: { fill: '#f5f5f5'},height: 60, width: 150,
+                                                            header:{ width: 50, height: 50, style: {fill:'#C7D4DF'} },
+                                        }
+                                    ],
+                                    orientation: 'Horizontal', isLane: true
+                                },
+                                height: 60,
+                                width: 140,
+                                style: { fill: '#f5f5f5'},
+                                offsetX: 70,
+                                offsetY: 30,
+                            }
+                        ]
+                    }],
+                symbolHeight: 50, symbolWidth: 50,
+                symbolPreview: { width: 100, height: 100},
+                expandMode: 'Multiple',
+                height: '400px',
+                width: '200px',
+                paletteExpanding: function (args) 
+                {
+                    args.cancel = true;
+                }
+            });
+            symbolPalette.appendTo('#symbolPalette');
+        });
+        afterAll((): void => {
+            symbolPalette.destroy();
+            ele.remove();
+        });
+        it('Cancel support while expand collapse', (done: Function) => {
+            setTimeout(() => {
+            var paletteHeader : any = document.getElementsByClassName('e-acrdn-header')
+            paletteHeader[1].click();
+            clickedPalette = symbolPalette.palettes[0].expanded;
+            expect(clickedPalette === true).toBe(true);
+            done();
+            }, 100);
+        });
+    })
 });

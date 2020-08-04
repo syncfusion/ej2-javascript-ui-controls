@@ -760,7 +760,10 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             removeClasses.push(cls.DEVICE_CLASS);
         }
         if (this.cssClass) {
-            addClasses.push(this.cssClass);
+            let cssClass: string[] = this.cssClass.split(' ');
+            for (let cls of cssClass) {
+                addClasses.push(cls);
+            }
         }
         classList(this.element, addClasses, removeClasses);
         this.validateDate();
@@ -1929,8 +1932,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                 this.notify(events.uiUpdate, { module: 'scroll', properties: { width: newProp.width, height: newProp.height } });
                 break;
             case 'cssClass':
-                if (oldProp.cssClass) { removeClass([this.element], oldProp.cssClass); }
-                if (newProp.cssClass) { addClass([this.element], newProp.cssClass); }
+                if (oldProp.cssClass) { removeClass([this.element], oldProp.cssClass.split(' ')); }
+                if (newProp.cssClass) { addClass([this.element], newProp.cssClass.split(' ')); }
                 break;
             case 'hideEmptyAgendaDays':
             case 'agendaDaysCount':

@@ -1,6 +1,6 @@
-import { removeChildElements, refreshCanvasBarcode } from '../barcode/utility/barcode-util';
+import { removeChildElements, refreshCanvasBarcode, exportAsImage } from '../barcode/utility/barcode-util';
 import { Complex, Property, Component, INotifyPropertyChanged, L10n, Event, EmitType } from '@syncfusion/ej2-base';
-import { ErrorCorrectionLevel, QRCodeVersion, RenderingMode, BarcodeEvent } from '../barcode/enum/enum';
+import { ErrorCorrectionLevel, QRCodeVersion, RenderingMode, BarcodeEvent, BarcodeExportType } from '../barcode/enum/enum';
 import { DisplayTextModel } from '../barcode/primitives/displaytext-model';
 import { MarginModel } from '../barcode/primitives/margin-model';
 import { DisplayText } from '../barcode/primitives/displaytext';
@@ -257,6 +257,24 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
         this.defaultLocale = {
 
         };
+    }
+
+    /**
+     * Export the qrcode as an image in the specified image type and downloads it in the browser.
+     *  @param {string} fileName - Specifies the filename of the qrcode image to be download. 
+     *  @param {BarcodeExportType} barcodeExportType - Defines the format of the qrcode to be exported
+     */
+    public exportImage(filename: string, barcodeExportType: BarcodeExportType ): void {
+        exportAsImage(barcodeExportType, filename, this.element, false, this);
+    }
+
+    /**
+     * Export the qrcode as an image in the specified image type and returns it as base64 string.
+     *  @param {BarcodeExportType} barcodeExportType - Defines the format of the qrcode to be exported
+     */
+    public exportAsBase64Image(barcodeExportType: BarcodeExportType): Promise<string> {
+        let returnValue: Promise<string> = exportAsImage(barcodeExportType, '', this.element, true, this);
+        return returnValue;
     }
 
     public onPropertyChanged(newProp: QRCodeGeneratorModel, oldProp: QRCodeGeneratorModel): void {

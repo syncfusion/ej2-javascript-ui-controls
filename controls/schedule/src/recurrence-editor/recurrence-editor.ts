@@ -292,7 +292,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
     }
     private applyCustomClass(cssClass: string): void {
         if (cssClass) {
-            addClass([this.element], cssClass);
+            addClass([this.element], cssClass.split(' '));
         }
     }
     private initialize(): void {
@@ -1111,7 +1111,8 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
                     this.rtlClass(newProp.enableRtl);
                     break;
                 case 'cssClass':
-                    this.applyCustomClass(newProp.cssClass);
+                    if (oldProp.cssClass) { removeClass([this.element], oldProp.cssClass.split(' ')); }
+                    if (newProp.cssClass) { addClass([this.element], newProp.cssClass.split(' ')); }
                     break;
                 case 'selectedType':
                     this.repeatType.setProperties({ index: this.selectedType });

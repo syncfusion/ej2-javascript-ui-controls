@@ -178,6 +178,9 @@ export class TextHelper {
         fontFamily = characterFormat.fontFamily;
         fontSize = fontSize === 0 ? 0.5 : fontSize / (characterFormat.baselineAlignment === 'Normal' ? 1 : 1.5);
         this.context.font = bold + ' ' + italic + ' ' + fontSize + 'pt' + ' ' + fontFamily;
+        if (characterFormat.allCaps) {
+            text = text.toUpperCase();
+        }
         return this.context.measureText(text).width;
     }
 

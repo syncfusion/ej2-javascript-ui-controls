@@ -3377,6 +3377,9 @@ describe('adding rows in empty grid through edit cell and press enter in batch e
             (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
            
         });
+        it('check item in pages', () => {
+            expect((gridObj.element.querySelector('.e-pagecountmsg') as HTMLElement).innerText).toBe("(0 item)");
+        });
         afterAll(() => {
             destroy(gridObj);
             gridObj = elem = null ;

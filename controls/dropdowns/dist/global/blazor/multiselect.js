@@ -546,6 +546,10 @@ var MultiSelect = /** @class */ (function (_super) {
             this.addValidInputClass();
             this.isDynamicDataChange = false;
         }
+        if (this.dataSource instanceof sf.data.DataManager && this.mode === 'CheckBox' && this.allowFiltering &&
+            !(sf.base.isBlazor() && this.isServerRendered)) {
+            this.removeFocus();
+        }
     };
     MultiSelect.prototype.updateActionList = function (ulElement, list, e, isUpdated) {
         if (this.mode === 'CheckBox' && this.showSelectAll) {

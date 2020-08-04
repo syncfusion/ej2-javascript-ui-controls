@@ -83,7 +83,7 @@ export class PdfExport {
     }
 
     private exportWithData(parent: IGrid, pdfDoc: Object, resolve: Function, returnType: Object,
-                           pdfExportProperties: PdfExportProperties, isMultipleExport: boolean): void {
+                           pdfExportProperties: PdfExportProperties, isMultipleExport: boolean, reject: Function): void {
         this.init(parent);
         if (!isNullOrUndefined(pdfDoc)) {
             this.pdfDocument = <PdfDocument>pdfDoc;
@@ -95,6 +95,9 @@ export class PdfExport {
             parent.trigger(events.pdfExportComplete, this.isBlob ? { promise: this.blobPromise } : {});
             this.parent.log('exporting_complete', this.getModuleName());
             resolve(this.pdfDocument);
+        }).catch((e: Error) => {
+            reject(this.pdfDocument);
+            this.parent.trigger(events.actionFailure, e);
         });
     }
     /**
@@ -139,12 +142,13 @@ export class PdfExport {
             }
             return new Promise((resolve: Function, reject: Function) => {
                 (<DataManager>pdfExportProperties.dataSource).executeQuery(new Query()).then((returnType: Object) => {
-                    this.exportWithData(parent, pdfDoc, resolve, returnType, pdfExportProperties, isMultipleExport);
+                    this.exportWithData(parent, pdfDoc, resolve, returnType, pdfExportProperties, isMultipleExport, reject);
                 });
             });
         } else if (!isNullOrUndefined(pdfExportProperties) && pdfExportProperties.exportType === 'CurrentPage') {
             return new Promise((resolve: Function, reject: Function) => {
-                this.exportWithData(parent, pdfDoc, resolve, this.parent.getCurrentViewRecords(), pdfExportProperties, isMultipleExport);
+                this.exportWithData(parent, pdfDoc, resolve, this.parent.getCurrentViewRecords(), pdfExportProperties,
+                                    isMultipleExport, reject);
             });
         } else {
             let allPromise: Promise<Object>[] = [];
@@ -289,7 +293,7 @@ export class PdfExport {
                 } else if (isGrouping) {
                     sRows = summaryModel.generateRows((<Group>dataSource).records, <SummaryData>returnType.aggregates);
                 } else {
-                    sRows = summaryModel.generateRows(returnType.result, <SummaryData>returnType.aggregates);
+                    sRows = summaryModel.generateRows(returnType.result, <SummaryData>returnType.aggregates, null, null, columns);
                 }
                 this.processAggregates(sRows, pdfGrid, border, captionThemeStyle.font,
                                        captionThemeStyle.brush, captionThemeStyle.backgroundBrush, false);

@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 18.2.48 (2020-08-04)
+
+### Gantt
+
+#### New Features
+
+- `#287282` - Provided support to change viewType of Gantt dynamically.
+
+#### Bug Fixes
+
+- `#285626` - Console error while rendering multiple Gantt has been fixed.
+- `#285749` - Issue on parent progress calculation while delete child record has been fixed.
+
 ## 18.2.47 (2020-07-28)
 
 ### Gantt
@@ -10,6 +23,7 @@
 
 - `#284995` - Issue in predecessor lines of exported pdf document has been fixed.
 - `#284995` - Content overflow issue in exported pdf document has been fixed.
+- `#284052` - Editing issue in Gantt Chart when using DB has been fixed.
 
 #### New Features
 

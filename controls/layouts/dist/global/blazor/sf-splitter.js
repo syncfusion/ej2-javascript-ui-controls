@@ -1417,33 +1417,49 @@ var SfSplitter = /** @class */ (function () {
 var Splitter = {
     initialize: function (element, options, dotnetRef) {
         new SfSplitter(element, options, dotnetRef);
-        element.blazor__instance.initialize();
+        if (!sf.base.isNullOrUndefined(element)) {
+            element.blazor__instance.initialize();
+        }
     },
     collapse: function (element, index) {
-        element.blazor__instance.collapse(index);
+        if (!sf.base.isNullOrUndefined(element)) {
+            element.blazor__instance.collapse(index);
+        }
     },
     expand: function (element, index) {
-        element.blazor__instance.expand(index);
+        if (!sf.base.isNullOrUndefined(element)) {
+            element.blazor__instance.expand(index);
+        }
     },
     resizeEvent: function (element, e) {
-        element.blazor__instance.resizeEvent(e);
+        if (!sf.base.isNullOrUndefined(element)) {
+            element.blazor__instance.resizeEvent(e);
+        }
     },
     onCollapseEvent: function (element, event) {
-        element.blazor__instance.onCollapseEvent(event);
+        if (!sf.base.isNullOrUndefined(element)) {
+            element.blazor__instance.onCollapseEvent(event);
+        }
     },
     collapseMethodEvent: function (element, event, index) {
-        element.blazor__instance.collapseMethodEvent(index, event);
+        if (!sf.base.isNullOrUndefined(element)) {
+            element.blazor__instance.collapseMethodEvent(index, event);
+        }
     },
     onExpandEvent: function (element, event) {
-        element.blazor__instance.onExpandEvent(event);
+        if (!sf.base.isNullOrUndefined(element)) {
+            element.blazor__instance.onExpandEvent(event);
+        }
     },
     destroy: function (element) {
-        if (element) {
+        if (!sf.base.isNullOrUndefined(element)) {
             element.blazor__instance.destroy();
         }
     },
     propertyChanged: function (splitObj, changedArgs) {
-        splitObj.element.blazor__instance.propertyChanged(splitObj, changedArgs);
+        if (!sf.base.isNullOrUndefined(splitObj.element)) {
+            splitObj.element.blazor__instance.propertyChanged(splitObj, changedArgs);
+        }
     }
 };
 

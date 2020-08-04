@@ -1107,4 +1107,60 @@ describe('RTE CR issues', () => {
             destroy(rteObj);
         });
     });
+
+    describe('EJ2-37997 - Lists all item selection with delete key action not remove the list completely', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyboardEventArgs = {
+            preventDefault: function () { },
+            keyCode: 46, which: 46, shiftKey: false, action: 'delete'
+        };
+        it(' Ordered list with select all item with test ', () => {
+            rteObj = renderRTE({
+                value: '<ol><li>Test 1</li><li>Test 2</li><li>Test 3<br></li></ol>'
+            });
+            rteEle = rteObj.element;
+            expect(document.querySelectorAll('ol').length === 1).toBe(true);
+            rteObj.focusIn();
+            rteObj.selectAll();
+            (rteObj.formatter.editorManager as any).listObj.keyDownHandler({ event: keyboardEventArgs });
+            expect(document.querySelectorAll('ol').length === 0).toBe(true);
+        });
+        it(' Ordered list with select some item with test ', () => {
+            rteObj = renderRTE({
+                value: '<ol><li>Test 1</li><li>Test 2</li><li>Test 3<br></li></ol>'
+            });
+            rteEle = rteObj.element;
+            expect(document.querySelectorAll('ol').length === 1).toBe(true);
+            rteObj.focusIn();
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('ol').childNodes[0], rteObj.element.querySelector('ol').childNodes[1], 0, 1);
+            (rteObj.formatter.editorManager as any).listObj.keyDownHandler({ event: keyboardEventArgs });
+            expect(document.querySelectorAll('ol').length === 0).toBe(false);
+        });
+        it(' Unordered list with select all item with test ', () => {
+            rteObj = renderRTE({
+                value: '<ul><li>Test 1</li><li>Test 2</li><li>Test 3<br></li></ul>'
+            });
+            rteEle = rteObj.element;
+            expect(document.querySelectorAll('ul').length === 1).toBe(true);
+            rteObj.focusIn();
+            rteObj.selectAll();
+            (rteObj.formatter.editorManager as any).listObj.keyDownHandler({ event: keyboardEventArgs });
+            expect(document.querySelectorAll('ul').length === 0).toBe(true);
+        });
+        it(' Unordered list with select some item with test ', () => {
+            rteObj = renderRTE({
+                value: '<ul><li>Test 1</li><li>Test 2</li><li>Test 3<br></li></ul>'
+            });
+            rteEle = rteObj.element;
+            expect(document.querySelectorAll('ul').length === 1).toBe(true);
+            rteObj.focusIn();
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('ul').childNodes[0], rteObj.element.querySelector('ul').childNodes[1], 0, 1);
+            (rteObj.formatter.editorManager as any).listObj.keyDownHandler({ event: keyboardEventArgs });
+            expect(document.querySelectorAll('ul').length === 0).toBe(false);
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+    });
 });

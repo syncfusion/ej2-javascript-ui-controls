@@ -194,8 +194,10 @@ export class ExcelExport {
                                 isMultipleExport: boolean, workbook: any, r: ReturnType | Object[]): Promise<Object> {
         this.groupedColLength = gObj.groupSettings.columns.length;
         let blankRows: number = 5;
+        let separator: string;
         let rows: ExcelRow[] = [];
-        if (!isNullOrUndefined(exportProperties) && !isNullOrUndefined(exportProperties.multipleExport)) {
+        let isExportPropertiesPresent: boolean = !isNullOrUndefined(exportProperties);
+        if (isExportPropertiesPresent && !isNullOrUndefined(exportProperties.multipleExport)) {
             /* tslint:disable-next-line:max-line-length */
             this.expType = (!isNullOrUndefined(exportProperties.multipleExport.type) ? exportProperties.multipleExport.type : 'AppendToSheet');
             if (!isNullOrUndefined(exportProperties.multipleExport.blankRows)) {
@@ -221,7 +223,7 @@ export class ExcelExport {
             this.rowLength++;
         }
 
-        if (!isNullOrUndefined(exportProperties)) {
+        if (isExportPropertiesPresent) {
             if (!isNullOrUndefined(isMultipleExport)) {
                 if (!isNullOrUndefined(exportProperties.header) && (isMultipleExport || this.expType === 'NewSheet')) {
                     this.processExcelHeader(JSON.parse(JSON.stringify(exportProperties.header)));
@@ -244,7 +246,7 @@ export class ExcelExport {
                 }
             }
         }
-        this.includeHiddenColumn = (!isNullOrUndefined(exportProperties) ? exportProperties.includeHiddenColumn : false);
+        this.includeHiddenColumn = (isExportPropertiesPresent ? exportProperties.includeHiddenColumn : false);
         return new Promise((resolve: Function, reject: Function) => {
             (<{childGridLevel?: number}>gObj).childGridLevel = 0;
             rows = this.processGridExport(gObj, exportProperties, r);
@@ -280,9 +282,14 @@ export class ExcelExport {
                     if (isBlazor() && gObj.isServerRendered) {
                         this.book.isServerRendered = gObj.isServerRendered;
                     }
-                    let book: Workbook = new Workbook(this.book, 'csv', gObj.locale, (<{currencyCode?: string}>gObj).currencyCode);
+                    if (isExportPropertiesPresent && !isNullOrUndefined(exportProperties.separator)
+                    && exportProperties.separator !== ',') {
+                        separator = exportProperties.separator;
+                      }
+                       /* tslint:disable-next-line:max-line-length */
+                    let book: Workbook = new Workbook(this.book, 'csv', gObj.locale, (<{currencyCode?: string}>gObj).currencyCode, separator);
                     if (!this.isBlob) {
-                        if (!isNullOrUndefined(exportProperties) && exportProperties.fileName) {
+                        if (isExportPropertiesPresent && exportProperties.fileName) {
                             book.save(exportProperties.fileName);
                         } else {
                             book.save('Export.csv');
@@ -293,7 +300,7 @@ export class ExcelExport {
                 } else {
                     let book: Workbook = new Workbook(this.book, 'xlsx', gObj.locale, (<{currencyCode?: string}>gObj).currencyCode);
                     if (!this.isBlob) {
-                        if (!isNullOrUndefined(exportProperties) && exportProperties.fileName) {
+                        if (isExportPropertiesPresent && exportProperties.fileName) {
                             book.save(exportProperties.fileName);
                         } else {
                             book.save('Export.xlsx');
@@ -380,7 +387,7 @@ export class ExcelExport {
             } else {
                 let result: Object[] = ((returnType as ReturnType).result as Group).GroupGuid ?
                                        ((returnType as ReturnType).result as Group).records : (returnType as ReturnType).result;
-                this.processAggregates(gObj, result, excelRow );
+                this.processAggregates(gObj, result, excelRow, null, null, null, headerRow.columns );
             }
         }
         return excelRow;
@@ -578,7 +585,8 @@ export class ExcelExport {
     }
 
     // tslint:disable-next-line:max-line-length
-    private processAggregates(gObj: IGrid, rec: Object[], excelRows: ExcelRow[], currentViewRecords?: Object[], indent?: number, byGroup?: boolean): ExcelRow[] {
+    private processAggregates(gObj: IGrid, rec: Object[], excelRows: ExcelRow[], currentViewRecords?: Object[], indent?: number,
+                              byGroup?: boolean, columns?: Column[]): ExcelRow[] {
         let summaryModel: SummaryModelGenerator = new SummaryModelGenerator(gObj);
         if (gObj.aggregates.length && this.parent !== gObj) {
             gObj.aggregateModule.prepareSummaryInfo();
@@ -601,7 +609,7 @@ export class ExcelExport {
             }
         } else {
             indent = gObj.groupSettings.columns.length > 0 && !byGroup ? gObj.groupSettings.columns.length : indent;
-            let sRows: Row<AggregateColumnModel>[] = summaryModel.generateRows(data, (<SummaryData>rec).aggregates);
+            let sRows: Row<AggregateColumnModel>[] = summaryModel.generateRows(data, (<SummaryData>rec).aggregates, null, null, columns);
             if (sRows.length > 0 && !byGroup) {
                 excelRows = this.fillAggregates(gObj, sRows, indent, excelRows);
             }

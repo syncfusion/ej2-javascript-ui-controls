@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.2.48 (2020-08-04)
+
+### In-place Editor
+
+#### Bug Fixes
+
+- `#284643` - The issue with "Keyborad actions closes the editor and calls the save action" has been resolved.
+
 ## 18.2.45 (2020-07-14)
 
 ### In-place Editor

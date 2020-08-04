@@ -2103,6 +2103,7 @@ var DropDownList = /** @class */ (function (_super) {
             if (this.element.hasAttribute('autofocus')) {
                 this.focusIn();
             }
+            this.initial = false;
         }
         else {
             if (this.element.tagName === 'INPUT') {

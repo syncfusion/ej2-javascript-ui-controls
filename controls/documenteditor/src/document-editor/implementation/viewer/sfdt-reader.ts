@@ -1302,6 +1302,9 @@ export class SfdtReader {
             if (!isNullOrUndefined(sourceFormat.revisionIds) && sourceFormat.revisionIds.length > 0) {
                 this.checkAndApplyRevision(sourceFormat, characterFormat);
             }
+            if (!isNullOrUndefined(sourceFormat.allCaps)) {
+                characterFormat.allCaps = sourceFormat.allCaps;
+            }
         }
     }
     private getColor(color: string): string {

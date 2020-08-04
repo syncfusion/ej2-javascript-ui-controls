@@ -1,7 +1,7 @@
 import { Animation, Browser, ChildProperty, Complex, Component, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, classList, closest, compile, createElement, detach, extend, formatUnit, getComponent, getUniqueID, getValue, isBlazor, isNullOrUndefined, isUndefined, matches, prepend, remove, removeClass, resetBlazorTemplate, rippleEffect, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { DataManager, DataUtil, Predicate, Query } from '@syncfusion/ej2-data';
 import { ListBase, Sortable, cssClass, moveTo } from '@syncfusion/ej2-lists';
-import { Popup, createSpinner, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
+import { Popup, createSpinner, getZindexPartial, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
 import { Input, TextBox } from '@syncfusion/ej2-inputs';
 import { Button, createCheckBox } from '@syncfusion/ej2-buttons';
 import { TreeView } from '@syncfusion/ej2-navigations';
@@ -3392,6 +3392,7 @@ let DropDownList = class DropDownList extends DropDownBase {
             if (this.element.hasAttribute('autofocus')) {
                 this.focusIn();
             }
+            this.initial = false;
         }
         else {
             if (this.element.tagName === 'INPUT') {
@@ -4376,6 +4377,10 @@ let DropDownTree = class DropDownTree extends Component {
             this.createChip();
         }
         this.wireEvents();
+        let firstUl = select('.' + PARENTITEM, this.treeObj.element);
+        if (firstUl && firstUl.getAttribute('aria-multiselectable')) {
+            firstUl.removeAttribute('aria-multiselectable');
+        }
         this.oldValue = this.value;
         this.isInitialized = true;
         this.renderComplete();
@@ -8421,6 +8426,10 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             this.updateVal(this.value, null, 'value');
             this.addValidInputClass();
             this.isDynamicDataChange = false;
+        }
+        if (this.dataSource instanceof DataManager && this.mode === 'CheckBox' && this.allowFiltering &&
+            !(isBlazor() && this.isServerRendered)) {
+            this.removeFocus();
         }
     }
     updateActionList(ulElement, list, e, isUpdated) {
@@ -12510,14 +12519,19 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
                 drop: this.dragEnd.bind(this),
                 placeHolder: () => { return this.createElement('span', { className: 'e-placeholder' }); },
                 helper: (e) => {
+                    let wrapper = this.list.cloneNode();
                     let ele = e.sender.cloneNode(true);
-                    ele.style.width = this.getItems()[0].offsetWidth + 'px';
+                    wrapper.appendChild(ele);
+                    let refEle = this.getItems()[0];
+                    wrapper.style.width = refEle.offsetWidth + 'px';
+                    wrapper.style.height = refEle.offsetHeight + 'px';
                     if ((this.value && this.value.length) > 1 && this.isSelected(ele)) {
                         ele.appendChild(this.createElement('span', {
                             className: 'e-list-badge', innerHTML: this.value.length + ''
                         }));
                     }
-                    return ele;
+                    wrapper.style.zIndex = getZindexPartial(this.element) + '';
+                    return wrapper;
                 }
             });
         }
@@ -12867,6 +12881,9 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
                 else {
                     li = this.getItems()[this.getIndexByValue(value)];
                 }
+                if (!li) {
+                    li = args.helper;
+                }
                 this.removeSelected(this, value === dropValue ? [args.droppedElement] : [li]);
                 if (isBlazor()) {
                     if (index === 0) {
@@ -12979,14 +12996,15 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
      * This method is used to enable or disable the items in the ListBox based on the items and enable argument.
      * @param items Text items that needs to be enabled/disabled.
      * @param enable Set `true`/`false` to enable/disable the list items.
+     * @param isValue - Set `true` if `items` parameter is a array of unique values.
      * @returns void
      */
-    enableItems(items, enable = true) {
+    enableItems(items, enable = true, isValue) {
         let li;
         items.forEach((item) => {
             let text;
             if (isBlazor() && typeof (item) === 'object') {
-                text = item[this.fields.text || 'text'];
+                text = getValue(isValue ? this.fields.value : this.fields.text, item);
                 if (isNullOrUndefined(text)) {
                     return;
                 }
@@ -12994,7 +13012,10 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
             else {
                 text = item;
             }
-            li = this.findListElement(this.list, 'li', 'data-value', this.getValueByText(text));
+            li = this.findListElement(this.list, 'li', 'data-value', isValue ? text : this.getValueByText(text));
+            if (!li) {
+                return;
+            }
             if (enable) {
                 removeClass([li], cssClass.disabled);
                 li.removeAttribute('aria-disabled');
@@ -13009,10 +13030,11 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
      * Based on the state parameter, specified list item will be selected/deselected.
      * @param items Array of text value of the item.
      * @param state Set `true`/`false` to select/un select the list items.
+     * @param isValue - Set `true` if `items` parameter is a array of unique values.
      * @returns void
      */
-    selectItems(items, state = true) {
-        this.setSelection(items, state, true);
+    selectItems(items, state = true, isValue) {
+        this.setSelection(items, state, !isValue);
         this.updateSelectedOptions();
     }
     /**
@@ -13840,6 +13862,7 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
             // tslint:disable
             fListBox.interopAdaptor.invokeMethodAsync('UpdateListData', fListBox.listData).then(() => {
                 fListBox.updateBlazorListData(null, true);
+                fListBox.updateSelectedOptions();
             });
             tListBox.interopAdaptor.invokeMethodAsync('UpdateListData', tListBox.listData).then(() => {
                 tListBox.updateBlazorListData(null, true);

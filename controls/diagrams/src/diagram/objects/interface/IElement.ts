@@ -15,6 +15,7 @@ import { KeyGestureModel } from '../../diagram/keyboard-commands-model';
 import { Node } from '../../objects/node';
 import { Size } from '../../primitives/size';
 import { ShapeAnnotationModel, PathAnnotationModel } from '../annotation-model';
+import { PaletteModel } from '../../../symbol-palette';
 
 /**
  * IElement interface defines the base of the diagram objects (node/connector)
@@ -608,6 +609,25 @@ export interface IPaletteSelectionChangeArgs {
     oldValue: string;
     /** returns the new palette item that is selected */
     newValue: string;
+}
+
+/**
+ * IPaletteExpandArgs notifies when the palette items are expanded or collapsed in the symbol palette
+ * 
+ */
+export interface IPaletteExpandArgs {
+    /** returns the index of the palette item selected */
+    index: number;
+    /** returns the value whether the palette item is expanded */
+    isExpanded: boolean;
+    /** cancels the palette item expand or collapse */
+    cancel: boolean;
+    /** returns the content of the palette item that is selected */
+    content: HTMLElement;
+    /** returns the  palette item selected */
+    element: HTMLElement;
+    /** returns the properties of the palette item selected */
+    palette: PaletteModel;
 }
 
 /**

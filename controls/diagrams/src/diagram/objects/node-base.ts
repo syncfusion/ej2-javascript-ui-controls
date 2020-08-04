@@ -4,6 +4,8 @@ import { MarginModel } from '../core/appearance-model';
 import { DiagramTooltipModel } from './tooltip-model';
 import { DiagramTooltip } from './tooltip';
 import { FlipDirection } from '../enum/enum';
+import { SymbolPaletteInfoModel } from './preview-model';
+import { SymbolPaletteInfo } from './preview';
 
 
 
@@ -71,5 +73,14 @@ export abstract class NodeBase extends ChildProperty<NodeBase> {
      */
     @Property('None')
     public flip: FlipDirection;
+
+    /**
+     * Defines the symbol info of a connector
+     * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
+     * @default undefined
+     */
+    @Complex<SymbolPaletteInfoModel>({}, SymbolPaletteInfo)
+    public symbolInfo: SymbolPaletteInfoModel;
 }
 

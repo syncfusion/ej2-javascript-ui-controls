@@ -199,23 +199,7 @@ var DropDownButton = /** @class */ (function (_super) {
             this.getPopUpElement().appendChild(ul);
         }
         if (showIcon) {
-            var blankIconLi = [].slice.call(this.getPopUpElement().getElementsByClassName('e-blank-icon'));
-            var iconLi = this.getPopUpElement().querySelector('.e-item:not(.e-blank-icon)');
-            var icon = iconLi.querySelector('.e-menu-icon');
-            var cssProp_1;
-            if (this.enableRtl) {
-                cssProp_1 = { padding: 'paddingRight', margin: 'marginLeft' };
-            }
-            else {
-                cssProp_1 = { padding: 'paddingLeft', margin: 'marginRight' };
-            }
-            // tslint:disable
-            var size_1 = parseInt(getComputedStyle(icon).fontSize, 10) + parseInt((this.enableRtl ? getComputedStyle(icon)[cssProp_1.margin] : getComputedStyle(icon)[cssProp_1.margin]), 10)
-                + parseInt(getComputedStyle(iconLi).paddingLeft, 10) + "px";
-            blankIconLi.forEach(function (li) {
-                li.style[cssProp_1.padding] = size_1;
-            });
-            // tslint:enable
+            sf.splitbuttons.setBlankIconStyle(this.getPopUpElement());
         }
     };
     DropDownButton.prototype.hasIcon = function (items, field) {

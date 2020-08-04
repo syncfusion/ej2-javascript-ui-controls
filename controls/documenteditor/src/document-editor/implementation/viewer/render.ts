@@ -735,6 +735,9 @@ export class Renderer {
         }
         let isRTL: boolean = format.bidi || this.documentHelper.textHelper.isRTLText(elementBox.text);
         text = this.documentHelper.textHelper.setText(text, isRTL, format.bdo, true);
+        if (format.allCaps) {
+            text = text.toUpperCase();
+        }
         // tslint:disable-next-line:max-line-length
         this.pageContext.fillText(text, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), scaledWidth);
         // tslint:disable-next-line:max-line-length

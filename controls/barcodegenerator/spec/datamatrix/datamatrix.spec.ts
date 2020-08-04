@@ -2186,5 +2186,38 @@ describe('Barcode Control ', () => {
 
     });
 
+});
 
+describe('Datamatrix export', () => {
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'datamatrix' });
+        document.body.appendChild(ele);
+        barcode = new DataMatrixGenerator({
+            width: '200px', height: '150px',
+            displayText: { visibility: true, size: 9,  text: "ABCD"},
+                //mode: 'Canvas',
+                value: 'Ä',
+        });
+        barcode.appendTo('#datamatrix');
+    });
+
+    afterAll((): void => {
+        barcode.destroy();
+        ele.remove();
+    });
+    
+    it('Datamatrix export - return Base64 in PNG format', (done: Function) => {
+        barcode.exportAsBase64Image('PNG');
+        done()
+    });
+    it('Datamatrix export - return Base64 in JPG format', (done: Function) => {
+        barcode.exportAsBase64Image('JPG');
+        done()
+    });
+    it('Datamatrix export - Download the image in JPG format', (done: Function) => {
+        let svg: any; 
+        svg = barcode.exportImage('Export','JPG');
+        expect(svg).not.toBeNull();
+        done()
+    });
 });

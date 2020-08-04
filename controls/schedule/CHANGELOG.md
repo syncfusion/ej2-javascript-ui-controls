@@ -8,6 +8,15 @@
 
 #### Bug Fixes
 
+- `#282556` - An issue with resizing the events has been fixed.
+- `#284373` - An issue with adding multiple CSS classes to `cssClass` property has been fixed.
+
+## 18.2.46 (2020-07-21)
+
+### Schedule
+
+#### Bug Fixes
+
 - `#154622` - An issue with date format is not showing correctly in Mac browsers has been fixed.
 - `#283631` - An issue with resizing not working properly with Timeline views when the resize interval is 5 has been fixed.
 - `#284869` - An issue with events are disappeared after resizing the browser window has been fixed.

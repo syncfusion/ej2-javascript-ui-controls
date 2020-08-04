@@ -3252,12 +3252,13 @@ var CustomToolTip = /** @class */ (function () {
         document.body.appendChild(this.toolTipElement);
     };
     CustomToolTip.prototype.setPosition = function (target) {
+        var tooltipPostion = { top: 0, left: 0 };
         var arrow = this.toolTipElement.querySelector('.e-arrow-tip');
-        var popUpPosition = sf.popups.calculateRelativeBasedPosition(target, this.parent.element);
-        this.toolTipElement.style.top = popUpPosition.top - arrow.offsetHeight - this.toolTipElement.offsetHeight + 'px';
-        var toolTipWidthBy2 = this.toolTipElement.offsetWidth / 2;
-        this.toolTipElement.style.left = popUpPosition.left + (target.offsetWidth / 2) - toolTipWidthBy2 + 'px';
-        arrow.style.left = toolTipWidthBy2 - (arrow.offsetWidth / 2) + 'px';
+        var popUpPosition = sf.popups.calculatePosition(target, 'Center', 'Top');
+        tooltipPostion.top -= this.toolTipElement.offsetHeight + arrow.offsetHeight;
+        tooltipPostion.left -= this.toolTipElement.offsetWidth / 2;
+        this.toolTipElement.style.top = popUpPosition.top + tooltipPostion.top + 'px';
+        this.toolTipElement.style.left = popUpPosition.left + tooltipPostion.left + 'px';
     };
     CustomToolTip.prototype.close = function () {
         if (this.toolTipElement) {

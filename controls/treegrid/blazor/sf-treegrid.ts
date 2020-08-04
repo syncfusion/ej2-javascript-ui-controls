@@ -1,4 +1,4 @@
-import { BlazorDotnetObject, enableBlazorMode } from '@syncfusion/ej2-base';
+import { BlazorDotnetObject, enableBlazorMode, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { SfTreeGrid } from './sf-treegrid-fn';
 import { BlazorTreeGridElement, ITreeGridOptions  } from './interface';
 
@@ -17,6 +17,18 @@ let TreeGrid: Object = {
     modelChanged(element: BlazorTreeGridElement, options: ITreeGridOptions, actionArgs: string): void {
       element.blazor_instance.options = options;
 	  let args: Object = JSON.parse(actionArgs);
+    },
+
+    headerCheckbox(element: BlazorTreeGridElement, colIndex: number, options: ITreeGridOptions, dotnetRef: BlazorDotnetObject) {
+      if (!isNullOrUndefined(element)) {
+        element.blazor_instance.checkboxcolumnModule.renderHeaderCheckbox(element, colIndex);
+      }
+    },
+
+    updateCheckbox(element: BlazorTreeGridElement, colIndex: number, checkState: string){
+      let thElement: Element = element.querySelectorAll('.e-gridheader th')[colIndex];
+	    let spanElement: Element = thElement.querySelector('span.e-frame');
+	    element.blazor_instance.checkboxcolumnModule.updateHeaderCheckbox(spanElement, checkState);
     },
 
     copyToClipBoard(element: BlazorTreeGridElement, withHeader: boolean): void {

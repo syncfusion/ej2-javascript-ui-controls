@@ -7125,5 +7125,100 @@ describe('MultiSelect', () => {
             listObj.destroy();
         });       
     }); 
-
+    describe('EJ2-41244 Pressing space key selects the first list item in the Multislect checkbox remote data', () => {
+        let listObj: MultiSelect;
+        let popupObj: any;
+        let originalTimeout: number;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect' });
+        let remoteData: DataManager = new DataManager({ url: '/api/Employees', adaptor: new ODataV4Adaptor });
+        let empList: { [key: string]: Object }[] = [
+            { id: 'list1', text: 'JAVA', icon: 'icon' },
+            { id: 'list2', text: 'C#' },
+            { id: 'list3', text: 'C++' },
+            { id: 'list4', text: '.NET', icon: 'icon' },
+            { id: 'list5', text: 'Oracle' },
+            { id: 'list6', text: 'GO' },
+            { id: 'list7', text: 'Haskell' }
+        ];
+        beforeAll(() => {
+            document.body.innerHTML = '';
+            document.body.appendChild(element);
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        });
+        afterAll(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            if (element) {
+                element.remove();
+            }
+        });
+        it('Checkbox mode with allowFiltering for remote data', (done) => {
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, mode: "CheckBox", fields: { value: 'EmployeeID', text: 'FirstName' }, allowFiltering: true });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            setTimeout(() => {
+                setTimeout(() => {
+                    let keyboardEventArgs: any = { preventDefault: (): void => { }, };
+                    (<any>listObj).inputElement.value = 'Na';
+                    let listElement: any = (<any>listObj).ulElement.querySelector("li.e-list-item");
+                    expect(listElement.classList.contains('e-item-focus')).toBe(false);       
+                    keyboardEventArgs.keyCode = 32;
+                    keyboardEventArgs.code = 'Space';
+                    (<any>listObj).onKeyDown(keyboardEventArgs);
+                    expect(listElement.classList.contains('e-active')).toBe(false);      
+                    listObj.destroy();
+                    done();
+                }, 2000);
+            }, 800);
+        });
+        it('Checkbox mode without allowFiltering for remote data', (done) => {
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, mode: "CheckBox", fields: { value: 'EmployeeID', text: 'FirstName' }, allowFiltering: false });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            setTimeout(() => {
+                setTimeout(() => {
+                    let keyboardEventArgs: any = { preventDefault: (): void => { }, };
+                    let listElement: any = (<any>listObj).ulElement.querySelector("li.e-list-item");
+                    expect(listElement.classList.contains('e-item-focus')).toBe(false);       
+                    expect(listElement.classList.contains('e-active')).toBe(false);      
+                    listObj.destroy();
+                    done();
+                }, 2000);
+            }, 800);
+        });
+        it('Checkbox mode with allowFiltering for local data', (done) => {
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: empList, mode: "CheckBox", fields: { value: 'id', text: 'text' }, allowFiltering: true });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            setTimeout(() => {
+                setTimeout(() => {
+                    let keyboardEventArgs: any = { preventDefault: (): void => { }, };
+                    (<any>listObj).inputElement.value = 'JA';
+                    let listElement: any = (<any>listObj).ulElement.querySelector("li.e-list-item");
+                    expect(listElement.classList.contains('e-item-focus')).toBe(false);       
+                    keyboardEventArgs.keyCode = 32;
+                    keyboardEventArgs.code = 'Space';
+                    (<any>listObj).onKeyDown(keyboardEventArgs);
+                    expect(listElement.classList.contains('e-active')).toBe(false);      
+                    listObj.destroy();
+                    done();
+                }, 2000);
+            }, 800);
+        });
+        it('Checkbox mode without allowFiltering for local data', (done) => {
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: empList, mode: "CheckBox", fields: { value: 'id', text: 'text' }, allowFiltering: false });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            setTimeout(() => {
+                setTimeout(() => {
+                    let keyboardEventArgs: any = { preventDefault: (): void => { }, };
+                    let listElement: any = (<any>listObj).ulElement.querySelector("li.e-list-item");
+                    expect(listElement.classList.contains('e-item-focus')).toBe(false);       
+                    expect(listElement.classList.contains('e-active')).toBe(false);      
+                    listObj.destroy();
+                    done();
+                }, 2000);
+            }, 800);
+        });
+    });
 });

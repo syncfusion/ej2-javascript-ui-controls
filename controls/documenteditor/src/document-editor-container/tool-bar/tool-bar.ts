@@ -5,7 +5,7 @@ import { DocumentEditorContainer } from '../document-editor-container';
 import { DropDownButton, DropDownButtonModel, MenuEventArgs, ItemModel } from '@syncfusion/ej2-splitbuttons';
 import { DocumentEditor } from '../../document-editor/document-editor';
 import { showSpinner, hideSpinner, DialogUtility } from '@syncfusion/ej2-popups';
-import { ToolbarItem } from '../../document-editor/base';
+import { ToolbarItem, BeforeFileOpenArgs } from '../../document-editor/base';
 import { XmlHttpRequestHandler } from '../../document-editor/base/ajax-helper';
 import { CustomToolbarItemModel } from '../../document-editor/base/events-helper';
 
@@ -569,6 +569,13 @@ export class Toolbar {
     }
     private onFileChange(): void {
         let file: File = this.filePicker.files[0];
+        let filesize: number = file.size;
+        let check: boolean;
+        let eventArgs: BeforeFileOpenArgs = { fileSize: filesize, isCanceled: check };
+        this.documentEditor.trigger('beforeFileOpen', eventArgs);
+        if (eventArgs.isCanceled) {
+            return;
+        }
         if (file) {
             if (file.name.substr(file.name.lastIndexOf('.')) === '.sfdt') {
                 let fileReader: FileReader = new FileReader();

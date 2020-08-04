@@ -37,8 +37,13 @@ export class DiagramNativeElement extends DiagramElement {
      */
     public set content(value: string | SVGElement) {
         this.data = value;
-        this.template = getContent(this, false) as SVGElement;
-        this.isDirt = true;
+        if (!this.canReset) {
+            this.canReset = true;
+            this.template = getContent(this, false) as SVGElement;
+            this.canReset = false;
+            this.isDirt = true;
+        }
+
     }
 
     /**
@@ -58,6 +63,10 @@ export class DiagramNativeElement extends DiagramElement {
      */
     public contentSize: Size;
 
+    /**
+     * Specifies whether the getcontent has to be executed or not.
+     */
+    private canReset: boolean;
     /**
      * Saves the top left point of the Native Element
      * @private

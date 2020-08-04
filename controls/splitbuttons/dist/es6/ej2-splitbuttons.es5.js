@@ -82,6 +82,37 @@ function isValidLI(ul, li, index, keyCode, count) {
     }
     return index;
 }
+/** @hidden */
+function setBlankIconStyle(popup) {
+    var blankIconList = [].slice.call(popup.getElementsByClassName('e-blank-icon'));
+    if (!blankIconList.length) {
+        return;
+    }
+    var iconLi = popup.querySelector('.e-item:not(.e-blank-icon):not(.e-separator)');
+    if (iconLi.classList.contains('e-url')) {
+        iconLi = iconLi.querySelector('.e-menu-url');
+    }
+    var icon = iconLi.querySelector('.e-menu-icon');
+    var cssProp;
+    if (this.enableRtl) {
+        cssProp = { padding: 'paddingRight', margin: 'marginLeft' };
+    }
+    else {
+        cssProp = { padding: 'paddingLeft', margin: 'marginRight' };
+    }
+    // tslint:disable
+    var size = parseInt(getComputedStyle(icon).fontSize, 10) + parseInt((this.enableRtl ? getComputedStyle(icon)[cssProp.margin] : getComputedStyle(icon)[cssProp.margin]), 10)
+        + parseInt(getComputedStyle(iconLi).paddingLeft, 10) + "px";
+    blankIconList.forEach(function (li) {
+        if (li.classList.contains('e-url')) {
+            li.querySelector('.e-menu-url').style[cssProp.padding] = size;
+        }
+        else {
+            li.style[cssProp.padding] = size;
+        }
+    });
+    // tslint:enable
+}
 /**
  * Defines the items of Split Button/DropDownButton.
  */
@@ -309,23 +340,7 @@ var DropDownButton = /** @__PURE__ @class */ (function (_super) {
             this.getPopUpElement().appendChild(ul);
         }
         if (showIcon) {
-            var blankIconLi = [].slice.call(this.getPopUpElement().getElementsByClassName('e-blank-icon'));
-            var iconLi = this.getPopUpElement().querySelector('.e-item:not(.e-blank-icon)');
-            var icon = iconLi.querySelector('.e-menu-icon');
-            var cssProp_1;
-            if (this.enableRtl) {
-                cssProp_1 = { padding: 'paddingRight', margin: 'marginLeft' };
-            }
-            else {
-                cssProp_1 = { padding: 'paddingLeft', margin: 'marginRight' };
-            }
-            // tslint:disable
-            var size_1 = parseInt(getComputedStyle(icon).fontSize, 10) + parseInt((this.enableRtl ? getComputedStyle(icon)[cssProp_1.margin] : getComputedStyle(icon)[cssProp_1.margin]), 10)
-                + parseInt(getComputedStyle(iconLi).paddingLeft, 10) + "px";
-            blankIconLi.forEach(function (li) {
-                li.style[cssProp_1.padding] = size_1;
-            });
-            // tslint:enable
+            setBlankIconStyle(this.getPopUpElement());
         }
     };
     DropDownButton.prototype.hasIcon = function (items, field) {
@@ -1703,5 +1718,5 @@ var ProgressButton = /** @__PURE__ @class */ (function (_super) {
  * SplitButton all module
  */
 
-export { getModel, upDownKeyHandler, Item, DropDownButton, SplitButton, Deferred, createButtonGroup, SpinSettings, AnimationSettings, ProgressButton };
+export { getModel, upDownKeyHandler, setBlankIconStyle, Item, DropDownButton, SplitButton, Deferred, createButtonGroup, SpinSettings, AnimationSettings, ProgressButton };
 //# sourceMappingURL=ej2-splitbuttons.es5.js.map

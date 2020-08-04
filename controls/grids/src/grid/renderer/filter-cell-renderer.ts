@@ -159,6 +159,7 @@ export class FilterCellRenderer extends CellRenderer implements ICellRenderer<Co
             width: '0px',
             enabled: column.allowFiltering,
             popupWidth: 'auto',
+            enableRtl: this.parent.enableRtl,
             change: this.internalEvent.bind(this),
             beforeOpen: function (): void {
                 let operator: Object = gObj.filterModule.customOperators;
@@ -173,11 +174,7 @@ export class FilterCellRenderer extends CellRenderer implements ICellRenderer<Co
         });
         this.dropOptr.appendTo(fbicon);
         let spanElmt: Element = closest(this.dropOptr.element, 'span');
-        if (!gObj.enableRtl) {
-            (spanElmt as HTMLElement).style.marginRight = '15px';
-        } else {
-            (spanElmt as HTMLElement).style.marginLeft = '15px';
-        }
+        spanElmt.classList.add('e-filterbardropdown');
         spanElmt.removeAttribute('tabindex');
     }
 

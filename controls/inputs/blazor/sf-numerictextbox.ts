@@ -239,25 +239,34 @@ class SfNumericTextBox {
 let NumericTextBox: object = {
     initialize(wrapperElement: HTMLElement, element: BlazorNumericElement, dotnetRef: BlazorDotnetObject, options: INumericOptions): void {
         new SfNumericTextBox(wrapperElement, element, dotnetRef, options);
-        element.blazor__instance.initialize();
-    },
-    isDevice(element: BlazorNumericElement): boolean {
-        return element.blazor__instance.isDevice();
+        if (element && element.blazor__instance) {
+            element.blazor__instance.initialize();
+        }
     },
     selectRange(inputEle: BlazorNumericElement, formatValue: string): void {
-        inputEle.blazor__instance.selectRange(formatValue);
+        if (inputEle && inputEle.blazor__instance) {
+            inputEle.blazor__instance.selectRange(formatValue);
+        }
     },
     propertyChanges(element: BlazorNumericElement, options: INumericOptions): void {
-        element.blazor__instance.options = options;
+        if (element && element.blazor__instance) {
+            element.blazor__instance.options = options;
+        }
     },
     focusIn(inputEle: HTMLElement): void {
-        inputEle.focus();
+        if (inputEle) {
+            inputEle.focus();
+        }
     },
     focusOut(inputEle: HTMLElement): void {
-        inputEle.blur();
+        if (inputEle) {
+            inputEle.blur();
+        }
     },
     spinButtonEvents(inputEle: BlazorNumericElement) {
-        inputEle.blazor__instance.spinButtonEvents();
+        if (inputEle && inputEle.blazor__instance) {
+            inputEle.blazor__instance.spinButtonEvents();
+        }
     }
 };
 interface BlazorNumericElement extends HTMLElement {

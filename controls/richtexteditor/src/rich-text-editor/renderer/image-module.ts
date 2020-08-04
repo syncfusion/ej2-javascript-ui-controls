@@ -346,7 +346,17 @@ export class Image {
             }
         }
     }
-
+    private getMaxWidth(): string | number {
+        let maxWidth: string | number = this.parent.insertImageSettings.maxWidth;
+        let imgPadding: number = 12;
+        let imgResizeBorder: number = 2;
+        let editEle: HTMLElement = this.parent.contentModule.getEditPanel() as HTMLElement;
+        let eleStyle: CSSStyleDeclaration = window.getComputedStyle(editEle);
+        let editEleMaxWidth: number = editEle.offsetWidth - (imgPadding + imgResizeBorder +
+            parseFloat(eleStyle.paddingLeft.split('px')[0]) + parseFloat(eleStyle.paddingRight.split('px')[0]) +
+            parseFloat(eleStyle.marginLeft.split('px')[0]) + parseFloat(eleStyle.marginRight.split('px')[0]));
+        return isNOU(maxWidth) ? editEleMaxWidth : maxWidth;
+    }
     private pixToPerc(expected: number, parentEle: Element): number {
         return expected / parseFloat(getComputedStyle(parentEle).width) * 100;
     }
@@ -357,7 +367,7 @@ export class Image {
                 this.cancelResizeAction();
             } else {
                 if ((parseInt(this.parent.insertImageSettings.minWidth as string, 10) >= parseInt(width, 10) ||
-                    parseInt(this.parent.insertImageSettings.maxWidth as string, 10) <= parseInt(width, 10))) {
+                    parseInt(this.getMaxWidth() as string, 10) <= parseInt(width, 10))) {
                     return;
                 }
                 if (!this.parent.insertImageSettings.resizeByPercent &&
@@ -374,6 +384,9 @@ export class Image {
         });
     }
     private resizing(e: PointerEvent | TouchEvent): void {
+        if (this.imgEle.offsetWidth >= this.getMaxWidth()) {
+            this.imgEle.style.maxHeight = this.imgEle.offsetHeight + 'px';
+        }
         let pageX: number = this.getPointX(e);
         let pageY: number = this.getPointY(e);
         let mouseX: number = (this.resizeBtnStat.botLeft || this.resizeBtnStat.topLeft) ? -(pageX - this.pageX) : (pageX - this.pageX);
@@ -1245,7 +1258,7 @@ export class Image {
                 url: url, selection: (this as IImageNotifyArgs).selection, altText: matchUrl,
                 selectParent: (this as IImageNotifyArgs).selectParent, width: {
                     width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
-                    maxWidth: proxy.parent.insertImageSettings.maxWidth
+                    maxWidth: proxy.getMaxWidth()
                 },
                 height: {
                     height: proxy.parent.insertImageSettings.height, minHeight: proxy.parent.insertImageSettings.minHeight,
@@ -1279,7 +1292,7 @@ export class Image {
         imgSizeWrap.appendChild(contentElem);
         let widthNum: NumericTextBox = new NumericTextBox({
             format: '###.### px', min: this.parent.insertImageSettings.minWidth as number,
-            max: this.parent.insertImageSettings.maxWidth as number,
+            max: this.getMaxWidth() as number,
             enableRtl: this.parent.enableRtl, locale: this.parent.locale
         });
         widthNum.isStringTemplate = true;
@@ -1393,7 +1406,7 @@ export class Image {
                                 selectParent: selectParent,
                                 width: {
                                     width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
-                                    maxWidth: proxy.parent.insertImageSettings.maxWidth
+                                    maxWidth: proxy.getMaxWidth()
                                 }, height: {
                                     height: proxy.parent.insertImageSettings.height, minHeight: proxy.parent.insertImageSettings.minHeight,
                                     maxHeight: proxy.parent.insertImageSettings.maxHeight
@@ -1438,7 +1451,7 @@ export class Image {
                             url: url, selection: save, altText: altText, selectParent: selectParent,
                             width: {
                                 width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
-                                maxWidth: proxy.parent.insertImageSettings.maxWidth
+                                maxWidth: proxy.getMaxWidth()
                             }, height: {
                                 height: proxy.parent.insertImageSettings.height, minHeight: proxy.parent.insertImageSettings.minHeight,
                                 maxHeight: proxy.parent.insertImageSettings.maxHeight
@@ -1831,7 +1844,7 @@ export class Image {
                         reader.result as string : URL.createObjectURL(convertToBlob(reader.result as string)),
                     width: {
                         width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
-                        maxWidth: proxy.parent.insertImageSettings.maxWidth
+                        maxWidth: proxy.getMaxWidth()
                     },
                     height: {
                         height: proxy.parent.insertImageSettings.height, minHeight: proxy.parent.insertImageSettings.minHeight,

@@ -4,7 +4,7 @@ import { isNullOrUndefined, L10n, EmitType, Browser } from '@syncfusion/ej2-base
 import { Save } from '@syncfusion/ej2-file-utils';
 // tslint:disable-next-line:max-line-length
 import { DocumentChangeEventArgs, ViewChangeEventArgs, ZoomFactorChangeEventArgs, StyleType, WStyle, BeforePaneSwitchEventArgs, LayoutType, FormFieldFillEventArgs, FormFieldData } from './index';
-import { SelectionChangeEventArgs, RequestNavigateEventArgs, ContentChangeEventArgs, DocumentEditorKeyDownEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, CommentDeleteEventArgs } from './index';
+import { SelectionChangeEventArgs, RequestNavigateEventArgs, ContentChangeEventArgs, DocumentEditorKeyDownEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, CommentDeleteEventArgs, BeforeFileOpenArgs } from './index';
 import { LayoutViewer, PageLayoutViewer, WebLayoutViewer, BulletsAndNumberingDialog } from './index';
 import { Print, SearchResultsChangeEventArgs } from './index';
 import { Page, BodyWidget, ParagraphWidget } from './index';
@@ -44,7 +44,6 @@ import { RevisionCollection } from './implementation/track-changes/track-changes
  * The `DocumentEditorSettings` module is used to provide the customize property of Document Editor.
  */
 export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings> {
-
     /**
      * Specifies the user preferred Search Highlight Color of Document Editor.
      * @default '#FFE97F'
@@ -646,6 +645,13 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Event()
     public commentEnd: EmitType<Object>;
+    /**
+     * Triggers before a file is opened.
+     * @event
+     * @blazorproperty 'onBeforeFileOpen'
+     */
+    @Event()
+    public beforeFileOpen: EmitType<BeforeFileOpenArgs>;
     /**
      * Triggers after inserting comment.
      * @blazorproperty 'OnCommentDelete'
@@ -1801,7 +1807,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'User': 'User',
         'View': 'View',
         'Insertion': 'Insertion',
-        'Deletion': 'Deletion'
+        'Deletion': 'Deletion',
+        'All caps': 'All caps'
     };
     // Public Implementation Starts
     /**

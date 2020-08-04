@@ -1552,6 +1552,9 @@ var MenuBase = /** @class */ (function (_super) {
         }
     };
     MenuBase.prototype.getMenuItemModel = function (item, level) {
+        if (sf.base.isNullOrUndefined(item)) {
+            return null;
+        }
         if (sf.base.isNullOrUndefined(level)) {
             level = 0;
         }

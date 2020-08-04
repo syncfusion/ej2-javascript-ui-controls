@@ -665,9 +665,9 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
         accumulation.allowServerDataBinding = false;
         accumulation.trigger(seriesRender, argsData);
         this.resultData = e.result !== '' ? e.result : [];
-        this.getPoints(this.resultData, accumulation);
         // tslint:disable
         if ((++accumulation.seriesCounts === accumulation.visibleSeries.length && render) || (window['Blazor'] && !render && accumulation.seriesCounts === 1)) {
+            this.getPoints(this.resultData, accumulation);
             accumulation.refreshChart();
         }
     }
