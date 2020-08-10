@@ -1458,7 +1458,7 @@ export class Zoom {
                     this.rectZoomingStart = false;
                     this.updateInteraction();
                     this.touchStartList = targetTouches(e);
-                } else if (this.touchStartList.length === 2 && touches.length === 2) {
+                } else if (touches.length === 2 && this.touchStartList.length === 2) {
                     this.touchMoveList = targetTouches(e);
                     e.preventDefault();
                     this.rectZoomingStart = false;
