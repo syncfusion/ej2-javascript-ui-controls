@@ -1470,7 +1470,7 @@ export class Zoom {
         this.mouseMovePoints = this.getMousePosition(pageX, pageY);
         let targetId: string = e.target['id'];
         let targetEle: Element = <Element>e.target;
-        if (zoom.enable && this.isPanning && ((Browser.isDevice && touches.length > 1) || !Browser.isDevice)) {
+        if (zoom.enable && this.isPanning && ((Browser.isDevice && touches.length >= 1) || !Browser.isDevice)) {
             e.preventDefault();
             this.maps.element.style.cursor = 'pointer';
             this.mouseMoveLatLong = { x: pageX, y: pageY };
