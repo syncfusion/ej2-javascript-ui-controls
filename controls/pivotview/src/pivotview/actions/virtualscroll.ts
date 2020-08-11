@@ -277,9 +277,10 @@ export class VirtualScroll {
             }
             this.direction = 'horizondal';
             let horiOffset: number = -((left - this.parent.scrollPosObject.horizontalSection - mCont.scrollLeft));
-            let vertiOffset: string = (mCont.querySelector('.' + cls.TABLE) as HTMLElement).style.transform.split(',')[1].trim();
+            const tableElement: HTMLElement = (mCont.querySelector('.' + cls.TABLE) as HTMLElement);
+            let vertiOffset: string = tableElement.style.transform.split(',')[1] ? tableElement.style.transform.split(',')[1].trim() : '0px)';
             if (mCont.scrollLeft < this.parent.scrollerBrowserLimit) {
-                setStyleAttribute(mCont.querySelector('.e-table') as HTMLElement, {
+                setStyleAttribute(tableElement, {
                     transform: 'translate(' + horiOffset + 'px,' + vertiOffset
                 });
                 setStyleAttribute(mHdr.querySelector('.e-table') as HTMLElement, {
