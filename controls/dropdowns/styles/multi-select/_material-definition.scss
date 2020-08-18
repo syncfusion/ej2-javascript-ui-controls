@@ -122,6 +122,11 @@ $ddl-multiselect-group-checkbox-wrapper-padding-left: 14px !default;
 $ddl-bigger-multiselect-group-checkbox-wrapper-padding-left: $ddl-multiselect-group-checkbox-wrapper-padding-left !default;
 $ddl-multiselect-group-list-group-item-rtl-padding-right: 16px !default;
 $ddl-multiselect-label-position: 15px !default;
+$ddl-multiselect-filled-floatlabel-fontsize: 14px !default;
+$ddl-multiselect-filled-float-input-min-height: 28px !default;
+$ddl-multiselect-filled-input-min-height: 39px !default;
+$ddl-multiselect-filled-float-input-chip-clear-icon-size: 12px !default;
+$ddl-multiselect-filled-chip-clear-icon-size: 14px !default;
 // Small size
 $ddl-select-all-height-small: 26px !default;
 $ddl-small-chip-height: 20px !default;
@@ -134,6 +139,16 @@ $ddl-delim-small-font-size: 12px !default;
 $ddl-small-closer-margin-top: -2.5em !default;
 $ddl-chip-close-hooker-small-left: 6px !default;
 $ddl-delimviewheight-small: 26px !default;
+$ddl-multiselect-filled-input-min-height-small: 32px !default;
+$ddl-multiselect-filled-float-input-min-height-small: 22px !default;
+$ddl-multiselect-filled-floatlabel-fontsize-small: 10px !default;
+$ddl-multiselect-filled-chip-clear-icon-size-small: 10px !default;
+
+// Touch
+$ddl-multiselect-filled-input-min-height-bigger: 52px !default;
+$ddl-multiselect-filled-float-input-min-height-bigger: 36px !default;
+$ddl-multiselect-filled-floatlabel-fontsize-bigger: 12px !default;
+
 // Touch Small size
 $ddl-select-all-height-bigger-small: 40px !default;
 $ddl-bigger-small-chip-height: 22px !default;
@@ -189,3 +204,4 @@ $outline-multiselect-close-icon-hover-bg-color: rgba($grey-light-font, .87) !def
 $outline-multiselect-remains-font-color: rgba($grey-light-font, .6) !default;
 $outline-multiselect-disabled-font-color: rgba($grey-light-font, .38) !default;
 $outline-multiselect-disabled-chip-bg-color: $grey-100 !default;
+$filled-multiselect-chip-bg-color: darken($grey-300, 7%) !default;

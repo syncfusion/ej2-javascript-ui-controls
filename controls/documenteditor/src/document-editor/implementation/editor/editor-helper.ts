@@ -140,6 +140,14 @@ export class HelperMethods {
         }
         return color;
     }
+    public static isVeryDark(backColor: string): boolean {
+        let backgroundColor: string = backColor.substring(1);
+        let r : number = parseInt(backgroundColor.substr(0, 2), 16);
+        let g : number = parseInt(backgroundColor.substr(2, 2), 16);
+        let b : number = parseInt(backgroundColor.substr(4, 2), 16);
+        let contrast : number = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+        return contrast <= 60;
+    }
     public static getColor(color: string): string {
         if (color.length > 0) {
             if (color[0] === '#') {

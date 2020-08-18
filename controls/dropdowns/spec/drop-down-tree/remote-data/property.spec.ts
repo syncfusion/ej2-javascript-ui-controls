@@ -1951,6 +1951,7 @@ describe('DropDown Tree control Remote datasource', () => {
                     },
                     allowMultiSelection: true,
                     treeSettings: { loadOnDemand: true },
+                    wrapText: true,
                     mode: 'Box'
                 });
                 ddtreeObj.appendTo(ele);
@@ -2279,7 +2280,8 @@ describe('DropDown Tree control Remote datasource', () => {
                         iconCss: 'nodeIcon', imageUrl: 'nodeImage', tooltip: 'nodeTooltip', htmlAttributes: 'nodeHtmlAttr', selected: 'nodeSelected'
                     },
                     showCheckBox: true,
-                    mode: 'Box'
+                    mode: 'Box',
+                    wrapText: true
                 });
                 ddtreeObj.appendTo(ele);
                 setTimeout(function () { done() });

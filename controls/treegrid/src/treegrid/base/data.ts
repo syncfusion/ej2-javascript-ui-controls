@@ -496,7 +496,7 @@ public isRemote(): boolean {
       let query: Query = getObject('query', args); let srtQry: Query = new Query();
       for (let srt: number = this.parent.grid.sortSettings.columns.length - 1; srt >= 0; srt--) {
         let col: GridColumnModel = this.parent.grid.getColumnByField(this.parent.grid.sortSettings.columns[srt].field);
-        let compFun: Function | string = col.sortComparer && !this.isRemote() ?
+        let compFun: Function | string = col.sortComparer && isOffline(this.parent) ?
           (col.sortComparer as Function).bind(col) :
           this.parent.grid.sortSettings.columns[srt].direction;
         srtQry.sortBy(this.parent.grid.sortSettings.columns[srt].field, compFun);

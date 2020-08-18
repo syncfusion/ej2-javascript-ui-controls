@@ -2293,7 +2293,9 @@ export enum RealAction {
     /** Indicates whether animation happens or not  */
     AnimationClick = 1 << 6,
     /** Enable the group action */
-    EnableGroupAction = 1 << 7
+    EnableGroupAction = 1 << 7,
+    /** Indicate action in Progress */
+    PanInProgress = 1 << 8,
 }
 
 /** @private */
@@ -2516,6 +2518,20 @@ export type State =
     'Progress' |
     /** Completed - Sets the interaction state as Completed */
     'Completed';
+
+/**
+ * Returns which mouse button is clicked.
+ * Left - Whenever the left button of the mouse is clicked, ‘Left’ is returned.
+ * Progress - Whenever the mouse wheel is clicked, ‘Middle’ is returned.
+ * Completed - Whenever the right button of the mouse is clicked, ‘Right’ is returned.
+ */
+export type MouseButtons =
+    /** Left - Whenever the left button of the mouse is clicked, ‘Left’ is returned. */
+    'Left' |
+    /** Middle - Whenever the mouse wheel is clicked, ‘Middle’ is returned. */
+    'Middle' |
+    /** Right - Whenever the right button of the mouse is clicked, ‘Right’ is returned. */
+    'Right' ;
 
 /**
  * Defines whether an object is added/removed from diagram

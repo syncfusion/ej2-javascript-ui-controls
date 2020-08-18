@@ -4573,4 +4573,30 @@ describe('rowdeselect checking with persist selection and ResetOnRowClick', () =
             gridObj.rowDeselected = null;
         });
     });
+
+    describe('EJ2-41692 - Row drag issue when field-based checkbox column is present', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID' },
+                        { field: 'CustomerID', headerText: 'CustomerID' },
+                        { field: 'EmployeeID', headerText: 'Employee ID' },
+                        { field: 'Verified', headerText: 'Verified', type:'checkbox' },],
+                        height:700,
+                }, done);
+        });
+        it('dataBind', () => {
+            gridObj.dataBind();
+        });
+        it('checkbox records ', () => {
+            expect(gridObj.getSelectedRows().length >= 1).toBeTruthy();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

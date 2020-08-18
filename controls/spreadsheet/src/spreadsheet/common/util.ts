@@ -57,6 +57,30 @@ export function getScrollBarWidth(): number {
     return scrollAreaWidth = result;
 }
 
+let classes: string[] = ['e-ribbon', 'e-formula-bar-panel', 'e-sheet-tab-panel', 'e-header-toolbar'];
+
+/** @hidden */
+export function getSiblingsHeight(element: HTMLElement, classList: string[] = classes): number {
+    let previous: number = getHeightFromDirection(element, 'previous', classList);
+    let next: number = getHeightFromDirection(element, 'next', classList);
+    return previous + next;
+}
+
+function getHeightFromDirection(element: HTMLElement, direction: string, classList: string[]): number {
+    // tslint:disable-next-line:no-any
+    let sibling: HTMLElement = (element)[direction + 'ElementSibling'];
+    let result: number = 0;
+    while (sibling) {
+        if (classList.some((value: string) => sibling.classList.contains(value))) {
+            result += sibling.offsetHeight;
+        }
+        // tslint:disable-next-line:no-any
+        sibling = (sibling)[direction + 'ElementSibling'];
+    }
+
+    return result;
+}
+
 /**
  * @hidden
  */

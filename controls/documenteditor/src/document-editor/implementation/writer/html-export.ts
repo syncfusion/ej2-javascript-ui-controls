@@ -824,7 +824,7 @@ export class HtmlExport {
             }
             //}
             if (!isNullOrUndefined(table.tableFormat.leftIndent) && table.tableFormat.leftIndent !== 0) {
-                tagAttributes.push('left-indent="' + table.tableFormat.leftIndent.toString() + 'pt;');
+                tagAttributes.push('left-indent="' + (table.tableFormat.leftIndent.toString() + 'pt;' ) + '"');
             }
             if (!isNullOrUndefined(table.tableFormat.cellSpacing) && table.tableFormat.cellSpacing > 0) {
                 tagAttributes.push('cellspacing="' + (((table.tableFormat.cellSpacing * 72) / 96) * 2).toString() + '"');

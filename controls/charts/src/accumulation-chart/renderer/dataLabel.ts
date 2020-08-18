@@ -1052,7 +1052,7 @@ export class AccumulationDataLabel extends AccumulationBase {
                 let newAngle: number = nextPoint.midAngle + count;
                 if (!(newAngle < 270 && newAngle > 90)) {
                     newAngle = 270;
-                    this.isIncreaseAngle = true;
+                    this.isIncreaseAngle = false;
                     break;
                 }
                 this.changeLabelAngle(nextPoint, newAngle);

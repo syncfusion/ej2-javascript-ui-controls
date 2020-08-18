@@ -1232,14 +1232,15 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             removeElement('animated_tiles');
             let ele: Element = createElement('div', {
                 id: this.element.id + '_tile_parent', styles: 'position: absolute; left: ' +
-                    (this.mapAreaRect.x) + 'px; top: ' + (this.mapAreaRect.y + padding) + 'px; height: ' +
+                    (this.mapAreaRect.x) + 'px; right: ' + (this.margin.right) + 'px; top: '
+                    + (this.mapAreaRect.y + padding) + 'px; height: ' +
                     (this.mapAreaRect.height) + 'px; width: '
                     + (this.mapAreaRect.width) + 'px; overflow: hidden;'
             });
             let ele1: Element = createElement('div', {
                 id: this.element.id + '_tiles', styles: 'position: absolute; left: ' +
-                    (this.mapAreaRect.x) + 'px; top: ' + (this.mapAreaRect.y + padding) + 'px; height: ' +
-                    (this.mapAreaRect.height) + 'px; width: '
+                    (this.mapAreaRect.x) + 'px;  right: ' + (this.margin.right) + 'px; top: '
+                    + (this.mapAreaRect.y + padding) + 'px; height: ' + (this.mapAreaRect.height) + 'px; width: '
                     + (this.mapAreaRect.width) + 'px; overflow: hidden;'
             });
             this.element.appendChild(ele);

@@ -77,7 +77,8 @@ export class KanbanTouch {
         if (selectedCards.length > 1) {
             popupContent = '(' + selectedCards.length + ') ' + this.parent.localeObj.getConstant('cardsSelected');
         } else if (selectedCards.length === 1) {
-            popupContent = ' ' + this.parent.getCardDetails(selectedCards[0])[this.parent.cardSettings.headerField];
+            popupContent = ' ' +
+                (this.parent.getCardDetails(selectedCards[0]) as { [key: string]: Object })[this.parent.cardSettings.headerField];
         }
         return popupContent;
     }

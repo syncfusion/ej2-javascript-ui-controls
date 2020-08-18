@@ -623,7 +623,7 @@ export class Renderer {
         let leftMargin: number = elementBox.margin.left;
         let format: WCharacterFormat = elementBox.listLevel.characterFormat;
         let breakCharacterFormat: WCharacterFormat = elementBox.line.paragraph.characterFormat;
-        let color: string = format.fontColor === '#000000' ? breakCharacterFormat.fontColor : format.fontColor;
+        let color: string = format.fontColor === 'empty' ? breakCharacterFormat.fontColor : format.fontColor;
         this.pageContext.textBaseline = 'alphabetic';
         let bold: string = '';
         let italic: string = '';
@@ -662,7 +662,12 @@ export class Renderer {
             let index: number = text.indexOf('.');
             text = text.substr(index) + text.substring(0, index);
         }
-        this.pageContext.fillStyle = HelperMethods.getColor(color);
+        if (color === "empty") {
+            let bgColor: string = this.documentHelper.backgroundColor;
+            this.pageContext.fillStyle = this.getDefaultFontColor(bgColor);
+        } else {
+            this.pageContext.fillStyle = HelperMethods.getColor(color);
+        }
         // tslint:disable-next-line:max-line-length
         this.pageContext.fillText(text, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width));
 
@@ -671,6 +676,14 @@ export class Renderer {
         }
         if (strikethrough !== 'None') {
             this.renderStrikeThrough(elementBox, left, top, format.strikethrough, color, baselineAlignment);
+        }
+    }
+
+    private getDefaultFontColor(backColor: string) {
+        if (HelperMethods.isVeryDark(backColor)) {
+            return "#FFFFFF";
+        } else {
+            return "#000000";
         }
     }
     /**
@@ -720,7 +733,12 @@ export class Renderer {
         }
         let baselineOffset: number = elementBox.baselineOffset;
         topMargin = (format.baselineAlignment === 'Normal') ? topMargin + baselineOffset : (topMargin + (baselineOffset / 1.5));
-        this.pageContext.fillStyle = HelperMethods.getColor(color);
+        if (color === "empty") {
+            let bgColor: string = this.documentHelper.backgroundColor;
+            this.pageContext.fillStyle = this.getDefaultFontColor(bgColor);
+        } else {
+            this.pageContext.fillStyle = HelperMethods.getColor(color);
+        }
 
         let scaledWidth: number = this.getScaledValue(elementBox.width);
         let text: string = elementBox.text;
@@ -1132,8 +1150,15 @@ export class Renderer {
             /* tslint:disable:no-empty */
         } else {
             try {
-                // tslint:disable-next-line:max-line-length
-                this.pageContext.drawImage(elementBox.element, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width), this.getScaledValue(elementBox.height));
+                if (!elementBox.isCrop) {
+                    // tslint:disable-next-line:max-line-length
+                    this.pageContext.drawImage(elementBox.element, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width), this.getScaledValue(elementBox.height));
+                } else {
+                    // tslint:disable-next-line:max-line-length
+                    this.pageContext.drawImage(elementBox.element, this.getScaledValue(elementBox.x), this.getScaledValue(elementBox.y),
+                        elementBox.cropWidth, elementBox.cropHeight, this.getScaledValue(left + leftMargin, 1),
+                        this.getScaledValue(top + topMargin, 2), elementBox.width, elementBox.height);
+                }
             } catch (e) {
                 // tslint:disable-next-line:max-line-length
                 elementBox.imageString = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAgVBMVEX///8AAADgAADY2Njl5eVcXFxjY2NZWVl/f3+wsLCmpqb4+PiioqKpqam7u7vV1dX2uLj2wsLhFRXzpKT3vb30sbHhCwv74+P40dH+9vbkIyO2trbBwcHLy8tsbGycnJz529v4zMzrbGzlLS3qZmblNzfrdXXoRkbvi4vvgYHlHh7CZsBOAAADpUlEQVR4nO3da1faQBSF4ekAUQlUEFs14AXxVv7/D6yaQiZx5mSEYXF2ut+PNKzyyK5diYDmR9czx34AB49C/CjE759w3jvvWr15Tdgz3atXE54f++EcIArxoxA/CvGjED8K8aMQPwrxoxA/CvGLEeZ9jPJdhfk4GyCUjb3ECGE/Q6m/q3DwfudjP0ERZYN9hKdn2hvd3+0jHJz5/kBVuTk96bbQUEjhYR9ckiikUH8UUqg/CinUH4UU6o9CCvVHIYX6o5BC/VFIof4opFB/FFKoPwop1B+FFOqPQgrjyxfjVC38Lxk9tnAxGqZqdKtSOE4GHA5/fuNJpDCtcNHbv4VqYYqPLjgfUViPQgrjozA2CptRSGF8/59w+Wrt+rr1btNna1cPzg0wwuXavncxabnX7PfHYYXzlYARvlobQZyUR9mXm+1NMEK7SSLONgcVV9vb8IQXv4J3KSeKKlxXxNCzONkeYp8AV3p9UT1+P3FWHVAsq5thhGZSEb1DrSZq7dS5HUdoLiuBZ6jORG3tCwAkNJfCUJ2Jrqe1P0ESCkMNTdSACYNDDU7UoAkDQw1P1MAJvUMVJmrwhJ6hShM1gMIvQxUnahCFjaHKEzWQQneoxR95ogZTWBuqPFEDKnSHKk/UoArdoYoTNbDC5lBDEzW4QjMpYiZqgIXG/S76JhwHK5zVVipcnkIVuv/RW/HyFKhwYhuFr6NiCmdNoDBUSGFjovJQEYXuRN9ahwoorJ8uSZenPsMTNk+X2q6jwgm/ntHL11HhhL4zenmoYEL/Gb04VCxh6KKTNFQoYfiikzBUJKF00Sk8VCChfF00OFQcYdt10dBQYYRT5xn0n9G7Q0X8GfCzNNEyZ6iPgD/HlydaVg11DfhajJaJlm2HugIUrlomWrYZKuJKHz6vHhbSM/hROdRnxNe1meuXYvW0DB6+aflYrB7dlzDiCM3N1dVN6GDhMCDhjlHYjEIK46MwNgqbUUhhfJ/vA07wO8N1vw94ONo/3e/lTpVOYfc/UyG//ZmqW52fi/FuTNW3/lZ+eguF+qOQQv1RSKH+KKRQfxRSqD8KKdQfhRTqj0IK9UchhfqjkEL9UUih/iikUH8UUqg/CmXh6Hsv3jlK+wnvD/vgkrSHMMuyu1P9ZdmuwnycDQYn+svG3n9KEUKT9zHyf6+IEWJHIX4U4kchfhTiRyF+FOJHIX4U4kchfnVhijeZa6sunCf4ZdPamteEHY5C/CjEr/vCv0ec0g+AtS1QAAAAAElFTkSuQmCC';

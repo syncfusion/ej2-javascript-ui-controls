@@ -72,14 +72,15 @@ export function setBlankIconStyle(popup: HTMLElement): void {
     if (iconLi.classList.contains('e-url')) { iconLi = iconLi.querySelector('.e-menu-url'); }
     let icon: HTMLElement = iconLi.querySelector('.e-menu-icon') as HTMLElement;
     let cssProp: { padding: string, margin: string };
-    if (this.enableRtl) {
+    let enableRtl: boolean = popup.classList.contains('e-rtl');
+    if (enableRtl) {
         cssProp = { padding: 'paddingRight', margin: 'marginLeft' };
     } else {
         cssProp = { padding: 'paddingLeft', margin: 'marginRight' };
     }
     // tslint:disable
     let size: string = `${parseInt(getComputedStyle(icon).fontSize, 10) + parseInt(
-        (this.enableRtl ? (getComputedStyle(icon) as any)[cssProp.margin] : (getComputedStyle(icon) as any)[cssProp.margin]), 10)
+        (enableRtl ? (getComputedStyle(icon) as any)[cssProp.margin] : (getComputedStyle(icon) as any)[cssProp.margin]), 10)
         + parseInt(getComputedStyle(iconLi).paddingLeft, 10)}px`;
     blankIconList.forEach((li: HTMLElement): void => {
         if (li.classList.contains('e-url')) {

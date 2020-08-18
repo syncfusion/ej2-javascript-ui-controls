@@ -319,7 +319,9 @@ var Uploader = /** @class */ (function (_super) {
         if (this.isBlazorSaveUrl && this.sequentialUpload) {
             this.sequentialUpload = false;
         }
-        this.formRendered();
+        if (!this.isBlazorSaveUrl) {
+            this.formRendered();
+        }
         if (!this.isServerBlazor) {
             this.updateHTMLAttrToElement();
             this.checkHTMLAttributes(false);

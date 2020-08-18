@@ -14,7 +14,7 @@ export class SpellChecker {
     /**
      * Specifies whether spell check has to be performed or not.
      */
-    public enableSpellCheck: boolean = true;
+    private enableSpellCheckInternal: boolean = true;
     /**
      * @private
      */
@@ -145,6 +145,24 @@ export class SpellChecker {
      */
     public set removeUnderline(value: boolean) {
         this.removeUnderlineInternal = value;
+        this.documentHelper.owner.editor.reLayout(this.documentHelper.selection);
+    }
+    /**
+     * Getter indicates whether spell check has to be performed or not.
+     * @aspType bool
+     * @blazorType bool
+     */
+    public get enableSpellCheck(): boolean {
+        return this.enableSpellCheckInternal;
+    }
+    /**
+     * Setter to enable or disable spell check has to be performed or not
+     * @aspType bool
+     * @blazorType bool
+     */
+    public set enableSpellCheck(value: boolean) {
+        this.enableSpellCheckInternal = value;
+        this.documentHelper.owner.editor.reLayout(this.documentHelper.selection);
     }
     /**
      *

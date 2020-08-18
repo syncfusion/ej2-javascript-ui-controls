@@ -1,7 +1,7 @@
 import { Property, Complex, Collection, ChildProperty, NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';
 import { IDataSet, IDataOptions, IFieldOptions, IFilter, ISort, ICalculatedFieldSettings } from '../../base/engine';
 import { IDrillOptions, IValueSortSettings, IFormatSettings, IConditionalFormatSettings, IGroupSettings } from '../../base/engine';
-import { SummaryTypes, Sorting, FilterType, Operators, Condition, DateGroup, GroupType, ProviderType } from '../../base/types';
+import { SummaryTypes, Sorting, FilterType, Operators, Condition, DateGroup, GroupType, ProviderType, RenderMode } from '../../base/types';
 import { DataSourceType } from '../../base/types';
 import { IStyle, ICustomGroups, IAuthenticationInfo } from '../../base/engine';
 import { FieldOptionsModel, FilterModel, SortModel, FormatSettingsModel, GroupSettingsModel } from './datasourcesettings-model';
@@ -731,6 +731,12 @@ export class Authentication extends ChildProperty<Authentication> implements IAu
  * * `authentication`: Allows you to set the credential information to access the specified SSAS cube. **Note: It is applicable only for OLAP data source**.
  */
 export class DataSourceSettings extends ChildProperty<DataSourceSettings> implements IDataOptions {
+
+    /**
+     * Allows to set the mode of rendering the pivot table.
+     */
+    @Property()
+    public mode: RenderMode;
 
     /**
      * Allows to set the database name of SSAS cube as string type that used to retrieve the data from the specified connection string. 

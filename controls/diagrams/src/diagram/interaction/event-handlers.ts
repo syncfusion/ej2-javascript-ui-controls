@@ -298,7 +298,7 @@ export class DiagramEventHandler {
             bottomLeft = { x: (width - 17), y: height };
             bottomRight = { x: width, y: height };
             bounds = Rect.toBounds([topLeft, topRight, bottomLeft, bottomRight]);
-            if (bounds.containsPoint({ x: x + diagramCanvas.scrollLeft, y: y + diagramCanvas.scrollTop })) {
+            if (bounds.containsPoint({ x: x, y: y })) {
                 return true;
             }
         }
@@ -308,7 +308,7 @@ export class DiagramEventHandler {
             bottomLeft = { x: 0, y: height };
             bottomRight = { x: width, y: height };
             bounds = Rect.toBounds([topLeft, topRight, bottomLeft, bottomRight]);
-            if (bounds.containsPoint({ x: x + diagramCanvas.scrollLeft, y: y + diagramCanvas.scrollTop })) {
+            if (bounds.containsPoint({ x: x, y: y })) {
                 return true;
             }
         }
@@ -391,7 +391,8 @@ export class DiagramEventHandler {
                 && (evt.button === 2 || evt.buttons === 2))) {
                 let arg: IClickEventArgs = {
                     element: cloneBlazorObject(this.diagram), position: cloneBlazorObject(this.currentPosition),
-                    count: evt.buttons, actualObject: cloneBlazorObject(this.eventArgs.actualObject)
+                    count: evt.buttons, actualObject: cloneBlazorObject(this.eventArgs.actualObject),
+                    button: (evt.button === 0) ? 'Left' : (evt.button === 1) ? 'Middle' : 'Right'
                 };
                 this.inAction = false;
                 this.tool.mouseUp(this.eventArgs);
@@ -778,7 +779,8 @@ export class DiagramEventHandler {
                 let arg: IClickEventArgs | IBlazorClickEventArgs = {
                     element: cloneBlazorObject(this.eventArgs.source) || cloneBlazorObject(this.diagram),
                     position: cloneBlazorObject(this.eventArgs.position), count: evt.detail,
-                    actualObject: cloneBlazorObject(this.eventArgs.actualObject)
+                    actualObject: cloneBlazorObject(this.eventArgs.actualObject),
+                    button: (evt.button === 0) ? 'Left' : (evt.button === 1) ? 'Middle' : 'Right'
                 };
                 if (isBlazor() && this.diagram.click) { arg = this.getBlazorClickEventArgs(arg); }
                 this.diagram.triggerEvent(DiagramEvent.click, arg);
@@ -805,6 +807,7 @@ export class DiagramEventHandler {
             position: cloneBlazorObject(this.eventArgs.position), count: arg.count,
             actualObject: this.eventArgs.actualObject ? { selector: cloneBlazorObject(this.eventArgs.actualObject) } :
                 { diagram: cloneBlazorObject(this.diagram) },
+                button: arg.button
         } as IBlazorClickEventArgs;
         if (this.eventArgs.source instanceof Node) {
             (arg as IBlazorClickEventArgs).element.selector.nodes = [];

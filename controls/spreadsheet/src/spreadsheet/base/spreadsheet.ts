@@ -3,7 +3,7 @@ import { Property, NotifyPropertyChanges, INotifyPropertyChanged, ModuleDeclarat
 import { addClass, removeClass, EmitType, Complex, formatUnit, L10n, isNullOrUndefined, Browser, EventHandler } from '@syncfusion/ej2-base';
 import { detach, select, closest } from '@syncfusion/ej2-base';
 import { MenuItemModel, BeforeOpenCloseMenuEventArgs, ItemModel } from '@syncfusion/ej2-navigations';
-import { initialLoad, mouseDown, spreadsheetDestroyed, keyUp, BeforeOpenEventArgs, clearViewer } from '../common/index';
+import { initialLoad, mouseDown, spreadsheetDestroyed, keyUp, BeforeOpenEventArgs, clearViewer, getSiblingsHeight } from '../common/index';
 import { hideShow, performUndoRedo, overlay, DialogBeforeOpenEventArgs } from '../common/index';
 import { HideShowEventArgs, sheetNameUpdate, updateUndoRedoCollection, getUpdateUsingRaf, setAutoFit, created } from '../common/index';
 import { actionEvents, collaborativeUpdate, CollaborativeEditArgs, keyDown, enableFileMenuItems, hideToolbarItems } from '../common/index';
@@ -1370,6 +1370,14 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     public clearConditionalFormat(range?: string): void {
         range = range || this.getActiveSheet().selectedRange;
         super.clearConditionalFormat(range);
+    }
+
+     /** @hidden */
+     public setPanelSize(): void {
+        if (this.height !== 'auto') {
+            let panel: HTMLElement = document.getElementById(this.element.id + '_sheet_panel');
+            panel.style.height = `${this.element.getBoundingClientRect().height - getSiblingsHeight(panel)}px`;
+        }
     }
 
     /**

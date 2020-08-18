@@ -42,6 +42,7 @@ export class CheckBoxSelection {
     private activeEle: HTMLElement[] = [];
     constructor(parent?: IMulitSelect) {
         this.parent = parent;
+        this.removeEventListener();
         this.addEventListener();
     }
     public getModuleName(): string {

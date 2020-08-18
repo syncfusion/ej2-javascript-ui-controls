@@ -567,12 +567,24 @@
     width: 75px;
   }
 
+  .e-de-pane-enable-clr.e-de-ctnr-properties-pane-btn {
+    .e-btn {
+      color: $de-pane-color-border;
+    }
+  }
+
+  .e-de-pane-disable-clr.e-de-ctnr-properties-pane-btn {
+    .e-btn {
+      color: $de-font-color;
+    }
+  }
+
   .e-de-ctnr-properties-pane-btn {
     .e-btn {
       background-color: $de-prpty-btn-bg-clr;
       border-radius: 0;
       box-shadow: none;
-      color: $de-font-color;
+      color: $de-pane-color-border;
       min-height: 100%;
       min-width: 100%;
 

@@ -94,14 +94,15 @@ function setBlankIconStyle(popup) {
     }
     var icon = iconLi.querySelector('.e-menu-icon');
     var cssProp;
-    if (this.enableRtl) {
+    var enableRtl = popup.classList.contains('e-rtl');
+    if (enableRtl) {
         cssProp = { padding: 'paddingRight', margin: 'marginLeft' };
     }
     else {
         cssProp = { padding: 'paddingLeft', margin: 'marginRight' };
     }
     // tslint:disable
-    var size = parseInt(getComputedStyle(icon).fontSize, 10) + parseInt((this.enableRtl ? getComputedStyle(icon)[cssProp.margin] : getComputedStyle(icon)[cssProp.margin]), 10)
+    var size = parseInt(getComputedStyle(icon).fontSize, 10) + parseInt((enableRtl ? getComputedStyle(icon)[cssProp.margin] : getComputedStyle(icon)[cssProp.margin]), 10)
         + parseInt(getComputedStyle(iconLi).paddingLeft, 10) + "px";
     blankIconList.forEach(function (li) {
         if (li.classList.contains('e-url')) {

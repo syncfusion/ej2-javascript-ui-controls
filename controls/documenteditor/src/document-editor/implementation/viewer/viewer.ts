@@ -291,6 +291,10 @@ export class DocumentHelper {
     /**
      * @private
      */
+    public alignTablesRowByRow: boolean = false;
+    /**
+     * @private
+     */
     public lists: WList[] = [];
     /**
      * @private
@@ -787,7 +791,7 @@ export class DocumentHelper {
         characterFormat.fontFamilyBidi = 'Calibri';
         characterFormat.baselineAlignment = 'Normal';
         characterFormat.highlightColor = 'NoColor';
-        characterFormat.fontColor = '#000000';
+        characterFormat.fontColor = 'empty';
         characterFormat.allCaps = false;
     }
     private setDefaultParagraphValue(paragraphFormat: WParagraphFormat): void {
@@ -3328,6 +3332,8 @@ export abstract class LayoutViewer {
                             leftIndent = leftIndent - HelperMethods.convertPointToPixel(block.leftIndent);
                             rightIndent = leftIndent;
                         }
+                        // tslint:disable-next-line:max-line-length
+                        leftIndent = (block.tableFormat.horizontalPositionAbs === 'Left') ? block.tableFormat.horizontalPosition : leftIndent;
                         this.documentHelper.tableLefts.push(leftIndent);
                     }
                 }

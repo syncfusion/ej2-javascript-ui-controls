@@ -74,6 +74,11 @@
     position: relative;
     width: auto;
 
+    .e-input-group.e-numeric.e-control-wrapper .e-clear-icon.e-clear-icon-hide {
+      display: block;
+      visibility: hidden;
+    }
+
     .e-editable-value-wrapper {
       display: inline-block;
       padding: $editor-nrml-value-container-padding;

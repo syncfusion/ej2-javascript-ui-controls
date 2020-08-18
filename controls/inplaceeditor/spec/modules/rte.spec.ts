@@ -2,7 +2,7 @@
  * Rte module spec document
  */
 import { select, selectAll } from '@syncfusion/ej2-base';
-import { InPlaceEditor, BeginEditEventArgs } from '../../src/inplace-editor/base/index';
+import { InPlaceEditor, BeginEditEventArgs, ChangeEventArgs } from '../../src/inplace-editor/base/index';
 import { Rte } from '../../src/inplace-editor/modules/index';
 import * as classes from '../../src/inplace-editor/base/classes';
 import { renderEditor, triggerKeyBoardEvent, destroy } from './../render.spec';
@@ -539,6 +539,72 @@ describe('Rte module', () => {
                 expect(count).toEqual(1);
                 done();
             }, 400);
+        });
+    });
+
+    describe('BLAZ-4764 - New change event testing', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let changeArgs: any = {};
+        afterEach((): void => {
+            destroy(editorObj);
+            changeArgs = {};
+        });
+        it('Without initial value - Check changed value', (done) => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                type: 'RTE',
+                model: {
+                    saveInterval: 1
+                },
+                change: function (e: ChangeEventArgs) {
+                    changeArgs = e;
+                }
+            });
+            ele = editorObj.element;
+            valueEle = <HTMLElement>select('.' + classes.VALUE, ele);
+            valueEle.click();
+            setTimeout(() => {
+                expect(editorObj.value).toEqual(null);
+                editorObj.rteModule.compObj.value = "<p>Syncfusion</p>";
+                editorObj.rteModule.compObj.dataBind();
+                (ele.querySelector('.e-btn-save') as HTMLElement).click();
+                setTimeout(() => {
+                    expect(changeArgs['name']).toEqual('change');
+                    expect(changeArgs['previousValue']).toEqual(null);
+                    expect(changeArgs['value']).toEqual('<p>Syncfusion</p>');
+                    done();
+                }, 1000);
+            }, 1500);
+        });
+        it('Check changed value', (done) => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                type: 'RTE',
+                value: '<p>Test</p>',
+                model: {
+                    saveInterval: 1
+                },
+                change: function (e: ChangeEventArgs) {
+                    changeArgs = e;
+                }
+            });
+            ele = editorObj.element;
+            valueEle = <HTMLElement>select('.' + classes.VALUE, ele);
+            valueEle.click();
+            setTimeout(() => {
+                expect(editorObj.value).toEqual('<p>Test</p>');
+                editorObj.rteModule.compObj.value = "<p>Syncfusion</p>";
+                editorObj.rteModule.compObj.dataBind();
+                (ele.querySelector('.e-btn-save') as HTMLElement).click();
+                setTimeout(() => {
+                    expect(changeArgs['name']).toEqual('change');
+                    expect(changeArgs['previousValue']).toEqual('<p>Test</p>');
+                    expect(changeArgs['value']).toEqual('<p>Syncfusion</p>');
+                    done();
+                }, 1000);
+            }, 1500);
         });
     });
 

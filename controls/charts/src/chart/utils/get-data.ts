@@ -209,6 +209,8 @@ export class ChartData {
                     closest = data;
                 }
             }
+        } else if (xData.length === 1) {
+            closest = xData[0];
         }
         return closest;
     }

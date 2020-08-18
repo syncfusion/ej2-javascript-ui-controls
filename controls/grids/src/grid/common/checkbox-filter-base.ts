@@ -387,6 +387,7 @@ export class CheckBoxFilterBase {
 
     private fltrBtnHandler(): void {
         let checked: Element[] = [].slice.call(this.cBox.querySelectorAll('.e-check:not(.e-selectall)'));
+        let check: Element[] = checked;
         let optr: string = 'equal';
         let searchInput: HTMLInputElement = this.searchBox.querySelector('.e-searchinput') as HTMLInputElement;
         let caseSen: boolean = this.options.allowCaseSensitive;
@@ -405,6 +406,8 @@ export class CheckBoxFilterBase {
             defaults.operator = 'notequal';
         }
         let value: string;
+        let val: string;
+        let length: number;
         let fObj: PredicateModel;
         let coll: PredicateModel[] = [];
         if (checked.length !== this.itemsCnt || (searchInput.value && searchInput.value !== '')) {
@@ -447,6 +450,16 @@ export class CheckBoxFilterBase {
                 this.parent.notify(events.fltrPrevent, args);
                 if (args.cancel) {
                     return;
+                }
+            }
+            if (this.options.type === 'date' || this.options.type === 'datetime') {
+                length = check.length - 1;
+                val = this.values[parentsUntil(check[length], 'e-ftrchk').getAttribute('uid')];
+                if (isNullOrUndefined(val) && isNotEqual) {
+                    coll.push({
+                        field: defaults.field, matchCase: defaults.matchCase, operator: 'equal',
+                        predicate: 'and', value: null
+                    });
                 }
             }
             this.initiateFilter(coll);
@@ -936,6 +949,7 @@ export class CheckBoxFilterBase {
         let len: number = cols ? cols.length : 0;
         let predicate: Predicate;
         let first: PredicateModel;
+        let operate: string = 'or';
         first = CheckBoxFilterBase.updateDateFilter(cols[0]);
         first.ignoreAccent = !isNullOrUndefined(first.ignoreAccent) ? first.ignoreAccent : false;
         if (first.type === 'date' || first.type === 'datetime') {
@@ -958,8 +972,13 @@ export class CheckBoxFilterBase {
                 }
             } else {
                 if (cols[p].type === 'date' || cols[p].type === 'datetime') {
-                    predicate = (predicate[((cols[p] as Predicate).predicate) as string] as Function)(
-                        getDatePredicate(cols[p], cols[p].type), cols[p].type, cols[p].ignoreAccent);
+                    if (cols[p].predicate === 'and' && cols[p].operator === 'equal') {
+                        predicate = (predicate[operate] as Function)(
+                            getDatePredicate(cols[p], cols[p].type), cols[p].type, cols[p].ignoreAccent);
+                    } else {
+                        predicate = (predicate[((cols[p] as Predicate).predicate) as string] as Function)(
+                            getDatePredicate(cols[p], cols[p].type), cols[p].type, cols[p].ignoreAccent);
+                    }
                 } else {
                     /* tslint:disable-next-line:max-line-length */
                     predicate = cols[p].ejpredicate ?

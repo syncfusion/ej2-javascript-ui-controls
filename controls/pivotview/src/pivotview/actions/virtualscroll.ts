@@ -120,7 +120,7 @@ export class VirtualScroll {
     private update(mHdr: HTMLElement, mCont: HTMLElement, top: number, left: number, e: Event): void {
         this.parent.isScrolling = true;
         let engine: PivotEngine | OlapEngine = this.parent.dataType === 'pivot' ? this.parent.engineModule : this.parent.olapEngineModule;
-        if (isBlazor()) {
+        if (isBlazor() || this.parent.dataSourceSettings.mode === 'Server') {
             engine.pageSettings = this.parent.pageSettings;
         }
         if (this.parent.pageSettings && engine.pageSettings) {
@@ -164,6 +164,8 @@ export class VirtualScroll {
                                     (engine.rowFirstLvl * rowValues * pivot.gridSettings.rowHeight);
                                 pivot.scrollPosObject.verticalSection = pos;
                             });
+                    } else if (this.parent.dataSourceSettings.mode === 'Server') {
+                        this.parent.getEngine('onScroll', null, null, null, null, null, null);
                     } else {
                         this.parent.engineModule.generateGridData(
                             this.parent.dataSourceSettings, this.parent.engineModule.headerCollection);
@@ -222,6 +224,8 @@ export class VirtualScroll {
                                     colValues * pivot.gridSettings.columnWidth);
                                 pivot.scrollPosObject.horizontalSection = pos;
                             });
+                    } else if (this.parent.dataSourceSettings.mode === 'Server') {
+                        this.parent.getEngine('onScroll', null, null, null, null, null, null);
                     } else {
                         pivot.engineModule.generateGridData(pivot.dataSourceSettings, pivot.engineModule.headerCollection);
                         colStartPos = pivot.engineModule.colStartPos;
@@ -275,7 +279,7 @@ export class VirtualScroll {
                 fCont.scrollTop = mCont.scrollTop;
                 return;
             }
-            this.direction = 'horizondal';
+            this.parent.scrollDirection = this.direction = 'horizondal';
             let horiOffset: number = -((left - this.parent.scrollPosObject.horizontalSection - mCont.scrollLeft));
             let vertiOffset: string = (mCont.querySelector('.' + cls.TABLE) as HTMLElement).style.transform.split(',')[1].trim();
             if (mCont.scrollLeft < this.parent.scrollerBrowserLimit) {
@@ -344,7 +348,7 @@ export class VirtualScroll {
             if (this.previousValues.top === top) {
                 return;
             }
-            this.direction = 'vertical';
+            this.parent.scrollDirection = this.direction = 'vertical';
             let vertiOffset: number = -((top - this.parent.scrollPosObject.verticalSection - mCont.scrollTop));
             let horiOffset: string = (mCont.querySelector('.' + cls.TABLE) as HTMLElement).style.transform.split(',')[0].trim();
             if (mCont.scrollTop < this.parent.scrollerBrowserLimit) {

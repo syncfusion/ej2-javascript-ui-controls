@@ -2325,9 +2325,7 @@ export class DropDownList extends DropDownBase implements IInput {
         let popupHolderEle: HTMLElement = document.querySelector('#' + this.element.id + '_popup_holder');
         if (this.isServerBlazor && this.serverPopupEle && popupHolderEle) {
             popupHolderEle.appendChild(this.serverPopupEle);
-        }
-        if (this.isServerBlazor) {
-            // tslint:disable-next-line
+			// tslint:disable-next-line
             (this as any).interopAdaptor.invokeMethodAsync('OnServerClosePopup');
         }
         this.isPopupOpen = false;
@@ -2731,7 +2729,8 @@ export class DropDownList extends DropDownBase implements IInput {
         if (this.isFiltering() && !this.isActive && this.actionCompleteData.list && this.actionCompleteData.list[0]) {
             this.isActive = true;
             this.onActionComplete(this.actionCompleteData.ulElement, this.actionCompleteData.list, null, true);
-        } else if (isNullOrUndefined(this.list) || !isUndefined(this.list) && this.list.classList.contains(dropDownBaseClasses.noData)) {
+        } else if (isNullOrUndefined(this.list) || !isUndefined(this.list) && (this.list.classList.contains(dropDownBaseClasses.noData) ||
+            this.list.querySelectorAll('.' + dropDownBaseClasses.li).length <= 0)) {
             this.renderList();
         } else if (this.isFiltering() && this.isServerBlazor) {
             this.renderList();

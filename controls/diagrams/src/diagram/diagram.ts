@@ -45,7 +45,8 @@ import { SnapSettingsModel } from './diagram/grid-lines-model';
 import { NodeModel, TextModel, BpmnShapeModel, BpmnAnnotationModel, HeaderModel, HtmlModel } from './objects/node-model';
 import { UmlActivityShapeModel, SwimLaneModel, LaneModel, PhaseModel } from './objects/node-model';
 import { Size } from './primitives/size';
-import { Keys, KeyModifiers, DiagramTools, AlignmentMode, AnnotationConstraints, NodeConstraints, RendererAction } from './enum/enum';
+import { Keys, KeyModifiers, DiagramTools, AlignmentMode, AnnotationConstraints, NodeConstraints } from './enum/enum';
+import { RendererAction, State } from './enum/enum';
 import { BlazorAction } from './enum/enum';
 import { DiagramConstraints, BridgeDirection, AlignmentOptions, SelectorConstraints, PortVisibility, DiagramEvent } from './enum/enum';
 import { DistributeOptions, SizingOptions, RenderingMode, DiagramAction, ThumbsConstraints, NudgeDirection } from './enum/enum';
@@ -135,6 +136,7 @@ import { SymbolSizeModel } from './../diagram/objects/preview-model';
 import { LineRouting } from './interaction/line-routing';
 import { DiagramSettingsModel } from '../diagram/diagram-settings-model';
 import { DiagramSettings } from '../diagram/diagram-settings';
+import { StackPanel } from './core/containers/stack-panel';
 /**
  * Represents the Diagram control
  * ```html
@@ -1332,7 +1334,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     //private variables
     /** @private */
-    public preventUpdate: boolean;
+    public preventDiagramUpdate: boolean;
     /** @private */
     public checkMenu: boolean = false;
     /** @private */
@@ -2057,7 +2059,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
         for (let i: number = 0; i < this.selectedItems.userHandles.length; i++) {
             {
-                updateBlazorTemplate('diagramsf_userHandle_template', 'UserHandleTemplate', this, false);
+                if (this.selectedItems.userHandles[i].template) {
+                    updateBlazorTemplate('diagramsf_userHandle_template', 'UserHandleTemplate', this, false);
+                }
             }
         }
 
@@ -2084,7 +2088,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
         for (let i: number = 0; i < this.selectedItems.userHandles.length; i++) {
             {
-                updateBlazorTemplate('diagramsf_userHandle_template', 'UserHandleTemplate', this, false);
+                if (this.selectedItems.userHandles[i].template) {
+                    updateBlazorTemplate('diagramsf_userHandle_template', 'UserHandleTemplate', this, false);
+                }
             }
         }
     }
@@ -2285,6 +2291,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
         let domTable: string = 'domTable';
         window[domTable] = {};
+
+        for (let i: number = 0; i < this.layers.length; i++) {
+            let currentLayer: Layer = (this.layers[i] as Layer);
+            currentLayer.zIndexTable = {};
+        }
+
+        this.diagramActions = undefined;
     }
 
     /**
@@ -2671,7 +2684,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private nudgeCommand(direction: NudgeDirection, x?: number, y?: number): void {
-        if (typeof direction !== 'object') {
+        if (typeof direction !== 'object' && (this.selectedItems.nodes.length || this.selectedItems.connectors.length) > 0) {
             this.nudge(direction);
         }
     }
@@ -2805,7 +2818,17 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             this.commandHandler.getBlazorOldValues();
         }
     }
+    private disableStackContainerPadding(wrapper: Container, disable: boolean): void {
+        if (wrapper instanceof StackPanel) {
+            wrapper.considerPadding = disable;
+        }
+        if (wrapper.children) {
+            for (let child of wrapper.children) {
+                this.disableStackContainerPadding(child as Container, false);
+            }
+        }
 
+    }
     /**
      * Scales the given objects by the given ratio
      * @param {NodeModel | ConnectorModel | SelectorModel} obj - Defines the objects to be resized
@@ -2814,6 +2837,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @param {PointModel} pivot - Defines the reference point with respect to which the objects will be resized
      */
     public scale(obj: NodeModel | ConnectorModel | SelectorModel, sx: number, sy: number, pivot: PointModel): boolean {
+        this.disableStackContainerPadding(obj.wrapper as Container, false);
         this.insertBlazorDiagramObjects(obj);
         let checkBoundaryConstraints: boolean = true;
         if ((obj as NodeModel | ConnectorModel).id) {
@@ -2849,6 +2873,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.callBlazorModel && (!(this.blazorActions & BlazorAction.interaction))) {
             this.commandHandler.getBlazorOldValues();
         }
+        this.disableStackContainerPadding(obj.wrapper as Container, true);
         return checkBoundaryConstraints;
     }
     /**
@@ -4512,7 +4537,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 update = true;
             }
             if (update) {
-                this.preventUpdate = true;
+                this.preventDiagramUpdate = true;
                 let connectors: Object = {};
                 let updatedNodes: NodeModel[] = nodes as NodeModel[];
                 if (isBlazor()) { this.updateTemplate(); }
@@ -4555,7 +4580,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     this.updateQuad(connector);
                     this.updateDiagramObject(connector, true);
                 }
-                this.preventUpdate = false;
+                this.preventDiagramUpdate = false;
                 this.updatePage();
                 if ((!(this.diagramActions & DiagramAction.Render)) || this.mode === 'Canvas') {
                     this.refreshDiagramLayer();
@@ -5085,7 +5110,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         });
         if (checkBrowserInfo()) {
             rect.setAttribute('fill', 'url(' + location.protocol + '//' + location.host + location.pathname +
-            '#' + this.element.id + '_pattern)');
+                '#' + this.element.id + '_pattern)');
         } else {
             rect.setAttribute('fill', 'url(#' + this.element.id + '_pattern)');
         }
@@ -5428,18 +5453,25 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             ViewportHeight: this.scrollSettings.viewPortHeight, ViewportWidth: this.scrollSettings.viewPortWidth,
             CurrentZoom: this.scroller.currentZoom
         };
+        let panStatus: State = 'Start';
+        if (this.realActions & RealAction.PanInProgress) {
+            panStatus = 'Progress';
+        }
         let arg: IScrollChangeEventArgs | IBlazorScrollChangeEventArgs = {
             oldValue: oldValue as ScrollValues,
-            newValue: newValue, source: this
+            newValue: newValue, source: this,
+            panState: panStatus
         };
         if (isBlazor() && this.scrollChange) {
             arg = {
                 oldValue: oldValue,
                 newValue: newValue,
-                sourceId: this.element.id
+                sourceId: this.element.id,
+                panState: panStatus
             } as IBlazorScrollChangeEventArgs;
         }
         this.triggerEvent(DiagramEvent.scrollChange, arg);
+        this.commandHandler.updatePanState(true);
         if (this.mode === 'Canvas' && (this.constraints & DiagramConstraints.Virtualization)) {
             this.refreshDiagramLayer();
         }
@@ -5503,16 +5535,16 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private initNodes(obj: Node, layer: LayerModel): void {
-        this.preventUpdate = true;
+        this.preventDiagramUpdate = true;
         this.initObject(obj as Node, layer);
-        this.preventUpdate = false;
+        this.preventDiagramUpdate = false;
     }
 
     private initConnectors(obj: Connector, layer: LayerModel, independentObj?: boolean): void {
-        this.preventUpdate = true;
+        this.preventDiagramUpdate = true;
         this.initObject(obj as Connector, layer, independentObj);
         this.updateEdges(obj as Connector);
-        this.preventUpdate = false;
+        this.preventDiagramUpdate = false;
     }
 
     private setZIndex(layer: LayerModel, obj: NodeModel | ConnectorModel): void {
@@ -5632,7 +5664,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     }
                 }
                 let sourceNode: NodeModel = this.nameTable[obj.sourceID]; let targetNode: NodeModel = this.nameTable[obj.targetID];
-                let port: PointPortModel = this.getConnectedPort(sourceNode, obj);
+                let port: PointPortModel = this.getConnectedPort(sourceNode, obj, true);
                 let targetPort: PointPortModel = this.getConnectedPort(targetNode, obj);
                 let outPort: PointPortModel = this.findInOutConnectPorts(sourceNode, false);
                 let inPort: PointPortModel = this.findInOutConnectPorts(targetNode, true);
@@ -5640,7 +5672,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     && canPortOutConnect(outPort))) {
                     (obj as Connector).sourceWrapper = this.getEndNodeWrapper(sourceNode, (obj as Connector), true);
                     if ((obj as Connector).sourcePortID) {
-                        if (port && port.constraints && !(port.constraints & PortConstraints.None)) {
+                        if (port && port.constraints && !(port.constraints & PortConstraints.None) && (port.constraints & PortConstraints.OutConnect)) {
                             ((obj as Connector) as Connector).sourcePortWrapper = this.getWrapper(
                                 sourceNode.wrapper, (obj as Connector).sourcePortID);
                         }
@@ -5650,7 +5682,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     && canPortInConnect(inPort))) {
                     (obj as Connector).targetWrapper = this.getEndNodeWrapper(targetNode, (obj as Connector), false);
                     if ((obj as Connector).targetPortID) {
-                        if (targetPort && targetPort.constraints && !(targetPort.constraints & PortConstraints.None)) {
+                        if (targetPort && targetPort.constraints && !(targetPort.constraints & PortConstraints.None) && (targetPort.constraints & PortConstraints.InConnect)) {
                             (obj as Connector).targetPortWrapper = this.getWrapper(
                                 targetNode.wrapper, (obj as Connector).targetPortID);
                         }
@@ -5711,12 +5743,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
     /* tslint:enable */
 
-    private getConnectedPort(node: NodeModel, connector: ConnectorModel): PointPortModel {
+    private getConnectedPort(node: NodeModel, connector: ConnectorModel, isSource?: boolean): PointPortModel {
         if (node && node.ports) {
             for (let port of node.ports) {
-                if (port.id === connector.sourcePortID) {
+                if (port.id === connector.sourcePortID && isSource) {
                     return port;
-                } else if (port.id === connector.targetPortID) {
+                } else if (port.id === connector.targetPortID && !isSource) {
                     return port;
                 }
             }
@@ -6162,9 +6194,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 let isProtectedChange: boolean = this.isProtectedOnChange;
                 let connector: ConnectorModel = this.nameTable[rootNode.outEdges[1]];
                 this.protectPropertyChange(false);
-                this.preventUpdate = true;
+                this.preventDiagramUpdate = true;
                 connector.sourcePortID = rootNode.ports[1].id;
-                this.preventUpdate = false;
+                this.preventDiagramUpdate = false;
                 this.dataBind();
                 this.protectPropertyChange(isProtectedChange);
             }
@@ -6591,7 +6623,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /** @private */
     public setSize(width: number, height: number): void {
-        if (this.diagramLayer && !this.preventUpdate) {
+        if (this.diagramLayer && !this.preventDiagramUpdate) {
             let position: Size = getRulerSize(this);
             width -= position.width;
             height -= position.height;
@@ -7148,7 +7180,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     public async endEdit(): Promise<void> {
         if (this.diagramActions & DiagramAction.TextEdit) {
             let oldValues: Object; let changedvalues: Object; let annotations: Object = {};
-            this.enableServerDataBinding(false);            
+            this.enableServerDataBinding(false);
             if (isBlazor()) { this.canEnableBlazorObject = true; }
             let textArea: HTMLTextAreaElement = (document.getElementById(this.element.id + '_editBox') as HTMLTextAreaElement);
             if ((isBlazor() && textArea) || !isBlazor()) {
@@ -7221,7 +7253,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         }
                         if (!(annotation instanceof Text)) {
                             let index: string = findObjectIndex(node as NodeModel, (annotation as ShapeAnnotationModel | PathAnnotationModel).id, true);
-                            let changesAnnotation: Object= {};
+                            let changesAnnotation: Object = {};
                             changesAnnotation[index] = { content: text };
                             changedvalues = { annotations: changesAnnotation };
                         }
@@ -7233,16 +7265,16 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             }
                         }
                         let nodeIndex: string = this.getIndex(node, node.id);
-                        if(nodeIndex) {
-                        let oldnodes = {};
-                        oldnodes[nodeIndex] = oldValues;
-                        let newnodes = {};
-                        newnodes[nodeIndex] = changedvalues;
-                        if (getObjectType(node) === Node) {
-                            this.onPropertyChanged({ nodes: newnodes } as DiagramModel, { nodes : oldnodes } as DiagramModel);
-                        } else {
-                            this.onPropertyChanged({ connectors: newnodes } as DiagramModel, { connectors : oldnodes } as DiagramModel);
-                        }
+                        if (nodeIndex) {
+                            let oldnodes = {};
+                            oldnodes[nodeIndex] = oldValues;
+                            let newnodes = {};
+                            newnodes[nodeIndex] = changedvalues;
+                            if (getObjectType(node) === Node) {
+                                this.onPropertyChanged({ nodes: newnodes } as DiagramModel, { nodes: oldnodes } as DiagramModel);
+                            } else {
+                                this.onPropertyChanged({ connectors: newnodes } as DiagramModel, { connectors: oldnodes } as DiagramModel);
+                            }
                         }
                         this.protectPropertyChange(true);
                         if (isBlazor() && ((node.shape) as DiagramShape).type === "Text") {
@@ -7809,14 +7841,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         var phaseHeader: string = 'PhaseHeaderParent';
                         if ((actualObject.isLane || actualObject.isPhase)) {
                             let collection: (PhaseModel | LaneModel)[] = actualObject.isLane ?
-                            (swimLaneNode.shape as SwimLaneModel).lanes : (swimLaneNode.shape as SwimLaneModel).phases;
-                        for (let j: number = 0; j < collection.length; j++) {
-                            if (collection[j].id === (actualObject[laneHeader] || actualObject[phaseHeader])) {
-                                collection[j].header.annotation.content = actualObject.annotations[0].content;
-                                collection[j].header.annotation.style = actualObject.annotations[0].style;
-                                break;
+                                (swimLaneNode.shape as SwimLaneModel).lanes : (swimLaneNode.shape as SwimLaneModel).phases;
+                            for (let j: number = 0; j < collection.length; j++) {
+                                if (collection[j].id === (actualObject[laneHeader] || actualObject[phaseHeader])) {
+                                    collection[j].header.annotation.content = actualObject.annotations[0].content;
+                                    collection[j].header.annotation.style = actualObject.annotations[0].style;
+                                    break;
+                                }
                             }
-                        }
                         }
                     }
                 }
@@ -8634,7 +8666,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /** @private */
     public updateQuad(obj: IElement): void {
         let modified: boolean = this.spatialSearch.updateQuad(obj.wrapper);
-        if (modified && !this.preventUpdate) {
+        if (modified && !this.preventDiagramUpdate) {
             this.updatePage();
         }
     }
@@ -8652,7 +8684,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
         this.spatialSearch.removeFromAQuad(obj.wrapper);
         let modified: boolean = this.spatialSearch.updateBounds(obj.wrapper);
-        if (modified && !this.preventUpdate) {
+        if (modified && !this.preventDiagramUpdate) {
             this.updatePage();
         }
     }
@@ -8942,11 +8974,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                                 }
                             }
                             if (!this.activeLayer.lock && !arg.cancel) {
-                                this.preventUpdate = true;
+                                this.preventDiagramUpdate = true;
                                 if ((newObj as Node).children) {
                                     this.findChild((newObj as Node), entryTable);
                                 }
-                                this.preventUpdate = true;
+                                this.preventDiagramUpdate = true;
                                 if (newObj.zIndex !== -1) {
                                     newObj.zIndex = -1;
                                 }
@@ -8960,7 +8992,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                                 this.commandHandler.updateBlazorSelector();
                                 this.eventHandler.mouseDown(args.event);
                                 this.eventHandler.mouseMove(args.event, args);
-                                this.preventUpdate = false; this.updatePage(); selectedSymbol.style.opacity = '0';
+                                this.preventDiagramUpdate = false; this.updatePage(); selectedSymbol.style.opacity = '0';
                             }
                             delete this['enterObject'];
                             delete this['enterTable'];

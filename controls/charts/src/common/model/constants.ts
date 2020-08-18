@@ -29,6 +29,8 @@ export const seriesRender: string = 'seriesRender';
 /** @private */
 export const axisLabelRender : string = 'axisLabelRender';
 /** @private */
+export const axisLabelClick: string = 'axisLabelClick';
+/** @private */
 export const axisRangeCalculated : string = 'axisRangeCalculated';
 /** @private */
 export const axisMultiLabelRender : string = 'axisMultiLabelRender';

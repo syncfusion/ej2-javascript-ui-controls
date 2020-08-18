@@ -4,7 +4,7 @@ import { ResultData, FocusEventArgs, BeforeOpenEventArgs, FilterType, FieldSetti
 import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';
 import { Popup, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { IInput, FloatLabelType } from '@syncfusion/ej2-inputs';
-import { attributes, setValue } from '@syncfusion/ej2-base';
+import { attributes, setValue, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, extend } from '@syncfusion/ej2-base';
 import { EventHandler, Property, Event, compile, L10n, EmitType, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { Animation, AnimationModel, Browser, prepend, isBlazor, Complex } from '@syncfusion/ej2-base';
@@ -158,6 +158,12 @@ export class MultiSelect extends DropDownBase implements IInput {
      */
     @Property(true)
     public enabled: boolean;
+    /**
+     * Defines whether to allow the cross-scripting site or not.
+     * @default false
+     */
+    @Property(false)
+    public enableHtmlSanitizer: boolean;
     /**
      * Accepts the list items either through local or remote service and binds it to the MultiSelect component.
      * It can be an array of JSON Objects or an instance of
@@ -2314,6 +2320,8 @@ export class MultiSelect extends DropDownBase implements IInput {
                 chipContent.appendChild(item);
             }
             this.DropDownBaseupdateBlazorTemplates(false, false, false, false, true, false, false, false);
+        } else if (this.enableHtmlSanitizer) {
+            chipContent.innerText = data;
         } else {
             chipContent.innerHTML = data;
         }
@@ -2741,7 +2749,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         this.setProperties({ text: text.toString() }, true);
         if (delim) {
-            this.delimiterWrapper.innerHTML = data;
+            this.updateWrapperText(this.delimiterWrapper, data);
             this.delimiterWrapper.setAttribute('id', getUniqueID('delim_val'));
             this.inputElement.setAttribute('aria-describedby', this.delimiterWrapper.id);
         }
@@ -3268,6 +3276,13 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.spinnerElement = null;
         }
     }
+    protected updateWrapperText(wrapperType: HTMLElement , wrapperData: string): void {
+        if (this.valueTemplate || !this.enableHtmlSanitizer) {
+            wrapperType.innerHTML = wrapperData;
+        } else {
+            wrapperType.innerText = SanitizeHtmlHelper.sanitize(wrapperData);
+        }
+    }
     private updateDelimView(): void {
         if (this.delimiterWrapper) {
             this.hideDelimWrapper();
@@ -3287,7 +3302,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             let remaining: number;
             let downIconWidth: number = 0;
             let overAllContainer: number;
-            this.viewWrapper.innerHTML = '';
+            this.updateWrapperText(this.viewWrapper, data);
             let l10nLocale: Object = {
                 noRecordsTemplate: 'No records found',
                 actionFailureTemplate: 'Request failed',
@@ -3318,7 +3333,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                     temp = this.getOverflowVal(index);
                     data += temp;
                     temp = this.viewWrapper.innerHTML;
-                    this.viewWrapper.innerHTML = data;
+                    this.updateWrapperText(this.viewWrapper, data);
                     wrapperleng = this.viewWrapper.offsetWidth +
                         parseInt(window.getComputedStyle(this.viewWrapper).paddingRight, 10);
                     overAllContainer = this.componentWrapper.offsetWidth -
@@ -3329,7 +3344,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                             temp = tempData;
                             index = tempIndex + 1;
                         }
-                        this.viewWrapper.innerHTML = temp;
+                        this.updateWrapperText(this.viewWrapper, temp);
                         remaining = this.value.length - index;
                         wrapperleng = this.viewWrapper.offsetWidth;
                         while (((wrapperleng + remainSize + downIconWidth) > overAllContainer) && wrapperleng !== 0

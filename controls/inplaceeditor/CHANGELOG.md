@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.2.54 (2020-08-18)
+
+### In-place Editor
+
+#### New Features
+
+- `#279315` - Provided new event `change` that triggers when the integrated component value has changed that render based on the `type` property in the In-place editor.
+
 ## 18.2.48 (2020-08-04)
 
 ### In-place Editor

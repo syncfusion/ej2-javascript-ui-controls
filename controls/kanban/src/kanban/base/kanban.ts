@@ -643,7 +643,7 @@ export class Kanban extends Component<HTMLElement> {
      * @param {Element} target Accepts the card element to get the details.
      * @returns {{[key: string]: Object}}
      */
-    public getCardDetails(target: Element): { [key: string]: Object } {
+    public getCardDetails(target: Element): { [key: string]: Object } | Object {
         let isNumeric: boolean = typeof (this.kanbanData[0] as { [key: string]: Object })[this.cardSettings.headerField] === 'number';
         let targetId: string | number = isNumeric ? parseInt(target.getAttribute('data-id'), 10) : target.getAttribute('data-id');
         let cardObj: { [key: string]: Object } = this.kanbanData.filter((data: { [key: string]: Object }) =>
@@ -726,36 +726,36 @@ export class Kanban extends Component<HTMLElement> {
     /**
      * Adds the new card to the data source of Kanban and layout.
      * @method addCard
-     * @param {{[key: string]: Object}} cardData Single card objects to be added into Kanban.
-     * @param {{[key: string]: Object}[]} cardData Collection of card objects to be added into Kanban.
+     * @param {Object | {[key: string]: Object}} cardData Single card objects to be added into Kanban.
+     * @param {Object[] | {[key: string]: Object}[]} cardData Collection of card objects to be added into Kanban.
      * @returns {void}
      */
-    public addCard(cardData: { [key: string]: Object } | { [key: string]: Object }[]): void {
-        this.crudModule.addCard(cardData);
+    public addCard(cardData: Object | Object[] | { [key: string]: Object } | { [key: string]: Object }[]): void {
+        this.crudModule.addCard(cardData as { [key: string]: Object } | { [key: string]: Object }[]);
     }
 
     /**
      * Updates the changes made in the card object by passing it as a parameter to the data source.
      * @method updateCard
-     * @param {{[key: string]: Object}} cardData Single card object to be updated into Kanban.
-     * @param {{[key: string]: Object}[]} cardData Collection of card objects to be updated into Kanban.
+     * @param {{[key: string]: Object} | Object} cardData Single card object to be updated into Kanban.
+     * @param {{[key: string]: Object}[] | Object[]} cardData Collection of card objects to be updated into Kanban.
      * @returns {void}
      */
-    public updateCard(cardData: { [key: string]: Object } | { [key: string]: Object }[]): void {
-        this.crudModule.updateCard(cardData);
+    public updateCard(cardData: Object | Object[] | { [key: string]: Object } | { [key: string]: Object }[]): void {
+        this.crudModule.updateCard(cardData as { [key: string]: Object } | { [key: string]: Object }[]);
     }
 
     /**
      * Deletes the card based on the provided ID or card collection in the argument list.
      * @method deleteCard
-     * @param {{[key: string]: Object}} id Single card to be removed from the Kanban.
-     * @param {{[key: string]: Object }[]} id Collection of cards to be removed from the Kanban.
+     * @param {{[key: string]: Object} | Object} id Single card to be removed from the Kanban.
+     * @param {{[key: string]: Object }[] | Object[]} id Collection of cards to be removed from the Kanban.
      * @param {number} id Accepts the ID of the card in integer type which needs to be removed from the Kanban.
      * @param {string} id Accepts the ID of the card in string type which needs to be removed from the Kanban.
      * @returns {void}
      */
-    public deleteCard(cardData: string | number | { [key: string]: Object } | { [key: string]: Object }[]): void {
-        this.crudModule.deleteCard(cardData);
+    public deleteCard(cardData: string | number | Object | Object[] | { [key: string]: Object } | { [key: string]: Object }[]): void {
+        this.crudModule.deleteCard(cardData as string | number | { [key: string]: Object } | { [key: string]: Object }[]);
     }
 
     /**

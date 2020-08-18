@@ -28,6 +28,17 @@
       }
     }
 
+    .e-overflow {
+
+      @if $skin-name == 'bootstrap4' {
+        color: $ddt-remains-font-color;
+      }
+
+      .e-remain {
+        color: $ddt-remains-font-color;
+      }
+    }
+
     &.e-input-group.e-control-wrapper,
     &.e-float-input.e-control-wrapper {
       .e-clear-icon {

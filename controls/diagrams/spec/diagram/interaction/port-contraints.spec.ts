@@ -75,7 +75,7 @@ describe('Diagram Control', () => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.mouseMoveEvent(diagramCanvas, 358, 68, true);
             let node: NodeModel = diagram.nodes[1];
-            node.ports[0].constraints = PortConstraints.Draw;
+            node.ports[0].constraints = PortConstraints.Draw | PortConstraints.InConnect;
             mouseEvents.clickEvent(diagramCanvas, 402.5, 102.5);
             mouseEvents.mouseDownEvent(diagramCanvas, 402.5, 102.5);
             mouseEvents.mouseMoveEvent(diagramCanvas, 402.5, 104.5);
@@ -91,7 +91,7 @@ describe('Diagram Control', () => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.mouseMoveEvent(diagramCanvas, 358, 68, true);
             let node: NodeModel = diagram.nodes[1];
-            node.ports[0].constraints = PortConstraints.Draw;
+            node.ports[0].constraints = PortConstraints.Draw | PortConstraints.OutConnect;
             mouseEvents.clickEvent(diagramCanvas, 200, 102.5);
             mouseEvents.mouseDownEvent(diagramCanvas, 402.5, 102.5);
             mouseEvents.mouseMoveEvent(diagramCanvas, 402.5, 104.5);
@@ -609,6 +609,45 @@ describe('Diagram Control', () => {
             mouseEvents.mouseUpEvent(diagramCanvas, 550.5, 180.5);
             let highlighter: HTMLElement = document.getElementById('diagram_diagramAdorner_svg_highlighter');
             expect(highlighter === null).toBe(true);
+            done();
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+    });
+
+    describe('Node ports are gets ignored', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        let mouseEvents: MouseEvents = new MouseEvents();
+
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramannotation' });
+            document.body.appendChild(ele);
+            let node1: NodeModel = {
+                id: 'node1', offsetX: 100, offsetY: 100,width:100,height:100, ports:[{ id: 'port1', shape: 'Circle', offset: { x: 0, y: 0.5 },constraints:PortConstraints.InConnect },
+                { id: 'port2', shape: 'Circle', offset: { x: 0.5, y: 0 },constraints:PortConstraints.Drag  },
+                { id: 'port3', shape: 'Circle', offset: { x: 1, y: 0.5 },constraints:PortConstraints.None  },
+                { id: 'port4', shape: 'Circle', offset: { x: 0.5, y: 1 },constraints:PortConstraints.OutConnect  }]
+            };
+            let node2: NodeModel = { id: 'node2', offsetX: 300, offsetY: 100,width:100,height:100,ports:[{ id: 'port1', shape: 'Circle', offset: { x: 0, y: 0.5 },constraints:PortConstraints.InConnect },
+            { id: 'port2', shape: 'Circle', offset: { x: 0.5, y: 0 },constraints:PortConstraints.OutConnect  },
+            { id: 'port3', shape: 'Circle', offset: { x: 1, y: 0.5 },constraints:PortConstraints.None  },
+            { id: 'port4', shape: 'Circle', offset: { x: 0.5, y: 1 },constraints:PortConstraints.OutConnect  }]
+            };
+            let connector: ConnectorModel = { id: 'Connector1', sourceID: 'node1', sourcePortID: 'port3', targetID: 'node2', targetPortID: 'port3' };
+            diagram = new Diagram({
+                width: '1000px', height: '1000px', nodes: [node1, node2],connectors:[connector]
+
+            });
+            diagram.appendTo('#diagramannotation');
+        });
+
+        it('Node ports are gets ignored', (done: Function) => {
+            expect(diagram.connectors[0].sourcePortID === '' && diagram.connectors[0].targetPortID === '').toBe(true);
             done();
         });
 

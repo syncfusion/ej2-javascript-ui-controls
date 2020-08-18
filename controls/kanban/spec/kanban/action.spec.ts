@@ -598,7 +598,7 @@ describe('Action module', () => {
             let model: KanbanModel = {
                 cardClick: (args: CardClickEventArgs) => {
                     expect(args.element).toBe(element);
-                    let data: { [key: string]: Object } = kanbanObj.getCardDetails(element);
+                    let data: { [key: string]: Object } = kanbanObj.getCardDetails(element) as { [key: string]: Object };
                     expect(args.data).toBe(data);
                     expect(args.cancel).toBeFalsy();
                     expect(args.name).toBe('cardClick');
@@ -606,7 +606,7 @@ describe('Action module', () => {
                 },
                 cardDoubleClick: (args: CardClickEventArgs) => {
                     expect(args.element).toBe(element);
-                    let data: { [key: string]: Object } = kanbanObj.getCardDetails(element);
+                    let data: { [key: string]: Object } = kanbanObj.getCardDetails(element) as { [key: string]: Object };
                     expect(args.data).toBe(data);
                     expect(args.cancel).toBeFalsy();
                     expect(args.name).toBe('cardDoubleClick');
@@ -624,7 +624,7 @@ describe('Action module', () => {
             expect(kanbanObj.activeCardData.element).toBeNull();
             element = (<NodeListOf<Element>>kanbanObj.element.querySelectorAll('.e-card[data-id="2"]')).item(0) as HTMLElement;
             util.triggerMouseEvent(element, 'click');
-            let data: { [key: string]: Object } = kanbanObj.getCardDetails(element);
+            let data: { [key: string]: Object } = kanbanObj.getCardDetails(element) as { [key: string]: Object };
             expect(kanbanObj.activeCardData.data).toBe(data);
             expect(kanbanObj.activeCardData.element).toBe(element);
         });
@@ -666,10 +666,10 @@ describe('Action module', () => {
 
         it('Testing to get selected cards details', () => {
             element = (<NodeListOf<Element>>kanbanObj.element.querySelectorAll('.e-card[data-id="25"]')).item(0) as HTMLElement;
-            let data: { [key: string]: Object } = kanbanObj.getCardDetails(element);
+            let data: { [key: string]: Object } = kanbanObj.getCardDetails(element) as { [key: string]: Object };
             expect(data.Status).toEqual('Open');
             element = (<NodeListOf<Element>>kanbanObj.element.querySelectorAll('.e-card[data-id="2"]')).item(0) as HTMLElement;
-            let card: { [key: string]: Object } = kanbanObj.getCardDetails(element);
+            let card: { [key: string]: Object } = kanbanObj.getCardDetails(element) as { [key: string]: Object };
             expect(card.Status).toEqual('InProgress');
 
         });

@@ -699,4 +699,29 @@ describe('Bookmark navigate API', () => {
         keyEvent.keyCode = 39;
         expect(() => {  editor.selectionModule.onKeyDownInternal(keyEvent, false, false, false); }).not.toThrowError();
     });
+    it('Get previous context item validation', () => {
+        editor.openBlank();
+        editor.editor.insertText('check ');
+        editor.editor.insertBookmark('goto');
+        editor.editor.insertText('new');
+        let contextItem: string  = editor.selection.getPreviousContextType();
+        expect(contextItem).toBe('Text');
+        editor.selection.handleControlLeftKey();
+        editor.selection.handleRightKey();
+        contextItem = editor.selection.getPreviousContextType();
+        expect(contextItem).toBe('Bookmark');        
+    });
+    it('Get next context item validation', () => {
+        editor.openBlank();
+        editor.editor.insertText('check ');
+        editor.editor.insertBookmark('goto');
+        editor.editor.insertText('new');
+        editor.selection.handleHomeKey();
+        let contextItem: string  = editor.selection.getNextContextType();
+        expect(contextItem).toBe('Text');
+        editor.selection.handleControlRightKey();
+        editor.selection.handleLeftKey();
+        contextItem = editor.selection.getNextContextType();
+        expect(contextItem).toBe('Bookmark');        
+    });
 });

@@ -445,6 +445,11 @@ var ListView = /** @class */ (function (_super) {
                     this.isWindow = true;
                     ulContainer.scrollIntoView();
                 }
+                if (this.height.toString().indexOf('%') !== -1) {
+                    // tslint:disable
+                    this.interopAdaptor.invokeMethodAsync('SetContainerHeight', this.element.getBoundingClientRect().height.toString());
+                    // tslint:enable
+                }
                 if (ulContainer.children[0]) {
                     this.liElementHeight = ulContainer.children[0].getBoundingClientRect().height;
                     // tslint:disable
@@ -2187,6 +2192,8 @@ var ListView = /** @class */ (function (_super) {
     return ListView;
 }(sf.base.Component));
 
+var listElementCount = 1.5;
+var windowElementCount = 3;
 var Virtualization = /** @class */ (function () {
     function Virtualization(instance) {
         this.elementDifference = 0;
@@ -2298,9 +2305,19 @@ var Virtualization = /** @class */ (function () {
     };
     Virtualization.prototype.ValidateItemCount = function (dataSourceLength) {
         var height = parseFloat(sf.base.formatUnit(this.listViewInstance.height));
-        var itemCount = this.listViewInstance.isWindow ?
-            Math.round((window.innerHeight / this.listItemHeight) * 3) :
-            Math.round((height / this.listItemHeight) * 1.5);
+        var itemCount;
+        if (this.listViewInstance.isWindow) {
+            itemCount = Math.round((window.innerHeight / this.listItemHeight) * windowElementCount);
+        }
+        else {
+            if (typeof this.listViewInstance.height === 'string' && this.listViewInstance.height.indexOf('%') !== -1) {
+                // tslint:disable-next-line:max-line-length
+                itemCount = Math.round((this.listViewInstance.element.getBoundingClientRect().height / this.listItemHeight) * listElementCount);
+            }
+            else {
+                itemCount = Math.round((height / this.listItemHeight) * listElementCount);
+            }
+        }
         if (itemCount > dataSourceLength) {
             itemCount = dataSourceLength;
         }

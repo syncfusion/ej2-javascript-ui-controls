@@ -115,7 +115,9 @@ export class Keyboard {
                 let className: string = '.' + cls.CARD_CLASS + '.' + cls.CARD_SELECTION_CLASS;
                 let selectedCards: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(className));
                 let selectedCardsData: { [key: string]: Object }[] = [];
-                selectedCards.forEach((selected: Element) => { selectedCardsData.push(this.parent.getCardDetails(selected)); });
+                selectedCards.forEach((selected: Element) => {
+                    selectedCardsData.push(this.parent.getCardDetails(selected) as { [key: string]: Object });
+                });
                 this.parent.crudModule.deleteCard(selectedCardsData);
                 break;
         }
@@ -246,9 +248,11 @@ export class Keyboard {
             }
         }
         if (selectedCard === document.activeElement && this.parent.element.querySelectorAll('.' + cls.CARD_SELECTION_CLASS).length === 1) {
-            this.parent.activeCardData = { data: this.parent.getCardDetails(selectedCard), element: selectedCard };
+            this.parent.activeCardData = {
+                data: this.parent.getCardDetails(selectedCard) as { [key: string]: Object }, element: selectedCard
+            };
             if (!this.parent.dialogModule.dialogObj) {
-                this.parent.dialogModule.openDialog('Edit', this.parent.getCardDetails(selectedCard));
+                this.parent.dialogModule.openDialog('Edit', this.parent.getCardDetails(selectedCard) as { [key: string]: Object });
             }
             (selectedCard as HTMLElement).focus();
         }

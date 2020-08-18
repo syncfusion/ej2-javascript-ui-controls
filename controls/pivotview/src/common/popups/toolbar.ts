@@ -90,8 +90,14 @@ export class Toolbar {
             allowKeyboard: false,
         });
         this.toolbar.isStringTemplate = true;
-        this.toolbar.appendTo('#' + this.parent.element.id + 'pivot-toolbar');
-        this.toolbar.width = this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) : (this.parent.getWidthAsNumber() - 2);
+        if (this.parent.toolbarTemplate && typeof (this.parent.toolbarTemplate) === 'string') {
+            this.toolbar.appendTo(this.parent.toolbarTemplate);
+            this.parent.element.replaceChild(this.toolbar.element, this.parent.element.querySelector('.' + cls.GRID_TOOLBAR));
+            this.toolbar.element.classList.add(cls.GRID_TOOLBAR);
+        } else {
+            this.toolbar.appendTo('#' + this.parent.element.id + 'pivot-toolbar');
+            this.toolbar.width = this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) : (this.parent.getWidthAsNumber() - 2);
+        }
         if (this.parent.chart) {
             this.parent.chart.setProperties(
                 { width: this.parent.grid ? this.parent.getGridWidthAsNumber().toString() : this.parent.getWidthAsNumber().toString() },
@@ -131,7 +137,7 @@ export class Toolbar {
 
     /* tslint:disable */
     private getItems(): ItemModel[] {
-        let toolbar: string[] = this.parent.toolbar.filter((v: ToolbarItems, i: number, a: ToolbarItems[]) => a.indexOf(v) === i);
+        let toolbar: (ToolbarItems | ItemModel)[] = this.parent.toolbar.filter((v: ToolbarItems, i: number, a: ToolbarItems[]) => a.indexOf(v) === i);
         let items: ItemModel[] = [];
         for (let item of toolbar) {
             switch (item) {
@@ -241,6 +247,9 @@ export class Toolbar {
                         (this.parent.element.querySelector('.e-toggle-field-list') as HTMLElement).style.display = 'none';
                     }
                     break;
+
+            } if (typeof (item) === 'object' && document.querySelector(item.template as string)) {
+                items.push(item);
             }
         }
         if (this.parent.showFieldList && toolbar.indexOf('FieldList') === -1 && (this.parent.element.querySelector('#' + this.parent.element.id + '_PivotFieldList') as HTMLElement) &&

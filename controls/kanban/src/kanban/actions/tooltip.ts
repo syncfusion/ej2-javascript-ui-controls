@@ -39,7 +39,7 @@ export class KanbanTooltip {
         if (this.parent.tooltipTemplate) {
             tooltipContent = createElement('div');
             let target: Element = closest(args.target, '.' + cls.CARD_CLASS);
-            let data: { [key: string]: Object } = this.parent.getCardDetails(target);
+            let data: { [key: string]: Object } = this.parent.getCardDetails(target) as { [key: string]: Object };
             let tooltipTemplate: Element[] = this.parent.templateParser(this.parent.tooltipTemplate)(data);
             append(tooltipTemplate, tooltipContent);
         } else {

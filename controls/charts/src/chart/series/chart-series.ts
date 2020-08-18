@@ -1152,8 +1152,10 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     }
     /** @private */
     protected pushCategoryData(point: Points, index: number, pointX: string): void {
-        if (!this.visible) {
-            return null;
+        if (!this.chart.tooltip.shared) {
+            if (!this.visible) {
+                return null;
+            }
         }
         if (!this.xAxis.isIndexed) {
             if (this.xAxis.labels.indexOf(pointX) < 0) {

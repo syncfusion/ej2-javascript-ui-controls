@@ -146,7 +146,7 @@ describe('Drag module', () => {
         });
 
         it('Testing the cards after dropping the card', () => {
-            let data: { [key: string]: Object } = kanbanObj.getCardDetails(dragElement);
+            let data: { [key: string]: Object } = kanbanObj.getCardDetails(dragElement) as { [key: string]: Object };
             let curKey: Object = data[kanbanObj.keyField];
             expect(curKey).not.toBe(key);
             expect(curKey).toEqual('Testing');
@@ -331,7 +331,7 @@ describe('Drag module', () => {
         });
 
         it('Testing the cards after dropping the card', () => {
-            let data: { [key: string]: Object } = kanbanObj.getCardDetails(draggedElement);
+            let data: { [key: string]: Object } = kanbanObj.getCardDetails(draggedElement) as { [key: string]: Object };
             let curKey: Object = data[kanbanObj.keyField];
             expect(curKey).not.toBe(key);
             expect(curKey).toEqual('Close');
@@ -468,7 +468,7 @@ describe('Drag module', () => {
         });
 
         it('Testing the cards after dropping the card', () => {
-            let data: { [key: string]: Object } = kanbanObj.getCardDetails(draggedElement);
+            let data: { [key: string]: Object } = kanbanObj.getCardDetails(draggedElement) as { [key: string]: Object };
             let curKey: Object = data[kanbanObj.keyField];
             expect(curKey).not.toBe(key);
             expect(curKey).toEqual('Close');
@@ -479,7 +479,7 @@ describe('Drag module', () => {
                 obj[kanbanObj.swimlaneSettings.keyField]);
             rows = allKeys.filter((key: string, index: number) => allKeys.indexOf(key) === index).sort();
             draggedElement = (kanbanObj.element.querySelectorAll('.e-card[data-id="2"]') as NodeListOf<Element>).item(0) as HTMLElement;
-            let data: { [key: string]: Object } = kanbanObj.getCardDetails(draggedElement);
+            let data: { [key: string]: Object } = kanbanObj.getCardDetails(draggedElement) as { [key: string]: Object };
             swimlaneKey = data[kanbanObj.swimlaneSettings.keyField];
             let contentRow: Element = draggedElement.closest('.e-content-row');
             let curSwimlaneKey: Object = contentRow.previousElementSibling.getAttribute('data-key');
@@ -533,7 +533,7 @@ describe('Drag module', () => {
         });
 
         it('Swimlane to swimlane Testing the cards after dropping the card', () => {
-            let data: { [key: string]: Object } = kanbanObj.getCardDetails(draggedElement);
+            let data: { [key: string]: Object } = kanbanObj.getCardDetails(draggedElement) as { [key: string]: Object };
             let curKey: Object = data[kanbanObj.keyField];
             expect(curKey).not.toBe(key);
             expect(curKey).not.toBe(columnKey);
@@ -722,7 +722,7 @@ describe('Drag module', () => {
                 expect((<HTMLElement>cells[2]).classList.contains('e-dropping')).toEqual(false);
                 expect((<HTMLElement>cells[3]).classList.contains('e-dropping')).toEqual(false);
                 let element: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="2"]').item(0);
-                let data: { [key: string]: Object } = kanbanObj.getCardDetails(element);
+                let data: { [key: string]: Object } = kanbanObj.getCardDetails(element) as { [key: string]: Object };
                 let curKey: Object = data[kanbanObj.keyField];
                 expect(curKey).not.toBe(key);
                 let headerCell: HTMLElement = kanbanObj.element.querySelector('.e-header-cells');
@@ -806,7 +806,7 @@ describe('Drag module', () => {
                 expect(kanbanObj.element.querySelectorAll('.e-card.e-cloned-card').length).toBe(0);
                 expect(kanbanObj.element.querySelectorAll('.e-kanban-dragged-card').length).toBe(0);
                 let element: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="5"]').item(0);
-                let data: { [key: string]: Object } = kanbanObj.getCardDetails(element);
+                let data: { [key: string]: Object } = kanbanObj.getCardDetails(element) as { [key: string]: Object };
                 let curKey: Object = data[kanbanObj.keyField];
                 expect(curKey).not.toBe(key);
                 let headerCell: HTMLElement = kanbanObj.element.querySelector('.e-header-cells');
@@ -910,7 +910,7 @@ describe('Drag module', () => {
                     expect((<HTMLElement>cells[i]).classList.contains('e-dropping')).toEqual(false);
                 }
                 let element: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="2"]').item(0);
-                let data: { [key: string]: Object } = kanbanObj.getCardDetails(element);
+                let data: { [key: string]: Object } = kanbanObj.getCardDetails(element) as { [key: string]: Object };
                 let curKey: Object = data[kanbanObj.keyField];
                 expect(curKey).not.toBe(key);
                 let headerCell: HTMLElement = kanbanObj.element.querySelector('.e-header-cells');
@@ -997,7 +997,7 @@ describe('Drag module', () => {
                 expect(kanbanObj.element.querySelectorAll('.e-card.e-cloned-card').length).toBe(0);
                 expect(kanbanObj.element.querySelectorAll('.e-kanban-dragged-card').length).toBe(0);
                 let element: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="45"]').item(0);
-                let data: { [key: string]: Object } = kanbanObj.getCardDetails(element);
+                let data: { [key: string]: Object } = kanbanObj.getCardDetails(element) as { [key: string]: Object };
                 let curKey: Object = data[kanbanObj.keyField];
                 expect(curKey).not.toBe(key);
                 let headerCell: HTMLElement = kanbanObj.element.querySelector('.e-header-cells');

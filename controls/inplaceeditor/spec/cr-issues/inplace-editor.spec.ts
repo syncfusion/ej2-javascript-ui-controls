@@ -771,6 +771,4 @@ describe('CR ISSUE InPlace-Editor Control', () => {
             expect((editorObj as any).valueEle.innerHTML).toBe('<img src="fail"> test');
         });
     });
-    
-    
 });

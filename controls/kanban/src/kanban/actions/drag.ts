@@ -76,10 +76,10 @@ export class DragAndDrop {
             let closestEle: Element = closest(this.dragObj.element, '.' + cls.CONTENT_ROW_CLASS);
             this.dragObj.selectedCards = [].slice.call(closestEle.querySelectorAll(className)) as HTMLElement[];
             (<HTMLElement[]>this.dragObj.selectedCards).forEach((element: HTMLElement) => {
-                this.dragObj.cardDetails.push(this.parent.getCardDetails(element));
+                this.dragObj.cardDetails.push(this.parent.getCardDetails(element) as { [key: string]: Object });
             });
         } else {
-            this.dragObj.cardDetails = [this.parent.getCardDetails(this.dragObj.element)];
+            this.dragObj.cardDetails = [this.parent.getCardDetails(this.dragObj.element) as { [key: string]: Object }];
         }
         let dragArgs: DragEventArgs = { cancel: false, data: this.dragObj.cardDetails, event: e, element: this.dragObj.selectedCards };
         this.parent.trigger(events.dragStart, dragArgs, (dragEventArgs: DragEventArgs & BlazorDragEventArgs) => {
@@ -296,7 +296,7 @@ export class DragAndDrop {
         this.parent.trigger(events.dragStop, dragArgs, (dragEventArgs: DragEventArgs) => {
             if (!dragEventArgs.cancel) {
                 if (contentCell || columnKey) {
-                    this.parent.crudModule.updateCard(dragEventArgs.data);
+                    this.parent.crudModule.updateCard(dragEventArgs.data as  {[key: string]: Object } | {[key: string]: Object; }[]);
                 }
             }
             this.removeElement(this.dragObj.draggedClone);
@@ -326,7 +326,7 @@ export class DragAndDrop {
     }
 
     private updateDroppedData(element: HTMLElement, cardStatus: string, contentCell: Element): void {
-        let crudData: { [key: string]: Object } = this.parent.getCardDetails(element);
+        let crudData: { [key: string]: Object } = this.parent.getCardDetails(element) as { [key: string]: Object };
         if (cardStatus.split(',').length === 1) {
             crudData[this.parent.keyField] = cardStatus;
         }
@@ -356,7 +356,7 @@ export class DragAndDrop {
         } else {
             return;
         }
-        let obj: { [key: string]: Object } = this.parent.getCardDetails(element);
+        let obj: { [key: string]: Object } = this.parent.getCardDetails(element) as { [key: string]: Object };
         let keyIndex: number = (obj as { [key: string]: Object })[this.parent.sortSettings.field] as number;
         if (modifieddata.length > 1 && this.parent.sortSettings.direction === 'Descending') {
             modifieddata = modifieddata.reverse();

@@ -254,6 +254,8 @@ export class Editor {
             this.endOffset = endPosition;
             this.editorHistory.updateComplexHistory();
         }
+        this.startParagraph = undefined;
+        this.endParagraph = undefined;
     }
     // Public Implementation Starts
     /**
@@ -7569,9 +7571,10 @@ export class Editor {
         }
     }
     /**
-     * @private
+     * To apply continue numbering from the previous list
      */
-    public applyContinueNumbering(selection: Selection): void {
+    public applyContinueNumbering(): void {
+        let selection: Selection = this.selection;
         if (this.editorHistory) {
             this.editorHistory.initializeHistory('ContinueNumbering');
         }

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.2.54 (2020-08-18)
+
+### TreeView
+
+#### Bug Fixes
+
+- `#286992` - The issue with rendering the TreeView with hierarchical data source using the offline property has been resolved
+
 ## 18.2.47 (2020-07-28)
 
 ### Menu

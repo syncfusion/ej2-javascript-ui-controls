@@ -10,6 +10,7 @@ import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { Page } from '../../src/treegrid/actions/page';
 import { Filter } from '../../src/treegrid/actions/filter';
 import { Sort } from '../../src/treegrid/actions/sort';
+import { DataManager, RemoteSaveAdaptor } from '@syncfusion/ej2-data';
 
 /**
  * Grid base spec 
@@ -1086,6 +1087,77 @@ describe('TreeGrid base module', () => {
     afterAll(() => {
       destroy(gridObj);
     });
+  });
+
+ describe('sort comparer', () => {
+     let gridObj: TreeGrid;
+     let actionComplete: () => void;
+     let data = [
+        { 'TaskID': 1, 'TaskName': 'Parent Task 1', 'StartDate': new Date('03/14/2017'),
+            'EndDate': new Date('02/27/2017'), 'Duration': 3, 'Progress': '40', 'Priority': 'Normal' },
+        { 'TaskID': 5, 'TaskName': 'Parent Task 2', 'StartDate': null,
+            'EndDate': new Date('03/18/2017'), 'Duration': 6, 'Progress': '40', 'Priority': 'Normal' },
+        { 'TaskID': 6, 'TaskName': 'Child Task 1', 'StartDate': null,
+            'EndDate': new Date('03/06/2017'), 'Duration': 11, 'Progress': '40', 'parentID': 5, 'Priority': 'High' },
+        { 'TaskID': 7, 'TaskName': 'Child Task 2', 'StartDate': new Date('03/02/2017'),
+            'EndDate': new Date('03/06/2017'), 'Duration': 7, 'Progress': '40', 'parentID': 5, 'Priority': 'Critical' }      
+            ];
+     let data1: DataManager = new DataManager({
+                json: data,
+                adaptor: new RemoteSaveAdaptor()
+            });
+     beforeAll((done: Function) => {
+         gridObj = createGrid(
+             {
+                 dataSource: data1,
+                 allowSorting: true,
+                 allowPaging: true,
+                 idMapping: 'TaskID',
+                 parentIdMapping: 'parentID',
+                 actionBegin: actionBegin,
+                 pageSettings: { pageSize: 10 },
+                 columns: [
+                     { field: 'TaskID', headerText: 'Task ID', textAlign: 'Right', width: 140 },
+                     { field: 'TaskName', headerText: 'Task Name', width: 160 },
+                     { field: 'StartDate', headerText: 'Start Date', sortComparer: sortComparer,textAlign: 'Right', width: 120, format: { skeleton: 'yMd', type: 'date' } },
+                     { field: 'EndDate', headerText: 'End Date', textAlign: 'Right', width: 120, format: { skeleton: 'yMd', type: 'date' } },
+                     ]
+             },
+             done
+             );
+     });
+      let action: string;
+      function actionBegin(args: SortEventArgs) {
+          if (args.requestType === 'sorting') {
+              action = args.direction;
+          }
+      }
+      function sortComparer (reference:any, comparer:any) {
+          const sortAsc = action === 'Ascending' ? true : false;
+          if (sortAsc && reference === null) {
+              return 1;
+            } else if (sortAsc && comparer === null) {
+              return -1;
+            } else if (!sortAsc && reference === null) {
+              return -1;
+            } else if (!sortAsc && comparer === null) {
+              return 1;
+            } else {
+              return reference - comparer;
+            }
+      };
+
+      it('Sort comparer check', (done:Function) => {
+          actionComplete = (args?: Object): void => {
+            expect((gridObj.getRows()[3].getElementsByClassName('e-rowcell')[2]).innerHTML == "").toBe(true);
+            done();
+          };
+          gridObj.grid.actionComplete = actionComplete;
+          gridObj.sortByColumn("StartDate", "Descending", true);
+      });
+      afterAll(() => {
+          destroy(gridObj);
+       })
   });
 
 

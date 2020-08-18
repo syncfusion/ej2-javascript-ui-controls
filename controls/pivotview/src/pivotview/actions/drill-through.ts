@@ -71,6 +71,8 @@ export class DrillThrough {
 
     /** @hidden */
     public executeDrillThrough(pivotValue: IAxisSet, rowIndex: number, colIndex: number, element?: Element): void {
+        this.parent.drillThroughElement = element;
+        this.parent.drillThroughValue = pivotValue;
         let engine: PivotEngine | OlapEngine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
         let valueCaption: string = '';
         let aggType: string = '';
@@ -90,8 +92,8 @@ export class DrillThrough {
                         this.parent.localeObj.getConstant('error'), this.parent.localeObj.getConstant('drillError'));
                     return;
                 }
-                valueCaption = engine.fieldList[measureName].caption;
-                aggType = engine.fieldList[measureName].aggregateType;
+                valueCaption = engine.fieldList[measureName || pivotValue.actualText].caption;
+                aggType = engine.fieldList[measureName || pivotValue.actualText].aggregateType;
                 this.parent.olapEngineModule.getDrillThroughData(pivotValue, this.parent.maxRowsInDrillThrough);
                 try {
                     rawData = JSON.parse((engine as OlapEngine).gridJSON);
@@ -119,6 +121,8 @@ export class DrillThrough {
                             currModule.triggerDialog(valueCaption, aggType, rawData, pivotValue, element);
                             /* tslint:enable:no-any */
                         });
+                } else if (this.parent.dataSourceSettings.mode === 'Server') {
+                    this.parent.getEngine('fetchRawData', null, null, null, null, null, null, { rowIndex: rowIndex, columnIndex: colIndex });
                 } else {
                     if (this.parent.enableVirtualization && this.parent.allowDataCompression) {
                         let indexArray: string[] = Object.keys(pivotValue.indexObject);
@@ -137,7 +141,7 @@ export class DrillThrough {
                     }
                 }
             }
-            if (!(isBlazor() && this.parent.enableVirtualization)) {
+            if (!(isBlazor() && this.parent.enableVirtualization) && this.parent.dataSourceSettings.mode !== 'Server') {
                 this.triggerDialog(valueCaption, aggType, rawData, pivotValue, element);
             }
         }
@@ -151,7 +155,8 @@ export class DrillThrough {
         while (dataPos < eventArgs.rawData.length) {
             let framedHeader: any = {};
             while (keyPos < eventArgs.gridColumns.length) {
-                framedHeader[eventArgs.gridColumns[keyPos].field] =
+                framedHeader[eventArgs.gridColumns[keyPos].field] = this.parent.dataSourceSettings.mode === 'Server' ?
+                    eventArgs.rawData[dataPos][this.parent.engineModule.fields.indexOf(eventArgs.gridColumns[keyPos].field) !== -1 ? this.parent.engineModule.fields.indexOf(eventArgs.gridColumns[keyPos].field) : 0] :
                     eventArgs.rawData[dataPos][this.parent.engineModule.fieldKeys[eventArgs.gridColumns[keyPos].field] as any];
                 keyPos++;
             }
@@ -163,7 +168,8 @@ export class DrillThrough {
         return eventArgs;
     }
 
-    private triggerDialog(valueCaption: string, aggType: string, rawData: IDataSet[], pivotValue: IAxisSet, element: Element): void {
+    /** @hidden */
+    public triggerDialog(valueCaption: string, aggType: string, rawData: IDataSet[], pivotValue: IAxisSet, element: Element): void {
         let valuetText: string = aggType === 'CalculatedField' ? valueCaption.toString() : aggType !== '' ?
             (this.parent.localeObj.getConstant(aggType) + ' ' + this.parent.localeObj.getConstant('of') + ' ' + valueCaption) :
             valueCaption;

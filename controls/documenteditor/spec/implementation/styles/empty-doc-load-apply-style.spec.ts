@@ -60,7 +60,7 @@ describe('Load Empty Document - Edit and Apply Style', () => {
         currentPara = editor.selection.start.currentWidget.paragraph;
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
         expect(editor.selection.characterFormat.fontSize).toBe(11.0);
-        expect(editor.selection.characterFormat.fontColor).toBe("#000000");
+        expect(editor.selection.characterFormat.fontColor).toBe("empty");
     });
     it('Apply Heading2', () => {
         editor.open(json);
@@ -81,7 +81,7 @@ describe('Load Empty Document - Edit and Apply Style', () => {
         editor.editorModule.insertText('Heading');
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
         expect(editor.selection.characterFormat.fontSize).toBe(11.0);
-        expect(editor.selection.characterFormat.fontColor).toBe("#000000");
+        expect(editor.selection.characterFormat.fontColor).toBe("empty");
     });
     it('Apply Heading3', () => {
         editor.open(json);
@@ -103,7 +103,7 @@ describe('Load Empty Document - Edit and Apply Style', () => {
         editor.editorModule.insertText('Heading');
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
         expect(editor.selection.characterFormat.fontSize).toBe(11.0);
-        expect(editor.selection.characterFormat.fontColor).toBe("#000000");
+        expect(editor.selection.characterFormat.fontColor).toBe("empty");
     });
     it('Apply Heading4', () => {
         editor.open(json);
@@ -124,7 +124,7 @@ describe('Load Empty Document - Edit and Apply Style', () => {
         editor.editorModule.insertText('Heading');
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
         expect(editor.selection.characterFormat.fontSize).toBe(11.0);
-        expect(editor.selection.characterFormat.fontColor).toBe("#000000");
+        expect(editor.selection.characterFormat.fontColor).toBe("empty");
     });
     it('Apply Heading5', () => {
         editor.open(json);
@@ -144,7 +144,7 @@ describe('Load Empty Document - Edit and Apply Style', () => {
         editor.editorModule.insertText('Heading');
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
         expect(editor.selection.characterFormat.fontSize).toBe(11.0);
-        expect(editor.selection.characterFormat.fontColor).toBe("#000000");
+        expect(editor.selection.characterFormat.fontColor).toBe("empty");
     });
     it('Apply Heading6', () => {
         editor.open(json);
@@ -164,6 +164,6 @@ describe('Load Empty Document - Edit and Apply Style', () => {
         editor.editorModule.insertText('Heading');
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
         expect(editor.selection.characterFormat.fontSize).toBe(11.0);
-        expect(editor.selection.characterFormat.fontColor).toBe("#000000");
+        expect(editor.selection.characterFormat.fontColor).toBe("empty");
     });
 });

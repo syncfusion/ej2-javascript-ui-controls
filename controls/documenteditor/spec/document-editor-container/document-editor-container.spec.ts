@@ -66,4 +66,10 @@ describe('Property vaidation', () => {
             done();
         }, 10);
     });
+    it('Properties pane enable validation' , ()=> {
+        (container.documentEditor as any).openBlank();
+        container.restrictEditing = true;
+        container.showPropertiesPane = true;
+        expect(container.showPropertiesPane).toBe(true);
+    });
 });

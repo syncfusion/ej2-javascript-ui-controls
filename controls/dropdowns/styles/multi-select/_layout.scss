@@ -191,6 +191,19 @@
   text-indent: $ddl-input-text-indent;
 }
 
+.e-multiselect.e-filled  .e-multi-select-wrapper input[type='text'] {
+  background: none;
+  border: 0;
+  font-family: $ddl-chip-font-family;
+  font-size: $ddl-delim-font-size;
+  font-weight: 400;
+  height: $ddl-input-height;
+  min-height: $ddl-input-height;
+  outline: none;
+  padding: 0;
+  text-indent: $ddl-input-text-indent;
+}
+
 .e-bigger .e-multi-select-wrapper input[type='text'],
 .e-multi-select-wrapper.e-mob-wrapper input[type='text'] {
   height: $ddl-input-height;
@@ -1123,12 +1136,15 @@ ejs-multiselect {
 
 //+2 more configutations
 
+.e-multiselect.e-filled .e-multi-select-wrapper .e-delim-values .e-remain,
 .e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values .e-remain {
   @if $skin-name == 'material' {
     font-size: 14px;
   }
 }
 
+.e-bigger.e-multiselect.e-filled .e-multi-select-wrapper .e-delim-values .e-remain,
+.e-bigger .e-multiselect.e-filled .e-multi-select-wrapper .e-delim-values .e-remain,
 .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values .e-remain,
 .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values .e-remain {
   @if $skin-name == 'material' {
@@ -1136,6 +1152,8 @@ ejs-multiselect {
   }
 }
 
+.e-small.e-multiselect.e-filled .e-multi-select-wrapper .e-delim-values .e-remain,
+.e-small .e-multiselect.e-filled .e-multi-select-wrapper .e-delim-values .e-remain,
 .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values .e-remain,
 .e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values .e-remain {
   @if $skin-name == 'material' {
@@ -1143,6 +1161,11 @@ ejs-multiselect {
   }
 }
 
+
+.e-bigger.e-small.e-multiselect.e-filled .e-multi-select-wrapper .e-delim-values .e-remain,
+.e-bigger.e-small .e-multiselect.e-filled .e-multi-select-wrapper .e-delim-values .e-remain,
+.e-bigger .e-small.e-multiselect.e-filled .e-multi-select-wrapper .e-delim-values .e-remain,
+.e-small .e-bigger.e-multiselect.e-filled .e-multi-select-wrapper .e-delim-values .e-remain,
 .e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values .e-remain,
 .e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values .e-remain,
 .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values .e-remain,
@@ -1151,3 +1174,417 @@ ejs-multiselect {
     font-size: 14px;
   }
 }
+
+
+// Filled theme specifications
+
+// Multiselect wrapper
+.e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper {
+  padding: 0 12px 0 8px;
+}
+
+.e-small.e-filled:not(.e-bigger).e-multiselect:not(.e-float-input) .e-multi-select-wrapper,
+.e-small .e-filled:not(.e-bigger).e-multiselect:not(.e-float-input) .e-multi-select-wrapper {
+  padding: 0 12px 0 4px;
+}
+
+.e-multiselect.e-filled.e-input-group.e-control-wrapper,
+.e-bigger.e-small.e-multiselect.e-filled.e-input-group.e-control-wrapper,
+.e-bigger.e-small .e-multiselect.e-filled.e-input-group.e-control-wrapper,
+.e-bigger .e-small.e-multiselect.e-filled.e-input-group.e-control-wrapper,
+.e-small .e-bigger.e-multiselect.e-filled.e-input-group.e-control-wrapper {
+  padding: 0;
+}
+
+.e-filled.e-float-input .e-multi-select-wrapper,
+.e-bigger.e-small.e-filled.e-float-input .e-multi-select-wrapper,
+.e-bigger.e-small .e-filled.e-float-input .e-multi-select-wrapper,
+.e-bigger .e-small.e-filled.e-float-input .e-multi-select-wrapper,
+.e-small .e-bigger.e-filled.e-float-input .e-multi-select-wrapper {
+  padding: 14px 12px 0;
+}
+
+.e-small.e-filled.e-float-input .e-multi-select-wrapper,
+.e-small .e-filled.e-float-input .e-multi-select-wrapper {
+  padding: 12px 12px 0 8px;
+}
+
+.e-bigger.e-filled.e-float-input .e-multi-select-wrapper,
+.e-bigger .e-filled.e-float-input .e-multi-select-wrapper {
+  padding: 14px 12px 0 16px;
+}
+
+// Searchable input
+
+.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper input[type='text'],
+.e-bigger.e-small.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper input[type='text'],
+.e-bigger.e-small .e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper input[type='text'],
+.e-bigger .e-small.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper input[type='text'],
+.e-small .e-bigger.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper input[type='text'] {
+  @if $ddl-multiselect-skin-name == 'material' {
+    min-height: $ddl-multiselect-filled-input-min-height;
+  }
+}
+
+.e-small.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper input[type='text'],
+.e-small .e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper input[type='text'] {
+  @if $ddl-multiselect-skin-name == 'material' {
+    min-height: $ddl-multiselect-filled-input-min-height-small;
+  }
+}
+
+.e-small.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper input[type='text'],
+.e-small .e-multiselect.e-filled.e-float-input .e-multi-select-wrapper input[type='text'] {
+  @if $ddl-multiselect-skin-name == 'material' {
+    height: $ddl-multiselect-filled-float-input-min-height-small;
+    min-height: $ddl-multiselect-filled-float-input-min-height-small;
+    padding: 2px;
+  }
+}
+
+.e-bigger.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper input[type='text'],
+.e-bigger .e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper input[type='text'] {
+  @if $ddl-multiselect-skin-name == 'material' {
+    min-height: $ddl-multiselect-filled-input-min-height-bigger;
+  }
+}
+
+.e-bigger.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper input[type='text'],
+.e-bigger .e-multiselect.e-filled.e-float-input .e-multi-select-wrapper input[type='text'] {
+  @if $ddl-multiselect-skin-name == 'material' {
+    min-height: $ddl-multiselect-filled-float-input-min-height-bigger;
+  }
+}
+
+.e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper.e-delimiter .e-searcher {
+  @if $ddl-multiselect-skin-name == 'material' {
+    height: $ddl-multiselect-filled-input-min-height;
+  }
+}
+
+.e-small.e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper.e-delimiter .e-searcher,
+.e-small .e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper.e-delimiter .e-searcher {
+  @if $ddl-multiselect-skin-name == 'material' {
+    height: $ddl-multiselect-filled-input-min-height-small;
+  }
+}
+
+.e-small.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper.e-delimiter .e-searcher,
+.e-small .e-filled.e-multiselect.e-float-input .e-multi-select-wrapper.e-delimiter .e-searcher {
+  @if $ddl-multiselect-skin-name == 'material' {
+    height: $ddl-multiselect-filled-float-input-min-height-small;
+  }
+}
+
+.e-bigger.e-filled:not(.e-small).e-multiselect:not(.e-float-input) .e-multi-select-wrapper.e-delimiter .e-searcher,
+.e-bigger .e-filled:not(.e-small).e-multiselect:not(.e-float-input) .e-multi-select-wrapper.e-delimiter .e-searcher {
+  @if $ddl-multiselect-skin-name == 'material' {
+    height: $ddl-multiselect-filled-input-min-height-bigger;
+  }
+}
+
+.e-bigger.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper.e-delimiter .e-searcher,
+.e-bigger .e-filled.e-multiselect.e-float-input .e-multi-select-wrapper.e-delimiter .e-searcher {
+  @if $ddl-multiselect-skin-name == 'material' {
+    height: $ddl-multiselect-filled-float-input-min-height-bigger;
+  }
+}
+
+.e-bigger.e-small.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper.e-delimiter .e-searcher,
+.e-bigger.e-small .e-filled.e-multiselect.e-float-input .e-multi-select-wrapper.e-delimiter .e-searcher
+.e-bigger .e-small.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper.e-delimiter .e-searcher,
+.e-small .e-bigger.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper.e-delimiter .e-searcher {
+  @if $ddl-multiselect-skin-name == 'material' {
+    height: $ddl-multiselect-filled-float-input-min-height;
+  }
+}
+
+.e-bigger.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper.e-delimiter input[type='text'],
+.e-bigger .e-multiselect.e-filled.e-float-input .e-multi-select-wrapper.e-delimiter input[type='text'] {
+  padding: 5px 0;
+}
+
+.e-multiselect.e-filled.e-float-input .e-searcher .e-dropdownbase,
+.e-bigger.e-small.e-multiselect.e-filled.e-float-input .e-searcher .e-dropdownbase,
+.e-bigger.e-small .e-multiselect.e-filled.e-float-input .e-searcher .e-dropdownbase,
+.e-bigger .e-small.e-multiselect.e-filled.e-float-input .e-searcher .e-dropdownbase,
+.e-small .e-bigger.e-multiselect.e-filled.e-float-input .e-searcher .e-dropdownbase {
+  @if $ddl-multiselect-skin-name == 'material' {
+    min-height: $ddl-multiselect-filled-float-input-min-height;
+  }
+}
+
+// Delimiter wrapper specifications
+
+.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-delim-values,
+.e-small.e-bigger.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-delim-values,
+.e-small.e-bigger .e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-delim-values,
+.e-small .e-bigger.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-delim-values,
+.e-bigger .e-small.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-delim-values {
+  @if $ddl-multiselect-skin-name == 'material' {
+    font-size: 14px;
+    line-height: $ddl-multiselect-filled-input-min-height;
+  }
+}
+
+.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values,
+.e-small.e-bigger.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values,
+.e-small.e-bigger .e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values,
+.e-small .e-bigger.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values,
+.e-bigger .e-small.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values {
+  @if $ddl-multiselect-skin-name == 'material' {
+    font-size: 14px;
+    line-height: $ddl-multiselect-filled-float-input-min-height;
+  }
+}
+
+.e-bigger.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-delim-values,
+.e-bigger .e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-delim-values,
+.e-bigger.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values,
+.e-bigger .e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values {
+  @if $ddl-multiselect-skin-name == 'material' {
+    font-size: 16px;
+    line-height: $ddl-multiselect-filled-input-min-height-bigger;
+  }
+}
+
+.e-bigger.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values,
+.e-bigger .e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values {
+  @if $ddl-multiselect-skin-name == 'material' {
+    line-height: $ddl-multiselect-filled-float-input-min-height-bigger;
+  }
+}
+
+.e-small.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-delim-values,
+.e-small .e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-delim-values,
+.e-small.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values,
+.e-small .e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values {
+  @if $ddl-multiselect-skin-name == 'material' {
+    font-size: $ddl-delim-bigger-small-font-size;
+    line-height: $ddl-multiselect-filled-input-min-height-small;
+  }
+}
+
+.e-small.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values,
+.e-small .e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values {
+  @if $ddl-multiselect-skin-name == 'material' {
+    line-height: $ddl-multiselect-filled-float-input-min-height-small;
+  }
+}
+
+
+// Chip specifications
+
+.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips,
+.e-bigger.e-small.e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips,
+.e-bigger.e-small .e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips,
+.e-bigger .e-small.e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips,
+.e-small .e-bigger.e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips {
+  height: 28px;
+}
+
+.e-bigger.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
+.e-bigger .e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
+.e-small.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips,
+.e-small .e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips {
+  height: 24px;
+}
+
+
+.e-bigger.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips,
+.e-bigger .e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips {
+  height: 32px;
+}
+
+.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper.e-mob-wrapper .e-chips.e-mob-chip {
+  height: 24px;
+}
+
+.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
+.e-bigger.e-small.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
+.e-bigger.e-small .e-filled.e-float-input .e-multi-select-wrapper .e-chips,
+.e-bigger .e-small.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
+.e-small .e-bigger.e-filled.e-float-input .e-multi-select-wrapper .e-chips {
+  height: 18px;
+}
+
+.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
+.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips,
+.e-bigger.e-small.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
+.e-bigger.e-small .e-filled.e-float-input .e-multi-select-wrapper .e-chips,
+.e-bigger .e-small.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
+.e-small .e-bigger.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
+.e-bigger.e-small.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips,
+.e-bigger.e-small .e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips,
+.e-bigger .e-small.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips,
+.e-small .e-bigger.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips {
+  margin: 5px 8px 0 0;
+  padding: 0 8px;
+}
+
+.e-bigger.e-small.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
+.e-bigger.e-small .e-filled.e-float-input .e-multi-select-wrapper .e-chips,
+.e-bigger .e-small.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
+.e-small .e-bigger.e-filled.e-float-input .e-multi-select-wrapper .e-chips {
+  padding-left: 8px;
+}
+
+.e-small .e-filled .e-multi-select-wrapper .e-chips,
+.e-small.e-filled .e-multi-select-wrapper .e-chips {
+  height: 16px;
+  margin: 4px 4px 0 0;
+  padding-right: 8px;
+}
+
+.e-small .e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips,
+.e-small.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips {
+  height: 24px;
+}
+
+.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper .e-chips .e-chips-close,
+.e-small.e-filled:not(.e-bigger).e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips .e-chips-close,
+.e-small .e-filled:not(.e-bigger).e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips .e-chips-close,
+.e-bigger.e-small.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper .e-chips .e-chips-close,
+.e-bigger.e-small .e-filled.e-multiselect.e-float-input .e-multi-select-wrapper .e-chips .e-chips-close,
+.e-bigger .e-small.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper .e-chips .e-chips-close,
+.e-small .e-bigger.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper .e-chips .e-chips-close {
+  @if $ddl-multiselect-skin-name == 'material' {
+    height: $ddl-multiselect-filled-float-input-chip-clear-icon-size;
+    width: $ddl-multiselect-filled-float-input-chip-clear-icon-size;
+  }
+}
+
+.e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips > .e-chipcontent,
+.e-bigger.e-small.e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips > .e-chipcontent,
+.e-bigger.e-small .e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips > .e-chipcontent,
+.e-bigger .e-small.e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips > .e-chipcontent,
+.e-small .e-bigger.e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips > .e-chipcontent {
+  font-size: 13px;
+  padding: 0 8px 0 0;
+}
+
+.e-small.e-filled.e-multiselect .e-multi-select-wrapper .e-chips > .e-chipcontent,
+.e-small .e-filled.e-multiselect .e-multi-select-wrapper .e-chips > .e-chipcontent {
+  font-size: 12px;
+}
+
+.e-filled.e-float-input.e-multiselect .e-multi-select-wrapper .e-chips > .e-chipcontent,
+.e-bigger.e-small.e-filled.e-float-input.e-multiselect .e-multi-select-wrapper .e-chips > .e-chipcontent,
+.e-bigger.e-small .e-filled.e-float-input.e-multiselect .e-multi-select-wrapper .e-chips > .e-chipcontent,
+.e-bigger .e-small.e-filled.e-float-input.e-multiselect .e-multi-select-wrapper .e-chips > .e-chipcontent,
+.e-small .e-bigger.e-filled.e-float-input.e-multiselect .e-multi-select-wrapper .e-chips > .e-chipcontent {
+  font-size: 12px;
+  padding: 0 4px 0 0;
+}
+
+.e-small.e-filled.e-float-input.e-multiselect .e-multi-select-wrapper .e-chips > .e-chipcontent,
+.e-small .e-filled.e-float-input.e-multiselect .e-multi-select-wrapper .e-chips > .e-chipcontent {
+  font-size: 10px;
+}
+
+.e-bigger.e-filled.e-float-input.e-multiselect .e-multi-select-wrapper .e-chips > .e-chipcontent,
+.e-bigger .e-filled.e-float-input.e-multiselect .e-multi-select-wrapper .e-chips > .e-chipcontent {
+  font-size: 13px;
+}
+
+.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper.e-mob-wrapper .e-chips > .e-chipcontent {
+  font-size: 13px;
+  padding-right: 4px;
+}
+
+.e-bigger.e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips > .e-chipcontent,
+.e-bigger .e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips > .e-chipcontent {
+  @if $ddl-multiselect-skin-name == 'material' {
+    font-size: $ddl-multiselect-filled-chip-clear-icon-size;
+  }
+}
+
+.e-bigger.e-filled .e-multi-select-wrapper .e-chips,
+.e-bigger .e-filled .e-multi-select-wrapper .e-chips {
+  padding: 0 12px;
+}
+
+.e-bigger.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
+.e-bigger .e-filled.e-float-input .e-multi-select-wrapper .e-chips {
+  padding-right: 8px;
+}
+
+.e-filled.e-float-input .e-multi-select-wrapper.e-mob-wrapper .e-chips.e-mob-chip .e-chips-close {
+  @if $ddl-multiselect-skin-name == 'material' {
+    height: $ddl-multiselect-filled-chip-clear-icon-size;
+    margin: 0;
+    width: $ddl-multiselect-filled-chip-clear-icon-size;
+  }
+}
+
+
+
+// Label element styles
+
+.e-filled.e-multiselect.e-float-input input:focus ~ label.e-float-text,
+.e-filled.e-multiselect.e-float-input input:valid ~ label.e-float-text,
+.e-filled.e-multiselect.e-float-input input ~ label.e-label-top.e-float-text,
+.e-filled.e-multiselect.e-float-input input[readonly] ~ label.e-label-top.e-float-text,
+.e-filled.e-multiselect.e-float-input input[disabled] ~ label.e-label-top.e-float-text,
+.e-filled.e-multiselect.e-float-input input label.e-float-text.e-label-top,
+.e-filled.e-multiselect.e-float-input.e-control-wrapper input:focus ~ label.e-float-text,
+.e-filled.e-multiselect.e-float-input.e-control-wrapper input:valid ~ label.e-float-text,
+.e-filled.e-multiselect.e-float-input.e-control-wrapper input ~ label.e-label-top.e-float-text,
+.e-filled.e-multiselect.e-float-input.e-control-wrapper input[readonly] ~ label.e-label-top.e-float-text,
+.e-filled.e-multiselect.e-float-input.e-control-wrapper input[disabled] ~ label.e-label-top.e-float-text,
+.e-filled.e-multiselect.e-float-input.e-control-wrapper input label.e-float-text.e-label-top,
+.e-filled.e-multiselect.e-float-input.e-input-focus input ~ label.e-float-text,
+.e-filled.e-multiselect.e-float-input.e-control-wrapper.e-input-focus input ~ label.e-float-text {
+  @if $ddl-multiselect-skin-name == 'material' {
+    font-size: $ddl-multiselect-filled-floatlabel-fontsize;
+  }
+}
+
+.e-bigger.e-filled.e-multiselect.e-float-input input:focus ~ label.e-float-text,
+.e-bigger.e-filled.e-multiselect.e-float-input input:valid ~ label.e-float-text,
+.e-bigger.e-filled.e-multiselect.e-float-input input ~ label.e-label-top.e-float-text,
+.e-bigger.e-filled.e-multiselect.e-float-input input[readonly] ~ label.e-label-top.e-float-text,
+.e-bigger.e-filled.e-multiselect.e-float-input input[disabled] ~ label.e-label-top.e-float-text,
+.e-bigger.e-filled.e-multiselect.e-float-input input label.e-float-text.e-label-top,
+.e-bigger.e-filled.e-multiselect.e-float-input.e-control-wrapper input:focus ~ label.e-float-text,
+.e-bigger.e-filled.e-multiselect.e-float-input.e-control-wrapper input:valid ~ label.e-float-text,
+.e-bigger.e-filled.e-multiselect.e-float-input.e-control-wrapper input ~ label.e-label-top.e-float-text,
+.e-bigger.e-filled.e-multiselect.e-float-input.e-control-wrapper input[readonly] ~ label.e-label-top.e-float-text,
+.e-bigger.e-filled.e-multiselect.e-float-input.e-control-wrapper input[disabled] ~ label.e-label-top.e-float-text,
+.e-bigger.e-filled.e-multiselect.e-float-input.e-control-wrapper input label.e-float-text.e-label-top,
+.e-bigger.e-filled.e-multiselect.e-float-input.e-input-focus input ~ label.e-float-text,
+.e-bigger.e-filled.e-multiselect.e-float-input.e-control-wrapper.e-input-focus input ~ label.e-float-text {
+  @if $ddl-multiselect-skin-name == 'material' {
+    font-size: $ddl-multiselect-filled-floatlabel-fontsize-bigger;
+  }
+}
+
+.e-small.e-filled.e-multiselect.e-float-input input:focus ~ label.e-float-text,
+.e-small.e-filled.e-multiselect.e-float-input input:valid ~ label.e-float-text,
+.e-small.e-filled.e-multiselect.e-float-input input ~ label.e-label-top.e-float-text,
+.e-small.e-filled.e-multiselect.e-float-input input[readonly] ~ label.e-label-top.e-float-text,
+.e-small.e-filled.e-multiselect.e-float-input input[disabled] ~ label.e-label-top.e-float-text,
+.e-small.e-filled.e-multiselect.e-float-input input label.e-float-text.e-label-top,
+.e-small.e-filled.e-multiselect.e-float-input.e-control-wrapper input:focus ~ label.e-float-text,
+.e-small.e-filled.e-multiselect.e-float-input.e-control-wrapper input:valid ~ label.e-float-text,
+.e-small.e-filled.e-multiselect.e-float-input.e-control-wrapper input ~ label.e-label-top.e-float-text,
+.e-small.e-filled.e-multiselect.e-float-input.e-control-wrapper input[readonly] ~ label.e-label-top.e-float-text,
+.e-small.e-filled.e-multiselect.e-float-input.e-control-wrapper input[disabled] ~ label.e-label-top.e-float-text,
+.e-small.e-filled.e-multiselect.e-float-input.e-control-wrapper input label.e-float-text.e-label-top,
+.e-small.e-filled.e-multiselect.e-float-input.e-input-focus input ~ label.e-float-text,
+.e-small.e-filled.e-multiselect.e-float-input.e-control-wrapper.e-input-focus input ~ label.e-float-text {
+  @if $ddl-multiselect-skin-name == 'material' {
+    font-size: $ddl-multiselect-filled-floatlabel-fontsize-small;
+  }
+}
+
+// Clear icon styles
+
+.e-filled.e-multi-select-wrapper .e-chips-close.e-close-hooker {
+  height: 38px;
+  margin-top: -38px;
+  right: 12px;
+  top: 100%;
+  width: 16px;
+}
+

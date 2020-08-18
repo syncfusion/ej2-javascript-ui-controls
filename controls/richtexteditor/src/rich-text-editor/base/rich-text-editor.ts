@@ -69,6 +69,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private idleInterval: number;
     private touchModule: EJ2Touch;
     private defaultResetValue: string = null;
+    private isResizeInitialized: boolean = false;
     /**
      * @hidden
      * @deprecated
@@ -2114,6 +2115,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
     }
 
+    private updateResizeFlag(): void {
+        this.isResizeInitialized = true;
+    }
+
     /**
      * setContentHeight method
      * @hidden
@@ -2136,14 +2141,14 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             }
         }
         let tbHeight: number = this.getToolbar() ? this.toolbarModule.getToolbarHeight() : 0;
-        let rzHeight: number = this.enableResize ?
-            (this.element.querySelector('.' + classes.CLS_RTE_RES_HANDLE) as HTMLElement).offsetHeight + 8 : 0;
+        let rzHandle: HTMLElement = this.element.querySelector('.' + classes.CLS_RTE_RES_HANDLE) as HTMLElement;
+        let rzHeight: number = this.enableResize ? (!isNOU(rzHandle) ? (rzHandle.offsetHeight + 8) : 0) : 0;
         let expandPopHeight: number = this.getToolbar() ? this.toolbarModule.getExpandTBarPopHeight() : 0;
         if (this.toolbarSettings.type === ToolbarType.Expand && isExpand && target !== 'preview') {
             heightValue = (this.height === 'auto' && rzHeight === 0) ? 'auto' : rteHeight - (tbHeight + expandPopHeight + rzHeight) + 'px';
             topValue = (!this.toolbarSettings.enableFloating) ? expandPopHeight : 0;
         } else {
-            if (this.height === 'auto' && !(this.element.classList.contains('e-rte-full-screen'))) {
+            if (this.height === 'auto' && !(this.element.classList.contains('e-rte-full-screen')) && !this.isResizeInitialized) {
                 heightValue = 'auto';
             } else {
                 heightValue = heightPercent ? rteHeightPercent : rteHeight - (tbHeight + rzHeight) + 'px';
@@ -2514,6 +2519,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.element.addEventListener('focusin', this.onFocusHandler, true);
         this.element.addEventListener('focusout', this.onBlurHandler, true);
         this.on(events.contentChanged, this.contentChanged, this);
+        this.on(events.resizeInitialized, this.updateResizeFlag, this);
         if (this.readonly && this.enabled) { return; }
         this.bindEvents();
     }
@@ -2591,6 +2597,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.element.removeEventListener('focusin', this.onFocusHandler, true);
         this.element.removeEventListener('focusout', this.onBlurHandler, true);
         this.off(events.contentChanged, this.contentChanged);
+        this.off(events.resizeInitialized, this.updateResizeFlag);
         if (this.readonly && this.enabled) { return; }
         this.unbindEvents();
     }

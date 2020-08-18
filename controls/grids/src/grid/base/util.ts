@@ -1,7 +1,7 @@
-import { ChildProperty, compile as baseTemplateComplier, setValue, Internationalization } from '@syncfusion/ej2-base';
+import { ChildProperty, compile as baseTemplateComplier, setValue, Internationalization, isUndefined } from '@syncfusion/ej2-base';
 import { extend as baseExtend, isNullOrUndefined, getValue, classList, NumberFormatOptions } from '@syncfusion/ej2-base';
 import { setStyleAttribute, addClass, attributes, remove, createElement, DateFormatOptions, removeClass } from '@syncfusion/ej2-base';
-import { isObject, IKeyValue, isBlazor } from '@syncfusion/ej2-base';
+import { isObject, IKeyValue, isBlazor, Browser } from '@syncfusion/ej2-base';
 import {
     IPosition, IGrid, IValueFormatter, IRow, ICell, IExpandedRow, PdfExportProperties,
     ExcelExportProperties, DataStateChangeEventArgs
@@ -727,7 +727,7 @@ export function getDatePredicate(filterObject: PredicateModel, type?: string): P
     let nextDate: Date;
     let prevObj: PredicateModel = baseExtend({}, getActualProperties(filterObject)) as PredicateModel;
     let nextObj: PredicateModel = baseExtend({}, getActualProperties(filterObject)) as PredicateModel;
-    if (filterObject.value === null) {
+    if (isNullOrUndefined(filterObject.value)) {
         datePredicate = new Predicate(prevObj.field, prevObj.operator, prevObj.value, false);
         return datePredicate;
     }
@@ -1031,4 +1031,21 @@ export function getStateEventArgument(query: Query): Object {
     let state: { data?: string } = adaptr.processQuery(dm, query);
     let data: Object = JSON.parse(state.data);
     return data;
+}
+
+/** @hidden */
+export function ispercentageWidth(gObj: IGrid): boolean {
+    let columns: Column[] = gObj.getVisibleColumns();
+    let percentageCol: number = 0;
+    let undefinedWidthCol: number = 0;
+    for (let i: number = 0; i < columns.length; i++) {
+        if (isUndefined(columns[i].width)) {
+            undefinedWidthCol++;
+        } else if (columns[i].width.toString().indexOf('%') !== -1) {
+            percentageCol++;
+        }
+    }
+    return (gObj.width === 'auto' || typeof (gObj.width) === 'string' && gObj.width.indexOf('%') !== -1) && Browser.info.name !== 'chrome'
+        && !gObj.groupSettings.showGroupedColumn && gObj.groupSettings.columns.length
+        && percentageCol && !undefinedWidthCol;
 }

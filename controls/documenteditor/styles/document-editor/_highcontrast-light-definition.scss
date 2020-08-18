@@ -749,6 +749,7 @@ $de-reply-footer-margin-top: 8px !default;
 $de-tooltip-color: #000 !default;
 $de-avatar-clr:  #fff !default;
 $de-tc-tlbr-padding-btm: 0;
+$de-pane-color-border:   #3f51b5 !default;
 
 @include export-module('documenteditor-icons') {
   .e-documenteditor {

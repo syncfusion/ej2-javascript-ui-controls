@@ -1476,6 +1476,8 @@ var Double = /** @class */ (function () {
 /** @private */
 var axisLabelRender = 'axisLabelRender';
 /** @private */
+
+/** @private */
 var axisRangeCalculated = 'axisRangeCalculated';
 /** @private */
 

@@ -5490,7 +5490,7 @@ var TreeMapTooltip = /** @class */ (function () {
  * export all modules from treemap component
  */
 
-TreeMap.Inject(TreeMapTooltip, TreeMapLegend, TreeMapHighlight, TreeMapSelection, Print, PdfExport, ImageExport);
+TreeMap.Inject(Print, PdfExport, ImageExport, TreeMapTooltip, TreeMapLegend, TreeMapHighlight, TreeMapSelection);
 
 exports.TreeMap = TreeMap;
 exports.LevelsData = LevelsData;

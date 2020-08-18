@@ -359,10 +359,11 @@ export class Lists {
         this.domNode.setMarker(this.saveSelection);
         let listsNodes: Node[] = this.domNode.blockNodes();
         for (let i: number = 0; i < listsNodes.length; i++) {
-            if ((listsNodes[i] as Element).tagName === 'TABLE') {
+            if ((listsNodes[i] as Element).tagName === 'TABLE' && !range.collapsed) {
                 listsNodes.splice(i, 1);
             }
-            if ((listsNodes[i] as Element).tagName !== 'LI' && 'LI' === (listsNodes[i].parentNode as Element).tagName) {
+            if (listsNodes.length > 0 && (listsNodes[i] as Element).tagName !== 'LI'
+                && 'LI' === (listsNodes[i].parentNode as Element).tagName) {
                 listsNodes[i] = listsNodes[i].parentNode;
             }
         }
@@ -386,7 +387,12 @@ export class Lists {
         } else {
             this.checkLists(elements, type);
             for (let i: number = 0; i < elements.length; i++) {
-                if ('LI' !== elements[i].tagName) {
+                if (elements[i].getAttribute('contenteditable') === 'true'
+                    && elements[i].childNodes.length === 1 && elements[i].childNodes[0].nodeName === 'TABLE') {
+                    let listEle: Element = document.createElement(type);
+                    listEle.innerHTML = '<li><br/></li>';
+                    elements[i].appendChild(listEle);
+                } else if ('LI' !== elements[i].tagName) {
                     isReverse = false;
                     let elemAtt: string = elements[i].tagName === 'IMG' ? '' : this.domNode.attributes(elements[i]);
                     let openTag: string = '<' + type + '>';

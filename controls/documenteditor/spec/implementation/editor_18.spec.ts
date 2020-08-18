@@ -889,4 +889,10 @@ describe('Validate Track Change have Page Break',()=>{
       container.editorHistory.redo();
       expect(container.revisions.length).toBe(0);
   });
+  it('Style validation', function () {
+    container.openBlank();
+    container.editor.applyStyle('Heading 1');
+    container.editor.insertText('h');
+    expect(container.documentHelper.selection.start.offset).toBe(1);
+  });
 });

@@ -5769,7 +5769,7 @@ var VerticalEvent = /** @class */ (function (_super) {
         var startEndHours = getStartEndHours(resetTime(this.dateRender[resource][day]), this.startHour, this.endHour);
         var startHour = startEndHours.startHour;
         var diffInMinutes = ((date.getHours() - startHour.getHours()) * 60) + (date.getMinutes() - startHour.getMinutes());
-        return (diffInMinutes * this.cellHeight * this.slotCount) / this.interval;
+        return (this.parent.activeViewOptions.timeScale.enable) ? ((diffInMinutes * this.cellHeight * this.slotCount) / this.interval) : 0;
     };
     VerticalEvent.prototype.getOverlapIndex = function (record, day, isAllDay, resource) {
         var _this = this;
@@ -17997,13 +17997,14 @@ var DragAndDrop = /** @class */ (function (_super) {
             * this.actionObj.cellHeight;
         offsetTop = offsetTop < 0 ? 0 : offsetTop;
         if (this.scrollEdges.top || this.scrollEdges.bottom) {
-            offsetTop = this.scrollEdges.top ? dragArea.scrollTop - this.heightUptoCursorPoint + this.actionObj.cellHeight :
-                (dragArea.scrollTop + dragArea.offsetHeight - this.actionObj.clone.offsetHeight) +
+            offsetTop = this.scrollEdges.top ? dragArea.scrollTop - this.heightUptoCursorPoint +
+                this.actionObj.cellHeight + window.pageYOffset :
+                (dragArea.scrollTop + dragArea.offsetHeight - this.actionObj.clone.offsetHeight + window.pageYOffset) +
                     (this.actionObj.clone.offsetHeight - this.heightUptoCursorPoint);
             offsetTop = Math.round(offsetTop / this.actionObj.cellHeight) * this.actionObj.cellHeight;
             this.actionObj.clone.style.top = sf.base.formatUnit(offsetTop);
         }
-        var rowIndex = offsetTop / this.actionObj.cellHeight;
+        var rowIndex = (this.parent.activeViewOptions.timeScale.enable) ? (offsetTop / this.actionObj.cellHeight) : 0;
         var heightPerMinute = this.actionObj.cellHeight / this.actionObj.slotInterval;
         var diffInMinutes = parseInt(this.actionObj.clone.style.top, 10) - offsetTop;
         var tr;

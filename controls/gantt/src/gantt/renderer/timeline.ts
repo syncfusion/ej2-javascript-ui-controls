@@ -728,7 +728,7 @@ export class Timeline {
         let dateString: string;
         switch (dayFormat) {
             case '':
-                dateString = this.parent.globalize.formatDate(date, { format: 'E' });
+                dateString = this.parent.globalize.formatDate(date, { format: 'EEEEE' });
                 dateString = dateString.slice(0, 1);
                 break;
             default:

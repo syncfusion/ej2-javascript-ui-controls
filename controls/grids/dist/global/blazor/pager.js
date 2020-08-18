@@ -1548,6 +1548,7 @@ var CheckBoxFilterBase = /** @class */ (function () {
     };
     CheckBoxFilterBase.prototype.fltrBtnHandler = function () {
         var checked = [].slice.call(this.cBox.querySelectorAll('.e-check:not(.e-selectall)'));
+        var check = checked;
         var optr = 'equal';
         var searchInput = this.searchBox.querySelector('.e-searchinput');
         var caseSen = this.options.allowCaseSensitive;
@@ -1563,6 +1564,8 @@ var CheckBoxFilterBase = /** @class */ (function () {
             defaults.operator = 'notequal';
         }
         var value;
+        var val;
+        var length;
         var fObj;
         var coll = [];
         if (checked.length !== this.itemsCnt || (searchInput.value && searchInput.value !== '')) {
@@ -1598,6 +1601,16 @@ var CheckBoxFilterBase = /** @class */ (function () {
                 this.parent.notify(fltrPrevent, args);
                 if (args.cancel) {
                     return;
+                }
+            }
+            if (this.options.type === 'date' || this.options.type === 'datetime') {
+                length = check.length - 1;
+                val = this.values[parentsUntil(check[length], 'e-ftrchk').getAttribute('uid')];
+                if (sf.base.isNullOrUndefined(val) && isNotEqual) {
+                    coll.push({
+                        field: defaults.field, matchCase: defaults.matchCase, operator: 'equal',
+                        predicate: 'and', value: null
+                    });
                 }
             }
             this.initiateFilter(coll);
@@ -2074,6 +2087,7 @@ var CheckBoxFilterBase = /** @class */ (function () {
         var len = cols ? cols.length : 0;
         var predicate;
         var first;
+        var operate = 'or';
         first = CheckBoxFilterBase.updateDateFilter(cols[0]);
         first.ignoreAccent = !sf.base.isNullOrUndefined(first.ignoreAccent) ? first.ignoreAccent : false;
         if (first.type === 'date' || first.type === 'datetime') {
@@ -2095,7 +2109,12 @@ var CheckBoxFilterBase = /** @class */ (function () {
             }
             else {
                 if (cols[p].type === 'date' || cols[p].type === 'datetime') {
-                    predicate = predicate[(cols[p].predicate)](getDatePredicate(cols[p], cols[p].type), cols[p].type, cols[p].ignoreAccent);
+                    if (cols[p].predicate === 'and' && cols[p].operator === 'equal') {
+                        predicate = predicate[operate](getDatePredicate(cols[p], cols[p].type), cols[p].type, cols[p].ignoreAccent);
+                    }
+                    else {
+                        predicate = predicate[(cols[p].predicate)](getDatePredicate(cols[p], cols[p].type), cols[p].type, cols[p].ignoreAccent);
+                    }
                 }
                 else {
                     /* tslint:disable-next-line:max-line-length */
@@ -7024,12 +7043,9 @@ var ColumnWidthService = /** @class */ (function () {
         }
     };
     ColumnWidthService.prototype.setWidth = function (width, index, clear) {
-        var chrome = 'chrome';
-        var webstore = 'webstore';
-        if (typeof (width) === 'string' && width.indexOf('%') !== -1 &&
-            !(Boolean(window[chrome]) && Boolean(window[chrome][webstore])) && this.parent.allowGrouping) {
+        if (this.parent.groupSettings.columns.length > index && ispercentageWidth(this.parent)) {
             var elementWidth = this.parent.element.offsetWidth;
-            width = parseInt(width, 10) / 100 * (elementWidth);
+            width = (30 / elementWidth * 100).toFixed(1) + '%';
         }
         var header = this.parent.getHeaderTable();
         var content = this.parent.getContentTable();
@@ -10261,7 +10277,8 @@ var Selection = /** @class */ (function () {
         var gObj = this.parent;
         var isDrag;
         var gridElement = parentsUntil(target, 'e-grid');
-        if (gridElement && gridElement.id !== gObj.element.id || parentsUntil(target, 'e-headercontent') && !this.parent.frozenRows) {
+        if (gridElement && gridElement.id !== gObj.element.id || parentsUntil(target, 'e-headercontent') && !this.parent.frozenRows ||
+            parentsUntil(target, 'e-editedbatchcell') || parentsUntil(target, 'e-editedrow')) {
             return;
         }
         if (e.shiftKey || e.ctrlKey) {
@@ -10651,6 +10668,16 @@ var Selection = /** @class */ (function () {
         }
         if (this.parent.enableVirtualization) {
             this.setCheckAllState();
+        }
+        if (this.parent.isCheckBoxSelection) {
+            var totalRecords = this.parent.getRowsObject();
+            var indexes = [];
+            for (var i = 0; i < totalRecords.length; i++) {
+                if (totalRecords[i].isSelected) {
+                    indexes.push(i);
+                }
+            }
+            this.selectRows(indexes);
         }
     };
     Selection.prototype.updatePersistSelectedData = function (checkState) {
@@ -14862,9 +14889,17 @@ var Grid = /** @class */ (function (_super) {
         var contentCol = [].slice.call(this.getContentTable().querySelector('colgroup').childNodes);
         var perPixel = indentWidth / 30;
         var i = 0;
+        var parentOffset = this.element.offsetWidth;
         var applyWidth = function (index, width) {
-            headerCol[index].style.width = width + 'px';
-            contentCol[index].style.width = width + 'px';
+            if (ispercentageWidth(_this)) {
+                var newWidth = (width / parentOffset * 100).toFixed(1) + '%';
+                headerCol[index].style.width = newWidth;
+                contentCol[index].style.width = newWidth;
+            }
+            else {
+                headerCol[index].style.width = width + 'px';
+                contentCol[index].style.width = width + 'px';
+            }
             _this.notify(columnWidthChanged, { index: index, width: width });
         };
         if (perPixel >= 1) {
@@ -14886,6 +14921,21 @@ var Grid = /** @class */ (function (_super) {
         }
         this.isAutoGen = false;
         this.getHeaderTable().querySelector('.e-emptycell').setAttribute('indentRefreshed', 'true');
+    };
+    /**
+     * @hidden
+     */
+    Grid.prototype.resetIndentWidth = function () {
+        if (ispercentageWidth(this)) {
+            this.getHeaderTable().querySelector('.e-emptycell').removeAttribute('indentRefreshed');
+            this.widthService.setWidthToColumns();
+            this.recalcIndentWidth();
+        }
+        if ((this.width === 'auto' || typeof (this.width) === 'string' && this.width.indexOf('%') !== -1)
+            && this.getColumns().filter(function (col) { return col.width && col.minWidth; }).length > 0) {
+            var tgridWidth = this.widthService.getTableWidth(this.getColumns());
+            this.widthService.setMinwidthBycalculation(tgridWidth);
+        }
     };
     /**
      * @hidden
@@ -15324,6 +15374,7 @@ var Grid = /** @class */ (function (_super) {
         sf.base.EventHandler.add(this.element, 'focusout', this.focusOutHandler, this);
         sf.base.EventHandler.add(this.element, 'dblclick', this.dblClickHandler, this);
         sf.base.EventHandler.add(this.element, 'keydown', this.keyPressHandler, this);
+        sf.base.EventHandler.add(window, 'resize', this.resetIndentWidth, this);
         if (this.allowKeyboard) {
             this.element.tabIndex = this.element.tabIndex === -1 ? 0 : this.element.tabIndex;
         }
@@ -15353,6 +15404,7 @@ var Grid = /** @class */ (function (_super) {
         sf.base.EventHandler.remove(this.element, 'keydown', this.keyPressHandler);
         sf.base.EventHandler.remove(this.getContent(), 'touchstart', this.tapEvent);
         sf.base.EventHandler.remove(document.body, 'keydown', this.keyDownHandler);
+        sf.base.EventHandler.remove(window, 'resize', this.resetIndentWidth);
     };
     /**
      * @hidden
@@ -17397,7 +17449,7 @@ function getDatePredicate(filterObject, type) {
     var nextDate;
     var prevObj = sf.base.extend({}, getActualProperties(filterObject));
     var nextObj = sf.base.extend({}, getActualProperties(filterObject));
-    if (filterObject.value === null) {
+    if (sf.base.isNullOrUndefined(filterObject.value)) {
         datePredicate = new sf.data.Predicate(prevObj.field, prevObj.operator, prevObj.value, false);
         return datePredicate;
     }
@@ -17634,6 +17686,24 @@ function eventPromise(args, query) {
     return { state: state, deffered: def };
 }
 /** @hidden */
+
+/** @hidden */
+function ispercentageWidth(gObj) {
+    var columns = gObj.getVisibleColumns();
+    var percentageCol = 0;
+    var undefinedWidthCol = 0;
+    for (var i = 0; i < columns.length; i++) {
+        if (sf.base.isUndefined(columns[i].width)) {
+            undefinedWidthCol++;
+        }
+        else if (columns[i].width.toString().indexOf('%') !== -1) {
+            percentageCol++;
+        }
+    }
+    return (gObj.width === 'auto' || typeof (gObj.width) === 'string' && gObj.width.indexOf('%') !== -1) && sf.base.Browser.info.name !== 'chrome'
+        && !gObj.groupSettings.showGroupedColumn && gObj.groupSettings.columns.length
+        && percentageCol && !undefinedWidthCol;
+}
 
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {

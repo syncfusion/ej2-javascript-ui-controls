@@ -411,9 +411,7 @@ export class WParagraphFormat {
         if (isNullOrUndefined(this.listFormat)) {
             format.listFormat = undefined;
         } else {
-            format.listFormat = new WListFormat();
-            format.listFormat.listId = this.listFormat.listId;
-            format.listFormat.listLevelNumber = this.listFormat.listLevelNumber;
+            format.listFormat = this.listFormat.cloneListFormat();
         }
         return format;
     }

@@ -329,6 +329,12 @@ class WUniqueFormat {
         if (property === 'allowAutoFit') {
             return 11;
         }
+        if (property === 'horizontalPositionAbs') {
+            return 12;
+        }
+        if (property === 'horizontalPosition') {
+            return 13;
+        }
         return 0;
     }
     static getListLevelType(property) {
@@ -810,6 +816,12 @@ class WUniqueFormat {
             return false;
         }
         if (this.isNotEqual('allowAutoFit', source, modifiedProperty, modifiedValue, 8)) {
+            return false;
+        }
+        if (this.isNotEqual('horizontalPositionAbs', source, modifiedProperty, modifiedValue, 8)) {
+            return false;
+        }
+        if (this.isNotEqual('horizontalPosition', source, modifiedProperty, modifiedValue, 8)) {
             return false;
         }
         return true;
@@ -1757,6 +1769,15 @@ class WListFormat {
             this.list.mergeList(format.list);
         }
     }
+    cloneListFormat() {
+        let format = new WListFormat(undefined);
+        format.list = this.list;
+        format.listId = this.listId;
+        format.baseStyle = this.baseStyle;
+        format.listLevelNumber = this.listLevelNumber;
+        format.uniqueListFormat = this.uniqueListFormat;
+        return format;
+    }
 }
 WListFormat.uniqueListFormats = new WUniqueFormats();
 WListFormat.uniqueFormatType = 7;
@@ -2154,9 +2175,7 @@ class WParagraphFormat {
             format.listFormat = undefined;
         }
         else {
-            format.listFormat = new WListFormat();
-            format.listFormat.listId = this.listFormat.listId;
-            format.listFormat.listLevelNumber = this.listFormat.listLevelNumber;
+            format.listFormat = this.listFormat.cloneListFormat();
         }
         return format;
     }
@@ -3986,7 +4005,7 @@ class WCharacterFormat {
                 value = 'NoColor';
                 break;
             case 'fontColor':
-                value = '#000000';
+                value = 'empty';
                 break;
             case 'fontFamily':
                 value = 'Calibri';
@@ -4297,6 +4316,14 @@ class HelperMethods {
                 break;
         }
         return color;
+    }
+    static isVeryDark(backColor) {
+        let backgroundColor = backColor.substring(1);
+        let r = parseInt(backgroundColor.substr(0, 2), 16);
+        let g = parseInt(backgroundColor.substr(2, 2), 16);
+        let b = parseInt(backgroundColor.substr(4, 2), 16);
+        let contrast = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+        return contrast <= 60;
     }
     static getColor(color) {
         if (color.length > 0) {
@@ -5130,6 +5157,18 @@ class WTableFormat {
     set bidi(value) {
         this.setPropertyValue('bidi', value);
     }
+    get horizontalPositionAbs() {
+        return this.getPropertyValue('horizontalPositionAbs');
+    }
+    set horizontalPositionAbs(value) {
+        this.setPropertyValue('horizontalPositionAbs', value);
+    }
+    get horizontalPosition() {
+        return this.getPropertyValue('horizontalPosition');
+    }
+    set horizontalPosition(value) {
+        this.setPropertyValue('horizontalPosition', value);
+    }
     getPropertyValue(property) {
         let hasValue = this.hasValue(property);
         if (hasValue) {
@@ -5170,6 +5209,8 @@ class WTableFormat {
         this.addUniqueTableFormat('preferredWidth', property, propValue, uniqueTableFormatTemp);
         this.addUniqueTableFormat('preferredWidthType', property, propValue, uniqueTableFormatTemp);
         this.addUniqueTableFormat('bidi', property, propValue, uniqueTableFormatTemp);
+        this.addUniqueTableFormat('horizontalPositionAbs', property, propValue, uniqueTableFormatTemp);
+        this.addUniqueTableFormat('horizontalPosition', property, propValue, uniqueTableFormatTemp);
         this.uniqueTableFormat = WTableFormat.uniqueTableFormats.addUniqueFormat(uniqueTableFormatTemp, WTableFormat.uniqueFormatType);
     }
     // tslint:disable-next-line:max-line-length
@@ -5215,6 +5256,12 @@ class WTableFormat {
                 break;
             case 'bidi':
                 value = false;
+                break;
+            case 'horizontalPositionAbs':
+                value = null;
+                break;
+            case 'horizontalPosition':
+                value = 0;
                 break;
         }
         return value;
@@ -5264,6 +5311,8 @@ class WTableFormat {
         tableFormat.bottomMargin = this.bottomMargin;
         tableFormat.preferredWidth = this.preferredWidth;
         tableFormat.preferredWidthType = this.preferredWidthType;
+        tableFormat.horizontalPositionAbs = this.horizontalPositionAbs;
+        tableFormat.horizontalPosition = this.horizontalPosition;
         tableFormat.borders = isNullOrUndefined(this.borders) ? undefined : this.borders.cloneFormat();
         tableFormat.shading = isNullOrUndefined(this.shading) ? undefined : this.shading.cloneFormat();
         tableFormat.bidi = this.bidi;
@@ -5291,6 +5340,8 @@ class WTableFormat {
                 this.preferredWidthType = format.preferredWidthType;
                 this.bidi = format.bidi;
                 this.allowAutoFit = format.allowAutoFit;
+                this.horizontalPosition = format.horizontalPosition;
+                this.horizontalPositionAbs = format.horizontalPositionAbs;
             }
             if (!isNullOrUndefined(format.borders)) {
                 this.borders = new WBorders(this);
@@ -5985,8 +6036,13 @@ class Layout {
             let line = widget.childWidgets[j];
             for (let i = 0; i < line.children.length; i++) {
                 let element = line.children[i];
-                if (element instanceof FieldElementBox && element.fieldType !== 0) {
+                if (element instanceof FieldElementBox && (element.fieldType !== 0 || (element.fieldType === 0 &&
+                    this.documentHelper.fields.indexOf(element) === -1))) {
                     element.linkFieldCharacter(this.documentHelper);
+                }
+                if (element instanceof FieldTextElementBox &&
+                    element.fieldBegin !== element.previousElement.fieldBegin) {
+                    element.fieldBegin = element.previousElement.fieldBegin;
                 }
             }
         }
@@ -6402,6 +6458,12 @@ class Layout {
             }
             this.viewer.clientActiveArea = clientActiveArea;
             this.viewer.clientArea = clientArea;
+        }
+        if (element instanceof ImageElementBox) {
+            // tslint:disable-next-line:max-line-length
+            if (element.top !== 0 && !isNullOrUndefined(element.top) || element.bottom !== 0 && !isNullOrUndefined(element.bottom) || element.left !== 0 && !isNullOrUndefined(element.left) || element.right !== 0 && !isNullOrUndefined(element.right)) {
+                this.cropPosition(element);
+            }
         }
         if (parseFloat(width.toFixed(4)) <= parseFloat(this.viewer.clientActiveArea.width.toFixed(4)) || !this.viewer.textWrap) {
             //Fits the text in current line.
@@ -9549,8 +9611,8 @@ class Layout {
         cellWidget.containerWidget = cell.containerWidget;
         this.updateWidgetLocation(cell, cellWidget);
         cellWidget.margin = cell.margin;
-        cellWidget.leftBorderWidth = HelperMethods.convertPointToPixel(cell.leftBorderWidth);
-        cellWidget.rightBorderWidth = HelperMethods.convertPointToPixel(cell.rightBorderWidth);
+        cellWidget.leftBorderWidth = cell.leftBorderWidth;
+        cellWidget.rightBorderWidth = cell.rightBorderWidth;
         return cellWidget;
     }
     /**
@@ -10518,7 +10580,13 @@ class Layout {
      */
     addTableRowWidget(area, row) {
         let rowWidget = row[row.length - 1];
-        rowWidget.x = area.x + rowWidget.rowFormat.gridBeforeWidth;
+        // tslint:disable-next-line:max-line-length
+        if ((rowWidget.rowFormat.beforeWidth !== 0 || rowWidget.rowFormat.gridBeforeWidth !== 0) && ((this.documentHelper.alignTablesRowByRow) ? rowWidget.ownerTable.tableFormat.tableAlignment === 'Left' : true)) {
+            rowWidget.x += (rowWidget.rowFormat.beforeWidth !== 0) ? rowWidget.rowFormat.beforeWidth : rowWidget.rowFormat.gridBeforeWidth;
+        }
+        else {
+            rowWidget.x = area.x;
+        }
         rowWidget.y = area.y;
         rowWidget.width = area.width;
         let borderWidth = 0;
@@ -12107,6 +12175,26 @@ class Layout {
         }
         return indentX;
     }
+    cropPosition(element) {
+        let right = 0;
+        let bottom = 0;
+        let image = element;
+        image.isCrop = true;
+        if (image.left !== 0) {
+            image.x = (image.left * image.widthScale) / 100;
+        }
+        if (image.top !== 0) {
+            image.y = (image.top * image.heightScale) / 100;
+        }
+        if (image.right !== 0) {
+            right = (image.right * image.widthScale) / 100;
+        }
+        if (image.bottom !== 0) {
+            bottom = (image.bottom * image.heightScale) / 100;
+        }
+        image.cropWidth = (image.widthScale - (image.x + right));
+        image.cropHeight = (image.heightScale - (image.y + bottom));
+    }
 }
 
 // tslint:disable-next-line:max-line-length
@@ -12712,7 +12800,7 @@ class Renderer {
         let leftMargin = elementBox.margin.left;
         let format = elementBox.listLevel.characterFormat;
         let breakCharacterFormat = elementBox.line.paragraph.characterFormat;
-        let color = format.fontColor === '#000000' ? breakCharacterFormat.fontColor : format.fontColor;
+        let color = format.fontColor === 'empty' ? breakCharacterFormat.fontColor : format.fontColor;
         this.pageContext.textBaseline = 'alphabetic';
         let bold = '';
         let italic = '';
@@ -12752,7 +12840,13 @@ class Renderer {
             let index = text.indexOf('.');
             text = text.substr(index) + text.substring(0, index);
         }
-        this.pageContext.fillStyle = HelperMethods.getColor(color);
+        if (color === "empty") {
+            let bgColor = this.documentHelper.backgroundColor;
+            this.pageContext.fillStyle = this.getDefaultFontColor(bgColor);
+        }
+        else {
+            this.pageContext.fillStyle = HelperMethods.getColor(color);
+        }
         // tslint:disable-next-line:max-line-length
         this.pageContext.fillText(text, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width));
         if (format.underline !== 'None' && !isNullOrUndefined(format.underline)) {
@@ -12760,6 +12854,14 @@ class Renderer {
         }
         if (strikethrough !== 'None') {
             this.renderStrikeThrough(elementBox, left, top, format.strikethrough, color, baselineAlignment);
+        }
+    }
+    getDefaultFontColor(backColor) {
+        if (HelperMethods.isVeryDark(backColor)) {
+            return "#FFFFFF";
+        }
+        else {
+            return "#000000";
         }
     }
     /**
@@ -12810,7 +12912,13 @@ class Renderer {
         }
         let baselineOffset = elementBox.baselineOffset;
         topMargin = (format.baselineAlignment === 'Normal') ? topMargin + baselineOffset : (topMargin + (baselineOffset / 1.5));
-        this.pageContext.fillStyle = HelperMethods.getColor(color);
+        if (color === "empty") {
+            let bgColor = this.documentHelper.backgroundColor;
+            this.pageContext.fillStyle = this.getDefaultFontColor(bgColor);
+        }
+        else {
+            this.pageContext.fillStyle = HelperMethods.getColor(color);
+        }
         let scaledWidth = this.getScaledValue(elementBox.width);
         let text = elementBox.text;
         if (elementBox instanceof TabElementBox) {
@@ -13222,8 +13330,14 @@ class Renderer {
         }
         else {
             try {
-                // tslint:disable-next-line:max-line-length
-                this.pageContext.drawImage(elementBox.element, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width), this.getScaledValue(elementBox.height));
+                if (!elementBox.isCrop) {
+                    // tslint:disable-next-line:max-line-length
+                    this.pageContext.drawImage(elementBox.element, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width), this.getScaledValue(elementBox.height));
+                }
+                else {
+                    // tslint:disable-next-line:max-line-length
+                    this.pageContext.drawImage(elementBox.element, this.getScaledValue(elementBox.x), this.getScaledValue(elementBox.y), elementBox.cropWidth, elementBox.cropHeight, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), elementBox.width, elementBox.height);
+                }
             }
             catch (e) {
                 // tslint:disable-next-line:max-line-length
@@ -15646,6 +15760,10 @@ class DocumentHelper {
         /**
          * @private
          */
+        this.alignTablesRowByRow = false;
+        /**
+         * @private
+         */
         this.lists = [];
         /**
          * @private
@@ -16961,7 +17079,7 @@ class DocumentHelper {
         characterFormat.fontFamilyBidi = 'Calibri';
         characterFormat.baselineAlignment = 'Normal';
         characterFormat.highlightColor = 'NoColor';
-        characterFormat.fontColor = '#000000';
+        characterFormat.fontColor = 'empty';
         characterFormat.allCaps = false;
     }
     setDefaultParagraphValue(paragraphFormat) {
@@ -18636,6 +18754,8 @@ class LayoutViewer {
                             leftIndent = leftIndent - HelperMethods.convertPointToPixel(block.leftIndent);
                             rightIndent = leftIndent;
                         }
+                        // tslint:disable-next-line:max-line-length
+                        leftIndent = (block.tableFormat.horizontalPositionAbs === 'Left') ? block.tableFormat.horizontalPosition : leftIndent;
                         this.documentHelper.tableLefts.push(leftIndent);
                     }
                 }
@@ -20986,7 +21106,8 @@ class TableWidget extends BlockWidget {
             let cellWidth = 0;
             let sizeInfo = new ColumnSizeInfo();
             let offset = 0;
-            if (rowFormat.gridBefore > 0) {
+            // tslint:disable-next-line:max-line-length
+            if (rowFormat.gridBefore > 0 && (row.rowFormat.beforeWidth !== 0 || row.rowFormat.gridBeforeWidth !== 0) && ((this.bodyWidget.page.documentHelper.alignTablesRowByRow) ? row.ownerTable.tableFormat.tableAlignment === 'Left' : true)) {
                 cellWidth = this.getCellWidth(rowFormat.gridBeforeWidth, row.rowFormat.gridAfterWidthType, tableWidth, null);
                 sizeInfo.minimumWidth = cellWidth;
                 this.tableHolder.addColumns(columnSpan, columnSpan = rowFormat.gridBefore, cellWidth, sizeInfo, offset = cellWidth);
@@ -23432,8 +23553,12 @@ class ElementBox {
                 else if (isNullOrUndefined(fieldBegin.fieldSeparator)) {
                     if (node.fieldType === 2 && isNullOrUndefined(node.fieldBegin)) {
                         fieldBegin.fieldSeparator = node;
+                        if (fieldBegin.fieldSeparator && isNullOrUndefined(fieldBegin.fieldSeparator.fieldBegin)) {
+                            fieldBegin.fieldSeparator.fieldBegin = fieldBegin;
+                        }
                         if (!isNullOrUndefined(node.fieldEnd)) {
                             fieldBegin.fieldEnd = node.fieldEnd;
+                            fieldBegin.fieldSeparator.fieldEnd = fieldBegin.fieldEnd;
                             return true;
                         }
                     }
@@ -24326,6 +24451,10 @@ class ImageElementBox extends ShapeBase {
         /**
          * @private
          */
+        this.isCrop = false;
+        /**
+         * @private
+         */
         this.isMetaFile = false;
         this.isInlineImageIn = isInlineImage;
     }
@@ -24381,6 +24510,15 @@ class ImageElementBox extends ShapeBase {
         image.isMetaFile = this.isMetaFile;
         image.width = this.width;
         image.height = this.height;
+        if (this.isCrop) {
+            image.verticalPosition = this.top;
+            image.horizontalPosition = this.left;
+            image.bottom = this.bottom;
+            image.right = this.right;
+            image.isCrop = this.isCrop;
+            image.heightScale = this.heightScale;
+            image.widthScale = this.widthScale;
+        }
         if (this.margin) {
             image.margin = this.margin.clone();
         }
@@ -26943,7 +27081,7 @@ class ContextMenu$1 {
                 this.documentHelper.owner.editor.deleteColumn();
                 break;
             case id + CONTEXTMENU_CONTINUE_NUMBERING:
-                this.documentHelper.owner.editorModule.applyContinueNumbering(this.documentHelper.selection);
+                this.documentHelper.owner.editorModule.applyContinueNumbering();
                 break;
             case id + CONTEXTMENU_RESTART_AT:
                 this.documentHelper.owner.editorModule.applyRestartNumbering(this.documentHelper.selection);
@@ -27402,6 +27540,9 @@ class SfdtReader {
         }
         if (!isNullOrUndefined(jsonObject.dontUseHTMLParagraphAutoSpacing)) {
             this.documentHelper.dontUseHtmlParagraphAutoSpacing = jsonObject.dontUseHTMLParagraphAutoSpacing;
+        }
+        if (!isNullOrUndefined(jsonObject.alignTablesRowByRow)) {
+            this.documentHelper.alignTablesRowByRow = jsonObject.alignTablesRowByRow;
         }
         if (!isNullOrUndefined(jsonObject.background)) {
             this.documentHelper.backgroundColor = this.getColor(jsonObject.background.color);
@@ -28015,6 +28156,12 @@ class SfdtReader {
                 }
                 image.width = HelperMethods.convertPointToPixel(inline.width);
                 image.height = HelperMethods.convertPointToPixel(inline.height);
+                image.top = inline.top;
+                image.left = inline.left;
+                image.bottom = inline.bottom;
+                image.right = inline.right;
+                image.heightScale = inline.getimageheight;
+                image.widthScale = inline.getimagewidth;
                 this.parseCharacterFormat(inline.characterFormat, image.characterFormat);
                 hasValidElmts = true;
             }
@@ -28472,6 +28619,12 @@ class SfdtReader {
         }
         if (!isNullOrUndefined(sourceFormat.bidi)) {
             tableFormat.bidi = sourceFormat.bidi;
+        }
+        if (!isNullOrUndefined(sourceFormat.horizontalPositionAbs)) {
+            tableFormat.horizontalPositionAbs = sourceFormat.horizontalPositionAbs;
+        }
+        if (!isNullOrUndefined(sourceFormat.horizontalPosition)) {
+            tableFormat.horizontalPosition = sourceFormat.horizontalPosition;
         }
     }
     parseCellFormat(sourceFormat, cellFormat) {
@@ -31926,7 +32079,7 @@ class HtmlExport {
             }
             //}
             if (!isNullOrUndefined(table.tableFormat.leftIndent) && table.tableFormat.leftIndent !== 0) {
-                tagAttributes.push('left-indent="' + table.tableFormat.leftIndent.toString() + 'pt;');
+                tagAttributes.push('left-indent="' + (table.tableFormat.leftIndent.toString() + 'pt;') + '"');
             }
             if (!isNullOrUndefined(table.tableFormat.cellSpacing) && table.tableFormat.cellSpacing > 0) {
                 tagAttributes.push('cellspacing="' + (((table.tableFormat.cellSpacing * 72) / 96) * 2).toString() + '"');
@@ -40756,6 +40909,72 @@ class Selection {
             this.imageFormat.clearImageFormat();
         }
     }
+    /**
+     * Returns the context type of previous character or element.
+     * @param isElement - Decides whether to get previous context type from element or character. By default, character.
+     */
+    getPreviousContextType(isElement) {
+        let contextType;
+        let start = this.start;
+        if (start.offset > 0) {
+            let element = start.currentWidget.getInline(start.offset, 0).element;
+            if (isElement) {
+                element = element.previousElement;
+            }
+            else {
+                element = start.currentWidget.getInline(start.offset - 1, 0).element;
+            }
+            contextType = this.getContextElement(element);
+            return contextType;
+        }
+        return undefined;
+    }
+    /**
+     * Returns the context type of next character or element.
+     * @param isElement - Decides whether to get next context type from element or character. By default, character.
+     */
+    getNextContextType(isElement) {
+        let contextType;
+        let start = this.start;
+        let element = start.currentWidget.getInline(start.offset, 0).element;
+        if (isElement && element.nextElement) {
+            element = element.nextElement;
+        }
+        else {
+            element = start.currentWidget.getInline(start.offset + 1, 0).element;
+        }
+        contextType = this.getContextElement(element);
+        return contextType;
+    }
+    getContextElement(element) {
+        if (element instanceof TextElementBox) {
+            return 'Text';
+        }
+        else if (element instanceof FieldElementBox || element instanceof FieldTextElementBox) {
+            return 'Field';
+        }
+        else if (element instanceof BookmarkElementBox) {
+            return 'Bookmark';
+        }
+        else if (element instanceof ImageElementBox) {
+            return 'Image';
+        }
+        else if (element instanceof ShapeElementBox) {
+            return 'Shape';
+        }
+        else if (element instanceof CommentElementBox || element instanceof CommentCharacterElementBox) {
+            return 'Comment';
+        }
+        else if (element instanceof ListTextElementBox) {
+            return 'List';
+        }
+        else if (element instanceof EditRangeStartElementBox || element instanceof EditRangeEndElementBox) {
+            return 'EditRange';
+        }
+        else {
+            return undefined;
+        }
+    }
     setCurrentContextType() {
         let contextIsinImage = this.imageFormat.image ? true : false;
         let contextIsinTable = (isNullOrUndefined(this.tableFormat) || isNullOrUndefined(this.tableFormat.table)) ? false : true;
@@ -47428,6 +47647,8 @@ class Editor {
             this.endOffset = endPosition;
             this.editorHistory.updateComplexHistory();
         }
+        this.startParagraph = undefined;
+        this.endParagraph = undefined;
     }
     // Public Implementation Starts
     /**
@@ -54754,9 +54975,10 @@ class Editor {
         }
     }
     /**
-     * @private
+     * To apply continue numbering from the previous list
      */
-    applyContinueNumbering(selection) {
+    applyContinueNumbering() {
+        let selection = this.selection;
         if (this.editorHistory) {
             this.editorHistory.initializeHistory('ContinueNumbering');
         }
@@ -68739,8 +68961,18 @@ class WordExport {
         }
         //End Element Blip
         writer.writeEndElement();
-        writer.writeStartElement('a', 'srcRect', this.aNamespace);
-        writer.writeEndElement();
+        if (picture.iscrop) {
+            writer.writeStartElement('a', 'srcRect', this.aNamespace);
+            let l = Math.round(picture.left * 1000);
+            writer.writeAttributeString(undefined, 'l', undefined, l.toString());
+            let t = Math.round(picture.top * 1000);
+            writer.writeAttributeString(undefined, 't', undefined, t.toString());
+            let r = Math.round(picture.right * 1000);
+            writer.writeAttributeString(undefined, 'r', undefined, r.toString());
+            let b = Math.round(picture.bottom * 1000);
+            writer.writeAttributeString(undefined, 'b', undefined, b.toString());
+            writer.writeEndElement();
+        }
         writer.writeStartElement('a', 'stretch', this.aNamespace);
         writer.writeStartElement('a', 'fillRect', this.aNamespace);
         writer.writeEndElement();
@@ -70273,7 +70505,12 @@ class WordExport {
         }
         if (!isNullOrUndefined(characterFormat.fontColor)) {
             writer.writeStartElement(undefined, 'color', this.wNamespace);
-            writer.writeAttributeString('w', 'val', this.wNamespace, this.getColor(characterFormat.fontColor));
+            if (characterFormat.fontColor === 'empty') {
+                writer.writeAttributeString('w', 'val', this.wNamespace, 'auto');
+            }
+            else {
+                writer.writeAttributeString('w', 'val', this.wNamespace, this.getColor(characterFormat.fontColor));
+            }
             writer.writeEndElement();
         }
         if (!isNullOrUndefined(characterFormat.fontSize)) {
@@ -71774,6 +72011,15 @@ class SfdtExport {
             inline.imageString = element.imageString;
             inline.width = HelperMethods.convertPixelToPoint(element.width);
             inline.height = HelperMethods.convertPixelToPoint(element.height);
+            inline.iscrop = element.isCrop;
+            if (element.isCrop) {
+                inline.bottom = element.bottom;
+                inline.right = element.right;
+                inline.left = element.horizontalPosition;
+                inline.top = element.verticalPosition;
+                inline.getimagewidth = element.widthScale;
+                inline.getimageheight = element.heightScale;
+            }
         }
         else if (element instanceof BookmarkElementBox) {
             inline.bookmarkType = element.bookmarkType;
@@ -72390,7 +72636,7 @@ class SfdtExport {
         tableFormat.shading = this.writeShading(wTableFormat.shading);
         tableFormat.cellSpacing = wTableFormat.hasValue('cellSpacing') ? wTableFormat.cellSpacing : undefined;
         tableFormat.leftIndent = wTableFormat.hasValue('leftIndent') ? wTableFormat.leftIndent : undefined;
-        tableFormat.tableAlignment = wTableFormat.hasValue('tableAlignment"') ? wTableFormat.tableAlignment : undefined;
+        tableFormat.tableAlignment = wTableFormat.hasValue('tableAlignment') ? wTableFormat.tableAlignment : undefined;
         tableFormat.topMargin = wTableFormat.hasValue('topMargin') ? wTableFormat.topMargin : undefined;
         tableFormat.rightMargin = wTableFormat.hasValue('rightMargin') ? wTableFormat.rightMargin : undefined;
         tableFormat.leftMargin = wTableFormat.hasValue('leftMargin') ? wTableFormat.leftMargin : undefined;
@@ -73988,7 +74234,8 @@ class PageSetupDialog {
             else {
                 this.portrait.checked = true;
             }
-            this.setPageSize(this.portrait.checked, sectionFormat.pageWidth, sectionFormat.pageHeight);
+            // tslint:disable-next-line:max-line-length
+            this.setPageSize(this.portrait.checked, parseFloat(sectionFormat.pageWidth.toFixed(1)), parseFloat(sectionFormat.pageHeight.toFixed(1)));
         };
         /**
          * @private
@@ -74530,7 +74777,7 @@ class PageSetupDialog {
             || (!isPortrait && width === 756 && height === 522)) {
             this.paperSize.value = 'executive';
         }
-        else if ((isPortrait && width === 841.9 && height === 1190.55)
+        else if ((isPortrait && width === 841.9 && height === 1190.5)
             || (!isPortrait && width === 1190.5 && height === 841.9)) {
             this.paperSize.value = 'a3';
         }
@@ -74538,8 +74785,8 @@ class PageSetupDialog {
             || (!isPortrait && width === 841.9 && height === 595.3)) {
             this.paperSize.value = 'a4';
         }
-        else if ((isPortrait && width === 419.55 && height === 595.3)
-            || (!isPortrait && width === 595.3 && height === 419.55)) {
+        else if ((isPortrait && width === 419.6 && height === 595.3)
+            || (!isPortrait && width === 595.3 && height === 419.6)) {
             this.paperSize.value = 'a5';
         }
         else if ((isPortrait && width === 728.5 && height === 1031.8)
@@ -82211,7 +82458,7 @@ class SpellChecker {
         /**
          * Specifies whether spell check has to be performed or not.
          */
-        this.enableSpellCheck = true;
+        this.enableSpellCheckInternal = true;
         this.spellSuggestionInternal = true;
         /**
          * @private
@@ -82316,6 +82563,24 @@ class SpellChecker {
      */
     set removeUnderline(value) {
         this.removeUnderlineInternal = value;
+        this.documentHelper.owner.editor.reLayout(this.documentHelper.selection);
+    }
+    /**
+     * Getter indicates whether spell check has to be performed or not.
+     * @aspType bool
+     * @blazorType bool
+     */
+    get enableSpellCheck() {
+        return this.enableSpellCheckInternal;
+    }
+    /**
+     * Setter to enable or disable spell check has to be performed or not
+     * @aspType bool
+     * @blazorType bool
+     */
+    set enableSpellCheck(value) {
+        this.enableSpellCheckInternal = value;
+        this.documentHelper.owner.editor.reLayout(this.documentHelper.selection);
     }
     get viewer() {
         return this.documentHelper.owner.viewer;
@@ -86424,6 +86689,9 @@ __decorate([
 ], DocumentEditor.prototype, "beforeFormFieldFill", void 0);
 __decorate([
     Event()
+], DocumentEditor.prototype, "serviceFailure", void 0);
+__decorate([
+    Event()
 ], DocumentEditor.prototype, "afterFormFieldFill", void 0);
 DocumentEditor = DocumentEditor_1 = __decorate([
     NotifyPropertyChanges
@@ -86574,6 +86842,8 @@ class Toolbar$1 {
             cssClass: cssClassName,
             iconCss: iconCss
         });
+        let locale = this.container.localObj;
+        buttonElement.title = locale.getConstant('Toggles the visibility of properties pane');
         this.propertiesPaneButton.appendTo(buttonElement);
         EventHandler.add(buttonElement, 'click', this.showHidePropertiesPane, this);
         toolbarContainer.appendChild(propertiesPaneDiv);
@@ -86653,8 +86923,11 @@ class Toolbar$1 {
         }
     }
     showHidePropertiesPane() {
+        let paneDiv = document.getElementsByClassName('e-de-ctnr-properties-pane-btn')[0];
         if (this.container.propertiesPaneContainer.style.display === 'none') {
             this.container.showPropertiesPane = true;
+            paneDiv.classList.remove('e-de-pane-disable-clr');
+            classList(paneDiv, ['e-de-pane-enable-clr'], []);
             this.container.trigger('beforePaneSwitch', { type: 'PropertiesPane' });
         }
         else if (this.container.previousContext.indexOf('Header') >= 0
@@ -86663,6 +86936,8 @@ class Toolbar$1 {
         }
         else {
             this.container.showPropertiesPane = false;
+            paneDiv.classList.remove('e-de-pane-enable-clr');
+            classList(paneDiv, ['e-de-pane-disable-clr'], []);
         }
         this.enableDisablePropertyPaneButton(this.container.showPropertiesPane);
         this.container.showPropertiesPaneOnSelection();
@@ -87147,7 +87422,10 @@ class Toolbar$1 {
                 this.toolbar.enableItems(element.parentElement, enable);
             }
         }
-        if (!isProtectedContent) {
+        if (!isProtectedContent || this.container.showPropertiesPane) {
+            if (isProtectedContent) {
+                enable = this.container.showPropertiesPane;
+            }
             classList(this.propertiesPaneButton.element.parentElement, !enable ? ['e-de-overlay'] : [], !enable ? [] : ['e-de-overlay']);
         }
         if (enable || (this.documentEditor.documentHelper.isDocumentProtected &&
@@ -90208,7 +90486,6 @@ class StatusBar {
                         this.documentEditor.documentHelper.triggerElementsOnLoading = true;
                         this.documentEditor.documentHelper.triggerSpellCheck = true;
                     }
-                    this.documentEditor.editor.reLayout(this.documentEditor.documentHelper.selection);
                     /* tslint:disable */
                 }, 50);
                 /* tslint:enable */
@@ -90220,7 +90497,6 @@ class StatusBar {
                 if (this.documentEditor.enableSpellCheck && this.documentEditor.spellChecker.enableSpellCheck) {
                     // tslint:disable-next-line:max-line-length
                     this.documentEditor.spellChecker.removeUnderline = (this.documentEditor.spellChecker.removeUnderline) ? false : true;
-                    this.documentEditor.editor.reLayout(this.documentEditor.documentHelper.selection);
                 }
             }
         };
@@ -90459,6 +90735,7 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
             'Upload from computer': 'Upload from computer',
             'By URL': 'By URL',
             'Page Break': 'Page Break',
+            'Toggles the visibility of properties pane': 'Toggles the visibility of properties pane',
             'Section Break': 'Section Break',
             'Header And Footer': 'Header & Footer',
             'Options': 'Options',
@@ -90901,6 +91178,7 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
             commentEnd: this.onCommentEnd.bind(this),
             commentDelete: this.onCommentDelete.bind(this),
             trackChange: this.onTrackChange.bind(this),
+            serviceFailure: this.fireServiceFailure.bind(this),
             locale: this.locale,
             acceptTab: true,
             zIndex: this.zIndex,
@@ -90942,6 +91220,12 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
     }
     onBeforePaneSwitch(args) {
         this.trigger('beforePaneSwitch', args);
+    }
+    /**
+     * @private
+     */
+    fireServiceFailure(eventArgs) {
+        this.trigger('serviceFailure', eventArgs);
     }
     /**
      * @private
@@ -91043,7 +91327,7 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
      * @private
      */
     showPropertiesPaneOnSelection() {
-        if (this.restrictEditing || this.textProperties === undefined) {
+        if ((this.restrictEditing || this.textProperties === undefined) && !this.showPropertiesPane) {
             return;
         }
         let isProtectedDocument = this.documentEditor.documentHelper.protectionType !== 'NoProtection';
@@ -91062,9 +91346,9 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
         else {
             let isReadOnly = !this.documentEditor.isReadOnly;
             if (this.toolbarModule) {
-                this.toolbarModule.enableDisableToolBarItem(isReadOnly, true);
+                this.toolbarModule.enableDisableToolBarItem(isReadOnly, true || this.showPropertiesPane);
             }
-            this.textProperties.enableDisableElements(isReadOnly);
+            this.textProperties.enableDisableElements(isReadOnly || this.showPropertiesPane);
             this.tableProperties.enableDisableElements(true);
             this.tocProperties.enableDisableElements(true);
             this.headerFooterProperties.enableDisableElements(true);
@@ -91281,6 +91565,9 @@ __decorate$1([
 __decorate$1([
     Event()
 ], DocumentEditorContainer.prototype, "commentDelete", void 0);
+__decorate$1([
+    Event()
+], DocumentEditorContainer.prototype, "serviceFailure", void 0);
 __decorate$1([
     Event()
 ], DocumentEditorContainer.prototype, "trackChange", void 0);

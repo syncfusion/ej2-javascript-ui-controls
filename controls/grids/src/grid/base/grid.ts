@@ -8,7 +8,7 @@ import { ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { createSpinner, hideSpinner, showSpinner, Tooltip } from '@syncfusion/ej2-popups';
 import { GridModel } from './grid-model';
 import { iterateArrayOrObject, prepareColumns, parentsUntil, wrap, templateCompiler, isGroupAdaptive, refreshForeignData } from './util';
-import { getRowHeight, setColumnIndex, Global } from './util';
+import { getRowHeight, setColumnIndex, Global, ispercentageWidth } from './util';
 import * as events from '../base/constant';
 import { ReturnType } from '../base/type';
 import { IDialogUI, ScrollPositionType, ActionArgs, ExportGroupCaptionEventArgs, FilterUI } from './interface';
@@ -4254,9 +4254,16 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         let contentCol: HTMLElement[] = [].slice.call(this.getContentTable().querySelector('colgroup').childNodes);
         let perPixel: number = indentWidth / 30;
         let i: number = 0;
+        let parentOffset: number =  this.element.offsetWidth;
         let applyWidth = (index: number, width: number) => {
-            headerCol[index].style.width = width + 'px';
-            contentCol[index].style.width = width + 'px';
+            if (ispercentageWidth(this)) {
+                let newWidth: string = (width / parentOffset * 100).toFixed(1) + '%';
+                headerCol[index].style.width = newWidth;
+                contentCol[index].style.width = newWidth;
+            } else {
+                headerCol[index].style.width = width + 'px';
+                contentCol[index].style.width = width + 'px';
+            }
             this.notify(events.columnWidthChanged, { index: index, width: width });
         };
         if (perPixel >= 1) {
@@ -4276,6 +4283,22 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         this.isAutoGen = false;
         this.getHeaderTable().querySelector('.e-emptycell').setAttribute('indentRefreshed', 'true');
+    }
+
+    /**
+     * @hidden
+     */
+    public resetIndentWidth(): void {
+        if (ispercentageWidth(this)) {
+            this.getHeaderTable().querySelector('.e-emptycell').removeAttribute('indentRefreshed');
+            this.widthService.setWidthToColumns();
+            this.recalcIndentWidth();
+        }
+        if ((this.width === 'auto' || typeof (this.width) === 'string' && this.width.indexOf('%') !== -1)
+            && this.getColumns().filter((col: Column) => col.width && col.minWidth).length > 0) {
+            let tgridWidth: number = this.widthService.getTableWidth(this.getColumns());
+            this.widthService.setMinwidthBycalculation(tgridWidth);
+        }
     }
 
     /**    
@@ -4734,6 +4757,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         EventHandler.add(this.element, 'focusout', this.focusOutHandler, this);
         EventHandler.add(this.element, 'dblclick', this.dblClickHandler, this);
         EventHandler.add(this.element, 'keydown', this.keyPressHandler, this);
+        EventHandler.add(window as any, 'resize', this.resetIndentWidth, this);
         if (this.allowKeyboard) {
             this.element.tabIndex = this.element.tabIndex === -1 ? 0 : this.element.tabIndex;
         }
@@ -4766,6 +4790,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         EventHandler.remove(this.element, 'keydown', this.keyPressHandler);
         EventHandler.remove(this.getContent(), 'touchstart', this.tapEvent);
         EventHandler.remove(document.body, 'keydown', this.keyDownHandler);
+        EventHandler.remove(window as any, 'resize', this.resetIndentWidth);
     }
     /**
      * @hidden

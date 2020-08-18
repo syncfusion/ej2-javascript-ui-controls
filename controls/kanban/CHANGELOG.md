@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 18.2.54 (2020-08-18)
+
+### Kanban
+
+#### Bug Fixes
+
+- `#287430` - The issue with "Mismatch in the public methods type information" has been resolved.
+
+## 18.2.47 (2020-07-28)
+
+### Kanban
+
+#### Bug Fixes
+
+- `#284048` - Provided unassigned Swimlane group support on the Kanban board.
+
 ## 18.2.44 (2020-07-07)
 
 ### Kanban

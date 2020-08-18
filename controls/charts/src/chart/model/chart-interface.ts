@@ -161,6 +161,23 @@ export interface IAxisLabelRenderEventArgs extends IChartEventArgs {
     labelStyle: FontModel;
 }
 
+export interface IAxisLabelClickEventArgs extends IChartEventArgs {
+    /** Defines the chart when labelClick */
+    chart: Chart;
+    /** Defines the current axis */
+    axis: Axis;
+    /** Defines axis current label text */
+    text: string;
+    /** Defines axis current label element id */
+    labelID: string;
+    /** Defines axis current label index */
+    index: number;
+    /** Defines the current annotation location */
+    location: ChartLocation;
+    /** Defines axis current label value */
+    value: number;
+}
+
 export interface ILegendRenderEventArgs extends IChartEventArgs {
     /** Defines the current legend text */
     text: string;
@@ -188,6 +205,8 @@ export interface ITextRenderEventArgs extends IChartEventArgs {
     point: Points;
     /** Defines the current text */
     text: string;
+    /** Defines the width and height of the current text */
+    textSize: Size;
     /** Defines the current label fill color */
     color: string;
     /** Defines the current label border */

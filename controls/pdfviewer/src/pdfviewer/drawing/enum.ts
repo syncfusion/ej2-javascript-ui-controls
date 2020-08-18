@@ -69,6 +69,7 @@ export type PdfAnnotationType =
  * None - Sets the decorator shape as None
  * Arrow - Sets the decorator shape as Arrow
  * Diamond - Sets the decorator shape as Diamond
+ * Butt - Sets the decorator shape as Butt
  * Path - Sets the decorator shape as Path
  * OpenArrow - Sets the decorator shape as OpenArrow
  * Circle - Sets the decorator shape as Circle
@@ -88,6 +89,8 @@ export type DecoratorShapes =
     'Arrow' |
     /** Diamond - Sets the decorator shape as Diamond */
     'Diamond' |
+    /** Butt - Sets the decorator shape as Butt */
+    'Butt' |
     /** OpenArrow - Sets the decorator shape as OpenArrow */
     'OpenArrow' |
     /** Circle - Sets the decorator shape as Circle */

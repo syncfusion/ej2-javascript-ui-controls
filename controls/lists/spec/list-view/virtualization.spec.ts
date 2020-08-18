@@ -18,6 +18,18 @@ describe('UI virtualization', () => {
         e.initUIEvent("scroll", true, true, window, 1);
         target.dispatchEvent(e);
     }
+    let dataSource: { [key: string]: Object }[] = [
+        { name: 'Nancy', id: '0', },
+        { name: 'Andrew', id: '1' },
+        { name: 'Janet', id: '2' },
+        { name: 'Margaret', id: '3' },
+        { name: 'Steven', id: '4' },
+        { name: 'Laura', id: '5' },
+        { name: 'Robert', id: '6' },
+        { name: 'Michael', id: '7' },
+        { name: 'Albert', id: '8' },
+        { name: 'Nolan', id: '9' }
+]
     describe('UI virtualization for flat List', () => {
         describe('UI virtualization with Array of JSON data in window scoll', () => {
             let listObj: any;
@@ -1003,6 +1015,32 @@ describe('UI virtualization', () => {
             expect(li[li.length - 1].getAttribute('data-uid')).toBe('0');
         })
 
+        afterAll(() => {
+            listObj.destroy();
+            ele.remove();
+        });
+    });
+    describe('UI virtualization with height property', () => {
+        let ele: Element;
+        let elementvalue: HTMLElement;
+        let listObj: any;
+        it('height property', () => {
+            elementvalue = createElement('div');
+            elementvalue.style.height = '1000px';
+            ele = createElement('div', { id: 'ListView' });
+            elementvalue.appendChild(ele);     
+            document.body.appendChild(elementvalue);
+            listObj = new ListView({ dataSource: dataSource, 
+                enableVirtualization: true,
+                height: '50%',
+                headerTitle: 'Contacts',
+                showHeader: true,
+                fields: { text: 'name', id: 'id' } 
+                });
+                listObj.appendTo(ele);
+            let heightValue: number = 500;
+            expect(heightValue).toBe(listObj.element.getBoundingClientRect().height);
+        });
         afterAll(() => {
             listObj.destroy();
             ele.remove();

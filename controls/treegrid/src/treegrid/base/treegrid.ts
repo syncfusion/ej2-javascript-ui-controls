@@ -1895,7 +1895,9 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
         setValue('grid.contentModule.isLoaded', !(req > 0), this);
       }
       if (this.isPixelHeight() && this.initialRender) {
-        let totalRows: HTMLTableRowElement[]  = this.getRows();
+        let totalRows: HTMLTableRowElement[];
+        let rows: HTMLCollection = (this.getContentTable() as HTMLTableElement).rows;
+        totalRows = [].slice.call(rows);
         for (let i: number = totalRows.length - 1; i > 0; i--) {
           if (!isHidden(totalRows[i])) {
             if (totalRows[i].nextElementSibling) {
@@ -3912,16 +3914,16 @@ private getGridEditSettings(): GridEditModel {
   /**
    * @hidden
    */
-  public getFrozenColumns(): number {
+  public getFrozenColumns(): number { // TreeGrid method to get frozen columns
     return this.getFrozenCount(this.columns as Column[], 0);
   }
 
-  private getFrozenCount(cols: Column[], cnt: number): number {
-    for (let i: number = 0, len: number = cols.length; i < len; i++) {
-      if (cols[i].columns) {
-        cnt = this.getFrozenCount(cols[i].columns as Column[], cnt);
+  private getFrozenCount(cols: Column[], cnt: number): number { // TreeGrid method to get frozen columns count
+    for (let j: number = 0, len: number = cols.length; j < len; j++) {
+      if (cols[j].columns) {
+        cnt = this.getFrozenCount(cols[j].columns as Column[], cnt);
       } else {
-        if (cols[i].isFrozen) {
+        if (cols[j].isFrozen) {
           cnt++;
         }
       }

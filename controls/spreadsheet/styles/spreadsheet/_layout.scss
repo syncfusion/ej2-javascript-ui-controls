@@ -2,8 +2,7 @@
 @include export-module('spreadsheet-layout') {
   /*! spreadsheet layout */
   #{&}.e-spreadsheet {
-    display: flex;
-    flex-direction: column;
+    display: block;
     user-select: none;
 
     & .e-protect-dlg {
@@ -1030,8 +1029,6 @@
     }
 
     .e-sheet-panel {
-      flex-grow: 1;
-      overflow-y: hidden;
       position: relative;
 
       &.e-protected {

@@ -1,15 +1,14 @@
 import { addClass, Browser, EventHandler, detach, removeClass, select, selectAll, KeyboardEvents } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, KeyboardEventArgs, closest, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { setStyleAttribute, extend } from '@syncfusion/ej2-base';
-import { Toolbar as tool, OverflowMode } from '@syncfusion/ej2-navigations';
+import { Toolbar as tool, OverflowMode, ClickEventArgs } from '@syncfusion/ej2-navigations';
 import * as events from '../base/constant';
 import * as classes from '../base/classes';
 import { RenderType, ToolbarType, ToolbarItems } from '../base/enum';
 import { setToolbarStatus, updateUndoRedoStatus, getTBarItemsIndex, getCollection, toObjectLowerCase, isIDevice } from '../base/util';
 import * as model from '../models/items';
-import { IRichTextEditor, IRenderer, NotifyArgs, IToolbarRenderOptions } from '../base/interface';
+import { IRichTextEditor, IRenderer, NotifyArgs, IToolbarRenderOptions, IColorPickerRenderArgs } from '../base/interface';
 import { IToolbarItemModel, IToolsItems, IUpdateItemsModel, IDropDownRenderArgs, ISetToolbarStatusArgs } from '../base/interface';
-import { IColorPickerRenderArgs } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
 import { ToolbarRenderer } from '../renderer/toolbar-renderer';
@@ -538,8 +537,8 @@ export class Toolbar {
         }
     }
 
-    private toolbarMouseDownHandler(e: Event): void {
-        let trg: Element = closest(e.target as Element, '.e-hor-nav');
+    private toolbarClickHandler(e: ClickEventArgs): void {
+        let trg: Element = closest(e.originalEvent.target as Element, '.e-hor-nav');
         if (trg && this.parent.toolbarSettings.type === ToolbarType.Expand && !isNOU(trg)) {
             if (!trg.classList.contains('e-nav-active')) {
                 removeClass([this.tbElement], [classes.CLS_EXPAND_OPEN]);
@@ -558,13 +557,11 @@ export class Toolbar {
 
     protected wireEvents(): void {
         if (this.parent.inlineMode.enable && isIDevice()) { return; }
-        EventHandler.add(this.tbElement, 'click mousedown', this.toolbarMouseDownHandler, this);
         EventHandler.add(this.tbElement, 'focusin', this.tbFocusHandler, this);
         EventHandler.add(this.tbElement, 'keydown', this.tbKeydownHandler, this);
     }
 
     protected unWireEvents(): void {
-        EventHandler.remove(this.tbElement, 'click mousedown', this.toolbarMouseDownHandler);
         EventHandler.remove(this.tbElement, 'focusin', this.tbFocusHandler);
         EventHandler.remove(this.tbElement, 'keydown', this.tbKeydownHandler);
     }
@@ -588,6 +585,9 @@ export class Toolbar {
         this.parent.on(events.focusChange, this.focusChangeHandler, this);
         this.parent.on(events.mouseDown, this.mouseDownHandler, this);
         this.parent.on(events.sourceCodeMouseDown, this.mouseDownHandler, this);
+        if (!this.parent.inlineMode.enable && !isIDevice()) {
+            this.parent.on(events.toolbarClick, this.toolbarClickHandler, this);
+        }
     }
 
     protected removeEventListener(): void {
@@ -607,6 +607,9 @@ export class Toolbar {
         this.parent.off(events.focusChange, this.focusChangeHandler);
         this.parent.off(events.mouseDown, this.mouseDownHandler);
         this.parent.off(events.sourceCodeMouseDown, this.mouseDownHandler);
+        if (!this.parent.inlineMode.enable && !isIDevice()) {
+            this.parent.off(events.toolbarClick, this.toolbarClickHandler);
+        }
     }
 
     private onRefresh(): void {

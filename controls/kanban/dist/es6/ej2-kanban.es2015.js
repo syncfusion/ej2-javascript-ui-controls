@@ -162,6 +162,9 @@ __decorate$1([
 __decorate$1([
     Property('Ascending')
 ], SwimlaneSettings.prototype, "sortDirection", void 0);
+__decorate$1([
+    Property(true)
+], SwimlaneSettings.prototype, "showUnassignedRow", void 0);
 
 var __decorate$2 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -530,7 +533,13 @@ class Action {
             newData[this.parent.swimlaneSettings.keyField] =
                 closest(target, '.' + CONTENT_ROW_CLASS).previousElementSibling.getAttribute('data-key');
         }
-        this.parent.openDialog('Add', newData);
+        if (this.parent.isBlazorRender()) {
+            // tslint:disable-next-line
+            this.parent.interopAdaptor.invokeMethodAsync('OpenDialog', 'Add', newData);
+        }
+        else {
+            this.parent.openDialog('Add', newData);
+        }
     }
     doubleClickHandler(e) {
         let target = closest(e.target, '.' + CARD_CLASS);
@@ -946,30 +955,28 @@ class Crud {
             if (!deleteArgs.cancel) {
                 this.parent.showSpinner();
                 let promise = null;
-                if (editParms.deletedRecords.length > 1) {
-                    if (!this.parent.isBlazorRender()) {
+                if (!this.parent.isBlazorRender()) {
+                    if (editParms.deletedRecords.length > 1) {
                         promise = this.parent.dataModule.dataManager.saveChanges(editParms, this.keyField, this.getTable(), this.getQuery());
                     }
                     else {
-                        // tslint:disable-next-line
-                        this.parent.interopAdaptor.invokeMethodAsync('DeleteCards', { DeletedRecords: cardData }, this.keyField);
-                    }
-                }
-                else {
-                    if (!this.parent.isBlazorRender()) {
                         promise = this.parent.dataModule.dataManager.remove(this.keyField, editParms.deletedRecords[0], this.getTable(), this.getQuery());
                     }
-                    else {
-                        // tslint:disable-next-line
-                        this.parent.interopAdaptor.invokeMethodAsync('DeleteCard', this.keyField, { Record: cardData });
-                    }
-                }
-                if (!this.parent.isBlazorRender()) {
                     let crudArgs = {
                         requestType: 'cardRemoved', cancel: false, promise: promise, addedRecords: editParms.addedRecords,
                         changedRecords: editParms.changedRecords, deletedRecords: editParms.deletedRecords
                     };
                     this.refreshData(crudArgs);
+                }
+                else {
+                    if (cardData instanceof Array) {
+                        // tslint:disable-next-line
+                        this.parent.interopAdaptor.invokeMethodAsync('DeleteCards', { DeletedRecords: cardData }, this.keyField);
+                    }
+                    else {
+                        // tslint:disable-next-line
+                        this.parent.interopAdaptor.invokeMethodAsync('DeleteCard', this.keyField, { Record: cardData });
+                    }
                 }
             }
         });
@@ -2037,7 +2044,9 @@ class Keyboard {
                 let className = '.' + CARD_CLASS + '.' + CARD_SELECTION_CLASS;
                 let selectedCards = [].slice.call(this.parent.element.querySelectorAll(className));
                 let selectedCardsData = [];
-                selectedCards.forEach((selected) => { selectedCardsData.push(this.parent.getCardDetails(selected)); });
+                selectedCards.forEach((selected) => {
+                    selectedCardsData.push(this.parent.getCardDetails(selected));
+                });
                 this.parent.crudModule.deleteCard(selectedCardsData);
                 break;
         }
@@ -2167,7 +2176,9 @@ class Keyboard {
             }
         }
         if (selectedCard === document.activeElement && this.parent.element.querySelectorAll('.' + CARD_SELECTION_CLASS).length === 1) {
-            this.parent.activeCardData = { data: this.parent.getCardDetails(selectedCard), element: selectedCard };
+            this.parent.activeCardData = {
+                data: this.parent.getCardDetails(selectedCard), element: selectedCard
+            };
             if (!this.parent.dialogModule.dialogObj) {
                 this.parent.dialogModule.openDialog('Edit', this.parent.getCardDetails(selectedCard));
             }
@@ -2322,7 +2333,8 @@ class KanbanTouch {
             popupContent = '(' + selectedCards.length + ') ' + this.parent.localeObj.getConstant('cardsSelected');
         }
         else if (selectedCards.length === 1) {
-            popupContent = ' ' + this.parent.getCardDetails(selectedCards[0])[this.parent.cardSettings.headerField];
+            popupContent = ' ' +
+                this.parent.getCardDetails(selectedCards[0])[this.parent.cardSettings.headerField];
         }
         return popupContent;
     }
@@ -2634,7 +2646,7 @@ class LayoutRender extends MobileLayout {
             }
             className = isCollaspsed ? CONTENT_ROW_CLASS + ' ' + COLLAPSED_CLASS : CONTENT_ROW_CLASS;
             let tr = createElement('tr', { className: className, attrs: { 'aria-expanded': 'true' } });
-            if (this.parent.swimlaneSettings.keyField && !this.parent.isAdaptive && row.keyField !== '') {
+            if (this.parent.swimlaneSettings.keyField && !this.parent.isAdaptive) {
                 this.renderSwimlaneRow(tBody, row, isCollaspsed);
             }
             for (let column of this.parent.columns) {
@@ -2861,10 +2873,18 @@ class LayoutRender extends MobileLayout {
                         return;
                     }
                 }
-                kanbanRows.push({
-                    keyField: obj[this.parent.swimlaneSettings.keyField],
-                    textField: obj[this.parent.swimlaneSettings.textField] || obj[this.parent.swimlaneSettings.keyField]
-                });
+                let textField = obj[this.parent.swimlaneSettings.textField] || obj[this.parent.swimlaneSettings.keyField];
+                let keyField = obj[this.parent.swimlaneSettings.keyField];
+                if (!obj[this.parent.swimlaneSettings.keyField]) {
+                    if (this.parent.swimlaneSettings.showUnassignedRow) {
+                        textField = 'Unassigned';
+                        keyField = '';
+                    }
+                    else {
+                        return;
+                    }
+                }
+                kanbanRows.push({ keyField: keyField, textField: textField });
             });
             kanbanRows = kanbanRows.filter((item, index, arr) => index === arr.map((item) => item.keyField).indexOf(item.keyField));
             kanbanRows.sort((firstRow, secondRow) => {
@@ -3131,7 +3151,8 @@ class LayoutRender extends MobileLayout {
         let swimlaneData = {};
         if (this.parent.swimlaneSettings.keyField) {
             this.kanbanRows.forEach((row) => swimlaneData[row.keyField] = this.parent.kanbanData.filter((obj) => this.columnKeys.indexOf(obj[this.parent.keyField]) > -1 &&
-                obj[this.parent.swimlaneSettings.keyField] === row.keyField));
+                ((!obj[this.parent.swimlaneSettings.keyField] && this.parent.swimlaneSettings.showUnassignedRow) ?
+                    '' : obj[this.parent.swimlaneSettings.keyField]) === row.keyField));
         }
         return swimlaneData;
     }
@@ -3663,8 +3684,8 @@ let Kanban = class Kanban extends Component {
     /**
      * Adds the new card to the data source of Kanban and layout.
      * @method addCard
-     * @param {{[key: string]: Object}} cardData Single card objects to be added into Kanban.
-     * @param {{[key: string]: Object}[]} cardData Collection of card objects to be added into Kanban.
+     * @param {Object | {[key: string]: Object}} cardData Single card objects to be added into Kanban.
+     * @param {Object[] | {[key: string]: Object}[]} cardData Collection of card objects to be added into Kanban.
      * @returns {void}
      */
     addCard(cardData) {
@@ -3673,8 +3694,8 @@ let Kanban = class Kanban extends Component {
     /**
      * Updates the changes made in the card object by passing it as a parameter to the data source.
      * @method updateCard
-     * @param {{[key: string]: Object}} cardData Single card object to be updated into Kanban.
-     * @param {{[key: string]: Object}[]} cardData Collection of card objects to be updated into Kanban.
+     * @param {{[key: string]: Object} | Object} cardData Single card object to be updated into Kanban.
+     * @param {{[key: string]: Object}[] | Object[]} cardData Collection of card objects to be updated into Kanban.
      * @returns {void}
      */
     updateCard(cardData) {
@@ -3683,8 +3704,8 @@ let Kanban = class Kanban extends Component {
     /**
      * Deletes the card based on the provided ID or card collection in the argument list.
      * @method deleteCard
-     * @param {{[key: string]: Object}} id Single card to be removed from the Kanban.
-     * @param {{[key: string]: Object }[]} id Collection of cards to be removed from the Kanban.
+     * @param {{[key: string]: Object} | Object} id Single card to be removed from the Kanban.
+     * @param {{[key: string]: Object }[] | Object[]} id Collection of cards to be removed from the Kanban.
      * @param {number} id Accepts the ID of the card in integer type which needs to be removed from the Kanban.
      * @param {string} id Accepts the ID of the card in string type which needs to be removed from the Kanban.
      * @returns {void}

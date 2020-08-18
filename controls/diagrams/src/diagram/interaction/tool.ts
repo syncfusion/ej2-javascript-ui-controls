@@ -1260,7 +1260,8 @@ export class ResizeTool extends ToolBase {
         let object: NodeModel | ConnectorModel | SelectorModel;
         this.commandHandler.updateSelector();
         object = (this.commandHandler.renderContainerHelper(args.source as NodeModel) as Node) || args.source as Node | Selector;
-        if ((this.undoElement.offsetX !== object.wrapper.offsetX || this.undoElement.offsetY !== object.wrapper.offsetY)) {
+        if ((this.undoElement.offsetX !== object.wrapper.offsetX || this.undoElement.offsetY !== object.wrapper.offsetY  || 
+            this.undoElement.width !== object.wrapper.bounds.width || this.undoElement.height !== object.wrapper.bounds.height)) {
             if (!isBlazor()) {
                 let deltaValues: Rect = this.updateSize(args.source, this.currentPosition, this.prevPosition, this.corner, this.initialBounds);
                 this.blocked = this.scaleObjects(
@@ -1667,12 +1668,14 @@ export class ZoomPanTool extends ToolBase {
                 this.updateTouch(startTouch1, moveTouch1);
             }
         }
+        this.commandHandler.dataBinding();
         return !this.blocked;
     }
 
     /**   @private  */
     public mouseUp(args: MouseEventArgs): void {
         this.checkPropertyValue();
+        this.commandHandler.updatePanState(false);
         super.mouseUp(args);
         this.inAction = false;
     }

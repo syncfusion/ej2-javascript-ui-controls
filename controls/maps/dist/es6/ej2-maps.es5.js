@@ -54,8 +54,6 @@ function stringToNumber(value, containerSize) {
 function calculateSize(maps) {
     var containerWidth = maps.element.clientWidth;
     var containerHeight = maps.element.clientHeight;
-    var parentHeight = maps.element.parentElement.clientHeight;
-    var parentWidth = maps.element.parentElement.clientWidth;
     var containerElementWidth = stringToNumber(maps.element.style.width, containerWidth);
     var containerElementHeight = stringToNumber(maps.element.style.height, containerWidth);
     if (maps.width === '0px' || maps.width === '0%' || maps.height === '0%' || maps.height === '0px') {
@@ -5260,8 +5258,10 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
             _this.layerObject.appendChild(element);
         });
         if (this.mapObject.markerModule) {
-            this.mapObject.markerModule.markerRender(this.layerObject, layerIndex, (this.mapObject.isTileMap ? Math.floor(this.currentFactor)
-                : this.currentFactor), null);
+            if (!isNullOrUndefined(this.mapObject.baseMapRectBounds)) {
+                this.mapObject.markerModule.markerRender(this.layerObject, layerIndex, (this.mapObject.isTileMap ? Math.floor(this.currentFactor)
+                    : this.currentFactor), null);
+            }
         }
         this.translateLayerElements(this.layerObject, layerIndex);
         this.layerGroup.appendChild(this.layerObject);
@@ -6563,14 +6563,15 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
             removeElement('animated_tiles');
             var ele = createElement('div', {
                 id: this.element.id + '_tile_parent', styles: 'position: absolute; left: ' +
-                    (this.mapAreaRect.x) + 'px; top: ' + (this.mapAreaRect.y + padding) + 'px; height: ' +
+                    (this.mapAreaRect.x) + 'px; right: ' + (this.margin.right) + 'px; top: '
+                    + (this.mapAreaRect.y + padding) + 'px; height: ' +
                     (this.mapAreaRect.height) + 'px; width: '
                     + (this.mapAreaRect.width) + 'px; overflow: hidden;'
             });
             var ele1 = createElement('div', {
                 id: this.element.id + '_tiles', styles: 'position: absolute; left: ' +
-                    (this.mapAreaRect.x) + 'px; top: ' + (this.mapAreaRect.y + padding) + 'px; height: ' +
-                    (this.mapAreaRect.height) + 'px; width: '
+                    (this.mapAreaRect.x) + 'px;  right: ' + (this.margin.right) + 'px; top: '
+                    + (this.mapAreaRect.y + padding) + 'px; height: ' + (this.mapAreaRect.height) + 'px; width: '
                     + (this.mapAreaRect.width) + 'px; overflow: hidden;'
             });
             this.element.appendChild(ele);

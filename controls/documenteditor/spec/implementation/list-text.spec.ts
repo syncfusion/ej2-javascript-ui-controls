@@ -623,7 +623,7 @@ describe('Apply Character Format -FontColor validation of selection context type
     });
     it('undo after FontColor apply at list text', () => {
         editor.editorHistory.undo();
-        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('#000000');
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('empty');
     });
     it('redo after FontColor apply at list text', () => {
         editor.editorHistory.redo();
@@ -637,7 +637,7 @@ describe('Apply Character Format -FontColor validation of selection context type
             i++;
         }
         editor.editorHistory.undo();
-        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('#000000');
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('empty');
     });
 });
 
@@ -680,7 +680,7 @@ describe('Apply Character Format -FontColor validation of selection context type
     });
     it('undo after FontColor apply at list text', () => {
         editor.editorHistory.undo();
-        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('#000000');
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('empty');
     });
     it('redo after FontColor apply at list text', () => {
         editor.editorHistory.redo();
@@ -694,7 +694,7 @@ describe('Apply Character Format -FontColor validation of selection context type
             i++;
         }
         editor.editorHistory.undo();
-        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('#000000');
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('empty');
     });
 });
 
@@ -928,7 +928,7 @@ describe('Continue Numbering validation with same level pattern with undo and re
         editor.editorModule.insertText('Sample');
         editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
-        editor.editor.applyContinueNumbering(editor.selection);
+        editor.editor.applyContinueNumbering();
         // expect(editor.selection.paragraphFormat.listText).toBe('3.');
     });
     it('undo after Continue Numbering apply at list text', () => {
@@ -987,7 +987,7 @@ describe('Continue Numbering at level number 1', () => {
         editor.editorModule.insertText('Sample');
         editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
-        editor.editor.applyContinueNumbering(editor.selection);
+        editor.editor.applyContinueNumbering();
         // expect(editor.selection.paragraphFormat.listText).toBe('II)');
     });
     it('undo after Continue Numbering apply at list text', () => {
@@ -1045,7 +1045,7 @@ describe('Continue Numbering at level number 1', () => {
         editor.editorModule.insertText('Sample');
         editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
-        editor.editor.applyContinueNumbering(editor.selection);
+        editor.editor.applyContinueNumbering();
         // expect(editor.selection.paragraphFormat.listText).toBe('2.');
     });
 });
@@ -1094,7 +1094,7 @@ describe('Continue Numbering validation with different level pattern with undo a
         editor.editorModule.insertText('Sample');
         editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
-        editor.editor.applyContinueNumbering(editor.selection);
+        editor.editor.applyContinueNumbering();
         // expect(editor.selection.paragraphFormat.listText).toBe('c.');
     });
     it('undo after Continue Numbering apply at list text', () => {
@@ -1159,7 +1159,7 @@ describe('without history Restart Numbering and continue numbering validation', 
         expect(editor.selection.paragraphFormat.listText).toBe('I)');
     });
     it('Continue numbering without history Apply validation', () => {
-        editor.editor.applyContinueNumbering(editor.selection);
+        editor.editor.applyContinueNumbering();
         //    expect(editor.selection.paragraphFormat.listText).toBe('III)');
     });
 });
@@ -1307,6 +1307,43 @@ describe('List text format validation in loaded document', () => {
         editor.selection.characterFormat.bold=true;
         editor.selection.selectListText();
         expect(editor.selection.characterFormat.bold).toBe(true);
+    });  
+});
+describe('Continue Numbering public API validation', () => {
+    let editor: DocumentEditor;
+    let documentHelper: DocumentHelper;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true});
+        editor.acceptTab = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        documentHelper = editor.documentHelper;
+        editor.open(JSON.stringify(listText));
     });
-   
+    afterAll((done): void => {
+        documentHelper.destroy();
+        documentHelper = undefined;
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Continue Numbering public API validation', () => {
+        editor.openBlank();
+        editor.editorModule.insertText('Adventure');
+        editor.editorModule.applyBulletOrNumbering('%1.', 'Arabic', 'Verdana');
+        documentHelper.selection.handleEndKey();
+        editor.editorModule.onEnter();
+        editor.editorModule.insertText('Works');
+        editor.selection.handleHomeKey();
+        expect(() => { editor.editorModule.applyContinueNumbering(); }).not.toThrowError();
+    });  
 });

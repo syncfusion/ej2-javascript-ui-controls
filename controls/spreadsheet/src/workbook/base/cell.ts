@@ -1,7 +1,7 @@
 import { extend, Property, ChildProperty, Complex } from '@syncfusion/ej2-base';
 import { SheetModel } from './index';
 import { CellStyleModel, HyperlinkModel, CellStyle, wrapEvent, ValidationModel } from '../common/index';
-import { getRow } from './row';
+import { getRow } from './index';
 import { RowModel } from './row-model';
 import { CellModel } from './cell-model';
 import { Workbook } from './workbook';

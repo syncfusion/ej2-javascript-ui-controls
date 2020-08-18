@@ -2046,7 +2046,8 @@ export class Selection implements IAction {
         let gObj: IGrid = this.parent;
         let isDrag: boolean;
         let gridElement: Element = parentsUntil(target, 'e-grid');
-        if (gridElement && gridElement.id !== gObj.element.id || parentsUntil(target, 'e-headercontent') && !this.parent.frozenRows) {
+        if (gridElement && gridElement.id !== gObj.element.id || parentsUntil(target, 'e-headercontent') && !this.parent.frozenRows ||
+            parentsUntil(target, 'e-editedbatchcell') || parentsUntil(target, 'e-editedrow')) {
             return;
         }
         if (e.shiftKey || e.ctrlKey) {
@@ -2450,6 +2451,16 @@ export class Selection implements IAction {
         }
         if (this.parent.enableVirtualization) {
             this.setCheckAllState();
+        }
+        if (this.parent.isCheckBoxSelection) {
+            let totalRecords: Row<Column>[] = this.parent.getRowsObject();
+            let indexes: number[] = [];
+            for (let i: number = 0; i < totalRecords.length; i++) {
+                if (totalRecords[i].isSelected) {
+                    indexes.push(i);
+                }
+            }
+            this.selectRows(indexes);
         }
     }
 

@@ -741,4 +741,14 @@ describe('PageSetup Dialog Test Case Validation - 9', function () {
         expect((dialog as any).paperSize.value).toBe('a3');
         dialog.closePageSetupDialog();
     });
+    it('a4 page size', () => {
+        editor.documentHelper.selection.sectionFormat.pageWidth=595.2999877929688;
+        editor.documentHelper.selection.sectionFormat.pageHeight=841.9000244140625;
+        (dialog as any).portrait.checked = true;
+        
+        dialog.loadPageSetupDialog();
+        
+        expect((dialog as any).paperSize.value).toBe('a4');
+        dialog.closePageSetupDialog();
+    });
 });

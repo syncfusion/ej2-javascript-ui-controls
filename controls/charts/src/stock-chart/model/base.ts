@@ -1823,4 +1823,13 @@ export class StockEventsSettings extends ChildProperty<StockEventsSettings> {
      */
     @Complex<StockChartFontModel>(Theme.stockEventFont, StockChartFont)
     public textStyle: StockChartFontModel;
+
+    /**
+     * To render stock events in particular series.
+     * By default stock events will render for all series.
+     * @default []
+     */
+
+    @Property([])
+    public seriesIndexes: number[];
 }

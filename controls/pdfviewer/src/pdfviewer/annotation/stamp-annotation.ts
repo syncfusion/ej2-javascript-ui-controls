@@ -191,11 +191,6 @@ export class StampAnnotation {
                     }
                     // tslint:disable-next-line
                     let rotation: number = this.retrieveRotationAngle(annotation['RotateAngle']);
-                    // tslint:disable-next-line
-                    if (annotation['Subject'] === 'Accepted' || annotation['Subject'] === 'Rejected') {
-                        currentLocation.width = (position.Width);
-                        currentLocation.height = (position.Height);
-                    }
                     // tslint:disable-next-line:max-line-length
                     this.renderStamp(currentLocation.left, currentLocation.top, currentLocation.width, currentLocation.height, pageIndex, opacity, rotation, canvass, annotation);
                     this.isExistingStamp = false;

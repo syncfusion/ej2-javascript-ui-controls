@@ -22,7 +22,7 @@ describe('Text Format Testing', () => {
         expect(format.strikethrough).toBe('None');
         expect(format.baselineAlignment).toBe('Normal');
         expect(format.highlightColor).toBe('NoColor');
-        expect(format.fontColor).toBe('#000000');
+        expect(format.fontColor).toBe('empty');
         expect(format.fontFamily).toBe('Calibri');
     });
 
@@ -38,7 +38,7 @@ describe('character format testing', () => {
         expect(format.strikethrough).toBe('None');
         expect(format.baselineAlignment).toBe('Normal');
         expect(format.highlightColor).toBe('NoColor');
-        expect(format.fontColor).toBe('#000000');
+        expect(format.fontColor).toBe('empty');
         expect(format.fontFamily).toBe('Calibri');
     });
 });

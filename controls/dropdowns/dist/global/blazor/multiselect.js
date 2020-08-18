@@ -29,10 +29,10 @@ function createFloatLabel(overAllWrapper, searchWrapper, element, inputElement, 
         sf.base.attributes(element, { 'aria-labelledby': floatLabelElement.id });
     }
     if (!sf.base.isNullOrUndefined(inputElement.placeholder) && inputElement.placeholder !== '') {
-        floatLabelElement.innerHTML = inputElement.placeholder;
+        floatLabelElement.innerText = sf.base.SanitizeHtmlHelper.sanitize(inputElement.placeholder);
         inputElement.removeAttribute('placeholder');
     }
-    floatLabelElement.innerHTML = placeholder;
+    floatLabelElement.innerText = sf.base.SanitizeHtmlHelper.sanitize(placeholder);
     searchWrapper.appendChild(floatLinelement);
     searchWrapper.appendChild(floatLabelElement);
     overAllWrapper.classList.add('e-float-input');
@@ -1940,6 +1940,9 @@ var MultiSelect = /** @class */ (function (_super) {
             }
             this.DropDownBaseupdateBlazorTemplates(false, false, false, false, true, false, false, false);
         }
+        else if (this.enableHtmlSanitizer) {
+            chipContent.innerText = data;
+        }
         else {
             chipContent.innerHTML = data;
         }
@@ -2391,7 +2394,7 @@ var MultiSelect = /** @class */ (function (_super) {
         }
         this.setProperties({ text: text.toString() }, true);
         if (delim) {
-            this.delimiterWrapper.innerHTML = data;
+            this.updateWrapperText(this.delimiterWrapper, data);
             this.delimiterWrapper.setAttribute('id', sf.base.getUniqueID('delim_val'));
             this.inputElement.setAttribute('aria-describedby', this.delimiterWrapper.id);
         }
@@ -2945,6 +2948,14 @@ var MultiSelect = /** @class */ (function (_super) {
             this.spinnerElement = null;
         }
     };
+    MultiSelect.prototype.updateWrapperText = function (wrapperType, wrapperData) {
+        if (this.valueTemplate || !this.enableHtmlSanitizer) {
+            wrapperType.innerHTML = wrapperData;
+        }
+        else {
+            wrapperType.innerText = sf.base.SanitizeHtmlHelper.sanitize(wrapperData);
+        }
+    };
     MultiSelect.prototype.updateDelimView = function () {
         if (this.delimiterWrapper) {
             this.hideDelimWrapper();
@@ -2964,7 +2975,7 @@ var MultiSelect = /** @class */ (function (_super) {
             var remaining = void 0;
             var downIconWidth = 0;
             var overAllContainer = void 0;
-            this.viewWrapper.innerHTML = '';
+            this.updateWrapperText(this.viewWrapper, data);
             var l10nLocale = {
                 noRecordsTemplate: 'No records found',
                 actionFailureTemplate: 'Request failed',
@@ -2995,7 +3006,7 @@ var MultiSelect = /** @class */ (function (_super) {
                     temp = this.getOverflowVal(index);
                     data += temp;
                     temp = this.viewWrapper.innerHTML;
-                    this.viewWrapper.innerHTML = data;
+                    this.updateWrapperText(this.viewWrapper, data);
                     wrapperleng = this.viewWrapper.offsetWidth +
                         parseInt(window.getComputedStyle(this.viewWrapper).paddingRight, 10);
                     overAllContainer = this.componentWrapper.offsetWidth -
@@ -3006,7 +3017,7 @@ var MultiSelect = /** @class */ (function (_super) {
                             temp = tempData;
                             index = tempIndex + 1;
                         }
-                        this.viewWrapper.innerHTML = temp;
+                        this.updateWrapperText(this.viewWrapper, temp);
                         remaining = this.value.length - index;
                         wrapperleng = this.viewWrapper.offsetWidth;
                         while (((wrapperleng + remainSize + downIconWidth) > overAllContainer) && wrapperleng !== 0
@@ -3811,6 +3822,9 @@ var MultiSelect = /** @class */ (function (_super) {
         sf.base.Property(true)
     ], MultiSelect.prototype, "enabled", void 0);
     __decorate([
+        sf.base.Property(false)
+    ], MultiSelect.prototype, "enableHtmlSanitizer", void 0);
+    __decorate([
         sf.base.Property([])
     ], MultiSelect.prototype, "dataSource", void 0);
     __decorate([
@@ -3992,6 +4006,7 @@ var CheckBoxSelection = /** @class */ (function () {
         this.activeLi = [];
         this.activeEle = [];
         this.parent = parent;
+        this.removeEventListener();
         this.addEventListener();
     }
     CheckBoxSelection.prototype.getModuleName = function () {

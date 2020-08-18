@@ -695,12 +695,14 @@ export class PdfViewerBase {
         } else {
             this.updateViewerContainerSize();
         }
-        if (this.pdfViewer.toolbarModule) {
+        // tslint:disable-next-line
+        let toolbarModule: any = this.pdfViewer.toolbarModule;
+        if (toolbarModule) {
             if (this.pdfViewer.enableToolbar) {
-                this.pdfViewer.toolbarModule.toolbar.refreshOverflow();
+                toolbarModule.toolbar.refreshOverflow();
             }
-            if (this.pdfViewer.enableAnnotationToolbar) {
-                this.pdfViewer.toolbarModule.annotationToolbarModule.toolbar.refreshOverflow();
+            if (this.pdfViewer.enableAnnotationToolbar && toolbarModule.annotationToolbarModule) {
+                toolbarModule.annotationToolbarModule.toolbar.refreshOverflow();
             }
         }
     }
@@ -1273,6 +1275,7 @@ export class PdfViewerBase {
         this.isImportAction = false;
         this.annotationPageList = [];
         this.annotationComments = null;
+        this.pdfViewer.isDocumentEdited = false;
         this.pdfViewer.annotationCollection = [];
         this.pdfViewer.signatureCollection = [];
         this.isAnnotationCollectionRemoved = false;
@@ -2697,7 +2700,9 @@ export class PdfViewerBase {
             this.preventTouchEvent(event);
         }
         if (event.touches.length === 1 && this.isTextMarkupAnnotationModule() && !this.getPopupNoteVisibleStatus()) {
+            if (!this.isToolbarInkClicked) {
             this.pdfViewer.annotationModule.textMarkupAnnotationModule.onTextMarkupAnnotationTouchEnd(event);
+            }
         }
         this.touchClientX = touchPoints[0].clientX;
         this.touchClientY = touchPoints[0].clientY;
@@ -2891,6 +2896,9 @@ export class PdfViewerBase {
             this.tapCount = 0;
         }
         this.preventTouchEvent(event);
+        if (this.isToolbarInkClicked) {
+            event.preventDefault();
+        }
         let touchPoints: TouchList = event.touches;
         if (this.pdfViewer.magnificationModule) {
             this.isTouchScrolled = true;
@@ -5110,10 +5118,13 @@ export class PdfViewerBase {
                 }
             }
         } else {
-            if ((e.target as HTMLElement).classList.contains('e-pv-text') ||
-                (e.target as HTMLElement).classList.contains('e-pv-hyperlink')) {
+            if ((e.target as HTMLElement).classList.contains('e-pv-hyperlink')) {
                 offsetX = (e as PointerEvent).offsetX + (e.target as HTMLElement).offsetLeft;
                 offsetY = (e as PointerEvent).offsetY + (e.target as HTMLElement).offsetTop;
+            } else if ((e.target as HTMLElement).classList.contains('e-pv-text')) {
+                let targetParentRect: ClientRect = (e.target as HTMLElement).parentElement.getBoundingClientRect();
+                offsetX = (e as PointerEvent).clientX - targetParentRect.left ;
+                offsetY =  (e as PointerEvent).clientY - targetParentRect.top;
             } else {
                 offsetX = (e as PointerEvent).offsetX;
                 offsetY = (e as PointerEvent).offsetY;

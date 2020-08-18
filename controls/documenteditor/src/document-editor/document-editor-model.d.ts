@@ -458,6 +458,12 @@ export interface DocumentEditorModel extends ComponentModel{
     beforeFormFieldFill?: EmitType<FormFieldFillEventArgs>;
 
     /**
+     * Triggers when the server side action fails.
+     * @event
+     */
+    serviceFailure?: EmitType<ServiceFailureArgs>;
+
+    /**
      * Triggers after form field fill.
      * @event
      */

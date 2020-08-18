@@ -2,7 +2,7 @@
  * DatePicker module spec document
  */
 import { select, selectAll } from '@syncfusion/ej2-base';
-import { ValidateEventArgs, BeginEditEventArgs } from '../../src/inplace-editor/base/index';
+import { ValidateEventArgs, BeginEditEventArgs, ChangeEventArgs } from '../../src/inplace-editor/base/index';
 import * as classes from '../../src/inplace-editor/base/classes';
 import { renderEditor, destroy } from './../render.spec';
 import { profile, inMB, getMemoryProfile } from './../common.spec';
@@ -272,13 +272,11 @@ describe('DatePicker Control', () => {
             valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
             valueEle.click();
             setTimeout(() => {
-                console.log(valueWrapper.classList.contains(classes.OPEN));
                 expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
                 buttonEle = <HTMLElement>select('.' + classes.BTN_SAVE, ele);
                 editEle = <HTMLElement>select('.' + classes.INPUT, ele);
                 errorEle = <HTMLElement>select('.e-date-wrapper', editEle);
                 buttonEle.dispatchEvent(new MouseEvent('mousedown'));
-                console.log(errorEle.classList.contains(classes.ERROR));
                 expect(errorEle.classList.contains(classes.ERROR)).toEqual(true);
                 done();
             }, 400);
@@ -777,6 +775,66 @@ describe('DatePicker Control', () => {
         });
         afterAll((): void => {
             destroy(editorObj);
+        });
+    });
+
+    describe('BLAZ-4764 - New change event testing', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let initialDate: Date = new Date('4/9/2018');
+        let modifiedDate: Date = new Date('6/9/2018');
+        let changeArgs: any = {};
+        afterEach((): void => {
+            destroy(editorObj);
+            changeArgs = {};
+        });
+        it('Without initial value - Check changed value', (done) => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                type: 'Date',
+                change: function (e: ChangeEventArgs) {
+                    changeArgs = e;
+                }
+            });
+            ele = editorObj.element;
+            valueEle = <HTMLElement>select('.' + classes.VALUE, ele);
+            valueEle.click();
+            setTimeout(() => {
+                expect(editorObj.value).toEqual(null);
+                editorObj.componentObj.value = modifiedDate;
+                (ele.querySelector('.e-editable-component') as HTMLElement).click();
+                setTimeout(() => {
+                    expect(changeArgs['name']).toEqual('change');
+                    expect(changeArgs['previousValue']).toEqual(null);
+                    expect(new Date(changeArgs['value'])).toEqual(modifiedDate);
+                    done();
+                }, 1000);
+            }, 1500);
+        });
+        it('Check changed value', (done) => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                type: 'Date',
+                value: initialDate,
+                change: function (e: ChangeEventArgs) {
+                    changeArgs = e;
+                }
+            });
+            ele = editorObj.element;
+            valueEle = <HTMLElement>select('.' + classes.VALUE, ele);
+            valueEle.click();
+            setTimeout(() => {
+                expect(editorObj.value).toEqual(initialDate);
+                editorObj.componentObj.value = modifiedDate;
+                (ele.querySelector('.e-editable-component') as HTMLElement).click();
+                setTimeout(() => {
+                    expect(changeArgs['name']).toEqual('change');
+                    expect(changeArgs['previousValue']).toEqual(initialDate);
+                    expect(new Date(changeArgs['value'])).toEqual(modifiedDate);
+                    done();
+                }, 1000);
+            }, 1500);
         });
     });
 

@@ -1,4 +1,4 @@
-import { Property, Complex, Collection, ChildProperty, NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';import { IDataSet, IDataOptions, IFieldOptions, IFilter, ISort, ICalculatedFieldSettings } from '../../base/engine';import { IDrillOptions, IValueSortSettings, IFormatSettings, IConditionalFormatSettings, IGroupSettings } from '../../base/engine';import { SummaryTypes, Sorting, FilterType, Operators, Condition, DateGroup, GroupType, ProviderType } from '../../base/types';import { DataSourceType } from '../../base/types';import { IStyle, ICustomGroups, IAuthenticationInfo } from '../../base/engine';import { DataManager } from '@syncfusion/ej2-data';
+import { Property, Complex, Collection, ChildProperty, NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';import { IDataSet, IDataOptions, IFieldOptions, IFilter, ISort, ICalculatedFieldSettings } from '../../base/engine';import { IDrillOptions, IValueSortSettings, IFormatSettings, IConditionalFormatSettings, IGroupSettings } from '../../base/engine';import { SummaryTypes, Sorting, FilterType, Operators, Condition, DateGroup, GroupType, ProviderType, RenderMode } from '../../base/types';import { DataSourceType } from '../../base/types';import { IStyle, ICustomGroups, IAuthenticationInfo } from '../../base/engine';import { DataManager } from '@syncfusion/ej2-data';
 
 /**
  * Interface for a class FieldOptions
@@ -557,6 +557,11 @@ export interface AuthenticationModel {
  * Interface for a class DataSourceSettings
  */
 export interface DataSourceSettingsModel {
+
+    /**
+     * Allows to set the mode of rendering the pivot table.
+     */
+    mode?: RenderMode;
 
     /**
      * Allows to set the database name of SSAS cube as string type that used to retrieve the data from the specified connection string. 

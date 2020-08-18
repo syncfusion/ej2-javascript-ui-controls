@@ -1132,6 +1132,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
                     setStyles(element as HTMLElement, pointer.color, pointer.border);
                 }
                 if (enableAnimation) {
+                    pointer.currentValue = pointer.value;
                     this.gaugeAxisLayoutPanel.pointerRenderer.performNeedleAnimation(
                         element as HTMLElement, pointer.currentValue, value, axis, pointer,
                         pointerRadius, (pointerRadius - pointer.pointerWidth)

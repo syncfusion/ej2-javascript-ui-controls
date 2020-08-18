@@ -396,7 +396,7 @@ export class WorkbookNumberFormat {
                 return '01-' + dateArr[0] + '-' + dateArr[1];
             } else if (months.indexOf(dateArr[1].toLowerCase()) > -1 && Number(dateArr[0]) <= 31) {
                 return dateArr[0] + '-' + dateArr[1] + '-' + new Date().getFullYear();
-            } else if (dateArr[0] <= '31' && dateArr[1] <= '12') {
+            } else if (Number(dateArr[0]) <= 31 && Number(dateArr[1]) <= 12) {
                 return dateArr[0] + '-' + dateArr[1] + '-' + new Date().getFullYear();
             }
             if (Number(dateArr[1]) <= 31 && Number(dateArr[0]) <= 12) {

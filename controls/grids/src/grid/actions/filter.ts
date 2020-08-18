@@ -40,6 +40,7 @@ export class Filter implements IAction {
     private isRemove: boolean;
     private contentRefresh: boolean = true;
     private initialLoad: boolean;
+    private filterByMethod: boolean = true;
     private refresh: boolean = true;
     private values: Object = {};
     public operators: Object = {};
@@ -377,13 +378,16 @@ export class Filter implements IAction {
             this.matchCase = true;
         }
         gObj.getColumnHeaderByField(fieldName).setAttribute('aria-filtered', 'true');
-        if (filterValue.length < 1 || this.checkForSkipInput(this.column, filterValue)) {
-            this.filterStatusMsg = filterValue.length < 1 ? '' : this.l10n.getConstant('InvalidFilterMessage');
-            this.updateFilterMsg();
-            return;
-        }
-        if (filterCell && this.filterSettings.type === 'FilterBar' && filterCell.value !== filterValue) {
-            filterCell.value = filterValue;
+        if (filterCell && this.filterSettings.type === 'FilterBar') {
+            if (filterValue.length < 1 || (!this.filterByMethod &&
+                this.checkForSkipInput(this.column, filterValue))) {
+                this.filterStatusMsg = filterValue.length < 1 ? '' : this.l10n.getConstant('InvalidFilterMessage');
+                this.updateFilterMsg();
+                return;
+            }
+            if (filterCell.value !== filterValue) {
+                filterCell.value = filterValue;
+            }
         }
         if (!isNullOrUndefined(this.column.format)) {
             this.applyColumnFormat(filterValue);
@@ -835,9 +839,11 @@ export class Filter implements IAction {
             return;
         }
         this.validateFilterValue(this.value as string);
+        this.filterByMethod = false;
         this.filterByColumn(
             this.column.field, this.operator, this.value as string, this.predicate,
             this.filterSettings.enableCaseSensitivity, this.ignoreAccent);
+        this.filterByMethod = true;
         filterElement.value = filterValue;
         this.updateFilterMsg();
     }

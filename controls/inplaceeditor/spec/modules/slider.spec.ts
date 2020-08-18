@@ -2,7 +2,7 @@
  * Slider module spec document
  */
 import { select, selectAll } from '@syncfusion/ej2-base';
-import { InPlaceEditor, ValidateEventArgs } from '../../src/inplace-editor/base/index';
+import { InPlaceEditor, ValidateEventArgs, ChangeEventArgs } from '../../src/inplace-editor/base/index';
 import { Slider } from '../../src/inplace-editor/modules/index';
 import * as classes from '../../src/inplace-editor/base/classes';
 import { renderEditor, destroy } from './../render.spec';
@@ -441,6 +441,64 @@ describe('Slider module', () => {
             editorObj.save();
             expect(editorObj.value).toEqual(6);
             expect(valueEle.innerHTML).toEqual('6');
+        });
+    });
+
+    describe('BLAZ-4764 - New change event testing', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let changeArgs: any = {};
+        afterEach((): void => {
+            destroy(editorObj);
+            changeArgs = {};
+        });
+        it('Without initial value - Check changed value', (done) => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                type: 'Slider',
+                change: function (e: ChangeEventArgs) {
+                    changeArgs = e;
+                }
+            });
+            ele = editorObj.element;
+            valueEle = <HTMLElement>select('.' + classes.VALUE, ele);
+            valueEle.click();
+            setTimeout(() => {
+                expect(editorObj.value).toEqual(null);
+                editorObj.sliderModule.compObj.value = 10;
+                (ele.querySelector('.e-editable-component') as HTMLElement).click();
+                setTimeout(() => {
+                    expect(changeArgs['name']).toEqual('change');
+                    expect(changeArgs['previousValue']).toEqual(null);
+                    expect(changeArgs['value']).toEqual(10);
+                    done();
+                }, 1000);
+            }, 1500);
+        });
+        it('Check changed value', (done) => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                type: 'Slider',
+                value: 6,
+                change: function (e: ChangeEventArgs) {
+                    changeArgs = e;
+                }
+            });
+            ele = editorObj.element;
+            valueEle = <HTMLElement>select('.' + classes.VALUE, ele);
+            valueEle.click();
+            setTimeout(() => {
+                expect(editorObj.value).toEqual(6);
+                editorObj.sliderModule.compObj.value = 10;
+                (ele.querySelector('.e-editable-component') as HTMLElement).click();
+                setTimeout(() => {
+                    expect(changeArgs['name']).toEqual('change');
+                    expect(changeArgs['previousValue']).toEqual(6);
+                    expect(changeArgs['value']).toEqual(10);
+                    done();
+                }, 1000);
+            }, 1500);
         });
     });
 

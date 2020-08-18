@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.2.54 (2020-08-18)
+
+### Range Slider
+
+#### Bug Fixes
+
+- `#277466` - In the mobile view, the scrolling issue when multiple sliders are rendered has been resolved
+
 ## 18.2.48 (2020-08-04)
 
 ### TextBox

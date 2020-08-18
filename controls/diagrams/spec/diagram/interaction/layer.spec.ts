@@ -834,3 +834,86 @@ describe('Diagram Control', () => {
         });
     });
 });    
+
+describe('ZIndex value chnaged after calling refresh method', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let zIndexBeforeCall: number;
+    let zIndexAfterCall : number;
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'diagram_div' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] = [
+            {
+                id: "rectangle1",
+                offsetX: 100,
+                offsetY: 100,
+                width: 100,
+                height: 100,
+                annotations: [{
+                    content: 'rectangle1'
+                }]
+            }, {
+                id: "rectangle2",
+                offsetX: 200,
+                offsetY: 200,
+                width: 100,
+                height: 100,
+                annotations: [{
+                    content: 'rectangle2'
+                }]
+            },
+            {
+                id: 'group',
+                children: ['rectangle1', 'rectangle2']
+            },
+            {
+                id: "rectangle3",
+                offsetX: 200,
+                offsetY: 200,
+                width: 100,
+                height: 100,
+                annotations: [{
+                    content: 'rectangle2'
+                }]
+            }
+        
+        ];
+        let connectors: ConnectorModel[] = [
+            {
+                id:'connector',
+                sourcePoint: {
+                x: 100,
+                y: 100
+              },
+              targetPoint: {
+                x: 350,
+                y: 350
+              },
+            }
+          ]
+        
+        diagram = new Diagram({
+            width: '1500px',
+            height: '600px',
+            nodes: nodes, connectors: connectors
+        });
+        diagram.appendTo("#diagram_div");
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Exception occurs when sendToBack method is called', (done: Function) => {
+       
+        diagram.select([diagram.connectors[0]]);
+        diagram.sendToBack();
+        zIndexBeforeCall = diagram.connectors[0].zIndex;
+        console.log(diagram.connectors[0].zIndex);
+        diagram.refresh();
+        console.log(diagram.connectors[0].zIndex);
+        zIndexAfterCall = diagram.connectors[0].zIndex;
+        expect(zIndexBeforeCall === zIndexAfterCall).toBe(true);
+        done();
+    });
+});

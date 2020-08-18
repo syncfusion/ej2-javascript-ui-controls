@@ -11,6 +11,9 @@ export interface ElementContext extends HTMLElement {
     context: { [key: string]: string | Object };
 }
 
+const listElementCount: number = 1.5;
+const windowElementCount: number = 3;
+
 export class Virtualization {
     constructor(instance: ListView) {
         this.listViewInstance = instance;
@@ -149,9 +152,17 @@ export class Virtualization {
 
     private ValidateItemCount(dataSourceLength: number): number {
         const height: number = parseFloat(formatUnit(this.listViewInstance.height));
-        let itemCount: number = this.listViewInstance.isWindow ?
-            Math.round((window.innerHeight / this.listItemHeight) * 3) :
-            Math.round((height / this.listItemHeight) * 1.5);
+        let itemCount: number;
+        if (this.listViewInstance.isWindow) {
+            itemCount = Math.round((window.innerHeight / this.listItemHeight) * windowElementCount);
+        } else {
+            if (typeof this.listViewInstance.height === 'string' && this.listViewInstance.height.indexOf('%') !== -1) {
+                 // tslint:disable-next-line:max-line-length
+                itemCount = Math.round((this.listViewInstance.element.getBoundingClientRect().height / this.listItemHeight) * listElementCount);
+            } else {
+                itemCount = Math.round((height / this.listItemHeight) * listElementCount);
+            }
+        }
         if (itemCount > dataSourceLength) {
             itemCount = dataSourceLength;
         }

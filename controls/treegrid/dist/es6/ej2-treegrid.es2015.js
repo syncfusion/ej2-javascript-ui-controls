@@ -1831,7 +1831,7 @@ class DataManipulation {
             let srtQry = new Query();
             for (let srt = this.parent.grid.sortSettings.columns.length - 1; srt >= 0; srt--) {
                 let col = this.parent.grid.getColumnByField(this.parent.grid.sortSettings.columns[srt].field);
-                let compFun = col.sortComparer && !this.isRemote() ?
+                let compFun = col.sortComparer && isOffline(this.parent) ?
                     col.sortComparer.bind(col) :
                     this.parent.grid.sortSettings.columns[srt].direction;
                 srtQry.sortBy(this.parent.grid.sortSettings.columns[srt].field, compFun);
@@ -2883,7 +2883,9 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
                 setValue('grid.contentModule.isLoaded', !(req > 0), this);
             }
             if (this.isPixelHeight() && this.initialRender) {
-                let totalRows = this.getRows();
+                let totalRows;
+                let rows = this.getContentTable().rows;
+                totalRows = [].slice.call(rows);
                 for (let i = totalRows.length - 1; i > 0; i--) {
                     if (!isHidden(totalRows[i])) {
                         if (totalRows[i].nextElementSibling) {
@@ -4872,12 +4874,12 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         return this.getFrozenCount(this.columns, 0);
     }
     getFrozenCount(cols, cnt) {
-        for (let i = 0, len = cols.length; i < len; i++) {
-            if (cols[i].columns) {
-                cnt = this.getFrozenCount(cols[i].columns, cnt);
+        for (let j = 0, len = cols.length; j < len; j++) {
+            if (cols[j].columns) {
+                cnt = this.getFrozenCount(cols[j].columns, cnt);
             }
             else {
-                if (cols[i].isFrozen) {
+                if (cols[j].isFrozen) {
                     cnt++;
                 }
             }

@@ -106,4 +106,10 @@ describe('Default section Format API Validation', () => {
     it('check right margin', () => {
         expect(editor.selection.sectionFormat.rightMargin).toBe(20);
     });
+    it('Footer distance validation', () => {
+        editor.openBlank();
+        editor.selection.goToFooter();
+        editor.editor.insertPageNumber();
+        expect(() => { editor.selection.sectionFormat.footerDistance = 34; }).not.toThrowError();
+    });
 });

@@ -44,7 +44,8 @@
         display: none;
       }
 
-      &.e-show-chip {
+      &.e-show-chip,
+      &.e-show-text  {
         .e-clear-icon {
           bottom: $ddt-close-icon-bottom;
           position: absolute;
@@ -71,6 +72,9 @@
 
     .e-chips-wrapper {
       width: 100%;
+    }
+
+    &.e-show-chip {
 
       .e-chips-close {
         line-height: $ddt-chip-icon-line-height;
@@ -108,6 +112,50 @@
 
           @if $ddt-skin-name == 'fabric' or $ddt-skin-name == 'fabric-dark' or $ddt-skin-name == 'highcontrast' or $ddt-skin-name == 'highcontrast-light' {
             line-height: $ddt-chip-text-line-height;
+          }
+        }
+      }
+    }
+
+    .e-overflow {
+      white-space: nowrap;
+
+      &.e-show-text {
+        padding: $ddt-delim-padding;
+      }
+
+      &.e-total-count {
+        box-sizing: border-box;
+        display: inline-block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        .e-remain {
+          padding: $ddt-rtl-remains-padding;
+        }
+      }
+
+      &.e-wrap-count {
+        padding-top: $ddt-remains-count-padding-top;
+      }
+
+      .e-remain {
+        cursor: pointer;
+        display: inline-block;
+        font-size: $ddt-chip-font-size;
+        padding: $ddt-remains-padding;
+
+        &.e-wrap-count {
+          padding-top: $ddt-overflow-count-padding-top;
+        }
+      }
+    }
+
+    &.e-show-chip {
+      .e-overflow {
+        &.e-total-count {
+          .e-remain {
+            padding: $ddt-delim-padding;
           }
         }
       }
@@ -294,9 +342,48 @@
     }
 
     &.e-rtl {
+      &.e-show-chip {
+        .e-chips {
+          float: right;
+        }
+      }
 
-      .e-chips-wrapper .e-chips {
-        float: right;
+      &.e-show-chip,
+      &.e-show-text {
+        .e-overflow {
+          .e-remain {
+            padding: $ddt-rtl-remains-padding;
+
+            &.e-wrap-count {
+              padding-top: $ddt-remains-count-padding-top;
+            }
+          }
+
+          &.e-wrap-count {
+            position: absolute;
+            right: auto;
+          }
+        }
+      }
+
+      &.e-show-text {
+        .e-overflow {
+          &.e-total-count {
+            .e-remain {
+              padding: $ddt-remains-padding;
+            }
+          }
+        }
+      }
+
+      &.e-show-chip {
+        .e-overflow {
+          &.e-total-count {
+            .e-remain {
+              padding: $ddt-delim-padding;
+            }
+          }
+        }
       }
 
       &.e-show-dd-icon .e-chips-wrapper .e-chips:last-child {
@@ -317,7 +404,8 @@
       &.e-input-group.e-control-wrapper,
       &.e-float-input.e-control-wrapper {
 
-        &.e-show-chip {
+        &.e-show-chip,
+        &.e-show-text  {
 
           .e-clear-icon,
           .e-ddt-icon {
@@ -340,6 +428,20 @@
     }
   }
 
+  #{&}.e-dropdowntree {
+    .e-ddt.e-input-group.e-control-wrapper,
+    .e-ddt.e-float-input.e-control-wrapper  {
+
+      .e-clear-icon {
+        @if $ddt-skin-name == 'material' {
+          margin: 6px;
+          min-height: $ddt-dd-icon-width;
+          padding: $ddt-close-icon-bottom;
+        }
+      }
+    }
+  }
+
   .e-bigger #{&}.e-ddt,
   #{&}.e-ddt.e-bigger {
 
@@ -350,9 +452,13 @@
     &.e-input-group.e-control-wrapper,
     &.e-float-input.e-control-wrapper {
 
-      &.e-show-chip {
+      &.e-show-chip,
+      &.e-show-text  {
         &.e-show-dd-icon .e-clear-icon {
           right: $ddt-dd-icon-bigger-width;
+          @if $ddt-skin-name == 'bootstrap4' {
+            right: 33px;
+          }
         }
 
         .e-ddt-icon {
@@ -371,8 +477,7 @@
       }
     }
 
-    .e-chips-wrapper {
-
+    &.e-show-chip {
       .e-chips-close {
         @if $ddt-skin-name == 'bootstrap4' {
           line-height: 27px;
@@ -383,6 +488,13 @@
             font-size: 10px;
           }
         }
+      }
+    }
+
+    .e-overflow {
+
+      &.e-show-text {
+        padding: $ddt-delim-bigger-padding;
       }
     }
 
@@ -428,9 +540,12 @@
         margin-right: 1px;
       }
 
-      &.e-show-chip.e-input-group.e-show-dd-icon .e-clear-icon {
-        left: $ddt-dd-icon-bigger-width;
-        right: auto;
+      &.e-show-chip,
+      &.e-show-text  {
+        &.e-input-group.e-show-dd-icon .e-clear-icon {
+          left: $ddt-dd-icon-bigger-width;
+          right: auto;
+        }
       }
     }
   }

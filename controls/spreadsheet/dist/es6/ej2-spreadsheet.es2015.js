@@ -918,7 +918,7 @@ class WorkbookNumberFormat {
             else if (months.indexOf(dateArr[1].toLowerCase()) > -1 && Number(dateArr[0]) <= 31) {
                 return dateArr[0] + '-' + dateArr[1] + '-' + new Date().getFullYear();
             }
-            else if (dateArr[0] <= '31' && dateArr[1] <= '12') {
+            else if (Number(dateArr[0]) <= 31 && Number(dateArr[1]) <= 12) {
                 return dateArr[0] + '-' + dateArr[1] + '-' + new Date().getFullYear();
             }
             if (Number(dateArr[1]) <= 31 && Number(dateArr[0]) <= 12) {
@@ -10117,44 +10117,48 @@ class WorkbookFindAndReplace {
                         cellval = displayTxt;
                     }
                     else {
-                        cellval = sheet.rows[findNextArgs.rowIndex].cells[findNextArgs.colIndex].value.toString();
-                    }
-                    if (findNextArgs.args.isCSen && findNextArgs.args.isEMatch) {
-                        if (cellval === findNextArgs.stringValue) {
-                            let address = sheet.name + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
-                            this.parent.notify(goto, { address: address });
-                            findNextArgs.count++;
-                            return true;
+                        if (cellType.value) {
+                            cellval = sheet.rows[findNextArgs.rowIndex].cells[findNextArgs.colIndex].value.toString();
                         }
                     }
-                    else if (findNextArgs.args.isCSen && !findNextArgs.args.isEMatch) {
-                        let index = cellval.indexOf(findNextArgs.args.value) > -1;
-                        if ((cellval === findNextArgs.stringValue) || (index)) {
-                            let address = sheet.name + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
-                            this.parent.notify(goto, { address: address });
-                            findNextArgs.count++;
-                            return true;
+                    if (cellval) {
+                        if (findNextArgs.args.isCSen && findNextArgs.args.isEMatch) {
+                            if (cellval === findNextArgs.stringValue) {
+                                let address = sheet.name + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
+                                this.parent.notify(goto, { address: address });
+                                findNextArgs.count++;
+                                return true;
+                            }
                         }
-                    }
-                    else if (!findNextArgs.args.isCSen && findNextArgs.args.isEMatch) {
-                        findNextArgs.val = cellval.toString().toLowerCase();
-                        if (findNextArgs.val === findNextArgs.stringValue) {
-                            let address = sheet.name + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
-                            this.parent.notify(goto, { address: address });
-                            findNextArgs.count++;
-                            return true;
+                        else if (findNextArgs.args.isCSen && !findNextArgs.args.isEMatch) {
+                            let index = cellval.indexOf(findNextArgs.args.value) > -1;
+                            if ((cellval === findNextArgs.stringValue) || (index)) {
+                                let address = sheet.name + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
+                                this.parent.notify(goto, { address: address });
+                                findNextArgs.count++;
+                                return true;
+                            }
                         }
-                    }
-                    else if (!findNextArgs.args.isCSen && !findNextArgs.args.isEMatch) {
-                        findNextArgs.val = cellval.toString().toLowerCase();
-                        let index = cellval.indexOf(findNextArgs.args.value) > -1;
-                        let lowerCaseIndex = findNextArgs.val.indexOf(findNextArgs.args.value) > -1;
-                        if ((findNextArgs.val === findNextArgs.stringValue) || ((cellval === findNextArgs.stringValue) || (index)) ||
-                            (cellval === findNextArgs.stringValue) || (lowerCaseIndex)) {
-                            let address = sheet.name + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
-                            this.parent.notify(goto, { address: address });
-                            findNextArgs.count++;
-                            return true;
+                        else if (!findNextArgs.args.isCSen && findNextArgs.args.isEMatch) {
+                            findNextArgs.val = cellval.toString().toLowerCase();
+                            if (findNextArgs.val === findNextArgs.stringValue) {
+                                let address = sheet.name + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
+                                this.parent.notify(goto, { address: address });
+                                findNextArgs.count++;
+                                return true;
+                            }
+                        }
+                        else if (!findNextArgs.args.isCSen && !findNextArgs.args.isEMatch) {
+                            findNextArgs.val = cellval.toString().toLowerCase();
+                            let index = cellval.indexOf(findNextArgs.args.value) > -1;
+                            let lowerCaseIndex = findNextArgs.val.indexOf(findNextArgs.args.value) > -1;
+                            if ((findNextArgs.val === findNextArgs.stringValue) || ((cellval === findNextArgs.stringValue) || (index)) ||
+                                (cellval === findNextArgs.stringValue) || (lowerCaseIndex)) {
+                                let address = sheet.name + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
+                                this.parent.notify(goto, { address: address });
+                                findNextArgs.count++;
+                                return true;
+                            }
                         }
                     }
                 }
@@ -10416,44 +10420,48 @@ class WorkbookFindAndReplace {
                         cellvalue = displayTxt;
                     }
                     else {
-                        cellvalue = sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex].value.toString();
-                    }
-                    if (findPrevArgs.args.isCSen && findPrevArgs.args.isEMatch) {
-                        if (cellvalue === findPrevArgs.stringValue) {
-                            let address = sheet.name + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
-                            this.parent.notify(goto, { address: address });
-                            findPrevArgs.count++;
-                            return true;
+                        if (cellType.value) {
+                            cellvalue = sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex].value.toString();
                         }
                     }
-                    else if (findPrevArgs.args.isCSen && !findPrevArgs.args.isEMatch) {
-                        let index = cellvalue.indexOf(findPrevArgs.args.value) > -1;
-                        if ((cellvalue === findPrevArgs.stringValue) || (index)) {
-                            let address = sheet.name + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
-                            this.parent.notify(goto, { address: address });
-                            findPrevArgs.count++;
-                            return true;
+                    if (cellvalue) {
+                        if (findPrevArgs.args.isCSen && findPrevArgs.args.isEMatch) {
+                            if (cellvalue === findPrevArgs.stringValue) {
+                                let address = sheet.name + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
+                                this.parent.notify(goto, { address: address });
+                                findPrevArgs.count++;
+                                return true;
+                            }
                         }
-                    }
-                    else if (!findPrevArgs.args.isCSen && findPrevArgs.args.isEMatch) {
-                        findPrevArgs.val = cellvalue.toString().toLowerCase();
-                        if (findPrevArgs.val === findPrevArgs.stringValue) {
-                            let address = sheet.name + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
-                            this.parent.notify(goto, { address: address });
-                            findPrevArgs.count++;
-                            return true;
+                        else if (findPrevArgs.args.isCSen && !findPrevArgs.args.isEMatch) {
+                            let index = cellvalue.indexOf(findPrevArgs.args.value) > -1;
+                            if ((cellvalue === findPrevArgs.stringValue) || (index)) {
+                                let address = sheet.name + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
+                                this.parent.notify(goto, { address: address });
+                                findPrevArgs.count++;
+                                return true;
+                            }
                         }
-                    }
-                    else if (!findPrevArgs.args.isCSen && !findPrevArgs.args.isEMatch) {
-                        findPrevArgs.val = cellvalue.toString().toLowerCase();
-                        let index = cellvalue.indexOf(findPrevArgs.args.value) > -1;
-                        let lowerCaseIndex = findPrevArgs.val.indexOf(findPrevArgs.args.value) > -1;
-                        if ((cellvalue === findPrevArgs.stringValue) || ((cellvalue === findPrevArgs.stringValue) ||
-                            (index)) || (findPrevArgs.val === findPrevArgs.stringValue) || (lowerCaseIndex)) {
-                            let address = sheet.name + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
-                            this.parent.notify(goto, { address: address });
-                            findPrevArgs.count++;
-                            return true;
+                        else if (!findPrevArgs.args.isCSen && findPrevArgs.args.isEMatch) {
+                            findPrevArgs.val = cellvalue.toString().toLowerCase();
+                            if (findPrevArgs.val === findPrevArgs.stringValue) {
+                                let address = sheet.name + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
+                                this.parent.notify(goto, { address: address });
+                                findPrevArgs.count++;
+                                return true;
+                            }
+                        }
+                        else if (!findPrevArgs.args.isCSen && !findPrevArgs.args.isEMatch) {
+                            findPrevArgs.val = cellvalue.toString().toLowerCase();
+                            let index = cellvalue.indexOf(findPrevArgs.args.value) > -1;
+                            let lowerCaseIndex = findPrevArgs.val.indexOf(findPrevArgs.args.value) > -1;
+                            if ((cellvalue === findPrevArgs.stringValue) || ((cellvalue === findPrevArgs.stringValue) ||
+                                (index)) || (findPrevArgs.val === findPrevArgs.stringValue) || (lowerCaseIndex)) {
+                                let address = sheet.name + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
+                                this.parent.notify(goto, { address: address });
+                                findPrevArgs.count++;
+                                return true;
+                            }
                         }
                     }
                 }
@@ -10468,10 +10476,17 @@ class WorkbookFindAndReplace {
         }
         let sheet = this.parent.getActiveSheet();
         let activecell = getCellIndexes(sheet.activeCell);
-        let currentCell = sheet.rows[activecell[0]].cells[activecell[1]].value.toString();
-        let index = currentCell.indexOf(args.value) > -1;
-        let lowerCaseIndex = currentCell.toLowerCase().indexOf(args.value) > -1;
-        let val = currentCell.toString().toLowerCase();
+        let cellType = sheet.rows[activecell[0]].cells[activecell[1]];
+        let currentCell;
+        let index;
+        let lowerCaseIndex;
+        let val;
+        if (cellType && cellType.value) {
+            currentCell = sheet.rows[activecell[0]].cells[activecell[1]].value.toString();
+            index = currentCell.indexOf(args.value) > -1;
+            lowerCaseIndex = currentCell.toLowerCase().indexOf(args.value) > -1;
+            val = currentCell.toString().toLowerCase();
+        }
         if ((currentCell !== args.value) && (!index) && (val !== args.value) && (!lowerCaseIndex)) {
             args.findOpt = 'next';
             this.findNext(args);
@@ -10480,7 +10495,10 @@ class WorkbookFindAndReplace {
         let activecel = getCellIndexes(sheet.activeCell);
         let address = sheet.activeCell;
         let cell = sheet.rows[activecel[0]].cells[activecel[1]];
-        let cellFormat = sheet.rows[activecel[0]].cells[activecel[1]].format;
+        let cellFormat;
+        if (cell) {
+            cellFormat = cell.format;
+        }
         let compareVal;
         let replaceAddress = sheet.name + '!' + getCellAddress(activecel[0], activecel[1]);
         if (cellFormat) {
@@ -10488,33 +10506,37 @@ class WorkbookFindAndReplace {
             compareVal = dispTxt.toString();
         }
         else {
-            compareVal = sheet.rows[activecel[0]].cells[activecel[1]].value.toString();
+            if (cell && cell.value) {
+                compareVal = cell.value.toString();
+            }
         }
-        let replaceAllCollection = { undoRedoOpt: 'before', address: replaceAddress, compareVal: compareVal };
-        this.parent.notify(findUndoRedo, replaceAllCollection);
-        let lcValueOfCell = compareVal.toLowerCase();
-        let ivalueOfCell = compareVal.indexOf(args.value) > -1;
-        let caseInSensitive = lcValueOfCell.indexOf(args.value) > -1;
-        if ((args.value === compareVal) || (args.value === lcValueOfCell)) {
-            sheet.rows[activecel[0]].cells[activecel[1]].value = args.replaceValue;
-            this.parent.updateCell(cell, address);
-            let replaceAllCollection = { address: replaceAddress, compareVal: args.replaceValue, undoRedoOpt: 'after' };
+        if (compareVal) {
+            let replaceAllCollection = { undoRedoOpt: 'before', address: replaceAddress, compareVal: compareVal };
             this.parent.notify(findUndoRedo, replaceAllCollection);
-        }
-        else if (ivalueOfCell) {
-            let newValue = compareVal.replace(args.value, args.replaceValue);
-            sheet.rows[activecel[0]].cells[activecel[1]].value = newValue;
-            this.parent.updateCell(cell, address);
-            let replaceAllCollection = { address: replaceAddress, compareVal: args.replaceValue, undoRedoOpt: 'after' };
-            this.parent.notify(findUndoRedo, replaceAllCollection);
-        }
-        else if (caseInSensitive) {
-            let regx = new RegExp(args.value.toString().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig');
-            let updateValue = compareVal.replace(regx, args.replaceValue);
-            sheet.rows[activecel[0]].cells[activecel[1]].value = updateValue;
-            this.parent.updateCell(cell, address);
-            let replaceAllCollection = { address: replaceAddress, compareVal: args.replaceValue, undoRedoOpt: 'after' };
-            this.parent.notify(findUndoRedo, replaceAllCollection);
+            let lcValueOfCell = compareVal.toLowerCase();
+            let ivalueOfCell = compareVal.indexOf(args.value) > -1;
+            let caseInSensitive = lcValueOfCell.indexOf(args.value) > -1;
+            if ((args.value === compareVal) || (args.value === lcValueOfCell)) {
+                sheet.rows[activecel[0]].cells[activecel[1]].value = args.replaceValue;
+                this.parent.updateCell(cell, address);
+                let replaceAllCollection = { address: replaceAddress, compareVal: args.replaceValue, undoRedoOpt: 'after' };
+                this.parent.notify(findUndoRedo, replaceAllCollection);
+            }
+            else if (ivalueOfCell) {
+                let newValue = compareVal.replace(args.value, args.replaceValue);
+                sheet.rows[activecel[0]].cells[activecel[1]].value = newValue;
+                this.parent.updateCell(cell, address);
+                let replaceAllCollection = { address: replaceAddress, compareVal: args.replaceValue, undoRedoOpt: 'after' };
+                this.parent.notify(findUndoRedo, replaceAllCollection);
+            }
+            else if (caseInSensitive) {
+                let regx = new RegExp(args.value.toString().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig');
+                let updateValue = compareVal.replace(regx, args.replaceValue);
+                sheet.rows[activecel[0]].cells[activecel[1]].value = updateValue;
+                this.parent.updateCell(cell, address);
+                let replaceAllCollection = { address: replaceAddress, compareVal: args.replaceValue, undoRedoOpt: 'after' };
+                this.parent.notify(findUndoRedo, replaceAllCollection);
+            }
         }
     }
     replaceAll(args) {
@@ -10522,7 +10544,6 @@ class WorkbookFindAndReplace {
         let sheet = this.parent.sheets[startSheet];
         let endRow = sheet.usedRange.rowIndex;
         let count = 0;
-        let undoRedoOpt = 'beforeReplaceAll';
         let startRow = 0;
         let endColumn = sheet.usedRange.colIndex;
         let startColumn = 0;
@@ -10562,51 +10583,55 @@ class WorkbookFindAndReplace {
                                         cellval = displayTxt.toString();
                                     }
                                     else {
-                                        cellval = sheet.rows[startRow].cells[startColumn].value.toString();
-                                    }
-                                    if (args.isCSen && args.isEMatch) {
-                                        if (cellval === args.value) {
-                                            sheet.rows[startRow].cells[startColumn].value = args.replaceValue;
-                                            address = sheet.name + '!' + getCellAddress(startRow, startColumn);
-                                            this.parent.updateCell(cell, address);
-                                            addressCollection.push(address);
-                                            count++;
+                                        if (cellType.value) {
+                                            cellval = cellType.value.toString();
                                         }
                                     }
-                                    else if (args.isCSen && !args.isEMatch) {
-                                        let index = cellval.indexOf(args.value) > -1;
-                                        if ((cellval === args.value) || (index)) {
-                                            let newValue = cellval.replace(args.value, args.replaceValue);
-                                            sheet.rows[startRow].cells[startColumn].value = newValue;
-                                            address = sheet.name + '!' + getCellAddress(startRow, startColumn);
-                                            this.parent.updateCell(cell, address);
-                                            addressCollection.push(address);
-                                            count++;
+                                    if (cellval) {
+                                        if (args.isCSen && args.isEMatch) {
+                                            if (cellval === args.value) {
+                                                cellType.value = args.replaceValue;
+                                                address = sheet.name + '!' + getCellAddress(startRow, startColumn);
+                                                this.parent.updateCell(cell, address);
+                                                addressCollection.push(address);
+                                                count++;
+                                            }
                                         }
-                                    }
-                                    else if (!args.isCSen && args.isEMatch) {
-                                        let val = cellval.toString().toLowerCase();
-                                        if (val === args.value) {
-                                            sheet.rows[startRow].cells[startColumn].value = args.replaceValue;
-                                            address = sheet.name + '!' + getCellAddress(startRow, startColumn);
-                                            this.parent.updateCell(cell, address);
-                                            addressCollection.push(address);
-                                            count++;
+                                        else if (args.isCSen && !args.isEMatch) {
+                                            let index = cellval.indexOf(args.value) > -1;
+                                            if ((cellval === args.value) || (index)) {
+                                                let newValue = cellval.replace(args.value, args.replaceValue);
+                                                cellType.value = newValue;
+                                                address = sheet.name + '!' + getCellAddress(startRow, startColumn);
+                                                this.parent.updateCell(cell, address);
+                                                addressCollection.push(address);
+                                                count++;
+                                            }
                                         }
-                                    }
-                                    else if (!args.isCSen && !args.isEMatch) {
-                                        let val = cellval.toString().toLowerCase();
-                                        let index = cellval.indexOf(args.value) > -1;
-                                        let lowerCaseValue = val.indexOf(args.value) > -1;
-                                        if (((cellval === args.value) || (index)) || (val === args.value) || (cellval === args.value) ||
-                                            (lowerCaseValue)) {
-                                            let regExepression = new RegExp(args.value.toString().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig');
-                                            let newValue = cellval.replace(regExepression, args.replaceValue);
-                                            sheet.rows[startRow].cells[startColumn].value = newValue;
-                                            address = sheet.name + '!' + getCellAddress(startRow, startColumn);
-                                            this.parent.updateCell(cell, address);
-                                            addressCollection.push(address);
-                                            count++;
+                                        else if (!args.isCSen && args.isEMatch) {
+                                            let val = cellval.toString().toLowerCase();
+                                            if (val === args.value) {
+                                                cellType.value = args.replaceValue;
+                                                address = sheet.name + '!' + getCellAddress(startRow, startColumn);
+                                                this.parent.updateCell(cell, address);
+                                                addressCollection.push(address);
+                                                count++;
+                                            }
+                                        }
+                                        else if (!args.isCSen && !args.isEMatch) {
+                                            let val = cellval.toString().toLowerCase();
+                                            let index = cellval.indexOf(args.value) > -1;
+                                            let lowerCaseValue = val.indexOf(args.value) > -1;
+                                            if (((cellval === args.value) || (index)) || (val === args.value) || (cellval === args.value) ||
+                                                (lowerCaseValue)) {
+                                                let regExepression = new RegExp(args.value.toString().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig');
+                                                let newValue = cellval.replace(regExepression, args.replaceValue);
+                                                cellType.value = newValue;
+                                                address = sheet.name + '!' + getCellAddress(startRow, startColumn);
+                                                this.parent.updateCell(cell, address);
+                                                addressCollection.push(address);
+                                                count++;
+                                            }
                                         }
                                     }
                                 }
@@ -10616,16 +10641,6 @@ class WorkbookFindAndReplace {
                 }
             }
         }
-        let replaceAllCollection = {
-            undoRedoOpt: undoRedoOpt, Collection: addressCollection,
-            replaceValue: args.value
-        };
-        this.parent.notify(findUndoRedo, replaceAllCollection);
-        replaceAllCollection = {
-            undoRedoOpt: 'afterReplaceAll', Collection: addressCollection,
-            replaceValue: args.replaceValue
-        };
-        this.parent.notify(findUndoRedo, replaceAllCollection);
         let countNumber = count;
         this.parent.notify(replaceAllDialog, { count: countNumber, replaceValue: args.replaceValue });
     }
@@ -10656,32 +10671,36 @@ class WorkbookFindAndReplace {
                                     cellvalue = displayTxt.toString();
                                 }
                                 else {
-                                    cellvalue = cellType.value.toString();
-                                }
-                                if (args.isCSen && args.isEMatch) {
-                                    if (cellvalue === args.value) {
-                                        count++;
+                                    if (cellType.value) {
+                                        cellvalue = cellType.value.toString();
                                     }
                                 }
-                                else if (args.isCSen && !args.isEMatch) {
-                                    let index = cellvalue.indexOf(args.value) > -1;
-                                    if ((cellvalue === args.value) || (index)) {
-                                        count++;
+                                if (cellvalue) {
+                                    if (args.isCSen && args.isEMatch) {
+                                        if (cellvalue === args.value) {
+                                            count++;
+                                        }
                                     }
-                                }
-                                else if (!args.isCSen && args.isEMatch) {
-                                    let val = cellvalue.toString().toLowerCase();
-                                    if (val === args.value) {
-                                        count++;
+                                    else if (args.isCSen && !args.isEMatch) {
+                                        let index = cellvalue.indexOf(args.value) > -1;
+                                        if ((cellvalue === args.value) || (index)) {
+                                            count++;
+                                        }
                                     }
-                                }
-                                else if (!args.isCSen && !args.isEMatch) {
-                                    let val = cellvalue.toString().toLowerCase();
-                                    let index = cellvalue.indexOf(args.value) > -1;
-                                    let lowerCaseValue = val.indexOf(args.value) > -1;
-                                    if ((val === args.value) || ((cellvalue === args.value) || (index)) || (cellvalue === args.value) ||
-                                        (lowerCaseValue)) {
-                                        count++;
+                                    else if (!args.isCSen && args.isEMatch) {
+                                        let val = cellvalue.toString().toLowerCase();
+                                        if (val === args.value) {
+                                            count++;
+                                        }
+                                    }
+                                    else if (!args.isCSen && !args.isEMatch) {
+                                        let val = cellvalue.toString().toLowerCase();
+                                        let index = cellvalue.indexOf(args.value) > -1;
+                                        let lowerCaseValue = val.indexOf(args.value) > -1;
+                                        if ((val === args.value) || ((cellvalue === args.value) || (index)) || (cellvalue === args.value) ||
+                                            (lowerCaseValue)) {
+                                            count++;
+                                        }
                                     }
                                 }
                             }
@@ -10714,40 +10733,45 @@ class WorkbookFindAndReplace {
                 for (startColumn; startColumn <= endColumn; startColumn++) {
                     if (row) {
                         if (row.cells[startColumn]) {
-                            if (sheet.rows[startRow].cells[startColumn]) {
+                            let cell = sheet.rows[startRow].cells[startColumn];
+                            if (cell) {
                                 let cellval;
-                                if (sheet.rows[startRow].cells[startColumn].format) {
+                                if (cell.format) {
                                     let displayTxt = this.parent.getDisplayText(sheet.rows[startRow].
                                         cells[startColumn]);
                                     cellval = displayTxt.toString();
                                 }
                                 else {
-                                    cellval = sheet.rows[startRow].cells[startColumn].value.toString();
-                                }
-                                if (args.isCSen && !args.isEMatch) {
-                                    let index = cellval.indexOf(args.value) > -1;
-                                    if ((cellval === args.value) || (index)) {
-                                        requiredCount++;
+                                    if (cell.value) {
+                                        cellval = cell.value.toString();
                                     }
                                 }
-                                else if (args.isCSen && args.isEMatch) {
-                                    if (cellval === args.value) {
-                                        requiredCount++;
+                                if (cellval) {
+                                    if (args.isCSen && !args.isEMatch) {
+                                        let index = cellval.indexOf(args.value) > -1;
+                                        if ((cellval === args.value) || (index)) {
+                                            requiredCount++;
+                                        }
                                     }
-                                }
-                                else if (!args.isCSen && args.isEMatch) {
-                                    let val = cellval.toString().toLowerCase();
-                                    if (val === args.value) {
-                                        requiredCount++;
+                                    else if (args.isCSen && args.isEMatch) {
+                                        if (cellval === args.value) {
+                                            requiredCount++;
+                                        }
                                     }
-                                }
-                                else if (!args.isCSen && !args.isEMatch) {
-                                    let val = cellval.toString().toLowerCase();
-                                    let index = cellval.indexOf(args.value) > -1;
-                                    let lowerCaseVal = val.indexOf(args.value) > -1;
-                                    if ((cellval === args.value) || ((cellval === args.value) || (index)) || (val === args.value) ||
-                                        (lowerCaseVal)) {
-                                        requiredCount++;
+                                    else if (!args.isCSen && args.isEMatch) {
+                                        let val = cellval.toString().toLowerCase();
+                                        if (val === args.value) {
+                                            requiredCount++;
+                                        }
+                                    }
+                                    else if (!args.isCSen && !args.isEMatch) {
+                                        let val = cellval.toString().toLowerCase();
+                                        let index = cellval.indexOf(args.value) > -1;
+                                        let lowerCaseVal = val.indexOf(args.value) > -1;
+                                        if ((cellval === args.value) || ((cellval === args.value) || (index)) || (val === args.value) ||
+                                            (lowerCaseVal)) {
+                                            requiredCount++;
+                                        }
                                     }
                                 }
                             }
@@ -12597,108 +12621,6 @@ let localeData = {
  * Common tasks.
  */
 
-var __decorate$5 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-/**
- * Configures the Row behavior for the spreadsheet.
- *  ```html
- * <div id='Spreadsheet'></div>
- * ```
- * ```typescript
- * let spreadsheet: Spreadsheet = new Spreadsheet({
- *      sheets: [{
- *                rows: [{
- *                        index: 30,
- *                        cells: [{ index: 4, value: 'Total Amount:' },
- *                               { formula: '=SUM(F2:F30)', style: { fontWeight: 'bold' } }]
- *                }]
- * ...
- * });
- * spreadsheet.appendTo('#Spreadsheet');
- * ```
- */
-class Row extends ChildProperty {
-}
-__decorate$5([
-    Collection([], Cell)
-], Row.prototype, "cells", void 0);
-__decorate$5([
-    Property(0)
-], Row.prototype, "index", void 0);
-__decorate$5([
-    Property(20)
-], Row.prototype, "height", void 0);
-__decorate$5([
-    Property(false)
-], Row.prototype, "customHeight", void 0);
-__decorate$5([
-    Property(false)
-], Row.prototype, "hidden", void 0);
-/**
- * @hidden
- */
-function getRow(sheet, rowIndex) {
-    return sheet.rows[rowIndex];
-}
-/** @hidden */
-function setRow(sheet, rowIndex, row) {
-    if (!sheet.rows[rowIndex]) {
-        sheet.rows[rowIndex] = {};
-    }
-    Object.keys(row).forEach((key) => {
-        sheet.rows[rowIndex][key] = row[key];
-    });
-}
-/** @hidden */
-function isHiddenRow(sheet, index) {
-    return sheet.rows[index] && sheet.rows[index].hidden;
-}
-/**
- * @hidden
- */
-function getRowHeight(sheet, rowIndex) {
-    if (sheet && sheet.rows && sheet.rows[rowIndex]) {
-        if (sheet.rows[rowIndex].hidden) {
-            return 0;
-        }
-        return sheet.rows[rowIndex].height === undefined ? 20 : sheet.rows[rowIndex].height;
-    }
-    else {
-        return 20;
-    }
-}
-/**
- * @hidden
- */
-function setRowHeight(sheet, rowIndex, height) {
-    if (sheet && sheet.rows) {
-        if (!sheet.rows[rowIndex]) {
-            sheet.rows[rowIndex] = {};
-        }
-        sheet.rows[rowIndex].height = height;
-    }
-}
-/**
- * @hidden
- */
-function getRowsHeight(sheet, startRow, endRow = startRow) {
-    let height = 0;
-    let swap;
-    if (startRow > endRow) {
-        swap = startRow;
-        startRow = endRow;
-        endRow = swap;
-    }
-    for (let i = startRow; i <= endRow; i++) {
-        height += getRowHeight(sheet, i);
-    }
-    return height;
-}
-
 var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -13047,6 +12969,108 @@ function clearRange(context, address, sheetIdx, valueOnly) {
             }
         }
     }
+}
+
+var __decorate$5 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Configures the Row behavior for the spreadsheet.
+ *  ```html
+ * <div id='Spreadsheet'></div>
+ * ```
+ * ```typescript
+ * let spreadsheet: Spreadsheet = new Spreadsheet({
+ *      sheets: [{
+ *                rows: [{
+ *                        index: 30,
+ *                        cells: [{ index: 4, value: 'Total Amount:' },
+ *                               { formula: '=SUM(F2:F30)', style: { fontWeight: 'bold' } }]
+ *                }]
+ * ...
+ * });
+ * spreadsheet.appendTo('#Spreadsheet');
+ * ```
+ */
+class Row extends ChildProperty {
+}
+__decorate$5([
+    Collection([], Cell)
+], Row.prototype, "cells", void 0);
+__decorate$5([
+    Property(0)
+], Row.prototype, "index", void 0);
+__decorate$5([
+    Property(20)
+], Row.prototype, "height", void 0);
+__decorate$5([
+    Property(false)
+], Row.prototype, "customHeight", void 0);
+__decorate$5([
+    Property(false)
+], Row.prototype, "hidden", void 0);
+/**
+ * @hidden
+ */
+function getRow(sheet, rowIndex) {
+    return sheet.rows[rowIndex];
+}
+/** @hidden */
+function setRow(sheet, rowIndex, row) {
+    if (!sheet.rows[rowIndex]) {
+        sheet.rows[rowIndex] = {};
+    }
+    Object.keys(row).forEach((key) => {
+        sheet.rows[rowIndex][key] = row[key];
+    });
+}
+/** @hidden */
+function isHiddenRow(sheet, index) {
+    return sheet.rows[index] && sheet.rows[index].hidden;
+}
+/**
+ * @hidden
+ */
+function getRowHeight(sheet, rowIndex) {
+    if (sheet && sheet.rows && sheet.rows[rowIndex]) {
+        if (sheet.rows[rowIndex].hidden) {
+            return 0;
+        }
+        return sheet.rows[rowIndex].height === undefined ? 20 : sheet.rows[rowIndex].height;
+    }
+    else {
+        return 20;
+    }
+}
+/**
+ * @hidden
+ */
+function setRowHeight(sheet, rowIndex, height) {
+    if (sheet && sheet.rows) {
+        if (!sheet.rows[rowIndex]) {
+            sheet.rows[rowIndex] = {};
+        }
+        sheet.rows[rowIndex].height = height;
+    }
+}
+/**
+ * @hidden
+ */
+function getRowsHeight(sheet, startRow, endRow = startRow) {
+    let height = 0;
+    let swap;
+    if (startRow > endRow) {
+        swap = startRow;
+        startRow = endRow;
+        endRow = swap;
+    }
+    for (let i = startRow; i <= endRow; i++) {
+        height += getRowHeight(sheet, i);
+    }
+    return height;
 }
 
 var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
@@ -14380,6 +14404,26 @@ function getScrollBarWidth() {
     result = (htmlDivNode.offsetWidth - htmlDivNode.clientWidth) | 0;
     document.body.removeChild(htmlDivNode);
     return scrollAreaWidth = result;
+}
+let classes = ['e-ribbon', 'e-formula-bar-panel', 'e-sheet-tab-panel', 'e-header-toolbar'];
+/** @hidden */
+function getSiblingsHeight(element, classList = classes) {
+    let previous = getHeightFromDirection(element, 'previous', classList);
+    let next = getHeightFromDirection(element, 'next', classList);
+    return previous + next;
+}
+function getHeightFromDirection(element, direction, classList) {
+    // tslint:disable-next-line:no-any
+    let sibling = (element)[direction + 'ElementSibling'];
+    let result = 0;
+    while (sibling) {
+        if (classList.some((value) => sibling.classList.contains(value))) {
+            result += sibling.offsetHeight;
+        }
+        // tslint:disable-next-line:no-any
+        sibling = (sibling)[direction + 'ElementSibling'];
+    }
+    return result;
 }
 /**
  * @hidden
@@ -20010,11 +20054,11 @@ class SpreadsheetHyperlink {
             selectedItem: selIdx,
             items: [
                 {
-                    header: { 'text': 'WEB PAGE' },
+                    header: { 'text': l10n.getConstant('WebPage') },
                     content: webContElem
                 },
                 {
-                    header: { 'text': 'THIS DOCUMENT' },
+                    header: { 'text': l10n.getConstant('ThisDocument') },
                     content: docContElem
                 },
             ]
@@ -20028,8 +20072,8 @@ class SpreadsheetHyperlink {
         }
         let textCont = this.parent.createElement('div', { className: 'e-cont' });
         let urlCont = this.parent.createElement('div', { className: 'e-cont' });
-        let textH = this.parent.createElement('div', { className: 'e-header', innerHTML: 'Display Text' });
-        let urlH = this.parent.createElement('div', { className: 'e-header', innerHTML: 'URL' });
+        let textH = this.parent.createElement('div', { className: 'e-header', innerHTML: l10n.getConstant('DisplayText') });
+        let urlH = this.parent.createElement('div', { className: 'e-header', innerHTML: l10n.getConstant('Url') });
         let textInput = this.parent.createElement('input', { className: 'e-input e-text', attrs: { 'type': 'Text' }, });
         if (!isEnable) {
             textInput.classList.add('e-disabled');
@@ -20040,8 +20084,8 @@ class SpreadsheetHyperlink {
             textInput.setAttribute('value', this.parent.getDisplayText(cell));
         }
         let urlInput = this.parent.createElement('input', { className: 'e-input e-text', attrs: { 'type': 'Text' } });
-        textInput.setAttribute('placeholder', 'Enter the text to display');
-        urlInput.setAttribute('placeholder', 'Enter the URL');
+        textInput.setAttribute('placeholder', l10n.getConstant('EnterTheTextToDisplay'));
+        urlInput.setAttribute('placeholder', l10n.getConstant('EnterTheUrl'));
         textCont.appendChild(textInput);
         textCont.insertBefore(textH, textInput);
         urlCont.appendChild(urlInput);
@@ -20075,11 +20119,11 @@ class SpreadsheetHyperlink {
         }
         let data = [
             {
-                nodeId: '01', nodeText: 'Cell Reference', expanded: isCellRef,
+                nodeId: '01', nodeText: l10n.getConstant('CellReference'), expanded: isCellRef,
                 nodeChild: cellRef
             },
             {
-                nodeId: '02', nodeText: 'Defined Names', expanded: isDefinedName,
+                nodeId: '02', nodeText: l10n.getConstant('DefinedNames'), expanded: isDefinedName,
                 nodeChild: definedName
             },
         ];
@@ -20087,7 +20131,7 @@ class SpreadsheetHyperlink {
             fields: { dataSource: data, id: 'nodeId', text: 'nodeText', child: 'nodeChild' }
         });
         let cellrefCont = this.parent.createElement('div', { className: 'e-cont' });
-        let cellrefH = this.parent.createElement('div', { className: 'e-header', innerHTML: 'Cell Reference' });
+        let cellrefH = this.parent.createElement('div', { className: 'e-header', innerHTML: l10n.getConstant('CellReference') });
         let cellrefInput = this.parent.createElement('input', {
             className: 'e-input e-text e-hyp-text',
             attrs: { 'type': 'Text' }
@@ -20096,7 +20140,7 @@ class SpreadsheetHyperlink {
         cellrefCont.appendChild(cellrefInput);
         cellrefCont.insertBefore(cellrefH, cellrefInput);
         let textCont1 = this.parent.createElement('div', { className: 'e-cont' });
-        let textH1 = this.parent.createElement('div', { className: 'e-header', innerHTML: 'Display Text' });
+        let textH1 = this.parent.createElement('div', { className: 'e-header', innerHTML: l10n.getConstant('DisplayText') });
         let textInput1 = this.parent.createElement('input', { className: 'e-input e-text', attrs: { 'type': 'Text' } });
         if (!isEnable) {
             textInput1.classList.add('e-disabled');
@@ -20106,11 +20150,11 @@ class SpreadsheetHyperlink {
         if (cell && isNullOrUndefined(cell.hyperlink)) {
             textInput1.setAttribute('value', this.parent.getDisplayText(cell));
         }
-        textInput1.setAttribute('placeholder', 'Enter the text to display');
+        textInput1.setAttribute('placeholder', l10n.getConstant('EnterTheTextToDisplay'));
         textCont1.appendChild(textInput1);
         textCont1.insertBefore(textH1, textInput1);
         let sheetCont = this.parent.createElement('div', { className: 'e-cont' });
-        let sheetH = this.parent.createElement('div', { className: 'e-header', innerHTML: 'Sheet' });
+        let sheetH = this.parent.createElement('div', { className: 'e-header', innerHTML: l10n.getConstant('Sheet') });
         let refCont = this.parent.createElement('div', { className: 'e-refcont' });
         sheetCont.appendChild(refCont);
         sheetCont.insertBefore(sheetH, refCont);
@@ -22812,63 +22856,65 @@ class ConditionalFormatting {
         }
     }
     getType(action) {
+        let l10n = this.parent.serviceLocator.getService(locale);
         let result = '';
         switch (action) {
-            case 'Greater Than...':
+            case l10n.getConstant('GreaterThan') + '...':
                 result = 'GreaterThan';
                 break;
-            case 'Less Than...':
+            case l10n.getConstant('LessThan') + '...':
                 result = 'LessThan';
                 break;
-            case 'Between...':
+            case l10n.getConstant('Between') + '...':
                 result = 'Between';
                 break;
-            case 'Equal To...':
+            case l10n.getConstant('CFEqualTo') + '...':
                 result = 'EqualTo';
                 break;
-            case 'Text that Contains...':
+            case l10n.getConstant('TextThatContains') + '...':
                 result = 'ContainsText';
                 break;
-            case 'A Date Occuring...':
+            case l10n.getConstant('ADateOccuring') + '...':
                 result = 'DateOccur';
                 break;
-            case 'Top 10 Items...':
+            case l10n.getConstant('Top10Items') + '...':
                 result = 'Top10Items';
                 break;
-            case 'Bottom 10 Items...':
+            case l10n.getConstant('Bottom10Items') + '...':
                 result = 'Bottom10Items';
                 break;
-            case 'Top 10 %...':
+            case l10n.getConstant('Top10') + ' %...':
                 result = 'Top10Percentage';
                 break;
-            case 'Bottom 10 %...':
+            case l10n.getConstant('Bottom10') + ' %...':
                 result = 'Bottom10Percentage';
                 break;
-            case 'Above Average...':
+            case l10n.getConstant('AboveAverage') + '...':
                 result = 'AboveAverage';
                 break;
-            case 'Below Average...':
+            case l10n.getConstant('BelowAverage') + '...':
                 result = 'BelowAverage';
                 break;
         }
         return result;
     }
     getCFColor(value) {
+        let l10n = this.parent.serviceLocator.getService(locale);
         let result = 'RedFT';
         switch (value) {
-            case 'Light Red Fill with Dark Red Text':
+            case l10n.getConstant('LightRedFillWithDarkRedText'):
                 result = 'RedFT';
                 break;
-            case 'Yellow Fill with Dark Yellow Text':
+            case l10n.getConstant('YellowFillWithDarkYellowText'):
                 result = 'YellowFT';
                 break;
-            case 'Green Fill with Dark Green Text':
+            case l10n.getConstant('GreenFillWithDarkGreenText'):
                 result = 'GreenFT';
                 break;
-            case 'Red Fill':
+            case l10n.getConstant('RedFill'):
                 result = 'RedF';
                 break;
-            case 'Red Text':
+            case l10n.getConstant('RedText'):
                 result = 'RedT';
                 break;
         }
@@ -22888,11 +22934,11 @@ class ConditionalFormatting {
         dlgContent.appendChild(mainDiv);
         dlgContent.appendChild(subDiv);
         mainDiv.appendChild(value1Text);
-        if (action !== 'Duplicate Values...') {
-            if (action !== 'Above Average...' && action !== 'Below Average...') {
+        if (action !== l10n.getConstant('DuplicateValues') + '...') {
+            if (action !== l10n.getConstant('AboveAverage') + '...' && action !== l10n.getConstant('BelowAverage') + '...') {
                 mainDiv.appendChild(value1Inp);
-                if (action === 'Top 10 Items...' || action === 'Top 10 %...' ||
-                    action === 'Bottom 10 Items...' || action === 'Bottom 10 %...') {
+                if (action === l10n.getConstant('Top10Items') + '...' || action === l10n.getConstant('Top10') + ' %...' ||
+                    action === l10n.getConstant('Bottom10Items') + '...' || action === l10n.getConstant('Bottom10') + ' %...') {
                     let numeric = new NumericTextBox({
                         value: 10
                     });
@@ -22903,8 +22949,8 @@ class ConditionalFormatting {
         else {
             mainDiv.appendChild(duplicateSelectEle);
             let dupData = [
-                { text: 'Duplicate', id: 'duplicate' },
-                { text: 'Unique', id: 'unique' },
+                { text: l10n.getConstant('Duplicate'), id: 'duplicate' },
+                { text: l10n.getConstant('Unique'), id: 'unique' },
             ];
             let dupList = new DropDownList({
                 dataSource: dupData,
@@ -22913,8 +22959,8 @@ class ConditionalFormatting {
             });
             dupList.appendTo(duplicateSelectEle);
         }
-        if (action === 'Between...') {
-            let value2Text = this.parent.createElement('span', { className: 'e-header e-header-2', innerHTML: 'and' });
+        if (action === l10n.getConstant('Between') + '...') {
+            let value2Text = this.parent.createElement('span', { className: 'e-header e-header-2', innerHTML: l10n.getConstant('And') });
             let value2Inp = this.parent.createElement('input', { className: 'e-input' });
             mainDiv.appendChild(value2Text);
             mainDiv.appendChild(value2Inp);
@@ -22922,11 +22968,11 @@ class ConditionalFormatting {
         subDiv.appendChild(subDivText);
         subDiv.appendChild(colorSelectEle);
         let colorData = [
-            { text: 'Light Red Fill with Dark Red Text', value: 'redft', id: 'redft' },
-            { text: 'Yellow Fill with Dark Yellow Text', id: 'yellowft' },
-            { text: 'Green Fill with Dark Green Text', id: 'greenft' },
-            { text: 'Red Fill', id: 'redf' },
-            { text: 'Red Text', id: 'redt' },
+            { text: l10n.getConstant('LightRedFillWithDarkRedText'), value: 'redft', id: 'redft' },
+            { text: l10n.getConstant('YellowFillWithDarkYellowText'), id: 'yellowft' },
+            { text: l10n.getConstant('GreenFillWithDarkGreenText'), id: 'greenft' },
+            { text: l10n.getConstant('RedFill'), id: 'redf' },
+            { text: l10n.getConstant('RedText'), id: 'redt' },
         ];
         let colorList = new DropDownList({
             dataSource: colorData,
@@ -22967,10 +23013,10 @@ class ConditionalFormatting {
                 result = l10n.getConstant('FormatCellsEqualTo');
                 break;
             case l10n.getConstant('TextThatContains') + '...':
-                result = l10n.getConstant('FormatCellsText');
+                result = l10n.getConstant('FormatCellsThatContainTheText');
                 break;
             case l10n.getConstant('ADateOccuring') + '...':
-                result = l10n.getConstant('FormatCellsDate');
+                result = l10n.getConstant('FormatCellsThatContainADateOccurring');
                 break;
             case l10n.getConstant('DuplicateValues') + '...':
                 result = l10n.getConstant('FormatCellsDuplicate');
@@ -24953,15 +24999,15 @@ class Ribbon$$1 {
                 }],
             orientation: 'Vertical',
             beforeOpen: (args) => {
-                if (args.parentItem.text === 'Data Bars') {
+                if (args.parentItem.text === l10n.getConstant('DataBars')) {
                     args.element.firstChild.appendChild(dataBars);
                     args.element.parentElement.classList.add('e-databars');
                 }
-                else if (args.parentItem.text === 'Color Scales') {
+                else if (args.parentItem.text === l10n.getConstant('ColorScales')) {
                     args.element.firstChild.appendChild(colorScales);
                     args.element.parentElement.classList.add('e-colorscales');
                 }
-                else if (args.parentItem.text === 'Icon Sets') {
+                else if (args.parentItem.text === l10n.getConstant('IconSets')) {
                     args.element.firstChild.appendChild(iconSets);
                     args.element.parentElement.classList.add('e-iconsets');
                 }
@@ -25910,6 +25956,7 @@ class Ribbon$$1 {
         else {
             target.title = l10n.getConstant('ExpandToolbar');
         }
+        this.parent.setPanelSize();
     }
     getNumFormatDdbItems(id) {
         let l10n = this.parent.serviceLocator.getService(locale);
@@ -27037,6 +27084,7 @@ class FormulaBar {
             document.getElementById(this.parent.element.id + '_formula_input').rows = 3;
             target.title = l10n.getConstant('CollapseFormulaBar');
         }
+        this.parent.setPanelSize();
     }
     dialogOpen() {
         this.focusOkButton();
@@ -30447,8 +30495,8 @@ let defaultLocale = {
     FormatCellsLessThan: 'Format cells that are LESS THAN:',
     FormatCellsBetween: 'Format cells that are BETWEEN:',
     FormatCellsEqualTo: 'Format cells that are EQUAL TO:',
-    FormatCellsText: 'Format cells that contain the text:',
-    FormatCellsDate: 'Format cells that contain a date occurring:',
+    FormatCellsThatContainTheText: 'Format cells that contain the text:',
+    FormatCellsThatContainADateOccurring: 'Format cells that contain a date occurring:',
     FormatCellsDuplicate: 'Format cells that contain:',
     FormatCellsTop: 'Format cells that rank in the TOP:',
     FormatCellsBottom: 'Format cells that rank in the BOTTOM:',
@@ -30472,7 +30520,23 @@ let defaultLocale = {
     ClearContents: 'Clear Contents',
     ClearAll: 'Clear All',
     ClearFormats: 'Clear Formats',
-    ClearHyperlinks: 'Clear Hyperlinks'
+    ClearHyperlinks: 'Clear Hyperlinks',
+    LightRedFillWithDarkRedText: 'Light Red Fill with Dark Red Text',
+    YellowFillWithDarkYellowText: 'Yellow Fill with Dark Yellow Text',
+    GreenFillWithDarkGreenText: 'Green Fill with Dark Green Text',
+    RedFill: 'Red Fill',
+    RedText: 'Red Text',
+    Duplicate: 'Duplicate',
+    Unique: 'Unique',
+    And: 'and',
+    WebPage: 'WEB PAGE',
+    ThisDocument: 'THIS DOCUMENT',
+    DisplayText: 'Display Text',
+    Url: 'URL',
+    CellReference: 'Cell Reference',
+    DefinedNames: 'Defined Names',
+    EnterTheTextToDisplay: 'Enter the text to display',
+    EnterTheUrl: 'Enter the URL'
 };
 
 /**
@@ -31662,13 +31726,17 @@ class Render {
      * Used to set sheet panel size.
      */
     setSheetPanelSize() {
-        let offset = document.getElementById(this.parent.element.id + '_sheet_panel').getBoundingClientRect();
+        let panel = document.getElementById(this.parent.element.id + '_sheet_panel');
+        let offset = this.parent.element.getBoundingClientRect();
         let height;
         if (this.parent.height === 'auto') {
+            panel.style.height = '260px';
             height = 230;
         }
         else {
-            height = offset.height - 32;
+            height = offset.height - getSiblingsHeight(panel);
+            panel.style.height = `${height}px`;
+            height -= 32;
         }
         this.parent.viewport.height = height;
         this.parent.viewport.width = offset.width - 32;
@@ -32759,6 +32827,13 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
         range = range || this.getActiveSheet().selectedRange;
         super.clearConditionalFormat(range);
     }
+    /** @hidden */
+    setPanelSize() {
+        if (this.height !== 'auto') {
+            let panel = document.getElementById(this.element.id + '_sheet_panel');
+            panel.style.height = `${this.element.getBoundingClientRect().height - getSiblingsHeight(panel)}px`;
+        }
+    }
     /**
      * Opens the Excel file.
      * @param {OpenOptions} options - Options for opening the excel file.
@@ -33532,5 +33607,5 @@ Spreadsheet = Spreadsheet_1 = __decorate$9([
  * Export Spreadsheet modules
  */
 
-export { Workbook, Range, UsedRange, Sheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, getSheetIndexByName, updateSelectedRange, getSelectedRange, getSheet, getSheetNameCount, getMaxSheetId, initSheet, getSheetName, Row, getRow, setRow, isHiddenRow, getRowHeight, setRowHeight, getRowsHeight, Column, getColumn, setColumn, getColumnWidth, getColumnsWidth, isHiddenCol, Cell, getCell, setCell, skipDefaultValue, wrap, getData, getModel, processIdx, clearRange, getRangeIndexes, getCellIndexes, getColIndex, getCellAddress, getRangeAddress, getColumnHeaderText, getIndexesFromAddress, getRangeFromAddress, getAddressFromSelectedRange, getAddressInfo, getSwapRange, isSingleCell, executeTaskAsync, WorkbookBasicModule, WorkbookAllModule, getWorkbookRequiredModules, CellStyle, DefineName, ProtectSettings, Hyperlink, Validation, Format, ConditionalFormat, workbookDestroyed, updateSheetFromDataSource, dataSourceChanged, workbookOpen, beginSave, saveCompleted, applyNumberFormatting, getFormattedCellObject, refreshCellElement, setCellFormat, findAllValues, textDecorationUpdate, applyCellFormat, updateUsedRange, workbookFormulaOperation, workbookEditOperation, checkDateFormat, getFormattedBarText, activeCellChanged, openSuccess, openFailure, sheetCreated, sheetsDestroyed, aggregateComputation, beforeSort, initiateSort, sortComplete, sortRangeAlert, initiatelink, beforeHyperlinkCreate, afterHyperlinkCreate, beforeHyperlinkClick, afterHyperlinkClick, addHyperlink, setLinkModel, beforeFilter, initiateFilter, filterComplete, filterRangeAlert, clearAllFilter, wrapEvent, onSave, insert, deleteAction, insertModel, deleteModel, isValidation, setValidation, addHighlight, dataValidate, findNext, findPrevious, goto, findWorkbookHandler, replaceHandler, replaceAllHandler, showDialog, findUndoRedo, findKeyUp, removeValidation, removeHighlight, queryCellInfo, count, findCount, protectSheetWorkBook, updateToggle, protectsheetHandler, replaceAllDialog, unprotectsheetHandler, workBookeditAlert, setLockCells, applyLockCells, setMerge, applyMerge, mergedRange, activeCellMergedRange, insertMerge, pasteMerge, setCFRule, cFInitialCheck, clearCFRule, initiateClearCFRule, cFRender, cFDelete, clear, clearCF, clearCells, checkIsFormula, isCellReference, isChar, toFraction, getGcd, intToDate, dateToInt, isDateTime, isNumber, toDate, workbookLocale, localeData, DataBind, WorkbookOpen, WorkbookSave, WorkbookFormula, WorkbookNumberFormat, getFormatFromType, getTypeFromFormat, WorkbookSort, WorkbookFilter, WorkbookCellFormat, WorkbookEdit, WorkbookHyperlink, WorkbookInsert, WorkbookDelete, WorkbookDataValidation, WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookMerge, WorkbookConditionalFormat, getRequiredModules, ribbon, formulaBar, sheetTabs, refreshSheetTabs, dataRefresh, initialLoad, contentLoaded, mouseDown, spreadsheetDestroyed, editOperation, formulaOperation, formulaBarOperation, click, keyUp, keyDown, formulaKeyUp, formulaBarUpdate, onVerticalScroll, onHorizontalScroll, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, contextMenuOpen, cellNavigate, mouseUpAfterSelection, selectionComplete, cMenuBeforeOpen, insertSheetTab, removeSheetTab, renameSheetTab, ribbonClick, refreshRibbon, enableToolbarItems, tabSwitch, selectRange, cut, copy, paste, clearCopy, dataBound, beforeDataBound, addContextMenuItems, removeContextMenuItems, enableContextMenuItems, enableFileMenuItems, hideFileMenuItems, addFileMenuItems, hideRibbonTabs, enableRibbonTabs, addRibbonTabs, addToolbarItems, hideToolbarItems, beforeRibbonCreate, rowHeightChanged, colWidthChanged, beforeHeaderLoaded, onContentScroll, deInitProperties, activeSheetChanged, renameSheet, initiateCustomSort, applySort, collaborativeUpdate, hideShow, autoFit, updateToggleItem, initiateHyperlink, editHyperlink, openHyperlink, removeHyperlink, createHyperlinkElement, sheetNameUpdate, hideSheet, performUndoRedo, updateUndoRedoCollection, setActionData, getBeforeActionData, clearUndoRedoCollection, initiateFilterUI, renderFilterCell, reapplyFilter, filterByCellValue, clearFilter, getFilteredColumn, completeAction, beginAction, filterCellKeyDown, getFilterRange, setAutoFit, refreshFormulaDatasource, setScrollEvent, initiateDataValidation, validationError, startEdit, invalidData, clearInvalid, protectSheet, applyProtect, unprotectSheet, protectCellFormat, gotoDlg, findDlg, findHandler, replace, created, editAlert, setUndoRedo, enableFormulaInput, protectSelection, hiddenMerge, checkPrevMerge, checkMerge, removeDataValidation, showAggregate, initiateConditionalFormat, checkConditionalFormat, setCF, clearViewer, getUpdateUsingRaf, removeAllChildren, getColGroupWidth, getScrollBarWidth, inView, getCellPosition, locateElem, setStyleAttribute$1 as setStyleAttribute, getStartEvent, getMoveEvent, getEndEvent, isTouchStart, isTouchMove, isTouchEnd, getClientX, getClientY, setAriaOptions, destroyComponent, setResize, setWidthAndHeight, findMaxValue, updateAction, hasTemplate, setRowEleHeight, getTextHeight, getTextWidth, getLines, setMaxHgt, getMaxHgt, skipHiddenIdx, BasicModule, AllModule, ScrollSettings, SelectionSettings, DISABLED, WRAPTEXT, locale, dialog, actionEvents, overlay, fontColor, fillColor, defaultLocale, Spreadsheet, Clipboard, Edit, Selection, Scroll, VirtualScroll, KeyboardNavigation, KeyboardShortcut, CellFormat, Resize, CollaborativeEditing, ShowHide, SpreadsheetHyperlink, UndoRedo, WrapText, Insert, Delete, DataValidation, ProtectSheet, FindAndReplace, Merge, ConditionalFormatting, Ribbon$$1 as Ribbon, FormulaBar, Formula, SheetTabs, Open, Save, ContextMenu$1 as ContextMenu, NumberFormat, Sort, Filter, Render, SheetRender, RowRenderer, CellRenderer, Calculate, FormulaError, FormulaInfo, CalcSheetFamilyItem, getAlphalabel, ValueChangedArgs, Parser, CalculateCommon, isUndefined$1 as isUndefined, getModules, getValue$1 as getValue, setValue, ModuleLoader, CommonErrors, FormulasErrorsStrings, BasicFormulas };
+export { Workbook, Range, UsedRange, Sheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, getSheetIndexByName, updateSelectedRange, getSelectedRange, getSheet, getSheetNameCount, getMaxSheetId, initSheet, getSheetName, Row, getRow, setRow, isHiddenRow, getRowHeight, setRowHeight, getRowsHeight, Column, getColumn, setColumn, getColumnWidth, getColumnsWidth, isHiddenCol, Cell, getCell, setCell, skipDefaultValue, wrap, getData, getModel, processIdx, clearRange, getRangeIndexes, getCellIndexes, getColIndex, getCellAddress, getRangeAddress, getColumnHeaderText, getIndexesFromAddress, getRangeFromAddress, getAddressFromSelectedRange, getAddressInfo, getSwapRange, isSingleCell, executeTaskAsync, WorkbookBasicModule, WorkbookAllModule, getWorkbookRequiredModules, CellStyle, DefineName, ProtectSettings, Hyperlink, Validation, Format, ConditionalFormat, workbookDestroyed, updateSheetFromDataSource, dataSourceChanged, workbookOpen, beginSave, saveCompleted, applyNumberFormatting, getFormattedCellObject, refreshCellElement, setCellFormat, findAllValues, textDecorationUpdate, applyCellFormat, updateUsedRange, workbookFormulaOperation, workbookEditOperation, checkDateFormat, getFormattedBarText, activeCellChanged, openSuccess, openFailure, sheetCreated, sheetsDestroyed, aggregateComputation, beforeSort, initiateSort, sortComplete, sortRangeAlert, initiatelink, beforeHyperlinkCreate, afterHyperlinkCreate, beforeHyperlinkClick, afterHyperlinkClick, addHyperlink, setLinkModel, beforeFilter, initiateFilter, filterComplete, filterRangeAlert, clearAllFilter, wrapEvent, onSave, insert, deleteAction, insertModel, deleteModel, isValidation, setValidation, addHighlight, dataValidate, findNext, findPrevious, goto, findWorkbookHandler, replaceHandler, replaceAllHandler, showDialog, findUndoRedo, findKeyUp, removeValidation, removeHighlight, queryCellInfo, count, findCount, protectSheetWorkBook, updateToggle, protectsheetHandler, replaceAllDialog, unprotectsheetHandler, workBookeditAlert, setLockCells, applyLockCells, setMerge, applyMerge, mergedRange, activeCellMergedRange, insertMerge, pasteMerge, setCFRule, cFInitialCheck, clearCFRule, initiateClearCFRule, cFRender, cFDelete, clear, clearCF, clearCells, checkIsFormula, isCellReference, isChar, toFraction, getGcd, intToDate, dateToInt, isDateTime, isNumber, toDate, workbookLocale, localeData, DataBind, WorkbookOpen, WorkbookSave, WorkbookFormula, WorkbookNumberFormat, getFormatFromType, getTypeFromFormat, WorkbookSort, WorkbookFilter, WorkbookCellFormat, WorkbookEdit, WorkbookHyperlink, WorkbookInsert, WorkbookDelete, WorkbookDataValidation, WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookMerge, WorkbookConditionalFormat, getRequiredModules, ribbon, formulaBar, sheetTabs, refreshSheetTabs, dataRefresh, initialLoad, contentLoaded, mouseDown, spreadsheetDestroyed, editOperation, formulaOperation, formulaBarOperation, click, keyUp, keyDown, formulaKeyUp, formulaBarUpdate, onVerticalScroll, onHorizontalScroll, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, contextMenuOpen, cellNavigate, mouseUpAfterSelection, selectionComplete, cMenuBeforeOpen, insertSheetTab, removeSheetTab, renameSheetTab, ribbonClick, refreshRibbon, enableToolbarItems, tabSwitch, selectRange, cut, copy, paste, clearCopy, dataBound, beforeDataBound, addContextMenuItems, removeContextMenuItems, enableContextMenuItems, enableFileMenuItems, hideFileMenuItems, addFileMenuItems, hideRibbonTabs, enableRibbonTabs, addRibbonTabs, addToolbarItems, hideToolbarItems, beforeRibbonCreate, rowHeightChanged, colWidthChanged, beforeHeaderLoaded, onContentScroll, deInitProperties, activeSheetChanged, renameSheet, initiateCustomSort, applySort, collaborativeUpdate, hideShow, autoFit, updateToggleItem, initiateHyperlink, editHyperlink, openHyperlink, removeHyperlink, createHyperlinkElement, sheetNameUpdate, hideSheet, performUndoRedo, updateUndoRedoCollection, setActionData, getBeforeActionData, clearUndoRedoCollection, initiateFilterUI, renderFilterCell, reapplyFilter, filterByCellValue, clearFilter, getFilteredColumn, completeAction, beginAction, filterCellKeyDown, getFilterRange, setAutoFit, refreshFormulaDatasource, setScrollEvent, initiateDataValidation, validationError, startEdit, invalidData, clearInvalid, protectSheet, applyProtect, unprotectSheet, protectCellFormat, gotoDlg, findDlg, findHandler, replace, created, editAlert, setUndoRedo, enableFormulaInput, protectSelection, hiddenMerge, checkPrevMerge, checkMerge, removeDataValidation, showAggregate, initiateConditionalFormat, checkConditionalFormat, setCF, clearViewer, getUpdateUsingRaf, removeAllChildren, getColGroupWidth, getScrollBarWidth, getSiblingsHeight, inView, getCellPosition, locateElem, setStyleAttribute$1 as setStyleAttribute, getStartEvent, getMoveEvent, getEndEvent, isTouchStart, isTouchMove, isTouchEnd, getClientX, getClientY, setAriaOptions, destroyComponent, setResize, setWidthAndHeight, findMaxValue, updateAction, hasTemplate, setRowEleHeight, getTextHeight, getTextWidth, getLines, setMaxHgt, getMaxHgt, skipHiddenIdx, BasicModule, AllModule, ScrollSettings, SelectionSettings, DISABLED, WRAPTEXT, locale, dialog, actionEvents, overlay, fontColor, fillColor, defaultLocale, Spreadsheet, Clipboard, Edit, Selection, Scroll, VirtualScroll, KeyboardNavigation, KeyboardShortcut, CellFormat, Resize, CollaborativeEditing, ShowHide, SpreadsheetHyperlink, UndoRedo, WrapText, Insert, Delete, DataValidation, ProtectSheet, FindAndReplace, Merge, ConditionalFormatting, Ribbon$$1 as Ribbon, FormulaBar, Formula, SheetTabs, Open, Save, ContextMenu$1 as ContextMenu, NumberFormat, Sort, Filter, Render, SheetRender, RowRenderer, CellRenderer, Calculate, FormulaError, FormulaInfo, CalcSheetFamilyItem, getAlphalabel, ValueChangedArgs, Parser, CalculateCommon, isUndefined$1 as isUndefined, getModules, getValue$1 as getValue, setValue, ModuleLoader, CommonErrors, FormulasErrorsStrings, BasicFormulas };
 //# sourceMappingURL=ej2-spreadsheet.es2015.js.map

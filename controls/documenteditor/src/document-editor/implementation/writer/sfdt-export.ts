@@ -404,6 +404,15 @@ export class SfdtExport {
             inline.imageString = element.imageString;
             inline.width = HelperMethods.convertPixelToPoint(element.width);
             inline.height = HelperMethods.convertPixelToPoint(element.height);
+            inline.iscrop = element.isCrop;
+            if (element.isCrop) {
+                inline.bottom = element.bottom;
+                inline.right = element.right;
+                inline.left = element.horizontalPosition;
+                inline.top = element.verticalPosition;
+                inline.getimagewidth = element.widthScale;
+                inline.getimageheight = element.heightScale;
+                }
         } else if (element instanceof BookmarkElementBox) {
             inline.bookmarkType = element.bookmarkType;
             inline.name = element.name;
@@ -1006,7 +1015,7 @@ export class SfdtExport {
         tableFormat.shading = this.writeShading(wTableFormat.shading);
         tableFormat.cellSpacing = wTableFormat.hasValue('cellSpacing') ? wTableFormat.cellSpacing : undefined;
         tableFormat.leftIndent = wTableFormat.hasValue('leftIndent') ? wTableFormat.leftIndent : undefined;
-        tableFormat.tableAlignment = wTableFormat.hasValue('tableAlignment"') ? wTableFormat.tableAlignment : undefined;
+        tableFormat.tableAlignment = wTableFormat.hasValue('tableAlignment') ? wTableFormat.tableAlignment : undefined;
         tableFormat.topMargin = wTableFormat.hasValue('topMargin') ? wTableFormat.topMargin : undefined;
         tableFormat.rightMargin = wTableFormat.hasValue('rightMargin') ? wTableFormat.rightMargin : undefined;
         tableFormat.leftMargin = wTableFormat.hasValue('leftMargin') ? wTableFormat.leftMargin : undefined;

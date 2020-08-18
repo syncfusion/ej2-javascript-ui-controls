@@ -57,7 +57,7 @@ describe('Dialog actions module', () => {
         it('Card double click event testing', () => {
             element1 = kanbanObj.element.querySelector('.e-card[data-id="5"]') as HTMLElement;
             util.triggerMouseEvent(element1, 'dblclick');
-            data = kanbanObj.getCardDetails(element1);
+            data = kanbanObj.getCardDetails(element1) as { [key: string]: Object };
             expect(kanbanObj.activeCardData.data).toBe(data);
             expect(kanbanObj.activeCardData.element).toBe(element1);
         });
@@ -123,7 +123,7 @@ describe('Dialog actions module', () => {
         });
         it('Update card testing - before editing', () => {
             element1 = kanbanObj.element.querySelector('.e-card[data-id="2"]') as HTMLElement;
-            data = kanbanObj.getCardDetails(element1);
+            data = kanbanObj.getCardDetails(element1) as { [key: string]: Object };
             columnKey = data[kanbanObj.keyField];
             expect(columnKey).toEqual('InProgress');
             if (!isDoubleClick) {
@@ -142,7 +142,7 @@ describe('Dialog actions module', () => {
         });
         it('Update card testing - after editing', (done: DoneFn) => {
             kanbanObj.dataBound = () => {
-                data = kanbanObj.getCardDetails(element1);
+                data = kanbanObj.getCardDetails(element1) as { [key: string]: Object };
                 columnKey = data[kanbanObj.keyField];
                 expect(columnKey).toEqual('Open');
                 done();
@@ -152,7 +152,7 @@ describe('Dialog actions module', () => {
         });
         it('Delete the card testing - before open dialog', () => {
             element2 = kanbanObj.element.querySelector('.e-card[data-id="6"]') as HTMLElement;
-            data = kanbanObj.getCardDetails(element2);
+            data = kanbanObj.getCardDetails(element2) as { [key: string]: Object };
             columnKey = data[kanbanObj.keyField];
             expect(columnKey).toEqual('Close');
             expect(data).not.toBeNull();
@@ -165,7 +165,7 @@ describe('Dialog actions module', () => {
 
         it('Delete the card testing - press the delete button', (done: DoneFn) => {
             kanbanObj.dataBound = () => {
-                data = kanbanObj.getCardDetails(element2);
+                data = kanbanObj.getCardDetails(element2) as { [key: string]: Object };
                 expect(data).toBeUndefined();
                 done();
             };
@@ -214,7 +214,7 @@ describe('Dialog actions module', () => {
             expect(kanbanObj.kanbanData.length).toBe(76);
             kanbanObj.dataBound = () => {
                 let element: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="2"]') as HTMLElement;
-                let data: { [key: string]: Object } = kanbanObj.getCardDetails(element);
+                let data: { [key: string]: Object } = kanbanObj.getCardDetails(element) as { [key: string]: Object };
                 let status: Object = data[kanbanObj.keyField];
                 expect(status).toBe('Close');
                 done();
@@ -262,7 +262,7 @@ describe('Dialog actions module', () => {
         it('openEditor update method testing', (done: DoneFn) => {
             kanbanObj.dataBound = () => {
                 let element: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="6"]') as HTMLElement;
-                let data: { [key: string]: Object } = kanbanObj.getCardDetails(element);
+                let data: { [key: string]: Object } = kanbanObj.getCardDetails(element) as { [key: string]: Object };
                 let status: Object = data[kanbanObj.keyField];
                 expect(status).toBe('Open');
                 done();

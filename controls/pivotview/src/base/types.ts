@@ -358,7 +358,18 @@ export type ProviderType =
  * * CSV: Defines CSV or string[][] type of data source.
  */
 export type DataSourceType =
-/** Defines JSON type of data source */
-'JSON' |
-/** Defines CSV or string[][] type of data source */
-'CSV';
+    /** Defines JSON type of data source */
+    'JSON' |
+    /** Defines CSV or string[][] type of data source */
+    'CSV';
+
+/**
+ * Allows to set the mode of rendering the pivot table. They are,
+ * * Local: Defines the data source in client side and the aggregation done in the same.
+ * * Server: Defines the data source in server side (WebAPI) and the aggregation done in the same. Only the rendering part alone done in client side.
+ */
+export type RenderMode =
+    /** Defines the data source in client side and the aggregation done in the same */
+    'Local' |
+    /** Defines the data source in server side (WebAPI) and the aggregation done in the same */
+    'Server';

@@ -519,6 +519,30 @@ export class ConditionalFormatting {
 
         if (typeof colours[colour.toLowerCase()] !== 'undefined') {
             return colours[colour.toLowerCase()];
+        } else if (colour.search('rgba') === 0) {
+            let value: string[] = colour.substr(5).split(')')[0].split(',');
+            let rgb: string = '';
+            let a: string = '';
+            for (let i: number = 0; i < value.length - 1; i++) {
+                value[i] = (+value[i]).toString(16);
+                if (value[i].length === 1) {
+                    value[i] = '0' + value[i];
+                }
+                rgb = rgb + value[i];
+            }
+            a = (Math.round(+value[3] * 255)).toString(16);
+            return '#' + rgb + a;
+        } else if (colour.search('rgb') === 0) {
+            let value: string[] = colour.substr(4).split(')')[0].split(',');
+            let rgb: string = '';
+            for (let i: number = 0; i < value.length; i++) {
+                value[i] = (+value[i]).toString(16);
+                if (value[i].length === 1) {
+                    value[i] = '0' + value[i];
+                }
+                rgb = rgb + value[i];
+            }
+            return '#' + rgb;
         }
         return '#d5d5d5';
     }

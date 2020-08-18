@@ -303,4 +303,18 @@ describe('Insert table', () => {
         editor.editorHistory.redo();
         expect(editor.selection.start.paragraph.associatedCell.cellFormat.cellWidth).toBeGreaterThan(0);
     });
+    it('Apply restart list clone validation', () => {
+        editor.openBlank();
+        editor.editor.insertText('Sample');
+        editor.editor.onEnter();
+        editor.editor.insertText('Sample');
+        editor.editor.onEnter();
+        editor.editor.insertText('Sample');
+        editor.selection.selectAll();
+        editor.editor.applyNumbering('.%1', 'Arabic');
+        editor.selection.handleUpKey();
+        editor.selection.handleDownKey();
+        editor.editor.applyRestartNumbering(editor.selection);
+        expect((((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as ListTextElementBox).listLevel.paragraphFormat.listFormat as any).uniqueListFormat)).toBe(undefined);
+    });
 });

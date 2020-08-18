@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 18.2.54 (2020-08-18)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#285793`  - The issue with "Bring to front does not work for group node" has been fixed.
+- `#F156309` - The issue with "Exception occurs when try to do nudge in the diagram" has been fixed.
+- `#286692`  - The issue with "Node does not resize properly when created using the stack, container and text elements" has been fixed.
+- `#286458` - The issue with "Node ports are gets ignored" has been fixed.
+- `#286174`  - The issue with "Send to back not working after refresh the diagram using refresh() method" has been fixed.
+- `#286611`  - The issue with "Size changed event does not get triggered when resizing with south, east, south east pin" has been fixed.
+- `#246813`  - The issue with "To notify right/left button clicked in diagram click event" Has been fixed.
+- `#286418`  - The issue with "When run the individual swimlane sample in angular 9 , throws build issue"  has been fixed.
+- `#288057` - The issue with "Diagram selection do not update properly" has been fixed.
+
 ## 18.2.48 (2020-08-04)
 
 ### Diagram
@@ -16,6 +32,7 @@
 - `#283092` - The issue of "Exception throws when try to append a new diagram at run time In IE11" has been fixed.
 - `#281759` - The issue of "SVG node do not gets visible in diagram" has been fixed.
 - `#284823` - The issue of "DataLoaded event do not gets trigger after data loaded" has been fixed.
+- `#285793`  - The issue with "Bring to front does not work for group node" has been fixed.
 
 ## 18.2.46 (2020-07-21)
 

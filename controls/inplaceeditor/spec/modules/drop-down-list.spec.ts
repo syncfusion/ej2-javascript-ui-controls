@@ -6,7 +6,7 @@ import { DataManager, Query, ODataV4Adaptor } from '@syncfusion/ej2-data';
 import * as classes from '../../src/inplace-editor/base/classes';
 import { renderEditor, destroy } from './../render.spec';
 import { profile, inMB, getMemoryProfile } from './../common.spec';
-import { BeginEditEventArgs } from '../../src/inplace-editor/base/index';
+import { BeginEditEventArgs, ChangeEventArgs } from '../../src/inplace-editor/base/index';
 
 describe('DropDownList Control', () => {
     beforeAll(() => {
@@ -1027,6 +1027,143 @@ describe('DropDownList Control', () => {
                 expect((select('.' + classes.VALUE_WRAPPER + ' .' + classes.VALUE, editorObj.element) as HTMLElement).innerText).toEqual('12000');
                 done();
             }, 400);
+        });
+    });
+
+    describe('BLAZ-4764 - New change event testing', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let changeArgs: any = {};
+        afterEach((): void => {
+            destroy(editorObj);
+            changeArgs = {};
+        });
+        it('Without Fields & without initial value - Check changed value', (done) => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                type: 'DropDownList',
+                model: {
+                    dataSource: ['Badminton', 'Cricket']
+                },
+                change: function (e: ChangeEventArgs) {
+                    changeArgs = e;
+                }
+            });
+            ele = editorObj.element;
+            valueEle = <HTMLElement>select('.' + classes.VALUE, ele);
+            valueEle.click();
+            setTimeout(() => {
+                expect(editorObj.value).toEqual(null);
+                editorObj.componentObj.value = "Badminton";
+                (ele.querySelector('.e-editable-component') as HTMLElement).click();
+                setTimeout(() => {
+                    expect(changeArgs['name']).toEqual('change');
+                    expect(changeArgs['previousValue']).toEqual(null);
+                    expect(changeArgs['value']).toEqual('Badminton');
+                    expect(changeArgs['previousItemData']).toEqual(null);
+                    expect(changeArgs['itemData']).toEqual({value: "Badminton", text: "Badminton"});
+                    done();
+                }, 1000);
+            }, 1500);
+        });
+        it('Without Fields - Check changed value', (done) => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                type: 'DropDownList',
+                value: 'Cricket',
+                model: {
+                    dataSource: ['Badminton', 'Cricket']
+                },
+                change: function (e: ChangeEventArgs) {
+                    changeArgs = e;
+                }
+            });
+            ele = editorObj.element;
+            valueEle = <HTMLElement>select('.' + classes.VALUE, ele);
+            valueEle.click();
+            setTimeout(() => {
+                expect(editorObj.value).toEqual('Cricket');
+                editorObj.componentObj.value = "Badminton";
+                (ele.querySelector('.e-editable-component') as HTMLElement).click();
+                setTimeout(() => {
+                    expect(changeArgs['name']).toEqual('change');
+                    expect(changeArgs['previousValue']).toEqual('Cricket');
+                    expect(changeArgs['value']).toEqual('Badminton');
+                    expect(changeArgs['previousItemData']).toEqual({value: "Cricket", text: "Cricket"});
+                    expect(changeArgs['itemData']).toEqual({value: "Badminton", text: "Badminton"});
+                    done();
+                }, 1000);
+            }, 1500);
+        });
+        it('With Fields & without initail value - Check changed value', (done) => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                type: 'DropDownList',
+                model: {
+                    dataSource: [
+                        { Id: 'game1', Game: 'Badminton' },
+                        { Id: 'game2', Game: 'Basketball' },
+                        { Id: 'game3', Game: 'Cricket' },
+                        { Id: 'game4', Game: 'Football' },
+                    ],
+                    fields: { text: 'Game', value: 'Id' },
+                },
+                change: function (e: ChangeEventArgs) {
+                    changeArgs = e;
+                }
+            });
+            ele = editorObj.element;
+            valueEle = <HTMLElement>select('.' + classes.VALUE, ele);
+            valueEle.click();
+            setTimeout(() => {
+                expect(editorObj.value).toEqual(null);
+                editorObj.componentObj.value = "game1";
+                (ele.querySelector('.e-editable-component') as HTMLElement).click();
+                setTimeout(() => {
+                    expect(changeArgs['name']).toEqual('change');
+                    expect(changeArgs['previousValue']).toEqual(null);
+                    expect(changeArgs['value']).toEqual('game1');
+                    expect(changeArgs['previousItemData']).toEqual(null);
+                    expect(changeArgs['itemData']).toEqual({Id: "game1", Game: "Badminton"});
+                    done();
+                }, 1000);
+            }, 1500);
+        });
+        it('With Fields - Check changed value', (done) => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                type: 'DropDownList',
+                value: 'game3',
+                model: {
+                    dataSource: [
+                        { Id: 'game1', Game: 'Badminton' },
+                        { Id: 'game2', Game: 'Basketball' },
+                        { Id: 'game3', Game: 'Cricket' },
+                        { Id: 'game4', Game: 'Football' },
+                    ],
+                    fields: { text: 'Game', value: 'Id' },
+                },
+                change: function (e: ChangeEventArgs) {
+                    changeArgs = e;
+                }
+            });
+            ele = editorObj.element;
+            valueEle = <HTMLElement>select('.' + classes.VALUE, ele);
+            valueEle.click();
+            setTimeout(() => {
+                expect(editorObj.value).toEqual('game3');
+                editorObj.componentObj.value = "game1";
+                (ele.querySelector('.e-editable-component') as HTMLElement).click();
+                setTimeout(() => {
+                    expect(changeArgs['name']).toEqual('change');
+                    expect(changeArgs['previousValue']).toEqual('game3');
+                    expect(changeArgs['value']).toEqual('game1');
+                    expect(changeArgs['previousItemData']).toEqual({Id: "game3", Game: "Cricket"});
+                    expect(changeArgs['itemData']).toEqual({Id: "game1", Game: "Badminton"});
+                    done();
+                }, 1000);
+            }, 1500);
         });
     });
 

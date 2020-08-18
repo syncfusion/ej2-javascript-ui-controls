@@ -40,6 +40,7 @@ export class Resize {
             e.preventDefault();
         }
         this.wireResizeEvents();
+        this.parent.notify(events.resizeInitialized, {});
         let args: ResizeArgs = isBlazor() ? { requestType: 'editor' } : { event: e, requestType: 'editor' };
         this.parent.trigger(events.resizeStart, args, (resizeStartArgs: ResizeArgs) => {
             if (resizeStartArgs.cancel) {

@@ -22,10 +22,10 @@ let nodes: NodeModel[] = [
         id: 'swimlane',
         shape: {
             type: 'SwimLane',
+            orientation: 'Horizontal',
             header: {
                 annotation: { content: 'ONLINE PURCHASE STATUS' },
                 height: 50, style: { fill: darkColor, fontSize: 11 },
-                orientation: 'Horizontal',
             },
             lanes: [
                 {
@@ -132,12 +132,12 @@ let nodes: NodeModel[] = [
                 {
                     id: 'phase1', offset: 170,
                     style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#606060' },
-                    header: { content: { content: 'Phase' } }
+                    header: { annotation: { content: 'Phase' } }
                 },
                 {
                     id: 'phase2', offset: 450,
                     style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#606060' },
-                    header: { content: { content: 'Phase' } }
+                    header: { annotation: { content: 'Phase' } }
                 },
             ],
             phaseSize: 20,

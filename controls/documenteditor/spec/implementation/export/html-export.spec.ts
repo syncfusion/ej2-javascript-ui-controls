@@ -1,6 +1,6 @@
 import { DocumentEditor } from '../../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
-import { Editor, TextPosition, SfdtExport, HtmlExport, HelperMethods } from '../../../src/index';
+import { Editor, TextPosition, SfdtExport, HtmlExport, HelperMethods, TableWidget } from '../../../src/index';
 import { TestHelper } from '../../test-helper.spec';
 import { Selection } from '../../../src/index';
 
@@ -165,5 +165,13 @@ describe('Copy html tag', () => {
         editor.editorModule.copiedData = JSON.stringify(documentContent);
         let html: string = editor.selection.htmlWriter.writeHtml(documentContent);
         expect(html.indexOf('&lt;html&gt;')).not.toBe(-1);
+    });
+    it('table with left indent copy validation', () => {
+        editor.openBlank();
+        editor.editor.insertTable(2,2);
+        let table: TableWidget = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as any;
+        table.tableFormat.leftIndent = 1;
+        editor.selection.selectAll();
+        expect(() => { editor.selection.copy(); }).not.toThrowError();
     });
 });

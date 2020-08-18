@@ -1179,7 +1179,7 @@ export class WordExport {
         if (item.hasOwnProperty('revisionIds')) {
             //skip revision end for field begin as we combine to end with field code text
             if (item.hasOwnProperty('fieldType') && item.fieldType === 0) {
-              return;
+                return;
             }
             //skip revision end for field result text as we need to only on field end.
             // tslint:disable-next-line:max-line-length
@@ -1188,7 +1188,7 @@ export class WordExport {
             }
             for (let i: number = 0; i < item.revisionIds.length; i++) {
                 let revision: Revision = this.retrieveRevision(item.revisionIds[i]);
-                 // tslint:disable-next-line:max-line-length
+                // tslint:disable-next-line:max-line-length
                 if (revision.revisionType === 'Insertion' || revision.revisionType === 'Deletion') {
                     writer.writeEndElement();
                 }
@@ -2959,8 +2959,18 @@ export class WordExport {
 
         //End Element Blip
         writer.writeEndElement();
-        writer.writeStartElement('a', 'srcRect', this.aNamespace);
-        writer.writeEndElement();
+        if (picture.iscrop) {
+            writer.writeStartElement('a', 'srcRect', this.aNamespace);
+            let l: number = Math.round(picture.left * 1000);
+            writer.writeAttributeString(undefined, 'l', undefined, l.toString());
+            let t: number = Math.round(picture.top * 1000);
+            writer.writeAttributeString(undefined, 't', undefined, t.toString());
+            let r: number = Math.round(picture.right * 1000);
+            writer.writeAttributeString(undefined, 'r', undefined, r.toString());
+            let b: number = Math.round(picture.bottom * 1000);
+            writer.writeAttributeString(undefined, 'b', undefined, b.toString());
+            writer.writeEndElement();
+        }
         writer.writeStartElement('a', 'stretch', this.aNamespace);
         writer.writeStartElement('a', 'fillRect', this.aNamespace);
         writer.writeEndElement();
@@ -4022,7 +4032,7 @@ export class WordExport {
             let isField: boolean = !isNullOrUndefined(previousNode)
                 && previousNode.hasOwnProperty('fieldType') && previousNode.fieldType !== 2;
             let localName: string = isField ? isDeleteText ? 'delInstrText' : 'instrText' : isDeleteText ? 'delText' : 't';
-            writer.writeStartElement(undefined, localName , this.wNamespace);
+            writer.writeStartElement(undefined, localName, this.wNamespace);
             writer.writeAttributeString('xml', 'space', this.xmlNamespace, 'preserve');
             writer.writeString(span.text);
             writer.writeEndElement();
@@ -4032,14 +4042,14 @@ export class WordExport {
     }
     private retrieveDeleteRevision(span: any): boolean {
         if (span.hasOwnProperty('revisionIds')) {
-        if (span.revisionIds.length > 0) {
-            for (let i : number = 0; i < span.revisionIds.length; i++) {
-               if (this.retrieveRevision(span.revisionIds[i]).revisionType === 'Deletion') {
-                   return true;
-               }
+            if (span.revisionIds.length > 0) {
+                for (let i: number = 0; i < span.revisionIds.length; i++) {
+                    if (this.retrieveRevision(span.revisionIds[i]).revisionType === 'Deletion') {
+                        return true;
+                    }
+                }
             }
         }
-    }
         return false;
     }
     // Serializes the paragraph format
@@ -4537,7 +4547,11 @@ export class WordExport {
         }
         if (!isNullOrUndefined(characterFormat.fontColor)) {
             writer.writeStartElement(undefined, 'color', this.wNamespace);
-            writer.writeAttributeString('w', 'val', this.wNamespace, this.getColor(characterFormat.fontColor));
+            if (characterFormat.fontColor === 'empty') {
+                writer.writeAttributeString('w', 'val', this.wNamespace, 'auto');
+            } else {
+                writer.writeAttributeString('w', 'val', this.wNamespace, this.getColor(characterFormat.fontColor));
+            }
             writer.writeEndElement();
         }
         if (!isNullOrUndefined(characterFormat.fontSize)) {

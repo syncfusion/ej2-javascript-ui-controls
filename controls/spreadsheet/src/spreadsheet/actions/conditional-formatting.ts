@@ -258,42 +258,43 @@ export class ConditionalFormatting {
     }
 
     private getType(action: string): string {
+        let l10n: L10n = this.parent.serviceLocator.getService(locale);
         let result: string = '';
         switch (action) {
-            case 'Greater Than...':
+            case l10n.getConstant('GreaterThan') + '...':
                 result = 'GreaterThan';
                 break;
-            case 'Less Than...':
+            case l10n.getConstant('LessThan') + '...':
                 result = 'LessThan';
                 break;
-            case 'Between...':
+            case l10n.getConstant('Between') + '...':
                 result = 'Between';
                 break;
-            case 'Equal To...':
+            case l10n.getConstant('CFEqualTo') + '...':
                 result = 'EqualTo';
                 break;
-            case 'Text that Contains...':
+            case l10n.getConstant('TextThatContains') + '...':
                 result = 'ContainsText';
                 break;
-            case 'A Date Occuring...':
+            case l10n.getConstant('ADateOccuring') + '...':
                 result = 'DateOccur';
                 break;
-            case 'Top 10 Items...':
+            case l10n.getConstant('Top10Items') + '...':
                 result = 'Top10Items';
                 break;
-            case 'Bottom 10 Items...':
+            case l10n.getConstant('Bottom10Items') + '...':
                 result = 'Bottom10Items';
                 break;
-            case 'Top 10 %...':
+            case l10n.getConstant('Top10') + ' %...':
                 result = 'Top10Percentage';
                 break;
-            case 'Bottom 10 %...':
+            case l10n.getConstant('Bottom10') + ' %...':
                 result = 'Bottom10Percentage';
                 break;
-            case 'Above Average...':
+            case l10n.getConstant('AboveAverage') + '...':
                 result = 'AboveAverage';
                 break;
-            case 'Below Average...':
+            case l10n.getConstant('BelowAverage') + '...':
                 result = 'BelowAverage';
                 break;
         }
@@ -301,21 +302,22 @@ export class ConditionalFormatting {
     }
 
     private getCFColor(value: string): string {
+        let l10n: L10n = this.parent.serviceLocator.getService(locale);
         let result: string = 'RedFT';
         switch (value) {
-            case 'Light Red Fill with Dark Red Text':
+            case l10n.getConstant('LightRedFillWithDarkRedText'):
                 result = 'RedFT';
                 break;
-            case 'Yellow Fill with Dark Yellow Text':
+            case l10n.getConstant('YellowFillWithDarkYellowText'):
                 result = 'YellowFT';
                 break;
-            case 'Green Fill with Dark Green Text':
+            case l10n.getConstant('GreenFillWithDarkGreenText'):
                 result = 'GreenFT';
                 break;
-            case 'Red Fill':
+            case l10n.getConstant('RedFill'):
                 result = 'RedF';
                 break;
-            case 'Red Text':
+            case l10n.getConstant('RedText'):
                 result = 'RedT';
                 break;
         }
@@ -340,11 +342,11 @@ export class ConditionalFormatting {
         dlgContent.appendChild(subDiv);
 
         mainDiv.appendChild(value1Text);
-        if (action !== 'Duplicate Values...') {
-            if (action !== 'Above Average...' && action !== 'Below Average...') {
+        if (action !== l10n.getConstant('DuplicateValues') + '...') {
+            if (action !== l10n.getConstant('AboveAverage') + '...' && action !== l10n.getConstant('BelowAverage') + '...') {
                 mainDiv.appendChild(value1Inp);
-                if (action === 'Top 10 Items...' || action === 'Top 10 %...' ||
-                    action === 'Bottom 10 Items...' || action === 'Bottom 10 %...') {
+                if (action === l10n.getConstant('Top10Items') + '...' || action === l10n.getConstant('Top10') + ' %...' ||
+                    action === l10n.getConstant('Bottom10Items') + '...' || action === l10n.getConstant('Bottom10') + ' %...') {
                     let numeric: NumericTextBox = new NumericTextBox({
                         value: 10
                     });
@@ -354,8 +356,8 @@ export class ConditionalFormatting {
         } else {
             mainDiv.appendChild(duplicateSelectEle);
             let dupData: { [key: string]: Object }[] = [
-                { text: 'Duplicate', id: 'duplicate' },
-                { text: 'Unique', id: 'unique' },
+                { text: l10n.getConstant('Duplicate'), id: 'duplicate' },
+                { text: l10n.getConstant('Unique'), id: 'unique' },
             ];
             let dupList: DropDownList = new DropDownList({
                 dataSource: dupData,
@@ -364,8 +366,9 @@ export class ConditionalFormatting {
             });
             dupList.appendTo(duplicateSelectEle);
         }
-        if (action === 'Between...') {
-            let value2Text: HTMLElement = this.parent.createElement('span', { className: 'e-header e-header-2', innerHTML: 'and' });
+        if (action === l10n.getConstant('Between') + '...') {
+            let value2Text: HTMLElement = this.parent.createElement(
+                'span', { className: 'e-header e-header-2', innerHTML: l10n.getConstant('And') });
             let value2Inp: HTMLElement = this.parent.createElement('input', { className: 'e-input' });
             mainDiv.appendChild(value2Text);
             mainDiv.appendChild(value2Inp);
@@ -374,11 +377,11 @@ export class ConditionalFormatting {
         subDiv.appendChild(colorSelectEle);
 
         let colorData: { [key: string]: Object }[] = [
-            { text: 'Light Red Fill with Dark Red Text', value: 'redft', id: 'redft' },
-            { text: 'Yellow Fill with Dark Yellow Text', id: 'yellowft' },
-            { text: 'Green Fill with Dark Green Text', id: 'greenft' },
-            { text: 'Red Fill', id: 'redf' },
-            { text: 'Red Text', id: 'redt' },
+            { text: l10n.getConstant('LightRedFillWithDarkRedText'), value: 'redft', id: 'redft' },
+            { text: l10n.getConstant('YellowFillWithDarkYellowText'), id: 'yellowft' },
+            { text: l10n.getConstant('GreenFillWithDarkGreenText'), id: 'greenft' },
+            { text: l10n.getConstant('RedFill'), id: 'redf' },
+            { text: l10n.getConstant('RedText'), id: 'redt' },
         ];
         let colorList: DropDownList = new DropDownList({
             dataSource: colorData,
@@ -421,10 +424,10 @@ export class ConditionalFormatting {
                 result = l10n.getConstant('FormatCellsEqualTo');
                 break;
             case l10n.getConstant('TextThatContains') + '...':
-                result = l10n.getConstant('FormatCellsText');
+                result = l10n.getConstant('FormatCellsThatContainTheText');
                 break;
             case l10n.getConstant('ADateOccuring') + '...':
-                result = l10n.getConstant('FormatCellsDate');
+                result = l10n.getConstant('FormatCellsThatContainADateOccurring');
                 break;
             case l10n.getConstant('DuplicateValues') + '...':
                 result = l10n.getConstant('FormatCellsDuplicate');

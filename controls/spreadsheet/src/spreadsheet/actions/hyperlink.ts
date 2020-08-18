@@ -605,11 +605,11 @@ export class SpreadsheetHyperlink {
             selectedItem: selIdx,
             items: [
                 {
-                    header: { 'text': 'WEB PAGE' },
+                    header: { 'text': l10n.getConstant('WebPage') },
                     content: webContElem
                 },
                 {
-                    header: { 'text': 'THIS DOCUMENT' },
+                    header: { 'text': l10n.getConstant('ThisDocument') },
                     content: docContElem
                 },
             ]
@@ -622,8 +622,8 @@ export class SpreadsheetHyperlink {
         }
         let textCont: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
         let urlCont: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
-        let textH: HTMLElement = this.parent.createElement('div', { className: 'e-header', innerHTML: 'Display Text' });
-        let urlH: HTMLElement = this.parent.createElement('div', { className: 'e-header', innerHTML: 'URL' });
+        let textH: HTMLElement = this.parent.createElement('div', { className: 'e-header', innerHTML: l10n.getConstant('DisplayText') });
+        let urlH: HTMLElement = this.parent.createElement('div', { className: 'e-header', innerHTML: l10n.getConstant('Url') });
         let textInput: HTMLElement = this.parent.createElement('input', { className: 'e-input e-text', attrs: { 'type': 'Text' }, });
         if (!isEnable) {
             textInput.classList.add('e-disabled');
@@ -634,8 +634,8 @@ export class SpreadsheetHyperlink {
             textInput.setAttribute('value', this.parent.getDisplayText(cell));
         }
         let urlInput: HTMLElement = this.parent.createElement('input', { className: 'e-input e-text', attrs: { 'type': 'Text' } });
-        textInput.setAttribute('placeholder', 'Enter the text to display');
-        urlInput.setAttribute('placeholder', 'Enter the URL');
+        textInput.setAttribute('placeholder', l10n.getConstant('EnterTheTextToDisplay'));
+        urlInput.setAttribute('placeholder', l10n.getConstant('EnterTheUrl'));
         textCont.appendChild(textInput);
         textCont.insertBefore(textH, textInput);
         urlCont.appendChild(urlInput);
@@ -668,11 +668,11 @@ export class SpreadsheetHyperlink {
         }
         let data: { [key: string]: Object }[] = [
             {
-                nodeId: '01', nodeText: 'Cell Reference', expanded: isCellRef,
+                nodeId: '01', nodeText: l10n.getConstant('CellReference'), expanded: isCellRef,
                 nodeChild: cellRef
             },
             {
-                nodeId: '02', nodeText: 'Defined Names', expanded: isDefinedName,
+                nodeId: '02', nodeText: l10n.getConstant('DefinedNames'), expanded: isDefinedName,
                 nodeChild: definedName
             },
         ];
@@ -680,7 +680,8 @@ export class SpreadsheetHyperlink {
             fields: { dataSource: data, id: 'nodeId', text: 'nodeText', child: 'nodeChild' }
         });
         let cellrefCont: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
-        let cellrefH: HTMLElement = this.parent.createElement('div', { className: 'e-header', innerHTML: 'Cell Reference' });
+        let cellrefH: HTMLElement = this.parent.createElement(
+            'div', { className: 'e-header', innerHTML: l10n.getConstant('CellReference') });
         let cellrefInput: HTMLElement = this.parent.createElement('input', {
             className: 'e-input e-text e-hyp-text',
             attrs: { 'type': 'Text' }
@@ -689,7 +690,7 @@ export class SpreadsheetHyperlink {
         cellrefCont.appendChild(cellrefInput);
         cellrefCont.insertBefore(cellrefH, cellrefInput);
         let textCont1: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
-        let textH1: HTMLElement = this.parent.createElement('div', { className: 'e-header', innerHTML: 'Display Text' });
+        let textH1: HTMLElement = this.parent.createElement('div', { className: 'e-header', innerHTML: l10n.getConstant('DisplayText') });
         let textInput1: HTMLElement = this.parent.createElement('input', { className: 'e-input e-text', attrs: { 'type': 'Text' } });
         if (!isEnable) {
             textInput1.classList.add('e-disabled');
@@ -699,11 +700,11 @@ export class SpreadsheetHyperlink {
         if (cell && isNullOrUndefined(cell.hyperlink)) {
             textInput1.setAttribute('value', this.parent.getDisplayText(cell));
         }
-        textInput1.setAttribute('placeholder', 'Enter the text to display');
+        textInput1.setAttribute('placeholder', l10n.getConstant('EnterTheTextToDisplay'));
         textCont1.appendChild(textInput1);
         textCont1.insertBefore(textH1, textInput1);
         let sheetCont: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
-        let sheetH: HTMLElement = this.parent.createElement('div', { className: 'e-header', innerHTML: 'Sheet' });
+        let sheetH: HTMLElement = this.parent.createElement('div', { className: 'e-header', innerHTML: l10n.getConstant('Sheet') });
         let refCont: HTMLElement = this.parent.createElement('div', { className: 'e-refcont' });
         sheetCont.appendChild(refCont);
         sheetCont.insertBefore(sheetH, refCont);

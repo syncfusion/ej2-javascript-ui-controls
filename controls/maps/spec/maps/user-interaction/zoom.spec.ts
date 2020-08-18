@@ -1103,7 +1103,7 @@ describe('Zoom feature tesing for map control', () => {
             map.loaded = (args: ILoadedEventArgs) => {
                 let element: Element = document.getElementById('container_tile_parent');
                 expect(element.getAttribute('style')).toBe(
-                    'position: absolute; left: 18px; top: 18px; height: 492px; width: 492px; overflow: hidden;');
+                    'position: absolute; left: 18px; right: 10px; top: 18px; height: 492px; width: 492px; overflow: hidden;');
             };
             map.zoomToCoordinates(19.1555762, 13.4107368, 52.4643089, 72.8849595);
         });
@@ -1908,7 +1908,8 @@ describe('Zoom feature tesing for map control', () => {
         it('Checking with Zoom using public methode', () => {
             map.loaded = (args: ILoadedEventArgs) => {
                 let element: Element = document.getElementById("container_tile_parent");
-                expect(element.getAttribute("style")).toBe("position: absolute; left: 18px; top: 37px; height: 473px; width: 492px; overflow: hidden;");
+                expect(element.getAttribute("style"))
+                .toBe("position: absolute; left: 18px; right: 10px; top: 37px; height: 473px; width: 492px; overflow: hidden;");
             };
             map.zoomToCoordinates(19.1555762, 13.4107368, 52.4643089, 72.8849595);
         });

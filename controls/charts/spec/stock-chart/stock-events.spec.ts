@@ -135,6 +135,24 @@ describe('default stock chart', () => {
         stockchart.refresh();
     });
 
+    it('checking with stock event for particular series', (done: Function) => {
+        stockchart.loaded = () => {
+            element = getElement('stockEvents_Series_0_StockEvents_0_Shape');
+           expect(element.getAttribute('fill')).toBe('black');
+           expect(element.getAttribute('stroke')).toBe('red');
+           done();
+        };
+        stockchart.series[0].dataSource = chartData;
+        stockchart.series[0].type = 'Line';
+        stockchart.stockEvents = [
+            { date: new Date('2017-01-07'), placeAt: 'y', text: 'A', description: 'This is event description', type: 'Triangle',
+             textStyle: { color: 'white'}, seriesIndexes: [0], background: 'black', border: { color: 'red'} },
+            { date: new Date(2017, 1, 2), text: 'C', placeAt: 'y', description: 'Add longer text',
+             seriesIndexes: [0], type: 'InvertedTriangle'}
+        ];
+        stockchart.refresh();
+    });
+
     it('checking with stock event render', (done: Function) => {
         stockchart.loaded = () => {
             element = getElement(chartElement.id + '_StockEvents');

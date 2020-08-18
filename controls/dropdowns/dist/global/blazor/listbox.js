@@ -2320,6 +2320,7 @@ var CheckBoxSelection = /** @class */ (function () {
         this.activeLi = [];
         this.activeEle = [];
         this.parent = parent;
+        this.removeEventListener();
         this.addEventListener();
     }
     CheckBoxSelection.prototype.getModuleName = function () {

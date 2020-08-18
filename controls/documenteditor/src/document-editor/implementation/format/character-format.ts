@@ -312,7 +312,7 @@ export class WCharacterFormat {
                 value = 'NoColor';
                 break;
             case 'fontColor':
-                value = '#000000';
+                value = 'empty';
                 break;
             case 'fontFamily':
                 value = 'Calibri';

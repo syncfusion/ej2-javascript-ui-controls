@@ -1,7 +1,7 @@
 /**
  * InPlace-Editor spec document
  */
-import { isNullOrUndefined as isNOU, select, selectAll, createElement, Browser } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, select, selectAll, createElement, Browser, detach } from '@syncfusion/ej2-base';
 import { InPlaceEditor, BeforeSanitizeHtmlArgs } from '../../src/inplace-editor/base/index';
 import * as classes from '../../src/inplace-editor/base/classes';
 import { renderEditor, destroy, triggerKeyBoardEvent, safariMobileUA } from './../render.spec';
@@ -117,7 +117,11 @@ describe('InPlace-Editor Control', () => {
             expect(editorObj.enableEditMode).toEqual(true);
             expect(editorObj.submitOnEnter).toEqual(false);
             expect(editorObj.popupSettings.title).toEqual('Test');
-            expect(editorObj.model).toEqual({ cssClass: "e-editable-elements", enableRtl: true, locale: "en-US", value: 'MyText', showClearButton: true });
+            expect(editorObj.model.cssClass).toEqual("e-editable-elements");
+            expect(editorObj.model.enableRtl).toEqual(true);
+            expect(editorObj.model.locale).toEqual("en-US");
+            expect(editorObj.model.value).toEqual('MyText');
+            expect((editorObj.model as any).showClearButton).toEqual(true);
             expect(editorObj.saveButton).toEqual({ iconCss: 'e-icons e-save-icon' });
             expect(editorObj.cancelButton).toEqual({ iconCss: 'e-icons e-reset-icon' });
             expect(editorObj.validationRules).toEqual({ Game: { required: true } });       
@@ -2778,6 +2782,37 @@ describe('InPlace-Editor Control', () => {
             let inputEle: HTMLElement = (<HTMLElement>selectAll('.e-editable-overlay-icon', ele)[0]);
             inputEle.click();
             expect((<HTMLElement>selectAll('.e-editable-component', ele)[0]).querySelectorAll('script').length).toBeGreaterThan(0);
+        });
+    });
+
+    describe('BLAZ-6367 - Configure tabindex if not available in the target element', () => {
+        let ele: HTMLElement;
+        let targetEle: Element;
+        let editorObj: InPlaceEditor;
+        afterAll((): void => {
+            destroy(editorObj);
+            detach(targetEle);
+            editorObj = undefined;
+            targetEle = undefined;
+        });
+        it('Without tabindex attribute', () => {
+            targetEle = document.createElement('div');
+            document.body.appendChild(targetEle);
+            editorObj = new InPlaceEditor({});
+            editorObj.appendTo(targetEle as HTMLElement);
+            ele = editorObj.element;
+            expect(isNOU(ele.getAttribute('tabindex'))).toBe(false);
+            expect(ele.getAttribute('tabindex')).toBe('0');
+        });
+        it('With tabindex attribute', () => {
+            targetEle = document.createElement('div');
+            targetEle.setAttribute('tabindex', '3');
+            document.body.appendChild(targetEle);
+            editorObj = new InPlaceEditor({});
+            editorObj.appendTo(targetEle as HTMLElement);
+            ele = editorObj.element;
+            expect(isNOU(ele.getAttribute('tabindex'))).toBe(false);
+            expect(ele.getAttribute('tabindex')).toBe('3');
         });
     });
 });

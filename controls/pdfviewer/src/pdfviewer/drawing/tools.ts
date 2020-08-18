@@ -709,6 +709,7 @@ export class InkDrawingTool extends ToolBase {
     }
     /**   @private  */
     public mouseDown(args: MouseEventArgs): void {
+        this.pdfViewerBase.disableTextSelectionMode();
         super.mouseDown(args);
         this.inAction = true;
         // tslint:disable-next-line

@@ -15,9 +15,11 @@ export function createGrid(options: TreeGridModel, done: Function): TreeGrid {
         }
         done();
     };
-    let data: Object[] = (<Object[]>options.dataSource).slice();
-    delete options['dataSource'];
-    options.dataSource = DataUtil.parse.parseJson(JSON.stringify(data));
+    if (!(options.dataSource instanceof DataManager)) {
+        let data: Object[] = (<Object[]>options.dataSource).slice();
+        delete options['dataSource'];
+        options.dataSource = DataUtil.parse.parseJson(JSON.stringify(data));
+    }
     if (!options.hasOwnProperty('dataBound')) {
         options.dataBound = dataBound;
     }

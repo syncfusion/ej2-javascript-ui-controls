@@ -13,12 +13,15 @@ import { TextElement } from '../../../src/diagram/core/elements/text-element';
 import { Native, NodeConstraints, accessibilityElement, HtmlModel, Ruler, ComplexHierarchicalTree } from '../../../src/index';
 import { MouseEvents } from '../interaction/mouseevents.spec';
 import { SnapConstraints, PointPort, Annotation, IconShapes, Decorator, PortVisibility, ConnectorModel, PointModel, PortConstraints, AnnotationConstraints, ConnectorConstraints } from '../../../src/diagram/index';
+import {  IScrollChangeEventArgs, IBlazorScrollChangeEventArgs, DiagramTools, State } from '../../../src/diagram/index';
+
 import { PointPortModel } from '../../../src/diagram/objects/port-model';
 import { IconShape } from '../../../src/diagram/objects/icon';
 import { DiagramHtmlElement } from '../../../src/diagram/core/elements/html-element';
 import { getDiagramLayerSvg } from '../../../src/diagram/utility/dom-util';
 import { LayerModel } from '../../../src/diagram/diagram/layer-model';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
+import { Selector } from '../../../src/diagram/objects/node';
 Diagram.Inject(ComplexHierarchicalTree);
 
 /**
@@ -1889,5 +1892,117 @@ describe('node default connector default check', () => {
 
     });
 
+    describe('Pan Status on Mouse events', () => {
+        let diagram: Diagram; let elements: HTMLElement;let status: State;
+        beforeAll((): void => {
+            elements = createElement('div', { styles: 'width:100%;height:500px;' });
+            elements.appendChild(createElement('div', { id: 'diagramNodeZindex' }));
+            document.body.appendChild(elements);
+            let nodes: NodeModel[] = [
+                {
+                    id: 'node2', width: 100, height: 100, offsetX: 300, offsetY: 100, pivot: {x: 0,y: 0}
+                }
+            ];
+            diagram = new Diagram({
+                width: '100%',
+                height: '600px',
+                nodes: nodes,
+                tool: DiagramTools.ZoomPan,
+            });
+            diagram.appendTo('#diagramNodeZindex');
+        });
 
+        afterAll((): void => {
+            diagram.destroy();
+            elements.remove();  
+        });
+
+        it('Pan Status on events', (done: Function) => {
+            let diagramCanvas: Element = document.getElementById('diagramNodeZindexcontent');
+            let mouseevents: MouseEvents = new MouseEvents();
+            diagram.scrollChange = (args:IScrollChangeEventArgs | IBlazorScrollChangeEventArgs) => {
+                if(status === 'Start')
+                {
+                    expect( args.panState === 'Start' ).toBe(true)
+                }
+                if(status === 'Completed' )
+                {
+                    expect( args.panState === 'Completed' ).toBe(true)
+                }
+            }
+            mouseevents.mouseDownEvent(diagramCanvas, 350, 140, false, false);
+            status = 'Start';
+            mouseevents.mouseMoveEvent(diagramCanvas, 400, 500, false, false);
+            status = 'Completed';
+            mouseevents.mouseUpEvent(diagramCanvas, 400, 500, false, false);
+            done();
+        });
+    });
+
+});
+
+describe('SizeChange Event at completed state', () => {
+    let diagram: Diagram; let elements: HTMLElement
+    beforeAll((): void => {
+        elements = createElement('div', { styles: 'width:100%;height:500px;' });
+        elements.appendChild(createElement('div', { id: 'diagramNodeZindex' }));
+        document.body.appendChild(elements);
+        let nodes: NodeModel = 
+            {
+                id: 'node2', width: 100, height: 100, offsetX: 300, offsetY: 100, pivot: {x: 0,y: 0}
+            }
+        diagram = new Diagram({
+            width: 800, height: 800, nodes: [nodes], 
+        });
+        diagram.appendTo('#diagramNodeZindex');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        elements.remove();  
+    });
+
+    function resize(diagram: Diagram, direction: string): void {
+        if ((diagram.selectedItems as Selector).nodes[0]) {
+            let diagramCanvas: HTMLElement; let left: number; let top: number;
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            left = diagram.element.offsetLeft; top = diagram.element.offsetTop;
+            let element: HTMLElement = document.getElementById(direction);
+            let mouseEvents: MouseEvents = new MouseEvents();
+            let x: number = Number(element.getAttribute('cx'));
+            let y: number = Number(element.getAttribute('cy'));
+            mouseEvents.mouseDownEvent(diagramCanvas, x + diagram.element.offsetLeft, y + diagram.element.offsetTop);
+            mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop);
+            mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop + 20);
+            mouseEvents.mouseUpEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop + 20);
+        }
+    }
+
+    it('SizeChange Event at completed state', (done: Function) => {
+        diagram.select([diagram.nodes[0]]);
+        console.log(diagram.nodes[0].width);
+        let beforeWidth:number = diagram.nodes[0].width;
+        let beforeOffsetX: number = diagram.nodes[0].offsetX;
+        resize(diagram, 'resizeEast');
+        let afterWidth: number = diagram.nodes[0].width
+        let afterOffsetX: number = diagram.nodes[0].offsetX;
+        console.log(diagram.nodes[0].width);
+        expect((beforeWidth != afterWidth) && (beforeOffsetX === afterOffsetX) ).toBe(true)
+        done();
+        
+    });
+
+    it('SizeChange Event at completed state', (done: Function) => {
+        diagram.select([diagram.nodes[0]]);
+        console.log(diagram.nodes[0].height);
+        let beforeHeight:number = diagram.nodes[0].height;
+        let beforeOffsetX: number = diagram.nodes[0].offsetX;
+        resize(diagram, 'resizeSouth');
+        let afterHeight: number = diagram.nodes[0].height
+        let afterOffsetX: number = diagram.nodes[0].offsetX;
+        console.log(diagram.nodes[0].height);
+        expect((beforeHeight != afterHeight) && (beforeOffsetX === afterOffsetX) ).toBe(true)
+        done();
+        
+    });
 });

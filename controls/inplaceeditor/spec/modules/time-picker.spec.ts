@@ -2,7 +2,7 @@
  * TimePicker module spec document
  */
 import { select, selectAll } from '@syncfusion/ej2-base';
-import { InPlaceEditor, ValidateEventArgs, BeginEditEventArgs } from '../../src/inplace-editor/base/index';
+import { InPlaceEditor, ValidateEventArgs, BeginEditEventArgs, ChangeEventArgs } from '../../src/inplace-editor/base/index';
 import { TimePicker } from '../../src/inplace-editor/modules/index';
 import * as classes from '../../src/inplace-editor/base/classes';
 import { renderEditor, destroy } from './../render.spec';
@@ -749,6 +749,66 @@ describe('TimePicker module', () => {
                 expect(count).toEqual(1);
                 done();
             }, 400);
+        });
+    });
+
+    describe('BLAZ-4764 - New change event testing', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let initialDate: Date = new Date('4/9/2018 12:30 AM');
+        let modifiedDate: Date = new Date('6/9/2018 2:30 AM');
+        let changeArgs: any = {};
+        afterEach((): void => {
+            destroy(editorObj);
+            changeArgs = {};
+        });
+        it('Without initial value - Check changed value', (done) => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                type: 'Time',
+                change: function (e: ChangeEventArgs) {
+                    changeArgs = e;
+                }
+            });
+            ele = editorObj.element;
+            valueEle = <HTMLElement>select('.' + classes.VALUE, ele);
+            valueEle.click();
+            setTimeout(() => {
+                expect(editorObj.value).toEqual(null);
+                editorObj.timeModule.compObj.value = modifiedDate;
+                (ele.querySelector('.e-editable-component') as HTMLElement).click();
+                setTimeout(() => {
+                    expect(changeArgs['name']).toEqual('change');
+                    expect(changeArgs['previousValue']).toEqual(null);
+                    expect(changeArgs['value']).toEqual(modifiedDate);
+                    done();
+                }, 1000);
+            }, 1500);
+        });
+        it('Check changed value', (done) => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                type: 'Time',
+                value: initialDate,
+                change: function (e: ChangeEventArgs) {
+                    changeArgs = e;
+                }
+            });
+            ele = editorObj.element;
+            valueEle = <HTMLElement>select('.' + classes.VALUE, ele);
+            valueEle.click();
+            setTimeout(() => {
+                expect(editorObj.value).toEqual(initialDate);
+                editorObj.timeModule.compObj.value = modifiedDate;
+                (ele.querySelector('.e-editable-component') as HTMLElement).click();
+                setTimeout(() => {
+                    expect(changeArgs['name']).toEqual('change');
+                    expect(changeArgs['previousValue']).toEqual(initialDate);
+                    expect(changeArgs['value']).toEqual(modifiedDate);
+                    done();
+                }, 1000);
+            }, 1500);
         });
     });
 

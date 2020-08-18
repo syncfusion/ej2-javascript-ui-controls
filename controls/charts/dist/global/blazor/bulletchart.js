@@ -1429,6 +1429,8 @@ var legendRender = 'legendRender';
 /** @private */
 var axisLabelRender = 'axisLabelRender';
 /** @private */
+
+/** @private */
 var axisRangeCalculated = 'axisRangeCalculated';
 /** @private */
 

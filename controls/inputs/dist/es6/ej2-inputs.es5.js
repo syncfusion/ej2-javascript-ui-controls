@@ -4268,12 +4268,16 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Slider.prototype.handleFocus = function (e) {
+        this.focusSliderElement();
+        this.sliderBarClick(e);
         if (e.currentTarget === this.firstHandle) {
             this.firstHandle.classList.add(classNames.sliderHandleFocused);
         }
         else {
             this.secondHandle.classList.add(classNames.sliderHandleFocused);
         }
+        EventHandler.add(document, 'mousemove touchmove', this.sliderBarMove, this);
+        EventHandler.add(document, 'mouseup touchend', this.sliderBarUp, this);
     };
     Slider.prototype.handleOver = function (e) {
         if (this.tooltip.isVisible && this.tooltip.showOn === 'Hover') {
@@ -4460,13 +4464,18 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
+    Slider.prototype.materialTooltipEventCallBack = function (event) {
+        this.sliderBarClick(event);
+        EventHandler.add(document, 'mousemove touchmove', this.sliderBarMove, this);
+        EventHandler.add(document, 'mouseup touchend', this.sliderBarUp, this);
+    };
     Slider.prototype.wireMaterialTooltipEvent = function (destroy) {
         if (this.isMaterialTooltip) {
             if (!destroy) {
-                EventHandler.add(this.tooltipElement, 'mousedown touchstart', this.sliderDown, this);
+                EventHandler.add(this.tooltipElement, 'mousedown touchstart', this.materialTooltipEventCallBack, this);
             }
             else {
-                EventHandler.remove(this.tooltipElement, 'mousedown touchstart', this.sliderDown);
+                EventHandler.remove(this.tooltipElement, 'mousedown touchstart', this.materialTooltipEventCallBack);
             }
         }
     };
@@ -5718,10 +5727,10 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
     Slider.prototype.sliderBarClick = function (evt) {
         evt.preventDefault();
         var pos;
-        if (evt.type === 'mousedown' || evt.type === 'click') {
+        if (evt.type === 'mousedown' || evt.type === 'mouseup' || evt.type === 'click') {
             pos = { x: evt.clientX, y: evt.clientY };
         }
-        else if (evt.type === 'touchstart') {
+        else if (evt.type === 'touchend' || evt.type === 'touchstart') {
             pos = { x: evt.changedTouches[0].clientX, y: evt.changedTouches[0].clientY };
         }
         var handlepos = this.xyToPosition(pos);
@@ -5786,42 +5795,6 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
             this.setRangeBar();
         }
     };
-    Slider.prototype.sliderDown = function (event) {
-        var _a, _b;
-        event.preventDefault();
-        this.focusSliderElement();
-        if (this.type === 'Range' && this.drag && event.target === this.rangeBar) {
-            var xPostion = void 0;
-            var yPostion = void 0;
-            if (event.type === 'mousedown') {
-                _a = [event.clientX, event.clientY], xPostion = _a[0], yPostion = _a[1];
-            }
-            else if (event.type === 'touchstart') {
-                _b = [event.changedTouches[0].clientX, event.changedTouches[0].clientY], xPostion = _b[0], yPostion = _b[1];
-            }
-            if (this.orientation === 'Horizontal') {
-                this.firstPartRemain = xPostion - this.rangeBar.getBoundingClientRect().left;
-                this.secondPartRemain = this.rangeBar.getBoundingClientRect().right - xPostion;
-            }
-            else {
-                this.firstPartRemain = yPostion - this.rangeBar.getBoundingClientRect().top;
-                this.secondPartRemain = this.rangeBar.getBoundingClientRect().bottom - yPostion;
-            }
-            this.minDiff = this.handleVal2 - this.handleVal1;
-            this.tooltipToggle(this.rangeBar);
-            var focusedElement = this.element.querySelector('.' + classNames.sliderTabHandle);
-            if (focusedElement) {
-                focusedElement.classList.remove(classNames.sliderTabHandle);
-            }
-            EventHandler.add(document, 'mousemove touchmove', this.dragRangeBarMove, this);
-            EventHandler.add(document, 'mouseup touchend', this.dragRangeBarUp, this);
-        }
-        else {
-            this.sliderBarClick(event);
-            EventHandler.add(document, 'mousemove touchmove', this.sliderBarMove, this);
-            EventHandler.add(document, 'mouseup touchend', this.sliderBarUp, this);
-        }
-    };
     Slider.prototype.handleValueAdjust = function (handleValue, assignValue, handleNumber) {
         if (handleNumber === 1) {
             this.handleVal1 = assignValue;
@@ -5839,6 +5812,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         if (event.type !== 'touchmove') {
             event.preventDefault();
         }
+        this.rangeBarDragged = true;
         var pos;
         this.rangeBar.style.transition = 'none';
         this.firstHandle.style.transition = 'none';
@@ -6003,10 +5977,15 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Slider.prototype.dragRangeBarUp = function (event) {
+        if (!this.rangeBarDragged) {
+            this.focusSliderElement();
+            this.sliderBarClick(event);
+        }
         this.changeEvent('changed', event);
         this.closeTooltip();
         EventHandler.remove(document, 'mousemove touchmove', this.dragRangeBarMove);
         EventHandler.remove(document, 'mouseup touchend', this.dragRangeBarUp);
+        this.rangeBarDragged = false;
     };
     Slider.prototype.checkRepeatedValue = function (currentValue) {
         if (this.type === 'Range') {
@@ -6084,11 +6063,50 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
             EventHandler.remove(this.secondBtn, 'focusout', this.sliderFocusOut);
         }
     };
+    Slider.prototype.rangeBarMousedown = function (event) {
+        var _a, _b;
+        event.preventDefault();
+        this.focusSliderElement();
+        if (this.type === 'Range' && this.drag && event.target === this.rangeBar) {
+            var xPostion = void 0;
+            var yPostion = void 0;
+            if (event.type === 'mousedown') {
+                _a = [event.clientX, event.clientY], xPostion = _a[0], yPostion = _a[1];
+            }
+            else if (event.type === 'touchstart') {
+                _b = [event.changedTouches[0].clientX, event.changedTouches[0].clientY], xPostion = _b[0], yPostion = _b[1];
+            }
+            if (this.orientation === 'Horizontal') {
+                this.firstPartRemain = xPostion - this.rangeBar.getBoundingClientRect().left;
+                this.secondPartRemain = this.rangeBar.getBoundingClientRect().right - xPostion;
+            }
+            else {
+                this.firstPartRemain = yPostion - this.rangeBar.getBoundingClientRect().top;
+                this.secondPartRemain = this.rangeBar.getBoundingClientRect().bottom - yPostion;
+            }
+            this.minDiff = this.handleVal2 - this.handleVal1;
+            this.tooltipToggle(this.rangeBar);
+            var focusedElement = this.element.querySelector('.' + classNames.sliderTabHandle);
+            if (focusedElement) {
+                focusedElement.classList.remove(classNames.sliderTabHandle);
+            }
+            EventHandler.add(document, 'mousemove touchmove', this.dragRangeBarMove, this);
+            EventHandler.add(document, 'mouseup touchend', this.dragRangeBarUp, this);
+        }
+    };
+    Slider.prototype.elementClick = function (event) {
+        event.preventDefault();
+        this.focusSliderElement();
+        this.sliderBarClick(event);
+    };
     Slider.prototype.wireEvents = function () {
         this.onresize = this.reposition.bind(this);
         window.addEventListener('resize', this.onresize);
         if (this.enabled && !this.readonly) {
-            EventHandler.add(this.element, 'mousedown touchstart', this.sliderDown, this);
+            EventHandler.add(this.element, 'click', this.elementClick, this);
+            if (this.type === 'Range' && this.drag) {
+                EventHandler.add(this.rangeBar, 'mousedown touchstart', this.rangeBarMousedown, this);
+            }
             EventHandler.add(this.sliderContainer, 'keydown', this.keyDown, this);
             EventHandler.add(this.sliderContainer, 'keyup', this.keyUp, this);
             EventHandler.add(this.element, 'focusout', this.sliderFocusOut, this);
@@ -6107,7 +6125,10 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Slider.prototype.unwireEvents = function () {
-        EventHandler.remove(this.element, 'mousedown touchstart', this.sliderDown);
+        EventHandler.remove(this.element, 'click', this.elementClick);
+        if (this.type === 'Range' && this.drag) {
+            EventHandler.remove(this.rangeBar, 'mousedown touchstart', this.rangeBarMousedown);
+        }
         EventHandler.remove(this.sliderContainer, 'keydown', this.keyDown);
         EventHandler.remove(this.sliderContainer, 'keyup', this.keyUp);
         EventHandler.remove(this.element, 'focusout', this.sliderFocusOut);
@@ -7841,7 +7862,9 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         if (this.isBlazorSaveUrl && this.sequentialUpload) {
             this.sequentialUpload = false;
         }
-        this.formRendered();
+        if (!this.isBlazorSaveUrl) {
+            this.formRendered();
+        }
         if (!this.isServerBlazor) {
             this.updateHTMLAttrToElement();
             this.checkHTMLAttributes(false);

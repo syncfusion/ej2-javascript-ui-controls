@@ -2,8 +2,8 @@ import { Browser, ChildProperty, Complex, Component, Event, EventHandler, Intern
 import { DataManager, ODataV4Adaptor, Predicate, Query, UrlAdaptor, WebApiAdaptor } from '@syncfusion/ej2-data';
 import { Button } from '@syncfusion/ej2-buttons';
 import { DatePicker, DateRangePicker, DateTimePicker, TimePicker } from '@syncfusion/ej2-calendars';
-import { ColorPicker, FormValidator, MaskedTextBox, NumericTextBox, Slider, TextBox } from '@syncfusion/ej2-inputs';
 import { Tooltip, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
+import { ColorPicker, FormValidator, MaskedTextBox, NumericTextBox, Slider, TextBox } from '@syncfusion/ej2-inputs';
 import { AutoComplete, ComboBox, DropDownList, MultiSelect } from '@syncfusion/ej2-dropdowns';
 import { HtmlEditor, Image, Link, MarkdownEditor, QuickToolbar, RichTextEditor, Table, Toolbar } from '@syncfusion/ej2-richtexteditor';
 
@@ -265,7 +265,9 @@ let InPlaceEditor = class InPlaceEditor extends Component {
      * @private
      */
     render() {
-        this.element.setAttribute('tabindex', '0');
+        if (isNullOrUndefined(this.element.getAttribute('tabindex'))) {
+            this.element.setAttribute('tabindex', '0');
+        }
         this.checkIsTemplate();
         this.disable(this.disabled);
         this.updateAdaptor();
@@ -386,7 +388,6 @@ let InPlaceEditor = class InPlaceEditor extends Component {
             return;
         }
         if (this.mode === 'Inline') {
-            this.loaderWidth = this.valueWrap.offsetWidth;
             addClass([this.valueWrap], [HIDE]);
             this.inlineWrapper = this.createElement('div', { className: INLINE });
             this.element.appendChild(this.inlineWrapper);
@@ -545,7 +546,9 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         else {
             classProp = ELEMENTS;
         }
-        extend(this.model, this.model, { cssClass: classProp, enableRtl: this.enableRtl, locale: this.locale });
+        extend(this.model, this.model, {
+            cssClass: classProp, enableRtl: this.enableRtl, locale: this.locale, change: this.changeHandler.bind(this)
+        });
         if (!isNullOrUndefined(this.value)) {
             this.updateModelValue();
         }
@@ -669,7 +672,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         }
         else if (this.componentObj) {
             if (this.type === 'Numeric' && this.componentObj.value === null) {
-                this.componentObj.setProperties({ value: 0 }, true);
+                this.componentObj.setProperties({ value: null }, true);
             }
             this.setProperties({ value: this.componentObj.value }, true);
             this.extendModelValue(this.componentObj.value);
@@ -1222,6 +1225,18 @@ let InPlaceEditor = class InPlaceEditor extends Component {
             }
         }
     }
+    changeHandler(e) {
+        let eventArgs = {
+            previousValue: this.compPrevValue === undefined ? this.value : this.compPrevValue,
+            value: e.value
+        };
+        if (this.type === 'AutoComplete' || this.type === 'ComboBox' || this.type === 'DropDownList') {
+            eventArgs.itemData = e.itemData;
+            eventArgs.previousItemData = e.previousItemData;
+        }
+        this.compPrevValue = eventArgs.value;
+        this.trigger('change', eventArgs);
+    }
     /**
      * Validate current editor value.
      * @returns void
@@ -1437,6 +1452,9 @@ __decorate$1([
 __decorate$1([
     Event()
 ], InPlaceEditor.prototype, "beginEdit", void 0);
+__decorate$1([
+    Event()
+], InPlaceEditor.prototype, "change", void 0);
 __decorate$1([
     Event()
 ], InPlaceEditor.prototype, "destroyed", void 0);

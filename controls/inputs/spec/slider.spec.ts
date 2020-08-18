@@ -1865,7 +1865,7 @@ describe('Slider Control', () => {
             slider.handlePos2 = 20;
             let currentTarget = document.getElementsByClassName('e-slider')[0];
             let args = { changedTouches: [{ clientX: 148, clientY: 349 }], preventDefault: function () { }, type: 'touchstart', currentTarget: currentTarget };
-            slider.sliderDown(args);
+            slider.materialTooltipEventCallBack(args);
             slider.handlePos1 = 10;
             slider.handlePos2 = 20;
             args = {
@@ -1878,45 +1878,6 @@ describe('Slider Control', () => {
             document.body.innerHTML = '';
         })
     })
-    describe('Slide related events testing', () => {
-        let slider: Slider;
-        let dragEle: HTMLElement;
-        let targetEle: HTMLElement;
-        let mousemove: any;
-        let instance: any;
-        let mouseUp: any;
-        beforeEach(() => {
-            dragEle = createElement('div', { id: 'slider' });
-            targetEle = createElement('div', {
-                id: 'target', styles: 'top: 150px;left: 300px;height: 300px;width: 500px;position: absolute;'
-            });
-            document.body.appendChild(targetEle);
-            targetEle.appendChild(dragEle);
-            slider = new Slider({ type: 'Range', tooltip: { placement: 'After', isVisible: true, showOn: 'Auto' } }, '#slider');
-            (document.getElementsByClassName("e-handle")[1] as HTMLElement).style.height = '2px';
-            (document.getElementsByClassName("e-handle")[1] as HTMLElement).style.width = '2px';
-            mousemove = getEventObject('MouseEvents', 'mousemove');
-            mousemove = setMouseCoordinates(mousemove, 319, 148);
-            let mousedown: any = getEventObject('MouseEvents', 'mousedown');
-            mousedown = setMouseCoordinates(mousedown, 312, 144);
-            mousedown.target = mousedown.currentTarget = document.getElementsByClassName("e-handle")[1];
-            EventHandler.trigger(document.getElementsByClassName("e-handle")[1] as HTMLElement, 'mousedown', mousedown);
-            mousemove.srcElement = mousemove.target = mousemove.toElement = document.getElementsByClassName("e-handle")[1];
-            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-            mousemove = setMouseCoordinates(mousemove, 319, 148);
-            mouseUp = getEventObject('MouseEvents', 'mouseup');
-            mouseUp.srcElement = mouseUp.target = mouseUp.toElement = document.getElementsByClassName("e-handle")[1];
-        });
-        it('Slide the range slider second handle slide testing', () => {
-            mousemove = setMouseCoordinates(mousemove, 319, 148);
-            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-            EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
-            expect((document.getElementsByClassName('e-handle')[0] as HTMLElement).getAttribute('aria-valuenow')).toBe('0');
-        });
-        afterEach(() => {
-            document.body.innerHTML = '';
-        });
-    });
 
     describe('Slide related events testing', () => {
         let slider: Slider;
@@ -3325,7 +3286,7 @@ describe('Slider Control', () => {
             let mousedown: any = getEventObject('MouseEvents', 'mousedown');
             mousedown = setMouseCoordinates(mousedown, 350, 144);
             mousedown.target = mousedown.currentTarget = document.getElementsByClassName("e-range")[0];
-            EventHandler.trigger(document.getElementsByClassName("e-slider")[0] as HTMLElement, 'mousedown', mousedown);
+            EventHandler.trigger(document.getElementsByClassName("e-range")[0] as HTMLElement, 'mousedown', mousedown);
 
             mousemove = getEventObject('MouseEvents', 'mousemove');
             mousemove = setMouseCoordinates(mousemove, 519, 148);
@@ -3358,15 +3319,15 @@ describe('Slider Control', () => {
             let mousedown: any = getEventObject('MouseEvents', 'mousedown');
             mousedown = setMouseCoordinates(mousedown, 350, 144);
             mousedown.target = mousedown.currentTarget = document.getElementsByClassName("e-range")[0];
-            EventHandler.trigger(document.getElementsByClassName("e-slider")[0] as HTMLElement, 'mousedown', mousedown);
+            EventHandler.trigger(document.getElementsByClassName("e-range")[0] as HTMLElement, 'mousedown', mousedown);
 
             mousemove = getEventObject('MouseEvents', 'mousemove');
             mousemove = setMouseCoordinates(mousemove, 619, 148);
-            mousemove.srcElement = mousemove.target = mousemove.toElement = document.getElementsByClassName("e-slider");
+            mousemove.srcElement = mousemove.target = mousemove.toElement = document.getElementsByClassName("e-range")[0];
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
 
             mouseUp = getEventObject('MouseEvents', 'mouseup');
-            mouseUp.srcElement = mouseUp.target = mouseUp.toElement = document.getElementsByClassName("e-slider")[0];
+            mouseUp.srcElement = mouseUp.target = mouseUp.toElement = document.getElementsByClassName("e-range")[0];
             EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
 
             expect((document.getElementsByClassName('e-handle')[0] as HTMLElement).getAttribute('aria-valuenow')).toBe('30');
@@ -3391,7 +3352,7 @@ describe('Slider Control', () => {
             let mousedown: any = getEventObject('MouseEvents', 'mousedown');
             mousedown = setMouseCoordinates(mousedown, 350, 144);
             mousedown.target = mousedown.currentTarget = document.getElementsByClassName("e-range")[0];
-            EventHandler.trigger(document.getElementsByClassName("e-slider")[0] as HTMLElement, 'mousedown', mousedown);
+            EventHandler.trigger(document.getElementsByClassName("e-range")[0] as HTMLElement, 'mousedown', mousedown);
 
             mousemove = getEventObject('MouseEvents', 'mousemove');
             mousemove = setMouseCoordinates(mousemove, 919, 148);
@@ -3399,7 +3360,7 @@ describe('Slider Control', () => {
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
 
             mouseUp = getEventObject('MouseEvents', 'mouseup');
-            mouseUp.srcElement = mouseUp.target = mouseUp.toElement = document.getElementsByClassName("e-slider")[0];
+            mouseUp.srcElement = mouseUp.target = mouseUp.toElement = document.getElementsByClassName("e-range")[0];
             EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
 
             expect((document.getElementsByClassName('e-handle')[0] as HTMLElement).getAttribute('aria-valuenow')).toBe('20');
@@ -3424,7 +3385,7 @@ describe('Slider Control', () => {
             let mousedown: any = getEventObject('MouseEvents', 'mousedown');
             mousedown = setMouseCoordinates(mousedown, 350, 144);
             mousedown.target = mousedown.currentTarget = document.getElementsByClassName("e-range")[0];
-            EventHandler.trigger(document.getElementsByClassName("e-slider")[0] as HTMLElement, 'mousedown', mousedown);
+            EventHandler.trigger(document.getElementsByClassName("e-range")[0] as HTMLElement, 'mousedown', mousedown);
 
             mousemove = getEventObject('MouseEvents', 'mousemove');
             mousemove = setMouseCoordinates(mousemove, 0, 148);
@@ -3432,7 +3393,7 @@ describe('Slider Control', () => {
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
 
             mouseUp = getEventObject('MouseEvents', 'mouseup');
-            mouseUp.srcElement = mouseUp.target = mouseUp.toElement = document.getElementsByClassName("e-slider")[0];
+            mouseUp.srcElement = mouseUp.target = mouseUp.toElement = document.getElementsByClassName("e-range")[0];
             EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
 
             expect((document.getElementsByClassName('e-handle')[0] as HTMLElement).getAttribute('aria-valuenow')).toBe('10');
@@ -3521,15 +3482,15 @@ describe('Slider Control', () => {
             let mousedown: any = getEventObject('MouseEvents', 'mousedown');
             mousedown = setMouseCoordinates(mousedown, 350, 144);
             mousedown.target = mousedown.currentTarget = document.getElementsByClassName("e-range")[0];
-            EventHandler.trigger(document.getElementsByClassName("e-slider")[0] as HTMLElement, 'mousedown', mousedown);
+            EventHandler.trigger(document.getElementsByClassName("e-range")[0] as HTMLElement, 'mousedown', mousedown);
 
             mousemove = getEventObject('MouseEvents', 'mousemove');
             mousemove = setMouseCoordinates(mousemove, 819, 148);
-            mousemove.srcElement = mousemove.target = mousemove.toElement = document.getElementsByClassName("e-slider");
+            mousemove.srcElement = mousemove.target = mousemove.toElement = document.getElementsByClassName("e-range")[0];
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
 
             mouseUp = getEventObject('MouseEvents', 'mouseup');
-            mouseUp.srcElement = mouseUp.target = mouseUp.toElement = document.getElementsByClassName("e-slider")[0];
+            mouseUp.srcElement = mouseUp.target = mouseUp.toElement = document.getElementsByClassName("e-range")[0];
             EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
 
             expect((document.getElementsByClassName('e-handle')[0] as HTMLElement).getAttribute('aria-valuenow')).toBe('70');
@@ -3584,7 +3545,7 @@ describe('Slider Control', () => {
                 changedTouches: [{ clientX: 350, clientY: 144 }], type: 'touchstart', preventDefault: function () { },
                 currentTarget: document.getElementsByClassName("e-range")[0], target: document.getElementsByClassName("e-range")[0]
             };
-            slider.sliderDown(args);
+            slider.materialTooltipEventCallBack(args);
 
             args = {
                 changedTouches: [{ clientX: 0, clientY: 148 }], type: 'touchmove', preventDefault: function () { },
@@ -3609,7 +3570,7 @@ describe('Slider Control', () => {
             let mousedown: any = getEventObject('MouseEvents', 'mousedown');
             mousedown = setMouseCoordinates(mousedown, 350, 144);
             mousedown.target = mousedown.currentTarget = document.getElementsByClassName("e-range")[0];
-            EventHandler.trigger(document.getElementsByClassName("e-slider")[0] as HTMLElement, 'mousedown', mousedown);
+            EventHandler.trigger(document.getElementsByClassName("e-range")[0] as HTMLElement, 'mousedown', mousedown);
 
             mousemove = getEventObject('MouseEvents', 'mousemove');
             mousemove = setMouseCoordinates(mousemove, 519, 148);
@@ -3630,7 +3591,7 @@ describe('Slider Control', () => {
                 changedTouches: [{ clientX: 350, clientY: 144 }], type: 'touchstart', preventDefault: function () { },
                 currentTarget: document.getElementsByClassName("e-range")[0], target: document.getElementsByClassName("e-range")[0]
             };
-            slider.sliderDown(args);
+            slider.materialTooltipEventCallBack(args);
 
             args = {
                 changedTouches: [{ clientX: 519, clientY: 148 }], type: 'touchmove', preventDefault: function () { },
@@ -3658,7 +3619,7 @@ describe('Slider Control', () => {
             let mousedown: any = getEventObject('MouseEvents', 'mousedown');
             mousedown = setMouseCoordinates(mousedown, 300, 200);
             mousedown.target = mousedown.currentTarget = document.getElementsByClassName("e-range")[0];
-            EventHandler.trigger(document.getElementsByClassName("e-slider")[0] as HTMLElement, 'mousedown', mousedown);
+            EventHandler.trigger(document.getElementsByClassName("e-range")[0] as HTMLElement, 'mousedown', mousedown);
 
             mousemove = getEventObject('MouseEvents', 'mousemove');
             mousemove = setMouseCoordinates(mousemove, 300, 250);
@@ -3679,7 +3640,7 @@ describe('Slider Control', () => {
                 changedTouches: [{ clientX: 300, clientY: 200 }], type: 'touchstart', preventDefault: function () { },
                 currentTarget: document.getElementsByClassName("e-range")[0], target: document.getElementsByClassName("e-range")[0]
             };
-            slider.sliderDown(args);
+            slider.materialTooltipEventCallBack(args);
         });
 
         it('interval dragging property change method testing', () => {

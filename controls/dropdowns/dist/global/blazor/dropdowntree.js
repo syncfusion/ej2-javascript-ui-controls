@@ -63,6 +63,11 @@ var HEADERTEMPLATE = 'HeaderTemplate';
 var FOOTERTEMPLATE = 'FooterTemplate';
 var NORECORDSTEMPLATE = 'NoRecordsTemplate';
 var ACTIONFAILURETEMPLATE = 'ActionFailureTemplate';
+var REMAIN_WRAPPER = 'e-remain';
+var OVERFLOW_VIEW = 'e-overflow';
+var SHOW_TEXT = 'e-show-text';
+var TOTAL_COUNT_WRAPPER = 'e-total-count';
+var REMAIN_COUNT = 'e-wrap-count';
 var Fields = /** @class */ (function (_super) {
     __extends(Fields, _super);
     function Fields() {
@@ -160,6 +165,9 @@ var DropDownTree = /** @class */ (function (_super) {
         var keyEntity = ['value'];
         return this.addOnPersist(keyEntity);
     };
+    DropDownTree.prototype.getLocaleName = function () {
+        return 'drop-down-tree';
+    };
     /**
      * Initialize the event handler.
      * @private
@@ -178,6 +186,7 @@ var DropDownTree = /** @class */ (function (_super) {
         this.dataValue = null;
         this.isNodeSelected = false;
         this.isDynamicChange = false;
+        this.clearIconWidth = 0;
         this.isBlazorPlatForm = sf.base.isBlazor();
         this.headerTemplateId = "" + this.element.id + HEADERTEMPLATE;
         this.footerTemplateId = "" + this.element.id + FOOTERTEMPLATE;
@@ -272,14 +281,26 @@ var DropDownTree = /** @class */ (function (_super) {
         this.popupDiv.style.display = 'none';
         this.renderTree();
         this.isRemoteData = this.fields.dataSource instanceof sf.data.DataManager;
+        if (this.allowMultiSelection || this.showCheckBox) {
+            if (this.mode !== 'Delimiter') {
+                this.createChip();
+            }
+            if (!this.wrapText) {
+                this.overFlowWrapper = this.createElement('span', { className: OVERFLOW_VIEW + ' ' + HIDEICON });
+                this.inputWrapper.insertBefore(this.overFlowWrapper, this.hiddenElement);
+                if (this.mode !== 'Box') {
+                    sf.base.addClass([this.overFlowWrapper], SHOW_TEXT);
+                }
+            }
+        }
         if (!this.isRemoteData) {
             this.setTreeValue();
             this.setTreeText();
             this.updateHiddenValue();
             this.setSelectedValue();
-        }
-        if ((this.allowMultiSelection || this.showCheckBox) && this.mode !== 'Delimiter') {
-            this.createChip();
+            if (!this.wrapText) {
+                this.updateView();
+            }
         }
         this.wireEvents();
         var firstUl = sf.base.select('.' + PARENTITEM, this.treeObj.element);
@@ -524,6 +545,9 @@ var DropDownTree = /** @class */ (function (_super) {
             this.isClearButtonClick = false;
             return;
         }
+        if (!this.wrapText && e.target.classList.contains(CHIP_CLOSE)) {
+            this.removeChip(e);
+        }
         if (this.isPopupOpen) {
             this.hidePopup();
         }
@@ -568,16 +592,22 @@ var DropDownTree = /** @class */ (function (_super) {
             this.isClearButtonClick = false;
         }
         if (this.showClearButton) {
+            this.clearIconWidth = sf.base.select('.e-clear-icon', this.inputWrapper).offsetWidth;
             sf.base.addClass([this.overAllClear], HIDEICON);
             sf.base.removeClass([this.inputWrapper], SHOW_CLEAR);
         }
         sf.base.removeClass([this.inputWrapper], [INPUTFOCUS]);
-        if ((this.allowMultiSelection || this.showCheckBox) && this.mode !== 'Delimiter') {
+        if ((this.allowMultiSelection || this.showCheckBox)) {
             var isValue = this.value ? (this.value.length ? true : false) : false;
-            if (this.chipWrapper && (this.mode === 'Default') || (this.mode === 'Box' && !isValue)) {
-                sf.base.addClass([this.chipWrapper], HIDEICON);
-                sf.base.removeClass([this.inputWrapper], SHOW_CHIP);
-                sf.base.removeClass([this.inputEle], CHIP_INPUT);
+            if (this.mode !== 'Delimiter') {
+                if (this.chipWrapper && (this.mode === 'Default')) {
+                    sf.base.addClass([this.chipWrapper], HIDEICON);
+                    sf.base.removeClass([this.inputWrapper], SHOW_CHIP);
+                    sf.base.removeClass([this.inputEle], CHIP_INPUT);
+                }
+            }
+            if (!this.wrapText && isValue) {
+                this.updateView();
             }
         }
         if (this.changeOnBlur) {
@@ -586,6 +616,25 @@ var DropDownTree = /** @class */ (function (_super) {
         this.removeValue = false;
         this.oldValue = this.value;
         this.trigger('blur');
+    };
+    DropDownTree.prototype.updateView = function () {
+        if (!this.showCheckBox && !this.allowMultiSelection) {
+            return;
+        }
+        if (this.mode !== 'Box') {
+            sf.base.addClass([this.inputWrapper, this.overFlowWrapper], SHOW_TEXT);
+        }
+        else {
+            sf.base.addClass([this.inputWrapper], SHOW_CHIP);
+        }
+        if (this.value && this.value.length !== 0) {
+            if (this.inputWrapper.contains(this.chipWrapper)) {
+                sf.base.addClass([this.chipWrapper], HIDEICON);
+            }
+            sf.base.addClass([this.inputEle], CHIP_INPUT);
+            this.updateOverFlowView();
+            this.ensurePlaceHolder();
+        }
     };
     DropDownTree.prototype.triggerChangeEvent = function (event) {
         var isEqual = this.compareValues(this.oldValue, this.value);
@@ -623,14 +672,30 @@ var DropDownTree = /** @class */ (function (_super) {
         this.showOverAllClear();
         this.inputFocus = true;
         sf.base.addClass([this.inputWrapper], [INPUTFOCUS]);
-        if ((this.allowMultiSelection || this.showCheckBox) && this.mode === 'Default' && this.inputFocus) {
-            if (this.chipWrapper && (this.value && this.value.length !== 0)) {
-                sf.base.removeClass([this.chipWrapper], HIDEICON);
+        if (this.allowMultiSelection || this.showCheckBox) {
+            if (this.mode !== 'Delimiter' && this.inputFocus) {
+                if (this.chipWrapper && (this.value && this.value.length !== 0)) {
+                    sf.base.removeClass([this.chipWrapper], HIDEICON);
+                    sf.base.addClass([this.inputEle], CHIP_INPUT);
+                }
                 sf.base.addClass([this.inputWrapper], SHOW_CHIP);
-                sf.base.addClass([this.inputEle], CHIP_INPUT);
+                if (this.popupObj) {
+                    this.popupObj.refreshPosition();
+                }
             }
-            if (this.popupObj) {
-                this.popupObj.refreshPosition();
+            if (!this.wrapText) {
+                if (this.inputWrapper.contains(this.overFlowWrapper)) {
+                    sf.base.addClass([this.overFlowWrapper], HIDEICON);
+                }
+                if (this.mode === 'Delimiter') {
+                    sf.base.removeClass([this.inputWrapper], SHOW_CHIP);
+                    sf.base.removeClass([this.inputEle], CHIP_INPUT);
+                }
+                else {
+                    sf.base.addClass([this.inputWrapper], SHOW_CHIP);
+                }
+                sf.base.removeClass([this.inputWrapper], SHOW_TEXT);
+                this.ensurePlaceHolder();
             }
         }
         var args = { isInteracted: e ? true : false, event: e };
@@ -775,6 +840,160 @@ var DropDownTree = /** @class */ (function (_super) {
             'aria-activedescendant': 'null',
             'aria-labelledby': this.hiddenElement.id
         };
+    };
+    DropDownTree.prototype.updateOverFlowView = function () {
+        this.overFlowWrapper.classList.remove(TOTAL_COUNT_WRAPPER);
+        sf.base.removeClass([this.overFlowWrapper], HIDEICON);
+        if (this.value && this.value.length) {
+            var data = '';
+            var overAllContainer = void 0;
+            var temp = void 0;
+            var tempData = void 0;
+            var tempIndex = 1;
+            var wrapperleng = void 0;
+            var remaining = void 0;
+            var downIconWidth = 0;
+            this.overFlowWrapper.innerHTML = '';
+            var l10nLocale = { overflowCountTemplate: '+${count} more..', totalCountTemplate: '${count} selected' };
+            this.l10n = new sf.base.L10n(this.getLocaleName(), l10nLocale, this.locale);
+            var remainContent = this.l10n.getConstant('overflowCountTemplate');
+            var remainElement = this.createElement('span', { className: REMAIN_WRAPPER });
+            var compiledString = sf.base.compile(remainContent);
+            var totalCompiledString = sf.base.compile(this.l10n.getConstant('totalCountTemplate'));
+            remainElement.appendChild(compiledString({ 'count': this.value.length }, null, null, null, !this.isStringTemplate)[0]);
+            this.overFlowWrapper.appendChild(remainElement);
+            var remainSize = remainElement.offsetWidth;
+            sf.base.remove(remainElement);
+            if (this.showDropDownIcon) {
+                downIconWidth = sf.base.select('.' + DDTICON, this.inputWrapper).offsetWidth;
+            }
+            if (!sf.base.isNullOrUndefined(this.value)) {
+                if (this.mode !== 'Box') {
+                    for (var index = 0; !sf.base.isNullOrUndefined(this.value[index]); index++) {
+                        data += (index === 0) ? '' : this.delimiterChar + ' ';
+                        temp = this.getOverflowVal(index);
+                        data += temp;
+                        temp = this.overFlowWrapper.innerHTML;
+                        this.overFlowWrapper.innerHTML = data;
+                        wrapperleng = this.overFlowWrapper.offsetWidth;
+                        overAllContainer = this.inputWrapper.offsetWidth;
+                        if ((wrapperleng + downIconWidth + this.clearIconWidth) > overAllContainer) {
+                            if (tempData !== undefined && tempData !== '') {
+                                temp = tempData;
+                                index = tempIndex + 1;
+                            }
+                            this.overFlowWrapper.innerHTML = temp;
+                            remaining = this.value.length - index;
+                            wrapperleng = this.overFlowWrapper.offsetWidth;
+                            while (((wrapperleng + remainSize + downIconWidth + this.clearIconWidth) >= overAllContainer)
+                                && wrapperleng !== 0 && this.overFlowWrapper.innerHTML !== '') {
+                                var textArr = this.overFlowWrapper.innerHTML.split(this.delimiterChar);
+                                textArr.pop();
+                                this.overFlowWrapper.innerHTML = textArr.join(this.delimiterChar);
+                                remaining++;
+                                wrapperleng = this.overFlowWrapper.offsetWidth;
+                            }
+                            break;
+                        }
+                        else if ((wrapperleng + remainSize + downIconWidth + this.clearIconWidth) <= overAllContainer) {
+                            tempData = data;
+                            tempIndex = index;
+                        }
+                        else if (index === 0) {
+                            tempData = '';
+                            tempIndex = -1;
+                        }
+                    }
+                }
+                else {
+                    sf.base.addClass([this.chipWrapper], HIDEICON);
+                    var ele = this.chipWrapper.cloneNode(true);
+                    var chips = sf.base.selectAll('.' + CHIP, ele);
+                    for (var i = 0; i < chips.length; i++) {
+                        temp = this.overFlowWrapper.innerHTML;
+                        this.overFlowWrapper.appendChild(chips[i]);
+                        data = this.overFlowWrapper.innerHTML;
+                        wrapperleng = this.overFlowWrapper.offsetWidth;
+                        overAllContainer = this.inputWrapper.offsetWidth;
+                        if ((wrapperleng + downIconWidth + this.clearIconWidth) > overAllContainer) {
+                            if (tempData !== undefined && tempData !== '') {
+                                temp = tempData;
+                                i = tempIndex + 1;
+                            }
+                            this.overFlowWrapper.innerHTML = temp;
+                            remaining = this.value.length - i;
+                            wrapperleng = this.overFlowWrapper.offsetWidth;
+                            while (((wrapperleng + remainSize + downIconWidth + this.clearIconWidth) >= overAllContainer)
+                                && wrapperleng !== 0 && this.overFlowWrapper.innerHTML !== '') {
+                                this.overFlowWrapper.removeChild(this.overFlowWrapper.lastChild);
+                                remaining++;
+                                wrapperleng = this.overFlowWrapper.offsetWidth;
+                            }
+                            break;
+                        }
+                        else if ((wrapperleng + remainSize + downIconWidth + this.clearIconWidth) <= overAllContainer) {
+                            tempData = data;
+                            tempIndex = i;
+                        }
+                        else if (i === 0) {
+                            tempData = '';
+                            tempIndex = -1;
+                        }
+                    }
+                }
+            }
+            if (remaining > 0) {
+                var totalWidth = overAllContainer - (downIconWidth + this.clearIconWidth);
+                this.overFlowWrapper.appendChild(this.updateRemainTemplate(remainElement, remaining, compiledString, totalCompiledString, totalWidth));
+            }
+            if (this.mode === 'Box' && !this.overFlowWrapper.classList.contains(TOTAL_COUNT_WRAPPER)) {
+                sf.base.addClass([remainElement], REMAIN_COUNT);
+            }
+        }
+        else {
+            this.overFlowWrapper.innerHTML = '';
+            sf.base.addClass([this.overFlowWrapper], HIDEICON);
+        }
+        this.updateDelimMode();
+    };
+    DropDownTree.prototype.updateRemainTemplate = function (remainElement, remaining, compiledString, totalCompiledString, totalWidth) {
+        if (this.overFlowWrapper.firstChild && this.overFlowWrapper.firstChild.nodeType === 3 &&
+            this.overFlowWrapper.firstChild.nodeValue === '') {
+            this.overFlowWrapper.removeChild(this.overFlowWrapper.firstChild);
+        }
+        remainElement.innerHTML = '';
+        remainElement.appendChild((this.overFlowWrapper.firstChild && (this.overFlowWrapper.firstChild.nodeType === 3 || this.mode === 'Box')) ?
+            compiledString({ 'count': remaining }, null, null, null, !this.isStringTemplate)[0] :
+            totalCompiledString({ 'count': remaining }, null, null, null, !this.isStringTemplate)[0]);
+        if (this.overFlowWrapper.firstChild && (this.overFlowWrapper.firstChild.nodeType === 3 || this.mode === 'Box')) {
+            sf.base.removeClass([this.overFlowWrapper], TOTAL_COUNT_WRAPPER);
+        }
+        else {
+            sf.base.addClass([this.overFlowWrapper], TOTAL_COUNT_WRAPPER);
+            sf.base.removeClass([this.overFlowWrapper], REMAIN_COUNT);
+        }
+        return remainElement;
+    };
+    DropDownTree.prototype.getOverflowVal = function (index) {
+        var temp;
+        var selectedData = this.getSelectedData(this.value[index]);
+        temp = sf.base.getValue(this.treeSettings.loadOnDemand ? this.fields.text : 'text', selectedData);
+        return temp;
+    };
+    DropDownTree.prototype.updateDelimMode = function () {
+        if (this.mode !== 'Box') {
+            if (sf.base.select('.' + REMAIN_WRAPPER, this.overFlowWrapper) && !this.overFlowWrapper.classList.contains(TOTAL_COUNT_WRAPPER)) {
+                sf.base.addClass([this.overFlowWrapper], REMAIN_COUNT);
+                sf.base.addClass([this.overFlowWrapper], SHOW_TEXT);
+            }
+            else {
+                this.overFlowWrapper.classList.remove(REMAIN_COUNT);
+                sf.base.removeClass([this.overFlowWrapper], REMAIN_COUNT);
+            }
+        }
+        else if (sf.base.select('.' + REMAIN_WRAPPER, this.overFlowWrapper)) {
+            this.overFlowWrapper.classList.remove(REMAIN_COUNT);
+        }
     };
     DropDownTree.prototype.createHiddenElement = function () {
         if (this.allowMultiSelection || this.showCheckBox) {
@@ -1378,6 +1597,9 @@ var DropDownTree = /** @class */ (function (_super) {
             this.setTreeText();
             this.updateHiddenValue();
             this.setSelectedValue();
+            if (!this.wrapText) {
+                this.updateView();
+            }
             this.treeObj.element.focus();
         }
         var eventArgs = { data: args.data };
@@ -1970,8 +2192,13 @@ var DropDownTree = /** @class */ (function (_super) {
         }
         this.resetValue();
         this.showOverAllClear();
-        if ((this.allowMultiSelection || this.showCheckBox) && this.popupObj) {
-            this.popupObj.refreshPosition();
+        if ((this.allowMultiSelection || this.showCheckBox)) {
+            if (this.popupObj) {
+                this.popupObj.refreshPosition();
+            }
+            if (!this.wrapText) {
+                this.updateOverflowWrapper(true);
+            }
         }
         if (e) {
             this.isClearButtonClick = true;
@@ -2060,6 +2287,9 @@ var DropDownTree = /** @class */ (function (_super) {
         }
         this.updateMode();
         this.setMultiSelect();
+        if (!this.wrapText) {
+            state ? this.updateView() : this.updateOverflowWrapper(true);
+        }
     };
     DropDownTree.prototype.updateTreeSettings = function (prop) {
         var value = Object.keys(prop.treeSettings)[0];
@@ -2079,6 +2309,9 @@ var DropDownTree = /** @class */ (function (_super) {
         this.setMultiSelect();
     };
     DropDownTree.prototype.updateCheckBoxState = function (checkBox) {
+        if (!this.wrapText) {
+            this.updateOverflowWrapper(false);
+        }
         this.treeObj.showCheckBox = checkBox;
         this.treeObj.dataBind();
         this.isDynamicChange = true;
@@ -2127,7 +2360,7 @@ var DropDownTree = /** @class */ (function (_super) {
         }
         else {
             var l10nLocale = { noRecordsTemplate: 'No Records Found', actionFailureTemplate: 'The Request Failed' };
-            this.l10n = new sf.base.L10n(this.getModuleName(), l10nLocale, this.locale);
+            this.l10n = new sf.base.L10n(this.getLocaleName(), l10nLocale, this.locale);
             this.noRecord.innerHTML = actionFailure ?
                 this.l10n.getConstant('actionFailureTemplate') : this.l10n.getConstant('noRecordsTemplate');
         }
@@ -2170,7 +2403,21 @@ var DropDownTree = /** @class */ (function (_super) {
             this.updateTemplate();
         }
     };
+    DropDownTree.prototype.updateOverflowWrapper = function (state) {
+        if (!state) {
+            if (!this.inputWrapper.contains(this.overFlowWrapper)) {
+                this.overFlowWrapper = this.createElement('span', { className: OVERFLOW_VIEW + ' ' + HIDEICON });
+                this.inputWrapper.insertBefore(this.overFlowWrapper, this.hiddenElement);
+            }
+        }
+        else if (this.inputWrapper.contains(this.overFlowWrapper) && state) {
+            this.overFlowWrapper.innerHTML = '';
+        }
+    };
     DropDownTree.prototype.updateMultiSelection = function (state) {
+        if (!this.wrapText) {
+            this.updateOverflowWrapper(false);
+        }
         this.treeObj.allowMultiSelection = state;
         this.treeObj.dataBind();
         this.updateOption();
@@ -2202,6 +2449,10 @@ var DropDownTree = /** @class */ (function (_super) {
         }
         else {
             this.setTreeValue();
+            if ((this.allowMultiSelection || this.showCheckBox) && !this.wrapText) {
+                this.updateOverflowWrapper(false);
+                this.updateView();
+            }
         }
         this.updateHiddenValue();
     };
@@ -2211,6 +2462,10 @@ var DropDownTree = /** @class */ (function (_super) {
         }
         else {
             this.setTreeText();
+            if ((this.allowMultiSelection || this.showCheckBox) && !this.wrapText) {
+                this.updateOverflowWrapper(false);
+                this.updateView();
+            }
         }
         this.updateHiddenValue();
     };
@@ -2219,8 +2474,24 @@ var DropDownTree = /** @class */ (function (_super) {
         if (!validMode) {
             return;
         }
+        if (!this.wrapText) {
+            var overFlow = sf.base.select('.' + OVERFLOW_VIEW, this.inputWrapper);
+            if (overFlow) {
+                overFlow.innerHTML = '';
+            }
+        }
         this.updateMode();
         this.setMultiSelect();
+        if (!this.wrapText && (this.value && this.value.length !== 0)) {
+            this.updateOverFlowView();
+            sf.base.addClass([this.inputEle], CHIP_INPUT);
+            if (this.mode === 'Box') {
+                sf.base.removeClass([this.overFlowWrapper, this.inputWrapper], SHOW_TEXT);
+            }
+            else {
+                sf.base.addClass([this.overFlowWrapper, this.inputWrapper], SHOW_TEXT);
+            }
+        }
     };
     DropDownTree.prototype.updateOption = function () {
         if (!this.hiddenElement.hasAttribute('multiple') && (this.allowMultiSelection || this.showCheckBox)) {
@@ -2362,6 +2633,23 @@ var DropDownTree = /** @class */ (function (_super) {
                     break;
                 case 'htmlAttributes':
                     this.setHTMLAttributes();
+                    break;
+                case 'wrapText':
+                    this.updateOverflowWrapper(this.wrapText);
+                    if ((this.allowMultiSelection || this.showCheckBox) && !this.wrapText) {
+                        this.updateView();
+                    }
+                    else {
+                        sf.base.addClass([this.overFlowWrapper], HIDEICON);
+                        if (this.chipWrapper && this.mode === 'Box') {
+                            sf.base.removeClass([this.chipWrapper], HIDEICON);
+                        }
+                        else {
+                            sf.base.removeClass([this.inputWrapper], SHOW_CHIP);
+                            sf.base.removeClass([this.inputEle], CHIP_INPUT);
+                        }
+                        this.ensurePlaceHolder();
+                    }
                     break;
             }
         }
@@ -2587,6 +2875,9 @@ var DropDownTree = /** @class */ (function (_super) {
     __decorate([
         sf.base.Property(1000)
     ], DropDownTree.prototype, "zIndex", void 0);
+    __decorate([
+        sf.base.Property(false)
+    ], DropDownTree.prototype, "wrapText", void 0);
     __decorate([
         sf.base.Event()
     ], DropDownTree.prototype, "actionFailure", void 0);

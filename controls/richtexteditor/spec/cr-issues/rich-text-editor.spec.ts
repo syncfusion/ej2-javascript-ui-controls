@@ -1163,4 +1163,49 @@ describe('RTE CR issues', () => {
             destroy(rteObj);
         });
     });
+
+    describe('EJ2-41562 - Script error occurs with toolbar options, when placing the cursor before & after RichTextEditor table', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        it(' Before the table element ', () => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['OrderedList']
+                },
+                value: '<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr></tbody></table>'
+            });
+            rteEle = rteObj.element;
+            expect(rteEle.querySelector('.e-content').childNodes.length === 1).toBe(true);
+            rteObj.focusIn();
+            let targetElm: HTMLElement = rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement;
+            targetElm.click();
+            expect(rteEle.querySelector('.e-content').childNodes.length === 1).toBe(true);
+            expect(document.querySelectorAll('ol').length === 1).toBe(true);
+            expect(rteEle.querySelector('.e-content').childNodes[0].nodeName === 'OL').toBe(true);
+        });
+        it(' After the table element ', () => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['OrderedList']
+                },
+                value: '<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr></tbody></table>'
+            });
+            rteEle = rteObj.element;
+            expect(rteEle.querySelector('.e-content').childNodes.length === 1).toBe(true);
+            rteObj.focusIn();
+            let range: Range = document.createRange();
+            range.setStart(rteObj.element.querySelector('.e-content'), 1);
+            rteObj.formatter.editorManager.nodeSelection.setRange(document, range);
+            //rteObj.formatter.editorManager.nodeSelection.setCursorPoint(document, rteObj.element.querySelector('table'), 0);
+            let targetElm: HTMLElement = rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement;
+            targetElm.click();
+            expect(rteEle.querySelector('.e-content').childNodes.length === 2).toBe(true);
+            expect(document.querySelectorAll('ol').length === 1).toBe(true);
+            expect(rteEle.querySelector('.e-content').childNodes[0].nodeName === 'TABLE').toBe(true);
+            expect(rteEle.querySelector('.e-content').childNodes[1].nodeName === 'OL').toBe(true);
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+    });
 });

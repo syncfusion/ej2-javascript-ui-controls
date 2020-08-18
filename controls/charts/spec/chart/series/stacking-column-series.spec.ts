@@ -354,7 +354,7 @@ describe('Chart Control', () => {
                 dataLabel = document.getElementById('container_Series_0_Point_0_Text_0');
                 expect(series1.points[0].regions[0].y < parseFloat(dataLabel.getAttribute('y'))).toBe(true);
                 dataLabel = document.getElementById('container_Series_1_Point_0_Text_0');
-                expect(series2.points[0].regions[0].y < parseFloat(dataLabel.getAttribute('y'))).toBe(true);
+                expect(series2.points[0].regions[0].y > parseFloat(dataLabel.getAttribute('y'))).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -367,9 +367,9 @@ describe('Chart Control', () => {
                 let series1: Series = <Series>args.chart.series[0];
                 let series2: Series = <Series>args.chart.series[1];
                 dataLabel = document.getElementById('container_Series_0_Point_0_Text_0');
-                expect(series1.points[0].regions[0].y < parseFloat(dataLabel.getAttribute('y'))).toBe(true);
+                expect(series1.points[0].regions[0].y > parseFloat(dataLabel.getAttribute('y'))).toBe(true);
                 dataLabel = document.getElementById('container_Series_1_Point_0_Text_0');
-                expect(series2.points[0].regions[0].y < parseFloat(dataLabel.getAttribute('y'))).toBe(true);
+                expect(series2.points[0].regions[0].y > parseFloat(dataLabel.getAttribute('y'))).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -545,7 +545,7 @@ describe('Chart Control', () => {
                 expect((series1.points[2].regions[0].y + series1.points[2].regions[0].height) >
                     parseFloat(dataLabel.getAttribute('y'))).toBe(true);
                 dataLabel = document.getElementById('container_Series_1_Point_5_Text_0');
-                expect((series2.points[5].regions[0].y + series2.points[5].regions[0].height) >
+                expect((series2.points[5].regions[0].y + series2.points[5].regions[0].height) <
                     parseFloat(dataLabel.getAttribute('y'))).toBe(true);
                 done();
             };
@@ -959,10 +959,10 @@ describe('Chart Control', () => {
             loaded = (args: Object): void => {
                 dataLabelY = +document.getElementById('container_Series_0_Point_1_TextShape_0').getAttribute('y');
                 pointY = (<Points>(<Series>chart.series[0]).points[1]).symbolLocations[0].y;
-                expect(dataLabelY > pointY).toBe(true);
+                expect(dataLabelY < pointY).toBe(true);
                 dataLabelY = +document.getElementById('container_Series_0_Point_0_TextShape_0').getAttribute('y');
                 pointY = (<Points>(<Series>chart.series[0]).points[0]).symbolLocations[0].y;
-                expect(dataLabelY < pointY).toBe(true);
+                expect(dataLabelY > pointY).toBe(true);
                 done();
             };
             chart.loaded = loaded;
@@ -1095,11 +1095,11 @@ describe('Chart Control', () => {
                 //positive yValues
                 dataLabel = document.getElementById('container_Series_0_Point_2_Text_0');
                 point = (<Points>(<Series>chart.series[0]).points[2]);
-                expect(+(dataLabel.getAttribute('x')) < point.symbolLocations[0].x).toBe(true);
+                expect(+(dataLabel.getAttribute('x')) > point.symbolLocations[0].x).toBe(true);
                 //negative yValues
                 dataLabel = document.getElementById('container_Series_0_Point_1_Text_0');
                 point = (<Points>(<Series>chart.series[0]).points[1]);
-                expect(+(dataLabel.getAttribute('x')) > point.symbolLocations[0].x).toBe(true);
+                expect(+(dataLabel.getAttribute('x')) < point.symbolLocations[0].x).toBe(true);
                 done();
             };
             chart.loaded = loaded;

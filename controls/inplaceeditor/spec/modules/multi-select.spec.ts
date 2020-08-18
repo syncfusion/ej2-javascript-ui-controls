@@ -3,7 +3,7 @@
  */
 import { select, selectAll, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import { DataManager, Query, ODataV4Adaptor } from '@syncfusion/ej2-data';
-import { InPlaceEditor, ValidateEventArgs, BeginEditEventArgs } from '../../src/inplace-editor/base/index';
+import { InPlaceEditor, ValidateEventArgs, BeginEditEventArgs, ChangeEventArgs } from '../../src/inplace-editor/base/index';
 import { MultiSelect } from '../../src/inplace-editor/modules/index';
 import * as classes from '../../src/inplace-editor/base/classes';
 import { renderEditor, destroy } from './../render.spec';
@@ -1231,6 +1231,151 @@ describe('MultiSelect module', () => {
                 expect((select('.' + classes.VALUE_WRAPPER + ' .' + classes.VALUE, editorObj.element) as HTMLElement).innerText).toEqual('12000,13000');
                 done();
             }, 400);
+        });
+    });
+
+    describe('BLAZ-4764 - New change event testing', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let changeArgs: any = {};
+        afterEach((): void => {
+            destroy(editorObj);
+            changeArgs = {};
+        });
+        it('Without Fields & without initial value - Check changed value', (done) => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                type: 'MultiSelect',
+                model: {
+                    dataSource: ['Badminton', 'Cricket']
+                },
+                change: function (e: ChangeEventArgs) {
+                    changeArgs = e;
+                }
+            });
+            ele = editorObj.element;
+            valueEle = <HTMLElement>select('.' + classes.VALUE, ele);
+            valueEle.click();
+            setTimeout(() => {
+                expect(editorObj.value).toEqual(null);
+                editorObj.multiSelectModule.compObj.value = ['Badminton', 'Cricket'];
+                editorObj.multiSelectModule.compObj.dataBind();
+                editorObj.multiSelectModule.compObj.focusOut();
+                (ele.querySelector('.e-btn-save') as HTMLElement).click();
+                setTimeout(() => {
+                    expect(changeArgs['name']).toEqual('change');
+                    expect(changeArgs['previousValue']).toEqual(null);
+                    expect(changeArgs['value']).toEqual(['Badminton', 'Cricket']);
+                    expect(isNullOrUndefined(changeArgs['previousItemData'])).toEqual(true);
+                    expect(isNullOrUndefined(changeArgs['itemData'])).toEqual(true);
+                    done();
+                }, 1000);
+            }, 1500);
+        });
+        it('Without Fields - Check changed value', (done) => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                type: 'MultiSelect',
+                value: ['Cricket'],
+                model: {
+                    dataSource: ['Badminton', 'Cricket']
+                },
+                change: function (e: ChangeEventArgs) {
+                    changeArgs = e;
+                }
+            });
+            ele = editorObj.element;
+            valueEle = <HTMLElement>select('.' + classes.VALUE, ele);
+            valueEle.click();
+            setTimeout(() => {
+                expect(editorObj.value).toEqual(['Cricket']);
+                editorObj.multiSelectModule.compObj.value = ['Badminton', 'Cricket'];
+                editorObj.multiSelectModule.compObj.dataBind();
+                editorObj.multiSelectModule.compObj.focusOut();
+                (ele.querySelector('.e-btn-save') as HTMLElement).click();
+                setTimeout(() => {
+                    expect(changeArgs['name']).toEqual('change');
+                    expect(changeArgs['previousValue']).toEqual(['Cricket']);
+                    expect(changeArgs['value']).toEqual(['Badminton', 'Cricket']);
+                    expect(isNullOrUndefined(changeArgs['previousItemData'])).toEqual(true);
+                    expect(isNullOrUndefined(changeArgs['itemData'])).toEqual(true);
+                    done();
+                }, 1000);
+            }, 1500);
+        });
+        it('With Fields & without initial value - Check changed value', (done) => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                type: 'MultiSelect',
+                model: {
+                    dataSource: [
+                        { Id: 'game1', Game: 'Badminton' },
+                        { Id: 'game2', Game: 'Basketball' },
+                        { Id: 'game3', Game: 'Cricket' },
+                        { Id: 'game4', Game: 'Football' },
+                    ],
+                    fields: { text: 'Game', value: 'Id' },
+                },
+                change: function (e: ChangeEventArgs) {
+                    changeArgs = e;
+                }
+            });
+            ele = editorObj.element;
+            valueEle = <HTMLElement>select('.' + classes.VALUE, ele);
+            valueEle.click();
+            setTimeout(() => {
+                expect(editorObj.value).toEqual(null);
+                editorObj.multiSelectModule.compObj.value = ['game1', 'game2'];
+                editorObj.multiSelectModule.compObj.dataBind();
+                editorObj.multiSelectModule.compObj.focusOut();
+                (ele.querySelector('.e-btn-save') as HTMLElement).click();
+                setTimeout(() => {
+                    expect(changeArgs['name']).toEqual('change');
+                    expect(changeArgs['previousValue']).toEqual(null);
+                    expect(changeArgs['value']).toEqual(['game1', 'game2']);
+                    expect(isNullOrUndefined(changeArgs['previousItemData'])).toEqual(true);
+                    expect(isNullOrUndefined(changeArgs['itemData'])).toEqual(true);
+                    done();
+                }, 1000);
+            }, 1500);
+        });
+        it('With Fields - Check changed value', (done) => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                type: 'MultiSelect',
+                value: ['game3'],
+                model: {
+                    dataSource: [
+                        { Id: 'game1', Game: 'Badminton' },
+                        { Id: 'game2', Game: 'Basketball' },
+                        { Id: 'game3', Game: 'Cricket' },
+                        { Id: 'game4', Game: 'Football' },
+                    ],
+                    fields: { text: 'Game', value: 'Id' },
+                },
+                change: function (e: ChangeEventArgs) {
+                    changeArgs = e;
+                }
+            });
+            ele = editorObj.element;
+            valueEle = <HTMLElement>select('.' + classes.VALUE, ele);
+            valueEle.click();
+            setTimeout(() => {
+                expect(editorObj.value).toEqual(['game3']);
+                editorObj.multiSelectModule.compObj.value = ['game1', 'game2'];
+                editorObj.multiSelectModule.compObj.dataBind();
+                editorObj.multiSelectModule.compObj.focusOut();
+                (ele.querySelector('.e-btn-save') as HTMLElement).click();
+                setTimeout(() => {
+                    expect(changeArgs['name']).toEqual('change');
+                    expect(changeArgs['previousValue']).toEqual(['game3']);
+                    expect(changeArgs['value']).toEqual(['game1', 'game2']);
+                    expect(isNullOrUndefined(changeArgs['previousItemData'])).toEqual(true);
+                    expect(isNullOrUndefined(changeArgs['itemData'])).toEqual(true);
+                    done();
+                }, 1000);
+            }, 1500);
         });
     });
 

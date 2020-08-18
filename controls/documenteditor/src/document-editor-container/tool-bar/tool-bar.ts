@@ -141,6 +141,8 @@ export class Toolbar {
             cssClass: cssClassName,
             iconCss: iconCss
         });
+        let locale: L10n = this.container.localObj;
+        buttonElement.title = locale.getConstant('Toggles the visibility of properties pane');
         this.propertiesPaneButton.appendTo(buttonElement);
         EventHandler.add(buttonElement, 'click', this.showHidePropertiesPane, this);
         toolbarContainer.appendChild(propertiesPaneDiv);
@@ -219,15 +221,21 @@ export class Toolbar {
             this.formFieldDropDown = new DropDownButton(items, breakButton as HTMLButtonElement);
         }
     }
+
     private showHidePropertiesPane(): void {
+        let paneDiv: HTMLElement = document.getElementsByClassName('e-de-ctnr-properties-pane-btn')[0] as HTMLButtonElement;
         if (this.container.propertiesPaneContainer.style.display === 'none') {
             this.container.showPropertiesPane = true;
+            paneDiv.classList.remove('e-de-pane-disable-clr');
+            classList(paneDiv, ['e-de-pane-enable-clr'], []);
             this.container.trigger('beforePaneSwitch', { type: 'PropertiesPane' });
         } else if (this.container.previousContext.indexOf('Header') >= 0
             || this.container.previousContext.indexOf('Footer') >= 0) {
             this.container.showHeaderProperties = !this.container.showHeaderProperties;
         } else {
             this.container.showPropertiesPane = false;
+            paneDiv.classList.remove('e-de-pane-enable-clr');
+            classList(paneDiv, ['e-de-pane-disable-clr'], []);
         }
         this.enableDisablePropertyPaneButton(this.container.showPropertiesPane);
         this.container.showPropertiesPaneOnSelection();
@@ -697,7 +705,10 @@ export class Toolbar {
                 this.toolbar.enableItems(element.parentElement, enable);
             }
         }
-        if (!isProtectedContent) {
+        if (!isProtectedContent || this.container.showPropertiesPane) {
+            if (isProtectedContent) {
+                enable = this.container.showPropertiesPane;
+            }
             classList(this.propertiesPaneButton.element.parentElement, !enable ? ['e-de-overlay'] : [], !enable ? [] : ['e-de-overlay']);
         }
         if (enable || (this.documentEditor.documentHelper.isDocumentProtected &&

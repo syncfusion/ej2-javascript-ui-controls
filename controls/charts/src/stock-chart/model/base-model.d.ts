@@ -1552,4 +1552,12 @@ export interface StockEventsSettingsModel {
      */
     textStyle?: StockChartFontModel;
 
+    /**
+     * To render stock events in particular series.
+     * By default stock events will render for all series.
+     * @default []
+     */
+
+    seriesIndexes?: number[];
+
 }

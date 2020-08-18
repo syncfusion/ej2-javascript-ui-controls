@@ -173,9 +173,11 @@ export class Reorder {
         //gObj.notify(events.columnPositionChanged, { fromIndex: destIndex, toIndex: srcIdx });
         if (preventRefresh !== false) {
             //TODO: reorder from here
-            gObj.dotNetRef.invokeMethodAsync("ColumnReordered", {
-                 requestType: 'reorder', fromIndex: destIndex, toIndex: srcIdx, toColumnUid: column.uid
-            });
+            setTimeout(() => {
+                gObj.dotNetRef.invokeMethodAsync("ColumnReordered", {
+                    requestType: 'reorder', fromIndex: destIndex, toIndex: srcIdx, toColumnUid: column.uid
+                });
+            }, 10);
         }
     }
 

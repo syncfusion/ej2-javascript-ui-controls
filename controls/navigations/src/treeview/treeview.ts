@@ -627,6 +627,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private isFieldChange: boolean = false;
     private changeDataSource: boolean = false;
     private isBlazorExpandedNodes: string[] = [];
+    private isOffline: boolean;
     /**
      * Indicates whether the TreeView allows drag and drop of nodes. To drag and drop a node in
      * desktop, hold the mouse on the node, drag it to the target node and drop the node by releasing
@@ -1191,9 +1192,15 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private setDataBinding(changeDataSource: boolean): void {
         this.treeList.push('false');
         if (this.fields.dataSource instanceof DataManager) {
+            // tslint:disable
+            this.isOffline =  (this.isBlazorPlatform ? (this.fields.dataSource as any).offline :
+                                    (this.fields.dataSource as DataManager).dataSource.offline);
             if ((this.fields.dataSource as DataManager).ready) {
                 (this.fields.dataSource as DataManager).ready.then((e: Object) => {
-                    if (this.fields.dataSource instanceof DataManager && this.fields.dataSource.dataSource.offline) {
+                    // tslint:disable
+                    this.isOffline =  (this.isBlazorPlatform ? (this.fields.dataSource as any).offline :
+                                                (this.fields.dataSource as DataManager).dataSource.offline);
+                    if (this.fields.dataSource instanceof DataManager && this.isOffline) {
                         this.treeList.pop();
                         this.treeData = (e as ResultData).result;
                         this.isNumberTypeId = this.getType();
@@ -1365,7 +1372,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     }
                 }
             } else if (this.dataType === 2 || (this.fields.dataSource instanceof DataManager &&
-                this.fields.dataSource.dataSource.offline)) {
+                this.isOffline)) {
                 for (let index: number = 0; index < this.treeData.length; index++) {
                     let fieldId: string = this.treeData[index][this.fields.id] ? this.treeData[index][this.fields.id].toString() : '';
                     if (this.treeData[index][this.fields.isChecked] && !(this.isLoaded) && this.checkedNodes.indexOf(fieldId) === -1) {
@@ -1572,7 +1579,12 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private getDataType(ds: { [key: string]: Object }[], mapper: FieldsSettingsModel): number {
         if (this.fields.dataSource instanceof DataManager && ((this.fields.dataSource as any).adaptorName !== 'BlazorAdaptor')) {
             for (let i: number = 0; i < ds.length; i++) {
-                if ((typeof mapper.child === 'string') && isNOU(getValue(mapper.child, ds[i]))) {
+                if (this.isOffline) {
+                    if ((typeof mapper.child === 'string') && isNOU(getValue(mapper.child, ds[i])) && !isNOU(getValue(mapper.parentID, ds[i]))) {
+                        return 1;
+                    }
+                }
+                else if ((typeof mapper.child === 'string') && isNOU(getValue(mapper.child, ds[i]))) {
                     return 1;
                 }
             }
@@ -1864,7 +1876,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 }
             }
         } else if (this.dataType === 2 || (this.fields.dataSource instanceof DataManager &&
-            this.fields.dataSource.dataSource.offline)) {
+            this.isOffline)) {
             let id: string;
             let parentElement: Element;
             let check: Element;
@@ -2456,7 +2468,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 return;
             }
             this.treeList.push('false');
-            if (this.fields.dataSource instanceof DataManager && (this.fields.dataSource.dataSource.offline)) {
+            if (this.fields.dataSource instanceof DataManager && this.isOffline) {
                        this.treeList.pop();
                        childItems = this.getChildNodes(this.treeData, parentLi.getAttribute('data-uid'));
                        this.loadChild(childItems, mapper, eicon, parentLi, expandChild, callback, loaded);
@@ -2508,7 +2520,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     this.removeExpand(parentLi, true);
             } else {
                 this.updateListProp(mapper);
-                if (this.fields.dataSource instanceof DataManager && !this.fields.dataSource.dataSource.offline) {
+                if (this.fields.dataSource instanceof DataManager && !this.isOffline) {
                     let id: string = parentLi.getAttribute('data-uid');
                     let nodeData: { [key: string]: Object } = this.getNodeObject(id);
                     setValue('child', childItems, nodeData);
@@ -3519,7 +3531,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         let txtEle: HTMLElement = closest(target, '.' + LISTTEXT) as HTMLElement;
         let liEle: Element = closest(target, '.' + LISTITEM);
         detach(this.inputObj.container);
-        if (this.fields.dataSource instanceof DataManager && !(this.fields.dataSource.dataSource.offline) && ((this.fields.dataSource as any).adaptorName !== 'BlazorAdaptor')) {
+        if (this.fields.dataSource instanceof DataManager && !this.isOffline && ((this.fields.dataSource as any).adaptorName !== 'BlazorAdaptor')) {
            this.crudOperation('update', null, liEle, newText, null, null, true);
         } else {
             this.appendNewText(liEle, txtEle, newText, true);
@@ -5332,7 +5344,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         let dropLi: Element = this.getElement(target);
         this.preventExpand = preventTargetExpand;
         if (this.fields.dataSource instanceof DataManager && ((this.fields.dataSource as any).adaptorName !== 'BlazorAdaptor')) {
-            if (!(this.fields.dataSource.dataSource.offline) ) {
+            if (!this.isOffline ) {
                 this.crudOperation('insert', null, target, null, nodes, index, this.preventExpand);
             } else {
                 this.addSuccess(nodes, dropLi, index);
@@ -5628,7 +5640,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      */
     public removeNodes(nodes: string[] | Element[]): void {
         if (!isNOU(nodes)) {
-            if (this.fields.dataSource instanceof DataManager && !(this.fields.dataSource.dataSource.offline) && ((this.fields.dataSource as any).adaptorName !== 'BlazorAdaptor')) {
+            if (this.fields.dataSource instanceof DataManager && !this.isOffline && ((this.fields.dataSource as any).adaptorName !== 'BlazorAdaptor')) {
                 this.crudOperation('delete', nodes);
             } else {
                 this.deleteSuccess(nodes)
@@ -5654,7 +5666,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         let eventArgs: NodeEditEventArgs = this.getEditEvent(liEle, null, null);
         this.trigger('nodeEditing', eventArgs, (observedArgs: NodeEditEventArgs) => {
             if (!observedArgs.cancel) {
-                if (this.fields.dataSource instanceof DataManager && !(this.fields.dataSource.dataSource.offline) && ((this.fields.dataSource as any).adaptorName !== 'BlazorAdaptor')) {
+                if (this.fields.dataSource instanceof DataManager && !this.isOffline && ((this.fields.dataSource as any).adaptorName !== 'BlazorAdaptor')) {
                     
                     this.crudOperation('update', null, target, newText, null, null, false);
                 } else {

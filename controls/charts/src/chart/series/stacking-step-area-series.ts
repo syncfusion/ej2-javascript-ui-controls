@@ -17,6 +17,7 @@ export class StackingStepAreaSeries extends LineBase {
      * @return {void}
      * @private
      */
+    // tslint:disable-next-line:max-func-body-length
     public render(stackSeries: Series, xAxis: Axis, yAxis: Axis, isInverted: boolean): void {
         let currentPointLocation: ChartLocation; let secondPoint: ChartLocation;
         let start: ChartLocation = null; let direction: string = '';
@@ -26,6 +27,7 @@ export class StackingStepAreaSeries extends LineBase {
         let pointsLength: number = visiblePoint.length; let options: PathOption; let point: Points;
         let point2: ChartLocation; let point3: ChartLocation; let xValue: number; let lineLength: number;
         let prevPoint: Points = null; let validIndex: number; let startPoint: number = 0;
+        let pointIndex: number;
         if (xAxis.valueType === 'Category' && xAxis.labelPlacement === 'BetweenTicks') {
             lineLength = 0.5;
         } else {
@@ -34,25 +36,26 @@ export class StackingStepAreaSeries extends LineBase {
         for (let i: number = 0; i < pointsLength; i++) {
             point = visiblePoint[i]; xValue = point.xValue;
             point.symbolLocations = []; point.regions = [];
+            pointIndex = point.index;
             if (point.visible && withInRange(visiblePoint[i - 1], point, visiblePoint[i + 1], stackSeries)) {
                 if (start === null) {
                     start = new ChartLocation(xValue, 0);
                     currentPointLocation = getPoint(xValue - lineLength, origin, xAxis, yAxis, isInverted);
                     direction += ('M' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
-                    currentPointLocation = getPoint(xValue - lineLength, stackedvalue.endValues[i], xAxis, yAxis, isInverted);
+                    currentPointLocation = getPoint(xValue - lineLength, stackedvalue.endValues[pointIndex], xAxis, yAxis, isInverted);
                     direction += ('L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
                 }
                 if (prevPoint != null) {
-                    currentPointLocation = getPoint(point.xValue, stackedvalue.endValues[i], xAxis, yAxis, isInverted);
+                    currentPointLocation = getPoint(point.xValue, stackedvalue.endValues[pointIndex], xAxis, yAxis, isInverted);
                     secondPoint = getPoint(prevPoint.xValue, stackedvalue.endValues[prevPoint.index], xAxis, yAxis, isInverted);
                     direction += ('L' + ' ' + (currentPointLocation.x) + ' ' + (secondPoint.y) +
                         ' L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
                 } else if (stackSeries.emptyPointSettings.mode === 'Gap') {
-                    currentPointLocation = getPoint(point.xValue, stackedvalue.endValues[i], xAxis, yAxis, isInverted);
+                    currentPointLocation = getPoint(point.xValue, stackedvalue.endValues[pointIndex], xAxis, yAxis, isInverted);
                     direction += 'L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ';
                 }
                 visiblePoint[i].symbolLocations.push(
-                    getPoint(visiblePoint[i].xValue, stackedvalue.endValues[i], xAxis, yAxis, isInverted, stackSeries));
+                    getPoint(visiblePoint[i].xValue, stackedvalue.endValues[pointIndex], xAxis, yAxis, isInverted, stackSeries));
                 visiblePoint[i].regions.push(new Rect(
                     visiblePoint[i].symbolLocations[0].x - stackSeries.marker.width,
                     visiblePoint[i].symbolLocations[0].y - stackSeries.marker.height,
@@ -62,17 +65,22 @@ export class StackingStepAreaSeries extends LineBase {
             }
             // If we set the empty point mode is Gap or next point of the current point is false, we will close the series path.
             if (visiblePoint[i + 1] && !visiblePoint[i + 1].visible && stackSeries.emptyPointSettings.mode !== 'Drop') {
+                let previousPointIndex: number;
                 for (let j: number = i; j >= startPoint; j--) {
-                    if (j !== 0 && (stackedvalue.startValues[j] < stackedvalue.startValues[j - 1] ||
-                        stackedvalue.startValues[j] > stackedvalue.startValues[j - 1])) {
+                    pointIndex = visiblePoint[j].index;
+                    previousPointIndex = j === 0 ? 0 : visiblePoint[j - 1].index;
+                    if (j !== 0 && (stackedvalue.startValues[pointIndex] < stackedvalue.startValues[previousPointIndex] ||
+                        stackedvalue.startValues[pointIndex] > stackedvalue.startValues[previousPointIndex])) {
                         currentPointLocation = getPoint(
-                            visiblePoint[j].xValue, stackedvalue.startValues[j], xAxis, yAxis, isInverted, stackSeries);
+                            visiblePoint[pointIndex].xValue, stackedvalue.startValues[pointIndex], xAxis, yAxis, isInverted, stackSeries);
                         direction = direction.concat('L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
                         currentPointLocation = getPoint(
-                            visiblePoint[j].xValue, stackedvalue.startValues[j - 1], xAxis, yAxis, isInverted, stackSeries);
+                            visiblePoint[pointIndex].xValue, stackedvalue.startValues[previousPointIndex],
+                            xAxis, yAxis, isInverted, stackSeries
+                        );
                     } else {
                         currentPointLocation = getPoint(
-                            visiblePoint[j].xValue, stackedvalue.startValues[j], xAxis, yAxis, isInverted, stackSeries);
+                            visiblePoint[pointIndex].xValue, stackedvalue.startValues[pointIndex], xAxis, yAxis, isInverted, stackSeries);
                     }
                     direction = direction.concat('L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
                 }
@@ -83,10 +91,11 @@ export class StackingStepAreaSeries extends LineBase {
         }
         // For category axis
         if ((pointsLength > 1) && direction !== '') {
-            start = { 'x': visiblePoint[pointsLength - 1].xValue + lineLength, 'y': stackedvalue.endValues[pointsLength - 1] };
+            pointIndex = visiblePoint[pointsLength - 1].index;
+            start = { 'x': visiblePoint[pointsLength - 1].xValue + lineLength, 'y': stackedvalue.endValues[pointIndex] };
             secondPoint = getPoint(start.x, start.y, xAxis, yAxis, isInverted);
             direction += ('L' + ' ' + (secondPoint.x) + ' ' + (secondPoint.y) + ' ');
-            start = { 'x': visiblePoint[pointsLength - 1].xValue + lineLength, 'y': stackedvalue.startValues[pointsLength - 1] };
+            start = { 'x': visiblePoint[pointsLength - 1].xValue + lineLength, 'y': stackedvalue.startValues[pointIndex] };
             secondPoint = getPoint(start.x, start.y, xAxis, yAxis, isInverted);
             direction += ('L' + ' ' + (secondPoint.x) + ' ' + (secondPoint.y) + ' ');
         }
@@ -94,7 +103,8 @@ export class StackingStepAreaSeries extends LineBase {
         for (let j: number = pointsLength - 1; j >= startPoint; j--) {
             let index: number;
             if (visiblePoint[j].visible) {
-                point2 = getPoint(visiblePoint[j].xValue, stackedvalue.startValues[j], xAxis, yAxis, isInverted, stackSeries);
+                pointIndex = visiblePoint[j].index;
+                point2 = getPoint(visiblePoint[j].xValue, stackedvalue.startValues[pointIndex], xAxis, yAxis, isInverted, stackSeries);
                 direction = direction.concat('L' + ' ' + (point2.x) + ' ' + (point2.y) + ' ');
             }
             if (j !== 0 && !visiblePoint[j - 1].visible) {
@@ -102,8 +112,9 @@ export class StackingStepAreaSeries extends LineBase {
             }
             if (j !== 0) {
                 validIndex = index ? index : j - 1;
+                pointIndex = index ? visiblePoint[index].index : visiblePoint[j - 1].index;
                 point3 = getPoint(
-                    visiblePoint[validIndex].xValue, stackedvalue.startValues[validIndex], xAxis, yAxis, isInverted, stackSeries);
+                    visiblePoint[validIndex].xValue, stackedvalue.startValues[pointIndex], xAxis, yAxis, isInverted, stackSeries);
                 direction = direction.concat('L' + ' ' + (point2.x) + ' ' + (point3.y) + ' ');
             }
         }

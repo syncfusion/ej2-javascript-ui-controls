@@ -48,8 +48,6 @@ export function stringToNumber(value: string, containerSize: number): number {
 export function calculateSize(maps: Maps): void {
     let containerWidth: number = maps.element.clientWidth;
     let containerHeight: number = maps.element.clientHeight;
-    let parentHeight: number = maps.element.parentElement.clientHeight;
-    let parentWidth: number = maps.element.parentElement.clientWidth;
     let containerElementWidth : number = stringToNumber(maps.element.style.width, containerWidth);
     let containerElementHeight : number = stringToNumber(maps.element.style.height, containerWidth);
     if (maps.width === '0px' || maps.width === '0%' || maps.height === '0%' || maps.height === '0px') {

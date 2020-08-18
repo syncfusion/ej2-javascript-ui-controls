@@ -46,7 +46,7 @@ const IFRAMEHEADER: string = `
                 h1{font-size: 2.17em;font-weight: 400;line-height: 1;margin: 10px 0;}
                 h2{font-size: 1.74em;font-weight: 400;margin: 10px 0;}
                 h3{font-size: 1.31em;font-weight: 400;margin: 10px 0;}
-                h4{font-size: 1em;font-weight: 400;margin: 0;}
+                h4{font-size: 16px;font-weight: 400;line-height: 1.5;margin: 0;}
                 h5{font-size: 00.8em;font-weight: 400;margin: 0;}
                 h6{font-size: 00.65em;font-weight: 400;margin: 0;}
                 blockquote{margin: 10px 0;margin-left: 0;padding-left: 5px;border-left: solid 2px #5c5c5c;}

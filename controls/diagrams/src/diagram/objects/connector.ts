@@ -5,7 +5,8 @@ import { StrokeStyleModel, ShapeStyleModel } from '../core/appearance-model';
 import { Point } from '../primitives/point';
 import { TextElement } from '../core/elements/text-element';
 import { PointModel } from '../primitives/point-model';
-import { Segments, DecoratorShapes, Transform, ConnectorConstraints, Direction, LayoutOrientation, Status } from '../enum/enum';
+import { Segments, DecoratorShapes, Transform, ConnectorConstraints } from '../enum/enum';
+import { Direction, LayoutOrientation, Status, PortConstraints } from '../enum/enum';
 import { DecoratorModel, ConnectorShapeModel, BpmnFlowModel, VectorModel, DiagramConnectorShapeModel } from './connector-model';
 import { Rect } from '../primitives/rect';
 import { Size } from '../primitives/size';
@@ -1174,12 +1175,35 @@ export class Connector extends NodeBase implements IElement {
             setConnectorDefaults(defaultValue, this);
         }
     }
+    /* tslint:disable */
+    private setPortID(diagram: any, isTarget?: boolean): void {
+        if (this.targetID && this.sourceID) {
+            let targetNode: any = diagram.nameTable[this.targetID];
+            let sourceNode: any = diagram.nameTable[this.sourceID];
+            let ports: any = isTarget ? (targetNode && targetNode.ports) : (sourceNode && sourceNode.ports);
+            let port: any;
+            for (let i: number = 0; ports && i < ports.length; i++) {
+                port = ports[i];
+                if (this.targetPortID === port.id && isTarget) {
+                    if ((port.constraints & PortConstraints.None) || !(port.constraints & PortConstraints.InConnect)) {
+                        this.targetPortID = '';
+                    }
+                } else if (this.sourcePortID === port.id && !isTarget) {
+                    if ((port.constraints & PortConstraints.None) || !(port.constraints & PortConstraints.OutConnect)) {
+                        this.sourcePortID = '';
+                    }
+                }
+
+            }
+        }
+    }
+     /* tslint:enable */
     /** @private */
     // tslint:disable-next-line:no-any
     public init(diagram: any): Canvas {
-        if (!this.id) {
-            this.id = randomId();
-        }
+        if (!this.id) { this.id = randomId(); }
+        if (this.sourcePortID) { this.setPortID(diagram); }
+        if (this.targetPortID) { this.setPortID(diagram, true); }
         let bpmnElement: PathElement;
         let container: Canvas = new Canvas(); let segment: PathElement = new PathElement();
         segment.id = this.id + '_path';
@@ -1277,7 +1301,6 @@ export class Connector extends NodeBase implements IElement {
         this.wrapper = container;
         return container;
     }
-
     private getConnectorRelation(): void {
         let shape: RelationShip = (this.shape as RelationShip);
         if (shape.relationship === 'Association') {

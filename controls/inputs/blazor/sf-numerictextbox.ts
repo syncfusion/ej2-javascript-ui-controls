@@ -238,7 +238,7 @@ class SfNumericTextBox {
 // tslint:disable
 let NumericTextBox: object = {
     initialize(wrapperElement: HTMLElement, element: BlazorNumericElement, dotnetRef: BlazorDotnetObject, options: INumericOptions): void {
-        new SfNumericTextBox(wrapperElement, element, dotnetRef, options);
+        if (element) { new SfNumericTextBox(wrapperElement, element, dotnetRef, options); }
         if (element && element.blazor__instance) {
             element.blazor__instance.initialize();
         }

@@ -1937,7 +1937,7 @@ var DataManipulation = /** @class */ (function () {
             var srtQry = new sf.data.Query();
             for (var srt = this.parent.grid.sortSettings.columns.length - 1; srt >= 0; srt--) {
                 var col = this.parent.grid.getColumnByField(this.parent.grid.sortSettings.columns[srt].field);
-                var compFun = col.sortComparer && !this.isRemote() ?
+                var compFun = col.sortComparer && isOffline(this.parent) ?
                     col.sortComparer.bind(col) :
                     this.parent.grid.sortSettings.columns[srt].direction;
                 srtQry.sortBy(this.parent.grid.sortSettings.columns[srt].field, compFun);
@@ -3092,7 +3092,9 @@ var TreeGrid = /** @class */ (function (_super) {
                 sf.base.setValue('grid.contentModule.isLoaded', !(req > 0), _this);
             }
             if (_this.isPixelHeight() && _this.initialRender) {
-                var totalRows = _this.getRows();
+                var totalRows = void 0;
+                var rows = _this.getContentTable().rows;
+                totalRows = [].slice.call(rows);
                 for (var i = totalRows.length - 1; i > 0; i--) {
                     if (!isHidden(totalRows[i])) {
                         if (totalRows[i].nextElementSibling) {
@@ -5103,12 +5105,12 @@ var TreeGrid = /** @class */ (function (_super) {
         return this.getFrozenCount(this.columns, 0);
     };
     TreeGrid.prototype.getFrozenCount = function (cols, cnt) {
-        for (var i = 0, len = cols.length; i < len; i++) {
-            if (cols[i].columns) {
-                cnt = this.getFrozenCount(cols[i].columns, cnt);
+        for (var j = 0, len = cols.length; j < len; j++) {
+            if (cols[j].columns) {
+                cnt = this.getFrozenCount(cols[j].columns, cnt);
             }
             else {
-                if (cols[i].isFrozen) {
+                if (cols[j].isFrozen) {
                     cnt++;
                 }
             }

@@ -1204,7 +1204,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         this.isBlazorSaveUrl = (this.isServerRendered &&
             (this.asyncSettings.saveUrl === '' || isNullOrUndefined(this.asyncSettings.saveUrl))) ? true : false;
         if (this.isBlazorSaveUrl && this.sequentialUpload) { this.sequentialUpload = false; }
-        this.formRendered();
+        if (!this.isBlazorSaveUrl) { this.formRendered(); }
         if (!this.isServerBlazor) {
         this.updateHTMLAttrToElement();
         this.checkHTMLAttributes(false);

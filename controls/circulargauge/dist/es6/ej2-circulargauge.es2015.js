@@ -4813,6 +4813,7 @@ let CircularGauge = class CircularGauge extends Component {
                     setStyles(element, pointer.color, pointer.border);
                 }
                 if (enableAnimation) {
+                    pointer.currentValue = pointer.value;
                     this.gaugeAxisLayoutPanel.pointerRenderer.performNeedleAnimation(element, pointer.currentValue, value, axis, pointer, pointerRadius, (pointerRadius - pointer.pointerWidth));
                 }
                 else {

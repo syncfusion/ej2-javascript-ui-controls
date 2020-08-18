@@ -502,4 +502,160 @@ describe('DropDownTree control remote datasource', () => {
             expect(ddtreeObj.treeObj.element.querySelectorAll('li')[0].querySelector('ul li')).not.toBe(null);
         });
     });
+    describe('overflow testing', () => {
+        let mouseEventArgs: any = {
+            preventDefault: (): void => { },
+            stopImmediatePropagation: (): void => { },
+            target: null,
+            type: null,
+            shiftKey: false,
+            ctrlKey: false
+        };
+        let tapEvent: any = {
+            originalEvent: mouseEventArgs,
+            tapCount: 1
+        };
+        let ddtreeObj: any;
+        let ele: HTMLElement = createElement('input', { id: 'tree1' });
+        let data: DataManager = new DataManager({
+            url: 'https://services.odata.org/V4/Northwind/Northwind.svc',
+            adaptor: new ODataV4Adaptor,
+            crossDomain: true,
+        });
+        let query: Query = new Query().from('Employees').select('EmployeeID,FirstName,Title').take(5);
+        let query1: Query = new Query().from('Orders').select('OrderID,EmployeeID,ShipName').take(5);
+        beforeAll((done: Function) => {
+            document.body.appendChild(ele);
+            ddtreeObj = new DropDownTree({
+                fields: {
+                    dataSource: data, query: query, value: 'EmployeeID', text: 'FirstName', hasChildren: 'EmployeeID',
+                    child: { dataSource: data, query: query1, value: 'OrderID', parentValue: 'EmployeeID', text: 'ShipName', child: 'nodeChild' }
+                },
+                showCheckBox: true,
+                width: '150px',
+                dataBound: () => {
+                    done();
+                }
+            });
+            ddtreeObj.appendTo(ele);
+
+        });
+        afterAll(() => {
+            if (ele)
+                ele.remove();
+            document.body.innerHTML = '';
+        });
+        it('for showCheckBox', () => {
+            var li = ddtreeObj.treeObj.element.querySelectorAll('li');
+            ddtreeObj.showPopup();
+            let checkEle: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+            var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+            var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+            checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+            var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+            checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+            var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            checkEle[1].querySelector('.e-frame').dispatchEvent(e);
+            var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+            checkEle[1].querySelector('.e-frame').dispatchEvent(e);
+            var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+            checkEle[1].querySelector('.e-frame').dispatchEvent(e);
+            var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            checkEle[2].querySelector('.e-frame').dispatchEvent(e);
+            var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+            checkEle[2].querySelector('.e-frame').dispatchEvent(e);
+            var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+            checkEle[2].querySelector('.e-frame').dispatchEvent(e);
+            let chipElement = ddtreeObj.inputWrapper.firstElementChild;
+            expect(chipElement.classList.contains('e-chips-wrapper')).toBe(true);
+            expect(chipElement.classList.contains('e-icon-hide')).toBe(false);
+            let chips = chipElement.querySelectorAll('.e-chips');
+            expect(chips.length).toBe(3);
+            let oveflowElement = ddtreeObj.inputWrapper.firstElementChild.nextElementSibling;
+            expect(oveflowElement.classList.contains('e-overflow')).toBe(true);
+            expect(oveflowElement.classList.contains('e-icon-hide')).toBe(true);
+            ddtreeObj.onFocusOut();
+            let nchipElement = ddtreeObj.inputWrapper.firstElementChild;
+            expect(nchipElement.classList.contains('e-icon-hide')).toBe(true);
+            let noveflowElement = ddtreeObj.inputWrapper.firstElementChild.nextElementSibling;
+            expect(noveflowElement.classList.contains('e-icon-hide')).toBe(false);
+            ddtreeObj.focusIn();
+            let newchipElement = ddtreeObj.inputWrapper.firstElementChild;
+            expect(newchipElement.classList.contains('e-icon-hide')).toBe(false);
+            let newoveflowElement = ddtreeObj.inputWrapper.firstElementChild.nextElementSibling;
+            expect(newoveflowElement.classList.contains('e-icon-hide')).toBe(true);
+        });
+    });
+
+    describe('overflow testing', () => {
+        let mouseEventArgs: any = {
+            preventDefault: (): void => { },
+            stopImmediatePropagation: (): void => { },
+            target: null,
+            type: null,
+            shiftKey: false,
+            ctrlKey: false
+        };
+        let tapEvent: any = {
+            originalEvent: mouseEventArgs,
+            tapCount: 1
+        };
+        let ddtreeObj: any;
+        let ele: HTMLElement = createElement('input', { id: 'tree1' });
+        let data: DataManager = new DataManager({
+            url: 'https://services.odata.org/V4/Northwind/Northwind.svc',
+            adaptor: new ODataV4Adaptor,
+            crossDomain: true,
+        });
+        let query: Query = new Query().from('Employees').select('EmployeeID,FirstName,Title').take(5);
+        let query1: Query = new Query().from('Orders').select('OrderID,EmployeeID,ShipName').take(5);
+        beforeAll((done: Function) => {
+            document.body.appendChild(ele);
+            ddtreeObj = new DropDownTree({
+                fields: {
+                    dataSource: data, query: query, value: 'EmployeeID', text: 'FirstName', hasChildren: 'EmployeeID',
+                    child: { dataSource: data, query: query1, value: 'OrderID', parentValue: 'EmployeeID', text: 'ShipName', child: 'nodeChild' }
+                },
+                allowMultiSelection: true,
+                width: '150px',
+                dataBound: () => {
+                    done();
+                }
+            });
+            ddtreeObj.appendTo(ele);
+
+        });
+        afterAll(() => {
+            if (ele)
+                ele.remove();
+            document.body.innerHTML = '';
+        });
+        it('for allowMultiSelection', () => {
+            var ele = ddtreeObj.element;
+            var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            ele.dispatchEvent(e);
+            var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+            ele.dispatchEvent(e);
+            var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+            ele.dispatchEvent(e);
+           ddtreeObj.value = ['1', '2', '3']
+           ddtreeObj.dataBind();
+            let chipElement = ddtreeObj.inputWrapper.firstElementChild;
+            expect(chipElement.classList.contains('e-chips-wrapper')).toBe(true);
+            let chips = chipElement.querySelectorAll('.e-chips');
+            expect(chips.length).toBe(3);
+            let oveflowElement = ddtreeObj.inputWrapper.firstElementChild.nextElementSibling;
+            expect(oveflowElement.classList.contains('e-overflow')).toBe(true);
+            ddtreeObj.onFocusOut();
+            let nchipElement = ddtreeObj.inputWrapper.firstElementChild;
+            expect(nchipElement.classList.contains('e-icon-hide')).toBe(true);
+            let noveflowElement = ddtreeObj.inputWrapper.firstElementChild.nextElementSibling;
+            ddtreeObj.focusIn();
+            let newchipElement = ddtreeObj.inputWrapper.firstElementChild;
+            expect(newchipElement.classList.contains('e-icon-hide')).toBe(false);
+            let newoveflowElement = ddtreeObj.inputWrapper.firstElementChild.nextElementSibling;
+            expect(newoveflowElement.classList.contains('e-icon-hide')).toBe(true);
+        });
+    });
 });

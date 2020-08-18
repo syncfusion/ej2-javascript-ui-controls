@@ -1000,6 +1000,8 @@ var seriesRender = 'seriesRender';
 /** @private */
 var axisLabelRender = 'axisLabelRender';
 /** @private */
+
+/** @private */
 var axisRangeCalculated = 'axisRangeCalculated';
 /** @private */
 
@@ -8603,7 +8605,7 @@ var AccumulationDataLabel = /** @class */ (function (_super) {
                 var newAngle = nextPoint.midAngle + count;
                 if (!(newAngle < 270 && newAngle > 90)) {
                     newAngle = 270;
-                    this.isIncreaseAngle = true;
+                    this.isIncreaseAngle = false;
                     break;
                 }
                 this.changeLabelAngle(nextPoint, newAngle);
@@ -8891,6 +8893,9 @@ var ChartData = /** @class */ (function () {
                     closest = data;
                 }
             }
+        }
+        else if (xData.length === 1) {
+            closest = xData[0];
         }
         return closest;
     };

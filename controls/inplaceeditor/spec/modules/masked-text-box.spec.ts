@@ -5,7 +5,7 @@ import { select, selectAll } from '@syncfusion/ej2-base';
 import * as classes from '../../src/inplace-editor/base/classes';
 import { renderEditor, destroy } from './../render.spec';
 import { profile, inMB, getMemoryProfile } from './../common.spec';
-import { BeginEditEventArgs } from '../../src/inplace-editor/base/index';
+import { BeginEditEventArgs, ChangeEventArgs } from '../../src/inplace-editor/base/index';
 
 describe('MaskedTextBox Control', () => {
     beforeAll(() => {
@@ -467,6 +467,70 @@ describe('MaskedTextBox Control', () => {
                 expect(count).toEqual(1);
                 done();
             }, 400);
+        });
+    });
+
+    describe('BLAZ-4764 - New change event testing', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let changeArgs: any = {};
+        afterEach((): void => {
+            destroy(editorObj);
+            changeArgs = {};
+        });
+        it('Without initial value - Check changed value', (done) => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                type: 'Mask',
+                model: {
+                    mask: '#####'
+                },
+                change: function (e: ChangeEventArgs) {
+                    changeArgs = e;
+                }
+            });
+            ele = editorObj.element;
+            valueEle = <HTMLElement>select('.' + classes.VALUE, ele);
+            valueEle.click();
+            setTimeout(() => {
+                expect(editorObj.value).toEqual(null);
+                editorObj.componentObj.value = "12345";
+                (ele.querySelector('.e-editable-component') as HTMLElement).click();
+                setTimeout(() => {
+                    expect(changeArgs['name']).toEqual('change');
+                    expect(changeArgs['previousValue']).toEqual(null);
+                    expect(changeArgs['value']).toEqual('12345');
+                    done();
+                }, 1000);
+            }, 1500);
+        });
+        it('Check changed value', (done) => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                type: 'Mask',
+                value: '000__',
+                model: {
+                    mask: '#####'
+                },
+                change: function (e: ChangeEventArgs) {
+                    changeArgs = e;
+                }
+            });
+            ele = editorObj.element;
+            valueEle = <HTMLElement>select('.' + classes.VALUE, ele);
+            valueEle.click();
+            setTimeout(() => {
+                expect(editorObj.value).toEqual('000__');
+                editorObj.componentObj.value = "12345";
+                (ele.querySelector('.e-editable-component') as HTMLElement).click();
+                setTimeout(() => {
+                    expect(changeArgs['name']).toEqual('change');
+                    expect(changeArgs['previousValue']).toEqual('000__');
+                    expect(changeArgs['value']).toEqual('12345');
+                    done();
+                }, 1000);
+            }, 1500);
         });
     });
 

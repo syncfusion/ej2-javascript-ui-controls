@@ -1048,6 +1048,8 @@ var seriesRender = 'seriesRender';
 /** @private */
 var axisLabelRender = 'axisLabelRender';
 /** @private */
+var axisLabelClick = 'axisLabelClick';
+/** @private */
 var axisRangeCalculated = 'axisRangeCalculated';
 /** @private */
 var axisMultiLabelRender = 'axisMultiLabelRender';
@@ -5648,8 +5650,10 @@ var SeriesBase = /** @class */ (function (_super) {
     };
     /** @private */
     SeriesBase.prototype.pushCategoryData = function (point, index, pointX) {
-        if (!this.visible) {
-            return null;
+        if (!this.chart.tooltip.shared) {
+            if (!this.visible) {
+                return null;
+            }
         }
         if (!this.xAxis.isIndexed) {
             if (this.xAxis.labels.indexOf(pointX) < 0) {
@@ -7045,6 +7049,9 @@ var StockEventsSettings = /** @class */ (function (_super) {
     __decorate$4([
         sf.base.Complex(Theme.stockEventFont, StockChartFont)
     ], StockEventsSettings.prototype, "textStyle", void 0);
+    __decorate$4([
+        sf.base.Property([])
+    ], StockEventsSettings.prototype, "seriesIndexes", void 0);
     return StockEventsSettings;
 }(sf.base.ChildProperty));
 
@@ -7250,6 +7257,9 @@ var ChartData = /** @class */ (function () {
                     closest = data;
                 }
             }
+        }
+        else if (xData.length === 1) {
+            closest = xData[0];
         }
         return closest;
     };
@@ -7578,7 +7588,6 @@ var StockEvents = /** @class */ (function (_super) {
         var sChart = this.stockChart;
         var stockEvent;
         var stockEventElement;
-        var symbolLocation;
         var textSize;
         // Creation of group elements for stock events
         var stockEventsElementGroup = sChart.renderer.createGroup({ id: this.chartId + '_StockEvents' });
@@ -7598,18 +7607,31 @@ var StockEvents = /** @class */ (function (_super) {
                 if (!argsData.cancel) {
                     stockEventElement = sChart.renderer.createGroup({ id: this.chartId + '_Series_' + series.index + '_StockEvents_' + i });
                     if (withIn(this.dateParse(stockEvent.date).getTime(), series.xAxis.visibleRange)) {
-                        symbolLocation = this.findClosePoint(series, stockEvent);
-                        if (!stockEvent.showOnSeries) {
-                            symbolLocation.y = series.yAxis.rect.y + series.yAxis.rect.height;
+                        if (stockEvent.seriesIndexes.length > 0) {
+                            for (var j = 0; j < stockEvent.seriesIndexes.length; j++) {
+                                if (stockEvent.seriesIndexes[j] === series.index) {
+                                    stockEventsElementGroup.appendChild(this.creatEventGroup(stockEventElement, series, stockEvent, i, textSize));
+                                }
+                            }
                         }
-                        this.symbolLocations[series.index][i] = symbolLocation;
-                        this.createStockElements(stockEventElement, stockEvent, series, i, symbolLocation, textSize);
-                        stockEventsElementGroup.appendChild(stockEventElement);
+                        else {
+                            stockEventsElementGroup.appendChild(this.creatEventGroup(stockEventElement, series, stockEvent, i, textSize));
+                        }
                     }
                 }
             }
         }
         return stockEventsElementGroup;
+    };
+    StockEvents.prototype.creatEventGroup = function (stockEventElement, series, stockEvent, i, textSize) {
+        var symbolLocation;
+        symbolLocation = this.findClosePoint(series, stockEvent);
+        if (!stockEvent.showOnSeries) {
+            symbolLocation.y = series.yAxis.rect.y + series.yAxis.rect.height;
+        }
+        this.symbolLocations[series.index][i] = symbolLocation;
+        this.createStockElements(stockEventElement, stockEvent, series, i, symbolLocation, textSize);
+        return stockEventElement;
     };
     StockEvents.prototype.findClosePoint = function (series, sEvent) {
         var closeIndex = this.getClosest(series, this.dateParse(sEvent.date).getTime());
@@ -10264,9 +10286,7 @@ var Marker = /** @class */ (function (_super) {
                     : border.color,
                 width: border.width
             },
-            height: marker.height,
-            width: marker.width,
-            shape: marker.shape
+            height: marker.height, width: marker.width, shape: marker.shape
         };
         argsData.border = series.setBorderColor(point, { width: argsData.border.width, color: argsData.border.color });
         if (!series.isRectSeries || series.type === 'BoxAndWhisker') {
@@ -10285,26 +10305,37 @@ var Marker = /** @class */ (function (_super) {
             else {
                 y = point.y;
             }
-            shapeOption = new sf.svgbase.PathOption(symbolId, argsData.fill, argsData.border.width, argsData.border.color, marker.opacity, null);
+            var markerFill = argsData.point.marker.fill || argsData.fill;
+            var markerBorder = void 0;
+            if (!sf.base.isNullOrUndefined(argsData.point.marker.border)) {
+                markerBorder = {
+                    color: argsData.point.marker.border.color || argsData.border.color,
+                    width: argsData.point.marker.border.width || argsData.border.width
+                };
+            }
+            else {
+                markerBorder = { color: argsData.border.color, width: argsData.border.width };
+            }
+            var markerWidth = argsData.point.marker.width || argsData.width;
+            var markerHeight = argsData.point.marker.height || argsData.height;
+            var markerOpacity = argsData.point.marker.opacity || marker.opacity;
+            var markerShape = argsData.point.marker.shape || argsData.shape;
+            shapeOption = new sf.svgbase.PathOption(symbolId, markerFill, markerBorder.width, markerBorder.color, markerOpacity, null);
             if ((parentElement !== undefined && parentElement !== null) || this.chart.enableCanvas) {
                 if (redraw && getElement$1(shapeOption.id)) {
                     markerElement = getElement$1(shapeOption.id);
-                    circlePath = argsData.shape === 'Circle' ? 'c' : '';
+                    circlePath = markerShape === 'Circle' ? 'c' : '';
                     previousLocation = {
                         x: +markerElement.getAttribute(circlePath + 'x'), y: +markerElement.getAttribute(circlePath + 'y')
                     };
                     previousPath = markerElement.getAttribute('d');
                 }
-                markerElement = drawSymbol(location, argsData.shape, new sf.svgbase.Size(argsData.width, argsData.height), marker.imageUrl, shapeOption, point.x.toString() + ':' + y.toString(), this.chart.renderer, series.clipRect);
+                markerElement = drawSymbol(location, markerShape, new sf.svgbase.Size(markerWidth, markerHeight), marker.imageUrl, shapeOption, point.x.toString() + ':' + y.toString(), this.chart.renderer, series.clipRect);
                 appendChildElement(this.chart.enableCanvas, parentElement, markerElement, redraw, true, circlePath + 'x', circlePath + 'y', previousLocation, previousPath, false, false, null, series.chart.duration);
             }
             point.marker = {
-                border: argsData.border,
-                fill: argsData.fill,
-                height: argsData.height,
-                visible: true,
-                shape: argsData.shape,
-                width: argsData.width
+                border: markerBorder, fill: markerFill, height: markerHeight,
+                visible: true, shape: markerShape, width: markerWidth
             };
         }
         else {
@@ -11635,7 +11666,9 @@ var Chart$1 = /** @class */ (function (_super) {
              * Load event for the chart will be triggered only chart componet, if this is stock chart, load event did not triggered.
              */
             this.trigger(load, loadEventData, function () {
-                _this.cartesianChartRendering(loadEventData);
+                if (!loadEventData.cancel) {
+                    _this.cartesianChartRendering(loadEventData);
+                }
             });
         }
         else {
@@ -12690,6 +12723,9 @@ var Chart$1 = /** @class */ (function (_super) {
             this.clickCount = 0;
             this.triggerPointEvent(pointDoubleClick, e);
         }
+        if (this.axisLabelClick) {
+            this.triggerAxisLabelClickEvent(axisLabelClick, e);
+        }
         this.notify('click', e);
         return false;
     };
@@ -12704,6 +12740,27 @@ var Chart$1 = /** @class */ (function (_super) {
                 seriesIndex: pointData.series.index, pointIndex: pointData.point.index,
                 x: this.mouseX, y: this.mouseY, pageX: evt.pageX, pageY: evt.pageY
             });
+        }
+    };
+    Chart$$1.prototype.triggerAxisLabelClickEvent = function (event, e) {
+        var targetElement = e.target;
+        var clickEvt = e;
+        if (targetElement.id.indexOf('_AxisLabel_') !== -1) {
+            var index = targetElement.id.split('_AxisLabel_');
+            var axisIndex = +index[0].slice(-1);
+            var labelIndex = +index[1];
+            var currentAxis = this.axisCollections[axisIndex];
+            if (currentAxis.visible && (axisIndex === 0 || axisIndex === 1)) {
+                this.trigger(event, {
+                    chart: this,
+                    axis: currentAxis,
+                    text: currentAxis.visibleLabels[labelIndex].text,
+                    labelID: targetElement.id,
+                    index: labelIndex,
+                    location: new ChartLocation(clickEvt.pageX, clickEvt.pageY),
+                    value: currentAxis.visibleLabels[labelIndex].value
+                });
+            }
         }
     };
     /**
@@ -13669,6 +13726,9 @@ var Chart$1 = /** @class */ (function (_super) {
     __decorate$6([
         sf.base.Event()
     ], Chart$$1.prototype, "axisLabelRender", void 0);
+    __decorate$6([
+        sf.base.Event()
+    ], Chart$$1.prototype, "axisLabelClick", void 0);
     __decorate$6([
         sf.base.Event()
     ], Chart$$1.prototype, "axisRangeCalculated", void 0);
@@ -18013,6 +18073,7 @@ var StackingStepAreaSeries = /** @class */ (function (_super) {
      * @return {void}
      * @private
      */
+    // tslint:disable-next-line:max-func-body-length
     StackingStepAreaSeries.prototype.render = function (stackSeries, xAxis, yAxis, isInverted) {
         var currentPointLocation;
         var secondPoint;
@@ -18031,6 +18092,7 @@ var StackingStepAreaSeries = /** @class */ (function (_super) {
         var prevPoint = null;
         var validIndex;
         var startPoint = 0;
+        var pointIndex;
         if (xAxis.valueType === 'Category' && xAxis.labelPlacement === 'BetweenTicks') {
             lineLength = 0.5;
         }
@@ -18042,39 +18104,43 @@ var StackingStepAreaSeries = /** @class */ (function (_super) {
             xValue = point.xValue;
             point.symbolLocations = [];
             point.regions = [];
+            pointIndex = point.index;
             if (point.visible && withInRange(visiblePoint[i - 1], point, visiblePoint[i + 1], stackSeries)) {
                 if (start === null) {
                     start = new ChartLocation(xValue, 0);
                     currentPointLocation = getPoint(xValue - lineLength, origin, xAxis, yAxis, isInverted);
                     direction += ('M' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
-                    currentPointLocation = getPoint(xValue - lineLength, stackedvalue.endValues[i], xAxis, yAxis, isInverted);
+                    currentPointLocation = getPoint(xValue - lineLength, stackedvalue.endValues[pointIndex], xAxis, yAxis, isInverted);
                     direction += ('L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
                 }
                 if (prevPoint != null) {
-                    currentPointLocation = getPoint(point.xValue, stackedvalue.endValues[i], xAxis, yAxis, isInverted);
+                    currentPointLocation = getPoint(point.xValue, stackedvalue.endValues[pointIndex], xAxis, yAxis, isInverted);
                     secondPoint = getPoint(prevPoint.xValue, stackedvalue.endValues[prevPoint.index], xAxis, yAxis, isInverted);
                     direction += ('L' + ' ' + (currentPointLocation.x) + ' ' + (secondPoint.y) +
                         ' L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
                 }
                 else if (stackSeries.emptyPointSettings.mode === 'Gap') {
-                    currentPointLocation = getPoint(point.xValue, stackedvalue.endValues[i], xAxis, yAxis, isInverted);
+                    currentPointLocation = getPoint(point.xValue, stackedvalue.endValues[pointIndex], xAxis, yAxis, isInverted);
                     direction += 'L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ';
                 }
-                visiblePoint[i].symbolLocations.push(getPoint(visiblePoint[i].xValue, stackedvalue.endValues[i], xAxis, yAxis, isInverted, stackSeries));
+                visiblePoint[i].symbolLocations.push(getPoint(visiblePoint[i].xValue, stackedvalue.endValues[pointIndex], xAxis, yAxis, isInverted, stackSeries));
                 visiblePoint[i].regions.push(new sf.svgbase.Rect(visiblePoint[i].symbolLocations[0].x - stackSeries.marker.width, visiblePoint[i].symbolLocations[0].y - stackSeries.marker.height, 2 * stackSeries.marker.width, 2 * stackSeries.marker.height));
                 prevPoint = point;
             }
             // If we set the empty point mode is Gap or next point of the current point is false, we will close the series path.
             if (visiblePoint[i + 1] && !visiblePoint[i + 1].visible && stackSeries.emptyPointSettings.mode !== 'Drop') {
+                var previousPointIndex = void 0;
                 for (var j = i; j >= startPoint; j--) {
-                    if (j !== 0 && (stackedvalue.startValues[j] < stackedvalue.startValues[j - 1] ||
-                        stackedvalue.startValues[j] > stackedvalue.startValues[j - 1])) {
-                        currentPointLocation = getPoint(visiblePoint[j].xValue, stackedvalue.startValues[j], xAxis, yAxis, isInverted, stackSeries);
+                    pointIndex = visiblePoint[j].index;
+                    previousPointIndex = j === 0 ? 0 : visiblePoint[j - 1].index;
+                    if (j !== 0 && (stackedvalue.startValues[pointIndex] < stackedvalue.startValues[previousPointIndex] ||
+                        stackedvalue.startValues[pointIndex] > stackedvalue.startValues[previousPointIndex])) {
+                        currentPointLocation = getPoint(visiblePoint[pointIndex].xValue, stackedvalue.startValues[pointIndex], xAxis, yAxis, isInverted, stackSeries);
                         direction = direction.concat('L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
-                        currentPointLocation = getPoint(visiblePoint[j].xValue, stackedvalue.startValues[j - 1], xAxis, yAxis, isInverted, stackSeries);
+                        currentPointLocation = getPoint(visiblePoint[pointIndex].xValue, stackedvalue.startValues[previousPointIndex], xAxis, yAxis, isInverted, stackSeries);
                     }
                     else {
-                        currentPointLocation = getPoint(visiblePoint[j].xValue, stackedvalue.startValues[j], xAxis, yAxis, isInverted, stackSeries);
+                        currentPointLocation = getPoint(visiblePoint[pointIndex].xValue, stackedvalue.startValues[pointIndex], xAxis, yAxis, isInverted, stackSeries);
                     }
                     direction = direction.concat('L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
                 }
@@ -18085,10 +18151,11 @@ var StackingStepAreaSeries = /** @class */ (function (_super) {
         }
         // For category axis
         if ((pointsLength > 1) && direction !== '') {
-            start = { 'x': visiblePoint[pointsLength - 1].xValue + lineLength, 'y': stackedvalue.endValues[pointsLength - 1] };
+            pointIndex = visiblePoint[pointsLength - 1].index;
+            start = { 'x': visiblePoint[pointsLength - 1].xValue + lineLength, 'y': stackedvalue.endValues[pointIndex] };
             secondPoint = getPoint(start.x, start.y, xAxis, yAxis, isInverted);
             direction += ('L' + ' ' + (secondPoint.x) + ' ' + (secondPoint.y) + ' ');
-            start = { 'x': visiblePoint[pointsLength - 1].xValue + lineLength, 'y': stackedvalue.startValues[pointsLength - 1] };
+            start = { 'x': visiblePoint[pointsLength - 1].xValue + lineLength, 'y': stackedvalue.startValues[pointIndex] };
             secondPoint = getPoint(start.x, start.y, xAxis, yAxis, isInverted);
             direction += ('L' + ' ' + (secondPoint.x) + ' ' + (secondPoint.y) + ' ');
         }
@@ -18096,7 +18163,8 @@ var StackingStepAreaSeries = /** @class */ (function (_super) {
         for (var j = pointsLength - 1; j >= startPoint; j--) {
             var index = void 0;
             if (visiblePoint[j].visible) {
-                point2 = getPoint(visiblePoint[j].xValue, stackedvalue.startValues[j], xAxis, yAxis, isInverted, stackSeries);
+                pointIndex = visiblePoint[j].index;
+                point2 = getPoint(visiblePoint[j].xValue, stackedvalue.startValues[pointIndex], xAxis, yAxis, isInverted, stackSeries);
                 direction = direction.concat('L' + ' ' + (point2.x) + ' ' + (point2.y) + ' ');
             }
             if (j !== 0 && !visiblePoint[j - 1].visible) {
@@ -18104,7 +18172,8 @@ var StackingStepAreaSeries = /** @class */ (function (_super) {
             }
             if (j !== 0) {
                 validIndex = index ? index : j - 1;
-                point3 = getPoint(visiblePoint[validIndex].xValue, stackedvalue.startValues[validIndex], xAxis, yAxis, isInverted, stackSeries);
+                pointIndex = index ? visiblePoint[index].index : visiblePoint[j - 1].index;
+                point3 = getPoint(visiblePoint[validIndex].xValue, stackedvalue.startValues[pointIndex], xAxis, yAxis, isInverted, stackSeries);
                 direction = direction.concat('L' + ' ' + (point2.x) + ' ' + (point3.y) + ' ');
             }
         }
@@ -26073,7 +26142,8 @@ var DataLabel = /** @class */ (function () {
                     argsData = {
                         cancel: false, name: textRender, series: series,
                         point: point, text: labelText[i_1], border: border,
-                        color: dataLabel.fill, template: dataLabel.template, font: argsFont, location: labelLocation
+                        color: dataLabel.fill, template: dataLabel.template, font: argsFont, location: labelLocation,
+                        textSize: sf.svgbase.measureText(labelText[i_1], dataLabel.font)
                     };
                     chart.trigger(textRender, argsData);
                     if (!argsData.cancel) {
@@ -26391,8 +26461,8 @@ var DataLabel = /** @class */ (function () {
         var margin = this.margin;
         var textLength = !this.inverted ? textSize.height : textSize.width;
         var extraSpace = this.borderWidth + textLength / 2 + padding;
-        if (series.type.indexOf('Stacking') > -1) {
-            position = position === 'Outer' ? 'Top' : position;
+        if (series.type === 'StackingColumn100' || series.type === 'StackingBar100') {
+            position = (position === 'Outer') ? 'Top' : position;
         }
         else if (series.type.indexOf('Range') > -1) {
             position = (position === 'Outer' || position === 'Top') ? position : 'Auto';
@@ -26426,6 +26496,21 @@ var DataLabel = /** @class */ (function () {
         this.fontBackground = check ?
             (this.fontBackground === 'transparent' ? this.chartBackground : this.fontBackground)
             : this.fontBackground === 'transparent' ? (point.color || series.interior) : this.fontBackground;
+        var seriesLength = series.chart.series.length;
+        if (position === 'Outer' && (series.type.indexOf('Stacking') > -1) && ((seriesLength - 1) > series.index)) {
+            var nextSeries = void 0;
+            var nextSeriesPoint = void 0;
+            for (var i = series.index + 1; i < seriesLength; i++) {
+                nextSeries = series.chart.series[i];
+                nextSeriesPoint = nextSeries.points[point.index];
+                if ((nextSeries.type.indexOf('Stacking') > -1) && (nextSeries.type.indexOf('100') === -1)) {
+                    this.fontBackground = (nextSeriesPoint && ((nextSeriesPoint.yValue < 0 && point.yValue < 0) ||
+                        (nextSeriesPoint.yValue > 0 && point.yValue > 0))) ? (nextSeriesPoint ? nextSeriesPoint.color :
+                        nextSeries.interior) : this.fontBackground;
+                    break;
+                }
+            }
+        }
         return labelLocation;
     };
     DataLabel.prototype.calculatePathPosition = function (labelLocation, position, series, point, size, labelIndex) {
@@ -26466,7 +26551,12 @@ var DataLabel = /** @class */ (function () {
         var collection = this.chart.dataLabelCollections;
         var finalPosition = series.type.indexOf('Range') !== -1 || series.type === 'Hilo' ? 2 : 4;
         while (isOverLap && position < finalPosition) {
-            location = this.calculateRectPosition(labelLocation, rect, isMinus, this.getPosition(position), series, size, labelIndex, point);
+            var actualPosition = this.getPosition(position);
+            if (series.type.indexOf('Stacking') > -1 && actualPosition === 'Outer') {
+                actualPosition = 'Top';
+                position++;
+            }
+            location = this.calculateRectPosition(labelLocation, rect, isMinus, actualPosition, series, size, labelIndex, point);
             if (!this.inverted) {
                 labelRect = calculateRect(new ChartLocation(this.locationX, location), size, this.margin);
                 isOverLap = labelRect.y < 0 || isCollide(labelRect, collection, series.clipRect) || labelRect.y > series.clipRect.height;
@@ -29051,6 +29141,13 @@ var ScrollBar = /** @class */ (function () {
         var range = this.axis.visibleRange;
         var zoomPosition = this.zoomPosition;
         var zoomFactor = this.zoomFactor;
+        var moveLength = this.previousRectX - elem.thumbRectX;
+        var thumbMove = moveLength < 0 ? 'RightMove' : 'LeftMove';
+        var args;
+        if (this.isLazyLoad && (this.isThumbDrag || this.isResizeLeft || this.isResizeRight)) {
+            args = this.calculateLazyRange(elem.thumbRectX, elem.thumbRectWidth, thumbMove);
+        }
+        var currentRange = args ? args.currentRange : null;
         if (this.isThumbDrag) {
             this.component.isScrolling = this.isThumbDrag;
             mouseXY = (this.isVertical || this.axis.isInversed) ? this.width - mouseXY : mouseXY;
@@ -29067,11 +29164,11 @@ var ScrollBar = /** @class */ (function () {
                 this.previousXY = mouseXY;
                 this.setZoomFactorPosition(currentX, elem.thumbRectWidth);
             }
-            this.component.trigger(scrollChanged, this.getArgs(scrollChanged, range, zoomPosition, zoomFactor));
+            this.component.trigger(scrollChanged, this.getArgs(scrollChanged, range, zoomPosition, zoomFactor, currentRange));
         }
         else if (this.isResizeLeft || this.isResizeRight) {
             this.resizeThumb(e);
-            this.component.trigger(scrollChanged, this.getArgs(scrollChanged, range, zoomPosition, zoomFactor));
+            this.component.trigger(scrollChanged, this.getArgs(scrollChanged, range, zoomPosition, zoomFactor, currentRange));
         }
     };
     /**
@@ -29522,7 +29619,7 @@ var ScrollBar = /** @class */ (function () {
     ScrollBar.prototype.getModuleName = function () {
         return 'ScrollBar';
     };
-    ScrollBar.prototype.getArgs = function (eventName, range, zoomPosition, zoomFactor) {
+    ScrollBar.prototype.getArgs = function (eventName, range, zoomPosition, zoomFactor, currentRanges) {
         var scrollArgs = {
             axis: (this.component.isBlazor ? {} : this.axis),
             name: eventName,
@@ -29532,6 +29629,7 @@ var ScrollBar = /** @class */ (function () {
             previousRange: range,
             previousZoomFactor: zoomFactor,
             previousZoomPosition: zoomPosition,
+            currentRange: currentRanges
         };
         return scrollArgs;
     };

@@ -14,6 +14,7 @@ import { MouseEvents } from '../../../spec/diagram/interaction/mouseevents.spec'
 import { Animation } from '../../../src/diagram/objects/interface/IElement'
 
 import { DataManager, Query } from '@syncfusion/ej2-data';
+import { Selector } from '../../../src/diagram/objects/node';
 /**
  * Organizational Chart
  */
@@ -148,6 +149,22 @@ let expandRoutingData: object[] =    [
     { 'Id': '8', 'Role': 'Development Supervisor', 'Manager': '6', 'color': '#2E95D8' },
     { 'Id': '9', 'Role': 'Drafting Supervisor', 'Manager': '6', 'color': '#2E95D8' },
 ]
+
+function resize(diagram: Diagram, direction: string): void {
+    if ((diagram.selectedItems as Selector).nodes[0]) {
+        let diagramCanvas: HTMLElement; let left: number; let top: number;
+        diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        left = diagram.element.offsetLeft; top = diagram.element.offsetTop;
+        let element: HTMLElement = document.getElementById(direction);
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let x: number = Number(element.getAttribute('cx'));
+        let y: number = Number(element.getAttribute('cy'));
+        mouseEvents.mouseDownEvent(diagramCanvas, x + diagram.element.offsetLeft, y + diagram.element.offsetTop);
+        mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop);
+        mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop + 20);
+        mouseEvents.mouseUpEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop + 20);
+    }
+}
 
 describe('Diagram Control', () => {
     describe('Tree Layout', () => {
@@ -1469,6 +1486,18 @@ describe('Tree Layout', () => {
             || (Math.ceil(nodes3.wrapper.children[2].offsetX) === 466))
             && Math.ceil(nodes3.wrapper.children[2].offsetY) === 295).toBe(true);
         done();
+    })
+    it('Checking node size after resizing', (done: Function) => {
+        diagram.select([diagram.nodes[0]]);
+        console.log(diagram.nodes[0].width);
+            resize(diagram, 'resizeEast');
+            console.log('afterWidth'+diagram.nodes[0].width);
+            console.log('afterOffsetX'+diagram.nodes[0].offsetX );
+            console.log('afterHeight'+diagram.nodes[0].height);
+            console.log('afterOffsetY'+diagram.nodes[0].offsetY);
+            expect((diagram.nodes[0].offsetX === 517.03 || diagram.nodes[0].offsetX === 514.53) && diagram.nodes[0].offsetY === 295 
+                && (diagram.nodes[0].width === 139.0625 || diagram.nodes[0].width === 138.0625) && diagram.nodes[0].height === 43.8).toBe(true);
+            done();
     })
 
 });

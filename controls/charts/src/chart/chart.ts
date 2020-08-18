@@ -6,7 +6,7 @@ import { INotifyPropertyChanged, Browser, Touch } from '@syncfusion/ej2-base';
 import { Event, EventHandler, Complex, Collection } from '@syncfusion/ej2-base';
 import { findClipRect, showTooltip, ImageOption, removeElement, appendChildElement, blazorTemplatesReset } from '../common/utils/helper';
 import { textElement, RectOption, createSvg, firstToLowerCase, titlePositionX, PointData, redrawElement } from '../common/utils/helper';
-import { appendClipElement } from '../common/utils/helper';
+import { appendClipElement, ChartLocation } from '../common/utils/helper';
 import { ChartModel, CrosshairSettingsModel, ZoomSettingsModel } from './chart-model';
 import { MarginModel, BorderModel, ChartAreaModel, FontModel, TooltipSettingsModel } from '../common/model/base-model';
 import { getSeriesColor, Theme, getThemeColor } from '../common/model/theme';
@@ -85,10 +85,10 @@ import { ILegendRenderEventArgs, IAxisLabelRenderEventArgs, ITextRenderEventArgs
 import { IAnnotationRenderEventArgs, IAxisMultiLabelRenderEventArgs, IThemeStyle, IScrollEventArgs } from '../chart/model/chart-interface';
 import { IPointRenderEventArgs, ISeriesRenderEventArgs, ISelectionCompleteEventArgs } from '../chart/model/chart-interface';
 import { IDragCompleteEventArgs, ITooltipRenderEventArgs, IExportEventArgs, IAfterExportEventArgs } from '../chart/model/chart-interface';
-import { IZoomCompleteEventArgs, ILoadedEventArgs, IZoomingEventArgs } from '../chart/model/chart-interface';
+import { IZoomCompleteEventArgs, ILoadedEventArgs, IZoomingEventArgs, IAxisLabelClickEventArgs } from '../chart/model/chart-interface';
 import { IMultiLevelLabelClickEventArgs, ILegendClickEventArgs, ISharedTooltipRenderEventArgs } from '../chart/model/chart-interface';
 import { IAnimationCompleteEventArgs, IMouseEventArgs, IPointEventArgs } from '../chart/model/chart-interface';
-import { chartMouseClick, pointClick, pointDoubleClick,  } from '../common/model/constants';
+import { chartMouseClick, pointClick, pointDoubleClick, axisLabelClick,  } from '../common/model/constants';
 import { chartMouseDown, chartMouseMove, chartMouseUp, load, pointMove, chartMouseLeave, resized } from '../common/model/constants';
 import { IPrintEventArgs, IAxisRangeCalculatedEventArgs, IDataEditingEventArgs } from '../chart/model/chart-interface';
 import { ChartAnnotationSettingsModel } from './model/chart-base-model';
@@ -1003,6 +1003,13 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     @Event()
     public axisLabelRender: EmitType<IAxisLabelRenderEventArgs>;
     /**
+     * Triggers when x axis label clicked.
+     * @event
+     * @deprecated
+     */
+    @Event()
+    public axisLabelClick: EmitType<IAxisLabelClickEventArgs>;
+    /**
      * Triggers before each axis range is rendered.
      * @event
      * @deprecated
@@ -1453,7 +1460,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
              * Load event for the chart will be triggered only chart componet, if this is stock chart, load event did not triggered.
              */
             this.trigger(load, loadEventData, () => {
-                this.cartesianChartRendering(loadEventData);
+                if (!loadEventData.cancel) {
+                    this.cartesianChartRendering(loadEventData);
+                }
             });
         } else {
             this.cartesianChartRendering(loadEventData);
@@ -2642,6 +2651,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             this.clickCount = 0;
             this.triggerPointEvent(pointDoubleClick, e);
         }
+        if (this.axisLabelClick) {
+            this.triggerAxisLabelClickEvent(axisLabelClick, e);
+        }
         this.notify('click', e);
         return false;
     }
@@ -2656,6 +2668,27 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 seriesIndex: pointData.series.index, pointIndex: pointData.point.index,
                 x: this.mouseX, y: this.mouseY, pageX: evt.pageX, pageY: evt.pageY
             });
+        }
+    }
+    private triggerAxisLabelClickEvent(event: string, e?: PointerEvent | TouchEvent): void {
+        let targetElement: Element = <Element>e.target;
+        let clickEvt: PointerEvent = e as PointerEvent;
+        if (targetElement.id.indexOf('_AxisLabel_') !== -1) {
+            let index: string[] = targetElement.id.split('_AxisLabel_');
+            let axisIndex: number = +index[0].slice(-1);
+            let labelIndex: number = +index[1];
+            let currentAxis: Axis = this.axisCollections[axisIndex];
+            if (currentAxis.visible && (axisIndex === 0 || axisIndex === 1)) {
+                this.trigger(event, {
+                    chart: this,
+                    axis: currentAxis,
+                    text: currentAxis.visibleLabels[labelIndex].text as string,
+                    labelID: targetElement.id,
+                    index: labelIndex,
+                    location: new ChartLocation(clickEvt.pageX, clickEvt.pageY),
+                    value: currentAxis.visibleLabels[labelIndex].value
+                });
+            }
         }
     }
     /**

@@ -9253,9 +9253,15 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         var _this = this;
         this.treeList.push('false');
         if (this.fields.dataSource instanceof DataManager) {
+            // tslint:disable
+            this.isOffline = (this.isBlazorPlatform ? this.fields.dataSource.offline :
+                this.fields.dataSource.dataSource.offline);
             if (this.fields.dataSource.ready) {
                 this.fields.dataSource.ready.then(function (e) {
-                    if (_this.fields.dataSource instanceof DataManager && _this.fields.dataSource.dataSource.offline) {
+                    // tslint:disable
+                    _this.isOffline = (_this.isBlazorPlatform ? _this.fields.dataSource.offline :
+                        _this.fields.dataSource.dataSource.offline);
+                    if (_this.fields.dataSource instanceof DataManager && _this.isOffline) {
                         _this.treeList.pop();
                         _this.treeData = e.result;
                         _this.isNumberTypeId = _this.getType();
@@ -9429,7 +9435,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             else if (this.dataType === 2 || (this.fields.dataSource instanceof DataManager &&
-                this.fields.dataSource.dataSource.offline)) {
+                this.isOffline)) {
                 for (var index = 0; index < this.treeData.length; index++) {
                     var fieldId = this.treeData[index][this.fields.id] ? this.treeData[index][this.fields.id].toString() : '';
                     if (this.treeData[index][this.fields.isChecked] && !(this.isLoaded) && this.checkedNodes.indexOf(fieldId) === -1) {
@@ -9638,7 +9644,12 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
     TreeView.prototype.getDataType = function (ds, mapper) {
         if (this.fields.dataSource instanceof DataManager && (this.fields.dataSource.adaptorName !== 'BlazorAdaptor')) {
             for (var i = 0; i < ds.length; i++) {
-                if ((typeof mapper.child === 'string') && isNullOrUndefined(getValue(mapper.child, ds[i]))) {
+                if (this.isOffline) {
+                    if ((typeof mapper.child === 'string') && isNullOrUndefined(getValue(mapper.child, ds[i])) && !isNullOrUndefined(getValue(mapper.parentID, ds[i]))) {
+                        return 1;
+                    }
+                }
+                else if ((typeof mapper.child === 'string') && isNullOrUndefined(getValue(mapper.child, ds[i]))) {
                     return 1;
                 }
             }
@@ -9941,7 +9952,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
             }
         }
         else if (this.dataType === 2 || (this.fields.dataSource instanceof DataManager &&
-            this.fields.dataSource.dataSource.offline)) {
+            this.isOffline)) {
             var id = void 0;
             var parentElement = void 0;
             var check = void 0;
@@ -10549,7 +10560,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                 return;
             }
             this.treeList.push('false');
-            if (this.fields.dataSource instanceof DataManager && (this.fields.dataSource.dataSource.offline)) {
+            if (this.fields.dataSource instanceof DataManager && this.isOffline) {
                 this.treeList.pop();
                 childItems = this.getChildNodes(this.treeData, parentLi.getAttribute('data-uid'));
                 this.loadChild(childItems, mapper_2, eicon, parentLi, expandChild, callback, loaded);
@@ -10602,7 +10613,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             this.updateListProp(mapper);
-            if (this.fields.dataSource instanceof DataManager && !this.fields.dataSource.dataSource.offline) {
+            if (this.fields.dataSource instanceof DataManager && !this.isOffline) {
                 var id = parentLi.getAttribute('data-uid');
                 var nodeData = this.getNodeObject(id);
                 setValue('child', childItems, nodeData);
@@ -11592,7 +11603,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         var txtEle = closest(target, '.' + LISTTEXT);
         var liEle = closest(target, '.' + LISTITEM);
         detach(this.inputObj.container);
-        if (this.fields.dataSource instanceof DataManager && !(this.fields.dataSource.dataSource.offline) && (this.fields.dataSource.adaptorName !== 'BlazorAdaptor')) {
+        if (this.fields.dataSource instanceof DataManager && !this.isOffline && (this.fields.dataSource.adaptorName !== 'BlazorAdaptor')) {
             this.crudOperation('update', null, liEle, newText, null, null, true);
         }
         else {
@@ -13390,7 +13401,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         var dropLi = this.getElement(target);
         this.preventExpand = preventTargetExpand;
         if (this.fields.dataSource instanceof DataManager && (this.fields.dataSource.adaptorName !== 'BlazorAdaptor')) {
-            if (!(this.fields.dataSource.dataSource.offline)) {
+            if (!this.isOffline) {
                 this.crudOperation('insert', null, target, null, nodes, index, this.preventExpand);
             }
             else {
@@ -13688,7 +13699,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
      */
     TreeView.prototype.removeNodes = function (nodes) {
         if (!isNullOrUndefined(nodes)) {
-            if (this.fields.dataSource instanceof DataManager && !(this.fields.dataSource.dataSource.offline) && (this.fields.dataSource.adaptorName !== 'BlazorAdaptor')) {
+            if (this.fields.dataSource instanceof DataManager && !this.isOffline && (this.fields.dataSource.adaptorName !== 'BlazorAdaptor')) {
                 this.crudOperation('delete', nodes);
             }
             else {
@@ -13715,7 +13726,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         var eventArgs = this.getEditEvent(liEle, null, null);
         this.trigger('nodeEditing', eventArgs, function (observedArgs) {
             if (!observedArgs.cancel) {
-                if (_this.fields.dataSource instanceof DataManager && !(_this.fields.dataSource.dataSource.offline) && (_this.fields.dataSource.adaptorName !== 'BlazorAdaptor')) {
+                if (_this.fields.dataSource instanceof DataManager && !_this.isOffline && (_this.fields.dataSource.adaptorName !== 'BlazorAdaptor')) {
                     _this.crudOperation('update', null, target, newText, null, null, false);
                 }
                 else {

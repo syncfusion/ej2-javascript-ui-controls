@@ -455,7 +455,7 @@ export class ContextMenu {
                 this.documentHelper.owner.editor.deleteColumn();
                 break;
             case id + CONTEXTMENU_CONTINUE_NUMBERING:
-                this.documentHelper.owner.editorModule.applyContinueNumbering(this.documentHelper.selection);
+                this.documentHelper.owner.editorModule.applyContinueNumbering();
                 break;
             case id + CONTEXTMENU_RESTART_AT:
                 this.documentHelper.owner.editorModule.applyRestartNumbering(this.documentHelper.selection);

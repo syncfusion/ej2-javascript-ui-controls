@@ -50,4 +50,11 @@ export interface SwimlaneSettingsModel {
      */
     sortDirection?: SortDirection;
 
+    /**
+     * Enable or disable unassigned swimlane group
+     * @default true
+     * @deprecated
+     */
+    showUnassignedRow?: boolean;
+
 }

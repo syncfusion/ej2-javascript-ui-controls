@@ -3,7 +3,7 @@ import { IGrid } from '../base/interface';
 import { formatUnit } from '@syncfusion/ej2-base';
 import { columnWidthChanged } from '../base/constant';
 import { Column } from '../models/column';
-import { parentsUntil } from '../base/util';
+import { parentsUntil, ispercentageWidth } from '../base/util';
 
 /**
  * ColumnWidthService
@@ -100,12 +100,9 @@ export class ColumnWidthService {
     }
 
     private setWidth(width: string | number, index: number, clear?: boolean): void {
-        let chrome: string = 'chrome';
-        let webstore: string = 'webstore';
-        if (typeof (width) === 'string' && width.indexOf('%') !== -1 &&
-            !(Boolean(window[chrome]) && Boolean(window[chrome][webstore])) && this.parent.allowGrouping) {
+        if (this.parent.groupSettings.columns.length > index && ispercentageWidth(this.parent)) {
             let elementWidth: number = this.parent.element.offsetWidth;
-            width = parseInt(width, 10) / 100 * (elementWidth);
+            width = (30 / elementWidth * 100).toFixed(1) + '%';
         }
         let header: Element = this.parent.getHeaderTable();
         let content: Element = this.parent.getContentTable();

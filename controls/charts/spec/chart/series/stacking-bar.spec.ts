@@ -425,10 +425,10 @@ describe('Chart Control', () => {
             loaded = (args: Object): void => {
                 let svg: number = +document.getElementById('container_Series_0_Point_1_TextShape_0').getAttribute('x');
                 let point0Location = (<Points>(<Series>chartObj.series[0]).points[1]).symbolLocations[0].x;
-                expect(svg > point0Location).toBe(true);
+                expect(svg < point0Location).toBe(true);
                 let svg1: number = +document.getElementById('container_Series_0_Point_0_TextShape_0').getAttribute('x');
                 let point0Location1 = (<Points>(<Series>chartObj.series[0]).points[0]).symbolLocations[0].x;
-                expect(svg1 < point0Location1).toBe(true); done();
+                expect(svg1 > point0Location1).toBe(true); done();
             };
             chartObj.loaded = loaded;
             chartObj.series[0].marker.dataLabel.position = 'Outer';
@@ -587,7 +587,7 @@ describe('Chart Control', () => {
         it('Color saturation with chart area background black', (done: Function) => {
             loaded = (args: Object): void => {
                 let element: HTMLElement = document.getElementById('container_Series_0_Point_4_Text_0');
-                expect(element.getAttribute('fill') == 'black').toBe(true);
+                expect(element.getAttribute('fill') == 'white').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -678,10 +678,10 @@ describe('Chart Control', () => {
             loaded = (args: Object): void => {
                 dataLabelX = +document.getElementById('container_Series_0_Point_1_TextShape_0').getAttribute('x');
                 pointX = (<Points>(<Series>chart.series[0]).points[1]).symbolLocations[0].x;
-                expect(dataLabelX < pointX).toBe(true);
+                expect(dataLabelX > pointX).toBe(true);
                 dataLabelX = +document.getElementById('container_Series_0_Point_0_TextShape_0').getAttribute('x');
                 pointX = (<Points>(<Series>chart.series[0]).points[0]).symbolLocations[0].x;
-                expect(dataLabelX > pointX).toBe(true);
+                expect(dataLabelX < pointX).toBe(true);
                 done();
             };
             chart.loaded = loaded;
@@ -813,11 +813,11 @@ describe('Chart Control', () => {
                 //positive yValues
                 dataLabel = document.getElementById('container_Series_0_Point_2_Text_0');
                 point = (<Points>(<Series>chart.series[0]).points[2]);
-                expect(+(dataLabel.getAttribute('y')) > point.symbolLocations[0].y).toBe(true);
+                expect(+(dataLabel.getAttribute('y')) < point.symbolLocations[0].y).toBe(true);
                 //negative yValues
                 dataLabel = document.getElementById('container_Series_0_Point_1_Text_0');
                 point = (<Points>(<Series>chart.series[0]).points[1]);
-                expect(+(dataLabel.getAttribute('y')) < point.symbolLocations[0].y).toBe(true);
+                expect(+(dataLabel.getAttribute('y')) > point.symbolLocations[0].y).toBe(true);
                 done();
             };
             chart.loaded = loaded;

@@ -271,6 +271,13 @@ export class ScrollBar {
         let range: VisibleRangeModel = this.axis.visibleRange;
         let zoomPosition: number = this.zoomPosition;
         let zoomFactor: number = this.zoomFactor;
+        let moveLength: number = this.previousRectX - elem.thumbRectX;
+        let thumbMove: string = moveLength < 0 ? 'RightMove' : 'LeftMove';
+        let args: IScrollEventArgs;
+        if (this.isLazyLoad && (this.isThumbDrag || this.isResizeLeft || this.isResizeRight)) {
+            args = this.calculateLazyRange(elem.thumbRectX, elem.thumbRectWidth, thumbMove);
+        }
+        let currentRange: ScrollbarSettingsRangeModel = args ? args.currentRange : null;
         if (this.isThumbDrag) {
             this.component.isScrolling = this.isThumbDrag;
             mouseXY = (this.isVertical || this.axis.isInversed) ? this.width - mouseXY : mouseXY;
@@ -286,10 +293,10 @@ export class ScrollBar {
                 this.previousXY = mouseXY;
                 this.setZoomFactorPosition(currentX, elem.thumbRectWidth);
             }
-            this.component.trigger(scrollChanged, this.getArgs(scrollChanged, range, zoomPosition, zoomFactor));
+            this.component.trigger(scrollChanged, this.getArgs(scrollChanged, range, zoomPosition, zoomFactor, currentRange));
         } else if (this.isResizeLeft || this.isResizeRight) {
             this.resizeThumb(e);
-            this.component.trigger(scrollChanged, this.getArgs(scrollChanged, range, zoomPosition, zoomFactor));
+            this.component.trigger(scrollChanged, this.getArgs(scrollChanged, range, zoomPosition, zoomFactor, currentRange));
         }
     }
     /**
@@ -755,7 +762,7 @@ private getStartEnd(start: number | Date, end: number | Date, isCurrentStartEnd:
 
     private getArgs(
         eventName: string, range?: VisibleRangeModel, zoomPosition?: number,
-        zoomFactor?: number
+        zoomFactor?: number, currentRanges?: ScrollbarSettingsRangeModel
     ): IScrollEventArgs {
         let scrollArgs: IScrollEventArgs = {
             axis: (this.component.isBlazor ? {} : this.axis) as Axis,
@@ -766,6 +773,7 @@ private getStartEnd(start: number | Date, end: number | Date, isCurrentStartEnd:
             previousRange: range,
             previousZoomFactor: zoomFactor,
             previousZoomPosition: zoomPosition,
+            currentRange: currentRanges
 
         };
         return scrollArgs;

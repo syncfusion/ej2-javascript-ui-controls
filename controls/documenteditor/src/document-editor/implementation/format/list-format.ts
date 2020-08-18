@@ -182,4 +182,13 @@ export class WListFormat {
             this.list.mergeList(format.list);
         }
     }
+    public cloneListFormat(): WListFormat {
+        let format: WListFormat = new WListFormat(undefined);
+        format.list = this.list;
+        format.listId = this.listId;
+        format.baseStyle = this.baseStyle;
+        format.listLevelNumber = this.listLevelNumber;
+        format.uniqueListFormat = this.uniqueListFormat;
+        return format;
+    }
 }

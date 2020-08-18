@@ -949,6 +949,8 @@ const seriesRender = 'seriesRender';
 /** @private */
 const axisLabelRender = 'axisLabelRender';
 /** @private */
+const axisLabelClick = 'axisLabelClick';
+/** @private */
 const axisRangeCalculated = 'axisRangeCalculated';
 /** @private */
 const axisMultiLabelRender = 'axisMultiLabelRender';
@@ -5209,6 +5211,9 @@ class ChartData {
                 }
             }
         }
+        else if (xData.length === 1) {
+            closest = xData[0];
+        }
         return closest;
     }
     getClosestX(chart, series) {
@@ -5756,8 +5761,10 @@ class SeriesBase extends ChildProperty {
     }
     /** @private */
     pushCategoryData(point, index, pointX) {
-        if (!this.visible) {
-            return null;
+        if (!this.chart.tooltip.shared) {
+            if (!this.visible) {
+                return null;
+            }
         }
         if (!this.xAxis.isIndexed) {
             if (this.xAxis.labels.indexOf(pointX) < 0) {
@@ -6664,9 +6671,7 @@ class Marker extends MarkerExplode {
                     : border.color,
                 width: border.width
             },
-            height: marker.height,
-            width: marker.width,
-            shape: marker.shape
+            height: marker.height, width: marker.width, shape: marker.shape
         };
         argsData.border = series.setBorderColor(point, { width: argsData.border.width, color: argsData.border.color });
         if (!series.isRectSeries || series.type === 'BoxAndWhisker') {
@@ -6685,26 +6690,37 @@ class Marker extends MarkerExplode {
             else {
                 y = point.y;
             }
-            shapeOption = new PathOption(symbolId, argsData.fill, argsData.border.width, argsData.border.color, marker.opacity, null);
+            let markerFill = argsData.point.marker.fill || argsData.fill;
+            let markerBorder;
+            if (!isNullOrUndefined(argsData.point.marker.border)) {
+                markerBorder = {
+                    color: argsData.point.marker.border.color || argsData.border.color,
+                    width: argsData.point.marker.border.width || argsData.border.width
+                };
+            }
+            else {
+                markerBorder = { color: argsData.border.color, width: argsData.border.width };
+            }
+            let markerWidth = argsData.point.marker.width || argsData.width;
+            let markerHeight = argsData.point.marker.height || argsData.height;
+            let markerOpacity = argsData.point.marker.opacity || marker.opacity;
+            let markerShape = argsData.point.marker.shape || argsData.shape;
+            shapeOption = new PathOption(symbolId, markerFill, markerBorder.width, markerBorder.color, markerOpacity, null);
             if ((parentElement !== undefined && parentElement !== null) || this.chart.enableCanvas) {
                 if (redraw && getElement$1(shapeOption.id)) {
                     markerElement = getElement$1(shapeOption.id);
-                    circlePath = argsData.shape === 'Circle' ? 'c' : '';
+                    circlePath = markerShape === 'Circle' ? 'c' : '';
                     previousLocation = {
                         x: +markerElement.getAttribute(circlePath + 'x'), y: +markerElement.getAttribute(circlePath + 'y')
                     };
                     previousPath = markerElement.getAttribute('d');
                 }
-                markerElement = drawSymbol(location, argsData.shape, new Size(argsData.width, argsData.height), marker.imageUrl, shapeOption, point.x.toString() + ':' + y.toString(), this.chart.renderer, series.clipRect);
+                markerElement = drawSymbol(location, markerShape, new Size(markerWidth, markerHeight), marker.imageUrl, shapeOption, point.x.toString() + ':' + y.toString(), this.chart.renderer, series.clipRect);
                 appendChildElement(this.chart.enableCanvas, parentElement, markerElement, redraw, true, circlePath + 'x', circlePath + 'y', previousLocation, previousPath, false, false, null, series.chart.duration);
             }
             point.marker = {
-                border: argsData.border,
-                fill: argsData.fill,
-                height: argsData.height,
-                visible: true,
-                shape: argsData.shape,
-                width: argsData.width
+                border: markerBorder, fill: markerFill, height: markerHeight,
+                visible: true, shape: markerShape, width: markerWidth
             };
         }
         else {
@@ -7961,7 +7977,9 @@ let Chart = class Chart extends Component {
              * Load event for the chart will be triggered only chart componet, if this is stock chart, load event did not triggered.
              */
             this.trigger(load, loadEventData, () => {
-                this.cartesianChartRendering(loadEventData);
+                if (!loadEventData.cancel) {
+                    this.cartesianChartRendering(loadEventData);
+                }
             });
         }
         else {
@@ -8994,6 +9012,9 @@ let Chart = class Chart extends Component {
             this.clickCount = 0;
             this.triggerPointEvent(pointDoubleClick, e);
         }
+        if (this.axisLabelClick) {
+            this.triggerAxisLabelClickEvent(axisLabelClick, e);
+        }
         this.notify('click', e);
         return false;
     }
@@ -9008,6 +9029,27 @@ let Chart = class Chart extends Component {
                 seriesIndex: pointData.series.index, pointIndex: pointData.point.index,
                 x: this.mouseX, y: this.mouseY, pageX: evt.pageX, pageY: evt.pageY
             });
+        }
+    }
+    triggerAxisLabelClickEvent(event, e) {
+        let targetElement = e.target;
+        let clickEvt = e;
+        if (targetElement.id.indexOf('_AxisLabel_') !== -1) {
+            let index = targetElement.id.split('_AxisLabel_');
+            let axisIndex = +index[0].slice(-1);
+            let labelIndex = +index[1];
+            let currentAxis = this.axisCollections[axisIndex];
+            if (currentAxis.visible && (axisIndex === 0 || axisIndex === 1)) {
+                this.trigger(event, {
+                    chart: this,
+                    axis: currentAxis,
+                    text: currentAxis.visibleLabels[labelIndex].text,
+                    labelID: targetElement.id,
+                    index: labelIndex,
+                    location: new ChartLocation(clickEvt.pageX, clickEvt.pageY),
+                    value: currentAxis.visibleLabels[labelIndex].value
+                });
+            }
         }
     }
     /**
@@ -9959,6 +10001,9 @@ __decorate([
 __decorate([
     Event()
 ], Chart.prototype, "axisLabelRender", void 0);
+__decorate([
+    Event()
+], Chart.prototype, "axisLabelClick", void 0);
 __decorate([
     Event()
 ], Chart.prototype, "axisRangeCalculated", void 0);
@@ -13921,6 +13966,7 @@ class StackingStepAreaSeries extends LineBase {
      * @return {void}
      * @private
      */
+    // tslint:disable-next-line:max-func-body-length
     render(stackSeries, xAxis, yAxis, isInverted) {
         let currentPointLocation;
         let secondPoint;
@@ -13939,6 +13985,7 @@ class StackingStepAreaSeries extends LineBase {
         let prevPoint = null;
         let validIndex;
         let startPoint = 0;
+        let pointIndex;
         if (xAxis.valueType === 'Category' && xAxis.labelPlacement === 'BetweenTicks') {
             lineLength = 0.5;
         }
@@ -13950,39 +13997,43 @@ class StackingStepAreaSeries extends LineBase {
             xValue = point.xValue;
             point.symbolLocations = [];
             point.regions = [];
+            pointIndex = point.index;
             if (point.visible && withInRange(visiblePoint[i - 1], point, visiblePoint[i + 1], stackSeries)) {
                 if (start === null) {
                     start = new ChartLocation(xValue, 0);
                     currentPointLocation = getPoint(xValue - lineLength, origin, xAxis, yAxis, isInverted);
                     direction += ('M' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
-                    currentPointLocation = getPoint(xValue - lineLength, stackedvalue.endValues[i], xAxis, yAxis, isInverted);
+                    currentPointLocation = getPoint(xValue - lineLength, stackedvalue.endValues[pointIndex], xAxis, yAxis, isInverted);
                     direction += ('L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
                 }
                 if (prevPoint != null) {
-                    currentPointLocation = getPoint(point.xValue, stackedvalue.endValues[i], xAxis, yAxis, isInverted);
+                    currentPointLocation = getPoint(point.xValue, stackedvalue.endValues[pointIndex], xAxis, yAxis, isInverted);
                     secondPoint = getPoint(prevPoint.xValue, stackedvalue.endValues[prevPoint.index], xAxis, yAxis, isInverted);
                     direction += ('L' + ' ' + (currentPointLocation.x) + ' ' + (secondPoint.y) +
                         ' L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
                 }
                 else if (stackSeries.emptyPointSettings.mode === 'Gap') {
-                    currentPointLocation = getPoint(point.xValue, stackedvalue.endValues[i], xAxis, yAxis, isInverted);
+                    currentPointLocation = getPoint(point.xValue, stackedvalue.endValues[pointIndex], xAxis, yAxis, isInverted);
                     direction += 'L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ';
                 }
-                visiblePoint[i].symbolLocations.push(getPoint(visiblePoint[i].xValue, stackedvalue.endValues[i], xAxis, yAxis, isInverted, stackSeries));
+                visiblePoint[i].symbolLocations.push(getPoint(visiblePoint[i].xValue, stackedvalue.endValues[pointIndex], xAxis, yAxis, isInverted, stackSeries));
                 visiblePoint[i].regions.push(new Rect(visiblePoint[i].symbolLocations[0].x - stackSeries.marker.width, visiblePoint[i].symbolLocations[0].y - stackSeries.marker.height, 2 * stackSeries.marker.width, 2 * stackSeries.marker.height));
                 prevPoint = point;
             }
             // If we set the empty point mode is Gap or next point of the current point is false, we will close the series path.
             if (visiblePoint[i + 1] && !visiblePoint[i + 1].visible && stackSeries.emptyPointSettings.mode !== 'Drop') {
+                let previousPointIndex;
                 for (let j = i; j >= startPoint; j--) {
-                    if (j !== 0 && (stackedvalue.startValues[j] < stackedvalue.startValues[j - 1] ||
-                        stackedvalue.startValues[j] > stackedvalue.startValues[j - 1])) {
-                        currentPointLocation = getPoint(visiblePoint[j].xValue, stackedvalue.startValues[j], xAxis, yAxis, isInverted, stackSeries);
+                    pointIndex = visiblePoint[j].index;
+                    previousPointIndex = j === 0 ? 0 : visiblePoint[j - 1].index;
+                    if (j !== 0 && (stackedvalue.startValues[pointIndex] < stackedvalue.startValues[previousPointIndex] ||
+                        stackedvalue.startValues[pointIndex] > stackedvalue.startValues[previousPointIndex])) {
+                        currentPointLocation = getPoint(visiblePoint[pointIndex].xValue, stackedvalue.startValues[pointIndex], xAxis, yAxis, isInverted, stackSeries);
                         direction = direction.concat('L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
-                        currentPointLocation = getPoint(visiblePoint[j].xValue, stackedvalue.startValues[j - 1], xAxis, yAxis, isInverted, stackSeries);
+                        currentPointLocation = getPoint(visiblePoint[pointIndex].xValue, stackedvalue.startValues[previousPointIndex], xAxis, yAxis, isInverted, stackSeries);
                     }
                     else {
-                        currentPointLocation = getPoint(visiblePoint[j].xValue, stackedvalue.startValues[j], xAxis, yAxis, isInverted, stackSeries);
+                        currentPointLocation = getPoint(visiblePoint[pointIndex].xValue, stackedvalue.startValues[pointIndex], xAxis, yAxis, isInverted, stackSeries);
                     }
                     direction = direction.concat('L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
                 }
@@ -13993,10 +14044,11 @@ class StackingStepAreaSeries extends LineBase {
         }
         // For category axis
         if ((pointsLength > 1) && direction !== '') {
-            start = { 'x': visiblePoint[pointsLength - 1].xValue + lineLength, 'y': stackedvalue.endValues[pointsLength - 1] };
+            pointIndex = visiblePoint[pointsLength - 1].index;
+            start = { 'x': visiblePoint[pointsLength - 1].xValue + lineLength, 'y': stackedvalue.endValues[pointIndex] };
             secondPoint = getPoint(start.x, start.y, xAxis, yAxis, isInverted);
             direction += ('L' + ' ' + (secondPoint.x) + ' ' + (secondPoint.y) + ' ');
-            start = { 'x': visiblePoint[pointsLength - 1].xValue + lineLength, 'y': stackedvalue.startValues[pointsLength - 1] };
+            start = { 'x': visiblePoint[pointsLength - 1].xValue + lineLength, 'y': stackedvalue.startValues[pointIndex] };
             secondPoint = getPoint(start.x, start.y, xAxis, yAxis, isInverted);
             direction += ('L' + ' ' + (secondPoint.x) + ' ' + (secondPoint.y) + ' ');
         }
@@ -14004,7 +14056,8 @@ class StackingStepAreaSeries extends LineBase {
         for (let j = pointsLength - 1; j >= startPoint; j--) {
             let index;
             if (visiblePoint[j].visible) {
-                point2 = getPoint(visiblePoint[j].xValue, stackedvalue.startValues[j], xAxis, yAxis, isInverted, stackSeries);
+                pointIndex = visiblePoint[j].index;
+                point2 = getPoint(visiblePoint[j].xValue, stackedvalue.startValues[pointIndex], xAxis, yAxis, isInverted, stackSeries);
                 direction = direction.concat('L' + ' ' + (point2.x) + ' ' + (point2.y) + ' ');
             }
             if (j !== 0 && !visiblePoint[j - 1].visible) {
@@ -14012,7 +14065,8 @@ class StackingStepAreaSeries extends LineBase {
             }
             if (j !== 0) {
                 validIndex = index ? index : j - 1;
-                point3 = getPoint(visiblePoint[validIndex].xValue, stackedvalue.startValues[validIndex], xAxis, yAxis, isInverted, stackSeries);
+                pointIndex = index ? visiblePoint[index].index : visiblePoint[j - 1].index;
+                point3 = getPoint(visiblePoint[validIndex].xValue, stackedvalue.startValues[pointIndex], xAxis, yAxis, isInverted, stackSeries);
                 direction = direction.concat('L' + ' ' + (point2.x) + ' ' + (point3.y) + ' ');
             }
         }
@@ -21720,7 +21774,8 @@ class DataLabel {
                     argsData = {
                         cancel: false, name: textRender, series: series,
                         point: point, text: labelText[i], border: border,
-                        color: dataLabel.fill, template: dataLabel.template, font: argsFont, location: labelLocation
+                        color: dataLabel.fill, template: dataLabel.template, font: argsFont, location: labelLocation,
+                        textSize: measureText(labelText[i], dataLabel.font)
                     };
                     chart.trigger(textRender, argsData);
                     if (!argsData.cancel) {
@@ -22037,8 +22092,8 @@ class DataLabel {
         let margin = this.margin;
         let textLength = !this.inverted ? textSize.height : textSize.width;
         let extraSpace = this.borderWidth + textLength / 2 + padding;
-        if (series.type.indexOf('Stacking') > -1) {
-            position = position === 'Outer' ? 'Top' : position;
+        if (series.type === 'StackingColumn100' || series.type === 'StackingBar100') {
+            position = (position === 'Outer') ? 'Top' : position;
         }
         else if (series.type.indexOf('Range') > -1) {
             position = (position === 'Outer' || position === 'Top') ? position : 'Auto';
@@ -22072,6 +22127,21 @@ class DataLabel {
         this.fontBackground = check ?
             (this.fontBackground === 'transparent' ? this.chartBackground : this.fontBackground)
             : this.fontBackground === 'transparent' ? (point.color || series.interior) : this.fontBackground;
+        let seriesLength = series.chart.series.length;
+        if (position === 'Outer' && (series.type.indexOf('Stacking') > -1) && ((seriesLength - 1) > series.index)) {
+            let nextSeries;
+            let nextSeriesPoint;
+            for (let i = series.index + 1; i < seriesLength; i++) {
+                nextSeries = series.chart.series[i];
+                nextSeriesPoint = nextSeries.points[point.index];
+                if ((nextSeries.type.indexOf('Stacking') > -1) && (nextSeries.type.indexOf('100') === -1)) {
+                    this.fontBackground = (nextSeriesPoint && ((nextSeriesPoint.yValue < 0 && point.yValue < 0) ||
+                        (nextSeriesPoint.yValue > 0 && point.yValue > 0))) ? (nextSeriesPoint ? nextSeriesPoint.color :
+                        nextSeries.interior) : this.fontBackground;
+                    break;
+                }
+            }
+        }
         return labelLocation;
     }
     calculatePathPosition(labelLocation, position, series, point, size, labelIndex) {
@@ -22112,7 +22182,12 @@ class DataLabel {
         let collection = this.chart.dataLabelCollections;
         let finalPosition = series.type.indexOf('Range') !== -1 || series.type === 'Hilo' ? 2 : 4;
         while (isOverLap && position < finalPosition) {
-            location = this.calculateRectPosition(labelLocation, rect, isMinus, this.getPosition(position), series, size, labelIndex, point);
+            let actualPosition = this.getPosition(position);
+            if (series.type.indexOf('Stacking') > -1 && actualPosition === 'Outer') {
+                actualPosition = 'Top';
+                position++;
+            }
+            location = this.calculateRectPosition(labelLocation, rect, isMinus, actualPosition, series, size, labelIndex, point);
             if (!this.inverted) {
                 labelRect = calculateRect(new ChartLocation(this.locationX, location), size, this.margin);
                 isOverLap = labelRect.y < 0 || isCollide(labelRect, collection, series.clipRect) || labelRect.y > series.clipRect.height;
@@ -24587,6 +24662,13 @@ class ScrollBar {
         let range = this.axis.visibleRange;
         let zoomPosition = this.zoomPosition;
         let zoomFactor = this.zoomFactor;
+        let moveLength = this.previousRectX - elem.thumbRectX;
+        let thumbMove = moveLength < 0 ? 'RightMove' : 'LeftMove';
+        let args;
+        if (this.isLazyLoad && (this.isThumbDrag || this.isResizeLeft || this.isResizeRight)) {
+            args = this.calculateLazyRange(elem.thumbRectX, elem.thumbRectWidth, thumbMove);
+        }
+        let currentRange = args ? args.currentRange : null;
         if (this.isThumbDrag) {
             this.component.isScrolling = this.isThumbDrag;
             mouseXY = (this.isVertical || this.axis.isInversed) ? this.width - mouseXY : mouseXY;
@@ -24603,11 +24685,11 @@ class ScrollBar {
                 this.previousXY = mouseXY;
                 this.setZoomFactorPosition(currentX, elem.thumbRectWidth);
             }
-            this.component.trigger(scrollChanged, this.getArgs(scrollChanged, range, zoomPosition, zoomFactor));
+            this.component.trigger(scrollChanged, this.getArgs(scrollChanged, range, zoomPosition, zoomFactor, currentRange));
         }
         else if (this.isResizeLeft || this.isResizeRight) {
             this.resizeThumb(e);
-            this.component.trigger(scrollChanged, this.getArgs(scrollChanged, range, zoomPosition, zoomFactor));
+            this.component.trigger(scrollChanged, this.getArgs(scrollChanged, range, zoomPosition, zoomFactor, currentRange));
         }
     }
     /**
@@ -25057,7 +25139,7 @@ class ScrollBar {
     getModuleName() {
         return 'ScrollBar';
     }
-    getArgs(eventName, range, zoomPosition, zoomFactor) {
+    getArgs(eventName, range, zoomPosition, zoomFactor, currentRanges) {
         let scrollArgs = {
             axis: (this.component.isBlazor ? {} : this.axis),
             name: eventName,
@@ -25067,6 +25149,7 @@ class ScrollBar {
             previousRange: range,
             previousZoomFactor: zoomFactor,
             previousZoomPosition: zoomPosition,
+            currentRange: currentRanges
         };
         return scrollArgs;
     }
@@ -29184,7 +29267,7 @@ class AccumulationDataLabel extends AccumulationBase {
                 let newAngle = nextPoint.midAngle + count;
                 if (!(newAngle < 270 && newAngle > 90)) {
                     newAngle = 270;
-                    this.isIncreaseAngle = true;
+                    this.isIncreaseAngle = false;
                     break;
                 }
                 this.changeLabelAngle(nextPoint, newAngle);
@@ -33561,6 +33644,9 @@ __decorate$12([
 __decorate$12([
     Complex(Theme.stockEventFont, StockChartFont)
 ], StockEventsSettings.prototype, "textStyle", void 0);
+__decorate$12([
+    Property([])
+], StockEventsSettings.prototype, "seriesIndexes", void 0);
 
 /**
  * @private
@@ -33581,7 +33667,6 @@ class StockEvents extends BaseTooltip {
         let sChart = this.stockChart;
         let stockEvent;
         let stockEventElement;
-        let symbolLocation;
         let textSize;
         // Creation of group elements for stock events
         let stockEventsElementGroup = sChart.renderer.createGroup({ id: this.chartId + '_StockEvents' });
@@ -33600,18 +33685,31 @@ class StockEvents extends BaseTooltip {
                 if (!argsData.cancel) {
                     stockEventElement = sChart.renderer.createGroup({ id: this.chartId + '_Series_' + series.index + '_StockEvents_' + i });
                     if (withIn(this.dateParse(stockEvent.date).getTime(), series.xAxis.visibleRange)) {
-                        symbolLocation = this.findClosePoint(series, stockEvent);
-                        if (!stockEvent.showOnSeries) {
-                            symbolLocation.y = series.yAxis.rect.y + series.yAxis.rect.height;
+                        if (stockEvent.seriesIndexes.length > 0) {
+                            for (let j = 0; j < stockEvent.seriesIndexes.length; j++) {
+                                if (stockEvent.seriesIndexes[j] === series.index) {
+                                    stockEventsElementGroup.appendChild(this.creatEventGroup(stockEventElement, series, stockEvent, i, textSize));
+                                }
+                            }
                         }
-                        this.symbolLocations[series.index][i] = symbolLocation;
-                        this.createStockElements(stockEventElement, stockEvent, series, i, symbolLocation, textSize);
-                        stockEventsElementGroup.appendChild(stockEventElement);
+                        else {
+                            stockEventsElementGroup.appendChild(this.creatEventGroup(stockEventElement, series, stockEvent, i, textSize));
+                        }
                     }
                 }
             }
         }
         return stockEventsElementGroup;
+    }
+    creatEventGroup(stockEventElement, series, stockEvent, i, textSize) {
+        let symbolLocation;
+        symbolLocation = this.findClosePoint(series, stockEvent);
+        if (!stockEvent.showOnSeries) {
+            symbolLocation.y = series.yAxis.rect.y + series.yAxis.rect.height;
+        }
+        this.symbolLocations[series.index][i] = symbolLocation;
+        this.createStockElements(stockEventElement, stockEvent, series, i, symbolLocation, textSize);
+        return stockEventElement;
     }
     findClosePoint(series, sEvent) {
         let closeIndex = this.getClosest(series, this.dateParse(sEvent.date).getTime());
@@ -43654,5 +43752,5 @@ class SparklineTooltip {
  * Chart components exported.
  */
 
-export { CrosshairSettings, ZoomSettings, Chart, Row, Column, MajorGridLines, MinorGridLines, AxisLine, MajorTickLines, MinorTickLines, CrosshairTooltip, Axis, VisibleLabels, Double, DateTime, Category, Logarithmic, DateTimeCategory, NiceInterval, StripLine, Connector, Font, Border, Offset, ChartArea, Margin, Animation$1 as Animation, Indexes, CornerRadius, Index, EmptyPointSettings, DragSettings, TooltipSettings, Periods, PeriodSelectorSettings, LineSeries, ColumnSeries, AreaSeries, BarSeries, PolarSeries, RadarSeries, StackingBarSeries, CandleSeries, StackingColumnSeries, StepLineSeries, StepAreaSeries, StackingAreaSeries, StackingStepAreaSeries, StackingLineSeries, ScatterSeries, RangeColumnSeries, WaterfallSeries, HiloSeries, HiloOpenCloseSeries, RangeAreaSeries, BubbleSeries, SplineSeries, HistogramSeries, SplineAreaSeries, TechnicalIndicator, SmaIndicator, EmaIndicator, TmaIndicator, AccumulationDistributionIndicator, AtrIndicator, MomentumIndicator, RsiIndicator, StochasticIndicator, BollingerBands, MacdIndicator, Trendlines, sort, isBreakLabel, getVisiblePoints, rotateTextSize, removeElement$1 as removeElement, logBase, showTooltip, inside, withIn, logWithIn, withInRange, sum, subArraySum, subtractThickness, subtractRect, degreeToLocation, degreeToRadian, getRotatedRectangleCoordinates, isRotatedRectIntersect, getAngle, subArray, valueToCoefficient, TransformToVisible, indexFinder, CoefficientToVector, valueToPolarCoefficient, Mean, PolarArc, createTooltip, createZoomingLabels, withInBounds, getValueXByPoint, getValueYByPoint, findClipRect, firstToLowerCase, getTransform, getMinPointsDelta, getAnimationFunction, linear, markerAnimate, animateRectElement, pathAnimation, appendClipElement, triggerLabelRender, setRange, getActualDesiredIntervalsCount, templateAnimate, drawSymbol, calculateShapes, getRectLocation, minMax, getElement$1 as getElement, getTemplateFunction, createTemplate, getFontStyle, measureElementRect, findlElement, getPoint, appendElement, appendChildElement, getDraggedRectLocation, checkBounds, getLabelText, stopTimer, isCollide, isOverlap, containsRect, calculateRect, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, getSaturationColor, getMedian, calculateLegendShapes, textTrim, lineBreakLabelTrim, stringToNumber, redrawElement, animateRedrawElement, textElement$1 as textElement, calculateSize, createSvg, getTitle, titlePositionX, textWrap, getUnicodeText, blazorTemplatesReset, CustomizeOption, StackValues, RectOption, ImageOption, CircleOption, PolygonOption, ChartLocation, LabelLocation, Thickness, ColorValue, PointData, AccPointData, ControlPoints, Crosshair, Tooltip$1 as Tooltip, Zoom, Selection, DataEditing, Highlight, DataLabel, ErrorBar, DataLabelSettings, MarkerSettings, Points, Trendline, ErrorBarCapSettings, ChartSegment, ErrorBarSettings, SeriesBase, Series, Legend, ChartAnnotation, ChartAnnotationSettings, LabelBorder, MultiLevelCategories, StripLineSettings, MultiLevelLabels, ScrollbarSettingsRange, ScrollbarSettings, BoxAndWhiskerSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiColoredSeries, MultiLevelLabel, ScrollBar, ParetoSeries, Export, AccumulationChart, AccumulationAnnotationSettings, AccumulationDataLabelSettings, PieCenter, AccPoints, AccumulationSeries, getSeriesFromIndex, pointByIndex, PieSeries, FunnelSeries, PyramidSeries, AccumulationLegend, AccumulationDataLabel, AccumulationTooltip, AccumulationSelection, AccumulationAnnotation, StockChart, StockChartFont, StockChartBorder, StockChartArea, StockMargin, StockChartStripLineSettings, StockEmptyPointSettings, StockChartConnector, StockSeries, StockChartIndicator, StockChartAxis, StockChartRow, StockChartTrendline, StockChartAnnotationSettings, StockChartIndexes, StockEventsSettings, loaded, legendClick, load, animationComplete, legendRender, textRender, pointRender, sharedTooltipRender, seriesRender, axisLabelRender, axisRangeCalculated, axisMultiLabelRender, tooltipRender, chartMouseMove, chartMouseClick, pointClick, pointDoubleClick, pointMove, chartMouseLeave, chartMouseDown, chartMouseUp, zoomComplete, dragComplete, selectionComplete, resized, beforePrint, annotationRender, scrollStart, scrollEnd, scrollChanged, stockEventRender, multiLevelLabelClick, dragStart, drag, dragEnd, regSub, regSup, beforeExport, afterExport, bulletChartMouseClick, onZooming, Theme, getSeriesColor, getThemeColor, getScrollbarThemeColor, PeriodSelector, RangeNavigator, rangeValueToCoefficient, getXLocation, getRangeValueXByPoint, getExactData, getNearestValue, DataPoint, RangeNavigatorTheme, getRangeThemeColor, RangeNavigatorAxis, RangeSeries, RangeSlider, RangeNavigatorSeries, ThumbSettings, StyleSettings, RangeTooltipSettings, RangeTooltip, BulletChart, Range, MajorTickLinesSettings, MinorTickLinesSettings, BulletLabelStyle, BulletTooltipSettings, BulletDataLabel, BulletChartLegendSettings, BulletChartTheme, getBulletThemeColor, BulletTooltip, BulletChartLegend, Smithchart, SmithchartMajorGridLines, SmithchartMinorGridLines, SmithchartAxisLine, SmithchartAxis, LegendTitle, LegendLocation, LegendItemStyleBorder, LegendItemStyle, LegendBorder, SmithchartLegendSettings, SeriesTooltipBorder, SeriesTooltip, SeriesMarkerBorder, SeriesMarkerDataLabelBorder, SeriesMarkerDataLabelConnectorLine, SeriesMarkerDataLabel, SeriesMarker, SmithchartSeries, TooltipRender, Subtitle, Title, SmithchartFont, SmithchartMargin, SmithchartBorder, SmithchartRect, LabelCollection, LegendSeries, LabelRegion, HorizontalLabelCollection, RadialLabelCollections, LineSegment, PointRegion, Point, ClosestPoint, MarkerOptions, SmithchartLabelPosition, Direction, DataLabelTextOptions, LabelOption, SmithchartSize, GridArcPoints, smithchartBeforePrint, SmithchartLegend, Sparkline, SparklineTooltip, SparklineBorder, SparklineFont, TrackLineSettings, SparklineTooltipSettings, ContainerArea, LineSettings, RangeBandSettings, AxisSettings, Padding, SparklineMarkerSettings, LabelOffset, SparklineDataLabelSettings };
+export { CrosshairSettings, ZoomSettings, Chart, Row, Column, MajorGridLines, MinorGridLines, AxisLine, MajorTickLines, MinorTickLines, CrosshairTooltip, Axis, VisibleLabels, Double, DateTime, Category, Logarithmic, DateTimeCategory, NiceInterval, StripLine, Connector, Font, Border, Offset, ChartArea, Margin, Animation$1 as Animation, Indexes, CornerRadius, Index, EmptyPointSettings, DragSettings, TooltipSettings, Periods, PeriodSelectorSettings, LineSeries, ColumnSeries, AreaSeries, BarSeries, PolarSeries, RadarSeries, StackingBarSeries, CandleSeries, StackingColumnSeries, StepLineSeries, StepAreaSeries, StackingAreaSeries, StackingStepAreaSeries, StackingLineSeries, ScatterSeries, RangeColumnSeries, WaterfallSeries, HiloSeries, HiloOpenCloseSeries, RangeAreaSeries, BubbleSeries, SplineSeries, HistogramSeries, SplineAreaSeries, TechnicalIndicator, SmaIndicator, EmaIndicator, TmaIndicator, AccumulationDistributionIndicator, AtrIndicator, MomentumIndicator, RsiIndicator, StochasticIndicator, BollingerBands, MacdIndicator, Trendlines, sort, isBreakLabel, getVisiblePoints, rotateTextSize, removeElement$1 as removeElement, logBase, showTooltip, inside, withIn, logWithIn, withInRange, sum, subArraySum, subtractThickness, subtractRect, degreeToLocation, degreeToRadian, getRotatedRectangleCoordinates, isRotatedRectIntersect, getAngle, subArray, valueToCoefficient, TransformToVisible, indexFinder, CoefficientToVector, valueToPolarCoefficient, Mean, PolarArc, createTooltip, createZoomingLabels, withInBounds, getValueXByPoint, getValueYByPoint, findClipRect, firstToLowerCase, getTransform, getMinPointsDelta, getAnimationFunction, linear, markerAnimate, animateRectElement, pathAnimation, appendClipElement, triggerLabelRender, setRange, getActualDesiredIntervalsCount, templateAnimate, drawSymbol, calculateShapes, getRectLocation, minMax, getElement$1 as getElement, getTemplateFunction, createTemplate, getFontStyle, measureElementRect, findlElement, getPoint, appendElement, appendChildElement, getDraggedRectLocation, checkBounds, getLabelText, stopTimer, isCollide, isOverlap, containsRect, calculateRect, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, getSaturationColor, getMedian, calculateLegendShapes, textTrim, lineBreakLabelTrim, stringToNumber, redrawElement, animateRedrawElement, textElement$1 as textElement, calculateSize, createSvg, getTitle, titlePositionX, textWrap, getUnicodeText, blazorTemplatesReset, CustomizeOption, StackValues, RectOption, ImageOption, CircleOption, PolygonOption, ChartLocation, LabelLocation, Thickness, ColorValue, PointData, AccPointData, ControlPoints, Crosshair, Tooltip$1 as Tooltip, Zoom, Selection, DataEditing, Highlight, DataLabel, ErrorBar, DataLabelSettings, MarkerSettings, Points, Trendline, ErrorBarCapSettings, ChartSegment, ErrorBarSettings, SeriesBase, Series, Legend, ChartAnnotation, ChartAnnotationSettings, LabelBorder, MultiLevelCategories, StripLineSettings, MultiLevelLabels, ScrollbarSettingsRange, ScrollbarSettings, BoxAndWhiskerSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiColoredSeries, MultiLevelLabel, ScrollBar, ParetoSeries, Export, AccumulationChart, AccumulationAnnotationSettings, AccumulationDataLabelSettings, PieCenter, AccPoints, AccumulationSeries, getSeriesFromIndex, pointByIndex, PieSeries, FunnelSeries, PyramidSeries, AccumulationLegend, AccumulationDataLabel, AccumulationTooltip, AccumulationSelection, AccumulationAnnotation, StockChart, StockChartFont, StockChartBorder, StockChartArea, StockMargin, StockChartStripLineSettings, StockEmptyPointSettings, StockChartConnector, StockSeries, StockChartIndicator, StockChartAxis, StockChartRow, StockChartTrendline, StockChartAnnotationSettings, StockChartIndexes, StockEventsSettings, loaded, legendClick, load, animationComplete, legendRender, textRender, pointRender, sharedTooltipRender, seriesRender, axisLabelRender, axisLabelClick, axisRangeCalculated, axisMultiLabelRender, tooltipRender, chartMouseMove, chartMouseClick, pointClick, pointDoubleClick, pointMove, chartMouseLeave, chartMouseDown, chartMouseUp, zoomComplete, dragComplete, selectionComplete, resized, beforePrint, annotationRender, scrollStart, scrollEnd, scrollChanged, stockEventRender, multiLevelLabelClick, dragStart, drag, dragEnd, regSub, regSup, beforeExport, afterExport, bulletChartMouseClick, onZooming, Theme, getSeriesColor, getThemeColor, getScrollbarThemeColor, PeriodSelector, RangeNavigator, rangeValueToCoefficient, getXLocation, getRangeValueXByPoint, getExactData, getNearestValue, DataPoint, RangeNavigatorTheme, getRangeThemeColor, RangeNavigatorAxis, RangeSeries, RangeSlider, RangeNavigatorSeries, ThumbSettings, StyleSettings, RangeTooltipSettings, RangeTooltip, BulletChart, Range, MajorTickLinesSettings, MinorTickLinesSettings, BulletLabelStyle, BulletTooltipSettings, BulletDataLabel, BulletChartLegendSettings, BulletChartTheme, getBulletThemeColor, BulletTooltip, BulletChartLegend, Smithchart, SmithchartMajorGridLines, SmithchartMinorGridLines, SmithchartAxisLine, SmithchartAxis, LegendTitle, LegendLocation, LegendItemStyleBorder, LegendItemStyle, LegendBorder, SmithchartLegendSettings, SeriesTooltipBorder, SeriesTooltip, SeriesMarkerBorder, SeriesMarkerDataLabelBorder, SeriesMarkerDataLabelConnectorLine, SeriesMarkerDataLabel, SeriesMarker, SmithchartSeries, TooltipRender, Subtitle, Title, SmithchartFont, SmithchartMargin, SmithchartBorder, SmithchartRect, LabelCollection, LegendSeries, LabelRegion, HorizontalLabelCollection, RadialLabelCollections, LineSegment, PointRegion, Point, ClosestPoint, MarkerOptions, SmithchartLabelPosition, Direction, DataLabelTextOptions, LabelOption, SmithchartSize, GridArcPoints, smithchartBeforePrint, SmithchartLegend, Sparkline, SparklineTooltip, SparklineBorder, SparklineFont, TrackLineSettings, SparklineTooltipSettings, ContainerArea, LineSettings, RangeBandSettings, AxisSettings, Padding, SparklineMarkerSettings, LabelOffset, SparklineDataLabelSettings };
 //# sourceMappingURL=ej2-charts.es2015.js.map

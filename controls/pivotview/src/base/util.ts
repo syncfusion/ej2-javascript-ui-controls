@@ -1,6 +1,6 @@
 import { IPivotValues, IDataOptions, IFieldOptions, IFilter, ISort, IFormatSettings } from './engine';
 import { IDrillOptions, IValueSortSettings, IGroupSettings, IConditionalFormatSettings, ICustomGroups, FieldItemInfo } from './engine';
-import { ICalculatedFieldSettings, IAuthenticationInfo } from './engine';
+import { ICalculatedFieldSettings, IAuthenticationInfo, IGridValues, IAxisSet } from './engine';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { PivotView, PivotViewModel } from '../pivotview';
 import { PivotFieldList, PivotFieldListModel } from '../pivotfieldlist';
@@ -572,5 +572,144 @@ export class PivotUtil {
             isButtonRefresh = false;
         }
         return isButtonRefresh;
+    }
+
+    /* tslint:disable:no-any */
+    public static formatPivotValues(pivotValues: any): any {
+        let values: any = [];
+        for (let i: number = 0; i < pivotValues.length; i++) {
+            if (pivotValues[i]) {
+                values[i] = [];
+                for (let j: number = 0; j < pivotValues[i].length; j++) {
+                    if (pivotValues[i][j]) {
+                        values[i][j] = {
+                            axis: pivotValues[i][j].Axis,
+                            actualText: pivotValues[i][j].ActualText,
+                            indexObject: pivotValues[i][j].IndexObject,
+                            index: pivotValues[i][j].Index,
+                            rowHeaders: pivotValues[i][j].RowHeaders,
+                            columnHeaders: pivotValues[i][j].ColumnHeaders,
+                            formattedText: pivotValues[i][j].FormattedText,
+                            actualValue: pivotValues[i][j].ActualValue,
+                            rowIndex: pivotValues[i][j].RowIndex,
+                            colIndex: pivotValues[i][j].ColIndex,
+                            colSpan: pivotValues[i][j].ColSpan,
+                            level: pivotValues[i][j].Level,
+                            rowSpan: pivotValues[i][j].RowSpan,
+                            isSum: pivotValues[i][j].IsSum,
+                            isGrandSum: pivotValues[i][j].IsGrandSum,
+                            valueSort: pivotValues[i][j].ValueSort,
+                            ordinal: pivotValues[i][j].Ordinal,
+                            hasChild: pivotValues[i][j].HasChild,
+                            isDrilled: pivotValues[i][j].IsDrilled,
+                            value: pivotValues[i][j].Value,
+                            type: pivotValues[i][j].Type,
+                            members: pivotValues[i][j].Members
+                        };
+                    }
+                }
+            }
+        }
+        return values;
+    }
+
+    /* tslint:disable:no-any */
+    public static formatFieldList(fieldList: any): any {
+        let keys: string[] = Object.keys(fieldList);
+        let fList: any = {};
+        for (let i: number = 0; i < keys.length; i++) {
+            if (fieldList[keys[i]]) {
+                fList[keys[i]] = {
+                    id: fieldList[keys[i]].Id,
+                    caption: fieldList[keys[i]].Caption,
+                    type: fieldList[keys[i]].Type,
+                    formatString: fieldList[keys[i]].FormatString,
+                    index: fieldList[keys[i]].Index,
+                    members: fieldList[keys[i]].Members,
+                    formattedMembers: fieldList[keys[i]].FormattedMembers,
+                    dateMember: fieldList[keys[i]].DateMember,
+                    filter: fieldList[keys[i]].Filter,
+                    sort: fieldList[keys[i]].Sort,
+                    aggregateType: fieldList[keys[i]].AggregateType,
+                    baseField: fieldList[keys[i]].BaseField,
+                    baseItem: fieldList[keys[i]].BaseItem,
+                    filterType: fieldList[keys[i]].FilterType,
+                    format: fieldList[keys[i]].Format,
+                    formula: fieldList[keys[i]].Formula,
+                    isSelected: fieldList[keys[i]].IsSelected,
+                    isExcelFilter: fieldList[keys[i]].IsExcelFilter,
+                    showNoDataItems: fieldList[keys[i]].ShowNoDataItems,
+                    isCustomField: fieldList[keys[i]].IsCustomField,
+                    showFilterIcon: fieldList[keys[i]].ShowFilterIcon,
+                    showSortIcon: fieldList[keys[i]].ShowSortIcon,
+                    showRemoveIcon: fieldList[keys[i]].ShowRemoveIcon,
+                    showEditIcon: fieldList[keys[i]].ShowEditIcon,
+                    showValueTypeIcon: fieldList[keys[i]].ShowValueTypeIcon,
+                    allowDragAndDrop: fieldList[keys[i]].AllowDragAndDrop,
+                    isCalculatedField: fieldList[keys[i]].IsCalculatedField,
+                    showSubTotals: fieldList[keys[i]].ShowSubTotals
+                }
+            }
+        }
+        return fList;
+    }
+
+    public static frameContent(pivotValues: IPivotValues, type: string, rowPosition: number, control: PivotView | PivotFieldList): IGridValues {
+        let dataContent: IGridValues = [];
+        var pivot = control;
+        if (pivot.dataSourceSettings.values.length > 0 && !pivot.engineModule.isEmptyData) {
+            if ((pivot.enableValueSorting) || !pivot.engineModule.isEngineUpdated) {
+                let rowCnt: number = 0;
+                let start: number = type === 'value' ? rowPosition : 0;
+                let end: number = type === 'value' ? pivotValues.length : rowPosition;
+                for (var rCnt = start; rCnt < end; rCnt++) {
+                    if (pivotValues[rCnt]) {
+                        rowCnt = type === 'header' ? rCnt : rowCnt;
+                        dataContent[rowCnt] = {} as IAxisSet[];
+                        for (var cCnt = 0; cCnt < pivotValues[rCnt].length; cCnt++) {
+                            if (pivotValues[rCnt][cCnt]) {
+                                dataContent[rowCnt][cCnt] = pivotValues[rCnt][cCnt] as IAxisSet;
+                            }
+                        }
+                        rowCnt++;
+                    }
+                }
+            }
+        }
+        return dataContent;
+    }
+
+    public static getLocalizedObject(control: PivotView | PivotFieldList): Object {
+        let locale: Object = new Object();
+        (locale as any)["Null"] = control.localeObj.getConstant('null');
+        (locale as any)["Years"] = control.localeObj.getConstant('Years');
+        (locale as any)["Quarters"] = control.localeObj.getConstant('Quarters');
+        (locale as any)["Months"] = control.localeObj.getConstant('Months');
+        (locale as any)["Days"] = control.localeObj.getConstant('Days');
+        (locale as any)["Hours"] = control.localeObj.getConstant('Hours');
+        (locale as any)["Minutes"] = control.localeObj.getConstant('Minutes');
+        (locale as any)["Seconds"] = control.localeObj.getConstant('Seconds');
+        (locale as any)["QuarterYear"] = control.localeObj.getConstant('QuarterYear');
+        (locale as any)["Of"] = control.localeObj.getConstant('of');
+        (locale as any)["Qtr"] = control.localeObj.getConstant('qtr');
+        (locale as any)["Undefined"] = control.localeObj.getConstant('undefined');
+        (locale as any)["GroupOutOfRange"] = control.localeObj.getConstant('groupOutOfRange');
+        return locale;
+    }
+
+    public static generateUUID(): string {
+        let d: number = new Date().getTime();
+        let d2: number = (performance && performance.now && (performance.now() * 1000)) || 0;
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+            let r: number = Math.random() * 16;
+            if (d > 0) {
+                r = (d + r) % 16 | 0;
+                d = Math.floor(d / 16);
+            } else {
+                r = (d2 + r) % 16 | 0;
+                d2 = Math.floor(d2 / 16);
+            }
+            return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+        });
     }
 }

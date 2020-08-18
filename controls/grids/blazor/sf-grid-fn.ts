@@ -65,7 +65,7 @@ export class SfGrid {
         this.dotNetRef = dotnetRef;
         this.options = options;
         this.header = this.element.querySelector('.e-headercontent');
-        this.content = this.element.querySelector('.e-content');
+        this.content = this.element.querySelector('.e-gridcontent .e-content');
         this.footer = this.element.querySelector('.e-summarycontent');
         this.initModules();
     }
@@ -453,6 +453,7 @@ export class SfGrid {
         EventHandler.add(this.element,'focus', this.gridFocus, this);
         EventHandler.add(document,'click', this.documentClickHandler, this);
         EventHandler.add(this.element,'keydown', this.gridKeyDownHandler, this);
+        EventHandler.add(this.element, 'keydown', this.keyDownHandler, this);
     }
 
     public unWireEvents(): void {
@@ -460,6 +461,7 @@ export class SfGrid {
         EventHandler.remove(this.element, 'focus', this.gridFocus);
         EventHandler.remove(document, 'click', this.documentClickHandler);
         EventHandler.remove(this.element, 'keydown', this.gridKeyDownHandler);
+        EventHandler.remove(this.element, 'keydown', this.keyDownHandler)
     }
 
     public setOptions(newOptions: IGridOptions, options: IGridOptions) {
@@ -504,6 +506,23 @@ export class SfGrid {
         }
     }
 
+    public keyDownHandler(e: KeyboardEventArgs): void {
+        var gridElement = parentsUntil(<Element>e.target, 'e-grid');
+
+        if ((gridElement && gridElement.id !== this.element.id) ||  
+            (e.key == "Shift" || e.key == "Control" || e.key == "Alt")) {
+            return;
+        }
+
+        this.dotNetRef.invokeMethodAsync("GridKeyDown", { 
+            key: e.key,
+            code: e.code,
+            ctrlKey: e.ctrlKey,
+            shiftKey: e.shiftKey,
+            altKey: e.altKey
+        });
+    }
+
     public gridKeyDownHandler(e: KeyboardEventArgs): void {
         let popupElement: Element = parentsUntil(<Element>e.target, 'e-popup-open');
         if (popupElement && e.key != 'Escape') {
@@ -515,6 +534,11 @@ export class SfGrid {
                 e.target.dispatchEvent(evt);
             }
         }
+
+        if (e.key == "Shift" || e.key == "Control" || e.key == "Alt") { 
+            e.stopPropagation(); //dont let execute c# keydown handler for meta keys.
+        }
+
         if (e.keyCode === 67 && e.ctrlKey) {
             this.clipboardModule.copy();
         } else if (e.keyCode === 72 && e.ctrlKey && e.shiftKey) {
@@ -579,7 +603,8 @@ export class SfGrid {
     }
 
     public gridFocus(e: FocusEvent) { //new
-        if (this.element.classList.contains("e-editing")) { return; }
+        if (!isNullOrUndefined(this.element.querySelector(".e-gridform")) && 
+            this.element.querySelector(".e-gridform").classList.contains("e-editing")) { return; }
         this.dotNetRef.invokeMethodAsync("GridFocus", e);
     }
 
@@ -589,9 +614,14 @@ export class SfGrid {
         || e.action === 'altDownArrow' || e.action === 'ctrlPlusP') { 
             e.preventDefault();
         }
-        if (e.action === 'enter' && this.element.classList.contains("e-editing")
+        if (e.action === 'enter' && !isNullOrUndefined(this.element.querySelector(".e-gridform"))
+            && this.element.querySelector(".e-gridform").classList.contains("e-editing")
             && this.options.editMode !== "Batch") {
-            setTimeout(() => this.dotNetRef.invokeMethodAsync("EndEdit"), 40);
+            setTimeout(() => 
+                {
+                    (e.target as HTMLElement).blur();
+                    this.dotNetRef.invokeMethodAsync("EndEdit");
+                }, 40);
         }
     }
 

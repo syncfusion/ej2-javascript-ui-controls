@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 18.2.54 (2020-08-18)
+
+### Chart
+
+#### Bug Fixes
+
+- `#287569` - Shared tooltip does not render for multiple line series when there is a single point issue fixed.
+- `#285313` - Cancel property in arguments is not working properly on chart Load event issue fixed.
+- `#287632` - Point Render event customization not applied for column chart markers issue fixed.
+
 ## 18.2.48 (2020-08-04)
 
 ### Accumulation chart
@@ -9,6 +19,7 @@
 #### Bug Fixes
 
 - `#286597` - Tooltip showing out of the chart area issue fixed.
+- `#286177` - Pie chart data labels are overlapped when smart labels are enabled issue fixed.
 
 ## 18.2.47 (2020-07-28)
 

@@ -78,12 +78,12 @@ let nodes: NodeModel[] = [
                 {
                     id: 'phase1', offset: 200,
                     style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#606060' },
-                    header: { content: { content: 'Phase' } }
+                    header: { annotation: { content: 'Phase' } }
                 },
                 {
                     id: 'phase2', offset: 400,
                     style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#606060' },
-                    header: { content: { content: 'Phase' } }
+                    header: { annotation: { content: 'Phase' } }
                 },
             ],
             phaseSize: 20,

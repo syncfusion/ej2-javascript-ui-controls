@@ -1389,10 +1389,14 @@ export class PivotChart {
                         pivot.parent.renderPivotGrid();
                     });
                 /* tslint:enable */
+            } else if (pivot.parent.dataSourceSettings.mode === 'Server') {
+                pivot.parent.getEngine('onDrill', drilledItem, null, null, null, null, null);
             } else {
                 pivot.engineModule.drilledMembers = pivot.dataSourceSettings.drilledMembers;
                 (pivot.engineModule as PivotEngine).onDrill(drilledItem);
             }
+        } else if (pivot.parent.dataSourceSettings.mode === 'Server') {
+            pivot.parent.getEngine('onDrill', drilledItem, null, null, null, null, null);
         } else {
             (pivot.engineModule as PivotEngine).generateGridData(pivot.dataSourceSettings);
         }

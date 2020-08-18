@@ -58,7 +58,7 @@ export type AnnotationType = 'None' | 'Highlight' | 'Underline' | 'Strikethrough
 /**
  * Enum LineHeadStyle for line and arrow annotation
  */
-export type LineHeadStyle = 'None' | 'Closed' | 'Open' | 'Square' | 'Round' | 'Diamond';
+export type LineHeadStyle = 'None' | 'Closed' | 'Open' | 'Square' | 'Round' | 'Diamond'| 'Butt';
 
 /**
  * Enum unit for calibration annotation

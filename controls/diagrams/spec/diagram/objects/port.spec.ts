@@ -219,7 +219,7 @@ describe('Diagram Control', () => {
                 ports: [
                     {
                         id: "port", width: 25, height: 25, offset: {x: 0.5, y: 1},
-                        visibility: PortVisibility.Visible, constraints: PortConstraints.Drag
+                        visibility: PortVisibility.Visible, constraints: PortConstraints.Drag | PortConstraints.OutConnect
                     }
                 ]
             };

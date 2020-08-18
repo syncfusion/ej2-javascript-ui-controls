@@ -617,6 +617,14 @@ describe('Spell Checker API', () => {
         expect(wordSpec.hasSpellError).toBe(false);
         expect(wordSpec.isElementPresent).toBe(true);
     });
+    it('Remove underline API validation', () => {
+        editor.openBlank();
+        editor.editor.insertText('AdventureWorks')
+        editor.spellChecker.removeUnderline = false;
+        let wordSpec: WordSpellInfo = editor.spellChecker.checkSpellingInPageInfo('AdventureWorks');
+        expect(wordSpec.hasSpellError).toBe(false);
+        expect(editor.spellChecker.removeUnderline).toBe(false)
+    });
     //     let markIndex: number = element.line.getOffset(element, 0);
     //     // tslint:disable-next-line:max-line-length
     //     editor.searchModule.textSearch.updateMatchedTextLocation(matchResults.matches, results, matchResults.elementInfo, 0,element , false, null, markIndex);  

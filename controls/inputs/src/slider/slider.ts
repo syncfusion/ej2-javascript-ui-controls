@@ -430,7 +430,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     private isForm: boolean;
     private formElement: HTMLFormElement;
     private formResetValue: number | number[];
-
+    private rangeBarDragged : boolean;
     /**
      * It is used to denote the current value of the Slider.
      * The value should be specified in array of number when render Slider type as range.
@@ -1058,12 +1058,16 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             }
         }
     }
-    private handleFocus(e: MouseEvent): void {
+    private handleFocus(e: MouseEvent & TouchEvent): void {
+        this.focusSliderElement();
+        this.sliderBarClick(e);
         if (e.currentTarget === this.firstHandle) {
             this.firstHandle.classList.add(classNames.sliderHandleFocused);
         } else {
             this.secondHandle.classList.add(classNames.sliderHandleFocused);
         }
+        EventHandler.add(document, 'mousemove touchmove', this.sliderBarMove, this);
+        EventHandler.add(document, 'mouseup touchend', this.sliderBarUp, this);
     }
     private handleOver(e: MouseEvent): void {
         if (this.tooltip.isVisible && this.tooltip.showOn === 'Hover') {
@@ -1254,12 +1258,18 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         }
     }
 
+    private materialTooltipEventCallBack(event: MouseEvent & TouchEvent): void {
+        this.sliderBarClick(event);
+        EventHandler.add(document, 'mousemove touchmove', this.sliderBarMove, this);
+        EventHandler.add(document, 'mouseup touchend', this.sliderBarUp, this);
+    }
+
     private wireMaterialTooltipEvent(destroy: boolean): void {
         if (this.isMaterialTooltip) {
             if (!destroy) {
-                EventHandler.add(this.tooltipElement, 'mousedown touchstart', this.sliderDown, this);
+                EventHandler.add(this.tooltipElement, 'mousedown touchstart', this.materialTooltipEventCallBack, this);
             } else {
-                EventHandler.remove(this.tooltipElement, 'mousedown touchstart', this.sliderDown);
+                EventHandler.remove(this.tooltipElement, 'mousedown touchstart', this.materialTooltipEventCallBack);
             }
         }
     }
@@ -2505,9 +2515,9 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     private sliderBarClick(evt: MouseEvent & TouchEvent): void {
         evt.preventDefault();
         let pos: { [key: string]: Object };
-        if (evt.type === 'mousedown' || evt.type === 'click') {
+        if (evt.type === 'mousedown' || evt.type === 'mouseup' || evt.type === 'click') {
             pos = { x: evt.clientX, y: evt.clientY };
-        } else if (evt.type === 'touchstart') {
+        } else if (evt.type === 'touchend' || evt.type === 'touchstart') {
             pos = { x: evt.changedTouches[0].clientX, y: evt.changedTouches[0].clientY };
         }
         let handlepos: number = this.xyToPosition(pos);
@@ -2572,38 +2582,6 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         }
     }
 
-    private sliderDown(event: MouseEvent & TouchEvent): void {
-        event.preventDefault();
-        this.focusSliderElement();
-        if (this.type === 'Range' && this.drag && event.target === this.rangeBar) {
-            let xPostion: number; let yPostion: number;
-            if (event.type === 'mousedown') {
-                [xPostion, yPostion] = [event.clientX, event.clientY];
-            } else if (event.type === 'touchstart') {
-                [xPostion, yPostion] = [event.changedTouches[0].clientX, event.changedTouches[0].clientY];
-            }
-            if (this.orientation === 'Horizontal') {
-                this.firstPartRemain = xPostion - this.rangeBar.getBoundingClientRect().left;
-                this.secondPartRemain = this.rangeBar.getBoundingClientRect().right - xPostion;
-            } else {
-                this.firstPartRemain = yPostion - this.rangeBar.getBoundingClientRect().top;
-                this.secondPartRemain = this.rangeBar.getBoundingClientRect().bottom - yPostion;
-            }
-            this.minDiff = this.handleVal2 - this.handleVal1;
-            this.tooltipToggle(this.rangeBar);
-            let focusedElement: Element = this.element.querySelector('.' + classNames.sliderTabHandle);
-            if (focusedElement) {
-                focusedElement.classList.remove(classNames.sliderTabHandle);
-            }
-            EventHandler.add(document, 'mousemove touchmove', this.dragRangeBarMove, this);
-            EventHandler.add(document, 'mouseup touchend', this.dragRangeBarUp, this);
-        } else {
-            this.sliderBarClick(event);
-            EventHandler.add(document, 'mousemove touchmove', this.sliderBarMove, this);
-            EventHandler.add(document, 'mouseup touchend', this.sliderBarUp, this);
-        }
-    }
-
     private handleValueAdjust(handleValue: number, assignValue: number, handleNumber: SliderHandleNumber): void {
         if (handleNumber === 1) {
             this.handleVal1 = assignValue;
@@ -2620,6 +2598,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         if (event.type !== 'touchmove') {
             event.preventDefault();
         }
+        this.rangeBarDragged = true;
         let pos: { [key: string]: number };
         this.rangeBar.style.transition = 'none';
         this.firstHandle.style.transition = 'none';
@@ -2781,10 +2760,15 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private dragRangeBarUp(event: MouseEvent & TouchEvent): void {
+        if (!this.rangeBarDragged) {
+            this.focusSliderElement();
+            this.sliderBarClick(event);
+        }
         this.changeEvent('changed', event);
         this.closeTooltip();
         EventHandler.remove(document, 'mousemove touchmove', this.dragRangeBarMove);
         EventHandler.remove(document, 'mouseup touchend', this.dragRangeBarUp);
+        this.rangeBarDragged = false;
     }
 
     private checkRepeatedValue(currentValue: number): number {
@@ -2868,11 +2852,48 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         }
     }
 
+    private rangeBarMousedown(event: MouseEvent & TouchEvent): void {
+        event.preventDefault();
+        this.focusSliderElement();
+        if (this.type === 'Range' && this.drag && event.target === this.rangeBar) {
+            let xPostion: number; let yPostion: number;
+            if (event.type === 'mousedown') {
+                [xPostion, yPostion] = [event.clientX, event.clientY];
+            } else if (event.type === 'touchstart') {
+                [xPostion, yPostion] = [event.changedTouches[0].clientX, event.changedTouches[0].clientY];
+            }
+            if (this.orientation === 'Horizontal') {
+                this.firstPartRemain = xPostion - this.rangeBar.getBoundingClientRect().left;
+                this.secondPartRemain = this.rangeBar.getBoundingClientRect().right - xPostion;
+            } else {
+                this.firstPartRemain = yPostion - this.rangeBar.getBoundingClientRect().top;
+                this.secondPartRemain = this.rangeBar.getBoundingClientRect().bottom - yPostion;
+            }
+            this.minDiff = this.handleVal2 - this.handleVal1;
+            this.tooltipToggle(this.rangeBar);
+            let focusedElement: Element = this.element.querySelector('.' + classNames.sliderTabHandle);
+            if (focusedElement) {
+                focusedElement.classList.remove(classNames.sliderTabHandle);
+            }
+            EventHandler.add(document, 'mousemove touchmove', this.dragRangeBarMove, this);
+            EventHandler.add(document, 'mouseup touchend', this.dragRangeBarUp, this);
+        }
+    }
+
+    private elementClick(event: MouseEvent & TouchEvent): void {
+        event.preventDefault();
+        this.focusSliderElement();
+        this.sliderBarClick(event);
+    }
+
     private wireEvents(): void {
         this.onresize = this.reposition.bind(this);
         window.addEventListener('resize', this.onresize);
         if (this.enabled && !this.readonly) {
-            EventHandler.add(this.element, 'mousedown touchstart', this.sliderDown, this);
+            EventHandler.add(this.element, 'click', this.elementClick, this);
+            if (this.type === 'Range' && this.drag) {
+                EventHandler.add(this.rangeBar, 'mousedown touchstart', this.rangeBarMousedown, this);
+            }
             EventHandler.add(this.sliderContainer, 'keydown', this.keyDown, this);
             EventHandler.add(this.sliderContainer, 'keyup', this.keyUp, this);
             EventHandler.add(this.element, 'focusout', this.sliderFocusOut, this);
@@ -2892,7 +2913,10 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private unwireEvents(): void {
-        EventHandler.remove(this.element, 'mousedown touchstart', this.sliderDown);
+        EventHandler.remove(this.element, 'click', this.elementClick);
+        if (this.type === 'Range' && this.drag) {
+            EventHandler.remove(this.rangeBar, 'mousedown touchstart', this.rangeBarMousedown);
+        }
         EventHandler.remove(this.sliderContainer, 'keydown', this.keyDown);
         EventHandler.remove(this.sliderContainer, 'keyup', this.keyUp);
         EventHandler.remove(this.element, 'focusout', this.sliderFocusOut);

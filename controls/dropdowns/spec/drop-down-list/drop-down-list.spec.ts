@@ -5424,4 +5424,43 @@ describe('DDList', () => {
             expect((listObj as any).list.querySelectorAll('li')[1].textContent).toBe('Brazil');
         });
     });
+    describe('EJ2-41293 : Popup did not open after focus out the component before loading the remote data' , () => {
+        let listObj: any;
+        let popupObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+        let remoteData: DataManager = new DataManager({ url: '/api/Employees', adaptor: new ODataV4Adaptor });
+        let mouseEventArgs: any = { preventDefault: function () { }, target: null };
+        beforeEach(() => {
+            document.body.appendChild(element);
+        });
+        afterEach(() => {
+            if (element) {
+                element.remove();
+                document.body.innerHTML = '';
+            }
+        });
+        /**
+         * remoteData binding with index
+         */
+        it('Open the remote dropDown after initial loading with focus out before the data loaded ', (done) => {
+            listObj = new DropDownList({ dataSource: remoteData, fields: { value: 'EmployeeID', text: 'FirstName' } });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            mouseEventArgs.target = document.body;
+            listObj.onBlur(mouseEventArgs);
+            expect(listObj.isPopupOpen).toBe(false);
+            listObj.showPopup();
+            setTimeout(function () {
+                expect(listObj.isPopupOpen).toBe(true);
+                done();
+            }, 800);
+            listObj.hidePopup();
+            expect(listObj.isPopupOpen).toBe(false);
+            listObj.showPopup();
+            setTimeout(function () {
+                expect(listObj.isPopupOpen).toBe(true);
+                done();
+            }, 800);            
+        });
+    });
 });

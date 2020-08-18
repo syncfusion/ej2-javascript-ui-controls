@@ -60,18 +60,34 @@ export class StockEvents extends BaseTooltip {
                         { id: this.chartId + '_Series_' + series.index + '_StockEvents_' + i }
                     );
                     if (withIn(this.dateParse(stockEvent.date).getTime() , series.xAxis.visibleRange)) {
-                        symbolLocation = this.findClosePoint(series, stockEvent);
-                        if (!stockEvent.showOnSeries) {
-                            symbolLocation.y = series.yAxis.rect.y + series.yAxis.rect.height;
+                        if (stockEvent.seriesIndexes.length > 0) {
+                            for (let j: number = 0; j < stockEvent.seriesIndexes.length; j++) {
+                                if (stockEvent.seriesIndexes[j] === series.index) {
+                                        stockEventsElementGroup.appendChild(
+                                            this.creatEventGroup(stockEventElement, series, stockEvent, i, textSize));
+                                 }
+                             }
+                        } else {
+                            stockEventsElementGroup.appendChild(
+                                this.creatEventGroup(stockEventElement, series, stockEvent, i, textSize));
                         }
-                        this.symbolLocations[series.index][i] = symbolLocation;
-                        this.createStockElements(stockEventElement, stockEvent, series, i, symbolLocation, textSize);
-                        stockEventsElementGroup.appendChild(stockEventElement);
                     }
                 }
             }
         }
         return stockEventsElementGroup;
+    }
+
+    private creatEventGroup(stockEventElement: Element, series: Series, stockEvent: StockEventsSettingsModel,
+                            i: number, textSize: Size): Element {
+        let symbolLocation: ChartLocation;
+        symbolLocation = this.findClosePoint(series, stockEvent);
+        if (!stockEvent.showOnSeries) {
+            symbolLocation.y = series.yAxis.rect.y + series.yAxis.rect.height;
+        }
+        this.symbolLocations[series.index][i] = symbolLocation;
+        this.createStockElements(stockEventElement, stockEvent, series, i, symbolLocation, textSize);
+        return stockEventElement;
     }
 
     private findClosePoint(series: Series, sEvent: StockEventsSettingsModel): ChartLocation {
@@ -91,7 +107,6 @@ export class StockEvents extends BaseTooltip {
         }
         xPixel = series.xAxis.rect.x + valueToCoefficient(pointData.point.xValue, series.xAxis) * series.xAxis.rect.width;
         yPixel = valueToCoefficient(pointData.point[sEvent.placeAt] as number, series.yAxis) * series.yAxis.rect.height;
-
         yPixel = (yPixel * -1) + (series.yAxis.rect.y + series.yAxis.rect.height);
         return new ChartLocation(xPixel, yPixel);
     }

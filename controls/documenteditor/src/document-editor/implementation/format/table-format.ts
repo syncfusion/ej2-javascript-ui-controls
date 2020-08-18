@@ -1,5 +1,5 @@
 import { Dictionary } from '../../base/dictionary';
-import { TableAlignment, WidthType } from '../../base/types';
+import { TableAlignment, WidthType, HorizontalAlignment } from '../../base/types';
 import { WUniqueFormat } from '../../base/unique-format';
 import { WUniqueFormats } from '../../base/unique-formats';
 import { WBorders } from './borders';
@@ -92,6 +92,18 @@ export class WTableFormat {
     set bidi(value: boolean) {
         this.setPropertyValue('bidi', value);
     }
+    get horizontalPositionAbs(): HorizontalAlignment {
+        return this.getPropertyValue('horizontalPositionAbs') as HorizontalAlignment;
+    }
+    set horizontalPositionAbs(value: HorizontalAlignment) {
+        this.setPropertyValue('horizontalPositionAbs', value);
+    }
+    get horizontalPosition(): number {
+        return this.getPropertyValue('horizontalPosition') as number;
+    }
+    set horizontalPosition(value: number) {
+        this.setPropertyValue('horizontalPosition', value);
+    }
     constructor(owner?: TableWidget) {
         this.ownerBase = owner;
         this.assignTableMarginValue(5.4, 0, 5.4, 0);
@@ -135,6 +147,8 @@ export class WTableFormat {
         this.addUniqueTableFormat('preferredWidth', property, propValue, uniqueTableFormatTemp);
         this.addUniqueTableFormat('preferredWidthType', property, propValue, uniqueTableFormatTemp);
         this.addUniqueTableFormat('bidi', property, propValue, uniqueTableFormatTemp);
+        this.addUniqueTableFormat('horizontalPositionAbs', property, propValue, uniqueTableFormatTemp);
+        this.addUniqueTableFormat('horizontalPosition', property, propValue, uniqueTableFormatTemp);
         this.uniqueTableFormat = WTableFormat.uniqueTableFormats.addUniqueFormat(uniqueTableFormatTemp, WTableFormat.uniqueFormatType);
     }
     // tslint:disable-next-line:max-line-length
@@ -180,6 +194,12 @@ export class WTableFormat {
                 break;
             case 'bidi':
                 value = false;
+                break;
+            case 'horizontalPositionAbs':
+                value = null;
+                break;
+            case 'horizontalPosition':
+                value = 0;
                 break;
         }
         return value;
@@ -230,6 +250,8 @@ export class WTableFormat {
         tableFormat.bottomMargin = this.bottomMargin;
         tableFormat.preferredWidth = this.preferredWidth;
         tableFormat.preferredWidthType = this.preferredWidthType;
+        tableFormat.horizontalPositionAbs = this.horizontalPositionAbs;
+        tableFormat.horizontalPosition = this.horizontalPosition;
         tableFormat.borders = isNullOrUndefined(this.borders) ? undefined : this.borders.cloneFormat();
         tableFormat.shading = isNullOrUndefined(this.shading) ? undefined : this.shading.cloneFormat();
         tableFormat.bidi = this.bidi;
@@ -257,6 +279,8 @@ export class WTableFormat {
                 this.preferredWidthType = format.preferredWidthType;
                 this.bidi = format.bidi;
                 this.allowAutoFit = format.allowAutoFit;
+                this.horizontalPosition = format.horizontalPosition;
+                this.horizontalPositionAbs = format.horizontalPositionAbs;
             }
             if (!isNullOrUndefined(format.borders)) {
                 this.borders = new WBorders(this);

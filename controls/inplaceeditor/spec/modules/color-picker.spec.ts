@@ -2,7 +2,7 @@
  * ColorPicker module spec document
  */
 import { select, selectAll } from '@syncfusion/ej2-base';
-import { InPlaceEditor, BeginEditEventArgs } from '../../src/inplace-editor/base/index';
+import { InPlaceEditor, BeginEditEventArgs, ChangeEventArgs } from '../../src/inplace-editor/base/index';
 import { ColorPicker } from '../../src/inplace-editor/modules/index';
 import * as classes from '../../src/inplace-editor/base/classes';
 import { renderEditor, destroy } from './../render.spec';
@@ -413,6 +413,68 @@ describe('ColorPicker module', () => {
                 expect(count).toEqual(1);
                 done();
             }, 400);
+        });
+    });
+
+    describe('BLAZ-4764 - New change event testing', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let changeArgs: any = {};
+        afterEach((): void => {
+            destroy(editorObj);
+            changeArgs = {};
+        });
+        it('Without initial value - Check changed value', (done) => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                type: 'Color',
+                change: function (e: ChangeEventArgs) {
+                    changeArgs = e;
+                }
+            });
+            ele = editorObj.element;
+            valueEle = <HTMLElement>select('.' + classes.VALUE, ele);
+            valueEle.click();
+            setTimeout(() => {
+                expect(editorObj.value).toEqual(null);
+                editorObj.colorModule.compObj.value = "#a2e2c2";
+                editorObj.colorModule.compObj.dataBind();
+                (ele.querySelector('.e-colorpicker-wrapper .e-dropdown-btn') as HTMLElement).click();
+                (document.body.querySelector('.e-colorpicker-popup .e-btn.e-primary') as HTMLElement).click();
+                setTimeout(() => {
+                    expect(changeArgs['name']).toEqual('change');
+                    expect(changeArgs['previousValue']).toEqual(null);
+                    expect(changeArgs['value']).toEqual('#a2e2c2ff');
+                    done();
+                }, 1000);
+            }, 1500);
+        });
+        it('Check changed value', (done) => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                type: 'Color',
+                value: '#008000ff',
+                change: function (e: ChangeEventArgs) {
+                    changeArgs = e;
+                }
+            });
+            ele = editorObj.element;
+            valueEle = <HTMLElement>select('.' + classes.VALUE, ele);
+            valueEle.click();
+            setTimeout(() => {
+                expect(editorObj.value).toEqual('#008000ff');
+                editorObj.colorModule.compObj.value = "#a2e2c2";
+                editorObj.colorModule.compObj.dataBind();
+                (ele.querySelector('.e-colorpicker-wrapper .e-dropdown-btn') as HTMLElement).click();
+                (document.body.querySelector('.e-colorpicker-popup .e-btn.e-primary') as HTMLElement).click();
+                setTimeout(() => {
+                    expect(changeArgs['name']).toEqual('change');
+                    expect(changeArgs['previousValue']).toEqual('#008000ff');
+                    expect(changeArgs['value']).toEqual('#a2e2c2ff');
+                    done();
+                }, 1000);
+            }, 1500);
         });
     });
 

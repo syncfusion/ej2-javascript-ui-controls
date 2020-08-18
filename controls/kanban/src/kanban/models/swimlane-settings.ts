@@ -58,4 +58,12 @@ export class SwimlaneSettings extends ChildProperty<SwimlaneSettings> {
     @Property('Ascending')
     public sortDirection: SortDirection;
 
+    /**
+     * Enable or disable unassigned swimlane group
+     * @default true
+     * @deprecated
+     */
+    @Property(true)
+    public showUnassignedRow: boolean;
+
 }

@@ -766,7 +766,7 @@ export class CalculatedField implements IAction {
     private addFormula(report: IDataOptions, field: string): void {
         this.isFormula = true;
         this.field = field;
-        if (isBlazor()) {
+        if (isBlazor() || this.parent.dataSourceSettings.mode === 'Server') {
             PivotUtil.updateDataSourceSettings(this.parent, PivotUtil.getClonedDataSourceSettings(report));
         } else {
             this.parent.setProperties({ dataSourceSettings: report }, true);
@@ -778,7 +778,7 @@ export class CalculatedField implements IAction {
             this.parent.updateDataSource(false);
             let pivot: PivotView = this.parent.getModuleName() === 'pivotfieldlist' ?
                 (this.parent as PivotFieldList).pivotGridModule : (this.parent as PivotView);
-            if (!(isBlazor() && pivot && pivot.enableVirtualization)) {
+            if (!(isBlazor() && pivot && pivot.enableVirtualization) && (pivot && pivot.dataSourceSettings.mode !== 'Server')) {
                 this.endDialog();
             } else {
                 this.isRequireUpdate = true;

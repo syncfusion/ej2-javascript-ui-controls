@@ -102,11 +102,17 @@ export class RowDD {
         this.dragTarget = trElement && parentsUntil(target, 'e-grid').id === cloneElement.parentElement.id ?
             trElement.rowIndex : parseInt(this.startedRow.getAttribute('aria-rowindex'), 10);
         if (gObj.options.rowDropTarget) {
-            if (!parentsUntil(target, 'e-gridcontent') ||
-                parentsUntil(cloneElement.parentElement, 'e-grid').id === parentsUntil(target, 'e-grid').id) {
-                classList(cloneElement, ['e-notallowedcur'], ['e-defaultcur']);
-            } else {
+            if (parentsUntil(target, 'e-gridcontent')) {
+                if (parentsUntil(cloneElement.parentElement, 'e-grid').id === parentsUntil(target, 'e-grid').id) {
+                    classList(cloneElement, ['e-notallowedcur'], ['e-defaultcur']);
+                } else {
+                    classList(cloneElement, ['e-defaultcur'], ['e-notallowedcur']);
+                }
+            } else if (parentsUntil(target, 'e-droppable')) {
                 classList(cloneElement, ['e-defaultcur'], ['e-notallowedcur']);
+            }
+            else {
+                classList(cloneElement, ['e-notallowedcur'], ['e-defaultcur']);
             }
         } else {
             let elem: Element = parentsUntil(target, 'e-grid');
@@ -155,6 +161,13 @@ export class RowDD {
             targetEle : e.target;
         gObj.element.classList.remove('e-rowdrag');
         let dropElement: any = document.getElementById(gObj.options.rowDropTarget);
+        if (this.parent.options.allowRowDragAndDrop && this.parent.options.rowDropTarget && !parentsUntil(target, 'e-grid')) {
+            let toIdx: number = 0;
+            let targetClass: string = (target.classList as any).value;
+            let targetID: string = target.id;
+            let fromIdx: number = parseInt(this.startedRow.getAttribute('aria-rowindex'), 10);
+            gObj.dotNetRef.invokeMethodAsync("ReorderRows", fromIdx, toIdx, 'add', false, targetClass, targetID, null, true);
+        }
         if (gObj.options.rowDropTarget && dropElement && dropElement.blazor__instance &&
             (<{ getModuleName?: Function }>dropElement.blazor__instance).getModuleName() === 'grid') {
             dropElement.blazor__instance.getContent().classList.remove('e-allowRowDrop');
@@ -177,7 +190,7 @@ export class RowDD {
             let targetID: string = target.id;
             let fromIdx: number = parseInt(this.startedRow.getAttribute('aria-rowindex'), 10);
             setTimeout(() => {
-                gObj.dotNetRef.invokeMethodAsync("ReorderRows", fromIdx, toIdx, 'delete', true, targetClass, targetID, null);
+                gObj.dotNetRef.invokeMethodAsync("ReorderRows", fromIdx, toIdx, 'delete', true, targetClass, targetID, null, false);
             }, 10);
             this.dragTarget = null;
         }
@@ -364,8 +377,8 @@ export class RowDD {
             }
             let targetClass: string = (e.target.classList as any).value;
             let targetID: string = e.target.id;
-            gObj.dotNetRef.invokeMethodAsync("ReorderRows", 0, targetIndex, 'add', false, targetClass, targetID, srcControl.dotNetRef);
-            srcControl.dotNetRef.invokeMethodAsync("ReorderRows", 0, targetIndex, 'delete', false, targetClass, targetID, null);
+            gObj.dotNetRef.invokeMethodAsync("ReorderRows", 0, targetIndex, 'add', false, targetClass, targetID, srcControl.dotNetRef, false);
+            srcControl.dotNetRef.invokeMethodAsync("ReorderRows", 0, targetIndex, 'delete', false, targetClass, targetID, null, false);
         }
     }
 

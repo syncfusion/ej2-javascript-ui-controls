@@ -178,6 +178,9 @@ var SwimlaneSettings = /** @class */ (function (_super) {
     __decorate$1([
         sf.base.Property('Ascending')
     ], SwimlaneSettings.prototype, "sortDirection", void 0);
+    __decorate$1([
+        sf.base.Property(true)
+    ], SwimlaneSettings.prototype, "showUnassignedRow", void 0);
     return SwimlaneSettings;
 }(sf.base.ChildProperty));
 
@@ -621,7 +624,13 @@ var Action = /** @class */ (function () {
             newData[this.parent.swimlaneSettings.keyField] =
                 sf.base.closest(target, '.' + CONTENT_ROW_CLASS).previousElementSibling.getAttribute('data-key');
         }
-        this.parent.openDialog('Add', newData);
+        if (this.parent.isBlazorRender()) {
+            // tslint:disable-next-line
+            this.parent.interopAdaptor.invokeMethodAsync('OpenDialog', 'Add', newData);
+        }
+        else {
+            this.parent.openDialog('Add', newData);
+        }
     };
     Action.prototype.doubleClickHandler = function (e) {
         var target = sf.base.closest(e.target, '.' + CARD_CLASS);
@@ -1052,30 +1061,28 @@ var Crud = /** @class */ (function () {
             if (!deleteArgs.cancel) {
                 _this.parent.showSpinner();
                 var promise = null;
-                if (editParms.deletedRecords.length > 1) {
-                    if (!_this.parent.isBlazorRender()) {
+                if (!_this.parent.isBlazorRender()) {
+                    if (editParms.deletedRecords.length > 1) {
                         promise = _this.parent.dataModule.dataManager.saveChanges(editParms, _this.keyField, _this.getTable(), _this.getQuery());
                     }
                     else {
-                        // tslint:disable-next-line
-                        _this.parent.interopAdaptor.invokeMethodAsync('DeleteCards', { DeletedRecords: cardData }, _this.keyField);
-                    }
-                }
-                else {
-                    if (!_this.parent.isBlazorRender()) {
                         promise = _this.parent.dataModule.dataManager.remove(_this.keyField, editParms.deletedRecords[0], _this.getTable(), _this.getQuery());
                     }
-                    else {
-                        // tslint:disable-next-line
-                        _this.parent.interopAdaptor.invokeMethodAsync('DeleteCard', _this.keyField, { Record: cardData });
-                    }
-                }
-                if (!_this.parent.isBlazorRender()) {
                     var crudArgs = {
                         requestType: 'cardRemoved', cancel: false, promise: promise, addedRecords: editParms.addedRecords,
                         changedRecords: editParms.changedRecords, deletedRecords: editParms.deletedRecords
                     };
                     _this.refreshData(crudArgs);
+                }
+                else {
+                    if (cardData instanceof Array) {
+                        // tslint:disable-next-line
+                        _this.parent.interopAdaptor.invokeMethodAsync('DeleteCards', { DeletedRecords: cardData }, _this.keyField);
+                    }
+                    else {
+                        // tslint:disable-next-line
+                        _this.parent.interopAdaptor.invokeMethodAsync('DeleteCard', _this.keyField, { Record: cardData });
+                    }
                 }
             }
         });
@@ -2168,7 +2175,9 @@ var Keyboard = /** @class */ (function () {
                 var className = '.' + CARD_CLASS + '.' + CARD_SELECTION_CLASS;
                 var selectedCards = [].slice.call(this.parent.element.querySelectorAll(className));
                 var selectedCardsData_1 = [];
-                selectedCards.forEach(function (selected) { selectedCardsData_1.push(_this.parent.getCardDetails(selected)); });
+                selectedCards.forEach(function (selected) {
+                    selectedCardsData_1.push(_this.parent.getCardDetails(selected));
+                });
                 this.parent.crudModule.deleteCard(selectedCardsData_1);
                 break;
         }
@@ -2298,7 +2307,9 @@ var Keyboard = /** @class */ (function () {
             }
         }
         if (selectedCard === document.activeElement && this.parent.element.querySelectorAll('.' + CARD_SELECTION_CLASS).length === 1) {
-            this.parent.activeCardData = { data: this.parent.getCardDetails(selectedCard), element: selectedCard };
+            this.parent.activeCardData = {
+                data: this.parent.getCardDetails(selectedCard), element: selectedCard
+            };
             if (!this.parent.dialogModule.dialogObj) {
                 this.parent.dialogModule.openDialog('Edit', this.parent.getCardDetails(selectedCard));
             }
@@ -2455,7 +2466,8 @@ var KanbanTouch = /** @class */ (function () {
             popupContent = '(' + selectedCards.length + ') ' + this.parent.localeObj.getConstant('cardsSelected');
         }
         else if (selectedCards.length === 1) {
-            popupContent = ' ' + this.parent.getCardDetails(selectedCards[0])[this.parent.cardSettings.headerField];
+            popupContent = ' ' +
+                this.parent.getCardDetails(selectedCards[0])[this.parent.cardSettings.headerField];
         }
         return popupContent;
     };
@@ -2789,7 +2801,7 @@ var LayoutRender = /** @class */ (function (_super) {
             }
             className = isCollaspsed ? CONTENT_ROW_CLASS + ' ' + COLLAPSED_CLASS : CONTENT_ROW_CLASS;
             var tr = sf.base.createElement('tr', { className: className, attrs: { 'aria-expanded': 'true' } });
-            if (this_2.parent.swimlaneSettings.keyField && !this_2.parent.isAdaptive && row.keyField !== '') {
+            if (this_2.parent.swimlaneSettings.keyField && !this_2.parent.isAdaptive) {
                 this_2.renderSwimlaneRow(tBody, row, isCollaspsed);
             }
             for (var _i = 0, _a = this_2.parent.columns; _i < _a.length; _i++) {
@@ -3035,10 +3047,18 @@ var LayoutRender = /** @class */ (function (_super) {
                         return;
                     }
                 }
-                kanbanRows.push({
-                    keyField: obj[_this.parent.swimlaneSettings.keyField],
-                    textField: obj[_this.parent.swimlaneSettings.textField] || obj[_this.parent.swimlaneSettings.keyField]
-                });
+                var textField = obj[_this.parent.swimlaneSettings.textField] || obj[_this.parent.swimlaneSettings.keyField];
+                var keyField = obj[_this.parent.swimlaneSettings.keyField];
+                if (!obj[_this.parent.swimlaneSettings.keyField]) {
+                    if (_this.parent.swimlaneSettings.showUnassignedRow) {
+                        textField = 'Unassigned';
+                        keyField = '';
+                    }
+                    else {
+                        return;
+                    }
+                }
+                kanbanRows.push({ keyField: keyField, textField: textField });
             });
             kanbanRows = kanbanRows.filter(function (item, index, arr) {
                 return index === arr.map(function (item) { return item.keyField; }).indexOf(item.keyField);
@@ -3325,7 +3345,8 @@ var LayoutRender = /** @class */ (function (_super) {
             this.kanbanRows.forEach(function (row) {
                 return swimlaneData[row.keyField] = _this.parent.kanbanData.filter(function (obj) {
                     return _this.columnKeys.indexOf(obj[_this.parent.keyField]) > -1 &&
-                        obj[_this.parent.swimlaneSettings.keyField] === row.keyField;
+                        ((!obj[_this.parent.swimlaneSettings.keyField] && _this.parent.swimlaneSettings.showUnassignedRow) ?
+                            '' : obj[_this.parent.swimlaneSettings.keyField]) === row.keyField;
                 });
             });
         }
@@ -3898,8 +3919,8 @@ var Kanban = /** @class */ (function (_super) {
     /**
      * Adds the new card to the data source of Kanban and layout.
      * @method addCard
-     * @param {{[key: string]: Object}} cardData Single card objects to be added into Kanban.
-     * @param {{[key: string]: Object}[]} cardData Collection of card objects to be added into Kanban.
+     * @param {Object | {[key: string]: Object}} cardData Single card objects to be added into Kanban.
+     * @param {Object[] | {[key: string]: Object}[]} cardData Collection of card objects to be added into Kanban.
      * @returns {void}
      */
     Kanban.prototype.addCard = function (cardData) {
@@ -3908,8 +3929,8 @@ var Kanban = /** @class */ (function (_super) {
     /**
      * Updates the changes made in the card object by passing it as a parameter to the data source.
      * @method updateCard
-     * @param {{[key: string]: Object}} cardData Single card object to be updated into Kanban.
-     * @param {{[key: string]: Object}[]} cardData Collection of card objects to be updated into Kanban.
+     * @param {{[key: string]: Object} | Object} cardData Single card object to be updated into Kanban.
+     * @param {{[key: string]: Object}[] | Object[]} cardData Collection of card objects to be updated into Kanban.
      * @returns {void}
      */
     Kanban.prototype.updateCard = function (cardData) {
@@ -3918,8 +3939,8 @@ var Kanban = /** @class */ (function (_super) {
     /**
      * Deletes the card based on the provided ID or card collection in the argument list.
      * @method deleteCard
-     * @param {{[key: string]: Object}} id Single card to be removed from the Kanban.
-     * @param {{[key: string]: Object }[]} id Collection of cards to be removed from the Kanban.
+     * @param {{[key: string]: Object} | Object} id Single card to be removed from the Kanban.
+     * @param {{[key: string]: Object }[] | Object[]} id Collection of cards to be removed from the Kanban.
      * @param {number} id Accepts the ID of the card in integer type which needs to be removed from the Kanban.
      * @param {string} id Accepts the ID of the card in string type which needs to be removed from the Kanban.
      * @returns {void}

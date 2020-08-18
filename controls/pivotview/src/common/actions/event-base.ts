@@ -129,9 +129,11 @@ export class EventBase {
         if (this.parent.filterDialog.dialogPopUp) {
             this.parent.filterDialog.dialogPopUp.close();
         }
-        let popupTarget: HTMLElement;
-        popupTarget = this.parent.moduleName !== 'pivotfieldlist' ?
-            this.parent.element : document.getElementById(this.parent.parentID + '_Wrapper');
+        let popupTarget: HTMLElement = this.parent.control.filterTargetID;
+        if (isNullOrUndefined(popupTarget)) {
+            popupTarget = this.parent.moduleName !== 'pivotfieldlist' ?
+                this.parent.element : document.getElementById(this.parent.parentID + '_Wrapper');
+        }
         this.parent.filterDialog.createFilterDialog(treeData, fieldName, fieldCaption, popupTarget);
     }
     /**

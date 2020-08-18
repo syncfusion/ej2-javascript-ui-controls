@@ -53,6 +53,11 @@ const HEADERTEMPLATE: string = 'HeaderTemplate';
 const FOOTERTEMPLATE: string = 'FooterTemplate';
 const NORECORDSTEMPLATE: string = 'NoRecordsTemplate';
 const ACTIONFAILURETEMPLATE: string = 'ActionFailureTemplate';
+const REMAIN_WRAPPER: string = 'e-remain';
+const OVERFLOW_VIEW: string = 'e-overflow';
+const SHOW_TEXT: string = 'e-show-text';
+const TOTAL_COUNT_WRAPPER: string = 'e-total-count';
+const REMAIN_COUNT: string = 'e-wrap-count';
 
 export type TreeFilterType = 'StartsWith' | 'EndsWith' | 'Contains';
 
@@ -361,7 +366,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     private keyboardModule: KeyboardEvents;
     private keyConfigs: { [key: string]: string };
     private isBlazorPlatForm: boolean;
-
+    private overFlowWrapper: HTMLElement;
     private isFilteredData: boolean = false;
     private isFilterRestore: boolean = false;
     private treeData: { [key: string]: Object }[];
@@ -369,7 +374,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     private filterObj: TextBox;
     private filterDelayTime: number = 300;
     private nestedTableUpdate: { flag: boolean, fields: FieldsModel };
-
+    private clearIconWidth: number;
     /**
      * Specifies the template that renders to the popup list content of the 
      * Dropdown Tree component when the data fetch request from the remote server fails.
@@ -677,6 +682,14 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     public zIndex: number;
 
     /**
+     * Defines whether to enable or disable the feature called wrap the selected items into multiple lines when the selected item's text
+     * content exceeded the input width limit.
+     * @default false
+     */
+    @Property(false)
+    public wrapText: boolean;
+
+    /**
      * Triggers when the data fetch request from the remote server fails.
      * @event
      */
@@ -783,6 +796,10 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         return this.addOnPersist(keyEntity);
     }
 
+    public getLocaleName(): string {
+        return 'drop-down-tree';
+    }
+
     /**
      * Initialize the event handler.
      * @private
@@ -801,6 +818,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         this.dataValue = null;
         this.isNodeSelected = false;
         this.isDynamicChange = false;
+        this.clearIconWidth = 0;
         this.isBlazorPlatForm = isBlazor();
         this.headerTemplateId = `${this.element.id}${HEADERTEMPLATE}`;
         this.footerTemplateId = `${this.element.id}${FOOTERTEMPLATE}`;
@@ -898,14 +916,26 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         this.popupDiv.style.display = 'none';
         this.renderTree();
         this.isRemoteData = this.fields.dataSource instanceof DataManager;
+        if (this.allowMultiSelection || this.showCheckBox) {
+            if (this.mode !== 'Delimiter') {
+                this.createChip();
+            }
+            if (!this.wrapText) {
+                this.overFlowWrapper = this.createElement('span', { className: OVERFLOW_VIEW + ' ' + HIDEICON });
+                this.inputWrapper.insertBefore(this.overFlowWrapper, this.hiddenElement);
+                if (this.mode !== 'Box') {
+                    addClass([this.overFlowWrapper], SHOW_TEXT);
+                }
+            }
+        }
         if (!this.isRemoteData) {
             this.setTreeValue();
             this.setTreeText();
             this.updateHiddenValue();
             this.setSelectedValue();
-        }
-        if ((this.allowMultiSelection || this.showCheckBox) && this.mode !== 'Delimiter') {
-            this.createChip();
+            if (!this.wrapText ) {
+                this.updateView();
+            }
         }
         this.wireEvents();
         let firstUl: Element = select('.' + PARENTITEM, this.treeObj.element);
@@ -1152,6 +1182,9 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             this.isClearButtonClick = false;
             return;
         }
+        if (!this.wrapText && (e.target as HTMLElement).classList.contains(CHIP_CLOSE)) {
+            this.removeChip(e);
+        }
         if (this.isPopupOpen) {
             this.hidePopup();
         } else {
@@ -1200,16 +1233,22 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             this.isClearButtonClick = false;
         }
         if (this.showClearButton) {
+            this.clearIconWidth = (<HTMLElement>select('.e-clear-icon', this.inputWrapper)).offsetWidth;
             addClass([this.overAllClear], HIDEICON);
             removeClass([this.inputWrapper], SHOW_CLEAR);
         }
         removeClass([this.inputWrapper], [INPUTFOCUS]);
-        if ((this.allowMultiSelection || this.showCheckBox) && this.mode !== 'Delimiter') {
+        if ((this.allowMultiSelection || this.showCheckBox)) {
             let isValue: boolean = this.value ? (this.value.length ? true : false) : false;
-            if (this.chipWrapper && (this.mode === 'Default') || (this.mode === 'Box' && !isValue)) {
-                addClass([this.chipWrapper], HIDEICON);
-                removeClass([this.inputWrapper], SHOW_CHIP);
-                removeClass([this.inputEle], CHIP_INPUT);
+            if (this.mode !== 'Delimiter') {
+                if (this.chipWrapper && (this.mode === 'Default')) {
+                    addClass([this.chipWrapper], HIDEICON);
+                    removeClass([this.inputWrapper], SHOW_CHIP);
+                    removeClass([this.inputEle], CHIP_INPUT);
+                }
+            }
+            if (!this.wrapText && isValue) {
+                this.updateView();
             }
         }
         if (this.changeOnBlur) {
@@ -1218,6 +1257,25 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         this.removeValue = false;
         this.oldValue = this.value;
         this.trigger('blur');
+    }
+
+    private updateView(): void {
+        if (!this.showCheckBox && !this.allowMultiSelection) {
+            return;
+        }
+        if (this.mode !== 'Box') {
+            addClass([this.inputWrapper, this.overFlowWrapper], SHOW_TEXT);
+        } else {
+            addClass([this.inputWrapper], SHOW_CHIP);
+        }
+        if (this.value && this.value.length !== 0) {
+            if (this.inputWrapper.contains(this.chipWrapper)) {
+                addClass([this.chipWrapper], HIDEICON);
+            }
+            addClass([this.inputEle], CHIP_INPUT);
+            this.updateOverFlowView();
+            this.ensurePlaceHolder();
+        }
     }
 
     private triggerChangeEvent(event?: MouseEvent | KeyboardEvent): void {
@@ -1257,14 +1315,29 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         this.showOverAllClear();
         this.inputFocus = true;
         addClass([this.inputWrapper], [INPUTFOCUS]);
-        if ((this.allowMultiSelection || this.showCheckBox) && this.mode === 'Default' && this.inputFocus) {
-            if (this.chipWrapper && (this.value && this.value.length !== 0)) {
-                removeClass([this.chipWrapper], HIDEICON);
+        if (this.allowMultiSelection || this.showCheckBox) {
+            if (this.mode !== 'Delimiter' && this.inputFocus) {
+                if (this.chipWrapper && (this.value && this.value.length !== 0)) {
+                    removeClass([this.chipWrapper], HIDEICON);
+                    addClass([this.inputEle], CHIP_INPUT);
+                }
                 addClass([this.inputWrapper], SHOW_CHIP);
-                addClass([this.inputEle], CHIP_INPUT);
+                if (this.popupObj) {
+                    this.popupObj.refreshPosition();
+                }
             }
-            if (this.popupObj) {
-                this.popupObj.refreshPosition();
+            if (!this.wrapText) {
+                if (this.inputWrapper.contains(this.overFlowWrapper)) {
+                    addClass([this.overFlowWrapper], HIDEICON);
+                }
+                if (this.mode === 'Delimiter') {
+                    removeClass([this.inputWrapper], SHOW_CHIP);
+                    removeClass([this.inputEle], CHIP_INPUT);
+                } else {
+                    addClass([this.inputWrapper], SHOW_CHIP);
+                }
+                removeClass([this.inputWrapper], SHOW_TEXT);
+                this.ensurePlaceHolder();
             }
         }
         let args: DdtFocusEventArgs = { isInteracted: e ? true : false, event: e };
@@ -1411,6 +1484,152 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             'aria-activedescendant': 'null',
             'aria-labelledby': this.hiddenElement.id
         };
+    }
+
+    private updateOverFlowView(): void {
+        this.overFlowWrapper.classList.remove(TOTAL_COUNT_WRAPPER);
+        removeClass([this.overFlowWrapper], HIDEICON);
+        if (this.value && this.value.length) {
+            let data: string = ''; let overAllContainer: number;
+            let temp: string; let tempData: string;
+            let tempIndex: number = 1; let wrapperleng: number;
+            let remaining: number; let downIconWidth: number = 0;
+            this.overFlowWrapper.innerHTML = '';
+            let l10nLocale: Object = { overflowCountTemplate: '+${count} more..', totalCountTemplate: '${count} selected' };
+            this.l10n = new L10n(this.getLocaleName(), l10nLocale, this.locale);
+            let remainContent: string = this.l10n.getConstant('overflowCountTemplate');
+            let remainElement: HTMLElement = this.createElement('span', { className: REMAIN_WRAPPER });
+            let compiledString: Function = compile(remainContent);
+            let totalCompiledString: Function = compile(this.l10n.getConstant('totalCountTemplate'));
+            remainElement.appendChild(compiledString({ 'count': this.value.length }, null, null, null, !this.isStringTemplate)[0]);
+            this.overFlowWrapper.appendChild(remainElement);
+            let remainSize: number = remainElement.offsetWidth;
+            remove(remainElement);
+            if (this.showDropDownIcon) {
+                downIconWidth = (<HTMLElement>select('.' + DDTICON, this.inputWrapper)).offsetWidth;
+            }
+            if (!isNOU(this.value)) {
+                if (this.mode !== 'Box') {
+                    for (let index: number = 0; !isNOU(this.value[index]); index++) {
+                        data += (index === 0) ? '' : this.delimiterChar + ' ';
+                        temp = this.getOverflowVal(index);
+                        data += temp;
+                        temp = this.overFlowWrapper.innerHTML;
+                        this.overFlowWrapper.innerHTML = data;
+                        wrapperleng = this.overFlowWrapper.offsetWidth;
+                        overAllContainer = this.inputWrapper.offsetWidth;
+                        if ((wrapperleng + downIconWidth + this.clearIconWidth) > overAllContainer) {
+                            if (tempData !== undefined && tempData !== '') {
+                                temp = tempData;
+                                index = tempIndex + 1;
+                            }
+                            this.overFlowWrapper.innerHTML = temp;
+                            remaining = this.value.length - index;
+                            wrapperleng = this.overFlowWrapper.offsetWidth;
+                            while (((wrapperleng + remainSize + downIconWidth + this.clearIconWidth) >= overAllContainer)
+                                && wrapperleng !== 0 && this.overFlowWrapper.innerHTML !== '') {
+                                let textArr: string[] = this.overFlowWrapper.innerHTML.split(this.delimiterChar);
+                                textArr.pop();
+                                this.overFlowWrapper.innerHTML = textArr.join(this.delimiterChar);
+                                remaining++;
+                                wrapperleng = this.overFlowWrapper.offsetWidth;
+                            }
+                            break;
+                        } else if ((wrapperleng + remainSize + downIconWidth + this.clearIconWidth) <= overAllContainer) {
+                            tempData = data; tempIndex = index;
+                        } else if (index === 0) { tempData = ''; tempIndex = -1; }
+                    }
+                } else {
+                    addClass([this.chipWrapper], HIDEICON);
+                    let ele: HTMLElement = <HTMLElement>(this.chipWrapper as Node).cloneNode(true);
+                    let chips: HTMLElement[] = selectAll('.' + CHIP, ele);
+                    for (let i: number = 0; i < chips.length; i++) {
+                        temp = this.overFlowWrapper.innerHTML;
+                        this.overFlowWrapper.appendChild(chips[i]);
+                        data = this.overFlowWrapper.innerHTML;
+                        wrapperleng = this.overFlowWrapper.offsetWidth;
+                        overAllContainer = this.inputWrapper.offsetWidth;
+                        if ((wrapperleng  + downIconWidth + this.clearIconWidth) > overAllContainer) {
+                            if (tempData !== undefined && tempData !== '') {
+                                temp = tempData; i = tempIndex + 1;
+                            }
+                            this.overFlowWrapper.innerHTML = temp;
+                            remaining = this.value.length - i;
+                            wrapperleng = this.overFlowWrapper.offsetWidth;
+                            while (((wrapperleng + remainSize + downIconWidth + this.clearIconWidth) >= overAllContainer)
+                                && wrapperleng !== 0 && this.overFlowWrapper.innerHTML !== '') {
+                                this.overFlowWrapper.removeChild( this.overFlowWrapper.lastChild);
+                                remaining++;
+                                wrapperleng = this.overFlowWrapper.offsetWidth;
+                            }
+                            break;
+                        } else if ((wrapperleng + remainSize + downIconWidth + this.clearIconWidth) <= overAllContainer) {
+                            tempData = data; tempIndex = i;
+                        } else if (i === 0) {
+                            tempData = ''; tempIndex = -1;
+                        }
+                    }
+                }
+            }
+            if (remaining > 0) {
+                let totalWidth: number = overAllContainer - (downIconWidth + this.clearIconWidth);
+                this.overFlowWrapper.appendChild(
+                    this.updateRemainTemplate(remainElement, remaining, compiledString, totalCompiledString, totalWidth)
+                );
+            }
+            if (this.mode === 'Box' && !this.overFlowWrapper.classList.contains(TOTAL_COUNT_WRAPPER)) {
+                addClass([remainElement], REMAIN_COUNT);
+            }
+        } else {
+            this.overFlowWrapper.innerHTML = '';
+            addClass([this.overFlowWrapper], HIDEICON);
+        }
+        this.updateDelimMode();
+    }
+
+    private updateRemainTemplate(
+        remainElement: HTMLElement,
+        remaining: number,
+        compiledString: Function,
+        totalCompiledString: Function,
+        totalWidth?: number): HTMLElement {
+        if (this.overFlowWrapper.firstChild && this.overFlowWrapper.firstChild.nodeType === 3 &&
+            this.overFlowWrapper.firstChild.nodeValue === '') {
+            this.overFlowWrapper.removeChild(this.overFlowWrapper.firstChild);
+        }
+        remainElement.innerHTML = '';
+        remainElement.appendChild(
+            (this.overFlowWrapper.firstChild && (this.overFlowWrapper.firstChild.nodeType === 3 || this.mode === 'Box')) ?
+                compiledString({ 'count': remaining }, null, null, null, !this.isStringTemplate)[0] :
+                totalCompiledString({ 'count': remaining }, null, null, null, !this.isStringTemplate)[0]);
+        if (this.overFlowWrapper.firstChild && (this.overFlowWrapper.firstChild.nodeType === 3 || this.mode === 'Box')) {
+            removeClass([this.overFlowWrapper], TOTAL_COUNT_WRAPPER);
+        } else {
+            addClass([this.overFlowWrapper], TOTAL_COUNT_WRAPPER);
+            removeClass([this.overFlowWrapper], REMAIN_COUNT);
+        }
+        return remainElement;
+    }
+
+    private getOverflowVal(index: number): string {
+        let temp: string;
+        let selectedData: { [key: string]: Object } = this.getSelectedData(this.value[index]);
+        temp = getValue(this.treeSettings.loadOnDemand ? this.fields.text : 'text', selectedData);
+        return temp;
+    }
+
+    private updateDelimMode(): void {
+        if (this.mode !== 'Box') {
+            if (select('.' + REMAIN_WRAPPER, this.overFlowWrapper) && !this.overFlowWrapper.classList.contains(TOTAL_COUNT_WRAPPER)) {
+                addClass([this.overFlowWrapper], REMAIN_COUNT);
+                addClass([this.overFlowWrapper], SHOW_TEXT);
+            } else {
+                this.overFlowWrapper.classList.remove(REMAIN_COUNT);
+                removeClass([this.overFlowWrapper], REMAIN_COUNT);
+            }
+        } else if (select('.' + REMAIN_WRAPPER, this.overFlowWrapper)) {
+            this.overFlowWrapper.classList.remove(REMAIN_COUNT);
+        }
     }
 
     private createHiddenElement(): void {
@@ -1998,6 +2217,9 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             this.setTreeText();
             this.updateHiddenValue();
             this.setSelectedValue();
+            if (!this.wrapText ) {
+                this.updateView();
+            }
             this.treeObj.element.focus();
         }
         let eventArgs: DdtDataBoundEventArgs = { data: args.data };
@@ -2582,8 +2804,13 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         }
         this.resetValue();
         this.showOverAllClear();
-        if ((this.allowMultiSelection || this.showCheckBox) && this.popupObj) {
-            this.popupObj.refreshPosition();
+        if ((this.allowMultiSelection || this.showCheckBox)) {
+            if ( this.popupObj) {
+                this.popupObj.refreshPosition();
+            }
+            if (!this.wrapText) {
+                this.updateOverflowWrapper(true);
+            }
         }
         if (e) {
             this.isClearButtonClick = true;
@@ -2673,6 +2900,9 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         }
         this.updateMode();
         this.setMultiSelect();
+        if (!this.wrapText) {
+           state ? this.updateView() : this.updateOverflowWrapper(true);
+        }
     }
 
     private updateTreeSettings(prop: DropDownTreeModel): void {
@@ -2692,6 +2922,9 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     }
 
     private updateCheckBoxState(checkBox: boolean): void {
+        if (!this.wrapText) {
+            this.updateOverflowWrapper(false);
+        }
         this.treeObj.showCheckBox = checkBox;
         this.treeObj.dataBind();
         this.isDynamicChange = true;
@@ -2739,7 +2972,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             this.ddtupdateBlazorTemplates(!actionFailure, actionFailure);
         } else {
             let l10nLocale: Object = { noRecordsTemplate: 'No Records Found', actionFailureTemplate: 'The Request Failed'};
-            this.l10n = new L10n(this.getModuleName(), l10nLocale, this.locale);
+            this.l10n = new L10n(this.getLocaleName(), l10nLocale, this.locale);
             this.noRecord.innerHTML = actionFailure ?
             this.l10n.getConstant('actionFailureTemplate') : this.l10n.getConstant('noRecordsTemplate');
         }
@@ -2786,7 +3019,22 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         }
     }
 
+    private updateOverflowWrapper(state: boolean): void {
+        if (!state) {
+            if (!this.inputWrapper.contains(this.overFlowWrapper)) {
+                this.overFlowWrapper = this.createElement('span', { className: OVERFLOW_VIEW + ' ' + HIDEICON });
+                this.inputWrapper.insertBefore(this.overFlowWrapper, this.hiddenElement);
+            }
+        } else if (this.inputWrapper.contains(this.overFlowWrapper) && state) {
+           this.overFlowWrapper.innerHTML = '';
+        }
+    }
+
+
     private updateMultiSelection(state: boolean): void {
+        if (!this.wrapText) {
+            this.updateOverflowWrapper(false);
+        }
         this.treeObj.allowMultiSelection = state;
         this.treeObj.dataBind();
         this.updateOption();
@@ -2819,6 +3067,10 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             this.resetValue(true);
         } else {
             this.setTreeValue();
+            if ((this.allowMultiSelection || this.showCheckBox) && !this.wrapText) {
+                this.updateOverflowWrapper(false);
+                this.updateView();
+            }
         }
         this.updateHiddenValue();
     }
@@ -2828,6 +3080,10 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             this.resetValue();
         } else {
             this.setTreeText();
+            if ((this.allowMultiSelection || this.showCheckBox) && !this.wrapText) {
+                this.updateOverflowWrapper(false);
+                this.updateView();
+            }
         }
         this.updateHiddenValue();
     }
@@ -2835,8 +3091,23 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     private updateModelMode(): void {
         let validMode: boolean = this.allowMultiSelection ? true : (this.showCheckBox ? true : false);
         if (!validMode) { return; }
+        if (!this.wrapText) {
+            let overFlow: Element = select('.' + OVERFLOW_VIEW, this.inputWrapper);
+            if (overFlow) {
+                overFlow.innerHTML = '';
+            }
+        }
         this.updateMode();
         this.setMultiSelect();
+        if (!this.wrapText && (this.value && this.value.length !== 0)) {
+            this.updateOverFlowView();
+            addClass([this.inputEle], CHIP_INPUT);
+            if (this.mode === 'Box') {
+                removeClass([this.overFlowWrapper, this.inputWrapper], SHOW_TEXT);
+            } else  {
+                addClass([this.overFlowWrapper, this.inputWrapper], SHOW_TEXT);
+            }
+        }
     }
 
     private updateOption(): void {
@@ -2940,6 +3211,21 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                     this.updateRecordTemplate(true);
                     break;
                 case 'htmlAttributes': this.setHTMLAttributes(); break;
+                case 'wrapText':
+                    this.updateOverflowWrapper(this.wrapText);
+                    if ((this.allowMultiSelection || this.showCheckBox) && !this.wrapText) {
+                        this.updateView();
+                    } else {
+                        addClass([this.overFlowWrapper], HIDEICON);
+                        if (this.chipWrapper && this.mode === 'Box') {
+                            removeClass([this.chipWrapper], HIDEICON);
+                        } else {
+                            removeClass([this.inputWrapper], SHOW_CHIP);
+                            removeClass([this.inputEle], CHIP_INPUT);
+                        }
+                        this.ensurePlaceHolder();
+                    }
+                    break;
             }
         }
     }

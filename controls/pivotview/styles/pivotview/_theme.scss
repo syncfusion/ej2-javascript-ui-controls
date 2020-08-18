@@ -75,11 +75,11 @@
       visibility: hidden;
     }
 
-    .e-toolbar .e-toolbar-items {
+    .e-member-editor-dialog .e-toolbar .e-toolbar-items {
       margin-left: $pivotview-filter-toolbar-items-margin-left;
     }
 
-    .e-rtl.e-toolbar .e-toolbar-items {
+    .e-member-editor-dialog .e-rtl.e-toolbar .e-toolbar-items {
       margin-left: 0;
       margin-right: $pivotview-filter-toolbar-items-margin-right;
     }

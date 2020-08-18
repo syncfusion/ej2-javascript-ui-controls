@@ -177,7 +177,8 @@ export class DataLabel {
                     argsData = {
                         cancel: false, name: textRender, series: series,
                         point: point, text: labelText[i], border: border,
-                        color: dataLabel.fill, template: dataLabel.template, font: argsFont, location: labelLocation
+                        color: dataLabel.fill, template: dataLabel.template, font: argsFont, location: labelLocation,
+                        textSize: measureText(labelText[i], dataLabel.font)
                     };
                     chart.trigger(textRender, argsData);
                     if (!argsData.cancel) {
@@ -521,8 +522,8 @@ export class DataLabel {
         let margin: MarginModel = this.margin;
         let textLength: number = !this.inverted ? textSize.height : textSize.width;
         let extraSpace: number = this.borderWidth + textLength / 2 + padding;
-        if (series.type.indexOf('Stacking') > -1) {
-            position = position === 'Outer' ? 'Top' : position;
+        if (series.type === 'StackingColumn100' || series.type === 'StackingBar100') {
+          position = (position === 'Outer') ? 'Top' : position;
         } else if (series.type.indexOf('Range') > -1) {
             position = (position === 'Outer' || position === 'Top') ? position : 'Auto';
         } else if (series.type === 'Waterfall') {
@@ -556,6 +557,21 @@ export class DataLabel {
         this.fontBackground = check ?
             (this.fontBackground === 'transparent' ? this.chartBackground : this.fontBackground)
             : this.fontBackground === 'transparent' ? (point.color || series.interior) : this.fontBackground;
+        let seriesLength: number = series.chart.series.length;
+        if (position === 'Outer' && (series.type.indexOf('Stacking') > -1) && ((seriesLength - 1) > series.index)) {
+            let nextSeries: Series;
+            let nextSeriesPoint: Points;
+            for (let i: number = series.index + 1; i < seriesLength; i++) {
+                nextSeries = series.chart.series[i] as Series;
+                nextSeriesPoint = <Points>nextSeries.points[point.index];
+                if ((nextSeries.type.indexOf('Stacking') > -1) && (nextSeries.type.indexOf('100') === -1)) {
+                    this.fontBackground = (nextSeriesPoint && ((nextSeriesPoint.yValue < 0 && point.yValue < 0) ||
+                        (nextSeriesPoint.yValue > 0 && point.yValue > 0))) ? (nextSeriesPoint ? nextSeriesPoint.color :
+                            nextSeries.interior) : this.fontBackground;
+                    break;
+                }
+            }
+        }
         return labelLocation;
     }
 
@@ -607,8 +623,14 @@ export class DataLabel {
         let collection: Rect[] = this.chart.dataLabelCollections;
         let finalPosition: number = series.type.indexOf('Range') !== -1 || series.type === 'Hilo' ? 2 : 4;
         while (isOverLap && position < finalPosition) {
+            let actualPosition: LabelPosition = this.getPosition(position);
+            if (series.type.indexOf('Stacking') > -1 && actualPosition === 'Outer') {
+                actualPosition = 'Top';
+                position++;
+            }
             location = this.calculateRectPosition(
-                labelLocation, rect, isMinus, this.getPosition(position), series, size, labelIndex, point);
+                labelLocation, rect, isMinus, actualPosition,
+                series, size, labelIndex, point);
             if (!this.inverted) {
                 labelRect = calculateRect(new ChartLocation(this.locationX, location), size, this.margin);
                 isOverLap = labelRect.y < 0 || isCollide(labelRect, collection, series.clipRect) || labelRect.y > series.clipRect.height;

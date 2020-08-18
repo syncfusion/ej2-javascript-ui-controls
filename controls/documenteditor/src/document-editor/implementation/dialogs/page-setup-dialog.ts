@@ -405,7 +405,8 @@ export class PageSetupDialog {
         } else {
             this.portrait.checked = true;
         }
-        this.setPageSize(this.portrait.checked, sectionFormat.pageWidth, sectionFormat.pageHeight);
+        // tslint:disable-next-line:max-line-length
+        this.setPageSize(this.portrait.checked, parseFloat(sectionFormat.pageWidth.toFixed(1)), parseFloat(sectionFormat.pageHeight.toFixed(1)));
     }
     private setPageSize(isPortrait: boolean, width: number, height: number): void {
         if ((isPortrait && width === 612 && height === 792)
@@ -423,14 +424,14 @@ export class PageSetupDialog {
         } else if ((isPortrait && width === 522 && height === 756)
             || (!isPortrait && width === 756 && height === 522)) {
             this.paperSize.value = 'executive';
-        } else if ((isPortrait && width === 841.9 && height === 1190.55)
+        } else if ((isPortrait && width === 841.9 && height === 1190.5)
             || (!isPortrait && width === 1190.5 && height === 841.9)) {
             this.paperSize.value = 'a3';
         } else if ((isPortrait && width === 595.3 && height === 841.9)
             || (!isPortrait && width === 841.9 && height === 595.3)) {
             this.paperSize.value = 'a4';
-        } else if ((isPortrait && width === 419.55 && height === 595.3)
-            || (!isPortrait && width === 595.3 && height === 419.55)) {
+        } else if ((isPortrait && width === 419.6 && height === 595.3)
+            || (!isPortrait && width === 595.3 && height === 419.6)) {
             this.paperSize.value = 'a5';
         } else if ((isPortrait && width === 728.5 && height === 1031.8)
             || (!isPortrait && width === 1031.8 && height === 728.5)) {

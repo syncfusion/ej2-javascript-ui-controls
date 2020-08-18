@@ -1887,13 +1887,13 @@ export interface HeaderModel {
      * Sets the content of the header
      * @default ''
      */
-    annotation?: Annotation;
+    annotation?: AnnotationModel;
 
     /**
      * Sets the style of the header
      * @default ''
      */
-    style?: ShapeStyleModel;
+    style?: TextStyleModel;
 
     /**
      * Sets the height of the header

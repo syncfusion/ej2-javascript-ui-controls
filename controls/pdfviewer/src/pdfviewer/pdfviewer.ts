@@ -3623,6 +3623,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Round Arrow': 'Round',
         'Square Arrow': 'Square',
         'Diamond Arrow': 'Diamond',
+        'Butt': 'Butt',
         'Cut': 'Cut',
         'Paste': 'Paste',
         'Delete Context': 'Delete',

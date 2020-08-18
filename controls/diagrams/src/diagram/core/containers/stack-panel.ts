@@ -22,6 +22,11 @@ export class StackPanel extends Container {
      */
     public measureChildren: boolean = undefined;
     /**
+     * Sets or gets whether the padding of the element needs to be measured
+     * @private
+     */
+    public considerPadding: boolean = true;
+    /**
      * Measures the minimum space that the panel needs
      * @param {Size} availableSize 
      */
@@ -77,7 +82,9 @@ export class StackPanel extends Container {
         desired = super.validateDesiredSize(desired, availableSize);
         this.stretchChildren(desired);
         //Considering padding values
-        this.applyPadding(desired);
+        if ( this.considerPadding) {
+            this.applyPadding(desired);
+            }
         return desired;
     }
 

@@ -170,10 +170,10 @@ let nodes: NodeModel[] = [
         id: 'swimlane',
         shape: {
             type: 'SwimLane',
+            orientation: 'Horizontal',
             header: {
                 annotation: { content: 'ONLINE PURCHASE STATUS', style: { fill: '#111111' } },
                 height: 50, style: { fontSize: 11 },
-                orientation: 'Horizontal',
             },
             lanes: [
                 {
@@ -275,11 +275,11 @@ let nodes: NodeModel[] = [
             phases: [
                 {
                     id: 'phase1', offset: 170,
-                    header: { content: { content: 'Phase' } }
+                    header: { annotation: { content: 'Phase' } }
                 },
                 {
                     id: 'phase2', offset: 450,
-                    header: { content: { content: 'Phase' } }
+                    header: { annotation: { content: 'Phase' } }
                 },
             ],
             phaseSize: 20,

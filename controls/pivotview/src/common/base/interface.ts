@@ -326,7 +326,7 @@ export interface DrillThroughEventArgs {
 /**
  * The event argument which holds the editing information of the raw data made in corresponding aggregated cell.
  */
-export interface EditCompleteEventArgs {
+export interface EditCompletedEventArgs {
     /** Defines the edited raw data */
     currentData: IDataSet[];
     /** Defines the actual raw data */

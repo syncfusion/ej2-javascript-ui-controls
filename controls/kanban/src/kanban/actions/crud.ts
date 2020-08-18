@@ -166,29 +166,27 @@ export class Crud {
             if (!deleteArgs.cancel) {
                 this.parent.showSpinner();
                 let promise: Promise<Object> = null;
-                if (editParms.deletedRecords.length > 1) {
-                    if (!this.parent.isBlazorRender()) {
-                        promise = this.parent.dataModule.dataManager.saveChanges(
-                            editParms, this.keyField, this.getTable(), this.getQuery()) as Promise<Object>;
-                    } else {
-                        // tslint:disable-next-line
-                        (this.parent as any).interopAdaptor.invokeMethodAsync('DeleteCards', { DeletedRecords: cardData }, this.keyField);
-                    }
-                } else {
-                    if (!this.parent.isBlazorRender()) {
-                        promise = this.parent.dataModule.dataManager.remove(
-                            this.keyField, editParms.deletedRecords[0], this.getTable(), this.getQuery()) as Promise<Object>;
-                    } else {
-                        // tslint:disable-next-line
-                        (this.parent as any).interopAdaptor.invokeMethodAsync('DeleteCard', this.keyField, { Record: cardData });
-                    }
-                }
                 if (!this.parent.isBlazorRender()) {
+                    if (editParms.deletedRecords.length > 1) {
+                            promise = this.parent.dataModule.dataManager.saveChanges(
+                                editParms, this.keyField, this.getTable(), this.getQuery()) as Promise<Object>;
+                    } else {
+                            promise = this.parent.dataModule.dataManager.remove(
+                                this.keyField, editParms.deletedRecords[0], this.getTable(), this.getQuery()) as Promise<Object>;
+                    }
                     let crudArgs: CrudArgs = {
                         requestType: 'cardRemoved', cancel: false, promise: promise, addedRecords: editParms.addedRecords,
                         changedRecords: editParms.changedRecords, deletedRecords: editParms.deletedRecords
                     };
                     this.refreshData(crudArgs);
+                } else {
+                    if (cardData instanceof Array) {
+                        // tslint:disable-next-line
+                        (this.parent as any).interopAdaptor.invokeMethodAsync('DeleteCards', { DeletedRecords: cardData }, this.keyField);
+                    } else {
+                        // tslint:disable-next-line
+                        (this.parent as any).interopAdaptor.invokeMethodAsync('DeleteCard', this.keyField, { Record: cardData });
+                    }
                 }
             }
         });

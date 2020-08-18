@@ -5766,12 +5766,9 @@ var ColumnWidthService = /** @__PURE__ @class */ (function () {
         }
     };
     ColumnWidthService.prototype.setWidth = function (width, index, clear) {
-        var chrome = 'chrome';
-        var webstore = 'webstore';
-        if (typeof (width) === 'string' && width.indexOf('%') !== -1 &&
-            !(Boolean(window[chrome]) && Boolean(window[chrome][webstore])) && this.parent.allowGrouping) {
+        if (this.parent.groupSettings.columns.length > index && ispercentageWidth(this.parent)) {
             var elementWidth = this.parent.element.offsetWidth;
-            width = parseInt(width, 10) / 100 * (elementWidth);
+            width = (30 / elementWidth * 100).toFixed(1) + '%';
         }
         var header = this.parent.getHeaderTable();
         var content = this.parent.getContentTable();
@@ -9028,7 +9025,8 @@ var Selection = /** @__PURE__ @class */ (function () {
         var gObj = this.parent;
         var isDrag;
         var gridElement = parentsUntil(target, 'e-grid');
-        if (gridElement && gridElement.id !== gObj.element.id || parentsUntil(target, 'e-headercontent') && !this.parent.frozenRows) {
+        if (gridElement && gridElement.id !== gObj.element.id || parentsUntil(target, 'e-headercontent') && !this.parent.frozenRows ||
+            parentsUntil(target, 'e-editedbatchcell') || parentsUntil(target, 'e-editedrow')) {
             return;
         }
         if (e.shiftKey || e.ctrlKey) {
@@ -9418,6 +9416,16 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
         if (this.parent.enableVirtualization) {
             this.setCheckAllState();
+        }
+        if (this.parent.isCheckBoxSelection) {
+            var totalRecords = this.parent.getRowsObject();
+            var indexes = [];
+            for (var i = 0; i < totalRecords.length; i++) {
+                if (totalRecords[i].isSelected) {
+                    indexes.push(i);
+                }
+            }
+            this.selectRows(indexes);
         }
     };
     Selection.prototype.updatePersistSelectedData = function (checkState) {
@@ -14006,9 +14014,17 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         var contentCol = [].slice.call(this.getContentTable().querySelector('colgroup').childNodes);
         var perPixel = indentWidth / 30;
         var i = 0;
+        var parentOffset = this.element.offsetWidth;
         var applyWidth = function (index, width) {
-            headerCol[index].style.width = width + 'px';
-            contentCol[index].style.width = width + 'px';
+            if (ispercentageWidth(_this)) {
+                var newWidth = (width / parentOffset * 100).toFixed(1) + '%';
+                headerCol[index].style.width = newWidth;
+                contentCol[index].style.width = newWidth;
+            }
+            else {
+                headerCol[index].style.width = width + 'px';
+                contentCol[index].style.width = width + 'px';
+            }
             _this.notify(columnWidthChanged, { index: index, width: width });
         };
         if (perPixel >= 1) {
@@ -14030,6 +14046,21 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         }
         this.isAutoGen = false;
         this.getHeaderTable().querySelector('.e-emptycell').setAttribute('indentRefreshed', 'true');
+    };
+    /**
+     * @hidden
+     */
+    Grid.prototype.resetIndentWidth = function () {
+        if (ispercentageWidth(this)) {
+            this.getHeaderTable().querySelector('.e-emptycell').removeAttribute('indentRefreshed');
+            this.widthService.setWidthToColumns();
+            this.recalcIndentWidth();
+        }
+        if ((this.width === 'auto' || typeof (this.width) === 'string' && this.width.indexOf('%') !== -1)
+            && this.getColumns().filter(function (col) { return col.width && col.minWidth; }).length > 0) {
+            var tgridWidth = this.widthService.getTableWidth(this.getColumns());
+            this.widthService.setMinwidthBycalculation(tgridWidth);
+        }
     };
     /**
      * @hidden
@@ -14468,6 +14499,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         EventHandler.add(this.element, 'focusout', this.focusOutHandler, this);
         EventHandler.add(this.element, 'dblclick', this.dblClickHandler, this);
         EventHandler.add(this.element, 'keydown', this.keyPressHandler, this);
+        EventHandler.add(window, 'resize', this.resetIndentWidth, this);
         if (this.allowKeyboard) {
             this.element.tabIndex = this.element.tabIndex === -1 ? 0 : this.element.tabIndex;
         }
@@ -14497,6 +14529,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         EventHandler.remove(this.element, 'keydown', this.keyPressHandler);
         EventHandler.remove(this.getContent(), 'touchstart', this.tapEvent);
         EventHandler.remove(document.body, 'keydown', this.keyDownHandler);
+        EventHandler.remove(window, 'resize', this.resetIndentWidth);
     };
     /**
      * @hidden
@@ -16717,7 +16750,7 @@ function getDatePredicate(filterObject, type) {
     var nextDate;
     var prevObj = extend({}, getActualProperties(filterObject));
     var nextObj = extend({}, getActualProperties(filterObject));
-    if (filterObject.value === null) {
+    if (isNullOrUndefined(filterObject.value)) {
         datePredicate = new Predicate(prevObj.field, prevObj.operator, prevObj.value, false);
         return datePredicate;
     }
@@ -17023,6 +17056,23 @@ function getStateEventArgument(query) {
     var state = adaptr.processQuery(dm, query);
     var data = JSON.parse(state.data);
     return data;
+}
+/** @hidden */
+function ispercentageWidth(gObj) {
+    var columns = gObj.getVisibleColumns();
+    var percentageCol = 0;
+    var undefinedWidthCol = 0;
+    for (var i = 0; i < columns.length; i++) {
+        if (isUndefined(columns[i].width)) {
+            undefinedWidthCol++;
+        }
+        else if (columns[i].width.toString().indexOf('%') !== -1) {
+            percentageCol++;
+        }
+    }
+    return (gObj.width === 'auto' || typeof (gObj.width) === 'string' && gObj.width.indexOf('%') !== -1) && Browser.info.name !== 'chrome'
+        && !gObj.groupSettings.showGroupedColumn && gObj.groupSettings.columns.length
+        && percentageCol && !undefinedWidthCol;
 }
 
 /* tslint:disable-next-line:max-line-length */
@@ -17339,6 +17389,7 @@ var CheckBoxFilterBase = /** @__PURE__ @class */ (function () {
     };
     CheckBoxFilterBase.prototype.fltrBtnHandler = function () {
         var checked = [].slice.call(this.cBox.querySelectorAll('.e-check:not(.e-selectall)'));
+        var check = checked;
         var optr = 'equal';
         var searchInput = this.searchBox.querySelector('.e-searchinput');
         var caseSen = this.options.allowCaseSensitive;
@@ -17354,6 +17405,8 @@ var CheckBoxFilterBase = /** @__PURE__ @class */ (function () {
             defaults.operator = 'notequal';
         }
         var value;
+        var val;
+        var length;
         var fObj;
         var coll = [];
         if (checked.length !== this.itemsCnt || (searchInput.value && searchInput.value !== '')) {
@@ -17389,6 +17442,16 @@ var CheckBoxFilterBase = /** @__PURE__ @class */ (function () {
                 this.parent.notify(fltrPrevent, args);
                 if (args.cancel) {
                     return;
+                }
+            }
+            if (this.options.type === 'date' || this.options.type === 'datetime') {
+                length = check.length - 1;
+                val = this.values[parentsUntil(check[length], 'e-ftrchk').getAttribute('uid')];
+                if (isNullOrUndefined(val) && isNotEqual) {
+                    coll.push({
+                        field: defaults.field, matchCase: defaults.matchCase, operator: 'equal',
+                        predicate: 'and', value: null
+                    });
                 }
             }
             this.initiateFilter(coll);
@@ -17865,6 +17928,7 @@ var CheckBoxFilterBase = /** @__PURE__ @class */ (function () {
         var len = cols ? cols.length : 0;
         var predicate;
         var first;
+        var operate = 'or';
         first = CheckBoxFilterBase.updateDateFilter(cols[0]);
         first.ignoreAccent = !isNullOrUndefined(first.ignoreAccent) ? first.ignoreAccent : false;
         if (first.type === 'date' || first.type === 'datetime') {
@@ -17886,7 +17950,12 @@ var CheckBoxFilterBase = /** @__PURE__ @class */ (function () {
             }
             else {
                 if (cols[p].type === 'date' || cols[p].type === 'datetime') {
-                    predicate = predicate[(cols[p].predicate)](getDatePredicate(cols[p], cols[p].type), cols[p].type, cols[p].ignoreAccent);
+                    if (cols[p].predicate === 'and' && cols[p].operator === 'equal') {
+                        predicate = predicate[operate](getDatePredicate(cols[p], cols[p].type), cols[p].type, cols[p].ignoreAccent);
+                    }
+                    else {
+                        predicate = predicate[(cols[p].predicate)](getDatePredicate(cols[p], cols[p].type), cols[p].type, cols[p].ignoreAccent);
+                    }
                 }
                 else {
                     /* tslint:disable-next-line:max-line-length */
@@ -21351,6 +21420,7 @@ var Filter = /** @__PURE__ @class */ (function () {
     function Filter(parent, filterSettings, serviceLocator) {
         this.predicate = 'and';
         this.contentRefresh = true;
+        this.filterByMethod = true;
         this.refresh = true;
         this.values = {};
         this.operators = {};
@@ -21663,13 +21733,16 @@ var Filter = /** @__PURE__ @class */ (function () {
             this.matchCase = true;
         }
         gObj.getColumnHeaderByField(fieldName).setAttribute('aria-filtered', 'true');
-        if (filterValue.length < 1 || this.checkForSkipInput(this.column, filterValue)) {
-            this.filterStatusMsg = filterValue.length < 1 ? '' : this.l10n.getConstant('InvalidFilterMessage');
-            this.updateFilterMsg();
-            return;
-        }
-        if (filterCell && this.filterSettings.type === 'FilterBar' && filterCell.value !== filterValue) {
-            filterCell.value = filterValue;
+        if (filterCell && this.filterSettings.type === 'FilterBar') {
+            if (filterValue.length < 1 || (!this.filterByMethod &&
+                this.checkForSkipInput(this.column, filterValue))) {
+                this.filterStatusMsg = filterValue.length < 1 ? '' : this.l10n.getConstant('InvalidFilterMessage');
+                this.updateFilterMsg();
+                return;
+            }
+            if (filterCell.value !== filterValue) {
+                filterCell.value = filterValue;
+            }
         }
         if (!isNullOrUndefined(this.column.format)) {
             this.applyColumnFormat(filterValue);
@@ -22113,7 +22186,9 @@ var Filter = /** @__PURE__ @class */ (function () {
             return;
         }
         this.validateFilterValue(this.value);
+        this.filterByMethod = false;
         this.filterByColumn(this.column.field, this.operator, this.value, this.predicate, this.filterSettings.enableCaseSensitivity, this.ignoreAccent);
+        this.filterByMethod = true;
         filterElement.value = filterValue;
         this.updateFilterMsg();
     };
@@ -31600,7 +31675,7 @@ var Edit = /** @__PURE__ @class */ (function () {
         if (gObj.editSettings.template) {
             this.parent.destroyTemplate(['editSettingsTemplate']);
         }
-        cols = cols ? cols : this.parent.getColumns();
+        cols = cols ? cols : this.parent.getVisibleColumns();
         if (cols.some(function (column) { return !isNullOrUndefined(column.editTemplate); })) {
             this.parent.destroyTemplate(['editTemplate']);
         }
@@ -39202,5 +39277,5 @@ var MaskedTextBoxCellEdit = /** @__PURE__ @class */ (function () {
  * Export Grid components
  */
 
-export { CheckBoxFilterBase, ExcelFilterBase, SortDescriptor, SortSettings, Predicate$1 as Predicate, InfiniteScrollSettings, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, AggregateTemplateType, doesImplementInterface, valueAccessor, headerValueAccessor, getUpdateUsingRaf, isExportColumns, updateColumnTypeForExportColumns, updatecloneRow, getCollapsedRowsCount, recursive, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, setColumnIndex, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, isGroupAdaptive, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, refreshFilteredColsUid, Global, getTransformValues, applyBiggerTheme, alignFrozenEditForm, ensureLastRow, ensureFirstRow, getEditedDataIndex, eventPromise, getStateEventArgument, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, beforePaste, beforeAutoFill, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, commandClick, exportGroupCaption, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, columnDataStateChange, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, textWrapRefresh, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, exportDataBound, rowPositionChanged, columnChooserOpened, batchForm, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, partialRefresh, beforeCustomFilterOpen, selectVirtualRow, columnsPrepared, cBoxFltrBegin, cBoxFltrComplete, fltrPrevent, beforeFltrcMenuOpen, valCustomPlacement, filterCboxValue, componentRendered, restoreFocus, detailStateChange, detailIndentCellInfo, virtaulKeyHandler, virtaulCellFocus, virtualScrollEditActionBegin, virtualScrollEditSuccess, virtualScrollEditCancel, virtualScrollEdit, refreshVirtualCache, editReset, virtualScrollAddActionBegin, getVirtualData, refreshInfiniteModeBlocks, resetInfiniteBlocks, infiniteScrollHandler, infinitePageQuery, infiniteShowHide, appendInfiniteContent, removeInfiniteRows, setInfiniteCache, infiniteEditHandler, initialCollapse, getAggregateQuery, closeFilterDialog, columnChooserCancelBtnClick, getFilterBarOperator, resetColumns, pdfAggregateQueryCellInfo, excelAggregateQueryCellInfo, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Logger, detailLists, gridObserver, BlazorAction, InfiniteScroll, Column, CommandColumnModel, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, AutoCompleteEditCell, ComboboxEditCell, MultiSelectEditCell, TimePickerEditCell, ToggleEditCell, MaskedTextBoxCellEdit, VirtualContentRenderer, VirtualHeaderRenderer, VirtualElementHandler, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, VirtualRowModelGenerator, InterSectionObserver, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
+export { CheckBoxFilterBase, ExcelFilterBase, SortDescriptor, SortSettings, Predicate$1 as Predicate, InfiniteScrollSettings, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, AggregateTemplateType, doesImplementInterface, valueAccessor, headerValueAccessor, getUpdateUsingRaf, isExportColumns, updateColumnTypeForExportColumns, updatecloneRow, getCollapsedRowsCount, recursive, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, setColumnIndex, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, isGroupAdaptive, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, refreshFilteredColsUid, Global, getTransformValues, applyBiggerTheme, alignFrozenEditForm, ensureLastRow, ensureFirstRow, getEditedDataIndex, eventPromise, getStateEventArgument, ispercentageWidth, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, beforePaste, beforeAutoFill, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, commandClick, exportGroupCaption, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, columnDataStateChange, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, textWrapRefresh, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, exportDataBound, rowPositionChanged, columnChooserOpened, batchForm, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, partialRefresh, beforeCustomFilterOpen, selectVirtualRow, columnsPrepared, cBoxFltrBegin, cBoxFltrComplete, fltrPrevent, beforeFltrcMenuOpen, valCustomPlacement, filterCboxValue, componentRendered, restoreFocus, detailStateChange, detailIndentCellInfo, virtaulKeyHandler, virtaulCellFocus, virtualScrollEditActionBegin, virtualScrollEditSuccess, virtualScrollEditCancel, virtualScrollEdit, refreshVirtualCache, editReset, virtualScrollAddActionBegin, getVirtualData, refreshInfiniteModeBlocks, resetInfiniteBlocks, infiniteScrollHandler, infinitePageQuery, infiniteShowHide, appendInfiniteContent, removeInfiniteRows, setInfiniteCache, infiniteEditHandler, initialCollapse, getAggregateQuery, closeFilterDialog, columnChooserCancelBtnClick, getFilterBarOperator, resetColumns, pdfAggregateQueryCellInfo, excelAggregateQueryCellInfo, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Logger, detailLists, gridObserver, BlazorAction, InfiniteScroll, Column, CommandColumnModel, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, AutoCompleteEditCell, ComboboxEditCell, MultiSelectEditCell, TimePickerEditCell, ToggleEditCell, MaskedTextBoxCellEdit, VirtualContentRenderer, VirtualHeaderRenderer, VirtualElementHandler, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, VirtualRowModelGenerator, InterSectionObserver, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
 //# sourceMappingURL=ej2-grids.es5.js.map

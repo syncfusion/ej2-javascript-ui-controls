@@ -676,6 +676,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * Triggers when the server side action fails.
      * @event
      */
+    @Event()
     public serviceFailure: EmitType<ServiceFailureArgs>;
 
     /**

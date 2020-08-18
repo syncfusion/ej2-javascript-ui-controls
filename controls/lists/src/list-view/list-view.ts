@@ -785,6 +785,11 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                     this.isWindow = true;
                     ulContainer.scrollIntoView();
                 }
+                if (this.height.toString().indexOf('%') !== -1) {
+                    // tslint:disable
+                    (this as any).interopAdaptor.invokeMethodAsync('SetContainerHeight', this.element.getBoundingClientRect().height.toString());
+                    // tslint:enable
+                }
                 if (ulContainer.children[0]) {
                     this.liElementHeight = ulContainer.children[0].getBoundingClientRect().height;
                     // tslint:disable

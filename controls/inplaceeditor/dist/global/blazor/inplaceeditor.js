@@ -293,7 +293,9 @@ var InPlaceEditor = /** @class */ (function (_super) {
      * @private
      */
     InPlaceEditor.prototype.render = function () {
-        this.element.setAttribute('tabindex', '0');
+        if (sf.base.isNullOrUndefined(this.element.getAttribute('tabindex'))) {
+            this.element.setAttribute('tabindex', '0');
+        }
         this.checkIsTemplate();
         this.disable(this.disabled);
         this.updateAdaptor();
@@ -417,7 +419,6 @@ var InPlaceEditor = /** @class */ (function (_super) {
             return;
         }
         if (this.mode === 'Inline') {
-            this.loaderWidth = this.valueWrap.offsetWidth;
             sf.base.addClass([this.valueWrap], [HIDE]);
             this.inlineWrapper = this.createElement('div', { className: INLINE });
             this.element.appendChild(this.inlineWrapper);
@@ -577,7 +578,9 @@ var InPlaceEditor = /** @class */ (function (_super) {
         else {
             classProp = ELEMENTS;
         }
-        sf.base.extend(this.model, this.model, { cssClass: classProp, enableRtl: this.enableRtl, locale: this.locale });
+        sf.base.extend(this.model, this.model, {
+            cssClass: classProp, enableRtl: this.enableRtl, locale: this.locale, change: this.changeHandler.bind(this)
+        });
         if (!sf.base.isNullOrUndefined(this.value)) {
             this.updateModelValue();
         }
@@ -701,7 +704,7 @@ var InPlaceEditor = /** @class */ (function (_super) {
         }
         else if (this.componentObj) {
             if (this.type === 'Numeric' && this.componentObj.value === null) {
-                this.componentObj.setProperties({ value: 0 }, true);
+                this.componentObj.setProperties({ value: null }, true);
             }
             this.setProperties({ value: this.componentObj.value }, true);
             this.extendModelValue(this.componentObj.value);
@@ -1258,6 +1261,18 @@ var InPlaceEditor = /** @class */ (function (_super) {
             }
         }
     };
+    InPlaceEditor.prototype.changeHandler = function (e) {
+        var eventArgs = {
+            previousValue: this.compPrevValue === undefined ? this.value : this.compPrevValue,
+            value: e.value
+        };
+        if (this.type === 'AutoComplete' || this.type === 'ComboBox' || this.type === 'DropDownList') {
+            eventArgs.itemData = e.itemData;
+            eventArgs.previousItemData = e.previousItemData;
+        }
+        this.compPrevValue = eventArgs.value;
+        this.trigger('change', eventArgs);
+    };
     /**
      * Validate current editor value.
      * @returns void
@@ -1474,6 +1489,9 @@ var InPlaceEditor = /** @class */ (function (_super) {
     __decorate$1([
         sf.base.Event()
     ], InPlaceEditor.prototype, "beginEdit", void 0);
+    __decorate$1([
+        sf.base.Event()
+    ], InPlaceEditor.prototype, "change", void 0);
     __decorate$1([
         sf.base.Event()
     ], InPlaceEditor.prototype, "destroyed", void 0);

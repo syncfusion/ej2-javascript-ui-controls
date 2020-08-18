@@ -863,8 +863,11 @@ export class PivotButton implements IAction {
     private updateFiltering(args: MouseEventArgs): void {
         /* tslint:disable */
         let pivotObj: PivotView = (this.parent as any).pivotGridModule ? (this.parent as any).pivotGridModule : this.parent;
+        pivotObj.mouseEventArgs = args;
+        pivotObj.filterTargetID = this.parent.pivotCommon.moduleName !== 'pivotfieldlist' ?
+            this.parent.element : document.getElementById(this.parent.pivotCommon.parentID + '_Wrapper');
+        let fieldName: string = (args.target as HTMLElement).parentElement.id;
         if (pivotObj && pivotObj.enableVirtualization && isBlazor() && pivotObj.dataType === 'pivot') {
-            let fieldName: string = (args.target as HTMLElement).parentElement.id;
             let $this: PivotButton = this;
             (pivotObj as any).interopAdaptor.invokeMethodAsync("PivotInteropMethod", 'fetchFieldMembers',
                 fieldName).then((data: any) => {
@@ -880,16 +883,21 @@ export class PivotButton implements IAction {
                     $this.parent.engineModule.fieldList[fieldName].dateMember = dateMembers;
                     $this.parent.engineModule.fieldList[fieldName].formattedMembers = formattedMembers;
                     $this.parent.engineModule.fieldList[fieldName].members = members;
-                    $this.updateFilterEvents(args);
+                    $this.updateFilterEvents();
                 });
+        } else if (pivotObj.dataSourceSettings.mode === 'Server') {
+            pivotObj.getEngine('fetchFieldMembers', null, null ,null, null, null, fieldName);
         } else {
-            this.updateFilterEvents(args);
+            this.updateFilterEvents();
         }
         /* tslint:enable */
     }
-    private updateFilterEvents(args: MouseEventArgs): void {
-        this.parent.pivotCommon.eventBase.updateFiltering(args);
-        let target: HTMLElement = args.target as HTMLElement;
+    /** @hidden */
+    public updateFilterEvents(): void {
+        /* tslint:disable */
+        let pivotObj: PivotView = (this.parent as any).pivotGridModule ? (this.parent as any).pivotGridModule : this.parent;
+        this.parent.pivotCommon.eventBase.updateFiltering(pivotObj.mouseEventArgs);
+        let target: HTMLElement = pivotObj.mouseEventArgs.target as HTMLElement;
         this.fieldName = target.parentElement.id;
         if (this.parent.pivotCommon.filterDialog.dialogPopUp) {
             this.dialogPopUp = this.parent.pivotCommon.filterDialog.dialogPopUp;

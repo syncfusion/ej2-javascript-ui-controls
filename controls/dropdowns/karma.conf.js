@@ -17,6 +17,7 @@ module.exports = function (config) {
     files: [
       "test-main.js",
       "styles/list-box/material.css",
+      "styles/drop-down-tree/material.css",
       { pattern: "src/**/*.js", included: false },     
       { pattern: "spec/**/*.spec.js", included: false },
       { pattern: 'node_modules/es6-promise/dist/**/*.*', included: false },

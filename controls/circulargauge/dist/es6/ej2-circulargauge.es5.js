@@ -5078,6 +5078,7 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
                     setStyles(element, pointer.color, pointer.border);
                 }
                 if (enableAnimation) {
+                    pointer.currentValue = pointer.value;
                     _this.gaugeAxisLayoutPanel.pointerRenderer.performNeedleAnimation(element, pointer.currentValue, value, axis, pointer, pointerRadius, (pointerRadius - pointer.pointerWidth));
                 }
                 else {

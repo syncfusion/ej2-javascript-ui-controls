@@ -10,6 +10,24 @@ export class MouseEvents {
         this.mouseUpEvent(element, x, y, ctrl, shift);
     }
 
+    public rightClickEvent(element: Element, x: number, y: number, ctrl?: boolean, shift?: boolean): void {
+        let mousedown: MouseEvent = document.createEvent('MouseEvent');
+        mousedown.initMouseEvent('mousedown', false, false, window, 1, 0, 0, x, y, ctrl, false, shift, false, 2, null);
+        element.dispatchEvent(mousedown);
+        let mouseup: MouseEvent = document.createEvent('MouseEvent');
+        mouseup.initMouseEvent('mouseup', true, false, window, 1, 0, 0, x, y, ctrl, false, shift, false, 2, null);
+        element.dispatchEvent(mouseup);
+    }
+
+    public middleClickEvent(element: Element, x: number, y: number, ctrl?: boolean, shift?: boolean): void {
+        let mousedown: MouseEvent = document.createEvent('MouseEvent');
+        mousedown.initMouseEvent('mousedown', false, false, window, 1, 0, 0, x, y, ctrl, false, shift, false, 1, null);
+        element.dispatchEvent(mousedown);
+        let mouseup: MouseEvent = document.createEvent('MouseEvent');
+        mouseup.initMouseEvent('mouseup', true, false, window, 1, 0, 0, x, y, ctrl, false, shift, false, 1, null);
+        element.dispatchEvent(mouseup);
+    }
+
     public mouseDownEvent(element: Element, cx: number, cy: number, ctrl?: boolean, shift?: boolean): void {
         let mousedown: MouseEvent = document.createEvent('MouseEvent');
         mousedown.initMouseEvent('mousedown', false, false, window, 1, 0, 0, cx, cy, ctrl, false, shift, false, 0, null);

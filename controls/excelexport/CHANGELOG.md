@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 18.2.48 (2020-08-04)
+## 18.2.54 (2020-08-18)
+
+### Excel Export
+
+#### Bug Fixes
+
+- Number format separator issue is fixed in EJ2 Grid to Excel export.
+
+## 18.2.45 (2020-07-14)
 
 ### Excel Export
 

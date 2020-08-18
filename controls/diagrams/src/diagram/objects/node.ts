@@ -2822,14 +2822,14 @@ export class Header extends ChildProperty<Shape> {
      * @default ''
      */
     @Complex<AnnotationModel>({}, Annotation)
-    public annotation: Annotation;
+    public annotation: AnnotationModel;
 
     /**
      * Sets the style of the header
      * @default ''
      */
     @Complex<ShapeStyleModel>({ fill: '#E7F4FF', strokeColor: '#CCCCCC' }, ShapeStyle)
-    public style: ShapeStyleModel;
+    public style: TextStyleModel;
 
     /**
      * Sets the height of the header

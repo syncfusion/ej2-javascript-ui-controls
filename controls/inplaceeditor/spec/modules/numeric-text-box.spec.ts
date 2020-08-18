@@ -5,7 +5,7 @@ import { select, selectAll } from '@syncfusion/ej2-base';
 import * as classes from '../../src/inplace-editor/base/classes';
 import { renderEditor, destroy } from './../render.spec';
 import { profile, inMB, getMemoryProfile } from './../common.spec';
-import { BeginEditEventArgs } from '../../src/inplace-editor/base/index';
+import { BeginEditEventArgs, ChangeEventArgs } from '../../src/inplace-editor/base/index';
 
 describe('NumericTextBox Control', () => {
     beforeAll(() => {
@@ -156,7 +156,7 @@ describe('NumericTextBox Control', () => {
             expect(editorObj.value).toEqual(null);
             expect((<HTMLInputElement>select('.e-numerictextbox', document.body)).value).toEqual('');
             editorObj.save();
-            expect(editorObj.value).toEqual(0);
+            expect(editorObj.value).toEqual(null);
             expect(valueEle.innerHTML).toEqual('Enter some text');
             editorObj.value = 2;
             editorObj.dataBind();
@@ -180,7 +180,7 @@ describe('NumericTextBox Control', () => {
             expect(editorObj.value).toEqual('');
             expect((<HTMLInputElement>select('.e-numerictextbox', document.body)).value).toEqual('');
             editorObj.save();
-            expect(editorObj.value).toEqual(0);
+            expect(editorObj.value).toEqual(null);
             expect(valueEle.innerHTML).toEqual('Enter some text');
         });
         it('Value as "null" with initial render testing', () => {
@@ -204,7 +204,7 @@ describe('NumericTextBox Control', () => {
             expect(editorObj.value).toEqual(null);
             expect((<HTMLInputElement>select('.e-numerictextbox', document.body)).value).toEqual('');
             editorObj.save();
-            expect(editorObj.value).toEqual(0);
+            expect(editorObj.value).toEqual(null);
             expect(valueEle.innerHTML).toEqual('Enter some text');
             editorObj.value = 2;
             editorObj.dataBind();
@@ -228,7 +228,7 @@ describe('NumericTextBox Control', () => {
             expect(editorObj.value).toEqual('');
             expect((<HTMLInputElement>select('.e-numerictextbox', document.body)).value).toEqual('');
             editorObj.save();
-            expect(editorObj.value).toEqual(0);
+            expect(editorObj.value).toEqual(null);
             expect(valueEle.innerHTML).toEqual('Enter some text');
         });
         it('Value as "undefined" string with initial render testing', () => {
@@ -252,7 +252,7 @@ describe('NumericTextBox Control', () => {
             expect(editorObj.value).toEqual(null);
             expect((<HTMLInputElement>select('.e-numerictextbox', document.body)).value).toEqual('');
             editorObj.save();
-            expect(editorObj.value).toEqual(0);
+            expect(editorObj.value).toEqual(null);
             expect(valueEle.innerHTML).toEqual('Enter some text');
             editorObj.value = 2;
             editorObj.dataBind();
@@ -276,7 +276,7 @@ describe('NumericTextBox Control', () => {
             expect(editorObj.value).toEqual('');
             expect((<HTMLInputElement>select('.e-numerictextbox', document.body)).value).toEqual('');
             editorObj.save();
-            expect(editorObj.value).toEqual(0);
+            expect(editorObj.value).toEqual(null);
             expect(valueEle.innerHTML).toEqual('Enter some text');
         });
         it('Value as empty string with initial render testing', () => {
@@ -300,7 +300,7 @@ describe('NumericTextBox Control', () => {
             expect(editorObj.value).toEqual('');
             expect((<HTMLInputElement>select('.e-numerictextbox', document.body)).value).toEqual('');
             editorObj.save();
-            expect(editorObj.value).toEqual(0);
+            expect(editorObj.value).toEqual(null);
             expect(valueEle.innerHTML).toEqual('Enter some text');
             editorObj.value = 2;
             editorObj.dataBind();
@@ -324,7 +324,7 @@ describe('NumericTextBox Control', () => {
             expect(editorObj.value).toEqual('');
             expect((<HTMLInputElement>select('.e-numerictextbox', document.body)).value).toEqual('');
             editorObj.save();
-            expect(editorObj.value).toEqual(0);
+            expect(editorObj.value).toEqual(null);
             expect(valueEle.innerHTML).toEqual('Enter some text');
         });
         it('Defined value with initial render testing', () => {
@@ -360,7 +360,7 @@ describe('NumericTextBox Control', () => {
             expect(editorObj.value).toEqual('');
             expect((<HTMLInputElement>select('.e-numerictextbox', document.body)).value).toEqual('');
             editorObj.save();
-            expect(editorObj.value).toEqual(0);
+            expect(editorObj.value).toEqual(null);
             expect(valueEle.innerHTML).toEqual('Enter some text');
             editorObj.value = 6;
             editorObj.dataBind();
@@ -406,13 +406,13 @@ describe('NumericTextBox Control', () => {
             editorObj.setProperties({ value: null }, true);
             editorObj.componentObj.value = null;
             editorObj.save();
-            expect(editorObj.value).toEqual(0);
+            expect(editorObj.value).toEqual(null);
             expect(valueEle.innerHTML).toEqual('Empty');
             valueEle.click();
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
             expect(selectAll('.e-numerictextbox', document.body).length === 1).toEqual(true);
-            expect(editorObj.value).toEqual(0);
-            expect((<HTMLInputElement>select('.e-numerictextbox', document.body)).value).toEqual('0');
+            expect(editorObj.value).toEqual(null);
+            expect((<HTMLInputElement>select('.e-numerictextbox', document.body)).value).toEqual('');
         });
     });
 
@@ -495,6 +495,64 @@ describe('NumericTextBox Control', () => {
                 expect(count).toEqual(1);
                 done();
             }, 400);
+        });
+    });
+
+    describe('BLAZ-4764 - New change event testing', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let changeArgs: any = {};
+        afterEach((): void => {
+            destroy(editorObj);
+            changeArgs = {};
+        });
+        it('Without initial value - Check changed value', (done) => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                type: 'Numeric',
+                change: function (e: ChangeEventArgs) {
+                    changeArgs = e;
+                }
+            });
+            ele = editorObj.element;
+            valueEle = <HTMLElement>select('.' + classes.VALUE, ele);
+            valueEle.click();
+            setTimeout(() => {
+                expect(editorObj.value).toEqual(null);
+                editorObj.componentObj.value = 7;
+                (ele.querySelector('.e-editable-component') as HTMLElement).click();
+                setTimeout(() => {
+                    expect(changeArgs['name']).toEqual('change');
+                    expect(changeArgs['previousValue']).toEqual(null);
+                    expect(changeArgs['value']).toEqual(7);
+                    done();
+                }, 1000);
+            }, 1500);
+        });
+        it('Check changed value', (done) => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                type: 'Numeric',
+                value: 5,
+                change: function (e: ChangeEventArgs) {
+                    changeArgs = e;
+                }
+            });
+            ele = editorObj.element;
+            valueEle = <HTMLElement>select('.' + classes.VALUE, ele);
+            valueEle.click();
+            setTimeout(() => {
+                expect(editorObj.value).toEqual(5);
+                editorObj.componentObj.value = 7;
+                (ele.querySelector('.e-editable-component') as HTMLElement).click();
+                setTimeout(() => {
+                    expect(changeArgs['name']).toEqual('change');
+                    expect(changeArgs['previousValue']).toEqual(5);
+                    expect(changeArgs['value']).toEqual(7);
+                    done();
+                }, 1000);
+            }, 1500);
         });
     });
 

@@ -1,4 +1,5 @@
 import { IElement, ISelectionChangeEventArgs, IConnectionChangeEventArgs } from '../objects/interface/IElement';
+import {  ScrollValues, IScrollChangeEventArgs, IBlazorScrollChangeEventArgs } from '../objects/interface/IElement';
 import { IDragOverEventArgs, IBlazorConnectionChangeEventArgs, IBlazorSelectionChangeEventArgs } from '../objects/interface/IElement';
 import { ConnectorValue } from '../objects/interface/IElement';
 import { DiagramEventObjectCollection } from '../objects/interface/IElement';
@@ -1538,11 +1539,11 @@ export class CommandHandler {
                         } else {
                             this.clearSelection(true, true);
                         }
-                        this.updateBlazorSelector();
                     }
                 }
             }
             this.diagram.enableServerDataBinding(true);
+            this.updateBlazorSelector();
         }
     }
 
@@ -1977,7 +1978,7 @@ export class CommandHandler {
                     let target: string;
                     let layer: LayerModel = this.getObjectLayer(objectName);
                     for (let i: number = 0; i < layer.objects.length; i++) {
-                        if (layer.objects[i] !== objectName) {
+                        if ((layer.objects[i] !== objectName) && (this.diagram.nameTable[layer.objects[i]].parentId) !== objectName) {
                             this.moveSvgNode(layer.objects[i], objectName);
                             this.updateNativeNodeIndex(objectName);
                         }
@@ -2479,11 +2480,11 @@ export class CommandHandler {
                             if (selectNodes) {
                                 this.diagram.select(selectNodes);
                             }
-                            this.updateBlazorSelector();
                         }
                     }
                 }
             }
+            this.updateBlazorSelector();
             this.diagram.enableServerDataBinding(enableServerDataBinding);
         }
     }
@@ -4465,6 +4466,34 @@ export class CommandHandler {
             selectorObject.connectors.push(clone(obj) as ConnectorModel);
         }
         return selectorObject;
+    }
+
+        /**
+     * @private
+     */
+    public updatePanState(eventCheck: boolean): any {
+        if (eventCheck) {
+            this.diagram.realActions = this.diagram.realActions | RealAction.PanInProgress;
+        } else {
+            this.diagram.dataBind();
+            let diagramScrollSettings = this.diagram.scrollSettings;
+            this.diagram.realActions = this.diagram.realActions & ~RealAction.PanInProgress;
+            let Values: ScrollValues = {
+            VerticalOffset: diagramScrollSettings.verticalOffset, HorizontalOffset: diagramScrollSettings.horizontalOffset,
+            ViewportHeight: diagramScrollSettings.viewPortHeight, ViewportWidth: diagramScrollSettings.viewPortWidth,
+            CurrentZoom: diagramScrollSettings.currentZoom
+            };
+            let arg: IScrollChangeEventArgs | IBlazorScrollChangeEventArgs = {
+                oldValue: Values as ScrollValues,
+                newValue: Values, source: this.diagram,panState: 'Completed'
+            };
+            this.triggerEvent(DiagramEvent.scrollChange, arg);
+        }
+    }
+
+    /** @private */
+    public dataBinding(): void {
+        this.diagram.dataBind();
     }
 
     /** @private */

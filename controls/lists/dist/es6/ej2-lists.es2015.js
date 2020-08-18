@@ -1238,6 +1238,11 @@ let ListView = class ListView extends Component {
                     this.isWindow = true;
                     ulContainer.scrollIntoView();
                 }
+                if (this.height.toString().indexOf('%') !== -1) {
+                    // tslint:disable
+                    this.interopAdaptor.invokeMethodAsync('SetContainerHeight', this.element.getBoundingClientRect().height.toString());
+                    // tslint:enable
+                }
                 if (ulContainer.children[0]) {
                     this.liElementHeight = ulContainer.children[0].getBoundingClientRect().height;
                     // tslint:disable
@@ -2966,6 +2971,8 @@ ListView = __decorate([
     NotifyPropertyChanges
 ], ListView);
 
+const listElementCount = 1.5;
+const windowElementCount = 3;
 class Virtualization {
     constructor(instance) {
         this.elementDifference = 0;
@@ -3077,9 +3084,19 @@ class Virtualization {
     }
     ValidateItemCount(dataSourceLength) {
         const height = parseFloat(formatUnit(this.listViewInstance.height));
-        let itemCount = this.listViewInstance.isWindow ?
-            Math.round((window.innerHeight / this.listItemHeight) * 3) :
-            Math.round((height / this.listItemHeight) * 1.5);
+        let itemCount;
+        if (this.listViewInstance.isWindow) {
+            itemCount = Math.round((window.innerHeight / this.listItemHeight) * windowElementCount);
+        }
+        else {
+            if (typeof this.listViewInstance.height === 'string' && this.listViewInstance.height.indexOf('%') !== -1) {
+                // tslint:disable-next-line:max-line-length
+                itemCount = Math.round((this.listViewInstance.element.getBoundingClientRect().height / this.listItemHeight) * listElementCount);
+            }
+            else {
+                itemCount = Math.round((height / this.listItemHeight) * listElementCount);
+            }
+        }
         if (itemCount > dataSourceLength) {
             itemCount = dataSourceLength;
         }

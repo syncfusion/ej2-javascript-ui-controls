@@ -2558,6 +2558,8 @@ var DiagramShapeStyle = /** @class */ (function (_super) {
     RealAction[RealAction["AnimationClick"] = 64] = "AnimationClick";
     /** Enable the group action */
     RealAction[RealAction["EnableGroupAction"] = 128] = "EnableGroupAction";
+    /** Indicate action in Progress */
+    RealAction[RealAction["PanInProgress"] = 256] = "PanInProgress";
 })(exports.RealAction || (exports.RealAction = {}));
 /** @private */
 
@@ -7887,11 +7889,40 @@ var Connector = /** @class */ (function (_super) {
         }
         return _this;
     }
+    /* tslint:disable */
+    Connector.prototype.setPortID = function (diagram, isTarget) {
+        if (this.targetID && this.sourceID) {
+            var targetNode = diagram.nameTable[this.targetID];
+            var sourceNode = diagram.nameTable[this.sourceID];
+            var ports = isTarget ? (targetNode && targetNode.ports) : (sourceNode && sourceNode.ports);
+            var port = void 0;
+            for (var i = 0; ports && i < ports.length; i++) {
+                port = ports[i];
+                if (this.targetPortID === port.id && isTarget) {
+                    if ((port.constraints & exports.PortConstraints.None) || !(port.constraints & exports.PortConstraints.InConnect)) {
+                        this.targetPortID = '';
+                    }
+                }
+                else if (this.sourcePortID === port.id && !isTarget) {
+                    if ((port.constraints & exports.PortConstraints.None) || !(port.constraints & exports.PortConstraints.OutConnect)) {
+                        this.sourcePortID = '';
+                    }
+                }
+            }
+        }
+    };
+    /* tslint:enable */
     /** @private */
     // tslint:disable-next-line:no-any
     Connector.prototype.init = function (diagram) {
         if (!this.id) {
             this.id = randomId();
+        }
+        if (this.sourcePortID) {
+            this.setPortID(diagram);
+        }
+        if (this.targetPortID) {
+            this.setPortID(diagram, true);
         }
         var bpmnElement;
         var container = new Canvas();
@@ -15012,6 +15043,11 @@ var StackPanel = /** @class */ (function (_super) {
          * @private
          */
         _this.measureChildren = undefined;
+        /**
+         * Sets or gets whether the padding of the element needs to be measured
+         * @private
+         */
+        _this.considerPadding = true;
         return _this;
     }
     /**
@@ -15071,7 +15107,9 @@ var StackPanel = /** @class */ (function (_super) {
         desired = _super.prototype.validateDesiredSize.call(this, desired, availableSize);
         this.stretchChildren(desired);
         //Considering padding values
-        this.applyPadding(desired);
+        if (this.considerPadding) {
+            this.applyPadding(desired);
+        }
         return desired;
     };
     StackPanel.prototype.arrangeStackPanel = function (desiredSize, updatePosition) {
@@ -18054,16 +18092,18 @@ function createUserHandleTemplates(userHandleTemplate, template, selectedItems) 
         var a = void 0;
         for (var _b = 0, _c = selectedItems.userHandles; _b < _c.length; _b++) {
             handle = _c[_b];
-            compiledString = sf.base.compile(handle.content);
-            for (i = 0, a = compiledString(cloneBlazorObject(handle), null, null, content); i < a.length; i++) {
-                var attr = {
-                    'style': 'height: 100%; width: 100%; pointer-events: all',
-                    'id': handle.name + '_template_hiddenUserHandle'
-                };
-                div = createHtmlElement('div', attr);
-                div.appendChild(a[i]);
+            if (!handle.pathData && !handle.content && !handle.source) {
+                compiledString = sf.base.compile(handle.content);
+                for (i = 0, a = compiledString(cloneBlazorObject(handle), null, null, content); i < a.length; i++) {
+                    var attr = {
+                        'style': 'height: 100%; width: 100%; pointer-events: all',
+                        'id': handle.name + '_template_hiddenUserHandle'
+                    };
+                    div = createHtmlElement('div', attr);
+                    div.appendChild(a[i]);
+                }
+                template[0].appendChild(div);
             }
-            template[0].appendChild(div);
         }
     }
 }
@@ -23839,7 +23879,8 @@ var ResizeTool = /** @class */ (function (_super) {
                         this.commandHandler.removeSnap();
                         this.commandHandler.updateSelector();
                         object = this.commandHandler.renderContainerHelper(args.source) || args.source;
-                        if ((this.undoElement.offsetX !== object.wrapper.offsetX || this.undoElement.offsetY !== object.wrapper.offsetY)) {
+                        if ((this.undoElement.offsetX !== object.wrapper.offsetX || this.undoElement.offsetY !== object.wrapper.offsetY ||
+                            this.undoElement.width !== object.wrapper.bounds.width || this.undoElement.height !== object.wrapper.bounds.height)) {
                             if (!sf.base.isBlazor()) {
                                 deltaValues = this.updateSize(args.source, this.currentPosition, this.prevPosition, this.corner, this.initialBounds);
                                 this.blocked = this.scaleObjects(deltaValues.width, deltaValues.height, this.corner, this.currentPosition, this.prevPosition, object);
@@ -24225,11 +24266,13 @@ var ZoomPanTool = /** @class */ (function (_super) {
                 this.updateTouch(startTouch1, moveTouch1);
             }
         }
+        this.commandHandler.dataBinding();
         return !this.blocked;
     };
     /**   @private  */
     ZoomPanTool.prototype.mouseUp = function (args) {
         this.checkPropertyValue();
+        this.commandHandler.updatePanState(false);
         _super.prototype.mouseUp.call(this, args);
         this.inAction = false;
     };
@@ -25570,7 +25613,7 @@ var DiagramEventHandler = /** @class */ (function () {
             bottomLeft = { x: (width - 17), y: height };
             bottomRight = { x: width, y: height };
             bounds = Rect.toBounds([topLeft, topRight, bottomLeft, bottomRight]);
-            if (bounds.containsPoint({ x: x + diagramCanvas.scrollLeft, y: y + diagramCanvas.scrollTop })) {
+            if (bounds.containsPoint({ x: x, y: y })) {
                 return true;
             }
         }
@@ -25580,7 +25623,7 @@ var DiagramEventHandler = /** @class */ (function () {
             bottomLeft = { x: 0, y: height };
             bottomRight = { x: width, y: height };
             bounds = Rect.toBounds([topLeft, topRight, bottomLeft, bottomRight]);
-            if (bounds.containsPoint({ x: x + diagramCanvas.scrollLeft, y: y + diagramCanvas.scrollTop })) {
+            if (bounds.containsPoint({ x: x, y: y })) {
                 return true;
             }
         }
@@ -25658,7 +25701,8 @@ var DiagramEventHandler = /** @class */ (function () {
                 && (evt.button === 2 || evt.buttons === 2))) {
                 var arg = {
                     element: cloneBlazorObject(this.diagram), position: cloneBlazorObject(this.currentPosition),
-                    count: evt.buttons, actualObject: cloneBlazorObject(this.eventArgs.actualObject)
+                    count: evt.buttons, actualObject: cloneBlazorObject(this.eventArgs.actualObject),
+                    button: (evt.button === 0) ? 'Left' : (evt.button === 1) ? 'Middle' : 'Right'
                 };
                 this.inAction = false;
                 this.tool.mouseUp(this.eventArgs);
@@ -26070,7 +26114,8 @@ var DiagramEventHandler = /** @class */ (function () {
                 var arg = {
                     element: cloneBlazorObject(this.eventArgs.source) || cloneBlazorObject(this.diagram),
                     position: cloneBlazorObject(this.eventArgs.position), count: evt.detail,
-                    actualObject: cloneBlazorObject(this.eventArgs.actualObject)
+                    actualObject: cloneBlazorObject(this.eventArgs.actualObject),
+                    button: (evt.button === 0) ? 'Left' : (evt.button === 1) ? 'Middle' : 'Right'
                 };
                 if (sf.base.isBlazor() && this.diagram.click) {
                     arg = this.getBlazorClickEventArgs(arg);
@@ -26099,6 +26144,7 @@ var DiagramEventHandler = /** @class */ (function () {
             position: cloneBlazorObject(this.eventArgs.position), count: arg.count,
             actualObject: this.eventArgs.actualObject ? { selector: cloneBlazorObject(this.eventArgs.actualObject) } :
                 { diagram: cloneBlazorObject(this.diagram) },
+            button: arg.button
         };
         if (this.eventArgs.source instanceof Node) {
             arg.element.selector.nodes = [];
@@ -29169,12 +29215,12 @@ var CommandHandler = /** @class */ (function () {
                                 else {
                                     this.clearSelection(true, true);
                                 }
-                                this.updateBlazorSelector();
                             }
                         }
                         _a.label = 3;
                     case 3:
                         this.diagram.enableServerDataBinding(true);
+                        this.updateBlazorSelector();
                         _a.label = 4;
                     case 4: return [2 /*return*/];
                 }
@@ -29618,7 +29664,7 @@ var CommandHandler = /** @class */ (function () {
                 else {
                     var layer = this.getObjectLayer(objectName);
                     for (var i = 0; i < layer.objects.length; i++) {
-                        if (layer.objects[i] !== objectName) {
+                        if ((layer.objects[i] !== objectName) && (this.diagram.nameTable[layer.objects[i]].parentId) !== objectName) {
                             this.moveSvgNode(layer.objects[i], objectName);
                             this.updateNativeNodeIndex(objectName);
                         }
@@ -30113,10 +30159,10 @@ var CommandHandler = /** @class */ (function () {
                             if (selectNodes) {
                                 this.diagram.select(selectNodes);
                             }
-                            this.updateBlazorSelector();
                         }
                         _a.label = 3;
                     case 3:
+                        this.updateBlazorSelector();
                         this.diagram.enableServerDataBinding(enableServerDataBinding);
                         _a.label = 4;
                     case 4: return [2 /*return*/];
@@ -32126,6 +32172,33 @@ var CommandHandler = /** @class */ (function () {
             selectorObject.connectors.push(cloneObject(obj));
         }
         return selectorObject;
+    };
+    /**
+ * @private
+ */
+    CommandHandler.prototype.updatePanState = function (eventCheck) {
+        if (eventCheck) {
+            this.diagram.realActions = this.diagram.realActions | exports.RealAction.PanInProgress;
+        }
+        else {
+            this.diagram.dataBind();
+            var diagramScrollSettings = this.diagram.scrollSettings;
+            this.diagram.realActions = this.diagram.realActions & ~exports.RealAction.PanInProgress;
+            var Values = {
+                VerticalOffset: diagramScrollSettings.verticalOffset, HorizontalOffset: diagramScrollSettings.horizontalOffset,
+                ViewportHeight: diagramScrollSettings.viewPortHeight, ViewportWidth: diagramScrollSettings.viewPortWidth,
+                CurrentZoom: diagramScrollSettings.currentZoom
+            };
+            var arg = {
+                oldValue: Values,
+                newValue: Values, source: this.diagram, panState: 'Completed'
+            };
+            this.triggerEvent(exports.DiagramEvent.scrollChange, arg);
+        }
+    };
+    /** @private */
+    CommandHandler.prototype.dataBinding = function () {
+        this.diagram.dataBind();
     };
     /** @private */
     CommandHandler.prototype.scroll = function (scrollX, scrollY, focusPoint) {
@@ -34189,7 +34262,9 @@ var Diagram = /** @class */ (function (_super) {
         }
         for (var i = 0; i < this.selectedItems.userHandles.length; i++) {
             {
-                sf.base.updateBlazorTemplate('diagramsf_userHandle_template', 'UserHandleTemplate', this, false);
+                if (this.selectedItems.userHandles[i].template) {
+                    sf.base.updateBlazorTemplate('diagramsf_userHandle_template', 'UserHandleTemplate', this, false);
+                }
             }
         }
     };
@@ -34215,7 +34290,9 @@ var Diagram = /** @class */ (function (_super) {
         }
         for (var i = 0; i < this.selectedItems.userHandles.length; i++) {
             {
-                sf.base.updateBlazorTemplate('diagramsf_userHandle_template', 'UserHandleTemplate', this, false);
+                if (this.selectedItems.userHandles[i].template) {
+                    sf.base.updateBlazorTemplate('diagramsf_userHandle_template', 'UserHandleTemplate', this, false);
+                }
             }
         }
     };
@@ -34394,6 +34471,11 @@ var Diagram = /** @class */ (function (_super) {
         }
         var domTable = 'domTable';
         window[domTable] = {};
+        for (var i = 0; i < this.layers.length; i++) {
+            var currentLayer = this.layers[i];
+            currentLayer.zIndexTable = {};
+        }
+        this.diagramActions = undefined;
     };
     /**
      * Wires the mouse events with diagram control
@@ -34742,7 +34824,7 @@ var Diagram = /** @class */ (function (_super) {
         return this.activeLayer;
     };
     Diagram.prototype.nudgeCommand = function (direction, x, y) {
-        if (typeof direction !== 'object') {
+        if (typeof direction !== 'object' && (this.selectedItems.nodes.length || this.selectedItems.connectors.length) > 0) {
             this.nudge(direction);
         }
     };
@@ -34881,6 +34963,17 @@ var Diagram = /** @class */ (function (_super) {
             this.commandHandler.getBlazorOldValues();
         }
     };
+    Diagram.prototype.disableStackContainerPadding = function (wrapper, disable) {
+        if (wrapper instanceof StackPanel) {
+            wrapper.considerPadding = disable;
+        }
+        if (wrapper.children) {
+            for (var _i = 0, _a = wrapper.children; _i < _a.length; _i++) {
+                var child = _a[_i];
+                this.disableStackContainerPadding(child, false);
+            }
+        }
+    };
     /**
      * Scales the given objects by the given ratio
      * @param {NodeModel | ConnectorModel | SelectorModel} obj - Defines the objects to be resized
@@ -34889,6 +34982,7 @@ var Diagram = /** @class */ (function (_super) {
      * @param {PointModel} pivot - Defines the reference point with respect to which the objects will be resized
      */
     Diagram.prototype.scale = function (obj, sx, sy, pivot) {
+        this.disableStackContainerPadding(obj.wrapper, false);
         this.insertBlazorDiagramObjects(obj);
         var checkBoundaryConstraints = true;
         if (obj.id) {
@@ -34926,6 +35020,7 @@ var Diagram = /** @class */ (function (_super) {
         if (this.callBlazorModel && (!(this.blazorActions & exports.BlazorAction.interaction))) {
             this.commandHandler.getBlazorOldValues();
         }
+        this.disableStackContainerPadding(obj.wrapper, true);
         return checkBoundaryConstraints;
     };
     /**
@@ -36581,7 +36676,7 @@ var Diagram = /** @class */ (function (_super) {
                 update = true;
             }
             if (update) {
-                this.preventUpdate = true;
+                this.preventDiagramUpdate = true;
                 var connectors = {};
                 var updatedNodes = nodes;
                 if (sf.base.isBlazor()) {
@@ -36627,7 +36722,7 @@ var Diagram = /** @class */ (function (_super) {
                     this.updateQuad(connector);
                     this.updateDiagramObject(connector, true);
                 }
-                this.preventUpdate = false;
+                this.preventDiagramUpdate = false;
                 this.updatePage();
                 if ((!(this.diagramActions & exports.DiagramAction.Render)) || this.mode === 'Canvas') {
                     this.refreshDiagramLayer();
@@ -37471,18 +37566,25 @@ var Diagram = /** @class */ (function (_super) {
             ViewportHeight: this.scrollSettings.viewPortHeight, ViewportWidth: this.scrollSettings.viewPortWidth,
             CurrentZoom: this.scroller.currentZoom
         };
+        var panStatus = 'Start';
+        if (this.realActions & exports.RealAction.PanInProgress) {
+            panStatus = 'Progress';
+        }
         var arg = {
             oldValue: oldValue,
-            newValue: newValue, source: this
+            newValue: newValue, source: this,
+            panState: panStatus
         };
         if (sf.base.isBlazor() && this.scrollChange) {
             arg = {
                 oldValue: oldValue,
                 newValue: newValue,
-                sourceId: this.element.id
+                sourceId: this.element.id,
+                panState: panStatus
             };
         }
         this.triggerEvent(exports.DiagramEvent.scrollChange, arg);
+        this.commandHandler.updatePanState(true);
         if (this.mode === 'Canvas' && (this.constraints & exports.DiagramConstraints.Virtualization)) {
             this.refreshDiagramLayer();
         }
@@ -37543,15 +37645,15 @@ var Diagram = /** @class */ (function (_super) {
         return data;
     };
     Diagram.prototype.initNodes = function (obj, layer) {
-        this.preventUpdate = true;
+        this.preventDiagramUpdate = true;
         this.initObject(obj, layer);
-        this.preventUpdate = false;
+        this.preventDiagramUpdate = false;
     };
     Diagram.prototype.initConnectors = function (obj, layer, independentObj) {
-        this.preventUpdate = true;
+        this.preventDiagramUpdate = true;
         this.initObject(obj, layer, independentObj);
         this.updateEdges(obj);
-        this.preventUpdate = false;
+        this.preventDiagramUpdate = false;
     };
     Diagram.prototype.setZIndex = function (layer, obj) {
         //should be changed
@@ -37682,7 +37784,7 @@ var Diagram = /** @class */ (function (_super) {
                 }
                 var sourceNode = this.nameTable[obj.sourceID];
                 var targetNode = this.nameTable[obj.targetID];
-                var port = this.getConnectedPort(sourceNode, obj);
+                var port = this.getConnectedPort(sourceNode, obj, true);
                 var targetPort = this.getConnectedPort(targetNode, obj);
                 var outPort = this.findInOutConnectPorts(sourceNode, false);
                 var inPort = this.findInOutConnectPorts(targetNode, true);
@@ -37690,7 +37792,7 @@ var Diagram = /** @class */ (function (_super) {
                     && canPortOutConnect(outPort))) {
                     obj.sourceWrapper = this.getEndNodeWrapper(sourceNode, obj, true);
                     if (obj.sourcePortID) {
-                        if (port && port.constraints && !(port.constraints & exports.PortConstraints.None)) {
+                        if (port && port.constraints && !(port.constraints & exports.PortConstraints.None) && (port.constraints & exports.PortConstraints.OutConnect)) {
                             obj.sourcePortWrapper = this.getWrapper(sourceNode.wrapper, obj.sourcePortID);
                         }
                     }
@@ -37699,7 +37801,7 @@ var Diagram = /** @class */ (function (_super) {
                     && canPortInConnect(inPort))) {
                     obj.targetWrapper = this.getEndNodeWrapper(targetNode, obj, false);
                     if (obj.targetPortID) {
-                        if (targetPort && targetPort.constraints && !(targetPort.constraints & exports.PortConstraints.None)) {
+                        if (targetPort && targetPort.constraints && !(targetPort.constraints & exports.PortConstraints.None) && (targetPort.constraints & exports.PortConstraints.InConnect)) {
                             obj.targetPortWrapper = this.getWrapper(targetNode.wrapper, obj.targetPortID);
                         }
                     }
@@ -37768,14 +37870,14 @@ var Diagram = /** @class */ (function (_super) {
         }
     };
     /* tslint:enable */
-    Diagram.prototype.getConnectedPort = function (node, connector) {
+    Diagram.prototype.getConnectedPort = function (node, connector, isSource) {
         if (node && node.ports) {
             for (var _i = 0, _a = node.ports; _i < _a.length; _i++) {
                 var port = _a[_i];
-                if (port.id === connector.sourcePortID) {
+                if (port.id === connector.sourcePortID && isSource) {
                     return port;
                 }
-                else if (port.id === connector.targetPortID) {
+                else if (port.id === connector.targetPortID && !isSource) {
                     return port;
                 }
             }
@@ -38236,9 +38338,9 @@ var Diagram = /** @class */ (function (_super) {
                 var isProtectedChange = this.isProtectedOnChange;
                 var connector = this.nameTable[rootNode.outEdges[1]];
                 this.protectPropertyChange(false);
-                this.preventUpdate = true;
+                this.preventDiagramUpdate = true;
                 connector.sourcePortID = rootNode.ports[1].id;
-                this.preventUpdate = false;
+                this.preventDiagramUpdate = false;
                 this.dataBind();
                 this.protectPropertyChange(isProtectedChange);
             }
@@ -38639,7 +38741,7 @@ var Diagram = /** @class */ (function (_super) {
     };
     /** @private */
     Diagram.prototype.setSize = function (width, height) {
-        if (this.diagramLayer && !this.preventUpdate) {
+        if (this.diagramLayer && !this.preventDiagramUpdate) {
             var position = getRulerSize(this);
             width -= position.width;
             height -= position.height;
@@ -40744,7 +40846,7 @@ var Diagram = /** @class */ (function (_super) {
     /** @private */
     Diagram.prototype.updateQuad = function (obj) {
         var modified = this.spatialSearch.updateQuad(obj.wrapper);
-        if (modified && !this.preventUpdate) {
+        if (modified && !this.preventDiagramUpdate) {
             this.updatePage();
         }
     };
@@ -40762,7 +40864,7 @@ var Diagram = /** @class */ (function (_super) {
         }
         this.spatialSearch.removeFromAQuad(obj.wrapper);
         var modified = this.spatialSearch.updateBounds(obj.wrapper);
-        if (modified && !this.preventUpdate) {
+        if (modified && !this.preventDiagramUpdate) {
             this.updatePage();
         }
     };
@@ -41059,11 +41161,11 @@ var Diagram = /** @class */ (function (_super) {
                                 }
                             }
                             if (!_this.activeLayer.lock && !arg.cancel) {
-                                _this.preventUpdate = true;
+                                _this.preventDiagramUpdate = true;
                                 if (newObj.children) {
                                     _this.findChild(newObj, entryTable);
                                 }
-                                _this.preventUpdate = true;
+                                _this.preventDiagramUpdate = true;
                                 if (newObj.zIndex !== -1) {
                                     newObj.zIndex = -1;
                                 }
@@ -41077,7 +41179,7 @@ var Diagram = /** @class */ (function (_super) {
                                 _this.commandHandler.updateBlazorSelector();
                                 _this.eventHandler.mouseDown(args.event);
                                 _this.eventHandler.mouseMove(args.event, args);
-                                _this.preventUpdate = false;
+                                _this.preventDiagramUpdate = false;
                                 _this.updatePage();
                                 selectedSymbol.style.opacity = '0';
                             }

@@ -62,7 +62,7 @@ describe('New Document - Create and Apply Style', () => {
         expect(editor.selection.characterFormat.bold).toBe(true);
         expect(editor.selection.characterFormat.italic).toBe(true);
         expect(editor.selection.characterFormat.underline).toBe('Single');
-        expect(editor.selection.characterFormat.fontColor).toBe("#000000");
+        expect(editor.selection.characterFormat.fontColor).toBe("empty");
 
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         editor.documentHelper.onKeyDownInternal(event);
@@ -73,7 +73,7 @@ describe('New Document - Create and Apply Style', () => {
         expect(editor.selection.characterFormat.bold).toBe(false);
         expect(editor.selection.characterFormat.italic).toBe(false);
         expect(editor.selection.characterFormat.underline).toBe('None');
-        expect(editor.selection.characterFormat.fontColor).toBe("#000000");
+        expect(editor.selection.characterFormat.fontColor).toBe("empty");
     });
     it('Paragraph-Character-Linked Style', () => {
         editor.openBlank();
@@ -86,7 +86,7 @@ describe('New Document - Create and Apply Style', () => {
         expect(editor.selection.characterFormat.bold).toBe(true);
         expect(editor.selection.characterFormat.italic).toBe(true);
         expect(editor.selection.characterFormat.underline).toBe('Single');
-        expect(editor.selection.characterFormat.fontColor).toBe("#000000");
+        expect(editor.selection.characterFormat.fontColor).toBe("empty");
 
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         editor.documentHelper.onKeyDownInternal(event);
@@ -97,7 +97,7 @@ describe('New Document - Create and Apply Style', () => {
         expect(editor.selection.characterFormat.bold).toBe(false);
         expect(editor.selection.characterFormat.italic).toBe(false);
         expect(editor.selection.characterFormat.underline).toBe('None');
-        expect(editor.selection.characterFormat.fontColor).toBe("#000000");
+        expect(editor.selection.characterFormat.fontColor).toBe("empty");
     });
     it('Remove inline style', () => {
         editor.openBlank();

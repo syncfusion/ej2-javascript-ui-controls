@@ -870,17 +870,18 @@ export function createUserHandleTemplates(userHandleTemplate: string, template: 
         let content: string = 'diagramsf_userHandle_template';
         let a: Function;
         for (handle of selectedItems.userHandles) {
-            compiledString = compile(handle.content);
-            for (i = 0, a = compiledString(cloneBlazorObject(handle), null, null, content); i < a.length; i++) {
-                let attr: object = {
-                    'style': 'height: 100%; width: 100%; pointer-events: all',
-                    'id': handle.name + '_template_hiddenUserHandle'
-                };
-                div = createHtmlElement('div', attr);
-                div.appendChild(a[i]);
+            if (!handle.pathData && !handle.content && !handle.source) {
+                compiledString = compile(handle.content);
+                for (i = 0, a = compiledString(cloneBlazorObject(handle), null, null, content); i < a.length; i++) {
+                    let attr: object = {
+                        'style': 'height: 100%; width: 100%; pointer-events: all',
+                        'id': handle.name + '_template_hiddenUserHandle'
+                    };
+                    div = createHtmlElement('div', attr);
+                    div.appendChild(a[i]);
+                }
+                template[0].appendChild(div);
             }
-            template[0].appendChild(div);
-
         }
     }
 }

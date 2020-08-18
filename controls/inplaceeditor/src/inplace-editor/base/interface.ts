@@ -1,8 +1,8 @@
 import { ButtonModel } from '@syncfusion/ej2-buttons';
 import { ColorPicker, Slider } from '@syncfusion/ej2-inputs';
 import { RichTextEditor } from '@syncfusion/ej2-richtexteditor';
-import { DateRangePicker, TimePicker } from '@syncfusion/ej2-calendars';
-import { AutoComplete, ComboBox, MultiSelect } from '@syncfusion/ej2-dropdowns';
+import { DateRangePicker, TimePicker, DateRange } from '@syncfusion/ej2-calendars';
+import { AutoComplete, ComboBox, MultiSelect, FieldSettingsModel } from '@syncfusion/ej2-dropdowns';
 import { RenderMode } from './inplace-editor';
 
 /**
@@ -97,4 +97,18 @@ export interface BeginEditEventArgs {
     cancelFocus?: boolean;
     /** Defines the current editor mode. */
     mode?: RenderMode;
+}
+
+/**
+ * Provides information about the Change event.
+ */
+export interface ChangeEventArgs {
+    /** Returns the selected item as JSON Object from the AutoComplete/ComboBox/DropDownList data source. */
+    itemData?: FieldSettingsModel;
+    /** Returns the previous selected item as JSON Object from the AutoComplete/ComboBox/DropDownList data source. */
+    previousItemData?: FieldSettingsModel;
+    /** Returns the previous value of integrated component that renders based on the `type` property in the In-place editor. */
+    previousValue: string | string[] | number | number[] | boolean[] | Date | Date[] | DateRange;
+    /** Returns the value of integrated component that renders based on the `type` property in the In-place editor. */
+    value: string | string[] | number | number[] | boolean[] | Date | Date[] | DateRange;
 }

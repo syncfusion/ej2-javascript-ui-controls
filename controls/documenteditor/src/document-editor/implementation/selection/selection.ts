@@ -4,7 +4,7 @@ import {
     LineWidget, TextElementBox, ListTextElementBox, ImageElementBox, Page, ParagraphWidget, TableCellWidget,
     FieldElementBox, BlockWidget, HeaderFooterWidget, BlockContainer, BookmarkElementBox, ElementBox, HeaderFooters,
     EditRangeStartElementBox, EditRangeEndElementBox, TabElementBox, CommentElementBox, CommentCharacterElementBox,
-    TextFormField, CheckBoxFormField, DropDownFormField, ShapeElementBox, TextFrame
+    TextFormField, CheckBoxFormField, DropDownFormField, ShapeElementBox, TextFrame, FieldTextElementBox
 } from '../viewer/page';
 import {
     ElementInfo, CaretHeightInfo, IndexInfo, SizeInfo,
@@ -6267,6 +6267,62 @@ export class Selection {
             this.imageFormat.copyImageFormat(image);
         } else {
             this.imageFormat.clearImageFormat();
+        }
+    }
+    /**
+     * Returns the context type of previous character or element.
+     * @param isElement - Decides whether to get previous context type from element or character. By default, character.
+     */
+    public getPreviousContextType(isElement?: boolean): string {
+        let contextType: string;
+        let start: TextPosition = this.start;
+        if (start.offset > 0) {
+            let element: ElementBox = start.currentWidget.getInline(start.offset, 0).element;
+            if (isElement) {
+                element = element.previousElement;
+            } else {
+                element = start.currentWidget.getInline(start.offset - 1, 0).element;
+            }
+            contextType = this.getContextElement(element);
+            return contextType;
+        }
+        return undefined;
+    }
+    /**
+     * Returns the context type of next character or element.
+     * @param isElement - Decides whether to get next context type from element or character. By default, character.
+     */
+    public getNextContextType(isElement?: boolean): string {
+        let contextType: string;
+        let start: TextPosition = this.start;
+        let element: ElementBox = start.currentWidget.getInline(start.offset, 0).element;
+        if (isElement && element.nextElement) {
+            element = element.nextElement;
+        } else {
+           element = start.currentWidget.getInline(start.offset + 1, 0).element;
+        }
+        contextType = this.getContextElement(element);
+        return contextType;
+    }
+    private getContextElement(element: ElementBox): string {
+        if (element instanceof TextElementBox) {
+            return 'Text';
+        } else if (element instanceof FieldElementBox || element instanceof FieldTextElementBox) {
+            return 'Field';
+        } else if (element instanceof BookmarkElementBox) {
+            return 'Bookmark';
+        } else if (element instanceof ImageElementBox) {
+            return 'Image';
+        } else if (element instanceof ShapeElementBox) {
+            return 'Shape';
+        } else if (element instanceof CommentElementBox || element instanceof CommentCharacterElementBox) {
+            return 'Comment';
+        } else if (element instanceof ListTextElementBox) {
+            return 'List';
+        } else if (element instanceof EditRangeStartElementBox || element instanceof EditRangeEndElementBox) {
+            return 'EditRange';
+        } else {
+            return undefined;
         }
     }
     private setCurrentContextType(): void {

@@ -385,13 +385,13 @@ export class Ribbon {
             }],
             orientation: 'Vertical',
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
-                if (args.parentItem.text === 'Data Bars') {
+                if (args.parentItem.text === l10n.getConstant('DataBars')) {
                     args.element.firstChild.appendChild(dataBars);
                     args.element.parentElement.classList.add('e-databars');
-                } else if (args.parentItem.text === 'Color Scales') {
+                } else if (args.parentItem.text === l10n.getConstant('ColorScales')) {
                     args.element.firstChild.appendChild(colorScales);
                     args.element.parentElement.classList.add('e-colorscales');
-                } else if (args.parentItem.text === 'Icon Sets') {
+                } else if (args.parentItem.text === l10n.getConstant('IconSets')) {
                     args.element.firstChild.appendChild(iconSets);
                     args.element.parentElement.classList.add('e-iconsets');
                 }
@@ -1265,6 +1265,7 @@ export class Ribbon {
         } else {
             target.title = l10n.getConstant('ExpandToolbar');
         }
+        this.parent.setPanelSize();
     }
     private getNumFormatDdbItems(id: string): ItemModel[] {
         let l10n: L10n = this.parent.serviceLocator.getService(locale);

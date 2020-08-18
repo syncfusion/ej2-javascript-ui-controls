@@ -196,7 +196,6 @@ export class StatusBar {
                     this.documentEditor.documentHelper.triggerElementsOnLoading = true;
                     this.documentEditor.documentHelper.triggerSpellCheck = true;
                 }
-                this.documentEditor.editor.reLayout(this.documentEditor.documentHelper.selection);
                 /* tslint:disable */
             }, 50);
             /* tslint:enable */
@@ -207,7 +206,6 @@ export class StatusBar {
             if (this.documentEditor.enableSpellCheck && this.documentEditor.spellChecker.enableSpellCheck) {
                 // tslint:disable-next-line:max-line-length
                 this.documentEditor.spellChecker.removeUnderline = (this.documentEditor.spellChecker.removeUnderline) ? false : true;
-                this.documentEditor.editor.reLayout(this.documentEditor.documentHelper.selection);
             }
         }
     }

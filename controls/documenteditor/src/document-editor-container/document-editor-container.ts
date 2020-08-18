@@ -11,7 +11,7 @@ import { TocProperties } from './properties-pane/table-of-content-pane';
 import { TableProperties } from './properties-pane/table-properties-pane';
 import { StatusBar } from './properties-pane/status-bar';
 // tslint:disable-next-line:max-line-length
-import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs, ContainerDocumentChangeEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, BeforePaneSwitchEventArgs, LayoutType, CommentDeleteEventArgs } from '../document-editor/base';
+import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs, ContainerDocumentChangeEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, BeforePaneSwitchEventArgs, LayoutType, CommentDeleteEventArgs, ServiceFailureArgs } from '../document-editor/base';
 import { createSpinner } from '@syncfusion/ej2-popups';
 // tslint:disable-next-line:max-line-length
 import { ContainerServerActionSettingsModel, DocumentEditorSettingsModel, FormFieldSettingsModel } from '../document-editor/document-editor-model';
@@ -189,6 +189,13 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     @Event()
     public commentDelete: EmitType<CommentDeleteEventArgs>;
     /**
+     * Triggers when the server action fails.
+     * @event
+     */
+    @Event()
+    public serviceFailure: EmitType<ServiceFailureArgs>;
+
+    /**
      * Triggers Keyboard shortcut of TrackChanges.
      * @blazorproperty 'OnEnableTrackChanges'
      * @event
@@ -353,6 +360,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         'Upload from computer': 'Upload from computer',
         'By URL': 'By URL',
         'Page Break': 'Page Break',
+        'Toggles the visibility of properties pane': 'Toggles the visibility of properties pane',
         'Section Break': 'Section Break',
         'Header And Footer': 'Header & Footer',
         'Options': 'Options',
@@ -784,6 +792,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             commentEnd: this.onCommentEnd.bind(this),
             commentDelete: this.onCommentDelete.bind(this),
             trackChange: this.onTrackChange.bind(this),
+            serviceFailure: this.fireServiceFailure.bind(this),
             locale: this.locale,
             acceptTab: true,
             zIndex: this.zIndex,
@@ -817,6 +826,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     private onCommentDelete(args: CommentDeleteEventArgs): void {
         this.trigger('commentDelete', args);
     }
+
     private onTrackChange(args: TrackChangeEventArgs): void {
         this.trigger('trackChange', args);
         if (this.toolbarModule) {
@@ -826,6 +836,12 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     }
     private onBeforePaneSwitch(args: BeforePaneSwitchEventArgs): void {
         this.trigger('beforePaneSwitch', args);
+    }
+    /**
+     * @private
+     */
+    private fireServiceFailure(eventArgs: ServiceFailureArgs): void {
+        this.trigger('serviceFailure', eventArgs);
     }
     /**
      * @private
@@ -929,7 +945,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      * @private
      */
     public showPropertiesPaneOnSelection(): void {
-        if (this.restrictEditing || this.textProperties === undefined) {
+        if ((this.restrictEditing || this.textProperties === undefined) && !this.showPropertiesPane) {
             return;
         }
         let isProtectedDocument: boolean = this.documentEditor.documentHelper.protectionType !== 'NoProtection';
@@ -948,9 +964,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         } else {
             let isReadOnly: boolean = !this.documentEditor.isReadOnly;
             if (this.toolbarModule) {
-                this.toolbarModule.enableDisableToolBarItem(isReadOnly, true);
+                this.toolbarModule.enableDisableToolBarItem(isReadOnly, true || this.showPropertiesPane);
             }
-            this.textProperties.enableDisableElements(isReadOnly);
+            this.textProperties.enableDisableElements(isReadOnly || this.showPropertiesPane);
             this.tableProperties.enableDisableElements(true);
             this.tocProperties.enableDisableElements(true);
             this.headerFooterProperties.enableDisableElements(true);

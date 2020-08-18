@@ -351,6 +351,7 @@ export class FormulaBar {
             (document.getElementById(this.parent.element.id + '_formula_input') as HTMLTextAreaElement).rows = 3;
             target.title = l10n.getConstant('CollapseFormulaBar');
         }
+        this.parent.setPanelSize();
     }
     private dialogOpen(): void {
         this.focusOkButton();

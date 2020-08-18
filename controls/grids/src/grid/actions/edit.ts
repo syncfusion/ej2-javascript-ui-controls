@@ -642,7 +642,7 @@ export class Edit implements IAction {
         if (gObj.editSettings.template) {
             this.parent.destroyTemplate(['editSettingsTemplate']);
         }
-        cols = cols ? cols : this.parent.getColumns() as Column[];
+        cols = cols ? cols : this.parent.getVisibleColumns() as Column[];
         if (cols.some((column: Column) => !isNullOrUndefined(column.editTemplate))) {
             this.parent.destroyTemplate(['editTemplate']);
         }

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.2.54 (2020-08-18)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+`#287193` - The issue with "Script error occurs with toolbar options when placing the cursor before & after the RichTextEditor table" has been resolved.
+
 ## 18.2.48 (2020-08-04)
 
 ### RichTextEditor

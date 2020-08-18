@@ -6,13 +6,12 @@ import { DocumentEditorContainer } from '../../document-editor-container';
  * ServiceFailureArgs
  */
 export interface ServiceFailureArgs {
-    /** Defines the status. */
+    /** Status code of the service failure. */
     status: string;
-    /** Defines the status text. */
+    /** Status text of the service failure. */
     statusText: string;
-    /** Defines the response url. */
+    /** Service failed URL. */
     url: string;
-
 }
 
 /** 

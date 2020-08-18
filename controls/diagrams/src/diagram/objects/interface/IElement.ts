@@ -3,7 +3,7 @@ import { Diagram } from '../../diagram';
 import { ConnectorModel } from '../connector-model';
 import { NodeModel, TextModel } from '../node-model';
 import { PointModel } from '../../primitives/point-model';
-import { EventState, ChangeType, State, DiagramAction, HistoryChangeAction, KeyModifiers } from '../../enum/enum';
+import { EventState, ChangeType, State, DiagramAction, HistoryChangeAction, KeyModifiers, MouseButtons } from '../../enum/enum';
 import { SelectorModel } from '../../objects/node-model';
 import { DiagramModel } from '../../diagram-model';
 import { Connector } from '../../objects/connector';
@@ -454,6 +454,8 @@ export interface IClickEventArgs {
     count: number;
     /** returns the actual object that is clicked or id of the diagram */
     actualObject: SelectorModel | Diagram;
+    /** returns the button clicked */
+    button?: MouseButtons;
 }
 
 /**
@@ -469,6 +471,8 @@ export interface IBlazorClickEventArgs {
     count: number;
     /** returns the actual object that is clicked or id of the diagram */
     actualObject: DiagramClickEventObject;
+    /** returns the button clicked */
+    button?: MouseButtons;
 }
 
 /**
@@ -586,6 +590,8 @@ export interface IBlazorScrollChangeEventArgs {
     oldValue: ScrollValues;
     /** returns the new delay value between subsequent auto scrolls */
     newValue: ScrollValues;
+    /** returns the pan state of the object */
+    panState: State;
 }
 /**
  * IScrollChangeEventArgs notifies when the scroller has changed
@@ -598,6 +604,8 @@ export interface IScrollChangeEventArgs {
     oldValue: ScrollValues;
     /** returns the new delay value between subsequent auto scrolls */
     newValue: ScrollValues;
+    /** returns the pan state of the object */
+    panState: State;
 }
 
 /**

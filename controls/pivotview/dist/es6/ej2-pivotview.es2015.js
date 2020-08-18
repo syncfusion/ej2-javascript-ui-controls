@@ -564,6 +564,141 @@ class PivotUtil {
         }
         return isButtonRefresh;
     }
+    /* tslint:disable:no-any */
+    static formatPivotValues(pivotValues) {
+        let values = [];
+        for (let i = 0; i < pivotValues.length; i++) {
+            if (pivotValues[i]) {
+                values[i] = [];
+                for (let j = 0; j < pivotValues[i].length; j++) {
+                    if (pivotValues[i][j]) {
+                        values[i][j] = {
+                            axis: pivotValues[i][j].Axis,
+                            actualText: pivotValues[i][j].ActualText,
+                            indexObject: pivotValues[i][j].IndexObject,
+                            index: pivotValues[i][j].Index,
+                            rowHeaders: pivotValues[i][j].RowHeaders,
+                            columnHeaders: pivotValues[i][j].ColumnHeaders,
+                            formattedText: pivotValues[i][j].FormattedText,
+                            actualValue: pivotValues[i][j].ActualValue,
+                            rowIndex: pivotValues[i][j].RowIndex,
+                            colIndex: pivotValues[i][j].ColIndex,
+                            colSpan: pivotValues[i][j].ColSpan,
+                            level: pivotValues[i][j].Level,
+                            rowSpan: pivotValues[i][j].RowSpan,
+                            isSum: pivotValues[i][j].IsSum,
+                            isGrandSum: pivotValues[i][j].IsGrandSum,
+                            valueSort: pivotValues[i][j].ValueSort,
+                            ordinal: pivotValues[i][j].Ordinal,
+                            hasChild: pivotValues[i][j].HasChild,
+                            isDrilled: pivotValues[i][j].IsDrilled,
+                            value: pivotValues[i][j].Value,
+                            type: pivotValues[i][j].Type,
+                            members: pivotValues[i][j].Members
+                        };
+                    }
+                }
+            }
+        }
+        return values;
+    }
+    /* tslint:disable:no-any */
+    static formatFieldList(fieldList) {
+        let keys = Object.keys(fieldList);
+        let fList = {};
+        for (let i = 0; i < keys.length; i++) {
+            if (fieldList[keys[i]]) {
+                fList[keys[i]] = {
+                    id: fieldList[keys[i]].Id,
+                    caption: fieldList[keys[i]].Caption,
+                    type: fieldList[keys[i]].Type,
+                    formatString: fieldList[keys[i]].FormatString,
+                    index: fieldList[keys[i]].Index,
+                    members: fieldList[keys[i]].Members,
+                    formattedMembers: fieldList[keys[i]].FormattedMembers,
+                    dateMember: fieldList[keys[i]].DateMember,
+                    filter: fieldList[keys[i]].Filter,
+                    sort: fieldList[keys[i]].Sort,
+                    aggregateType: fieldList[keys[i]].AggregateType,
+                    baseField: fieldList[keys[i]].BaseField,
+                    baseItem: fieldList[keys[i]].BaseItem,
+                    filterType: fieldList[keys[i]].FilterType,
+                    format: fieldList[keys[i]].Format,
+                    formula: fieldList[keys[i]].Formula,
+                    isSelected: fieldList[keys[i]].IsSelected,
+                    isExcelFilter: fieldList[keys[i]].IsExcelFilter,
+                    showNoDataItems: fieldList[keys[i]].ShowNoDataItems,
+                    isCustomField: fieldList[keys[i]].IsCustomField,
+                    showFilterIcon: fieldList[keys[i]].ShowFilterIcon,
+                    showSortIcon: fieldList[keys[i]].ShowSortIcon,
+                    showRemoveIcon: fieldList[keys[i]].ShowRemoveIcon,
+                    showEditIcon: fieldList[keys[i]].ShowEditIcon,
+                    showValueTypeIcon: fieldList[keys[i]].ShowValueTypeIcon,
+                    allowDragAndDrop: fieldList[keys[i]].AllowDragAndDrop,
+                    isCalculatedField: fieldList[keys[i]].IsCalculatedField,
+                    showSubTotals: fieldList[keys[i]].ShowSubTotals
+                };
+            }
+        }
+        return fList;
+    }
+    static frameContent(pivotValues, type, rowPosition, control) {
+        let dataContent = [];
+        var pivot = control;
+        if (pivot.dataSourceSettings.values.length > 0 && !pivot.engineModule.isEmptyData) {
+            if ((pivot.enableValueSorting) || !pivot.engineModule.isEngineUpdated) {
+                let rowCnt = 0;
+                let start = type === 'value' ? rowPosition : 0;
+                let end = type === 'value' ? pivotValues.length : rowPosition;
+                for (var rCnt = start; rCnt < end; rCnt++) {
+                    if (pivotValues[rCnt]) {
+                        rowCnt = type === 'header' ? rCnt : rowCnt;
+                        dataContent[rowCnt] = {};
+                        for (var cCnt = 0; cCnt < pivotValues[rCnt].length; cCnt++) {
+                            if (pivotValues[rCnt][cCnt]) {
+                                dataContent[rowCnt][cCnt] = pivotValues[rCnt][cCnt];
+                            }
+                        }
+                        rowCnt++;
+                    }
+                }
+            }
+        }
+        return dataContent;
+    }
+    static getLocalizedObject(control) {
+        let locale = new Object();
+        locale["Null"] = control.localeObj.getConstant('null');
+        locale["Years"] = control.localeObj.getConstant('Years');
+        locale["Quarters"] = control.localeObj.getConstant('Quarters');
+        locale["Months"] = control.localeObj.getConstant('Months');
+        locale["Days"] = control.localeObj.getConstant('Days');
+        locale["Hours"] = control.localeObj.getConstant('Hours');
+        locale["Minutes"] = control.localeObj.getConstant('Minutes');
+        locale["Seconds"] = control.localeObj.getConstant('Seconds');
+        locale["QuarterYear"] = control.localeObj.getConstant('QuarterYear');
+        locale["Of"] = control.localeObj.getConstant('of');
+        locale["Qtr"] = control.localeObj.getConstant('qtr');
+        locale["Undefined"] = control.localeObj.getConstant('undefined');
+        locale["GroupOutOfRange"] = control.localeObj.getConstant('groupOutOfRange');
+        return locale;
+    }
+    static generateUUID() {
+        let d = new Date().getTime();
+        let d2 = (performance && performance.now && (performance.now() * 1000)) || 0;
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+            let r = Math.random() * 16;
+            if (d > 0) {
+                r = (d + r) % 16 | 0;
+                d = Math.floor(d / 16);
+            }
+            else {
+                r = (d2 + r) % 16 | 0;
+                d2 = Math.floor(d2 / 16);
+            }
+            return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+        });
+    }
 }
 
 /**
@@ -2923,12 +3058,22 @@ class PivotEngine {
     getSortedHeaders(headers, sortOrder) {
         let isNotDateType = !(this.formatFields && this.formatFields[headers[0].valueSort.axis] &&
             this.formatFields[headers[0].valueSort.axis].type);
+        let childrens = this.fieldList[headers[0].valueSort.axis];
         if (isNotDateType) {
-            return sortOrder === 'Ascending' ?
-                (headers.sort((a, b) => (a.actualText > b.actualText) ? 1 : ((b.actualText > a.actualText) ? -1 : 0))) :
-                sortOrder === 'Descending' ?
-                    (headers.sort((a, b) => (a.actualText < b.actualText) ? 1 : ((b.actualText < a.actualText) ? -1 : 0))) :
-                    headers;
+            if (childrens && childrens.type == 'number' && headers.length > 0 && (typeof (headers[0].actualText) == 'string') && ((/^\d/).test(headers[0].actualText.toString()) === true)) {
+                return childrens.sort === 'Ascending' ?
+                    (headers.sort((a, b) => !isNullOrUndefined(a.actualText) && !isNullOrUndefined(b.actualText) ? (Number(a.actualText.toString().match(/\d+/)[0]) > Number(b.actualText.toString().match(/\d+/)[0])) ? 1 : ((Number(b.actualText.toString().match(/\d+/)[0]) > Number(a.actualText.toString().match(/\d+/)[0])) ? -1 : 0) : 0)) :
+                    childrens.sort === 'Descending' ?
+                        (headers.sort((a, b) => !isNullOrUndefined(a.actualText) && !isNullOrUndefined(b.actualText) ? (Number(a.actualText.toString().match(/\d+/)[0]) < Number(b.actualText.toString().match(/\d+/)[0])) ? 1 : ((Number(b.actualText.toString().match(/\d+/)[0]) < Number(a.actualText.toString().match(/\d+/)[0])) ? -1 : 0) : 0)) :
+                        headers;
+            }
+            else {
+                return sortOrder === 'Ascending' ?
+                    (headers.sort(function (a, b) { return (a.actualText > b.actualText) ? 1 : ((b.actualText > a.actualText) ? -1 : 0); })) :
+                    sortOrder === 'Descending' ?
+                        (headers.sort(function (a, b) { return (a.actualText < b.actualText) ? 1 : ((b.actualText < a.actualText) ? -1 : 0); })) :
+                        headers;
+            }
         }
         else {
             return sortOrder === 'Ascending' ?
@@ -3362,11 +3507,20 @@ class PivotEngine {
                             hierarchy;
                 }
                 else {
-                    return childrens.sort === 'Ascending' ?
-                        (hierarchy.sort((a, b) => (a.actualText > b.actualText) ? 1 : ((b.actualText > a.actualText) ? -1 : 0))) :
-                        childrens.sort === 'Descending' ?
-                            (hierarchy.sort((a, b) => (a.actualText < b.actualText) ? 1 : ((b.actualText < a.actualText) ? -1 : 0))) :
-                            hierarchy;
+                    if (childrens.type === 'number' && hierarchy.length > 0 && (typeof (hierarchy[0].actualText) === 'string') && ((/\d/).test(hierarchy[0].actualText.toString()) === true)) {
+                        return childrens.sort === 'Ascending' ?
+                            (hierarchy.sort((a, b) => (Number(a.actualText.toString().match(/\d+/)[0]) > Number(b.actualText.toString().match(/\d+/)[0])) ? 1 : ((Number(b.actualText.toString().match(/\d+/)[0]) > Number(a.actualText.toString().match(/\d+/)[0])) ? -1 : 0))) :
+                            childrens.sort === 'Descending' ?
+                                (hierarchy.sort((a, b) => (Number(a.actualText.toString().match(/\d+/)[0]) < Number(b.actualText.toString().match(/\d+/)[0])) ? 1 : ((Number(b.actualText.toString().match(/\d+/)[0]) < Number(a.actualText.toString().match(/\d+/)[0])) ? -1 : 0))) :
+                                hierarchy;
+                    }
+                    else {
+                        return childrens.sort === 'Ascending' ?
+                            (hierarchy.sort((a, b) => (a.actualText > b.actualText) ? 1 : ((b.actualText > a.actualText) ? -1 : 0))) :
+                            childrens.sort === 'Descending' ?
+                                (hierarchy.sort((a, b) => (a.actualText < b.actualText) ? 1 : ((b.actualText < a.actualText) ? -1 : 0))) :
+                                hierarchy;
+                    }
                 }
             }
             else {
@@ -4959,7 +5113,7 @@ const rowDeselected = 'rowDeselected';
 /** @hidden */
 const beginDrillThrough = 'beginDrillThrough';
 /** @hidden */
-const editComplete = 'editComplete';
+const editCompleted = 'editCompleted';
 /** @hidden */
 const saveReport = 'saveReport';
 /** @hidden */
@@ -8234,9 +8388,11 @@ class EventBase {
         if (this.parent.filterDialog.dialogPopUp) {
             this.parent.filterDialog.dialogPopUp.close();
         }
-        let popupTarget;
-        popupTarget = this.parent.moduleName !== 'pivotfieldlist' ?
-            this.parent.element : document.getElementById(this.parent.parentID + '_Wrapper');
+        let popupTarget = this.parent.control.filterTargetID;
+        if (isNullOrUndefined(popupTarget)) {
+            popupTarget = this.parent.moduleName !== 'pivotfieldlist' ?
+                this.parent.element : document.getElementById(this.parent.parentID + '_Wrapper');
+        }
         this.parent.filterDialog.createFilterDialog(treeData, fieldName, fieldCaption, popupTarget);
     }
     /**
@@ -10727,6 +10883,9 @@ class DataSourceSettings extends ChildProperty {
 }
 __decorate$1([
     Property()
+], DataSourceSettings.prototype, "mode", void 0);
+__decorate$1([
+    Property()
 ], DataSourceSettings.prototype, "catalog", void 0);
 __decorate$1([
     Property()
@@ -12253,7 +12412,7 @@ class VirtualScroll$1 {
     update(mHdr, mCont, top, left, e) {
         this.parent.isScrolling = true;
         let engine = this.parent.dataType === 'pivot' ? this.parent.engineModule : this.parent.olapEngineModule;
-        if (isBlazor()) {
+        if (isBlazor() || this.parent.dataSourceSettings.mode === 'Server') {
             engine.pageSettings = this.parent.pageSettings;
         }
         if (this.parent.pageSettings && engine.pageSettings) {
@@ -12296,6 +12455,9 @@ class VirtualScroll$1 {
                                 (engine.rowFirstLvl * rowValues * pivot.gridSettings.rowHeight);
                             pivot.scrollPosObject.verticalSection = pos;
                         });
+                    }
+                    else if (this.parent.dataSourceSettings.mode === 'Server') {
+                        this.parent.getEngine('onScroll', null, null, null, null, null, null);
                     }
                     else {
                         this.parent.engineModule.generateGridData(this.parent.dataSourceSettings, this.parent.engineModule.headerCollection);
@@ -12355,6 +12517,9 @@ class VirtualScroll$1 {
                             pivot.scrollPosObject.horizontalSection = pos;
                         });
                     }
+                    else if (this.parent.dataSourceSettings.mode === 'Server') {
+                        this.parent.getEngine('onScroll', null, null, null, null, null, null);
+                    }
                     else {
                         pivot.engineModule.generateGridData(pivot.dataSourceSettings, pivot.engineModule.headerCollection);
                         colStartPos = pivot.engineModule.colStartPos;
@@ -12404,7 +12569,7 @@ class VirtualScroll$1 {
                 fCont.scrollTop = mCont.scrollTop;
                 return;
             }
-            this.direction = 'horizondal';
+            this.parent.scrollDirection = this.direction = 'horizondal';
             let horiOffset = -((left - this.parent.scrollPosObject.horizontalSection - mCont.scrollLeft));
             let vertiOffset = mCont.querySelector('.' + TABLE).style.transform.split(',')[1].trim();
             if (mCont.scrollLeft < this.parent.scrollerBrowserLimit) {
@@ -12472,7 +12637,7 @@ class VirtualScroll$1 {
             if (this.previousValues.top === top) {
                 return;
             }
-            this.direction = 'vertical';
+            this.parent.scrollDirection = this.direction = 'vertical';
             let vertiOffset = -((top - this.parent.scrollPosObject.verticalSection - mCont.scrollTop));
             let horiOffset = mCont.querySelector('.' + TABLE).style.transform.split(',')[0].trim();
             if (mCont.scrollTop < this.parent.scrollerBrowserLimit) {
@@ -12621,6 +12786,8 @@ class DrillThroughDialog {
                         }
                         let count = Object.keys(this.gridIndexObjects).length;
                         let addItems = [];
+                        let prevItems = [];
+                        let index = 0;
                         /* tslint:disable:no-string-literal */
                         for (let item of this.drillThroughGrid.dataSource) {
                             if (isNullOrUndefined(item['__index']) || item['__index'] === '') {
@@ -12637,8 +12804,18 @@ class DrillThroughDialog {
                                     this.parent.engineModule.data[Number(item['__index'])] = item;
                                 }
                                 delete this.gridIndexObjects[item['__index'].toString()];
+                                prevItems.push(item);
                                 count--;
                             }
+                            if (this.parent.dataSourceSettings.mode === 'Server') {
+                                if (item['__index']) {
+                                    delete item['__index'];
+                                }
+                                if (this.gridData[index]['__index']) {
+                                    delete this.gridData[index]['__index'];
+                                }
+                            }
+                            index++;
                         }
                         count = 0;
                         if (isBlazor() && this.parent.enableVirtualization) {
@@ -12656,6 +12833,20 @@ class DrillThroughDialog {
                                 currModule.gridIndexObjects = {};
                             });
                             /* tslint:enable:no-any */
+                        }
+                        else if (this.parent.dataSourceSettings.mode === 'Server') {
+                            let gridIndex = [];
+                            let keys = Object.keys(this.gridIndexObjects);
+                            for (let len = 0; len < keys.length; len++) {
+                                delete this.parent.drillThroughValue.indexObject[this.gridIndexObjects[keys[len]]];
+                                gridIndex.push({ Key: keys[len], Value: this.gridIndexObjects[keys[len]] });
+                            }
+                            let indexObject = [];
+                            keys = Object.keys(this.parent.drillThroughValue.indexObject);
+                            for (let len = 0; len < keys.length; len++) {
+                                indexObject.push({ Key: keys[len], Value: this.parent.drillThroughValue.indexObject[keys[len]] });
+                            }
+                            this.parent.getEngine('updateRawData', null, null, null, null, null, null, null, { 'addedData': addItems, 'removedData': gridIndex, 'updatedData': prevItems, indexObject: indexObject });
                         }
                         else {
                             let items = [];
@@ -12676,9 +12867,9 @@ class DrillThroughDialog {
                                 previousPosition: previousPosition,
                                 cancel: false
                             };
-                            this.parent.trigger(editComplete, eventArgs);
+                            this.parent.trigger(editCompleted, eventArgs);
                             if (!eventArgs.cancel) {
-                                this.parent.setProperties({ dataSourceSettings: { dataSource: eventArgs.currentData } }, true);
+                                this.parent.setProperties({ dataSourceSettings: { dataSource: items } }, true);
                                 this.engine.updateGridData(this.parent.dataSourceSettings);
                                 this.parent.pivotValues = this.engine.pivotValues;
                             }
@@ -13028,6 +13219,8 @@ class DrillThrough {
     }
     /** @hidden */
     executeDrillThrough(pivotValue, rowIndex, colIndex, element) {
+        this.parent.drillThroughElement = element;
+        this.parent.drillThroughValue = pivotValue;
         let engine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
         let valueCaption = '';
         let aggType = '';
@@ -13047,8 +13240,8 @@ class DrillThrough {
                     this.parent.pivotCommon.errorDialog.createErrorDialog(this.parent.localeObj.getConstant('error'), this.parent.localeObj.getConstant('drillError'));
                     return;
                 }
-                valueCaption = engine.fieldList[measureName].caption;
-                aggType = engine.fieldList[measureName].aggregateType;
+                valueCaption = engine.fieldList[measureName || pivotValue.actualText].caption;
+                aggType = engine.fieldList[measureName || pivotValue.actualText].aggregateType;
                 this.parent.olapEngineModule.getDrillThroughData(pivotValue, this.parent.maxRowsInDrillThrough);
                 try {
                     rawData = JSON.parse(engine.gridJSON);
@@ -13077,6 +13270,9 @@ class DrillThrough {
                         /* tslint:enable:no-any */
                     });
                 }
+                else if (this.parent.dataSourceSettings.mode === 'Server') {
+                    this.parent.getEngine('fetchRawData', null, null, null, null, null, null, { rowIndex: rowIndex, columnIndex: colIndex });
+                }
                 else {
                     if (this.parent.enableVirtualization && this.parent.allowDataCompression) {
                         let indexArray = Object.keys(pivotValue.indexObject);
@@ -13096,7 +13292,7 @@ class DrillThrough {
                     }
                 }
             }
-            if (!(isBlazor() && this.parent.enableVirtualization)) {
+            if (!(isBlazor() && this.parent.enableVirtualization) && this.parent.dataSourceSettings.mode !== 'Server') {
                 this.triggerDialog(valueCaption, aggType, rawData, pivotValue, element);
             }
         }
@@ -13109,7 +13305,8 @@ class DrillThrough {
         while (dataPos < eventArgs.rawData.length) {
             let framedHeader = {};
             while (keyPos < eventArgs.gridColumns.length) {
-                framedHeader[eventArgs.gridColumns[keyPos].field] =
+                framedHeader[eventArgs.gridColumns[keyPos].field] = this.parent.dataSourceSettings.mode === 'Server' ?
+                    eventArgs.rawData[dataPos][this.parent.engineModule.fields.indexOf(eventArgs.gridColumns[keyPos].field) !== -1 ? this.parent.engineModule.fields.indexOf(eventArgs.gridColumns[keyPos].field) : 0] :
                     eventArgs.rawData[dataPos][this.parent.engineModule.fieldKeys[eventArgs.gridColumns[keyPos].field]];
                 keyPos++;
             }
@@ -13120,6 +13317,7 @@ class DrillThrough {
         eventArgs.rawData = data;
         return eventArgs;
     }
+    /** @hidden */
     triggerDialog(valueCaption, aggType, rawData, pivotValue, element) {
         let valuetText = aggType === 'CalculatedField' ? valueCaption.toString() : aggType !== '' ?
             (this.parent.localeObj.getConstant(aggType) + ' ' + this.parent.localeObj.getConstant('of') + ' ' + valueCaption) :
@@ -14522,10 +14720,16 @@ class PivotChart {
                 });
                 /* tslint:enable */
             }
+            else if (pivot.parent.dataSourceSettings.mode === 'Server') {
+                pivot.parent.getEngine('onDrill', drilledItem, null, null, null, null, null);
+            }
             else {
                 pivot.engineModule.drilledMembers = pivot.dataSourceSettings.drilledMembers;
                 pivot.engineModule.onDrill(drilledItem);
             }
+        }
+        else if (pivot.parent.dataSourceSettings.mode === 'Server') {
+            pivot.parent.getEngine('onDrill', drilledItem, null, null, null, null, null);
         }
         else {
             pivot.engineModule.generateGridData(pivot.dataSourceSettings);
@@ -20362,6 +20566,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         this.isInitialRendering = false;
         this.needsID = true;
         this.pivotRefresh = Component.prototype.refresh;
+        this.request = new XMLHttpRequest();
         this.pivotView = this;
         setValue('mergePersistData', this.mergePersistPivotData, this);
     }
@@ -20382,7 +20587,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         if (this.allowCalculatedField) {
             modules.push({ args: [this], member: 'calculatedfield' });
         }
-        if (this.showToolbar && this.toolbar.length > 0) {
+        if (this.showToolbar && (this.toolbar.length > 0 || this.toolbarTemplate)) {
             modules.push({ args: [this], member: 'toolbar' });
         }
         if (this.showFieldList) {
@@ -21010,18 +21215,152 @@ let PivotView = PivotView_1 = class PivotView extends Component {
     }
     loadData() {
         if (this.dataType === 'pivot' && this.dataSourceSettings.url && this.dataSourceSettings.url !== '') {
-            this.request = new XMLHttpRequest();
-            this.request.open("GET", this.dataSourceSettings.url, true);
-            this.request.withCredentials = false;
-            this.request.onreadystatechange = this.onReadyStateChange.bind(this);
-            this.request.setRequestHeader("Content-type", "text/plain");
-            this.request.send(null);
+            if (this.dataSourceSettings.mode === 'Server') {
+                this.guid = PivotUtil.generateUUID();
+                this.initialLoad();
+                if (this.displayOption.view !== 'Chart') {
+                    this.renderEmptyGrid();
+                }
+                this.showWaitingPopup();
+                this.getEngine('initialRender', null, null, null, null, null, null);
+            }
+            else {
+                this.request.open("GET", this.dataSourceSettings.url, true);
+                this.request.withCredentials = false;
+                this.request.onreadystatechange = this.onReadyStateChange.bind(this);
+                this.request.setRequestHeader("Content-type", "text/plain");
+                this.request.send(null);
+            }
         }
         else {
             this.initialLoad();
         }
     }
     /* tslint:enable */
+    onSuccess() {
+        if (this.request.readyState === XMLHttpRequest.DONE) {
+            try {
+                let engine = JSON.parse(this.request.responseText);
+                if (this.currentAction === 'fetchFieldMembers') {
+                    let currentMembers = JSON.parse(engine.members);
+                    let dateMembers = [];
+                    let formattedMembers = {};
+                    let members = {};
+                    for (let i = 0; i < currentMembers.length; i++) {
+                        dateMembers.push({ formattedText: currentMembers[i].FormattedText, actualText: currentMembers[i].ActualText });
+                        formattedMembers[currentMembers[i].FormattedText] = {};
+                        members[currentMembers[i].ActualText] = {};
+                    }
+                    this.engineModule.fieldList[engine.memberName].dateMember = dateMembers;
+                    this.engineModule.fieldList[engine.memberName].formattedMembers = formattedMembers;
+                    this.engineModule.fieldList[engine.memberName].members = members;
+                    this.pivotButtonModule.updateFilterEvents();
+                }
+                else if (this.currentAction === 'fetchRawData') {
+                    let valueCaption = this.engineModule.fieldList[this.drillThroughValue.actualText.toString()] ?
+                        this.engineModule.fieldList[this.drillThroughValue.actualText.toString()].caption : this.drillThroughValue.actualText.toString();
+                    let aggType = this.engineModule.fieldList[this.drillThroughValue.actualText] ? this.engineModule.fieldList[this.drillThroughValue.actualText].aggregateType : '';
+                    let rawData = JSON.parse(engine.rawData);
+                    let parsedObj = JSON.parse(engine.indexObject);
+                    let indexObject = {};
+                    for (let len = 0; len < parsedObj.length; len++) {
+                        indexObject[parsedObj[len].Key] = parsedObj[len].Value;
+                    }
+                    this.drillThroughValue.indexObject = indexObject;
+                    this.drillThroughModule.triggerDialog(valueCaption, aggType, rawData, this.drillThroughValue, this.drillThroughElement);
+                }
+                else {
+                    this.engineModule.fieldList = PivotUtil.formatFieldList(JSON.parse(engine.fieldList));
+                    this.engineModule.fields = JSON.parse(engine.fields);
+                    this.engineModule.rowCount = JSON.parse(engine.pivotCount).RowCount;
+                    this.engineModule.columnCount = JSON.parse(engine.pivotCount).ColumnCount;
+                    this.engineModule.rowStartPos = JSON.parse(engine.pivotCount).RowStartPosition;
+                    this.engineModule.colStartPos = JSON.parse(engine.pivotCount).ColumnStartPosition;
+                    this.engineModule.rowFirstLvl = JSON.parse(engine.pivotCount).RowFirstLevel;
+                    this.engineModule.colFirstLvl = JSON.parse(engine.pivotCount).ColumnFirstLevel;
+                    let rowPos;
+                    let pivotValues = PivotUtil.formatPivotValues(JSON.parse(engine.pivotValue));
+                    for (let rCnt = 0; rCnt < pivotValues.length; rCnt++) {
+                        if (pivotValues[rCnt] && pivotValues[rCnt][0] && pivotValues[rCnt][0].axis === 'row') {
+                            rowPos = rCnt;
+                            break;
+                        }
+                    }
+                    this.engineModule.headerContent = PivotUtil.frameContent(pivotValues, 'header', rowPos, this);
+                    this.engineModule.pageSettings = this.pageSettings;
+                    let valueSort = JSON.parse(engine.valueSortSettings);
+                    this.engineModule.valueSortSettings = {
+                        headerText: valueSort.HeaderText,
+                        headerDelimiter: valueSort.HeaderDelimiter,
+                        sortOrder: valueSort.SortOrder,
+                        columnIndex: valueSort.ColumnIndex
+                    };
+                    this.engineModule.pivotValues = pivotValues;
+                }
+            }
+            catch (error) {
+                this.engineModule.pivotValues = [];
+            }
+            if (this.currentAction !== 'fetchFieldMembers' && this.currentAction !== 'fetchRawData') {
+                this.initEngine();
+                if (this.calculatedFieldModule && this.calculatedFieldModule.isRequireUpdate) {
+                    this.calculatedFieldModule.endDialog();
+                    this.calculatedFieldModule.isRequireUpdate = false;
+                }
+                if (this.pivotFieldListModule && this.pivotFieldListModule.calculatedFieldModule && this.pivotFieldListModule.calculatedFieldModule.isRequireUpdate) {
+                    this.pivotFieldListModule.calculatedFieldModule.endDialog();
+                    this.pivotFieldListModule.calculatedFieldModule.isRequireUpdate = false;
+                }
+            }
+            if (this.currentAction === 'onScroll') {
+                if (this.scrollDirection === 'vertical') {
+                    let rowValues = this.dataSourceSettings.valueAxis === 'row' ? this.dataSourceSettings.values.length : 1;
+                    let exactSize = (this.pageSettings.rowSize * rowValues * this.gridSettings.rowHeight);
+                    let exactPage = Math.ceil(this.engineModule.rowStartPos / (this.pageSettings.rowSize * rowValues));
+                    let pos = exactSize * exactPage - (this.engineModule.rowFirstLvl * rowValues * this.gridSettings.rowHeight);
+                    this.scrollPosObject.verticalSection = pos;
+                }
+                else if (this.scrollDirection === 'horizondal') {
+                    let colValues = this.dataSourceSettings.valueAxis === 'column' ? this.dataSourceSettings.values.length : 1;
+                    let exactSize = (this.pageSettings.columnSize * colValues * this.gridSettings.columnWidth);
+                    let exactPage = Math.ceil(this.engineModule.colStartPos / (this.pageSettings.columnSize * colValues));
+                    let pos = exactSize * exactPage - (this.engineModule.colFirstLvl * colValues * this.gridSettings.columnWidth);
+                    this.scrollPosObject.horizontalSection = pos;
+                }
+            }
+        }
+    }
+    /**
+     * @hidden
+     */
+    getEngine(action, drillItem, sortItem, aggField, cField, filterItem, memberName, rawDataArgs, editArgs) {
+        this.currentAction = action;
+        let customProperties = {
+            pageSettings: this.pageSettings,
+            enableValueSorting: this.enableValueSorting,
+            enableDrillThrough: (this.allowDrillThrough || this.editSettings.allowEditing),
+            locale: JSON.stringify(PivotUtil.getLocalizedObject(this))
+        };
+        let params = {
+            dataSourceSettings: JSON.parse(this.getPersistData()).dataSourceSettings,
+            action: action,
+            customProperties: customProperties,
+            drillItem: drillItem,
+            sortItem: sortItem,
+            aggregatedItem: aggField,
+            calculatedItem: cField,
+            filterItem: filterItem,
+            memberName: memberName,
+            fetchRawDataArgs: rawDataArgs,
+            editArgs: editArgs,
+            hash: this.guid
+        };
+        this.request.open("POST", this.dataSourceSettings.url, true);
+        this.request.withCredentials = false;
+        this.request.onreadystatechange = this.onSuccess.bind(this);
+        this.request.setRequestHeader("Content-type", "application/json");
+        this.request.send(JSON.stringify(params));
+    }
     onReadyStateChange() {
         if (this.request.readyState === XMLHttpRequest.DONE) {
             let dataSource = [];
@@ -21076,7 +21415,9 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             this.fieldsType = observedArgs.fieldsType;
             this.updateClass();
             this.notify(initSubComponent, {});
-            this.notify(initialLoad, {});
+            if (this.dataSourceSettings.mode !== 'Server') {
+                this.notify(initialLoad, {});
+            }
             if (this.isAdaptive) {
                 this.contextMenuModule.render();
             }
@@ -21566,6 +21907,9 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                         let sortArgs = window[sfBlazor].copyWithoutCircularReferences([pivot.lastSortInfo], pivot.lastSortInfo);
                         interopArguments = { 'key': 'onSort', 'arg': sortArgs };
                     }
+                    else if (this.dataSourceSettings.mode === 'Server') {
+                        pivot.getEngine('onSort', null, pivot.lastSortInfo, null, null, null, null);
+                    }
                     else {
                         pivot.engineModule.onSort(pivot.lastSortInfo);
                     }
@@ -21578,6 +21922,9 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                         let aggregateArgs = window[sfBlazor].copyWithoutCircularReferences([pivot.lastAggregationInfo], pivot.lastAggregationInfo);
                         interopArguments = { 'key': 'onAggregation', 'arg': aggregateArgs };
                         /* tslint:enable */
+                    }
+                    else if (this.dataSourceSettings.mode === 'Server') {
+                        pivot.getEngine('onAggregation', null, null, pivot.lastAggregationInfo, null, null, null);
                     }
                     else {
                         pivot.engineModule.onAggregation(pivot.lastAggregationInfo);
@@ -21598,6 +21945,9 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                         };
                         /* tslint:enable */
                     }
+                    else if (this.dataSourceSettings.mode === 'Server') {
+                        pivot.getEngine('onCalcOperation', null, null, null, pivot.lastCalcFieldInfo, null, null);
+                    }
                     else {
                         pivot.engineModule.onCalcOperation(pivot.lastCalcFieldInfo);
                     }
@@ -21613,6 +21963,9 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                             'arg': { 'lastFilterInfo': filterArgs, 'filterSettings': filterSettings }
                         };
                         /* tslint:enable */
+                    }
+                    else if (this.dataSourceSettings.mode === 'Server') {
+                        pivot.getEngine('onFilter', null, null, null, null, pivot.lastFilterInfo, null);
                     }
                     else {
                         pivot.engineModule.onFilter(pivot.lastFilterInfo, pivot.dataSourceSettings);
@@ -21703,6 +22056,22 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                             pivot.enginePopulatedEventMethod('updateDataSource', pivot);
                         });
                         /* tslint:enable */
+                    }
+                    else if (pivot.dataSourceSettings.mode === 'Server') {
+                        if (isSorted)
+                            pivot.getEngine('onSort', null, pivot.lastSortInfo, null, null, null, null);
+                        else if (isAggChange)
+                            pivot.getEngine('onAggregation', null, null, pivot.lastAggregationInfo, null, null, null);
+                        else if (isCalcChange)
+                            pivot.getEngine('onCalcOperation', null, null, null, pivot.lastCalcFieldInfo, null, null);
+                        else if (isFiltered)
+                            pivot.getEngine('onFilter', null, null, null, null, pivot.lastFilterInfo, null);
+                        else
+                            pivot.getEngine('onDrop', null, null, null, null, null, null);
+                        pivot.lastSortInfo = {};
+                        pivot.lastAggregationInfo = {};
+                        pivot.lastCalcFieldInfo = {};
+                        pivot.lastFilterInfo = {};
                     }
                     else {
                         pivot.engineModule.renderEngine(pivot.dataSourceSettings, customProperties, pivot.getValueCellInfo.bind(pivot));
@@ -21877,10 +22246,16 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                             });
                             /* tslint:enable */
                         }
+                        else if (this.dataSourceSettings.mode === 'Server') {
+                            this.getEngine('onDrill', drilledItem, null, null, null, null, null);
+                        }
                         else {
                             pivot.engineModule.drilledMembers = pivot.dataSourceSettings.drilledMembers;
                             pivot.engineModule.onDrill(drilledItem);
                         }
+                    }
+                    else if (this.dataSourceSettings.mode === 'Server') {
+                        this.getEngine('onDrill', drilledItem, null, null, null, null, null);
                     }
                     else {
                         pivot.engineModule.generateGridData(pivot.dataSourceSettings);
@@ -22437,12 +22812,18 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                         });
                         /* tslint:enable */
                     }
+                    else if (pivot.dataSourceSettings.mode === 'Server') {
+                        pivot.getEngine('onValueSort', null, null, null, null, null, null);
+                    }
                     else {
                         pivot.engineModule.rMembers = pivot.engineModule.headerCollection.rowHeaders;
                         pivot.engineModule.cMembers = pivot.engineModule.headerCollection.columnHeaders;
                         pivot.engineModule.applyValueSorting();
                         pivot.engineModule.updateEngine();
                     }
+                }
+                else if (pivot.dataSourceSettings.mode === 'Server') {
+                    pivot.getEngine('onValueSort', null, null, null, null, null, null);
                 }
                 else {
                     pivot.engineModule.generateGridData(pivot.dataSourceSettings);
@@ -23067,7 +23448,9 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                     });
                 }
                 else {
-                    this.engineModule.renderEngine(this.dataSourceSettings, customProperties, this.getValueCellInfo.bind(this));
+                    if (this.dataSourceSettings.mode !== 'Server') {
+                        this.engineModule.renderEngine(this.dataSourceSettings, customProperties, this.getValueCellInfo.bind(this));
+                    }
                     this.allowServerDataBinding = false;
                     this.setProperties({ pivotValues: this.engineModule.pivotValues }, true);
                     /* tslint:disable-next-line:no-any */
@@ -23183,8 +23566,8 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             }
         }
         blazPivot.pivotValues = blazPivotValues;
-        valContent = blazPivot.frameContent(blazPivotValues, 'value', rowPos, blazPivot);
-        headContent = blazPivot.frameContent(blazPivotValues, 'header', rowPos, blazPivot);
+        valContent = PivotUtil.frameContent(blazPivotValues, 'value', rowPos, blazPivot);
+        headContent = PivotUtil.frameContent(blazPivotValues, 'header', rowPos, blazPivot);
         this.engineModule.pivotValues = blazPivotValues;
         this.engineModule.fieldList = pivotFL;
         this.engineModule.fields = pivotFields;
@@ -23200,31 +23583,6 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         this.engineModule.rowFirstLvl = JSON.parse(data["rowFirstLvl"]);
         this.engineModule.colFirstLvl = JSON.parse(data["colFirstLvl"]);
         control.allowServerDataBinding = true;
-    }
-    /** @hidden */
-    frameContent(pivotValues, type, rowPosition, control) {
-        let dataContent = [];
-        var pivot = control;
-        if (pivot.dataSourceSettings.values.length > 0 && !pivot.engineModule.isEmptyData) {
-            if ((pivot.enableValueSorting) || !pivot.engineModule.isEngineUpdated) {
-                let rowCnt = 0;
-                let start = type === 'value' ? rowPosition : 0;
-                let end = type === 'value' ? pivotValues.length : rowPosition;
-                for (var rCnt = start; rCnt < end; rCnt++) {
-                    if (pivotValues[rCnt]) {
-                        rowCnt = type === 'header' ? rCnt : rowCnt;
-                        dataContent[rowCnt] = {};
-                        for (var cCnt = 0; cCnt < pivotValues[rCnt].length; cCnt++) {
-                            if (pivotValues[rCnt][cCnt]) {
-                                dataContent[rowCnt][cCnt] = pivotValues[rCnt][cCnt];
-                            }
-                        }
-                        rowCnt++;
-                    }
-                }
-            }
-        }
-        return dataContent;
     }
     /* tslint:enable */
     generateData() {
@@ -23281,6 +23639,9 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                 pivot.initEngine();
             }
             else {
+                if (this.dataSourceSettings.mode === 'Server') {
+                    this.getEngine("onRefresh");
+                }
                 this.hideWaitingPopup();
             }
         }
@@ -23400,7 +23761,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             let pivotValues = this.pivotValues;
             let colIndex = [];
             for (let len = pivotValues.length, i = 0; i < len; i++) {
-                if (pivotValues[i] !== undefined && pivotValues[i][0] === undefined) {
+                if (!isNullOrUndefined(pivotValues[i]) && pivotValues[i][0] === undefined) {
                     colIndex.push(i);
                 }
             }
@@ -23812,6 +24173,9 @@ __decorate([
 ], PivotView.prototype, "cellTemplate", void 0);
 __decorate([
     Property()
+], PivotView.prototype, "toolbarTemplate", void 0);
+__decorate([
+    Property()
 ], PivotView.prototype, "tooltipTemplate", void 0);
 __decorate([
     Property()
@@ -23977,7 +24341,7 @@ __decorate([
 ], PivotView.prototype, "drillThrough", void 0);
 __decorate([
     Event()
-], PivotView.prototype, "editComplete", void 0);
+], PivotView.prototype, "editCompleted", void 0);
 __decorate([
     Event()
 ], PivotView.prototype, "beginDrillThrough", void 0);
@@ -26444,8 +26808,11 @@ class PivotButton {
     updateFiltering(args) {
         /* tslint:disable */
         let pivotObj = this.parent.pivotGridModule ? this.parent.pivotGridModule : this.parent;
+        pivotObj.mouseEventArgs = args;
+        pivotObj.filterTargetID = this.parent.pivotCommon.moduleName !== 'pivotfieldlist' ?
+            this.parent.element : document.getElementById(this.parent.pivotCommon.parentID + '_Wrapper');
+        let fieldName = args.target.parentElement.id;
         if (pivotObj && pivotObj.enableVirtualization && isBlazor() && pivotObj.dataType === 'pivot') {
-            let fieldName = args.target.parentElement.id;
             let $this = this;
             pivotObj.interopAdaptor.invokeMethodAsync("PivotInteropMethod", 'fetchFieldMembers', fieldName).then((data) => {
                 let parsedData = JSON.parse(data.dateMembers);
@@ -26460,17 +26827,23 @@ class PivotButton {
                 $this.parent.engineModule.fieldList[fieldName].dateMember = dateMembers;
                 $this.parent.engineModule.fieldList[fieldName].formattedMembers = formattedMembers;
                 $this.parent.engineModule.fieldList[fieldName].members = members;
-                $this.updateFilterEvents(args);
+                $this.updateFilterEvents();
             });
         }
+        else if (pivotObj.dataSourceSettings.mode === 'Server') {
+            pivotObj.getEngine('fetchFieldMembers', null, null, null, null, null, fieldName);
+        }
         else {
-            this.updateFilterEvents(args);
+            this.updateFilterEvents();
         }
         /* tslint:enable */
     }
-    updateFilterEvents(args) {
-        this.parent.pivotCommon.eventBase.updateFiltering(args);
-        let target = args.target;
+    /** @hidden */
+    updateFilterEvents() {
+        /* tslint:disable */
+        let pivotObj = this.parent.pivotGridModule ? this.parent.pivotGridModule : this.parent;
+        this.parent.pivotCommon.eventBase.updateFiltering(pivotObj.mouseEventArgs);
+        let target = pivotObj.mouseEventArgs.target;
         this.fieldName = target.parentElement.id;
         if (this.parent.pivotCommon.filterDialog.dialogPopUp) {
             this.dialogPopUp = this.parent.pivotCommon.filterDialog.dialogPopUp;
@@ -27121,6 +27494,7 @@ let PivotFieldList = class PivotFieldList extends Component {
         this.isPopupView = false;
         /** @hidden */
         this.enableValueSorting = false;
+        this.request = new XMLHttpRequest();
         this.remoteData = [];
     }
     /**
@@ -27362,15 +27736,119 @@ let PivotFieldList = class PivotFieldList extends Component {
      */
     render() {
         if (this.dataType === 'pivot' && this.dataSourceSettings.url && this.dataSourceSettings.url !== '') {
-            this.request = new XMLHttpRequest();
-            this.request.open("GET", this.dataSourceSettings.url, true);
-            this.request.withCredentials = false;
-            this.request.onreadystatechange = this.onReadyStateChange.bind(this);
-            this.request.setRequestHeader("Content-type", "text/plain");
-            this.request.send(null);
+            if (this.dataSourceSettings.mode === 'Server') {
+                this.guid = PivotUtil.generateUUID();
+                this.getEngine('initialRender', null, null, null, null, null, null);
+            }
+            else {
+                this.request.open("GET", this.dataSourceSettings.url, true);
+                this.request.withCredentials = false;
+                this.request.onreadystatechange = this.onReadyStateChange.bind(this);
+                this.request.setRequestHeader("Content-type", "text/plain");
+                this.request.send(null);
+            }
         }
         else {
             this.initialLoad();
+        }
+    }
+    /**
+     * @hidden
+     */
+    getEngine(action, drillItem, sortItem, aggField, cField, filterItem, memberName, rawDataArgs, editArgs) {
+        this.currentAction = action;
+        if (this.pivotGridModule) {
+            this.pivotGridModule.updatePageSettings(false);
+        }
+        let customProperties = {
+            pageSettings: this.pivotGridModule ? this.pivotGridModule.pageSettings : undefined,
+            enableValueSorting: this.pivotGridModule ? this.pivotGridModule.enableValueSorting : undefined,
+            enableDrillThrough: this.pivotGridModule ?
+                (this.pivotGridModule.allowDrillThrough || this.pivotGridModule.editSettings.allowEditing) : true,
+            locale: JSON.stringify(PivotUtil.getLocalizedObject(this))
+        };
+        let params = {
+            dataSourceSettings: JSON.parse(this.getPersistData()).dataSourceSettings,
+            action: action,
+            customProperties: customProperties,
+            drillItem: drillItem,
+            sortItem: sortItem,
+            aggregatedItem: aggField,
+            calculatedItem: cField,
+            filterItem: filterItem,
+            memberName: memberName,
+            fetchRawDataArgs: rawDataArgs,
+            editArgs: editArgs,
+            hash: this.guid
+        };
+        this.request.open("POST", this.dataSourceSettings.url, true);
+        this.request.withCredentials = false;
+        this.request.onreadystatechange = this.onSuccess.bind(this);
+        this.request.setRequestHeader("Content-type", "application/json");
+        this.request.send(JSON.stringify(params));
+    }
+    onSuccess() {
+        if (this.request.readyState === XMLHttpRequest.DONE) {
+            try {
+                let engine = JSON.parse(this.request.responseText);
+                if (this.currentAction === 'fetchFieldMembers') {
+                    let currentMembers = JSON.parse(engine.members);
+                    let dateMembers = [];
+                    let formattedMembers = {};
+                    let members = {};
+                    for (let i = 0; i < currentMembers.length; i++) {
+                        dateMembers.push({ formattedText: currentMembers[i].FormattedText, actualText: currentMembers[i].ActualText });
+                        formattedMembers[currentMembers[i].FormattedText] = {};
+                        members[currentMembers[i].ActualText] = {};
+                    }
+                    this.engineModule.fieldList[engine.memberName].dateMember = dateMembers;
+                    this.engineModule.fieldList[engine.memberName].formattedMembers = formattedMembers;
+                    this.engineModule.fieldList[engine.memberName].members = members;
+                    this.pivotButtonModule.updateFilterEvents();
+                }
+                else {
+                    this.engineModule.fieldList = PivotUtil.formatFieldList(JSON.parse(engine.fieldList));
+                    this.engineModule.fields = JSON.parse(engine.fields);
+                    this.engineModule.rowCount = JSON.parse(engine.pivotCount).RowCount;
+                    this.engineModule.columnCount = JSON.parse(engine.pivotCount).ColumnCount;
+                    this.engineModule.rowStartPos = JSON.parse(engine.pivotCount).RowStartPosition;
+                    this.engineModule.colStartPos = JSON.parse(engine.pivotCount).ColumnStartPosition;
+                    this.engineModule.rowFirstLvl = JSON.parse(engine.pivotCount).RowFirstLevel;
+                    this.engineModule.colFirstLvl = JSON.parse(engine.pivotCount).ColumnFirstLevel;
+                    let rowPos;
+                    let pivotValues = PivotUtil.formatPivotValues(JSON.parse(engine.pivotValue));
+                    for (let rCnt = 0; rCnt < pivotValues.length; rCnt++) {
+                        if (pivotValues[rCnt] && pivotValues[rCnt][0] && pivotValues[rCnt][0].axis === 'row') {
+                            rowPos = rCnt;
+                            break;
+                        }
+                    }
+                    this.engineModule.headerContent = PivotUtil.frameContent(pivotValues, 'header', rowPos, this);
+                    this.engineModule.pageSettings = this.pivotGridModule ? this.pivotGridModule.pageSettings : undefined;
+                    let valueSort = JSON.parse(engine.valueSortSettings);
+                    this.engineModule.valueSortSettings = {
+                        headerText: valueSort.HeaderText,
+                        headerDelimiter: valueSort.HeaderDelimiter,
+                        sortOrder: valueSort.SortOrder,
+                        columnIndex: valueSort.ColumnIndex
+                    };
+                    this.engineModule.pivotValues = pivotValues;
+                }
+            }
+            catch (error) {
+                this.engineModule.pivotValues = [];
+            }
+            if (this.currentAction !== 'fetchFieldMembers') {
+                this.initEngine();
+                if (this.calculatedFieldModule && this.calculatedFieldModule.isRequireUpdate) {
+                    this.calculatedFieldModule.endDialog();
+                    this.calculatedFieldModule.isRequireUpdate = false;
+                }
+                if (this.pivotGridModule && this.pivotGridModule.calculatedFieldModule && this.pivotGridModule.calculatedFieldModule.isRequireUpdate) {
+                    this.pivotGridModule.calculatedFieldModule.endDialog();
+                    this.pivotGridModule.calculatedFieldModule.isRequireUpdate = false;
+                }
+            }
         }
     }
     onReadyStateChange() {
@@ -27586,7 +28064,9 @@ let PivotFieldList = class PivotFieldList extends Component {
                 let customProperties = this.frameCustomProperties();
                 customProperties.enableValueSorting = this.staticPivotGridModule ?
                     this.staticPivotGridModule.enableValueSorting : this.enableValueSorting;
-                this.engineModule.renderEngine(this.dataSourceSettings, customProperties, this.getValueCellInfo.bind(this));
+                if (this.dataSourceSettings.mode !== 'Server') {
+                    this.engineModule.renderEngine(this.dataSourceSettings, customProperties, this.getValueCellInfo.bind(this));
+                }
                 this.pivotFieldList = this.engineModule.fieldList;
                 let eventArgs = {
                     pivotFieldList: this.pivotFieldList,
@@ -27744,11 +28224,6 @@ let PivotFieldList = class PivotFieldList extends Component {
             pivot.pivotGridModule.pageSettings : undefined;
         let isCalcChange = Object.keys(pivot.lastCalcFieldInfo).length > 0 ? true : false;
         let isSorted = Object.keys(pivot.lastSortInfo).length > 0 ? true : false;
-        let lastSortInfo = pivot.lastSortInfo;
-        if (pivot.pivotGridModule && pivot.dataType === 'pivot') {
-            pivot.pivotGridModule.lastSortInfo = {};
-        }
-        pivot.lastSortInfo = {};
         let isAggChange = Object.keys(pivot.lastAggregationInfo).length > 0 ? true : false;
         let isFiltered = Object.keys(pivot.lastFilterInfo).length > 0 ? true : false;
         let args = {
@@ -27776,11 +28251,15 @@ let PivotFieldList = class PivotFieldList extends Component {
                         if (isSorted) {
                             pivot.pivotGridModule.setProperties({ dataSourceSettings: { valueSortSettings: { headerText: '' } } }, true);
                             if ((isBlazor())) {
-                                interopArguments = { 'key': 'onSort', 'arg': lastSortInfo };
+                                interopArguments = { 'key': 'onSort', 'arg': pivot.lastSortInfo };
+                            }
+                            else if (control.dataSourceSettings.mode === 'Server') {
+                                control.getEngine('onSort', null, pivot.lastSortInfo, null, null, null, null);
                             }
                             else {
-                                pivot.engineModule.onSort(lastSortInfo);
+                                pivot.engineModule.onSort(pivot.lastSortInfo);
                             }
+                            pivot.lastSortInfo = {};
                         }
                         if (isFiltered) {
                             if (isBlazor()) {
@@ -27790,6 +28269,9 @@ let PivotFieldList = class PivotFieldList extends Component {
                                     'arg': { 'lastFilterInfo': pivot.lastFilterInfo, 'filterSettings': dataArgs }
                                 };
                             }
+                            else if (control.dataSourceSettings.mode === 'Server') {
+                                control.getEngine('onFilter', null, null, null, null, pivot.lastFilterInfo, null);
+                            }
                             else {
                                 pivot.engineModule.onFilter(pivot.lastFilterInfo, pivot.dataSourceSettings);
                             }
@@ -27798,6 +28280,9 @@ let PivotFieldList = class PivotFieldList extends Component {
                         if (isAggChange) {
                             if (isBlazor()) {
                                 interopArguments = { 'key': 'onAggregation', 'arg': pivot.lastAggregationInfo };
+                            }
+                            else if (control.dataSourceSettings.mode === 'Server') {
+                                control.getEngine('onAggregation', null, null, pivot.lastAggregationInfo, null, null, null);
                             }
                             else {
                                 pivot.engineModule.onAggregation(pivot.lastAggregationInfo);
@@ -27814,6 +28299,9 @@ let PivotFieldList = class PivotFieldList extends Component {
                                         calculatedFieldSettings: pivot.dataSourceSettings.calculatedFieldSettings
                                     }
                                 };
+                            }
+                            else if (control.dataSourceSettings.mode === 'Server') {
+                                control.getEngine('onCalcOperation', null, null, null, pivot.lastCalcFieldInfo, null, null);
                             }
                             else {
                                 pivot.engineModule.onCalcOperation(pivot.lastCalcFieldInfo);
@@ -27855,6 +28343,22 @@ let PivotFieldList = class PivotFieldList extends Component {
                                     pivot.enginePopulatedEventMethod(pivot, isTreeViewRefresh, isOlapDataRefreshed);
                                 }
                             });
+                        }
+                        else if (pivot.dataSourceSettings.mode === 'Server') {
+                            if (isSorted)
+                                control.getEngine('onSort', null, pivot.lastSortInfo, null, null, null, null);
+                            else if (isAggChange)
+                                control.getEngine('onAggregation', null, null, pivot.lastAggregationInfo, null, null, null);
+                            else if (isCalcChange)
+                                control.getEngine('onCalcOperation', null, null, null, pivot.lastCalcFieldInfo, null, null);
+                            else if (isFiltered)
+                                control.getEngine('onFilter', null, null, null, null, pivot.lastFilterInfo, null);
+                            else
+                                control.getEngine('onDrop', null, null, null, null, null, null);
+                            pivot.lastSortInfo = {};
+                            pivot.lastAggregationInfo = {};
+                            pivot.lastCalcFieldInfo = {};
+                            pivot.lastFilterInfo = {};
                         }
                         else {
                             pivot.engineModule.renderEngine(pivot.dataSourceSettings, customProperties, pivot.getValueCellInfo.bind(pivot));
@@ -28910,7 +29414,7 @@ class CalculatedField {
     addFormula(report, field) {
         this.isFormula = true;
         this.field = field;
-        if (isBlazor()) {
+        if (isBlazor() || this.parent.dataSourceSettings.mode === 'Server') {
             PivotUtil.updateDataSourceSettings(this.parent, PivotUtil.getClonedDataSourceSettings(report));
         }
         else {
@@ -28923,7 +29427,7 @@ class CalculatedField {
             this.parent.updateDataSource(false);
             let pivot = this.parent.getModuleName() === 'pivotfieldlist' ?
                 this.parent.pivotGridModule : this.parent;
-            if (!(isBlazor() && pivot && pivot.enableVirtualization)) {
+            if (!(isBlazor() && pivot && pivot.enableVirtualization) && (pivot && pivot.dataSourceSettings.mode !== 'Server')) {
                 this.endDialog();
             }
             else {
@@ -31417,6 +31921,32 @@ class ConditionalFormatting {
         if (typeof colours[colour.toLowerCase()] !== 'undefined') {
             return colours[colour.toLowerCase()];
         }
+        else if (colour.search('rgba') === 0) {
+            let value = colour.substr(5).split(')')[0].split(',');
+            let rgb = '';
+            let a = '';
+            for (let i = 0; i < value.length - 1; i++) {
+                value[i] = (+value[i]).toString(16);
+                if (value[i].length === 1) {
+                    value[i] = '0' + value[i];
+                }
+                rgb = rgb + value[i];
+            }
+            a = (Math.round(+value[3] * 255)).toString(16);
+            return '#' + rgb + a;
+        }
+        else if (colour.search('rgb') === 0) {
+            let value = colour.substr(4).split(')')[0].split(',');
+            let rgb = '';
+            for (let i = 0; i < value.length; i++) {
+                value[i] = (+value[i]).toString(16);
+                if (value[i].length === 1) {
+                    value[i] = '0' + value[i];
+                }
+                rgb = rgb + value[i];
+            }
+            return '#' + rgb;
+        }
         return '#d5d5d5';
     }
     removeDialog() {
@@ -31514,8 +32044,15 @@ class Toolbar$2 {
             allowKeyboard: false,
         });
         this.toolbar.isStringTemplate = true;
-        this.toolbar.appendTo('#' + this.parent.element.id + 'pivot-toolbar');
-        this.toolbar.width = this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) : (this.parent.getWidthAsNumber() - 2);
+        if (this.parent.toolbarTemplate && typeof (this.parent.toolbarTemplate) === 'string') {
+            this.toolbar.appendTo(this.parent.toolbarTemplate);
+            this.parent.element.replaceChild(this.toolbar.element, this.parent.element.querySelector('.' + GRID_TOOLBAR));
+            this.toolbar.element.classList.add(GRID_TOOLBAR);
+        }
+        else {
+            this.toolbar.appendTo('#' + this.parent.element.id + 'pivot-toolbar');
+            this.toolbar.width = this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) : (this.parent.getWidthAsNumber() - 2);
+        }
         if (this.parent.chart) {
             this.parent.chart.setProperties({ width: this.parent.grid ? this.parent.getGridWidthAsNumber().toString() : this.parent.getWidthAsNumber().toString() }, true);
         }
@@ -31660,6 +32197,9 @@ class Toolbar$2 {
                         this.parent.element.querySelector('.e-toggle-field-list').style.display = 'none';
                     }
                     break;
+            }
+            if (typeof (item) === 'object' && document.querySelector(item.template)) {
+                items.push(item);
             }
         }
         if (this.parent.showFieldList && toolbar.indexOf('FieldList') === -1 && this.parent.element.querySelector('#' + this.parent.element.id + '_PivotFieldList') &&
@@ -34194,5 +34734,5 @@ class Grouping {
  * Export PivotGrid components
  */
 
-export { GroupingBarSettings, CellEditSettings, ConditionalSettings, HyperlinkSettings, DisplayOption, PivotView, Render, ExcelExport$1 as ExcelExport, PDFExport, KeyboardInteraction, VirtualScroll$1 as VirtualScroll, DrillThrough, PivotChart, PivotFieldList, TreeViewRenderer, AxisFieldRenderer, AxisTableRenderer, DialogRenderer, EventBase, NodeStateModified, DataSourceUpdate, FieldList, CommonKeyboardInteraction, Common, GroupingBar, CalculatedField, ConditionalFormatting, PivotCommon, load, enginePopulating, enginePopulated, onFieldDropped, fieldDrop, beforePivotTableRender, afterPivotTableRender, beforeExport, excelHeaderQueryCellInfo, pdfHeaderQueryCellInfo, excelQueryCellInfo, pdfQueryCellInfo, onPdfCellRender, dataBound, queryCellInfo, headerCellInfo, hyperlinkCellClick, resizing, resizeStop, cellClick, drillThrough, beforeColumnsRender, selected, cellSelecting, drill, cellSelected, cellDeselected, rowSelected, rowDeselected, beginDrillThrough, editComplete, saveReport, fetchReport, loadReport, renameReport, removeReport, newReport, toolbarRender, toolbarClick, chartTooltipRender, chartLoaded, chartLoad, chartResized, chartAxisLabelRender, chartSeriesCreated, aggregateCellInfo, contextMenuClick, contextMenuOpen, fieldListRefreshed, conditionalFormatting, beforePdfExport, beforeExcelExport, memberFiltering, calculatedFieldCreate, memberEditorOpen, fieldRemove, numberFormatting, aggregateMenuOpen, fieldDragStart, chartPointClick, initialLoad, uiUpdate, scroll, contentReady, dataReady, initSubComponent, treeViewUpdate, pivotButtonUpdate, initCalculatedField, click, initToolbar, initFormatting, initGrouping, Theme, ErrorDialog, FilterDialog, PivotContextMenu, AggregateMenu, Toolbar$2 as Toolbar, NumberFormatting, Grouping, PivotEngine, PivotUtil, OlapEngine, MDXQuery };
+export { GroupingBarSettings, CellEditSettings, ConditionalSettings, HyperlinkSettings, DisplayOption, PivotView, Render, ExcelExport$1 as ExcelExport, PDFExport, KeyboardInteraction, VirtualScroll$1 as VirtualScroll, DrillThrough, PivotChart, PivotFieldList, TreeViewRenderer, AxisFieldRenderer, AxisTableRenderer, DialogRenderer, EventBase, NodeStateModified, DataSourceUpdate, FieldList, CommonKeyboardInteraction, Common, GroupingBar, CalculatedField, ConditionalFormatting, PivotCommon, load, enginePopulating, enginePopulated, onFieldDropped, fieldDrop, beforePivotTableRender, afterPivotTableRender, beforeExport, excelHeaderQueryCellInfo, pdfHeaderQueryCellInfo, excelQueryCellInfo, pdfQueryCellInfo, onPdfCellRender, dataBound, queryCellInfo, headerCellInfo, hyperlinkCellClick, resizing, resizeStop, cellClick, drillThrough, beforeColumnsRender, selected, cellSelecting, drill, cellSelected, cellDeselected, rowSelected, rowDeselected, beginDrillThrough, editCompleted, saveReport, fetchReport, loadReport, renameReport, removeReport, newReport, toolbarRender, toolbarClick, chartTooltipRender, chartLoaded, chartLoad, chartResized, chartAxisLabelRender, chartSeriesCreated, aggregateCellInfo, contextMenuClick, contextMenuOpen, fieldListRefreshed, conditionalFormatting, beforePdfExport, beforeExcelExport, memberFiltering, calculatedFieldCreate, memberEditorOpen, fieldRemove, numberFormatting, aggregateMenuOpen, fieldDragStart, chartPointClick, initialLoad, uiUpdate, scroll, contentReady, dataReady, initSubComponent, treeViewUpdate, pivotButtonUpdate, initCalculatedField, click, initToolbar, initFormatting, initGrouping, Theme, ErrorDialog, FilterDialog, PivotContextMenu, AggregateMenu, Toolbar$2 as Toolbar, NumberFormatting, Grouping, PivotEngine, PivotUtil, OlapEngine, MDXQuery };
 //# sourceMappingURL=ej2-pivotview.es2015.js.map

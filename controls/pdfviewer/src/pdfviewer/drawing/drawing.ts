@@ -310,10 +310,6 @@ export class Drawing {
                     canvas.minHeight = content.minHeight + 20;
                     canvas.minWidth = content.minWidth + 20;
                 }
-                if (obj && obj.annotationAddMode && obj.annotationAddMode === 'Existing Annotation') {
-                    obj.bounds.width = obj.bounds.width + 20;
-                    obj.bounds.height = obj.bounds.height + 20;
-                }
                 break;
             case 'Image':
                 // tslint:disable-next-line

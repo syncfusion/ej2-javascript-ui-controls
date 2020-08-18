@@ -71,7 +71,7 @@ export class Action {
             if (closest(target, '.' + cls.CONTENT_CELLS_CLASS).querySelector('.' + cls.CARD_CLASS)) {
                 let card: Element = this.parent.sortSettings.direction === 'Ascending' ?
                     target.nextElementSibling.lastElementChild : target.nextElementSibling.firstElementChild;
-                let data: { [key: string]: Object } = this.parent.getCardDetails(card);
+                let data: { [key: string]: Object } = this.parent.getCardDetails(card) as { [key: string]: Object };
                 newData[this.parent.sortSettings.field] = data[this.parent.sortSettings.field] as number + 1;
             }
         }
@@ -80,7 +80,12 @@ export class Action {
             newData[this.parent.swimlaneSettings.keyField] =
                 closest(target, '.' + cls.CONTENT_ROW_CLASS).previousElementSibling.getAttribute('data-key');
         }
-        this.parent.openDialog('Add', newData);
+        if (this.parent.isBlazorRender()) {
+            // tslint:disable-next-line
+            (this.parent as any).interopAdaptor.invokeMethodAsync('OpenDialog', 'Add', newData);
+        } else {
+            this.parent.openDialog('Add', newData);
+        }
     }
 
     public doubleClickHandler(e: MouseEvent): void {
@@ -92,7 +97,7 @@ export class Action {
 
     public cardClick(e: KeyboardEvent, selectedCard?: HTMLElement): void {
         let target: Element = closest((selectedCard) ? selectedCard : e.target as Element, '.' + cls.CARD_CLASS);
-        let cardClickObj: { [key: string]: Object } = this.parent.getCardDetails(target);
+        let cardClickObj: { [key: string]: Object } = this.parent.getCardDetails(target) as { [key: string]: Object };
         this.parent.activeCardData = { data: cardClickObj, element: target };
         let args: CardClickEventArgs = { data: cardClickObj, element: target, cancel: false, event: e };
         this.parent.trigger(events.cardClick, args, (clickArgs: CardClickEventArgs) => {
@@ -124,7 +129,7 @@ export class Action {
 
     private cardDoubleClick(e: Event): void {
         let target: Element = closest(e.target as Element, '.' + cls.CARD_CLASS);
-        let cardDoubleClickObj: { [key: string]: Object } = this.parent.getCardDetails(target);
+        let cardDoubleClickObj: { [key: string]: Object } = this.parent.getCardDetails(target) as { [key: string]: Object };
         this.parent.activeCardData = { data: cardDoubleClickObj, element: target };
         let args: CardClickEventArgs = { data: cardDoubleClickObj, element: target, cancel: false, event: e };
         this.parent.trigger(events.cardDoubleClick, args, (doubleClickArgs: CardClickEventArgs) => {

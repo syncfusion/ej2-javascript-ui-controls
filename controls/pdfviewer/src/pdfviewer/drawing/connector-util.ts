@@ -87,6 +87,11 @@ export function updateDecoratorElement(
     (element as PathElement).canMeasurePath = true;
     element.width = size.width;
     element.height = size.height;
+    if (obj.sourceDecoraterShapes === 'Butt') {
+        element.width = size.width - 10;
+        element.height = size.height + 10;
+    }
+
 }
 
 /** @private */
@@ -421,5 +426,6 @@ let decoratorShapes: {} = {
     'DoubleArrow': 'M19,10 L19,22 L13,16Z M12,10 L12,22 L6,16Z',
     'Arrow': 'M15,10 L15,22 L5,16Z',
     'Diamond': 'M12,23l-7-7l7-7l6.9,7L12,23z',
-    'Circle': 'M0,50 A50,50,0 1 1 100,50 A50,50,0 1 1 0,50 Z'
+    'Circle': 'M0,50 A50,50,0 1 1 100,50 A50,50,0 1 1 0,50 Z',
+    'Butt': 'M0,0 L0,90'
 };

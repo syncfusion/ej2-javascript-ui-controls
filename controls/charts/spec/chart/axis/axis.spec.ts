@@ -13,7 +13,7 @@ import { unbindResizeEvents } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import { DateTime } from '../../../src/index' ;
 import { Logarithmic } from '../../../src/index';
-import { ILoadedEventArgs, IAxisLabelRenderEventArgs } from '../../../src/chart/model/chart-interface';
+import { ILoadedEventArgs, IAxisLabelRenderEventArgs, IAxisLabelClickEventArgs } from '../../../src/chart/model/chart-interface';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 Chart.Inject(LineSeries, Category, ColumnSeries, DateTime, Logarithmic);
 
@@ -1399,6 +1399,101 @@ describe('Chart Control', () =>{
             text = document.getElementById('chartContainer1_AxisLabel_1');
             expect(text.textContent == '1.250').toBe(true);
 
+        });
+    });
+    describe('Checking Axis Label Click Event', () => {
+        let chartContainer: HTMLElement;
+        let chartObj: Chart;
+        let titleElement: Element;
+        let trigger: MouseEvents = new MouseEvents();
+        chartContainer = createElement('div', { id: 'container' });
+        beforeAll(() => {
+            document.body.appendChild(chartContainer);
+            chartObj = new Chart(
+                {
+                    enableAnimation: false,
+                    border: {
+                        width: 3,
+                        color: 'blue'
+                    },
+                    //Initializing Primary X Axis
+                    primaryXAxis: {
+                        valueType: 'DateTime',
+                        labelFormat: 'y',
+                        intervalType: 'Years',
+                        edgeLabelPlacement: 'Shift',
+                        majorGridLines: { width: 0 }
+                    },
+
+                    //Initializing Primary Y Axis
+                    primaryYAxis:
+                    {
+                        labelFormat: '{value}%',
+                        rangePadding: 'None',
+                        minimum: 0,
+                        maximum: 100,
+                        interval: 20,
+                        lineStyle: { width: 0 },
+                        majorTickLines: { width: 0 },
+                        minorTickLines: { width: 0 }
+                    },
+                    chartArea: {
+                        border: {
+                            width: 3,
+                            color: 'black'
+                        }
+                    },
+                    //Initializing Chart Series
+                    series: [
+                        {
+                            type: 'Line',
+                            dataSource: [
+                                { x: new Date(2005, 0, 1), y: 21 }, { x: new Date(2006, 0, 1), y: 24 },
+                                { x: new Date(2007, 0, 1), y: 36 }, { x: new Date(2008, 0, 1), y: 38 },
+                                { x: new Date(2009, 0, 1), y: 54 }, { x: new Date(2010, 0, 1), y: 57 },
+                                { x: new Date(2011, 0, 1), y: 70 }
+                            ],
+                            xName: 'x', width: 2, marker: {
+                                visible: true,
+                                width: 10,
+                                height: 10
+                            },
+                            yName: 'y', name: 'Germany',
+                        },
+                        {
+                            type: 'Line',
+                            dataSource: [
+                                { x: new Date(2005, 0, 1), y: 28 }, { x: new Date(2006, 0, 1), y: 44 },
+                                { x: new Date(2007, 0, 1), y: 48 }, { x: new Date(2008, 0, 1), y: 50 },
+                                { x: new Date(2009, 0, 1), y: 66 }, { x: new Date(2010, 0, 1), y: 78 }, { x: new Date(2011, 0, 1), y: 84 }
+                            ],
+                            xName: 'x', width: 2, marker: {
+                                visible: true,
+                                width: 10,
+                                height: 10
+                            },
+                            yName: 'y', name: 'England',
+                        },
+                    ],
+                    axisLabelClick: (args: IAxisLabelClickEventArgs) => {
+                        document.getElementById('container0_AxisLabel_3').setAttribute('fill', 'red');
+                    }
+
+                },'#container');
+        });
+        afterAll((): void => {
+            chartObj.destroy();
+            chartContainer.remove();
+        });
+        it('default axis label click event checking', (done: Function) => {
+            chartObj.loaded = () => {
+                let lableElement: Element = document.getElementById('container0_AxisLabel_3');
+                trigger.clickEvent(lableElement);
+                lableElement = document.getElementById('container0_AxisLabel_3');
+                expect(lableElement.getAttribute('fill') === 'red').toBe(true);
+                done();
+            }
+            chartObj.refresh();
         });
     });
     it('memory leak', () => {

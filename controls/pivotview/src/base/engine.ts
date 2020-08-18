@@ -2374,12 +2374,22 @@ export class PivotEngine {
     private getSortedHeaders(headers: IAxisSet[], sortOrder: string): IAxisSet[] {
         let isNotDateType: boolean = !(this.formatFields && this.formatFields[(headers[0].valueSort as any).axis] &&
             this.formatFields[(headers[0].valueSort as any).axis].type);
+        let childrens: IField = this.fieldList[(headers[0].valueSort as any).axis];
         if (isNotDateType) {
-            return sortOrder === 'Ascending' ?
-                (headers.sort((a, b) => (a.actualText > b.actualText) ? 1 : ((b.actualText > a.actualText) ? -1 : 0))) :
-                sortOrder === 'Descending' ?
-                    (headers.sort((a, b) => (a.actualText < b.actualText) ? 1 : ((b.actualText < a.actualText) ? -1 : 0))) :
-                    headers;
+            if (childrens && childrens.type == 'number' && headers.length > 0 && (typeof (headers[0].actualText) == 'string') && ((/^\d/).test(headers[0].actualText.toString()) === true)) {
+                return childrens.sort === 'Ascending' ?
+                    (headers.sort((a, b) => !isNullOrUndefined(a.actualText) && !isNullOrUndefined(b.actualText) ? (Number(a.actualText.toString().match(/\d+/)[0]) > Number(b.actualText.toString().match(/\d+/)[0])) ? 1 : ((Number(b.actualText.toString().match(/\d+/)[0]) > Number(a.actualText.toString().match(/\d+/)[0])) ? -1 : 0) : 0)) :
+                    childrens.sort === 'Descending' ?
+                        (headers.sort((a, b) => !isNullOrUndefined(a.actualText) && !isNullOrUndefined(b.actualText) ? (Number(a.actualText.toString().match(/\d+/)[0]) < Number(b.actualText.toString().match(/\d+/)[0])) ? 1 : ((Number(b.actualText.toString().match(/\d+/)[0]) < Number(a.actualText.toString().match(/\d+/)[0])) ? -1 : 0) : 0)) :
+                        headers;
+            }
+            else {
+                return sortOrder === 'Ascending' ?
+                    (headers.sort(function (a, b) { return (a.actualText > b.actualText) ? 1 : ((b.actualText > a.actualText) ? -1 : 0); })) :
+                    sortOrder === 'Descending' ?
+                        (headers.sort(function (a, b) { return (a.actualText < b.actualText) ? 1 : ((b.actualText < a.actualText) ? -1 : 0); })) :
+                        headers;
+            }
         } else {
             return sortOrder === 'Ascending' ?
                 (headers.sort((a, b) => (a.dateText > b.dateText) ? 1 : ((b.dateText > a.dateText) ? -1 : 0))) :
@@ -2803,11 +2813,20 @@ export class PivotEngine {
                             (hierarchy.sort((a, b) => (a.dateText < b.dateText) ? 1 : ((b.dateText < a.dateText) ? -1 : 0))) :
                             hierarchy;
                 } else {
-                    return childrens.sort === 'Ascending' ?
-                        (hierarchy.sort((a, b) => (a.actualText > b.actualText) ? 1 : ((b.actualText > a.actualText) ? -1 : 0))) :
-                        childrens.sort === 'Descending' ?
-                            (hierarchy.sort((a, b) => (a.actualText < b.actualText) ? 1 : ((b.actualText < a.actualText) ? -1 : 0))) :
-                            hierarchy;
+                    if (childrens.type === 'number' && hierarchy.length > 0 && (typeof (hierarchy[0].actualText) === 'string') && ((/\d/).test(hierarchy[0].actualText.toString()) === true)) {
+                        return childrens.sort === 'Ascending' ?
+                            (hierarchy.sort((a, b) => (Number(a.actualText.toString().match(/\d+/)[0]) > Number(b.actualText.toString().match(/\d+/)[0])) ? 1 : ((Number(b.actualText.toString().match(/\d+/)[0]) > Number(a.actualText.toString().match(/\d+/)[0])) ? -1 : 0))) :
+                            childrens.sort === 'Descending' ?
+                                (hierarchy.sort((a, b) => (Number(a.actualText.toString().match(/\d+/)[0]) < Number(b.actualText.toString().match(/\d+/)[0])) ? 1 : ((Number(b.actualText.toString().match(/\d+/)[0]) < Number(a.actualText.toString().match(/\d+/)[0])) ? -1 : 0))) :
+                                hierarchy;
+                    }
+                    else {
+                        return childrens.sort === 'Ascending' ?
+                            (hierarchy.sort((a, b) => (a.actualText > b.actualText) ? 1 : ((b.actualText > a.actualText) ? -1 : 0))) :
+                            childrens.sort === 'Descending' ?
+                                (hierarchy.sort((a, b) => (a.actualText < b.actualText) ? 1 : ((b.actualText < a.actualText) ? -1 : 0))) :
+                                hierarchy;
+                    }
                 }
             } else {
                 return hierarchy;

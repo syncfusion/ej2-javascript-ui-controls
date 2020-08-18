@@ -841,3 +841,94 @@ describe('Connector state of completed while dragging', () => {
         
     });
 });
+describe('Click event notify', () => {
+    let diagram: Diagram; let ele: HTMLElement;
+
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'diagramtemplate' });
+        document.body.appendChild(ele);
+        diagram = new Diagram({
+            width: '100%', height: 900,
+            annotationTemplate:"#diagramtemplate"
+        });
+        diagram.appendTo('#diagramtemplate');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('Click event notify in diagram', (done: Function) => {
+        let diagramCanvas: Element = document.getElementById('diagramtemplatecontent');
+        let mouseevents: MouseEvents = new MouseEvents();
+        let status: string = 'click';
+        diagram.click = (args:IClickEventArgs) =>
+        {
+            if(status === 'click')
+            {
+            expect(args.button === 'Left').toBe(true);
+            }
+            else if(status === 'right')
+            {
+            expect(args.button === 'Right').toBe(true);
+            }
+            else if(status === 'middle')
+            {
+            expect(args.button === 'Middle').toBe(true);
+            }
+        }
+        mouseevents.clickEvent(diagramCanvas,300,300);
+        status = 'right'
+        mouseevents.rightClickEvent(diagramCanvas,350,350);
+        status = 'middle'
+        mouseevents.middleClickEvent(diagramCanvas,350,350);
+        done();
+    });
+
+});
+describe('The node behind the scrollbar is not selected while clicking scrollbar', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+
+    let mouseEvents: MouseEvents = new MouseEvents();
+
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagramscrollselection' });
+        document.body.appendChild(ele);
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let node: NodeModel = {
+        id: 'node1', width: 150, height: 100, offsetX: 450, offsetY: 300, annotations: [{ content: 'Node1' }]
+        };
+
+        diagram = new Diagram({
+            width: 1000, height: 1000, nodes: [node]
+        });
+
+        diagram.appendTo('#diagramscrollselection');
+        
+
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Node is not selected', (done: Function) => {
+        debugger
+        var diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        diagram.zoom(2.5);
+        mouseEvents.mouseDownEvent(diagramCanvas,969,376)
+        {
+        expect(diagram.selectedItems.nodes.length === 0).toBe(true);
+        }
+        mouseEvents.clickEvent(diagramCanvas, 969, 376);
+        done();
+    });
+});

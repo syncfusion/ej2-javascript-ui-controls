@@ -5,7 +5,7 @@ import { remove } from '@syncfusion/ej2-base';
 import { CellModel, SheetModel, getSheetName, getRowsHeight, getColumnsWidth } from '../../workbook/base/index';
 import { getCellAddress, getCellIndexes, workbookFormulaOperation } from '../../workbook/common/index';
 import { dataRefresh, RefreshArgs, sheetTabs, onContentScroll, deInitProperties, beforeDataBound } from '../common/index';
-import { spreadsheetDestroyed } from '../common/index';
+import { spreadsheetDestroyed, getSiblingsHeight } from '../common/index';
 
 /**
  * Render module is used to render the spreadsheet
@@ -155,12 +155,16 @@ export class Render {
      * Used to set sheet panel size.
      */
     public setSheetPanelSize(): void {
-        let offset: ClientRect = document.getElementById(this.parent.element.id + '_sheet_panel').getBoundingClientRect();
+        let panel: HTMLElement = document.getElementById(this.parent.element.id + '_sheet_panel');
+        let offset: ClientRect = this.parent.element.getBoundingClientRect();
         let height: number;
         if (this.parent.height === 'auto') {
+            panel.style.height = '260px';
             height = 230;
         } else {
-            height = offset.height - 32;
+            height = offset.height - getSiblingsHeight(panel);
+            panel.style.height = `${height}px`;
+            height -= 32;
         }
         this.parent.viewport.height = height;
         this.parent.viewport.width = offset.width - 32;

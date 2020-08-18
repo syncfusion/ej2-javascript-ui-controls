@@ -240,7 +240,9 @@ var SfNumericTextBox = /** @class */ (function () {
 // tslint:disable
 var NumericTextBox = {
     initialize: function (wrapperElement, element, dotnetRef, options) {
-        new SfNumericTextBox(wrapperElement, element, dotnetRef, options);
+        if (element) {
+            new SfNumericTextBox(wrapperElement, element, dotnetRef, options);
+        }
         if (element && element.blazor__instance) {
             element.blazor__instance.initialize();
         }

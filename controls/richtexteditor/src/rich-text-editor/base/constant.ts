@@ -523,3 +523,8 @@ export const xhtmlValidation: string = 'xhtmlValidation';
  * @deprecated
  */
 export const beforeImageUpload: string = 'beforeImageUpload';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const resizeInitialized: string = 'resizeInitialized';

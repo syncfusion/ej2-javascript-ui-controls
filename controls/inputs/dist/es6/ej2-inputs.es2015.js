@@ -4172,12 +4172,16 @@ let Slider = class Slider extends Component {
         }
     }
     handleFocus(e) {
+        this.focusSliderElement();
+        this.sliderBarClick(e);
         if (e.currentTarget === this.firstHandle) {
             this.firstHandle.classList.add(classNames.sliderHandleFocused);
         }
         else {
             this.secondHandle.classList.add(classNames.sliderHandleFocused);
         }
+        EventHandler.add(document, 'mousemove touchmove', this.sliderBarMove, this);
+        EventHandler.add(document, 'mouseup touchend', this.sliderBarUp, this);
     }
     handleOver(e) {
         if (this.tooltip.isVisible && this.tooltip.showOn === 'Hover') {
@@ -4363,13 +4367,18 @@ let Slider = class Slider extends Component {
             }
         }
     }
+    materialTooltipEventCallBack(event) {
+        this.sliderBarClick(event);
+        EventHandler.add(document, 'mousemove touchmove', this.sliderBarMove, this);
+        EventHandler.add(document, 'mouseup touchend', this.sliderBarUp, this);
+    }
     wireMaterialTooltipEvent(destroy) {
         if (this.isMaterialTooltip) {
             if (!destroy) {
-                EventHandler.add(this.tooltipElement, 'mousedown touchstart', this.sliderDown, this);
+                EventHandler.add(this.tooltipElement, 'mousedown touchstart', this.materialTooltipEventCallBack, this);
             }
             else {
-                EventHandler.remove(this.tooltipElement, 'mousedown touchstart', this.sliderDown);
+                EventHandler.remove(this.tooltipElement, 'mousedown touchstart', this.materialTooltipEventCallBack);
             }
         }
     }
@@ -5614,10 +5623,10 @@ let Slider = class Slider extends Component {
     sliderBarClick(evt) {
         evt.preventDefault();
         let pos;
-        if (evt.type === 'mousedown' || evt.type === 'click') {
+        if (evt.type === 'mousedown' || evt.type === 'mouseup' || evt.type === 'click') {
             pos = { x: evt.clientX, y: evt.clientY };
         }
-        else if (evt.type === 'touchstart') {
+        else if (evt.type === 'touchend' || evt.type === 'touchstart') {
             pos = { x: evt.changedTouches[0].clientX, y: evt.changedTouches[0].clientY };
         }
         let handlepos = this.xyToPosition(pos);
@@ -5682,41 +5691,6 @@ let Slider = class Slider extends Component {
             this.setRangeBar();
         }
     }
-    sliderDown(event) {
-        event.preventDefault();
-        this.focusSliderElement();
-        if (this.type === 'Range' && this.drag && event.target === this.rangeBar) {
-            let xPostion;
-            let yPostion;
-            if (event.type === 'mousedown') {
-                [xPostion, yPostion] = [event.clientX, event.clientY];
-            }
-            else if (event.type === 'touchstart') {
-                [xPostion, yPostion] = [event.changedTouches[0].clientX, event.changedTouches[0].clientY];
-            }
-            if (this.orientation === 'Horizontal') {
-                this.firstPartRemain = xPostion - this.rangeBar.getBoundingClientRect().left;
-                this.secondPartRemain = this.rangeBar.getBoundingClientRect().right - xPostion;
-            }
-            else {
-                this.firstPartRemain = yPostion - this.rangeBar.getBoundingClientRect().top;
-                this.secondPartRemain = this.rangeBar.getBoundingClientRect().bottom - yPostion;
-            }
-            this.minDiff = this.handleVal2 - this.handleVal1;
-            this.tooltipToggle(this.rangeBar);
-            let focusedElement = this.element.querySelector('.' + classNames.sliderTabHandle);
-            if (focusedElement) {
-                focusedElement.classList.remove(classNames.sliderTabHandle);
-            }
-            EventHandler.add(document, 'mousemove touchmove', this.dragRangeBarMove, this);
-            EventHandler.add(document, 'mouseup touchend', this.dragRangeBarUp, this);
-        }
-        else {
-            this.sliderBarClick(event);
-            EventHandler.add(document, 'mousemove touchmove', this.sliderBarMove, this);
-            EventHandler.add(document, 'mouseup touchend', this.sliderBarUp, this);
-        }
-    }
     handleValueAdjust(handleValue, assignValue, handleNumber) {
         if (handleNumber === 1) {
             this.handleVal1 = assignValue;
@@ -5733,6 +5707,7 @@ let Slider = class Slider extends Component {
         if (event.type !== 'touchmove') {
             event.preventDefault();
         }
+        this.rangeBarDragged = true;
         let pos;
         this.rangeBar.style.transition = 'none';
         this.firstHandle.style.transition = 'none';
@@ -5897,10 +5872,15 @@ let Slider = class Slider extends Component {
         }
     }
     dragRangeBarUp(event) {
+        if (!this.rangeBarDragged) {
+            this.focusSliderElement();
+            this.sliderBarClick(event);
+        }
         this.changeEvent('changed', event);
         this.closeTooltip();
         EventHandler.remove(document, 'mousemove touchmove', this.dragRangeBarMove);
         EventHandler.remove(document, 'mouseup touchend', this.dragRangeBarUp);
+        this.rangeBarDragged = false;
     }
     checkRepeatedValue(currentValue) {
         if (this.type === 'Range') {
@@ -5978,11 +5958,49 @@ let Slider = class Slider extends Component {
             EventHandler.remove(this.secondBtn, 'focusout', this.sliderFocusOut);
         }
     }
+    rangeBarMousedown(event) {
+        event.preventDefault();
+        this.focusSliderElement();
+        if (this.type === 'Range' && this.drag && event.target === this.rangeBar) {
+            let xPostion;
+            let yPostion;
+            if (event.type === 'mousedown') {
+                [xPostion, yPostion] = [event.clientX, event.clientY];
+            }
+            else if (event.type === 'touchstart') {
+                [xPostion, yPostion] = [event.changedTouches[0].clientX, event.changedTouches[0].clientY];
+            }
+            if (this.orientation === 'Horizontal') {
+                this.firstPartRemain = xPostion - this.rangeBar.getBoundingClientRect().left;
+                this.secondPartRemain = this.rangeBar.getBoundingClientRect().right - xPostion;
+            }
+            else {
+                this.firstPartRemain = yPostion - this.rangeBar.getBoundingClientRect().top;
+                this.secondPartRemain = this.rangeBar.getBoundingClientRect().bottom - yPostion;
+            }
+            this.minDiff = this.handleVal2 - this.handleVal1;
+            this.tooltipToggle(this.rangeBar);
+            let focusedElement = this.element.querySelector('.' + classNames.sliderTabHandle);
+            if (focusedElement) {
+                focusedElement.classList.remove(classNames.sliderTabHandle);
+            }
+            EventHandler.add(document, 'mousemove touchmove', this.dragRangeBarMove, this);
+            EventHandler.add(document, 'mouseup touchend', this.dragRangeBarUp, this);
+        }
+    }
+    elementClick(event) {
+        event.preventDefault();
+        this.focusSliderElement();
+        this.sliderBarClick(event);
+    }
     wireEvents() {
         this.onresize = this.reposition.bind(this);
         window.addEventListener('resize', this.onresize);
         if (this.enabled && !this.readonly) {
-            EventHandler.add(this.element, 'mousedown touchstart', this.sliderDown, this);
+            EventHandler.add(this.element, 'click', this.elementClick, this);
+            if (this.type === 'Range' && this.drag) {
+                EventHandler.add(this.rangeBar, 'mousedown touchstart', this.rangeBarMousedown, this);
+            }
             EventHandler.add(this.sliderContainer, 'keydown', this.keyDown, this);
             EventHandler.add(this.sliderContainer, 'keyup', this.keyUp, this);
             EventHandler.add(this.element, 'focusout', this.sliderFocusOut, this);
@@ -6001,7 +6019,10 @@ let Slider = class Slider extends Component {
         }
     }
     unwireEvents() {
-        EventHandler.remove(this.element, 'mousedown touchstart', this.sliderDown);
+        EventHandler.remove(this.element, 'click', this.elementClick);
+        if (this.type === 'Range' && this.drag) {
+            EventHandler.remove(this.rangeBar, 'mousedown touchstart', this.rangeBarMousedown);
+        }
         EventHandler.remove(this.sliderContainer, 'keydown', this.keyDown);
         EventHandler.remove(this.sliderContainer, 'keyup', this.keyUp);
         EventHandler.remove(this.element, 'focusout', this.sliderFocusOut);
@@ -7672,7 +7693,9 @@ let Uploader = class Uploader extends Component {
         if (this.isBlazorSaveUrl && this.sequentialUpload) {
             this.sequentialUpload = false;
         }
-        this.formRendered();
+        if (!this.isBlazorSaveUrl) {
+            this.formRendered();
+        }
         if (!this.isServerBlazor) {
             this.updateHTMLAttrToElement();
             this.checkHTMLAttributes(false);

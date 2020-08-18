@@ -915,7 +915,7 @@ var WorkbookNumberFormat = /** @class */ (function () {
             else if (months.indexOf(dateArr[1].toLowerCase()) > -1 && Number(dateArr[0]) <= 31) {
                 return dateArr[0] + '-' + dateArr[1] + '-' + new Date().getFullYear();
             }
-            else if (dateArr[0] <= '31' && dateArr[1] <= '12') {
+            else if (Number(dateArr[0]) <= 31 && Number(dateArr[1]) <= 12) {
                 return dateArr[0] + '-' + dateArr[1] + '-' + new Date().getFullYear();
             }
             if (Number(dateArr[1]) <= 31 && Number(dateArr[0]) <= 12) {
@@ -10392,44 +10392,48 @@ var WorkbookFindAndReplace = /** @class */ (function () {
                         cellval = displayTxt;
                     }
                     else {
-                        cellval = sheet.rows[findNextArgs.rowIndex].cells[findNextArgs.colIndex].value.toString();
-                    }
-                    if (findNextArgs.args.isCSen && findNextArgs.args.isEMatch) {
-                        if (cellval === findNextArgs.stringValue) {
-                            var address = sheet.name + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
-                            this.parent.notify(goto, { address: address });
-                            findNextArgs.count++;
-                            return true;
+                        if (cellType.value) {
+                            cellval = sheet.rows[findNextArgs.rowIndex].cells[findNextArgs.colIndex].value.toString();
                         }
                     }
-                    else if (findNextArgs.args.isCSen && !findNextArgs.args.isEMatch) {
-                        var index = cellval.indexOf(findNextArgs.args.value) > -1;
-                        if ((cellval === findNextArgs.stringValue) || (index)) {
-                            var address = sheet.name + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
-                            this.parent.notify(goto, { address: address });
-                            findNextArgs.count++;
-                            return true;
+                    if (cellval) {
+                        if (findNextArgs.args.isCSen && findNextArgs.args.isEMatch) {
+                            if (cellval === findNextArgs.stringValue) {
+                                var address = sheet.name + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
+                                this.parent.notify(goto, { address: address });
+                                findNextArgs.count++;
+                                return true;
+                            }
                         }
-                    }
-                    else if (!findNextArgs.args.isCSen && findNextArgs.args.isEMatch) {
-                        findNextArgs.val = cellval.toString().toLowerCase();
-                        if (findNextArgs.val === findNextArgs.stringValue) {
-                            var address = sheet.name + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
-                            this.parent.notify(goto, { address: address });
-                            findNextArgs.count++;
-                            return true;
+                        else if (findNextArgs.args.isCSen && !findNextArgs.args.isEMatch) {
+                            var index = cellval.indexOf(findNextArgs.args.value) > -1;
+                            if ((cellval === findNextArgs.stringValue) || (index)) {
+                                var address = sheet.name + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
+                                this.parent.notify(goto, { address: address });
+                                findNextArgs.count++;
+                                return true;
+                            }
                         }
-                    }
-                    else if (!findNextArgs.args.isCSen && !findNextArgs.args.isEMatch) {
-                        findNextArgs.val = cellval.toString().toLowerCase();
-                        var index = cellval.indexOf(findNextArgs.args.value) > -1;
-                        var lowerCaseIndex = findNextArgs.val.indexOf(findNextArgs.args.value) > -1;
-                        if ((findNextArgs.val === findNextArgs.stringValue) || ((cellval === findNextArgs.stringValue) || (index)) ||
-                            (cellval === findNextArgs.stringValue) || (lowerCaseIndex)) {
-                            var address = sheet.name + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
-                            this.parent.notify(goto, { address: address });
-                            findNextArgs.count++;
-                            return true;
+                        else if (!findNextArgs.args.isCSen && findNextArgs.args.isEMatch) {
+                            findNextArgs.val = cellval.toString().toLowerCase();
+                            if (findNextArgs.val === findNextArgs.stringValue) {
+                                var address = sheet.name + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
+                                this.parent.notify(goto, { address: address });
+                                findNextArgs.count++;
+                                return true;
+                            }
+                        }
+                        else if (!findNextArgs.args.isCSen && !findNextArgs.args.isEMatch) {
+                            findNextArgs.val = cellval.toString().toLowerCase();
+                            var index = cellval.indexOf(findNextArgs.args.value) > -1;
+                            var lowerCaseIndex = findNextArgs.val.indexOf(findNextArgs.args.value) > -1;
+                            if ((findNextArgs.val === findNextArgs.stringValue) || ((cellval === findNextArgs.stringValue) || (index)) ||
+                                (cellval === findNextArgs.stringValue) || (lowerCaseIndex)) {
+                                var address = sheet.name + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
+                                this.parent.notify(goto, { address: address });
+                                findNextArgs.count++;
+                                return true;
+                            }
                         }
                     }
                 }
@@ -10691,44 +10695,48 @@ var WorkbookFindAndReplace = /** @class */ (function () {
                         cellvalue = displayTxt;
                     }
                     else {
-                        cellvalue = sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex].value.toString();
-                    }
-                    if (findPrevArgs.args.isCSen && findPrevArgs.args.isEMatch) {
-                        if (cellvalue === findPrevArgs.stringValue) {
-                            var address = sheet.name + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
-                            this.parent.notify(goto, { address: address });
-                            findPrevArgs.count++;
-                            return true;
+                        if (cellType.value) {
+                            cellvalue = sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex].value.toString();
                         }
                     }
-                    else if (findPrevArgs.args.isCSen && !findPrevArgs.args.isEMatch) {
-                        var index = cellvalue.indexOf(findPrevArgs.args.value) > -1;
-                        if ((cellvalue === findPrevArgs.stringValue) || (index)) {
-                            var address = sheet.name + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
-                            this.parent.notify(goto, { address: address });
-                            findPrevArgs.count++;
-                            return true;
+                    if (cellvalue) {
+                        if (findPrevArgs.args.isCSen && findPrevArgs.args.isEMatch) {
+                            if (cellvalue === findPrevArgs.stringValue) {
+                                var address = sheet.name + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
+                                this.parent.notify(goto, { address: address });
+                                findPrevArgs.count++;
+                                return true;
+                            }
                         }
-                    }
-                    else if (!findPrevArgs.args.isCSen && findPrevArgs.args.isEMatch) {
-                        findPrevArgs.val = cellvalue.toString().toLowerCase();
-                        if (findPrevArgs.val === findPrevArgs.stringValue) {
-                            var address = sheet.name + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
-                            this.parent.notify(goto, { address: address });
-                            findPrevArgs.count++;
-                            return true;
+                        else if (findPrevArgs.args.isCSen && !findPrevArgs.args.isEMatch) {
+                            var index = cellvalue.indexOf(findPrevArgs.args.value) > -1;
+                            if ((cellvalue === findPrevArgs.stringValue) || (index)) {
+                                var address = sheet.name + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
+                                this.parent.notify(goto, { address: address });
+                                findPrevArgs.count++;
+                                return true;
+                            }
                         }
-                    }
-                    else if (!findPrevArgs.args.isCSen && !findPrevArgs.args.isEMatch) {
-                        findPrevArgs.val = cellvalue.toString().toLowerCase();
-                        var index = cellvalue.indexOf(findPrevArgs.args.value) > -1;
-                        var lowerCaseIndex = findPrevArgs.val.indexOf(findPrevArgs.args.value) > -1;
-                        if ((cellvalue === findPrevArgs.stringValue) || ((cellvalue === findPrevArgs.stringValue) ||
-                            (index)) || (findPrevArgs.val === findPrevArgs.stringValue) || (lowerCaseIndex)) {
-                            var address = sheet.name + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
-                            this.parent.notify(goto, { address: address });
-                            findPrevArgs.count++;
-                            return true;
+                        else if (!findPrevArgs.args.isCSen && findPrevArgs.args.isEMatch) {
+                            findPrevArgs.val = cellvalue.toString().toLowerCase();
+                            if (findPrevArgs.val === findPrevArgs.stringValue) {
+                                var address = sheet.name + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
+                                this.parent.notify(goto, { address: address });
+                                findPrevArgs.count++;
+                                return true;
+                            }
+                        }
+                        else if (!findPrevArgs.args.isCSen && !findPrevArgs.args.isEMatch) {
+                            findPrevArgs.val = cellvalue.toString().toLowerCase();
+                            var index = cellvalue.indexOf(findPrevArgs.args.value) > -1;
+                            var lowerCaseIndex = findPrevArgs.val.indexOf(findPrevArgs.args.value) > -1;
+                            if ((cellvalue === findPrevArgs.stringValue) || ((cellvalue === findPrevArgs.stringValue) ||
+                                (index)) || (findPrevArgs.val === findPrevArgs.stringValue) || (lowerCaseIndex)) {
+                                var address = sheet.name + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
+                                this.parent.notify(goto, { address: address });
+                                findPrevArgs.count++;
+                                return true;
+                            }
                         }
                     }
                 }
@@ -10743,10 +10751,17 @@ var WorkbookFindAndReplace = /** @class */ (function () {
         }
         var sheet = this.parent.getActiveSheet();
         var activecell = getCellIndexes(sheet.activeCell);
-        var currentCell = sheet.rows[activecell[0]].cells[activecell[1]].value.toString();
-        var index = currentCell.indexOf(args.value) > -1;
-        var lowerCaseIndex = currentCell.toLowerCase().indexOf(args.value) > -1;
-        var val = currentCell.toString().toLowerCase();
+        var cellType = sheet.rows[activecell[0]].cells[activecell[1]];
+        var currentCell;
+        var index;
+        var lowerCaseIndex;
+        var val;
+        if (cellType && cellType.value) {
+            currentCell = sheet.rows[activecell[0]].cells[activecell[1]].value.toString();
+            index = currentCell.indexOf(args.value) > -1;
+            lowerCaseIndex = currentCell.toLowerCase().indexOf(args.value) > -1;
+            val = currentCell.toString().toLowerCase();
+        }
         if ((currentCell !== args.value) && (!index) && (val !== args.value) && (!lowerCaseIndex)) {
             args.findOpt = 'next';
             this.findNext(args);
@@ -10755,7 +10770,10 @@ var WorkbookFindAndReplace = /** @class */ (function () {
         var activecel = getCellIndexes(sheet.activeCell);
         var address = sheet.activeCell;
         var cell = sheet.rows[activecel[0]].cells[activecel[1]];
-        var cellFormat = sheet.rows[activecel[0]].cells[activecel[1]].format;
+        var cellFormat;
+        if (cell) {
+            cellFormat = cell.format;
+        }
         var compareVal;
         var replaceAddress = sheet.name + '!' + getCellAddress(activecel[0], activecel[1]);
         if (cellFormat) {
@@ -10763,33 +10781,37 @@ var WorkbookFindAndReplace = /** @class */ (function () {
             compareVal = dispTxt.toString();
         }
         else {
-            compareVal = sheet.rows[activecel[0]].cells[activecel[1]].value.toString();
+            if (cell && cell.value) {
+                compareVal = cell.value.toString();
+            }
         }
-        var replaceAllCollection = { undoRedoOpt: 'before', address: replaceAddress, compareVal: compareVal };
-        this.parent.notify(findUndoRedo, replaceAllCollection);
-        var lcValueOfCell = compareVal.toLowerCase();
-        var ivalueOfCell = compareVal.indexOf(args.value) > -1;
-        var caseInSensitive = lcValueOfCell.indexOf(args.value) > -1;
-        if ((args.value === compareVal) || (args.value === lcValueOfCell)) {
-            sheet.rows[activecel[0]].cells[activecel[1]].value = args.replaceValue;
-            this.parent.updateCell(cell, address);
-            var replaceAllCollection_1 = { address: replaceAddress, compareVal: args.replaceValue, undoRedoOpt: 'after' };
-            this.parent.notify(findUndoRedo, replaceAllCollection_1);
-        }
-        else if (ivalueOfCell) {
-            var newValue = compareVal.replace(args.value, args.replaceValue);
-            sheet.rows[activecel[0]].cells[activecel[1]].value = newValue;
-            this.parent.updateCell(cell, address);
-            var replaceAllCollection_2 = { address: replaceAddress, compareVal: args.replaceValue, undoRedoOpt: 'after' };
-            this.parent.notify(findUndoRedo, replaceAllCollection_2);
-        }
-        else if (caseInSensitive) {
-            var regx = new RegExp(args.value.toString().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig');
-            var updateValue = compareVal.replace(regx, args.replaceValue);
-            sheet.rows[activecel[0]].cells[activecel[1]].value = updateValue;
-            this.parent.updateCell(cell, address);
-            var replaceAllCollection_3 = { address: replaceAddress, compareVal: args.replaceValue, undoRedoOpt: 'after' };
-            this.parent.notify(findUndoRedo, replaceAllCollection_3);
+        if (compareVal) {
+            var replaceAllCollection = { undoRedoOpt: 'before', address: replaceAddress, compareVal: compareVal };
+            this.parent.notify(findUndoRedo, replaceAllCollection);
+            var lcValueOfCell = compareVal.toLowerCase();
+            var ivalueOfCell = compareVal.indexOf(args.value) > -1;
+            var caseInSensitive = lcValueOfCell.indexOf(args.value) > -1;
+            if ((args.value === compareVal) || (args.value === lcValueOfCell)) {
+                sheet.rows[activecel[0]].cells[activecel[1]].value = args.replaceValue;
+                this.parent.updateCell(cell, address);
+                var replaceAllCollection_1 = { address: replaceAddress, compareVal: args.replaceValue, undoRedoOpt: 'after' };
+                this.parent.notify(findUndoRedo, replaceAllCollection_1);
+            }
+            else if (ivalueOfCell) {
+                var newValue = compareVal.replace(args.value, args.replaceValue);
+                sheet.rows[activecel[0]].cells[activecel[1]].value = newValue;
+                this.parent.updateCell(cell, address);
+                var replaceAllCollection_2 = { address: replaceAddress, compareVal: args.replaceValue, undoRedoOpt: 'after' };
+                this.parent.notify(findUndoRedo, replaceAllCollection_2);
+            }
+            else if (caseInSensitive) {
+                var regx = new RegExp(args.value.toString().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig');
+                var updateValue = compareVal.replace(regx, args.replaceValue);
+                sheet.rows[activecel[0]].cells[activecel[1]].value = updateValue;
+                this.parent.updateCell(cell, address);
+                var replaceAllCollection_3 = { address: replaceAddress, compareVal: args.replaceValue, undoRedoOpt: 'after' };
+                this.parent.notify(findUndoRedo, replaceAllCollection_3);
+            }
         }
     };
     WorkbookFindAndReplace.prototype.replaceAll = function (args) {
@@ -10797,7 +10819,6 @@ var WorkbookFindAndReplace = /** @class */ (function () {
         var sheet = this.parent.sheets[startSheet];
         var endRow = sheet.usedRange.rowIndex;
         var count = 0;
-        var undoRedoOpt = 'beforeReplaceAll';
         var startRow = 0;
         var endColumn = sheet.usedRange.colIndex;
         var startColumn = 0;
@@ -10837,51 +10858,55 @@ var WorkbookFindAndReplace = /** @class */ (function () {
                                         cellval = displayTxt.toString();
                                     }
                                     else {
-                                        cellval = sheet.rows[startRow].cells[startColumn].value.toString();
-                                    }
-                                    if (args.isCSen && args.isEMatch) {
-                                        if (cellval === args.value) {
-                                            sheet.rows[startRow].cells[startColumn].value = args.replaceValue;
-                                            address = sheet.name + '!' + getCellAddress(startRow, startColumn);
-                                            this.parent.updateCell(cell, address);
-                                            addressCollection.push(address);
-                                            count++;
+                                        if (cellType.value) {
+                                            cellval = cellType.value.toString();
                                         }
                                     }
-                                    else if (args.isCSen && !args.isEMatch) {
-                                        var index = cellval.indexOf(args.value) > -1;
-                                        if ((cellval === args.value) || (index)) {
-                                            var newValue = cellval.replace(args.value, args.replaceValue);
-                                            sheet.rows[startRow].cells[startColumn].value = newValue;
-                                            address = sheet.name + '!' + getCellAddress(startRow, startColumn);
-                                            this.parent.updateCell(cell, address);
-                                            addressCollection.push(address);
-                                            count++;
+                                    if (cellval) {
+                                        if (args.isCSen && args.isEMatch) {
+                                            if (cellval === args.value) {
+                                                cellType.value = args.replaceValue;
+                                                address = sheet.name + '!' + getCellAddress(startRow, startColumn);
+                                                this.parent.updateCell(cell, address);
+                                                addressCollection.push(address);
+                                                count++;
+                                            }
                                         }
-                                    }
-                                    else if (!args.isCSen && args.isEMatch) {
-                                        var val = cellval.toString().toLowerCase();
-                                        if (val === args.value) {
-                                            sheet.rows[startRow].cells[startColumn].value = args.replaceValue;
-                                            address = sheet.name + '!' + getCellAddress(startRow, startColumn);
-                                            this.parent.updateCell(cell, address);
-                                            addressCollection.push(address);
-                                            count++;
+                                        else if (args.isCSen && !args.isEMatch) {
+                                            var index = cellval.indexOf(args.value) > -1;
+                                            if ((cellval === args.value) || (index)) {
+                                                var newValue = cellval.replace(args.value, args.replaceValue);
+                                                cellType.value = newValue;
+                                                address = sheet.name + '!' + getCellAddress(startRow, startColumn);
+                                                this.parent.updateCell(cell, address);
+                                                addressCollection.push(address);
+                                                count++;
+                                            }
                                         }
-                                    }
-                                    else if (!args.isCSen && !args.isEMatch) {
-                                        var val = cellval.toString().toLowerCase();
-                                        var index = cellval.indexOf(args.value) > -1;
-                                        var lowerCaseValue = val.indexOf(args.value) > -1;
-                                        if (((cellval === args.value) || (index)) || (val === args.value) || (cellval === args.value) ||
-                                            (lowerCaseValue)) {
-                                            var regExepression = new RegExp(args.value.toString().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig');
-                                            var newValue = cellval.replace(regExepression, args.replaceValue);
-                                            sheet.rows[startRow].cells[startColumn].value = newValue;
-                                            address = sheet.name + '!' + getCellAddress(startRow, startColumn);
-                                            this.parent.updateCell(cell, address);
-                                            addressCollection.push(address);
-                                            count++;
+                                        else if (!args.isCSen && args.isEMatch) {
+                                            var val = cellval.toString().toLowerCase();
+                                            if (val === args.value) {
+                                                cellType.value = args.replaceValue;
+                                                address = sheet.name + '!' + getCellAddress(startRow, startColumn);
+                                                this.parent.updateCell(cell, address);
+                                                addressCollection.push(address);
+                                                count++;
+                                            }
+                                        }
+                                        else if (!args.isCSen && !args.isEMatch) {
+                                            var val = cellval.toString().toLowerCase();
+                                            var index = cellval.indexOf(args.value) > -1;
+                                            var lowerCaseValue = val.indexOf(args.value) > -1;
+                                            if (((cellval === args.value) || (index)) || (val === args.value) || (cellval === args.value) ||
+                                                (lowerCaseValue)) {
+                                                var regExepression = new RegExp(args.value.toString().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig');
+                                                var newValue = cellval.replace(regExepression, args.replaceValue);
+                                                cellType.value = newValue;
+                                                address = sheet.name + '!' + getCellAddress(startRow, startColumn);
+                                                this.parent.updateCell(cell, address);
+                                                addressCollection.push(address);
+                                                count++;
+                                            }
                                         }
                                     }
                                 }
@@ -10891,16 +10916,6 @@ var WorkbookFindAndReplace = /** @class */ (function () {
                 }
             }
         }
-        var replaceAllCollection = {
-            undoRedoOpt: undoRedoOpt, Collection: addressCollection,
-            replaceValue: args.value
-        };
-        this.parent.notify(findUndoRedo, replaceAllCollection);
-        replaceAllCollection = {
-            undoRedoOpt: 'afterReplaceAll', Collection: addressCollection,
-            replaceValue: args.replaceValue
-        };
-        this.parent.notify(findUndoRedo, replaceAllCollection);
         var countNumber = count;
         this.parent.notify(replaceAllDialog, { count: countNumber, replaceValue: args.replaceValue });
     };
@@ -10931,32 +10946,36 @@ var WorkbookFindAndReplace = /** @class */ (function () {
                                     cellvalue = displayTxt.toString();
                                 }
                                 else {
-                                    cellvalue = cellType.value.toString();
-                                }
-                                if (args.isCSen && args.isEMatch) {
-                                    if (cellvalue === args.value) {
-                                        count++;
+                                    if (cellType.value) {
+                                        cellvalue = cellType.value.toString();
                                     }
                                 }
-                                else if (args.isCSen && !args.isEMatch) {
-                                    var index = cellvalue.indexOf(args.value) > -1;
-                                    if ((cellvalue === args.value) || (index)) {
-                                        count++;
+                                if (cellvalue) {
+                                    if (args.isCSen && args.isEMatch) {
+                                        if (cellvalue === args.value) {
+                                            count++;
+                                        }
                                     }
-                                }
-                                else if (!args.isCSen && args.isEMatch) {
-                                    var val = cellvalue.toString().toLowerCase();
-                                    if (val === args.value) {
-                                        count++;
+                                    else if (args.isCSen && !args.isEMatch) {
+                                        var index = cellvalue.indexOf(args.value) > -1;
+                                        if ((cellvalue === args.value) || (index)) {
+                                            count++;
+                                        }
                                     }
-                                }
-                                else if (!args.isCSen && !args.isEMatch) {
-                                    var val = cellvalue.toString().toLowerCase();
-                                    var index = cellvalue.indexOf(args.value) > -1;
-                                    var lowerCaseValue = val.indexOf(args.value) > -1;
-                                    if ((val === args.value) || ((cellvalue === args.value) || (index)) || (cellvalue === args.value) ||
-                                        (lowerCaseValue)) {
-                                        count++;
+                                    else if (!args.isCSen && args.isEMatch) {
+                                        var val = cellvalue.toString().toLowerCase();
+                                        if (val === args.value) {
+                                            count++;
+                                        }
+                                    }
+                                    else if (!args.isCSen && !args.isEMatch) {
+                                        var val = cellvalue.toString().toLowerCase();
+                                        var index = cellvalue.indexOf(args.value) > -1;
+                                        var lowerCaseValue = val.indexOf(args.value) > -1;
+                                        if ((val === args.value) || ((cellvalue === args.value) || (index)) || (cellvalue === args.value) ||
+                                            (lowerCaseValue)) {
+                                            count++;
+                                        }
                                     }
                                 }
                             }
@@ -10989,40 +11008,45 @@ var WorkbookFindAndReplace = /** @class */ (function () {
                 for (startColumn; startColumn <= endColumn; startColumn++) {
                     if (row) {
                         if (row.cells[startColumn]) {
-                            if (sheet.rows[startRow].cells[startColumn]) {
+                            var cell = sheet.rows[startRow].cells[startColumn];
+                            if (cell) {
                                 var cellval = void 0;
-                                if (sheet.rows[startRow].cells[startColumn].format) {
+                                if (cell.format) {
                                     var displayTxt = this.parent.getDisplayText(sheet.rows[startRow].
                                         cells[startColumn]);
                                     cellval = displayTxt.toString();
                                 }
                                 else {
-                                    cellval = sheet.rows[startRow].cells[startColumn].value.toString();
-                                }
-                                if (args.isCSen && !args.isEMatch) {
-                                    var index = cellval.indexOf(args.value) > -1;
-                                    if ((cellval === args.value) || (index)) {
-                                        requiredCount++;
+                                    if (cell.value) {
+                                        cellval = cell.value.toString();
                                     }
                                 }
-                                else if (args.isCSen && args.isEMatch) {
-                                    if (cellval === args.value) {
-                                        requiredCount++;
+                                if (cellval) {
+                                    if (args.isCSen && !args.isEMatch) {
+                                        var index = cellval.indexOf(args.value) > -1;
+                                        if ((cellval === args.value) || (index)) {
+                                            requiredCount++;
+                                        }
                                     }
-                                }
-                                else if (!args.isCSen && args.isEMatch) {
-                                    var val = cellval.toString().toLowerCase();
-                                    if (val === args.value) {
-                                        requiredCount++;
+                                    else if (args.isCSen && args.isEMatch) {
+                                        if (cellval === args.value) {
+                                            requiredCount++;
+                                        }
                                     }
-                                }
-                                else if (!args.isCSen && !args.isEMatch) {
-                                    var val = cellval.toString().toLowerCase();
-                                    var index = cellval.indexOf(args.value) > -1;
-                                    var lowerCaseVal = val.indexOf(args.value) > -1;
-                                    if ((cellval === args.value) || ((cellval === args.value) || (index)) || (val === args.value) ||
-                                        (lowerCaseVal)) {
-                                        requiredCount++;
+                                    else if (!args.isCSen && args.isEMatch) {
+                                        var val = cellval.toString().toLowerCase();
+                                        if (val === args.value) {
+                                            requiredCount++;
+                                        }
+                                    }
+                                    else if (!args.isCSen && !args.isEMatch) {
+                                        var val = cellval.toString().toLowerCase();
+                                        var index = cellval.indexOf(args.value) > -1;
+                                        var lowerCaseVal = val.indexOf(args.value) > -1;
+                                        if ((cellval === args.value) || ((cellval === args.value) || (index)) || (val === args.value) ||
+                                            (lowerCaseVal)) {
+                                            requiredCount++;
+                                        }
                                     }
                                 }
                             }
@@ -12927,127 +12951,6 @@ var localeData = {
  * Common tasks.
  */
 
-var __extends$6 = (undefined && undefined.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __decorate$5 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-/**
- * Configures the Row behavior for the spreadsheet.
- *  ```html
- * <div id='Spreadsheet'></div>
- * ```
- * ```typescript
- * let spreadsheet: Spreadsheet = new Spreadsheet({
- *      sheets: [{
- *                rows: [{
- *                        index: 30,
- *                        cells: [{ index: 4, value: 'Total Amount:' },
- *                               { formula: '=SUM(F2:F30)', style: { fontWeight: 'bold' } }]
- *                }]
- * ...
- * });
- * spreadsheet.appendTo('#Spreadsheet');
- * ```
- */
-var Row = /** @class */ (function (_super) {
-    __extends$6(Row, _super);
-    function Row() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    __decorate$5([
-        sf.base.Collection([], Cell)
-    ], Row.prototype, "cells", void 0);
-    __decorate$5([
-        sf.base.Property(0)
-    ], Row.prototype, "index", void 0);
-    __decorate$5([
-        sf.base.Property(20)
-    ], Row.prototype, "height", void 0);
-    __decorate$5([
-        sf.base.Property(false)
-    ], Row.prototype, "customHeight", void 0);
-    __decorate$5([
-        sf.base.Property(false)
-    ], Row.prototype, "hidden", void 0);
-    return Row;
-}(sf.base.ChildProperty));
-/**
- * @hidden
- */
-function getRow(sheet, rowIndex) {
-    return sheet.rows[rowIndex];
-}
-/** @hidden */
-function setRow(sheet, rowIndex, row) {
-    if (!sheet.rows[rowIndex]) {
-        sheet.rows[rowIndex] = {};
-    }
-    Object.keys(row).forEach(function (key) {
-        sheet.rows[rowIndex][key] = row[key];
-    });
-}
-/** @hidden */
-function isHiddenRow(sheet, index) {
-    return sheet.rows[index] && sheet.rows[index].hidden;
-}
-/**
- * @hidden
- */
-function getRowHeight(sheet, rowIndex) {
-    if (sheet && sheet.rows && sheet.rows[rowIndex]) {
-        if (sheet.rows[rowIndex].hidden) {
-            return 0;
-        }
-        return sheet.rows[rowIndex].height === undefined ? 20 : sheet.rows[rowIndex].height;
-    }
-    else {
-        return 20;
-    }
-}
-/**
- * @hidden
- */
-function setRowHeight(sheet, rowIndex, height) {
-    if (sheet && sheet.rows) {
-        if (!sheet.rows[rowIndex]) {
-            sheet.rows[rowIndex] = {};
-        }
-        sheet.rows[rowIndex].height = height;
-    }
-}
-/**
- * @hidden
- */
-function getRowsHeight(sheet, startRow, endRow) {
-    if (endRow === void 0) { endRow = startRow; }
-    var height = 0;
-    var swap;
-    if (startRow > endRow) {
-        swap = startRow;
-        startRow = endRow;
-        endRow = swap;
-    }
-    for (var i = startRow; i <= endRow; i++) {
-        height += getRowHeight(sheet, i);
-    }
-    return height;
-}
-
 var __extends$5 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -13421,6 +13324,127 @@ function clearRange(context, address, sheetIdx, valueOnly) {
             }
         }
     }
+}
+
+var __extends$6 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate$5 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Configures the Row behavior for the spreadsheet.
+ *  ```html
+ * <div id='Spreadsheet'></div>
+ * ```
+ * ```typescript
+ * let spreadsheet: Spreadsheet = new Spreadsheet({
+ *      sheets: [{
+ *                rows: [{
+ *                        index: 30,
+ *                        cells: [{ index: 4, value: 'Total Amount:' },
+ *                               { formula: '=SUM(F2:F30)', style: { fontWeight: 'bold' } }]
+ *                }]
+ * ...
+ * });
+ * spreadsheet.appendTo('#Spreadsheet');
+ * ```
+ */
+var Row = /** @class */ (function (_super) {
+    __extends$6(Row, _super);
+    function Row() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$5([
+        sf.base.Collection([], Cell)
+    ], Row.prototype, "cells", void 0);
+    __decorate$5([
+        sf.base.Property(0)
+    ], Row.prototype, "index", void 0);
+    __decorate$5([
+        sf.base.Property(20)
+    ], Row.prototype, "height", void 0);
+    __decorate$5([
+        sf.base.Property(false)
+    ], Row.prototype, "customHeight", void 0);
+    __decorate$5([
+        sf.base.Property(false)
+    ], Row.prototype, "hidden", void 0);
+    return Row;
+}(sf.base.ChildProperty));
+/**
+ * @hidden
+ */
+function getRow(sheet, rowIndex) {
+    return sheet.rows[rowIndex];
+}
+/** @hidden */
+function setRow(sheet, rowIndex, row) {
+    if (!sheet.rows[rowIndex]) {
+        sheet.rows[rowIndex] = {};
+    }
+    Object.keys(row).forEach(function (key) {
+        sheet.rows[rowIndex][key] = row[key];
+    });
+}
+/** @hidden */
+function isHiddenRow(sheet, index) {
+    return sheet.rows[index] && sheet.rows[index].hidden;
+}
+/**
+ * @hidden
+ */
+function getRowHeight(sheet, rowIndex) {
+    if (sheet && sheet.rows && sheet.rows[rowIndex]) {
+        if (sheet.rows[rowIndex].hidden) {
+            return 0;
+        }
+        return sheet.rows[rowIndex].height === undefined ? 20 : sheet.rows[rowIndex].height;
+    }
+    else {
+        return 20;
+    }
+}
+/**
+ * @hidden
+ */
+function setRowHeight(sheet, rowIndex, height) {
+    if (sheet && sheet.rows) {
+        if (!sheet.rows[rowIndex]) {
+            sheet.rows[rowIndex] = {};
+        }
+        sheet.rows[rowIndex].height = height;
+    }
+}
+/**
+ * @hidden
+ */
+function getRowsHeight(sheet, startRow, endRow) {
+    if (endRow === void 0) { endRow = startRow; }
+    var height = 0;
+    var swap;
+    if (startRow > endRow) {
+        swap = startRow;
+        startRow = endRow;
+        endRow = swap;
+    }
+    for (var i = startRow; i <= endRow; i++) {
+        height += getRowHeight(sheet, i);
+    }
+    return height;
 }
 
 var __extends$7 = (undefined && undefined.__extends) || (function () {
@@ -14846,6 +14870,27 @@ function getScrollBarWidth() {
     result = (htmlDivNode.offsetWidth - htmlDivNode.clientWidth) | 0;
     document.body.removeChild(htmlDivNode);
     return scrollAreaWidth = result;
+}
+var classes = ['e-ribbon', 'e-formula-bar-panel', 'e-sheet-tab-panel', 'e-header-toolbar'];
+/** @hidden */
+function getSiblingsHeight(element, classList) {
+    if (classList === void 0) { classList = classes; }
+    var previous = getHeightFromDirection(element, 'previous', classList);
+    var next = getHeightFromDirection(element, 'next', classList);
+    return previous + next;
+}
+function getHeightFromDirection(element, direction, classList) {
+    // tslint:disable-next-line:no-any
+    var sibling = (element)[direction + 'ElementSibling'];
+    var result = 0;
+    while (sibling) {
+        if (classList.some(function (value) { return sibling.classList.contains(value); })) {
+            result += sibling.offsetHeight;
+        }
+        // tslint:disable-next-line:no-any
+        sibling = (sibling)[direction + 'ElementSibling'];
+    }
+    return result;
 }
 /**
  * @hidden
@@ -20523,11 +20568,11 @@ var SpreadsheetHyperlink = /** @class */ (function () {
             selectedItem: selIdx,
             items: [
                 {
-                    header: { 'text': 'WEB PAGE' },
+                    header: { 'text': l10n.getConstant('WebPage') },
                     content: webContElem
                 },
                 {
-                    header: { 'text': 'THIS DOCUMENT' },
+                    header: { 'text': l10n.getConstant('ThisDocument') },
                     content: docContElem
                 },
             ]
@@ -20541,8 +20586,8 @@ var SpreadsheetHyperlink = /** @class */ (function () {
         }
         var textCont = this.parent.createElement('div', { className: 'e-cont' });
         var urlCont = this.parent.createElement('div', { className: 'e-cont' });
-        var textH = this.parent.createElement('div', { className: 'e-header', innerHTML: 'Display Text' });
-        var urlH = this.parent.createElement('div', { className: 'e-header', innerHTML: 'URL' });
+        var textH = this.parent.createElement('div', { className: 'e-header', innerHTML: l10n.getConstant('DisplayText') });
+        var urlH = this.parent.createElement('div', { className: 'e-header', innerHTML: l10n.getConstant('Url') });
         var textInput = this.parent.createElement('input', { className: 'e-input e-text', attrs: { 'type': 'Text' }, });
         if (!isEnable) {
             textInput.classList.add('e-disabled');
@@ -20553,8 +20598,8 @@ var SpreadsheetHyperlink = /** @class */ (function () {
             textInput.setAttribute('value', this.parent.getDisplayText(cell));
         }
         var urlInput = this.parent.createElement('input', { className: 'e-input e-text', attrs: { 'type': 'Text' } });
-        textInput.setAttribute('placeholder', 'Enter the text to display');
-        urlInput.setAttribute('placeholder', 'Enter the URL');
+        textInput.setAttribute('placeholder', l10n.getConstant('EnterTheTextToDisplay'));
+        urlInput.setAttribute('placeholder', l10n.getConstant('EnterTheUrl'));
         textCont.appendChild(textInput);
         textCont.insertBefore(textH, textInput);
         urlCont.appendChild(urlInput);
@@ -20588,11 +20633,11 @@ var SpreadsheetHyperlink = /** @class */ (function () {
         }
         var data = [
             {
-                nodeId: '01', nodeText: 'Cell Reference', expanded: isCellRef,
+                nodeId: '01', nodeText: l10n.getConstant('CellReference'), expanded: isCellRef,
                 nodeChild: cellRef
             },
             {
-                nodeId: '02', nodeText: 'Defined Names', expanded: isDefinedName,
+                nodeId: '02', nodeText: l10n.getConstant('DefinedNames'), expanded: isDefinedName,
                 nodeChild: definedName
             },
         ];
@@ -20600,7 +20645,7 @@ var SpreadsheetHyperlink = /** @class */ (function () {
             fields: { dataSource: data, id: 'nodeId', text: 'nodeText', child: 'nodeChild' }
         });
         var cellrefCont = this.parent.createElement('div', { className: 'e-cont' });
-        var cellrefH = this.parent.createElement('div', { className: 'e-header', innerHTML: 'Cell Reference' });
+        var cellrefH = this.parent.createElement('div', { className: 'e-header', innerHTML: l10n.getConstant('CellReference') });
         var cellrefInput = this.parent.createElement('input', {
             className: 'e-input e-text e-hyp-text',
             attrs: { 'type': 'Text' }
@@ -20609,7 +20654,7 @@ var SpreadsheetHyperlink = /** @class */ (function () {
         cellrefCont.appendChild(cellrefInput);
         cellrefCont.insertBefore(cellrefH, cellrefInput);
         var textCont1 = this.parent.createElement('div', { className: 'e-cont' });
-        var textH1 = this.parent.createElement('div', { className: 'e-header', innerHTML: 'Display Text' });
+        var textH1 = this.parent.createElement('div', { className: 'e-header', innerHTML: l10n.getConstant('DisplayText') });
         var textInput1 = this.parent.createElement('input', { className: 'e-input e-text', attrs: { 'type': 'Text' } });
         if (!isEnable) {
             textInput1.classList.add('e-disabled');
@@ -20619,11 +20664,11 @@ var SpreadsheetHyperlink = /** @class */ (function () {
         if (cell && sf.base.isNullOrUndefined(cell.hyperlink)) {
             textInput1.setAttribute('value', this.parent.getDisplayText(cell));
         }
-        textInput1.setAttribute('placeholder', 'Enter the text to display');
+        textInput1.setAttribute('placeholder', l10n.getConstant('EnterTheTextToDisplay'));
         textCont1.appendChild(textInput1);
         textCont1.insertBefore(textH1, textInput1);
         var sheetCont = this.parent.createElement('div', { className: 'e-cont' });
-        var sheetH = this.parent.createElement('div', { className: 'e-header', innerHTML: 'Sheet' });
+        var sheetH = this.parent.createElement('div', { className: 'e-header', innerHTML: l10n.getConstant('Sheet') });
         var refCont = this.parent.createElement('div', { className: 'e-refcont' });
         sheetCont.appendChild(refCont);
         sheetCont.insertBefore(sheetH, refCont);
@@ -23348,63 +23393,65 @@ var ConditionalFormatting = /** @class */ (function () {
         }
     };
     ConditionalFormatting.prototype.getType = function (action) {
+        var l10n = this.parent.serviceLocator.getService(locale);
         var result = '';
         switch (action) {
-            case 'Greater Than...':
+            case l10n.getConstant('GreaterThan') + '...':
                 result = 'GreaterThan';
                 break;
-            case 'Less Than...':
+            case l10n.getConstant('LessThan') + '...':
                 result = 'LessThan';
                 break;
-            case 'Between...':
+            case l10n.getConstant('Between') + '...':
                 result = 'Between';
                 break;
-            case 'Equal To...':
+            case l10n.getConstant('CFEqualTo') + '...':
                 result = 'EqualTo';
                 break;
-            case 'Text that Contains...':
+            case l10n.getConstant('TextThatContains') + '...':
                 result = 'ContainsText';
                 break;
-            case 'A Date Occuring...':
+            case l10n.getConstant('ADateOccuring') + '...':
                 result = 'DateOccur';
                 break;
-            case 'Top 10 Items...':
+            case l10n.getConstant('Top10Items') + '...':
                 result = 'Top10Items';
                 break;
-            case 'Bottom 10 Items...':
+            case l10n.getConstant('Bottom10Items') + '...':
                 result = 'Bottom10Items';
                 break;
-            case 'Top 10 %...':
+            case l10n.getConstant('Top10') + ' %...':
                 result = 'Top10Percentage';
                 break;
-            case 'Bottom 10 %...':
+            case l10n.getConstant('Bottom10') + ' %...':
                 result = 'Bottom10Percentage';
                 break;
-            case 'Above Average...':
+            case l10n.getConstant('AboveAverage') + '...':
                 result = 'AboveAverage';
                 break;
-            case 'Below Average...':
+            case l10n.getConstant('BelowAverage') + '...':
                 result = 'BelowAverage';
                 break;
         }
         return result;
     };
     ConditionalFormatting.prototype.getCFColor = function (value) {
+        var l10n = this.parent.serviceLocator.getService(locale);
         var result = 'RedFT';
         switch (value) {
-            case 'Light Red Fill with Dark Red Text':
+            case l10n.getConstant('LightRedFillWithDarkRedText'):
                 result = 'RedFT';
                 break;
-            case 'Yellow Fill with Dark Yellow Text':
+            case l10n.getConstant('YellowFillWithDarkYellowText'):
                 result = 'YellowFT';
                 break;
-            case 'Green Fill with Dark Green Text':
+            case l10n.getConstant('GreenFillWithDarkGreenText'):
                 result = 'GreenFT';
                 break;
-            case 'Red Fill':
+            case l10n.getConstant('RedFill'):
                 result = 'RedF';
                 break;
-            case 'Red Text':
+            case l10n.getConstant('RedText'):
                 result = 'RedT';
                 break;
         }
@@ -23424,11 +23471,11 @@ var ConditionalFormatting = /** @class */ (function () {
         dlgContent.appendChild(mainDiv);
         dlgContent.appendChild(subDiv);
         mainDiv.appendChild(value1Text);
-        if (action !== 'Duplicate Values...') {
-            if (action !== 'Above Average...' && action !== 'Below Average...') {
+        if (action !== l10n.getConstant('DuplicateValues') + '...') {
+            if (action !== l10n.getConstant('AboveAverage') + '...' && action !== l10n.getConstant('BelowAverage') + '...') {
                 mainDiv.appendChild(value1Inp);
-                if (action === 'Top 10 Items...' || action === 'Top 10 %...' ||
-                    action === 'Bottom 10 Items...' || action === 'Bottom 10 %...') {
+                if (action === l10n.getConstant('Top10Items') + '...' || action === l10n.getConstant('Top10') + ' %...' ||
+                    action === l10n.getConstant('Bottom10Items') + '...' || action === l10n.getConstant('Bottom10') + ' %...') {
                     var numeric = new sf.inputs.NumericTextBox({
                         value: 10
                     });
@@ -23439,8 +23486,8 @@ var ConditionalFormatting = /** @class */ (function () {
         else {
             mainDiv.appendChild(duplicateSelectEle);
             var dupData = [
-                { text: 'Duplicate', id: 'duplicate' },
-                { text: 'Unique', id: 'unique' },
+                { text: l10n.getConstant('Duplicate'), id: 'duplicate' },
+                { text: l10n.getConstant('Unique'), id: 'unique' },
             ];
             var dupList = new sf.dropdowns.DropDownList({
                 dataSource: dupData,
@@ -23449,8 +23496,8 @@ var ConditionalFormatting = /** @class */ (function () {
             });
             dupList.appendTo(duplicateSelectEle);
         }
-        if (action === 'Between...') {
-            var value2Text = this.parent.createElement('span', { className: 'e-header e-header-2', innerHTML: 'and' });
+        if (action === l10n.getConstant('Between') + '...') {
+            var value2Text = this.parent.createElement('span', { className: 'e-header e-header-2', innerHTML: l10n.getConstant('And') });
             var value2Inp = this.parent.createElement('input', { className: 'e-input' });
             mainDiv.appendChild(value2Text);
             mainDiv.appendChild(value2Inp);
@@ -23458,11 +23505,11 @@ var ConditionalFormatting = /** @class */ (function () {
         subDiv.appendChild(subDivText);
         subDiv.appendChild(colorSelectEle);
         var colorData = [
-            { text: 'Light Red Fill with Dark Red Text', value: 'redft', id: 'redft' },
-            { text: 'Yellow Fill with Dark Yellow Text', id: 'yellowft' },
-            { text: 'Green Fill with Dark Green Text', id: 'greenft' },
-            { text: 'Red Fill', id: 'redf' },
-            { text: 'Red Text', id: 'redt' },
+            { text: l10n.getConstant('LightRedFillWithDarkRedText'), value: 'redft', id: 'redft' },
+            { text: l10n.getConstant('YellowFillWithDarkYellowText'), id: 'yellowft' },
+            { text: l10n.getConstant('GreenFillWithDarkGreenText'), id: 'greenft' },
+            { text: l10n.getConstant('RedFill'), id: 'redf' },
+            { text: l10n.getConstant('RedText'), id: 'redt' },
         ];
         var colorList = new sf.dropdowns.DropDownList({
             dataSource: colorData,
@@ -23503,10 +23550,10 @@ var ConditionalFormatting = /** @class */ (function () {
                 result = l10n.getConstant('FormatCellsEqualTo');
                 break;
             case l10n.getConstant('TextThatContains') + '...':
-                result = l10n.getConstant('FormatCellsText');
+                result = l10n.getConstant('FormatCellsThatContainTheText');
                 break;
             case l10n.getConstant('ADateOccuring') + '...':
-                result = l10n.getConstant('FormatCellsDate');
+                result = l10n.getConstant('FormatCellsThatContainADateOccurring');
                 break;
             case l10n.getConstant('DuplicateValues') + '...':
                 result = l10n.getConstant('FormatCellsDuplicate');
@@ -25550,15 +25597,15 @@ var Ribbon$$1 = /** @class */ (function () {
                 }],
             orientation: 'Vertical',
             beforeOpen: function (args) {
-                if (args.parentItem.text === 'Data Bars') {
+                if (args.parentItem.text === l10n.getConstant('DataBars')) {
                     args.element.firstChild.appendChild(dataBars);
                     args.element.parentElement.classList.add('e-databars');
                 }
-                else if (args.parentItem.text === 'Color Scales') {
+                else if (args.parentItem.text === l10n.getConstant('ColorScales')) {
                     args.element.firstChild.appendChild(colorScales);
                     args.element.parentElement.classList.add('e-colorscales');
                 }
-                else if (args.parentItem.text === 'Icon Sets') {
+                else if (args.parentItem.text === l10n.getConstant('IconSets')) {
                     args.element.firstChild.appendChild(iconSets);
                     args.element.parentElement.classList.add('e-iconsets');
                 }
@@ -26520,6 +26567,7 @@ var Ribbon$$1 = /** @class */ (function () {
         else {
             target.title = l10n.getConstant('ExpandToolbar');
         }
+        this.parent.setPanelSize();
     };
     Ribbon$$1.prototype.getNumFormatDdbItems = function (id) {
         var l10n = this.parent.serviceLocator.getService(locale);
@@ -27658,6 +27706,7 @@ var FormulaBar = /** @class */ (function () {
             document.getElementById(this.parent.element.id + '_formula_input').rows = 3;
             target.title = l10n.getConstant('CollapseFormulaBar');
         }
+        this.parent.setPanelSize();
     };
     FormulaBar.prototype.dialogOpen = function () {
         this.focusOkButton();
@@ -31127,8 +31176,8 @@ var defaultLocale = {
     FormatCellsLessThan: 'Format cells that are LESS THAN:',
     FormatCellsBetween: 'Format cells that are BETWEEN:',
     FormatCellsEqualTo: 'Format cells that are EQUAL TO:',
-    FormatCellsText: 'Format cells that contain the text:',
-    FormatCellsDate: 'Format cells that contain a date occurring:',
+    FormatCellsThatContainTheText: 'Format cells that contain the text:',
+    FormatCellsThatContainADateOccurring: 'Format cells that contain a date occurring:',
     FormatCellsDuplicate: 'Format cells that contain:',
     FormatCellsTop: 'Format cells that rank in the TOP:',
     FormatCellsBottom: 'Format cells that rank in the BOTTOM:',
@@ -31152,7 +31201,23 @@ var defaultLocale = {
     ClearContents: 'Clear Contents',
     ClearAll: 'Clear All',
     ClearFormats: 'Clear Formats',
-    ClearHyperlinks: 'Clear Hyperlinks'
+    ClearHyperlinks: 'Clear Hyperlinks',
+    LightRedFillWithDarkRedText: 'Light Red Fill with Dark Red Text',
+    YellowFillWithDarkYellowText: 'Yellow Fill with Dark Yellow Text',
+    GreenFillWithDarkGreenText: 'Green Fill with Dark Green Text',
+    RedFill: 'Red Fill',
+    RedText: 'Red Text',
+    Duplicate: 'Duplicate',
+    Unique: 'Unique',
+    And: 'and',
+    WebPage: 'WEB PAGE',
+    ThisDocument: 'THIS DOCUMENT',
+    DisplayText: 'Display Text',
+    Url: 'URL',
+    CellReference: 'Cell Reference',
+    DefinedNames: 'Defined Names',
+    EnterTheTextToDisplay: 'Enter the text to display',
+    EnterTheUrl: 'Enter the URL'
 };
 
 /**
@@ -32354,13 +32419,17 @@ var Render = /** @class */ (function () {
      * Used to set sheet panel size.
      */
     Render.prototype.setSheetPanelSize = function () {
-        var offset = document.getElementById(this.parent.element.id + '_sheet_panel').getBoundingClientRect();
+        var panel = document.getElementById(this.parent.element.id + '_sheet_panel');
+        var offset = this.parent.element.getBoundingClientRect();
         var height;
         if (this.parent.height === 'auto') {
+            panel.style.height = '260px';
             height = 230;
         }
         else {
-            height = offset.height - 32;
+            height = offset.height - getSiblingsHeight(panel);
+            panel.style.height = height + "px";
+            height -= 32;
         }
         this.parent.viewport.height = height;
         this.parent.viewport.width = offset.width - 32;
@@ -33478,6 +33547,13 @@ var Spreadsheet = /** @class */ (function (_super) {
         range = range || this.getActiveSheet().selectedRange;
         _super.prototype.clearConditionalFormat.call(this, range);
     };
+    /** @hidden */
+    Spreadsheet.prototype.setPanelSize = function () {
+        if (this.height !== 'auto') {
+            var panel = document.getElementById(this.element.id + '_sheet_panel');
+            panel.style.height = this.element.getBoundingClientRect().height - getSiblingsHeight(panel) + "px";
+        }
+    };
     /**
      * Opens the Excel file.
      * @param {OpenOptions} options - Options for opening the excel file.
@@ -34576,6 +34652,7 @@ exports.getUpdateUsingRaf = getUpdateUsingRaf;
 exports.removeAllChildren = removeAllChildren;
 exports.getColGroupWidth = getColGroupWidth;
 exports.getScrollBarWidth = getScrollBarWidth;
+exports.getSiblingsHeight = getSiblingsHeight;
 exports.inView = inView;
 exports.getCellPosition = getCellPosition;
 exports.locateElem = locateElem;

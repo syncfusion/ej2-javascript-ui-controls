@@ -1,7 +1,8 @@
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
+
 /**
  * `Selection` module is used to handle RTE Selections.
  */
-
 export class NodeSelection {
 
     public range: Range;
@@ -259,6 +260,7 @@ export class NodeSelection {
         let array: number[] = [];
         ((isStart) ? (this.startNodeName = []) : (this.endNodeName = []));
         for (; node !== (root ? root : this.rootNode); null) {
+            if (isNullOrUndefined(node)) { break; }
             (isStart) ? this.startNodeName.push(node.nodeName.toLowerCase()) : this.endNodeName.push(node.nodeName.toLowerCase());
             array.push(this.getIndex(node));
             node = node.parentNode;

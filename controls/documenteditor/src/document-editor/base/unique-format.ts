@@ -204,6 +204,12 @@ export class WUniqueFormat {
         if (property === 'allowAutoFit') {
             return 11;
         }
+        if (property === 'horizontalPositionAbs') {
+            return 12;
+        }
+        if (property === 'horizontalPosition') {
+            return 13;
+        }
         return 0;
     }
     private static getListLevelType(property: string): number {
@@ -687,6 +693,12 @@ export class WUniqueFormat {
             return false;
         }
         if (this.isNotEqual('allowAutoFit', source, modifiedProperty, modifiedValue, 8)) {
+            return false;
+        }
+        if (this.isNotEqual('horizontalPositionAbs', source, modifiedProperty, modifiedValue, 8)) {
+            return false;
+        }
+        if (this.isNotEqual('horizontalPosition', source, modifiedProperty, modifiedValue, 8)) {
             return false;
         }
         return true;

@@ -84,6 +84,9 @@ export class SfdtReader {
         if (!isNullOrUndefined(jsonObject.dontUseHTMLParagraphAutoSpacing)) {
             this.documentHelper.dontUseHtmlParagraphAutoSpacing = jsonObject.dontUseHTMLParagraphAutoSpacing;
         }
+        if (!isNullOrUndefined(jsonObject.alignTablesRowByRow)) {
+            this.documentHelper.alignTablesRowByRow = jsonObject.alignTablesRowByRow;
+        }
         if (!isNullOrUndefined(jsonObject.background)) {
             this.documentHelper.backgroundColor = this.getColor(jsonObject.background.color);
         }
@@ -145,7 +148,7 @@ export class SfdtReader {
                     if (revisionData.revisionType === 'Insertion' && this.isPaste && this.documentHelper.owner.enableTrackChanges) {
                         continue;
                     } else {
-                        if (!this. revisionCollection.containsKey(revisionData.revisionId)) {
+                        if (!this.revisionCollection.containsKey(revisionData.revisionId)) {
                             this.revisionCollection.add(revisionData.revisionId, revision);
                         }
                     }
@@ -609,7 +612,7 @@ export class SfdtReader {
                     if (!isNullOrUndefined(inline.revisionIds)) {
                         for (let j: number = 0; j < inline.revisionIds.length; j++) {
                             if (this.revisionCollection.containsKey(inline.revisionIds[j])) {
-                                if  (trackChange) {
+                                if (trackChange) {
                                     revision = this.revisionCollection.get(inline.revisionIds[j]);
                                 }
                                 // tslint:disable-next-line:max-line-length
@@ -678,6 +681,12 @@ export class SfdtReader {
                 }
                 image.width = HelperMethods.convertPointToPixel(inline.width);
                 image.height = HelperMethods.convertPointToPixel(inline.height);
+                image.top = inline.top;
+                image.left = inline.left;
+                image.bottom = inline.bottom;
+                image.right = inline.right;
+                image.heightScale = inline.getimageheight;
+                image.widthScale = inline.getimagewidth;
                 this.parseCharacterFormat(inline.characterFormat, image.characterFormat);
                 hasValidElmts = true;
             } else if (inline.hasOwnProperty('hasFieldEnd') || (inline.hasOwnProperty('fieldType') && inline.fieldType === 0)) {
@@ -1121,6 +1130,12 @@ export class SfdtReader {
         }
         if (!isNullOrUndefined(sourceFormat.bidi)) {
             tableFormat.bidi = sourceFormat.bidi;
+        }
+        if (!isNullOrUndefined(sourceFormat.horizontalPositionAbs)) {
+            tableFormat.horizontalPositionAbs = sourceFormat.horizontalPositionAbs;
+        }
+        if (!isNullOrUndefined(sourceFormat.horizontalPosition)) {
+            tableFormat.horizontalPosition = sourceFormat.horizontalPosition;
         }
     }
     private parseCellFormat(sourceFormat: any, cellFormat: WCellFormat): void {

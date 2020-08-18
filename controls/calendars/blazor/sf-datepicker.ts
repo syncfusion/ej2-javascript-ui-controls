@@ -1,5 +1,5 @@
 import { BlazorDotnetObject, Browser, Animation, closest, EventHandler, isNullOrUndefined, } from '@syncfusion/ej2-base';
-import { select, createElement, extend, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { select, createElement, extend, KeyboardEvents, KeyboardEventArgs, removeClass } from '@syncfusion/ej2-base';
 import { Popup } from '@syncfusion/ej2-popups';
 const ROOT: string = 'e-datepicker';
 const POPUPWRAPPER: string = 'e-popup-wrapper';
@@ -202,6 +202,7 @@ class SfDatePicker {
             this.modal = null;
         }
         if (Browser.isDevice) {
+            removeClass([document.body], OVERFLOW);
             if (!isNullOrUndefined(this.mobilePopupWrapper)) {
                 this.mobilePopupWrapper.remove();
                 this.mobilePopupWrapper = null;
@@ -277,25 +278,29 @@ class SfDatePicker {
 let DatePicker: object = {
     initialize(wrapperElement: HTMLElement, element: BlazorDatePickerElement,
         dotnetRef: BlazorDotnetObject, options: IDatePickerOptions): void {
-        new SfDatePicker(wrapperElement, element, dotnetRef, options);
-        element.blazor__instance.initialize();
+        if (element) { new SfDatePicker(wrapperElement, element, dotnetRef, options); }
+        if (element && element.blazor__instance) {
+            element.blazor__instance.initialize();
+        }
     },
     renderPopup(element: BlazorDatePickerElement, popupElement: HTMLElement, popupHolderEle: HTMLElement,
         openEventArgs: PopupObjectArgs, options: IDatePickerOptions) {
-        if (popupElement && popupHolderEle) {
+        if (element && element.blazor__instance && popupElement && popupHolderEle) {
             element.blazor__instance.renderPopup(popupElement, popupHolderEle, openEventArgs, options);
         }
     },
     // tslint:disable
     closePopup(element: BlazorDatePickerElement, popupElement: HTMLElement, popupHolderEle: HTMLElement,
         closeEventArgs: PopupObjectArgs, options: IDatePickerOptions) {
-        element.blazor__instance.closePopup(closeEventArgs, options);
+        if (element && element.blazor__instance) {
+            element.blazor__instance.closePopup(closeEventArgs, options);
+        }
     },
     focusIn(inputEle: HTMLElement): void {
-        inputEle.focus();
+        if (inputEle) { inputEle.focus(); }
     },
     focusOut(inputEle: HTMLElement): void {
-        inputEle.blur();
+        if (inputEle) { inputEle.blur(); }
     }
 };
 interface BlazorDatePickerElement extends HTMLElement {

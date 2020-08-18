@@ -3666,3 +3666,43 @@ describe('Diagram constraints TestCases', () => {
     });
   
 });
+describe('Nudge testing while the item is not selected', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+
+    let mouseEvents: MouseEvents = new MouseEvents();
+
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagramnudge' });
+        document.body.appendChild(ele);
+        let selArray: (NodeModel | ConnectorModel)[] = [];
+        let node: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100 };
+        let connector: ConnectorModel = { id: 'connector1', sourcePoint: { x: 200, y: 200 }, targetPoint: { x: 300, y: 300 } };
+
+        diagram = new Diagram({
+            width: 550, height: 550, nodes: [node], connectors: [connector], snapSettings: { constraints: SnapConstraints.ShowLines }
+
+        });
+
+        diagram.appendTo('#diagramnudge');
+
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('Nudge', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.clickEvent(diagramCanvas, 150, 150); 
+        mouseEvents.keyDownEvent(diagramCanvas, 'Down');
+        expect((diagram.selectedItems.nodes.length > 0) || (diagram.selectedItems.connectors.length > 0)).toBe(true);
+        done();
+    })
+});

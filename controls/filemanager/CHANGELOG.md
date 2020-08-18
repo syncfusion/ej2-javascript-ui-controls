@@ -8,6 +8,14 @@
 
 #### Bug Fixes
 
+- The issue with “The Toolbar is not updated while adding the sortOrder property value as none” is fixed now.
+
+## 18.2.47 (2020-07-28)
+
+### File Manager
+
+#### Bug Fixes
+
 - Resolved the issue with the incorrect delete confirmation dialog heading and content of the File Manager component.
 
 ## 18.2.44 (2020-07-07)

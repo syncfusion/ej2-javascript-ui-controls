@@ -8942,9 +8942,15 @@ let TreeView = TreeView_1 = class TreeView extends Component {
     setDataBinding(changeDataSource) {
         this.treeList.push('false');
         if (this.fields.dataSource instanceof DataManager) {
+            // tslint:disable
+            this.isOffline = (this.isBlazorPlatform ? this.fields.dataSource.offline :
+                this.fields.dataSource.dataSource.offline);
             if (this.fields.dataSource.ready) {
                 this.fields.dataSource.ready.then((e) => {
-                    if (this.fields.dataSource instanceof DataManager && this.fields.dataSource.dataSource.offline) {
+                    // tslint:disable
+                    this.isOffline = (this.isBlazorPlatform ? this.fields.dataSource.offline :
+                        this.fields.dataSource.dataSource.offline);
+                    if (this.fields.dataSource instanceof DataManager && this.isOffline) {
                         this.treeList.pop();
                         this.treeData = e.result;
                         this.isNumberTypeId = this.getType();
@@ -9116,7 +9122,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                 }
             }
             else if (this.dataType === 2 || (this.fields.dataSource instanceof DataManager &&
-                this.fields.dataSource.dataSource.offline)) {
+                this.isOffline)) {
                 for (let index = 0; index < this.treeData.length; index++) {
                     let fieldId = this.treeData[index][this.fields.id] ? this.treeData[index][this.fields.id].toString() : '';
                     if (this.treeData[index][this.fields.isChecked] && !(this.isLoaded) && this.checkedNodes.indexOf(fieldId) === -1) {
@@ -9325,7 +9331,12 @@ let TreeView = TreeView_1 = class TreeView extends Component {
     getDataType(ds, mapper) {
         if (this.fields.dataSource instanceof DataManager && (this.fields.dataSource.adaptorName !== 'BlazorAdaptor')) {
             for (let i = 0; i < ds.length; i++) {
-                if ((typeof mapper.child === 'string') && isNullOrUndefined(getValue(mapper.child, ds[i]))) {
+                if (this.isOffline) {
+                    if ((typeof mapper.child === 'string') && isNullOrUndefined(getValue(mapper.child, ds[i])) && !isNullOrUndefined(getValue(mapper.parentID, ds[i]))) {
+                        return 1;
+                    }
+                }
+                else if ((typeof mapper.child === 'string') && isNullOrUndefined(getValue(mapper.child, ds[i]))) {
                     return 1;
                 }
             }
@@ -9628,7 +9639,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
             }
         }
         else if (this.dataType === 2 || (this.fields.dataSource instanceof DataManager &&
-            this.fields.dataSource.dataSource.offline)) {
+            this.isOffline)) {
             let id;
             let parentElement;
             let check;
@@ -10231,7 +10242,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                 return;
             }
             this.treeList.push('false');
-            if (this.fields.dataSource instanceof DataManager && (this.fields.dataSource.dataSource.offline)) {
+            if (this.fields.dataSource instanceof DataManager && this.isOffline) {
                 this.treeList.pop();
                 childItems = this.getChildNodes(this.treeData, parentLi.getAttribute('data-uid'));
                 this.loadChild(childItems, mapper, eicon, parentLi, expandChild, callback, loaded);
@@ -10284,7 +10295,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         }
         else {
             this.updateListProp(mapper);
-            if (this.fields.dataSource instanceof DataManager && !this.fields.dataSource.dataSource.offline) {
+            if (this.fields.dataSource instanceof DataManager && !this.isOffline) {
                 let id = parentLi.getAttribute('data-uid');
                 let nodeData = this.getNodeObject(id);
                 setValue('child', childItems, nodeData);
@@ -11266,7 +11277,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         let txtEle = closest(target, '.' + LISTTEXT);
         let liEle = closest(target, '.' + LISTITEM);
         detach(this.inputObj.container);
-        if (this.fields.dataSource instanceof DataManager && !(this.fields.dataSource.dataSource.offline) && (this.fields.dataSource.adaptorName !== 'BlazorAdaptor')) {
+        if (this.fields.dataSource instanceof DataManager && !this.isOffline && (this.fields.dataSource.adaptorName !== 'BlazorAdaptor')) {
             this.crudOperation('update', null, liEle, newText, null, null, true);
         }
         else {
@@ -13056,7 +13067,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         let dropLi = this.getElement(target);
         this.preventExpand = preventTargetExpand;
         if (this.fields.dataSource instanceof DataManager && (this.fields.dataSource.adaptorName !== 'BlazorAdaptor')) {
-            if (!(this.fields.dataSource.dataSource.offline)) {
+            if (!this.isOffline) {
                 this.crudOperation('insert', null, target, null, nodes, index, this.preventExpand);
             }
             else {
@@ -13354,7 +13365,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
      */
     removeNodes(nodes) {
         if (!isNullOrUndefined(nodes)) {
-            if (this.fields.dataSource instanceof DataManager && !(this.fields.dataSource.dataSource.offline) && (this.fields.dataSource.adaptorName !== 'BlazorAdaptor')) {
+            if (this.fields.dataSource instanceof DataManager && !this.isOffline && (this.fields.dataSource.adaptorName !== 'BlazorAdaptor')) {
                 this.crudOperation('delete', nodes);
             }
             else {
@@ -13380,7 +13391,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         let eventArgs = this.getEditEvent(liEle, null, null);
         this.trigger('nodeEditing', eventArgs, (observedArgs) => {
             if (!observedArgs.cancel) {
-                if (this.fields.dataSource instanceof DataManager && !(this.fields.dataSource.dataSource.offline) && (this.fields.dataSource.adaptorName !== 'BlazorAdaptor')) {
+                if (this.fields.dataSource instanceof DataManager && !this.isOffline && (this.fields.dataSource.adaptorName !== 'BlazorAdaptor')) {
                     this.crudOperation('update', null, target, newText, null, null, false);
                 }
                 else {

@@ -1026,9 +1026,11 @@ var Reorder = /** @class */ (function () {
         //gObj.notify(events.columnPositionChanged, { fromIndex: destIndex, toIndex: srcIdx });
         if (preventRefresh !== false) {
             //TODO: reorder from here
-            gObj.dotNetRef.invokeMethodAsync("ColumnReordered", {
-                requestType: 'reorder', fromIndex: destIndex, toIndex: srcIdx, toColumnUid: column.uid
-            });
+            setTimeout(function () {
+                gObj.dotNetRef.invokeMethodAsync("ColumnReordered", {
+                    requestType: 'reorder', fromIndex: destIndex, toIndex: srcIdx, toColumnUid: column.uid
+                });
+            }, 10);
         }
     };
     Reorder.prototype.targetParentContainerIndex = function (srcElem, destElem) {
@@ -3481,12 +3483,19 @@ var RowDD = /** @class */ (function () {
             _this.dragTarget = trElement && parentsUntil(target, 'e-grid').id === cloneElement.parentElement.id ?
                 trElement.rowIndex : parseInt(_this.startedRow.getAttribute('aria-rowindex'), 10);
             if (gObj.options.rowDropTarget) {
-                if (!parentsUntil(target, 'e-gridcontent') ||
-                    parentsUntil(cloneElement.parentElement, 'e-grid').id === parentsUntil(target, 'e-grid').id) {
-                    sf.base.classList(cloneElement, ['e-notallowedcur'], ['e-defaultcur']);
+                if (parentsUntil(target, 'e-gridcontent')) {
+                    if (parentsUntil(cloneElement.parentElement, 'e-grid').id === parentsUntil(target, 'e-grid').id) {
+                        sf.base.classList(cloneElement, ['e-notallowedcur'], ['e-defaultcur']);
+                    }
+                    else {
+                        sf.base.classList(cloneElement, ['e-defaultcur'], ['e-notallowedcur']);
+                    }
+                }
+                else if (parentsUntil(target, 'e-droppable')) {
+                    sf.base.classList(cloneElement, ['e-defaultcur'], ['e-notallowedcur']);
                 }
                 else {
-                    sf.base.classList(cloneElement, ['e-defaultcur'], ['e-notallowedcur']);
+                    sf.base.classList(cloneElement, ['e-notallowedcur'], ['e-defaultcur']);
                 }
             }
             else {
@@ -3537,6 +3546,13 @@ var RowDD = /** @class */ (function () {
                 targetEle : e.target;
             gObj.element.classList.remove('e-rowdrag');
             var dropElement = document.getElementById(gObj.options.rowDropTarget);
+            if (_this.parent.options.allowRowDragAndDrop && _this.parent.options.rowDropTarget && !parentsUntil(target, 'e-grid')) {
+                var toIdx = 0;
+                var targetClass = target.classList.value;
+                var targetID = target.id;
+                var fromIdx = parseInt(_this.startedRow.getAttribute('aria-rowindex'), 10);
+                gObj.dotNetRef.invokeMethodAsync("ReorderRows", fromIdx, toIdx, 'add', false, targetClass, targetID, null, true);
+            }
             if (gObj.options.rowDropTarget && dropElement && dropElement.blazor__instance &&
                 dropElement.blazor__instance.getModuleName() === 'grid') {
                 dropElement.blazor__instance.getContent().classList.remove('e-allowRowDrop');
@@ -3559,7 +3575,7 @@ var RowDD = /** @class */ (function () {
                 var targetID_1 = target.id;
                 var fromIdx_1 = parseInt(_this.startedRow.getAttribute('aria-rowindex'), 10);
                 setTimeout(function () {
-                    gObj.dotNetRef.invokeMethodAsync("ReorderRows", fromIdx_1, toIdx_1, 'delete', true, targetClass_1, targetID_1, null);
+                    gObj.dotNetRef.invokeMethodAsync("ReorderRows", fromIdx_1, toIdx_1, 'delete', true, targetClass_1, targetID_1, null, false);
                 }, 10);
                 _this.dragTarget = null;
             }
@@ -3727,8 +3743,8 @@ var RowDD = /** @class */ (function () {
             }
             var targetClass = e.target.classList.value;
             var targetID = e.target.id;
-            gObj.dotNetRef.invokeMethodAsync("ReorderRows", 0, targetIndex, 'add', false, targetClass, targetID, srcControl.dotNetRef);
-            srcControl.dotNetRef.invokeMethodAsync("ReorderRows", 0, targetIndex, 'delete', false, targetClass, targetID, null);
+            gObj.dotNetRef.invokeMethodAsync("ReorderRows", 0, targetIndex, 'add', false, targetClass, targetID, srcControl.dotNetRef, false);
+            srcControl.dotNetRef.invokeMethodAsync("ReorderRows", 0, targetIndex, 'delete', false, targetClass, targetID, null, false);
         }
     };
     /**
@@ -4601,7 +4617,7 @@ var SfGrid = /** @class */ (function () {
         this.dotNetRef = dotnetRef;
         this.options = options;
         this.header = this.element.querySelector('.e-headercontent');
-        this.content = this.element.querySelector('.e-content');
+        this.content = this.element.querySelector('.e-gridcontent .e-content');
         this.footer = this.element.querySelector('.e-summarycontent');
         this.initModules();
     }
@@ -4957,12 +4973,14 @@ var SfGrid = /** @class */ (function () {
         sf.base.EventHandler.add(this.element, 'focus', this.gridFocus, this);
         sf.base.EventHandler.add(document, 'click', this.documentClickHandler, this);
         sf.base.EventHandler.add(this.element, 'keydown', this.gridKeyDownHandler, this);
+        sf.base.EventHandler.add(this.element, 'keydown', this.keyDownHandler, this);
     };
     SfGrid.prototype.unWireEvents = function () {
         sf.base.EventHandler.remove(this.element, 'mousedown', this.mouseDownHandler);
         sf.base.EventHandler.remove(this.element, 'focus', this.gridFocus);
         sf.base.EventHandler.remove(document, 'click', this.documentClickHandler);
         sf.base.EventHandler.remove(this.element, 'keydown', this.gridKeyDownHandler);
+        sf.base.EventHandler.remove(this.element, 'keydown', this.keyDownHandler);
     };
     SfGrid.prototype.setOptions = function (newOptions, options) {
         var oldOptions = sf.base.extend(options, {});
@@ -5004,6 +5022,20 @@ var SfGrid = /** @class */ (function () {
             this.dotNetRef.invokeMethodAsync('FilterPopupClose');
         }
     };
+    SfGrid.prototype.keyDownHandler = function (e) {
+        var gridElement = parentsUntil(e.target, 'e-grid');
+        if ((gridElement && gridElement.id !== this.element.id) ||
+            (e.key == "Shift" || e.key == "Control" || e.key == "Alt")) {
+            return;
+        }
+        this.dotNetRef.invokeMethodAsync("GridKeyDown", {
+            key: e.key,
+            code: e.code,
+            ctrlKey: e.ctrlKey,
+            shiftKey: e.shiftKey,
+            altKey: e.altKey
+        });
+    };
     SfGrid.prototype.gridKeyDownHandler = function (e) {
         var popupElement = parentsUntil(e.target, 'e-popup-open');
         if (popupElement && e.key != 'Escape') {
@@ -5014,6 +5046,9 @@ var SfGrid = /** @class */ (function () {
                 evt.initEvent('change', false, true);
                 e.target.dispatchEvent(evt);
             }
+        }
+        if (e.key == "Shift" || e.key == "Control" || e.key == "Alt") {
+            e.stopPropagation(); //dont let execute c# keydown handler for meta keys.
         }
         if (e.keyCode === 67 && e.ctrlKey) {
             this.clipboardModule.copy();
@@ -5079,7 +5114,8 @@ var SfGrid = /** @class */ (function () {
         }
     };
     SfGrid.prototype.gridFocus = function (e) {
-        if (this.element.classList.contains("e-editing")) {
+        if (!sf.base.isNullOrUndefined(this.element.querySelector(".e-gridform")) &&
+            this.element.querySelector(".e-gridform").classList.contains("e-editing")) {
             return;
         }
         this.dotNetRef.invokeMethodAsync("GridFocus", e);
@@ -5091,9 +5127,13 @@ var SfGrid = /** @class */ (function () {
             || e.action === 'altDownArrow' || e.action === 'ctrlPlusP') {
             e.preventDefault();
         }
-        if (e.action === 'enter' && this.element.classList.contains("e-editing")
+        if (e.action === 'enter' && !sf.base.isNullOrUndefined(this.element.querySelector(".e-gridform"))
+            && this.element.querySelector(".e-gridform").classList.contains("e-editing")
             && this.options.editMode !== "Batch") {
-            setTimeout(function () { return _this.dotNetRef.invokeMethodAsync("EndEdit"); }, 40);
+            setTimeout(function () {
+                e.target.blur();
+                _this.dotNetRef.invokeMethodAsync("EndEdit");
+            }, 40);
         }
     };
     SfGrid.prototype.destroy = function () {

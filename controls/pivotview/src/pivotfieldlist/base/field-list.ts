@@ -2,7 +2,7 @@ import { Property, Event, Component, EmitType, Internationalization, extend, isB
 import { L10n, remove, addClass, Browser, Complex, ModuleDeclaration, getInstance } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, removeClass, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DataManager, ReturnOption, Query } from '@syncfusion/ej2-data';
-import { PivotEngine, IFieldListOptions, IPageSettings, IDataOptions, ICustomProperties } from '../../base/engine';
+import { PivotEngine, IFieldListOptions, IPageSettings, IDataOptions, ICustomProperties, IDrilledItem } from '../../base/engine';
 import { ISort, IFilter, IFieldOptions, ICalculatedFields, IDataSet } from '../../base/engine';
 import { PivotFieldListModel } from './field-list-model';
 import * as events from '../../common/base/constant';
@@ -81,6 +81,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     public lastCalcFieldInfo: ICalculatedFields = {};
     /** @hidden */
     public isPopupView: boolean = false;
+    /** @hidden */
+    public filterTargetID: HTMLElement;
     private defaultLocale: Object;
     private captionData: FieldOptionsModel[][];
 
@@ -106,11 +108,15 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     /** @hidden */
     public contextMenuModule: PivotContextMenu;
     /** @hidden */
+    public currentAction: string;
+    /** @hidden */
     private staticPivotGridModule: PivotView;
     /** @hidden */
-    private enableValueSorting: boolean = false;
-    private request: XMLHttpRequest;
+    public enableValueSorting: boolean = false;
+    private request: XMLHttpRequest = new XMLHttpRequest();
     private remoteData: string[][] | IDataSet[] = [];
+    /** @hidden */
+    public guid: string;
     //Property Declarations
 
     /* tslint:disable */
@@ -657,14 +663,117 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
      */
     public render(): void {
         if (this.dataType === 'pivot' && this.dataSourceSettings.url && this.dataSourceSettings.url !== '') {
-            this.request = new XMLHttpRequest();
-            this.request.open("GET", this.dataSourceSettings.url, true);
-            this.request.withCredentials = false;
-            this.request.onreadystatechange = this.onReadyStateChange.bind(this);
-            this.request.setRequestHeader("Content-type", "text/plain");
-            this.request.send(null);
+            if (this.dataSourceSettings.mode === 'Server') {
+                this.guid = PivotUtil.generateUUID();
+                this.getEngine('initialRender', null, null, null, null, null, null);
+            } else {
+                this.request.open("GET", this.dataSourceSettings.url, true);
+                this.request.withCredentials = false;
+                this.request.onreadystatechange = this.onReadyStateChange.bind(this);
+                this.request.setRequestHeader("Content-type", "text/plain");
+                this.request.send(null);
+            }
         } else {
             this.initialLoad();
+        }
+    }
+
+    /**
+     * @hidden
+     */
+    public getEngine(action: string, drillItem?: IDrilledItem, sortItem?: ISort, aggField?: IFieldOptions, cField?: ICalculatedFields, filterItem?: IFilter, memberName?: string, rawDataArgs?: any, editArgs?: any): void {
+        this.currentAction = action;
+        if (this.pivotGridModule) {
+            this.pivotGridModule.updatePageSettings(false);
+        }
+        let customProperties: any = {
+            pageSettings: this.pivotGridModule ? this.pivotGridModule.pageSettings : undefined,
+            enableValueSorting: this.pivotGridModule ? this.pivotGridModule.enableValueSorting : undefined,
+            enableDrillThrough: this.pivotGridModule ?
+            (this.pivotGridModule.allowDrillThrough || this.pivotGridModule.editSettings.allowEditing) : true,
+            locale: JSON.stringify(PivotUtil.getLocalizedObject(this))
+        };
+        let params: any = {
+            dataSourceSettings: JSON.parse(this.getPersistData()).dataSourceSettings,
+            action: action,
+            customProperties: customProperties,
+            drillItem: drillItem,
+            sortItem: sortItem,
+            aggregatedItem: aggField,
+            calculatedItem: cField,
+            filterItem: filterItem,
+            memberName: memberName,
+            fetchRawDataArgs: rawDataArgs,
+            editArgs: editArgs,
+            hash: this.guid
+        };
+        this.request.open("POST", this.dataSourceSettings.url, true);
+        this.request.withCredentials = false;
+        this.request.onreadystatechange = this.onSuccess.bind(this);
+        this.request.setRequestHeader("Content-type", "application/json");
+        this.request.send(JSON.stringify(params));
+    }
+
+    private onSuccess(): void {
+        if (this.request.readyState === XMLHttpRequest.DONE) {
+            try {
+                let engine: any = JSON.parse(this.request.responseText);
+                if (this.currentAction === 'fetchFieldMembers') {
+                    let currentMembers: any = JSON.parse(engine.members);
+                    let dateMembers: any = [];
+                    let formattedMembers: any = {};
+                    let members: any = {};
+                    for (let i: number = 0; i < currentMembers.length; i++) {
+                        dateMembers.push({ formattedText: currentMembers[i].FormattedText, actualText: currentMembers[i].ActualText });
+                        formattedMembers[currentMembers[i].FormattedText] = {};
+                        members[currentMembers[i].ActualText] = {};
+                    }
+                    this.engineModule.fieldList[engine.memberName].dateMember = dateMembers;
+                    this.engineModule.fieldList[engine.memberName].formattedMembers = formattedMembers;
+                    this.engineModule.fieldList[engine.memberName].members = members;
+                    this.pivotButtonModule.updateFilterEvents();
+                } else {
+                    this.engineModule.fieldList = PivotUtil.formatFieldList(JSON.parse(engine.fieldList));
+                    this.engineModule.fields = JSON.parse(engine.fields);
+                    this.engineModule.rowCount = JSON.parse(engine.pivotCount).RowCount;
+                    this.engineModule.columnCount = JSON.parse(engine.pivotCount).ColumnCount;
+                    this.engineModule.rowStartPos = JSON.parse(engine.pivotCount).RowStartPosition;
+                    this.engineModule.colStartPos = JSON.parse(engine.pivotCount).ColumnStartPosition;
+                    this.engineModule.rowFirstLvl = JSON.parse(engine.pivotCount).RowFirstLevel;
+                    this.engineModule.colFirstLvl = JSON.parse(engine.pivotCount).ColumnFirstLevel;
+                    let rowPos: number;
+                    let pivotValues: any = PivotUtil.formatPivotValues(JSON.parse(engine.pivotValue));
+                    for (let rCnt: number = 0; rCnt < pivotValues.length; rCnt++) {
+                        if (pivotValues[rCnt] && pivotValues[rCnt][0] && pivotValues[rCnt][0].axis === 'row') {
+                            rowPos = rCnt;
+                            break;
+                        }
+                    }
+                    this.engineModule.headerContent = PivotUtil.frameContent(pivotValues, 'header', rowPos, this);
+                    this.engineModule.pageSettings = this.pivotGridModule ?  this.pivotGridModule.pageSettings : undefined;
+                    let valueSort: any = JSON.parse(engine.valueSortSettings);
+                    this.engineModule.valueSortSettings = { 
+                        headerText: valueSort.HeaderText,
+                        headerDelimiter: valueSort.HeaderDelimiter,
+                        sortOrder: valueSort.SortOrder,
+                        columnIndex: valueSort.ColumnIndex
+                    };
+                    this.engineModule.pivotValues = pivotValues;
+                }
+            } catch (error) {
+                this.engineModule.pivotValues = [];
+            }
+            if (this.currentAction !== 'fetchFieldMembers') {
+                this.initEngine();
+                if (this.calculatedFieldModule && this.calculatedFieldModule.isRequireUpdate) {
+                    this.calculatedFieldModule.endDialog();
+                    this.calculatedFieldModule.isRequireUpdate = false;
+                }
+                if (this.pivotGridModule && this.pivotGridModule.calculatedFieldModule && this.pivotGridModule.calculatedFieldModule.isRequireUpdate) {
+                    this.pivotGridModule.calculatedFieldModule.endDialog();
+                    this.pivotGridModule.calculatedFieldModule.isRequireUpdate = false;
+                }
+            }
         }
     }
 
@@ -876,7 +985,9 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 let customProperties: ICustomProperties = this.frameCustomProperties();
                 customProperties.enableValueSorting = this.staticPivotGridModule ?
                     this.staticPivotGridModule.enableValueSorting : this.enableValueSorting;
-                this.engineModule.renderEngine(this.dataSourceSettings as IDataOptions, customProperties, this.getValueCellInfo.bind(this));
+                if (this.dataSourceSettings.mode !== 'Server') {
+                    this.engineModule.renderEngine(this.dataSourceSettings as IDataOptions, customProperties, this.getValueCellInfo.bind(this));
+                }
                 this.pivotFieldList = this.engineModule.fieldList;
                 let eventArgs: EnginePopulatedEventArgs = {
                     pivotFieldList: this.pivotFieldList,
@@ -1033,11 +1144,6 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             pivot.pivotGridModule.pageSettings : undefined;
         let isCalcChange: boolean = Object.keys(pivot.lastCalcFieldInfo).length > 0 ? true : false;
         let isSorted: boolean = Object.keys(pivot.lastSortInfo).length > 0 ? true : false;
-        let lastSortInfo: ISort = pivot.lastSortInfo;
-        if (pivot.pivotGridModule && pivot.dataType === 'pivot') {
-            pivot.pivotGridModule.lastSortInfo = {};
-        }
-        pivot.lastSortInfo = {};
         let isAggChange: boolean = Object.keys(pivot.lastAggregationInfo).length > 0 ? true : false;
         let isFiltered: boolean = Object.keys(pivot.lastFilterInfo).length > 0 ? true : false;
         let args: EnginePopulatingEventArgs = {
@@ -1065,10 +1171,13 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                         if (isSorted) {
                             pivot.pivotGridModule.setProperties({ dataSourceSettings: { valueSortSettings: { headerText: '' } } }, true);
                             if ((isBlazor())) {
-                                interopArguments = { 'key': 'onSort', 'arg': lastSortInfo };
+                                interopArguments = { 'key': 'onSort', 'arg': pivot.lastSortInfo };
+                            } else if (control.dataSourceSettings.mode === 'Server') {
+                                control.getEngine('onSort', null, pivot.lastSortInfo, null, null, null, null);
                             } else {
-                                pivot.engineModule.onSort(lastSortInfo);
+                                pivot.engineModule.onSort(pivot.lastSortInfo);
                             }
+                            pivot.lastSortInfo = {};
                         }
                         if (isFiltered) {
                             if (isBlazor()) {
@@ -1079,6 +1188,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                                     'key': 'onFilter',
                                     'arg': { 'lastFilterInfo': pivot.lastFilterInfo, 'filterSettings': dataArgs }
                                 };
+                            } else if (control.dataSourceSettings.mode === 'Server') {
+                                control.getEngine('onFilter', null, null, null, null, pivot.lastFilterInfo, null);
                             } else {
                                 pivot.engineModule.onFilter(pivot.lastFilterInfo, pivot.dataSourceSettings as IDataOptions);
                             }
@@ -1087,6 +1198,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                         if (isAggChange) {
                             if (isBlazor()) {
                                 interopArguments = { 'key': 'onAggregation', 'arg': pivot.lastAggregationInfo };
+                            } else if (control.dataSourceSettings.mode === 'Server') {
+                                control.getEngine('onAggregation', null, null, pivot.lastAggregationInfo, null, null, null);
                             } else {
                                 pivot.engineModule.onAggregation(pivot.lastAggregationInfo);
                             }
@@ -1102,6 +1215,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                                         calculatedFieldSettings: pivot.dataSourceSettings.calculatedFieldSettings
                                     }
                                 };
+                            } else if (control.dataSourceSettings.mode === 'Server') {
+                                control.getEngine('onCalcOperation', null, null, null, pivot.lastCalcFieldInfo, null, null);
                             } else {
                                 pivot.engineModule.onCalcOperation(pivot.lastCalcFieldInfo);
                             }
@@ -1148,6 +1263,21 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                                             pivot.enginePopulatedEventMethod(pivot, isTreeViewRefresh, isOlapDataRefreshed);
                                         }
                                     });
+                        } else if (pivot.dataSourceSettings.mode === 'Server') {
+                            if (isSorted)
+                                control.getEngine('onSort', null, pivot.lastSortInfo, null, null, null, null);
+                            else if (isAggChange)
+                                control.getEngine('onAggregation', null, null, pivot.lastAggregationInfo, null, null, null);
+                            else if (isCalcChange)
+                                control.getEngine('onCalcOperation', null, null, null, pivot.lastCalcFieldInfo, null, null);
+                            else if (isFiltered)
+                                control.getEngine('onFilter', null, null, null, null, pivot.lastFilterInfo, null);
+                            else
+                                control.getEngine('onDrop', null, null, null, null, null, null);
+                            pivot.lastSortInfo = {};
+                            pivot.lastAggregationInfo = {};
+                            pivot.lastCalcFieldInfo = {};
+                            pivot.lastFilterInfo = {};
                         } else {
                             pivot.engineModule.renderEngine(pivot.dataSourceSettings as IDataOptions, customProperties, pivot.getValueCellInfo.bind(pivot));
                         }

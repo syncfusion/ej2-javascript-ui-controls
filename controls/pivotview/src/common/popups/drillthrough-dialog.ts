@@ -1,6 +1,6 @@
 import { Dialog } from '@syncfusion/ej2-popups';
 import { PivotView } from '../../pivotview';
-import { DrillThroughEventArgs, EditCompleteEventArgs } from '../base/interface';
+import { DrillThroughEventArgs, EditCompletedEventArgs } from '../base/interface';
 import { createElement, setStyleAttribute, remove, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
 import * as cls from '../../common/base/css-constant';
 import { Grid, ColumnModel, Reorder, Resize, ColumnChooser, Toolbar } from '@syncfusion/ej2-grids';
@@ -92,6 +92,8 @@ export class DrillThroughDialog {
                         }
                         let count: number = Object.keys(this.gridIndexObjects).length;
                         let addItems: IDataSet[] = [];
+                        let prevItems: IDataSet[] = [];
+                        let index: number = 0;
                         /* tslint:disable:no-string-literal */
                         for (let item of this.drillThroughGrid.dataSource as IDataSet[]) {
                             if (isNullOrUndefined(item['__index']) || item['__index'] === '') {
@@ -107,8 +109,18 @@ export class DrillThroughDialog {
                                     this.parent.engineModule.data[Number(item['__index'])] = item;
                                 }
                                 delete this.gridIndexObjects[item['__index'].toString()];
+                                prevItems.push(item);
                                 count--;
                             }
+                            if (this.parent.dataSourceSettings.mode === 'Server') {
+                                if (item['__index']) {
+                                    delete item['__index'];
+                                }
+                                if (this.gridData[index]['__index']) {
+                                    delete this.gridData[index]['__index'];
+                                }
+                            }
+                            index++;
                         }
                         count = 0;
                         if (isBlazor() && this.parent.enableVirtualization) {
@@ -127,6 +139,19 @@ export class DrillThroughDialog {
                                 currModule.gridIndexObjects = {};
                             });
                             /* tslint:enable:no-any */
+                        } else if (this.parent.dataSourceSettings.mode === 'Server') {
+                            let gridIndex: object[] = [];
+                            let keys: string[] = Object.keys(this.gridIndexObjects);
+                            for (let len: number = 0; len < keys.length; len++) {
+                                delete this.parent.drillThroughValue.indexObject[this.gridIndexObjects[keys[len]]];
+                                gridIndex.push({ Key: keys[len], Value: this.gridIndexObjects[keys[len]] });
+                            }
+                            let indexObject: object[] = [];
+                            keys = Object.keys(this.parent.drillThroughValue.indexObject);
+                            for (let len: number = 0; len < keys.length; len++) {
+                                indexObject.push({ Key: keys[len], Value: this.parent.drillThroughValue.indexObject[keys[len]] });
+                            }
+                            this.parent.getEngine('updateRawData', null, null, null, null, null, null, null, { 'addedData': addItems, 'removedData': gridIndex, 'updatedData': prevItems, indexObject: indexObject });
                         } else {
                             let items: IDataSet[] = [];
                             let data: IDataSet[] | string[][] = (this.parent.allowDataCompression && this.parent.enableVirtualization) ?
@@ -140,15 +165,15 @@ export class DrillThroughDialog {
                             }
                             /* tslint:enable:no-string-literal */
                             items = items.concat(addItems);
-                            let eventArgs: EditCompleteEventArgs = {
+                            let eventArgs: EditCompletedEventArgs = {
                                 currentData: this.drillThroughGrid.dataSource as IDataSet[],
                                 previousData: this.clonedData,
                                 previousPosition: previousPosition,
                                 cancel: false
                             };
-                            this.parent.trigger(events.editComplete, eventArgs);
+                            this.parent.trigger(events.editCompleted, eventArgs);
                             if (!eventArgs.cancel) {
-                                this.parent.setProperties({ dataSourceSettings: { dataSource: eventArgs.currentData } }, true);
+                                this.parent.setProperties({ dataSourceSettings: { dataSource: items } }, true);
                                 (this.engine as PivotEngine).updateGridData(this.parent.dataSourceSettings as IDataOptions);
                                 this.parent.pivotValues = this.engine.pivotValues;
                             }

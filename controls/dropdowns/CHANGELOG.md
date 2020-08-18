@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 18.2.54 (2020-08-18)
+
+### Dropdown Tree
+
+#### Breaking Changes
+
+- `#273325` - Provided the option to customize the Dropdown Tree’s input height when the content is increased.
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#275308` - Performance issue will no longer occurs when render the multiselect with checkbox.
+
 ## 18.2.48 (2020-08-04)
 
 ### ListBox

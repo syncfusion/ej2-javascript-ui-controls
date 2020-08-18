@@ -327,7 +327,7 @@ export class LayerPanel {
         });
         this.currentLayer.rectBounds = this.rectBounds;
         if (isNullOrUndefined(this.mapObject.baseMapRectBounds) && this.currentLayer.isBaseLayer) {
-            this.mapObject.baseMapRectBounds = this.rectBounds;
+               this.mapObject.baseMapRectBounds = this.rectBounds;
         }
         let colors: string[] = shapeSettings.palette.length > 1 ? shapeSettings.palette : getShapeColor(this.mapObject.theme);
         let labelTemplateEle: HTMLElement = createElement('div', {
@@ -557,11 +557,13 @@ export class LayerPanel {
             this.layerObject.appendChild(element);
         });
         if (this.mapObject.markerModule) {
+            if (!isNullOrUndefined(this.mapObject.baseMapRectBounds)) {
             this.mapObject.markerModule.markerRender(
                 this.layerObject, layerIndex, (this.mapObject.isTileMap ? Math.floor(this.currentFactor)
                 : this.currentFactor),
                 null
             );
+            }
         }
         this.translateLayerElements(this.layerObject, layerIndex);
         this.layerGroup.appendChild(this.layerObject);

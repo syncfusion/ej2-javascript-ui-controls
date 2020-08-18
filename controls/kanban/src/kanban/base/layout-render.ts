@@ -171,7 +171,7 @@ export class LayoutRender extends MobileLayout {
             }
             className = isCollaspsed ? cls.CONTENT_ROW_CLASS + ' ' + cls.COLLAPSED_CLASS : cls.CONTENT_ROW_CLASS;
             let tr: HTMLElement = createElement('tr', { className: className, attrs: { 'aria-expanded': 'true' } });
-            if (this.parent.swimlaneSettings.keyField && !this.parent.isAdaptive && row.keyField !== '') {
+            if (this.parent.swimlaneSettings.keyField && !this.parent.isAdaptive) {
                 this.renderSwimlaneRow(tBody, row, isCollaspsed);
             }
             for (let column of this.parent.columns) {
@@ -400,10 +400,17 @@ export class LayoutRender extends MobileLayout {
                         return;
                     }
                 }
-                kanbanRows.push({
-                    keyField: obj[this.parent.swimlaneSettings.keyField],
-                    textField: obj[this.parent.swimlaneSettings.textField] || obj[this.parent.swimlaneSettings.keyField]
-                });
+                let textField: string = obj[this.parent.swimlaneSettings.textField] || obj[this.parent.swimlaneSettings.keyField];
+                let keyField: string = obj[this.parent.swimlaneSettings.keyField];
+                if (!obj[this.parent.swimlaneSettings.keyField]) {
+                    if (this.parent.swimlaneSettings.showUnassignedRow) {
+                        textField = 'Unassigned';
+                        keyField = '';
+                    } else {
+                       return;
+                    }
+                }
+                kanbanRows.push({ keyField: keyField, textField: textField });
             });
             kanbanRows = kanbanRows.filter((item: HeaderArgs, index: number, arr: Object[]) =>
                 index === arr.map((item: HeaderArgs) => item.keyField).indexOf(item.keyField));
@@ -680,7 +687,8 @@ export class LayoutRender extends MobileLayout {
             this.kanbanRows.forEach((row: HeaderArgs) =>
                 swimlaneData[row.keyField] = this.parent.kanbanData.filter((obj: { [key: string]: Object }) =>
                     this.columnKeys.indexOf(<string>obj[this.parent.keyField]) > -1 &&
-                    obj[this.parent.swimlaneSettings.keyField] === row.keyField));
+                    ((!obj[this.parent.swimlaneSettings.keyField] && this.parent.swimlaneSettings.showUnassignedRow) ?
+                    '' : obj[this.parent.swimlaneSettings.keyField]) === row.keyField));
         }
         return swimlaneData;
     }

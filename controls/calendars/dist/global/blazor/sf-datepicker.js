@@ -190,6 +190,7 @@ var SfDatePicker = /** @class */ (function () {
             this.modal = null;
         }
         if (sf.base.Browser.isDevice) {
+            sf.base.removeClass([document.body], OVERFLOW);
             if (!sf.base.isNullOrUndefined(this.mobilePopupWrapper)) {
                 this.mobilePopupWrapper.remove();
                 this.mobilePopupWrapper = null;
@@ -269,23 +270,33 @@ var SfDatePicker = /** @class */ (function () {
 // tslint:disable
 var DatePicker = {
     initialize: function (wrapperElement, element, dotnetRef, options) {
-        new SfDatePicker(wrapperElement, element, dotnetRef, options);
-        element.blazor__instance.initialize();
+        if (element) {
+            new SfDatePicker(wrapperElement, element, dotnetRef, options);
+        }
+        if (element && element.blazor__instance) {
+            element.blazor__instance.initialize();
+        }
     },
     renderPopup: function (element, popupElement, popupHolderEle, openEventArgs, options) {
-        if (popupElement && popupHolderEle) {
+        if (element && element.blazor__instance && popupElement && popupHolderEle) {
             element.blazor__instance.renderPopup(popupElement, popupHolderEle, openEventArgs, options);
         }
     },
     // tslint:disable
     closePopup: function (element, popupElement, popupHolderEle, closeEventArgs, options) {
-        element.blazor__instance.closePopup(closeEventArgs, options);
+        if (element && element.blazor__instance) {
+            element.blazor__instance.closePopup(closeEventArgs, options);
+        }
     },
     focusIn: function (inputEle) {
-        inputEle.focus();
+        if (inputEle) {
+            inputEle.focus();
+        }
     },
     focusOut: function (inputEle) {
-        inputEle.blur();
+        if (inputEle) {
+            inputEle.blur();
+        }
     }
 };
 

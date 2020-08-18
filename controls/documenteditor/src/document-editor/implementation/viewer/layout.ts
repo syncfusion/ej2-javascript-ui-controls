@@ -235,7 +235,7 @@ export class Layout {
             for (let i: number = 0; i < childWidge.length; i++) {
                 if (childWidge[i].childWidgets.length > 0) {
                     let lineWidge: any = childWidge[i].childWidgets;
-                    for ( let j: number = 0; j < lineWidge.length; j++) {
+                    for (let j: number = 0; j < lineWidge.length; j++) {
                         let childrens: any = lineWidge[j].children;
                         if (childrens) {
                             for (let k: number = 0; k < childrens.length; k++) {
@@ -285,8 +285,13 @@ export class Layout {
             let line: LineWidget = widget.childWidgets[j] as LineWidget;
             for (let i: number = 0; i < line.children.length; i++) {
                 let element: ElementBox = line.children[i] as ElementBox;
-                if (element instanceof FieldElementBox && element.fieldType !== 0) {
+                if (element instanceof FieldElementBox && (element.fieldType !== 0 || (element.fieldType === 0 &&
+                    this.documentHelper.fields.indexOf(element) === -1))) {
                     element.linkFieldCharacter(this.documentHelper);
+                }
+                if (element instanceof FieldTextElementBox &&
+                   element.fieldBegin !== (element.previousElement as FieldElementBox).fieldBegin) {
+                    element.fieldBegin = (element.previousElement as FieldElementBox).fieldBegin;
                 }
             }
         }
@@ -692,6 +697,12 @@ export class Layout {
             }
             this.viewer.clientActiveArea = clientActiveArea;
             this.viewer.clientArea = clientArea;
+        }
+        if (element instanceof ImageElementBox) {
+            // tslint:disable-next-line:max-line-length
+            if (element.top !== 0 && !isNullOrUndefined(element.top) || element.bottom !== 0 && !isNullOrUndefined(element.bottom) || element.left !== 0 && !isNullOrUndefined(element.left) || element.right !== 0 && !isNullOrUndefined(element.right)) {
+                this.cropPosition(element);
+            }
         }
         if (parseFloat(width.toFixed(4)) <= parseFloat(this.viewer.clientActiveArea.width.toFixed(4)) || !this.viewer.textWrap) {
             //Fits the text in current line.
@@ -1524,7 +1535,7 @@ export class Layout {
                     } else {
                         rangeIndex = currentRevision.range.indexOf(item);
                         if (rangeIndex < 0) {
-                        currentRevision.range.push(spittedElement);
+                            currentRevision.range.push(spittedElement);
                         } else {
                             currentRevision.range.splice(rangeIndex + 1, 0, spittedElement);
                         }
@@ -3026,7 +3037,7 @@ export class Layout {
                     splittedWidget.height = splittedCell.height + splittedCell.margin.top + splittedCell.margin.bottom;
                 } else {
                     if (tableRowWidget.rowFormat.heightType === 'Exactly' || (tableRowWidget.rowFormat.heightType === 'AtLeast' &&
-                    splittedWidget.height < tableRowWidget.rowFormat.height)) {
+                        splittedWidget.height < tableRowWidget.rowFormat.height)) {
                         //Sets the height for row widget if height type is exact or at least.
                         splittedWidget.height = tableRowWidget.rowFormat.height;
                     }
@@ -3741,8 +3752,8 @@ export class Layout {
         cellWidget.containerWidget = cell.containerWidget;
         this.updateWidgetLocation(cell, cellWidget);
         cellWidget.margin = cell.margin;
-        cellWidget.leftBorderWidth = HelperMethods.convertPointToPixel(cell.leftBorderWidth);
-        cellWidget.rightBorderWidth = HelperMethods.convertPointToPixel(cell.rightBorderWidth);
+        cellWidget.leftBorderWidth = cell.leftBorderWidth;
+        cellWidget.rightBorderWidth = cell.rightBorderWidth;
         return cellWidget;
     }
     /**
@@ -4687,7 +4698,12 @@ export class Layout {
      */
     private addTableRowWidget(area: Rect, row: TableRowWidget[]): Widget {
         let rowWidget: TableRowWidget = row[row.length - 1];
-        rowWidget.x = area.x + rowWidget.rowFormat.gridBeforeWidth;
+        // tslint:disable-next-line:max-line-length
+        if ((rowWidget.rowFormat.beforeWidth !== 0 || rowWidget.rowFormat.gridBeforeWidth !== 0) && ((this.documentHelper.alignTablesRowByRow) ? rowWidget.ownerTable.tableFormat.tableAlignment === 'Left' : true)) {
+            rowWidget.x += (rowWidget.rowFormat.beforeWidth !== 0) ? rowWidget.rowFormat.beforeWidth : rowWidget.rowFormat.gridBeforeWidth;
+        } else {
+            rowWidget.x = area.x;
+        }
         rowWidget.y = area.y;
         rowWidget.width = area.width;
         let borderWidth: number = 0;
@@ -6223,5 +6239,25 @@ export class Layout {
                 break;
         }
         return indentX;
+    }
+    private cropPosition(element: ImageElementBox): void {
+        let right: number = 0;
+        let bottom: number = 0;
+        let image: ImageElementBox = element;
+        image.isCrop = true;
+        if (image.left !== 0) {
+            image.x = (image.left * image.widthScale) / 100;
+        }
+        if (image.top !== 0) {
+            image.y = (image.top * image.heightScale) / 100;
+        }
+        if (image.right !== 0) {
+            right = (image.right * image.widthScale) / 100;
+        }
+        if (image.bottom !== 0) {
+            bottom = (image.bottom * image.heightScale) / 100;
+        }
+        image.cropWidth = (image.widthScale - (image.x + right));
+        image.cropHeight = (image.heightScale - (image.y + bottom));
     }
 }

@@ -5,13 +5,15 @@ import { updateBlazorTemplate, resetBlazorTemplate, SanitizeHtmlHelper, getValue
 import { DataManager, UrlAdaptor, Query, WebApiAdaptor, ODataV4Adaptor, ReturnOption, Predicate } from '@syncfusion/ej2-data';
 import { Button, ButtonModel } from '@syncfusion/ej2-buttons';
 import { RichTextEditorModel } from '@syncfusion/ej2-richtexteditor';
-import { DatePicker, DatePickerModel, DateTimePicker, DateRange } from '@syncfusion/ej2-calendars';
+import { DatePicker, DatePickerModel, DateTimePicker, DateRange, RangeEventArgs } from '@syncfusion/ej2-calendars';
 import { DateTimePickerModel, DateRangePickerModel, TimePickerModel } from '@syncfusion/ej2-calendars';
-import { NumericTextBox, NumericTextBoxModel, TextBox, TextBoxModel } from '@syncfusion/ej2-inputs';
 import { createSpinner, hideSpinner, SpinnerArgs, showSpinner } from '@syncfusion/ej2-popups';
 import { Tooltip, TooltipEventArgs, TipPointerPosition } from '@syncfusion/ej2-popups';
+import { NumericTextBox, NumericTextBoxModel, TextBox, TextBoxModel, SliderChangeEventArgs } from '@syncfusion/ej2-inputs';
 import { ColorPickerModel, FormValidator, MaskedTextBox, MaskedTextBoxModel, SliderModel } from '@syncfusion/ej2-inputs';
+import { ChangeEventArgs as InputChangeEventArgs, ColorPickerEventArgs } from '@syncfusion/ej2-inputs';
 import { AutoCompleteModel, ComboBoxModel, DropDownList, DropDownListModel, MultiSelectModel } from '@syncfusion/ej2-dropdowns';
+import { MultiSelectChangeEventArgs, ChangeEventArgs as DropDownsChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 /* Inject modules */
 import { Rte } from '../modules/rte';
 import { Slider } from '../modules/slider';
@@ -30,6 +32,7 @@ import { InPlaceEditorModel } from './inplace-editor-model';
 import { PopupSettingsModel } from './models-model';
 /* Interface */
 import { ActionBeginEventArgs, ActionEventArgs, FormEventArgs, ValidateEventArgs, IButton, BeginEditEventArgs } from './interface';
+import { ChangeEventArgs } from './interface';
 /* Interface */
 import { parseValue, getCompValue } from './util';
 
@@ -113,7 +116,6 @@ type DropDownTypes = AutoCompleteModel | ComboBoxModel | DropDownListModel | Mul
 export class InPlaceEditor extends Component<HTMLElement> implements INotifyPropertyChanged {
     private tipObj: Tooltip;
     private touchModule: Touch;
-    private loaderWidth: number;
     private loader: HTMLElement;
     private editEle: HTMLElement;
     private spinObj: SpinnerArgs;
@@ -144,6 +146,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     private dateType: string[] = ['Date', 'DateTime', 'Time'];
     private inputDataEle: string[] = ['Date', 'DateTime', 'DateRange', 'Time', 'Numeric'];
     private dropDownEle: string[] = ['AutoComplete', 'ComboBox', 'DropDownList', 'MultiSelect'];
+    private compPrevValue: string | string[] | number | number[] | boolean[] | Date | Date[] | DateRange;
     private moduleList: string[] = ['AutoComplete', 'Color', 'ComboBox', 'DateRange', 'MultiSelect', 'RTE', 'Slider', 'Time'];
     private afterOpenEvent: EmitType<TooltipEventArgs>;
 
@@ -465,6 +468,14 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     @Event()
     public beginEdit: EmitType<BeginEditEventArgs>;
     /**
+     * The event will be fired when the integrated component value has changed that render based on the `type` property
+     * in the In-place editor.
+     * @event
+     * @blazorProperty 'ValueChange'
+     */
+    @Event()
+    public change: EmitType<ChangeEventArgs>;
+    /**
      * The event will be fired when the component gets destroyed.
      * @event
      * @blazorProperty 'Destroyed'
@@ -489,7 +500,9 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
      * @private
      */
     protected render(): void {
-        this.element.setAttribute('tabindex', '0');
+        if (isNOU(this.element.getAttribute('tabindex'))) {
+            this.element.setAttribute('tabindex', '0');
+        }
         this.checkIsTemplate();
         this.disable(this.disabled);
         this.updateAdaptor();
@@ -607,7 +620,6 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         }
         if (this.valueWrap.classList.contains(classes.OPEN)) { return; }
         if (this.mode === 'Inline') {
-            this.loaderWidth = this.valueWrap.offsetWidth;
             addClass([this.valueWrap], [classes.HIDE]);
             this.inlineWrapper = this.createElement('div', { className: classes.INLINE });
             this.element.appendChild(this.inlineWrapper);
@@ -760,7 +772,9 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         } else {
             classProp = classes.ELEMENTS;
         }
-        extend(this.model, this.model, { cssClass: classProp, enableRtl: this.enableRtl, locale: this.locale });
+        extend(this.model, this.model, {
+            cssClass: classProp, enableRtl: this.enableRtl, locale: this.locale, change: this.changeHandler.bind(this)
+        });
         if (!isNOU(this.value)) { this.updateModelValue(); }
         if (this.isExtModule) {
             this.notify(events.render, { module: modulesList[this.type], target: ele, type: this.type });
@@ -870,7 +884,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             this.notify(events.update, { type: this.type });
         } else if (this.componentObj) {
             if (this.type === 'Numeric' && this.componentObj.value === null) {
-                this.componentObj.setProperties({ value: 0 }, true);
+                this.componentObj.setProperties({ value: null }, true);
             }
             this.setProperties({ value: this.componentObj.value }, true);
             this.extendModelValue(this.componentObj.value);
@@ -1381,6 +1395,19 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
                 this.cancelHandler();
             }
         }
+    }
+    private changeHandler(e: InputChangeEventArgs | ColorPickerEventArgs | MultiSelectChangeEventArgs | SliderChangeEventArgs |
+        RangeEventArgs | DropDownsChangeEventArgs): void {
+        let eventArgs: ChangeEventArgs = {
+            previousValue: this.compPrevValue === undefined ? this.value : this.compPrevValue,
+            value: (e as InputChangeEventArgs).value
+        };
+        if (this.type === 'AutoComplete' || this.type === 'ComboBox' || this.type === 'DropDownList') {
+            eventArgs.itemData = (e as DropDownsChangeEventArgs).itemData;
+            eventArgs.previousItemData = (e as DropDownsChangeEventArgs).previousItemData;
+        }
+        this.compPrevValue = eventArgs.value;
+        this.trigger('change', eventArgs);
     }
     /**
      * Validate current editor value.

@@ -10,6 +10,7 @@ import { IPointRenderEventArgs } from '../../chart/model/chart-interface';
 import { pointRender } from '../../common/model/constants';
 import { MarkerExplode } from './marker-explode';
 import { getSaturationColor } from '../../common/utils/helper';
+import { ChartShape } from '../utils/enum';
 
 /**
  * Marker module used to render the marker for line type series.
@@ -85,9 +86,7 @@ export class Marker extends MarkerExplode {
                     : border.color,
                 width: border.width
             },
-            height: marker.height,
-            width: marker.width,
-            shape: marker.shape
+            height: marker.height, width: marker.width, shape: marker.shape
         };
         argsData.border = series.setBorderColor(point, { width: argsData.border.width, color: argsData.border.color });
         if (!series.isRectSeries || series.type === 'BoxAndWhisker') {
@@ -104,24 +103,35 @@ export class Marker extends MarkerExplode {
             } else {
                 y = point.y;
             }
+            let markerFill: string = argsData.point.marker.fill || argsData.fill;
+            let markerBorder: BorderModel;
+            if (!isNullOrUndefined(argsData.point.marker.border)) {
+                markerBorder = {
+                    color: argsData.point.marker.border.color || argsData.border.color,
+                    width: argsData.point.marker.border.width || argsData.border.width
+                };
+            } else {
+                markerBorder = { color: argsData.border.color, width: argsData.border.width };
+            }
+            let markerWidth: number = argsData.point.marker.width || argsData.width;
+            let markerHeight: number = argsData.point.marker.height || argsData.height;
+            let markerOpacity: number = argsData.point.marker.opacity || marker.opacity;
+            let markerShape: ChartShape = argsData.point.marker.shape || argsData.shape;
             shapeOption = new PathOption(
-                symbolId, argsData.fill,
-                argsData.border.width,
-                argsData.border.color,
-                marker.opacity, null
+                symbolId, markerFill, markerBorder.width, markerBorder.color, markerOpacity, null
             );
             if ((parentElement !== undefined && parentElement !== null) || this.chart.enableCanvas) {
                 if (redraw && getElement(shapeOption.id)) {
                     markerElement = getElement(shapeOption.id);
-                    circlePath = argsData.shape === 'Circle' ? 'c' : '';
+                    circlePath = markerShape === 'Circle' ? 'c' : '';
                     previousLocation = {
                         x: +markerElement.getAttribute(circlePath + 'x'), y: +markerElement.getAttribute(circlePath + 'y')
                     };
                     previousPath = markerElement.getAttribute('d');
                 }
                 markerElement = drawSymbol(
-                    location, argsData.shape,
-                    new Size(argsData.width, argsData.height),
+                    location, markerShape,
+                    new Size(markerWidth, markerHeight),
                     marker.imageUrl, shapeOption,
                     point.x.toString() + ':' + y.toString(), this.chart.renderer, series.clipRect
                 );
@@ -131,12 +141,8 @@ export class Marker extends MarkerExplode {
                 );
             }
             point.marker = {
-                border: argsData.border,
-                fill: argsData.fill,
-                height: argsData.height,
-                visible: true,
-                shape: argsData.shape,
-                width: argsData.width
+                border: markerBorder, fill: markerFill, height: markerHeight,
+                visible: true, shape: markerShape, width: markerWidth
             };
         } else {
             location = null;

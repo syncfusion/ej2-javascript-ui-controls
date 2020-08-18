@@ -2412,6 +2412,8 @@ var RealAction;
     RealAction[RealAction["AnimationClick"] = 64] = "AnimationClick";
     /** Enable the group action */
     RealAction[RealAction["EnableGroupAction"] = 128] = "EnableGroupAction";
+    /** Indicate action in Progress */
+    RealAction[RealAction["PanInProgress"] = 256] = "PanInProgress";
 })(RealAction || (RealAction = {}));
 /** @private */
 var NoOfSegments;
@@ -7405,11 +7407,40 @@ class Connector extends NodeBase {
             setConnectorDefaults(defaultValue, this);
         }
     }
+    /* tslint:disable */
+    setPortID(diagram, isTarget) {
+        if (this.targetID && this.sourceID) {
+            let targetNode = diagram.nameTable[this.targetID];
+            let sourceNode = diagram.nameTable[this.sourceID];
+            let ports = isTarget ? (targetNode && targetNode.ports) : (sourceNode && sourceNode.ports);
+            let port;
+            for (let i = 0; ports && i < ports.length; i++) {
+                port = ports[i];
+                if (this.targetPortID === port.id && isTarget) {
+                    if ((port.constraints & PortConstraints.None) || !(port.constraints & PortConstraints.InConnect)) {
+                        this.targetPortID = '';
+                    }
+                }
+                else if (this.sourcePortID === port.id && !isTarget) {
+                    if ((port.constraints & PortConstraints.None) || !(port.constraints & PortConstraints.OutConnect)) {
+                        this.sourcePortID = '';
+                    }
+                }
+            }
+        }
+    }
+    /* tslint:enable */
     /** @private */
     // tslint:disable-next-line:no-any
     init(diagram) {
         if (!this.id) {
             this.id = randomId();
+        }
+        if (this.sourcePortID) {
+            this.setPortID(diagram);
+        }
+        if (this.targetPortID) {
+            this.setPortID(diagram, true);
         }
         let bpmnElement;
         let container = new Canvas();
@@ -14382,6 +14413,11 @@ class StackPanel extends Container {
          * @private
          */
         this.measureChildren = undefined;
+        /**
+         * Sets or gets whether the padding of the element needs to be measured
+         * @private
+         */
+        this.considerPadding = true;
     }
     /**
      * Measures the minimum space that the panel needs
@@ -14439,7 +14475,9 @@ class StackPanel extends Container {
         desired = super.validateDesiredSize(desired, availableSize);
         this.stretchChildren(desired);
         //Considering padding values
-        this.applyPadding(desired);
+        if (this.considerPadding) {
+            this.applyPadding(desired);
+        }
         return desired;
     }
     arrangeStackPanel(desiredSize, updatePosition) {
@@ -17213,16 +17251,18 @@ function createUserHandleTemplates(userHandleTemplate, template, selectedItems) 
         let content = 'diagramsf_userHandle_template';
         let a;
         for (handle of selectedItems.userHandles) {
-            compiledString = compile(handle.content);
-            for (i = 0, a = compiledString(cloneBlazorObject(handle), null, null, content); i < a.length; i++) {
-                let attr = {
-                    'style': 'height: 100%; width: 100%; pointer-events: all',
-                    'id': handle.name + '_template_hiddenUserHandle'
-                };
-                div = createHtmlElement('div', attr);
-                div.appendChild(a[i]);
+            if (!handle.pathData && !handle.content && !handle.source) {
+                compiledString = compile(handle.content);
+                for (i = 0, a = compiledString(cloneBlazorObject(handle), null, null, content); i < a.length; i++) {
+                    let attr = {
+                        'style': 'height: 100%; width: 100%; pointer-events: all',
+                        'id': handle.name + '_template_hiddenUserHandle'
+                    };
+                    div = createHtmlElement('div', attr);
+                    div.appendChild(a[i]);
+                }
+                template[0].appendChild(div);
             }
-            template[0].appendChild(div);
         }
     }
 }
@@ -22741,7 +22781,8 @@ class ResizeTool extends ToolBase {
             let object;
             this.commandHandler.updateSelector();
             object = this.commandHandler.renderContainerHelper(args.source) || args.source;
-            if ((this.undoElement.offsetX !== object.wrapper.offsetX || this.undoElement.offsetY !== object.wrapper.offsetY)) {
+            if ((this.undoElement.offsetX !== object.wrapper.offsetX || this.undoElement.offsetY !== object.wrapper.offsetY ||
+                this.undoElement.width !== object.wrapper.bounds.width || this.undoElement.height !== object.wrapper.bounds.height)) {
                 if (!isBlazor()) {
                     let deltaValues = this.updateSize(args.source, this.currentPosition, this.prevPosition, this.corner, this.initialBounds);
                     this.blocked = this.scaleObjects(deltaValues.width, deltaValues.height, this.corner, this.currentPosition, this.prevPosition, object);
@@ -23110,11 +23151,13 @@ class ZoomPanTool extends ToolBase {
                 this.updateTouch(startTouch1, moveTouch1);
             }
         }
+        this.commandHandler.dataBinding();
         return !this.blocked;
     }
     /**   @private  */
     mouseUp(args) {
         this.checkPropertyValue();
+        this.commandHandler.updatePanState(false);
         super.mouseUp(args);
         this.inAction = false;
     }
@@ -24414,7 +24457,7 @@ class DiagramEventHandler {
             bottomLeft = { x: (width - 17), y: height };
             bottomRight = { x: width, y: height };
             bounds = Rect.toBounds([topLeft, topRight, bottomLeft, bottomRight]);
-            if (bounds.containsPoint({ x: x + diagramCanvas.scrollLeft, y: y + diagramCanvas.scrollTop })) {
+            if (bounds.containsPoint({ x: x, y: y })) {
                 return true;
             }
         }
@@ -24424,7 +24467,7 @@ class DiagramEventHandler {
             bottomLeft = { x: 0, y: height };
             bottomRight = { x: width, y: height };
             bounds = Rect.toBounds([topLeft, topRight, bottomLeft, bottomRight]);
-            if (bounds.containsPoint({ x: x + diagramCanvas.scrollLeft, y: y + diagramCanvas.scrollTop })) {
+            if (bounds.containsPoint({ x: x, y: y })) {
                 return true;
             }
         }
@@ -24501,7 +24544,8 @@ class DiagramEventHandler {
                 && (evt.button === 2 || evt.buttons === 2))) {
                 let arg = {
                     element: cloneBlazorObject(this.diagram), position: cloneBlazorObject(this.currentPosition),
-                    count: evt.buttons, actualObject: cloneBlazorObject(this.eventArgs.actualObject)
+                    count: evt.buttons, actualObject: cloneBlazorObject(this.eventArgs.actualObject),
+                    button: (evt.button === 0) ? 'Left' : (evt.button === 1) ? 'Middle' : 'Right'
                 };
                 this.inAction = false;
                 this.tool.mouseUp(this.eventArgs);
@@ -24913,7 +24957,8 @@ class DiagramEventHandler {
                 let arg = {
                     element: cloneBlazorObject(this.eventArgs.source) || cloneBlazorObject(this.diagram),
                     position: cloneBlazorObject(this.eventArgs.position), count: evt.detail,
-                    actualObject: cloneBlazorObject(this.eventArgs.actualObject)
+                    actualObject: cloneBlazorObject(this.eventArgs.actualObject),
+                    button: (evt.button === 0) ? 'Left' : (evt.button === 1) ? 'Middle' : 'Right'
                 };
                 if (isBlazor() && this.diagram.click) {
                     arg = this.getBlazorClickEventArgs(arg);
@@ -24942,6 +24987,7 @@ class DiagramEventHandler {
             position: cloneBlazorObject(this.eventArgs.position), count: arg.count,
             actualObject: this.eventArgs.actualObject ? { selector: cloneBlazorObject(this.eventArgs.actualObject) } :
                 { diagram: cloneBlazorObject(this.diagram) },
+            button: arg.button
         };
         if (this.eventArgs.source instanceof Node) {
             arg.element.selector.nodes = [];
@@ -27923,11 +27969,11 @@ class CommandHandler {
                             else {
                                 this.clearSelection(true, true);
                             }
-                            this.updateBlazorSelector();
                         }
                     }
                 }
                 this.diagram.enableServerDataBinding(true);
+                this.updateBlazorSelector();
             }
         });
     }
@@ -28366,7 +28412,7 @@ class CommandHandler {
                 else {
                     let layer = this.getObjectLayer(objectName);
                     for (let i = 0; i < layer.objects.length; i++) {
-                        if (layer.objects[i] !== objectName) {
+                        if ((layer.objects[i] !== objectName) && (this.diagram.nameTable[layer.objects[i]].parentId) !== objectName) {
                             this.moveSvgNode(layer.objects[i], objectName);
                             this.updateNativeNodeIndex(objectName);
                         }
@@ -28854,11 +28900,11 @@ class CommandHandler {
                                 if (selectNodes) {
                                     this.diagram.select(selectNodes);
                                 }
-                                this.updateBlazorSelector();
                             }
                         }
                     }
                 }
+                this.updateBlazorSelector();
                 this.diagram.enableServerDataBinding(enableServerDataBinding);
             }
         });
@@ -30861,6 +30907,33 @@ class CommandHandler {
         }
         return selectorObject;
     }
+    /**
+ * @private
+ */
+    updatePanState(eventCheck) {
+        if (eventCheck) {
+            this.diagram.realActions = this.diagram.realActions | RealAction.PanInProgress;
+        }
+        else {
+            this.diagram.dataBind();
+            let diagramScrollSettings = this.diagram.scrollSettings;
+            this.diagram.realActions = this.diagram.realActions & ~RealAction.PanInProgress;
+            let Values = {
+                VerticalOffset: diagramScrollSettings.verticalOffset, HorizontalOffset: diagramScrollSettings.horizontalOffset,
+                ViewportHeight: diagramScrollSettings.viewPortHeight, ViewportWidth: diagramScrollSettings.viewPortWidth,
+                CurrentZoom: diagramScrollSettings.currentZoom
+            };
+            let arg = {
+                oldValue: Values,
+                newValue: Values, source: this.diagram, panState: 'Completed'
+            };
+            this.triggerEvent(DiagramEvent.scrollChange, arg);
+        }
+    }
+    /** @private */
+    dataBinding() {
+        this.diagram.dataBind();
+    }
     /** @private */
     scroll(scrollX, scrollY, focusPoint) {
         let panx = canPanX(this.diagram);
@@ -32786,7 +32859,9 @@ class Diagram extends Component {
         }
         for (let i = 0; i < this.selectedItems.userHandles.length; i++) {
             {
-                updateBlazorTemplate('diagramsf_userHandle_template', 'UserHandleTemplate', this, false);
+                if (this.selectedItems.userHandles[i].template) {
+                    updateBlazorTemplate('diagramsf_userHandle_template', 'UserHandleTemplate', this, false);
+                }
             }
         }
     }
@@ -32812,7 +32887,9 @@ class Diagram extends Component {
         }
         for (let i = 0; i < this.selectedItems.userHandles.length; i++) {
             {
-                updateBlazorTemplate('diagramsf_userHandle_template', 'UserHandleTemplate', this, false);
+                if (this.selectedItems.userHandles[i].template) {
+                    updateBlazorTemplate('diagramsf_userHandle_template', 'UserHandleTemplate', this, false);
+                }
             }
         }
     }
@@ -32991,6 +33068,11 @@ class Diagram extends Component {
         }
         let domTable = 'domTable';
         window[domTable] = {};
+        for (let i = 0; i < this.layers.length; i++) {
+            let currentLayer = this.layers[i];
+            currentLayer.zIndexTable = {};
+        }
+        this.diagramActions = undefined;
     }
     /**
      * Wires the mouse events with diagram control
@@ -33339,7 +33421,7 @@ class Diagram extends Component {
         return this.activeLayer;
     }
     nudgeCommand(direction, x, y) {
-        if (typeof direction !== 'object') {
+        if (typeof direction !== 'object' && (this.selectedItems.nodes.length || this.selectedItems.connectors.length) > 0) {
             this.nudge(direction);
         }
     }
@@ -33475,6 +33557,16 @@ class Diagram extends Component {
             this.commandHandler.getBlazorOldValues();
         }
     }
+    disableStackContainerPadding(wrapper, disable) {
+        if (wrapper instanceof StackPanel) {
+            wrapper.considerPadding = disable;
+        }
+        if (wrapper.children) {
+            for (let child of wrapper.children) {
+                this.disableStackContainerPadding(child, false);
+            }
+        }
+    }
     /**
      * Scales the given objects by the given ratio
      * @param {NodeModel | ConnectorModel | SelectorModel} obj - Defines the objects to be resized
@@ -33483,6 +33575,7 @@ class Diagram extends Component {
      * @param {PointModel} pivot - Defines the reference point with respect to which the objects will be resized
      */
     scale(obj, sx, sy, pivot) {
+        this.disableStackContainerPadding(obj.wrapper, false);
         this.insertBlazorDiagramObjects(obj);
         let checkBoundaryConstraints = true;
         if (obj.id) {
@@ -33518,6 +33611,7 @@ class Diagram extends Component {
         if (this.callBlazorModel && (!(this.blazorActions & BlazorAction.interaction))) {
             this.commandHandler.getBlazorOldValues();
         }
+        this.disableStackContainerPadding(obj.wrapper, true);
         return checkBoundaryConstraints;
     }
     /**
@@ -35154,7 +35248,7 @@ class Diagram extends Component {
                 update = true;
             }
             if (update) {
-                this.preventUpdate = true;
+                this.preventDiagramUpdate = true;
                 let connectors = {};
                 let updatedNodes = nodes;
                 if (isBlazor()) {
@@ -35198,7 +35292,7 @@ class Diagram extends Component {
                     this.updateQuad(connector);
                     this.updateDiagramObject(connector, true);
                 }
-                this.preventUpdate = false;
+                this.preventDiagramUpdate = false;
                 this.updatePage();
                 if ((!(this.diagramActions & DiagramAction.Render)) || this.mode === 'Canvas') {
                     this.refreshDiagramLayer();
@@ -36030,18 +36124,25 @@ class Diagram extends Component {
             ViewportHeight: this.scrollSettings.viewPortHeight, ViewportWidth: this.scrollSettings.viewPortWidth,
             CurrentZoom: this.scroller.currentZoom
         };
+        let panStatus = 'Start';
+        if (this.realActions & RealAction.PanInProgress) {
+            panStatus = 'Progress';
+        }
         let arg = {
             oldValue: oldValue,
-            newValue: newValue, source: this
+            newValue: newValue, source: this,
+            panState: panStatus
         };
         if (isBlazor() && this.scrollChange) {
             arg = {
                 oldValue: oldValue,
                 newValue: newValue,
-                sourceId: this.element.id
+                sourceId: this.element.id,
+                panState: panStatus
             };
         }
         this.triggerEvent(DiagramEvent.scrollChange, arg);
+        this.commandHandler.updatePanState(true);
         if (this.mode === 'Canvas' && (this.constraints & DiagramConstraints.Virtualization)) {
             this.refreshDiagramLayer();
         }
@@ -36102,15 +36203,15 @@ class Diagram extends Component {
         return data;
     }
     initNodes(obj, layer) {
-        this.preventUpdate = true;
+        this.preventDiagramUpdate = true;
         this.initObject(obj, layer);
-        this.preventUpdate = false;
+        this.preventDiagramUpdate = false;
     }
     initConnectors(obj, layer, independentObj) {
-        this.preventUpdate = true;
+        this.preventDiagramUpdate = true;
         this.initObject(obj, layer, independentObj);
         this.updateEdges(obj);
-        this.preventUpdate = false;
+        this.preventDiagramUpdate = false;
     }
     setZIndex(layer, obj) {
         //should be changed
@@ -36239,7 +36340,7 @@ class Diagram extends Component {
                 }
                 let sourceNode = this.nameTable[obj.sourceID];
                 let targetNode = this.nameTable[obj.targetID];
-                let port = this.getConnectedPort(sourceNode, obj);
+                let port = this.getConnectedPort(sourceNode, obj, true);
                 let targetPort = this.getConnectedPort(targetNode, obj);
                 let outPort = this.findInOutConnectPorts(sourceNode, false);
                 let inPort = this.findInOutConnectPorts(targetNode, true);
@@ -36247,7 +36348,7 @@ class Diagram extends Component {
                     && canPortOutConnect(outPort))) {
                     obj.sourceWrapper = this.getEndNodeWrapper(sourceNode, obj, true);
                     if (obj.sourcePortID) {
-                        if (port && port.constraints && !(port.constraints & PortConstraints.None)) {
+                        if (port && port.constraints && !(port.constraints & PortConstraints.None) && (port.constraints & PortConstraints.OutConnect)) {
                             obj.sourcePortWrapper = this.getWrapper(sourceNode.wrapper, obj.sourcePortID);
                         }
                     }
@@ -36256,7 +36357,7 @@ class Diagram extends Component {
                     && canPortInConnect(inPort))) {
                     obj.targetWrapper = this.getEndNodeWrapper(targetNode, obj, false);
                     if (obj.targetPortID) {
-                        if (targetPort && targetPort.constraints && !(targetPort.constraints & PortConstraints.None)) {
+                        if (targetPort && targetPort.constraints && !(targetPort.constraints & PortConstraints.None) && (targetPort.constraints & PortConstraints.InConnect)) {
                             obj.targetPortWrapper = this.getWrapper(targetNode.wrapper, obj.targetPortID);
                         }
                     }
@@ -36325,13 +36426,13 @@ class Diagram extends Component {
         }
     }
     /* tslint:enable */
-    getConnectedPort(node, connector) {
+    getConnectedPort(node, connector, isSource) {
         if (node && node.ports) {
             for (let port of node.ports) {
-                if (port.id === connector.sourcePortID) {
+                if (port.id === connector.sourcePortID && isSource) {
                     return port;
                 }
-                else if (port.id === connector.targetPortID) {
+                else if (port.id === connector.targetPortID && !isSource) {
                     return port;
                 }
             }
@@ -36789,9 +36890,9 @@ class Diagram extends Component {
                 let isProtectedChange = this.isProtectedOnChange;
                 let connector = this.nameTable[rootNode.outEdges[1]];
                 this.protectPropertyChange(false);
-                this.preventUpdate = true;
+                this.preventDiagramUpdate = true;
                 connector.sourcePortID = rootNode.ports[1].id;
-                this.preventUpdate = false;
+                this.preventDiagramUpdate = false;
                 this.dataBind();
                 this.protectPropertyChange(isProtectedChange);
             }
@@ -37182,7 +37283,7 @@ class Diagram extends Component {
     }
     /** @private */
     setSize(width, height) {
-        if (this.diagramLayer && !this.preventUpdate) {
+        if (this.diagramLayer && !this.preventDiagramUpdate) {
             let position = getRulerSize(this);
             width -= position.width;
             height -= position.height;
@@ -39255,7 +39356,7 @@ class Diagram extends Component {
     /** @private */
     updateQuad(obj) {
         let modified = this.spatialSearch.updateQuad(obj.wrapper);
-        if (modified && !this.preventUpdate) {
+        if (modified && !this.preventDiagramUpdate) {
             this.updatePage();
         }
     }
@@ -39273,7 +39374,7 @@ class Diagram extends Component {
         }
         this.spatialSearch.removeFromAQuad(obj.wrapper);
         let modified = this.spatialSearch.updateBounds(obj.wrapper);
-        if (modified && !this.preventUpdate) {
+        if (modified && !this.preventDiagramUpdate) {
             this.updatePage();
         }
     }
@@ -39568,11 +39669,11 @@ class Diagram extends Component {
                                 }
                             }
                             if (!this.activeLayer.lock && !arg.cancel) {
-                                this.preventUpdate = true;
+                                this.preventDiagramUpdate = true;
                                 if (newObj.children) {
                                     this.findChild(newObj, entryTable);
                                 }
-                                this.preventUpdate = true;
+                                this.preventDiagramUpdate = true;
                                 if (newObj.zIndex !== -1) {
                                     newObj.zIndex = -1;
                                 }
@@ -39586,7 +39687,7 @@ class Diagram extends Component {
                                 this.commandHandler.updateBlazorSelector();
                                 this.eventHandler.mouseDown(args.event);
                                 this.eventHandler.mouseMove(args.event, args);
-                                this.preventUpdate = false;
+                                this.preventDiagramUpdate = false;
                                 this.updatePage();
                                 selectedSymbol.style.opacity = '0';
                             }

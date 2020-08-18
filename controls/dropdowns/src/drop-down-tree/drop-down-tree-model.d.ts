@@ -396,6 +396,13 @@ export interface DropDownTreeModel extends ComponentModel{
     zIndex?: number;
 
     /**
+     * Defines whether to enable or disable the feature called wrap the selected items into multiple lines when the selected item's text
+     * content exceeded the input width limit.
+     * @default false
+     */
+    wrapText?: boolean;
+
+    /**
      * Triggers when the data fetch request from the remote server fails.
      * @event
      */

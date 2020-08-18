@@ -1614,7 +1614,8 @@ export class TableWidget extends BlockWidget {
             let cellWidth: number = 0;
             let sizeInfo: ColumnSizeInfo = new ColumnSizeInfo();
             let offset: number = 0;
-            if (rowFormat.gridBefore > 0) {
+            // tslint:disable-next-line:max-line-length
+            if (rowFormat.gridBefore > 0 && (row.rowFormat.beforeWidth !== 0 || row.rowFormat.gridBeforeWidth !== 0) && ((this.bodyWidget.page.documentHelper.alignTablesRowByRow) ? row.ownerTable.tableFormat.tableAlignment === 'Left' : true)) {
                 cellWidth = this.getCellWidth(rowFormat.gridBeforeWidth, row.rowFormat.gridAfterWidthType, tableWidth, null);
                 sizeInfo.minimumWidth = cellWidth;
                 this.tableHolder.addColumns(columnSpan, columnSpan = rowFormat.gridBefore, cellWidth, sizeInfo, offset = cellWidth);
@@ -4014,8 +4015,12 @@ export abstract class ElementBox {
                 } else if (isNullOrUndefined(fieldBegin.fieldSeparator)) {
                     if (node.fieldType === 2 && isNullOrUndefined((node as FieldElementBox).fieldBegin)) {
                         fieldBegin.fieldSeparator = node as FieldElementBox;
+                        if (fieldBegin.fieldSeparator && isNullOrUndefined(fieldBegin.fieldSeparator.fieldBegin)) {
+                            fieldBegin.fieldSeparator.fieldBegin = fieldBegin;
+                        }
                         if (!isNullOrUndefined((node as FieldElementBox).fieldEnd)) {
                             fieldBegin.fieldEnd = (node as FieldElementBox).fieldEnd;
+                            fieldBegin.fieldSeparator.fieldEnd = fieldBegin.fieldEnd;
                             return true;
                         }
                     } else {
@@ -4119,9 +4124,9 @@ export abstract class ElementBox {
         }
         return elementBox;
     }
-  /**
-   * @private
-   */
+    /**
+     * @private
+     */
     get previousValidNodeForTracking(): ElementBox {
         let elementBox: ElementBox = this;
         //tslint:disable-next-line:max-line-length
@@ -5048,6 +5053,34 @@ export class ImageElementBox extends ShapeBase {
     /**
      * @private
      */
+    public isCrop: boolean = false;
+    /**
+     * @private
+     */
+    public cropWidth: number;
+    /**
+     * @private
+     */
+    public cropHeight: number;
+    /**
+     * @private
+     */
+    public left: number;
+    /**
+     * @private
+     */
+    public top: number;
+    /**
+     * @private
+     */
+    public right: number;
+    /**
+     * @private
+     */
+    public bottom: number;
+    /**
+     * @private
+     */
     public isMetaFile: boolean = false;
     /**
      * @private
@@ -5105,6 +5138,15 @@ export class ImageElementBox extends ShapeBase {
         image.isMetaFile = this.isMetaFile;
         image.width = this.width;
         image.height = this.height;
+        if (this.isCrop) {
+        image.verticalPosition = this.top;
+        image.horizontalPosition = this.left;
+        image.bottom = this.bottom;
+        image.right = this.right;
+        image.isCrop = this.isCrop;
+        image.heightScale = this.heightScale;
+        image.widthScale = this.widthScale;
+        }
         if (this.margin) {
             image.margin = this.margin.clone();
         }

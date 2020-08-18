@@ -3,7 +3,7 @@
  * Specifies whether to display the floating label above the input element.
  */
 import { removeClass, addClass, detach } from '@syncfusion/ej2-base';
-import { attributes, isNullOrUndefined, createElement } from '@syncfusion/ej2-base';
+import { attributes, isNullOrUndefined, createElement, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { FloatLabelType } from '@syncfusion/ej2-inputs';
 
 const FLOATLINE: string = 'e-float-line';
@@ -35,10 +35,10 @@ export function createFloatLabel(
         attributes(element, { 'aria-labelledby': floatLabelElement.id });
     }
     if (!isNullOrUndefined(inputElement.placeholder) && inputElement.placeholder !== '') {
-        floatLabelElement.innerHTML = inputElement.placeholder;
+        floatLabelElement.innerText = SanitizeHtmlHelper.sanitize(inputElement.placeholder);
         inputElement.removeAttribute('placeholder');
     }
-    floatLabelElement.innerHTML = placeholder;
+    floatLabelElement.innerText = SanitizeHtmlHelper.sanitize(placeholder);
     searchWrapper.appendChild(floatLinelement);
     searchWrapper.appendChild(floatLabelElement);
     overAllWrapper.classList.add('e-float-input');

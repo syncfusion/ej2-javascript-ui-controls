@@ -466,3 +466,54 @@ describe('Diagram Control', () => {
         })
     });
 });
+
+describe('BringToFront exception', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'diagram_div' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] = [
+            {
+                id: "rectangle1",
+                offsetX: 100,
+                offsetY: 100,
+                width: 100,
+                height: 100,
+                annotations: [{
+                    content: 'rectangle1'
+                }]
+            }, {
+                id: "rectangle2",
+                offsetX: 200,
+                offsetY: 200,
+                width: 100,
+                height: 100,
+                annotations: [{
+                    content: 'rectangle2'
+                }]
+            },
+            {
+                id: 'group',
+                children: ['rectangle1', 'rectangle2']
+            },
+        
+        ];
+        
+        diagram = new Diagram({
+            width: '1500px',
+            height: '600px',
+            nodes: nodes,
+        });
+        diagram.appendTo("#diagram_div");
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('BringToFront is not working for groupnode', (done: Function) => {
+        diagram.select([diagram.nodes[2]]);
+        diagram.bringToFront();
+        done();
+    });
+})

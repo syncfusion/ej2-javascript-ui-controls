@@ -2447,3 +2447,35 @@ describe('Check for OdataV4 date filter', () => {
         gridObj = actionComplete = null;
     });
 });  
+
+describe('Check for operator symbol in datasource value in filtebar', () => {
+    let gridObj: Grid;
+    let sampleData: Object[] = [{
+        FirstName: 'VINET', Value: 'ENV<0'
+    }, { FirstName: 'TOMSP', Value: 'role' }];
+    let actionComplete: (args: any) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                allowPaging: true,
+                allowFiltering: true,
+                columns: [
+                    { field: 'FirstName', type: 'string' },
+                    { field: 'Value', type: 'sting' }
+                ],
+            }, done);
+    });
+    it('filterbyColumn public Method checking', (done: Function) => {
+        actionComplete = () => {
+            expect(gridObj.element.querySelectorAll('.e-row').length).toBe(1);
+            done();
+        };
+        gridObj.filterModule.filterByColumn('Value', 'equal', 'env<0');
+        gridObj.actionComplete = actionComplete;
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = actionComplete = null;
+    });
+});  
