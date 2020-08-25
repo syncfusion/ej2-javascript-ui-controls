@@ -1889,6 +1889,7 @@ var DateParser = /** @class */ (function () {
                         }
                     }
                     else {
+                        matchString = prop === 'month' ? matchString[0].toUpperCase() + matchString.substring(1).toLowerCase() : matchString;
                         retOptions[prop] = parseOptions[prop][matchString];
                     }
                 }

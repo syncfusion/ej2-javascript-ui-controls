@@ -8612,14 +8612,15 @@ class Layout {
         cell.width -= (!isLeftStyleNone) ? 0 : (cell.leftBorderWidth > 0) ? 0 : cell.leftBorderWidth;
         let lastCell = !cell.ownerTable.isBidiTable ? cell.cellIndex === cell.ownerRow.childWidgets.length - 1
             : cell.cellIndex === 0;
-        if (cellspace > 0 || cell.columnIndex === cell.ownerTable.tableHolder.columns.length - 1) {
+        if (cellspace > 0 || cell.columnIndex === cell.ownerTable.tableHolder.columns.length - 1 ||
+            (cell.columnIndex === cell.containerWidget.childWidgets.length - 1 && cell.cellFormat.columnSpan > 1)) {
             cell.rightBorderWidth = !cell.ownerTable.isBidiTable ? rightBorderWidth : leftBorderWidth;
             if (!cell.ownerTable.tableFormat.allowAutoFit) {
                 cell.width -= cell.rightBorderWidth;
             }
         }
         //Add the border widths to respective margin side.
-        cell.margin.left += (isLeftStyleNone) ? 0 : (cell.leftBorderWidth);
+        //cell.margin.left += (isLeftStyleNone) ? 0 : (cell.leftBorderWidth);
         cell.margin.right += (isRightStyleNone) ? 0 : (cell.rightBorderWidth);
         //cell.ownerWidget = owner;
         return cell;
@@ -9233,7 +9234,8 @@ class Layout {
                 // tslint:disable-next-line:max-line-length
                 let rowSpanWidgetEndIndex = currentRowWidgetIndex + rowSpan - 1 - (rowWidget.index - cellWidget.rowIndex);
                 if (!isInitialLayout && (viewer.clientArea.bottom < cellWidget.y + cellWidget.height + cellWidget.margin.bottom
-                    || rowSpanWidgetEndIndex >= currentRowWidgetIndex + 1)) {
+                    || rowSpanWidgetEndIndex >= currentRowWidgetIndex + 1) && (rowCollection.length === 1
+                    || rowCollection.length >= 1 && rowWidget === rowCollection[rowCollection.length - 1])) {
                     this.splitSpannedCellWidget(cellWidget, tableCollection, rowCollection, viewer);
                 }
                 let spanEndRowWidget = rowWidget;
@@ -11008,6 +11010,7 @@ class Layout {
         this.clearTableWidget(combinedTable, true, false);
         this.shiftTableWidget(combinedTable, this.viewer);
         this.updateVerticalPositionToTop(table, false);
+        this.viewer.updateClientAreaForBlock(table, false);
     }
     updateVerticalPositionToTop(table, isUpdateTop) {
         //Iterate the tableWidgets counts
@@ -16449,7 +16452,6 @@ class DocumentHelper {
                     this.owner.imageResizerModule.mouseUpInternal();
                     this.scrollToPosition(this.owner.selection.start, this.owner.selection.end);
                     this.owner.imageResizerModule.isImageResizing = false;
-                    this.owner.imageResizerModule.updateHistoryForImageResizer();
                 }
                 // tslint:disable-next-line:max-line-length
                 if (this.owner.enableImageResizerMode && this.owner.imageResizerModule.isImageResizerVisible && !isNullOrUndefined(this.selection.caret)) {
@@ -16694,7 +16696,6 @@ class DocumentHelper {
                     this.owner.imageResizerModule.isImageResizing = false;
                     this.owner.imageResizerModule.isImageMoveToNextPage = false;
                     this.scrollToPosition(this.owner.selection.start, this.owner.selection.end);
-                    this.owner.imageResizerModule.updateHistoryForImageResizer();
                 }
                 // tslint:disable-next-line:max-line-length
                 if (this.owner.enableImageResizerMode && this.owner.imageResizerModule.isImageResizerVisible && this.isTouchInput) {
@@ -56770,7 +56771,9 @@ class Editor {
                     this.deleteSection(selection, this.delSection, bodyWidget, editAction);
                     this.delSection = undefined;
                 }
-                this.deleteBlock(this.delBlock, selection, start, end, editAction);
+                if (this.delBlock.indexInOwner !== -1) {
+                    this.deleteBlock(this.delBlock, selection, start, end, editAction);
+                }
                 this.delBlockContinue = false;
                 this.delBlock = undefined;
             }
@@ -65225,6 +65228,7 @@ class ImageResizer {
         this.owner.isShiftingEnabled = true;
         this.owner.editorModule.setOffsetValue(this.owner.selection);
         this.documentHelper.layout.reLayoutParagraph(this.currentImageElementBox.line.paragraph, 0, 0);
+        this.updateHistoryForImageResizer();
         this.owner.editorModule.reLayout(this.owner.selection, true);
         this.viewer.updateScrollBars();
     }
@@ -68883,7 +68887,12 @@ class WordExport {
         writer.writeAttributeString(undefined, 'w', undefined, '12700');
         writer.writeStartElement('a', 'solidFill', this.aNamespace);
         writer.writeStartElement('a', 'srgbClr', this.aNamespace);
-        writer.writeAttributeString(undefined, 'val', undefined, '000000');
+        if (shape.lineFormat.lineFormatType !== 'None') {
+            writer.writeAttributeString(undefined, 'val', undefined, '000000');
+        }
+        else {
+            writer.writeAttributeString(undefined, 'val', undefined, 'FFFFFF');
+        }
         writer.writeEndElement();
         writer.writeEndElement();
         writer.writeStartElement('a', 'round', this.aNamespace);
@@ -69244,11 +69253,12 @@ class WordExport {
             writer.writeEndElement(); //end of pPr
             writer.writeEndElement(); //end of P
         }
-        writer.writeEndElement(); //end of table cell 'tc'        
-        if (this.mVerticalMerge.containsKey((cell.columnIndex + cell.cellFormat.columnSpan - 1) + 1)
+        writer.writeEndElement(); //end of table cell 'tc' 
+        let increment = 1;
+        while (this.mVerticalMerge.containsKey((cell.columnIndex + cell.cellFormat.columnSpan - 1) + increment)
             && (((this.row.cells.indexOf(cell) === this.row.cells.length - 1) || this.row.cells.indexOf(cell) === cell.columnIndex))
             && cell.nextNode === undefined) {
-            let collKey = (cell.columnIndex + cell.cellFormat.columnSpan - 1) + 1;
+            let collKey = (cell.columnIndex + cell.cellFormat.columnSpan - 1) + increment;
             writer.writeStartElement(undefined, 'tc', this.wNamespace);
             let endProperties = true;
             if (!isNullOrUndefined(this.spanCellFormat)) {
@@ -69270,6 +69280,7 @@ class WordExport {
             writer.writeStartElement('w', 'p', this.wNamespace);
             writer.writeEndElement(); //end of P
             writer.writeEndElement(); //end of table cell 'tc'  
+            increment++;
         }
         this.blockOwner = owner;
     }
@@ -76552,21 +76563,29 @@ class StyleDialog {
         this.styleDropdwn.addEventListener('select', this.openDialog);
     }
     createFontOptions(parentDiv, isRtl) {
-        let fontFamilyElement = createElement('select', { id: this.target.id + '_fontName' });
-        fontFamilyElement.innerHTML = '<option>Arial</option><option>Calibri</option><option>Candara</option>' +
-            '<option>Comic Sans MS</option><option>Consolas</option><option>Constantia</option><option>Corbel</option>' +
-            '<option>Courier New</option><option>Ebrima</option><option>Franklin Gothic</option>' +
-            '<option>Gabriola</option><option>Gadugi</option><option>Georgia</option><option>Impact</option>' +
-            '<option>Javanese Text</option><option>Microsoft Sans Serif</option><option>MS Gothic</option><option>MS UI Gothic</option>' +
-            '<option>Segoe Print</option><option>Times New Roman</option><option>Verdana</option><option>Segoe UI</option>' +
-            '<option>Algerian</option><option>Cambria</option><option>Georgia</option><option>Consolas</option>';
+        let fontFamilyElement = createElement('input', {
+            id: this.target.id + '_fontName',
+        });
+        let fontStyle;
+        let isStringTemplate = true;
+        let itemTemplate = '<span style="font-family: ${FontName};">${FontName}</span>';
         parentDiv.appendChild(fontFamilyElement);
         this.fontFamily = new ComboBox({
-            width: '123px', popupWidth: '123px',
-            cssClass: 'e-style-font-fmaily-right', enableRtl: isRtl, change: this.fontFamilyChanged
+            dataSource: fontStyle, query: new Query().select(['FontName']), fields: { text: 'FontName', value: 'value' },
+            allowCustom: true, width: '123px', popupWidth: '123px',
+            cssClass: 'e-style-font-fmaily-right', enableRtl: isRtl, change: this.fontFamilyChanged,
+            showClearButton: false, itemTemplate: itemTemplate
         });
-        this.fontFamily.showClearButton = false;
         this.fontFamily.appendTo(fontFamilyElement);
+        this.fontFamily.isStringTemplate = isStringTemplate;
+        let fontFamilyValue = this.documentHelper.owner.documentEditorSettings.fontFamilies;
+        for (let i = 0; i < fontFamilyValue.length; i++) {
+            let fontValue = fontFamilyValue[i];
+            let fontStyleValue = { 'FontName': fontValue, 'value': fontValue };
+            this.fontFamily.addItem(fontStyleValue, i);
+        }
+        this.fontFamily.focus = () => { this.fontFamily.element.select(); };
+        this.fontFamily.element.parentElement.setAttribute('title', this.localObj.getConstant('Font'));
         let fontSizeElement = createElement('input');
         parentDiv.appendChild(fontSizeElement);
         let sizeDataSource = [8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72];
@@ -89948,7 +89967,8 @@ class TableProperties {
                     this.horizontalMerge.disabled = true;
                 }
                 if (this.documentEditor.selection.contextType === 'TableText' || this.documentEditor.selection.contextType === 'TableImage') {
-                    this.shadingBtn.value = this.documentEditor.selection.cellFormat.background;
+                    // tslint:disable-next-line:max-line-length
+                    this.shadingBtn.value = this.documentEditor.selection.cellFormat.background ? this.documentEditor.selection.cellFormat.background : '';
                 }
                 // tslint:disable-next-line:max-line-length
                 this.topMargin.value = this.documentEditor.selection.cellFormat.topMargin ? this.documentEditor.selection.cellFormat.topMargin : 0;

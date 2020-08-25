@@ -104,7 +104,7 @@ describe('Gantt Selection support', () => {
             ganttObj.selectionSettings.type = 'Single';
             ganttObj.selectionSettings.mode = 'Row';
             ganttObj.dataBind();
-            let row: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-left-label-container') as HTMLElement;
+            let row: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-left-label-container') as HTMLElement;
             triggerMouseEvent(row, 'mouseup', 10, 10, false, true);
             triggerMouseEvent(row, 'mouseup', 10, 10, false, true);
             expect(ganttObj.selectionModule.getSelectedRecords().length).toBe(1);

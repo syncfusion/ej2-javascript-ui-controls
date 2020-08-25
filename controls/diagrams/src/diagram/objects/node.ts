@@ -2573,7 +2573,6 @@ export class Node extends NodeBase implements IElement {
 
         for (let i: number = 0; this.ports !== undefined, i < this.ports.length; i++) {
             port = this.initPortWrapper(this.ports[i] as Port);
-            port.elementActions = port.elementActions | ElementAction.ElementIsPort;
             // tslint:disable-next-line:no-any
             let wrapperContent: any;
             let contentAccessibility: Function = getFunction(accessibilityContent);
@@ -2582,6 +2581,7 @@ export class Node extends NodeBase implements IElement {
             }
             port.description = wrapperContent ? wrapperContent : port.id;
             port.inversedAlignment = canvas.inversedAlignment;
+            port.elementActions = port.elementActions | ElementAction.ElementIsPort;
             container.children.push(port);
         }
     }
@@ -2682,6 +2682,7 @@ export class Node extends NodeBase implements IElement {
         portContent.relativeMode = 'Point';
         portContent.visible = checkPortRestriction(ports, PortVisibility.Visible) &&
             !checkPortRestriction(ports, PortVisibility.Hover) && !checkPortRestriction(ports, PortVisibility.Connect) ? true : false;
+        portContent.elementActions = portContent.elementActions | ElementAction.ElementIsPort;
         return portContent;
     }
     /** @private */

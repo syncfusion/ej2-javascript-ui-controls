@@ -52,6 +52,10 @@ export class Trendlines {
         series.xData = [];
         series.yData = [];
         trendline.targetSeries = series;
+        if (chart.isBlazor) {
+            trendline.targetSeries.border = {}; // To avoid console error in blazor
+            trendline.targetSeries.connector = {}; // To avoid console error in blazor
+        }
     }
 
     /**

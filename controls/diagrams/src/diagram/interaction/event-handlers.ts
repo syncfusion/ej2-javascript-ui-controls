@@ -378,9 +378,10 @@ export class DiagramEventHandler {
             evt.preventDefault();
             return;
         }
-        if (isBlazor()) {
-            this.commandHandler.oldSelectedObjects = cloneObject(this.diagram.selectedItems);
-        }
+        // commanded by gowtham- unwanted cloning of selectedItems
+        // if (isBlazor()) {
+        //     this.commandHandler.oldSelectedObjects = cloneObject(this.diagram.selectedItems);
+        // }
         this.checkUserHandleEvent(DiagramEvent.onUserHandleMouseDown);
         if (!this.checkEditBoxAsTarget(evt) && (canUserInteract(this.diagram)) ||
             (canZoomPan(this.diagram) && !defaultTool(this.diagram))) {
@@ -1333,6 +1334,9 @@ export class DiagramEventHandler {
     /** @private */
     public scrolled(evt: PointerEvent): void {
         this.diagram.updateScrollOffset();
+        if (isBlazor() && (this.diagram.realActions & RealAction.OverViewAction)) {
+            this.diagram.setBlazorDiagramProps(false);
+        }
     }
 
     /** @private */

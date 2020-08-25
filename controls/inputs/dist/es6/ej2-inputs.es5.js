@@ -11876,7 +11876,10 @@ var ColorPicker = /** @__PURE__ @class */ (function (_super) {
         attributes(this.element, { 'value': this.initialInputValue });
     };
     ColorPicker.prototype.addCtrlSwitchEvent = function () {
-        EventHandler.add(select('.' + CTRLSWITCH, this.container), 'click', this.btnClickHandler, this);
+        var ctrlSwitchBtn = select('.' + CTRLSWITCH, this.container);
+        if (ctrlSwitchBtn) {
+            EventHandler.add(ctrlSwitchBtn, 'click', this.btnClickHandler, this);
+        }
     };
     ColorPicker.prototype.pickerKeyDown = function (e) {
         switch (e.keyCode) {

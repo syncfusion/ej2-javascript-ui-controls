@@ -43,10 +43,26 @@ export class EditTooltip {
             };
             this.parent.trigger('beforeTooltipRender', argsData);
         };
+        this.toolTipObj.afterOpen = (args: TooltipEventArgs) => {
+            this.updateTooltipPosition(args);
+        };
         this.toolTipObj.isStringTemplate = true;
         this.toolTipObj.appendTo(this.parent.chartPane);
     }
 
+    /**
+     * Method to update tooltip position
+     * @param args 
+     */
+    private updateTooltipPosition(args: TooltipEventArgs): void {
+        let containerPosition: { top: number, left: number } = this.parent.getOffsetRect(this.parent.chartPane);
+        let leftEnd: number = containerPosition.left + this.parent.chartPane.offsetWidth;
+        let tooltipPositionX: number = args.element.offsetLeft;
+        if (leftEnd < (tooltipPositionX + args.element.offsetWidth)) {
+            tooltipPositionX += leftEnd - (tooltipPositionX + args.element.offsetWidth);
+        }
+        args.element.style.left = tooltipPositionX + 'px';
+    }
     /**
      * To show/hide taskbar edit tooltip.
      * @return {void}

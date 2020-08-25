@@ -89,7 +89,9 @@ export class GanttChart {
         if (rangeContainer) {
             rangeContainer.innerHTML = '';
         }
-        this.renderRangeContainer(this.parent.flatData);
+        if (this.parent.treeGrid.grid.filterSettings.columns.length === 0) {
+            this.renderRangeContainer(this.parent.flatData);
+        }
     }
     private renderChartElements(): void {
         this.parent.chartRowsModule.renderChartRows();
@@ -107,11 +109,13 @@ export class GanttChart {
         let recordLength: number = records.length;
         let count: number; let ganttRecord: IGanttData;
         let rangeCollection: IWorkTimelineRanges[];
-        for (count = 0; count < recordLength; count++) {
-            ganttRecord = records[count];
-            rangeCollection = ganttRecord.ganttProperties.workTimelineRanges;
-            if (rangeCollection) {
-                this.renderRange(rangeCollection, ganttRecord);
+        if (this.parent.treeGrid.grid.filterSettings.columns.length === 0) {
+            for (count = 0; count < recordLength; count++) {
+                ganttRecord = records[count];
+                rangeCollection = ganttRecord.ganttProperties.workTimelineRanges;
+                if (rangeCollection) {
+                    this.renderRange(rangeCollection, ganttRecord);
+                }
             }
         }
     }

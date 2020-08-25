@@ -1646,6 +1646,7 @@ export class ZoomPanTool extends ToolBase {
     public mouseDown(args: MouseEventArgs): void {
         super.mouseDown(args);
         this.inAction = true;
+        this.commandHandler.setBlazorDiagramProps(true);
     }
 
     /**   @private  */
@@ -1674,6 +1675,7 @@ export class ZoomPanTool extends ToolBase {
 
     /**   @private  */
     public mouseUp(args: MouseEventArgs): void {
+        this.commandHandler.setBlazorDiagramProps(false);
         this.checkPropertyValue();
         this.commandHandler.updatePanState(false);
         super.mouseUp(args);

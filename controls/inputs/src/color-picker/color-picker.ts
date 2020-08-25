@@ -1017,7 +1017,8 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
     }
 
     private addCtrlSwitchEvent(): void {
-        EventHandler.add(select('.' + CTRLSWITCH, this.container), 'click', this.btnClickHandler, this);
+        let ctrlSwitchBtn: Element = select('.' + CTRLSWITCH, this.container);
+        if (ctrlSwitchBtn) { EventHandler.add(ctrlSwitchBtn, 'click', this.btnClickHandler, this); }
     }
 
     private pickerKeyDown(e: KeyboardEvent): void {

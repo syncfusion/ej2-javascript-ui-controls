@@ -16767,6 +16767,10 @@ class Trendlines {
         series.xData = [];
         series.yData = [];
         trendline.targetSeries = series;
+        if (chart.isBlazor) {
+            trendline.targetSeries.border = {}; // To avoid console error in blazor
+            trendline.targetSeries.connector = {}; // To avoid console error in blazor
+        }
     }
     /**
      * Creates the elements of a trendline
@@ -18135,7 +18139,7 @@ class Tooltip$1 extends BaseTooltip {
             }
             else {
                 for (let series of chart.visibleSeries) {
-                    if (series.visible) {
+                    if (series.visible && !(series.category === 'TrendLine')) {
                         data = this.getClosestX(chart, series) || data;
                     }
                 }
@@ -18258,8 +18262,9 @@ class Tooltip$1 extends BaseTooltip {
                     + data.series.xAxis.rect.x;
             }
             else {
-                this.valueX = valueToCoefficient(data.point.xValue, data.series.xAxis) * data.series.xAxis.rect.width
-                    + data.series.xAxis.rect.x;
+                this.valueX = (data.series.category === 'TrendLine' && chart.tooltip.shared) ? this.valueX :
+                    valueToCoefficient(data.point.xValue, data.series.xAxis) * data.series.xAxis.rect.width
+                        + data.series.xAxis.rect.x;
             }
             this.valueY = chart.mouseY;
         }
@@ -18271,6 +18276,7 @@ class Tooltip$1 extends BaseTooltip {
     }
     renderGroupedTooltip(chart, isFirst, tooltipDiv) {
         let data;
+        let lastData;
         let pointData = chart.chartAreaType === 'PolarRadar' ? this.getData() : null;
         this.stopAnimation();
         this.removeHighlight(chart);
@@ -18316,6 +18322,7 @@ class Tooltip$1 extends BaseTooltip {
                     argument.headerText = this.findHeader(data);
                     this.currentPoints.push(data);
                     argument.text.push(this.getTooltipText(data));
+                    lastData = (data.series.category === 'TrendLine' && chart.tooltip.shared) ? lastData : data;
                 }
             }
             // if (data && this.triggerEvent(data, isFirst, this.getTooltipText(data)), this.findHeader(data)) {
@@ -18327,7 +18334,7 @@ class Tooltip$1 extends BaseTooltip {
             // }
         }
         if (chart.isBlazor) {
-            this.triggerBlazorSharedTooltip(argument, data, extraPoints, chart, isFirst);
+            this.triggerBlazorSharedTooltip(argument, lastData, extraPoints, chart, isFirst);
         }
         if (this.currentPoints.length > 0) {
             this.createTooltip(chart, isFirst, this.findSharedLocation(), this.currentPoints.length === 1 ? this.currentPoints[0].series.clipRect : null, null, this.findShapes(), this.findMarkerHeight(this.currentPoints[0]), chart.chartAxisLayoutPanel.seriesClipRect, extraPoints);
@@ -33684,7 +33691,9 @@ class StockEvents extends BaseTooltip {
                 textSize = measureText(stockEvent.text + 'W', stockEvent.textStyle);
                 if (!argsData.cancel) {
                     stockEventElement = sChart.renderer.createGroup({ id: this.chartId + '_Series_' + series.index + '_StockEvents_' + i });
-                    if (withIn(this.dateParse(stockEvent.date).getTime(), series.xAxis.visibleRange)) {
+                    let stockEventDate = this.stockChart.isBlazor ? Date.parse((stockEvent.date).toString()) :
+                        this.dateParse(stockEvent.date).getTime();
+                    if (withIn(stockEventDate, series.xAxis.visibleRange)) {
                         if (stockEvent.seriesIndexes.length > 0) {
                             for (let j = 0; j < stockEvent.seriesIndexes.length; j++) {
                                 if (stockEvent.seriesIndexes[j] === series.index) {
@@ -33712,7 +33721,9 @@ class StockEvents extends BaseTooltip {
         return stockEventElement;
     }
     findClosePoint(series, sEvent) {
-        let closeIndex = this.getClosest(series, this.dateParse(sEvent.date).getTime());
+        let stockEventDate = this.stockChart.isBlazor ? Date.parse((sEvent.date).toString()) :
+            this.dateParse(sEvent.date).getTime();
+        let closeIndex = this.getClosest(series, stockEventDate);
         let pointData;
         let point;
         let xPixel;

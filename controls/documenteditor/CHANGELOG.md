@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 18.2.55 (2020-08-25)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#286474` - Resolved table re layout issue when table have left indent value.
+- `#289186` - Resolved issue on exporting a text box with line format none.
+- `#288198` - Font family customization is also available on modify style dialog now.
+- `#289187` - Resolved table border rendering issue when table have merged cells.
+- `#287255` - Resolved page unresponsive error occurs on mail merge.
+- `#286474`, `#288778` - Resolved script error thrown on choosing fill color.
+- `#155699` - Image resize history is now called before the content change event.
+- `#156086` - Resolved table layout issue on opening a saved document with merged cells.
+
 ## 18.2.54 (2020-08-18)
 
 ### Document Editor

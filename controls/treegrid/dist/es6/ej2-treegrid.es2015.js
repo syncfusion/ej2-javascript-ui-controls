@@ -1259,13 +1259,7 @@ class Render {
                 else {
                     expand = !(!data.expanded || !getExpandStatus(this.parent, data, this.parent.grid.getCurrentViewRecords()));
                 }
-                let collapsed$$1 = true;
-                if (!isNullOrUndefined(data.parentItem) && (!isNullOrUndefined(data[this.parent.expandStateMapping])
-                    && data[this.parent.expandStateMapping])
-                    && !(this.parent.allowPaging && !(this.parent.pageSettings.pageSizeMode === 'Root'))) {
-                    collapsed$$1 = !getExpandStatus(this.parent, args.data, this.parent.grid.getCurrentViewRecords());
-                }
-                addClass([expandIcon], (expand && collapsed$$1) ? 'e-treegridexpand' : 'e-treegridcollapse');
+                addClass([expandIcon], (expand) ? 'e-treegridexpand' : 'e-treegridcollapse');
                 totalIconsWidth += 18;
                 container.appendChild(expandIcon);
                 emptyExpandIcon.style.width = '7px';
@@ -4525,6 +4519,8 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
             }
             if (this.isPixelHeight() && !row.cells[0].classList.contains('e-lastrowcell')) {
                 let totalRows = this.getRows();
+                let rows = this.getContentTable().rows;
+                totalRows = [].slice.call(rows);
                 for (let i = totalRows.length - 1; i > 0; i--) {
                     if (!isHidden(totalRows[i])) {
                         let table = this.getContentTable();
@@ -8370,7 +8366,7 @@ class BatchEdit {
         this.batchIndex = 0;
         this.currentViewRecords = extendArray(this.parent.grid.getCurrentViewRecords());
         this.batchDeletedRecords = [];
-        this.parent.refresh();
+        this.parent.grid.renderModule.refresh();
     }
     batchSave(args) {
         if (this.parent.editSettings.mode === 'Batch') {

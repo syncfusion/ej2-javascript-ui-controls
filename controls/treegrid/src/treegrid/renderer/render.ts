@@ -115,13 +115,7 @@ export class Render {
                 } else {
                    expand =  !(!data.expanded || !getExpandStatus(this.parent, data, this.parent.grid.getCurrentViewRecords()));
                 }
-                let collapsed: boolean = true;
-                if (!isNullOrUndefined(data.parentItem) && (!isNullOrUndefined(data[this.parent.expandStateMapping])
-                    && data[this.parent.expandStateMapping])
-                    && !(this.parent.allowPaging && !(this.parent.pageSettings.pageSizeMode === 'Root'))) {
-                    collapsed = !getExpandStatus(this.parent, args.data, this.parent.grid.getCurrentViewRecords());
-                }
-                addClass([expandIcon], (expand && collapsed) ? 'e-treegridexpand' : 'e-treegridcollapse');
+                addClass([expandIcon], (expand) ? 'e-treegridexpand' : 'e-treegridcollapse');
                 totalIconsWidth += 18;
                 container.appendChild(expandIcon);
                 emptyExpandIcon.style.width = '7px'; totalIconsWidth += 7;

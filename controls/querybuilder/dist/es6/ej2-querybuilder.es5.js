@@ -171,6 +171,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         _this.fields = { text: 'label', value: 'field' };
         _this.updatedRule = { not: false, condition: 'and' };
         _this.isLocale = false;
+        _this.isRefreshed = false;
         MultiSelect.Inject(CheckBoxSelection);
         return _this;
     }
@@ -1353,8 +1354,11 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         var original = {};
         var result = [];
         var value;
+        var fieldColl;
+        if (this.separator.length > 0) {
+            fieldColl = field.split(this.separator);
+        }
         var dataSource = this.dataColl;
-        var fieldColl = field.split('.');
         if (this.dataColl[1]) {
             for (var i = 0, iLen = dataSource.length; i < iLen; i++) {
                 var data = {};
@@ -1930,6 +1934,13 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             }
             this.renderControls(target, itemData, rule, tempRule);
         }
+        else {
+            var parentElem = target.parentElement.querySelector('.e-rule-value');
+            if (parentElem) {
+                removeClass([parentElem], 'e-show');
+                addClass([parentElem], 'e-hide');
+            }
+        }
     };
     QueryBuilder.prototype.updateValues = function (element, rule) {
         var idx = 1;
@@ -2381,7 +2392,9 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             if (this.columns.length && this.isImportRules) {
                 this.addGroupElement(false, this.element, this.rule.condition);
                 var mRules = extend({}, this.rule, {}, true);
+                this.isRefreshed = true;
                 this.setGroupRules(mRules);
+                this.isRefreshed = false;
             }
             else if (this.columns.length) {
                 this.addRuleElement(this.element.querySelector('.e-group-container'), {});
@@ -2871,12 +2884,17 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             var valElem = ruleElem.querySelectorAll('.e-tooltip');
             var i = void 0;
             var len = valElem.length;
+            var column = void 0;
             for (i = 0; i < len; i++) {
                 getComponent(valElem[i], 'tooltip').destroy();
             }
             while (ruleElem.previousElementSibling !== null) {
                 ruleElem = ruleElem.previousElementSibling;
                 index++;
+            }
+            column = this.getColumn(rule.rules[index].field);
+            if (column && column.template) {
+                this.templateDestroy(column, clnruleElem.querySelector('.e-template').id);
             }
             rule.rules.splice(index, 1);
             if (!prevElem || prevElem.className.indexOf('e-rule-container') < 0) {
@@ -2910,7 +2928,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         this.isImportRules = false;
     };
     QueryBuilder.prototype.keyBoardHandler = function (e) {
-        if (this.readonly && e.keyCode === 38 || e.keyCode === 40 || e.keyCode === 13) {
+        if (this.readonly && (e.keyCode === 38 || e.keyCode === 40 || e.keyCode === 13)) {
             e.preventDefault();
         }
     };
@@ -2977,7 +2995,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                     rule.value = null;
                 }
             }
-            if (rule.field !== '' && rule.operator !== '' && rule.value !== '') {
+            if ((this.isRefreshed && this.enablePersistence) || (this.rule.field !== '' && rule.operator !== '' && rule.value !== '')) {
                 // tslint:disable-next-line:no-any
                 var customObj = rule.custom;
                 rule = {
@@ -3172,15 +3190,15 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                     ignoreCase = true;
                 }
                 column = this.getColumn(ruleColl[i].field);
-                if (ruleColl[i].type === 'date' && !(ruleColl[i].value instanceof Array)) {
+                if (oper.indexOf('null') > -1 || oper.indexOf('empty') > -1) {
+                    ruleColl[i].value = null;
+                }
+                else if (ruleColl[i].type === 'date' && !(ruleColl[i].value instanceof Array)) {
                     var format = this.getFormat(column.format);
                     ruleValue = this.getDate(ruleColl[i].value, format);
                     if (dateOperColl.indexOf(oper) > -1) {
                         isDateFilter = true;
                     }
-                }
-                else if (oper.indexOf('null') > -1 || oper.indexOf('empty') > -1) {
-                    ruleColl[i].value = null;
                 }
                 else {
                     ruleValue = ruleColl[i].value;
@@ -3243,7 +3261,9 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         return localeString;
     };
     QueryBuilder.prototype.getColumn = function (field) {
-        field = field.split('.')[0];
+        if (this.separator.length > 0) {
+            field = field.split(this.separator)[0];
+        }
         var columns = this.columns;
         var column;
         for (var i = 0, iLen = columns.length; i < iLen; i++) {
@@ -4023,6 +4043,9 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property(false)
     ], QueryBuilder.prototype, "readonly", void 0);
+    __decorate([
+        Property('')
+    ], QueryBuilder.prototype, "separator", void 0);
     __decorate([
         Complex({ condition: 'and', rules: [] }, Rule)
     ], QueryBuilder.prototype, "rule", void 0);

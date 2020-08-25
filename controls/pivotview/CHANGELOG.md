@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 18.2.55 (2020-08-25)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- The drill through dialog now be showed the correct raw items when we filtering applied in fields in filter axis.
+- The drill through dialog can now be openend when we bind measures in row axis.
+
 ## 18.2.54 (2020-08-18)
 
 ### Pivot Table

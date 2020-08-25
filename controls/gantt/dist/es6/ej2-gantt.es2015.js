@@ -187,7 +187,7 @@ class DateProcessor {
      * @param ganttProp
      * @private
      */
-    checkEndDate(date, ganttProp) {
+    checkEndDate(date, ganttProp, validateAsMilestone) {
         if (isNullOrUndefined(date)) {
             return null;
         }
@@ -196,7 +196,7 @@ class DateProcessor {
         if (hour > this.parent.defaultEndTime) {
             this.setTime(this.parent.defaultEndTime, cloneEndDate);
         }
-        else if (hour <= this.parent.defaultStartTime) {
+        else if (hour <= this.parent.defaultStartTime && !validateAsMilestone) {
             cloneEndDate.setDate(cloneEndDate.getDate() - 1);
             this.setTime(this.parent.defaultEndTime, cloneEndDate);
         }
@@ -1875,7 +1875,9 @@ class TaskProcessor extends DateProcessor {
         if (endDate.getHours() === 0 && this.parent.defaultEndTime !== 86400) {
             this.setTime(this.parent.defaultEndTime, endDate);
         }
-        this.parent.setRecordValue('endDate', this.checkEndDate(endDate, ganttData.ganttProperties), ganttProperties, true);
+        let validateAsMilestone = (parseInt(duration, 10) === 0) ? true : null;
+        /* tslint:disable-next-line */
+        this.parent.setRecordValue('endDate', this.checkEndDate(endDate, ganttData.ganttProperties, validateAsMilestone), ganttProperties, true);
         if (isNullOrUndefined(duration) || duration === '') {
             if (this.parent.allowUnscheduledTasks) {
                 this.parent.setRecordValue('startDate', null, ganttProperties, true);
@@ -1893,7 +1895,10 @@ class TaskProcessor extends DateProcessor {
     }
     calculateDateFromStartDate(startDate, endDate, duration, ganttData) {
         let ganttProperties = ganttData.ganttProperties;
-        this.parent.setRecordValue('startDate', this.checkStartDate(startDate, ganttProperties), ganttProperties, true);
+        let validateAsMilestone = (parseInt(duration, 10) === 0 || ((startDate && endDate) &&
+            (new Date(startDate.getTime()) === new Date(endDate.getTime())))) ? true : null;
+        /* tslint:disable-next-line */
+        this.parent.setRecordValue('startDate', this.checkStartDate(startDate, ganttProperties, validateAsMilestone), ganttProperties, true);
         if (!endDate && (isNullOrUndefined(duration) || duration === '')) {
             if (this.parent.allowUnscheduledTasks) {
                 this.parent.setRecordValue('endDate', null, ganttProperties, true);
@@ -3335,7 +3340,9 @@ class GanttChart {
         if (rangeContainer$$1) {
             rangeContainer$$1.innerHTML = '';
         }
-        this.renderRangeContainer(this.parent.flatData);
+        if (this.parent.treeGrid.grid.filterSettings.columns.length === 0) {
+            this.renderRangeContainer(this.parent.flatData);
+        }
     }
     renderChartElements() {
         this.parent.chartRowsModule.renderChartRows();
@@ -3354,11 +3361,13 @@ class GanttChart {
         let count;
         let ganttRecord;
         let rangeCollection;
-        for (count = 0; count < recordLength; count++) {
-            ganttRecord = records[count];
-            rangeCollection = ganttRecord.ganttProperties.workTimelineRanges;
-            if (rangeCollection) {
-                this.renderRange(rangeCollection, ganttRecord);
+        if (this.parent.treeGrid.grid.filterSettings.columns.length === 0) {
+            for (count = 0; count < recordLength; count++) {
+                ganttRecord = records[count];
+                rangeCollection = ganttRecord.ganttProperties.workTimelineRanges;
+                if (rangeCollection) {
+                    this.renderRange(rangeCollection, ganttRecord);
+                }
             }
         }
     }
@@ -4474,7 +4483,9 @@ class Timeline {
             requestType: 'beforeZoomToProject',
             timeline: newTimeline
         };
-        this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomin', this.parent.controlId + '_zoomout'], true);
+        if (this.parent.toolbarModule) {
+            this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomin', this.parent.controlId + '_zoomout'], true);
+        }
         this.parent.trigger('actionBegin', args);
     }
     roundOffDateToZoom(date, isStartDate, perDayWidth, tierMode) {
@@ -4972,8 +4983,13 @@ class Timeline {
         let dateString;
         switch (dayFormat) {
             case '':
-                dateString = this.parent.globalize.formatDate(date, { format: 'EEEEE' });
-                dateString = dateString.slice(0, 1);
+                dateString = this.parent.globalize.formatDate(date, { format: 'E' });
+                if (this.parent.locale === 'zh') {
+                    dateString = dateString.slice(1);
+                }
+                else {
+                    dateString = dateString.slice(0, 1);
+                }
                 break;
             default:
                 dateString = this.parent.globalize.formatDate(date, { format: dayFormat });
@@ -9959,7 +9975,8 @@ let Gantt = class Gantt extends Component {
                 this.expandCollapseKey(e);
                 break;
             case 'saveRequest':
-                if (this.editModule.cellEditModule.isCellEdit) {
+                if (!isNullOrUndefined(this.editModule) && !isNullOrUndefined(this.editModule.cellEditModule) &&
+                    this.editModule.cellEditModule.isCellEdit) {
                     let col = this.editModule.cellEditModule.editedColumn;
                     if (col.field === this.columnMapping.duration && !isNullOrUndefined(col.edit) && !isNullOrUndefined(col.edit.read)) {
                         let textBox = e.target.ej2_instances[0];
@@ -9976,9 +9993,6 @@ let Gantt = class Gantt extends Component {
                             }
                         }
                     }
-                }
-                if (!isNullOrUndefined(this.editModule) && !isNullOrUndefined(this.editModule.cellEditModule) &&
-                    this.editModule.cellEditModule.isCellEdit === true) {
                     if (this.editModule.dialogModule.dialogObj && getValue('dialogOpen', this.editModule.dialogModule.dialogObj)) {
                         return;
                     }
@@ -10939,6 +10953,7 @@ let Gantt = class Gantt extends Component {
                 this[modules[i]] = null;
             }
         }
+        this.keyboardModule.destroy();
         super.destroy();
         this.chartVerticalLineContainer = null;
         this.element.innerHTML = '';
@@ -11799,7 +11814,9 @@ let Gantt = class Gantt extends Component {
      * To update existing taskId with new unique Id.
      */
     updateTaskId(currentId, newId) {
-        this.editModule.updateTaskId(currentId, newId);
+        if (this.editModule && this.editSettings.allowEditing) {
+            this.editModule.updateTaskId(currentId, newId);
+        }
     }
     /**
      * Public method to expand particular level of rows.
@@ -13301,8 +13318,24 @@ class EditTooltip {
             };
             this.parent.trigger('beforeTooltipRender', argsData);
         };
+        this.toolTipObj.afterOpen = (args) => {
+            this.updateTooltipPosition(args);
+        };
         this.toolTipObj.isStringTemplate = true;
         this.toolTipObj.appendTo(this.parent.chartPane);
+    }
+    /**
+     * Method to update tooltip position
+     * @param args
+     */
+    updateTooltipPosition(args) {
+        let containerPosition = this.parent.getOffsetRect(this.parent.chartPane);
+        let leftEnd = containerPosition.left + this.parent.chartPane.offsetWidth;
+        let tooltipPositionX = args.element.offsetLeft;
+        if (leftEnd < (tooltipPositionX + args.element.offsetWidth)) {
+            tooltipPositionX += leftEnd - (tooltipPositionX + args.element.offsetWidth);
+        }
+        args.element.style.left = tooltipPositionX + 'px';
     }
     /**
      * To show/hide taskbar edit tooltip.
@@ -14706,6 +14739,10 @@ class TaskbarEdit {
                 let table = this.parent.connectorLineModule.tooltipTable.querySelector('#toPredecessor').querySelectorAll('td');
                 table[1].innerText = toItem.taskName;
                 table[2].innerText = currentTarget;
+                let tooltipElement = this.parent.connectorLineModule.tooltipTable.parentElement.parentElement;
+                if (tooltipElement.offsetTop + tooltipElement.offsetHeight > e.pageY) {
+                    tooltipElement.style.top = (e.pageY - tooltipElement.offsetHeight - 20) + 'px';
+                }
             }
             this.drawPredecessor = true;
         }
@@ -19229,7 +19266,9 @@ class Edit$2 {
         this.parent.updatedConnectorLineCollection = [];
         this.parent.connectorLineIds = [];
         this.parent.predecessorModule.createConnectorLinesCollection(this.parent.flatData);
-        // this.parent.connectorLineEditModule.refreshEditedRecordConnectorLine(flatData);
+        if (this.parent.taskFields.dependency) {
+            this.parent.predecessorModule.updatedRecordsDateByPredecessor();
+        }
         this.parent.treeGrid.refresh();
         // Trigger actioncomplete event for delete action
         eventArgs.requestType = 'delete';
@@ -20877,23 +20916,21 @@ class Selection$1 {
             index = this.multipleIndexes;
         }
         else {
-            if (this.isMultiCtrlRequest) {
-                index = args.rowIndex;
-            }
-            else {
-                if (!isNullOrUndefined(args.rowIndexes)) {
-                    for (let i = 0; i < args.rowIndexes.length; i++) {
-                        if (args.rowIndexes[i] === args.rowIndex) {
-                            isContains = true;
-                        }
+            if (!isNullOrUndefined(args.rowIndexes)) {
+                for (let i = 0; i < args.rowIndexes.length; i++) {
+                    if (args.rowIndexes[i] === args.rowIndex) {
+                        isContains = true;
                     }
-                    if (isContains) {
-                        index = args.rowIndexes;
-                    }
+                }
+                if (isContains) {
+                    index = args.rowIndexes;
                 }
                 else {
                     index = args.rowIndex;
                 }
+            }
+            else {
+                index = args.rowIndex;
             }
         }
         this.removeClass(index);
@@ -20959,6 +20996,7 @@ class Selection$1 {
      */
     selectRow(index, isToggle, isPreventFocus) {
         let selectedRow = this.parent.getRowByIndex(index);
+        let condition;
         if (index === -1 || isNullOrUndefined(selectedRow) || this.parent.selectionSettings.mode === 'Cell') {
             return;
         }
@@ -20968,10 +21006,16 @@ class Selection$1 {
         else {
             this.parent.treeGrid.grid.selectionModule.preventFocus = false;
         }
-        this.parent.treeGrid.selectRow(index, isToggle);
+        if ((!isNullOrUndefined(this.selectedClass) && (this.selectedClass === selectedRow) && (!isToggle))) {
+            condition = true;
+        }
+        if (condition !== true) {
+            this.parent.treeGrid.selectRow(index, isToggle);
+        }
         this.parent.treeGrid.grid.selectionModule.preventFocus = this.parent.treeGrid.grid.selectionModule.preventFocus === true ?
             false : this.parent.treeGrid.grid.selectionModule.preventFocus;
         this.prevRowIndex = index;
+        this.selectedClass = selectedRow;
     }
     /**
      * Selects a collection of rows by indexes.
@@ -22384,7 +22428,7 @@ class ContextMenu$2 {
             text: text,
             id: this.generateID(item),
             target: target,
-            iconCss: iconCss ? 'e-icons ' + iconCss : ''
+            iconCss: iconCss ? 'e-icons ' + iconCss : null
         };
         return itemModel;
     }

@@ -1049,6 +1049,7 @@ export class ImageResizer {
         this.owner.isShiftingEnabled = true;
         this.owner.editorModule.setOffsetValue(this.owner.selection);
         this.documentHelper.layout.reLayoutParagraph(this.currentImageElementBox.line.paragraph, 0, 0);
+        this.updateHistoryForImageResizer();
         this.owner.editorModule.reLayout(this.owner.selection, true);
         this.viewer.updateScrollBars();
     }

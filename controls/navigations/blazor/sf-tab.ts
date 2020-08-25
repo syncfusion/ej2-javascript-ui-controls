@@ -531,14 +531,14 @@ class SfTab {
         this.isSwipeed = true;
         if (e.swipeDirection === 'Right' && this.options.selectedItem !== 0) {
             for (let k: number = this.options.selectedItem - 1; k >= 0; k--) {
-                if (!this.tbItem[k].classList.contains(CLS_HIDDEN)) {
+                if (!this.tbItem[k].classList.contains(CLS_HIDDEN) && !this.tbItem[k].classList.contains(CLS_DISABLE)) {
                     this.select(k);
                     break;
                 }
             }
         } else if (e.swipeDirection === 'Left' && (this.options.selectedItem !== selectAll('.' + CLS_TB_ITEM, this.element).length - 1)) {
             for (let i: number = this.options.selectedItem + 1; i < this.tbItem.length; i++) {
-                if (!this.tbItem[i].classList.contains(CLS_HIDDEN)) {
+                if (!this.tbItem[i].classList.contains(CLS_HIDDEN) && !this.tbItem[i].classList.contains(CLS_DISABLE)) {
                     this.select(i);
                     break;
                 }

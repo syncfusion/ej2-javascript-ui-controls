@@ -4980,6 +4980,15 @@ class PivotEngine {
                     if ((formatSetting.format) && !(this.formatRegex.test(formatSetting.format))) {
                         let pattern = formatSetting.format.match(this.customRegex);
                         let flag = true;
+                        if (isNullOrUndefined(formatSetting.minimumFractionDigits)) {
+                            delete formatSetting.minimumFractionDigits;
+                        }
+                        if (isNullOrUndefined(formatSetting.maximumFractionDigits)) {
+                            delete formatSetting.maximumFractionDigits;
+                        }
+                        if (isNullOrUndefined(formatSetting.minimumIntegerDigits)) {
+                            delete formatSetting.minimumIntegerDigits;
+                        }
                         if (isNullOrUndefined(pattern)) {
                             pattern = formatSetting.format.match(/^(('[^']+'|''|[^*@0])*)(\*.)?((([0#,]*[0,]*[0#]*)(\.[0#]*)?)|([#,]*@+#*))(E\+?0+)?(('[^']+'|''|[^*#@,.E])*)$/);
                             delete formatSetting.useGrouping;
@@ -6821,6 +6830,16 @@ class Render {
                     break;
             }
         }
+        let hiddenItemsCount = 0;
+        for (let i = 0; i < args.items.length; i++) {
+            let classNameofItem = document.getElementById(args.items[i].id).className;
+            if (classNameofItem.match('e-menu-hide')) {
+                hiddenItemsCount++;
+            }
+        }
+        if (hiddenItemsCount === args.items.length) {
+            args.cancel = true;
+        }
         this.parent.trigger(contextMenuOpen, args);
     }
     getMenuItem(isStringField) {
@@ -7767,6 +7786,8 @@ class Render {
         return gridHeight < this.parent.gridSettings.rowHeight ? this.parent.gridSettings.rowHeight : gridHeight;
     }
     frameStackedHeaders() {
+        let singleValueFormat = this.parent.dataSourceSettings.values.length === 1 &&
+            !this.parent.dataSourceSettings.alwaysShowValueHeader ? this.formatList[this.parent.dataSourceSettings.values[0].name] : undefined;
         let integrateModel = [];
         if ((this.parent.dataType === 'olap' ? true : this.parent.dataSourceSettings.values.length > 0) && !this.engine.isEmptyData) {
             let headerCnt = this.engine.headerContent.length;
@@ -7798,7 +7819,7 @@ class Render {
                                 /* tslint:disable-next-line */
                                 width: colField[cCnt] ? this.setSavedWidth(colField[cCnt].valueSort.levelName, colWidth) : this.resColWidth,
                                 minWidth: 30,
-                                format: cCnt === 0 ? '' : this.formatList[colField[cCnt].actualText],
+                                format: cCnt === 0 ? '' : (isNullOrUndefined(singleValueFormat) ? this.formatList[colField[cCnt].actualText] : singleValueFormat),
                                 allowReordering: (this.parent.showGroupingBar ? false : this.parent.gridSettings.allowReordering),
                                 allowResizing: this.parent.gridSettings.allowResizing,
                                 visible: true
@@ -12571,7 +12592,8 @@ class VirtualScroll$1 {
             }
             this.parent.scrollDirection = this.direction = 'horizondal';
             let horiOffset = -((left - this.parent.scrollPosObject.horizontalSection - mCont.scrollLeft));
-            let vertiOffset = mCont.querySelector('.' + TABLE).style.transform.split(',')[1].trim();
+            let vertiOffset = mCont.querySelector('.' + TABLE).style.transform.split(',').length > 1 ?
+                mCont.querySelector('.' + TABLE).style.transform.split(',')[1].trim() : "0px)";
             if (mCont.scrollLeft < this.parent.scrollerBrowserLimit) {
                 setStyleAttribute(mCont.querySelector('.e-table'), {
                     transform: 'translate(' + horiOffset + 'px,' + vertiOffset
@@ -12898,10 +12920,16 @@ class DrillThroughDialog {
         }
     }
     editCell(eventArgs) {
+        let gridResize = this.parent.gridSettings.allowResizing;
         let actualText = eventArgs.currentCell.actualText.toString();
         let indexObject = Number(Object.keys(eventArgs.currentCell.indexObject));
         eventArgs.currentTarget.firstElementChild.style.display = 'none';
         let cellValue = Number(eventArgs.rawData[0][actualText]);
+        let previousData = this.frameHeaderWithKeys(eventArgs.rawData[eventArgs.rawData.length - 1]);
+        let currentData = eventArgs.rawData[eventArgs.rawData.length - 1];
+        if (eventArgs.currentCell.actualText in previousData) {
+            currentData[eventArgs.currentCell.actualText] = eventArgs.currentCell.actualValue;
+        }
         this.numericTextBox = new NumericTextBox({
             value: cellValue,
             enableRtl: this.parent.enableRtl,
@@ -12915,10 +12943,19 @@ class DrillThroughDialog {
                 this.parent.engineModule.data[indexValue] = eventArgs.rawData[0];
             },
             blur: () => {
-                this.parent.setProperties({ dataSourceSettings: { dataSource: this.parent.engineModule.data } }, true);
-                this.engine.updateGridData(this.parent.dataSourceSettings);
-                this.parent.pivotValues = this.engine.pivotValues;
-                this.parent.gridSettings.allowResizing = true;
+                let eventArgs = {
+                    currentData: currentData,
+                    previousData: previousData,
+                    previousPosition: currentData.index,
+                    cancel: false
+                };
+                this.parent.trigger(editCompleted, eventArgs);
+                if (!eventArgs.cancel) {
+                    this.parent.setProperties({ dataSourceSettings: { dataSource: this.parent.engineModule.data } }, true);
+                    this.engine.updateGridData(this.parent.dataSourceSettings);
+                    this.parent.pivotValues = this.engine.pivotValues;
+                    this.parent.gridSettings.allowResizing = gridResize;
+                }
             },
         });
         let textBoxElement = createElement('input', {
@@ -19449,6 +19486,23 @@ class OlapEngine {
             this.tupRowInfo[pivotValue.rowOrdinal].uNameCollection.split('::[').map((item) => {
                 return item[0] === '[' ? item : ('[' + item);
             }) : [];
+        let filters;
+        let filteritems = [];
+        let filterQuery = '';
+        for (let i = 0; i < this.filters.length; i++) {
+            filters = this.filterMembers[this.filters[i].name];
+            if (filters) {
+                for (let j = 0; j < filters.length; j++) {
+                    filterQuery = filterQuery + filters[j];
+                    filterQuery = j < filters.length - 1 ? filterQuery + ',' : filterQuery + '';
+                }
+                filteritems[i] = filterQuery;
+                filterQuery = '';
+            }
+        }
+        for (let i = 0; i < filteritems.length; i++) {
+            filterQuery = filterQuery === '' ? '{' + filteritems[i] + '}' : (filterQuery + ',' + '{' + filteritems[i] + '}');
+        }
         let columnQuery = '';
         let rowQuery = '';
         for (let i = 0; i < column.length; i++) {
@@ -19460,8 +19514,9 @@ class OlapEngine {
                 row[i].split('~~')[row[i].split('~~').length - 1] : row[i]);
         }
         let drillQuery = 'DRILLTHROUGH MAXROWS ' + maxRows + ' Select(' + (columnQuery.length > 0 ? columnQuery : '') +
-            (columnQuery.length > 0 && rowQuery.length > 0 ? ',' : '') + (rowQuery.length > 0 ? rowQuery : '') + ') on 0 from [' +
-            this.dataSourceSettings.cube + ']';
+            (columnQuery.length > 0 && rowQuery.length > 0 ? ',' : '') + (rowQuery.length > 0 ? rowQuery : '') + ') on 0 from ' +
+            (filterQuery === '' ? '[' + this.dataSourceSettings.cube + ']' : '(SELECT (' + filterQuery + ') ON COLUMNS FROM [' +
+                this.dataSourceSettings.cube + '])');
         drillQuery = drillQuery.replace(/&/g, '&amp;');
         let xmla = this.getSoapMsg(this.dataSourceSettings, drillQuery);
         let connectionString = this.getConnectionInfo(this.dataSourceSettings.url, this.dataSourceSettings.localeIdentifier);
@@ -32044,6 +32099,12 @@ class Toolbar$2 {
             allowKeyboard: false,
         });
         this.toolbar.isStringTemplate = true;
+        let viewStr = 'viewContainerRef';
+        let registerTemp = 'registeredTemplate';
+        if (this.parent[viewStr]) {
+            this.toolbar[registerTemp] = {};
+            this.toolbar[viewStr] = this.parent[viewStr];
+        }
         if (this.parent.toolbarTemplate && typeof (this.parent.toolbarTemplate) === 'string') {
             this.toolbar.appendTo(this.parent.toolbarTemplate);
             this.parent.element.replaceChild(this.toolbar.element, this.parent.element.querySelector('.' + GRID_TOOLBAR));
@@ -32197,9 +32258,10 @@ class Toolbar$2 {
                         this.parent.element.querySelector('.e-toggle-field-list').style.display = 'none';
                     }
                     break;
-            }
-            if (typeof (item) === 'object' && document.querySelector(item.template)) {
-                items.push(item);
+                default:
+                    if (typeof (item) === 'object') {
+                        items.push(item);
+                    }
             }
         }
         if (this.parent.showFieldList && toolbar.indexOf('FieldList') === -1 && this.parent.element.querySelector('#' + this.parent.element.id + '_PivotFieldList') &&

@@ -366,7 +366,8 @@ export class MsWordPaste {
                 tempCleaner.push(allNodes[index] as Element);
                 continue;
             } else if ((allNodes[index] as Element).className &&
-                (allNodes[index] as Element).className.toLowerCase().indexOf('msolistparagraph') !== -1) {
+                (allNodes[index] as Element).className.toLowerCase().indexOf('msolistparagraph') !== -1 &&
+                (allNodes[index] as Element).childElementCount !== 1) {
                 listNodes.push(allNodes[index] as Element);
             }
             if (prevflagState && (this.blockNode.indexOf(allNodes[index].nodeName.toLowerCase()) !== -1) &&

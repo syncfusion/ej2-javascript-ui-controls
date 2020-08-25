@@ -188,6 +188,15 @@ describe('Internationalization', () => {
             let result: Date = dParseIntl.parseDate(ip);
             expect(monthDayMatch(result, parseDate));
         });
+        it('Case insensitive date parser support for uppercase', () => {
+            let result: Date = dParseIntl.parseDate('12/DEC/20',{format:'dd/MMM/yy'});
+            expect(dParseIntl.formatDate(result)).toBe('12/12/20');
+        });
+        it('Case insensitive date parser support for lowercase', () => {
+            let result: Date = dParseIntl.parseDate('12/dec/20',{format:'dd/MMM/yy'});
+            expect(dParseIntl.formatDate(result)).toBe('12/12/20');
+        });
+
     });
     describe('Number  Parser', () => {
         let nParseIntl: Internationalization = new Internationalization();

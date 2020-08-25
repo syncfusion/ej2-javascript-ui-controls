@@ -581,6 +581,16 @@ export class Render {
                     break;
             }
         }
+        let hiddenItemsCount: number = 0;
+        for (let i: number = 0; i < args.items.length; i++) {
+            let classNameofItem: string = document.getElementById(args.items[i].id).className;
+            if (classNameofItem.match('e-menu-hide')) {
+                hiddenItemsCount++;
+            }
+        }
+        if (hiddenItemsCount === args.items.length) {
+            args.cancel = true;
+        }
         this.parent.trigger(events.contextMenuOpen, args);
     }
 
@@ -1528,6 +1538,8 @@ export class Render {
     }
 
     public frameStackedHeaders(): ColumnModel[] {
+        let singleValueFormat: string = this.parent.dataSourceSettings.values.length === 1 &&
+            !this.parent.dataSourceSettings.alwaysShowValueHeader ? this.formatList[this.parent.dataSourceSettings.values[0].name] : undefined;
         let integrateModel: ColumnModel[] = [];
         if ((this.parent.dataType === 'olap' ? true : this.parent.dataSourceSettings.values.length > 0) && !this.engine.isEmptyData) {
             let headerCnt: number = this.engine.headerContent.length;
@@ -1559,7 +1571,7 @@ export class Render {
                                 /* tslint:disable-next-line */
                                 width: colField[cCnt] ? this.setSavedWidth((colField[cCnt].valueSort as any).levelName, colWidth) : this.resColWidth,
                                 minWidth: 30,
-                                format: cCnt === 0 ? '' : this.formatList[colField[cCnt].actualText],
+                                format: cCnt === 0 ? '' : (isNullOrUndefined(singleValueFormat) ? this.formatList[colField[cCnt].actualText] : singleValueFormat),
                                 allowReordering: (this.parent.showGroupingBar ? false : this.parent.gridSettings.allowReordering),
                                 allowResizing: this.parent.gridSettings.allowResizing,
                                 visible: true

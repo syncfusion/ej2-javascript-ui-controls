@@ -13114,7 +13114,8 @@ class MsWordPaste {
                 continue;
             }
             else if (allNodes[index].className &&
-                allNodes[index].className.toLowerCase().indexOf('msolistparagraph') !== -1) {
+                allNodes[index].className.toLowerCase().indexOf('msolistparagraph') !== -1 &&
+                allNodes[index].childElementCount !== 1) {
                 listNodes.push(allNodes[index]);
             }
             if (prevflagState && (this.blockNode.indexOf(allNodes[index].nodeName.toLowerCase()) !== -1) &&
@@ -14791,12 +14792,17 @@ class PasteCleanup {
                 if (this.parent.isServerRendered) {
                     beforeUploadArgs = JSON.parse(JSON.stringify(args));
                     beforeUploadArgs.filesData = rawFile;
+                    args.cancel = true;
                     this.parent.trigger(imageUploading, beforeUploadArgs, (beforeUploadArgs) => {
                         if (beforeUploadArgs.cancel) {
                             return;
                         }
                         /* tslint:disable */
-                        this.uploadObj.uploadFiles(rawFile, null);
+                        uploadObj.currentRequestHeader = beforeUploadArgs.currentRequest ?
+                            beforeUploadArgs.currentRequest : uploadObj.currentRequestHeader;
+                        uploadObj.customFormDatas = beforeUploadArgs.customFormData && beforeUploadArgs.customFormData.length > 0 ?
+                            beforeUploadArgs.customFormData : uploadObj.customFormDatas;
+                        uploadObj.uploadFiles(rawFile, null);
                         /* tslint:enable */
                     });
                 }
@@ -15148,7 +15154,8 @@ class PasteCleanup {
                 let parElem;
                 for (let k = 0, l = 0, preNode; k < inElem[j].childNodes.length; k++, l++) {
                     if (inElem[j].childNodes[k].nodeName === 'DIV' || inElem[j].childNodes[k].nodeName === 'P' ||
-                        (inElem[j].childNodes[k].nodeName === '#text' && (inElem[j].childNodes[k].nodeValue.replace(/\u00a0/g, '&nbsp;') !== '&nbsp;') &&
+                        (inElem[j].childNodes[k].nodeName === '#text' &&
+                            (inElem[j].childNodes[k].nodeValue.replace(/\u00a0/g, '&nbsp;') !== '&nbsp;') &&
                             inElem[j].childNodes[k].textContent.trim() === '')) {
                         parElem = inElem[j].childNodes[k].parentElement;
                         inElem[j].childNodes[k].parentElement.parentElement.insertBefore(inElem[j].childNodes[k], inElem[j].childNodes[k].parentElement);
@@ -17580,11 +17587,16 @@ class Image {
                 if (this.parent.isServerRendered) {
                     beforeUploadArgs = JSON.parse(JSON.stringify(args));
                     beforeUploadArgs.filesData = filesData;
+                    args.cancel = true;
                     this.parent.trigger(imageUploading, beforeUploadArgs, (beforeUploadArgs) => {
                         if (beforeUploadArgs.cancel) {
                             return;
                         }
                         /* tslint:disable */
+                        this.uploadObj.currentRequestHeader = beforeUploadArgs.currentRequest ?
+                            beforeUploadArgs.currentRequest : this.uploadObj.currentRequestHeader;
+                        this.uploadObj.customFormDatas = beforeUploadArgs.customFormData && beforeUploadArgs.customFormData.length > 0 ?
+                            beforeUploadArgs.customFormData : this.uploadObj.customFormDatas;
                         this.uploadObj.uploadFiles(rawFile, null);
                         /* tslint:enable */
                     });
@@ -17900,11 +17912,16 @@ class Image {
                     beforeUploadArgs = JSON.parse(JSON.stringify(args));
                     beforeUploadArgs.filesData = rawFile;
                     isUploading = true;
+                    args.cancel = true;
                     this.parent.trigger(imageUploading, beforeUploadArgs, (beforeUploadArgs) => {
                         if (beforeUploadArgs.cancel) {
                             return;
                         }
                         /* tslint:disable */
+                        this.uploadObj.currentRequestHeader = beforeUploadArgs.currentRequest ?
+                            beforeUploadArgs.currentRequest : this.uploadObj.currentRequestHeader;
+                        this.uploadObj.customFormDatas = beforeUploadArgs.customFormData && beforeUploadArgs.customFormData.length > 0 ?
+                            beforeUploadArgs.customFormData : this.uploadObj.customFormDatas;
                         this.uploadObj.uploadFiles(rawFile, null);
                         this.parent.inputElement.contentEditable = 'false';
                         /* tslint:enable */
@@ -18208,7 +18225,7 @@ class ViewSource {
         this.previewElement.focus();
         this.parent.updateValue();
         if (!isNullOrUndefined(this.parent.placeholder) && !this.parent.iframeSettings.enable) {
-            let placeHolderWrapper = this.parent.element.querySelector('.rte-placeholder');
+            let placeHolderWrapper = this.parent.element.querySelector('.rte-placeholder.e-rte-placeholder');
             placeHolderWrapper.style.display = 'none';
         }
         this.parent.trigger(actionComplete, { requestType: 'SourceCode', targetItem: 'SourceCode', args: args });
@@ -18251,7 +18268,7 @@ class ViewSource {
         this.contentModule.getEditPanel().focus();
         this.parent.updateValue();
         if (!isNullOrUndefined(this.parent.placeholder) && this.contentModule.getEditPanel().innerText.length === 0) {
-            let placeHolderWrapper = this.parent.element.querySelector('.rte-placeholder');
+            let placeHolderWrapper = this.parent.element.querySelector('.rte-placeholder.e-rte-placeholder');
             placeHolderWrapper.style.display = 'block';
         }
         this.parent.trigger(actionComplete, { requestType: 'Preview', targetItem: 'Preview', args: args });
@@ -20944,7 +20961,7 @@ let RichTextEditor = class RichTextEditor extends Component {
         if (this.inputElement && this.placeholder && this.iframeSettings.enable !== true) {
             if (this.editorMode !== 'Markdown') {
                 if (!this.placeHolderWrapper) {
-                    this.placeHolderWrapper = this.createElement('span', { className: 'rte-placeholder' });
+                    this.placeHolderWrapper = this.createElement('span', { className: 'rte-placeholder e-rte-placeholder' });
                     if (this.inputElement) {
                         this.inputElement.parentElement.insertBefore(this.placeHolderWrapper, this.inputElement);
                     }

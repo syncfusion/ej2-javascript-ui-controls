@@ -1427,9 +1427,14 @@ export class Image {
                 if (this.parent.isServerRendered) {
                     beforeUploadArgs = JSON.parse(JSON.stringify(args));
                     beforeUploadArgs.filesData = filesData;
+                    args.cancel = true;
                     this.parent.trigger(events.imageUploading, beforeUploadArgs, (beforeUploadArgs: ImageUploadingEventArgs) => {
                         if (beforeUploadArgs.cancel) { return; }
                         /* tslint:disable */
+                        (this.uploadObj as any).currentRequestHeader = beforeUploadArgs.currentRequest ?
+                        beforeUploadArgs.currentRequest : (this.uploadObj as any).currentRequestHeader;
+                       (this.uploadObj as any).customFormDatas = beforeUploadArgs.customFormData && beforeUploadArgs.customFormData.length > 0 ?
+                       beforeUploadArgs.customFormData : (this.uploadObj as any).customFormDatas;
                         (this.uploadObj as any).uploadFiles(rawFile, null);
                         /* tslint:enable */
                     });
@@ -1732,9 +1737,14 @@ export class Image {
                     beforeUploadArgs = JSON.parse(JSON.stringify(args));
                     beforeUploadArgs.filesData = rawFile;
                     isUploading = true;
+                    args.cancel = true;
                     this.parent.trigger(events.imageUploading, beforeUploadArgs, (beforeUploadArgs: ImageUploadingEventArgs) => {
                         if (beforeUploadArgs.cancel) { return; }
                         /* tslint:disable */
+                        (this.uploadObj as any).currentRequestHeader = beforeUploadArgs.currentRequest ?
+                        beforeUploadArgs.currentRequest : (this.uploadObj as any).currentRequestHeader;
+                       (this.uploadObj as any).customFormDatas = beforeUploadArgs.customFormData && beforeUploadArgs.customFormData.length > 0 ?
+                       beforeUploadArgs.customFormData : (this.uploadObj as any).customFormDatas;
                         (this.uploadObj as any).uploadFiles(rawFile, null);
                         this.parent.inputElement.contentEditable = 'false';
                         /* tslint:enable */

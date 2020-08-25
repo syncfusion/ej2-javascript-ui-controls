@@ -235,6 +235,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private updatedRule: ruleObj = { not: false, condition: 'and' };
     private ruleTemplateFn: Function;
     private isLocale: boolean = false;
+    private isRefreshed: boolean = false;
     /** 
      * Triggers when the component is created.
      * @event
@@ -371,6 +372,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
      */
     @Property(false)
     public readonly: boolean;
+    /**
+     * Specifies the separator string for column.
+     * @default ''
+     */
+    @Property('')
+    public separator: string;
     /**
      * Defines rules in the QueryBuilder.
      * Specifies the initial rule, which is JSON data.
@@ -1461,8 +1468,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
      * @returns object[].
      */
     public getValues(field: string): object[] {
-        let original: object = {}; let result: object[] = []; let value: string;
-        let dataSource: object[] = this.dataColl; let fieldColl: string[] = field.split('.');
+        let original: object = {}; let result: object[] = []; let value: string; let fieldColl: string[];
+        if (this.separator.length > 0) {
+            fieldColl = field.split(this.separator);
+        }
+        let dataSource: object[] = this.dataColl;
         if (this.dataColl[1]) {
             for (let i: number = 0, iLen: number = dataSource.length; i < iLen; i++) {
                 let data: object = {};
@@ -1977,6 +1987,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             }
         }
         this.renderControls(target, itemData, rule, tempRule);
+        } else {
+            let parentElem: HTMLElement = target.parentElement.querySelector('.e-rule-value') as HTMLElement;
+            if (parentElem) { removeClass([parentElem], 'e-show'); addClass([parentElem], 'e-hide'); }
         }
     }
     private updateValues(element: HTMLElement, rule: RuleModel): void {
@@ -2388,7 +2401,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             if (this.columns.length && this.isImportRules) {
                 this.addGroupElement(false, this.element, this.rule.condition);
                 let mRules: RuleModel = extend({}, this.rule, {}, true);
+                this.isRefreshed = true;
                 this.setGroupRules(mRules as RuleModel);
+                this.isRefreshed = false;
             } else if (this.columns.length) {
                 this.addRuleElement(this.element.querySelector('.e-group-container'), {});
             }
@@ -2836,18 +2851,20 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             let groupElem: Element = closest(target, '.e-group-container');
             let rule: RuleModel = this.getParentGroup(groupElem); let ruleElem: Element = closest(target, '.e-rule-container');
             let beforeRules: RuleModel = this.getValidRules(this.rule);
-            let clnruleElem: Element = ruleElem;
-            let nextElem: Element = ruleElem.nextElementSibling;
-            let prevElem: Element = ruleElem.previousElementSibling;
-            let index: number = 0;
+            let clnruleElem: Element = ruleElem; let nextElem: Element = ruleElem.nextElementSibling;
+            let prevElem: Element = ruleElem.previousElementSibling; let index: number = 0;
             let valElem: NodeListOf<Element> = ruleElem.querySelectorAll('.e-tooltip');
-            let i: number; let len: number = valElem.length;
+            let i: number; let len: number = valElem.length; let column: ColumnsModel;
             for (i = 0; i < len; i++) {
                 (getComponent(valElem[i] as HTMLElement, 'tooltip') as Tooltip).destroy();
             }
             while (ruleElem.previousElementSibling !== null) {
                 ruleElem = ruleElem.previousElementSibling;
                 index++;
+            }
+            column = this.getColumn(rule.rules[index].field);
+            if (column && column.template) {
+                this.templateDestroy(column, clnruleElem.querySelector('.e-template').id);
             }
             rule.rules.splice(index, 1);
             if (!prevElem || prevElem.className.indexOf('e-rule-container') < 0) {
@@ -2883,7 +2900,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     }
 
     private keyBoardHandler(e: KeyboardEventArgs): void {
-        if (this.readonly && e.keyCode === 38 || e.keyCode === 40 || e.keyCode === 13) {
+        if (this.readonly && (e.keyCode === 38 || e.keyCode === 40 || e.keyCode === 13)) {
             e.preventDefault();
         }
     }
@@ -2947,7 +2964,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     rule.value = null;
                 }
             }
-            if (rule.field !== '' && rule.operator !== '' && rule.value !== '') {
+            if ((this.isRefreshed && this.enablePersistence) || (this.rule.field !== '' && rule.operator !== '' && rule.value !== '')) {
                 // tslint:disable-next-line:no-any
                 let customObj: Object = (rule as any).custom;
                 rule = {
@@ -3119,14 +3136,14 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     ignoreCase = true;
                 }
                 column = this.getColumn(ruleColl[i].field);
-                if (ruleColl[i].type === 'date' && !(ruleColl[i].value instanceof Array)) {
+                if (oper.indexOf('null') > -1 || oper.indexOf('empty') > -1) {
+                    ruleColl[i].value = null;
+                } else if (ruleColl[i].type === 'date' && !(ruleColl[i].value instanceof Array)) {
                     let format: DateFormatOptions = this.getFormat(column.format);
                     ruleValue = this.getDate(ruleColl[i].value as string, format);
                     if (dateOperColl.indexOf(oper) > -1) {
                         isDateFilter = true;
                     }
-                } else if (oper.indexOf('null') > -1 || oper.indexOf('empty') > -1) {
-                    ruleColl[i].value = null;
                 } else {
                     ruleValue = ruleColl[i].value as string | number;
                 }
@@ -3184,7 +3201,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         return localeString;
     }
     private getColumn(field: string): ColumnsModel {
-        field = field.split('.')[0];
+        if (this.separator.length > 0) {
+            field = field.split(this.separator)[0];
+        }
         let columns: ColumnsModel[] = this.columns; let column: ColumnsModel;
         for (let i: number = 0, iLen: number = columns.length; i < iLen; i++) {
             if (columns[i].field === field) {

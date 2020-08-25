@@ -126,7 +126,9 @@ export class StringTokenizer {
                 case '\n': {
                     let text : string = this.text.substring(this.currentPosition, pos - this.currentPosition);
                     this.currentPosition = pos + 1;
-                    this.currentPosition++;
+                    if (((ch === '\r') && (this.currentPosition < this.length)) && (this.text[this.currentPosition] === '\n')) {
+                        this.currentPosition++;
+                    }
                     return text;
                 }
             }
@@ -134,7 +136,7 @@ export class StringTokenizer {
         }
         // The remaining text.
         if (pos > this.currentPosition) {
-            let text2 : string = this.text.substring(this.currentPosition, pos - this.currentPosition);
+            let text2 : string = this.text.substr(this.currentPosition, pos - this.currentPosition);
             this.currentPosition = pos;
             return text2;
         }

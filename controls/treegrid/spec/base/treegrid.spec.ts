@@ -1160,6 +1160,47 @@ describe('TreeGrid base module', () => {
        })
   });
 
+  describe('sub level parent expand/collapse icon', () => {
+    let gridObj: TreeGrid;
+    let rows: Element[];
+    let data = [{"TaskId":1,"TaskName":"Parent Task 1","Duration":10,"ParentId":null,"isParent":true,"isExpanded":true},
+{"TaskId":2,"TaskName":"Child task 1","Duration":4,"ParentId":1,"isParent":null,"isExpanded":true},
+{"TaskId":15,"TaskName":"Sub task 1","Duration":4,"ParentId":2,"isParent":null,"isExpanded":true},
+{"TaskId":13,"TaskName":"Child task 5","Duration":4,"ParentId":15,"isParent":null,"isExpanded":false},
+{"TaskId":5,"TaskName":"Parent Task 2","Duration":10,"ParentId":null,"isParent":true,"isExpanded":true},
+{"TaskId":6,"TaskName":"Child task 2","Duration":4,"ParentId":5,"isParent":null,"isExpanded":false},
+{"TaskId":10,"TaskName":"Parent Task 3","Duration":10,"ParentId":null,"isParent":true,"isExpanded":true},
+{"TaskId":11,"TaskName":"Child task 3","Duration":4,"ParentId":10,"isParent":false,"isExpanded":false}];
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: data,
+          idMapping: 'TaskID',
+          parentIdMapping: 'ParentId',
+          height: '450px',
+          treeColumnIndex: 1,
+          expandStateMapping: "isExpanded",
+         
+          columns: [
+            { field: 'TaskID', headerText: 'Task ID', textAlign: 'Right', width: 140 },
+            { field: 'TaskName', headerText: 'Task Name', width: 160 }
+           
+          ]
+        },
+        done
+      );
+    });
+    it('expand testing', () => {
+      rows = gridObj.getRows();
+      expect(rows[0].getElementsByClassName('e-treegridexpanded')).toBeTruthy();
+      expect(rows[2].getElementsByClassName('e-treegridexpanded')).toBeTruthy();
+            
+    });
+    
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
 
 
   it('memory leak', () => {

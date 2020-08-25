@@ -83,7 +83,8 @@ export class DiagramRenderer {
 
     private getParentSvg(element: DiagramElement, targetElement?: string, canvas?: HTMLCanvasElement | SVGElement): SVGSVGElement {
         if (this.diagramId && element && element.id) {
-            if (element.id.split('_icon_content').length > 1 || element.id.split('_nodeport').length > 1) {
+            if (element.id.split('_icon_content').length > 1 || element.id.split('_nodeport').length > 1 ||
+                (element.elementActions & ElementAction.ElementIsPort)) {
                 return this.iconSvgLayer;
             }
             if (targetElement && targetElement === 'selector') {
@@ -109,6 +110,9 @@ export class DiagramRenderer {
                 layerGElement = svgElement.getElementById(this.diagramId + '_diagramPorts') as SVGElement;
             } else if (element instanceof DiagramNativeElement) {
                 layerGElement = svgElement.getElementById(this.diagramId + '_nativeLayer') as SVGElement;
+                defaultParent = null;
+            } else if (element.elementActions & ElementAction.ElementIsPort) {
+                layerGElement = svgElement.getElementById(this.diagramId + '_diagramPorts') as SVGElement;
                 defaultParent = null;
             } else {
                 layerGElement = svgElement.getElementById(this.diagramId + '_diagramLayer') as SVGElement;

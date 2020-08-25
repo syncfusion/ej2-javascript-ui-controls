@@ -965,6 +965,7 @@ export class FormFields {
                 shapeAnnotationType: 'Path', opacity: 1, rotateAngle: 0, annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
             };
             this.pdfViewer.add(annot as PdfAnnotationBase);
+            data.Bounds = annot.bounds;
             // tslint:disable-next-line
             let canvass: any = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + currentPage);
             // tslint:disable-next-line

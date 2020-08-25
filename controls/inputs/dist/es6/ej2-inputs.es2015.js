@@ -11625,7 +11625,10 @@ let ColorPicker = class ColorPicker extends Component {
         attributes(this.element, { 'value': this.initialInputValue });
     }
     addCtrlSwitchEvent() {
-        EventHandler.add(select('.' + CTRLSWITCH, this.container), 'click', this.btnClickHandler, this);
+        let ctrlSwitchBtn = select('.' + CTRLSWITCH, this.container);
+        if (ctrlSwitchBtn) {
+            EventHandler.add(ctrlSwitchBtn, 'click', this.btnClickHandler, this);
+        }
     }
     pickerKeyDown(e) {
         switch (e.keyCode) {

@@ -1955,7 +1955,9 @@ export class Edit {
         this.parent.updatedConnectorLineCollection = [];
         this.parent.connectorLineIds = [];
         this.parent.predecessorModule.createConnectorLinesCollection(this.parent.flatData);
-        // this.parent.connectorLineEditModule.refreshEditedRecordConnectorLine(flatData);
+        if (this.parent.taskFields.dependency) {
+            this.parent.predecessorModule.updatedRecordsDateByPredecessor();
+        }
         this.parent.treeGrid.refresh();
         // Trigger actioncomplete event for delete action
         eventArgs.requestType = 'delete';

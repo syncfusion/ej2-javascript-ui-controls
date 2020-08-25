@@ -1775,6 +1775,9 @@ describe('RTE base module', () => {
         it('Ensure cssClass property', () => {
             expect(rteObj.element.classList.contains('myClass')).toBe(true);
         });
+        it('Ensure placeholderClassName', () => {
+            expect(rteObj.element.getElementsByClassName("e-rte-placeholder").length > 0).toBe(true);
+        });
         it('through onproperty change cssClass property', () => {
             rteObj.cssClass = 'textClass';
             rteObj.dataBind();

@@ -5,6 +5,7 @@ import { WStyle, WCharacterStyle, WParagraphStyle } from '../../implementation/f
 import { StyleType } from '../../base';
 import { BulletsAndNumberingDialog } from './index';
 import { WList } from '../list/list';
+import { Query } from '@syncfusion/ej2-data';
 import { WAbstractList } from '../list/abstract-list';
 import { WCharacterFormat, WParagraphFormat } from '../index';
 import { ColorPicker } from '@syncfusion/ej2-inputs';
@@ -224,21 +225,29 @@ export class StyleDialog {
         }
     }
     private createFontOptions(parentDiv: HTMLElement, isRtl?: boolean): void {
-        let fontFamilyElement: HTMLSelectElement = createElement('select', { id: this.target.id + '_fontName' }) as HTMLSelectElement;
-        fontFamilyElement.innerHTML = '<option>Arial</option><option>Calibri</option><option>Candara</option>' +
-            '<option>Comic Sans MS</option><option>Consolas</option><option>Constantia</option><option>Corbel</option>' +
-            '<option>Courier New</option><option>Ebrima</option><option>Franklin Gothic</option>' +
-            '<option>Gabriola</option><option>Gadugi</option><option>Georgia</option><option>Impact</option>' +
-            '<option>Javanese Text</option><option>Microsoft Sans Serif</option><option>MS Gothic</option><option>MS UI Gothic</option>' +
-            '<option>Segoe Print</option><option>Times New Roman</option><option>Verdana</option><option>Segoe UI</option>' +
-            '<option>Algerian</option><option>Cambria</option><option>Georgia</option><option>Consolas</option>';
+        let fontFamilyElement: HTMLElement = createElement('input', {
+            id: this.target.id + '_fontName' ,
+        });
+        let fontStyle: { [key: string]: Object; }[];
+        let isStringTemplate: boolean = true;
+        let itemTemplate: string = '<span style="font-family: ${FontName};">${FontName}</span>';
         parentDiv.appendChild(fontFamilyElement);
         this.fontFamily = new ComboBox({
-            width: '123px', popupWidth: '123px',
-            cssClass: 'e-style-font-fmaily-right', enableRtl: isRtl, change: this.fontFamilyChanged
+            dataSource: fontStyle, query: new Query().select(['FontName']), fields: { text: 'FontName', value: 'value' },
+            allowCustom: true, width: '123px', popupWidth: '123px',
+            cssClass: 'e-style-font-fmaily-right', enableRtl: isRtl, change: this.fontFamilyChanged,
+            showClearButton: false, itemTemplate: itemTemplate
         });
-        this.fontFamily.showClearButton = false;
         this.fontFamily.appendTo(fontFamilyElement);
+        this.fontFamily.isStringTemplate = isStringTemplate;
+        let fontFamilyValue: string[] = this.documentHelper.owner.documentEditorSettings.fontFamilies;
+        for (let i: number = 0; i < fontFamilyValue.length; i++) {
+            let fontValue: string = fontFamilyValue[i];
+            let fontStyleValue: { [key: string]: Object; } = { 'FontName': fontValue, 'value': fontValue };
+            this.fontFamily.addItem(fontStyleValue, i);
+        }
+        this.fontFamily.focus = (): void => { (this.fontFamily.element as HTMLInputElement).select(); };
+        this.fontFamily.element.parentElement.setAttribute('title', this.localObj.getConstant('Font'));
         let fontSizeElement: HTMLElement = createElement('input');
         parentDiv.appendChild(fontSizeElement);
         let sizeDataSource: number[] = [8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72];

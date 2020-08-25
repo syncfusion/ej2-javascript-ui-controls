@@ -1338,27 +1338,25 @@ export class Gantt extends Component<HTMLElement>
                 this.expandCollapseKey(e);
                 break;
             case 'saveRequest':
-                if (this.editModule.cellEditModule.isCellEdit) {
-                let col: ColumnModel = this.editModule.cellEditModule.editedColumn;
-                if (col.field === this.columnMapping.duration && !isNullOrUndefined(col.edit) && !isNullOrUndefined(col.edit.read)) {
-                    let textBox: TextBox = <TextBox>(<EJ2Instance>e.target).ej2_instances[0];
-                    let textValue: string = (e.target as HTMLInputElement).value;
-                    let ganttProp: ITaskData = this.currentViewData[this.selectedRowIndex].ganttProperties;
-                    let tempValue: string | Date | number;
-                    if (col.field === this.columnMapping.duration) {
-                        tempValue = !isNullOrUndefined(col.edit) && !isNullOrUndefined(col.edit.read) ? (col.edit.read as Function)() :
-                        !isNullOrUndefined(col.valueAccessor) ? (col.valueAccessor as Function)
-                        (this.columnMapping.duration,  this.editedRecords, col) :
-                        this.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
-                        if (textValue !== tempValue.toString()) {
-                            textBox.value = textValue;
-                            textBox.dataBind();
+                if (!isNullOrUndefined(this.editModule) && !isNullOrUndefined(this.editModule.cellEditModule) &&
+                    this.editModule.cellEditModule.isCellEdit) {
+                    let col: ColumnModel = this.editModule.cellEditModule.editedColumn;
+                    if (col.field === this.columnMapping.duration && !isNullOrUndefined(col.edit) && !isNullOrUndefined(col.edit.read)) {
+                        let textBox: TextBox = <TextBox>(<EJ2Instance>e.target).ej2_instances[0];
+                        let textValue: string = (e.target as HTMLInputElement).value;
+                        let ganttProp: ITaskData = this.currentViewData[this.selectedRowIndex].ganttProperties;
+                        let tempValue: string | Date | number;
+                        if (col.field === this.columnMapping.duration) {
+                            tempValue = !isNullOrUndefined(col.edit) && !isNullOrUndefined(col.edit.read) ? (col.edit.read as Function)() :
+                                !isNullOrUndefined(col.valueAccessor) ? (col.valueAccessor as Function)
+                                    (this.columnMapping.duration, this.editedRecords, col) :
+                                    this.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
+                            if (textValue !== tempValue.toString()) {
+                                textBox.value = textValue;
+                                textBox.dataBind();
+                            }
                         }
                     }
-                }
-            }
-                if (!isNullOrUndefined(this.editModule) && !isNullOrUndefined(this.editModule.cellEditModule) &&
-                    this.editModule.cellEditModule.isCellEdit === true) {
                     if (this.editModule.dialogModule.dialogObj && getValue('dialogOpen', this.editModule.dialogModule.dialogObj)) {
                         return;
                     }
@@ -2309,6 +2307,7 @@ export class Gantt extends Component<HTMLElement>
                 this[modules[i]] = null;
             }
         }
+        this.keyboardModule.destroy();
         super.destroy();
         this.chartVerticalLineContainer = null;
         this.element.innerHTML = '';
@@ -3177,7 +3176,9 @@ export class Gantt extends Component<HTMLElement>
      * To update existing taskId with new unique Id.
      */
     public updateTaskId(currentId: number | string, newId: number | string): void {
-        this.editModule.updateTaskId(currentId, newId);
+        if (this.editModule && this.editSettings.allowEditing) {
+            this.editModule.updateTaskId(currentId, newId);
+        }
     }
     /**
      * Public method to expand particular level of rows.

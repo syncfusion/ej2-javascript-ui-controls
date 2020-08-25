@@ -1867,7 +1867,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (this.inputElement && this.placeholder && this.iframeSettings.enable !== true) {
             if (this.editorMode !== 'Markdown') {
                 if (!this.placeHolderWrapper) {
-                    this.placeHolderWrapper = this.createElement('span', { className: 'rte-placeholder' });
+                    this.placeHolderWrapper = this.createElement('span', { className: 'rte-placeholder e-rte-placeholder' });
                     if (this.inputElement) {
                         this.inputElement.parentElement.insertBefore(this.placeHolderWrapper, this.inputElement);
                     }

@@ -2296,6 +2296,8 @@ export enum RealAction {
     EnableGroupAction = 1 << 7,
     /** Indicate action in Progress */
     PanInProgress = 1 << 8,
+    /** Indicate overview action  */
+    OverViewAction = 1 << 9,
 }
 
 /** @private */

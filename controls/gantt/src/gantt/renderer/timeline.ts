@@ -226,7 +226,9 @@ export class Timeline {
             requestType: 'beforeZoomToProject',
             timeline: newTimeline
         };
-        this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomin', this.parent.controlId + '_zoomout'], true);
+        if (this.parent.toolbarModule) {
+            this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomin', this.parent.controlId + '_zoomout'], true);
+        }
         this.parent.trigger('actionBegin', args);
     }
 
@@ -728,8 +730,12 @@ export class Timeline {
         let dateString: string;
         switch (dayFormat) {
             case '':
-                dateString = this.parent.globalize.formatDate(date, { format: 'EEEEE' });
-                dateString = dateString.slice(0, 1);
+                dateString = this.parent.globalize.formatDate(date, { format: 'E' });
+                if (this.parent.locale === 'zh') {
+                    dateString = dateString.slice(1);
+                } else {
+                    dateString = dateString.slice(0, 1);
+                }
                 break;
             default:
                 dateString = this.parent.globalize.formatDate(date, { format: dayFormat });

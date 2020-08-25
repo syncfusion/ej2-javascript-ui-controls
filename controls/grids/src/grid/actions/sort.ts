@@ -414,7 +414,7 @@ export class Sort implements IAction {
 
     private showPopUp(e: MouseEvent): void {
         let target: HTMLElement = closest(e.target as Element, '.e-headercell') as HTMLElement;
-        if (!isNullOrUndefined(target) || this.parent.isContextMenuOpen()) {
+        if (this.parent.allowMultiSorting && (!isNullOrUndefined(target) || this.parent.isContextMenuOpen())) {
             setCssInGridPopUp(
                 <HTMLElement>this.parent.element.querySelector('.e-gridpopup'), e,
                 'e-sortdirect e-icons e-icon-sortdirect' + (this.sortedColumns.length > 1 ? ' e-spanclicked' : ''));

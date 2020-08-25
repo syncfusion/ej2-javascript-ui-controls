@@ -304,6 +304,12 @@ export interface QueryBuilderModel extends ComponentModel{
     readonly?: boolean;
 
     /**
+     * Specifies the separator string for column.
+     * @default ''
+     */
+    separator?: string;
+
+    /**
      * Defines rules in the QueryBuilder.
      * Specifies the initial rule, which is JSON data.
      * @default {}

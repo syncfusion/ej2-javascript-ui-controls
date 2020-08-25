@@ -9313,7 +9313,9 @@ export class Editor {
                     this.deleteSection(selection, this.delSection, bodyWidget, editAction);
                     this.delSection = undefined;
                 }
-                this.deleteBlock((this.delBlock as ParagraphWidget), selection, start, end, editAction);
+                if (this.delBlock.indexInOwner !== -1) {
+                    this.deleteBlock((this.delBlock as ParagraphWidget), selection, start, end, editAction);
+                }
                 this.delBlockContinue = false;
                 this.delBlock = undefined;
             }

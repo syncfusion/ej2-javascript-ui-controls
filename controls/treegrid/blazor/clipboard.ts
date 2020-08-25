@@ -1,4 +1,4 @@
-import { Browser, isNullOrUndefined, createElement, classList } from '@syncfusion/ej2-base';
+import { Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { SfTreeGrid } from './sf-treegrid-fn';
 
 /**
@@ -6,8 +6,6 @@ import { SfTreeGrid } from './sf-treegrid-fn';
  */
 
 export class Clipboard {
-    //Internal variables 
-    protected clipBoardTextArea: HTMLInputElement;
     //Module declarations
     private parent: SfTreeGrid;
     private treeCopyContent: string = '';
@@ -18,19 +16,13 @@ export class Clipboard {
     constructor(parent?: SfTreeGrid) {
         this.parent = parent;
         this.gridClipboard = this.parent.grid.clipboardModule;
-        this.clipBoardTextArea = createElement('textarea', {
-            className: 'e-clipboard',
-            styles: 'opacity: 0',
-            attrs: { tabindex: '-1', 'aria-label': 'clipboard', 'aria-hidden': 'true' }
-        }) as HTMLInputElement;
-        this.parent.element.appendChild(this.clipBoardTextArea);
     }
 
     public copy(withHeader?: boolean): void {
         if (document.queryCommandSupported('copy')) {
             this.setCopyData(withHeader);
             document.execCommand('copy');
-            this.clipBoardTextArea.blur();
+            this.gridClipboard.clipBoardTextArea.blur();
         }
         if (this.gridClipboard.isSelect) {
             window.getSelection().removeAllRanges();
@@ -45,7 +37,7 @@ export class Clipboard {
         let uniqueID: string = 'uniqueID';
         let currentRecords: object[] = this.parent.options.currentViewData;
         if (window.getSelection().toString() === '') {
-            this.clipBoardTextArea.value = this.gridClipboard[copyContent] = '';
+            this.gridClipboard.clipBoardTextArea.value = this.gridClipboard[copyContent] = '';
             let rows: Element[] = this.parent.grid.getRows();
             if (this.parent.grid.selectionMode !== 'Cell') {
                 let selectedIndexes: number[] = this.parent.grid.getSelectedRowIndexes().sort((a: number, b: number) => {
@@ -80,14 +72,14 @@ export class Clipboard {
                     this.gridClipboard[getCopyData](headerTextArray, false, '\t', withHeader);
                     this.treeCopyContent = this.gridClipboard[copyContent] + '\n' + this.treeCopyContent;
                 }
-                this.clipBoardTextArea.value = this.gridClipboard[copyContent] = this.treeCopyContent;
+                this.gridClipboard.clipBoardTextArea.value = this.gridClipboard[copyContent] = this.treeCopyContent;
                 if (!Browser.userAgent.match(/ipad|ipod|iphone/i)) {
                     window.getSelection().removeAllRanges();
-                    this.clipBoardTextArea.select();
+                    this.gridClipboard.clipBoardTextArea.select();
                 } else {
-                    this.clipBoardTextArea.setSelectionRange(
+                    this.gridClipboard.clipBoardTextArea.setSelectionRange(
                         0,
-                        this.clipBoardTextArea.value.length
+                        this.gridClipboard.clipBoardTextArea.value.length
                     );
                 }
                 this.gridClipboard[isSelect] = true;

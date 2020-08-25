@@ -33,13 +33,15 @@ export interface TreeGridModel extends ComponentModel{
 
     /**
    * Defines the schema of dataSource. 
-   * If the `columns` declaration is empty or undefined then the `columns` are automatically generated from data source.     
+   * If the `columns` declaration is empty or undefined then the `columns` are automatically generated from data source.
+   * {% codeBlock src='treegrid/columns/index.md' %}{% endcodeBlock %}    
    * @default []
    */
     columns?: ColumnModel[] | string[] | Column[];
 
     /**
    * Specifies the mapping property path for child records in data source
+   * {% codeBlock src='treegrid/childMapping/index.md' %}{% endcodeBlock %}
    * @default null
    */
     childMapping?: string;
@@ -58,12 +60,14 @@ export interface TreeGridModel extends ComponentModel{
 
     /**
    * Specifies the name of the field in the dataSource, which contains the id of that row.
+   * {% codeBlock src='treegrid/idMapping/index.md' %}{% endcodeBlock %}
    * @default null
    */
     idMapping?: string;
 
     /**
    * Specifies the name of the field in the dataSource, which contains the parent’s id
+   * {% codeBlock src='treegrid/parentIdMapping/index.md' %}{% endcodeBlock %}
    * @default null
    */
     parentIdMapping?: string;
@@ -88,6 +92,7 @@ export interface TreeGridModel extends ComponentModel{
 
     /**
    * It is used to render TreeGrid table rows.
+   * {% codeBlock src='treegrid/dataSource/index.md' %}{% endcodeBlock %}
    * @default []
    * @isGenericType true
    * @isDataSource true

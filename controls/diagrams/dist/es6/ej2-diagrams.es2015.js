@@ -2414,6 +2414,8 @@ var RealAction;
     RealAction[RealAction["EnableGroupAction"] = 128] = "EnableGroupAction";
     /** Indicate action in Progress */
     RealAction[RealAction["PanInProgress"] = 256] = "PanInProgress";
+    /** Indicate overview action  */
+    RealAction[RealAction["OverViewAction"] = 512] = "OverViewAction";
 })(RealAction || (RealAction = {}));
 /** @private */
 var NoOfSegments;
@@ -15868,7 +15870,6 @@ class Node extends NodeBase {
         let port;
         for (let i = 0; this.ports !== undefined, i < this.ports.length; i++) {
             port = this.initPortWrapper(this.ports[i]);
-            port.elementActions = port.elementActions | ElementAction.ElementIsPort;
             // tslint:disable-next-line:no-any
             let wrapperContent;
             let contentAccessibility = getFunction(accessibilityContent);
@@ -15877,6 +15878,7 @@ class Node extends NodeBase {
             }
             port.description = wrapperContent ? wrapperContent : port.id;
             port.inversedAlignment = canvas.inversedAlignment;
+            port.elementActions = port.elementActions | ElementAction.ElementIsPort;
             container.children.push(port);
         }
     }
@@ -15975,6 +15977,7 @@ class Node extends NodeBase {
         portContent.relativeMode = 'Point';
         portContent.visible = checkPortRestriction(ports, PortVisibility.Visible) &&
             !checkPortRestriction(ports, PortVisibility.Hover) && !checkPortRestriction(ports, PortVisibility.Connect) ? true : false;
+        portContent.elementActions = portContent.elementActions | ElementAction.ElementIsPort;
         return portContent;
     }
     /** @private */
@@ -19105,7 +19108,8 @@ class DiagramRenderer {
     }
     getParentSvg(element, targetElement, canvas) {
         if (this.diagramId && element && element.id) {
-            if (element.id.split('_icon_content').length > 1 || element.id.split('_nodeport').length > 1) {
+            if (element.id.split('_icon_content').length > 1 || element.id.split('_nodeport').length > 1 ||
+                (element.elementActions & ElementAction.ElementIsPort)) {
                 return this.iconSvgLayer;
             }
             if (targetElement && targetElement === 'selector') {
@@ -19132,6 +19136,10 @@ class DiagramRenderer {
             }
             else if (element instanceof DiagramNativeElement) {
                 layerGElement = svgElement.getElementById(this.diagramId + '_nativeLayer');
+                defaultParent = null;
+            }
+            else if (element.elementActions & ElementAction.ElementIsPort) {
+                layerGElement = svgElement.getElementById(this.diagramId + '_diagramPorts');
                 defaultParent = null;
             }
             else {
@@ -23129,6 +23137,7 @@ class ZoomPanTool extends ToolBase {
     mouseDown(args) {
         super.mouseDown(args);
         this.inAction = true;
+        this.commandHandler.setBlazorDiagramProps(true);
     }
     /**   @private  */
     mouseMove(args) {
@@ -23156,6 +23165,7 @@ class ZoomPanTool extends ToolBase {
     }
     /**   @private  */
     mouseUp(args) {
+        this.commandHandler.setBlazorDiagramProps(false);
         this.checkPropertyValue();
         this.commandHandler.updatePanState(false);
         super.mouseUp(args);
@@ -24531,9 +24541,10 @@ class DiagramEventHandler {
             evt.preventDefault();
             return;
         }
-        if (isBlazor()) {
-            this.commandHandler.oldSelectedObjects = cloneObject(this.diagram.selectedItems);
-        }
+        // commanded by gowtham- unwanted cloning of selectedItems
+        // if (isBlazor()) {
+        //     this.commandHandler.oldSelectedObjects = cloneObject(this.diagram.selectedItems);
+        // }
         this.checkUserHandleEvent(DiagramEvent.onUserHandleMouseDown);
         if (!this.checkEditBoxAsTarget(evt) && (canUserInteract(this.diagram)) ||
             (canZoomPan(this.diagram) && !defaultTool(this.diagram))) {
@@ -25524,6 +25535,9 @@ class DiagramEventHandler {
     /** @private */
     scrolled(evt) {
         this.diagram.updateScrollOffset();
+        if (isBlazor() && (this.diagram.realActions & RealAction.OverViewAction)) {
+            this.diagram.setBlazorDiagramProps(false);
+        }
     }
     /** @private */
     doubleClick(evt) {
@@ -28769,10 +28783,10 @@ class CommandHandler {
     /**   @private  */
     ismouseEvents(value) {
         if (value) {
-            this.diagram.blazorActions = BlazorAction.interaction;
+            this.diagram.blazorActions = this.diagram.addConstraints(this.diagram.blazorActions, BlazorAction.interaction);
         }
         else {
-            this.diagram.blazorActions = ~BlazorAction.interaction;
+            this.diagram.blazorActions = this.diagram.removeConstraints(this.diagram.blazorActions, BlazorAction.interaction);
         }
     }
     /** @private */
@@ -30934,11 +30948,20 @@ class CommandHandler {
     dataBinding() {
         this.diagram.dataBind();
     }
+    setBlazorDiagramProps(arg) {
+        this.diagram.setBlazorDiagramProps(arg);
+    }
     /** @private */
     scroll(scrollX, scrollY, focusPoint) {
         let panx = canPanX(this.diagram);
         let pany = canPanY(this.diagram);
-        this.diagram.pan((scrollX = panx ? scrollX : 0) * this.diagram.scroller.currentZoom, (scrollY = pany ? scrollY : 0) * this.diagram.scroller.currentZoom, focusPoint);
+        if (isBlazor()) {
+            this.diagram.setCursor('grabbing');
+            this.diagram.scroller.zoom(1, (scrollX = panx ? scrollX : 0) * this.diagram.scroller.currentZoom, (scrollY = pany ? scrollY : 0) * this.diagram.scroller.currentZoom, focusPoint);
+        }
+        else {
+            this.diagram.pan((scrollX = panx ? scrollX : 0) * this.diagram.scroller.currentZoom, (scrollY = pany ? scrollY : 0) * this.diagram.scroller.currentZoom, focusPoint);
+        }
     }
     /**
      * @private
@@ -34087,6 +34110,16 @@ class Diagram extends Component {
         }
     }
     /** @private */
+    setBlazorDiagramProps(arg) {
+        let attribute = this.getZoomingAttribute();
+        if (arg) {
+            this.updateBlazorDiagramProperties(attribute);
+        }
+        else {
+            this.updateBlazorDiagramProperties(attribute, true);
+        }
+    }
+    /** @private */
     triggerEvent(eventName, args) {
         return __awaiter(this, void 0, void 0, function* () {
             if (args) {
@@ -34445,6 +34478,7 @@ class Diagram extends Component {
                     newObj.status = 'New';
                     this.nodes.push(newObj);
                     this.initObject(newObj, layers, undefined, group);
+                    this.updateTemplate();
                     this.UpdateBlazorDiagramModel(newObj, "Node");
                     if (this.bpmnModule) {
                         if (newObj.shape.annotations && newObj.shape.annotations.length !== 0) {
@@ -34662,6 +34696,16 @@ class Diagram extends Component {
     removeElements(currentObj) {
         if (this.mode === 'SVG' || (this.mode === 'Canvas' && currentObj.shape.type === 'Native')) {
             let removeElement$$1 = getDiagramElement(currentObj.id + '_groupElement', this.element.id);
+            let object = currentObj;
+            if ((object).ports && (object).ports.length > 0) {
+                for (let i = 0; i < (object).ports.length; i++) {
+                    let port = (object).ports[i];
+                    let removePort = getDiagramElement(object.id + '_' + port.id + '_groupElement', this.element.id);
+                    if (removePort) {
+                        removePort.parentNode.removeChild(removePort);
+                    }
+                }
+            }
             if (removeElement$$1) {
                 removeElement$$1.parentNode.removeChild(removeElement$$1);
             }
@@ -38595,17 +38639,20 @@ class Diagram extends Component {
             }
             this.updateGroupOffset(actualObject);
             // if (existingBounds.equals(existingBounds, actualObject.wrapper.outerBounds) === false) { this.updateQuad(actualObject); }
-            let objects = [];
-            objects = objects.concat(this.selectedItems.nodes, this.selectedItems.connectors);
-            if (objects.length === 0) {
-                if (actualObject.parentId && this.nameTable[actualObject.parentId]) {
-                    let parent = this.nameTable[actualObject.parentId];
-                    parent.wrapper.measure(new Size(parent.wrapper.width, actualObject.wrapper.height));
-                    parent.wrapper.arrange(parent.wrapper.desiredSize);
-                    parent.offsetX = parent.wrapper.offsetX;
-                    parent.offsetY = parent.wrapper.offsetY;
-                }
+            // EJ2-42005 - The parent of the actualObject is not measured and arranged when a node or connector is selected.
+            // The condition restricts the measure and arrange of the actualObject whenever a node or connector is selected.
+            // Commented @Dheepshiva
+            // let objects: (NodeModel | ConnectorModel)[] = [];
+            // objects = objects.concat(this.selectedItems.nodes, this.selectedItems.connectors);
+            // if (objects.length === 0) {
+            if (actualObject.parentId && this.nameTable[actualObject.parentId]) {
+                let parent = this.nameTable[actualObject.parentId];
+                parent.wrapper.measure(new Size(parent.wrapper.width, actualObject.wrapper.height));
+                parent.wrapper.arrange(parent.wrapper.desiredSize);
+                parent.offsetX = parent.wrapper.offsetX;
+                parent.offsetY = parent.wrapper.offsetY;
             }
+            // }
             if (existingInnerBounds.equals(existingInnerBounds, actualObject.wrapper.bounds) === false) {
                 this.updateGroupSize(actualObject);
                 if (actualObject.children) {
@@ -40410,6 +40457,10 @@ class PrintAndExport {
             options.margin = margin;
             let svg = content = this.diagramAsSvg(options, margin);
             if (mode === 'Data') {
+                if (isBlazor() && options.format === 'SVG') {
+                    let svgData = new XMLSerializer().serializeToString(svg);
+                    return svgData;
+                }
                 return content;
             }
             let buffer = new XMLSerializer().serializeToString(svg);
@@ -40676,8 +40727,8 @@ class PrintAndExport {
             svg.appendChild(gradient);
         }
         attr = {
-            'x': 0,
-            'y': 0, 'width': String(width + margin.left + margin.right), 'height': String(height + margin.top + margin.bottom)
+            'x': String(left),
+            'y': String(top), 'width': String(width + margin.left + margin.right), 'height': String(height + margin.top + margin.bottom)
         };
         let backimage = document.getElementById(this.diagram.element.id + '_backgroundImageLayer').cloneNode(true);
         setAttributeSvg(backimage, attr);
@@ -54510,11 +54561,18 @@ class Overview extends Component {
             delx = -hoffset - this.parent.scroller.horizontalOffset;
             dely = -voffset - this.parent.scroller.verticalOffset;
         }
+        this.parent.setBlazorDiagramProps(true);
+        this.parent.realActions |= RealAction.OverViewAction;
         if (this.actionName === 'scale' || this.actionName === 'draw') {
             this.parent.scroller.zoom(zoom / this.parent.scroller.currentZoom, delx, dely, focusPoint);
         }
         else {
-            this.parent.pan(delx, dely, focusPoint);
+            if (!isBlazor()) {
+                this.parent.pan(delx, dely, focusPoint);
+            }
+            else {
+                this.parent.scroller.zoom(1, delx, dely, focusPoint);
+            }
         }
     }
     updateHtmlLayer(view) {

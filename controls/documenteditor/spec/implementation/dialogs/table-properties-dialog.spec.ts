@@ -1460,4 +1460,15 @@ describe('Table vertical alignment - center validation', () => {
         expect(editor.selection.tableFormat.table.x).not.toBe(96);
         expect(Math.round(cellWidget.cellFormat.preferredWidth)).toBe(Math.round(previousCellWidth));
     });
+    it('cell with different backgroud validation', () => {
+        editor.openBlank();
+        editor.editor.insertTable(1, 2);
+        editor.selection.handleHomeKey();
+        editor.selection.handleControlRightKey();
+        editor.selection.cellFormat.background = '#dd2626';
+        editor.selection.handleHomeKey();
+        editor.selection.handleControlRightKey();
+        editor.selection.handleControlRightKey();
+        expect(() => { editor.selection.cellFormat.background = '#dd2626'; }).not.toThrowError();
+    });
 });

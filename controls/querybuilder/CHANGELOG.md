@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 18.2.55 (2020-08-25)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- Issue with 'getColumn' method is fixed.
+- Issue with persistence is fixed.
+
 ## 18.2.46 (2020-07-21)
 
 ### QueryBuilder

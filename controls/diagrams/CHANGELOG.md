@@ -2,9 +2,23 @@
 
 ## [Unreleased]
 
+## 18.2.55 (2020-08-25)
+
+### Diagram
+
+#### Bug Fixes
+
+- `F156456` - The issue "SVG image not exported properly" has been fixed
+- `#288628` - The issue "HTML node does not gets added at run time" has been fixed.
+- `#289513`  - The issue with "Group rotation does not work as expected" has been fixed.
+
 ## 18.2.54 (2020-08-18)
 
 ### Diagram
+
+#### New Features
+
+- `#281811` -  support to render the port over the HTML layer.
 
 #### Bug Fixes
 

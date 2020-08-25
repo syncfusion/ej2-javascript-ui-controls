@@ -1,6 +1,7 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { TableOfContentsSettings, ParagraphWidget, TableWidget, FieldElementBox, TextFormField, ElementBox, WParagraphFormat, WCharacterFormat, HelperMethods } from '../../src/document-editor/index';
 import { createElement } from '@syncfusion/ej2-base';
+import { ImageResizer } from '../../src/document-editor/implementation/editor/image-resizer';
 import { Editor, EditorHistory, TableCellWidget, TextElementBox, TextHelper, RtlInfo, ListTextElementBox, LineWidget, TabElementBox, TextPosition } from '../../src/index';
 import { TestHelper } from '../test-helper.spec';
 import { Selection, PageLayoutViewer } from '../../src/index';
@@ -850,20 +851,24 @@ describe('Update Revision Collection validation', () => {
 
 describe('Validate Track Change have Page Break',()=>{
   let container : DocumentEditor;
+  let imageResizer: ImageResizer;
   beforeAll(() => {
       document.body.innerHTML = '';
       let ele: HTMLElement = createElement('div', { id: 'container' });
       document.body.appendChild(ele);
-      DocumentEditor.Inject(Editor, Selection, EditorHistory);
-      container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true });
+      DocumentEditor.Inject(Editor, Selection, EditorHistory, ImageResizer);
+      container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableImageResizer: true });
       (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
       (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
       (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
       (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
       container.appendTo('#container');
+      imageResizer = container.imageResizerModule;
        });
   afterAll((done): void => {
       container.destroy();
+      imageResizer.destroy();
+      imageResizer = undefined;
       document.body.removeChild(document.getElementById('container'));
       container = undefined;
       document.body.innerHTML = '';
@@ -888,6 +893,27 @@ describe('Validate Track Change have Page Break',()=>{
       expect(container.revisions.length).toBe(1);
       container.editorHistory.redo();
       expect(container.revisions.length).toBe(0);
+  });
+  it('image resizer validation', function () {
+    container.openBlank();
+    let imageString: string = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAIAAAADnC86AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADQSURBVFhH7ZbRDYQgDIYZ5UZhFEdxlBuFUUhY4N7vwWtTURJz5tem8GAbTYS0/eGjWsN7hJVSAuku3c2FuyF31BvqBNu90/mLmnSRjKDbMZULt2csz/kV8hRbVjSkSZkxRC0yKcbl+6FLhttSDIV5W6vYnKeZVWkR1WyFGbhIHrAbCzPhEcL1XCvqptYMd7xXExUXM4+pT3ENe53OP5yGqJ8kDDZGpIld6E730uFR/uuDs1J6OmolQDzcUeOslJ6OWgkQD3fUOCulJ6Ome4j9AGEu0k90WN54AAAAAElFTkSuQmCC';
+    container.editor.insertImage(imageString, 100, 100);
+    container.editor.insertBookmark('check');
+    let event: any = { offsetX: 173, offsetY: 116, preventDefault: function () { }, ctrlKey: false, which: 1 };
+    container.documentHelper.onMouseDownInternal(event);
+    let event2: any = { offsetX: 173, offsetY: 116, preventDefault: function () { }, ctrlKey: false, which: 0 };
+    container.documentHelper.onMouseMoveInternal(event2);
+    container.documentHelper.onMouseDownInternal(event);
+    container.documentHelper.onMouseMoveInternal(event2);
+    container.documentHelper.onMouseUpInternal(event2);
+    imageResizer.isImageResizing = true;
+    let event3: any = { offsetX: 153, offsetY: 106, preventDefault: function () { }, ctrlKey: false, which: 0 };
+    container.documentHelper.onMouseMoveInternal(event3);
+    container.documentHelper.onMouseUpInternal(event3);
+    container.documentHelper.onMouseMoveInternal(event);
+    let eventArgs: any = { keyCode: 90, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
+    container.documentHelper.onKeyDownInternal(eventArgs);
+    expect(container.editorHistory.undoStack[container.editorHistory.undoStack.length - 1].action).toBe('ImageResizing');
   });
   it('Style validation', function () {
     container.openBlank();

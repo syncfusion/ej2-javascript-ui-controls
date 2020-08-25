@@ -29569,7 +29569,7 @@ class Filter {
      */
     processRange(sheet, sheetIdx, filterRange) {
         let range = getSwapRange(getIndexesFromAddress(filterRange || sheet.selectedRange));
-        if (range[0] === range[2] && (range[2] - range[0]) === 0) { //if selected range is a single cell 
+        if (range[0] === range[2] && range[1] === range[3]) { //if selected range is a single cell 
             range[0] = 0;
             range[1] = 0;
             range[2] = sheet.usedRange.rowIndex;

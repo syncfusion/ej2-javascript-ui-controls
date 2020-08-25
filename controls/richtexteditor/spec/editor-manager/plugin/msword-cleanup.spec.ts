@@ -1204,7 +1204,7 @@ mso-hansi-font-family:Calibri;mso-bidi-font-family:Calibri'><span style='mso-lis
       }
       let pastedElem: any = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = true;
-      let expectedElem: string = `<ul level="1" style="list-style: disc;"><li><p>Para 1 </p></li></ul><p><br></p><h1>Head 1 </h1><table border="1" cellspacing="0" cellpadding="0" style="border:none;" class="e-rte-table"><tbody><tr><td width="312" valign="top" style="width: 233.75pt; padding: 0in 5.4pt;"><p style="margin-top:0in;margin-right:0in;margin-bottom:0in;margin-left:1.0in;margin-bottom:.0001pt;line-height:normal;">T-1</p></td><td width="312" valign="top" style="width: 233.75pt; padding: 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:normal;">T-2</p></td><td width="312" valign="top" style="width: 233.75pt; padding: 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:normal;">T-3 </p></td></tr></tbody></table><p>16</p>`
+      let expectedElem: string = `<ul level="1" style="list-style: disc;"><li><p>Para 1 </p></li></ul><p><br></p><h1>Head 1 </h1><p><br></p><table border="1" cellspacing="0" cellpadding="0" style="border:none;" class="e-rte-table"><tbody><tr><td width="312" valign="top" style="width: 233.75pt; padding: 0in 5.4pt;"><p style="margin-top:0in;margin-right:0in;margin-bottom:0in;margin-left:1.0in;margin-bottom:.0001pt;line-height:normal;">T-1</p></td><td width="312" valign="top" style="width: 233.75pt; padding: 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:normal;">T-2</p></td><td width="312" valign="top" style="width: 233.75pt; padding: 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:normal;">T-3 </p></td></tr></tbody></table><p>16</p>`
       if (pastedElem.trim().replace(/>\s+</g, '><') !== expectedElem) {
         expected = false;
       }
@@ -5270,6 +5270,393 @@ ffffffffffffffffffffffffffffffff52006f006f007400200045006e0074007200790000000000
     Federated CMDB Tree and List – are closely related, and their design should be
     planned jointly.</span></p><ol level="2"><li><p><span lang="EN-GB">Overview</span></p></li></ol><p><span lang="EN-GB" style="font-size:12.0pt;line-height:
     107%;font-family:&quot;Calibri&quot;,sans-serif;">The purpose of the explorer</span></p><p>22</p>`;
+      if (pastedElem.trim().replace(/>\s+</g, '><') !== expectedElem) {
+        expected = false;
+      }
+      expect(expected).toBe(true);
+      done();
+    }, 100);
+  });
+
+  it('EJ2-41730 - Rare type of list content', (done) => {
+    let localElem: string = `<html><head><style>
+    <!--
+     /* Font Definitions */
+     @font-face
+      {font-family:"Cambria Math";
+      panose-1:2 4 5 3 5 4 6 3 2 4;
+      mso-font-charset:0;
+      mso-generic-font-family:roman;
+      mso-font-pitch:variable;
+      mso-font-signature:3 0 0 0 1 0;}
+    @font-face
+      {font-family:Calibri;
+      panose-1:2 15 5 2 2 2 4 3 2 4;
+      mso-font-charset:0;
+      mso-generic-font-family:swiss;
+      mso-font-pitch:variable;
+      mso-font-signature:-469750017 -1073732485 9 0 511 0;}
+    @font-face
+      {font-family:Cambria;
+      panose-1:2 4 5 3 5 4 6 3 2 4;
+      mso-font-charset:0;
+      mso-generic-font-family:roman;
+      mso-font-pitch:variable;
+      mso-font-signature:-536869121 1107305727 33554432 0 415 0;}
+     /* Style Definitions */
+     p.MsoNormal, li.MsoNormal, div.MsoNormal
+      {mso-style-unhide:no;
+      mso-style-qformat:yes;
+      mso-style-parent:"";
+      margin-top:0in;
+      margin-right:0in;
+      margin-bottom:10.0pt;
+      margin-left:0in;
+      line-height:115%;
+      mso-pagination:widow-orphan;
+      font-size:11.0pt;
+      font-family:"Calibri",sans-serif;
+      mso-ascii-font-family:Calibri;
+      mso-ascii-theme-font:minor-latin;
+      mso-fareast-font-family:Calibri;
+      mso-fareast-theme-font:minor-latin;
+      mso-hansi-font-family:Calibri;
+      mso-hansi-theme-font:minor-latin;
+      mso-bidi-font-family:"Times New Roman";
+      mso-bidi-theme-font:minor-bidi;
+      mso-ansi-language:PT-BR;}
+    p.MsoHeader, li.MsoHeader, div.MsoHeader
+      {mso-style-priority:99;
+      mso-style-link:"Header Char";
+      margin:0in;
+      margin-bottom:.0001pt;
+      mso-pagination:widow-orphan;
+      tab-stops:center 212.6pt right 425.2pt;
+      font-size:11.0pt;
+      font-family:"Calibri",sans-serif;
+      mso-ascii-font-family:Calibri;
+      mso-ascii-theme-font:minor-latin;
+      mso-fareast-font-family:Calibri;
+      mso-fareast-theme-font:minor-latin;
+      mso-hansi-font-family:Calibri;
+      mso-hansi-theme-font:minor-latin;
+      mso-bidi-font-family:"Times New Roman";
+      mso-bidi-theme-font:minor-bidi;
+      mso-ansi-language:PT-BR;}
+    p.MsoFooter, li.MsoFooter, div.MsoFooter
+      {mso-style-priority:99;
+      mso-style-link:"Footer Char";
+      margin:0in;
+      margin-bottom:.0001pt;
+      mso-pagination:widow-orphan;
+      tab-stops:center 212.6pt right 425.2pt;
+      font-size:11.0pt;
+      font-family:"Calibri",sans-serif;
+      mso-ascii-font-family:Calibri;
+      mso-ascii-theme-font:minor-latin;
+      mso-fareast-font-family:Calibri;
+      mso-fareast-theme-font:minor-latin;
+      mso-hansi-font-family:Calibri;
+      mso-hansi-theme-font:minor-latin;
+      mso-bidi-font-family:"Times New Roman";
+      mso-bidi-theme-font:minor-bidi;
+      mso-ansi-language:PT-BR;}
+    p.MsoListParagraph, li.MsoListParagraph, div.MsoListParagraph
+      {mso-style-priority:34;
+      mso-style-unhide:no;
+      mso-style-qformat:yes;
+      margin-top:0in;
+      margin-right:0in;
+      margin-bottom:10.0pt;
+      margin-left:.5in;
+      mso-add-space:auto;
+      line-height:115%;
+      mso-pagination:widow-orphan;
+      font-size:11.0pt;
+      font-family:"Calibri",sans-serif;
+      mso-ascii-font-family:Calibri;
+      mso-ascii-theme-font:minor-latin;
+      mso-fareast-font-family:Calibri;
+      mso-fareast-theme-font:minor-latin;
+      mso-hansi-font-family:Calibri;
+      mso-hansi-theme-font:minor-latin;
+      mso-bidi-font-family:"Times New Roman";
+      mso-bidi-theme-font:minor-bidi;
+      mso-ansi-language:PT-BR;}
+    p.MsoListParagraphCxSpFirst, li.MsoListParagraphCxSpFirst, div.MsoListParagraphCxSpFirst
+      {mso-style-priority:34;
+      mso-style-unhide:no;
+      mso-style-qformat:yes;
+      mso-style-type:export-only;
+      margin-top:0in;
+      margin-right:0in;
+      margin-bottom:0in;
+      margin-left:.5in;
+      margin-bottom:.0001pt;
+      mso-add-space:auto;
+      line-height:115%;
+      mso-pagination:widow-orphan;
+      font-size:11.0pt;
+      font-family:"Calibri",sans-serif;
+      mso-ascii-font-family:Calibri;
+      mso-ascii-theme-font:minor-latin;
+      mso-fareast-font-family:Calibri;
+      mso-fareast-theme-font:minor-latin;
+      mso-hansi-font-family:Calibri;
+      mso-hansi-theme-font:minor-latin;
+      mso-bidi-font-family:"Times New Roman";
+      mso-bidi-theme-font:minor-bidi;
+      mso-ansi-language:PT-BR;}
+    p.MsoListParagraphCxSpMiddle, li.MsoListParagraphCxSpMiddle, div.MsoListParagraphCxSpMiddle
+      {mso-style-priority:34;
+      mso-style-unhide:no;
+      mso-style-qformat:yes;
+      mso-style-type:export-only;
+      margin-top:0in;
+      margin-right:0in;
+      margin-bottom:0in;
+      margin-left:.5in;
+      margin-bottom:.0001pt;
+      mso-add-space:auto;
+      line-height:115%;
+      mso-pagination:widow-orphan;
+      font-size:11.0pt;
+      font-family:"Calibri",sans-serif;
+      mso-ascii-font-family:Calibri;
+      mso-ascii-theme-font:minor-latin;
+      mso-fareast-font-family:Calibri;
+      mso-fareast-theme-font:minor-latin;
+      mso-hansi-font-family:Calibri;
+      mso-hansi-theme-font:minor-latin;
+      mso-bidi-font-family:"Times New Roman";
+      mso-bidi-theme-font:minor-bidi;
+      mso-ansi-language:PT-BR;}
+    p.MsoListParagraphCxSpLast, li.MsoListParagraphCxSpLast, div.MsoListParagraphCxSpLast
+      {mso-style-priority:34;
+      mso-style-unhide:no;
+      mso-style-qformat:yes;
+      mso-style-type:export-only;
+      margin-top:0in;
+      margin-right:0in;
+      margin-bottom:10.0pt;
+      margin-left:.5in;
+      mso-add-space:auto;
+      line-height:115%;
+      mso-pagination:widow-orphan;
+      font-size:11.0pt;
+      font-family:"Calibri",sans-serif;
+      mso-ascii-font-family:Calibri;
+      mso-ascii-theme-font:minor-latin;
+      mso-fareast-font-family:Calibri;
+      mso-fareast-theme-font:minor-latin;
+      mso-hansi-font-family:Calibri;
+      mso-hansi-theme-font:minor-latin;
+      mso-bidi-font-family:"Times New Roman";
+      mso-bidi-theme-font:minor-bidi;
+      mso-ansi-language:PT-BR;}
+    span.HeaderChar
+      {mso-style-name:"Header Char";
+      mso-style-priority:99;
+      mso-style-unhide:no;
+      mso-style-locked:yes;
+      mso-style-link:Header;}
+    span.FooterChar
+      {mso-style-name:"Footer Char";
+      mso-style-priority:99;
+      mso-style-unhide:no;
+      mso-style-locked:yes;
+      mso-style-link:Footer;}
+    .MsoChpDefault
+      {mso-style-type:export-only;
+      mso-default-props:yes;
+      font-family:"Calibri",sans-serif;
+      mso-ascii-font-family:Calibri;
+      mso-ascii-theme-font:minor-latin;
+      mso-fareast-font-family:Calibri;
+      mso-fareast-theme-font:minor-latin;
+      mso-hansi-font-family:Calibri;
+      mso-hansi-theme-font:minor-latin;
+      mso-bidi-font-family:"Times New Roman";
+      mso-bidi-theme-font:minor-bidi;
+      mso-ansi-language:PT-BR;}
+    .MsoPapDefault
+      {mso-style-type:export-only;
+      margin-bottom:10.0pt;
+      line-height:115%;}
+    @page WordSection1
+      {size:595.3pt 841.9pt;
+      margin:70.85pt 85.05pt 70.85pt 85.05pt;
+      mso-header-margin:35.4pt;
+      mso-footer-margin:35.4pt;
+      mso-paper-source:0;}
+    div.WordSection1
+      {page:WordSection1;}
+     /* List Definitions */
+     @list l0
+      {mso-list-id:415592100;
+      mso-list-type:hybrid;
+      mso-list-template-ids:-368527292 -1571935822 68550681 68550683 68550671 68550681 68550683 68550671 68550681 68550683;}
+    @list l0:level1
+      {mso-level-text:%1-;
+      mso-level-tab-stop:none;
+      mso-level-number-position:left;
+      text-indent:-.25in;}
+    @list l0:level2
+      {mso-level-number-format:alpha-lower;
+      mso-level-tab-stop:none;
+      mso-level-number-position:left;
+      text-indent:-.25in;}
+    @list l0:level3
+      {mso-level-number-format:roman-lower;
+      mso-level-tab-stop:none;
+      mso-level-number-position:right;
+      text-indent:-9.0pt;}
+    @list l0:level4
+      {mso-level-tab-stop:none;
+      mso-level-number-position:left;
+      text-indent:-.25in;}
+    @list l0:level5
+      {mso-level-number-format:alpha-lower;
+      mso-level-tab-stop:none;
+      mso-level-number-position:left;
+      text-indent:-.25in;}
+    @list l0:level6
+      {mso-level-number-format:roman-lower;
+      mso-level-tab-stop:none;
+      mso-level-number-position:right;
+      text-indent:-9.0pt;}
+    @list l0:level7
+      {mso-level-tab-stop:none;
+      mso-level-number-position:left;
+      text-indent:-.25in;}
+    @list l0:level8
+      {mso-level-number-format:alpha-lower;
+      mso-level-tab-stop:none;
+      mso-level-number-position:left;
+      text-indent:-.25in;}
+    @list l0:level9
+      {mso-level-number-format:roman-lower;
+      mso-level-tab-stop:none;
+      mso-level-number-position:right;
+      text-indent:-9.0pt;}
+    ol
+      {margin-bottom:0in;}
+    ul
+      {margin-bottom:0in;}
+    -->
+    </style>
+    <!--[if gte mso 10]>
+    <style>
+     /* Style Definitions */
+     table.MsoNormalTable
+      {mso-style-name:"Table Normal";
+      mso-tstyle-rowband-size:0;
+      mso-tstyle-colband-size:0;
+      mso-style-noshow:yes;
+      mso-style-priority:99;
+      mso-style-parent:"";
+      mso-padding-alt:0in 5.4pt 0in 5.4pt;
+      mso-para-margin-top:0in;
+      mso-para-margin-right:0in;
+      mso-para-margin-bottom:10.0pt;
+      mso-para-margin-left:0in;
+      line-height:115%;
+      mso-pagination:widow-orphan;
+      font-size:11.0pt;
+      font-family:"Calibri",sans-serif;
+      mso-ascii-font-family:Calibri;
+      mso-ascii-theme-font:minor-latin;
+      mso-hansi-font-family:Calibri;
+      mso-hansi-theme-font:minor-latin;
+      mso-bidi-font-family:"Times New Roman";
+      mso-bidi-theme-font:minor-bidi;
+      mso-ansi-language:PT-BR;}
+    </style><![endif]--></head><body lang=EN-US style='tab-interval:.5in'><!--StartFragment--><p class=MsoNormal><span lang=PT-BR style='font-size:12.0pt;line-height:115%;
+    font-family:"Cambria",serif;mso-ascii-theme-font:major-latin;mso-hansi-theme-font:
+    major-latin'><o:p>&nbsp;</o:p></span></p><p class=MsoListParagraphCxSpFirst style='margin-bottom:7.5pt;mso-add-space:
+    auto;text-indent:-.25in;line-height:normal;mso-list:l0 level1 lfo1'><![if !supportLists]><span
+    lang=PT-BR style='font-size:12.0pt;font-family:"Cambria",serif;mso-ascii-theme-font:
+    major-latin;mso-fareast-font-family:Cambria;mso-fareast-theme-font:major-latin;
+    mso-hansi-theme-font:major-latin;mso-bidi-font-family:Cambria;mso-bidi-theme-font:
+    major-latin;color:black;mso-fareast-language:PT-BR'><span style='mso-list:Ignore'>1-<span
+    style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+    lang=PT-BR style='font-size:12.0pt;font-family:"Cambria",serif;mso-ascii-theme-font:
+    major-latin;mso-fareast-font-family:"Times New Roman";mso-hansi-theme-font:
+    major-latin;mso-bidi-font-family:"Times New Roman";color:black;mso-fareast-language:
+    PT-BR'>RELORA ------------ 100MG<o:p></o:p></span></p><p class=MsoListParagraphCxSpMiddle style='margin-bottom:7.5pt;mso-add-space:
+    auto;line-height:normal'><span lang=PT-BR style='font-size:12.0pt;font-family:
+    "Cambria",serif;mso-ascii-theme-font:major-latin;mso-fareast-font-family:"Times New Roman";
+    mso-hansi-theme-font:major-latin;mso-bidi-font-family:"Times New Roman";
+    color:black;mso-fareast-language:PT-BR'>5HTP ----------------- 100MG<o:p></o:p></span></p><p class=MsoListParagraphCxSpMiddle style='margin-bottom:7.5pt;mso-add-space:
+    auto;line-height:normal'><span lang=PT-BR style='font-size:12.0pt;font-family:
+    "Cambria",serif;mso-ascii-theme-font:major-latin;mso-fareast-font-family:"Times New Roman";
+    mso-hansi-theme-font:major-latin;mso-bidi-font-family:"Times New Roman";
+    color:black;mso-fareast-language:PT-BR'>METILFOLATO ----- 500MCG<o:p></o:p></span></p><p class=MsoListParagraphCxSpLast style='margin-bottom:7.5pt;mso-add-space:
+    auto;line-height:normal'><span lang=PT-BR style='font-size:12.0pt;font-family:
+    "Cambria",serif;mso-ascii-theme-font:major-latin;mso-fareast-font-family:"Times New Roman";
+    mso-hansi-theme-font:major-latin;mso-bidi-font-family:"Times New Roman";
+    color:black;mso-fareast-language:PT-BR'>. 2 DOSES AO DIA. <o:p></o:p></span></p><p class=MsoNormal><span lang=PT-BR style='font-size:12.0pt;line-height:115%;
+    font-family:"Cambria",serif;mso-ascii-theme-font:major-latin;mso-hansi-theme-font:
+    major-latin'><o:p>&nbsp;</o:p></span></p><p class=MsoListParagraphCxSpFirst style='text-indent:-.25in;mso-list:l0 level1 lfo1'><![if !supportLists]><span
+    lang=PT-BR style='font-size:12.0pt;line-height:115%;font-family:"Cambria",serif;
+    mso-ascii-theme-font:major-latin;mso-fareast-font-family:Cambria;mso-fareast-theme-font:
+    major-latin;mso-hansi-theme-font:major-latin;mso-bidi-font-family:Cambria;
+    mso-bidi-theme-font:major-latin'><span style='mso-list:Ignore'>2-<span
+    style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+    lang=PT-BR style='font-size:12.0pt;line-height:115%;font-family:"Cambria",serif;
+    mso-ascii-theme-font:major-latin;mso-hansi-theme-font:major-latin'>Melissa (2%
+    ácidos romarínicos) ------------<span style='mso-spacerun:yes'></span>100mg <o:p></o:p></span></p><p class=MsoListParagraphCxSpMiddle><span lang=PT-BR style='font-size:12.0pt;
+    line-height:115%;font-family:"Cambria",serif;mso-ascii-theme-font:major-latin;
+    mso-hansi-theme-font:major-latin'>Passiflora (0,5% vitexina)
+    ------------------------ 200mg <o:p></o:p></span></p><p class=MsoListParagraphCxSpMiddle><span lang=PT-BR style='font-size:12.0pt;
+    line-height:115%;font-family:"Cambria",serif;mso-ascii-theme-font:major-latin;
+    mso-hansi-theme-font:major-latin'>Valeriana (0,5% Ácido valerênico)
+    ----------------- 100mg <o:p></o:p></span></p><p class=MsoListParagraphCxSpMiddle><span lang=PT-BR style='font-size:12.0pt;
+    line-height:115%;font-family:"Cambria",serif;mso-ascii-theme-font:major-latin;
+    mso-hansi-theme-font:major-latin'>Mulungu (0,07% flavonoides)
+    -------------------- 200mg <o:p></o:p></span></p><p class=MsoListParagraphCxSpMiddle><span lang=PT-BR style='font-size:12.0pt;
+    line-height:115%;font-family:"Cambria",serif;mso-ascii-theme-font:major-latin;
+    mso-hansi-theme-font:major-latin'>Melatonina --------------------------------------------
+    1mg<o:p></o:p></span></p><p class=MsoListParagraphCxSpLast><span lang=PT-BR style='font-size:12.0pt;
+    line-height:115%;font-family:"Cambria",serif;mso-ascii-theme-font:major-latin;
+    mso-hansi-theme-font:major-latin'>Tomar 1 dose 1<span
+    style='mso-spacerun:yes'>  </span>hora antes de deitar.<o:p></o:p></span></p><!--EndFragment--></body></html>`;
+    rteObj.value = '<p>23</p>';
+    rteObj.dataBind();
+    keyBoardEvent.clipboardData = {
+      getData: () => {
+        return localElem;
+      },
+      items: []
+    };
+    setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
+    rteObj.onPaste(keyBoardEvent);
+    setTimeout(() => {
+      if (rteObj.pasteCleanupSettings.prompt) {
+        let keepFormat: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_KEEP_FORMAT);
+        keepFormat[0].click();
+        let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
+        pasteOK[0].click();
+      }
+      let pastedElem: any = (rteObj as any).inputElement.innerHTML;
+      let expected: boolean = true;
+      let expectedElem: string = `<p><br></p><ol level="1"><li><p><span lang="PT-BR" style="font-size:12.0pt;font-family:&quot;Cambria&quot;,serif;color:black;">RELORA ------------ 100MG</span></p></li></ol><p style="margin-bottom:7.5pt;line-height:normal;"><span lang="PT-BR" style="font-size:12.0pt;font-family:
+    &quot;Cambria&quot;,serif;
+    color:black;">5HTP ----------------- 100MG</span></p><p style="margin-bottom:7.5pt;line-height:normal;"><span lang="PT-BR" style="font-size:12.0pt;font-family:
+    &quot;Cambria&quot;,serif;
+    color:black;">METILFOLATO ----- 500MCG</span></p><p style="margin-bottom:7.5pt;line-height:normal;"><span lang="PT-BR" style="font-size:12.0pt;font-family:
+    &quot;Cambria&quot;,serif;
+    color:black;">. 2 DOSES AO DIA. </span></p><p><br></p><ol level="1"><li><p><span lang="PT-BR" style="font-size:12.0pt;line-height:115%;font-family:&quot;Cambria&quot;,serif;">Melissa (2%
+    ácidos romarínicos) ------------100mg </span></p></li></ol><p><span lang="PT-BR" style="font-size:12.0pt;
+    line-height:115%;font-family:&quot;Cambria&quot;,serif;">Passiflora (0,5% vitexina)
+    ------------------------ 200mg </span></p><p><span lang="PT-BR" style="font-size:12.0pt;
+    line-height:115%;font-family:&quot;Cambria&quot;,serif;">Valeriana (0,5% Ácido valerênico)
+    ----------------- 100mg </span></p><p><span lang="PT-BR" style="font-size:12.0pt;
+    line-height:115%;font-family:&quot;Cambria&quot;,serif;">Mulungu (0,07% flavonoides)
+    -------------------- 200mg </span></p><p><span lang="PT-BR" style="font-size:12.0pt;
+    line-height:115%;font-family:&quot;Cambria&quot;,serif;">Melatonina --------------------------------------------
+    1mg</span></p><p><span lang="PT-BR" style="font-size:12.0pt;
+    line-height:115%;font-family:&quot;Cambria&quot;,serif;">Tomar 1 dose 1<span>&nbsp; </span>hora antes de deitar.</span></p><p>23</p>`;
       if (pastedElem.trim().replace(/>\s+</g, '><') !== expectedElem) {
         expected = false;
       }

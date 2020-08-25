@@ -41,6 +41,7 @@ export interface EditSettingsModel {
      * * Above
      * * Below
      * * Child
+     * {% codeBlock src='treegrid/newRowPosition/index.md' %}{% endcodeBlock %}
      * @default Top 
      */
     newRowPosition?: RowPosition;

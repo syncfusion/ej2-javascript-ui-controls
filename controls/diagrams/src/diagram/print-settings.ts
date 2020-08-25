@@ -1,4 +1,4 @@
-import { Browser } from '@syncfusion/ej2-base';
+import { Browser, isBlazor } from '@syncfusion/ej2-base';
 import { CanvasRenderer } from './rendering/canvas-renderer';
 import { DiagramRenderer } from './rendering/renderer';
 import { ConnectorModel } from './objects/connector-model';
@@ -80,7 +80,11 @@ export class PrintAndExport {
             options.margin = margin;
             let svg: SVGElement = content = this.diagramAsSvg(options, margin);
             if (mode === 'Data') {
-                return content;
+            if (isBlazor() && options.format === 'SVG') {
+                let svgData: string = new XMLSerializer().serializeToString(svg);
+                return svgData;
+            }
+            return content;
             }
             let buffer: string = new XMLSerializer().serializeToString(svg);
             buffers.push(buffer);
@@ -361,8 +365,8 @@ export class PrintAndExport {
             svg.appendChild(gradient);
         }
         attr = {
-            'x': 0,
-            'y': 0, 'width': String(width + margin.left + margin.right), 'height': String(height + margin.top + margin.bottom)
+            'x': String(left),
+            'y': String(top), 'width': String(width + margin.left + margin.right), 'height': String(height + margin.top + margin.bottom)
         };
         let backimage: SVGElement =
             document.getElementById(this.diagram.element.id + '_backgroundImageLayer').cloneNode(true) as SVGElement;

@@ -69,7 +69,7 @@ export class PasteCleanup {
   }
 
   private pasteClean(e?: NotifyArgs): void {
-    let args: { [key: string]: string |NotifyArgs } = {
+    let args: { [key: string]: string | NotifyArgs } = {
       requestType: 'Paste',
       editorMode: this.parent.editorMode,
       event: e
@@ -96,7 +96,7 @@ export class PasteCleanup {
           text: value,
           callBack: (b: string | object) => {
             imageproperties = b;
-            if (typeof(imageproperties) === 'object') {
+            if (typeof (imageproperties) === 'object') {
               this.parent.formatter.editorManager.execCommand(
                 'Images',
                 'Image',
@@ -134,7 +134,7 @@ export class PasteCleanup {
         let tempDivElem: HTMLElement = this.parent.createElement('div') as HTMLElement;
         tempDivElem.innerHTML = value;
         if (tempDivElem.textContent !== '' || !isNOU(tempDivElem.querySelector('img')) ||
-        !isNOU(tempDivElem.querySelector('table'))) {
+          !isNOU(tempDivElem.querySelector('table'))) {
           this.pasteDialog(value, args);
         }
       } else if (this.parent.pasteCleanupSettings.plainText) {
@@ -153,12 +153,12 @@ export class PasteCleanup {
     let enterSplitText: string[] = value.split('\n');
     let contentInnerElem: string = '';
     for (let i: number = 0; i < enterSplitText.length; i++) {
-        if (enterSplitText[i].trim() === '') {
-          contentInnerElem += '<p><br></p>';
-        } else {
-          let contentWithSpace: string = this.makeSpace(enterSplitText[i]);
-          contentInnerElem += '<p>' + contentWithSpace.trim() + '</p>';
-        }
+      if (enterSplitText[i].trim() === '') {
+        contentInnerElem += '<p><br></p>';
+      } else {
+        let contentWithSpace: string = this.makeSpace(enterSplitText[i]);
+        contentInnerElem += '<p>' + contentWithSpace.trim() + '</p>';
+      }
     }
     return contentInnerElem;
   }
@@ -193,13 +193,13 @@ export class PasteCleanup {
       }
       let fileList: File[] = [];
       for (let i: number = 0; i < base64Src.length; i++) {
-          fileList.push(this.base64ToFile(base64Src[i], imgName[i]));
+        fileList.push(this.base64ToFile(base64Src[i], imgName[i]));
       }
       for (let i: number = 0; i < fileList.length; i++) {
         this.uploadMethod(fileList[i], uploadImg[i]);
       }
       if (isNOU(this.parent.insertImageSettings.path) &&
-      this.parent.insertImageSettings.saveFormat === 'Blob') {
+        this.parent.insertImageSettings.saveFormat === 'Blob') {
         this.getBlob(allImgElm);
       }
     } else if (this.parent.insertImageSettings.saveFormat === 'Blob') {
@@ -217,7 +217,7 @@ export class PasteCleanup {
   private getBlob(allImgElm: NodeListOf<HTMLImageElement>): void {
     for (let i: number = 0; i < allImgElm.length; i++) {
       if (!isNOU(allImgElm[i].getAttribute('src')) &&
-      allImgElm[i].getAttribute('src').split(',')[0].indexOf('base64') >= 0) {
+        allImgElm[i].getAttribute('src').split(',')[0].indexOf('base64') >= 0) {
         let blopUrl: string = URL.createObjectURL(convertToBlob(allImgElm[i].getAttribute('src')));
         allImgElm[i].setAttribute('src', blopUrl);
       }
@@ -226,110 +226,116 @@ export class PasteCleanup {
 
 
   private uploadMethod(fileList: File, imgElem: Element): void {
-      let uploadEle: HTMLInputElement | HTMLElement = document.createElement('div');
-      document.body.appendChild(uploadEle);
-      uploadEle.setAttribute('display', 'none');
-      (imgElem as HTMLElement).style.opacity = '0.5';
-      let popupEle: HTMLElement = this.parent.createElement('div');
-      this.parent.element.appendChild(popupEle);
-      let contentEle:  HTMLInputElement | HTMLElement = this.parent.createElement('input', {
-        id: this.parent.element.id + '_upload', attrs: { type: 'File', name: 'UploadFiles' }
+    let uploadEle: HTMLInputElement | HTMLElement = document.createElement('div');
+    document.body.appendChild(uploadEle);
+    uploadEle.setAttribute('display', 'none');
+    (imgElem as HTMLElement).style.opacity = '0.5';
+    let popupEle: HTMLElement = this.parent.createElement('div');
+    this.parent.element.appendChild(popupEle);
+    let contentEle: HTMLInputElement | HTMLElement = this.parent.createElement('input', {
+      id: this.parent.element.id + '_upload', attrs: { type: 'File', name: 'UploadFiles' }
     });
-      let offsetY: number = this.parent.iframeSettings.enable ? -50 : -90;
-      let popupObj: Popup = new Popup(popupEle, {
-          relateTo: imgElem as HTMLElement,
-          height: '85px',
-          width: '300px',
-          offsetY: offsetY,
-          content: contentEle,
-          viewPortElement: this.parent.element,
-          position: { X: 'center', Y: 'top' },
-          enableRtl: this.parent.enableRtl,
-          zIndex: 10001,
-          close: (event: { [key: string]: object }) => {
-              this.parent.isBlur = false;
-              popupObj.destroy();
-              detach(popupObj.element);
-          }
-      });
-      popupObj.element.style.display = 'none';
-      addClass([popupObj.element], [classes.CLS_POPUP_OPEN, classes.CLS_RTE_UPLOAD_POPUP]);
-      let timeOut: number = fileList.size > 1000000 ? 300 : 100;
-      setTimeout(() => { this.refreshPopup(imgElem as HTMLElement, popupObj); }, timeOut);
-      let rawFile: FileInfo[];
-      let beforeUploadArgs: ImageUploadingEventArgs;
-      let uploadObj: Uploader = new Uploader({
-        asyncSettings: {
-            saveUrl: this.parent.insertImageSettings.saveUrl
-        },
-        cssClass: classes.CLS_RTE_DIALOG_UPLOAD,
-        dropArea: this.parent.inputElement,
-        allowedExtensions: this.parent.insertImageSettings.allowedTypes.toString(),
-        success: (e: object) => {
-          setTimeout(() => { this.popupClose(popupObj, uploadObj, imgElem, e); }, 900); },
-        uploading: (e: UploadingEventArgs) => {
-          if (!this.parent.isServerRendered) {
-            this.parent.trigger(events.imageUploading, e);
-            this.parent.inputElement.contentEditable = 'false';
-          }
-        },
-        beforeUpload: (args: BeforeUploadEventArgs) => {
-          if (this.parent.isServerRendered) {
-              beforeUploadArgs = JSON.parse(JSON.stringify(args));
-              beforeUploadArgs.filesData = rawFile;
-              this.parent.trigger(events.imageUploading, beforeUploadArgs, (beforeUploadArgs: ImageUploadingEventArgs) => {
-                  if (beforeUploadArgs.cancel) { return; }
-                  /* tslint:disable */
-                  (this.uploadObj as any).uploadFiles(rawFile, null);
-                  /* tslint:enable */
-              });
-            } else {
-                this.parent.trigger(events.beforeImageUpload, args);
-            }
-       },
-        failure: (e: Object) => {
-          setTimeout(() => { this.uploadFailure(imgElem, uploadObj, popupObj, e); }, 900);
-        },
-        canceling: () => {
-          this.parent.inputElement.contentEditable = 'true';
-          if (imgElem.nextSibling.textContent === ' ') {
-            detach(imgElem.nextSibling);
-          }
-          detach(imgElem);
-          popupObj.close();
-        },
-        selected: (e: SelectedEventArgs) => {
-          e.cancel  = true;
-          if (this.parent.isServerRendered) {
-            rawFile = e.filesData;
+    let offsetY: number = this.parent.iframeSettings.enable ? -50 : -90;
+    let popupObj: Popup = new Popup(popupEle, {
+      relateTo: imgElem as HTMLElement,
+      height: '85px',
+      width: '300px',
+      offsetY: offsetY,
+      content: contentEle,
+      viewPortElement: this.parent.element,
+      position: { X: 'center', Y: 'top' },
+      enableRtl: this.parent.enableRtl,
+      zIndex: 10001,
+      close: (event: { [key: string]: object }) => {
+        this.parent.isBlur = false;
+        popupObj.destroy();
+        detach(popupObj.element);
+      }
+    });
+    popupObj.element.style.display = 'none';
+    addClass([popupObj.element], [classes.CLS_POPUP_OPEN, classes.CLS_RTE_UPLOAD_POPUP]);
+    let timeOut: number = fileList.size > 1000000 ? 300 : 100;
+    setTimeout(() => { this.refreshPopup(imgElem as HTMLElement, popupObj); }, timeOut);
+    let rawFile: FileInfo[];
+    let beforeUploadArgs: ImageUploadingEventArgs;
+    let uploadObj: Uploader = new Uploader({
+      asyncSettings: {
+        saveUrl: this.parent.insertImageSettings.saveUrl
+      },
+      cssClass: classes.CLS_RTE_DIALOG_UPLOAD,
+      dropArea: this.parent.inputElement,
+      allowedExtensions: this.parent.insertImageSettings.allowedTypes.toString(),
+      success: (e: object) => {
+        setTimeout(() => { this.popupClose(popupObj, uploadObj, imgElem, e); }, 900);
+      },
+      uploading: (e: UploadingEventArgs) => {
+        if (!this.parent.isServerRendered) {
+          this.parent.trigger(events.imageUploading, e);
+          this.parent.inputElement.contentEditable = 'false';
         }
-        },
-        removing: () => {
-          this.parent.inputElement.contentEditable = 'true';
-          if (imgElem.nextSibling.textContent === ' ') {
-            detach(imgElem.nextSibling);
-          }
-          detach(imgElem);
-          popupObj.close();
+      },
+      beforeUpload: (args: BeforeUploadEventArgs) => {
+        if (this.parent.isServerRendered) {
+          beforeUploadArgs = JSON.parse(JSON.stringify(args));
+          beforeUploadArgs.filesData = rawFile;
+          args.cancel = true;
+          this.parent.trigger(events.imageUploading, beforeUploadArgs, (beforeUploadArgs: ImageUploadingEventArgs) => {
+            if (beforeUploadArgs.cancel) { return; }
+            /* tslint:disable */
+            (uploadObj as any).currentRequestHeader = beforeUploadArgs.currentRequest ?
+              beforeUploadArgs.currentRequest : (uploadObj as any).currentRequestHeader;
+            (uploadObj as any).customFormDatas = beforeUploadArgs.customFormData && beforeUploadArgs.customFormData.length > 0 ?
+              beforeUploadArgs.customFormData : (uploadObj as any).customFormDatas;
+            (uploadObj as any).uploadFiles(rawFile, null);
+            /* tslint:enable */
+          });
+        } else {
+          this.parent.trigger(events.beforeImageUpload, args);
         }
-      });
-      uploadObj.appendTo(popupObj.element.childNodes[0] as HTMLElement);
+      },
+      failure: (e: Object) => {
+        setTimeout(() => { this.uploadFailure(imgElem, uploadObj, popupObj, e); }, 900);
+      },
+      canceling: () => {
+        this.parent.inputElement.contentEditable = 'true';
+        if (imgElem.nextSibling.textContent === ' ') {
+          detach(imgElem.nextSibling);
+        }
+        detach(imgElem);
+        popupObj.close();
+      },
+      selected: (e: SelectedEventArgs) => {
+        e.cancel = true;
+        if (this.parent.isServerRendered) {
+          rawFile = e.filesData;
+        }
+      },
+      removing: () => {
+        this.parent.inputElement.contentEditable = 'true';
+        if (imgElem.nextSibling.textContent === ' ') {
+          detach(imgElem.nextSibling);
+        }
+        detach(imgElem);
+        popupObj.close();
+      }
+    });
+    uploadObj.appendTo(popupObj.element.childNodes[0] as HTMLElement);
 
-      /* tslint:disable */
-      let fileData: any = [{
-          name: fileList.name,
-          rawFile: fileList,
-          size: fileList.size,
-          type: fileList.type,
-          validationMessages: { minSize: "", maxSize: "" },
-          statusCode: '1'
-      }];
-      (uploadObj as any).createFileList(fileData);
-      (uploadObj as any).filesData.push(fileData[0]);
-      /* tslint:enable */
-      uploadObj.upload(fileData);
-      (popupObj.element.getElementsByClassName('e-file-select-wrap')[0] as HTMLElement).style.display = 'none';
-      detach(popupObj.element.querySelector('.e-rte-dialog-upload .e-file-select-wrap') as HTMLElement);
+    /* tslint:disable */
+    let fileData: any = [{
+      name: fileList.name,
+      rawFile: fileList,
+      size: fileList.size,
+      type: fileList.type,
+      validationMessages: { minSize: "", maxSize: "" },
+      statusCode: '1'
+    }];
+    (uploadObj as any).createFileList(fileData);
+    (uploadObj as any).filesData.push(fileData[0]);
+    /* tslint:enable */
+    uploadObj.upload(fileData);
+    (popupObj.element.getElementsByClassName('e-file-select-wrap')[0] as HTMLElement).style.display = 'none';
+    detach(popupObj.element.querySelector('.e-rte-dialog-upload .e-file-select-wrap') as HTMLElement);
   }
   private uploadFailure(imgElem: Element, uploadObj: Uploader, popupObj: Popup, e: Object): void {
     this.parent.inputElement.contentEditable = 'true';
@@ -344,9 +350,9 @@ export class PasteCleanup {
     this.parent.inputElement.contentEditable = 'true';
     this.parent.trigger(events.imageUploadSuccess, e, (e: object) => {
       if (!isNullOrUndefined(this.parent.insertImageSettings.path)) {
-          let url: string = this.parent.insertImageSettings.path + (e as MetaData).file.name;
-          (imgElem as HTMLImageElement).src = url;
-          imgElem.setAttribute('alt', (e as MetaData).file.name);
+        let url: string = this.parent.insertImageSettings.path + (e as MetaData).file.name;
+        (imgElem as HTMLImageElement).src = url;
+        imgElem.setAttribute('alt', (e as MetaData).file.name);
       }
     });
     popupObj.close();
@@ -355,17 +361,17 @@ export class PasteCleanup {
   }
   private refreshPopup(imageElement: HTMLElement, popupObj: Popup): void {
     let imgPosition: number = this.parent.iframeSettings.enable ? this.parent.element.offsetTop +
-    imageElement.offsetTop : imageElement.offsetTop;
+      imageElement.offsetTop : imageElement.offsetTop;
     let rtePosition: number = this.parent.element.offsetTop + this.parent.element.offsetHeight;
     if (imgPosition > rtePosition) {
-        popupObj.relateTo = this.parent.inputElement;
-        popupObj.offsetY = this.parent.iframeSettings.enable ? -30 : -65;
-        popupObj.element.style.display = 'block';
+      popupObj.relateTo = this.parent.inputElement;
+      popupObj.offsetY = this.parent.iframeSettings.enable ? -30 : -65;
+      popupObj.element.style.display = 'block';
     } else {
-        if (popupObj) {
+      if (popupObj) {
         popupObj.refreshPosition(imageElement);
         popupObj.element.style.display = 'block';
-        }
+      }
     }
   }
   private base64ToFile(base64: string, filename: string): File {
@@ -376,14 +382,14 @@ export class PasteCleanup {
     let strLen: number = decodeStr.length;
     let decodeArr: Uint8Array = new Uint8Array(strLen);
     while (strLen--) {
-        decodeArr[strLen] = decodeStr.charCodeAt(strLen);
+      decodeArr[strLen] = decodeStr.charCodeAt(strLen);
     }
     if (Browser.isIE || navigator.appVersion.indexOf('Edge') > -1) {
-        let blob: Blob = new Blob([decodeArr], {type: extension});
-        extend(blob, { name: filename + '.' + (!isNOU(extension) ? extension : '') });
-        return blob as File;
+      let blob: Blob = new Blob([decodeArr], { type: extension });
+      extend(blob, { name: filename + '.' + (!isNOU(extension) ? extension : '') });
+      return blob as File;
     } else {
-        return new File([decodeArr], filename + '.' + (!isNOU(extension) ? extension : ''), {type: extension});
+      return new File([decodeArr], filename + '.' + (!isNOU(extension) ? extension : ''), { type: extension });
     }
   }
   /**
@@ -487,7 +493,7 @@ export class PasteCleanup {
       cssClass: CLS_RTE_DIALOG_MIN_HEIGHT,
       isModal: true
     };
-    let dialog: Dialog =  this.dialogRenderObj.render(dialogModel);
+    let dialog: Dialog = this.dialogRenderObj.render(dialogModel);
     let rteDialogWrapper: HTMLElement = this.parent.element.querySelector('#' + this.parent.getID()
       + '_pasteCleanupDialog');
     if (rteDialogWrapper !== null && rteDialogWrapper.innerHTML !== '') {
@@ -519,7 +525,7 @@ export class PasteCleanup {
 
   private formatting(value: string, clean: boolean, args: Object): void {
     let clipBoardElem: HTMLElement = this.parent.createElement(
-      'div', { className: 'pasteContent', styles: 'display:inline;'}) as HTMLElement;
+      'div', { className: 'pasteContent', styles: 'display:inline;' }) as HTMLElement;
     if (this.isNotFromHtml && this.containsHtml) {
       value = this.splitBreakLine(value);
     }
@@ -543,13 +549,13 @@ export class PasteCleanup {
     }
     this.addTempClass(clipBoardElem);
     if (clipBoardElem.textContent !== '' || !isNOU(clipBoardElem.querySelector('img')) ||
-    !isNOU(clipBoardElem.querySelector('table'))) {
+      !isNOU(clipBoardElem.querySelector('table'))) {
       this.parent.formatter.editorManager.execCommand(
         'inserthtml',
         'pasteCleanup',
         args,
         (returnArgs: IHtmlFormatterCallBack) => {
-          extend(args, {elements: returnArgs.elements, imageElements: returnArgs.imgElem}, true);
+          extend(args, { elements: returnArgs.elements, imageElements: returnArgs.imgElem }, true);
           this.parent.formatter.onSuccess(this.parent, args);
         },
         clipBoardElem
@@ -585,7 +591,7 @@ export class PasteCleanup {
   //Plain Formatting
   private plainFormatting(value: string, args: Object): void {
     let clipBoardElem: HTMLElement = this.parent.createElement(
-      'div', { className: 'pasteContent', styles: 'display:inline;'}) as HTMLElement;
+      'div', { className: 'pasteContent', styles: 'display:inline;' }) as HTMLElement;
     clipBoardElem.innerHTML = value;
     this.detachInlineElements(clipBoardElem);
     this.getTextContent(clipBoardElem);
@@ -594,7 +600,7 @@ export class PasteCleanup {
         let firstElm: Element | Node = clipBoardElem.firstElementChild;
         if (!isNOU(clipBoardElem.firstElementChild)) {
           let spanElm: HTMLElement = this.parent.createElement('span') as HTMLElement;
-          for (let i: number = 0, j: number = 0;  i < firstElm.childNodes.length; i++, j++) {
+          for (let i: number = 0, j: number = 0; i < firstElm.childNodes.length; i++, j++) {
             if (firstElm.childNodes[i].nodeName === '#text') {
               spanElm.appendChild(firstElm.childNodes[i]);
               clipBoardElem.insertBefore(spanElm, clipBoardElem.firstElementChild);
@@ -624,7 +630,7 @@ export class PasteCleanup {
         'pasteCleanup',
         args,
         (returnArgs: IHtmlFormatterCallBack) => {
-          extend(args, {elements: returnArgs.elements, imageElements: returnArgs.imgElem}, true);
+          extend(args, { elements: returnArgs.elements, imageElements: returnArgs.imgElem }, true);
           this.parent.formatter.onSuccess(this.parent, args);
         },
         clipBoardElem
@@ -632,7 +638,7 @@ export class PasteCleanup {
       this.removeTempClass();
     } else {
       this.saveSelection.restore();
-      extend(args, {elements: []}, true);
+      extend(args, { elements: [] }, true);
       this.parent.formatter.onSuccess(this.parent, args);
     }
   }
@@ -644,8 +650,9 @@ export class PasteCleanup {
         let parElem: HTMLElement;
         for (let k: number = 0, l: number = 0, preNode: string; k < inElem[j].childNodes.length; k++, l++) {
           if (inElem[j].childNodes[k].nodeName === 'DIV' || inElem[j].childNodes[k].nodeName === 'P' ||
-          (inElem[j].childNodes[k].nodeName === '#text' && (inElem[j].childNodes[k].nodeValue.replace(/\u00a0/g, '&nbsp;') !== '&nbsp;') &&
-          inElem[j].childNodes[k].textContent.trim() === '')) {
+            (inElem[j].childNodes[k].nodeName === '#text' &&
+            (inElem[j].childNodes[k].nodeValue.replace(/\u00a0/g, '&nbsp;') !== '&nbsp;') &&
+            inElem[j].childNodes[k].textContent.trim() === '')) {
             parElem = inElem[j].childNodes[k].parentElement;
             inElem[j].childNodes[k].parentElement.parentElement.insertBefore(
               inElem[j].childNodes[k], inElem[j].childNodes[k].parentElement);
@@ -656,7 +663,7 @@ export class PasteCleanup {
               let previousElem: Element = parElem.previousElementSibling;
               previousElem.appendChild(inElem[j].childNodes[k]);
             } else {
-              let divElement: HTMLElement = this.parent.createElement('div', { id: 'newDiv' } );
+              let divElement: HTMLElement = this.parent.createElement('div', { id: 'newDiv' });
               divElement.appendChild(inElem[j].childNodes[k]);
               parElem.parentElement.insertBefore(divElement, parElem);
             }
@@ -700,27 +707,27 @@ export class PasteCleanup {
   private findDetachEmptyElem(element: Element): HTMLElement {
     let removableElement: HTMLElement;
     if (!isNOU(element.parentElement)) {
-        if (element.parentElement.textContent.trim() === '' &&
+      if (element.parentElement.textContent.trim() === '' &&
         element.parentElement.getAttribute('class') !== 'pasteContent') {
-            removableElement = this.findDetachEmptyElem(element.parentElement);
-        } else {
-            removableElement = element as HTMLElement;
-        }
+        removableElement = this.findDetachEmptyElem(element.parentElement);
+      } else {
+        removableElement = element as HTMLElement;
+      }
     } else {
-        removableElement = null;
+      removableElement = null;
     }
     return removableElement;
   }
   private removeEmptyElements(element: HTMLElement): void {
-      let emptyElements: NodeListOf<Element> = element.querySelectorAll(':empty');
-      for (let i: number = 0; i < emptyElements.length; i++) {
-          if (emptyElements[i].tagName !== 'BR') {
-              let detachableElement: HTMLElement = this.findDetachEmptyElem(emptyElements[i]);
-              if (!isNOU(detachableElement)) {
-                detach(detachableElement);
-              }
-          }
+    let emptyElements: NodeListOf<Element> = element.querySelectorAll(':empty');
+    for (let i: number = 0; i < emptyElements.length; i++) {
+      if (emptyElements[i].tagName !== 'BR') {
+        let detachableElement: HTMLElement = this.findDetachEmptyElem(emptyElements[i]);
+        if (!isNOU(detachableElement)) {
+          detach(detachableElement);
+        }
       }
+    }
   }
 
   //GroupingTags
@@ -827,7 +834,7 @@ export class PasteCleanup {
       }
       styleElement[i].removeAttribute('style');
       allowedStyleValue = allowedStyleValueArray.join(';').trim() === '' ?
-      allowedStyleValueArray.join(';') : allowedStyleValueArray.join(';') + ';';
+        allowedStyleValueArray.join(';') : allowedStyleValueArray.join(';') + ';';
       if (allowedStyleValue) {
         styleElement[i].setAttribute('style', allowedStyleValue);
       }

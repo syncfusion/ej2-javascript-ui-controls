@@ -14,6 +14,10 @@
       .e-hierarchycheckbox {
         padding-left: 2px;
       }
+
+      .e-treecell {
+        line-height: $treegrid-bigger-icon-size;
+      }
     }
   }
 
@@ -114,7 +118,7 @@
 
     .e-treecell {
       display: table-cell;
-      line-height: normal;
+      line-height: $treegrid-smaller-icon-size;
     }
 
     .e-grid {

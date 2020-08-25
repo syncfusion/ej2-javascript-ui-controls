@@ -45260,6 +45260,7 @@ var FormFields = /** @__PURE__ @class */ (function () {
                 shapeAnnotationType: 'Path', opacity: 1, rotateAngle: 0, annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
             };
             this.pdfViewer.add(annot);
+            data.Bounds = annot.bounds;
             // tslint:disable-next-line
             var canvass = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + currentPage);
             // tslint:disable-next-line

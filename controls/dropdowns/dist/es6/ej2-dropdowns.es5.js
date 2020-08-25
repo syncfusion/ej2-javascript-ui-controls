@@ -8888,7 +8888,8 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         else if (!isNullOrUndefined(this.mainData) && this.mainData.length === 0) {
             this.mainData = list;
         }
-        if ((this.remoteCustomValue || list.length <= 0) && this.allowCustomValue && this.inputFocus && this.allowFiltering) {
+        if ((this.remoteCustomValue || list.length <= 0) && this.allowCustomValue && this.inputFocus && this.allowFiltering &&
+            this.inputElement.value && this.inputElement.value !== '') {
             this.checkForCustomValue(this.tempQuery, this.fields);
             return;
         }

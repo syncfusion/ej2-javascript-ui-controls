@@ -19,6 +19,7 @@ export class Selection {
     private actualTarget: EventTarget;
     private isInteracted: boolean;
     private prevRowIndex: number;
+    private selectedClass: HTMLElement;
     private multipleIndexes: number[] = [];
     public selectedRowIndexes: number[] = [];
     public enableSelectMultiTouch: boolean = false;
@@ -129,22 +130,20 @@ export class Selection {
         if (this.multipleIndexes.length !== 0) {
             index = this.multipleIndexes;
         } else {
-            if (this.isMultiCtrlRequest) {
-                index = args.rowIndex;
-            } else {
-                if (!isNullOrUndefined(args.rowIndexes)) {
-                    for (let i: number = 0; i < args.rowIndexes.length; i++) {
-                        if (args.rowIndexes[i] === args.rowIndex) {
-                            isContains = true;
-                        }
+            if (!isNullOrUndefined(args.rowIndexes)) {
+                for (let i: number = 0; i < args.rowIndexes.length; i++) {
+                    if (args.rowIndexes[i] === args.rowIndex) {
+                        isContains = true;
                     }
-                    if (isContains) {
-                        index = args.rowIndexes;
-                    }
-                 } else {
-                     index = args.rowIndex;
-                 }
-            }
+                }
+                if (isContains) {
+                    index = args.rowIndexes;
+                } else {
+                    index = args.rowIndex;
+                }
+             } else {
+                 index = args.rowIndex;
+             }
         }
         this.removeClass(index);
         this.selectedRowIndexes = extend([], this.getSelectedRowIndexes(), [], true) as number[];
@@ -211,6 +210,7 @@ export class Selection {
      */
     public selectRow(index: number, isToggle?: boolean, isPreventFocus?: boolean): void {
         let selectedRow: HTMLElement = this.parent.getRowByIndex(index);
+        let condition: boolean;
         if (index === -1 || isNullOrUndefined(selectedRow) || this.parent.selectionSettings.mode === 'Cell') {
             return;
         }
@@ -219,10 +219,16 @@ export class Selection {
         } else {
             this.parent.treeGrid.grid.selectionModule.preventFocus = false;
         }
-        this.parent.treeGrid.selectRow(index, isToggle);
+        if ((!isNullOrUndefined(this.selectedClass) && (this.selectedClass === selectedRow) && (!isToggle))) {
+            condition = true;
+        }
+        if (condition !== true) {
+            this.parent.treeGrid.selectRow(index, isToggle);
+        }
         this.parent.treeGrid.grid.selectionModule.preventFocus = this.parent.treeGrid.grid.selectionModule.preventFocus === true ?
             false : this.parent.treeGrid.grid.selectionModule.preventFocus;
         this.prevRowIndex = index;
+        this.selectedClass = selectedRow;
     }
 
     /**

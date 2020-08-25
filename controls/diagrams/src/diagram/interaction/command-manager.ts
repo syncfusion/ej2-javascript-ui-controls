@@ -2347,9 +2347,9 @@ export class CommandHandler {
     /**   @private  */
     public ismouseEvents(value: boolean): void {
         if (value) {
-            this.diagram.blazorActions = BlazorAction.interaction;
+            this.diagram.blazorActions = this.diagram.addConstraints(this.diagram.blazorActions, BlazorAction.interaction);
         } else {
-            this.diagram.blazorActions = ~BlazorAction.interaction;
+            this.diagram.blazorActions = this.diagram.removeConstraints(this.diagram.blazorActions, BlazorAction.interaction);
         }
     }
 
@@ -4495,14 +4495,23 @@ export class CommandHandler {
     public dataBinding(): void {
         this.diagram.dataBind();
     }
-
+    public setBlazorDiagramProps(arg: boolean): void {
+        this.diagram.setBlazorDiagramProps(arg);
+    }
     /** @private */
     public scroll(scrollX: number, scrollY: number, focusPoint?: PointModel): void {
         let panx: number = canPanX(this.diagram);
         let pany: number = canPanY(this.diagram);
-        this.diagram.pan(
-            (scrollX = panx ? scrollX : 0) * this.diagram.scroller.currentZoom,
+        if(isBlazor()){
+        this.diagram.setCursor('grabbing');
+        this.diagram.scroller.zoom(
+            1, (scrollX = panx ? scrollX : 0) * this.diagram.scroller.currentZoom,
             (scrollY = pany ? scrollY : 0) * this.diagram.scroller.currentZoom, focusPoint);
+        } else {
+            this.diagram.pan(
+                (scrollX = panx ? scrollX : 0) * this.diagram.scroller.currentZoom,
+                (scrollY = pany ? scrollY : 0) * this.diagram.scroller.currentZoom, focusPoint);    
+        }
     }
 
     /**

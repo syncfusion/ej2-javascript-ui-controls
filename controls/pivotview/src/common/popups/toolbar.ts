@@ -90,6 +90,12 @@ export class Toolbar {
             allowKeyboard: false,
         });
         this.toolbar.isStringTemplate = true;
+        let viewStr: string = 'viewContainerRef';
+        let registerTemp: string = 'registeredTemplate';
+        if ((this.parent as any)[viewStr]) {
+            (this.toolbar as any)[registerTemp] = {};
+            (this.toolbar as any)[viewStr] = (this.parent as any)[viewStr];
+        }
         if (this.parent.toolbarTemplate && typeof (this.parent.toolbarTemplate) === 'string') {
             this.toolbar.appendTo(this.parent.toolbarTemplate);
             this.parent.element.replaceChild(this.toolbar.element, this.parent.element.querySelector('.' + cls.GRID_TOOLBAR));
@@ -247,9 +253,10 @@ export class Toolbar {
                         (this.parent.element.querySelector('.e-toggle-field-list') as HTMLElement).style.display = 'none';
                     }
                     break;
-
-            } if (typeof (item) === 'object' && document.querySelector(item.template as string)) {
-                items.push(item);
+                default:
+                    if (typeof (item) === 'object') {
+                        items.push(item as ItemModel);
+                    }
             }
         }
         if (this.parent.showFieldList && toolbar.indexOf('FieldList') === -1 && (this.parent.element.querySelector('#' + this.parent.element.id + '_PivotFieldList') as HTMLElement) &&

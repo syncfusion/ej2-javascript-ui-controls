@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 18.2.55 (2020-08-25)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#288438` - Tooltip rendering issue has been fixed.
+- The issue of the bottom tire format in Chinese culture has been fixed.
+
 ## 18.2.48 (2020-08-04)
 
 ### Gantt

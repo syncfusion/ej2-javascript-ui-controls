@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 18.2.54 (2020-08-18)
+## 18.2.55 (2020-08-25)
+
+### Common
+
+#### Bug Fixes
+
+- `I281274` - Resolved `Dateformat` returns improper date value.
+
+## 18.2.47 (2020-07-28)
 
 ### Common
 

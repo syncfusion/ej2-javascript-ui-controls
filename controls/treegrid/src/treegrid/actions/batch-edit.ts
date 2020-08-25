@@ -404,7 +404,7 @@ export class BatchEdit {
     this.batchRecords = extendArray(this.parent.grid.getCurrentViewRecords()); this.batchIndex = 0;
     this.currentViewRecords = extendArray(this.parent.grid.getCurrentViewRecords());
     this.batchDeletedRecords = [];
-    this.parent.refresh();
+    this.parent.grid.renderModule.refresh();
   }
 
 private batchSave(args: SaveEventArgs): void {

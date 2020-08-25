@@ -163,7 +163,7 @@ export class ViewSource {
         this.previewElement.focus();
         this.parent.updateValue();
         if (!isNullOrUndefined(this.parent.placeholder) && !this.parent.iframeSettings.enable) {
-            let placeHolderWrapper: HTMLElement = this.parent.element.querySelector('.rte-placeholder') as HTMLElement;
+            let placeHolderWrapper: HTMLElement = this.parent.element.querySelector('.rte-placeholder.e-rte-placeholder') as HTMLElement;
             placeHolderWrapper.style.display = 'none';
         }
         this.parent.trigger(events.actionComplete, { requestType: 'SourceCode', targetItem: 'SourceCode', args: args });
@@ -204,7 +204,7 @@ export class ViewSource {
         (this.contentModule.getEditPanel() as HTMLElement).focus();
         this.parent.updateValue();
         if (!isNullOrUndefined(this.parent.placeholder) && (this.contentModule.getEditPanel() as HTMLElement).innerText.length === 0) {
-            let placeHolderWrapper: HTMLElement = this.parent.element.querySelector('.rte-placeholder') as HTMLElement;
+            let placeHolderWrapper: HTMLElement = this.parent.element.querySelector('.rte-placeholder.e-rte-placeholder') as HTMLElement;
             placeHolderWrapper.style.display = 'block';
         }
         this.parent.trigger(events.actionComplete, { requestType: 'Preview', targetItem: 'Preview', args: args });

@@ -1362,13 +1362,7 @@ var Render = /** @__PURE__ @class */ (function () {
                 else {
                     expand = !(!data.expanded || !getExpandStatus(this.parent, data, this.parent.grid.getCurrentViewRecords()));
                 }
-                var collapsed$$1 = true;
-                if (!isNullOrUndefined(data.parentItem) && (!isNullOrUndefined(data[this.parent.expandStateMapping])
-                    && data[this.parent.expandStateMapping])
-                    && !(this.parent.allowPaging && !(this.parent.pageSettings.pageSizeMode === 'Root'))) {
-                    collapsed$$1 = !getExpandStatus(this.parent, args.data, this.parent.grid.getCurrentViewRecords());
-                }
-                addClass([expandIcon], (expand && collapsed$$1) ? 'e-treegridexpand' : 'e-treegridcollapse');
+                addClass([expandIcon], (expand) ? 'e-treegridexpand' : 'e-treegridcollapse');
                 totalIconsWidth += 18;
                 container.appendChild(expandIcon);
                 emptyExpandIcon.style.width = '7px';
@@ -4751,6 +4745,8 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             }
             if (this.isPixelHeight() && !row.cells[0].classList.contains('e-lastrowcell')) {
                 var totalRows = this.getRows();
+                var rows = this.getContentTable().rows;
+                totalRows = [].slice.call(rows);
                 for (var i = totalRows.length - 1; i > 0; i--) {
                     if (!isHidden(totalRows[i])) {
                         var table = this.getContentTable();
@@ -8673,7 +8669,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         this.batchIndex = 0;
         this.currentViewRecords = extendArray(this.parent.grid.getCurrentViewRecords());
         this.batchDeletedRecords = [];
-        this.parent.refresh();
+        this.parent.grid.renderModule.refresh();
     };
     BatchEdit.prototype.batchSave = function (args) {
         if (this.parent.editSettings.mode === 'Batch') {

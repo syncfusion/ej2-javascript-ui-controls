@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.2.55 (2020-08-25)
+
+### TreeGrid
+
+#### Bug Fixes
+
+- `#287235` - While enabling expand state mapping the Expand / Collapse icon works fine at nested child levels.
+
 ## 18.2.54 (2020-08-18)
 
 ### TreeGrid

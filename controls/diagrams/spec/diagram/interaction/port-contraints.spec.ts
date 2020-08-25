@@ -368,7 +368,8 @@ describe('Diagram Control', () => {
             diagram.copy();
             diagram.paste();
             diagram.undo();
-            expect(document.getElementById("groupgroup_container_groupElement").children.length).toEqual(6)
+            expect(document.getElementById("groupgroup_container_groupElement").children.length).toEqual(2);
+            expect(document.getElementById(diagram.element.id + "_diagramPorts").children.length).toEqual(4);
             done();
         });
     });

@@ -6014,7 +6014,10 @@ var ColorPicker = /** @class */ (function (_super) {
         sf.base.attributes(this.element, { 'value': this.initialInputValue });
     };
     ColorPicker.prototype.addCtrlSwitchEvent = function () {
-        sf.base.EventHandler.add(sf.base.select('.' + CTRLSWITCH, this.container), 'click', this.btnClickHandler, this);
+        var ctrlSwitchBtn = sf.base.select('.' + CTRLSWITCH, this.container);
+        if (ctrlSwitchBtn) {
+            sf.base.EventHandler.add(ctrlSwitchBtn, 'click', this.btnClickHandler, this);
+        }
     };
     ColorPicker.prototype.pickerKeyDown = function (e) {
         switch (e.keyCode) {

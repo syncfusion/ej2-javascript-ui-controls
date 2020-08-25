@@ -45,6 +45,7 @@ export class EditSettings extends ChildProperty<EditSettings> {
      * * Above
      * * Below
      * * Child
+     * {% codeBlock src='treegrid/newRowPosition/index.md' %}{% endcodeBlock %}
      * @default Top 
      */
     @Property('Top')

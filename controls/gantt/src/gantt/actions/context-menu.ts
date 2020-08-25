@@ -379,7 +379,7 @@ export class ContextMenu {
             text: text,
             id: this.generateID(item),
             target: target,
-            iconCss: iconCss ? 'e-icons ' + iconCss : ''
+            iconCss: iconCss ? 'e-icons ' + iconCss : null
         };
         return itemModel;
     }

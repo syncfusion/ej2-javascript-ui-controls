@@ -1902,7 +1902,6 @@ export class DocumentHelper {
                 this.owner.imageResizerModule.mouseUpInternal();
                 this.scrollToPosition(this.owner.selection.start, this.owner.selection.end);
                 this.owner.imageResizerModule.isImageResizing = false;
-                this.owner.imageResizerModule.updateHistoryForImageResizer();
             }
             // tslint:disable-next-line:max-line-length
             if (this.owner.enableImageResizerMode && this.owner.imageResizerModule.isImageResizerVisible && !isNullOrUndefined(this.selection.caret)) {
@@ -2217,7 +2216,6 @@ export class DocumentHelper {
                 this.owner.imageResizerModule.isImageResizing = false;
                 this.owner.imageResizerModule.isImageMoveToNextPage = false;
                 this.scrollToPosition(this.owner.selection.start, this.owner.selection.end);
-                this.owner.imageResizerModule.updateHistoryForImageResizer();
             }
             // tslint:disable-next-line:max-line-length
             if (this.owner.enableImageResizerMode && this.owner.imageResizerModule.isImageResizerVisible && this.isTouchInput) {

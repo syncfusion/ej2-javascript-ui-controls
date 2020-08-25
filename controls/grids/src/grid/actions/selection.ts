@@ -132,6 +132,7 @@ export class Selection implements IAction {
     private cellselected: boolean = false;
     private isMultiSelection: boolean = false;
     private isAddRowsToSelection: boolean = false;
+    private initialRowSelection: boolean = false;
     /**
      * @hidden
      */
@@ -2452,7 +2453,7 @@ export class Selection implements IAction {
         if (this.parent.enableVirtualization) {
             this.setCheckAllState();
         }
-        if (this.parent.isCheckBoxSelection) {
+        if (this.parent.isCheckBoxSelection && !this.initialRowSelection) {
             let totalRecords: Row<Column>[] = this.parent.getRowsObject();
             let indexes: number[] = [];
             for (let i: number = 0; i < totalRecords.length; i++) {
@@ -2460,7 +2461,10 @@ export class Selection implements IAction {
                     indexes.push(i);
                 }
             }
-            this.selectRows(indexes);
+            if (indexes.length) {
+                this.selectRows(indexes);
+            }
+            this.initialRowSelection = true;
         }
     }
 
@@ -2576,7 +2580,8 @@ export class Selection implements IAction {
         } else {
             rIndex = parseInt(target.parentElement.getAttribute('aria-rowindex'), 10);
         }
-        if (this.parent.isPersistSelection && this.parent.element.querySelectorAll('.e-addedrow').length > 0) {
+        if (this.parent.isPersistSelection && this.parent.element.querySelectorAll('.e-addedrow').length > 0 &&
+            this.parent.editSettings.newRowPosition === 'Top') {
             ++rIndex;
         }
         this.rowCellSelectionHandler(rIndex, parseInt(target.getAttribute('aria-colindex'), 10));

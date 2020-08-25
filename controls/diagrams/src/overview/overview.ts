@@ -1,8 +1,8 @@
 import { Diagram } from '../diagram/diagram';
-import { RenderingMode } from '../diagram/enum/enum';
+import { RenderingMode, RealAction } from '../diagram/enum/enum';
 import { DiagramRenderer } from '../diagram/rendering/renderer';
 import { CanvasRenderer } from '../diagram/rendering/canvas-renderer';
-import { INotifyPropertyChanged, Component, Property, Browser, EventHandler, Event, EmitType } from '@syncfusion/ej2-base';
+import { INotifyPropertyChanged, Component, Property, Browser, EventHandler, Event, EmitType, isBlazor } from '@syncfusion/ej2-base';
 import { setAttributeHtml, setAttributeSvg, createHtmlElement, getHTMLLayer } from '../diagram/utility/dom-util';
 import { createSvgElement, getNativeLayer, hasClass } from '../diagram/utility/dom-util';
 import { Rect } from '../diagram/primitives/rect';
@@ -670,10 +670,16 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
             delx = -hoffset - this.parent.scroller.horizontalOffset;
             dely = -voffset - this.parent.scroller.verticalOffset;
         }
+        this.parent.setBlazorDiagramProps(true);
+        this.parent.realActions |=   RealAction.OverViewAction;
         if (this.actionName === 'scale' || this.actionName === 'draw') {
             this.parent.scroller.zoom(zoom / this.parent.scroller.currentZoom, delx, dely, focusPoint);
         } else {
-            this.parent.pan(delx, dely, focusPoint);
+            if (!isBlazor()) {
+                this.parent.pan(delx, dely, focusPoint);
+            } else {
+                this.parent.scroller.zoom(1, delx, dely, focusPoint);
+            }
         }
     }
 

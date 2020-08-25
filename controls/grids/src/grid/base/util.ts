@@ -1017,7 +1017,7 @@ export function getEditedDataIndex(gObj: IGrid, data: Object): number {
 /** @hidden */
 export function eventPromise(args: Object, query: Query): FilterStateObj {
     let state: DataStateChangeEventArgs;
-    state = this.getStateEventArgument(query);
+    state = getStateEventArgument(query);
     let def: Deferred = new Deferred();
     state.dataSource = def.resolve;
     state.action = args;

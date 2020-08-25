@@ -422,13 +422,15 @@ class SfToolbar {
         this.popupPriCount = 0;
         let width: string = formatUnit(this.options.width);
         let height: string = formatUnit(this.options.height);
-        if (Browser.info.name !== 'msie' || this.options.height !== 'auto') {
-            setStyle(this.element, { 'height': height });
+        if (this.element) {
+            if (Browser.info.name !== 'msie' || this.options.height !== 'auto') {
+                setStyle(this.element, { 'height': height });
+            }
+            setStyle(this.element, { 'width': width });
+            this.element.setAttribute('aria-haspopup', 'false');
+            this.renderControl();
+            this.wireEvents();
         }
-        setStyle(this.element, { 'width': width });
-        this.element.setAttribute('aria-haspopup', 'false');
-        this.renderControl();
-        this.wireEvents();
     }
     private renderControl(): void {
         this.tbarAlgEle = { lefts: [], centers: [], rights: [] };

@@ -981,9 +981,10 @@ export class MultiSelect extends DropDownBase implements IInput {
         } else if (!isNullOrUndefined(this.mainData) && this.mainData.length === 0) {
             this.mainData = list;
         }
-        if ((this.remoteCustomValue || list.length <= 0) && this.allowCustomValue && this.inputFocus && this.allowFiltering) {
-            this.checkForCustomValue(this.tempQuery, this.fields);
-            return;
+        if ((this.remoteCustomValue || list.length <= 0) && this.allowCustomValue && this.inputFocus && this.allowFiltering &&
+             this.inputElement.value && this.inputElement.value !== '') {
+             this.checkForCustomValue(this.tempQuery, this.fields);
+             return;
         }
         if (this.value && this.value.length && ((this.mode !== 'CheckBox' && this.inputElement.value !== '') ||
             this.mode === 'CheckBox')) {

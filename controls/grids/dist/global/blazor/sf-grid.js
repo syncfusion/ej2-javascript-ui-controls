@@ -2665,7 +2665,7 @@ var ColumnMenu = /** @class */ (function () {
         this.key = key;
         this.uid = uid;
         var e = this.parent.getColumnHeaderByUid(uid).querySelector('.e-columnmenu');
-        var columnMenuElement = document.getElementsByClassName('e-grid-column-menu')[0];
+        var columnMenuElement = document.getElementsByClassName("e-" + this.parent.element.id + "-column-menu")[0];
         var element = columnMenuElement.getElementsByTagName('ul')[0];
         if (!sf.base.isNullOrUndefined(element)) {
             var pos = { top: 0, left: 0 };
@@ -2737,7 +2737,7 @@ var Filter = /** @class */ (function () {
             if (isColumnMenu) {
                 sf.base.EventHandler.add(dlgelement, 'mousedown', this.mouseDownHandler, this);
                 dlgelement.style.maxHeight = type == 'excel' ? '800px' : '350px';
-                var element = document.getElementsByClassName('e-grid-column-menu')[0].getElementsByTagName('ul')[0];
+                var element = document.getElementsByClassName("e-" + this.parent.element.id + "-column-menu")[0].getElementsByTagName('ul')[0];
                 var li = element.querySelector('.' + 'e-icon-filter').parentElement;
                 var ul = this.parent.element.querySelector('.' + 'e-filter-popup');
                 var gridPos = this.parent.element.getBoundingClientRect();
@@ -3408,6 +3408,7 @@ var RowDD = /** @class */ (function () {
         this.helper = function (e) {
             var gObj = _this.parent;
             var target = _this.draggable.currentStateTarget;
+            e.sender.target.blur(); //https://github.com/dotnet/aspnetcore/issues/17926
             var visualElement = sf.base.createElement('div', {
                 className: 'e-cloneproperties e-draganddrop e-grid e-dragclone',
                 styles: 'height:"auto", z-index:2, width:' + gObj.element.offsetWidth
@@ -5018,7 +5019,7 @@ var SfGrid = /** @class */ (function () {
     SfGrid.prototype.documentClickHandler = function (e) {
         var popupElement = parentsUntil(e.target, 'e-popup-open');
         var CCButton = parentsUntil(e.target, 'e-cc-toolbar');
-        if (!popupElement && !(e.target.classList.contains('e-fltrcheck')) && !(e.target.classList.contains('e-icon-filter')) && !CCButton && (this.element.querySelectorAll('.e-filter-popup.e-popup-open').length || this.element.querySelectorAll('.e-ccdlg.e-popup-open').length)) {
+        if (!popupElement && !(e.target.classList.contains('e-cc-cancel')) && !(e.target.classList.contains('e-choosercheck')) && !(e.target.classList.contains('e-fltrcheck')) && !(e.target.classList.contains('e-icon-filter')) && !CCButton && (this.element.querySelectorAll('.e-filter-popup.e-popup-open').length || this.element.querySelectorAll('.e-ccdlg.e-popup-open').length)) {
             this.dotNetRef.invokeMethodAsync('FilterPopupClose');
         }
     };
@@ -5037,8 +5038,8 @@ var SfGrid = /** @class */ (function () {
         });
     };
     SfGrid.prototype.gridKeyDownHandler = function (e) {
-        var popupElement = parentsUntil(e.target, 'e-popup-open');
-        if (popupElement && e.key != 'Escape') {
+        var popupElement = parentsUntil(e.target, 'e-filter-popup');
+        if (!sf.base.isNullOrUndefined(popupElement) && popupElement.classList.contains('e-popup-open') && e.key != 'Escape') {
             e.stopPropagation();
             if ((e.key == "Tab" || e.key == "shiftTab" || e.key == "Enter" || e.key == "shiftEnter") &&
                 e.target.tagName == "INPUT") {
@@ -5164,7 +5165,7 @@ var SfGrid = /** @class */ (function () {
         if (this.options.enableVirtualization && (this.options.pageSize === 12 || this.options.width === 'auto')) {
             this.virtualContentModule.ensurePageSize();
         }
-        if (this.options.columns.some(function (col) { return col.hideAtMedia !== ''; })) {
+        if (this.getColumns().some(function (col) { return col.hideAtMedia !== ''; })) {
             this.columnChooserModule.setMediaColumns();
         }
     };

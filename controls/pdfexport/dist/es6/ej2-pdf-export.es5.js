@@ -5512,7 +5512,9 @@ var StringTokenizer = /** @__PURE__ @class */ (function () {
                 case '\n': {
                     var text = this.text.substring(this.currentPosition, pos - this.currentPosition);
                     this.currentPosition = pos + 1;
-                    this.currentPosition++;
+                    if (((ch === '\r') && (this.currentPosition < this.length)) && (this.text[this.currentPosition] === '\n')) {
+                        this.currentPosition++;
+                    }
                     return text;
                 }
             }
@@ -5520,7 +5522,7 @@ var StringTokenizer = /** @__PURE__ @class */ (function () {
         }
         // The remaining text.
         if (pos > this.currentPosition) {
-            var text2 = this.text.substring(this.currentPosition, pos - this.currentPosition);
+            var text2 = this.text.substr(this.currentPosition, pos - this.currentPosition);
             this.currentPosition = pos;
             return text2;
         }

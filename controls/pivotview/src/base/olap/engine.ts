@@ -2408,6 +2408,23 @@ export class OlapEngine {
             this.tupRowInfo[pivotValue.rowOrdinal].uNameCollection.split('::[').map((item: string) => {
                 return item[0] === '[' ? item : ('[' + item);
             }) : [];
+        let filters: IFilter[] | string[];
+        let filteritems: string[] = [];
+        let filterQuery: string = '';
+        for (let i: number = 0; i < this.filters.length; i++) {
+            filters = this.filterMembers[this.filters[i].name];
+            if (filters) {
+                for (let j: number = 0; j < filters.length; j++) {
+                    filterQuery = filterQuery + filters[j];
+                    filterQuery = j < filters.length - 1 ? filterQuery + ',' : filterQuery + '';
+                }
+                filteritems[i] = filterQuery;
+                filterQuery = '';
+            }
+        }
+        for (let i: number = 0; i < filteritems.length; i++) {
+            filterQuery = filterQuery === '' ? '{' + filteritems[i] + '}' : (filterQuery + ',' + '{' + filteritems[i] + '}');
+        }
         let columnQuery: string = ''; let rowQuery: string = '';
         for (let i: number = 0; i < column.length; i++) {
             columnQuery = (columnQuery.length > 0 ? (columnQuery + ',') : '') + (column[i].split('~~').length > 1 ?
@@ -2418,8 +2435,9 @@ export class OlapEngine {
                 row[i].split('~~')[row[i].split('~~').length - 1] : row[i]);
         }
         let drillQuery: string = 'DRILLTHROUGH MAXROWS ' + maxRows + ' Select(' + (columnQuery.length > 0 ? columnQuery : '') +
-            (columnQuery.length > 0 && rowQuery.length > 0 ? ',' : '') + (rowQuery.length > 0 ? rowQuery : '') + ') on 0 from [' +
-            this.dataSourceSettings.cube + ']';
+            (columnQuery.length > 0 && rowQuery.length > 0 ? ',' : '') + (rowQuery.length > 0 ? rowQuery : '') + ') on 0 from ' +
+            (filterQuery === '' ? '[' + this.dataSourceSettings.cube + ']' : '(SELECT (' + filterQuery + ') ON COLUMNS FROM [' +
+                this.dataSourceSettings.cube + '])');
         drillQuery = drillQuery.replace(/&/g, '&amp;');
         let xmla: string = this.getSoapMsg(this.dataSourceSettings, drillQuery);
         let connectionString: ConnectionInfo =

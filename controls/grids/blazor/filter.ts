@@ -25,7 +25,7 @@ export class Filter {
             if (isColumnMenu) {
                 EventHandler.add(dlgelement,'mousedown', this.mouseDownHandler, this);
                 dlgelement.style.maxHeight = type == 'excel' ? '800px' : '350px';
-                let element: Element = document.getElementsByClassName('e-grid-column-menu')[0].getElementsByTagName('ul')[0];
+                let element: Element = document.getElementsByClassName(`e-${this.parent.element.id}-column-menu`)[0].getElementsByTagName('ul')[0];
                 let li: Element = element.querySelector('.' + 'e-icon-filter').parentElement;
                 let ul: HTMLElement = this.parent.element.querySelector('.' + 'e-filter-popup');
                 let gridPos: ClientRect = this.parent.element.getBoundingClientRect();

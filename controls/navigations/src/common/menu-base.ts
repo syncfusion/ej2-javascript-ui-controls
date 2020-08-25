@@ -1452,10 +1452,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                                 }
                                 this.isClosed = true;
                                 this.keyType = 'click';
+                                if (this.showItemOnClick) { this.setLISelected(cli); }
                                 this.closeMenu(culIdx + 1, e);
-                                if (this.showItemOnClick) {
-                                    this.setLISelected(cli);
-                                }
+                                if (this.showItemOnClick) { this.setLISelected(cli); }
                             }
                         }
                         if (!this.isClosed) {

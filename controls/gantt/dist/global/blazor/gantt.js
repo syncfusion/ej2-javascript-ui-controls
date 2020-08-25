@@ -178,7 +178,7 @@ var DateProcessor = /** @class */ (function () {
      * @param ganttProp
      * @private
      */
-    DateProcessor.prototype.checkEndDate = function (date, ganttProp) {
+    DateProcessor.prototype.checkEndDate = function (date, ganttProp, validateAsMilestone) {
         if (sf.base.isNullOrUndefined(date)) {
             return null;
         }
@@ -187,7 +187,7 @@ var DateProcessor = /** @class */ (function () {
         if (hour > this.parent.defaultEndTime) {
             this.setTime(this.parent.defaultEndTime, cloneEndDate);
         }
-        else if (hour <= this.parent.defaultStartTime) {
+        else if (hour <= this.parent.defaultStartTime && !validateAsMilestone) {
             cloneEndDate.setDate(cloneEndDate.getDate() - 1);
             this.setTime(this.parent.defaultEndTime, cloneEndDate);
         }
@@ -1892,7 +1892,9 @@ var TaskProcessor = /** @class */ (function (_super) {
         if (endDate.getHours() === 0 && this.parent.defaultEndTime !== 86400) {
             this.setTime(this.parent.defaultEndTime, endDate);
         }
-        this.parent.setRecordValue('endDate', this.checkEndDate(endDate, ganttData.ganttProperties), ganttProperties, true);
+        var validateAsMilestone = (parseInt(duration, 10) === 0) ? true : null;
+        /* tslint:disable-next-line */
+        this.parent.setRecordValue('endDate', this.checkEndDate(endDate, ganttData.ganttProperties, validateAsMilestone), ganttProperties, true);
         if (sf.base.isNullOrUndefined(duration) || duration === '') {
             if (this.parent.allowUnscheduledTasks) {
                 this.parent.setRecordValue('startDate', null, ganttProperties, true);
@@ -1910,7 +1912,10 @@ var TaskProcessor = /** @class */ (function (_super) {
     };
     TaskProcessor.prototype.calculateDateFromStartDate = function (startDate, endDate, duration, ganttData) {
         var ganttProperties = ganttData.ganttProperties;
-        this.parent.setRecordValue('startDate', this.checkStartDate(startDate, ganttProperties), ganttProperties, true);
+        var validateAsMilestone = (parseInt(duration, 10) === 0 || ((startDate && endDate) &&
+            (new Date(startDate.getTime()) === new Date(endDate.getTime())))) ? true : null;
+        /* tslint:disable-next-line */
+        this.parent.setRecordValue('startDate', this.checkStartDate(startDate, ganttProperties, validateAsMilestone), ganttProperties, true);
         if (!endDate && (sf.base.isNullOrUndefined(duration) || duration === '')) {
             if (this.parent.allowUnscheduledTasks) {
                 this.parent.setRecordValue('endDate', null, ganttProperties, true);
@@ -3360,7 +3365,9 @@ var GanttChart = /** @class */ (function () {
         if (rangeContainer$$1) {
             rangeContainer$$1.innerHTML = '';
         }
-        this.renderRangeContainer(this.parent.flatData);
+        if (this.parent.treeGrid.grid.filterSettings.columns.length === 0) {
+            this.renderRangeContainer(this.parent.flatData);
+        }
     };
     GanttChart.prototype.renderChartElements = function () {
         this.parent.chartRowsModule.renderChartRows();
@@ -3379,11 +3386,13 @@ var GanttChart = /** @class */ (function () {
         var count;
         var ganttRecord;
         var rangeCollection;
-        for (count = 0; count < recordLength; count++) {
-            ganttRecord = records[count];
-            rangeCollection = ganttRecord.ganttProperties.workTimelineRanges;
-            if (rangeCollection) {
-                this.renderRange(rangeCollection, ganttRecord);
+        if (this.parent.treeGrid.grid.filterSettings.columns.length === 0) {
+            for (count = 0; count < recordLength; count++) {
+                ganttRecord = records[count];
+                rangeCollection = ganttRecord.ganttProperties.workTimelineRanges;
+                if (rangeCollection) {
+                    this.renderRange(rangeCollection, ganttRecord);
+                }
             }
         }
     };
@@ -4512,7 +4521,9 @@ var Timeline = /** @class */ (function () {
             requestType: 'beforeZoomToProject',
             timeline: newTimeline
         };
-        this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomin', this.parent.controlId + '_zoomout'], true);
+        if (this.parent.toolbarModule) {
+            this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomin', this.parent.controlId + '_zoomout'], true);
+        }
         this.parent.trigger('actionBegin', args);
     };
     Timeline.prototype.roundOffDateToZoom = function (date, isStartDate, perDayWidth, tierMode) {
@@ -5015,8 +5026,13 @@ var Timeline = /** @class */ (function () {
         var dateString;
         switch (dayFormat) {
             case '':
-                dateString = this.parent.globalize.formatDate(date, { format: 'EEEEE' });
-                dateString = dateString.slice(0, 1);
+                dateString = this.parent.globalize.formatDate(date, { format: 'E' });
+                if (this.parent.locale === 'zh') {
+                    dateString = dateString.slice(1);
+                }
+                else {
+                    dateString = dateString.slice(0, 1);
+                }
                 break;
             default:
                 dateString = this.parent.globalize.formatDate(date, { format: dayFormat });
@@ -10336,7 +10352,8 @@ var Gantt = /** @class */ (function (_super) {
                 this.expandCollapseKey(e);
                 break;
             case 'saveRequest':
-                if (this.editModule.cellEditModule.isCellEdit) {
+                if (!sf.base.isNullOrUndefined(this.editModule) && !sf.base.isNullOrUndefined(this.editModule.cellEditModule) &&
+                    this.editModule.cellEditModule.isCellEdit) {
                     var col = this.editModule.cellEditModule.editedColumn;
                     if (col.field === this.columnMapping.duration && !sf.base.isNullOrUndefined(col.edit) && !sf.base.isNullOrUndefined(col.edit.read)) {
                         var textBox = e.target.ej2_instances[0];
@@ -10353,9 +10370,6 @@ var Gantt = /** @class */ (function (_super) {
                             }
                         }
                     }
-                }
-                if (!sf.base.isNullOrUndefined(this.editModule) && !sf.base.isNullOrUndefined(this.editModule.cellEditModule) &&
-                    this.editModule.cellEditModule.isCellEdit === true) {
                     if (this.editModule.dialogModule.dialogObj && sf.base.getValue('dialogOpen', this.editModule.dialogModule.dialogObj)) {
                         return;
                     }
@@ -11318,6 +11332,7 @@ var Gantt = /** @class */ (function (_super) {
                 this[modules[i]] = null;
             }
         }
+        this.keyboardModule.destroy();
         _super.prototype.destroy.call(this);
         this.chartVerticalLineContainer = null;
         this.element.innerHTML = '';
@@ -12178,7 +12193,9 @@ var Gantt = /** @class */ (function (_super) {
      * To update existing taskId with new unique Id.
      */
     Gantt.prototype.updateTaskId = function (currentId, newId) {
-        this.editModule.updateTaskId(currentId, newId);
+        if (this.editModule && this.editSettings.allowEditing) {
+            this.editModule.updateTaskId(currentId, newId);
+        }
     };
     /**
      * Public method to expand particular level of rows.
@@ -13688,8 +13705,24 @@ var EditTooltip = /** @class */ (function () {
             };
             _this.parent.trigger('beforeTooltipRender', argsData);
         };
+        this.toolTipObj.afterOpen = function (args) {
+            _this.updateTooltipPosition(args);
+        };
         this.toolTipObj.isStringTemplate = true;
         this.toolTipObj.appendTo(this.parent.chartPane);
+    };
+    /**
+     * Method to update tooltip position
+     * @param args
+     */
+    EditTooltip.prototype.updateTooltipPosition = function (args) {
+        var containerPosition = this.parent.getOffsetRect(this.parent.chartPane);
+        var leftEnd = containerPosition.left + this.parent.chartPane.offsetWidth;
+        var tooltipPositionX = args.element.offsetLeft;
+        if (leftEnd < (tooltipPositionX + args.element.offsetWidth)) {
+            tooltipPositionX += leftEnd - (tooltipPositionX + args.element.offsetWidth);
+        }
+        args.element.style.left = tooltipPositionX + 'px';
     };
     /**
      * To show/hide taskbar edit tooltip.
@@ -15096,6 +15129,10 @@ var TaskbarEdit = /** @class */ (function () {
                 var table = this.parent.connectorLineModule.tooltipTable.querySelector('#toPredecessor').querySelectorAll('td');
                 table[1].innerText = toItem.taskName;
                 table[2].innerText = currentTarget;
+                var tooltipElement = this.parent.connectorLineModule.tooltipTable.parentElement.parentElement;
+                if (tooltipElement.offsetTop + tooltipElement.offsetHeight > e.pageY) {
+                    tooltipElement.style.top = (e.pageY - tooltipElement.offsetHeight - 20) + 'px';
+                }
             }
             this.drawPredecessor = true;
         }
@@ -19671,7 +19708,9 @@ var Edit$2 = /** @class */ (function () {
         this.parent.updatedConnectorLineCollection = [];
         this.parent.connectorLineIds = [];
         this.parent.predecessorModule.createConnectorLinesCollection(this.parent.flatData);
-        // this.parent.connectorLineEditModule.refreshEditedRecordConnectorLine(flatData);
+        if (this.parent.taskFields.dependency) {
+            this.parent.predecessorModule.updatedRecordsDateByPredecessor();
+        }
         this.parent.treeGrid.refresh();
         // Trigger actioncomplete event for delete action
         eventArgs.requestType = 'delete';
@@ -21331,23 +21370,21 @@ var Selection$1 = /** @class */ (function () {
             index = this.multipleIndexes;
         }
         else {
-            if (this.isMultiCtrlRequest) {
-                index = args.rowIndex;
-            }
-            else {
-                if (!sf.base.isNullOrUndefined(args.rowIndexes)) {
-                    for (var i = 0; i < args.rowIndexes.length; i++) {
-                        if (args.rowIndexes[i] === args.rowIndex) {
-                            isContains = true;
-                        }
+            if (!sf.base.isNullOrUndefined(args.rowIndexes)) {
+                for (var i = 0; i < args.rowIndexes.length; i++) {
+                    if (args.rowIndexes[i] === args.rowIndex) {
+                        isContains = true;
                     }
-                    if (isContains) {
-                        index = args.rowIndexes;
-                    }
+                }
+                if (isContains) {
+                    index = args.rowIndexes;
                 }
                 else {
                     index = args.rowIndex;
                 }
+            }
+            else {
+                index = args.rowIndex;
             }
         }
         this.removeClass(index);
@@ -21413,6 +21450,7 @@ var Selection$1 = /** @class */ (function () {
      */
     Selection$$1.prototype.selectRow = function (index, isToggle, isPreventFocus) {
         var selectedRow = this.parent.getRowByIndex(index);
+        var condition;
         if (index === -1 || sf.base.isNullOrUndefined(selectedRow) || this.parent.selectionSettings.mode === 'Cell') {
             return;
         }
@@ -21422,10 +21460,16 @@ var Selection$1 = /** @class */ (function () {
         else {
             this.parent.treeGrid.grid.selectionModule.preventFocus = false;
         }
-        this.parent.treeGrid.selectRow(index, isToggle);
+        if ((!sf.base.isNullOrUndefined(this.selectedClass) && (this.selectedClass === selectedRow) && (!isToggle))) {
+            condition = true;
+        }
+        if (condition !== true) {
+            this.parent.treeGrid.selectRow(index, isToggle);
+        }
         this.parent.treeGrid.grid.selectionModule.preventFocus = this.parent.treeGrid.grid.selectionModule.preventFocus === true ?
             false : this.parent.treeGrid.grid.selectionModule.preventFocus;
         this.prevRowIndex = index;
+        this.selectedClass = selectedRow;
     };
     /**
      * Selects a collection of rows by indexes.
@@ -22852,7 +22896,7 @@ var ContextMenu$2 = /** @class */ (function () {
             text: text,
             id: this.generateID(item),
             target: target,
-            iconCss: iconCss ? 'e-icons ' + iconCss : ''
+            iconCss: iconCss ? 'e-icons ' + iconCss : null
         };
         return itemModel;
     };

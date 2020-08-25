@@ -7149,6 +7149,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.cellselected = false;
         this.isMultiSelection = false;
         this.isAddRowsToSelection = false;
+        this.initialRowSelection = false;
         /**
          * @hidden
          */
@@ -9417,7 +9418,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         if (this.parent.enableVirtualization) {
             this.setCheckAllState();
         }
-        if (this.parent.isCheckBoxSelection) {
+        if (this.parent.isCheckBoxSelection && !this.initialRowSelection) {
             var totalRecords = this.parent.getRowsObject();
             var indexes = [];
             for (var i = 0; i < totalRecords.length; i++) {
@@ -9425,7 +9426,10 @@ var Selection = /** @__PURE__ @class */ (function () {
                     indexes.push(i);
                 }
             }
-            this.selectRows(indexes);
+            if (indexes.length) {
+                this.selectRows(indexes);
+            }
+            this.initialRowSelection = true;
         }
     };
     Selection.prototype.updatePersistSelectedData = function (checkState) {
@@ -9542,7 +9546,8 @@ var Selection = /** @__PURE__ @class */ (function () {
         else {
             rIndex = parseInt(target.parentElement.getAttribute('aria-rowindex'), 10);
         }
-        if (this.parent.isPersistSelection && this.parent.element.querySelectorAll('.e-addedrow').length > 0) {
+        if (this.parent.isPersistSelection && this.parent.element.querySelectorAll('.e-addedrow').length > 0 &&
+            this.parent.editSettings.newRowPosition === 'Top') {
             ++rIndex;
         }
         this.rowCellSelectionHandler(rIndex, parseInt(target.getAttribute('aria-colindex'), 10));
@@ -17043,7 +17048,7 @@ function getEditedDataIndex(gObj, data) {
 /** @hidden */
 function eventPromise(args, query) {
     var state;
-    state = this.getStateEventArgument(query);
+    state = getStateEventArgument(query);
     var def = new Deferred();
     state.dataSource = def.resolve;
     state.action = args;
@@ -19140,7 +19145,7 @@ var Sort = /** @__PURE__ @class */ (function () {
     };
     Sort.prototype.showPopUp = function (e) {
         var target = closest(e.target, '.e-headercell');
-        if (!isNullOrUndefined(target) || this.parent.isContextMenuOpen()) {
+        if (this.parent.allowMultiSorting && (!isNullOrUndefined(target) || this.parent.isContextMenuOpen())) {
             setCssInGridPopUp(this.parent.element.querySelector('.e-gridpopup'), e, 'e-sortdirect e-icons e-icon-sortdirect' + (this.sortedColumns.length > 1 ? ' e-spanclicked' : ''));
         }
     };

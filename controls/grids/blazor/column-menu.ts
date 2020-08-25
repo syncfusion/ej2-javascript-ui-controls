@@ -23,7 +23,7 @@ export class ColumnMenu  {
         this.key = key;
         this.uid = uid;
         let e: HTMLElement = this.parent.getColumnHeaderByUid(uid).querySelector('.e-columnmenu');
-        let columnMenuElement: Element = document.getElementsByClassName('e-grid-column-menu')[0];
+        let columnMenuElement: Element = document.getElementsByClassName(`e-${this.parent.element.id}-column-menu`)[0];
         let element: HTMLElement = columnMenuElement.getElementsByTagName('ul')[0];
         if(!isNullOrUndefined(element)) {
         let pos:  {left: number; top: number;}= { top: 0, left: 0 };

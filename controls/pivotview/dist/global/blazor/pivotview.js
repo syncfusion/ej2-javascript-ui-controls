@@ -5078,6 +5078,15 @@ var PivotEngine = /** @class */ (function () {
                     if ((formatSetting.format) && !(this.formatRegex.test(formatSetting.format))) {
                         var pattern = formatSetting.format.match(this.customRegex);
                         var flag = true;
+                        if (sf.base.isNullOrUndefined(formatSetting.minimumFractionDigits)) {
+                            delete formatSetting.minimumFractionDigits;
+                        }
+                        if (sf.base.isNullOrUndefined(formatSetting.maximumFractionDigits)) {
+                            delete formatSetting.maximumFractionDigits;
+                        }
+                        if (sf.base.isNullOrUndefined(formatSetting.minimumIntegerDigits)) {
+                            delete formatSetting.minimumIntegerDigits;
+                        }
                         if (sf.base.isNullOrUndefined(pattern)) {
                             pattern = formatSetting.format.match(/^(('[^']+'|''|[^*@0])*)(\*.)?((([0#,]*[0,]*[0#]*)(\.[0#]*)?)|([#,]*@+#*))(E\+?0+)?(('[^']+'|''|[^*#@,.E])*)$/);
                             delete formatSetting.useGrouping;
@@ -6935,6 +6944,16 @@ var Render = /** @class */ (function () {
             if (typeof state_1 === "object")
                 return state_1.value;
         }
+        var hiddenItemsCount = 0;
+        for (var i = 0; i < args.items.length; i++) {
+            var classNameofItem = document.getElementById(args.items[i].id).className;
+            if (classNameofItem.match('e-menu-hide')) {
+                hiddenItemsCount++;
+            }
+        }
+        if (hiddenItemsCount === args.items.length) {
+            args.cancel = true;
+        }
         this.parent.trigger(contextMenuOpen, args);
     };
     Render.prototype.getMenuItem = function (isStringField) {
@@ -7882,6 +7901,8 @@ var Render = /** @class */ (function () {
         return gridHeight < this.parent.gridSettings.rowHeight ? this.parent.gridSettings.rowHeight : gridHeight;
     };
     Render.prototype.frameStackedHeaders = function () {
+        var singleValueFormat = this.parent.dataSourceSettings.values.length === 1 &&
+            !this.parent.dataSourceSettings.alwaysShowValueHeader ? this.formatList[this.parent.dataSourceSettings.values[0].name] : undefined;
         var integrateModel = [];
         if ((this.parent.dataType === 'olap' ? true : this.parent.dataSourceSettings.values.length > 0) && !this.engine.isEmptyData) {
             var headerCnt = this.engine.headerContent.length;
@@ -7913,7 +7934,7 @@ var Render = /** @class */ (function () {
                                 /* tslint:disable-next-line */
                                 width: colField[cCnt] ? this.setSavedWidth(colField[cCnt].valueSort.levelName, colWidth) : this.resColWidth,
                                 minWidth: 30,
-                                format: cCnt === 0 ? '' : this.formatList[colField[cCnt].actualText],
+                                format: cCnt === 0 ? '' : (sf.base.isNullOrUndefined(singleValueFormat) ? this.formatList[colField[cCnt].actualText] : singleValueFormat),
                                 allowReordering: (this.parent.showGroupingBar ? false : this.parent.gridSettings.allowReordering),
                                 allowResizing: this.parent.gridSettings.allowResizing,
                                 visible: true
@@ -12849,7 +12870,8 @@ var VirtualScroll$1 = /** @class */ (function () {
             }
             _this.parent.scrollDirection = _this.direction = 'horizondal';
             var horiOffset = -((left - _this.parent.scrollPosObject.horizontalSection - mCont.scrollLeft));
-            var vertiOffset = mCont.querySelector('.' + TABLE).style.transform.split(',')[1].trim();
+            var vertiOffset = mCont.querySelector('.' + TABLE).style.transform.split(',').length > 1 ?
+                mCont.querySelector('.' + TABLE).style.transform.split(',')[1].trim() : "0px)";
             if (mCont.scrollLeft < _this.parent.scrollerBrowserLimit) {
                 sf.base.setStyleAttribute(mCont.querySelector('.e-table'), {
                     transform: 'translate(' + horiOffset + 'px,' + vertiOffset
@@ -13184,10 +13206,16 @@ var DrillThroughDialog = /** @class */ (function () {
     };
     DrillThroughDialog.prototype.editCell = function (eventArgs) {
         var _this = this;
+        var gridResize = this.parent.gridSettings.allowResizing;
         var actualText = eventArgs.currentCell.actualText.toString();
         var indexObject = Number(Object.keys(eventArgs.currentCell.indexObject));
         eventArgs.currentTarget.firstElementChild.style.display = 'none';
         var cellValue = Number(eventArgs.rawData[0][actualText]);
+        var previousData = this.frameHeaderWithKeys(eventArgs.rawData[eventArgs.rawData.length - 1]);
+        var currentData = eventArgs.rawData[eventArgs.rawData.length - 1];
+        if (eventArgs.currentCell.actualText in previousData) {
+            currentData[eventArgs.currentCell.actualText] = eventArgs.currentCell.actualValue;
+        }
         this.numericTextBox = new sf.inputs.NumericTextBox({
             value: cellValue,
             enableRtl: this.parent.enableRtl,
@@ -13201,10 +13229,19 @@ var DrillThroughDialog = /** @class */ (function () {
                 _this.parent.engineModule.data[indexValue] = eventArgs.rawData[0];
             },
             blur: function () {
-                _this.parent.setProperties({ dataSourceSettings: { dataSource: _this.parent.engineModule.data } }, true);
-                _this.engine.updateGridData(_this.parent.dataSourceSettings);
-                _this.parent.pivotValues = _this.engine.pivotValues;
-                _this.parent.gridSettings.allowResizing = true;
+                var eventArgs = {
+                    currentData: currentData,
+                    previousData: previousData,
+                    previousPosition: currentData.index,
+                    cancel: false
+                };
+                _this.parent.trigger(editCompleted, eventArgs);
+                if (!eventArgs.cancel) {
+                    _this.parent.setProperties({ dataSourceSettings: { dataSource: _this.parent.engineModule.data } }, true);
+                    _this.engine.updateGridData(_this.parent.dataSourceSettings);
+                    _this.parent.pivotValues = _this.engine.pivotValues;
+                    _this.parent.gridSettings.allowResizing = gridResize;
+                }
             },
         });
         var textBoxElement = sf.base.createElement('input', {
@@ -20043,6 +20080,23 @@ var OlapEngine = /** @class */ (function () {
             this.tupRowInfo[pivotValue.rowOrdinal].uNameCollection.split('::[').map(function (item) {
                 return item[0] === '[' ? item : ('[' + item);
             }) : [];
+        var filters;
+        var filteritems = [];
+        var filterQuery = '';
+        for (var i = 0; i < this.filters.length; i++) {
+            filters = this.filterMembers[this.filters[i].name];
+            if (filters) {
+                for (var j = 0; j < filters.length; j++) {
+                    filterQuery = filterQuery + filters[j];
+                    filterQuery = j < filters.length - 1 ? filterQuery + ',' : filterQuery + '';
+                }
+                filteritems[i] = filterQuery;
+                filterQuery = '';
+            }
+        }
+        for (var i = 0; i < filteritems.length; i++) {
+            filterQuery = filterQuery === '' ? '{' + filteritems[i] + '}' : (filterQuery + ',' + '{' + filteritems[i] + '}');
+        }
         var columnQuery = '';
         var rowQuery = '';
         for (var i = 0; i < column.length; i++) {
@@ -20054,8 +20108,9 @@ var OlapEngine = /** @class */ (function () {
                 row[i].split('~~')[row[i].split('~~').length - 1] : row[i]);
         }
         var drillQuery = 'DRILLTHROUGH MAXROWS ' + maxRows + ' Select(' + (columnQuery.length > 0 ? columnQuery : '') +
-            (columnQuery.length > 0 && rowQuery.length > 0 ? ',' : '') + (rowQuery.length > 0 ? rowQuery : '') + ') on 0 from [' +
-            this.dataSourceSettings.cube + ']';
+            (columnQuery.length > 0 && rowQuery.length > 0 ? ',' : '') + (rowQuery.length > 0 ? rowQuery : '') + ') on 0 from ' +
+            (filterQuery === '' ? '[' + this.dataSourceSettings.cube + ']' : '(SELECT (' + filterQuery + ') ON COLUMNS FROM [' +
+                this.dataSourceSettings.cube + '])');
         drillQuery = drillQuery.replace(/&/g, '&amp;');
         var xmla = this.getSoapMsg(this.dataSourceSettings, drillQuery);
         var connectionString = this.getConnectionInfo(this.dataSourceSettings.url, this.dataSourceSettings.localeIdentifier);
@@ -32836,6 +32891,12 @@ var Toolbar$2 = /** @class */ (function () {
             allowKeyboard: false,
         });
         this.toolbar.isStringTemplate = true;
+        var viewStr = 'viewContainerRef';
+        var registerTemp = 'registeredTemplate';
+        if (this.parent[viewStr]) {
+            this.toolbar[registerTemp] = {};
+            this.toolbar[viewStr] = this.parent[viewStr];
+        }
         if (this.parent.toolbarTemplate && typeof (this.parent.toolbarTemplate) === 'string') {
             this.toolbar.appendTo(this.parent.toolbarTemplate);
             this.parent.element.replaceChild(this.toolbar.element, this.parent.element.querySelector('.' + GRID_TOOLBAR));
@@ -32990,9 +33051,10 @@ var Toolbar$2 = /** @class */ (function () {
                         this.parent.element.querySelector('.e-toggle-field-list').style.display = 'none';
                     }
                     break;
-            }
-            if (typeof (item) === 'object' && document.querySelector(item.template)) {
-                items.push(item);
+                default:
+                    if (typeof (item) === 'object') {
+                        items.push(item);
+                    }
             }
         }
         if (this.parent.showFieldList && toolbar.indexOf('FieldList') === -1 && this.parent.element.querySelector('#' + this.parent.element.id + '_PivotFieldList') &&

@@ -380,4 +380,98 @@ describe('Diagram Control', () => {
             done();
         });
     });
-});
+    describe('Render port at diagram ports layer', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramPortDragIssue' });
+            document.body.appendChild(ele);
+            let node: NodeModel = {
+                id: "node", offsetX: 100, offsetY: 100, width: 100, height: 100, shape: {
+                    type: 'HTML',
+                    content: '<div style="height:100%;width:100%;"><button type="button" style="width:100px"> Button</button></div>'
+                },
+                ports: [
+                    { id: "port", width: 25, height: 25, offset: { x: 0.5, y: 0.5 }, visibility: PortVisibility.Visible },
+                    { id: 'port2', visibility: PortVisibility.Hover, shape: 'Circle', offset: { x: 0.5, y: 0 } },
+                    { id: 'port3', visibility: PortVisibility.Hidden, shape: 'Circle', offset: { x: 1, y: 0.5 } },
+                    { id: 'port4', visibility: PortVisibility.Connect, shape: 'Circle', offset: { x: 0.5, y: 1 } }
+
+                ]
+            };
+            diagram = new Diagram({ width: 700, height: 600, nodes: [node] });
+            diagram.appendTo('#diagramPortDragIssue');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('port dragging', (done: Function) => {
+            let diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            let mouseEvents: MouseEvents = new MouseEvents();
+            let node: NodeModel = diagram.nodes[0];
+            node.ports[0].constraints = PortConstraints.Drag;
+            console.log(diagram.nodes[0].ports[0].offset.x);
+           console.log(diagram.nodes[0].ports[0].offset.y);
+            mouseEvents.clickEvent(diagramCanvas, 102.5, 102.5);
+            mouseEvents.dragAndDropEvent(diagramCanvas, 102.5, 102.5, 103, 103);
+           console.log(diagram.nodes[0].ports[0].offset.x);
+           console.log(diagram.nodes[0].ports[0].offset.y);
+           expect(diagram.nodes[0].ports[0].offset.x).toBe(0.51);
+           expect(diagram.nodes[0].ports[0].offset.y).toBe(0.51);
+           diagram.clearSelection();
+           done();
+         
+     });
+
+
+     it('Checking selected port drawing with constraint', (done: Function) => {
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseMoveEvent(diagramCanvas, 358, 68, true);
+        let node: NodeModel = diagram.nodes[0];
+        node.ports[0].constraints = PortConstraints.Draw;
+        mouseEvents.clickEvent(diagramCanvas, 106, 106);
+        mouseEvents.mouseDownEvent(diagramCanvas, 106, 106);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 106, 108.5);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 106, 204);
+        mouseEvents.mouseUpEvent(diagramCanvas, 106, 204);
+        expect(diagram.connectors.length == 1).toBe(true);
+        expect(diagram.connectors[0].sourcePortID == diagram.nodes[0].ports[0].id).toBe(true);
+        done();
+    });
+
+        it('Checking port rendered in portlayer or not', (done: Function) => {
+            let ele = document.getElementById("node_port_groupElement");
+            expect(ele != null).toBe(true);
+            expect(document.getElementById(diagram.element.id + "_diagramPorts").children.length).toEqual(4);
+            done();
+        });
+
+        it('zooming the diagram with node and port', (done: Function) => {
+            let diagramCanvas = document.getElementById('node_' + (diagram.nodes[0] as Node).ports[0].id);
+            let rect: ClientRect = diagramCanvas.getBoundingClientRect();
+            console.log(diagramCanvas);
+            console.log(rect.width, rect.height);
+            diagram.zoom(1.2);
+            console.log(rect.width, rect.height)
+            expect(rect.width === 25 && rect.height === 25).toBe(true);
+            done();
+        });
+
+        it('checking node children length', (done: Function) => {
+            diagram.select([diagram.nodes[0]]);
+            diagram.copy();
+            diagram.paste();
+            expect(document.getElementById(diagram.element.id + "_diagramPorts").children.length).toEqual(8);
+            diagram.undo();
+            expect(document.getElementById(diagram.element.id + "_diagramPorts").children.length).toEqual(4);
+            done();
+        });
+    })
+
+ });
+
+

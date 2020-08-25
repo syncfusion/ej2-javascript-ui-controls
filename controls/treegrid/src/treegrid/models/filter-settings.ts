@@ -213,6 +213,7 @@ export class FilterSettings extends ChildProperty<FilterSettings> {
      * `Child`: Shows the filtered record with child record. 
      * `Both` : shows the filtered record with both parent and child record.
      * `None` : Shows only filtered record.
+     * {% codeBlock src='treegrid/hierarchyMode/index.md' %}{% endcodeBlock %}
      * @default Parent
      */
     @Property('Parent')

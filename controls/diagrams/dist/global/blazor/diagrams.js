@@ -2560,6 +2560,8 @@ var DiagramShapeStyle = /** @class */ (function (_super) {
     RealAction[RealAction["EnableGroupAction"] = 128] = "EnableGroupAction";
     /** Indicate action in Progress */
     RealAction[RealAction["PanInProgress"] = 256] = "PanInProgress";
+    /** Indicate overview action  */
+    RealAction[RealAction["OverViewAction"] = 512] = "OverViewAction";
 })(exports.RealAction || (exports.RealAction = {}));
 /** @private */
 
@@ -16678,7 +16680,6 @@ var Node = /** @class */ (function (_super) {
         var port;
         for (var i = 0; this.ports !== undefined, i < this.ports.length; i++) {
             port = this.initPortWrapper(this.ports[i]);
-            port.elementActions = port.elementActions | exports.ElementAction.ElementIsPort;
             // tslint:disable-next-line:no-any
             var wrapperContent = void 0;
             var contentAccessibility = getFunction(accessibilityContent);
@@ -16687,6 +16688,7 @@ var Node = /** @class */ (function (_super) {
             }
             port.description = wrapperContent ? wrapperContent : port.id;
             port.inversedAlignment = canvas.inversedAlignment;
+            port.elementActions = port.elementActions | exports.ElementAction.ElementIsPort;
             container.children.push(port);
         }
     };
@@ -16785,6 +16787,7 @@ var Node = /** @class */ (function (_super) {
         portContent.relativeMode = 'Point';
         portContent.visible = checkPortRestriction(ports, exports.PortVisibility.Visible) &&
             !checkPortRestriction(ports, exports.PortVisibility.Hover) && !checkPortRestriction(ports, exports.PortVisibility.Connect) ? true : false;
+        portContent.elementActions = portContent.elementActions | exports.ElementAction.ElementIsPort;
         return portContent;
     };
     /** @private */
@@ -19958,7 +19961,8 @@ var DiagramRenderer = /** @class */ (function () {
     };
     DiagramRenderer.prototype.getParentSvg = function (element, targetElement, canvas) {
         if (this.diagramId && element && element.id) {
-            if (element.id.split('_icon_content').length > 1 || element.id.split('_nodeport').length > 1) {
+            if (element.id.split('_icon_content').length > 1 || element.id.split('_nodeport').length > 1 ||
+                (element.elementActions & exports.ElementAction.ElementIsPort)) {
                 return this.iconSvgLayer;
             }
             if (targetElement && targetElement === 'selector') {
@@ -19985,6 +19989,10 @@ var DiagramRenderer = /** @class */ (function () {
             }
             else if (element instanceof DiagramNativeElement) {
                 layerGElement = svgElement.getElementById(this.diagramId + '_nativeLayer');
+                defaultParent = null;
+            }
+            else if (element.elementActions & exports.ElementAction.ElementIsPort) {
+                layerGElement = svgElement.getElementById(this.diagramId + '_diagramPorts');
                 defaultParent = null;
             }
             else {
@@ -24244,6 +24252,7 @@ var ZoomPanTool = /** @class */ (function (_super) {
     ZoomPanTool.prototype.mouseDown = function (args) {
         _super.prototype.mouseDown.call(this, args);
         this.inAction = true;
+        this.commandHandler.setBlazorDiagramProps(true);
     };
     /**   @private  */
     ZoomPanTool.prototype.mouseMove = function (args) {
@@ -24271,6 +24280,7 @@ var ZoomPanTool = /** @class */ (function (_super) {
     };
     /**   @private  */
     ZoomPanTool.prototype.mouseUp = function (args) {
+        this.commandHandler.setBlazorDiagramProps(false);
         this.checkPropertyValue();
         this.commandHandler.updatePanState(false);
         _super.prototype.mouseUp.call(this, args);
@@ -25688,9 +25698,10 @@ var DiagramEventHandler = /** @class */ (function () {
             evt.preventDefault();
             return;
         }
-        if (sf.base.isBlazor()) {
-            this.commandHandler.oldSelectedObjects = cloneObject(this.diagram.selectedItems);
-        }
+        // commanded by gowtham- unwanted cloning of selectedItems
+        // if (isBlazor()) {
+        //     this.commandHandler.oldSelectedObjects = cloneObject(this.diagram.selectedItems);
+        // }
         this.checkUserHandleEvent(exports.DiagramEvent.onUserHandleMouseDown);
         if (!this.checkEditBoxAsTarget(evt) && (canUserInteract(this.diagram)) ||
             (canZoomPan(this.diagram) && !defaultTool(this.diagram))) {
@@ -26682,6 +26693,9 @@ var DiagramEventHandler = /** @class */ (function () {
     /** @private */
     DiagramEventHandler.prototype.scrolled = function (evt) {
         this.diagram.updateScrollOffset();
+        if (sf.base.isBlazor() && (this.diagram.realActions & exports.RealAction.OverViewAction)) {
+            this.diagram.setBlazorDiagramProps(false);
+        }
     };
     /** @private */
     DiagramEventHandler.prototype.doubleClick = function (evt) {
@@ -30023,10 +30037,10 @@ var CommandHandler = /** @class */ (function () {
     /**   @private  */
     CommandHandler.prototype.ismouseEvents = function (value) {
         if (value) {
-            this.diagram.blazorActions = exports.BlazorAction.interaction;
+            this.diagram.blazorActions = this.diagram.addConstraints(this.diagram.blazorActions, exports.BlazorAction.interaction);
         }
         else {
-            this.diagram.blazorActions = ~exports.BlazorAction.interaction;
+            this.diagram.blazorActions = this.diagram.removeConstraints(this.diagram.blazorActions, exports.BlazorAction.interaction);
         }
     };
     /** @private */
@@ -32200,11 +32214,20 @@ var CommandHandler = /** @class */ (function () {
     CommandHandler.prototype.dataBinding = function () {
         this.diagram.dataBind();
     };
+    CommandHandler.prototype.setBlazorDiagramProps = function (arg) {
+        this.diagram.setBlazorDiagramProps(arg);
+    };
     /** @private */
     CommandHandler.prototype.scroll = function (scrollX, scrollY, focusPoint) {
         var panx = canPanX(this.diagram);
         var pany = canPanY(this.diagram);
-        this.diagram.pan((scrollX = panx ? scrollX : 0) * this.diagram.scroller.currentZoom, (scrollY = pany ? scrollY : 0) * this.diagram.scroller.currentZoom, focusPoint);
+        if (sf.base.isBlazor()) {
+            this.diagram.setCursor('grabbing');
+            this.diagram.scroller.zoom(1, (scrollX = panx ? scrollX : 0) * this.diagram.scroller.currentZoom, (scrollY = pany ? scrollY : 0) * this.diagram.scroller.currentZoom, focusPoint);
+        }
+        else {
+            this.diagram.pan((scrollX = panx ? scrollX : 0) * this.diagram.scroller.currentZoom, (scrollY = pany ? scrollY : 0) * this.diagram.scroller.currentZoom, focusPoint);
+        }
     };
     /**
      * @private
@@ -35498,6 +35521,16 @@ var Diagram = /** @class */ (function (_super) {
         }
     };
     /** @private */
+    Diagram.prototype.setBlazorDiagramProps = function (arg) {
+        var attribute = this.getZoomingAttribute();
+        if (arg) {
+            this.updateBlazorDiagramProperties(attribute);
+        }
+        else {
+            this.updateBlazorDiagramProperties(attribute, true);
+        }
+    };
+    /** @private */
     Diagram.prototype.triggerEvent = function (eventName, args) {
         return __awaiter(this, void 0, void 0, function () {
             var eventArgs;
@@ -35864,6 +35897,7 @@ var Diagram = /** @class */ (function (_super) {
                     newObj.status = 'New';
                     this.nodes.push(newObj);
                     this.initObject(newObj, layers, undefined, group);
+                    this.updateTemplate();
                     this.UpdateBlazorDiagramModel(newObj, "Node");
                     if (this.bpmnModule) {
                         if (newObj.shape.annotations && newObj.shape.annotations.length !== 0) {
@@ -36086,6 +36120,16 @@ var Diagram = /** @class */ (function (_super) {
     Diagram.prototype.removeElements = function (currentObj) {
         if (this.mode === 'SVG' || (this.mode === 'Canvas' && currentObj.shape.type === 'Native')) {
             var removeElement_1 = getDiagramElement(currentObj.id + '_groupElement', this.element.id);
+            var object = currentObj;
+            if ((object).ports && (object).ports.length > 0) {
+                for (var i = 0; i < (object).ports.length; i++) {
+                    var port = (object).ports[i];
+                    var removePort = getDiagramElement(object.id + '_' + port.id + '_groupElement', this.element.id);
+                    if (removePort) {
+                        removePort.parentNode.removeChild(removePort);
+                    }
+                }
+            }
             if (removeElement_1) {
                 removeElement_1.parentNode.removeChild(removeElement_1);
             }
@@ -40077,17 +40121,20 @@ var Diagram = /** @class */ (function (_super) {
             }
             this.updateGroupOffset(actualObject);
             // if (existingBounds.equals(existingBounds, actualObject.wrapper.outerBounds) === false) { this.updateQuad(actualObject); }
-            var objects = [];
-            objects = objects.concat(this.selectedItems.nodes, this.selectedItems.connectors);
-            if (objects.length === 0) {
-                if (actualObject.parentId && this.nameTable[actualObject.parentId]) {
-                    var parent_4 = this.nameTable[actualObject.parentId];
-                    parent_4.wrapper.measure(new Size(parent_4.wrapper.width, actualObject.wrapper.height));
-                    parent_4.wrapper.arrange(parent_4.wrapper.desiredSize);
-                    parent_4.offsetX = parent_4.wrapper.offsetX;
-                    parent_4.offsetY = parent_4.wrapper.offsetY;
-                }
+            // EJ2-42005 - The parent of the actualObject is not measured and arranged when a node or connector is selected.
+            // The condition restricts the measure and arrange of the actualObject whenever a node or connector is selected.
+            // Commented @Dheepshiva
+            // let objects: (NodeModel | ConnectorModel)[] = [];
+            // objects = objects.concat(this.selectedItems.nodes, this.selectedItems.connectors);
+            // if (objects.length === 0) {
+            if (actualObject.parentId && this.nameTable[actualObject.parentId]) {
+                var parent_4 = this.nameTable[actualObject.parentId];
+                parent_4.wrapper.measure(new Size(parent_4.wrapper.width, actualObject.wrapper.height));
+                parent_4.wrapper.arrange(parent_4.wrapper.desiredSize);
+                parent_4.offsetX = parent_4.wrapper.offsetX;
+                parent_4.offsetY = parent_4.wrapper.offsetY;
             }
+            // }
             if (existingInnerBounds.equals(existingInnerBounds, actualObject.wrapper.bounds) === false) {
                 this.updateGroupSize(actualObject);
                 if (actualObject.children) {
@@ -40115,11 +40162,11 @@ var Diagram = /** @class */ (function (_super) {
                     }
                     this.updateConnectorEdges(actualObject);
                     if (actualObject.id !== 'helper' && !(this.diagramActions & exports.DiagramAction.ToolAction)) {
-                        var objects_2 = this.spatialSearch.findObjects(actualObject.wrapper.outerBounds);
-                        for (var i_4 = 0; i_4 < objects_2.length; i_4++) {
-                            var object = objects_2[i_4];
+                        var objects = this.spatialSearch.findObjects(actualObject.wrapper.outerBounds);
+                        for (var i_4 = 0; i_4 < objects.length; i_4++) {
+                            var object = objects[i_4];
                             if (object instanceof Connector) {
-                                this.connectorPropertyChange(objects_2[i_4], {}, {
+                                this.connectorPropertyChange(objects[i_4], {}, {
                                     sourceID: object.sourceID,
                                     targetID: object.targetID,
                                     sourcePortID: object.sourcePortID,
@@ -41915,6 +41962,10 @@ var PrintAndExport = /** @class */ (function () {
             options.margin = margin;
             var svg = content = this.diagramAsSvg(options, margin);
             if (mode === 'Data') {
+                if (sf.base.isBlazor() && options.format === 'SVG') {
+                    var svgData = new XMLSerializer().serializeToString(svg);
+                    return svgData;
+                }
                 return content;
             }
             var buffer = new XMLSerializer().serializeToString(svg);
@@ -42187,8 +42238,8 @@ var PrintAndExport = /** @class */ (function () {
             svg.appendChild(gradient);
         }
         attr = {
-            'x': 0,
-            'y': 0, 'width': String(width + margin.left + margin.right), 'height': String(height + margin.top + margin.bottom)
+            'x': String(left),
+            'y': String(top), 'width': String(width + margin.left + margin.right), 'height': String(height + margin.top + margin.bottom)
         };
         var backimage = document.getElementById(this.diagram.element.id + '_backgroundImageLayer').cloneNode(true);
         setAttributeSvg(backimage, attr);
@@ -56178,11 +56229,18 @@ var Overview = /** @class */ (function (_super) {
             delx = -hoffset - this.parent.scroller.horizontalOffset;
             dely = -voffset - this.parent.scroller.verticalOffset;
         }
+        this.parent.setBlazorDiagramProps(true);
+        this.parent.realActions |= exports.RealAction.OverViewAction;
         if (this.actionName === 'scale' || this.actionName === 'draw') {
             this.parent.scroller.zoom(zoom / this.parent.scroller.currentZoom, delx, dely, focusPoint);
         }
         else {
-            this.parent.pan(delx, dely, focusPoint);
+            if (!sf.base.isBlazor()) {
+                this.parent.pan(delx, dely, focusPoint);
+            }
+            else {
+                this.parent.scroller.zoom(1, delx, dely, focusPoint);
+            }
         }
     };
     Overview.prototype.updateHtmlLayer = function (view) {

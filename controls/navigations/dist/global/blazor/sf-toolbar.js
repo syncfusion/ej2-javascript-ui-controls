@@ -426,13 +426,15 @@ var SfToolbar = /** @class */ (function () {
         this.popupPriCount = 0;
         var width = sf.base.formatUnit(this.options.width);
         var height = sf.base.formatUnit(this.options.height);
-        if (sf.base.Browser.info.name !== 'msie' || this.options.height !== 'auto') {
-            sf.base.setStyleAttribute(this.element, { 'height': height });
+        if (this.element) {
+            if (sf.base.Browser.info.name !== 'msie' || this.options.height !== 'auto') {
+                sf.base.setStyleAttribute(this.element, { 'height': height });
+            }
+            sf.base.setStyleAttribute(this.element, { 'width': width });
+            this.element.setAttribute('aria-haspopup', 'false');
+            this.renderControl();
+            this.wireEvents();
         }
-        sf.base.setStyleAttribute(this.element, { 'width': width });
-        this.element.setAttribute('aria-haspopup', 'false');
-        this.renderControl();
-        this.wireEvents();
     };
     SfToolbar.prototype.renderControl = function () {
         this.tbarAlgEle = { lefts: [], centers: [], rights: [] };

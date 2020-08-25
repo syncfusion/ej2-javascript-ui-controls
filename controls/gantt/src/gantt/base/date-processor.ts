@@ -93,7 +93,7 @@ export class DateProcessor {
      * @param ganttProp 
      * @private
      */
-    public checkEndDate(date: Date, ganttProp?: ITaskData): Date {
+    public checkEndDate(date: Date, ganttProp?: ITaskData, validateAsMilestone?: boolean): Date {
         if (isNullOrUndefined(date)) {
             return null;
         }
@@ -101,7 +101,7 @@ export class DateProcessor {
         let hour: number = this.getSecondsInDecimal(cloneEndDate);
         if (hour > this.parent.defaultEndTime) {
             this.setTime(this.parent.defaultEndTime, cloneEndDate);
-        } else if (hour <= this.parent.defaultStartTime) {
+        } else if (hour <= this.parent.defaultStartTime && !validateAsMilestone) {
             cloneEndDate.setDate(cloneEndDate.getDate() - 1);
             this.setTime(this.parent.defaultEndTime, cloneEndDate);
         } else if (hour > this.parent.defaultStartTime && hour < this.parent.defaultEndTime) {

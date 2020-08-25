@@ -3382,6 +3382,16 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
 
+    /** @private */
+    public setBlazorDiagramProps(arg: boolean): void {
+        let attribute: string[] = this.getZoomingAttribute();
+        if (arg) {
+            this.updateBlazorDiagramProperties(attribute);
+        } else {
+            this.updateBlazorDiagramProperties(attribute, true);
+        }
+
+    }
 
     /** @private */
     public async triggerEvent(eventName: DiagramEvent, args: Object): Promise<void | object> {
@@ -3741,6 +3751,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     newObj.umlIndex = (obj as Node).umlIndex; (newObj as Node).status = 'New';
                     (this.nodes as Node[]).push(newObj);
                     this.initObject(newObj, layers, undefined, group);
+                    this.updateTemplate();
                     this.UpdateBlazorDiagramModel(newObj, "Node");
                     if (this.bpmnModule) {
                         if ((newObj.shape as BpmnShape).annotations && (newObj.shape as BpmnShape).annotations.length !== 0) {
@@ -3956,6 +3967,16 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     public removeElements(currentObj: NodeModel | ConnectorModel): void {
         if (this.mode === 'SVG' || (this.mode === 'Canvas' && currentObj.shape.type === 'Native')) {
             let removeElement: HTMLElement = getDiagramElement(currentObj.id + '_groupElement', this.element.id);
+            let object: NodeModel = currentObj as NodeModel;
+            if ((object).ports && (object).ports.length > 0) {
+                for (let i: number = 0; i < (object).ports.length; i++) {
+                    let port: Port = (object).ports[i] as Port;
+                    let removePort: HTMLElement = getDiagramElement(object.id + '_' + port.id + '_groupElement', this.element.id);
+                    if (removePort) {
+                        removePort.parentNode.removeChild(removePort);
+                    }
+                }
+            }
             if (removeElement) {
                 removeElement.parentNode.removeChild(removeElement);
             }
@@ -7903,9 +7924,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
             this.updateGroupOffset(actualObject);
             // if (existingBounds.equals(existingBounds, actualObject.wrapper.outerBounds) === false) { this.updateQuad(actualObject); }
-            let objects: (NodeModel | ConnectorModel)[] = [];
-            objects = objects.concat(this.selectedItems.nodes, this.selectedItems.connectors);
-            if (objects.length === 0) {
+
+            // EJ2-42005 - The parent of the actualObject is not measured and arranged when a node or connector is selected.
+            // The condition restricts the measure and arrange of the actualObject whenever a node or connector is selected.
+            // Commented @Dheepshiva
+            // let objects: (NodeModel | ConnectorModel)[] = [];
+            // objects = objects.concat(this.selectedItems.nodes, this.selectedItems.connectors);
+            // if (objects.length === 0) {
                 if (actualObject.parentId && this.nameTable[actualObject.parentId]) {
                     let parent: NodeModel = this.nameTable[actualObject.parentId];
                     parent.wrapper.measure(new Size(parent.wrapper.width, actualObject.wrapper.height));
@@ -7914,7 +7939,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     parent.offsetX = parent.wrapper.offsetX;
                     parent.offsetY = parent.wrapper.offsetY;
                 }
-            }
+            // }
             if (existingInnerBounds.equals(existingInnerBounds, actualObject.wrapper.bounds) === false) {
                 this.updateGroupSize(actualObject);
                 if (actualObject.children) { this.updateGroupOffset(actualObject); }

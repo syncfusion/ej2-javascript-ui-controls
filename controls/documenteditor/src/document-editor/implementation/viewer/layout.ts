@@ -2773,14 +2773,15 @@ export class Layout {
         cell.width -= (!isLeftStyleNone) ? 0 : (cell.leftBorderWidth > 0) ? 0 : cell.leftBorderWidth;
         let lastCell: boolean = !cell.ownerTable.isBidiTable ? cell.cellIndex === cell.ownerRow.childWidgets.length - 1
             : cell.cellIndex === 0;
-        if (cellspace > 0 || cell.columnIndex === cell.ownerTable.tableHolder.columns.length - 1) {
+        if (cellspace > 0 || cell.columnIndex === cell.ownerTable.tableHolder.columns.length - 1 ||
+            (cell.columnIndex === (cell.containerWidget as TableRowWidget).childWidgets.length - 1 && cell.cellFormat.columnSpan > 1)) {
             cell.rightBorderWidth = !cell.ownerTable.isBidiTable ? rightBorderWidth : leftBorderWidth;
             if (!cell.ownerTable.tableFormat.allowAutoFit) {
                 cell.width -= cell.rightBorderWidth;
             }
         }
         //Add the border widths to respective margin side.
-        cell.margin.left += (isLeftStyleNone) ? 0 : (cell.leftBorderWidth);
+        //cell.margin.left += (isLeftStyleNone) ? 0 : (cell.leftBorderWidth);
         cell.margin.right += (isRightStyleNone) ? 0 : (cell.rightBorderWidth);
         //cell.ownerWidget = owner;
         return cell;
@@ -3382,7 +3383,8 @@ export class Layout {
                 // tslint:disable-next-line:max-line-length
                 let rowSpanWidgetEndIndex: number = currentRowWidgetIndex + rowSpan - 1 - (rowWidget.index - cellWidget.rowIndex);
                 if (!isInitialLayout && (viewer.clientArea.bottom < cellWidget.y + cellWidget.height + cellWidget.margin.bottom
-                    || rowSpanWidgetEndIndex >= currentRowWidgetIndex + 1)) {
+                    || rowSpanWidgetEndIndex >= currentRowWidgetIndex + 1) && (rowCollection.length === 1
+                    || rowCollection.length >= 1 && rowWidget === rowCollection[rowCollection.length - 1])) {
                     this.splitSpannedCellWidget(cellWidget, tableCollection, rowCollection, viewer);
                 }
                 let spanEndRowWidget: TableRowWidget = rowWidget;
@@ -5123,7 +5125,7 @@ export class Layout {
         this.clearTableWidget(combinedTable, true, false);
         this.shiftTableWidget(combinedTable, this.viewer);
         this.updateVerticalPositionToTop(table, false);
-
+        this.viewer.updateClientAreaForBlock(table, false);
     }
     private updateVerticalPositionToTop(table: TableWidget, isUpdateTop: boolean): void {
         //Iterate the tableWidgets counts

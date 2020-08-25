@@ -4231,6 +4231,15 @@ export class PivotEngine {
                     if ((formatSetting.format) && !(this.formatRegex.test(formatSetting.format))) {
                         let pattern: string[] = formatSetting.format.match(this.customRegex);
                         let flag: boolean = true;
+                        if (isNullOrUndefined(formatSetting.minimumFractionDigits)) {
+                            delete formatSetting.minimumFractionDigits;
+                        }
+                        if (isNullOrUndefined(formatSetting.maximumFractionDigits)) {
+                            delete formatSetting.maximumFractionDigits;
+                        }
+                        if (isNullOrUndefined(formatSetting.minimumIntegerDigits)) {
+                            delete formatSetting.minimumIntegerDigits;
+                        }
                         if (isNullOrUndefined(pattern)) {
                             pattern = formatSetting.format.match(/^(('[^']+'|''|[^*@0])*)(\*.)?((([0#,]*[0,]*[0#]*)(\.[0#]*)?)|([#,]*@+#*))(E\+?0+)?(('[^']+'|''|[^*#@,.E])*)$/);
                             delete formatSetting.useGrouping;

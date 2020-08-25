@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 18.2.54 (2020-08-18)
+## 18.2.55 (2020-08-25)
+
+### Pdf Export
+
+#### Bug Fixes
+
+- Rendering issue with Line break is fixed.
+
+## 18.2.45 (2020-07-14)
 
 ### Pdf Export
 

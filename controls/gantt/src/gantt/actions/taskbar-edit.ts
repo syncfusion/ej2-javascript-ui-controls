@@ -1337,6 +1337,10 @@ export class TaskbarEdit {
                 let table: NodeList = this.parent.connectorLineModule.tooltipTable.querySelector('#toPredecessor').querySelectorAll('td');
                 (table[1] as HTMLElement).innerText = toItem.taskName;
                 (table[2] as HTMLElement).innerText = currentTarget;
+                let tooltipElement: HTMLElement = this.parent.connectorLineModule.tooltipTable.parentElement.parentElement;
+                if (tooltipElement.offsetTop + tooltipElement.offsetHeight > e.pageY) {
+                    tooltipElement.style.top = (e.pageY - tooltipElement.offsetHeight - 20) + 'px';
+                }
             }
             this.drawPredecessor = true;
         } else {

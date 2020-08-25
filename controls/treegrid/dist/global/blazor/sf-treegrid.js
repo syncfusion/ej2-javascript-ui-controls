@@ -11,18 +11,12 @@ var Clipboard = /** @class */ (function () {
         this.copiedUniqueIdCollection = [];
         this.parent = parent;
         this.gridClipboard = this.parent.grid.clipboardModule;
-        this.clipBoardTextArea = sf.base.createElement('textarea', {
-            className: 'e-clipboard',
-            styles: 'opacity: 0',
-            attrs: { tabindex: '-1', 'aria-label': 'clipboard', 'aria-hidden': 'true' }
-        });
-        this.parent.element.appendChild(this.clipBoardTextArea);
     }
     Clipboard.prototype.copy = function (withHeader) {
         if (document.queryCommandSupported('copy')) {
             this.setCopyData(withHeader);
             document.execCommand('copy');
-            this.clipBoardTextArea.blur();
+            this.gridClipboard.clipBoardTextArea.blur();
         }
         if (this.gridClipboard.isSelect) {
             window.getSelection().removeAllRanges();
@@ -36,7 +30,7 @@ var Clipboard = /** @class */ (function () {
         var uniqueID = 'uniqueID';
         var currentRecords = this.parent.options.currentViewData;
         if (window.getSelection().toString() === '') {
-            this.clipBoardTextArea.value = this.gridClipboard[copyContent] = '';
+            this.gridClipboard.clipBoardTextArea.value = this.gridClipboard[copyContent] = '';
             var rows = this.parent.grid.getRows();
             if (this.parent.grid.selectionMode !== 'Cell') {
                 var selectedIndexes = this.parent.grid.getSelectedRowIndexes().sort(function (a, b) {
@@ -71,13 +65,13 @@ var Clipboard = /** @class */ (function () {
                     this.gridClipboard[getCopyData](headerTextArray, false, '\t', withHeader);
                     this.treeCopyContent = this.gridClipboard[copyContent] + '\n' + this.treeCopyContent;
                 }
-                this.clipBoardTextArea.value = this.gridClipboard[copyContent] = this.treeCopyContent;
+                this.gridClipboard.clipBoardTextArea.value = this.gridClipboard[copyContent] = this.treeCopyContent;
                 if (!sf.base.Browser.userAgent.match(/ipad|ipod|iphone/i)) {
                     window.getSelection().removeAllRanges();
-                    this.clipBoardTextArea.select();
+                    this.gridClipboard.clipBoardTextArea.select();
                 }
                 else {
-                    this.clipBoardTextArea.setSelectionRange(0, this.clipBoardTextArea.value.length);
+                    this.gridClipboard.clipBoardTextArea.setSelectionRange(0, this.gridClipboard.clipBoardTextArea.value.length);
                 }
                 this.gridClipboard[isSelect] = true;
                 this.copiedUniqueIdCollection = [];

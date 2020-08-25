@@ -7221,4 +7221,47 @@ describe('MultiSelect', () => {
             }, 800);
         });
     });
+	describe('EJ2-41334 Maximum call stack size exceeded when enable allowFiltering and allowCustomValue in Mutiselect', () => {
+        let listObj: MultiSelect;
+        let popupObj: any;
+        let  originalTimeout: number;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { 'type': 'text' } });
+        let remoteData: DataManager = new DataManager({ url: '/api/Employees', adaptor: new ODataV4Adaptor });
+        beforeAll(() => {
+            document.body.innerHTML = '';
+            document.body.appendChild(element);
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        });
+        afterAll(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            if (element) {
+                element.remove();
+            }
+        });
+        it('enter custom value and focus out and focus in', () => {
+            let listObj: MultiSelect = new MultiSelect({
+                dataSource: remoteData,
+                fields: { value: 'EmployeeID', text: 'FirstName' },
+                query: new Query().take(4),
+                width: '250px',
+                popupWidth: '250px',
+                popupHeight: '300px',
+                sortOrder: "Ascending",
+            });
+            listObj.appendTo(element);
+            (<any>listObj).inputFocus = true;
+            (<any>listObj).showPopup();
+            (<any>listObj).inputElement.value = "RUBY";
+            (<any>listObj).inputFocus = false;
+            (<any>listObj).inputElement.value = "";
+            (<any>listObj).hidePopup();
+            (<any>listObj).inputFocus = true;
+            (<any>listObj).showPopup();
+            setTimeout(() => {
+                expect((<any>listObj).isPopupOpen()).toBe(true);
+            }, 450);
+        });
+    });  
+  
 });

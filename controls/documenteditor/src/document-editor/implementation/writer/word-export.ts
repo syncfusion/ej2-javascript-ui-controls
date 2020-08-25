@@ -2878,7 +2878,11 @@ export class WordExport {
         writer.writeAttributeString(undefined, 'w', undefined, '12700');
         writer.writeStartElement('a', 'solidFill', this.aNamespace);
         writer.writeStartElement('a', 'srgbClr', this.aNamespace);
-        writer.writeAttributeString(undefined, 'val', undefined, '000000');
+        if (shape.lineFormat.lineFormatType !== 'None') {
+            writer.writeAttributeString(undefined, 'val', undefined, '000000');
+        } else {
+            writer.writeAttributeString(undefined, 'val', undefined, 'FFFFFF');
+        }
         writer.writeEndElement();
         writer.writeEndElement();
         writer.writeStartElement('a', 'round', this.aNamespace);
@@ -3252,11 +3256,12 @@ export class WordExport {
             writer.writeEndElement(); //end of pPr
             writer.writeEndElement(); //end of P
         }
-        writer.writeEndElement(); //end of table cell 'tc'        
-        if (this.mVerticalMerge.containsKey((cell.columnIndex + cell.cellFormat.columnSpan - 1) + 1)
+        writer.writeEndElement(); //end of table cell 'tc' 
+        let increment: number = 1;
+        while (this.mVerticalMerge.containsKey((cell.columnIndex + cell.cellFormat.columnSpan - 1) + increment)
             && (((this.row.cells.indexOf(cell) === this.row.cells.length - 1) || this.row.cells.indexOf(cell) === cell.columnIndex))
             && cell.nextNode === undefined) {
-            let collKey: number = (cell.columnIndex + cell.cellFormat.columnSpan - 1) + 1;
+            let collKey: number = (cell.columnIndex + cell.cellFormat.columnSpan - 1) + increment;
             writer.writeStartElement(undefined, 'tc', this.wNamespace);
             let endProperties: boolean = true;
             if (!isNullOrUndefined(this.spanCellFormat)) {
@@ -3277,6 +3282,7 @@ export class WordExport {
             writer.writeStartElement('w', 'p', this.wNamespace);
             writer.writeEndElement(); //end of P
             writer.writeEndElement(); //end of table cell 'tc'  
+            increment ++;
         }
         this.blockOwner = owner;
     }

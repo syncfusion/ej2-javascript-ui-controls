@@ -551,7 +551,7 @@ var SfTab = /** @class */ (function () {
         this.isSwipeed = true;
         if (e.swipeDirection === 'Right' && this.options.selectedItem !== 0) {
             for (var k = this.options.selectedItem - 1; k >= 0; k--) {
-                if (!this.tbItem[k].classList.contains(CLS_HIDDEN)) {
+                if (!this.tbItem[k].classList.contains(CLS_HIDDEN) && !this.tbItem[k].classList.contains(CLS_DISABLE)) {
                     this.select(k);
                     break;
                 }
@@ -559,7 +559,7 @@ var SfTab = /** @class */ (function () {
         }
         else if (e.swipeDirection === 'Left' && (this.options.selectedItem !== sf.base.selectAll('.' + CLS_TB_ITEM, this.element).length - 1)) {
             for (var i = this.options.selectedItem + 1; i < this.tbItem.length; i++) {
-                if (!this.tbItem[i].classList.contains(CLS_HIDDEN)) {
+                if (!this.tbItem[i].classList.contains(CLS_HIDDEN) && !this.tbItem[i].classList.contains(CLS_DISABLE)) {
                     this.select(i);
                     break;
                 }

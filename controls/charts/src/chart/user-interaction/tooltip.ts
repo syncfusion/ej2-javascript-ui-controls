@@ -154,7 +154,7 @@ export class Tooltip extends BaseTooltip {
                 this.isRemove = false;
             } else {
                 for (let series of chart.visibleSeries) {
-                    if (series.visible) {
+                    if (series.visible && !(series.category === 'TrendLine')) {
                         data = this.getClosestX(chart, series) || data;
                     }
                 }
@@ -285,7 +285,8 @@ export class Tooltip extends BaseTooltip {
                 this.valueX = valueToPolarCoefficient(data.point.xValue, data.series.xAxis) * data.series.xAxis.rect.width
                     + data.series.xAxis.rect.x;
             } else {
-                this.valueX = valueToCoefficient(data.point.xValue, data.series.xAxis) * data.series.xAxis.rect.width
+                this.valueX = (data.series.category === 'TrendLine' && chart.tooltip.shared) ? this.valueX :
+                    valueToCoefficient(data.point.xValue, data.series.xAxis) * data.series.xAxis.rect.width
                     + data.series.xAxis.rect.x;
             }
             this.valueY = chart.mouseY;
@@ -298,6 +299,7 @@ export class Tooltip extends BaseTooltip {
 
     private renderGroupedTooltip(chart: Chart, isFirst: boolean, tooltipDiv: Element): void {
         let data: PointData;
+        let lastData: PointData;
         let height: number = 0; let width: number = 0;
         let pointData: PointData = chart.chartAreaType === 'PolarRadar' ? this.getData() : null;
         this.stopAnimation();
@@ -341,6 +343,7 @@ export class Tooltip extends BaseTooltip {
                     argument.headerText = this.findHeader(data);
                     (<PointData[]>this.currentPoints).push(data);
                     argument.text.push(this.getTooltipText(data));
+                    lastData = (data.series.category === 'TrendLine' && chart.tooltip.shared) ? lastData : data;
                 }
             }
             // if (data && this.triggerEvent(data, isFirst, this.getTooltipText(data)), this.findHeader(data)) {
@@ -352,7 +355,7 @@ export class Tooltip extends BaseTooltip {
             // }
         }
         if (chart.isBlazor) {
-            this.triggerBlazorSharedTooltip(argument, data, extraPoints, chart, isFirst);
+            this.triggerBlazorSharedTooltip(argument, lastData, extraPoints, chart, isFirst);
         }
         if (this.currentPoints.length > 0) {
             this.createTooltip(chart, isFirst, this.findSharedLocation(),

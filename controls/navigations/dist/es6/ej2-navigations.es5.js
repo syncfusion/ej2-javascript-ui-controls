@@ -2218,6 +2218,9 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                                 }
                                 this.isClosed = true;
                                 this.keyType = 'click';
+                                if (this.showItemOnClick) {
+                                    this.setLISelected(cli);
+                                }
                                 this.closeMenu(culIdx + 1, e);
                                 if (this.showItemOnClick) {
                                     this.setLISelected(cli);

@@ -115,6 +115,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         this.fields = { text: 'label', value: 'field' };
         this.updatedRule = { not: false, condition: 'and' };
         this.isLocale = false;
+        this.isRefreshed = false;
         MultiSelect.Inject(CheckBoxSelection);
     }
     getPersistData() {
@@ -1285,8 +1286,11 @@ let QueryBuilder = class QueryBuilder extends Component {
         let original = {};
         let result = [];
         let value;
+        let fieldColl;
+        if (this.separator.length > 0) {
+            fieldColl = field.split(this.separator);
+        }
         let dataSource = this.dataColl;
-        let fieldColl = field.split('.');
         if (this.dataColl[1]) {
             for (let i = 0, iLen = dataSource.length; i < iLen; i++) {
                 let data = {};
@@ -1855,6 +1859,13 @@ let QueryBuilder = class QueryBuilder extends Component {
             }
             this.renderControls(target, itemData, rule, tempRule);
         }
+        else {
+            let parentElem = target.parentElement.querySelector('.e-rule-value');
+            if (parentElem) {
+                removeClass([parentElem], 'e-show');
+                addClass([parentElem], 'e-hide');
+            }
+        }
     }
     updateValues(element, rule) {
         let idx = 1;
@@ -2306,7 +2317,9 @@ let QueryBuilder = class QueryBuilder extends Component {
             if (this.columns.length && this.isImportRules) {
                 this.addGroupElement(false, this.element, this.rule.condition);
                 let mRules = extend({}, this.rule, {}, true);
+                this.isRefreshed = true;
                 this.setGroupRules(mRules);
+                this.isRefreshed = false;
             }
             else if (this.columns.length) {
                 this.addRuleElement(this.element.querySelector('.e-group-container'), {});
@@ -2792,12 +2805,17 @@ let QueryBuilder = class QueryBuilder extends Component {
             let valElem = ruleElem.querySelectorAll('.e-tooltip');
             let i;
             let len = valElem.length;
+            let column;
             for (i = 0; i < len; i++) {
                 getComponent(valElem[i], 'tooltip').destroy();
             }
             while (ruleElem.previousElementSibling !== null) {
                 ruleElem = ruleElem.previousElementSibling;
                 index++;
+            }
+            column = this.getColumn(rule.rules[index].field);
+            if (column && column.template) {
+                this.templateDestroy(column, clnruleElem.querySelector('.e-template').id);
             }
             rule.rules.splice(index, 1);
             if (!prevElem || prevElem.className.indexOf('e-rule-container') < 0) {
@@ -2831,7 +2849,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         this.isImportRules = false;
     }
     keyBoardHandler(e) {
-        if (this.readonly && e.keyCode === 38 || e.keyCode === 40 || e.keyCode === 13) {
+        if (this.readonly && (e.keyCode === 38 || e.keyCode === 40 || e.keyCode === 13)) {
             e.preventDefault();
         }
     }
@@ -2898,7 +2916,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                     rule.value = null;
                 }
             }
-            if (rule.field !== '' && rule.operator !== '' && rule.value !== '') {
+            if ((this.isRefreshed && this.enablePersistence) || (this.rule.field !== '' && rule.operator !== '' && rule.value !== '')) {
                 // tslint:disable-next-line:no-any
                 let customObj = rule.custom;
                 rule = {
@@ -3093,15 +3111,15 @@ let QueryBuilder = class QueryBuilder extends Component {
                     ignoreCase = true;
                 }
                 column = this.getColumn(ruleColl[i].field);
-                if (ruleColl[i].type === 'date' && !(ruleColl[i].value instanceof Array)) {
+                if (oper.indexOf('null') > -1 || oper.indexOf('empty') > -1) {
+                    ruleColl[i].value = null;
+                }
+                else if (ruleColl[i].type === 'date' && !(ruleColl[i].value instanceof Array)) {
                     let format = this.getFormat(column.format);
                     ruleValue = this.getDate(ruleColl[i].value, format);
                     if (dateOperColl.indexOf(oper) > -1) {
                         isDateFilter = true;
                     }
-                }
-                else if (oper.indexOf('null') > -1 || oper.indexOf('empty') > -1) {
-                    ruleColl[i].value = null;
                 }
                 else {
                     ruleValue = ruleColl[i].value;
@@ -3164,7 +3182,9 @@ let QueryBuilder = class QueryBuilder extends Component {
         return localeString;
     }
     getColumn(field) {
-        field = field.split('.')[0];
+        if (this.separator.length > 0) {
+            field = field.split(this.separator)[0];
+        }
         let columns = this.columns;
         let column;
         for (let i = 0, iLen = columns.length; i < iLen; i++) {
@@ -3944,6 +3964,9 @@ __decorate([
 __decorate([
     Property(false)
 ], QueryBuilder.prototype, "readonly", void 0);
+__decorate([
+    Property('')
+], QueryBuilder.prototype, "separator", void 0);
 __decorate([
     Complex({ condition: 'and', rules: [] }, Rule)
 ], QueryBuilder.prototype, "rule", void 0);

@@ -203,10 +203,16 @@ export class DrillThroughDialog {
     }
 
     private editCell(eventArgs: DrillThroughEventArgs): void {
+        let gridResize: boolean = this.parent.gridSettings.allowResizing;
         let actualText: string = eventArgs.currentCell.actualText.toString();
         let indexObject: number = Number(Object.keys(eventArgs.currentCell.indexObject));
         (eventArgs.currentTarget.firstElementChild as HTMLElement).style.display = 'none';
         let cellValue: number = Number(eventArgs.rawData[0][actualText]);
+        let previousData: any = this.frameHeaderWithKeys(eventArgs.rawData[eventArgs.rawData.length - 1]);
+        let currentData: any = eventArgs.rawData[eventArgs.rawData.length - 1];
+        if (eventArgs.currentCell.actualText in previousData) {
+            currentData[eventArgs.currentCell.actualText] = eventArgs.currentCell.actualValue;
+        }
         this.numericTextBox = new NumericTextBox({
             value: cellValue,
             enableRtl: this.parent.enableRtl,
@@ -220,10 +226,19 @@ export class DrillThroughDialog {
                 this.parent.engineModule.data[indexValue] = eventArgs.rawData[0];
             },
             blur: () => {
-                this.parent.setProperties({ dataSourceSettings: { dataSource: this.parent.engineModule.data } }, true);
-                (this.engine as PivotEngine).updateGridData(this.parent.dataSourceSettings as IDataOptions);
-                this.parent.pivotValues = this.engine.pivotValues;
-                this.parent.gridSettings.allowResizing = true;
+                let eventArgs: EditCompletedEventArgs = {
+                    currentData: currentData,
+                    previousData: previousData,
+                    previousPosition: currentData.index,
+                    cancel: false
+                }
+                this.parent.trigger(events.editCompleted, eventArgs);
+                if (!eventArgs.cancel) {
+                    this.parent.setProperties({ dataSourceSettings: { dataSource: this.parent.engineModule.data } }, true);
+                    (this.engine as PivotEngine).updateGridData(this.parent.dataSourceSettings as IDataOptions);
+                    this.parent.pivotValues = this.engine.pivotValues;
+                    this.parent.gridSettings.allowResizing = gridResize;
+                }
             },
         });
         let textBoxElement: HTMLElement = createElement('input', {

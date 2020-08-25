@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.2.55 (2020-08-25)
+
+### Context Menu
+
+#### Bug Fixes
+
+- Issue with item selection has been fixed.
+
 ## 18.2.54 (2020-08-18)
 
 ### TreeView

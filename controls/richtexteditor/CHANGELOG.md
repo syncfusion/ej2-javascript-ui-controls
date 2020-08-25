@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.2.55 (2020-08-25)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+`#287641` - The issue with "pasting the list content from MS Word in the Rich Text Editor removes the copied content" has been resolved.
+
 ## 18.2.54 (2020-08-18)
 
 ### RichTextEditor

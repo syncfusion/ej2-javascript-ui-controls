@@ -196,6 +196,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private updatedRule;
     private ruleTemplateFn;
     private isLocale;
+    private isRefreshed;
     /**
      * Triggers when the component is created.
      * @event
@@ -311,6 +312,11 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
      * @default false
      */
     readonly: boolean;
+    /**
+     * Specifies the separator string for column.
+     * @default ''
+     */
+    separator: string;
     /**
      * Defines rules in the QueryBuilder.
      * Specifies the initial rule, which is JSON data.

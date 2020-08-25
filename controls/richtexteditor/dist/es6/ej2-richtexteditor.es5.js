@@ -13238,7 +13238,8 @@ var MsWordPaste = /** @__PURE__ @class */ (function () {
                 continue;
             }
             else if (allNodes[index].className &&
-                allNodes[index].className.toLowerCase().indexOf('msolistparagraph') !== -1) {
+                allNodes[index].className.toLowerCase().indexOf('msolistparagraph') !== -1 &&
+                allNodes[index].childElementCount !== 1) {
                 listNodes.push(allNodes[index]);
             }
             if (prevflagState && (this.blockNode.indexOf(allNodes[index].nodeName.toLowerCase()) !== -1) &&
@@ -14886,12 +14887,17 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
                 if (_this.parent.isServerRendered) {
                     beforeUploadArgs = JSON.parse(JSON.stringify(args));
                     beforeUploadArgs.filesData = rawFile;
+                    args.cancel = true;
                     _this.parent.trigger(imageUploading, beforeUploadArgs, function (beforeUploadArgs) {
                         if (beforeUploadArgs.cancel) {
                             return;
                         }
                         /* tslint:disable */
-                        _this.uploadObj.uploadFiles(rawFile, null);
+                        uploadObj.currentRequestHeader = beforeUploadArgs.currentRequest ?
+                            beforeUploadArgs.currentRequest : uploadObj.currentRequestHeader;
+                        uploadObj.customFormDatas = beforeUploadArgs.customFormData && beforeUploadArgs.customFormData.length > 0 ?
+                            beforeUploadArgs.customFormData : uploadObj.customFormDatas;
+                        uploadObj.uploadFiles(rawFile, null);
                         /* tslint:enable */
                     });
                 }
@@ -15247,7 +15253,8 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
                 var parElem = void 0;
                 for (var k = 0, l = 0, preNode = void 0; k < inElem[j].childNodes.length; k++, l++) {
                     if (inElem[j].childNodes[k].nodeName === 'DIV' || inElem[j].childNodes[k].nodeName === 'P' ||
-                        (inElem[j].childNodes[k].nodeName === '#text' && (inElem[j].childNodes[k].nodeValue.replace(/\u00a0/g, '&nbsp;') !== '&nbsp;') &&
+                        (inElem[j].childNodes[k].nodeName === '#text' &&
+                            (inElem[j].childNodes[k].nodeValue.replace(/\u00a0/g, '&nbsp;') !== '&nbsp;') &&
                             inElem[j].childNodes[k].textContent.trim() === '')) {
                         parElem = inElem[j].childNodes[k].parentElement;
                         inElem[j].childNodes[k].parentElement.parentElement.insertBefore(inElem[j].childNodes[k], inElem[j].childNodes[k].parentElement);
@@ -17694,11 +17701,16 @@ var Image = /** @__PURE__ @class */ (function () {
                 if (_this.parent.isServerRendered) {
                     beforeUploadArgs = JSON.parse(JSON.stringify(args));
                     beforeUploadArgs.filesData = filesData;
+                    args.cancel = true;
                     _this.parent.trigger(imageUploading, beforeUploadArgs, function (beforeUploadArgs) {
                         if (beforeUploadArgs.cancel) {
                             return;
                         }
                         /* tslint:disable */
+                        _this.uploadObj.currentRequestHeader = beforeUploadArgs.currentRequest ?
+                            beforeUploadArgs.currentRequest : _this.uploadObj.currentRequestHeader;
+                        _this.uploadObj.customFormDatas = beforeUploadArgs.customFormData && beforeUploadArgs.customFormData.length > 0 ?
+                            beforeUploadArgs.customFormData : _this.uploadObj.customFormDatas;
                         _this.uploadObj.uploadFiles(rawFile, null);
                         /* tslint:enable */
                     });
@@ -18018,11 +18030,16 @@ var Image = /** @__PURE__ @class */ (function () {
                     beforeUploadArgs = JSON.parse(JSON.stringify(args));
                     beforeUploadArgs.filesData = rawFile;
                     isUploading = true;
+                    args.cancel = true;
                     _this.parent.trigger(imageUploading, beforeUploadArgs, function (beforeUploadArgs) {
                         if (beforeUploadArgs.cancel) {
                             return;
                         }
                         /* tslint:disable */
+                        _this.uploadObj.currentRequestHeader = beforeUploadArgs.currentRequest ?
+                            beforeUploadArgs.currentRequest : _this.uploadObj.currentRequestHeader;
+                        _this.uploadObj.customFormDatas = beforeUploadArgs.customFormData && beforeUploadArgs.customFormData.length > 0 ?
+                            beforeUploadArgs.customFormData : _this.uploadObj.customFormDatas;
                         _this.uploadObj.uploadFiles(rawFile, null);
                         _this.parent.inputElement.contentEditable = 'false';
                         /* tslint:enable */
@@ -18330,7 +18347,7 @@ var ViewSource = /** @__PURE__ @class */ (function () {
         this.previewElement.focus();
         this.parent.updateValue();
         if (!isNullOrUndefined(this.parent.placeholder) && !this.parent.iframeSettings.enable) {
-            var placeHolderWrapper = this.parent.element.querySelector('.rte-placeholder');
+            var placeHolderWrapper = this.parent.element.querySelector('.rte-placeholder.e-rte-placeholder');
             placeHolderWrapper.style.display = 'none';
         }
         this.parent.trigger(actionComplete, { requestType: 'SourceCode', targetItem: 'SourceCode', args: args });
@@ -18373,7 +18390,7 @@ var ViewSource = /** @__PURE__ @class */ (function () {
         this.contentModule.getEditPanel().focus();
         this.parent.updateValue();
         if (!isNullOrUndefined(this.parent.placeholder) && this.contentModule.getEditPanel().innerText.length === 0) {
-            var placeHolderWrapper = this.parent.element.querySelector('.rte-placeholder');
+            var placeHolderWrapper = this.parent.element.querySelector('.rte-placeholder.e-rte-placeholder');
             placeHolderWrapper.style.display = 'block';
         }
         this.parent.trigger(actionComplete, { requestType: 'Preview', targetItem: 'Preview', args: args });
@@ -21206,7 +21223,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         if (this.inputElement && this.placeholder && this.iframeSettings.enable !== true) {
             if (this.editorMode !== 'Markdown') {
                 if (!this.placeHolderWrapper) {
-                    this.placeHolderWrapper = this.createElement('span', { className: 'rte-placeholder' });
+                    this.placeHolderWrapper = this.createElement('span', { className: 'rte-placeholder e-rte-placeholder' });
                     if (this.inputElement) {
                         this.inputElement.parentElement.insertBefore(this.placeHolderWrapper, this.inputElement);
                     }

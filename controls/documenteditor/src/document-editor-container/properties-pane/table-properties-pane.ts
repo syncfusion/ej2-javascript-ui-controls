@@ -282,7 +282,8 @@ export class TableProperties {
                 this.horizontalMerge.disabled = true;
             }
             if (this.documentEditor.selection.contextType === 'TableText' || this.documentEditor.selection.contextType === 'TableImage') {
-                this.shadingBtn.value = this.documentEditor.selection.cellFormat.background;
+                // tslint:disable-next-line:max-line-length
+                this.shadingBtn.value = this.documentEditor.selection.cellFormat.background ? this.documentEditor.selection.cellFormat.background : '';
             }
             // tslint:disable-next-line:max-line-length
             this.topMargin.value = this.documentEditor.selection.cellFormat.topMargin ? this.documentEditor.selection.cellFormat.topMargin : 0;

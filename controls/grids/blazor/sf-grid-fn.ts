@@ -501,7 +501,7 @@ export class SfGrid {
     public documentClickHandler(e: MouseEventArgs): void {
         let popupElement: Element = parentsUntil(<Element>e.target, 'e-popup-open');
         let CCButton: Element = parentsUntil(<Element>e.target,'e-cc-toolbar');
-        if (!popupElement && !((<Element>e.target).classList.contains('e-fltrcheck')) && !((<Element>e.target).classList.contains('e-icon-filter')) && !CCButton && (this.element.querySelectorAll('.e-filter-popup.e-popup-open').length || this.element.querySelectorAll('.e-ccdlg.e-popup-open').length)) {
+        if (!popupElement && !((<Element>e.target).classList.contains('e-cc-cancel')) && !((<Element>e.target).classList.contains('e-choosercheck')) && !((<Element>e.target).classList.contains('e-fltrcheck')) && !((<Element>e.target).classList.contains('e-icon-filter')) && !CCButton && (this.element.querySelectorAll('.e-filter-popup.e-popup-open').length || this.element.querySelectorAll('.e-ccdlg.e-popup-open').length)) {
             this.dotNetRef.invokeMethodAsync('FilterPopupClose');
         }
     }
@@ -524,8 +524,8 @@ export class SfGrid {
     }
 
     public gridKeyDownHandler(e: KeyboardEventArgs): void {
-        let popupElement: Element = parentsUntil(<Element>e.target, 'e-popup-open');
-        if (popupElement && e.key != 'Escape') {
+        let popupElement: Element = parentsUntil(<Element>e.target, 'e-filter-popup');
+        if (!isNullOrUndefined(popupElement) && popupElement.classList.contains('e-popup-open') && e.key != 'Escape') {
             e.stopPropagation();
             if ((e.key == "Tab" || e.key == "shiftTab" || e.key == "Enter" || e.key == "shiftEnter") && 
                 (e.target as HTMLElement).tagName == "INPUT") {
@@ -656,7 +656,7 @@ export class SfGrid {
         if (this.options.enableVirtualization && (this.options.pageSize === 12 || this.options.width === 'auto')) {
             this.virtualContentModule.ensurePageSize();
         }
-        if (this.options.columns.some((col: Column) => col.hideAtMedia !== '')) {
+        if (this.getColumns().some((col: Column) =>  col.hideAtMedia !== '')) {
             this.columnChooserModule.setMediaColumns();
         }
     }

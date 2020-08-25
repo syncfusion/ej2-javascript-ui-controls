@@ -24,6 +24,7 @@ export class RowDD {
     private helper: Function = (e: { sender: MouseEventArgs }) => {
         let gObj: SfGrid = this.parent;
         let target: Element = this.draggable.currentStateTarget as Element;
+        (e.sender.target as HTMLElement).blur(); //https://github.com/dotnet/aspnetcore/issues/17926
         let visualElement: HTMLElement = createElement('div', {
             className: 'e-cloneproperties e-draganddrop e-grid e-dragclone',
             styles: 'height:"auto", z-index:2, width:' + gObj.element.offsetWidth

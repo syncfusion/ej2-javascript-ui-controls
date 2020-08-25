@@ -212,13 +212,15 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
   public grid: Grid;
   /**     
    * Defines the schema of dataSource. 
-   * If the `columns` declaration is empty or undefined then the `columns` are automatically generated from data source.     
+   * If the `columns` declaration is empty or undefined then the `columns` are automatically generated from data source.
+   * {% codeBlock src='treegrid/columns/index.md' %}{% endcodeBlock %}    
    * @default []
    */
   @Property([])
   public columns: ColumnModel[] | string[] | Column[];
   /**
    * Specifies the mapping property path for child records in data source
+   * {% codeBlock src='treegrid/childMapping/index.md' %}{% endcodeBlock %}
    * @default null
    */
   @Property(null)
@@ -237,12 +239,14 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
   public treeColumnIndex: number;
   /**
    * Specifies the name of the field in the dataSource, which contains the id of that row.
+   * {% codeBlock src='treegrid/idMapping/index.md' %}{% endcodeBlock %}
    * @default null
    */
   @Property(null)
   public idMapping: string;
   /**
    * Specifies the name of the field in the dataSource, which contains the parent’s id
+   * {% codeBlock src='treegrid/parentIdMapping/index.md' %}{% endcodeBlock %}
    * @default null
    */
   @Property(null)
@@ -271,6 +275,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
 
   /**
    * It is used to render TreeGrid table rows.
+   * {% codeBlock src='treegrid/dataSource/index.md' %}{% endcodeBlock %}
    * @default []
    * @isGenericType true
    * @isDataSource true
@@ -3543,6 +3548,8 @@ private getGridEditSettings(): GridEditModel {
       }
       if (this.isPixelHeight() && !row.cells[0].classList.contains('e-lastrowcell') ) {
         let totalRows: HTMLTableRowElement[] = this.getRows();
+        let rows: HTMLCollection = (this.getContentTable() as HTMLTableElement).rows;
+        totalRows = [].slice.call(rows);
         for (let i: number = totalRows.length - 1; i > 0; i--) {
           if (!isHidden(totalRows[i])) {
             let table: Element = this.getContentTable();
