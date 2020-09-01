@@ -1473,6 +1473,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             let pastedContentLength: number = (isNOU(e as ClipboardEvent) || isNOU((e as ClipboardEvent).clipboardData))
             ? 0 : (e as ClipboardEvent).clipboardData.getData('text/plain').length;
             let totalLength: number = (currentLength - selectionLength) + pastedContentLength;
+            if (this.editorMode === 'Markdown') {
+                if (!(this.maxLength === -1 || totalLength < this.maxLength)) {
+                    e.preventDefault();
+                }
+                return;
+            }
             if (!pasteArgs.cancel && this.inputElement.contentEditable === 'true' &&
             (this.maxLength === -1 || totalLength < this.maxLength)) {
                 if (!isNOU(this.pasteCleanupModule)) {
@@ -1533,7 +1539,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @return {void}
      */
     public destroy(): void {
-        if (this.isDestroyed) { return; }
+        if (this.isDestroyed || this.element.offsetParent === null) { return; }
         if (this.isRendered) {
             this.notify(events.destroy, {});
             this.destroyDependentModules();
@@ -1962,7 +1968,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Shows the Rich Text Editor component in full-screen mode.
      */
     public showFullScreen(): void {
-        if (this.readonly) { return; }
         this.fullScreenModule.showFullScreen();
     }
     /**

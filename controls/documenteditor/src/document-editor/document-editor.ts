@@ -33,7 +33,7 @@ import { DocumentEditorModel, ServerActionSettingsModel, DocumentEditorSettingsM
 import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties, DocumentHelper } from './index';
 import { PasteOptions } from './index';
 // tslint:disable-next-line:max-line-length
-import { CommentReviewPane, CheckBoxFormFieldDialog, DropDownFormField, TextFormField, CheckBoxFormField, FieldElementBox, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo } from './implementation/index';
+import { CommentReviewPane, CheckBoxFormFieldDialog, DropDownFormField, TextFormField, CheckBoxFormField, FieldElementBox, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, ContextElementInfo } from './implementation/index';
 import { TextFormFieldDialog } from './implementation/dialogs/form-field-text-dialog';
 import { DropDownFormFieldDialog } from './implementation/dialogs/form-field-drop-down-dialog';
 import { FormFillingMode, TrackChangeEventArgs, ServiceFailureArgs } from './base';
@@ -2235,6 +2235,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             case 'TableOptions':
                 this.showTableOptionsDialog();
                 break;
+            case 'SpellCheck':
+                this.showSpellCheckDialog();
+                break;
         }
     }
     /**
@@ -2251,6 +2254,16 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public showRestrictEditingPane(): void {
         if (this.documentHelper && this.documentHelper.restrictEditingPane) {
             this.documentHelper.restrictEditingPane.showHideRestrictPane(true);
+        }
+    }
+    /**
+     * Shows the spell check dialog.
+     * @private
+     */
+    public showSpellCheckDialog(): void {
+        if (this.spellCheckDialogModule && this.spellChecker) {
+            let element: ContextElementInfo = this.spellChecker.retriveText();
+            this.spellCheckDialogModule.show(element.text, element.element);
         }
     }
     /**

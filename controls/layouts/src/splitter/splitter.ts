@@ -1769,7 +1769,7 @@ export class Splitter extends Component<HTMLElement> {
     private getSeparatorPosition(e: MouseEvent | TouchEvent | PointerEvent): number {
         this.updateCursorPosition(e, 'current');
         let rectBound: number = (this.orientation === 'Horizontal') ? this.element.getBoundingClientRect().left :
-          this.element.getBoundingClientRect().top;
+          this.element.getBoundingClientRect().top +  window.scrollY;
         let offSet: number = (this.orientation === 'Horizontal') ? this.element.offsetWidth : this.element.offsetHeight;
         return this.calcDragPosition(rectBound, offSet);
     }

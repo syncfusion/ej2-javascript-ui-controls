@@ -445,6 +445,7 @@ export class PdfViewerBase {
     public isTileImageRendered: boolean = false;
     private isDataExits: boolean = false;
     private requestLists: string[] = [];
+    private tilerequestLists: string[] = [];
     /**
      * @private
      */
@@ -1290,6 +1291,7 @@ export class PdfViewerBase {
         this.annotationEvent = null;
         this.highestWidth = 0;
         this.requestLists = [];
+        this.tilerequestLists = [];
         this.pdfViewer.formFieldCollections = [];
         this.initiateTextSelectMode();
         if (!Browser.isDevice) {
@@ -3270,6 +3272,11 @@ export class PdfViewerBase {
                 canvas.style.backgroundColor = '#fff';
                 canvas.style.width = pageWidth + 'px';
                 canvas.style.height = pageHeight + 'px';
+                let zoomFactor: number = this.retrieveCurrentZoomFactor();
+                let currentString: string = this.documentId + '_' + pageIndex + '_' + zoomFactor + '_' + data.tileX + '_' + data.tileY;
+                // tslint:disable-next-line:max-line-length
+                if (((this.tilerequestLists.indexOf(currentString) === -1) && this.pdfViewer.restrictZoomRequest) || (!this.pdfViewer.restrictZoomRequest)) {
+                this.tilerequestLists.push(currentString);
                 // tslint:disable-next-line
                 let imageData: string = data['image'];
                 // tslint:disable-next-line
@@ -3336,6 +3343,7 @@ export class PdfViewerBase {
                         }
                     };
                     image.src = imageData;
+                }
                 }
                 if (isNaN(data.tileX) && isNaN(data.tileY)) {
                     this.onPageRender(data, pageIndex, pageDiv);
@@ -4055,7 +4063,9 @@ export class PdfViewerBase {
     }
 
     private downloadDocument(blobUrl: string): void {
-        blobUrl = URL.createObjectURL(blobUrl);
+        // tslint:disable-next-line
+        let Url: any = URL || webkitURL;
+        blobUrl = Url.createObjectURL(blobUrl);
         let anchorElement: HTMLElement = createElement('a');
         if (anchorElement.click) {
             (anchorElement as HTMLAnchorElement).href = blobUrl;
@@ -4077,7 +4087,9 @@ export class PdfViewerBase {
     }
 
     private downloadExportAnnotationJson(blobUrl: string): void {
-        blobUrl = URL.createObjectURL(blobUrl);
+        // tslint:disable-next-line
+        let Url: any = URL || webkitURL;
+        blobUrl = Url.createObjectURL(blobUrl);
         let anchorElement: HTMLElement = createElement('a');
         if (anchorElement.click) {
             (anchorElement as HTMLAnchorElement).href = blobUrl;
@@ -4558,9 +4570,6 @@ export class PdfViewerBase {
                     for (let y: number = 0; y < noTileY; y++) {
                         let jsonObject: object;
                         let zoomFactor: number = this.retrieveCurrentZoomFactor();
-                        if (this.pdfViewer.restrictZoomRequest && !this.pdfViewer.tileRenderingSettings.enableTileRendering) {
-                            zoomFactor = 1;
-                        }
                         if (zoomFactor > 2 && pageWidth <= 1200) {
                             viewPortWidth = 700;
                         } else {
@@ -4661,9 +4670,6 @@ export class PdfViewerBase {
     // tslint:disable-next-line
     public getStoredData(pageIndex: number): any {
         let zoomFactor: number = this.retrieveCurrentZoomFactor();
-        if (this.pdfViewer.restrictZoomRequest && !this.pdfViewer.tileRenderingSettings.enableTileRendering) {
-            zoomFactor = 1;
-        }
         // tslint:disable-next-line
         let storedData: any = this.getWindowSessionStorage(pageIndex, zoomFactor) ? this.getWindowSessionStorage(pageIndex, zoomFactor) : this.getPinchZoomPage(pageIndex);
         // tslint:disable-next-line
@@ -4685,7 +4691,9 @@ export class PdfViewerBase {
     public storeWinData(data: any, pageIndex: number, tileX?: number, tileY?: number): void {
         // tslint:disable-next-line
         let blobObj: string = this.createBlobUrl(data['image'].split('base64,')[1], 'image/png');
-        let blobUrl: string = URL.createObjectURL(blobObj);
+        // tslint:disable-next-line
+        let Url: any = URL || webkitURL;
+        let blobUrl: string = Url.createObjectURL(blobObj);
         // tslint:disable-next-line
         let storeObject: any;
         if (isNaN(tileX) && isNaN(tileY)) {
@@ -4811,9 +4819,6 @@ export class PdfViewerBase {
         let zoomFactor: number = this.retrieveCurrentZoomFactor();
         if (isNaN(tileX) && isNaN(tileY)) {
             // tslint:disable-next-line:max-line-length
-            if (this.pdfViewer.restrictZoomRequest && !this.pdfViewer.tileRenderingSettings.enableTileRendering) {
-                zoomFactor = 1;
-            }
             window.sessionStorage.setItem(this.documentId + '_' + pageIndex + '_' + zoomFactor, JSON.stringify(storeObject));
             this.sessionStorage.push(this.documentId + '_' + pageIndex + '_' + zoomFactor);
         } else {
@@ -5810,7 +5815,21 @@ export class PdfViewerBase {
                     this.pdfViewer.annotation.stampAnnotationModule.isStampAddMode = false;
                     if (stampObj.shapeAnnotationType === 'Image' && !this.isAlreadyAdded) {
                         this.stampAdded = true;
-                        this.customStampCollection.push({ customStampName: stampObj.id, customStampImageSource: stampObj.data });
+                        let stampName: string = stampObj.id;
+                        if (stampModule.currentStampAnnotation && stampModule.currentStampAnnotation.signatureName) {
+                            stampName = stampModule.currentStampAnnotation.signatureName;
+                        }
+                        let isSkip: boolean = false;
+                        for (let i: number = 0; i < this.customStampCollection.length; i++) {
+                            if (this.customStampCollection[i].customStampName === stampName) {
+                                isSkip = true;
+                                break;
+                            }
+                        }
+                        if (isSkip) {
+                            stampName = stampObj.id;
+                        }
+                        this.customStampCollection.push({ customStampName: stampName, customStampImageSource: stampObj.data });
                     }
                     this.isAlreadyAdded = false;
                     stampModule.updateDeleteItems(stampObj.pageIndex, stampObj, stampObj.opacity);

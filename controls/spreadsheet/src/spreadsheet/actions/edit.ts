@@ -305,9 +305,19 @@ export class Edit {
                 let range: number[] = getIndexesFromAddress(address);
                 range = range[0] > range[2] ? getSwapRange(range) : range;
                 address = getRangeAddress(range);
+                let sheet: SheetModel = this.parent.getActiveSheet();
+                let cell: CellModel = {};
+                Object.assign(cell, getCell(range[0], range[1], sheet));
+                this.parent.notify(setActionData, { args: { action: 'beforeCellSave', eventArgs: { address: address } } });
                 this.parent.clearRange(address, null, true);
                 this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(range);
                 this.parent.notify(selectionComplete, {});
+                let eventArgs: CellSaveEventArgs = {
+                    value: '',
+                    oldValue: cell.value,
+                    address: getSheetName(this.parent, this.parent.activeSheetIndex) + '!' + address,
+                };
+                this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'cellSave' });
                 break;
         }
     }

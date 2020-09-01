@@ -12,7 +12,7 @@ import { DiagramNativeElement } from '../../../src/diagram/core/elements/native-
 import { TextElement } from '../../../src/diagram/core/elements/text-element';
 import { Native, NodeConstraints, accessibilityElement, HtmlModel, Ruler, ComplexHierarchicalTree } from '../../../src/index';
 import { MouseEvents } from '../interaction/mouseevents.spec';
-import { SnapConstraints, PointPort, Annotation, IconShapes, Decorator, PortVisibility, ConnectorModel, PointModel, PortConstraints, AnnotationConstraints, ConnectorConstraints } from '../../../src/diagram/index';
+import { SnapConstraints, PointPort, Annotation, IconShapes, Decorator, PortVisibility, ConnectorModel, PointModel, PortConstraints, AnnotationConstraints, ConnectorConstraints, LayoutModel, randomId, Thickness, DataBinding } from '../../../src/diagram/index';
 import {  IScrollChangeEventArgs, IBlazorScrollChangeEventArgs, DiagramTools, State } from '../../../src/diagram/index';
 
 import { PointPortModel } from '../../../src/diagram/objects/port-model';
@@ -22,7 +22,8 @@ import { getDiagramLayerSvg } from '../../../src/diagram/utility/dom-util';
 import { LayerModel } from '../../../src/diagram/diagram/layer-model';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 import { Selector } from '../../../src/diagram/objects/node';
-Diagram.Inject(ComplexHierarchicalTree);
+import { DataManager, Query } from '@syncfusion/ej2-data';
+Diagram.Inject(ComplexHierarchicalTree,DataBinding);
 
 /**
  * Test cases to check different kind of nodes
@@ -2004,5 +2005,176 @@ describe('SizeChange Event at completed state', () => {
         expect((beforeHeight != afterHeight) && (beforeOffsetX === afterOffsetX) ).toBe(true)
         done();
         
+    });
+});
+export interface EmployeeInfo {
+    Name: string;
+    Designation: string;
+    ImageUrl: string;
+}
+describe('Complex Hierarchical tree layout change', () => {
+    let diagram: Diagram; let elements: HTMLElement
+    beforeAll((): void => {
+        elements = createElement('div', { styles: 'width:100%;height:500px;' });
+        elements.appendChild(createElement('div', { id: 'diagramHierarchical' }));
+        document.body.appendChild(elements);
+        let Data: object[] = [
+            {
+                "Id": "Node1", "Name": "Anto Moreno", "Designation": "Project Lead",
+                "ImageUrl": "./assets/diagram/employees/image1.png", "IsExpand": "false",
+                "RatingColor": "#93B85A",// "ReportingPerson": [1]
+            },
+            {
+                "Id": "Node2", "Name": "Thomas Hardy", "Designation": "Senior S/w Engg",
+                "ImageUrl": "./assets/diagram/employees/image3.png", "IsExpand": "false",
+                "RatingColor": "#68C2DE", "ReportingPerson": "Node1"
+            },
+            {
+                "Id": "Node3", "Name": "Christina kaff", "Designation": "S/w Engg",
+                "ImageUrl": "./assets/diagram/employees/image4.png", "IsExpand": "false",
+                "RatingColor": "#93B85A", "ReportingPerson": "Node2"
+            },
+            
+        ];
+        let items: DataManager = new DataManager(Data as JSON[], new Query().take(7));
+        let data: Object = {
+            id: "Id", parentId: 'ReportingPerson', dataSource: items
+        };
+        let layout: LayoutModel = {
+            type: 'ComplexHierarchicalTree', margin: { top: 20 },
+            horizontalSpacing: 50, verticalSpacing: 50
+            
+        };
+        diagram = new Diagram({
+            width: 1000, height: 1000,
+            scrollSettings:{ scrollLimit: 'Infinity' },
+            snapSettings:{constraints: SnapConstraints.None},
+            tool: DiagramTools.ZoomPan,
+            layout: layout,
+            dataSourceSettings: data,
+            setNodeTemplate: (node: NodeModel, diagram: Diagram): Container => {
+                node.constraints = NodeConstraints.InConnect |
+                NodeConstraints.OutConnect |
+                NodeConstraints.Select |
+                NodeConstraints.PointerEvents |
+                NodeConstraints.Drag;
+            const strokeWidth: number = 0.5;
+            const cornerRadius: number = 4;
+            const mainStack: StackPanel = new StackPanel();
+            mainStack.id = randomId();
+            mainStack.style.fill = "#0099ff";
+            mainStack.orientation = 'Horizontal';
+            mainStack.minHeight = 55;
+            mainStack.width = 100;
+            mainStack.style.strokeWidth = strokeWidth;
+            mainStack.style.strokeColor = '#AAAAAA';
+            mainStack.cornerRadius = cornerRadius;
+            mainStack.shadow = { color: 'grey', distance: 6, opacity: .1, angle: 135 };
+            const personStack: StackPanel = new StackPanel();
+            personStack.id = randomId();
+            personStack.orientation = 'Vertical';
+            personStack.style.strokeWidth = 0;
+            personStack.style.fill = 'transparent';
+            personStack.children = [];
+            let text: TextElement = new TextElement();
+            text.content = (node.data as EmployeeInfo).Name;
+            text.style.color = 'black';
+            text.style.bold = true;
+            text.style.strokeColor = 'none';
+            text.horizontalAlignment = 'Left';
+            text.style.fill = 'none';
+            text.id = node.id + '_text1';
+            const titleText = text;
+            personStack.children.push(titleText);
+            let desigText: TextElement = new TextElement();
+            desigText.margin = { left: 0, right: 0, top: 5, bottom: 0 };
+            desigText.content = (node.data as EmployeeInfo).Designation;
+            desigText.style.color = 'black';
+            desigText.style.strokeColor = 'none';
+            desigText.style.fontSize = 12;
+            desigText.style.fill = 'none';
+            desigText.horizontalAlignment = 'Left';
+            desigText.style.textWrapping = 'Wrap';
+            desigText.id = node.id + '_desig';
+            personStack.children.push(desigText);
+            const image: ImageElement = new ImageElement();
+            image.margin.left = 10;
+            image.margin.top = 10;
+            image.width = 30;
+            image.height = 30;
+            image.style.strokeColor = 'none';
+            image.style.fill = 'none';
+            image.verticalAlignment = 'Top';
+            image.source = 'https://cdn1.iconfinder.com/data/icons/business-elements-15/150/Firma-512.png';
+            image.id = randomId();
+            mainStack.children = [image, personStack];
+            const groupStack: StackPanel = new StackPanel();
+            groupStack.id = randomId();
+            groupStack.style.strokeWidth = 0;
+            groupStack.children = [];
+            groupStack.orientation = 'Vertical';
+            const bvStack: StackPanel = new StackPanel();
+            bvStack.id = randomId();
+            bvStack.style.fill = "#0099ff";
+            bvStack.orientation = 'Vertical';
+            bvStack.margin.top = 6;
+            bvStack.padding = new Thickness(4, 4, 4, 4);
+            bvStack.horizontalAlignment = 'Stretch';
+            bvStack.verticalAlignment = 'Top';
+            bvStack.style.strokeWidth = strokeWidth;
+            bvStack.style.strokeColor = '#AAAAAA';
+            bvStack.cornerRadius = cornerRadius;
+            bvStack.shadow = { color: 'grey', distance: 6, opacity: .1, angle: 135 };
+            bvStack.children = [];
+            let bvText: TextElement = new TextElement();
+            bvText.margin = { left: 0, right: 0, top: 5, bottom: 0 };
+            bvText.content = "Bankverbindungen";
+            bvText.style.color = 'black';
+            bvText.style.strokeColor = 'none';
+            bvText.style.fontSize = 12;
+            bvText.style.fill = 'none';
+            bvText.horizontalAlignment = 'Left';
+            bvText.style.textWrapping = 'Wrap';
+            bvText.id = node.id + '_bvText';
+            bvStack.children.push(bvText);
+            const vwStack: StackPanel = new StackPanel();
+            vwStack.id = randomId();
+            vwStack.style.fill = "#0099ff";
+            vwStack.orientation = 'Vertical';
+            vwStack.margin.top = 6;
+            vwStack.padding = new Thickness(4, 4, 4, 4);
+            vwStack.horizontalAlignment = 'Stretch';
+            vwStack.style.strokeWidth = strokeWidth;
+            vwStack.style.strokeColor = '#AAAAAA';
+            vwStack.cornerRadius = cornerRadius;
+            vwStack.shadow = { color: 'grey', distance: 6, opacity: .1, angle: 135 };
+            vwStack.children = [];
+            let vwText: TextElement = new TextElement();
+            vwText.margin = { left: 0, right: 0, top: 5, bottom: 0 };
+            vwText.content = "Vermögenswerte";
+            vwText.style.color = 'black';
+            vwText.style.strokeColor = 'none';
+            vwText.style.fontSize = 12;
+            vwText.style.fill = 'none';
+            vwText.horizontalAlignment = 'Left';
+            vwText.style.textWrapping = 'Wrap';
+            vwText.id = node.id + '_vwText';
+            vwStack.children.push(vwText);
+            groupStack.children.push(mainStack);
+            groupStack.children.push(bvStack);
+            groupStack.children.push(vwStack);
+            return groupStack;
+            }
+        });
+        diagram.appendTo('#diagramHierarchical');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        elements.remove();  
+    });
+    it('Due to intersection', (done: Function) => {
+        expect((diagram.nodes[1].offsetX) === 114.6953125).toBe(true)
+        done();
     });
 });

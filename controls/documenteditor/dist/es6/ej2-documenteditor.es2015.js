@@ -43896,9 +43896,9 @@ class Selection {
         return undefined;
     }
     /**
-     * @private
+     * Returns true if selection is inside the edit region
      */
-    isSelectionIsAtEditRegion(update) {
+    isSelectionInEditRegion() {
         if (!this.documentHelper.isDocumentProtected) {
             return false;
         }
@@ -47537,14 +47537,14 @@ class Editor {
      */
     get restrictFormatting() {
         return this.documentHelper.isDocumentProtected && (this.documentHelper.restrictFormatting
-            || (!this.documentHelper.restrictFormatting && !this.selection.isSelectionIsAtEditRegion(false)));
+            || (!this.documentHelper.restrictFormatting && !this.selection.isSelectionInEditRegion()));
     }
     /**
      * @private
      */
     get restrictEditing() {
         return this.documentHelper.isDocumentProtected && (this.documentHelper.protectionType === 'ReadOnly'
-            && !this.selection.isSelectionIsAtEditRegion(false) || this.documentHelper.protectionType === 'FormFieldsOnly');
+            && !this.selection.isSelectionInEditRegion() || this.documentHelper.protectionType === 'FormFieldsOnly');
     }
     get viewer() {
         return this.owner.viewer;
@@ -68911,6 +68911,12 @@ class WordExport {
             writer.writeEndElement();
         }
         writer.writeStartElement('wps', 'bodyPr', this.wpShapeNamespace);
+        if (shape.textFrame) {
+            writer.writeAttributeString(undefined, 'lIns', undefined, shape.textFrame.leftMargin.toString());
+            writer.writeAttributeString(undefined, 'tIns', undefined, shape.textFrame.topMargin.toString());
+            writer.writeAttributeString(undefined, 'rIns', undefined, shape.textFrame.rightMargin.toString());
+            writer.writeAttributeString(undefined, 'bIns', undefined, shape.textFrame.bottomMargin.toString());
+        }
         writer.writeEndElement();
         writer.writeEndElement();
         writer.writeEndElement();
@@ -86351,6 +86357,9 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
             case 'TableOptions':
                 this.showTableOptionsDialog();
                 break;
+            case 'SpellCheck':
+                this.showSpellCheckDialog();
+                break;
         }
     }
     /**
@@ -86367,6 +86376,16 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
     showRestrictEditingPane() {
         if (this.documentHelper && this.documentHelper.restrictEditingPane) {
             this.documentHelper.restrictEditingPane.showHideRestrictPane(true);
+        }
+    }
+    /**
+     * Shows the spell check dialog.
+     * @private
+     */
+    showSpellCheckDialog() {
+        if (this.spellCheckDialogModule && this.spellChecker) {
+            let element = this.spellChecker.retriveText();
+            this.spellCheckDialogModule.show(element.text, element.element);
         }
     }
     /**
@@ -86886,7 +86905,9 @@ class Toolbar$1 {
                 iconCss: 'e-icons e-de-ctnr-image',
                 select: this.onDropDownButtonSelect.bind(this),
             };
-            this.imgDropDwn = new DropDownButton(items, imageButton);
+            if (isNullOrUndefined(this.imgDropDwn)) {
+                this.imgDropDwn = new DropDownButton(items, imageButton);
+            }
         }
         if (this.toolbarItems.indexOf('Break') >= 0) {
             let breakButton = toolbarTarget.getElementsByClassName('e-de-break-splitbutton')[0].firstChild;
@@ -86899,7 +86920,9 @@ class Toolbar$1 {
                 iconCss: 'e-icons e-de-ctnr-break',
                 select: this.onDropDownButtonSelect.bind(this),
             };
-            this.breakDropDwn = new DropDownButton(items, breakButton);
+            if (isNullOrUndefined(this.breakDropDwn)) {
+                this.breakDropDwn = new DropDownButton(items, breakButton);
+            }
         }
         this.filePicker = createElement('input', {
             attrs: { type: 'file', accept: '.doc,.docx,.rtf,.txt,.htm,.html,.sfdt' }, className: 'e-de-ctnr-file-picker'
@@ -86925,7 +86948,9 @@ class Toolbar$1 {
                 cssClass: 'e-de-toolbar-btn-first e-caret-hide',
                 select: this.onDropDownButtonSelect.bind(this)
             };
-            this.restrictDropDwn = new DropDownButton(items, restrictEditing);
+            if (isNullOrUndefined(this.restrictDropDwn)) {
+                this.restrictDropDwn = new DropDownButton(items, restrictEditing);
+            }
         }
         if (this.toolbarItems.indexOf('FormFields') >= 0) {
             let breakButton = toolbarTarget.getElementsByClassName('e-de-formfields')[0].firstChild;
@@ -86938,7 +86963,9 @@ class Toolbar$1 {
                 cssClass: 'e-de-toolbar-btn-first e-caret-hide',
                 select: this.onDropDownButtonSelect.bind(this),
             };
-            this.formFieldDropDown = new DropDownButton(items, breakButton);
+            if (isNullOrUndefined(this.formFieldDropDown)) {
+                this.formFieldDropDown = new DropDownButton(items, breakButton);
+            }
         }
     }
     showHidePropertiesPane() {

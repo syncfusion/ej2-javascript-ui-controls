@@ -251,9 +251,9 @@ export class DateRangePicker extends CalendarBase {
     private mobileRangePopupWrap: HTMLElement;
 
     /**
-     * Gets or sets the start and end date of the Calendar.
-     * @default null
+     * Gets or sets the start and end date of the Calendar. 
      * {% codeBlock src='daterangepicker/value/index.md' %}{% endcodeBlock %}
+     * @default null
      */
     @Property(null)
     public value: Date[] | DateRange;

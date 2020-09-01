@@ -16561,9 +16561,19 @@ var Edit = /** @class */ (function () {
                 var range = getIndexesFromAddress(address);
                 range = range[0] > range[2] ? getSwapRange(range) : range;
                 address = getRangeAddress(range);
+                var sheet = this.parent.getActiveSheet();
+                var cell = {};
+                Object.assign(cell, getCell(range[0], range[1], sheet));
+                this.parent.notify(setActionData, { args: { action: 'beforeCellSave', eventArgs: { address: address } } });
                 this.parent.clearRange(address, null, true);
                 this.parent.serviceLocator.getService('cell').refreshRange(range);
                 this.parent.notify(selectionComplete, {});
+                var eventArgs = {
+                    value: '',
+                    oldValue: cell.value,
+                    address: getSheetName(this.parent, this.parent.activeSheetIndex) + '!' + address,
+                };
+                this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'cellSave' });
                 break;
         }
     };
@@ -32814,7 +32824,7 @@ var Spreadsheet = /** @class */ (function (_super) {
             bottomIndex: 0, rightIndex: 0
         };
         _this.needsID = true;
-        Spreadsheet_1.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, ContextMenu$1, Save, NumberFormat, CellFormat, Formula, WrapText, WorkbookEdit, WorkbookOpen, WorkbookSave, WorkbookCellFormat, WorkbookNumberFormat, WorkbookFormula, Sort, WorkbookSort, Resize, UndoRedo, WorkbookFilter, Filter, SpreadsheetHyperlink, WorkbookHyperlink, Insert, Delete, WorkbookInsert, WorkbookDelete, DataValidation, WorkbookDataValidation, ProtectSheet, FindAndReplace, Merge, WorkbookMerge, ConditionalFormatting, WorkbookConditionalFormat);
+        Spreadsheet_1.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, ContextMenu$1, Save, NumberFormat, CellFormat, Formula, WrapText, WorkbookEdit, WorkbookOpen, WorkbookSave, WorkbookCellFormat, WorkbookNumberFormat, WorkbookFormula, Sort, WorkbookSort, Resize, UndoRedo, WorkbookFilter, Filter, SpreadsheetHyperlink, WorkbookHyperlink, Insert, Delete, WorkbookInsert, WorkbookDelete, DataValidation, WorkbookDataValidation, ProtectSheet, FindAndReplace, WorkbookFindAndReplace, Merge, WorkbookMerge, ConditionalFormatting, WorkbookConditionalFormat);
         if (element) {
             _this.appendTo(element);
         }

@@ -26,7 +26,7 @@ export class RowModelGenerator implements IModelGenerator<Column> {
 
     public generateRows(data: Object, args?: { startIndex?: number, requestType?: Action }): Row<Column>[] {
         let rows: Row<Column>[] = [];
-        let startIndex: number = this.parent.enableVirtualization ? args.startIndex : 0;
+        let startIndex: number = this.parent.enableVirtualization && args ? args.startIndex : 0;
         startIndex = this.parent.enableInfiniteScrolling ? this.getInfiniteIndex(args) : startIndex;
         for (let i: number = 0, len: number = Object.keys(data).length; i < len; i++ , startIndex++) {
             rows[i] = this.generateRow(data[i], startIndex);

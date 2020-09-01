@@ -11342,7 +11342,9 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
                 this[modules[i]] = null;
             }
         }
-        this.keyboardModule.destroy();
+        if (this.keyboardModule) {
+            this.keyboardModule.destroy();
+        }
         _super.prototype.destroy.call(this);
         this.chartVerticalLineContainer = null;
         this.element.innerHTML = '';
@@ -16450,6 +16452,7 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
             this.updatePredecessorDropDownData(ganttData);
         }
         gridModel.dataSource = preData;
+        gridModel.actionBegin = this.gridActionBegin.bind(this);
         var columns = gridModel.columns;
         columns[1].edit = {
             write: function (args) {
@@ -16458,7 +16461,7 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
                 }
                 var field = 'name';
                 var autoObj = new ComboBox({
-                    dataSource: new DataManager(_this.preTableCollection),
+                    dataSource: new DataManager(_this.idCollection),
                     popupHeight: '180px',
                     allowCustom: false,
                     fields: { value: 'text' },
@@ -16489,6 +16492,31 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
         var divElement = this.createDivElement('e-dependent-div', ganttObj.element.id + '' + itemName + 'TabContainer');
         gridObj.appendTo(divElement);
         return divElement;
+    };
+    DialogEdit.prototype.gridActionBegin = function (args) {
+        var _this = this;
+        var itemName = 'Dependency';
+        var gridModel = this.beforeOpenArgs[itemName];
+        if (args.requestType === 'add' || args.requestType === 'beginEdit') {
+            var isEdit_1 = args.requestType === 'add' ? false : true;
+            this.idCollection = extend([], [], this.preTableCollection, true);
+            var gridData_1 = gridModel.dataSource;
+            var _loop_1 = function (i) {
+                this_1.idCollection.forEach(function (data, index) {
+                    if (data.id === getValue('id', gridData_1[i])) {
+                        var selectedItem = getValue('rowData', args);
+                        if (isEdit_1 && getValue('id', selectedItem) === data.id) {
+                            return;
+                        }
+                        _this.idCollection.splice(_this.idCollection.indexOf(data), 1);
+                    }
+                });
+            };
+            var this_1 = this;
+            for (var i = 0; i <= gridData_1.length; i++) {
+                _loop_1(i);
+            }
+        }
     };
     DialogEdit.prototype.updateResourceCollection = function (args, resourceTreeGridId) {
         if (!isNullOrUndefined(args.data) && Object.keys(args.data).length) {

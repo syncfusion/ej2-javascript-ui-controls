@@ -64,6 +64,14 @@ var Theme;
         fontFamily: 'Segoe UI'
     };
     /** @private */
+    Theme.legendTitleFont = {
+        size: '13px',
+        fontWeight: 'Normal',
+        color: null,
+        fontStyle: 'Normal',
+        fontFamily: 'Segoe UI'
+    };
+    /** @private */
     Theme.stripLineLabelFont = {
         size: '12px',
         fontWeight: 'Regular',
@@ -825,8 +833,8 @@ var Double = /** @class */ (function () {
         if (axis.visibleRange.interval && (axis.visibleRange.interval + '').indexOf('.') >= 0) {
             intervalDigits = (axis.visibleRange.interval + '').split('.')[1].length;
         }
-        labelStyle = (sf.base.extend({}, sf.base.getValue('properties', axis.labelStyle), null, true));
         for (; tempInterval <= axis.visibleRange.max; tempInterval += axis.visibleRange.interval) {
+            labelStyle = (sf.base.extend({}, sf.base.getValue('properties', axis.labelStyle), null, true));
             if (withIn(tempInterval, axis.visibleRange)) {
                 triggerLabelRender(chart, tempInterval, this.formatValue(axis, isCustom, format, tempInterval), labelStyle, axis);
             }
@@ -2772,6 +2780,26 @@ function calculateLegendShapes(location, size, shape, options) {
                 ' ' + (lx + (width / 5)) + ' ' + (ly + (-height / 2)) + ' ' + 'L' + ' ' + (lx + (width / 2)) + ' ' + (ly +
                 (-height / 2)) + 'L' + ' ' + (lx + (width / 2)) + ' ' + (ly + (height / 2)) + ' ' + 'L' + '' + (lx + (width / 2)
                 + (padding / 4)) + ' ' + (ly + (height / 2));
+            sf.base.merge(options, { 'd': dir });
+            break;
+        case 'UpArrow':
+            options.fill = options.stroke;
+            options.stroke = 'transparent';
+            dir = 'M' + ' ' + (lx + (-width / 2)) + ' ' + (ly + (height / 2)) + ' ' +
+                'L' + ' ' + (lx) + ' ' + (ly - (height / 2)) + ' ' +
+                'L' + ' ' + (lx + (width / 2)) + ' ' + (ly + (height / 2)) +
+                'L' + ' ' + (lx + (width / 2) - space) + ' ' + (ly + (height / 2)) + ' ' +
+                'L' + ' ' + (lx) + ' ' + (ly - (height / 2) + (2 * space)) +
+                'L' + (lx - (width / 2) + space) + ' ' + (ly + (height / 2)) + ' Z';
+            sf.base.merge(options, { 'd': dir });
+            break;
+        case 'DownArrow':
+            dir = 'M' + ' ' + (lx - (width / 2)) + ' ' + (ly - (height / 2)) + ' ' +
+                'L' + ' ' + (lx) + ' ' + (ly + (height / 2)) + ' ' +
+                'L' + ' ' + (lx + (width / 2)) + ' ' + (ly - (height / 2)) +
+                'L' + ' ' + (lx + (width / 2) - space) + ' ' + (ly - (height / 2)) + ' ' +
+                'L' + ' ' + (lx) + ' ' + (ly + (height / 2) - (2 * space)) +
+                'L' + (lx - (width / 2) + space) + ' ' + (ly - (height / 2)) + ' Z';
             sf.base.merge(options, { 'd': dir });
             break;
         case 'RightArrow':

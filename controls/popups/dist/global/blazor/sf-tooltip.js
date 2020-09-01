@@ -295,7 +295,8 @@ var SfTooltip = /** @class */ (function () {
         this.isContiniousOpen = !sf.base.isNullOrUndefined(this.tooltipEle);
         this.tooltipEventArgs = {
             type: e ? e.type.toString() : null, cancel: false, target: this.getDomObject('target', target), event: e ? e : null,
-            element: this.getDomObject('tooltipElement', this.tooltipEle), isInteracted: !sf.base.isNullOrUndefined(e), name: 'beforeRender'
+            hasText: this.hasText(), element: this.getDomObject('tooltipElement', this.tooltipEle),
+            isInteracted: !sf.base.isNullOrUndefined(e), name: 'beforeRender'
         };
         this.contentTargetValue = target;
         this.contentEvent = e;
@@ -359,7 +360,8 @@ var SfTooltip = /** @class */ (function () {
         }
         this.tooltipEventArgs = {
             type: null, cancel: false, target: this.getDomObject('target', target), event: null, isInteracted: false,
-            element: this.getDomObject('tooltipElement', this.tooltipEle), collidedPosition: newpos, name: 'beforeCollision'
+            hasText: this.hasText(), element: this.getDomObject('tooltipElement', this.tooltipEle),
+            collidedPosition: newpos, name: 'beforeCollision'
         };
         this.isRestrictUpdate = this.element.eventList.beforeCollision && !this.isHidden();
         if (this.element.eventList.beforeCollision) {
@@ -408,8 +410,8 @@ var SfTooltip = /** @class */ (function () {
         }
         this.tooltipEventArgs = {
             type: e ? e.type.toString() : null, cancel: false, target: this.getDomObject('target', target), event: e ? e : null,
-            element: this.getDomObject('tooltipElement', this.tooltipEle), isInteracted: !sf.base.isNullOrUndefined(e), name: 'beforeClose',
-            collidedPosition: null
+            element: this.getDomObject('tooltipElement', this.tooltipEle), hasText: this.hasText(),
+            isInteracted: !sf.base.isNullOrUndefined(e), name: 'beforeClose', collidedPosition: null
         };
         this.beforeCloseTarget = target;
         this.beforeCloseAnimation = hideAnimation;
@@ -742,8 +744,9 @@ var SfTooltip = /** @class */ (function () {
         sf.base.addClass([this.tooltipEle], POPUP_CLOSE);
         this.tooltipEventArgs = {
             type: this.contentEvent ? this.contentEvent.type.toString() : null, isInteracted: !sf.base.isNullOrUndefined(this.contentEvent),
-            target: this.getDomObject('target', this.contentTargetValue), name: 'beforeOpen', cancel: false,
-            event: this.contentEvent ? this.contentEvent : null, element: this.getDomObject('tooltipElement', this.tooltipEle),
+            hasText: this.hasText(), target: this.getDomObject('target', this.contentTargetValue),
+            name: 'beforeOpen', cancel: false, event: this.contentEvent ? this.contentEvent : null,
+            element: this.getDomObject('tooltipElement', this.tooltipEle)
         };
         this.isRestrictUpdate = this.element.eventList.beforeOpen && !this.isHidden();
         this.element.eventList.beforeOpen ? this.triggerEvent('TriggerBeforeOpenEvent', this.tooltipEventArgs) :
@@ -834,6 +837,9 @@ var SfTooltip = /** @class */ (function () {
     SfTooltip.prototype.getDomObject = function (value, element) {
         // tslint:disable-next-line
         return element ? window.sfBlazor.getDomObject(value, element) : null;
+    };
+    SfTooltip.prototype.hasText = function () {
+        return this.tooltipEle ? (this.tooltipEle.innerText.trim() === '' ? false : true) : false;
     };
     SfTooltip.prototype.destroy = function () {
         if (this.tooltipEle) {

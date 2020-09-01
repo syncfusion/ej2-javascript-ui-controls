@@ -310,7 +310,7 @@ export class StampAnnotation {
      * @private
      */
     // tslint:disable-next-line
-    public createCustomStampAnnotation(imageSource: any): void {
+    public createCustomStampAnnotation(imageSource: any, annotName?: string): void {
         let pageIndex: number = this.pdfViewerBase.currentPageNumber - 1;
         let pageDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + pageIndex);
         let image: HTMLImageElement = new Image();
@@ -342,7 +342,7 @@ export class StampAnnotation {
             // tslint:disable-next-line
             let modifiedDate: any = new Date().toLocaleString();
             let rotationAngle: number = 0;
-            proxy.renderCustomImage(positions, pageIndex, image, currentDate, modifiedDate, rotationAngle, 1, null);
+            proxy.renderCustomImage(positions, pageIndex, image, currentDate, modifiedDate, rotationAngle, 1, null, null, null, annotName);
         };
         image.src = imageSource;
     }
@@ -599,7 +599,7 @@ export class StampAnnotation {
      * @private
      */
     // tslint:disable-next-line
-    public renderCustomImage(position: any, pageIndex: any, image: any, currentDate: any, modifiedDate: any, RotationAngle: any, opacity: any, canvas?: any, isExistingStamp?: boolean, annotation?: any) {
+    public renderCustomImage(position: any, pageIndex: any, image: any, currentDate: any, modifiedDate: any, RotationAngle: any, opacity: any, canvas?: any, isExistingStamp?: boolean, annotation?: any, annotName?: string) {
         let annot: PdfAnnotationBaseModel;
         let annotationObject: IStampAnnotation = null;
         let annotationName: string;
@@ -628,7 +628,7 @@ export class StampAnnotation {
             // tslint:disable-next-line:max-line-length
             id: 'stamp' + this.pdfViewerBase.customStampCount, bounds: { x: position.left, y: position.top, width: position.width, height: position.height }, pageIndex: pageIndex, data: image.src, modifiedDate: modifiedDate,
             shapeAnnotationType: 'Image', opacity: opacity, rotateAngle: RotationAngle, annotName: annotationName, comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: author },
-            annotationSettings: annotationSettings, annotationAddMode: annotationAddMode
+            annotationSettings: annotationSettings, annotationAddMode: annotationAddMode, signatureName: annotName
         };
         this.currentStampAnnotation = annot;
         // tslint:disable-next-line

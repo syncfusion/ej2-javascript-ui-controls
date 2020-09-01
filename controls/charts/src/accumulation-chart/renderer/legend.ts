@@ -12,6 +12,7 @@ import { Rect, Size, measureText } from '@syncfusion/ej2-svg-base';
 import { ChartLocation, textTrim, getElement, blazorTemplatesReset} from '../../common/utils/helper';
 import { IAccLegendRenderEventArgs } from '../../accumulation-chart/model/pie-interface';
 import { Indexes } from '../../common/model/base';
+import { LegendTitlePosition } from '../../common/utils/enum';
 
 /**
  * AccumulationLegend module used to render `Legend` for Accumulation chart.
@@ -57,9 +58,15 @@ export class AccumulationLegend extends BaseLegend {
      * @private
      */
     public getLegendBounds(availableSize: Size, legendBounds: Rect, legend: LegendSettingsModel): void {
+        this.calculateLegendTitle(legend, legendBounds);
+        this.isTitle = legend.title ? true : false;
         let extraWidth: number = 0;
         let extraHeight: number = 0;
         let padding: number = legend.padding;
+        let titlePosition: LegendTitlePosition = legend.titlePosition;
+        let titlePlusArrowSpace: number = 0;
+        let arrowWidth: number = this.arrowWidth;
+        let arrowHeight: number = legend.enablePages ? 0 : this.arrowHeight;
         if (!this.isVertical) {
             extraHeight = !legend.height ? ((availableSize.height / 100) * 5) : 0;
         } else {
@@ -75,6 +82,7 @@ export class AccumulationLegend extends BaseLegend {
         let columnWidth: number[] = [];
         let columnHeight: number = 0;
         let legendWidth: number = 0;
+        let titleHeight: number = 0;
         this.maxItemHeight = Math.max(measureText('MeasureText', legend.textStyle).height, legend.shapeHeight);
         let legendEventArgs: IAccLegendRenderEventArgs;
         let render: boolean = false;
@@ -92,9 +100,9 @@ export class AccumulationLegend extends BaseLegend {
                 legendWidth = shapeWidth + shapePadding + legendOption.textSize.width + padding;
                 if (this.isVertical) {
                     ++rowCount;
-                    columnHeight = (rowCount * (this.maxItemHeight + padding)) + padding;
-                    if ((rowCount * (this.maxItemHeight + padding)) + padding > legendBounds.height) {
-                        columnHeight = Math.max(columnHeight, (rowCount * (this.maxItemHeight + padding)) + padding);
+                    columnHeight = (rowCount * (this.maxItemHeight + padding)) + padding + this.legendTitleSize.height + arrowHeight;
+                    if ((rowCount * (this.maxItemHeight + padding)) + padding + arrowHeight > legendBounds.height) {
+                        columnHeight = Math.max(columnHeight, (rowCount * (this.maxItemHeight + padding)) + padding + arrowHeight);
                         rowWidth = rowWidth + maximumWidth;
                         columnWidth.push(maximumWidth);
                         this.totalPages = Math.max(rowCount, this.totalPages || 1);
@@ -103,31 +111,40 @@ export class AccumulationLegend extends BaseLegend {
                     }
                     maximumWidth = Math.max(legendWidth, maximumWidth);
                 } else {
+                    if (!legend.enablePages) { // For new legend navigation support
+                        titlePlusArrowSpace = this.isTitle && titlePosition !== 'Top' ? this.legendTitleSize.width + this.fivePixel : 0;
+                        titlePlusArrowSpace += arrowWidth;
+                    }
                     rowWidth = rowWidth + legendWidth;
-                    if (legendBounds.width < (padding + rowWidth)) {
-                        maximumWidth = Math.max(maximumWidth, (rowWidth + padding - legendWidth));
+                    if (legendBounds.width < (padding + rowWidth + titlePlusArrowSpace)) {
+                        maximumWidth = Math.max(maximumWidth, (rowWidth + padding + titlePlusArrowSpace - legendWidth));
                         if (rowCount === 0 && (legendWidth !== rowWidth)) {
                             rowCount = 1;
                         }
                         rowWidth = legendWidth;
                         rowCount++;
-                        columnHeight = (rowCount * (this.maxItemHeight + padding)) + padding;
+                        columnHeight = (rowCount * (this.maxItemHeight + padding)) + padding + this.legendTitleSize.height;
                     }
                 }
             }
         }
+        titleHeight = titlePosition === 'Top' ? this.legendTitleSize.height : 0;
         if (this.isVertical) {
             rowWidth = rowWidth + maximumWidth;
             this.isPaging = legendBounds.width < (rowWidth + padding);
-            columnHeight = Math.max(columnHeight, ((this.totalPages || 1) * (this.maxItemHeight + padding)) + padding);
+            columnHeight = Math.max(columnHeight, ((this.totalPages || 1) * (this.maxItemHeight + padding)) + padding + arrowHeight);
             this.isPaging = this.isPaging && (this.totalPages > 1);
             if (columnWidth[columnWidth.length - 1] !== maximumWidth) {
                 columnWidth.push(maximumWidth);
             }
         } else {
             this.isPaging = legendBounds.height < columnHeight;
+            columnHeight = !legend.enablePages && this.isPaging ? (this.maxItemHeight + padding) + padding + titleHeight : columnHeight;
             this.totalPages = this.totalRowCount = rowCount;
-            columnHeight = Math.max(columnHeight, (this.maxItemHeight + padding) + padding);
+            columnHeight = Math.max(columnHeight, (this.maxItemHeight + padding) + padding + titleHeight);
+            if (!this.isPaging) { // For title left and right position
+                rowWidth += this.isTitle && titlePosition !== 'Top' ? (this.fivePixel + this.legendTitleSize.width + this.fivePixel) : 0;
+            }
         }
         this.maxColumns = 0; // initialization for max columns
         let width: number = this.isVertical ? this.getMaxColumn(columnWidth, legendBounds.width, padding, rowWidth + padding) :

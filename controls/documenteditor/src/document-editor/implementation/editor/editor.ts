@@ -109,7 +109,7 @@ export class Editor {
      */
     get restrictFormatting(): boolean {
         return this.documentHelper.isDocumentProtected && (this.documentHelper.restrictFormatting
-            || (!this.documentHelper.restrictFormatting && !this.selection.isSelectionIsAtEditRegion(false)));
+            || (!this.documentHelper.restrictFormatting && !this.selection.isSelectionInEditRegion()));
     }
 
     /**
@@ -117,7 +117,7 @@ export class Editor {
      */
     get restrictEditing(): boolean {
         return this.documentHelper.isDocumentProtected && (this.documentHelper.protectionType === 'ReadOnly'
-            && !this.selection.isSelectionIsAtEditRegion(false) || this.documentHelper.protectionType === 'FormFieldsOnly');
+            && !this.selection.isSelectionInEditRegion() || this.documentHelper.protectionType === 'FormFieldsOnly');
     }
     /* tslint:disable:no-any */
     public copiedContent: any = '';

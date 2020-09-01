@@ -231,3 +231,17 @@ export type SelectionPattern =
     'HorizontalStripe' |
     /** Set dots as bubble or selecting pattern. */
     'Bubble';
+
+/**
+ * Defines the position of the legend title. They are
+ * *top - Align the title to the top.
+ * *left - Align the title to the left.
+ * *right - Align the title to the right.
+ */
+export type LegendTitlePosition =
+    /** Define the top position. */
+    'Top' |
+    /** Define the left position. */
+    'Left' |
+    /** Define the right position. */
+    'Right';

@@ -23,6 +23,9 @@ export function setElementStype(obj: PdfAnnotationBaseModel, element: DrawingEle
         element.style.strokeColor = obj.strokeColor;
         (element as TextElement).style.color = obj.strokeColor;
         element.style.strokeWidth = obj.thickness;
+        if (obj.shapeAnnotationType === 'Image') {
+            element.style.strokeWidth = 0;
+        }
         element.style.strokeDashArray = obj.borderDashArray;
         element.style.opacity = obj.opacity;
 

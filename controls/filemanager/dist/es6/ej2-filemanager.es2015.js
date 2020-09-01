@@ -8622,6 +8622,10 @@ class DetailsView {
             this.gridObj.destroy();
         }
     }
+    updateType(item) {
+        let folder = select('.' + FOLDER, item);
+        this.parent.isFile = isNullOrUndefined(folder) ? true : false;
+    }
     /* istanbul ignore next */
     onSelection(action, args) {
         let eventArgs = {
@@ -8643,6 +8647,7 @@ class DetailsView {
         this.gridObj.element.setAttribute('tabindex', '-1');
         this.triggerSelect('select', args);
         let item = this.gridObj.getRowByIndex(this.gridObj.selectedRowIndex);
+        this.updateType(item);
         if (!isNullOrUndefined(item) && !isNullOrUndefined(item.querySelector('.e-checkselect'))) {
             if (this.gridObj.getSelectedRowIndexes().length !== 1) {
                 let lastItemIndex = this.gridObj.getSelectedRowIndexes()[this.gridObj.getSelectedRowIndexes().length - 2];

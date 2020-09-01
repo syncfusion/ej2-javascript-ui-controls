@@ -14,6 +14,7 @@ export class ChartAnnotationSettings extends ChildProperty<ChartAnnotationSettin
      * if set coordinateUnit as `Pixel` X specifies the axis value
      * else is specifies pixel or percentage of coordinate
      * @default '0'
+     * @aspType object
      */
     @Property('0')
     public x: string | Date | number;

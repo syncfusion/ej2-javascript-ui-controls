@@ -2501,7 +2501,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         let pivotData: PivotView;
         /* tslint:disable */
         if (isBlazor()) {
-            pivotData = persistData as any;
+            pivotData = typeof persistData === "string" ? JSON.parse(persistData) : persistData as any;
             pivotData.dataSourceSettings.dataSource = this.dataSourceSettings.dataSource;
         } else {
             pivotData = JSON.parse(persistData);

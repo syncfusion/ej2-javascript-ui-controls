@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.2.56 (2020-09-01)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+`#I290997`- Undo redo not working for delete key action is fixed.
+
 ## 18.2.55 (2020-08-25)
 
 ### Spreadsheet

@@ -24,8 +24,10 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 import { EmitType } from '@syncfusion/ej2-base';
 import { ILoadedEventArgs } from '../../../src/chart/model/chart-interface';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
+import { DateTime } from '../../../src/chart/axis/date-time-axis';
+import { Tooltip } from '../../../src/chart/user-interaction/tooltip';
 Chart.Inject(LineSeries, SplineSeries, Legend, StepLineSeries, AreaSeries, StackingAreaSeries, StackingColumnSeries, ColumnSeries,
-    ScatterSeries, BarSeries, Selection, Highlight);
+    ScatterSeries, BarSeries, Selection, Highlight, DateTime, Tooltip);
 let i: number; let currentPoint: Points; let value: number = 0; let data: Points[] = []; let seriesCollection: SeriesModel[] = [];
 let colors: string[] = ['#663AB6', '#EB3F79', '#F8AB1D', '#B82E3D', '#049CB1', '#F2424F', '#C2C924', '#3DA046', '#074D67', '#02A8F4'];
 let toggle: boolean = true;
@@ -982,6 +984,881 @@ describe('Chart Legend', () => {
             expect(color4 === '#e56590').toBe(true);
             done();
             };
+            chartObj.refresh();
+        });
+    });
+    describe('Legend title checking', () => {
+        let chartObj: Chart;
+        let chartContainer: Element;
+        let titleElement: Element;
+        let xValue: string; let yValue: string;
+        beforeAll((): void => {
+            chartContainer = createElement('div', { id: 'container', styles: 'width: 800px;height:450px' });
+            document.body.appendChild(chartContainer);
+            chartObj = new Chart({
+                enableAnimation: false,
+                border: {
+                    width: 3,
+                    color: 'blue'
+                },
+                //Initializing Primary X Axis
+                primaryXAxis: {
+                    valueType: 'DateTime',
+                    labelFormat: 'y',
+                    intervalType: 'Years',
+                    edgeLabelPlacement: 'Shift',
+                    majorGridLines: { width: 0 }
+                },
+
+                //Initializing Primary Y Axis
+                primaryYAxis:
+                {
+                    labelFormat: '{value}%',
+                    rangePadding: 'None',
+                    minimum: 0,
+                    maximum: 100,
+                    interval: 20,
+                    lineStyle: { width: 0 },
+                    majorTickLines: { width: 0 },
+                    minorTickLines: { width: 0 }
+                },
+                chartArea: {
+                    border: {
+                        width: 3,
+                        color: 'black'
+                    }
+                },
+                //Initializing Chart Series
+                series: [
+                    {
+                        type: 'Line',
+                        dataSource: [
+                            { x: new Date(2005, 0, 1), y: 21 }, { x: new Date(2006, 0, 1), y: 24 },
+                            { x: new Date(2007, 0, 1), y: 36 }, { x: new Date(2008, 0, 1), y: 38 },
+                            { x: new Date(2009, 0, 1), y: 54 }, { x: new Date(2010, 0, 1), y: 57 },
+                            { x: new Date(2011, 0, 1), y: 70 }
+                        ],
+                        xName: 'x', width: 2, marker: {
+                            visible: true,
+                            width: 10,
+                            height: 10
+                        },
+                        yName: 'y', name: 'Germany',
+                    },
+                    {
+                        type: 'Line',
+                        dataSource: [
+                            { x: new Date(2005, 0, 1), y: 28 }, { x: new Date(2006, 0, 1), y: 44 },
+                            { x: new Date(2007, 0, 1), y: 48 }, { x: new Date(2008, 0, 1), y: 50 },
+                            { x: new Date(2009, 0, 1), y: 66 }, { x: new Date(2010, 0, 1), y: 78 }, { x: new Date(2011, 0, 1), y: 84 }
+                        ],
+                        xName: 'x', width: 2, marker: {
+                            visible: true,
+                            width: 10,
+                            height: 10
+                        },
+                        yName: 'y', name: 'England',
+                    },
+                ],
+
+                //Initializing Chart title
+                title: 'Inflation - Consumer Price',
+                titleStyle: {
+                    textAlignment: 'Near',
+                    textOverflow: 'Wrap'
+                },
+                //Initializing User Interaction Tooltip
+                tooltip: {
+                    enable: true
+                },
+                legendSettings: {
+                    visible: true,
+                    title: 'Countries',
+                    titleStyle: {
+                        size: '14px',
+                        color: 'orange',
+                        textAlignment: 'Center',
+                        textOverflow: 'Trim'
+                    },
+                    border: {
+                        width: 2,
+                        color: 'red'
+                    },
+                }
+            });
+            chartObj.appendTo('#container');
+        });
+        afterAll((): void => {
+            chartObj.destroy();
+            document.getElementById('container').remove();
+        });
+        it('legend bottom and title top', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                titleElement = document.getElementById('container_chart_legend_title');
+                expect(titleElement.textContent === 'Countries').toBe(true);
+                let legendText: string = document.getElementById('container_chart_legend_text_0').textContent;
+                expect(legendText === 'Germany').toBe(true);
+                legendText = document.getElementById('container_chart_legend_text_1').textContent;
+                expect(legendText === 'England').toBe(true);
+                done();
+            };
+            chartObj.refresh();
+        });
+        it('legend bottom and title left', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                titleElement = document.getElementById('container_chart_legend_title');
+                expect(titleElement.textContent === 'Countries').toBe(true);
+                xValue = titleElement.getAttribute('x');
+                yValue = titleElement.getAttribute('y');
+                expect(xValue === '294.5' || xValue === '300.5').toBe(true);
+                expect(yValue === '425.25' || yValue === '425').toBe(true);
+                let legendText: string = document.getElementById('container_chart_legend_text_0').textContent;
+                expect(legendText === 'Germany').toBe(true);
+                legendText = document.getElementById('container_chart_legend_text_1').textContent;
+                expect(legendText === 'England').toBe(true);
+                done();
+            };
+            chartObj.legendSettings.titlePosition = 'Left';
+            chartObj.refresh();
+        });
+        it('legend bottom and title right', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                titleElement = document.getElementById('container_chart_legend_title');
+                expect(titleElement.textContent === 'Countries').toBe(true);
+                xValue = titleElement.getAttribute('x');
+                yValue = titleElement.getAttribute('y');
+                expect(xValue === '446.5' || xValue === '445.5').toBe(true);
+                expect(yValue === '425.25' || yValue === '425').toBe(true);
+                let legendText: string = document.getElementById('container_chart_legend_text_0').textContent;
+                expect(legendText === 'Germany').toBe(true);
+                legendText = document.getElementById('container_chart_legend_text_1').textContent;
+                expect(legendText === 'England').toBe(true);
+                done();
+            };
+            chartObj.legendSettings.titlePosition = 'Right';
+            chartObj.refresh();
+        });
+        it('legend top and title top', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                titleElement = document.getElementById('container_chart_legend_title');
+                expect(titleElement.textContent === 'Countries').toBe(true);
+                let legendText: string = document.getElementById('container_chart_legend_text_0').textContent;
+                expect(legendText === 'Germany').toBe(true);
+                legendText = document.getElementById('container_chart_legend_text_1').textContent;
+                expect(legendText === 'England').toBe(true);
+                done();
+            };
+            chartObj.legendSettings.position = 'Top';
+            chartObj.legendSettings.titlePosition = 'Top';
+            chartObj.refresh();
+        });
+        it('legend top and title left', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                titleElement = document.getElementById('container_chart_legend_title');
+                expect(titleElement.textContent === 'Countries').toBe(true);
+                xValue = titleElement.getAttribute('x');
+                yValue = titleElement.getAttribute('y');
+                expect(xValue === '294.5' || xValue === '300.5').toBe(true);
+                expect(yValue === '69.75' || yValue === '65.5').toBe(true);
+                let legendText: string = document.getElementById('container_chart_legend_text_0').textContent;
+                expect(legendText === 'Germany').toBe(true);
+                legendText = document.getElementById('container_chart_legend_text_1').textContent;
+                expect(legendText === 'England').toBe(true);
+                done();
+            };
+            chartObj.legendSettings.titlePosition = 'Left';
+            chartObj.refresh();
+        });
+        it('legend top and title right', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                titleElement = document.getElementById('container_chart_legend_title');
+                expect(titleElement.textContent === 'Countries').toBe(true);
+                xValue = titleElement.getAttribute('x');
+                yValue = titleElement.getAttribute('y');
+                expect(xValue === '446.5' || xValue === '445.5').toBe(true);
+                expect(yValue === '69.75' || yValue === '65.5').toBe(true);
+                let legendText: string = document.getElementById('container_chart_legend_text_0').textContent;
+                expect(legendText === 'Germany').toBe(true);
+                legendText = document.getElementById('container_chart_legend_text_1').textContent;
+                expect(legendText === 'England').toBe(true);
+                done();
+            };
+            chartObj.legendSettings.titlePosition = 'Right';
+            chartObj.refresh();
+        });
+        it('legend right and title top', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                titleElement = document.getElementById('container_chart_legend_title');
+                expect(titleElement.textContent === 'Countries').toBe(true);
+                xValue = titleElement.getAttribute('x');
+                yValue = titleElement.getAttribute('y');
+                expect(xValue === '745.5' || xValue === '747.5').toBe(true);
+                expect(yValue === '221.25' || yValue === '219.25').toBe(true);
+                let legendText: string = document.getElementById('container_chart_legend_text_0').textContent;
+                expect(legendText === 'Germany').toBe(true);
+                legendText = document.getElementById('container_chart_legend_text_1').textContent;
+                expect(legendText === 'England').toBe(true);
+                done();
+            };
+            chartObj.legendSettings.position = 'Right';
+            chartObj.legendSettings.titlePosition = 'Top';
+            chartObj.refresh();
+        });
+        it('legend right and title left', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                titleElement = document.getElementById('container_chart_legend_title');
+                expect(titleElement.textContent === 'Countries').toBe(true);
+                xValue = titleElement.getAttribute('x');
+                yValue = titleElement.getAttribute('y');
+                expect(xValue === '745.5' || xValue === '747.5').toBe(true);
+                expect(yValue === '221.25' || yValue === '219.25').toBe(true);
+                let legendText: string = document.getElementById('container_chart_legend_text_0').textContent;
+                expect(legendText === 'Germany').toBe(true);
+                legendText = document.getElementById('container_chart_legend_text_1').textContent;
+                expect(legendText === 'England').toBe(true);
+                done();
+            };
+            chartObj.legendSettings.titlePosition = 'Left';
+            chartObj.refresh();
+        });
+        it('legend right and title right', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                titleElement = document.getElementById('container_chart_legend_title');
+                expect(titleElement.textContent === 'Countries').toBe(true);
+                xValue = titleElement.getAttribute('x');
+                yValue = titleElement.getAttribute('y');
+                expect(xValue === '745.5' || xValue === '747.5').toBe(true);
+                expect(yValue === '221.25' || yValue === '219.25').toBe(true);
+                let legendText: string = document.getElementById('container_chart_legend_text_0').textContent;
+                expect(legendText === 'Germany').toBe(true);
+                legendText = document.getElementById('container_chart_legend_text_1').textContent;
+                expect(legendText === 'England').toBe(true);
+                done();
+            };
+            chartObj.legendSettings.titlePosition = 'Right';
+            chartObj.refresh();
+        });
+        it('legend left and title top', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                titleElement = document.getElementById('container_chart_legend_title');
+                expect(titleElement.textContent === 'Countries').toBe(true);
+                xValue = titleElement.getAttribute('x');
+                yValue = titleElement.getAttribute('y');
+                expect(xValue === '51.5' || xValue === '49.5').toBe(true);
+                expect(yValue === '221.25' || yValue === '219.25').toBe(true);
+                let legendText: string = document.getElementById('container_chart_legend_text_0').textContent;
+                expect(legendText === 'Germany').toBe(true);
+                legendText = document.getElementById('container_chart_legend_text_1').textContent;
+                expect(legendText === 'England').toBe(true);
+                done();
+            };
+            chartObj.legendSettings.position = 'Left';
+            chartObj.legendSettings.titlePosition = 'Top';
+            chartObj.refresh();
+        });
+        it('legend left and title left', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                titleElement = document.getElementById('container_chart_legend_title');
+                expect(titleElement.textContent === 'Countries').toBe(true);
+                xValue = titleElement.getAttribute('x');
+                yValue = titleElement.getAttribute('y');
+                expect(xValue === '51.5' || xValue === '49.5').toBe(true);
+                expect(yValue === '221.25' || yValue === '219.25').toBe(true);
+                let legendText: string = document.getElementById('container_chart_legend_text_0').textContent;
+                expect(legendText === 'Germany').toBe(true);
+                legendText = document.getElementById('container_chart_legend_text_1').textContent;
+                expect(legendText === 'England').toBe(true);
+                done();
+            };
+            chartObj.legendSettings.titlePosition = 'Left';
+            chartObj.refresh();
+        });
+        it('legend left and title right', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                titleElement = document.getElementById('container_chart_legend_title');
+                expect(titleElement.textContent === 'Countries').toBe(true);
+                xValue = titleElement.getAttribute('x');
+                yValue = titleElement.getAttribute('y');
+                expect(xValue === '51.5' || xValue === '49.5').toBe(true);
+                expect(yValue === '221.25' || yValue === '219.25').toBe(true);
+                let legendText: string = document.getElementById('container_chart_legend_text_0').textContent;
+                expect(legendText === 'Germany').toBe(true);
+                legendText = document.getElementById('container_chart_legend_text_1').textContent;
+                expect(legendText === 'England').toBe(true);
+                done();
+            };
+            chartObj.legendSettings.titlePosition = 'Right';
+            chartObj.refresh();
+        });
+    });
+    describe('Legend new paging support checking', () => {
+        let chartObj: Chart;
+        let chartContainer: HTMLElement;
+        let titleElement: Element;
+        let xValue: string; let yValue: string;
+        let backArrow: Element; let forwardArrow: Element;
+        let path: string; let opacity: string;
+        beforeAll((): void => {
+            chartContainer = createElement('div', { id: 'container', styles: 'width: 300px;height:300px' });
+            document.body.appendChild(chartContainer);
+            chartObj = new Chart({
+                border: {
+                    width: 3,
+                    color: 'blue'
+                },
+                //Initializing Primary X Axis
+                primaryXAxis: {
+                    valueType: 'DateTime',
+                    labelFormat: 'y',
+                    intervalType: 'Years',
+                    edgeLabelPlacement: 'Shift',
+                    majorGridLines: { width: 0 }
+                },
+
+                //Initializing Primary Y Axis
+                primaryYAxis:
+                {
+                    labelFormat: '{value}%',
+                    rangePadding: 'None',
+                    minimum: 0,
+                    maximum: 100,
+                    interval: 20,
+                    lineStyle: { width: 0 },
+                    majorTickLines: { width: 0 },
+                    minorTickLines: { width: 0 }
+                },
+                chartArea: {
+                    border: {
+                        width: 3,
+                        color: 'black'
+                    }
+                },
+                //Initializing Chart Series
+                series: [
+                    {
+                        type: 'Line',
+                        dataSource: [
+                            { x: new Date(2005, 0, 1), y: 21 }, { x: new Date(2006, 0, 1), y: 24 },
+                            { x: new Date(2007, 0, 1), y: 36 }, { x: new Date(2008, 0, 1), y: 38 },
+                            { x: new Date(2009, 0, 1), y: 54 }, { x: new Date(2010, 0, 1), y: 57 },
+                            { x: new Date(2011, 0, 1), y: 70 }
+                        ],
+                        xName: 'x', width: 2, marker: {
+                            visible: true,
+                            width: 10,
+                            height: 10
+                        },
+                        yName: 'y', name: 'Germany',
+                    },
+                    {
+                        type: 'Line',
+                        dataSource: [
+                            { x: new Date(2005, 0, 1), y: 28 }, { x: new Date(2006, 0, 1), y: 44 },
+                            { x: new Date(2007, 0, 1), y: 48 }, { x: new Date(2008, 0, 1), y: 50 },
+                            { x: new Date(2009, 0, 1), y: 66 }, { x: new Date(2010, 0, 1), y: 78 }, { x: new Date(2011, 0, 1), y: 84 }
+                        ],
+                        xName: 'x', width: 2, marker: {
+                            visible: true,
+                            width: 10,
+                            height: 10
+                        },
+                        yName: 'y', name: 'England',
+                    },
+                    {
+                        type: 'Line',
+                        dataSource: [
+                            { x: new Date(2005, 0, 1), y: 28 }, { x: new Date(2006, 0, 1), y: 44 },
+                            { x: new Date(2007, 0, 1), y: 48 }, { x: new Date(2008, 0, 1), y: 50 },
+                            { x: new Date(2009, 0, 1), y: 66 }, { x: new Date(2010, 0, 1), y: 78 }, { x: new Date(2011, 0, 1), y: 84 }
+                        ],
+                        xName: 'x', width: 2, marker: {
+                            visible: true,
+                            width: 10,
+                            height: 10
+                        },
+                        yName: 'y', name: 'India',
+                    },
+                    {
+                        type: 'Line',
+                        dataSource: [
+                            { x: new Date(2005, 0, 1), y: 28 }, { x: new Date(2006, 0, 1), y: 44 },
+                            { x: new Date(2007, 0, 1), y: 48 }, { x: new Date(2008, 0, 1), y: 50 },
+                            { x: new Date(2009, 0, 1), y: 66 }, { x: new Date(2010, 0, 1), y: 78 }, { x: new Date(2011, 0, 1), y: 84 }
+                        ],
+                        xName: 'x', width: 2, marker: {
+                            visible: true,
+                            width: 10,
+                            height: 10
+                        },
+                        yName: 'y', name: 'Unites States',
+                    },
+                    {
+                        type: 'Line',
+                        dataSource: [
+                            { x: new Date(2005, 0, 1), y: 28 }, { x: new Date(2006, 0, 1), y: 44 },
+                            { x: new Date(2007, 0, 1), y: 48 }, { x: new Date(2008, 0, 1), y: 50 },
+                            { x: new Date(2009, 0, 1), y: 66 }, { x: new Date(2010, 0, 1), y: 78 }, { x: new Date(2011, 0, 1), y: 84 }
+                        ],
+                        xName: 'x', width: 2, marker: {
+                            visible: true,
+                            width: 10,
+                            height: 10
+                        },
+                        yName: 'y', name: 'United Kingdom',
+                    },
+                    {
+                        type: 'Line',
+                        dataSource: [
+                            { x: new Date(2005, 0, 1), y: 28 }, { x: new Date(2006, 0, 1), y: 44 },
+                            { x: new Date(2007, 0, 1), y: 48 }, { x: new Date(2008, 0, 1), y: 50 },
+                            { x: new Date(2009, 0, 1), y: 66 }, { x: new Date(2010, 0, 1), y: 78 }, { x: new Date(2011, 0, 1), y: 84 }
+                        ],
+                        xName: 'x', width: 2, marker: {
+                            visible: true,
+                            width: 10,
+                            height: 10
+                        },
+                        yName: 'y', name: 'Switzerland',
+                    },
+
+                ],
+
+                //Initializing Chart title
+                title: 'Inflation - Consumer Price',
+                titleStyle: {
+                    textAlignment: 'Near',
+                    textOverflow: 'Wrap'
+                },
+                //Initializing User Interaction Tooltip
+                tooltip: {
+                    enable: true
+                },
+                legendSettings: {
+                    visible: true,
+                    title: '',
+                    titleStyle: {
+                        fontStyle: 'italic',
+                        fontWeight: 'Bold'
+                    },
+                    border: {
+                        width: 2,
+                        color: 'red'
+                    },
+                    position: 'Bottom',
+                    enablePages: false
+                }
+            });
+            chartObj.appendTo('#container');
+        });
+        afterAll((): void => {
+            chartObj.destroy();
+            document.getElementById('container').remove();
+        });
+        it('01.legend bottom: without legend title', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                backArrow = document.getElementById('container_chart_legend_pageup');
+                path = backArrow.getAttribute('d');
+                expect(path === 'M 38 266.5 L 30 270.5 L 38 274.5 L 38 272.5 L 34 270.5 L38 268.5 Z' ||
+                    path === 'M 44 267.5 L 36 271.5 L 44 275.5 L 44 273.5 L 40 271.5 L44 269.5 Z').toBe(true);
+                opacity = backArrow.getAttribute('opacity');
+                expect(opacity === '0').toBe(true);
+                forwardArrow = document.getElementById('container_chart_legend_pagedown');
+                path = forwardArrow.getAttribute('d');
+                expect(path === 'M 262 266.5 L 270 270.5 L 262 274.5 L 262 272.5 L 266 270.5 L262 268.5 Z' ||
+                    path === 'M 256 267.5 L 264 271.5 L 256 275.5 L 256 273.5 L 260 271.5 L256 269.5 Z').toBe(true);
+                opacity = forwardArrow.getAttribute('opacity');
+                expect(opacity === '1').toBe(true);
+                let legendGroup= document.getElementById('container_chart_legend_translate_g');
+                expect(legendGroup.childElementCount === 6).toBe(true);
+                done();
+            };
+            chartObj.refresh();
+        });
+        it('02.legend bottom: with legend title top', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                titleElement = document.getElementById('container_chart_legend_title');
+                expect(titleElement.textContent === 'Countries').toBe(true);
+                xValue = titleElement.getAttribute('x');
+                expect(xValue === '150').toBe(true);
+                yValue = titleElement.getAttribute('y');
+                expect(yValue === '249' || yValue === '250').toBe(true);
+                backArrow = document.getElementById('container_chart_legend_pageup');
+                path = backArrow.getAttribute('d');
+                expect(path === 'M 38 261.5 L 30 265.5 L 38 269.5 L 38 267.5 L 34 265.5 L38 263.5 Z' ||
+                    path === 'M 44 262.5 L 36 266.5 L 44 270.5 L 44 268.5 L 40 266.5 L44 264.5 Z').toBe(true);
+                opacity = backArrow.getAttribute('opacity');
+                expect(opacity === '0').toBe(true);
+                forwardArrow = document.getElementById('container_chart_legend_pagedown');
+                path = forwardArrow.getAttribute('d');
+                expect(path === 'M 262 261.5 L 270 265.5 L 262 269.5 L 262 267.5 L 266 265.5 L262 263.5 Z' ||
+                    path === 'M 256 262.5 L 264 266.5 L 256 270.5 L 256 268.5 L 260 266.5 L256 264.5 Z').toBe(true);
+                opacity = forwardArrow.getAttribute('opacity');
+                expect(opacity === '1').toBe(true);
+                let legendGroup = document.getElementById('container_chart_legend_translate_g');
+                expect(legendGroup.childElementCount === 6).toBe(true);
+                done();
+            };
+            chartObj.legendSettings.title = 'Countries';
+            chartObj.legendSettings.titlePosition = 'Top';
+            chartObj.refresh();
+        });
+        it('03.legend bottom: with legend title left', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                titleElement = document.getElementById('container_chart_legend_title');
+                expect(titleElement.textContent === 'Countries').toBe(true);
+                xValue = titleElement.getAttribute('x');
+                expect(xValue === '27.5' || xValue === '33.5').toBe(true);
+                yValue = titleElement.getAttribute('y');
+                expect(yValue === '274.75' || yValue === '275').toBe(true);
+                backArrow = document.getElementById('container_chart_legend_pageup');
+                path = backArrow.getAttribute('d');
+                expect(path === 'M 97.5 266.5 L 89.5 270.5 L 97.5 274.5 L 97.5 272.5 L 93.5 270.5 L97.5 268.5 Z' ||
+                    path === 'M 98.5 267.5 L 90.5 271.5 L 98.5 275.5 L 98.5 273.5 L 94.5 271.5 L98.5 269.5 Z').toBe(true);
+                opacity = backArrow.getAttribute('opacity');
+                expect(opacity === '0').toBe(true);
+                forwardArrow = document.getElementById('container_chart_legend_pagedown');
+                path = forwardArrow.getAttribute('d');
+                expect(path === 'M 260.5 266.5 L 268.5 270.5 L 260.5 274.5 L 260.5 272.5 L 264.5 270.5 L260.5 268.5 Z' ||
+                    path === 'M 254.5 267.5 L 262.5 271.5 L 254.5 275.5 L 254.5 273.5 L 258.5 271.5 L254.5 269.5 Z').toBe(true);
+                opacity = forwardArrow.getAttribute('opacity');
+                expect(opacity === '1').toBe(true);
+                let legendGroup = document.getElementById('container_chart_legend_translate_g');
+                expect(legendGroup.childElementCount === 6).toBe(true);
+                done();
+            };
+            chartObj.legendSettings.title = 'Countries';
+            chartObj.legendSettings.titlePosition = 'Left';
+            chartObj.refresh();
+        });
+        it('04.legend bottom: with legend title right', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                titleElement = document.getElementById('container_chart_legend_title');
+                expect(titleElement.textContent === 'Countries').toBe(true);
+                xValue = titleElement.getAttribute('x');
+                expect(xValue === '214.5' || xValue === '213.5').toBe(true);
+                yValue = titleElement.getAttribute('y');
+                expect(yValue === '274.75' || yValue === '275').toBe(true);
+                backArrow = document.getElementById('container_chart_legend_pageup');
+                path = backArrow.getAttribute('d');
+                expect(path === 'M 39.5 266.5 L 31.5 270.5 L 39.5 274.5 L 39.5 272.5 L 35.5 270.5 L39.5 268.5 Z' ||
+                    path === 'M 45.5 267.5 L 37.5 271.5 L 45.5 275.5 L 45.5 273.5 L 41.5 271.5 L45.5 269.5 Z').toBe(true);
+                opacity = backArrow.getAttribute('opacity');
+                expect(opacity === '0').toBe(true);
+                forwardArrow = document.getElementById('container_chart_legend_pagedown');
+                path = forwardArrow.getAttribute('d');
+                expect(path === 'M 197.5 266.5 L 205.5 270.5 L 197.5 274.5 L 197.5 272.5 L 201.5 270.5 L197.5 268.5 Z' ||
+                    path === 'M 196.5 267.5 L 204.5 271.5 L 196.5 275.5 L 196.5 273.5 L 200.5 271.5 L196.5 269.5 Z').toBe(true);
+                opacity = forwardArrow.getAttribute('opacity');
+                expect(opacity === '1').toBe(true);
+                let legendGroup = document.getElementById('container_chart_legend_translate_g');
+                expect(legendGroup.childElementCount === 6).toBe(true);
+                done();
+            };
+            chartObj.legendSettings.title = 'Countries';
+            chartObj.legendSettings.titlePosition = 'Right';
+            chartObj.refresh();
+        });
+        it('05.legend top: without legend title', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                backArrow = document.getElementById('container_chart_legend_pageup');
+                path = backArrow.getAttribute('d');
+                expect(path === 'M 38 61 L 30 65 L 38 69 L 38 67 L 34 65 L38 63 Z' ||
+                    path === 'M 44 58 L 36 62 L 44 66 L 44 64 L 40 62 L44 60 Z').toBe(true);
+                opacity = backArrow.getAttribute('opacity');
+                expect(opacity === '0').toBe(true);
+                forwardArrow = document.getElementById('container_chart_legend_pagedown');
+                path = forwardArrow.getAttribute('d');
+                expect(path === 'M 262 61 L 270 65 L 262 69 L 262 67 L 266 65 L262 63 Z' ||
+                    path === 'M 256 58 L 264 62 L 256 66 L 256 64 L 260 62 L256 60 Z').toBe(true);
+                opacity = forwardArrow.getAttribute('opacity');
+                expect(opacity === '1').toBe(true);
+                let legendGroup = document.getElementById('container_chart_legend_translate_g');
+                expect(legendGroup.childElementCount === 6).toBe(true);
+                done();
+            };
+            chartObj.legendSettings.title = '';
+            chartObj.legendSettings.titlePosition = 'Top';
+            chartObj.legendSettings.position = 'Top';
+            chartObj.refresh();
+        });
+        it('06.legend top: with legend title top', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                titleElement = document.getElementById('container_chart_legend_title');
+                expect(titleElement.textContent === 'Countries').toBe(true);
+                xValue = titleElement.getAttribute('x');
+                expect(xValue === '150').toBe(true);
+                yValue = titleElement.getAttribute('y');
+                expect(yValue === '65.5' || yValue === '61.5').toBe(true);
+                backArrow = document.getElementById('container_chart_legend_pageup');
+                path = backArrow.getAttribute('d');
+                expect(path === 'M 38 78 L 30 82 L 38 86 L 38 84 L 34 82 L38 80 Z' ||
+                    path === 'M 44 74 L 36 78 L 44 82 L 44 80 L 40 78 L44 76 Z').toBe(true);
+                opacity = backArrow.getAttribute('opacity');
+                expect(opacity === '0').toBe(true);
+                forwardArrow = document.getElementById('container_chart_legend_pagedown');
+                path = forwardArrow.getAttribute('d');
+                expect(path === 'M 262 78 L 270 82 L 262 86 L 262 84 L 266 82 L262 80 Z' ||
+                    path === 'M 256 74 L 264 78 L 256 82 L 256 80 L 260 78 L256 76 Z').toBe(true);
+                opacity = forwardArrow.getAttribute('opacity');
+                expect(opacity === '1').toBe(true);
+                let legendGroup = document.getElementById('container_chart_legend_translate_g');
+                expect(legendGroup.childElementCount === 6).toBe(true);
+                done();
+            };
+            chartObj.legendSettings.title = 'Countries';
+            chartObj.legendSettings.titlePosition = 'Top';
+            chartObj.legendSettings.position = 'Top';
+            chartObj.refresh();
+        });
+        it('07.legend top: with legend title left', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                titleElement = document.getElementById('container_chart_legend_title');
+                expect(titleElement.textContent === 'Countries').toBe(true);
+                xValue = titleElement.getAttribute('x');
+                expect(xValue === '27.5' || xValue === '33.5').toBe(true);
+                yValue = titleElement.getAttribute('y');
+                expect(yValue === '69.25' || yValue === '65.5').toBe(true);
+                backArrow = document.getElementById('container_chart_legend_pageup');
+                path = backArrow.getAttribute('d');
+                expect(path === 'M 97.5 61 L 89.5 65 L 97.5 69 L 97.5 67 L 93.5 65 L97.5 63 Z' ||
+                    path === 'M 98.5 58 L 90.5 62 L 98.5 66 L 98.5 64 L 94.5 62 L98.5 60 Z').toBe(true);
+                opacity = backArrow.getAttribute('opacity');
+                expect(opacity === '0').toBe(true);
+                forwardArrow = document.getElementById('container_chart_legend_pagedown');
+                path = forwardArrow.getAttribute('d');
+                expect(path === 'M 260.5 61 L 268.5 65 L 260.5 69 L 260.5 67 L 264.5 65 L260.5 63 Z' ||
+                    path === 'M 254.5 58 L 262.5 62 L 254.5 66 L 254.5 64 L 258.5 62 L254.5 60 Z').toBe(true);
+                opacity = forwardArrow.getAttribute('opacity');
+                expect(opacity === '1').toBe(true);
+                let legendGroup = document.getElementById('container_chart_legend_translate_g');
+                expect(legendGroup.childElementCount === 6).toBe(true);
+                done();
+            };
+            chartObj.legendSettings.title = 'Countries';
+            chartObj.legendSettings.titlePosition = 'Left';
+            chartObj.legendSettings.position = 'Top';
+            chartObj.refresh();
+        });
+        it('08.legend top: with legend title right', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                titleElement = document.getElementById('container_chart_legend_title');
+                expect(titleElement.textContent === 'Countries').toBe(true);
+                xValue = titleElement.getAttribute('x');
+                expect(xValue === '214.5' || xValue === '213.5').toBe(true);
+                yValue = titleElement.getAttribute('y');
+                expect(yValue === '69.25' || yValue === '65.5').toBe(true);
+                backArrow = document.getElementById('container_chart_legend_pageup');
+                path = backArrow.getAttribute('d');
+                expect(path === 'M 39.5 61 L 31.5 65 L 39.5 69 L 39.5 67 L 35.5 65 L39.5 63 Z' ||
+                    path === 'M 45.5 58 L 37.5 62 L 45.5 66 L 45.5 64 L 41.5 62 L45.5 60 Z').toBe(true);
+                opacity = backArrow.getAttribute('opacity');
+                expect(opacity === '0').toBe(true);
+                forwardArrow = document.getElementById('container_chart_legend_pagedown');
+                path = forwardArrow.getAttribute('d');
+                expect(path === 'M 197.5 61 L 205.5 65 L 197.5 69 L 197.5 67 L 201.5 65 L197.5 63 Z' ||
+                    path === 'M 196.5 58 L 204.5 62 L 196.5 66 L 196.5 64 L 200.5 62 L196.5 60 Z').toBe(true);
+                opacity = forwardArrow.getAttribute('opacity');
+                expect(opacity === '1').toBe(true);
+                let legendGroup = document.getElementById('container_chart_legend_translate_g');
+                expect(legendGroup.childElementCount === 6).toBe(true);
+                done();
+            };
+            chartObj.legendSettings.title = 'Countries';
+            chartObj.legendSettings.titlePosition = 'Right';
+            chartObj.legendSettings.position = 'Top';
+            chartObj.refresh();
+        });
+        it('09.legend right: without legend title', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                backArrow = document.getElementById('container_chart_legend_pageup');
+                path = backArrow.getAttribute('d');
+                expect(path === 'M 333 64 L 337 56 L 341 64L 339 64 L 337 60L335 64 Z' ||
+                    path === 'M 333 61 L 337 53 L 341 61L 339 61 L 337 57L335 61 Z').toBe(true);
+                opacity = backArrow.getAttribute('opacity');
+                expect(opacity === '0').toBe(true);
+                forwardArrow = document.getElementById('container_chart_legend_pagedown');
+                path = forwardArrow.getAttribute('d');
+                expect(path === 'M 333 172.5 L 337 180.5 L 341 172.5L 339 172.5 L 337 176.5L335 172.5 Z' ||
+                    path === 'M 333 172.5 L 337 180.5 L 341 172.5L 339 172.5 L 337 176.5L335 172.5 Z').toBe(true);
+                opacity = forwardArrow.getAttribute('opacity');
+                expect(opacity === '1').toBe(true);
+                let legendGroup = document.getElementById('container_chart_legend_translate_g');
+                expect(legendGroup.childElementCount === 6).toBe(true);
+                done();
+            };
+            chartContainer.style.width = '400px';
+            chartContainer.style.height = '200px';
+            chartObj.legendSettings.title = '';
+            chartObj.legendSettings.titlePosition = 'Top';
+            chartObj.legendSettings.position = 'Right';
+            chartObj.refresh();
+        });
+        it('10.legend right: with legend title left', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                titleElement = document.getElementById('container_chart_legend_title');
+                expect(titleElement.textContent === 'Countries').toBe(true);
+                xValue = titleElement.getAttribute('x');
+                expect(xValue === '337').toBe(true);
+                yValue = titleElement.getAttribute('y');
+                expect(yValue === '65' || yValue === '61').toBe(true);
+                backArrow = document.getElementById('container_chart_legend_pageup');
+                path = backArrow.getAttribute('d');
+                expect(path === 'M 333 81 L 337 73 L 341 81L 339 81 L 337 77L335 81 Z' ||
+                    path === 'M 333 77 L 337 69 L 341 77L 339 77 L 337 73L335 77 Z').toBe(true);
+                opacity = backArrow.getAttribute('opacity');
+                expect(opacity === '0').toBe(true);
+                forwardArrow = document.getElementById('container_chart_legend_pagedown');
+                path = forwardArrow.getAttribute('d');
+                expect(path === 'M 333 172.5 L 337 180.5 L 341 172.5L 339 172.5 L 337 176.5L335 172.5 Z' ||
+                    path === 'M 333 172.5 L 337 180.5 L 341 172.5L 339 172.5 L 337 176.5L335 172.5 Z').toBe(true);
+                opacity = forwardArrow.getAttribute('opacity');
+                expect(opacity === '1').toBe(true);
+                let legendGroup = document.getElementById('container_chart_legend_translate_g');
+                expect(legendGroup.childElementCount === 6).toBe(true);
+                done();
+            };
+            chartObj.legendSettings.title = 'Countries';
+            chartObj.legendSettings.titlePosition = 'Left';
+            chartObj.legendSettings.position = 'Right';
+            chartObj.refresh();
+        });
+        it('11.legend right: with legend title right', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                titleElement = document.getElementById('container_chart_legend_title');
+                expect(titleElement.textContent === 'Countries').toBe(true);
+                xValue = titleElement.getAttribute('x');
+                expect(xValue === '337').toBe(true);
+                yValue = titleElement.getAttribute('y');
+                expect(yValue === '65' || yValue === '61').toBe(true);
+                backArrow = document.getElementById('container_chart_legend_pageup');
+                path = backArrow.getAttribute('d');
+                expect(path === 'M 333 81 L 337 73 L 341 81L 339 81 L 337 77L335 81 Z' ||
+                    path === 'M 333 77 L 337 69 L 341 77L 339 77 L 337 73L335 77 Z').toBe(true);
+                opacity = backArrow.getAttribute('opacity');
+                expect(opacity === '0').toBe(true);
+                forwardArrow = document.getElementById('container_chart_legend_pagedown');
+                path = forwardArrow.getAttribute('d');
+                expect(path === 'M 333 172.5 L 337 180.5 L 341 172.5L 339 172.5 L 337 176.5L335 172.5 Z' ||
+                    path === 'M 333 172.5 L 337 180.5 L 341 172.5L 339 172.5 L 337 176.5L335 172.5 Z').toBe(true);
+                opacity = forwardArrow.getAttribute('opacity');
+                expect(opacity === '1').toBe(true);
+                let legendGroup = document.getElementById('container_chart_legend_translate_g');
+                expect(legendGroup.childElementCount === 6).toBe(true);
+                done();
+            };
+            chartObj.legendSettings.title = 'Countries';
+            chartObj.legendSettings.titlePosition = 'Right';
+            chartObj.legendSettings.position = 'Right';
+            chartObj.refresh();
+        });
+        it('12.legend left: without legend title', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                backArrow = document.getElementById('container_chart_legend_pageup');
+                path = backArrow.getAttribute('d');
+                expect(path === 'M 56 64 L 60 56 L 64 64L 62 64 L 60 60L58 64 Z' ||
+                    path === 'M 56 61 L 60 53 L 64 61L 62 61 L 60 57L58 61 Z').toBe(true);
+                opacity = backArrow.getAttribute('opacity');
+                expect(opacity === '0').toBe(true);
+                forwardArrow = document.getElementById('container_chart_legend_pagedown');
+                path = forwardArrow.getAttribute('d');
+                expect(path === 'M 56 172.5 L 60 180.5 L 64 172.5L 62 172.5 L 60 176.5L58 172.5 Z' ||
+                    path === 'M 56 172.5 L 60 180.5 L 64 172.5L 62 172.5 L 60 176.5L58 172.5 Z').toBe(true);
+                opacity = forwardArrow.getAttribute('opacity');
+                expect(opacity === '1').toBe(true);
+                let legendGroup = document.getElementById('container_chart_legend_translate_g');
+                expect(legendGroup.childElementCount === 6).toBe(true);
+                done();
+            };
+            chartObj.legendSettings.title = '';
+            chartObj.legendSettings.titlePosition = 'Top';
+            chartObj.legendSettings.position = 'Left';
+            chartObj.refresh();
+        });
+        it('13.legend left: with legend title top', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                titleElement = document.getElementById('container_chart_legend_title');
+                expect(titleElement.textContent === 'Countries').toBe(true);
+                xValue = titleElement.getAttribute('x');
+                expect(xValue === '60').toBe(true);
+                yValue = titleElement.getAttribute('y');
+                expect(yValue === '65' || yValue === '61').toBe(true);
+                backArrow = document.getElementById('container_chart_legend_pageup');
+                path = backArrow.getAttribute('d');
+                expect(path === 'M 56 81 L 60 73 L 64 81L 62 81 L 60 77L58 81 Z' ||
+                    path === 'M 56 77 L 60 69 L 64 77L 62 77 L 60 73L58 77 Z').toBe(true);
+                opacity = backArrow.getAttribute('opacity');
+                expect(opacity === '0').toBe(true);
+                forwardArrow = document.getElementById('container_chart_legend_pagedown');
+                path = forwardArrow.getAttribute('d');
+                expect(path === 'M 56 172.5 L 60 180.5 L 64 172.5L 62 172.5 L 60 176.5L58 172.5 Z' ||
+                    path === 'M 56 172.5 L 60 180.5 L 64 172.5L 62 172.5 L 60 176.5L58 172.5 Z').toBe(true);
+                opacity = forwardArrow.getAttribute('opacity');
+                expect(opacity === '1').toBe(true);
+                let legendGroup = document.getElementById('container_chart_legend_translate_g');
+                expect(legendGroup.childElementCount === 6).toBe(true);
+                done();
+            };
+            chartObj.legendSettings.title = 'Countries';
+            chartObj.legendSettings.titlePosition = 'Top';
+            chartObj.legendSettings.position = 'Left';
+            chartObj.refresh();
+        });
+        it('14.legend left: with legend title left', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                titleElement = document.getElementById('container_chart_legend_title');
+                expect(titleElement.textContent === 'Countries').toBe(true);
+                xValue = titleElement.getAttribute('x');
+                expect(xValue === '60').toBe(true);
+                yValue = titleElement.getAttribute('y');
+                expect(yValue === '65' || yValue === '61').toBe(true);
+                backArrow = document.getElementById('container_chart_legend_pageup');
+                path = backArrow.getAttribute('d');
+                expect(path === 'M 56 81 L 60 73 L 64 81L 62 81 L 60 77L58 81 Z' ||
+                    path === 'M 56 77 L 60 69 L 64 77L 62 77 L 60 73L58 77 Z').toBe(true);
+                opacity = backArrow.getAttribute('opacity');
+                expect(opacity === '0').toBe(true);
+                forwardArrow = document.getElementById('container_chart_legend_pagedown');
+                path = forwardArrow.getAttribute('d');
+                expect(path === 'M 56 172.5 L 60 180.5 L 64 172.5L 62 172.5 L 60 176.5L58 172.5 Z' ||
+                    path === 'M 56 172.5 L 60 180.5 L 64 172.5L 62 172.5 L 60 176.5L58 172.5 Z').toBe(true);
+                opacity = forwardArrow.getAttribute('opacity');
+                expect(opacity === '1').toBe(true);
+                let legendGroup = document.getElementById('container_chart_legend_translate_g');
+                expect(legendGroup.childElementCount === 6).toBe(true);
+                done();
+            };
+            chartObj.legendSettings.title = 'Countries';
+            chartObj.legendSettings.titlePosition = 'Left';
+            chartObj.legendSettings.position = 'Left';
+            chartObj.refresh();
+        });
+        it('15.legend left: with legend title right', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                titleElement = document.getElementById('container_chart_legend_title');
+                expect(titleElement.textContent === 'Countries').toBe(true);
+                xValue = titleElement.getAttribute('x');
+                expect(xValue === '60').toBe(true);
+                yValue = titleElement.getAttribute('y');
+                expect(yValue === '65' || yValue === '61').toBe(true);
+                backArrow = document.getElementById('container_chart_legend_pageup');
+                path = backArrow.getAttribute('d');
+                expect(path === 'M 56 81 L 60 73 L 64 81L 62 81 L 60 77L58 81 Z' ||
+                    path === 'M 56 77 L 60 69 L 64 77L 62 77 L 60 73L58 77 Z').toBe(true);
+                opacity = backArrow.getAttribute('opacity');
+                expect(opacity === '0').toBe(true);
+                forwardArrow = document.getElementById('container_chart_legend_pagedown');
+                path = forwardArrow.getAttribute('d');
+                expect(path === 'M 56 172.5 L 60 180.5 L 64 172.5L 62 172.5 L 60 176.5L58 172.5 Z' ||
+                    path === 'M 56 172.5 L 60 180.5 L 64 172.5L 62 172.5 L 60 176.5L58 172.5 Z').toBe(true);
+                opacity = forwardArrow.getAttribute('opacity');
+                expect(opacity === '1').toBe(true);
+                let legendGroup = document.getElementById('container_chart_legend_translate_g');
+                expect(legendGroup.childElementCount === 6).toBe(true);
+                done();
+            };
+            chartObj.legendSettings.title = 'Countries';
+            chartObj.legendSettings.titlePosition = 'Right';
+            chartObj.legendSettings.position = 'Left';
             chartObj.refresh();
         });
     });

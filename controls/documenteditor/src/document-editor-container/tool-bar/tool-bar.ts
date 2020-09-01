@@ -165,7 +165,9 @@ export class Toolbar {
                 iconCss: 'e-icons e-de-ctnr-image',
                 select: this.onDropDownButtonSelect.bind(this),
             };
-            this.imgDropDwn = new DropDownButton(items, imageButton as HTMLButtonElement);
+            if (isNullOrUndefined(this.imgDropDwn)) {
+                this.imgDropDwn = new DropDownButton(items, imageButton as HTMLButtonElement);
+            }
         }
 
         if (this.toolbarItems.indexOf('Break') >= 0) {
@@ -178,7 +180,9 @@ export class Toolbar {
                 iconCss: 'e-icons e-de-ctnr-break',
                 select: this.onDropDownButtonSelect.bind(this),
             };
-            this.breakDropDwn = new DropDownButton(items, breakButton as HTMLButtonElement);
+            if (isNullOrUndefined(this.breakDropDwn)) {
+                this.breakDropDwn = new DropDownButton(items, breakButton as HTMLButtonElement);
+            }
         }
 
 
@@ -206,7 +210,9 @@ export class Toolbar {
                 cssClass: 'e-de-toolbar-btn-first e-caret-hide',
                 select: this.onDropDownButtonSelect.bind(this)
             };
-            this.restrictDropDwn = new DropDownButton(items, restrictEditing as HTMLButtonElement);
+            if (isNullOrUndefined(this.restrictDropDwn)) {
+                this.restrictDropDwn = new DropDownButton(items, restrictEditing as HTMLButtonElement);
+            }
         }
         if (this.toolbarItems.indexOf('FormFields') >= 0) {
             let breakButton: HTMLElement = toolbarTarget.getElementsByClassName('e-de-formfields')[0].firstChild as HTMLElement;
@@ -218,7 +224,9 @@ export class Toolbar {
                 cssClass: 'e-de-toolbar-btn-first e-caret-hide',
                 select: this.onDropDownButtonSelect.bind(this),
             };
-            this.formFieldDropDown = new DropDownButton(items, breakButton as HTMLButtonElement);
+            if (isNullOrUndefined(this.formFieldDropDown)) {
+                this.formFieldDropDown = new DropDownButton(items, breakButton as HTMLButtonElement);
+            }
         }
     }
 

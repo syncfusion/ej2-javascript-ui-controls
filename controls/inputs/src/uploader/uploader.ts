@@ -1993,11 +1993,13 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             let index: number = this.filesData.indexOf(files);
             let rootElement: HTMLElement = this.fileList[index];
             if (rootElement) {
-                let statusElement: HTMLElement = rootElement.querySelector('.' + STATUS) as HTMLElement;
                 rootElement.classList.remove(UPLOAD_SUCCESS);
-                statusElement.classList.remove(UPLOAD_SUCCESS);
                 rootElement.classList.add(UPLOAD_FAILED);
-                statusElement.classList.add(UPLOAD_FAILED);
+                let statusElement: HTMLElement = rootElement.querySelector('.' + STATUS) as HTMLElement;
+                if (statusElement) {
+                    statusElement.classList.remove(UPLOAD_SUCCESS);
+                    statusElement.classList.add(UPLOAD_FAILED);
+                }
             }
             this.checkActionButtonStatus();
         }
@@ -2775,7 +2777,8 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     private getLiElement(files : FileInfo) : HTMLElement {
         let index: number;
         for (let i: number = 0; i < this.filesData.length; i++) {
-            if (this.filesData[i].name === files.name) {
+            if ((!isNullOrUndefined(this.filesData[i].id) && !isNullOrUndefined(files.id)) ? (this.filesData[i].name === files.name &&
+                 this.filesData[i].id === files.id) : this.filesData[i].name === files.name) {
                 index = i;
             }
         }
@@ -3743,7 +3746,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
      */
     public upload(files?: FileInfo | FileInfo[], custom?: boolean): void {
         files = files ? files : this.filesData;
-        if (this.sequentialUpload && this.isFirstFileOnSelection) {
+        if (this.sequentialUpload && (this.isFirstFileOnSelection || custom)) {
             this.sequenceUpload(files as FileInfo[]);
         } else {
             let uploadFiles: FileInfo[] = this.getFilesInArray(files);

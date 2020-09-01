@@ -36069,6 +36069,7 @@ var Diagram = /** @class */ (function (_super) {
     Diagram.prototype.spliceConnectorEdges = function (connector, isSource) {
         var node;
         var edges = [];
+        var isInEdge;
         node = isSource ? this.nameTable[connector.sourceID] : this.nameTable[connector.targetID];
         if (node) {
             edges = isSource ? node.outEdges : node.inEdges;
@@ -36076,6 +36077,10 @@ var Diagram = /** @class */ (function (_super) {
                 if (edges[i] === connector.id) {
                     edges.splice(i, 1);
                 }
+            }
+            for (var j = 0; node.ports && j < node.ports.length; j++) {
+                isInEdge = isSource ? false : true;
+                this.removePortEdges(node, node.ports[j].id, connector.id, isInEdge);
             }
         }
     };
@@ -36448,6 +36453,10 @@ var Diagram = /** @class */ (function (_super) {
                 }
                 parentNode.wrapper.measure(new Size());
                 parentNode.wrapper.arrange(parentNode.wrapper.desiredSize);
+                if (!parentNode.isLane) {
+                    this.nameTable[node.id].width = parentNode.wrapper.actualSize.width;
+                    this.nameTable[node.id].height = parentNode.wrapper.actualSize.height;
+                }
                 if (parentNode.container !== undefined) {
                     childNode.offsetX = childNode.wrapper.offsetX;
                     childNode.offsetY = childNode.wrapper.offsetY;
@@ -52673,9 +52682,10 @@ var HierarchicalLayoutUtil = /** @class */ (function () {
         }
     };
     HierarchicalLayoutUtil.prototype.isIntersect = function (rect, nodeRect, layoutProp) {
-        if (!(rect.right + layoutProp.horizontalSpacing <= nodeRect.x || rect.x - layoutProp.horizontalSpacing >= nodeRect.right
-            || rect.y - layoutProp.verticalSpacing >= nodeRect.bottom
-            || rect.bottom + layoutProp.verticalSpacing <= nodeRect.y)) {
+        if (!(Math.floor(rect.right + layoutProp.horizontalSpacing) <= Math.floor(nodeRect.x) ||
+            Math.floor(rect.x - layoutProp.horizontalSpacing) >= Math.floor(nodeRect.right)
+            || Math.floor(rect.y - layoutProp.verticalSpacing) >= Math.floor(nodeRect.bottom)
+            || Math.floor(rect.bottom + layoutProp.verticalSpacing) <= Math.floor(nodeRect.y))) {
             return true;
         }
         else {

@@ -64,6 +64,14 @@ var Theme;
         fontFamily: 'Segoe UI'
     };
     /** @private */
+    Theme.legendTitleFont = {
+        size: '13px',
+        fontWeight: 'Normal',
+        color: null,
+        fontStyle: 'Normal',
+        fontFamily: 'Segoe UI'
+    };
+    /** @private */
     Theme.stripLineLabelFont = {
         size: '12px',
         fontWeight: 'Regular',
@@ -983,8 +991,8 @@ var Double = /** @class */ (function () {
         if (axis.visibleRange.interval && (axis.visibleRange.interval + '').indexOf('.') >= 0) {
             intervalDigits = (axis.visibleRange.interval + '').split('.')[1].length;
         }
-        labelStyle = (sf.base.extend({}, sf.base.getValue('properties', axis.labelStyle), null, true));
         for (; tempInterval <= axis.visibleRange.max; tempInterval += axis.visibleRange.interval) {
+            labelStyle = (sf.base.extend({}, sf.base.getValue('properties', axis.labelStyle), null, true));
             if (withIn(tempInterval, axis.visibleRange)) {
                 triggerLabelRender(chart, tempInterval, this.formatValue(axis, isCustom, format, tempInterval), labelStyle, axis);
             }
@@ -3463,6 +3471,26 @@ function calculateLegendShapes(location, size, shape, options) {
                 ' ' + (lx + (width / 5)) + ' ' + (ly + (-height / 2)) + ' ' + 'L' + ' ' + (lx + (width / 2)) + ' ' + (ly +
                 (-height / 2)) + 'L' + ' ' + (lx + (width / 2)) + ' ' + (ly + (height / 2)) + ' ' + 'L' + '' + (lx + (width / 2)
                 + (padding / 4)) + ' ' + (ly + (height / 2));
+            sf.base.merge(options, { 'd': dir });
+            break;
+        case 'UpArrow':
+            options.fill = options.stroke;
+            options.stroke = 'transparent';
+            dir = 'M' + ' ' + (lx + (-width / 2)) + ' ' + (ly + (height / 2)) + ' ' +
+                'L' + ' ' + (lx) + ' ' + (ly - (height / 2)) + ' ' +
+                'L' + ' ' + (lx + (width / 2)) + ' ' + (ly + (height / 2)) +
+                'L' + ' ' + (lx + (width / 2) - space) + ' ' + (ly + (height / 2)) + ' ' +
+                'L' + ' ' + (lx) + ' ' + (ly - (height / 2) + (2 * space)) +
+                'L' + (lx - (width / 2) + space) + ' ' + (ly + (height / 2)) + ' Z';
+            sf.base.merge(options, { 'd': dir });
+            break;
+        case 'DownArrow':
+            dir = 'M' + ' ' + (lx - (width / 2)) + ' ' + (ly - (height / 2)) + ' ' +
+                'L' + ' ' + (lx) + ' ' + (ly + (height / 2)) + ' ' +
+                'L' + ' ' + (lx + (width / 2)) + ' ' + (ly - (height / 2)) +
+                'L' + ' ' + (lx + (width / 2) - space) + ' ' + (ly - (height / 2)) + ' ' +
+                'L' + ' ' + (lx) + ' ' + (ly + (height / 2) - (2 * space)) +
+                'L' + (lx - (width / 2) + space) + ' ' + (ly - (height / 2)) + ' Z';
             sf.base.merge(options, { 'd': dir });
             break;
         case 'RightArrow':
@@ -9292,6 +9320,8 @@ var CartesianAxisLayoutPanel = /** @class */ (function () {
         var scrollBarHeight = sf.base.isNullOrUndefined(axis.crossesAt) ? axis.scrollBarHeight * (isOpposed ? 1 : -1) : 0;
         var textHeight;
         var textPadding;
+        var maxLineWidth;
+        var pixel = 10;
         for (var i = 0, len = axis.visibleLabels.length; i < len; i++) {
             isAxisBreakLabel = isBreakLabel(axis.visibleLabels[i].originalText);
             pointX = isLabelInside ? (rect.x - padding) : (rect.x + padding + scrollBarHeight);
@@ -9302,6 +9332,21 @@ var CartesianAxisLayoutPanel = /** @class */ (function () {
             textPadding = ((elementSize.height / 4) * 3) + 3;
             pointY = (isAxisBreakLabel ? (axis.labelPosition === 'Inside' ? (pointY - (elementSize.height / 2) - textHeight + textPadding)
                 : (pointY - textHeight)) : (axis.labelPosition === 'Inside' ? (pointY + textPadding) : pointY + (elementSize.height / 4)));
+            if (axis.majorGridLines.width > axis.majorTickLines.width) {
+                maxLineWidth = axis.majorGridLines.width;
+            }
+            else {
+                maxLineWidth = axis.majorTickLines.width;
+            }
+            if (axis.labelStyle.textAlignment === 'Far') {
+                pointY = pointY - maxLineWidth - pixel;
+            }
+            else if (axis.labelStyle.textAlignment === 'Near') {
+                pointY = pointY + maxLineWidth + pixel;
+            }
+            else if (axis.labelStyle.textAlignment === 'Center') {
+                pointY = pointY;
+            }
             options = new sf.svgbase.TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, anchor, axis.visibleLabels[i].text);
             if (axis.edgeLabelPlacement) {
                 switch (axis.edgeLabelPlacement) {
@@ -9592,6 +9637,7 @@ var CartesianAxisLayoutPanel = /** @class */ (function () {
         var elementSize;
         var labelPadding;
         var anchor;
+        var pixel = 10;
         var labelElement = chart.renderer.createGroup({ id: chart.element.id + 'AxisLabels' + index });
         var islabelInside = axis.labelPosition === 'Inside';
         var isOpposed = axis.opposedPosition;
@@ -9626,6 +9672,15 @@ var CartesianAxisLayoutPanel = /** @class */ (function () {
             width = ((axis.labelIntersectAction === 'Trim' || axis.labelIntersectAction === 'Wrap') && angle === 0 &&
                 labelWidth > intervalLength) ? intervalLength : labelWidth;
             pointX -= width / 2;
+            if (axis.labelStyle.textAlignment === 'Far') {
+                pointX = pointX + width - pixel;
+            }
+            else if (axis.labelStyle.textAlignment === 'Near') {
+                pointX = pointX - width + pixel;
+            }
+            else if (axis.labelStyle.textAlignment === 'Center') {
+                pointX = pointX;
+            }
             if (islabelInside && angle) {
                 pointY = isOpposed ? (rect.y + padding) : (rect.y - padding);
             }
@@ -10528,6 +10583,21 @@ var LegendSettings = /** @class */ (function (_super) {
     __decorate$7([
         sf.base.Property(3)
     ], LegendSettings.prototype, "tabIndex", void 0);
+    __decorate$7([
+        sf.base.Property(null)
+    ], LegendSettings.prototype, "title", void 0);
+    __decorate$7([
+        sf.base.Complex(Theme.legendTitleFont, Font)
+    ], LegendSettings.prototype, "titleStyle", void 0);
+    __decorate$7([
+        sf.base.Property('Top')
+    ], LegendSettings.prototype, "titlePosition", void 0);
+    __decorate$7([
+        sf.base.Property(100)
+    ], LegendSettings.prototype, "maximumTitleWidth", void 0);
+    __decorate$7([
+        sf.base.Property(true)
+    ], LegendSettings.prototype, "enablePages", void 0);
     return LegendSettings;
 }(sf.base.ChildProperty));
 /**
@@ -10540,6 +10610,7 @@ var BaseLegend = /** @class */ (function () {
      * @private
      */
     function BaseLegend(chart) {
+        this.fivePixel = 5;
         this.rowCount = 0; // legend row counts per page
         this.columnCount = 0; // legend column counts per page
         this.pageButtonSize = 8;
@@ -10548,6 +10619,13 @@ var BaseLegend = /** @class */ (function () {
         this.isTrimmed = false;
         this.maxWidth = 0;
         this.currentPage = 1;
+        this.backwardArrowOpacity = 0;
+        this.forwardArrowOpacity = 1;
+        this.arrowWidth = (2 * (this.fivePixel + this.pageButtonSize + this.fivePixel));
+        this.arrowHeight = this.arrowWidth;
+        this.legendTitleCollections = [];
+        this.isTop = false;
+        this.isTitle = false;
         this.currentPageNumber = 1;
         this.legendRegions = [];
         this.pagingRegions = [];
@@ -10601,11 +10679,24 @@ var BaseLegend = /** @class */ (function () {
      * To set bounds for chart and accumulation chart
      */
     BaseLegend.prototype.setBounds = function (computedWidth, computedHeight, legend, legendBounds) {
-        computedWidth = computedWidth < legendBounds.width ? computedWidth : legendBounds.width;
-        computedHeight = computedHeight < legendBounds.height ? computedHeight : legendBounds.height;
+        var titleHeight = legend.title && legend.titlePosition === 'Top' ? this.legendTitleSize.height + this.fivePixel : 0;
+        if (this.isVertical && this.isPaging && !legend.enablePages && !this.isBulletChartControl) {
+            titleHeight = legend.title && legend.titlePosition === 'Top' ? this.legendTitleSize.height + this.fivePixel : 0;
+            titleHeight += (this.pageButtonSize + this.fivePixel);
+        }
+        computedWidth = Math.min(computedWidth, legendBounds.width);
+        computedHeight = Math.min(computedHeight, legendBounds.height);
         legendBounds.width = !legend.width ? computedWidth : legendBounds.width;
         legendBounds.height = !legend.height ? computedHeight : legendBounds.height;
-        this.rowCount = Math.max(1, Math.ceil((legendBounds.height - legend.padding) / (this.maxItemHeight + legend.padding)));
+        if (!this.isBulletChartControl) {
+            if (this.isTop && legend.titleStyle.textOverflow !== 'None') {
+                this.calculateLegendTitle(legend, legendBounds);
+                legendBounds.height += legend.titleStyle.textOverflow === 'Wrap' && this.legendTitleCollections.length > 1 ?
+                    (this.legendTitleSize.height - (this.legendTitleSize.height / this.legendTitleCollections.length)) : 0;
+            }
+        }
+        this.rowCount = Math.max(1, Math.ceil((legendBounds.height - legend.padding - titleHeight) /
+            (this.maxItemHeight + legend.padding)));
     };
     /**
      * To find legend location based on position, alignment for chart and accumulation chart
@@ -10687,14 +10778,30 @@ var BaseLegend = /** @class */ (function () {
     BaseLegend.prototype.renderLegend = function (chart, legend, legendBounds, redraw) {
         var firstLegend = this.findFirstLegendPosition(this.legendCollections);
         var padding = legend.padding;
+        var titleHeight = 0;
+        var titlePlusArrowWidth = 0;
+        var isPaging = legend.enablePages;
+        var titlePosition = legend.titlePosition;
+        var upArrowHeight = this.isPaging && !legend.enablePages && this.isVertical ? this.pageButtonSize : 0;
         this.legendRegions = [];
         this.maxItemHeight = Math.max(this.legendCollections[0].textSize.height, legend.shapeHeight);
         var legendGroup = chart.renderer.createGroup({ id: this.legendID + '_g' });
         var legendTranslateGroup = this.createLegendElements(chart, legendBounds, legendGroup, legend, this.legendID, redraw);
+        // For new legend navigation
+        if (!isPaging && this.isPaging && !this.isVertical) {
+            titlePlusArrowWidth = !this.isTitle ? 0 : titlePosition === 'Left' ? this.legendTitleSize.width : 0;
+            titlePlusArrowWidth += (this.pageButtonSize + (2 * this.fivePixel));
+        }
+        else if (!this.isPaging && !this.isVertical) {
+            titlePlusArrowWidth = this.isTitle && titlePosition === 'Left' ? (this.fivePixel + this.legendTitleSize.width) : 0;
+        }
+        titleHeight = !this.isTitle ? 0 : (this.isTop || this.isVertical ? this.legendTitleSize.height : 0);
+        var pagingLegendBounds = new sf.svgbase.Rect(0, 0, 0, 0);
+        var requireLegendBounds = new sf.svgbase.Rect(0, 0, 0, 0);
         if (firstLegend !== this.legendCollections.length) {
             var legendSeriesGroup = void 0; // legendItem group for each series group element
             var start = void 0; // starting shape center x,y position && to resolve lint error used new line for declaration
-            start = new ChartLocation(legendBounds.x + padding + (legend.shapeWidth / 2), legendBounds.y + padding + this.maxItemHeight / 2);
+            start = new ChartLocation(legendBounds.x + titlePlusArrowWidth + padding + (legend.shapeWidth / 2), legendBounds.y + titleHeight + upArrowHeight + padding + this.maxItemHeight / 2);
             var anchor = chart.isRtlEnabled ? 'end' : 'start';
             var textOptions = new sf.svgbase.TextOption('', start.x, start.y, anchor);
             //  initialization for totalPages legend click totalpage again calculate
@@ -10704,6 +10811,21 @@ var BaseLegend = /** @class */ (function () {
             this.pageXCollections = [];
             this.legendCollections[firstLegend].location = start;
             var previousLegend = this.legendCollections[firstLegend];
+            if (!legend.enablePages && this.isPaging) {
+                var x = start.x - this.fivePixel;
+                var y = start.y - this.fivePixel;
+                var rightSpace = this.isTitle && !this.isVertical && titlePosition === 'Right' ?
+                    this.legendTitleSize.width + this.fivePixel : 0;
+                var leftSpace = this.isTitle && !this.isVertical && titlePosition === 'Left' ?
+                    this.legendTitleSize.width + this.fivePixel : 0;
+                rightSpace += this.isVertical ? 0 : (this.fivePixel + this.pageButtonSize + this.fivePixel);
+                var bottomSapce = this.isVertical ? (this.pageButtonSize) + Math.abs(y - legendBounds.y) : 0;
+                pagingLegendBounds = new sf.svgbase.Rect(x, y, legendBounds.width - rightSpace - leftSpace, legendBounds.height - bottomSapce);
+                requireLegendBounds = pagingLegendBounds;
+            }
+            else {
+                requireLegendBounds = legendBounds;
+            }
             for (var _i = 0, _a = this.legendCollections; _i < _a.length; _i++) {
                 var legendOption = _a[_i];
                 if (this.chart.getModuleName() === 'accumulationchart') {
@@ -10721,7 +10843,7 @@ var BaseLegend = /** @class */ (function () {
                         legendSeriesGroup.setAttribute('aria-label', legend.description ||
                             this.accessbilityText);
                     }
-                    this.library.getRenderPoint(legendOption, start, textPadding, previousLegend, legendBounds, count, firstLegend);
+                    this.library.getRenderPoint(legendOption, start, textPadding, previousLegend, requireLegendBounds, count, firstLegend);
                     this.renderSymbol(legendOption, legendSeriesGroup, count);
                     this.renderText(chart, legendOption, legendSeriesGroup, textOptions, count);
                     if (legendSeriesGroup) {
@@ -10760,12 +10882,67 @@ var BaseLegend = /** @class */ (function () {
         return count;
     };
     /**
+     * To get the legend title text width and height.
+     * @param legend
+     * @param legendBounds
+     */
+    BaseLegend.prototype.calculateLegendTitle = function (legend, legendBounds) {
+        if (legend.title) {
+            this.isTop = legend.titlePosition === 'Top';
+            var padding = legend.titleStyle.textOverflow === 'Trim' ? 2 * legend.padding : 0;
+            if (this.isTop || this.isVertical) {
+                this.legendTitleCollections = getTitle(legend.title, legend.titleStyle, (legendBounds.width - padding));
+            }
+            else {
+                this.legendTitleCollections[0] = textTrim(legend.maximumTitleWidth, legend.title, legend.titleStyle);
+            }
+            var text = this.isTop ? legend.title : this.legendTitleCollections[0];
+            this.legendTitleSize = sf.svgbase.measureText(text, legend.titleStyle);
+            this.legendTitleSize.height *= this.legendTitleCollections.length;
+        }
+        else {
+            this.legendTitleSize = new sf.svgbase.Size(0, 0);
+        }
+    };
+    /**
+     * Render the legend title
+     * @param chart
+     * @param legend
+     * @param legendBounds
+     * @param legendGroup
+     */
+    BaseLegend.prototype.renderLegendTitle = function (chart, legend, legendBounds, legendGroup) {
+        var padding = legend.padding;
+        this.isTop = legend.titlePosition === 'Top';
+        var alignment = legend.titleStyle.textAlignment;
+        var anchor = alignment === 'Near' ? 'start' : alignment === 'Far' ? 'end' : 'middle';
+        anchor = this.isTop || this.isVertical ? anchor : '';
+        var x = titlePositionX(legendBounds, legend.titleStyle);
+        x = alignment === 'Near' ? (x + padding) : alignment === 'Far' ? (x - padding) : x;
+        x = (this.isTop || this.isVertical) ? x : ((legendBounds.x) + (legend.titlePosition === 'Left' ? 5 :
+            (legendBounds.width - this.legendTitleSize.width - 5)));
+        var topPadding = (legendBounds.height / 2) + (this.legendTitleSize.height / 4);
+        var y = legendBounds.y + (!this.isTop && !this.isVertical ? topPadding :
+            (this.legendTitleSize.height / this.legendTitleCollections.length));
+        var legendTitleTextOptions = new sf.svgbase.TextOption(this.legendID + '_title', x, y, anchor, this.legendTitleCollections);
+        textElement(chart.renderer, legendTitleTextOptions, legend.titleStyle, legend.titleStyle.color, legendGroup);
+    };
+    /**
      * To create legend rendering elements for chart and accumulation chart
+     * @param chart
+     * @param legendBounds
+     * @param legendGroup
+     * @param legend
+     * @param id
+     * @param redraw
      */
     BaseLegend.prototype.createLegendElements = function (chart, legendBounds, legendGroup, legend, id, redraw) {
         var padding = legend.padding;
         var options = new RectOption(id + '_element', legend.background, legend.border, legend.opacity, legendBounds);
         legendGroup ? legendGroup.appendChild(chart.renderer.drawRectangle(options)) : chart.renderer.drawRectangle(options);
+        if (legend.title) {
+            this.renderLegendTitle(chart, legend, legendBounds, legendGroup);
+        }
         var legendItemsGroup = chart.renderer.createGroup({ id: id + '_collections' });
         var isCanvas = chart.enableCanvas;
         if (!isCanvas) {
@@ -10776,7 +10953,7 @@ var BaseLegend = /** @class */ (function () {
             legendItemsGroup.appendChild(this.legendTranslateGroup);
         }
         var clippath = chart.renderer.createClipPath({ id: id + '_clipPath' });
-        options.y += padding;
+        options.y += padding + (this.isTop ? this.legendTitleSize.height : 0);
         options.id += '_clipPath_rect';
         options.width = ((!this.isChartControl && chart.getModuleName() !== 'bulletChart') && this.isVertical) ? this.maxWidth - padding : legendBounds.width;
         if (!isCanvas) {
@@ -10879,10 +11056,15 @@ var BaseLegend = /** @class */ (function () {
     /**
      * To render legend paging elements for chart and accumulation chart
      */
+    // tslint:disable-next-line:max-func-body-length
     BaseLegend.prototype.renderPagingElements = function (chart, bounds, textOption, legendGroup) {
         var paginggroup = chart.renderer.createGroup({ id: this.legendID + '_navigation' });
         this.pagingRegions = [];
+        var pageTextElement;
         var isCanvas = chart.enableCanvas;
+        var titleHeight = this.isBulletChartControl ? 0 : this.legendTitleSize.height;
+        this.backwardArrowOpacity = this.currentPage !== 1 ? 1 : 0;
+        this.forwardArrowOpacity = this.currentPage === this.totalPages ? 0 : 1;
         if (!isCanvas) {
             legendGroup.appendChild(paginggroup);
         }
@@ -10901,7 +11083,9 @@ var BaseLegend = /** @class */ (function () {
             paginggroup.setAttribute('style', 'cursor: pointer');
         }
         // Page left arrow drawing calculation started here
-        this.clipPathHeight = (this.rowCount - 1) * (this.maxItemHeight + legend.padding);
+        var rowCount = !legend.enablePages && this.isPaging && !this.isVertical && !this.isBulletChartControl ? 1 :
+            (this.rowCount - 1);
+        this.clipPathHeight = rowCount * (this.maxItemHeight + legend.padding);
         if (!isCanvas) {
             this.clipRect.setAttribute('height', this.clipPathHeight.toString());
         }
@@ -10914,11 +11098,27 @@ var BaseLegend = /** @class */ (function () {
             this.pagingClipRect.width -= (legend.border.width + legend.border.width / 2);
             this.chart.renderer.clearRect(new sf.svgbase.Rect(this.pagingClipRect.x, this.pagingClipRect.y, this.pagingClipRect.width, this.pagingClipRect.height));
         }
-        var x = bounds.x + iconSize / 2;
-        var y = bounds.y + this.clipPathHeight + ((bounds.height - this.clipPathHeight) / 2);
+        var titleWidth = this.isTitle && legend.titlePosition === 'Left' ? this.legendTitleSize.width : 0;
+        var x = (bounds.x + iconSize / 2);
+        var y = bounds.y + this.clipPathHeight + ((titleHeight + bounds.height - this.clipPathHeight) / 2);
+        if (this.isPaging && !legend.enablePages && !this.isVertical && !this.isBulletChartControl) {
+            x = (bounds.x + this.fivePixel + this.pageButtonSize + titleWidth);
+            y = legend.title && this.isTop ? (bounds.y + padding + titleHeight + (iconSize / 1) + 0.5) :
+                (bounds.y + padding + iconSize + 0.5);
+        }
         var size = sf.svgbase.measureText(this.totalPages + '/' + this.totalPages, legend.textStyle);
         if (!isCanvas) {
-            paginggroup.appendChild(drawSymbol({ x: x, y: y }, 'LeftArrow', new sf.svgbase.Size(iconSize, iconSize), '', symbolOption, 'LeftArrow'));
+            if (this.isVertical && !legend.enablePages && !this.isBulletChartControl) {
+                x = bounds.x + (bounds.width / 2);
+                y = bounds.y + (iconSize / 2) + padding + titleHeight;
+                symbolOption.opacity = this.backwardArrowOpacity;
+                paginggroup.appendChild(drawSymbol({ x: x, y: y }, 'UpArrow', new sf.svgbase.Size(iconSize, iconSize), '', symbolOption, 'UpArrow'));
+            }
+            else {
+                symbolOption.opacity = this.isBulletChartControl ? symbolOption.opacity :
+                    (legend.enablePages ? 1 : this.backwardArrowOpacity);
+                paginggroup.appendChild(drawSymbol({ x: x, y: y }, 'LeftArrow', new sf.svgbase.Size(iconSize, iconSize), '', symbolOption, 'LeftArrow'));
+            }
         }
         else {
             drawSymbol({ x: x, y: y }, 'LeftArrow', new sf.svgbase.Size(iconSize, iconSize), '', symbolOption, 'LeftArrow', this.chart.renderer, new sf.svgbase.Rect(bounds.width - (2 * (iconSize + padding) + padding + size.width), 0, 0, 0));
@@ -10932,34 +11132,53 @@ var BaseLegend = /** @class */ (function () {
         if (isCanvas && this.totalNoOfPages) {
             textOption.text = this.currentPageNumber + '/' + this.totalNoOfPages;
         }
-        var pageTextElement = textElement(chart.renderer, textOption, legend.textStyle, legend.textStyle.color, paginggroup, false, false, false, false, null, new sf.svgbase.Rect(bounds.width - (2 * (iconSize + padding) + padding + size.width), 0, 0, 0));
+        if (legend.enablePages || this.isBulletChartControl) {
+            pageTextElement = textElement(chart.renderer, textOption, legend.textStyle, legend.textStyle.color, paginggroup, false, false, false, false, null, new sf.svgbase.Rect(bounds.width - (2 * (iconSize + padding) + padding + size.width), 0, 0, 0));
+        }
         // Page right arrow rendering calculation started here
-        x = (textOption.x + padding + (iconSize / 2) + size.width);
+        x = textOption.x + padding + (iconSize / 2) + size.width;
+        if (this.isPaging && !legend.enablePages && !this.isVertical) {
+            x = (bounds.x + bounds.width - this.fivePixel - this.pageButtonSize - (legend.title && legend.titlePosition === 'Right' ?
+                this.legendTitleSize.width + this.fivePixel : 0));
+        }
         symbolOption.id = this.legendID + '_pagedown';
+        symbolOption.opacity = !legend.enablePages ? this.forwardArrowOpacity : 1;
         if (!isCanvas) {
-            paginggroup.appendChild(drawSymbol({ x: x, y: y }, 'RightArrow', new sf.svgbase.Size(iconSize, iconSize), '', symbolOption, 'RightArrow'));
+            if (this.isVertical && !legend.enablePages && !this.isBulletChartControl) {
+                x = bounds.x + (bounds.width / 2);
+                y = bounds.y + bounds.height - (iconSize / 2) - padding;
+                paginggroup.appendChild(drawSymbol({ x: x, y: y }, 'DownArrow', new sf.svgbase.Size(iconSize, iconSize), '', symbolOption, 'DownArrow'));
+            }
+            else {
+                paginggroup.appendChild(drawSymbol({ x: x, y: y }, 'RightArrow', new sf.svgbase.Size(iconSize, iconSize), '', symbolOption, 'RightArrow'));
+            }
         }
         else {
             drawSymbol({ x: x, y: y }, 'RightArrow', new sf.svgbase.Size(iconSize, iconSize), '', symbolOption, 'RightArrow', this.chart.renderer, new sf.svgbase.Rect(bounds.width - (2 * (iconSize + padding) + padding + size.width), 0, 0, 0));
         }
         this.pagingRegions.push(new sf.svgbase.Rect(x + (bounds.width - (2 * (iconSize + padding) + padding + size.width) - iconSize * 0.5), y - iconSize * 0.5, iconSize, iconSize));
-        if (!isCanvas) {
+        if (!isCanvas && (legend.enablePages || this.isBulletChartControl)) {
             //placing the navigation buttons and page numbering in legend right corner
             paginggroup.setAttribute('transform', 'translate(' + (bounds.width - (2 * (iconSize + padding) +
                 padding + size.width)) + ', ' + 0 + ')');
         }
         else {
-            if (this.currentPageNumber === 1 && this.calTotalPage) {
+            if (this.currentPageNumber === 1 && this.calTotalPage && (legend.enablePages || this.isBulletChartControl)) {
                 this.totalNoOfPages = this.totalPages;
                 this.calTotalPage = false;
             }
+            if (!legend.enablePages && !this.isBulletChartControl) { // For new legend page navigation
+                this.translatePage(null, this.currentPage - 1, this.currentPage, legend);
+            }
         }
-        this.translatePage(pageTextElement, this.currentPage - 1, this.currentPage);
+        if (legend.enablePages || this.isBulletChartControl) {
+            this.translatePage(pageTextElement, this.currentPage - 1, this.currentPage, legend);
+        }
     };
     /**
      * To translate legend pages for chart and accumulation chart
      */
-    BaseLegend.prototype.translatePage = function (pagingText, page, pageNumber) {
+    BaseLegend.prototype.translatePage = function (pagingText, page, pageNumber, legend) {
         var size = (this.clipPathHeight) * page;
         var translate = 'translate(0,-' + size + ')';
         if (!this.isChartControl && !this.isBulletChartControl && this.isVertical) {
@@ -10971,7 +11190,7 @@ var BaseLegend = /** @class */ (function () {
         if (!this.chart.enableCanvas) {
             this.legendTranslateGroup.setAttribute('transform', translate);
         }
-        if (!this.chart.enableCanvas) {
+        if (!this.chart.enableCanvas && (legend.enablePages || this.isBulletChartControl)) {
             pagingText.textContent = (pageNumber) + '/' + this.totalPages;
         }
         this.currentPage = pageNumber;
@@ -10981,14 +11200,37 @@ var BaseLegend = /** @class */ (function () {
      * To change legend pages for chart and accumulation chart
      */
     BaseLegend.prototype.changePage = function (event, pageUp) {
-        var pageText = document.getElementById(this.legendID + '_pagenumber');
-        var page = parseInt(pageText.textContent.split('/')[0], 10);
+        var legend = this.chart.legendSettings;
+        var backwardArrow = document.getElementById(this.legendID + '_pageup');
+        var forwardArrow = document.getElementById(this.legendID + '_pagedown');
+        var pageText = (legend.enablePages || this.isBulletChartControl) ?
+            document.getElementById(this.legendID + '_pagenumber') : null;
+        var page = (legend.enablePages || this.isBulletChartControl) ? parseInt(pageText.textContent.split('/')[0], 10) :
+            this.currentPage;
         if (pageUp && page > 1) {
-            this.translatePage(pageText, (page - 2), (page - 1));
+            this.translatePage(pageText, (page - 2), (page - 1), legend);
         }
         else if (!pageUp && page < this.totalPages) {
-            this.translatePage(pageText, page, (page + 1));
+            this.translatePage(pageText, page, (page + 1), legend);
         }
+        if (this.isPaging && !legend.enablePages && !this.isBulletChartControl) {
+            this.currentPage === this.totalPages ? this.hideArrow(forwardArrow) : this.showArrow(forwardArrow);
+            this.currentPage === 1 ? this.hideArrow(backwardArrow) : this.showArrow(backwardArrow);
+        }
+    };
+    /**
+     * To hide the backward and forward arrow
+     * @param arrowElement
+     */
+    BaseLegend.prototype.hideArrow = function (arrowElement) {
+        arrowElement.setAttribute('opacity', '0');
+    };
+    /**
+     * To show the  backward and forward arrow
+     * @param arrowElement
+     */
+    BaseLegend.prototype.showArrow = function (arrowElement) {
+        arrowElement.setAttribute('opacity', '1');
     };
     /**
      * To find legend elements id based on chart or accumulation chart
@@ -12793,14 +13035,15 @@ var Chart$1 = /** @class */ (function (_super) {
     Chart$$1.prototype.titleTooltip = function (event, x, y, isTouch) {
         var targetId = event.target.id;
         var id = (targetId === (this.element.id + '_ChartTitle') || targetId === (this.element.id + '_ChartSubTitle') ||
-            targetId.indexOf('_AxisTitle') > -1);
+            targetId.indexOf('_AxisTitle') > -1 || targetId.indexOf('_legend_title') > -1);
         var index = 0;
         if (targetId.indexOf('_AxisTitle') > -1) {
             index = parseInt(((targetId.replace(this.element.id, '')).replace('AxisLabel_', '')).split('_')[2], 10);
         }
         if (id && (event.target.textContent.indexOf('...') > -1)) {
             var title = (targetId === (this.element.id + '_ChartTitle')) ? this.title :
-                targetId.indexOf('_AxisTitle') > -1 ? this.axisCollections[index].title : this.subTitle;
+                targetId.indexOf('_AxisTitle') > -1 ? this.axisCollections[index].title :
+                    targetId.indexOf('_ChartSubTitle') > -1 ? this.subTitle : this.legendSettings.title;
             showTooltip(title, x, y, this.element.offsetWidth, this.element.id + '_EJ2_Title_Tooltip', getElement$1(this.element.id + '_Secondary_Element'), isTouch);
         }
         else {
@@ -22622,7 +22865,7 @@ var Tooltip$1 = /** @class */ (function (_super) {
             //     extraPoints.push(data);
             // }
         }
-        if (chart.isBlazor) {
+        if (chart.isBlazor && data) { // To avoid console error when we have empty chart with shared tooltip.
             this.triggerBlazorSharedTooltip(argument, lastData, extraPoints, chart, isFirst);
         }
         if (this.currentPoints.length > 0) {
@@ -27171,18 +27414,25 @@ var Legend = /** @class */ (function (_super) {
     };
     /** @private */
     Legend.prototype.getLegendBounds = function (availableSize, legendBounds, legend) {
+        this.calculateLegendTitle(legend, legendBounds);
+        this.isTitle = legend.title ? true : false;
         var padding = legend.padding;
+        var titlePosition = legend.titlePosition;
         var extraHeight = 0;
         var extraWidth = 0;
+        var arrowWidth = this.arrowWidth;
+        var arrowHeight = this.arrowHeight;
+        var verticalArrowSpace = this.isVertical && !legend.enablePages ? arrowHeight : 0;
+        var titleSpace = this.isTitle && titlePosition === 'Top' ? this.legendTitleSize.height + this.fivePixel : 0;
+        titleSpace = this.isTitle && this.isVertical && titlePosition !== 'Top' ? this.legendTitleSize.height + this.fivePixel : titleSpace;
         if (!this.isVertical) {
             extraHeight = !legend.height ? ((availableSize.height / 100) * 5) : 0;
         }
         else {
             extraWidth = !legend.width ? ((availableSize.width / 100) * 5) : 0;
         }
-        legendBounds.height += extraHeight;
+        legendBounds.height += (extraHeight);
         legendBounds.width += extraWidth;
-        var shapeHeight = legend.shapeHeight;
         var shapeWidth = legend.shapeWidth;
         var shapePadding = legend.shapePadding;
         var maximumWidth = 0;
@@ -27190,6 +27440,7 @@ var Legend = /** @class */ (function (_super) {
         var legendWidth = 0;
         var columnHeight = 0;
         var rowCount = 0;
+        var titlePlusArrowSpace = 0;
         var legendEventArgs;
         this.maxItemHeight = Math.max(sf.svgbase.measureText('MeasureText', legend.textStyle).height, legend.shapeHeight);
         var render = false;
@@ -27216,20 +27467,35 @@ var Legend = /** @class */ (function (_super) {
                 render = true;
                 legendWidth = shapeWidth + shapePadding + legendOption.textSize.width + padding;
                 rowWidth = rowWidth + legendWidth;
-                if (legendBounds.width < (padding + rowWidth) || this.isVertical) {
-                    maximumWidth = Math.max(maximumWidth, (rowWidth + padding - (this.isVertical ? 0 : legendWidth)));
+                if (!legend.enablePages && !this.isVertical) {
+                    titlePlusArrowSpace = this.isTitle && titlePosition !== 'Top' ? this.legendTitleSize.width + this.fivePixel : 0;
+                    titlePlusArrowSpace += arrowWidth;
+                }
+                if (legendBounds.width < (padding + rowWidth + titlePlusArrowSpace) || this.isVertical) {
+                    maximumWidth = Math.max(maximumWidth, (rowWidth + padding + titlePlusArrowSpace - (this.isVertical ? 0 : legendWidth)));
                     if (rowCount === 0 && (legendWidth !== rowWidth)) {
                         rowCount = 1;
                     }
                     rowWidth = this.isVertical ? 0 : legendWidth;
                     rowCount++;
-                    columnHeight = (rowCount * (this.maxItemHeight + padding)) + padding;
+                    columnHeight = (rowCount * (this.maxItemHeight + padding)) + padding + titleSpace + verticalArrowSpace;
                 }
             }
         }
-        columnHeight = Math.max(columnHeight, (this.maxItemHeight + padding) + padding);
+        columnHeight = Math.max(columnHeight, (this.maxItemHeight + padding) + padding + titleSpace);
         this.isPaging = legendBounds.height < columnHeight;
+        if (this.isPaging && !legend.enablePages) {
+            if (this.isVertical) {
+                columnHeight = columnHeight;
+            }
+            else {
+                columnHeight = (this.maxItemHeight + padding) + padding + (titlePosition === 'Top' ? titleSpace : 0);
+            }
+        }
         this.totalPages = rowCount;
+        if (!this.isPaging && !this.isVertical) {
+            rowWidth += this.isTitle && titlePosition !== 'Top' ? (this.fivePixel + this.legendTitleSize.width + this.fivePixel) : 0;
+        }
         if (render) {
             this.setBounds(Math.max((rowWidth + padding), maximumWidth), columnHeight, legend, legendBounds);
         }

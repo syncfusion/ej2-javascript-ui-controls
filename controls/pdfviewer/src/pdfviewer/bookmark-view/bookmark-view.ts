@@ -248,6 +248,7 @@ export class BookmarkView {
         let pageIndex: number = this.bookmarksDestination.bookMarkDestination[bookid].PageIndex;
         let Y: number = this.bookmarksDestination.bookMarkDestination[bookid].Y;
         this.goToBookmark(pageIndex, Y);
+        this.pdfViewer.fireBookmarkClick(pageIndex + 1, Y);
     }
 
     /**

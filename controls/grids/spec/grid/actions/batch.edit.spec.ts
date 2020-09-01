@@ -3553,3 +3553,59 @@ describe('EJ2-41463-Column resize icon not displayed after double-clicking the p
         destroy(gridObj);
     });
 });
+
+describe('EJ2-42099-The decimal values are not pasted properly in number column', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowPaging: true,
+                editSettings : { allowEditing: true, allowAdding: true, allowDeleting: true , mode: "Batch" },
+                toolbar : ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                selectionSettings: { type: 'Multiple', mode: 'Cell', cellSelectionMode: 'Box' },
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID',isPrimaryKey: true , width: 120, textAlign: 'Right' },
+                    { field: 'EmployeeID', headerText:'Employee ID', type: 'number' },
+                    { field: 'Freight', headerText: 'Freight', editType: 'numericedit', width: 120, format: 'N4', type: 'number' },
+                ]
+            }, done);
+    });
+    it('check number column decimal value after editing', () => {
+        gridObj.clipboardModule.paste('22.4567', 0, 2);
+        let updateElem: HTMLElement = gridObj.element.querySelector('.e-content').querySelector('table').rows[0].childNodes[2] as any;
+        expect(updateElem.innerHTML).toBe('22.4567');
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('EJ2-41938-Auto-fill functionality not working properly with frozen columns', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data.slice(0, 5),
+                frozenColumns: 2,
+                editSettings : { allowEditing: true, allowAdding: true, allowDeleting: true , mode: "Batch" },
+                toolbar : ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right', minWidth: 10, isPrimaryKey: true },
+                    { field: 'Freight', width: 125, format: 'C2', minWidth: 10 },
+                    { field: 'CustomerID', headerText: 'Customer ID', width: 130, minWidth: 10 },
+                    { field: 'ShipCity', headerText: 'Ship City', width: 250, minWidth: 10 },
+                    { field: 'ShipCountry', headerText: 'Ship Country', width: 250, minWidth: 10 }
+                ]
+            }, done);
+    });
+    it('Check the updatecell value', () => {
+        (gridObj.element.querySelector('#'+gridObj.element.id+'_add') as any).click();
+        gridObj.editModule.updateCell(0, 'CustomerID', 'updated');
+        let updateElem: HTMLElement = gridObj.getContent().querySelector('.e-movablecontent').querySelector('table').rows[0].childNodes[0] as any;
+        expect(updateElem.innerHTML).toBe('updated');
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});

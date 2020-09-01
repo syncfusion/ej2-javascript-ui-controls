@@ -80,9 +80,7 @@ class SfTab {
     public options: ITabOptions;
     constructor(element: BlazorTabElement, options: ITabOptions, dotnetRef: BlazorDotnetObject) {
         this.element = element;
-        if (!isNOU(element)) {
-            this.element.blazor__instance = this;
-        }
+        this.element.blazor__instance = this;
         this.dotNetRef = dotnetRef;
         this.options = options;
     }
@@ -595,6 +593,7 @@ class SfTab {
             case 'delete':
                 let trgParent: HTEle = <HTEle>closest(trg, '.' + CLS_TB_ITEM);
                 if (this.options.showCloseButton === true && !isNOU(trgParent)) {
+                    if (this.getEleIndex(trgParent) === -1) { return; }
                     let nxtSib: HTEle = <HTEle>trgParent.nextSibling;
                     if (!isNOU(nxtSib) && nxtSib.classList.contains(CLS_TB_ITEM)) { (<HTEle>nxtSib.firstElementChild).focus(); }
                     this.dotNetRef.invokeMethodAsync('RemoveTab', parseInt(trgParent.getAttribute('data-index'), 10));
@@ -783,9 +782,17 @@ interface BlazorToolbarElement extends HTMLElement {
 
 // tslint:disable
 let Tab: object = {
-    initialize(element: BlazorTabElement, options: ITabOptions, dotnetRef: BlazorDotnetObject): void {
-        let instance: SfTab = new SfTab(element, options, dotnetRef);
-        instance.render();
+    initialize(element: BlazorTabElement, options: ITabOptions, dotnetRef: BlazorDotnetObject, isLoaded: boolean, isCreatedEvent: boolean): void {
+        if (element) {
+            let instance: SfTab = new SfTab(element, options, dotnetRef);
+            instance.render();
+            if (isLoaded) {
+                instance.headerReady();
+                if (!isCreatedEvent) {
+                    instance.dotNetRef.invokeMethodAsync("CreatedEvent", null);
+                }
+            }
+        }
     },
     headerReady(element: BlazorTabElement, isCreatedEvent: boolean): void {
         if (!isNOU(element) && !isNOU(element.blazor__instance)) {

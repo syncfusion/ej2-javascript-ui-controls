@@ -1077,6 +1077,11 @@ export class AnnotationToolbar {
                         break;
                 }
             }
+            // tslint:disable-next-line
+            let annotationModule: any = this.pdfViewer.annotation;
+            if (annotationModule && annotationModule.inkAnnotationModule) {
+                this.pdfViewer.inkAnnotationSettings.opacity = args.value / 100;
+            }
             if (this.pdfViewer.drawingObject) {
                 this.pdfViewer.drawingObject.opacity = args.value / 100;
                 if (this.pdfViewer.drawingObject.shapeAnnotationType === 'FreeText') {
@@ -1202,8 +1207,15 @@ export class AnnotationToolbar {
                         break;
                 }
             }
-            this.pdfViewer.drawingObject.thickness = args.value;
-            if (this.pdfViewer.drawingObject.shapeAnnotationType === 'FreeText') {
+            // tslint:disable-next-line
+            let annotationModule: any = this.pdfViewer.annotation;
+            if (annotationModule && annotationModule.inkAnnotationModule) {
+                this.pdfViewer.inkAnnotationSettings.thickness = args.value;
+            }
+            if (this.pdfViewer.drawingObject) {
+                this.pdfViewer.drawingObject.thickness = args.value;
+            }
+            if (this.pdfViewer.drawingObject && this.pdfViewer.drawingObject.shapeAnnotationType === 'FreeText') {
                 this.pdfViewer.freeTextSettings.borderWidth = args.value;
                 this.pdfViewer.annotationModule.freeTextAnnotationModule.updateTextProperties();
             }
@@ -1589,8 +1601,15 @@ export class AnnotationToolbar {
                         break;
                 }
             }
-            this.pdfViewer.drawingObject.strokeColor = currentColor;
-            if (this.pdfViewer.drawingObject.shapeAnnotationType === 'FreeText') {
+             // tslint:disable-next-line
+            let annotationModule: any = this.pdfViewer.annotation;
+            if (annotationModule && annotationModule.inkAnnotationModule) {
+                this.pdfViewer.inkAnnotationSettings.strokeColor = currentColor;
+            }
+            if (this.pdfViewer.drawingObject) {
+                this.pdfViewer.drawingObject.strokeColor = currentColor;
+            }
+            if (this.pdfViewer.drawingObject && this.pdfViewer.drawingObject.shapeAnnotationType === 'FreeText') {
                 this.pdfViewer.freeTextSettings.borderColor = currentColor;
                 this.pdfViewer.annotationModule.freeTextAnnotationModule.updateTextProperties();
             }
@@ -1748,12 +1767,6 @@ export class AnnotationToolbar {
     }
 
     private onToolbarClicked(args: ClickEventArgs): void {
-        if (this.pdfViewer.annotationModule.inkAnnotationModule) {
-            // tslint:disable-next-line
-            let currentPageNumber: number = parseInt(this.pdfViewer.annotationModule.inkAnnotationModule.currentPageNumber);
-            this.pdfViewer.annotationModule.inkAnnotationModule.drawInkAnnotation(currentPageNumber);
-            this.primaryToolbar.deSelectItem(this.inkAnnotationItem);
-        }
         switch ((args.originalEvent.target as HTMLElement).id) {
             case this.pdfViewer.element.id + '_highlight':
             case this.pdfViewer.element.id + '_highlightIcon':
@@ -1812,6 +1825,16 @@ export class AnnotationToolbar {
                 break;
             case this.pdfViewer.element.id + '_annotation_ink':
             case this.pdfViewer.element.id + '_annotation_inkIcon':
+                this.pdfViewer.clearSelection(this.pdfViewer.currentPageNumber - 1);
+                if (this.pdfViewer.annotationModule.inkAnnotationModule) {
+                    // tslint:disable-next-line
+                    let currentPageNumber: any = this.pdfViewer.annotationModule.inkAnnotationModule.currentPageNumber;
+                    if (currentPageNumber && currentPageNumber !== '') {
+                         // tslint:disable-next-line
+                        this.pdfViewer.annotationModule.inkAnnotationModule.drawInkAnnotation(parseInt(currentPageNumber));
+                        this.primaryToolbar.deSelectItem(this.inkAnnotationItem);
+                    }
+                }
                 if (!this.inkAnnotationSelected) {
                     this.deselectAllItems();
                     this.drawInkAnnotation();
@@ -1831,6 +1854,7 @@ export class AnnotationToolbar {
     private drawInkAnnotation(): void {
         this.inkAnnotationSelected = true;
         this.primaryToolbar.selectItem(this.inkAnnotationItem);
+        this.enableSignaturePropertiesTools(true);
         this.pdfViewerBase.isToolbarInkClicked = true;
         this.pdfViewer.annotationModule.inkAnnotationModule.drawInk();
     }
@@ -1841,6 +1865,15 @@ export class AnnotationToolbar {
             if (this.freeTextEditItem) {
                 this.primaryToolbar.deSelectItem(this.freeTextEditItem);
                 this.enableFreeTextAnnotationPropertiesTools(false);
+            }
+        }
+        if (this.pdfViewer.annotationModule.inkAnnotationModule) {
+            // tslint:disable-next-line
+            let currentPageNumber: any = this.pdfViewer.annotationModule.inkAnnotationModule.currentPageNumber;
+            if (currentPageNumber && currentPageNumber !== '') {
+                 // tslint:disable-next-line
+                this.pdfViewer.annotationModule.inkAnnotationModule.drawInkAnnotation(parseInt(currentPageNumber));
+                this.primaryToolbar.deSelectItem(this.inkAnnotationItem);
             }
         }
         this.inkAnnotationSelected = false;

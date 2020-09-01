@@ -920,7 +920,8 @@ export class BatchEdit {
                         this.parent.getMovableDataRows()[rowIndex] as HTMLTableRowElement).querySelectorAll('.e-rowcell')));
                 td = cells[index];
             }
-            let rowObj: Row<Column> = this.parent.getRowObjectFromUID(td.parentElement.getAttribute('data-uid'));
+            let rowObj: Row<Column> = parentsUntil(td, 'e-movablecontent') ? this.parent.getMovableRowsObject()[index] :
+                this.parent.getRowObjectFromUID(td.parentElement.getAttribute('data-uid'));
             this.refreshTD(td, col, rowObj, value);
             this.parent.trigger(events.queryCellInfo, {
                 cell: td, column: col, data: rowObj.changes

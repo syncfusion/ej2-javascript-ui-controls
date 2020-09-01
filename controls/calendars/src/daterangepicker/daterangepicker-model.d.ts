@@ -30,9 +30,9 @@ export interface PresetsModel {
 export interface DateRangePickerModel extends CalendarBaseModel{
 
     /**
-     * Gets or sets the start and end date of the Calendar.
-     * @default null
+     * Gets or sets the start and end date of the Calendar. 
      * {% codeBlock src='daterangepicker/value/index.md' %}{% endcodeBlock %}
+     * @default null
      */
     value?: Date[] | DateRange;
 

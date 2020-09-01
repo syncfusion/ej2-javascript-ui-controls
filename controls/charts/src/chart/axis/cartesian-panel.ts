@@ -747,6 +747,8 @@ export class CartesianAxisLayoutPanel {
         let scrollBarHeight: number = isNullOrUndefined(axis.crossesAt) ? axis.scrollBarHeight * (isOpposed ? 1 : -1) : 0;
         let textHeight: number;
         let textPadding: number;
+        let maxLineWidth: number;
+        let pixel: number = 10;
         for (let i: number = 0, len: number = axis.visibleLabels.length; i < len; i++) {
             isAxisBreakLabel = isBreakLabel(axis.visibleLabels[i].originalText);
             pointX = isLabelInside ? (rect.x - padding) : (rect.x + padding + scrollBarHeight);
@@ -757,6 +759,18 @@ export class CartesianAxisLayoutPanel {
             textPadding = ((elementSize.height / 4) * 3) + 3;
             pointY = (isAxisBreakLabel ? (axis.labelPosition === 'Inside' ? (pointY - (elementSize.height / 2) - textHeight + textPadding)
             : (pointY - textHeight)) : (axis.labelPosition === 'Inside' ? (pointY + textPadding) :  pointY + (elementSize.height / 4)));
+            if (axis.majorGridLines.width > axis.majorTickLines.width) {
+                maxLineWidth = axis.majorGridLines.width;
+            } else {
+                maxLineWidth = axis.majorTickLines.width;
+            }
+            if (axis.labelStyle.textAlignment === 'Far') {
+                pointY = pointY - maxLineWidth - pixel;
+            } else if (axis.labelStyle.textAlignment === 'Near') {
+                pointY = pointY + maxLineWidth + pixel;
+            } else if (axis.labelStyle.textAlignment === 'Center') {
+                pointY = pointY;
+            }
             options = new TextOption(
                 chart.element.id + index + '_AxisLabel_' + i, pointX, pointY,
                 anchor, axis.visibleLabels[i].text);
@@ -1067,7 +1081,7 @@ export class CartesianAxisLayoutPanel {
     public drawXAxisLabels(axis: Axis, index: number, parent: Element, rect: Rect): void {
         let chart: Chart = this.chart; let pointX: number = 0; let pointY: number = 0;
         let labelSpace: number = axis.labelPadding;
-        let elementSize: Size; let labelPadding: number; let anchor: string;
+        let elementSize: Size; let labelPadding: number; let anchor: string; let pixel: number = 10;
         let labelElement: Element = chart.renderer.createGroup({ id: chart.element.id + 'AxisLabels' + index });
         let islabelInside: boolean = axis.labelPosition === 'Inside'; let isOpposed: boolean = axis.opposedPosition;
         let tickSpace: number = axis.labelPosition === axis.tickPosition ? axis.majorTickLines.height : 0;
@@ -1093,6 +1107,13 @@ export class CartesianAxisLayoutPanel {
             width = ((axis.labelIntersectAction === 'Trim' || axis.labelIntersectAction === 'Wrap') && angle === 0 &&
                     labelWidth > intervalLength) ? intervalLength : labelWidth;
             pointX -= width / 2;
+            if (axis.labelStyle.textAlignment === 'Far') {
+                pointX = pointX + width - pixel;
+            } else if (axis.labelStyle.textAlignment === 'Near') {
+                pointX = pointX - width + pixel;
+            } else if (axis.labelStyle.textAlignment === 'Center') {
+                pointX = pointX;
+            }
 
             if (islabelInside && angle) {
                 pointY = isOpposed ? (rect.y + padding) : (rect.y - padding);

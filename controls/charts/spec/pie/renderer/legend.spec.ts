@@ -447,6 +447,526 @@ describe('Legend checking for the pie series', () => {
         accumulation.refresh();
     });
 });
+    describe('Legend title checking with pie chart', () => {
+        let chartContainer: HTMLElement;
+        let titleElement: Element;
+        let legendGroup: Element;
+        let xValue: string; let yValue: string;
+        let loaded: EmitType<IAccLoadedEventArgs>;
+        let legendEle: Element;
+        let pieObj: AccumulationChart;
+        let trigger: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            chartContainer = createElement('div', { id: 'container', styles: 'width: 800px; height: 450px' });
+            document.body.appendChild(chartContainer);
+            pieObj = new AccumulationChart({
+                enableAnimation: false,
+                border: {
+                    width: 3,
+                    color: 'blue'
+                },
+                series: [
+                    {
+                        dataSource: [
+                            { x: 'Argentina', y: 505370, r: '100' },
+                            { x: 'Belgium', y: 551500, r: '118.7' },
+                            { x: 'Cuba', y: 312685, r: '124.6' },
+                            { x: 'Dominican Republic', y: 350000, r: '137.5' },
+                            { x: 'Egypt', y: 301000, r: '150.8' },
+                            { x: 'Kazakhstan', y: 300000, r: '155.5' },
+                            { x: 'Somalia', y: 357022, r: '160.6' }
+
+                        ],
+                        dataLabel: {
+                            visible: true, position: 'Outside',
+                            name: 'x'
+                        },
+                        radius: '100%', xName: 'x',
+                        yName: 'y', innerRadius: '0%'
+                    },
+
+                ],
+                enableSmartLabels: true,
+                legendSettings: {
+                    visible: true,
+                    title: 'Countries',
+                    titleStyle: {
+                        size: '14px',
+                        color: 'orange',
+                        textAlignment: 'Center',
+                        textOverflow: 'Trim'
+                    },
+                    border: {
+                        width: 2,
+                        color: 'red'
+                    },
+                    position: 'Bottom',
+                },
+                // Initialize tht tooltip
+                tooltip: { enable: true, format: '${point.x} : <b>${point.y}</b>' },
+            });
+            pieObj.appendTo('#container');
+        });
+
+        afterAll((): void => {
+            //pieObj.accumulationLegendModule.destroy(pieObj);
+            pieObj.destroy();
+            //pieObj.loaded = null;
+            document.getElementById('container').remove();
+        });
+        it('01.legend bottom: title top', (done: Function) => {
+            pieObj.loaded = (args: IAccLoadedEventArgs) => {
+                titleElement = getElement('container_chart_legend_title');
+                expect(titleElement.textContent === 'Countries').toBe(true);
+                xValue = titleElement.getAttribute('x');
+                expect(xValue === '400').toBe(true);
+                yValue = titleElement.getAttribute('y');
+                expect(yValue === '406' || yValue === '407').toBe(true);
+                legendGroup = getElement('container_chart_legend_translate_g');
+                expect(legendGroup.childElementCount === 7).toBe(true);
+                done();
+            };
+            pieObj.refresh();
+        });
+        it('02.legend bottom: title top with text trim', (done: Function) => {
+            pieObj.loaded = (args: IAccLoadedEventArgs) => {
+                titleElement = getElement('container_chart_legend_title');
+                expect(titleElement.textContent === 'It’s important that he dress like an Indian, dance like an Indian, even if it is an act, even...' ||
+                    titleElement.textContent === 'It’s important that he dress like an Indian, dance like an Indian, even if it is an act, even if ...').toBe(true);
+                xValue = titleElement.getAttribute('x');
+                expect(xValue === '400').toBe(true);
+                yValue = titleElement.getAttribute('y');
+                expect(yValue === '406' || yValue === '407').toBe(true);
+                legendGroup = getElement('container_chart_legend_translate_g');
+                expect(legendGroup.childElementCount === 7).toBe(true);
+                done();
+            };
+            pieObj.legendSettings.title = 'It’s important that he dress like an Indian, dance like an Indian, even if it is an act, even if he feels';
+            pieObj.refresh();
+        });
+        it('03.legend bottom: title left', (done: Function) => {
+            pieObj.loaded = (args: IAccLoadedEventArgs) => {
+                titleElement = getElement('container_chart_legend_title');
+                expect(titleElement.textContent === 'Countries').toBe(true);
+                xValue = titleElement.getAttribute('x');
+                expect(xValue === '91.5' || xValue === '105').toBe(true);
+                yValue = titleElement.getAttribute('y');
+                expect(yValue === '427.25' || yValue === '427').toBe(true);
+                legendGroup = getElement('container_chart_legend_translate_g');
+                expect(legendGroup.childElementCount === 7).toBe(true);
+                done();
+            };
+            pieObj.legendSettings.title = 'Countries';
+            pieObj.legendSettings.titlePosition = 'Left';
+            pieObj.refresh();
+        });
+        it('04.legend bottom: title right', (done: Function) => {
+            pieObj.loaded = (args: IAccLoadedEventArgs) => {
+                titleElement = getElement('container_chart_legend_title');
+                expect(titleElement.textContent === 'Countries').toBe(true);
+                xValue = titleElement.getAttribute('x');
+                expect(xValue === '649.5' || xValue === '641').toBe(true);
+                yValue = titleElement.getAttribute('y');
+                expect(yValue === '427.25' || yValue === '427').toBe(true);
+                legendGroup = getElement('container_chart_legend_translate_g');
+                expect(legendGroup.childElementCount === 7).toBe(true);
+                done();
+            };
+            pieObj.legendSettings.title = 'Countries';
+            pieObj.legendSettings.titlePosition = 'Right';
+            pieObj.refresh();
+        });
+        it('05.legend top: title top', (done: Function) => {
+            pieObj.loaded = (args: IAccLoadedEventArgs) => {
+                titleElement = getElement('container_chart_legend_title');
+                expect(titleElement.textContent === 'Countries').toBe(true);
+                xValue = titleElement.getAttribute('x');
+                expect(xValue === '400').toBe(true);
+                yValue = titleElement.getAttribute('y');
+                expect(yValue === '30' || yValue === '27').toBe(true);
+                legendGroup = getElement('container_chart_legend_translate_g');
+                expect(legendGroup.childElementCount === 7).toBe(true);
+                done();
+            };
+            pieObj.legendSettings.title = 'Countries';
+            pieObj.legendSettings.titlePosition = 'Top';
+            pieObj.legendSettings.position = 'Top';
+            pieObj.refresh();
+        });
+        it('06.legend top: title left', (done: Function) => {
+            pieObj.loaded = (args: IAccLoadedEventArgs) => {
+                titleElement = getElement('container_chart_legend_title');
+                expect(titleElement.textContent === 'Countries').toBe(true);
+                xValue = titleElement.getAttribute('x');
+                expect(xValue === '91.5' || xValue === '105').toBe(true);
+                yValue = titleElement.getAttribute('y');
+                expect(yValue === '32.25' || yValue === '31').toBe(true);
+                legendGroup = getElement('container_chart_legend_translate_g');
+                expect(legendGroup.childElementCount === 7).toBe(true);
+                done();
+            };
+            pieObj.legendSettings.title = 'Countries';
+            pieObj.legendSettings.titlePosition = 'Left';
+            pieObj.legendSettings.position = 'Top';
+            pieObj.refresh();
+        });
+        it('07.legend top: title right', (done: Function) => {
+            pieObj.loaded = (args: IAccLoadedEventArgs) => {
+                titleElement = getElement('container_chart_legend_title');
+                expect(titleElement.textContent === 'Countries').toBe(true);
+                xValue = titleElement.getAttribute('x');
+                expect(xValue === '649.5' || xValue === '641').toBe(true);
+                yValue = titleElement.getAttribute('y');
+                expect(yValue === '32.25' || yValue === '31').toBe(true);
+                legendGroup = getElement('container_chart_legend_translate_g');
+                expect(legendGroup.childElementCount === 7).toBe(true);
+                done();
+            };
+            pieObj.legendSettings.title = 'Countries';
+            pieObj.legendSettings.titlePosition = 'Right';
+            pieObj.legendSettings.position = 'Top';
+            pieObj.refresh();
+        });
+        it('08.legend right: title top', (done: Function) => {
+            pieObj.loaded = (args: IAccLoadedEventArgs) => {
+                titleElement = getElement('container_chart_legend_title');
+                expect(titleElement.textContent === 'Countries').toBe(true);
+                xValue = titleElement.getAttribute('x');
+                expect(xValue === '693.2297803156889' || xValue === '693.7297803156889').toBe(true);
+                yValue = titleElement.getAttribute('y');
+                expect(yValue === '143' || yValue === '145').toBe(true);
+                legendGroup = getElement('container_chart_legend_translate_g');
+                expect(legendGroup.childElementCount === 7).toBe(true);
+                done();
+            };
+            pieObj.legendSettings.title = 'Countries';
+            pieObj.legendSettings.titlePosition = 'Top';
+            pieObj.legendSettings.position = 'Right';
+            pieObj.refresh();
+        });
+        it('09.legend left: title top', (done: Function) => {
+            pieObj.loaded = (args: IAccLoadedEventArgs) => {
+                titleElement = getElement('container_chart_legend_title');
+                expect(titleElement.textContent === 'Countries').toBe(true);
+                xValue = titleElement.getAttribute('x');
+                expect(xValue === '103.96712842495415' || xValue === '103.96712842495415').toBe(true);
+                yValue = titleElement.getAttribute('y');
+                expect(yValue === '143' || yValue === '145').toBe(true);
+                legendGroup = getElement('container_chart_legend_translate_g');
+                expect(legendGroup.childElementCount === 7).toBe(true);
+                done();
+            };
+            pieObj.legendSettings.title = 'Countries';
+            pieObj.legendSettings.titlePosition = 'Top';
+            pieObj.legendSettings.position = 'Left';
+            pieObj.refresh();
+        });
+    });
+    describe('Legend new paging support checking with pie chart', () => {
+        let chartContainer: HTMLElement;
+        let titleElement: Element;
+        let legendGroup: Element;
+        let backArrow: Element; let fontArrow: Element;
+        let opacity: string; let path: string;
+        let xValue: string; let yValue: string;
+        let pieObj: AccumulationChart;
+        beforeAll((): void => {
+            chartContainer = createElement('div', { id: 'container', styles: 'width: 300px; height: 300px' });
+            document.body.appendChild(chartContainer);
+            pieObj = new AccumulationChart({
+                border: {
+                    width: 3,
+                    color: 'blue'
+                },
+                series: [
+                    {
+                        dataSource: [
+                            { x: 'Argentina', y: 505370, r: '100' },
+                            { x: 'Belgium', y: 551500, r: '118.7' },
+                            { x: 'Cuba', y: 312685, r: '124.6' },
+                            { x: 'Dominican Republic', y: 350000, r: '137.5' },
+                            { x: 'Egypt', y: 301000, r: '150.8' },
+                            { x: 'Kazakhstan', y: 300000, r: '155.5' },
+                            { x: 'Somalia', y: 357022, r: '160.6' }
+
+                        ],
+                        dataLabel: {
+                            visible: true, position: 'Outside',
+                            name: 'x'
+                        },
+                        radius: '100%', xName: 'x',
+                        yName: 'y', innerRadius: '0%'
+                    },
+
+                ],
+                enableSmartLabels: true,
+                legendSettings: {
+                    visible: true,
+                    title: '',
+                    titleStyle: {
+                        size: '14px',
+                        color: 'orange',
+                        textAlignment: 'Center',
+                        textOverflow: 'Trim'
+                    },
+                    border: {
+                        width: 2,
+                        color: 'red'
+                    },
+                    position: 'Bottom',
+                    margin: { top: 10 },
+                    enablePages: false
+                },
+                // Initialize tht tooltip
+                tooltip: { enable: true, format: '${point.x} : <b>${point.y}</b>' },
+                enableAnimation: true,
+            });
+            pieObj.appendTo('#container');
+        });
+
+        afterAll((): void => {
+            //pieObj.accumulationLegendModule.destroy(pieObj);
+            pieObj.destroy();
+            //pieObj.loaded = null;
+            document.getElementById('container').remove();
+        });
+        it('01.legend bottom: without title', (done: Function) => {
+            pieObj.loaded = (args: IAccLoadedEventArgs) => {
+                titleElement = getElement('container_chart_legend_title');
+                expect(titleElement === null).toBe(true);
+                backArrow = getElement('container_chart_legend_pageup');
+                path = backArrow.getAttribute('d');
+                expect(path === 'M 48.5 267.71501821018626 L 40.5 271.71501821018626 L 48.5 275.71501821018626 L 48.5 273.71501821018626 L 44.5 271.71501821018626 L48.5 269.71501821018626 Z').toBe;
+                fontArrow = getElement('container_chart_legend_pagedown');
+                path = fontArrow.getAttribute('d');
+                expect(path === 'M 251.5 267.71501821018626 L 259.5 271.71501821018626 L 251.5 275.71501821018626 L 251.5 273.71501821018626 L 255.5 271.71501821018626 L251.5 269.71501821018626 Z').toBe;
+                legendGroup = getElement('container_chart_legend_translate_g');
+                expect(legendGroup.childElementCount === 7).toBe(true);
+                done();
+            };
+            pieObj.refresh();
+        });
+        it('02.legend bottom: title top', (done: Function) => {
+            pieObj.loaded = (args: IAccLoadedEventArgs) => {
+                titleElement = getElement('container_chart_legend_title');
+                expect(titleElement.textContent === 'Countries').toBe(true);
+                xValue = titleElement.getAttribute('x');
+                expect(xValue === '150').toBe(true);
+                yValue = titleElement.getAttribute('y');
+                expect(yValue === '254.989169209323' || yValue === '255.23433900949567').toBe(true);
+                backArrow = getElement('container_chart_legend_pageup');
+                path = backArrow.getAttribute('d');
+                expect(path === 'M 44 267.489169209323 L 36 271.489169209323 L 44 275.489169209323 L 44 273.489169209323 L 40 271.489169209323 L44 269.489169209323 Z' ||
+                    path === 'M 48.5 267.73433900949567 L 40.5 271.73433900949567 L 48.5 275.73433900949567 L 48.5 273.73433900949567 L 44.5 271.73433900949567 L48.5 269.73433900949567 Z').toBe;
+                fontArrow = getElement('container_chart_legend_pagedown');
+                path = fontArrow.getAttribute('d');
+                expect(path === 'M 256 267.489169209323 L 264 271.489169209323 L 256 275.489169209323 L 256 273.489169209323 L 260 271.489169209323 L256 269.489169209323 Z'||
+                    path === 'M 251.5 267.73433900949567 L 259.5 271.73433900949567 L 251.5 275.73433900949567 L 251.5 273.73433900949567 L 255.5 271.73433900949567 L251.5 269.73433900949567 Z').toBe;
+                legendGroup = getElement('container_chart_legend_translate_g');
+                expect(legendGroup.childElementCount === 7).toBe(true);
+                done();
+            };
+            pieObj.legendSettings.title = 'Countries';
+            pieObj.legendSettings.titlePosition = 'Top';
+            pieObj.refresh();
+        });
+        it('03.legend bottom: title left', (done: Function) => {
+            pieObj.loaded = (args: IAccLoadedEventArgs) => {
+                titleElement = getElement('container_chart_legend_title');
+                expect(titleElement.textContent === 'Countries').toBe(true);
+                xValue = titleElement.getAttribute('x');
+                expect(xValue === '26.5' || xValue === '32').toBe(true);
+                yValue = titleElement.getAttribute('y');
+                expect(yValue === '276.21622576014306' || yValue === '275.21501821018626').toBe(true);
+                backArrow = getElement('container_chart_legend_pageup');
+                path = backArrow.getAttribute('d');
+                expect(path === 'M 97.5 267.46622576014306 L 89.5 271.46622576014306 L 97.5 275.46622576014306 L 97.5 273.46622576014306 L 93.5 271.46622576014306 L97.5 269.46622576014306 Z' ||
+                    path === 'M 98 267.71501821018626 L 90 271.71501821018626 L 98 275.71501821018626 L 98 273.71501821018626 L 94 271.71501821018626 L98 269.71501821018626 Z').toBe;
+                fontArrow = getElement('container_chart_legend_pagedown');
+                path = fontArrow.getAttribute('d');
+                expect(path === 'M 261.5 267.46622576014306 L 269.5 271.46622576014306 L 261.5 275.46622576014306 L 261.5 273.46622576014306 L 265.5 271.46622576014306 L261.5 269.46622576014306 Z' ||
+                    path === 'M 256 267.71501821018626 L 264 271.71501821018626 L 256 275.71501821018626 L 256 273.71501821018626 L 260 271.71501821018626 L256 269.71501821018626 Z').toBe;
+                legendGroup = getElement('container_chart_legend_translate_g');
+                expect(legendGroup.childElementCount === 7).toBe(true);
+                done();
+            };
+            pieObj.legendSettings.title = 'Countries';
+            pieObj.legendSettings.titlePosition = 'Left';
+            pieObj.refresh();
+        });
+        it('04.legend bottom: title right', (done: Function) => {
+            pieObj.loaded = (args: IAccLoadedEventArgs) => {
+                titleElement = getElement('container_chart_legend_title');
+                expect(titleElement.textContent === 'Countries').toBe(true);
+                xValue = titleElement.getAttribute('x');
+                expect(xValue === '214.5' || xValue === '214').toBe(true);
+                yValue = titleElement.getAttribute('y');
+                expect(yValue === '276.21622576014306' || yValue === '275.21501821018626').toBe(true);
+                backArrow = getElement('container_chart_legend_pageup');
+                path = backArrow.getAttribute('d');
+                expect(path === 'M 38.5 267.46622576014306 L 30.5 271.46622576014306 L 38.5 275.46622576014306 L 38.5 273.46622576014306 L 34.5 271.46622576014306 L38.5 269.46622576014306 Z' ||
+                    path === 'M 44 267.71501821018626 L 36 271.71501821018626 L 44 275.71501821018626 L 44 273.71501821018626 L 40 271.71501821018626 L44 269.71501821018626 Z').toBe;
+                fontArrow = getElement('container_chart_legend_pagedown');
+                path = fontArrow.getAttribute('d');
+                expect(path === 'M 197.5 267.46622576014306 L 205.5 271.46622576014306 L 197.5 275.46622576014306 L 197.5 273.46622576014306 L 201.5 271.46622576014306 L197.5 269.46622576014306 Z' ||
+                    path === 'M 197 267.71501821018626 L 205 271.71501821018626 L 197 275.71501821018626 L 197 273.71501821018626 L 201 271.71501821018626 L197 269.71501821018626 Z').toBe;
+                legendGroup = getElement('container_chart_legend_translate_g');
+                expect(legendGroup.childElementCount === 7).toBe(true);
+                done();
+            };
+            pieObj.legendSettings.title = 'Countries';
+            pieObj.legendSettings.titlePosition = 'Right';
+            pieObj.refresh();
+        });
+        it('05.legend top: without title', (done: Function) => {
+            pieObj.loaded = (args: IAccLoadedEventArgs) => {
+                titleElement = getElement('container_chart_legend_title');
+                expect(titleElement === null).toBe(true);
+                backArrow = getElement('container_chart_legend_pageup');
+                path = backArrow.getAttribute('d');
+                expect(path === 'M 44 28.5 L 36 32.5 L 44 36.5 L 44 34.5 L 40 32.5 L44 30.5 Z' ||
+                    path === 'M 48.5 28.5 L 40.5 32.5 L 48.5 36.5 L 48.5 34.5 L 44.5 32.5 L48.5 30.5 Z').toBe;
+                fontArrow = getElement('container_chart_legend_pagedown');
+                path = fontArrow.getAttribute('d');
+                expect(path === 'M 256 28.5 L 264 32.5 L 256 36.5 L 256 34.5 L 260 32.5 L256 30.5 Z' ||
+                    path === 'M 251.5 28.5 L 259.5 32.5 L 251.5 36.5 L 251.5 34.5 L 255.5 32.5 L251.5 30.5 Z').toBe;
+                legendGroup = getElement('container_chart_legend_translate_g');
+                expect(legendGroup.childElementCount === 7).toBe(true);
+                done();
+            };
+            pieObj.legendSettings.title = '';
+            pieObj.legendSettings.titlePosition = 'Top';
+            pieObj.legendSettings.position = 'Top';
+            pieObj.refresh();
+        });
+        it('06.legend top: title top', (done: Function) => {
+            pieObj.loaded = (args: IAccLoadedEventArgs) => {
+                titleElement = getElement('container_chart_legend_title');
+                expect(titleElement.textContent === 'Countries').toBe(true);
+                xValue = titleElement.getAttribute('x');
+                expect(xValue === '150').toBe(true);
+                yValue = titleElement.getAttribute('y');
+                expect(yValue === '35' || yValue === '31.999999999999993').toBe(true);
+                backArrow = getElement('container_chart_legend_pageup');
+                path = backArrow.getAttribute('d');
+                expect(path === 'M 44 47.5 L 36 51.5 L 44 55.5 L 44 53.5 L 40 51.5 L44 49.5 Z' ||
+                    path === 'M 48.5 44.49999999999999 L 40.5 48.49999999999999 L 48.5 52.49999999999999 L 48.5 50.49999999999999 L 44.5 48.49999999999999 L48.5 46.49999999999999 Z').toBe;
+                fontArrow = getElement('container_chart_legend_pagedown');
+                path = fontArrow.getAttribute('d');
+                expect(path === 'M 256 47.5 L 264 51.5 L 256 55.5 L 256 53.5 L 260 51.5 L256 49.5 Z' ||
+                    path === 'M 251.5 44.49999999999999 L 259.5 48.49999999999999 L 251.5 52.49999999999999 L 251.5 50.49999999999999 L 255.5 48.49999999999999 L251.5 46.49999999999999 Z').toBe;
+                legendGroup = getElement('container_chart_legend_translate_g');
+                expect(legendGroup.childElementCount === 7).toBe(true);
+                done();
+            };
+            pieObj.legendSettings.title = 'Countries';
+            pieObj.legendSettings.titlePosition = 'Top';
+            pieObj.legendSettings.position = 'Top';
+            pieObj.refresh();
+        });
+        it('07.legend top: title left', (done: Function) => {
+            pieObj.loaded = (args: IAccLoadedEventArgs) => {
+                titleElement = getElement('container_chart_legend_title');
+                expect(titleElement.textContent === 'Countries').toBe(true);
+                xValue = titleElement.getAttribute('x');
+                expect(xValue === '26.5' || xValue === '32').toBe(true);
+                yValue = titleElement.getAttribute('y');
+                expect(yValue === '37.25' || yValue === '36').toBe(true);
+                backArrow = getElement('container_chart_legend_pageup');
+                path = backArrow.getAttribute('d');
+                expect(path === 'M 97.5 28.5 L 89.5 32.5 L 97.5 36.5 L 97.5 34.5 L 93.5 32.5 L97.5 30.5 Z' ||
+                    path === 'M 98 28.5 L 90 32.5 L 98 36.5 L 98 34.5 L 94 32.5 L98 30.5 Z').toBe;
+                fontArrow = getElement('container_chart_legend_pagedown');
+                path = fontArrow.getAttribute('d');
+                expect(path === 'M 261.5 28.5 L 269.5 32.5 L 261.5 36.5 L 261.5 34.5 L 265.5 32.5 L261.5 30.5 Z' ||
+                    path === 'M 256 28.5 L 264 32.5 L 256 36.5 L 256 34.5 L 260 32.5 L256 30.5 Z').toBe;
+                legendGroup = getElement('container_chart_legend_translate_g');
+                expect(legendGroup.childElementCount === 7).toBe(true);
+                done();
+            };
+            pieObj.legendSettings.title = 'Countries';
+            pieObj.legendSettings.titlePosition = 'Left';
+            pieObj.legendSettings.position = 'Top';
+            pieObj.refresh();
+        });
+        it('08.legend top: title right', (done: Function) => {
+            pieObj.loaded = (args: IAccLoadedEventArgs) => {
+                titleElement = getElement('container_chart_legend_title');
+                expect(titleElement.textContent === 'Countries').toBe(true);
+                xValue = titleElement.getAttribute('x');
+                expect(xValue === '214.5' || xValue === '214').toBe(true);
+                yValue = titleElement.getAttribute('y');
+                expect(yValue === '37.25' || yValue === '36').toBe(true);
+                backArrow = getElement('container_chart_legend_pageup');
+                path = backArrow.getAttribute('d');
+                expect(path === 'M 38.5 28.5 L 30.5 32.5 L 38.5 36.5 L 38.5 34.5 L 34.5 32.5 L38.5 30.5 Z' ||
+                    path === 'M 44 28.5 L 36 32.5 L 44 36.5 L 44 34.5 L 40 32.5 L44 30.5 Z').toBe;
+                fontArrow = getElement('container_chart_legend_pagedown');
+                path = fontArrow.getAttribute('d');
+                expect(path === 'M 197.5 28.5 L 205.5 32.5 L 197.5 36.5 L 197.5 34.5 L 201.5 32.5 L197.5 30.5 Z' ||
+                    path === 'M 197 28.5 L 205 32.5 L 197 36.5 L 197 34.5 L 201 32.5 L197 30.5 Z').toBe;
+                legendGroup = getElement('container_chart_legend_translate_g');
+                expect(legendGroup.childElementCount === 7).toBe(true);
+                done();
+            };
+            pieObj.legendSettings.title = 'Countries';
+            pieObj.legendSettings.titlePosition = 'Right';
+            pieObj.legendSettings.position = 'Top';
+            pieObj.refresh();
+        });
+        it('09.legend right: title top', (done: Function) => {
+            pieObj.loaded = (args: IAccLoadedEventArgs) => {
+                titleElement = getElement('container_chart_legend_title');
+                expect(titleElement.textContent === 'Countries').toBe(true);
+                xValue = titleElement.getAttribute('x');
+                expect(xValue === '339.5').toBe(true);
+                yValue = titleElement.getAttribute('y');
+                expect(yValue === '29' || yValue === '26').toBe(true);
+                backArrow = getElement('container_chart_legend_pageup');
+                path = backArrow.getAttribute('d');
+                expect(path === 'M 335.5 45 L 339.5 37 L 343.5 45L 341.5 45 L 339.5 41L337.5 45 Z' ||
+                    path === 'M 335.5 42 L 339.5 34 L 343.5 42L 341.5 42 L 339.5 38L337.5 42 Z').toBe;
+                fontArrow = getElement('container_chart_legend_pagedown');
+                path = fontArrow.getAttribute('d');
+                expect(path === 'M 335.5 174 L 339.5 182 L 343.5 174L 341.5 174 L 339.5 178L337.5 174 Z' ||
+                    path === 'M 335.5 174 L 339.5 182 L 343.5 174L 341.5 174 L 339.5 178L337.5 174 Z').toBe;
+                legendGroup = getElement('container_chart_legend_translate_g');
+                expect(legendGroup.childElementCount === 7).toBe(true);
+                done();
+            };
+            chartContainer.style.width = '400px';
+            chartContainer.style.height = '200px';
+            pieObj.legendSettings.title = 'Countries';
+            pieObj.legendSettings.titlePosition = 'Top';
+            pieObj.legendSettings.position = 'Right';
+            pieObj.refresh();
+        });
+        it('10.legend left: title top', (done: Function) => {
+            pieObj.loaded = (args: IAccLoadedEventArgs) => {
+                titleElement = getElement('container_chart_legend_title');
+                expect(titleElement.textContent === 'Countries').toBe(true);
+                xValue = titleElement.getAttribute('x');
+                expect(xValue === '60.5').toBe(true);
+                yValue = titleElement.getAttribute('y');
+                expect(yValue === '29' || yValue === '26').toBe(true);
+                backArrow = getElement('container_chart_legend_pageup');
+                path = backArrow.getAttribute('d');
+                expect(path === 'M 56.5 45 L 60.5 37 L 64.5 45L 62.5 45 L 60.5 41L58.5 45 Z' ||
+                    path === 'M 56.5 42 L 60.5 34 L 64.5 42L 62.5 42 L 60.5 38L58.5 42 Z').toBe;
+                fontArrow = getElement('container_chart_legend_pagedown');
+                path = fontArrow.getAttribute('d');
+                expect(path === 'M 56.5 174 L 60.5 182 L 64.5 174L 62.5 174 L 60.5 178L58.5 174 Z' ||
+                    path === 'M 56.5 174 L 60.5 182 L 64.5 174L 62.5 174 L 60.5 178L58.5 174 Z').toBe;
+                legendGroup = getElement('container_chart_legend_translate_g');
+                expect(legendGroup.childElementCount === 7).toBe(true);
+                done();
+            };
+            pieObj.legendSettings.title = 'Countries';
+            pieObj.legendSettings.titlePosition = 'Top';
+            pieObj.legendSettings.position = 'Left';
+            pieObj.refresh();
+        });
+    });
 it('memory leak', () => {
     profile.sample();
     let average: any = inMB(profile.averageChange)

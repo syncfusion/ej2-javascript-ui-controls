@@ -253,7 +253,11 @@ describe('Restrict editing Add edit region inside Table', () => {
         editor.editor.insertText('T');
         editor.editor.onBackSpace();
         editor.editor.onBackSpace();
-        expect(editor.selection.isSelectionIsAtEditRegion(false)).toBe(true);
+        expect(editor.selection.isSelectionInEditRegion()).toBe(true);
+    });
+    it('Public API validation', () => {
+        editor.selection.navigateToNextEditingRegion();
+        expect(editor.selection.isSelectionInEditRegion()).toBe(true);
     });
 });
 

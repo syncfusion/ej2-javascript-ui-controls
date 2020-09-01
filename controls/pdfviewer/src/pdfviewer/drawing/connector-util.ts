@@ -295,7 +295,6 @@ export function textElement(obj: PdfAnnotationBaseModel, angle: number): TextEle
     textele.verticalAlignment = 'Top';
     textele.relativeMode = 'Object';
     textele.setOffsetWithRespectToBounds(.5, .5, 'Absolute');
-    textele.rotateAngle = angle;
     // tslint:disable-next-line
     textele.offsetX;
     textele.style.textWrapping = 'NoWrap';

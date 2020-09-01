@@ -4168,7 +4168,8 @@ var EventBase = /** @class */ (function () {
         return processed;
     };
     EventBase.prototype.timezonePropertyChange = function (oldTimezone) {
-        var processed = this.processData(this.parent.eventsData, true, oldTimezone);
+        var data = this.parent.eventsData.concat(this.parent.blockData);
+        var processed = this.processData(data, true, oldTimezone);
         this.parent.notify(dataReady, { processedData: processed });
     };
     /** @private */
@@ -4349,7 +4350,7 @@ var EventBase = /** @class */ (function () {
                 eventEndTime : addDays(eventEndTime, 1);
             var index = 1;
             var eventLength = getDaysCount(eventStartTime.getTime(), endDate.getTime());
-            while (end <= eventEndTime) {
+            while (end <= eventEndTime && start.getTime() !== end.getTime()) {
                 var app = sf.base.extend({}, event);
                 app[eventFields.startTime] = start;
                 app[eventFields.endTime] = end;
@@ -11780,9 +11781,11 @@ var VirtualScroll = /** @class */ (function () {
         if (this.isScrollHeightNull) {
             var wrap = sf.base.createElement('div', { className: VIRTUAL_TRACK_CLASS });
             var resWrap = [].slice.call((resourceWrap).querySelectorAll('table td'));
-            var startIndex = parseInt(resWrap[0].getAttribute('data-group-index'), 10);
-            var endIndex = parseInt(resWrap[resWrap.length - 1].getAttribute('data-group-index'), 10);
-            this.parent.resourceBase.renderedResources = this.parent.resourceBase.expandedResources.slice(startIndex, endIndex + 1);
+            var startIndex_1 = parseInt(resWrap[0].getAttribute('data-group-index'), 10);
+            var endIndex_1 = parseInt(resWrap[resWrap.length - 1].getAttribute('data-group-index'), 10);
+            this.parent.resourceBase.renderedResources = this.parent.resourceBase.expandedResources.filter(function (resource) {
+                return (resource.groupIndex >= startIndex_1 && resource.groupIndex <= endIndex_1);
+            });
             this.setItemSize();
             wrap.style.height = (this.parent.resourceBase.expandedResources.length * this.itemSize) + 'px';
             this.isScrollHeightNull = false;
@@ -12751,7 +12754,7 @@ var Crud = /** @class */ (function () {
                     var deletedEvents = eventCollections.follow.concat(eventCollections.occurrence);
                     switch (action) {
                         case 'EditSeries':
-                            if (childEvent[fields_2.startTime] > parentEvent[fields_2.startTime]) {
+                            if ((childEvent[fields_2.startTime] > parentEvent[fields_2.startTime]) && childEvent[fields_2.recurrenceRule]) {
                                 _this.processRecurrenceRule(parentEvent, childEvent);
                             }
                             childEvent[fields_2.id] = parentEvent[fields_2.id];
@@ -17817,9 +17820,11 @@ var DragAndDrop = /** @class */ (function (_super) {
         if (this.isAllowDrop(e)) {
             return;
         }
+        var target = ((!e.target.classList.contains('e-work-cells') && this.parent.cellTemplate) ?
+            sf.base.closest(e.target, '.e-work-cells') : e.target);
         var dragArgs = {
             cancel: false, data: this.getChangedData(),
-            event: e, element: this.actionObj.element, target: e.target
+            event: e, element: this.actionObj.element, target: target
         };
         this.parent.trigger(dragStop, dragArgs, function (dragEventArgs) {
             if (dragEventArgs.cancel) {
@@ -18067,16 +18072,20 @@ var DragAndDrop = /** @class */ (function (_super) {
         for (var i = 0; i < this.actionObj.groupIndex; i++) {
             datesCount = datesCount + this.verticalEvent.dateRender[i].length;
         }
-        var dayIndex = !this.parent.activeViewOptions.group.byDate ? this.actionObj.index - datesCount
-            : this.parent.getIndexOfDate(this.verticalEvent.dateRender[this.actionObj.groupIndex], resetTime(this.parent.getDateFromElement(this.actionObj.target)));
-        var record = this.verticalEvent.isSpannedEvent(event, dayIndex, this.actionObj.groupIndex);
-        var eStart = record[this.verticalEvent.fields.startTime];
-        var eEnd = record[this.verticalEvent.fields.endTime];
-        var topValue = 0;
-        var appHeight = this.verticalEvent.getHeight(eStart, eEnd);
-        topValue = this.verticalEvent.getTopValue(eStart, dayIndex, this.actionObj.groupIndex);
-        this.actionObj.clone.style.top = sf.base.formatUnit(topValue);
-        this.actionObj.clone.style.height = sf.base.formatUnit(appHeight);
+        var target = (this.parent.activeViewOptions.group.byDate &&
+            !sf.base.isNullOrUndefined(this.parent.getDateFromElement(this.actionObj.target))) ? true : false;
+        if (target || !this.parent.activeViewOptions.group.byDate) {
+            var dayIndex = !this.parent.activeViewOptions.group.byDate ? this.actionObj.index - datesCount
+                : this.parent.getIndexOfDate(this.verticalEvent.dateRender[this.actionObj.groupIndex], resetTime(this.parent.getDateFromElement(this.actionObj.target)));
+            var record = this.verticalEvent.isSpannedEvent(event, dayIndex, this.actionObj.groupIndex);
+            var eStart = record[this.verticalEvent.fields.startTime];
+            var eEnd = record[this.verticalEvent.fields.endTime];
+            var topValue = 0;
+            var appHeight = this.verticalEvent.getHeight(eStart, eEnd);
+            topValue = this.verticalEvent.getTopValue(eStart, dayIndex, this.actionObj.groupIndex);
+            this.actionObj.clone.style.top = sf.base.formatUnit(topValue);
+            this.actionObj.clone.style.height = sf.base.formatUnit(appHeight);
+        }
     };
     DragAndDrop.prototype.updateAllDayEvents = function (startDate, endDate, colIndex) {
         var _this = this;
@@ -20736,6 +20745,9 @@ var YearEvent = /** @class */ (function (_super) {
         }
         if (this.parent.activeViewOptions.orientation === 'Horizontal') {
             index = row + 1;
+            if (eventObj[this.fields.startTime].getTime() === eventObj[this.fields.endTime].getTime()) {
+                eventObj.isSpanned.count = 1;
+            }
             width = eventObj.isSpanned.count * this.cellWidth;
         }
         else {
@@ -21702,7 +21714,11 @@ var Agenda = /** @class */ (function (_super) {
         // Initial rendering, to load previous date events upto scroll bar enable
         if (this.parent.activeViewOptions.allowVirtualScrolling && this.parent.hideEmptyAgendaDays && this.parent.eventsData.length > 0) {
             var contentArea = this.getContentAreaElement();
+            var contentChild = contentArea.querySelector('.e-content-table');
             while (contentArea.offsetWidth <= contentArea.clientWidth) {
+                if (this.parent.isAdaptive && contentChild.offsetHeight >= contentArea.clientHeight) {
+                    break;
+                }
                 var emptyTBody_1 = sf.base.createElement('tbody');
                 lastDate = firstDate;
                 firstDate = addDays(lastDate, -this.parent.agendaDaysCount);

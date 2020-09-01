@@ -138,7 +138,7 @@ export class Clipboard implements IAction {
                     if (!args.cancel) {
                         if (grid.editModule) {
                             if (col.type === 'number') {
-                                this.parent.editModule.updateCell(rIdx, col.field, parseInt(args.data as string, 10));
+                                this.parent.editModule.updateCell(rIdx, col.field, parseFloat(args.data as string));
                             } else {
                                 grid.editModule.updateCell(rIdx, col.field, args.data);
                             }

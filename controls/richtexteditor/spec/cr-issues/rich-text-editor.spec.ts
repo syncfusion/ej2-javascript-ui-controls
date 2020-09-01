@@ -1208,4 +1208,25 @@ describe('RTE CR issues', () => {
             destroy(rteObj);
         });
     });
+    describe('EJ2-41995 - RichTextEditor showFullscreen method call when read-only is enabled', () => {
+        let rteObj: RichTextEditor;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['FullScreen']
+                }
+            });
+            rteObj.readonly = true;
+            rteObj.dataBind();
+            done();
+        });
+        it('Checking Fullscreen view', (done) => {
+            rteObj.showFullScreen();
+            expect(rteObj.element.classList.contains("e-rte-full-screen")).toBe(true);
+            done();
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+    });
 });

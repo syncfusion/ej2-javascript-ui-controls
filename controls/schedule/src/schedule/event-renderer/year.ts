@@ -220,6 +220,9 @@ export class YearEvent extends TimelineEvent {
         }
         if (this.parent.activeViewOptions.orientation === 'Horizontal') {
             index = row + 1;
+            if ((eventObj[this.fields.startTime] as Date).getTime() === (eventObj[this.fields.endTime] as Date).getTime()) {
+                (<{ [key: string]: number }>eventObj.isSpanned).count = 1;
+            }
             width = (<{ [key: string]: number }>eventObj.isSpanned).count * this.cellWidth;
         } else {
             index = rowIndex + 1;

@@ -15,6 +15,7 @@ import { ILegendRegions } from '../../common/model/interface';
 import { ILegendRenderEventArgs, ILegendClickEventArgs } from '../../chart/model/chart-interface';
 import { legendRender, legendClick, regSub, regSup} from '../../common/model/constants';
 import { Axis } from '../axis/axis';
+import { LegendTitlePosition } from '../../common/utils/enum';
 /**
  * `Legend` module is used to render legend for the chart.
  */
@@ -87,17 +88,24 @@ export class Legend extends BaseLegend {
     }
     /** @private */
     public getLegendBounds(availableSize: Size, legendBounds: Rect, legend: LegendSettingsModel): void {
+        this.calculateLegendTitle(legend, legendBounds);
+        this.isTitle = legend.title ? true : false;
         let padding: number = legend.padding;
+        let titlePosition: LegendTitlePosition = legend.titlePosition;
         let extraHeight: number = 0;
         let extraWidth: number = 0;
+        let arrowWidth: number = this.arrowWidth;
+        let arrowHeight: number = this.arrowHeight;
+        let verticalArrowSpace: number = this.isVertical && !legend.enablePages ? arrowHeight : 0;
+        let titleSpace: number = this.isTitle && titlePosition === 'Top' ? this.legendTitleSize.height + this.fivePixel : 0;
+        titleSpace = this.isTitle && this.isVertical && titlePosition !== 'Top' ? this.legendTitleSize.height + this.fivePixel : titleSpace;
         if (!this.isVertical) {
             extraHeight = !legend.height ? ((availableSize.height / 100) * 5) : 0;
         } else {
             extraWidth = !legend.width ? ((availableSize.width / 100) * 5) : 0;
         }
-        legendBounds.height += extraHeight;
+        legendBounds.height += (extraHeight);
         legendBounds.width += extraWidth;
-        let shapeHeight: number = legend.shapeHeight;
         let shapeWidth: number = legend.shapeWidth;
         let shapePadding: number = legend.shapePadding;
         let maximumWidth: number = 0;
@@ -105,6 +113,7 @@ export class Legend extends BaseLegend {
         let legendWidth: number = 0;
         let columnHeight: number = 0;
         let rowCount: number = 0;
+        let titlePlusArrowSpace: number = 0;
         let legendEventArgs: ILegendRenderEventArgs;
         this.maxItemHeight = Math.max(measureText('MeasureText', legend.textStyle).height, legend.shapeHeight);
         let render: boolean = false;
@@ -130,20 +139,34 @@ export class Legend extends BaseLegend {
                 render = true;
                 legendWidth = shapeWidth + shapePadding + legendOption.textSize.width + padding;
                 rowWidth = rowWidth + legendWidth;
-                if (legendBounds.width < (padding + rowWidth) || this.isVertical) {
-                    maximumWidth = Math.max(maximumWidth, (rowWidth + padding - (this.isVertical ? 0 : legendWidth)));
+                if (!legend.enablePages && !this.isVertical) {
+                    titlePlusArrowSpace = this.isTitle && titlePosition !== 'Top' ? this.legendTitleSize.width + this.fivePixel : 0;
+                    titlePlusArrowSpace += arrowWidth;
+                }
+                if (legendBounds.width < (padding + rowWidth + titlePlusArrowSpace) || this.isVertical) {
+                    maximumWidth = Math.max(maximumWidth, (rowWidth + padding + titlePlusArrowSpace - (this.isVertical ? 0 : legendWidth)));
                     if (rowCount === 0 && (legendWidth !== rowWidth)) {
                         rowCount = 1;
                     }
                     rowWidth = this.isVertical ? 0 : legendWidth;
                     rowCount++;
-                    columnHeight = (rowCount * (this.maxItemHeight + padding)) + padding;
+                    columnHeight = (rowCount * (this.maxItemHeight + padding)) + padding + titleSpace + verticalArrowSpace;
                 }
             }
         }
-        columnHeight = Math.max(columnHeight, (this.maxItemHeight + padding) + padding);
+        columnHeight = Math.max(columnHeight, (this.maxItemHeight + padding) + padding + titleSpace);
         this.isPaging = legendBounds.height < columnHeight;
+        if (this.isPaging && !legend.enablePages) {
+            if (this.isVertical) {
+                columnHeight = columnHeight;
+            } else {
+                columnHeight = (this.maxItemHeight + padding) + padding + (titlePosition === 'Top' ? titleSpace : 0);
+            }
+        }
         this.totalPages = rowCount;
+        if (!this.isPaging && !this.isVertical) {
+            rowWidth += this.isTitle && titlePosition !== 'Top' ? (this.fivePixel + this.legendTitleSize.width + this.fivePixel) : 0;
+        }
         if (render) {
             this.setBounds(Math.max((rowWidth + padding), maximumWidth), columnHeight, legend, legendBounds);
         } else {

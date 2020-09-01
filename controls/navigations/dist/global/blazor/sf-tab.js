@@ -51,9 +51,7 @@ var SfTab = /** @class */ (function () {
             moveDown: 'downarrow'
         };
         this.element = element;
-        if (!sf.base.isNullOrUndefined(element)) {
-            this.element.blazor__instance = this;
-        }
+        this.element.blazor__instance = this;
         this.dotNetRef = dotnetRef;
         this.options = options;
     }
@@ -626,6 +624,9 @@ var SfTab = /** @class */ (function () {
             case 'delete':
                 var trgParent = sf.base.closest(trg, '.' + CLS_TB_ITEM);
                 if (this.options.showCloseButton === true && !sf.base.isNullOrUndefined(trgParent)) {
+                    if (this.getEleIndex(trgParent) === -1) {
+                        return;
+                    }
                     var nxtSib = trgParent.nextSibling;
                     if (!sf.base.isNullOrUndefined(nxtSib) && nxtSib.classList.contains(CLS_TB_ITEM)) {
                         nxtSib.firstElementChild.focus();
@@ -815,9 +816,17 @@ var SfTab = /** @class */ (function () {
 }());
 // tslint:disable
 var Tab = {
-    initialize: function (element, options, dotnetRef) {
-        var instance = new SfTab(element, options, dotnetRef);
-        instance.render();
+    initialize: function (element, options, dotnetRef, isLoaded, isCreatedEvent) {
+        if (element) {
+            var instance = new SfTab(element, options, dotnetRef);
+            instance.render();
+            if (isLoaded) {
+                instance.headerReady();
+                if (!isCreatedEvent) {
+                    instance.dotNetRef.invokeMethodAsync("CreatedEvent", null);
+                }
+            }
+        }
     },
     headerReady: function (element, isCreatedEvent) {
         if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {

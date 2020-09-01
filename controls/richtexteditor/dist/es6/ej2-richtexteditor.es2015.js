@@ -10532,7 +10532,8 @@ class InsertHtml {
         let emptyElements = element.querySelectorAll(':empty');
         for (let i = 0; i < emptyElements.length; i++) {
             if (emptyElements[i].tagName !== 'IMG' && emptyElements[i].tagName !== 'BR' &&
-                emptyElements[i].tagName !== 'IFRAME' && emptyElements[i].tagName !== 'TD') {
+                emptyElements[i].tagName !== 'IFRAME' && emptyElements[i].tagName !== 'TD' &&
+                emptyElements[i].tagName !== 'SOURCE') {
                 let detachableElement = this.findDetachEmptyElem(emptyElements[i]);
                 if (!isNullOrUndefined(detachableElement)) {
                     detach(detachableElement);
@@ -20538,6 +20539,12 @@ let RichTextEditor = class RichTextEditor extends Component {
             let pastedContentLength = (isNullOrUndefined(e) || isNullOrUndefined(e.clipboardData))
                 ? 0 : e.clipboardData.getData('text/plain').length;
             let totalLength = (currentLength - selectionLength) + pastedContentLength;
+            if (this.editorMode === 'Markdown') {
+                if (!(this.maxLength === -1 || totalLength < this.maxLength)) {
+                    e.preventDefault();
+                }
+                return;
+            }
             if (!pasteArgs.cancel && this.inputElement.contentEditable === 'true' &&
                 (this.maxLength === -1 || totalLength < this.maxLength)) {
                 if (!isNullOrUndefined(this.pasteCleanupModule)) {
@@ -20599,7 +20606,7 @@ let RichTextEditor = class RichTextEditor extends Component {
      * @return {void}
      */
     destroy() {
-        if (this.isDestroyed) {
+        if (this.isDestroyed || this.element.offsetParent === null) {
             return;
         }
         if (this.isRendered) {
@@ -21061,9 +21068,6 @@ let RichTextEditor = class RichTextEditor extends Component {
      * Shows the Rich Text Editor component in full-screen mode.
      */
     showFullScreen() {
-        if (this.readonly) {
-            return;
-        }
         this.fullScreenModule.showFullScreen();
     }
     /**

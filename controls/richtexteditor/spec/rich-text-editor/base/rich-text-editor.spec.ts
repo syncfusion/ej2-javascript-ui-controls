@@ -2882,6 +2882,17 @@ describe("RTE ExecuteCommand public method testing", () => {
         expect(node.firstElementChild.tagName.toLocaleLowerCase() === 'a').toBe(true);
         expect(node.firstElementChild.textContent === 'www.google.com').toBe(true);
     });
+
+    it('Insert video using InsertHTML', () => {
+        rteObj.value = `<div><video><source src = "https://www.w3schools.com/html/movie.mp4"> <source src="https://www.w3schools.com/html/movie.ogg" type="video/ogg">Your browser does not support the video tag.</video><br><p id="lastNode">Last node</p></div>`;
+        rteObj.dataBind();
+        let videosrc = '<video><source src = "https://www.w3schools.com/html/movie.mp4"> <source src="https://www.w3schools.com/html/movie.ogg" type="video/ogg">Your browser does not support the video tag.</video><br />';
+        let cuspoint = document.getElementById('lastNode');
+        setCursorPoint(document, cuspoint.childNodes[0] as Element ,7);
+        expect(rteObj.inputElement.querySelectorAll('video').length).toBe(1);
+        rteObj.executeCommand("insertHTML", videosrc);
+        expect(rteObj.inputElement.querySelectorAll('video').length).toBe(2);
+    });
 });
 
 describe("RTE content remove issue", () => {
@@ -3492,7 +3503,7 @@ describe('EJ2-23205 Revert the headings and blockquotes format while applying th
         it(' Check the destroyed event after remove the element from DOM ', () => {
             rteObj.element.remove();
             rteObj.destroy();
-            expect(isDestroyed).toBe(true);
+            expect(isDestroyed).toBe(false);
         });
         afterAll(() => {
             destroy(rteObj);

@@ -4606,7 +4606,97 @@ export class Annotation {
         }
         return annotationInteraction;
     }
-
+    // tslint:disable-next-line
+    private checkIsLockSettings(annotation: any): boolean {
+        // tslint:disable-next-line
+        let isLocked: boolean = false;
+        if (annotation) {
+            if (annotation.shapeAnnotationType === 'FreeText') {
+                isLocked = this.checkLockSettings(this.pdfViewer.freeTextSettings.isLock);
+            } else if (annotation.shapeAnnotationType === 'Ink') {
+                // tslint:disable-next-line:max-line-length
+                isLocked = this.checkLockSettings(this.pdfViewer.inkAnnotationSettings.isLock);
+            } else if (annotation.shapeAnnotationType === 'StickyNotes') {
+                isLocked = this.checkLockSettings(this.pdfViewer.stickyNotesSettings.isLock);
+            } else if (annotation.shapeAnnotationType === 'Stamp') {
+                isLocked = this.checkLockSettings(this.pdfViewer.stampSettings.isLock);
+            } else if (annotation.shapeAnnotationType === 'Image') {
+                isLocked = this.checkLockSettings(this.pdfViewer.customStampSettings.isLock);
+            } else if (annotation.shapeAnnotationType === 'textMarkup') {
+                if (annotation.textMarkupAnnotationType === 'Highlight') {
+                    // tslint:disable-next-line:max-line-length
+                    isLocked = this.checkLockSettings(this.pdfViewer.highlightSettings.isLock);
+                } else if (annotation.textMarkupAnnotationType === 'Underline') {
+                    // tslint:disable-next-line:max-line-length
+                    isLocked = this.checkLockSettings(this.pdfViewer.underlineSettings.isLock);
+                } else if (annotation.textMarkupAnnotationType === 'Strikethrough') {
+                    // tslint:disable-next-line:max-line-length
+                    isLocked = this.checkLockSettings(this.pdfViewer.strikethroughSettings.isLock);
+                }
+            } else {
+                if (annotation.measureType !== '') {
+                    if (annotation.measureType === 'Distance') {
+                        // tslint:disable-next-line:max-line-length
+                        isLocked = this.checkLockSettings(this.pdfViewer.distanceSettings.isLock);
+                    } else if (annotation.measureType === 'Perimeter') {
+                        // tslint:disable-next-line:max-line-length
+                        isLocked = this.checkLockSettings(this.pdfViewer.perimeterSettings.isLock);
+                    } else if (annotation.measureType === 'Radius') {
+                        // tslint:disable-next-line:max-line-length
+                        isLocked = this.checkLockSettings(this.pdfViewer.radiusSettings.isLock);
+                    } else if (annotation.measureType === 'Area') {
+                        // tslint:disable-next-line:max-line-length
+                        isLocked = this.checkLockSettings(this.pdfViewer.areaSettings.isLock);
+                    } else if (annotation.measureType === 'Volume') {
+                        // tslint:disable-next-line:max-line-length
+                        isLocked = this.checkLockSettings(this.pdfViewer.volumeSettings.isLock);
+                    }
+                } else {
+                    if (annotation.shapeAnnotationType === 'Line') {
+                        // tslint:disable-next-line:max-line-length
+                        isLocked = this.checkLockSettings(this.pdfViewer.lineSettings.isLock);
+                        // tslint:disable-next-line:max-line-length
+                    } else if ((annotation.shapeAnnotationType === 'Arrow' || annotation.shapeAnnotationType === 'LineWidthArrowHead')) {
+                        // tslint:disable-next-line:max-line-length
+                        isLocked = this.checkLockSettings(this.pdfViewer.arrowSettings.isLock);
+                        // tslint:disable-next-line:max-line-length
+                    } else if ((annotation.shapeAnnotationType === 'Circle' || annotation.shapeAnnotationType === 'Ellipse' || annotation.shapeAnnotationType === 'Oval')) {
+                        // tslint:disable-next-line:max-line-length
+                        isLocked = this.checkLockSettings(this.pdfViewer.circleSettings.isLock);
+                    } else if ((annotation.shapeAnnotationType === 'Rectangle' || annotation.shapeAnnotationType === 'Square')) {
+                        // tslint:disable-next-line:max-line-length
+                        isLocked = this.checkLockSettings(this.pdfViewer.rectangleSettings.isLock);
+                    } else if (annotation.shapeAnnotationType === 'Polygon') {
+                        // tslint:disable-next-line:max-line-length
+                        isLocked = this.checkLockSettings(this.pdfViewer.polygonSettings.isLock);
+                    }
+                }
+            }
+        }
+        return isLocked;
+    }
+    // tslint:disable-next-line
+    private checkLockSettings(locked: boolean): boolean {
+        let islock: boolean = false;
+        if (locked || this.pdfViewer.annotationSettings.isLock) {
+            islock = true;
+        }
+        return islock;
+    }
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public restrictContextMenu(): boolean {
+        // tslint:disable-next-line
+        let isRestrict: boolean = false;
+        // tslint:disable-next-line
+        let annotation: any = this.findCurrentAnnotation();
+        if (annotation && this.checkIsLockSettings(annotation) && this.checkAllowedInteractions('Select', annotation)) {
+            isRestrict = true;
+        }
+        return isRestrict;
+    }
     // tslint:disable-next-line
     private checkAllowedInteractionSettings(annotationInteraction: any): any {
         if (annotationInteraction.length === 1) {

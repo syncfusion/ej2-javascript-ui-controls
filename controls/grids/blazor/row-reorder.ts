@@ -18,6 +18,7 @@ export class RowDD {
     private rowData: Object;
     private dragStartData: Object;
     private draggable: Draggable;
+    private droppable: Droppable;
 
     /* tslint:disable-next-line:max-line-length */
     // tslint:disable-next-line:max-func-body-length
@@ -231,7 +232,7 @@ export class RowDD {
             drag: this.drag,
             dragStop: this.dragStop
         });
-        let drop: Droppable = new Droppable(gObj.getContent() as HTMLElement, {
+        this.droppable = new Droppable(gObj.getContent() as HTMLElement, {
             accept: '.e-dragclone',
             drop: this.drop as (e: DropEventArgs) => void
         });

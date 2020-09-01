@@ -72,7 +72,8 @@ export class VirtualScroll {
                 [].slice.call((resourceWrap).querySelectorAll('table td'));
             let startIndex: number = parseInt(resWrap[0].getAttribute('data-group-index'), 10);
             let endIndex: number = parseInt(resWrap[resWrap.length - 1].getAttribute('data-group-index'), 10);
-            this.parent.resourceBase.renderedResources = this.parent.resourceBase.expandedResources.slice(startIndex, endIndex + 1);
+            this.parent.resourceBase.renderedResources = this.parent.resourceBase.expandedResources.filter((resource: TdData) =>
+                (resource.groupIndex >= startIndex && resource.groupIndex <= endIndex));
             this.setItemSize();
             wrap.style.height = (this.parent.resourceBase.expandedResources.length * this.itemSize) + 'px';
             this.isScrollHeightNull = false;

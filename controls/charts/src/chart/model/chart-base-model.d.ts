@@ -9,6 +9,7 @@ export interface ChartAnnotationSettingsModel {
      * if set coordinateUnit as `Pixel` X specifies the axis value
      * else is specifies pixel or percentage of coordinate
      * @default '0'
+     * @aspType object
      */
     x?: string | Date | number;
 

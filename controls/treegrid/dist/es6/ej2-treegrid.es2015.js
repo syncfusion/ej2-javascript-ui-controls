@@ -5473,7 +5473,7 @@ function editAction(details, control, isSelfReference, addRowIndex, selectedInde
                             }
                             else if (control.editSettings.newRowPosition === 'Below') {
                                 treeData.splice(i + 1, 0, originalData.taskData);
-                                updateParentRow(key, treeData[i], action, control, isSelfReference, originalData);
+                                updateParentRow(key, treeData[i + 1], action, control, isSelfReference, originalData);
                             }
                             else if (!addRowIndex) {
                                 index = 0;
@@ -5614,7 +5614,9 @@ function updateParentRow(key, record, action, control, isSelfReference, child) {
             index = i;
             return;
         } });
-        record = currentRecords[index];
+        if (!isNullOrUndefined(index)) {
+            record = currentRecords[index];
+        }
         if (control.enableVirtualization && isNullOrUndefined(record) && !isNullOrUndefined(child)) {
             record = getValue('uniqueIDCollection.' + child.parentUniqueID, control);
         }
@@ -7614,8 +7616,8 @@ class Aggregate$1 {
                             this.parent.columns[columnIndex] : getObject('field', this.parent.columns[columnIndex]);
                         item[field] = null;
                     }
+                    item = this.createSummaryItem(item, this.parent.aggregates[summaryRowIndex - 1]);
                     if (this.parent.aggregates[summaryRowIndex - 1].showChildSummary) {
-                        item = this.createSummaryItem(item, this.parent.aggregates[summaryRowIndex - 1]);
                         let idx;
                         flatRecords.map((e, i) => { if (e.uniqueID === parentRecord.uniqueID) {
                             idx = i;

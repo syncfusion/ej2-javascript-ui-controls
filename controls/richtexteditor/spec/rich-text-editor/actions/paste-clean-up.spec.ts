@@ -11,6 +11,7 @@ import {
   CLS_RTE_PASTE_OK, CLS_RTE_PASTE_CANCEL
 } from "../../../src/rich-text-editor/base/classes";
 import { renderRTE, destroy, setCursorPoint, dispatchEvent } from "../render.spec";
+import { MarkdownSelection } from '../../../src/markdown-parser/index';
 
 describe("paste cleanup testing", () => {
   let editorObj: EditorManager;
@@ -1400,4 +1401,62 @@ describe("EJ2-40047 - When pasting content in RichTextEditor the font-size of te
     afterEach(() => {
         destroy(rteObj);
     });
+});
+
+describe("Paste in Markdown Editor", () => {
+  let rteObj: RichTextEditor;
+  let keyBoardEvent: any = {
+      preventDefault: () => { },
+      type: "keydown",
+      stopPropagation: () => { },
+      ctrlKey: false,
+      shiftKey: false,
+      action: null,
+      which: 64,
+      key: ""
+  };
+  beforeAll((done: Function) => {
+      rteObj = renderRTE({
+          value: 'Mark down editor content',
+          editorMode: 'Markdown'
+      });
+      done();
+  });
+  it("Pasting content in ", (done) => {
+      keyBoardEvent.clipboardData = {
+          getData: () => { return `Content to be pasted in Markdown` },
+          types: ['text/plain', 'Files'],
+      };
+      let editorObj = new MarkdownSelection();
+      var textArea: HTMLTextAreaElement =  rteObj.inputElement as HTMLTextAreaElement;
+      editorObj.save(0, 7);
+      editorObj.restore(textArea);
+      let line: string = editorObj.getSelectedText(textArea);
+      rteObj.onPaste(keyBoardEvent);
+      setTimeout(() => {
+        expect(line).not.toBe(null);
+        done();
+    }, 50);
+  });
+
+  it("Pasting content in ", (done) => {
+    keyBoardEvent.clipboardData = {
+        getData: () => { return `Content to be pasted in Markdown` },
+        types: ['text/plain'],
+    };
+    rteObj.maxLength = 30;
+    let editorObj = new MarkdownSelection();
+    var textArea: HTMLTextAreaElement =  rteObj.inputElement as HTMLTextAreaElement;
+    editorObj.save(0, 7);
+    editorObj.restore(textArea);
+    let line: string = editorObj.getSelectedText(textArea);
+    rteObj.onPaste(keyBoardEvent);
+    setTimeout(() => {
+      expect(line).not.toBe(null);
+      done();
+  }, 50);
+});
+  afterAll(() => {
+      destroy(rteObj);
+  });
 });

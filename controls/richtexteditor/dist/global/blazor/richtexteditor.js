@@ -10628,7 +10628,8 @@ var InsertHtml = /** @class */ (function () {
         var emptyElements = element.querySelectorAll(':empty');
         for (var i = 0; i < emptyElements.length; i++) {
             if (emptyElements[i].tagName !== 'IMG' && emptyElements[i].tagName !== 'BR' &&
-                emptyElements[i].tagName !== 'IFRAME' && emptyElements[i].tagName !== 'TD') {
+                emptyElements[i].tagName !== 'IFRAME' && emptyElements[i].tagName !== 'TD' &&
+                emptyElements[i].tagName !== 'SOURCE') {
                 var detachableElement = this.findDetachEmptyElem(emptyElements[i]);
                 if (!sf.base.isNullOrUndefined(detachableElement)) {
                     sf.base.detach(detachableElement);
@@ -20792,6 +20793,12 @@ var RichTextEditor = /** @class */ (function (_super) {
             var pastedContentLength = (sf.base.isNullOrUndefined(e) || sf.base.isNullOrUndefined(e.clipboardData))
                 ? 0 : e.clipboardData.getData('text/plain').length;
             var totalLength = (currentLength - selectionLength) + pastedContentLength;
+            if (_this.editorMode === 'Markdown') {
+                if (!(_this.maxLength === -1 || totalLength < _this.maxLength)) {
+                    e.preventDefault();
+                }
+                return;
+            }
             if (!pasteArgs.cancel && _this.inputElement.contentEditable === 'true' &&
                 (_this.maxLength === -1 || totalLength < _this.maxLength)) {
                 if (!sf.base.isNullOrUndefined(_this.pasteCleanupModule)) {
@@ -20853,7 +20860,7 @@ var RichTextEditor = /** @class */ (function (_super) {
      * @return {void}
      */
     RichTextEditor.prototype.destroy = function () {
-        if (this.isDestroyed) {
+        if (this.isDestroyed || this.element.offsetParent === null) {
             return;
         }
         if (this.isRendered) {
@@ -21317,9 +21324,6 @@ var RichTextEditor = /** @class */ (function (_super) {
      * Shows the Rich Text Editor component in full-screen mode.
      */
     RichTextEditor.prototype.showFullScreen = function () {
-        if (this.readonly) {
-            return;
-        }
         this.fullScreenModule.showFullScreen();
     };
     /**

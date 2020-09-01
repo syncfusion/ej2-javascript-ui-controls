@@ -717,6 +717,9 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
      * To render the accumulation chart elements
      */
     protected render(): void {
+        if (this.element.className.indexOf('e-accumulationchart') === -1) {
+            this.element.classList.add('e-accumulationchart');
+        }
         let loadEventData: IAccLoadedEventArgs = {
             chart: this.isBlazor ? {} as AccumulationChart : this,
             accumulation: this.isBlazor ? {} as AccumulationChart : this,
@@ -988,9 +991,11 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     }
     public titleTooltip(event: Event, x: number, y: number, isTouch?: boolean): void {
         let targetId: string = (<HTMLElement>event.target).id;
-        let id: boolean = (targetId === (this.element.id + '_title') || targetId === (this.element.id + '_subTitle'));
+        let id: boolean = (targetId === (this.element.id + '_title') || targetId === (this.element.id + '_subTitle') ||
+            targetId === (this.element.id + '_chart_legend_title'));
         if (((<HTMLElement>event.target).textContent.indexOf('...') > -1) && id) {
-            let title: string = (targetId === (this.element.id + '_title')) ? this.title : this.subTitle;
+            let title: string = (targetId === (this.element.id + '_title')) ? this.title : (targetId === (this.element.id + '_subTitle')) ?
+                this.subTitle : this.legendSettings.title;
             showTooltip(
                 title, x, y, this.element.offsetWidth, this.element.id + '_EJ2_Title_Tooltip',
                 getElement(this.element.id + '_Secondary_Element'),

@@ -121,7 +121,8 @@ export class EventBase {
     }
 
     public timezonePropertyChange(oldTimezone: string): void {
-        let processed: Object[] = this.processData(this.parent.eventsData as { [key: string]: Object }[], true, oldTimezone);
+        let data: { [key: string]: Object }[] = this.parent.eventsData.concat(this.parent.blockData) as { [key: string]: Object }[];
+        let processed: Object[] = this.processData(data, true, oldTimezone);
         this.parent.notify(event.dataReady, { processedData: processed });
     }
 
@@ -300,7 +301,7 @@ export class EventBase {
                 eventEndTime : util.addDays(eventEndTime, 1);
             let index: number = 1;
             let eventLength: number = util.getDaysCount(eventStartTime.getTime(), endDate.getTime());
-            while (end <= eventEndTime) {
+            while (end <= eventEndTime && start.getTime() !== end.getTime()) {
                 let app: { [key: string]: Object } = <{ [key: string]: Object }>extend({}, event);
                 app[eventFields.startTime] = start;
                 app[eventFields.endTime] = end;

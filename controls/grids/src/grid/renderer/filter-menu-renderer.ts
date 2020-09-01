@@ -59,7 +59,7 @@ export class FilterMenuRenderer {
 
     }
 
-    private closeDialog(): void {
+    private closeDialog(target?: Element): void {
         if (!this.dlgObj) { return; }
         if (isBlazor()) {
             let columns: Column[] = this.parent.getColumns();
@@ -72,7 +72,9 @@ export class FilterMenuRenderer {
         }
         let elem: Element = document.getElementById(this.dlgObj.element.id);
         if (this.dlgObj && !this.dlgObj.isDestroyed && elem) {
-            this.parent.notify(events.filterMenuClose, { field: this.col.field });
+            let argument: Object = { cancel: false, column: this.col, target: target, element: elem };
+            this.parent.notify(events.filterMenuClose, argument);
+            if ((<{ cancel?: boolean }>argument).cancel) { return; }
             this.isDialogOpen = false;
             this.dlgObj.destroy();
             remove(elem);

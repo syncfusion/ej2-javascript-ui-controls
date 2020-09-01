@@ -3610,7 +3610,7 @@ var RowDD = /** @class */ (function () {
             drag: this.drag,
             dragStop: this.dragStop
         });
-        var drop = new sf.base.Droppable(gObj.getContent(), {
+        this.droppable = new sf.base.Droppable(gObj.getContent(), {
             accept: '.e-dragclone',
             drop: this.drop
         });
@@ -5027,6 +5027,9 @@ var SfGrid = /** @class */ (function () {
         var gridElement = parentsUntil(e.target, 'e-grid');
         if ((gridElement && gridElement.id !== this.element.id) ||
             (e.key == "Shift" || e.key == "Control" || e.key == "Alt")) {
+            return;
+        }
+        if (e.target.tagName == "INPUT" && e.code == "Delete") {
             return;
         }
         this.dotNetRef.invokeMethodAsync("GridKeyDown", {

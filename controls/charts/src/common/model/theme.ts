@@ -64,6 +64,14 @@ export namespace Theme {
         fontFamily: 'Segoe UI'
     };
     /** @private */
+    export let legendTitleFont: IFontMapping = {
+        size: '13px',
+        fontWeight: 'Normal',
+        color: null,
+        fontStyle: 'Normal',
+        fontFamily: 'Segoe UI'
+    };
+    /** @private */
     export let stripLineLabelFont: IFontMapping = {
         size: '12px',
         fontWeight: 'Regular',

@@ -6,6 +6,20 @@
 
 ### Document Editor
 
+#### New Features
+
+- `#156915` - Added public API to check whether the selection is in edit region.
+- `#287831` - Added public API to show spell check dialog.
+
+#### Bug Fixes
+
+- `#148494` - Resolved script error on destroying the container.
+- `#289186` - Resolved layout issue on exporting a text box.
+- `#289172` - Resolved script when two or more server request is passed at same time.
+- `#287775` - Resolved script on saving a document with form field.
+
+### Document Editor
+
 #### Bug Fixes
 
 - `#286474` - Resolved table re layout issue when table have left indent value.

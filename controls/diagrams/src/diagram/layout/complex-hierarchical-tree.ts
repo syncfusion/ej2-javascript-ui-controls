@@ -330,9 +330,10 @@ class HierarchicalLayoutUtil {
     }
 
     private isIntersect(rect: Rect, nodeRect: Rect, layoutProp: Layout): boolean {
-        if (!(rect.right + layoutProp.horizontalSpacing <= nodeRect.x || rect.x - layoutProp.horizontalSpacing >= nodeRect.right
-            || rect.y - layoutProp.verticalSpacing >= nodeRect.bottom
-            || rect.bottom + layoutProp.verticalSpacing <= nodeRect.y)) {
+        if (!(Math.floor(rect.right + layoutProp.horizontalSpacing) <= Math.floor(nodeRect.x) ||
+        Math.floor(rect.x - layoutProp.horizontalSpacing) >= Math.floor(nodeRect.right)
+            || Math.floor(rect.y - layoutProp.verticalSpacing) >= Math.floor(nodeRect.bottom)
+            || Math.floor(rect.bottom + layoutProp.verticalSpacing) <= Math.floor(nodeRect.y))) {
             return true;
         } else {
             return false;

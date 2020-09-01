@@ -69,8 +69,8 @@ export class Aggregate {
                        this.parent.columns[columnIndex] : getObject('field', this.parent.columns[columnIndex]);
                        item[field] = null;
                     }
+                    item = this.createSummaryItem(item,  this.parent.aggregates[summaryRowIndex - 1]);
                     if (this.parent.aggregates[summaryRowIndex - 1].showChildSummary) {
-                        item = this.createSummaryItem(item,  this.parent.aggregates[summaryRowIndex - 1]);
                         let idx: number;
                         flatRecords.map((e: ITreeData, i: number) => { if (e.uniqueID === parentRecord.uniqueID) { idx = i; return; } });
                         let currentIndex: number = idx + childRecordsLength + summaryRowIndex;

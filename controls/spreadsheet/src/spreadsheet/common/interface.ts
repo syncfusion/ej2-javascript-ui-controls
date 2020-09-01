@@ -250,7 +250,7 @@ export interface CellSaveEventArgs {
     /** Defines the old value. */
     oldValue: string;
     /** Defines the element. */
-    element: HTMLElement;
+    element?: HTMLElement;
     /** Defines the address. */
     address: string;
     /** Defines the formula. */

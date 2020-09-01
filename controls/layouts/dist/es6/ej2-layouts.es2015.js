@@ -1469,7 +1469,7 @@ let Splitter = class Splitter extends Component {
     getSeparatorPosition(e) {
         this.updateCursorPosition(e, 'current');
         let rectBound = (this.orientation === 'Horizontal') ? this.element.getBoundingClientRect().left :
-            this.element.getBoundingClientRect().top;
+            this.element.getBoundingClientRect().top + window.scrollY;
         let offSet = (this.orientation === 'Horizontal') ? this.element.offsetWidth : this.element.offsetHeight;
         return this.calcDragPosition(rectBound, offSet);
     }

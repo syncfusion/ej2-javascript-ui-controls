@@ -569,7 +569,7 @@ var SfSplitter = /** @class */ (function () {
     SfSplitter.prototype.getSeparatorPosition = function (e) {
         this.updateCursorPosition(e, CURRENT);
         var rectBound = (this.orientation === HORIZONTAL) ? this.element.getBoundingClientRect().left :
-            this.element.getBoundingClientRect().top;
+            this.element.getBoundingClientRect().top + window.scrollY;
         var offSet = (this.orientation === HORIZONTAL) ? this.element.offsetWidth : this.element.offsetHeight;
         return this.calcDragPosition(rectBound, offSet);
     };
@@ -1285,6 +1285,7 @@ var SfSplitter = /** @class */ (function () {
         this.expandFlag = true;
     };
     SfSplitter.prototype.collapseMethodEvent = function (index, e) {
+        this.expandFlag = false;
         var collapsedindex = [];
         collapsedindex[0] = index;
         var j = 1;
@@ -1312,6 +1313,7 @@ var SfSplitter = /** @class */ (function () {
             index: [this.getPreviousPaneIndex(), this.getNextPaneIndex()],
         });
         this.collapseFlag = false;
+        this.expandFlag = true;
     };
     SfSplitter.prototype.expand = function (index) {
         this.collapsedOnchange(index);

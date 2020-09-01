@@ -182,7 +182,7 @@ describe('FileManager control single selection Grid view', () => {
                 expect(feObj.selectedItems).toEqual(jasmine.arrayContaining(["1.png"]));
                 feObj.deleteFiles();
                 let dialogObj: any = (document.getElementById("file1_dialog") as any).ej2_instances[0];
-                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Delete Folder");
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Delete File");
                 (document.getElementById('file1_dialog').querySelectorAll('.e-btn')[2] as HTMLElement).click();
                 feObj.deleteFiles([]);
                 feObj.deleteFiles(["Documents", "2.png", "1.png"]);

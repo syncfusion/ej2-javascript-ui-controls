@@ -348,7 +348,7 @@ export class DateParser {
                             retOptions[prop] = val;
                         }
                     } else {
-                        matchString = prop === 'month' ? matchString[0].toUpperCase() + matchString.substring(1).toLowerCase() : matchString;
+                        matchString = prop === 'month' && !(<any>parseOptions).isIslamic ? matchString[0].toUpperCase() + matchString.substring(1).toLowerCase() : matchString;
                         (<any>retOptions)[prop] = (<any>parseOptions)[prop][matchString];
                     }
                 }

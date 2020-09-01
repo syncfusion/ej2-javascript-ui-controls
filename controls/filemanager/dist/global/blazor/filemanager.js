@@ -8805,6 +8805,10 @@ var DetailsView = /** @class */ (function () {
             this.gridObj.destroy();
         }
     };
+    DetailsView.prototype.updateType = function (item) {
+        var folder = sf.base.select('.' + FOLDER, item);
+        this.parent.isFile = sf.base.isNullOrUndefined(folder) ? true : false;
+    };
     /* istanbul ignore next */
     DetailsView.prototype.onSelection = function (action, args) {
         var eventArgs = {
@@ -8826,6 +8830,7 @@ var DetailsView = /** @class */ (function () {
         this.gridObj.element.setAttribute('tabindex', '-1');
         this.triggerSelect('select', args);
         var item = this.gridObj.getRowByIndex(this.gridObj.selectedRowIndex);
+        this.updateType(item);
         if (!sf.base.isNullOrUndefined(item) && !sf.base.isNullOrUndefined(item.querySelector('.e-checkselect'))) {
             if (this.gridObj.getSelectedRowIndexes().length !== 1) {
                 var lastItemIndex = this.gridObj.getSelectedRowIndexes()[this.gridObj.getSelectedRowIndexes().length - 2];

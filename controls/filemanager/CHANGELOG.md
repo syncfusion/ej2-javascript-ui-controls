@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.2.56 (2020-09-01)
+
+### File Manager
+
+#### Bug Fixes
+
+- Resolved the incorrect delete confirmation dialog content for file in details view of the File Manager component.
+
 ## 18.2.48 (2020-08-04)
 
 ### File Manager

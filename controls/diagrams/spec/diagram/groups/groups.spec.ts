@@ -1161,4 +1161,50 @@ describe('Group', () => {
             done();
         });
     });
+    describe('Group width and height does not update', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let nodes: NodeModel[]
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram_group' });
+            document.body.appendChild(ele);
+            nodes = [
+                {
+                    id: 'node1', width: 100, height: 100, offsetX: 100,
+                    offsetY: 100,
+                }, {
+                    id: 'node2', width: 100, height: 100, offsetX: 200,
+                    offsetY: 200
+                },
+                {
+                    id: 'group2',
+                    children: ['node1', 'node2']
+                },
+                {
+                    id: 'node3', width: 100, height: 100, offsetX: 350,
+                    offsetY: 300
+                }
+            ];
+            diagram = new Diagram({
+                width: '1050px', height: '500px', nodes: nodes,
+            });
+            diagram.appendTo('#diagram_group');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it("When child is added to a group", (done: Function) => {
+        diagram.addChildToGroup(diagram.nodes[2], diagram.nodes[3]);
+        expect(diagram.nodes[2].height === 300 && diagram.nodes[2].width === 350).toBe(true);
+        done();
+        });
+    });
 });

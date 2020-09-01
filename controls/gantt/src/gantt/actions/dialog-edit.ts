@@ -2,7 +2,7 @@ import { remove, extend, isNullOrUndefined, createElement, L10n, getValue, setVa
 import { DataManager, DataUtil } from '@syncfusion/ej2-data';
 import { Dialog, PositionDataModel, DialogModel } from '@syncfusion/ej2-popups';
 import { Tab, TabModel, TabItemModel, SelectEventArgs } from '@syncfusion/ej2-navigations';
-import { Grid, Edit, Toolbar as GridToolbar, Page, GridModel } from '@syncfusion/ej2-grids';
+import { Grid, Edit, Toolbar as GridToolbar, Page, GridModel, GridActionEventArgs } from '@syncfusion/ej2-grids';
 import {
     ColumnModel as GridColumnModel, ForeignKey,
     getActualProperties, RowSelectEventArgs
@@ -58,6 +58,7 @@ export class DialogEdit {
     private rowData: IGanttData;
     private beforeOpenArgs: CObject;
     private inputs: Object;
+    private idCollection: IDependencyEditData[];
     /**
      * @private
      */
@@ -1237,6 +1238,7 @@ export class DialogEdit {
             this.updatePredecessorDropDownData(ganttData);
         }
         gridModel.dataSource = preData;
+        gridModel.actionBegin = this.gridActionBegin.bind(this);
         let columns: GridColumnModel[] = <GridColumnModel[]>gridModel.columns;
         columns[1].edit = {
             write: (args: CObject): void => {
@@ -1245,7 +1247,7 @@ export class DialogEdit {
                 }
                 let field: string = 'name';
                 let autoObj: ComboBox = new ComboBox({
-                    dataSource: new DataManager(this.preTableCollection),
+                    dataSource: new DataManager(this.idCollection),
                     popupHeight: '180px',
                     allowCustom: false,
                     fields: { value: 'text' },
@@ -1276,6 +1278,27 @@ export class DialogEdit {
         let divElement: HTMLElement = this.createDivElement('e-dependent-div', ganttObj.element.id + '' + itemName + 'TabContainer');
         gridObj.appendTo(divElement);
         return divElement;
+    }
+
+    private gridActionBegin(args: GridActionEventArgs): void {
+        let itemName: string =  'Dependency';
+        let gridModel: GridModel = this.beforeOpenArgs[itemName] as GridModel;
+        if (args.requestType === 'add' || args.requestType === 'beginEdit') {
+            let isEdit: boolean = args.requestType === 'add' ? false : true;
+            this.idCollection = extend([], [], this.preTableCollection, true) as IDependencyEditData[];
+            let gridData: Object[] = gridModel.dataSource as object[];
+            for (let i: number = 0; i <= gridData.length; i++) {
+                this.idCollection.forEach((data: IDependencyEditData, index: number): void => {
+                    if (data.id === getValue('id', gridData[i])) {
+                        let selectedItem: object = getValue('rowData', args);
+                        if (isEdit && getValue('id', selectedItem) === data.id) {
+                            return;
+                        }
+                        this.idCollection.splice(this.idCollection.indexOf(data), 1);
+                    }
+                });
+            }
+        }
     }
 
     private updateResourceCollection(args: RowSelectEventArgs, resourceTreeGridId: string): void {

@@ -354,7 +354,7 @@ export class Tooltip extends BaseTooltip {
             //     extraPoints.push(data);
             // }
         }
-        if (chart.isBlazor) {
+        if (chart.isBlazor && data) { // To avoid console error when we have empty chart with shared tooltip.
             this.triggerBlazorSharedTooltip(argument, lastData, extraPoints, chart, isFirst);
         }
         if (this.currentPoints.length > 0) {

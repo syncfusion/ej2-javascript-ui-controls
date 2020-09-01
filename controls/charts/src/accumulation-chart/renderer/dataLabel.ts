@@ -253,6 +253,12 @@ export class AccumulationDataLabel extends AccumulationBase {
         point.labelRegion = null;
     }
     /**
+     * To set point label visible to enable.
+     */
+    private setPointVisibleTrue(point: AccPoints): void {
+        point.labelVisible = true;
+    }
+    /**
      * To set datalabel angle position for outside labels
      */
     private setOuterSmartLabel(
@@ -1108,7 +1114,7 @@ export class AccumulationDataLabel extends AccumulationBase {
             let angleDiff: number = currentPoint.endAngle % 360 - currentPoint.startAngle % 360;
             let prevAngleDiff: number = previousPoint.endAngle % 360 - previousPoint.startAngle % 360;
             if (prevAngleDiff <= angleDiff && angleDiff < 5 && previousPoint.labelVisible) {
-                this.setPointVisibileFalse(currentPoint);
+                this.setPointVisibleTrue(currentPoint);
             }
         } else if (pointIndex > 1 && ((currentPoint.midAngle < 300 && currentPoint.midAngle > 240) ||
             (currentPoint.midAngle < 120 && currentPoint.midAngle > 60))) {
@@ -1118,7 +1124,7 @@ export class AccumulationDataLabel extends AccumulationBase {
             let prevAngleDiff: number = prevPoint.endAngle % 360 - prevPoint.startAngle % 360;
             let thirdAngleDiff: number = secondPrevPoint.endAngle % 360 - secondPrevPoint.startAngle % 360;
             if (angleDiff < 3 && prevAngleDiff < 3 && thirdAngleDiff < 3 && prevPoint.labelVisible && currentPoint.labelVisible) {
-                this.setPointVisibileFalse(currentPoint);
+                this.setPointVisibleTrue(currentPoint);
             }
         }
     }

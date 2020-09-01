@@ -1800,7 +1800,7 @@ var RowModelGenerator = /** @class */ (function () {
     }
     RowModelGenerator.prototype.generateRows = function (data, args) {
         var rows = [];
-        var startIndex = this.parent.enableVirtualization ? args.startIndex : 0;
+        var startIndex = this.parent.enableVirtualization && args ? args.startIndex : 0;
         startIndex = this.parent.enableInfiniteScrolling ? this.getInfiniteIndex(args) : startIndex;
         for (var i = 0, len = Object.keys(data).length; i < len; i++, startIndex++) {
             rows[i] = this.generateRow(data[i], startIndex);
@@ -10989,7 +10989,7 @@ var Clipboard = /** @class */ (function () {
                     if (!args.cancel) {
                         if (grid.editModule) {
                             if (col.type === 'number') {
-                                this.parent.editModule.updateCell(rIdx, col.field, parseInt(args.data, 10));
+                                this.parent.editModule.updateCell(rIdx, col.field, parseFloat(args.data));
                             }
                             else {
                                 grid.editModule.updateCell(rIdx, col.field, args.data);
@@ -21035,7 +21035,7 @@ var FilterMenuRenderer = /** @class */ (function () {
             this.renderDlgContent(args.target, this.col);
         }
     };
-    FilterMenuRenderer.prototype.closeDialog = function () {
+    FilterMenuRenderer.prototype.closeDialog = function (target) {
         if (!this.dlgObj) {
             return;
         }
@@ -21050,7 +21050,11 @@ var FilterMenuRenderer = /** @class */ (function () {
         }
         var elem = document.getElementById(this.dlgObj.element.id);
         if (this.dlgObj && !this.dlgObj.isDestroyed && elem) {
-            this.parent.notify(filterMenuClose, { field: this.col.field });
+            var argument = { cancel: false, column: this.col, target: target, element: elem };
+            this.parent.notify(filterMenuClose, argument);
+            if (argument.cancel) {
+                return;
+            }
             this.isDialogOpen = false;
             this.dlgObj.destroy();
             sf.base.remove(elem);
@@ -30680,7 +30684,8 @@ var BatchEdit = /** @class */ (function () {
                 var cells = [].slice.call(this.parent.getDataRows()[rowIndex].querySelectorAll('.e-rowcell')).concat([].slice.call(this.parent.getMovableDataRows()[rowIndex].querySelectorAll('.e-rowcell')));
                 td = cells[index];
             }
-            var rowObj = this.parent.getRowObjectFromUID(td.parentElement.getAttribute('data-uid'));
+            var rowObj = parentsUntil(td, 'e-movablecontent') ? this.parent.getMovableRowsObject()[index] :
+                this.parent.getRowObjectFromUID(td.parentElement.getAttribute('data-uid'));
             this.refreshTD(td, col, rowObj, value);
             this.parent.trigger(queryCellInfo, {
                 cell: td, column: col, data: rowObj.changes

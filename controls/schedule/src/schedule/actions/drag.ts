@@ -300,16 +300,18 @@ export class DragAndDrop extends ActionBase {
         if (this.isAllowDrop(e)) {
             return;
         }
+        let target: HTMLElement = ((!(e.target as Element).classList.contains('e-work-cells') && this.parent.cellTemplate) ?
+            closest(e.target as Element, '.e-work-cells') : e.target) as HTMLElement;
         let dragArgs: DragEventArgs = {
             cancel: false, data: this.getChangedData(),
-            event: e, element: this.actionObj.element, target: e.target as HTMLElement
+            event: e, element: this.actionObj.element, target: target
         };
         this.parent.trigger(events.dragStop, dragArgs, (dragEventArgs: DragEventArgs) => {
             if (dragEventArgs.cancel) {
                 return;
             }
             if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.activeViewOptions.group.allowGroupEdit
-                && !this.parent.rowAutoHeight  && !this.parent.virtualScrollModule && this.parent.activeViewOptions.group.byGroupID) {
+                && !this.parent.rowAutoHeight && !this.parent.virtualScrollModule && this.parent.activeViewOptions.group.byGroupID) {
                 this.parent.crudModule.crudObj.isCrudAction = true;
                 this.parent.crudModule.crudObj.sourceEvent =
                     [this.parent.resourceBase.lastResourceLevel[parseInt(dragArgs.element.getAttribute('data-group-index'), 10)]];
@@ -547,17 +549,21 @@ export class DragAndDrop extends ActionBase {
         for (let i: number = 0; i < this.actionObj.groupIndex; i++) {
             datesCount = datesCount + this.verticalEvent.dateRender[i].length;
         }
-        let dayIndex: number = !this.parent.activeViewOptions.group.byDate ? this.actionObj.index - datesCount
-            : this.parent.getIndexOfDate(this.verticalEvent.dateRender[this.actionObj.groupIndex], util.resetTime(
-                this.parent.getDateFromElement(this.actionObj.target as HTMLElement)));
-        let record: { [key: string]: Object } = this.verticalEvent.isSpannedEvent(event, dayIndex, this.actionObj.groupIndex);
-        let eStart: Date = record[this.verticalEvent.fields.startTime] as Date;
-        let eEnd: Date = record[this.verticalEvent.fields.endTime] as Date;
-        let topValue: number = 0;
-        let appHeight: number = this.verticalEvent.getHeight(eStart, eEnd);
-        topValue = this.verticalEvent.getTopValue(eStart, dayIndex, this.actionObj.groupIndex);
-        this.actionObj.clone.style.top = formatUnit(topValue);
-        this.actionObj.clone.style.height = formatUnit(appHeight);
+        let target: boolean = (this.parent.activeViewOptions.group.byDate &&
+            !isNullOrUndefined(this.parent.getDateFromElement(this.actionObj.target as HTMLElement))) ? true : false;
+        if (target || !this.parent.activeViewOptions.group.byDate) {
+            let dayIndex: number = !this.parent.activeViewOptions.group.byDate ? this.actionObj.index - datesCount
+                : this.parent.getIndexOfDate(this.verticalEvent.dateRender[this.actionObj.groupIndex], util.resetTime(
+                    this.parent.getDateFromElement(this.actionObj.target as HTMLElement)));
+            let record: { [key: string]: Object } = this.verticalEvent.isSpannedEvent(event, dayIndex, this.actionObj.groupIndex);
+            let eStart: Date = record[this.verticalEvent.fields.startTime] as Date;
+            let eEnd: Date = record[this.verticalEvent.fields.endTime] as Date;
+            let topValue: number = 0;
+            let appHeight: number = this.verticalEvent.getHeight(eStart, eEnd);
+            topValue = this.verticalEvent.getTopValue(eStart, dayIndex, this.actionObj.groupIndex);
+            this.actionObj.clone.style.top = formatUnit(topValue);
+            this.actionObj.clone.style.height = formatUnit(appHeight);
+        }
     }
 
     private updateAllDayEvents(startDate: Date, endDate: Date, colIndex: number): void {

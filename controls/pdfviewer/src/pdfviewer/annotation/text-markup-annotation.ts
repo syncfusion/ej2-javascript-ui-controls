@@ -1564,6 +1564,9 @@ export class TextMarkupAnnotation {
                 let endIndex: number = 0;
                 if (!isNaN(pageId)) {
                     let pageRect: ClientRect = this.pdfViewerBase.getElement('_pageDiv_' + pageId).getBoundingClientRect();
+                    if (this.pdfViewerBase.isMixedSizeDocument) {
+                        pageRect = this.pdfViewerBase.getElement('_textLayer_' + pageId).getBoundingClientRect();
+                    }
                     if (isBackWardSelection) {
                         range.setStart(selection.focusNode, selection.focusOffset);
                         range.setEnd(selection.anchorNode, selection.anchorOffset);
@@ -1615,6 +1618,9 @@ export class TextMarkupAnnotation {
                     let pageStartId: number; let pageEndId: number; let pageStartOffset: number; let pageEndOffset: number;
                     let textDivs: NodeList = this.pdfViewerBase.getElement('_textLayer_' + i).childNodes;
                     let pageRect: ClientRect = this.pdfViewerBase.getElement('_pageDiv_' + i).getBoundingClientRect();
+                    if (this.pdfViewerBase.isMixedSizeDocument) {
+                        pageRect = this.pdfViewerBase.getElement('_textLayer_' + i).getBoundingClientRect();
+                    }
                     if (i === anchorPageId) {
                         currentId = anchorTextId;
                     } else {
@@ -1745,8 +1751,17 @@ export class TextMarkupAnnotation {
             }
             annotCanvas.style.width = '';
             annotCanvas.style.height = '';
-            (annotCanvas as HTMLCanvasElement).width = this.pdfViewerBase.pageSize[pageNumber].width * this.pdfViewerBase.getZoomFactor();
-            (annotCanvas as HTMLCanvasElement).height = this.pdfViewerBase.pageSize[pageNumber].height * this.pdfViewerBase.getZoomFactor();
+            if (this.pdfViewer.restrictZoomRequest) {
+                // tslint:disable-next-line:max-line-length
+                (annotCanvas as HTMLCanvasElement).style.width = this.pdfViewerBase.pageSize[pageNumber].width * this.pdfViewerBase.getZoomFactor() + 'px';
+                // tslint:disable-next-line:max-line-length
+                (annotCanvas as HTMLCanvasElement).style.height = this.pdfViewerBase.pageSize[pageNumber].height * this.pdfViewerBase.getZoomFactor() + 'px';
+            } else {
+                // tslint:disable-next-line:max-line-length
+                (annotCanvas as HTMLCanvasElement).width = this.pdfViewerBase.pageSize[pageNumber].width * this.pdfViewerBase.getZoomFactor();
+                (annotCanvas as HTMLCanvasElement).height = this.pdfViewerBase.pageSize[pageNumber].height * this.pdfViewerBase.getZoomFactor();
+            }
+
             this.renderTextMarkupAnnotations(null, pageNumber, annotCanvas, this.pdfViewerBase.getZoomFactor());
         }
     }

@@ -36,7 +36,7 @@ import { SelectorModel } from './drawing/selector-model';
 import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';
 import { renderAdornerLayer } from './drawing/dom-util';
 import { ThumbnailClickEventArgs } from './index';
-import { ValidateFormFieldsArgs } from './base';
+import { ValidateFormFieldsArgs, BookmarkClickEventArgs } from './base';
 // tslint:disable-next-line:max-line-length
 import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs } from './base';
 import { ContextMenuSettingsModel } from './pdfviewer-model';
@@ -2390,7 +2390,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * restrict zoom request.
      * @default false
      */
-    @Property(true)
+    @Property(false)
     public restrictZoomRequest: boolean;
     /**
      * Specifies the open state of the hyperlink in the PDF document.
@@ -3245,6 +3245,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public thumbnailClick: EmitType<ThumbnailClickEventArgs>;
 
     /**
+     * Triggers an event when the bookmark is clicked in the bookmark panel of PDF Viewer.
+     * @event
+     * @blazorProperty 'BookmarkClick'
+     */
+    @Event()
+    public bookmarkClick: EmitType<BookmarkClickEventArgs>;
+
+    /**
      * Triggers an event when the text selection is started.
      * @event
      * @blazorProperty 'OnTextSelectionStart'
@@ -3477,7 +3485,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         this.viewerBase.stampAdded = true;
         this.viewerBase.isAlreadyAdded = false;
         // tslint:disable-next-line:max-line-length
-        this.annotation.stampAnnotationModule.createCustomStampAnnotation(customStamp.customStampImageSource);
+        this.annotation.stampAnnotationModule.createCustomStampAnnotation(customStamp.customStampImageSource, customStamp.customStampName);
     }
 
     public getPersistData(): string {
@@ -4310,6 +4318,15 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public fireThumbnailClick(pageNumber: number): void {
         let eventArgs: ThumbnailClickEventArgs = { name: 'thumbnailClick', pageNumber: pageNumber };
         this.trigger('thumbnailClick', eventArgs);
+    }
+
+    /**
+     * 
+     * @private
+     */
+    public fireBookmarkClick(pageNumber: number, position: number): void {
+        let eventArgs: BookmarkClickEventArgs = { name: 'bookmarkClick', pageNumber: pageNumber , position: position};
+        this.trigger('bookmarkClick', eventArgs);
     }
     /**
      * @private

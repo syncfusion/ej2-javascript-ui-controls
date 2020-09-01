@@ -513,6 +513,10 @@ export class SfGrid {
             (e.key == "Shift" || e.key == "Control" || e.key == "Alt")) {
             return;
         }
+        
+        if((e.target as HTMLElement).tagName == "INPUT" && e.code == "Delete") {
+            return;
+        }
 
         this.dotNetRef.invokeMethodAsync("GridKeyDown", { 
             key: e.key,

@@ -2498,3 +2498,63 @@ describe('Editing - Add', () => {
     destroy(gridObj);
   });
 });
+
+describe('Expand / Collapse Icon Issue when adding a new record', () => {
+  let gridObj: TreeGrid;
+  let rows: Element[];
+  let actionComplete: () => void;
+  let data =[{"TaskId":1,"TaskName":"Parent Task 1","Duration":10,"ParentId":null,"isParent":true,"isExpanded":true},
+  {"TaskId":2,"TaskName":"Child task 1","Duration":4,"ParentId":null,"isParent":null,"isExpanded":true},
+  {"TaskId":13,"TaskName":"Child task 5","Duration":4,"ParentId":2,"isParent":null,"isExpanded":false},
+  {"TaskId":5,"TaskName":"Parent Task 2","Duration":10,"ParentId":null,"isParent":true,"isExpanded":true},
+  {"TaskId":6,"TaskName":"Child task 2","Duration":4,"ParentId":5,"isParent":null,"isExpanded":false},
+  {"TaskId":10,"TaskName":"Parent Task 3","Duration":10,"ParentId":null,"isParent":true,"isExpanded":true},
+  {"TaskId":11,"TaskName":"Child task 3","Duration":4,"ParentId":10,"isParent":false,"isExpanded":false}];
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: data,
+        idMapping: 'TaskId',
+         treeColumnIndex: 1,
+                parentIdMapping: 'ParentId',
+                expandStateMapping: "isExpanded",
+                        editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                mode: 'Row',
+                newRowPosition: 'Below'
+            },
+             toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+        columns: [
+          { field: 'TaskID', headerText: 'Task ID', textAlign: 'Right', isPrimaryKey:true, width: 140 },
+          { field: 'TaskName', headerText: 'Task Name', width: 160 }
+         
+        ]
+      },
+      done
+    );
+  });
+  it(' New row Add with the position below', (done: Function) => {
+    gridObj.selectRow(0);
+    actionComplete = (args?: any): void => {
+    if (args.requestType === 'save') {
+      rows = gridObj.getRows();
+      let cells: NodeListOf<Element> = gridObj.grid.getRows()[1].querySelectorAll('.e-rowcell');
+      expect(rows.length == 8).toBe(true);
+      expect(cells[0].textContent === '25' ).toBeTruthy();
+      expect(rows[0].getElementsByClassName('e-treegridexpand').length).toBe(0);
+      expect(rows[1].getElementsByClassName('e-treegridexpand').length).toBe(0);
+      done();
+     }
+      };
+      gridObj.actionComplete = actionComplete;
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+      gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = "25";
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+    });
+  
+  afterAll(() => {
+    destroy(gridObj);
+  });
+}); 

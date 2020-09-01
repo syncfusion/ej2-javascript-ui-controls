@@ -566,9 +566,16 @@ export class Magnification {
                 let pageNumber: number = parseInt((pageDivs[i] as HTMLElement).id.split('_pageCanvas_')[1]);
                 let pageWidth: number = this.pdfViewerBase.pageSize[pageNumber].width;
                 if ((viewPortWidth < pageWidth) && this.pdfViewer.tileRenderingSettings.enableTileRendering) {
-                    (pageDivs[i] as HTMLCanvasElement).width = pageWidth * this.pdfViewerBase.getZoomFactor();
-                    // tslint:disable-next-line:max-line-length
-                    (pageDivs[i] as HTMLCanvasElement).height = this.pdfViewerBase.pageSize[pageNumber].height * this.pdfViewerBase.getZoomFactor();
+                    if (this.pdfViewer.restrictZoomRequest) {
+                        (pageDivs[i] as HTMLCanvasElement).style.width = pageWidth * this.pdfViewerBase.getZoomFactor() + 'px';
+                        // tslint:disable-next-line:max-line-length
+                        (pageDivs[i] as HTMLCanvasElement).style.height = this.pdfViewerBase.pageSize[pageNumber].height * this.pdfViewerBase.getZoomFactor() + 'px';
+                    } else {
+                        (pageDivs[i] as HTMLCanvasElement).width = pageWidth * this.pdfViewerBase.getZoomFactor();
+                        // tslint:disable-next-line:max-line-length
+                        (pageDivs[i] as HTMLCanvasElement).height = this.pdfViewerBase.pageSize[pageNumber].height * this.pdfViewerBase.getZoomFactor();
+                    }
+
                 }
             }
             if (this.pdfViewerBase.textLayer) {
@@ -673,7 +680,7 @@ export class Magnification {
         higherPageValue = (higherPageValue < this.pdfViewerBase.pageCount) ? higherPageValue : (this.pdfViewerBase.pageCount - 1);
         for (let i: number = lowerPageValue; i <= higherPageValue; i++) {
             let canvas: HTMLElement = this.pdfViewerBase.getElement('_pageCanvas_' + i);
-            if (canvas) {
+            if (canvas && !this.pdfViewer.restrictZoomRequest) {
                 canvas.id = this.pdfViewer.element.id + '_oldCanvas_' + i;
                 canvas.style.backgroundColor = '#fff';
                 if (this.pdfViewerBase.isTextMarkupAnnotationModule()) {
@@ -682,7 +689,10 @@ export class Magnification {
                 }
                 // tslint:disable-next-line:max-line-length
                 this.pdfViewerBase.renderPageCanvas(this.pdfViewerBase.getElement('_pageDiv_' + i), this.pdfViewerBase.pageSize[i].width * this.zoomFactor, this.pdfViewerBase.pageSize[i].height * this.zoomFactor, i, 'none');
-            }
+             } else {
+                // tslint:disable-next-line:max-line-length
+                this.pdfViewerBase.renderPageCanvas(this.pdfViewerBase.getElement('_pageDiv_' + i), this.pdfViewerBase.pageSize[i].width * this.zoomFactor, this.pdfViewerBase.pageSize[i].height * this.zoomFactor, i, 'none');
+             }
         }
         this.isRerenderCanvasCreated = true;
     }

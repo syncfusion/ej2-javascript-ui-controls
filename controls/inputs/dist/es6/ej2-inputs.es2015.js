@@ -8480,11 +8480,13 @@ let Uploader = class Uploader extends Component {
             let index = this.filesData.indexOf(files);
             let rootElement = this.fileList[index];
             if (rootElement) {
-                let statusElement = rootElement.querySelector('.' + STATUS);
                 rootElement.classList.remove(UPLOAD_SUCCESS);
-                statusElement.classList.remove(UPLOAD_SUCCESS);
                 rootElement.classList.add(UPLOAD_FAILED);
-                statusElement.classList.add(UPLOAD_FAILED);
+                let statusElement = rootElement.querySelector('.' + STATUS);
+                if (statusElement) {
+                    statusElement.classList.remove(UPLOAD_SUCCESS);
+                    statusElement.classList.add(UPLOAD_FAILED);
+                }
             }
             this.checkActionButtonStatus();
         }
@@ -9269,7 +9271,8 @@ let Uploader = class Uploader extends Component {
     getLiElement(files) {
         let index;
         for (let i = 0; i < this.filesData.length; i++) {
-            if (this.filesData[i].name === files.name) {
+            if ((!isNullOrUndefined(this.filesData[i].id) && !isNullOrUndefined(files.id)) ? (this.filesData[i].name === files.name &&
+                this.filesData[i].id === files.id) : this.filesData[i].name === files.name) {
                 index = i;
             }
         }
@@ -10233,7 +10236,7 @@ let Uploader = class Uploader extends Component {
      */
     upload(files, custom) {
         files = files ? files : this.filesData;
-        if (this.sequentialUpload && this.isFirstFileOnSelection) {
+        if (this.sequentialUpload && (this.isFirstFileOnSelection || custom)) {
             this.sequenceUpload(files);
         }
         else {

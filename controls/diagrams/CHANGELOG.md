@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.2.56 (2020-09-01)
+
+### Diagram
+
+- `289532` - The issue "Group width and height does not update" has been fixed.
+- `285600` - The issue "Complex hierarchical layout does not arrange properly" has been fixed.
+- `F157055` - The issue "Port inedge and outedge not updated properly" has been fixed.
+
 ## 18.2.55 (2020-08-25)
 
 ### Diagram

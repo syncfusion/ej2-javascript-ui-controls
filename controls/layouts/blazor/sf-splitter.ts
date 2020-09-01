@@ -601,7 +601,7 @@ class SfSplitter {
     private getSeparatorPosition(e: MouseEvent | TouchEvent | PointerEvent): number {
         this.updateCursorPosition(e, CURRENT);
         let rectBound: number = (this.orientation === HORIZONTAL) ? this.element.getBoundingClientRect().left :
-            this.element.getBoundingClientRect().top;
+            this.element.getBoundingClientRect().top +  window.scrollY;
         let offSet: number = (this.orientation === HORIZONTAL) ? this.element.offsetWidth : this.element.offsetHeight;
         return this.calcDragPosition(rectBound, offSet);
     }
@@ -1321,6 +1321,7 @@ class SfSplitter {
     }
 
     public collapseMethodEvent(index: number, e: BeforeExpandEventArgs): void {
+        this.expandFlag = false;
         let collapsedindex: number[] = [];
         collapsedindex[0] = index;
         let j: number = 1;
@@ -1348,6 +1349,7 @@ class SfSplitter {
             index: [this.getPreviousPaneIndex(), this.getNextPaneIndex()],
         });
         this.collapseFlag = false;
+        this.expandFlag = true;
     }
 
     public expand(index: number): void {

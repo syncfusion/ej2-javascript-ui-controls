@@ -3913,6 +3913,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     private spliceConnectorEdges(connector: ConnectorModel, isSource: boolean): void {
         let node: Node;
         let edges: string[] = [];
+        let isInEdge: boolean;
         node = isSource ? this.nameTable[connector.sourceID] : this.nameTable[connector.targetID];
         if (node) {
             edges = isSource ? node.outEdges : node.inEdges;
@@ -3920,6 +3921,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 if (edges[i] === connector.id) {
                     edges.splice(i, 1);
                 }
+            }
+            for (let j: number = 0; node.ports && j < node.ports.length; j++) {
+                isInEdge = isSource ? false : true;
+                this.removePortEdges( node, node.ports[j].id, connector.id, isInEdge);
             }
         }
     }
@@ -4292,6 +4297,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
                 parentNode.wrapper.measure(new Size());
                 parentNode.wrapper.arrange(parentNode.wrapper.desiredSize);
+                if (!(parentNode as Node).isLane) {
+                    this.nameTable[node.id].width = parentNode.wrapper.actualSize.width;
+                    this.nameTable[node.id].height = parentNode.wrapper.actualSize.height;
+                }
                 if (parentNode.container !== undefined) {
                     childNode.offsetX = childNode.wrapper.offsetX;
                     childNode.offsetY = childNode.wrapper.offsetY;

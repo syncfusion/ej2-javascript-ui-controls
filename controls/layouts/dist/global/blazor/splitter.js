@@ -1499,7 +1499,7 @@ var Splitter = /** @class */ (function (_super) {
     Splitter.prototype.getSeparatorPosition = function (e) {
         this.updateCursorPosition(e, 'current');
         var rectBound = (this.orientation === 'Horizontal') ? this.element.getBoundingClientRect().left :
-            this.element.getBoundingClientRect().top;
+            this.element.getBoundingClientRect().top + window.scrollY;
         var offSet = (this.orientation === 'Horizontal') ? this.element.offsetWidth : this.element.offsetHeight;
         return this.calcDragPosition(rectBound, offSet);
     };

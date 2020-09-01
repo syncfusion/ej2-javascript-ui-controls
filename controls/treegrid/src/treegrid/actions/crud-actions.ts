@@ -86,7 +86,7 @@ export function editAction(details: { value: ITreeData, action: string }, contro
                                 }
                             } else if (control.editSettings.newRowPosition === 'Below') {
                                 treeData.splice(i + 1, 0, originalData.taskData);
-                                updateParentRow(key, treeData[i], action, control, isSelfReference, originalData);
+                                updateParentRow(key, treeData[i + 1 ], action, control, isSelfReference, originalData);
                             } else if (!addRowIndex) {
                                 index = 0;
                                 treeData.splice(index, 0, originalData.taskData);
@@ -219,7 +219,9 @@ export function updateParentRow(key: string, record: ITreeData, action: string, 
         let currentRecords: ITreeData[] = control.grid.getCurrentViewRecords();
         let index: number;
         currentRecords.map((e: ITreeData, i: number) => { if (e[key] === record[key]) { index = i; return; } });
-        record = currentRecords[index];
+        if (!isNullOrUndefined(index)) {
+            record = currentRecords[index];
+        }
         if (control.enableVirtualization && isNullOrUndefined(record) && !isNullOrUndefined(child)) {
             record = getValue('uniqueIDCollection.' + child.parentUniqueID, control);
         }

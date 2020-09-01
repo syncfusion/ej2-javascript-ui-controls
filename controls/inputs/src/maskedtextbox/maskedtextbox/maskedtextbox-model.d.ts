@@ -106,9 +106,9 @@ export interface MaskedTextBoxModel extends ComponentModel{
     /**
      * Sets the collection of values to be mapped for non-mask elements(literals)
      * which have been set in the mask of MaskedTextBox.
-     * * In the below example, non-mask elements "P" accepts values
+     * In the below example, non-mask elements "P" accepts values
      * "P" , "A" , "p" , "a" and "M" accepts values "M", "m" mentioned in the custom characters collection.
-     * For more information on customCharacters, refer to
+     * > For more information on customCharacters, refer to
      * [customCharacters](../../maskedtextbox/mask-configuration/#custom-characters).
      * {% codeBlock src='maskedtextbox/customCharacters/index.md' %}{% endcodeBlock %}
      * @default null

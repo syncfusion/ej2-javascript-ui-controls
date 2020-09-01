@@ -1145,7 +1145,11 @@ export type DialogType =
     /**
      * Specifies table options dialog.
      */
-    'TableOptions';
+    'TableOptions'|
+    /**
+     * Specifies spell check dialog.
+     */
+    'SpellCheck';
 
 /**
  * Action type

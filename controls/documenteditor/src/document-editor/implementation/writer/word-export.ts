@@ -2901,6 +2901,12 @@ export class WordExport {
             writer.writeEndElement();
         }
         writer.writeStartElement('wps', 'bodyPr', this.wpShapeNamespace);
+        if (shape.textFrame) {
+            writer.writeAttributeString(undefined, 'lIns', undefined, shape.textFrame.leftMargin.toString());
+            writer.writeAttributeString(undefined, 'tIns', undefined, shape.textFrame.topMargin.toString());
+            writer.writeAttributeString(undefined, 'rIns', undefined, shape.textFrame.rightMargin.toString());
+            writer.writeAttributeString(undefined, 'bIns', undefined, shape.textFrame.bottomMargin.toString());
+        }
         writer.writeEndElement();
         writer.writeEndElement();
         writer.writeEndElement();

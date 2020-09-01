@@ -4133,7 +4133,8 @@ class EventBase {
         return processed;
     }
     timezonePropertyChange(oldTimezone) {
-        let processed = this.processData(this.parent.eventsData, true, oldTimezone);
+        let data = this.parent.eventsData.concat(this.parent.blockData);
+        let processed = this.processData(data, true, oldTimezone);
         this.parent.notify(dataReady, { processedData: processed });
     }
     /** @private */
@@ -4310,7 +4311,7 @@ class EventBase {
                 eventEndTime : addDays(eventEndTime, 1);
             let index = 1;
             let eventLength = getDaysCount(eventStartTime.getTime(), endDate.getTime());
-            while (end <= eventEndTime) {
+            while (end <= eventEndTime && start.getTime() !== end.getTime()) {
                 let app = extend({}, event);
                 app[eventFields.startTime] = start;
                 app[eventFields.endTime] = end;
@@ -11514,7 +11515,7 @@ class VirtualScroll {
             let resWrap = [].slice.call((resourceWrap).querySelectorAll('table td'));
             let startIndex = parseInt(resWrap[0].getAttribute('data-group-index'), 10);
             let endIndex = parseInt(resWrap[resWrap.length - 1].getAttribute('data-group-index'), 10);
-            this.parent.resourceBase.renderedResources = this.parent.resourceBase.expandedResources.slice(startIndex, endIndex + 1);
+            this.parent.resourceBase.renderedResources = this.parent.resourceBase.expandedResources.filter((resource) => (resource.groupIndex >= startIndex && resource.groupIndex <= endIndex));
             this.setItemSize();
             wrap.style.height = (this.parent.resourceBase.expandedResources.length * this.itemSize) + 'px';
             this.isScrollHeightNull = false;
@@ -12375,7 +12376,7 @@ class Crud {
                     let deletedEvents = eventCollections.follow.concat(eventCollections.occurrence);
                     switch (action) {
                         case 'EditSeries':
-                            if (childEvent[fields.startTime] > parentEvent[fields.startTime]) {
+                            if ((childEvent[fields.startTime] > parentEvent[fields.startTime]) && childEvent[fields.recurrenceRule]) {
                                 this.processRecurrenceRule(parentEvent, childEvent);
                             }
                             childEvent[fields.id] = parentEvent[fields.id];
@@ -17186,9 +17187,11 @@ class DragAndDrop extends ActionBase {
         if (this.isAllowDrop(e)) {
             return;
         }
+        let target = ((!e.target.classList.contains('e-work-cells') && this.parent.cellTemplate) ?
+            closest(e.target, '.e-work-cells') : e.target);
         let dragArgs = {
             cancel: false, data: this.getChangedData(),
-            event: e, element: this.actionObj.element, target: e.target
+            event: e, element: this.actionObj.element, target: target
         };
         this.parent.trigger(dragStop, dragArgs, (dragEventArgs) => {
             if (dragEventArgs.cancel) {
@@ -17434,16 +17437,20 @@ class DragAndDrop extends ActionBase {
         for (let i = 0; i < this.actionObj.groupIndex; i++) {
             datesCount = datesCount + this.verticalEvent.dateRender[i].length;
         }
-        let dayIndex = !this.parent.activeViewOptions.group.byDate ? this.actionObj.index - datesCount
-            : this.parent.getIndexOfDate(this.verticalEvent.dateRender[this.actionObj.groupIndex], resetTime(this.parent.getDateFromElement(this.actionObj.target)));
-        let record = this.verticalEvent.isSpannedEvent(event, dayIndex, this.actionObj.groupIndex);
-        let eStart = record[this.verticalEvent.fields.startTime];
-        let eEnd = record[this.verticalEvent.fields.endTime];
-        let topValue = 0;
-        let appHeight = this.verticalEvent.getHeight(eStart, eEnd);
-        topValue = this.verticalEvent.getTopValue(eStart, dayIndex, this.actionObj.groupIndex);
-        this.actionObj.clone.style.top = formatUnit(topValue);
-        this.actionObj.clone.style.height = formatUnit(appHeight);
+        let target = (this.parent.activeViewOptions.group.byDate &&
+            !isNullOrUndefined(this.parent.getDateFromElement(this.actionObj.target))) ? true : false;
+        if (target || !this.parent.activeViewOptions.group.byDate) {
+            let dayIndex = !this.parent.activeViewOptions.group.byDate ? this.actionObj.index - datesCount
+                : this.parent.getIndexOfDate(this.verticalEvent.dateRender[this.actionObj.groupIndex], resetTime(this.parent.getDateFromElement(this.actionObj.target)));
+            let record = this.verticalEvent.isSpannedEvent(event, dayIndex, this.actionObj.groupIndex);
+            let eStart = record[this.verticalEvent.fields.startTime];
+            let eEnd = record[this.verticalEvent.fields.endTime];
+            let topValue = 0;
+            let appHeight = this.verticalEvent.getHeight(eStart, eEnd);
+            topValue = this.verticalEvent.getTopValue(eStart, dayIndex, this.actionObj.groupIndex);
+            this.actionObj.clone.style.top = formatUnit(topValue);
+            this.actionObj.clone.style.height = formatUnit(appHeight);
+        }
     }
     updateAllDayEvents(startDate, endDate, colIndex) {
         this.parent.eventBase.slots = [];
@@ -19966,6 +19973,9 @@ class YearEvent extends TimelineEvent {
         }
         if (this.parent.activeViewOptions.orientation === 'Horizontal') {
             index = row + 1;
+            if (eventObj[this.fields.startTime].getTime() === eventObj[this.fields.endTime].getTime()) {
+                eventObj.isSpanned.count = 1;
+            }
             width = eventObj.isSpanned.count * this.cellWidth;
         }
         else {
@@ -20884,7 +20894,11 @@ class Agenda extends ViewBase {
         // Initial rendering, to load previous date events upto scroll bar enable
         if (this.parent.activeViewOptions.allowVirtualScrolling && this.parent.hideEmptyAgendaDays && this.parent.eventsData.length > 0) {
             let contentArea = this.getContentAreaElement();
+            let contentChild = contentArea.querySelector('.e-content-table');
             while (contentArea.offsetWidth <= contentArea.clientWidth) {
+                if (this.parent.isAdaptive && contentChild.offsetHeight >= contentArea.clientHeight) {
+                    break;
+                }
                 let emptyTBody = createElement('tbody');
                 lastDate = firstDate;
                 firstDate = addDays(lastDate, -this.parent.agendaDaysCount);

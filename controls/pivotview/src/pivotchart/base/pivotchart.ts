@@ -2,7 +2,7 @@ import { PivotEngine, IPivotValues, IAxisSet, IDataOptions, IField, IFormatSetti
 import { IPivotRows, INumberIndex, IFieldOptions, IDrilledItem } from '../../base/engine';
 import * as events from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
-import { SeriesModel, Chart, ColumnSeries, LineSeries, Legend, Tooltip, Category, AreaSeries } from '@syncfusion/ej2-charts';
+import { SeriesModel, Chart, ColumnSeries, LineSeries, Legend, Tooltip, Category, AreaSeries, Selection } from '@syncfusion/ej2-charts';
 import { AccumulationChart, PieSeries, FunnelSeries, PyramidSeries } from '@syncfusion/ej2-charts';
 import { SplineAreaSeries, MultiColoredLineSeries, RangeAreaSeries, StackingAreaSeries, StepAreaSeries } from '@syncfusion/ej2-charts';
 import { MultiColoredAreaSeries, SplineSeries, StepLineSeries, AccumulationLegend, AccumulationTooltip } from '@syncfusion/ej2-charts';
@@ -264,9 +264,9 @@ export class PivotChart {
                                 break;
                             }
                             let colHeaders: string = this.parent.dataType === 'olap' ? cell.columnHeaders.toString().split(/~~|::/).join(' - ')
-                                : cell.columnHeaders.toString().split('.').join(' - ');
+                                : cell.columnHeaders.toString().split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).join(' - ');
                             let rowHeaders: string = this.parent.dataType === 'olap' ? cell.rowHeaders.toString().split(/~~|::/).join(' - ')
-                                : cell.rowHeaders.toString().split('.').join(' - ');
+                                : cell.rowHeaders.toString().split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).join(' - ');
                             let columnSeries: string = colHeaders + ' | ' + actualText;
                             let yValue: number = (this.parent.dataType === 'pivot' ? (this.engineModule.aggregatedValueMatrix[rowIndex] &&
                                 !isNullOrUndefined(this.engineModule.aggregatedValueMatrix[rowIndex][cellIndex])) ?
@@ -487,7 +487,7 @@ export class PivotChart {
                 ColumnSeries, StackingColumnSeries, RangeColumnSeries, BarSeries, StackingBarSeries, ScatterSeries, BubbleSeries,
                 LineSeries, StepLineSeries, SplineSeries, SplineAreaSeries, MultiColoredLineSeries, PolarSeries, RadarSeries,
                 AreaSeries, RangeAreaSeries, StackingAreaSeries, StepAreaSeries, MultiColoredAreaSeries, ParetoSeries,
-                Legend, Tooltip, Category, MultiLevelLabel, ScrollBar, Zoom, Export, Crosshair);
+                Legend, Tooltip, Category, MultiLevelLabel, ScrollBar, Zoom, Export, Crosshair, Selection);
             AccumulationChart.Inject(PieSeries, FunnelSeries, PyramidSeries, AccumulationDataLabel, AccumulationLegend, AccumulationTooltip,
                 Export);
             if (this.accumulationType.indexOf(type) > -1) {

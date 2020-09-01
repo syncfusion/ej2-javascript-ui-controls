@@ -12,7 +12,6 @@ import { PointModel } from '../../../src/diagram/primitives/point-model';
 import { MouseEvents } from '../interaction/mouseevents.spec';
 
 
-
 /**
  * Test cases for default ports and port positions
  */
@@ -472,6 +471,50 @@ describe('Diagram Control', () => {
         });
     })
 
+
+    describe('InEdge OutEdge not removed after deleting connector', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramPortInEdgeOutEdge' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                {
+                  id: 'node1', offsetX: 300, offsetY: 200, height: 100, width: 100,
+                  annotations: [{ content: 'Node1'}],
+                  ports: [
+                    {
+                      id: 'left', offset: {x: 1, y: 0.5}, visibility: PortVisibility.Visible
+                    }                   
+                  ]
+                },
+                 {
+                  id: 'node2', offsetX: 500, offsetY: 200, height: 100, width: 100,
+                  annotations: [{ content: 'Node2'}],
+                  ports: [
+                    
+                    {
+                      id: 'right', offset: {x: 0, y: 0.5}, visibility: PortVisibility.Visible
+                    }
+                  ]
+                }
+              ];
+            diagram = new Diagram({
+                width: '100%', height: 900, nodes: nodes
+            });
+            diagram.appendTo('#diagramPortInEdgeOutEdge');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('InEdge OutEdge', (done: Function) => {
+            diagram.addConnector({ id: "connector1", sourceID: 'node1', targetID: 'node2', sourcePortID: 'left', targetPortID: 'right' })
+            diagram.remove({ id: "connector1" })
+            expect(diagram.nodes[0].ports[0].outEdges.length === 0 && diagram.nodes[1].ports[0].inEdges.length === 0).toBe(true);
+           done();
+     });
  });
-
-
+});

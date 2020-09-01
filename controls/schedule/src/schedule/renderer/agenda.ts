@@ -107,7 +107,11 @@ export class Agenda extends ViewBase implements IRenderer {
         // Initial rendering, to load previous date events upto scroll bar enable
         if (this.parent.activeViewOptions.allowVirtualScrolling && this.parent.hideEmptyAgendaDays && this.parent.eventsData.length > 0) {
             let contentArea: HTMLElement = this.getContentAreaElement();
+            let contentChild: HTMLElement = contentArea.querySelector('.e-content-table');
             while (contentArea.offsetWidth <= contentArea.clientWidth) {
+                if (this.parent.isAdaptive && contentChild.offsetHeight >= contentArea.clientHeight) {
+                    break;
+                }
                 let emptyTBody: Element = createElement('tbody');
                 lastDate = firstDate;
                 firstDate = util.addDays(lastDate, - this.parent.agendaDaysCount);

@@ -2,6 +2,25 @@
 
 ## [Unreleased]
 
+## 18.2.56 (2020-09-01)
+
+### Chart
+
+#### Bug Fixes
+
+- `#286177` - Place pie data labels based on space available.
+- `#290274` - Axis label customization is not proper for double type.
+- `#F155030` - DateTime Annotation does not work in ASP.NET Core has been fixed.
+- `#F157038` - Empty chart with shared tooltip throws console error has been fixed.
+
+## 18.2.55 (2020-08-25)
+
+### Accumulation chart
+
+#### Bug Fixes
+
+- `#288484` - Accumulation chart class is removed while refreshing the chart issue fixed.
+
 ## 18.2.54 (2020-08-18)
 
 ### Chart

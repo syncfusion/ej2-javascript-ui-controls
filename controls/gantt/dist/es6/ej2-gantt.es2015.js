@@ -10953,7 +10953,9 @@ let Gantt = class Gantt extends Component {
                 this[modules[i]] = null;
             }
         }
-        this.keyboardModule.destroy();
+        if (this.keyboardModule) {
+            this.keyboardModule.destroy();
+        }
         super.destroy();
         this.chartVerticalLineContainer = null;
         this.element.innerHTML = '';
@@ -16043,6 +16045,7 @@ class DialogEdit {
             this.updatePredecessorDropDownData(ganttData);
         }
         gridModel.dataSource = preData;
+        gridModel.actionBegin = this.gridActionBegin.bind(this);
         let columns = gridModel.columns;
         columns[1].edit = {
             write: (args) => {
@@ -16051,7 +16054,7 @@ class DialogEdit {
                 }
                 let field = 'name';
                 let autoObj = new ComboBox({
-                    dataSource: new DataManager(this.preTableCollection),
+                    dataSource: new DataManager(this.idCollection),
                     popupHeight: '180px',
                     allowCustom: false,
                     fields: { value: 'text' },
@@ -16082,6 +16085,26 @@ class DialogEdit {
         let divElement = this.createDivElement('e-dependent-div', ganttObj.element.id + '' + itemName + 'TabContainer');
         gridObj.appendTo(divElement);
         return divElement;
+    }
+    gridActionBegin(args) {
+        let itemName = 'Dependency';
+        let gridModel = this.beforeOpenArgs[itemName];
+        if (args.requestType === 'add' || args.requestType === 'beginEdit') {
+            let isEdit = args.requestType === 'add' ? false : true;
+            this.idCollection = extend([], [], this.preTableCollection, true);
+            let gridData = gridModel.dataSource;
+            for (let i = 0; i <= gridData.length; i++) {
+                this.idCollection.forEach((data, index) => {
+                    if (data.id === getValue('id', gridData[i])) {
+                        let selectedItem = getValue('rowData', args);
+                        if (isEdit && getValue('id', selectedItem) === data.id) {
+                            return;
+                        }
+                        this.idCollection.splice(this.idCollection.indexOf(data), 1);
+                    }
+                });
+            }
+        }
     }
     updateResourceCollection(args, resourceTreeGridId) {
         if (!isNullOrUndefined(args.data) && Object.keys(args.data).length) {

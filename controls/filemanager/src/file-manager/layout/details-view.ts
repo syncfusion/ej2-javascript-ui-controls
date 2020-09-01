@@ -1027,6 +1027,11 @@ export class DetailsView {
         }
     }
 
+    private updateType(item: Element): void {
+        let folder: Element = select('.' + CLS.FOLDER, item);
+        this.parent.isFile = isNOU(folder) ? true : false;
+    }
+
     /* istanbul ignore next */
     private onSelection(action: string, args: RowSelectingEventArgs | RowDeselectEventArgs): void {
         let eventArgs: FileSelectionEventArgs = {
@@ -1047,6 +1052,7 @@ export class DetailsView {
         this.gridObj.element.setAttribute('tabindex', '-1');
         this.triggerSelect('select', args);
         let item: Element = this.gridObj.getRowByIndex(this.gridObj.selectedRowIndex);
+        this.updateType(item);
         if (!isNOU(item) && !isNOU(item.querySelector('.e-checkselect'))) {
             if (this.gridObj.getSelectedRowIndexes().length !== 1) {
                 let lastItemIndex: number = this.gridObj.getSelectedRowIndexes()[this.gridObj.getSelectedRowIndexes().length - 2];

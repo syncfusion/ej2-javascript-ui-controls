@@ -269,7 +269,7 @@ export class PivotButton implements IAction {
                                             actualText !== '' && actualText === currentMeasure) {
                                             firstValueRow = true;
                                             let columnSeries: string = this.parent.dataType === 'olap' ? cell.columnHeaders.toString().split(/~~|::/).join(' - ')
-                                                : cell.columnHeaders.toString().split('.').join(' - ');
+                                                : cell.columnHeaders.toString().split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).join(' - ');
                                             columnData.push({ value: columnSeries, text: columnSeries, title: { ['title']: columnSeries } });
                                             if (columnSeries === columnHeader) {
                                                 availColindex = columnData.length;

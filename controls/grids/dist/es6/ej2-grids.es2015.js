@@ -1775,7 +1775,7 @@ class RowModelGenerator {
     }
     generateRows(data, args) {
         let rows = [];
-        let startIndex = this.parent.enableVirtualization ? args.startIndex : 0;
+        let startIndex = this.parent.enableVirtualization && args ? args.startIndex : 0;
         startIndex = this.parent.enableInfiniteScrolling ? this.getInfiniteIndex(args) : startIndex;
         for (let i = 0, len = Object.keys(data).length; i < len; i++, startIndex++) {
             rows[i] = this.generateRow(data[i], startIndex);
@@ -10567,7 +10567,7 @@ class Clipboard {
                     if (!args.cancel) {
                         if (grid.editModule) {
                             if (col.type === 'number') {
-                                this.parent.editModule.updateCell(rIdx, col.field, parseInt(args.data, 10));
+                                this.parent.editModule.updateCell(rIdx, col.field, parseFloat(args.data));
                             }
                             else {
                                 grid.editModule.updateCell(rIdx, col.field, args.data);
@@ -20414,7 +20414,7 @@ class FilterMenuRenderer {
             this.renderDlgContent(args.target, this.col);
         }
     }
-    closeDialog() {
+    closeDialog(target) {
         if (!this.dlgObj) {
             return;
         }
@@ -20429,7 +20429,11 @@ class FilterMenuRenderer {
         }
         let elem = document.getElementById(this.dlgObj.element.id);
         if (this.dlgObj && !this.dlgObj.isDestroyed && elem) {
-            this.parent.notify(filterMenuClose, { field: this.col.field });
+            let argument = { cancel: false, column: this.col, target: target, element: elem };
+            this.parent.notify(filterMenuClose, argument);
+            if (argument.cancel) {
+                return;
+            }
             this.isDialogOpen = false;
             this.dlgObj.destroy();
             remove(elem);
@@ -29862,7 +29866,8 @@ class BatchEdit {
                 let cells = [].slice.call(this.parent.getDataRows()[rowIndex].querySelectorAll('.e-rowcell')).concat([].slice.call(this.parent.getMovableDataRows()[rowIndex].querySelectorAll('.e-rowcell')));
                 td = cells[index];
             }
-            let rowObj = this.parent.getRowObjectFromUID(td.parentElement.getAttribute('data-uid'));
+            let rowObj = parentsUntil(td, 'e-movablecontent') ? this.parent.getMovableRowsObject()[index] :
+                this.parent.getRowObjectFromUID(td.parentElement.getAttribute('data-uid'));
             this.refreshTD(td, col, rowObj, value);
             this.parent.trigger(queryCellInfo, {
                 cell: td, column: col, data: rowObj.changes

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.2.56 (2020-09-01)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#289077` - Horizontal scrolling issue raised in the latest version of Firefox has been fixed.
+
 ## 18.2.55 (2020-08-25)
 
 ### Pivot Table

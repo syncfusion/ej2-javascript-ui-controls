@@ -5712,7 +5712,7 @@ function editAction(details, control, isSelfReference, addRowIndex, selectedInde
                             }
                             else if (control.editSettings.newRowPosition === 'Below') {
                                 treeData.splice(i + 1, 0, originalData.taskData);
-                                updateParentRow(key, treeData[i], action, control, isSelfReference, originalData);
+                                updateParentRow(key, treeData[i + 1], action, control, isSelfReference, originalData);
                             }
                             else if (!addRowIndex) {
                                 index = 0;
@@ -5858,7 +5858,9 @@ function updateParentRow(key, record, action, control, isSelfReference, child) {
             index_1 = i;
             return;
         } });
-        record = currentRecords[index_1];
+        if (!isNullOrUndefined(index_1)) {
+            record = currentRecords[index_1];
+        }
         if (control.enableVirtualization && isNullOrUndefined(record) && !isNullOrUndefined(child)) {
             record = getValue('uniqueIDCollection.' + child.parentUniqueID, control);
         }
@@ -7908,8 +7910,8 @@ var Aggregate$1 = /** @__PURE__ @class */ (function () {
                             this_1.parent.columns[columnIndex] : getObject('field', this_1.parent.columns[columnIndex]);
                         item[field] = null;
                     }
+                    item = this_1.createSummaryItem(item, this_1.parent.aggregates[summaryRowIndex - 1]);
                     if (this_1.parent.aggregates[summaryRowIndex - 1].showChildSummary) {
-                        item = this_1.createSummaryItem(item, this_1.parent.aggregates[summaryRowIndex - 1]);
                         var idx_1;
                         flatRecords.map(function (e, i) { if (e.uniqueID === parentRecord.uniqueID) {
                             idx_1 = i;

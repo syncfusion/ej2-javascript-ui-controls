@@ -2307,7 +2307,9 @@ export class Gantt extends Component<HTMLElement>
                 this[modules[i]] = null;
             }
         }
-        this.keyboardModule.destroy();
+        if (this.keyboardModule) {
+            this.keyboardModule.destroy();
+        }
         super.destroy();
         this.chartVerticalLineContainer = null;
         this.element.innerHTML = '';

@@ -585,6 +585,11 @@ export class FormFields {
                     this.renderExistingAnnnot(currentData, index, printContainer);
                 }
                 break;
+            case 'ink':
+                if (currentData.Value && currentData.Value !== '') {
+                    this.renderExistingAnnnot(currentData, index, printContainer);
+                }
+                break;
         }
         return currentField;
     }
@@ -947,7 +952,7 @@ export class FormFields {
         if (!printContainer) {
             // tslint:disable-next-line
             let bounds: any;
-            if (data.Bounds) {
+            if (data.Bounds && data.Name !== 'ink') {
                 bounds = data.Bounds;
             } else {
                 bounds = data.LineBounds;

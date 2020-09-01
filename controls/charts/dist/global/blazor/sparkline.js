@@ -692,6 +692,14 @@ var Theme;
         fontFamily: 'Segoe UI'
     };
     /** @private */
+    Theme.legendTitleFont = {
+        size: '13px',
+        fontWeight: 'Normal',
+        color: null,
+        fontStyle: 'Normal',
+        fontFamily: 'Segoe UI'
+    };
+    /** @private */
     Theme.stripLineLabelFont = {
         size: '12px',
         fontWeight: 'Regular',
@@ -1411,8 +1419,8 @@ var Double = /** @class */ (function () {
         if (axis.visibleRange.interval && (axis.visibleRange.interval + '').indexOf('.') >= 0) {
             intervalDigits = (axis.visibleRange.interval + '').split('.')[1].length;
         }
-        labelStyle = (sf.base.extend({}, sf.base.getValue('properties', axis.labelStyle), null, true));
         for (; tempInterval <= axis.visibleRange.max; tempInterval += axis.visibleRange.interval) {
+            labelStyle = (sf.base.extend({}, sf.base.getValue('properties', axis.labelStyle), null, true));
             if (withIn(tempInterval, axis.visibleRange)) {
                 triggerLabelRender(chart, tempInterval, this.formatValue(axis, isCustom, format, tempInterval), labelStyle, axis);
             }

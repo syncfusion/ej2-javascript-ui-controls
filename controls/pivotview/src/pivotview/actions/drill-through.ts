@@ -177,8 +177,8 @@ export class DrillThrough {
             currentTarget: element,
             currentCell: pivotValue,
             rawData: rawData,
-            rowHeaders: pivotValue.rowHeaders === '' ? '' : pivotValue.rowHeaders.toString().split('.').join(' - '),
-            columnHeaders: pivotValue.columnHeaders === '' ? '' : pivotValue.columnHeaders.toString().split('.').join(' - '),
+            rowHeaders: pivotValue.rowHeaders === '' ? '' : pivotValue.rowHeaders.toString().split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).join(' - '),
+            columnHeaders: pivotValue.columnHeaders === '' ? '' : pivotValue.columnHeaders.toString().split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).join(' - '),
             value: valuetText + '(' + pivotValue.formattedText + ')',
             gridColumns: this.drillThroughDialog.frameGridColumns(rawData),
             cancel: false

@@ -743,6 +743,19 @@ export interface ThumbnailClickEventArgs extends BaseEventArgs {
 }
 
 /**
+ * This event arguments provides the necessary information about bookmark click event.
+ */
+export interface BookmarkClickEventArgs extends BaseEventArgs {
+    /**
+     * Page number of the bookmark in which click action is performed
+     */
+    pageNumber: number;
+    /**
+     * Position of the bookmark content
+     */
+    position: number;
+}
+/**
  * This event arguments provide the necessary information about text selection start event.
  */
 export interface TextSelectionStartEventArgs extends BaseEventArgs {

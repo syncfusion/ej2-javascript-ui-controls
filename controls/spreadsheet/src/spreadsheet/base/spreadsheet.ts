@@ -40,7 +40,7 @@ import { isNumber, getColumn, WorkbookFilter } from '../../workbook/index';
 import { PredicateModel } from '@syncfusion/ej2-grids';
 import { RibbonItemModel } from '../../ribbon/index';
 import { DataValidation } from '../actions/index';
-import { WorkbookDataValidation, WorkbookConditionalFormat } from '../../workbook/actions/index';
+import { WorkbookDataValidation, WorkbookConditionalFormat, WorkbookFindAndReplace } from '../../workbook/actions/index';
 import { FindAllArgs, findAllValues, ClearOptions, ConditionalFormatModel } from './../../workbook/common/index';
 import { ConditionalFormatting } from '../actions/conditional-formatting';
 /**
@@ -658,7 +658,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             Save, NumberFormat, CellFormat, Formula, WrapText, WorkbookEdit, WorkbookOpen, WorkbookSave, WorkbookCellFormat,
             WorkbookNumberFormat, WorkbookFormula, Sort, WorkbookSort, Resize, UndoRedo, WorkbookFilter, Filter, SpreadsheetHyperlink,
             WorkbookHyperlink, Insert, Delete, WorkbookInsert, WorkbookDelete, DataValidation, WorkbookDataValidation,
-            ProtectSheet, FindAndReplace, Merge, WorkbookMerge, ConditionalFormatting, WorkbookConditionalFormat
+            ProtectSheet, FindAndReplace, WorkbookFindAndReplace, Merge, WorkbookMerge, ConditionalFormatting, WorkbookConditionalFormat
         );
         if (element) {
             this.appendTo(element);

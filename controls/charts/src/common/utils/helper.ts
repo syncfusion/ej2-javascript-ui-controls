@@ -1348,6 +1348,26 @@ export function calculateLegendShapes(location: ChartLocation, size: Size, shape
                         + (padding / 4)) + ' ' + (ly + (height / 2));
             merge(options, { 'd': dir });
             break;
+        case 'UpArrow':
+            options.fill = options.stroke;
+            options.stroke = 'transparent';
+            dir = 'M' + ' ' + (lx + (-width / 2)) + ' ' + (ly + (height / 2)) + ' ' +
+                'L' + ' ' + (lx) + ' ' + (ly - (height / 2)) + ' ' +
+                'L' + ' ' + (lx + (width / 2)) + ' ' + (ly + (height / 2)) +
+                'L' + ' ' + (lx + (width / 2) - space) + ' ' + (ly + (height / 2)) + ' ' +
+                'L' + ' ' + (lx) + ' ' + (ly - (height / 2) + (2 * space)) +
+                'L' + (lx - (width / 2) + space) + ' ' + (ly + (height / 2)) + ' Z';
+            merge(options, { 'd': dir });
+            break;
+        case 'DownArrow':
+            dir = 'M' + ' ' + (lx - (width / 2)) + ' ' + (ly - (height / 2)) + ' ' +
+                'L' + ' ' + (lx) + ' ' + (ly + (height / 2)) + ' ' +
+                'L' + ' ' + (lx + (width / 2)) + ' ' + (ly - (height / 2)) +
+                'L' + ' ' + (lx + (width / 2) - space) + ' ' + (ly - (height / 2)) + ' ' +
+                'L' + ' ' + (lx) + ' ' + (ly + (height / 2) - (2 * space)) +
+                'L' + (lx - (width / 2) + space) + ' ' + (ly - (height / 2)) + ' Z';
+            merge(options, { 'd': dir });
+            break;
         case 'RightArrow':
             dir = 'M' + ' ' + (lx + (-width / 2)) + ' ' + (ly - (height / 2)) + ' ' +
                 'L' + ' ' + (lx + (width / 2)) + ' ' + (ly) + ' ' + 'L' + ' ' +

@@ -8659,11 +8659,13 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             var index = this.filesData.indexOf(files);
             var rootElement = this.fileList[index];
             if (rootElement) {
-                var statusElement = rootElement.querySelector('.' + STATUS);
                 rootElement.classList.remove(UPLOAD_SUCCESS);
-                statusElement.classList.remove(UPLOAD_SUCCESS);
                 rootElement.classList.add(UPLOAD_FAILED);
-                statusElement.classList.add(UPLOAD_FAILED);
+                var statusElement = rootElement.querySelector('.' + STATUS);
+                if (statusElement) {
+                    statusElement.classList.remove(UPLOAD_SUCCESS);
+                    statusElement.classList.add(UPLOAD_FAILED);
+                }
             }
             this.checkActionButtonStatus();
         }
@@ -9470,7 +9472,8 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
     Uploader.prototype.getLiElement = function (files) {
         var index;
         for (var i = 0; i < this.filesData.length; i++) {
-            if (this.filesData[i].name === files.name) {
+            if ((!isNullOrUndefined(this.filesData[i].id) && !isNullOrUndefined(files.id)) ? (this.filesData[i].name === files.name &&
+                this.filesData[i].id === files.id) : this.filesData[i].name === files.name) {
                 index = i;
             }
         }
@@ -10448,7 +10451,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
     Uploader.prototype.upload = function (files, custom) {
         var _this = this;
         files = files ? files : this.filesData;
-        if (this.sequentialUpload && this.isFirstFileOnSelection) {
+        if (this.sequentialUpload && (this.isFirstFileOnSelection || custom)) {
             this.sequenceUpload(files);
         }
         else {

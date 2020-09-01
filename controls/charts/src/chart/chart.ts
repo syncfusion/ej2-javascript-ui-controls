@@ -2717,14 +2717,15 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     private titleTooltip(event: Event, x: number, y: number, isTouch?: boolean): void {
         let targetId: string = (<HTMLElement>event.target).id;
         let id: boolean = (targetId === (this.element.id + '_ChartTitle') || targetId === (this.element.id + '_ChartSubTitle') ||
-                           targetId.indexOf('_AxisTitle') > -1);
+            targetId.indexOf('_AxisTitle') > -1 || targetId.indexOf('_legend_title') > -1);
         let index: number = 0;
         if (targetId.indexOf('_AxisTitle') > -1) {
            index = parseInt(((targetId.replace(this.element.id, '')).replace('AxisLabel_', '')).split('_')[2], 10);
         }
         if (id && ((<HTMLElement>event.target).textContent.indexOf('...') > -1)) {
             let title: string = (targetId === (this.element.id + '_ChartTitle')) ? this.title :
-                                 targetId.indexOf('_AxisTitle') > -1 ? this.axisCollections[index].title : this.subTitle;
+                targetId.indexOf('_AxisTitle') > -1 ? this.axisCollections[index].title :
+                    targetId.indexOf('_ChartSubTitle') > -1 ? this.subTitle : this.legendSettings.title;
             showTooltip(
                 title, x, y, this.element.offsetWidth, this.element.id + '_EJ2_Title_Tooltip',
                 getElement(this.element.id + '_Secondary_Element'), isTouch

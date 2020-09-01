@@ -10,7 +10,7 @@ import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
 import { Button, CheckBox, RadioButton } from '@syncfusion/ej2-buttons';
 import { Workbook } from '@syncfusion/ej2-excel-export';
 import { PdfBorders, PdfColor, PdfDocument, PdfFontFamily, PdfFontStyle, PdfGrid, PdfPageOrientation, PdfPageTemplateElement, PdfPen, PdfSolidBrush, PdfStandardFont, PdfStringFormat, PdfTextAlignment, PdfVerticalAlignment, PointF, RectangleF } from '@syncfusion/ej2-pdf-export';
-import { AccumulationChart, AccumulationDataLabel, AccumulationLegend, AccumulationTooltip, AreaSeries, BarSeries, BubbleSeries, Category, Chart, ColumnSeries, Crosshair, Export, FunnelSeries, Legend, LineSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiLevelLabel, ParetoSeries, PieSeries, PolarSeries, PyramidSeries, RadarSeries, RangeAreaSeries, RangeColumnSeries, ScatterSeries, ScrollBar, SplineAreaSeries, SplineSeries, StackingAreaSeries, StackingBarSeries, StackingColumnSeries, StepAreaSeries, StepLineSeries, Tooltip as Tooltip$1, Zoom } from '@syncfusion/ej2-charts';
+import { AccumulationChart, AccumulationDataLabel, AccumulationLegend, AccumulationTooltip, AreaSeries, BarSeries, BubbleSeries, Category, Chart, ColumnSeries, Crosshair, Export, FunnelSeries, Legend, LineSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiLevelLabel, ParetoSeries, PieSeries, PolarSeries, PyramidSeries, RadarSeries, RangeAreaSeries, RangeColumnSeries, ScatterSeries, ScrollBar, Selection as Selection$1, SplineAreaSeries, SplineSeries, StackingAreaSeries, StackingBarSeries, StackingColumnSeries, StepAreaSeries, StepLineSeries, Tooltip as Tooltip$1, Zoom } from '@syncfusion/ej2-charts';
 
 /**
  * This is a file to perform common utility for OLAP and Relational datasource
@@ -13666,8 +13666,8 @@ var DrillThrough = /** @__PURE__ @class */ (function () {
             currentTarget: element,
             currentCell: pivotValue,
             rawData: rawData,
-            rowHeaders: pivotValue.rowHeaders === '' ? '' : pivotValue.rowHeaders.toString().split('.').join(' - '),
-            columnHeaders: pivotValue.columnHeaders === '' ? '' : pivotValue.columnHeaders.toString().split('.').join(' - '),
+            rowHeaders: pivotValue.rowHeaders === '' ? '' : pivotValue.rowHeaders.toString().split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).join(' - '),
+            columnHeaders: pivotValue.columnHeaders === '' ? '' : pivotValue.columnHeaders.toString().split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).join(' - '),
             value: valuetText + '(' + pivotValue.formattedText + ')',
             gridColumns: this.drillThroughDialog.frameGridColumns(rawData),
             cancel: false
@@ -13929,9 +13929,9 @@ var PivotChart = /** @__PURE__ @class */ (function () {
                                 break;
                             }
                             var colHeaders = this.parent.dataType === 'olap' ? cell.columnHeaders.toString().split(/~~|::/).join(' - ')
-                                : cell.columnHeaders.toString().split('.').join(' - ');
+                                : cell.columnHeaders.toString().split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).join(' - ');
                             var rowHeaders = this.parent.dataType === 'olap' ? cell.rowHeaders.toString().split(/~~|::/).join(' - ')
-                                : cell.rowHeaders.toString().split('.').join(' - ');
+                                : cell.rowHeaders.toString().split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).join(' - ');
                             var columnSeries = colHeaders + ' | ' + actualText;
                             var yValue = (this.parent.dataType === 'pivot' ? (this.engineModule.aggregatedValueMatrix[rowIndex] &&
                                 !isNullOrUndefined(this.engineModule.aggregatedValueMatrix[rowIndex][cellIndex])) ?
@@ -14152,7 +14152,7 @@ var PivotChart = /** @__PURE__ @class */ (function () {
                 }));
                 this.parent.toolbarModule.isMultiAxisChange = false;
             }
-            Chart.Inject(ColumnSeries, StackingColumnSeries, RangeColumnSeries, BarSeries, StackingBarSeries, ScatterSeries, BubbleSeries, LineSeries, StepLineSeries, SplineSeries, SplineAreaSeries, MultiColoredLineSeries, PolarSeries, RadarSeries, AreaSeries, RangeAreaSeries, StackingAreaSeries, StepAreaSeries, MultiColoredAreaSeries, ParetoSeries, Legend, Tooltip$1, Category, MultiLevelLabel, ScrollBar, Zoom, Export, Crosshair);
+            Chart.Inject(ColumnSeries, StackingColumnSeries, RangeColumnSeries, BarSeries, StackingBarSeries, ScatterSeries, BubbleSeries, LineSeries, StepLineSeries, SplineSeries, SplineAreaSeries, MultiColoredLineSeries, PolarSeries, RadarSeries, AreaSeries, RangeAreaSeries, StackingAreaSeries, StepAreaSeries, MultiColoredAreaSeries, ParetoSeries, Legend, Tooltip$1, Category, MultiLevelLabel, ScrollBar, Zoom, Export, Crosshair, Selection$1);
             AccumulationChart.Inject(PieSeries, FunnelSeries, PyramidSeries, AccumulationDataLabel, AccumulationLegend, AccumulationTooltip, Export);
             if (this.accumulationType.indexOf(type) > -1) {
                 this.parent.chart = new AccumulationChart({
@@ -22185,7 +22185,7 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         var pivotData;
         /* tslint:disable */
         if (isBlazor()) {
-            pivotData = persistData;
+            pivotData = typeof persistData === "string" ? JSON.parse(persistData) : persistData;
             pivotData.dataSourceSettings.dataSource = this.dataSourceSettings.dataSource;
         }
         else {
@@ -26949,7 +26949,7 @@ var PivotButton = /** @__PURE__ @class */ (function () {
                                             actualText !== '' && actualText === currentMeasure) {
                                             firstValueRow = true;
                                             var columnSeries = this.parent.dataType === 'olap' ? cell.columnHeaders.toString().split(/~~|::/).join(' - ')
-                                                : cell.columnHeaders.toString().split('.').join(' - ');
+                                                : cell.columnHeaders.toString().split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).join(' - ');
                                             columnData.push({ value: columnSeries, text: columnSeries, title: (_a = {}, _a['title'] = columnSeries, _a) });
                                             if (columnSeries === columnHeader) {
                                                 availColindex = columnData.length;
@@ -34414,6 +34414,8 @@ var NumberFormatting = /** @__PURE__ @class */ (function () {
         this.parent.numberFormattingModule = this;
         this.removeEventListener();
         this.addEventListener();
+        this.newFormat = [];
+        this.lastFormattedValue = [];
     }
     /**
      * To get module name.
@@ -34463,6 +34465,33 @@ var NumberFormatting = /** @__PURE__ @class */ (function () {
         this.dialog.isStringTemplate = true;
         this.dialog.appendTo(valueDialog);
         this.dialog.element.querySelector('.' + DIALOG_HEADER).innerHTML = this.parent.localeObj.getConstant('numberFormat');
+        var formatObject;
+        this.newFormat = [{ name: this.parent.localeObj.getConstant('AllValues'), format: 'N0', useGrouping: true }];
+        var format = [];
+        for (var i = 0; i < this.parent.dataSourceSettings.values.length; i++) {
+            for (var j = 0; j < this.parent.dataSourceSettings.formatSettings.length; j++) {
+                if (this.parent.dataSourceSettings.formatSettings[j].name === this.parent.dataSourceSettings.values[i].name) {
+                    formatObject = {
+                        name: this.parent.dataSourceSettings.formatSettings[j].name,
+                        format: this.parent.dataSourceSettings.formatSettings[j].format,
+                        useGrouping: this.parent.dataSourceSettings.formatSettings[j].useGrouping
+                    };
+                    this.newFormat.push(formatObject);
+                }
+            }
+        }
+        for (var i = 0; i < this.newFormat.length; i++) {
+            format.push(this.newFormat[i].name);
+        }
+        for (var j = 0; j < this.parent.dataSourceSettings.values.length; j++) {
+            if (format.indexOf(this.parent.dataSourceSettings.values[j].name) === -1) {
+                formatObject = {
+                    name: this.parent.dataSourceSettings.values[j].name, format: 'N0',
+                    useGrouping: true
+                };
+                this.newFormat.push(formatObject);
+            }
+        }
         this.renderControls();
     };
     NumberFormatting.prototype.getDialogContent = function () {
@@ -34567,7 +34596,8 @@ var NumberFormatting = /** @__PURE__ @class */ (function () {
             }
             this.valuesDropDown = new DropDownList({
                 dataSource: valueFields, fields: { text: 'name', value: 'field' }, enableRtl: this.parent.enableRtl,
-                index: 0, cssClass: FORMATTING_VALUE_DROP, change: this.valueChange.bind(this), width: '100%'
+                index: 0, cssClass: FORMATTING_VALUE_DROP, change: this.valueChange.bind(this), width: '100%',
+                open: this.customUpdate.bind(this)
             });
             this.valuesDropDown.isStringTemplate = true;
             this.valuesDropDown.appendTo('#' + this.parent.element.id + '_FormatValueDrop');
@@ -34577,7 +34607,7 @@ var NumberFormatting = /** @__PURE__ @class */ (function () {
                 { index: 0, name: this.parent.localeObj.getConstant('number') },
                 { index: 1, name: this.parent.localeObj.getConstant('currency') },
                 { index: 2, name: this.parent.localeObj.getConstant('percentage') },
-                { index: 2, name: this.parent.localeObj.getConstant('Custom') }
+                { index: 3, name: this.parent.localeObj.getConstant('Custom') }
             ];
             this.formatDropDown = new DropDownList({
                 dataSource: fields, fields: { text: 'name', value: 'name' },
@@ -34594,7 +34624,7 @@ var NumberFormatting = /** @__PURE__ @class */ (function () {
             ];
             this.groupingDropDown = new DropDownList({
                 dataSource: fields, fields: { text: 'name', value: 'name' }, enableRtl: this.parent.enableRtl,
-                index: 0, cssClass: FORMATTING_GROUPING_DROP, width: '100%'
+                index: 0, cssClass: FORMATTING_GROUPING_DROP, width: '100%', change: this.groupingChange.bind(this)
             });
             this.groupingDropDown.isStringTemplate = true;
             this.groupingDropDown.appendTo('#' + this.parent.element.id + '_GroupingDrop');
@@ -34615,7 +34645,7 @@ var NumberFormatting = /** @__PURE__ @class */ (function () {
             ];
             this.decimalDropDown = new DropDownList({
                 dataSource: fields, fields: { text: 'name', value: 'name' }, enableRtl: this.parent.enableRtl,
-                index: 0, cssClass: FORMATTING_DECIMAL_DROP, popupHeight: 150, width: '100%'
+                index: 0, cssClass: FORMATTING_DECIMAL_DROP, popupHeight: 150, width: '100%', change: this.decimalChange.bind(this)
             });
             this.decimalDropDown.isStringTemplate = true;
             this.decimalDropDown.appendTo('#' + this.parent.element.id + '_DecimalDrop');
@@ -34623,26 +34653,25 @@ var NumberFormatting = /** @__PURE__ @class */ (function () {
         if (this.formatDropDown.value !== this.parent.localeObj.getConstant('Custom')) {
             this.customText.disabled = true;
         }
+        if (this.lastFormattedValue.length !== 0) {
+            this.valuesDropDown.value = this.lastFormattedValue[0].name;
+            var fString = this.lastFormattedValue[0].format;
+            var first = fString === '' ? '' : fString.split('')[0].toLowerCase();
+            var group = this.lastFormattedValue[0].useGrouping ? this.parent.localeObj.getConstant('true') :
+                this.parent.localeObj.getConstant('false');
+            this.updateFormattingDialog(fString, first, group);
+        }
     };
     NumberFormatting.prototype.valueChange = function (args) {
-        var format = this.parent.dataSourceSettings.formatSettings;
+        var format = this.newFormat;
         var isExist = false;
         for (var i = 0; i < format.length; i++) {
             if (format[i].name === args.value) {
                 var fString = format[i].format;
-                var first = fString.split('')[0].toLowerCase();
-                if (fString.length === 2 && ['n', 'p', 'c'].indexOf(first) > -1) {
-                    this.formatDropDown.value = first === 'n' ? this.parent.localeObj.getConstant('number') : first === 'p' ?
-                        this.parent.localeObj.getConstant('percentage') : first === 'c' ? this.parent.localeObj.getConstant('currency') :
-                        this.parent.localeObj.getConstant('number');
-                    this.decimalDropDown.value = Number(fString.split('')[1]);
-                    this.groupingDropDown.value = format[i].useGrouping ? this.parent.localeObj.getConstant('true') :
-                        this.parent.localeObj.getConstant('false');
-                }
-                else {
-                    this.formatDropDown.value = this.parent.localeObj.getConstant('Custom');
-                    this.customText.value = fString;
-                }
+                var first = fString === '' ? '' : fString.split('')[0].toLowerCase();
+                var group = format[i].useGrouping ? this.parent.localeObj.getConstant('true') :
+                    this.parent.localeObj.getConstant('false');
+                this.updateFormattingDialog(fString, first, group);
                 isExist = true;
                 break;
             }
@@ -34653,16 +34682,70 @@ var NumberFormatting = /** @__PURE__ @class */ (function () {
             this.groupingDropDown.value = this.parent.localeObj.getConstant('true');
         }
     };
+    NumberFormatting.prototype.updateFormattingDialog = function (fString, first, group) {
+        if (fString.length === 2 && ['n', 'p', 'c'].indexOf(first) > -1) {
+            this.formatDropDown.value = first === 'n' ? this.parent.localeObj.getConstant('number') : first === 'p' ?
+                this.parent.localeObj.getConstant('percentage') : first === 'c' ? this.parent.localeObj.getConstant('currency') :
+                this.parent.localeObj.getConstant('number');
+            this.decimalDropDown.value = Number(fString.split('')[1]);
+            this.groupingDropDown.value = group;
+        }
+        else {
+            this.formatDropDown.value = this.parent.localeObj.getConstant('Custom');
+            this.customText.value = fString;
+        }
+    };
+    NumberFormatting.prototype.customUpdate = function () {
+        if (this.formatDropDown.value === this.parent.localeObj.getConstant('Custom')) {
+            var index = this.getIndexValue();
+            this.newFormat[index].format = this.customText.value;
+        }
+    };
     NumberFormatting.prototype.dropDownChange = function (args) {
+        var index = this.getIndexValue();
         if (args.value === this.parent.localeObj.getConstant('Custom')) {
             this.customText.disabled = false;
             this.groupingDropDown.enabled = false;
             this.decimalDropDown.enabled = false;
+            this.newFormat[index].format = this.customText.value;
         }
         else {
+            var text = this.formattedText();
+            this.newFormat[index].format = text;
             this.customText.disabled = true;
             this.groupingDropDown.enabled = true;
             this.decimalDropDown.enabled = true;
+            this.customText.value = '';
+        }
+    };
+    NumberFormatting.prototype.groupingChange = function () {
+        var index = this.getIndexValue();
+        this.newFormat[index].useGrouping = this.groupingDropDown.value === this.parent.localeObj.getConstant('true') ? true : false;
+    };
+    NumberFormatting.prototype.getIndexValue = function () {
+        var format = [];
+        for (var i = 0; i < this.newFormat.length; i++) {
+            format.push(this.newFormat[i].name);
+        }
+        var index = format.indexOf(this.valuesDropDown.value.toString());
+        return index;
+    };
+    NumberFormatting.prototype.decimalChange = function () {
+        var index = this.getIndexValue();
+        var text = this.formattedText();
+        this.newFormat[index].format = text;
+    };
+    NumberFormatting.prototype.formattedText = function () {
+        var text;
+        if (this.formatDropDown.value === this.parent.localeObj.getConstant('number') ||
+            this.formatDropDown.value === this.parent.localeObj.getConstant('percentage') ||
+            this.formatDropDown.value === this.parent.localeObj.getConstant('currency')) {
+            text = this.formatDropDown.value === this.parent.localeObj.getConstant('number') ? 'N' :
+                this.formatDropDown.value === this.parent.localeObj.getConstant('currency') ? 'C' : 'P';
+            return text += this.decimalDropDown.value;
+        }
+        else {
+            return text = this.customText.value;
         }
     };
     NumberFormatting.prototype.removeDialog = function () {
@@ -34675,33 +34758,23 @@ var NumberFormatting = /** @__PURE__ @class */ (function () {
     };
     NumberFormatting.prototype.updateFormatting = function () {
         var _this = this;
-        var text;
-        if (this.formatDropDown.value === this.parent.localeObj.getConstant('number') ||
-            this.formatDropDown.value === this.parent.localeObj.getConstant('percentage') ||
-            this.formatDropDown.value === this.parent.localeObj.getConstant('currency')) {
-            text = this.formatDropDown.value === this.parent.localeObj.getConstant('number') ? 'N' :
-                this.formatDropDown.value === this.parent.localeObj.getConstant('currency') ? 'C' : 'P';
-            text += this.decimalDropDown.value;
-        }
-        else {
-            text = this.customText.value;
-        }
-        var format = extend([], this.parent.dataSourceSettings.formatSettings, true);
+        var text = this.formattedText();
+        var index = this.getIndexValue();
+        this.newFormat.splice(index, 1);
+        var format = extend([], this.newFormat, true);
         if (this.valuesDropDown.value === this.parent.localeObj.getConstant('AllValues')) {
             var fieldList = this.parent.dataType === 'olap' ?
                 this.parent.olapEngineModule.fieldList : this.parent.engineModule.fieldList;
             for (var _i = 0, _a = Object.keys(fieldList); _i < _a.length; _i++) {
                 var key = _a[_i];
-                if (fieldList[key].type === 'number') {
-                    this.insertFormat(key, text);
-                }
+                this.insertFormat(key, text);
             }
         }
         else {
             this.insertFormat(this.valuesDropDown.value.toString(), text);
         }
         var eventArgs = {
-            formatSettings: PivotUtil.cloneFormatSettings(this.parent.dataSourceSettings.formatSettings),
+            formatSettings: PivotUtil.cloneFormatSettings(this.newFormat),
             formatName: this.valuesDropDown.value.toString(),
             cancel: false
         };
@@ -34731,7 +34804,7 @@ var NumberFormatting = /** @__PURE__ @class */ (function () {
             name: fieldName, format: text,
             useGrouping: this.groupingDropDown.value === this.parent.localeObj.getConstant('true') ? true : false
         };
-        var format = this.parent.dataSourceSettings.formatSettings;
+        var format = this.newFormat;
         for (var i = 0; i < format.length; i++) {
             if (format[i].name === fieldName) {
                 format[i] = newFormat;
@@ -34741,6 +34814,8 @@ var NumberFormatting = /** @__PURE__ @class */ (function () {
         if (!isExist) {
             format.push(newFormat);
         }
+        this.lastFormattedValue = [];
+        this.lastFormattedValue.push(newFormat);
     };
     /**
      * To add event listener.

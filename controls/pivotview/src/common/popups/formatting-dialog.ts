@@ -6,7 +6,7 @@ import { IAction, NumberFormattingEventArgs } from '../base/interface';
 import * as events from '../../common/base/constant';
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { FormatSettingsModel } from '../../pivotview/model/datasourcesettings-model';
-import { IFieldListOptions } from '../../base/engine';
+import { IFieldListOptions, IFormatSettings } from '../../base/engine';
 import { PivotUtil } from '../../base/util';
 
 /**
@@ -22,11 +22,15 @@ export class NumberFormatting implements IAction {
     private decimalDropDown: DropDownList;
     private customText: HTMLInputElement;
     private customLable: HTMLElement;
+    private newFormat: IFormatSettings[];
+    private lastFormattedValue: IFormatSettings[];
     constructor(parent?: PivotView) {
         this.parent = parent;
         this.parent.numberFormattingModule = this;
         this.removeEventListener();
         this.addEventListener();
+        this.newFormat = [];
+        this.lastFormattedValue = [];
     }
 
     /**
@@ -77,6 +81,33 @@ export class NumberFormatting implements IAction {
         this.dialog.isStringTemplate = true;
         this.dialog.appendTo(valueDialog);
         this.dialog.element.querySelector('.' + cls.DIALOG_HEADER).innerHTML = this.parent.localeObj.getConstant('numberFormat');
+        let formatObject: FormatSettingsModel;
+        this.newFormat = [{ name: this.parent.localeObj.getConstant('AllValues'), format: 'N0', useGrouping: true }];
+        let format: string[] = [];
+        for (let i: number = 0; i < this.parent.dataSourceSettings.values.length; i++) {
+            for (let j: number = 0; j < this.parent.dataSourceSettings.formatSettings.length; j++) {
+                if (this.parent.dataSourceSettings.formatSettings[j].name === this.parent.dataSourceSettings.values[i].name) {
+                    formatObject = {
+                        name: this.parent.dataSourceSettings.formatSettings[j].name,
+                        format: this.parent.dataSourceSettings.formatSettings[j].format,
+                        useGrouping: this.parent.dataSourceSettings.formatSettings[j].useGrouping
+                    };
+                    this.newFormat.push(formatObject);
+                }
+            }
+        }
+        for (let i: number = 0; i < this.newFormat.length; i++) {
+            format.push(this.newFormat[i].name);
+        }
+        for (let j: number = 0; j < this.parent.dataSourceSettings.values.length; j++) {
+            if (format.indexOf(this.parent.dataSourceSettings.values[j].name) === -1) {
+                formatObject = {
+                    name: this.parent.dataSourceSettings.values[j].name, format: 'N0',
+                    useGrouping: true
+                };
+                this.newFormat.push(formatObject);
+            }
+        }
         this.renderControls();
     }
 
@@ -183,7 +214,8 @@ export class NumberFormatting implements IAction {
             }
             this.valuesDropDown = new DropDownList({
                 dataSource: valueFields, fields: { text: 'name', value: 'field' }, enableRtl: this.parent.enableRtl,
-                index: 0, cssClass: cls.FORMATTING_VALUE_DROP, change: this.valueChange.bind(this), width: '100%'
+                index: 0, cssClass: cls.FORMATTING_VALUE_DROP, change: this.valueChange.bind(this), width: '100%',
+                open: this.customUpdate.bind(this)
             });
             this.valuesDropDown.isStringTemplate = true;
             this.valuesDropDown.appendTo('#' + this.parent.element.id + '_FormatValueDrop');
@@ -193,7 +225,7 @@ export class NumberFormatting implements IAction {
                 { index: 0, name: this.parent.localeObj.getConstant('number') },
                 { index: 1, name: this.parent.localeObj.getConstant('currency') },
                 { index: 2, name: this.parent.localeObj.getConstant('percentage') },
-                { index: 2, name: this.parent.localeObj.getConstant('Custom') }
+                { index: 3, name: this.parent.localeObj.getConstant('Custom') }
             ];
             this.formatDropDown = new DropDownList({
                 dataSource: fields, fields: { text: 'name', value: 'name' },
@@ -208,9 +240,10 @@ export class NumberFormatting implements IAction {
                 { index: 0, name: this.parent.localeObj.getConstant('true') },
                 { index: 1, name: this.parent.localeObj.getConstant('false') }
             ];
+
             this.groupingDropDown = new DropDownList({
                 dataSource: fields, fields: { text: 'name', value: 'name' }, enableRtl: this.parent.enableRtl,
-                index: 0, cssClass: cls.FORMATTING_GROUPING_DROP, width: '100%'
+                index: 0, cssClass: cls.FORMATTING_GROUPING_DROP, width: '100%', change: this.groupingChange.bind(this)
             });
             this.groupingDropDown.isStringTemplate = true;
             this.groupingDropDown.appendTo('#' + this.parent.element.id + '_GroupingDrop');
@@ -231,7 +264,7 @@ export class NumberFormatting implements IAction {
             ];
             this.decimalDropDown = new DropDownList({
                 dataSource: fields, fields: { text: 'name', value: 'name' }, enableRtl: this.parent.enableRtl,
-                index: 0, cssClass: cls.FORMATTING_DECIMAL_DROP, popupHeight: 150, width: '100%'
+                index: 0, cssClass: cls.FORMATTING_DECIMAL_DROP, popupHeight: 150, width: '100%', change: this.decimalChange.bind(this)
             });
             this.decimalDropDown.isStringTemplate = true;
             this.decimalDropDown.appendTo('#' + this.parent.element.id + '_DecimalDrop');
@@ -239,26 +272,26 @@ export class NumberFormatting implements IAction {
         if (this.formatDropDown.value !== this.parent.localeObj.getConstant('Custom')) {
             this.customText.disabled = true;
         }
+        if (this.lastFormattedValue.length !== 0) {
+            this.valuesDropDown.value = this.lastFormattedValue[0].name;
+            let fString: string = this.lastFormattedValue[0].format;
+            let first: string = fString === '' ? '' : fString.split('')[0].toLowerCase();
+            let group: string = this.lastFormattedValue[0].useGrouping ? this.parent.localeObj.getConstant('true') :
+                this.parent.localeObj.getConstant('false');
+            this.updateFormattingDialog(fString, first, group);
+        }
     }
 
     private valueChange(args: ChangeEventArgs): void {
-        let format: FormatSettingsModel[] = this.parent.dataSourceSettings.formatSettings;
+        let format: FormatSettingsModel[] = this.newFormat;
         let isExist: boolean = false;
         for (let i: number = 0; i < format.length; i++) {
             if (format[i].name === args.value) {
                 let fString: string = format[i].format;
-                let first: string = fString.split('')[0].toLowerCase();
-                if (fString.length === 2 && ['n', 'p', 'c'].indexOf(first) > -1) {
-                    this.formatDropDown.value = first === 'n' ? this.parent.localeObj.getConstant('number') : first === 'p' ?
-                        this.parent.localeObj.getConstant('percentage') : first === 'c' ? this.parent.localeObj.getConstant('currency') :
-                            this.parent.localeObj.getConstant('number');
-                    this.decimalDropDown.value = Number(fString.split('')[1]);
-                    this.groupingDropDown.value = format[i].useGrouping ? this.parent.localeObj.getConstant('true') :
-                        this.parent.localeObj.getConstant('false');
-                } else {
-                    this.formatDropDown.value = this.parent.localeObj.getConstant('Custom');
-                    this.customText.value = fString;
-                }
+                let first: string = fString === '' ? '' : fString.split('')[0].toLowerCase();
+                let group: string = format[i].useGrouping ? this.parent.localeObj.getConstant('true') :
+                    this.parent.localeObj.getConstant('false');
+                this.updateFormattingDialog(fString, first, group);
                 isExist = true;
                 break;
             }
@@ -270,15 +303,73 @@ export class NumberFormatting implements IAction {
         }
     }
 
+    private updateFormattingDialog(fString: string, first: string, group: string): void {
+        if (fString.length === 2 && ['n', 'p', 'c'].indexOf(first) > -1) {
+            this.formatDropDown.value = first === 'n' ? this.parent.localeObj.getConstant('number') : first === 'p' ?
+                this.parent.localeObj.getConstant('percentage') : first === 'c' ? this.parent.localeObj.getConstant('currency') :
+                    this.parent.localeObj.getConstant('number');
+            this.decimalDropDown.value = Number(fString.split('')[1]);
+            this.groupingDropDown.value = group;
+        } else {
+            this.formatDropDown.value = this.parent.localeObj.getConstant('Custom');
+            this.customText.value = fString;
+        }
+    }
+
+    private customUpdate(): void {
+        if (this.formatDropDown.value === this.parent.localeObj.getConstant('Custom')) {
+            let index: number = this.getIndexValue();
+            this.newFormat[index].format = this.customText.value;
+        }
+    }
+
     private dropDownChange(args: ChangeEventArgs): void {
+        let index: number = this.getIndexValue();
         if (args.value === this.parent.localeObj.getConstant('Custom')) {
             this.customText.disabled = false;
             this.groupingDropDown.enabled = false;
             this.decimalDropDown.enabled = false;
+            this.newFormat[index].format = this.customText.value;
         } else {
+            let text: string = this.formattedText();
+            this.newFormat[index].format = text;
             this.customText.disabled = true;
             this.groupingDropDown.enabled = true;
             this.decimalDropDown.enabled = true;
+            this.customText.value = '';
+        }
+    }
+
+    private groupingChange(): void {
+        let index: number = this.getIndexValue();
+        this.newFormat[index].useGrouping = this.groupingDropDown.value === this.parent.localeObj.getConstant('true') ? true : false;
+    }
+
+    private getIndexValue(): number {
+        let format: string[] = [];
+        for (let i: number = 0; i < this.newFormat.length; i++) {
+            format.push(this.newFormat[i].name);
+        }
+        let index: number = format.indexOf(this.valuesDropDown.value.toString());
+        return index;
+    }
+
+    private decimalChange(): void {
+        let index: number = this.getIndexValue();
+        let text: string = this.formattedText();
+        this.newFormat[index].format = text;
+    }
+
+    private formattedText(): string {
+        let text: string;
+        if (this.formatDropDown.value === this.parent.localeObj.getConstant('number') ||
+            this.formatDropDown.value === this.parent.localeObj.getConstant('percentage') ||
+            this.formatDropDown.value === this.parent.localeObj.getConstant('currency')) {
+            text = this.formatDropDown.value === this.parent.localeObj.getConstant('number') ? 'N' :
+                this.formatDropDown.value === this.parent.localeObj.getConstant('currency') ? 'C' : 'P';
+            return text += this.decimalDropDown.value;
+        } else {
+            return text = this.customText.value;
         }
     }
 
@@ -290,30 +381,21 @@ export class NumberFormatting implements IAction {
     }
 
     private updateFormatting(): void {
-        let text: string;
-        if (this.formatDropDown.value === this.parent.localeObj.getConstant('number') ||
-            this.formatDropDown.value === this.parent.localeObj.getConstant('percentage') ||
-            this.formatDropDown.value === this.parent.localeObj.getConstant('currency')) {
-            text = this.formatDropDown.value === this.parent.localeObj.getConstant('number') ? 'N' :
-                this.formatDropDown.value === this.parent.localeObj.getConstant('currency') ? 'C' : 'P';
-            text += this.decimalDropDown.value;
-        } else {
-            text = this.customText.value;
-        }
-        let format: FormatSettingsModel[] = extend([], this.parent.dataSourceSettings.formatSettings, true) as FormatSettingsModel[];
+        let text: string = this.formattedText();
+        let index: number = this.getIndexValue();
+        this.newFormat.splice(index, 1);
+        let format: FormatSettingsModel[] = extend([], this.newFormat, true) as FormatSettingsModel[];
         if (this.valuesDropDown.value === this.parent.localeObj.getConstant('AllValues')) {
             let fieldList: IFieldListOptions = this.parent.dataType === 'olap' ?
                 this.parent.olapEngineModule.fieldList : this.parent.engineModule.fieldList;
             for (let key of Object.keys(fieldList)) {
-                if (fieldList[key].type === 'number') {
-                    this.insertFormat(key, text);
-                }
+                this.insertFormat(key, text);
             }
         } else {
             this.insertFormat(this.valuesDropDown.value.toString(), text);
         }
         let eventArgs: NumberFormattingEventArgs = {
-            formatSettings: PivotUtil.cloneFormatSettings(this.parent.dataSourceSettings.formatSettings),
+            formatSettings: PivotUtil.cloneFormatSettings(this.newFormat),
             formatName: this.valuesDropDown.value.toString(),
             cancel: false
         };
@@ -334,7 +416,6 @@ export class NumberFormatting implements IAction {
                 this.parent.setProperties({ dataSourceSettings: { formatSettings: format } }, true);
             }
         });
-
     }
 
     private insertFormat(fieldName: string, text: string): void {
@@ -343,7 +424,7 @@ export class NumberFormatting implements IAction {
             name: fieldName, format: text,
             useGrouping: this.groupingDropDown.value === this.parent.localeObj.getConstant('true') ? true : false
         };
-        let format: FormatSettingsModel[] = this.parent.dataSourceSettings.formatSettings;
+        let format: FormatSettingsModel[] = this.newFormat;
         for (let i: number = 0; i < format.length; i++) {
             if (format[i].name === fieldName) {
                 format[i] = newFormat;
@@ -353,6 +434,8 @@ export class NumberFormatting implements IAction {
         if (!isExist) {
             format.push(newFormat);
         }
+        this.lastFormattedValue = [];
+        this.lastFormattedValue.push(newFormat);
     }
 
     /**

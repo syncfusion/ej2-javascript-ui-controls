@@ -9205,9 +9205,9 @@ export class Selection {
         return undefined;
     }
     /**
-     * @private
+     * Returns true if selection is inside the edit region
      */
-    public isSelectionIsAtEditRegion(update: boolean): boolean {
+    public isSelectionInEditRegion(): boolean {
         if (!this.documentHelper.isDocumentProtected) {
             return false;
         }

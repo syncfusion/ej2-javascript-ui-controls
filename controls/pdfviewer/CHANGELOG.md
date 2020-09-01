@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 18.2.56 (2020-09-01)
+
+### PDF Viewer
+
+#### New Features
+
+- `#289233` - Provided the support to add expiration timing for cache.
+
+#### Bug Fixes
+
+- `#289417` - Now, the annotation toolbar position is maintained correctly.
+
 ## 18.2.47 (2020-07-28)
 
 ### PDF Viewer

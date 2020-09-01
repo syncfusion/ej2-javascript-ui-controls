@@ -503,6 +503,43 @@ describe('Summary with Sorting', () => {
     });
   });
 
+  describe(' Total Summary format', () => {
+    let TreegridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      TreegridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          aggregates: [{
+            showChildSummary: false,
+            columns: [{
+                type: 'Sum',
+                field: 'duration',
+                columnName: 'duration',
+                format: 'C2',
+                footerTemplate: 'Sum: ${Sum}'
+             }]
+          }],
+          columns: [
+            { field: 'taskID', headerText: 'Order ID', width: 120 },
+            { field: 'taskName', headerText: 'Customer ID', width: 150 },
+            { field: 'duration', headerText: 'Freight', type: "number", width: 150 },
+            { field: 'progress', headerText: 'Ship Name', width: 150 },
+            { field: 'startDate', headerText: 'start Date', type: "datetime", format: 'yMd', width: 150 }
+          ]
+        },done);
+    });
+    it('Summary Row format', () => {
+       expect(!TreegridObj.getRows()[5].classList.contains(".e-summaryrow")).toBe(true);
+       expect(TreegridObj.getFooterContent()).not.toBeNull();
+       expect(TreegridObj.element.getElementsByClassName('e-gridfooter')[0].getElementsByTagName('tfoot')[0].querySelector('.e-templatecell').innerHTML === "Sum: $150.00").toBe(true);
+      });
+    afterAll(() => {
+      destroy(TreegridObj);
+    });
+  });
+  
   it('memory leak', () => {
     profile.sample();
     let average: any = inMB(profile.averageChange)

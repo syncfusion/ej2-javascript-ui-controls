@@ -1,4 +1,4 @@
-import { Property, Complex, ChildProperty} from '@syncfusion/ej2-base';import { measureText, Rect, TextOption, Size, PathOption, CanvasRenderer } from '@syncfusion/ej2-svg-base';import { Chart, ILegendRegions } from '../../chart';import { Font, Border, Margin } from '../model/base';import { Theme } from '../model/theme';import { MarginModel, FontModel, BorderModel } from '../model/base-model';import { subtractThickness, Thickness, drawSymbol, ChartLocation } from '../utils/helper';import { RectOption, textElement, stringToNumber } from '../utils/helper';import { removeElement, showTooltip, getElement, appendChildElement } from '../utils/helper';import { LegendPosition, LegendShape, ChartSeriesType, ChartShape } from '../../chart/utils/enum';import { AccumulationType } from '../../accumulation-chart/model/enum';import { AccumulationChart } from '../../accumulation-chart/accumulation';import { BulletChart } from '../../bullet-chart/bullet-chart';import { Alignment } from '../utils/enum';
+import { Property, Complex, ChildProperty} from '@syncfusion/ej2-base';import { measureText, Rect, TextOption, Size, PathOption, CanvasRenderer } from '@syncfusion/ej2-svg-base';import { Chart, ILegendRegions } from '../../chart';import { Font, Border, Margin } from '../model/base';import { Theme } from '../model/theme';import { MarginModel, FontModel, BorderModel } from '../model/base-model';import { subtractThickness, Thickness, drawSymbol, ChartLocation, titlePositionX, getTitle, textTrim } from '../utils/helper';import { RectOption, textElement, stringToNumber } from '../utils/helper';import { removeElement, showTooltip, getElement, appendChildElement } from '../utils/helper';import { LegendPosition, LegendShape, ChartSeriesType, ChartShape } from '../../chart/utils/enum';import { AccumulationType } from '../../accumulation-chart/model/enum';import { AccumulationChart } from '../../accumulation-chart/accumulation';import { BulletChart } from '../../bullet-chart/bullet-chart';import { Alignment, LegendTitlePosition } from '../utils/enum';
 
 /**
  * Interface for a class Location
@@ -153,6 +153,35 @@ export interface LegendSettingsModel {
      * @default 3
      */
     tabIndex?: number;
+
+    /**
+     * Title for legends.
+     * @default null
+     */
+    title?: string;
+
+    /**
+     * Options to customize the legend title.
+     */
+    titleStyle?: FontModel;
+
+    /**
+     * legend title position
+     * @default 'Top'
+     */
+    titlePosition?: LegendTitlePosition;
+
+    /**
+     * maximum width for the legend title.
+     * @default 100
+     */
+    maximumTitleWidth?: number;
+
+    /**
+     * If set to true, legend will be visible using pages.
+     * @default true
+     */
+    enablePages?: boolean;
 
 }
 

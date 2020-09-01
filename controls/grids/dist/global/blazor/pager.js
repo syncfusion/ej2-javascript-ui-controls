@@ -3084,7 +3084,7 @@ var RowModelGenerator = /** @class */ (function () {
     }
     RowModelGenerator.prototype.generateRows = function (data, args) {
         var rows = [];
-        var startIndex = this.parent.enableVirtualization ? args.startIndex : 0;
+        var startIndex = this.parent.enableVirtualization && args ? args.startIndex : 0;
         startIndex = this.parent.enableInfiniteScrolling ? this.getInfiniteIndex(args) : startIndex;
         for (var i = 0, len = Object.keys(data).length; i < len; i++, startIndex++) {
             rows[i] = this.generateRow(data[i], startIndex);
@@ -12248,7 +12248,7 @@ var Clipboard = /** @class */ (function () {
                     if (!args.cancel) {
                         if (grid.editModule) {
                             if (col.type === 'number') {
-                                this.parent.editModule.updateCell(rIdx, col.field, parseInt(args.data, 10));
+                                this.parent.editModule.updateCell(rIdx, col.field, parseFloat(args.data));
                             }
                             else {
                                 grid.editModule.updateCell(rIdx, col.field, args.data);
