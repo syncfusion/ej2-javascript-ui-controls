@@ -751,4 +751,14 @@ describe('PageSetup Dialog Test Case Validation - 9', function () {
         expect((dialog as any).paperSize.value).toBe('a4');
         dialog.closePageSetupDialog();
     });
+    it('Custom size height and width validation', () => {
+        editor.openBlank();
+        var defaultSectionFormat = { pageWidth: 200, pageHeight: 200 }            
+        editor.setDefaultSectionFormat(defaultSectionFormat);    
+        editor.openBlank();
+        dialog.loadPageSetupDialog();        
+        expect((dialog as any).widthBox.value).toBe(200);
+        expect((dialog as any).heightBox.value).toBe(200);
+        dialog.closePageSetupDialog();
+    });
 });

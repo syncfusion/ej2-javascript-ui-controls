@@ -1229,4 +1229,40 @@ describe('RTE CR issues', () => {
             destroy(rteObj);
         });
     });
+    describe('BLAZ-6889 - RichTextEditor value changes are not maintained in source code view after focusing out', () => {
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        let rteEle: HTMLElement;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['SourceCode']
+                }
+            });
+            rteObj.value = 'Initial Content';
+            rteEle = rteObj.element;
+            controlId = rteEle.id;           
+            rteObj.dataBind();
+            done();
+        });
+        it('Checking Source code value changes after focusing out', (done) => {
+            let sourceCode: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_SourceCode');
+            sourceCode.click();
+            rteObj.focusIn();
+            let item: HTMLInputElement = rteObj.element.querySelector('.e-rte-srctextarea');
+            item.value = 'rich text editor'; 
+            rteObj.isBlur = true; 
+            rteObj.focusOut();            
+            rteObj.dataBind();                     
+            setTimeout(() => {
+                expect(rteObj.value === '<p>rich text editor</p>').toBe(true);
+                expect(item.value === '<p>rich text editor</p>').toBe(true);
+                done();
+              }, 100);
+            done();
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+    });
 });

@@ -33,6 +33,7 @@ interface ParseOptions {
     parserRegex?: RegExp;
     evalposition?: { [key: string]: ValuePosition };
     isIslamic?: boolean;
+    culture?: string;
 }
 
 /**
@@ -89,7 +90,7 @@ export class DateParser {
             throwError('Format options or type given must be invalid');
         } else {
             resPattern = base.ConvertDateToWeekFormat(resPattern);
-            parseOptions = { isIslamic: base.islamicRegex.test(option.calendar), pattern: resPattern, evalposition: {} };
+            parseOptions = { isIslamic: base.islamicRegex.test(option.calendar), pattern: resPattern, evalposition: {}, culture: culture };
             let patternMatch: string[] = resPattern.match(base.dateParseRegex) || [];
             let length: number = patternMatch.length;
             let gmtCorrection: number = 0;
@@ -348,7 +349,8 @@ export class DateParser {
                             retOptions[prop] = val;
                         }
                     } else {
-                        matchString = prop === 'month' && !(<any>parseOptions).isIslamic ? matchString[0].toUpperCase() + matchString.substring(1).toLowerCase() : matchString;
+                        matchString = ((prop === 'month') && (!(<any>parseOptions).isIslamic) && ((<any>parseOptions).culture === 'en' || (<any>parseOptions).culture === 'en-GB' || (<any>parseOptions).culture === 'en-US')) 
+                        ? matchString[0].toUpperCase() + matchString.substring(1).toLowerCase() : matchString;
                         (<any>retOptions)[prop] = (<any>parseOptions)[prop][matchString];
                     }
                 }

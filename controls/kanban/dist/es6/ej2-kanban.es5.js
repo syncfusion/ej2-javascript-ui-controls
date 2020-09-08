@@ -1112,7 +1112,7 @@ var Crud = /** @__PURE__ @class */ (function () {
                 if (data[this_1.parent.sortSettings.field]) {
                     order = data[this_1.parent.sortSettings.field];
                 }
-                else {
+                else if (args.requestType !== 'cardChange') {
                     if (customOrder === 1) {
                         initialOrder = columnAllDatas.slice(-1)[0][this_1.parent.sortSettings.field];
                     }
@@ -1309,7 +1309,10 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
             var isDrag = (targetKey === this.getColumnKey(closest(this.dragObj.draggedClone, '.' + CONTENT_CELLS_CLASS)))
                 ? true : false;
             if (keys.length === 1 || isDrag) {
-                if (target.classList.contains(CARD_CLASS) || target.classList.contains(DRAGGED_CLONE_CLASS)) {
+                if (target.classList.contains(DRAGGED_CLONE_CLASS)) {
+                    this.removeElement(this.dragObj.targetClone);
+                }
+                if (target.classList.contains(CARD_CLASS)) {
                     var element = target.classList.contains(DRAGGED_CLONE_CLASS) ?
                         (target.previousElementSibling.classList.contains(DRAGGED_CARD_CLASS) ? null : target.previousElementSibling)
                         : target.previousElementSibling;
@@ -1326,7 +1329,13 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
                     target.insertAdjacentElement(insertClone, this.dragObj.targetClone);
                 }
                 else if (target.classList.contains(CONTENT_CELLS_CLASS) && !closest(target, '.' + SWIMLANE_ROW_CLASS)) {
-                    target.querySelector('.' + CARD_WRAPPER_CLASS).appendChild(this.dragObj.targetClone);
+                    if (target.querySelectorAll('.' + DRAGGED_CARD_CLASS).length !== 0 &&
+                        target.querySelectorAll('.' + CARD_CLASS + ':not(.e-kanban-dragged-card):not(.e-cloned-card)').length === 0) {
+                        return;
+                    }
+                    else {
+                        target.querySelector('.' + CARD_WRAPPER_CLASS).appendChild(this.dragObj.targetClone);
+                    }
                 }
                 else if (target.classList.contains(CARD_WRAPPER_CLASS) && !closest(target, '.' + SWIMLANE_ROW_CLASS)
                     && contentCell.querySelectorAll('.' + CARD_CLASS).length === 0) {

@@ -476,7 +476,8 @@ export class CheckBoxSelection {
             let compiledString: Function;
             this.selectAllSpan.textContent = '';
             compiledString = compile(template);
-            for (let item of compiledString({}, null, null, null, !this.parent.isStringTemplate)) {
+            let templateName: string = unSelect ? 'unSelectAllText' : 'selectAllText';
+            for (let item of compiledString({}, this.parent, templateName, null, !this.parent.isStringTemplate)) {
                 this.selectAllSpan.textContent = item.textContent;
             }
         } else {

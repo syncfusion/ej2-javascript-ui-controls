@@ -14945,6 +14945,7 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
         uploadObj.createFileList(fileData);
         uploadObj.filesData.push(fileData[0]);
         /* tslint:enable */
+        rawFile = fileData;
         uploadObj.upload(fileData);
         popupObj.element.getElementsByClassName('e-file-select-wrap')[0].style.display = 'none';
         detach(popupObj.element.querySelector('.e-rte-dialog-upload .e-file-select-wrap'));
@@ -21693,9 +21694,13 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
     };
     RichTextEditor.prototype.getUpdatedValue = function () {
         var value;
+        var getTextArea = this.element.querySelector('.e-rte-srctextarea');
         if (this.editorMode === 'HTML') {
             value = (this.inputElement.innerHTML === '<p><br></p>') ? null : this.enableHtmlEncode ?
                 this.encode(decode(this.inputElement.innerHTML)) : this.inputElement.innerHTML;
+            if (getTextArea && getTextArea.style.display === 'block') {
+                value = getTextArea.value;
+            }
         }
         else {
             value = this.inputElement.value === '' ? null :

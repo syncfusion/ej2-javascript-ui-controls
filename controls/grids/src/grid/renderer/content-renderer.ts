@@ -1,4 +1,4 @@
-import { Droppable, DropEventArgs, isBlazor, addClass } from '@syncfusion/ej2-base';
+import { Droppable, DropEventArgs, isBlazor, addClass, isUndefined } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { setStyleAttribute, remove, updateBlazorTemplate, removeClass } from '@syncfusion/ej2-base';
 import { getUpdateUsingRaf, appendChildren } from '../base/util';
@@ -347,6 +347,9 @@ export class ContentRender implements IRenderer {
             mCont.querySelector('tbody').innerHTML = '';
         }
         let idx: number = modelData[0].cells[0].index;
+        if (isUndefined(idx) && this.parent.getFrozenColumns() && this.parent.isRowDragable()) {
+            idx = modelData[0].cells[1].index;
+        }
         if (this.parent.enableColumnVirtualization && this.parent.getFrozenColumns() && args.renderMovableContent
             && args.requestType === 'virtualscroll' && mCont.scrollLeft > 0 && args.virtualInfo.columnIndexes[0] !== 0) {
             idx = this.parent.getFrozenColumns();
@@ -835,7 +838,8 @@ export class ContentRender implements IRenderer {
             let displayVal: string = column.visible === true ? '' : 'none';
             if (idx !== -1 && testRow && idx < testRow.cells.length) {
                 if (frzCols) {
-                    if (idx < frzCols) {
+                    let normalizedfrzCols: number = this.parent.isRowDragable() ? frzCols + 1 : frzCols;
+                    if (idx < normalizedfrzCols) {
                         setStyleAttribute(<HTMLElement>this.getColGroup().childNodes[idx], { 'display': displayVal });
                         let infiniteFreezeData: Row<Column>[] = this.infiniteRowVisibility(true);
                         contentrows = infiniteFreezeData ? infiniteFreezeData : this.freezeRows;
@@ -885,7 +889,8 @@ export class ContentRender implements IRenderer {
                     removeClass([tr[trs[i]].querySelectorAll('td.e-rowcell')[idx]], ['e-hide']);
                 }
                 if (this.parent.isRowDragable()) {
-                    rows[trs[i]].cells[idx + 1].visible = displayVal === '' ? true : false;
+                    let index: number = this.parent.getFrozenColumns() ? idx : idx + 1;
+                    rows[trs[i]].cells[index].visible = displayVal === '' ? true : false;
                 } else {
                     rows[trs[i]].cells[idx].visible = displayVal === '' ? true : false;
                 }
@@ -924,7 +929,7 @@ export class ContentRender implements IRenderer {
 
     private initializeContentDrop(): void {
         let gObj: IGrid = this.parent;
-        let drop: Droppable = new Droppable(gObj.getContent() as HTMLElement, {
+        let drop: Droppable = new Droppable(gObj.element as HTMLElement, {
             accept: '.e-dragclone',
             drop: this.drop as (e: DropEventArgs) => void
         });

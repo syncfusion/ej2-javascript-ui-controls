@@ -21,6 +21,7 @@ export class FreezeRowModelGenerator implements IModelGenerator<Column> {
 
     public generateRows(data: Object, notifyArgs?: NotifyArgs, virtualRows?: Row<Column>[]): Row<Column>[] {
         let frzCols: number = this.parent.getFrozenColumns();
+        frzCols = frzCols && this.parent.isRowDragable() ? frzCols + 1 : frzCols;
         if (this.isFrzLoad % 2 !== 0 && notifyArgs.requestType === 'virtualscroll' && notifyArgs.virtualInfo.sentinelInfo.axis === 'X') {
             this.isFrzLoad++;
             return null;

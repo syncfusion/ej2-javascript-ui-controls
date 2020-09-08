@@ -622,7 +622,7 @@ export interface ResizeClasses {
         let rect: HTMLElement = closest(this.element, resizeClassList.header) as HTMLElement;
         let tr: HTMLElement[] = [].slice.call(this.parent.getHeaderContent().querySelectorAll('tr'));
         let frzCols: number = this.parent.options.frozenColumns;
-        if (frzCols) {
+        if (frzCols && rect.parentElement.children.length && !rect.parentElement.children[0].classList.contains('e-stackedheadercell')) {
             if (rect.parentElement.children.length !== frzCols) {
                 tr.splice(0, tr.length / 2);
             } else {

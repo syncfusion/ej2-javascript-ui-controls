@@ -49,11 +49,11 @@ export class TextSearch {
             textToFind = textToFind.split('\\').join('\\\\');
         }
         // tslint:disable-next-line:max-line-length
-        if (textToFind.indexOf('(') > -1 || textToFind.indexOf(')') > -1 || textToFind.indexOf('.') > -1 || textToFind.indexOf('[') > -1 || textToFind.indexOf(']') > -1 || textToFind.indexOf('$') > -1) {
+        if (textToFind.indexOf('(') > -1 || textToFind.indexOf(')') > -1 || textToFind.indexOf('.') > -1 || textToFind.indexOf('[') > -1 || textToFind.indexOf(']') > -1 || textToFind.indexOf('$') > -1 || textToFind.indexOf('{') > -1 || textToFind.indexOf('}') > -1 || textToFind.indexOf('*') > -1 || textToFind.indexOf('|') > -1 || textToFind.indexOf('^') > -1) {
             let text: string = '';
             for (let i: number = 0; i < textToFind.length; i++) {
                 // tslint:disable-next-line:max-line-length
-                if (textToFind[i] === '(' || textToFind[i] === ')' || textToFind[i] === '.' || textToFind[i] === '[' || textToFind[i] === ']' || textToFind[i] === '$') {
+                if (textToFind[i] === '(' || textToFind[i] === ')' || textToFind[i] === '.' || textToFind[i] === '[' || textToFind[i] === ']' || textToFind[i] === '$' || textToFind[i] === '{' || textToFind[i] === '}' || textToFind[i] === '*' || textToFind[i] === '|' || textToFind[i] === '^') {
                     text += '\\' + textToFind[i];
                 } else {
                     text += textToFind[i];

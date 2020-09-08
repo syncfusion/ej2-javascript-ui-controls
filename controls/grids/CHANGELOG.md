@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+### Grid
+
+#### Bug Fixes
+
+- `#288147` - Script error while using `addRecord` in `IE11`, has been fixed.
+- `#288292` - copy and paste in `mac os` issue has been resolved.
+- `#290651` - column chooser `pop-up` is hidden partially has been fixed.
+- `#290215` - Checkbox selection issue when delete records, has been fixed.
+
 ## 18.2.56 (2020-09-01)
 
 ### Grid
@@ -12,8 +21,6 @@
 - `#289421` - `AutoFill` functionality issue when `frozen` columns, has been fixed.
 - `#289539` - Script error while using `commandcolumns` with `virtualization` has been fixed.
 - `#290636` - Decimal value paste issue has been fixed.
-
-## 18.2.55 (2020-08-25)
 
 ## 18.2.55 (2020-08-25)
 

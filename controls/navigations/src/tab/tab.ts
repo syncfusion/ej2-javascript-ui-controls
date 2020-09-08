@@ -222,6 +222,12 @@ export class TabItem extends ChildProperty<TabItem> {
     @Property(true)
     public visible: boolean;
 }
+
+/** @hidden */
+interface EJ2Instance extends HTMLElement {
+    ej2_instances: Object[];
+}
+
 /**
  * Tab is a content panel to show multiple contents in a single space, one at a time.
  * Each Tab item has an associated content, that will be displayed based on the active Tab header item.
@@ -487,6 +493,16 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             this.element.removeAttribute(val);
         });
         this.expTemplateContent();
+        let subControls: NodeListOf<Element> = this.element.querySelectorAll('.e-control');
+        [].slice.call(subControls).forEach((node: HTMLElement): void => {
+            let instances: Object[] = (node as EJ2Instance).ej2_instances;
+            if (instances.length > 0) {
+                let instance: Tab = instances[0] as Tab;
+                if (instance) {
+                    instance.destroy();
+                }
+            }
+        });
         if (!this.isTemplate) {
             while (this.element.firstElementChild) {
                 remove(this.element.firstElementChild);

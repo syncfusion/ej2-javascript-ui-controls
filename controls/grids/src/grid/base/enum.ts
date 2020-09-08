@@ -683,3 +683,14 @@ export enum AggregateTemplateType {
     GroupFooter = 'GroupFooter',
     Footer = 'Footer',
 }
+
+/** 
+ * Defines mode of resizing.
+ * * Normal
+ * * Auto
+ */
+export type ResizeMode =
+    /**  Columns will not be adjusted to fit the remaining space */
+    'Normal' |
+    /**  Resized column width will be adjusted by other columns automatically */
+    'Auto';

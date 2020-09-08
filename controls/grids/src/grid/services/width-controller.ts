@@ -109,6 +109,7 @@ export class ColumnWidthService {
         let fWidth: string = formatUnit(width);
         let headerCol: HTMLTableColElement;
         let frzCols: number = this.parent.getFrozenColumns();
+        frzCols = frzCols && this.parent.isRowDragable() ? frzCols + 1 : frzCols;
         let mHdr: Element = this.parent.getHeaderContent().querySelector('.e-movableheader');
         let mCont: HTMLElement = <HTMLTableColElement>this.parent.getContent().querySelector('.e-movablecontent');
         if (frzCols && index >= frzCols && mHdr && mHdr.querySelector('colgroup')) {
@@ -229,6 +230,7 @@ export class ColumnWidthService {
 
     private setWidthToFrozenTable(): void {
         let freezeWidth: string = this.calcMovableOrFreezeColWidth('freeze');
+        freezeWidth = this.isAutoResize() ? '100%' : freezeWidth;
         (this.parent.getHeaderTable() as HTMLTableElement).style.width = freezeWidth;
         (this.parent.getContentTable() as HTMLTableElement).style.width = freezeWidth;
     }
@@ -242,6 +244,7 @@ export class ColumnWidthService {
         } else if (!isColUndefined && !isWidthAuto) {
             movableWidth = this.calcMovableOrFreezeColWidth('movable');
         }
+        movableWidth = this.isAutoResize() ? '100%' : movableWidth;
         if (this.parent.getHeaderContent().querySelector('.e-movableheader').firstElementChild) {
             (this.parent.getHeaderContent().querySelector('.e-movableheader').firstElementChild as HTMLTableElement).style.width
                 = movableWidth;
@@ -251,10 +254,12 @@ export class ColumnWidthService {
     }
     private setWidthToFrozenEditTable(): void {
         let freezeWidth: string = this.calcMovableOrFreezeColWidth('freeze');
+        freezeWidth = this.isAutoResize() ? '100%' : freezeWidth;
         (this.parent.element.querySelectorAll('.e-table.e-inline-edit')[0] as HTMLTableElement).style.width = freezeWidth;
     }
     private setWidthToMovableEditTable(): void {
         let movableWidth: string = this.calcMovableOrFreezeColWidth('movable');
+        movableWidth = this.isAutoResize() ? '100%' : movableWidth;
         (this.parent.element.querySelectorAll('.e-table.e-inline-edit')[1] as HTMLTableElement).style.width = movableWidth;
     }
     public setWidthToTable(): void {
@@ -266,6 +271,7 @@ export class ColumnWidthService {
             if (this.parent.detailTemplate || this.parent.childGrid) {
                 this.setColumnWidth(new Column({ width: '30px' }));
             }
+            tWidth = this.isAutoResize() ? '100%' : tWidth;
             (this.parent.getHeaderTable() as HTMLTableElement).style.width = tWidth;
             (this.parent.getContentTable() as HTMLTableElement).style.width = tWidth;
         }
@@ -276,5 +282,8 @@ export class ColumnWidthService {
         } else if (edit) {
             edit.style.width = tWidth;
         }
+    }
+    private isAutoResize(): boolean {
+        return this.parent.allowResizing && this.parent.resizeSettings.mode === 'Auto';
     }
 }

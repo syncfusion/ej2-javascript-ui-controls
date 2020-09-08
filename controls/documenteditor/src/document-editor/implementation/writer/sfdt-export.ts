@@ -215,6 +215,7 @@ export class SfdtExport {
         this.document.formatting = this.documentHelper.restrictFormatting;
         this.document.protectionType = this.documentHelper.protectionType;
         this.document.dontUseHTMLParagraphAutoSpacing = this.documentHelper.dontUseHtmlParagraphAutoSpacing;
+        this.document.formFieldShading = this.documentHelper.owner.documentEditorSettings.formFieldSettings.applyShading;
     }
     /**
      * @private

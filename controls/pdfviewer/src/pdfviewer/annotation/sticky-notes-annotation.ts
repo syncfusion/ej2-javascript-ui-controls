@@ -2066,9 +2066,11 @@ export class StickyNotesAnnotation {
                             if (pageCollections[i].rect || pageCollections[i].bounds) {
                                 // tslint:disable-next-line:max-line-length
                                 let scrollValue: number = this.pdfViewerBase.pageSize[pageNumber - 1].top * this.pdfViewerBase.getZoomFactor() + (this.pdfViewer.annotationModule.getAnnotationTop(pageCollections[i]) * this.pdfViewerBase.getZoomFactor());
-                                let scroll: string = (scrollValue - 20).toString();
-                                // tslint:disable-next-line:radix
-                                this.pdfViewerBase.viewerContainer.scrollTop = parseInt(scroll);
+                                if (scrollValue) {
+                                    let scroll: string = (scrollValue - 20).toString();
+                                    // tslint:disable-next-line:radix
+                                    this.pdfViewerBase.viewerContainer.scrollTop = parseInt(scroll);
+                                }
                             }
                         } else {
                             let top: number = pageCollections[i].bounds.top;

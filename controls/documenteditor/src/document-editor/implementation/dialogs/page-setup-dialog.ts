@@ -580,11 +580,11 @@ export class PageSetupDialog {
             }
         } else if (value === 'customsize') {
             if (this.isPortrait) {
-                this.widthBox.value = 515.9;
-                this.heightBox.value = 728.5;
+                this.widthBox.value = this.documentHelper.selection.sectionFormat.pageWidth;
+                this.heightBox.value = this.documentHelper.selection.sectionFormat.pageHeight;
             } else {
-                this.widthBox.value = 728.5;
-                this.heightBox.value = 515.9;
+                this.widthBox.value = this.documentHelper.selection.sectionFormat.pageWidth;
+                this.heightBox.value =  this.documentHelper.selection.sectionFormat.pageHeight;
             }
         }
     }

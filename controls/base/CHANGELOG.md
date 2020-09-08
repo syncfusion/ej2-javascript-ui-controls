@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Common
+
+#### Bug Fixes
+
+- `I291699`, `I291702`, `I291695`, `I291730`, `I291971`, `I291025`, `I291704`, `I291906`, `I291699`, `I292083`, `I291702`, `I292083` - Resolved `Dateformat` returns improper date value.
+
 ## 18.2.55 (2020-08-25)
 
 ### Common

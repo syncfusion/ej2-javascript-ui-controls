@@ -9534,6 +9534,10 @@ class Layout {
                         let tableHeight = tableWidget.height;
                         // tslint:disable-next-line:max-line-length
                         let splittedTable = this.getSplittedWidgetForTable(bottom - cellWidget.margin.bottom, tableCol, tableWidget);
+                        if (isNullOrUndefined(splittedTable) &&
+                            !(tableWidget.childWidgets[0].rowFormat.allowBreakAcrossPages)) {
+                            splittedTable = tableWidget;
+                        }
                         if (!isNullOrUndefined(splittedTable)) {
                             if (i === 0 && splittedTable === tableWidget) {
                                 //Returns if the whole table does not fit in current page.
@@ -15645,6 +15649,10 @@ class DocumentHelper {
         /**
          * @private
          */
+        this.showRevision = false;
+        /**
+         * @private
+         */
         this.splittedCellWidgets = [];
         /**
          * @private
@@ -17187,9 +17195,14 @@ class DocumentHelper {
             this.owner.commentReviewPane.reviewTab.hideTab(0, false);
             this.owner.commentReviewPane.showHidePane(true, 'Comments');
         }
+        else if (!this.showRevision && !this.owner.enableTrackChanges && this.owner.showRevisions) {
+            this.owner.commentReviewPane.showHidePane(!show, 'Changes');
+            this.owner.showRevisions = false;
+        }
         else {
             this.owner.commentReviewPane.showHidePane(show, 'Changes');
             this.owner.commentReviewPane.reviewTab.hideTab(0, true);
+            this.showRevision = false;
         }
     }
     /**
@@ -27566,6 +27579,9 @@ class SfdtReader {
         if (!isNullOrUndefined(jsonObject.sections)) {
             this.parseSections(jsonObject.sections, sections);
         }
+        if (!isNullOrUndefined(jsonObject.formFieldShading)) {
+            this.documentHelper.owner.documentEditorSettings.formFieldSettings.applyShading = jsonObject.formFieldShading;
+        }
         return sections;
     }
     parseDocumentProtection(data) {
@@ -27626,7 +27642,9 @@ class SfdtReader {
             }
         }
         this.documentHelper.revisionsInternal = this.revisionCollection;
-        this.documentHelper.owner.sfdtExportModule.copyWithTrackChange = false;
+        if (this.documentHelper.owner.sfdtExportModule) {
+            this.documentHelper.owner.sfdtExportModule.copyWithTrackChange = false;
+        }
     }
     /**
      * @private
@@ -31944,7 +31962,7 @@ class HtmlExport {
             charStyle += 'underline';
             charStyle += ';';
         }
-        if (!isNullOrUndefined(characterFormat.allCaps)) {
+        if (!isNullOrUndefined(characterFormat.allCaps) && (characterFormat.allCaps)) {
             charStyle += 'text-transform';
             charStyle += ':';
             charStyle += 'uppercase';
@@ -44033,11 +44051,11 @@ class TextSearch {
             textToFind = textToFind.split('\\').join('\\\\');
         }
         // tslint:disable-next-line:max-line-length
-        if (textToFind.indexOf('(') > -1 || textToFind.indexOf(')') > -1 || textToFind.indexOf('.') > -1 || textToFind.indexOf('[') > -1 || textToFind.indexOf(']') > -1 || textToFind.indexOf('$') > -1) {
+        if (textToFind.indexOf('(') > -1 || textToFind.indexOf(')') > -1 || textToFind.indexOf('.') > -1 || textToFind.indexOf('[') > -1 || textToFind.indexOf(']') > -1 || textToFind.indexOf('$') > -1 || textToFind.indexOf('{') > -1 || textToFind.indexOf('}') > -1 || textToFind.indexOf('*') > -1 || textToFind.indexOf('|') > -1 || textToFind.indexOf('^') > -1) {
             let text = '';
             for (let i = 0; i < textToFind.length; i++) {
                 // tslint:disable-next-line:max-line-length
-                if (textToFind[i] === '(' || textToFind[i] === ')' || textToFind[i] === '.' || textToFind[i] === '[' || textToFind[i] === ']' || textToFind[i] === '$') {
+                if (textToFind[i] === '(' || textToFind[i] === ')' || textToFind[i] === '.' || textToFind[i] === '[' || textToFind[i] === ']' || textToFind[i] === '$' || textToFind[i] === '{' || textToFind[i] === '}' || textToFind[i] === '*' || textToFind[i] === '|' || textToFind[i] === '^') {
                     text += '\\' + textToFind[i];
                 }
                 else {
@@ -56413,7 +56431,9 @@ class Editor {
             endLineWidget = paragraph.lastChild;
             endOffset = this.documentHelper.selection.getLineLength(paragraph.lastChild);
         }
-        let block = paragraph.previousRenderedWidget;
+        // If previous widget is splitted paragraph, combine paragraph widget.
+        let block = paragraph.previousRenderedWidget ?
+            paragraph.previousRenderedWidget.combineWidget(this.documentHelper.viewer) : undefined;
         if (startOffset > paragraphStart && start.currentWidget === paragraph.lastChild &&
             startOffset === lastLinelength && (paragraph === end.paragraph && end.offset === startOffset + 1 ||
             paragraph.nextRenderedWidget === end.paragraph && end.offset === endParagraphStartOffset) ||
@@ -66567,6 +66587,7 @@ class WordExport {
         this.hashValue = document.hashValue;
         this.saltValue = document.saltValue;
         this.protectionType = document.protectionType;
+        this.formFieldShading = document.formFieldShading;
     }
     // Clears the document
     clearDocument() {
@@ -70949,6 +70970,10 @@ class WordExport {
         //w:footnotePr - Document-Wide Footnote Properties and w:endnotePr - Document-Wide Endnote Properties
         // SerializeFootnoteSettings();
         //w:compat - Compatibility Settings
+        if (!this.formFieldShading) {
+            writer.writeStartElement(undefined, 'doNotShadeFormData', this.wNamespace);
+            writer.writeEndElement();
+        }
         writer.writeStartElement(undefined, 'compat', this.wNamespace);
         if (this.dontUseHtmlParagraphAutoSpacing) {
             this.serializeBoolProperty(writer, 'doNotUseHTMLParagraphAutoSpacing', this.dontUseHtmlParagraphAutoSpacing);
@@ -71835,6 +71860,7 @@ class SfdtExport {
         this.document.formatting = this.documentHelper.restrictFormatting;
         this.document.protectionType = this.documentHelper.protectionType;
         this.document.dontUseHTMLParagraphAutoSpacing = this.documentHelper.dontUseHtmlParagraphAutoSpacing;
+        this.document.formFieldShading = this.documentHelper.owner.documentEditorSettings.formFieldSettings.applyShading;
     }
     /**
      * @private
@@ -74412,12 +74438,12 @@ class PageSetupDialog {
             }
             else if (value === 'customsize') {
                 if (this.isPortrait) {
-                    this.widthBox.value = 515.9;
-                    this.heightBox.value = 728.5;
+                    this.widthBox.value = this.documentHelper.selection.sectionFormat.pageWidth;
+                    this.heightBox.value = this.documentHelper.selection.sectionFormat.pageHeight;
                 }
                 else {
-                    this.widthBox.value = 728.5;
-                    this.heightBox.value = 515.9;
+                    this.widthBox.value = this.documentHelper.selection.sectionFormat.pageWidth;
+                    this.heightBox.value = this.documentHelper.selection.sectionFormat.pageHeight;
                 }
             }
         };
@@ -82484,6 +82510,11 @@ class SpellChecker {
          * Specifies whether spell check has to be performed or not.
          */
         this.enableSpellCheckInternal = true;
+        /**
+         * @private
+         */
+        /* tslint:disable:no-any */
+        this.uniqueSpelledWords = {};
         this.spellSuggestionInternal = true;
         /**
          * @private
@@ -83301,6 +83332,7 @@ class SpellChecker {
         else if (isLastItem) {
             elementBox.isSpellChecked = true;
         }
+        this.updateUniqueWords([{ Text: currentText, HasSpellError: jsonObject.HasSpellingError }]);
     }
     /**
      * Method to include matched results in element box and to render it
@@ -83596,25 +83628,20 @@ class SpellChecker {
         if (!isNullOrUndefined(localStorage.getItem(this.uniqueKey))) {
             this.uniqueSpelledWords = JSON.parse(localStorage.getItem(this.uniqueKey));
         }
-        let totalCount = spelledWords.length + this.uniqueSpelledWords.length;
+        this.uniqueSpelledWords = (!this.uniqueSpelledWords) ? this.uniqueSpelledWords : {};
+        let totalCount = spelledWords.length + Object.keys(this.uniqueSpelledWords).length;
         if (totalCount <= this.uniqueWordsCount) {
             for (let i = 0; i < spelledWords.length; i++) {
                 this.checkForUniqueWords(spelledWords[i]);
             }
         }
         localStorage.setItem(this.uniqueKey, JSON.stringify(this.uniqueSpelledWords));
-        this.uniqueSpelledWords = [];
+        this.uniqueSpelledWords = {};
     }
     checkForUniqueWords(spellData) {
-        let identityMatched = false;
-        for (let i = 0; i < this.uniqueSpelledWords.length; i++) {
-            if (this.uniqueSpelledWords[i].Text === spellData.Text) {
-                identityMatched = true;
-                break;
-            }
-        }
+        let identityMatched = this.uniqueSpelledWords[spellData.Text];
         if (!identityMatched) {
-            this.uniqueSpelledWords.push(spellData);
+            this.uniqueSpelledWords[spellData.Text] = spellData.HasSpellError;
         }
     }
     /**
@@ -83646,12 +83673,10 @@ class SpellChecker {
         let hasError = false;
         let elementPresent = false;
         /* tslint:disable:no-any */
-        let uniqueWords = JSON.parse(localStorage.getItem(this.documentHelper.owner.spellChecker.uniqueKey));
+        let uniqueWords = JSON.parse(localStorage.getItem(this.uniqueKey));
         if (!isNullOrUndefined(uniqueWords)) {
-            for (let i = 0; i < uniqueWords.length; i++) {
-                if (uniqueWords[i].Text === wordToCheck) {
-                    return { hasSpellError: uniqueWords[i].HasSpellError, isElementPresent: true };
-                }
+            if (!isNullOrUndefined(uniqueWords[wordToCheck])) {
+                return { hasSpellError: uniqueWords[wordToCheck], isElementPresent: true };
             }
         }
         return { hasSpellError: hasError, isElementPresent: elementPresent };
@@ -88611,7 +88636,7 @@ class Paragraph {
                 let span = args.element.children[0];
                 if (args.item.text === this.appliedLineSpacing) {
                     span.style.marginRight = '10px';
-                    span.setAttribute('class', 'e-de-selected-item e-icons');
+                    span.setAttribute('class', 'e-de-selected-item e-icons e-de-linespacing');
                 }
                 else {
                     args.element.children[0].style.marginRight = '25px';
@@ -90960,6 +90985,9 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
                         this.documentEditor.showRevisions = newModel.enableTrackChanges;
                         if (this.toolbarModule) {
                             this.toolbarModule.toggleTrackChanges(newModel.enableTrackChanges);
+                        }
+                        if (this.documentEditor.enableTrackChanges) {
+                            this.documentEditor.documentHelper.showRevision = true;
                         }
                         this.documentEditor.resize();
                     }

@@ -2198,7 +2198,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 this.currentRequestHeader = eventArgs.currentRequest;
                 this.customFormDatas = eventArgs.customFormData;
             }
-            this.selectedFiles = fileData;
+            this.selectedFiles = this.selectedFiles.concat(fileData);
             this.btnTabIndex = this.disableKeyboardNavigation ? '-1' : '0';
             if (this.showFileList) {
                 if (eventArgs.isModified && eventArgs.modifiedFilesData.length > 0) {
@@ -2365,7 +2365,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             let liElement: HTMLElement = this.createElement('li', { className: FILE, attrs: { 'data-file-name': listItem.name } });
             this.uploadTemplateFn = this.templateComplier(this.template);
             let fromElements: HTMLElement[] = [].slice.call(
-                this.uploadTemplateFn(listItem, null, null, this.element.id + 'Template', this.isStringTemplate));
+                this.uploadTemplateFn(listItem, this, 'template', this.element.id + 'Template', this.isStringTemplate));
             let index: number = fileData.indexOf(listItem);
             append(fromElements, liElement);
             let eventArgs: RenderingEventArgs = {
@@ -2567,7 +2567,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         fileList.setAttribute('data-file-name', result.name);
         this.uploadTemplateFn = this.templateComplier(this.template);
         let fromElements: HTMLElement[] = [].slice.call(
-            this.uploadTemplateFn(result, null, null, this.element.id + 'Template', this.isStringTemplate));
+            this.uploadTemplateFn(result, this, 'template', this.element.id + 'Template', this.isStringTemplate));
         let index: number = this.listParent.querySelectorAll('li').length;
         append(fromElements, fileList);
         if (!fileList.classList.contains(INVALID_FILE)) {

@@ -3507,6 +3507,9 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
                             this.grid.dataSource = !(this.dataSource instanceof DataManager) ?
                                 this.flatData : new DataManager(this.dataSource.dataSource, this.dataSource.defaultQuery, this.dataSource.adaptor);
                         }
+                        if (this.enableVirtualization) {
+                            this.grid.contentModule.isDataSourceChanged = true;
+                        }
                     }
                     else {
                         this.bindedDataSource();
@@ -4491,7 +4494,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
             }
             else {
                 displayAction = 'none';
-                if (!isChild) {
+                if (!isChild || isCountRequired(this)) {
                     record.expanded = false;
                     this.uniqueIDCollection[record.uniqueID].expanded = record.expanded;
                 }
@@ -9419,6 +9422,8 @@ class VirtualTreeContentRenderer extends VirtualContentRenderer {
         this.endIndex = -1;
         this.preTranslate = 0;
         this.isRemoteExpand = false;
+        /** @hidden */
+        this.isDataSourceChanged = false;
         this.addEventListener();
     }
     getModelGenerator() {
@@ -9460,6 +9465,10 @@ class VirtualTreeContentRenderer extends VirtualContentRenderer {
             }
             this.recordAdded = false;
         }
+        if (this.isDataSourceChanged) {
+            this.startIndex = 0;
+            this.endIndex = this.parent.pageSettings.pageSize - 1;
+        }
         args.startIndex = this.startIndex;
         args.endIndex = this.endIndex;
     }
@@ -9494,8 +9503,9 @@ class VirtualTreeContentRenderer extends VirtualContentRenderer {
                 getValue('virtualEle', this).setVirtualHeight(this.parent.getRowHeight() * e.count, '100%');
                  // this.parent.pageSettings.pageSize - Math.ceil(this.parent.pageSettings.pageSize / 1.5);
             }
-            if (!isNullOrUndefined(e.requestType) && e.requestType.toString() === 'collapseAll') {
+            if ((!isNullOrUndefined(e.requestType) && e.requestType.toString() === 'collapseAll') || this.isDataSourceChanged) {
                 this.contents.scrollTop = 0;
+                this.isDataSourceChanged = false;
             }
         }
     }

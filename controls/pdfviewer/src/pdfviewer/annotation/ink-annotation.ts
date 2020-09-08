@@ -313,14 +313,18 @@ export class InkAnnotation {
                     // tslint:disable-next-line
                     let data: any = currentAnnotation.PathData;
                     if (isImport) {
-                        data = getPathString(JSON.parse(currentAnnotation.PathData));
+                        if (currentAnnotation.IsPathData) {
+                            data = currentAnnotation.PathData;
+                        } else {
+                            data = getPathString(JSON.parse(currentAnnotation.PathData));
+                        }
                     }
                     let isLock: boolean = currentAnnotation.AnnotationSettings ? currentAnnotation.AnnotationSettings.isLock : false;
                     // tslint:disable-next-line
                     let selectorSettings: any = currentAnnotation.AnnotationSelectorSettings ? currentAnnotation.AnnotationSelectorSettings : this.getSelector(currentAnnotation, 'Ink');
                     annot = {
                         // tslint:disable-next-line:max-line-length
-                        id: 'ink' + this.pdfViewerBase.signatureCount, bounds: { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight }, pageIndex: pageIndex, data: data,
+                        id: 'ink' + this.pdfViewerBase.inkCount, bounds: { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight }, pageIndex: pageIndex, data: data,
                         shapeAnnotationType: 'Ink', opacity: currentAnnotation.Opacity, strokeColor: currentAnnotation.StrokeColor, thickness: currentAnnotation.Thickness, annotName: currentAnnotation.AnnotName,
                         // tslint:disable-next-line:max-line-length
                         comments: this.pdfViewer.annotationModule.getAnnotationComments(currentAnnotation.Comments, currentAnnotation, currentAnnotation.Author), author: currentAnnotation.Author, subject: currentAnnotation.Subject, modifiedDate: currentAnnotation.ModifiedDate,

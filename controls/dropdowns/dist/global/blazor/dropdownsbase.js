@@ -359,7 +359,8 @@ var DropDownBase = /** @class */ (function (_super) {
             else {
                 compiledString = sf.base.compile(template);
             }
-            for (var _i = 0, _a = compiledString({}, null, null, templateId, this.isStringTemplate); _i < _a.length; _i++) {
+            var templateName = actionFailure ? 'actionFailureTemplate' : 'noRecordsTemplate';
+            for (var _i = 0, _a = compiledString({}, this, templateName, templateId, this.isStringTemplate); _i < _a.length; _i++) {
                 var item = _a[_i];
                 ele.appendChild(item);
             }
@@ -1126,7 +1127,7 @@ var DropDownBase = /** @class */ (function (_super) {
             }
             if (this.itemTemplate && !isHeader) {
                 var compiledString = sf.base.compile(this.itemTemplate);
-                sf.base.append(compiledString(item, null, null, this.itemTemplateId, this.isStringTemplate), li);
+                sf.base.append(compiledString(item, this, 'itemTemplate', this.itemTemplateId, this.isStringTemplate), li);
                 this.DropDownBaseupdateBlazorTemplates(true, false, false, false);
             }
             else if (!isHeader) {

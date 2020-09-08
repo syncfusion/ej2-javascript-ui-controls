@@ -1,6 +1,6 @@
 // sass-lint:disable no-vendor-prefixes
 @include export-module('chip-layout') {
-  #{&}.e-chip-list {
+  .e-chip-list {
     display: flex;
     padding: $chip-list-padding;
 
@@ -218,8 +218,8 @@
     }
   }
 
-  .e-bigger #{&}.e-chip-list,
-  .e-bigger#{&}.e-chip-list {
+  .e-bigger .e-chip-list,
+  .e-bigger.e-chip-list {
     &.e-chip,
     & .e-chip {
       border-radius: $chip-touch-border-radius;

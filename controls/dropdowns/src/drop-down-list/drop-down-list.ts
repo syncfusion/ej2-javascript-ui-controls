@@ -1390,7 +1390,7 @@ export class DropDownList extends DropDownBase implements IInput {
         } else {
             compiledString = compile(this.valueTemplate);
         }
-        for (let item of compiledString(templateData, null, null, this.valueTemplateId, this.isStringTemplate)) {
+        for (let item of compiledString(templateData, this, 'valueTemplate', this.valueTemplateId, this.isStringTemplate)) {
             this.valueTempElement.appendChild(item);
         }
         this.DropDownBaseupdateBlazorTemplates(false, false, false, false, true, true, true);
@@ -1836,7 +1836,7 @@ export class DropDownList extends DropDownBase implements IInput {
             }
             if (this.getModuleName() !== 'autocomplete' && this.isFiltering() && !this.isTyped) {
                 if (!this.actionCompleteData.isUpdated || ((!this.isCustomFilter
-                    && !this.isFilterFocus)
+                    && !this.isFilterFocus) || (isNullOrUndefined(this.itemData) && this.allowFiltering)
                     && ((this.dataSource instanceof DataManager)
                         || (!isNullOrUndefined(this.dataSource) && !isNullOrUndefined(this.dataSource.length) &&
                             this.dataSource.length !== 0)))) {
@@ -2472,7 +2472,7 @@ export class DropDownList extends DropDownBase implements IInput {
         } else {
             compiledString = compile(this.footerTemplate);
         }
-        for (let item of compiledString({}, null, null, this.footerTemplateId, this.isStringTemplate)) {
+        for (let item of compiledString({}, this, 'footerTemplate', this.footerTemplateId, this.isStringTemplate)) {
             this.footer.appendChild(item);
         }
         this.DropDownBaseupdateBlazorTemplates(false, false, false, false, false, false, true);
@@ -2493,7 +2493,7 @@ export class DropDownList extends DropDownBase implements IInput {
         } else {
             compiledString = compile(this.headerTemplate);
         }
-        for (let item of compiledString({}, null, null, this.headerTemplateId, this.isStringTemplate)) {
+        for (let item of compiledString({}, this, 'headerTemplate', this.headerTemplateId, this.isStringTemplate)) {
             this.header.appendChild(item);
         }
         this.DropDownBaseupdateBlazorTemplates(false, false, false, false, false, true, false);
@@ -2517,7 +2517,7 @@ export class DropDownList extends DropDownBase implements IInput {
             this.popupObj.resolveCollision();
         }
     }
-    private checkDatasource(newProp?: DropDownListModel): void {
+    protected checkData(newProp?: DropDownListModel): void {
         if (newProp.dataSource && !isNullOrUndefined(Object.keys(newProp.dataSource)) && this.itemTemplate && this.allowFiltering) {
             this.list = null;
             this.actionCompleteData = { ulElement: null, list: null, isUpdated: false };
@@ -2558,7 +2558,7 @@ export class DropDownList extends DropDownBase implements IInput {
     public onPropertyChanged(newProp: DropDownListModel, oldProp: DropDownListModel): void {
         if (this.getModuleName() === 'dropdownlist') {
             if (!this.isServerBlazor) {
-                this.checkDatasource(newProp);
+                this.checkData(newProp);
                 this.setUpdateInitial(['fields', 'query', 'dataSource'], newProp as { [key: string]: string; });
             }
         }

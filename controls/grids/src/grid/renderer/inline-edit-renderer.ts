@@ -33,10 +33,11 @@ export class InlineEditRender {
         }
         args.row = this.parent.createElement('tr', { className: 'e-row e-addedrow' });
         if (tbody.querySelector('.e-emptyrow')) {
-            tbody.querySelector('.e-emptyrow').remove();
+            let emptyRow: Element = tbody.querySelector('.e-emptyrow');
+            emptyRow.parentNode.removeChild(emptyRow);
             if (this.parent.getFrozenColumns()) {
                 let moveTbody: Element = this.parent.getContent().querySelector('.e-movablecontent').querySelector('tbody');
-                moveTbody.firstElementChild.remove();
+                (moveTbody.firstElementChild).parentNode.removeChild(moveTbody.firstElementChild);
             }
         }
         this.parent.editSettings.newRowPosition === 'Top' ? tbody.insertBefore(args.row, tbody.firstChild) : tbody.appendChild(args.row);

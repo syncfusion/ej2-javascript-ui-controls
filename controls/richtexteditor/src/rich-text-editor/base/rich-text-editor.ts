@@ -2341,9 +2341,13 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     private getUpdatedValue(): string {
         let value: string;
+        let getTextArea: HTMLInputElement = this.element.querySelector('.e-rte-srctextarea') ;
         if (this.editorMode === 'HTML') {
             value = (this.inputElement.innerHTML === '<p><br></p>') ? null : this.enableHtmlEncode ?
                 this.encode(decode(this.inputElement.innerHTML)) : this.inputElement.innerHTML;
+            if (getTextArea && getTextArea.style.display === 'block') {
+                value = getTextArea.value;
+            }
         } else {
             value = (this.inputElement as HTMLTextAreaElement).value === '' ? null :
                 (this.inputElement as HTMLTextAreaElement).value;

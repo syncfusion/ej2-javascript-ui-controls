@@ -177,7 +177,7 @@ export class Paragraph {
                 let span: HTMLElement = args.element.children[0] as HTMLElement;
                 if (args.item.text === this.appliedLineSpacing) {
                     span.style.marginRight = '10px';
-                    span.setAttribute('class', 'e-de-selected-item e-icons');
+                    span.setAttribute('class', 'e-de-selected-item e-icons e-de-linespacing');
                 } else {
                     (args.element.children[0] as HTMLElement).style.marginRight = '25px';
                     (args.element.children[0] as HTMLElement).classList.remove('e-de-selected-item');

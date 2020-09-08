@@ -2031,7 +2031,7 @@ export class DateRangePicker extends CalendarBase {
             }) : null;
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
             inputValue = startDate + ' ' + this.separator + ' ' + endDate;
-            range = (Math.round(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
+            range = (Math.floor(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
         } else {
             inputValue = '';
             range = 0;
@@ -2364,7 +2364,7 @@ export class DateRangePicker extends CalendarBase {
     private updateHeader(): void {
         let format: Object = { type: 'date', skeleton: isBlazor() ? 'D' : 'yMMMd' };
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
-            let range: number = (Math.round(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
+            let range: number = (Math.floor(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
             if (!isNullOrUndefined(this.disabledDayCnt)) {
                 range = range - this.disabledDayCnt;
                 this.disabledDayCnt = null;
@@ -2636,7 +2636,7 @@ export class DateRangePicker extends CalendarBase {
     }
     private validateMinMaxDays(): void {
         if (!isNullOrUndefined(this.startValue) && !isNullOrUndefined(this.endValue)) {
-            let range: number = (Math.round(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
+            let range: number = (Math.floor(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
             if ((!isNullOrUndefined(this.minDays) && this.minDays > 0) && !(range >= this.minDays)) {
                 if (this.strictMode) {
                     let date: Date = new Date(+this.startValue);
@@ -4087,7 +4087,7 @@ export class DateRangePicker extends CalendarBase {
     public getSelectedRange(): Object {
         let range: number;
         if (!isNullOrUndefined(this.startValue) && !isNullOrUndefined(this.endValue)) {
-            range = (Math.round(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
+            range = (Math.floor(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
             this.disabledDateRender();
             if (!isNullOrUndefined(this.disabledDayCnt)) {
                 range = range - this.disabledDayCnt;

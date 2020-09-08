@@ -117,6 +117,7 @@ export class Annotation {
     private selectedLineDashArray: string;
     private isUndoRedoAction: boolean = false;
     private isUndoAction: boolean = false;
+    private annotationSelected: boolean = true;
     /**
      * @private
      */
@@ -240,6 +241,13 @@ export class Annotation {
         }
     }
 
+    public deleteAnnotationById(annotationId: string | object): void {
+        if (annotationId) {
+            this.annotationSelected = false;
+            this.selectAnnotation(annotationId);
+            this.deleteAnnotation();
+        }
+    }
     public deleteAnnotation(): void {
         if (this.textMarkupAnnotationModule) {
             this.textMarkupAnnotationModule.deleteTextMarkupAnnotation();
@@ -3266,7 +3274,7 @@ export class Annotation {
         let annotationAddMode: string = annotation.annotationAddMode;
         if (!isDblClick) {
             if (annotation.shapeAnnotationType === 'Stamp' || annotation.shapeAnnotationType === 'Image') {
-                if (!this.pdfViewerBase.isNewStamp) {
+                if (!this.pdfViewerBase.isNewStamp && this.annotationSelected) {
                     if (overlappedCollection) {
                         // tslint:disable-next-line:max-line-length
                         this.pdfViewer.fireAnnotationSelect(annotationId, pageNumber, annotSettings, overlappedCollection, null, null, annotationAddMode);
@@ -3279,14 +3287,16 @@ export class Annotation {
                 if (multiPageCollection.length === 0) {
                     multiPageCollection = null;
                 }
-                if (overlappedCollection) {
-                    isSelected = false;
-                    // tslint:disable-next-line:max-line-length
-                    this.pdfViewer.fireAnnotationSelect(annotationId, pageNumber, annotSettings, overlappedCollection, multiPageCollection, isSelected, annotationAddMode);
-                } else {
-                    isSelected = true;
-                    // tslint:disable-next-line:max-line-length
-                    this.pdfViewer.fireAnnotationSelect(annotationId, pageNumber, annotSettings, null, multiPageCollection, isSelected, annotationAddMode);
+                if (this.annotationSelected) {
+                    if (overlappedCollection) {
+                        isSelected = false;
+                        // tslint:disable-next-line:max-line-length
+                        this.pdfViewer.fireAnnotationSelect(annotationId, pageNumber, annotSettings, overlappedCollection, multiPageCollection, isSelected, annotationAddMode);
+                    } else {
+                        isSelected = true;
+                        // tslint:disable-next-line:max-line-length
+                        this.pdfViewer.fireAnnotationSelect(annotationId, pageNumber, annotSettings, null, multiPageCollection, isSelected, annotationAddMode);
+                    }
                 }
             }
         } else {
@@ -3298,6 +3308,7 @@ export class Annotation {
                 this.pdfViewer.fireAnnotationDoubleClick(annotationId, pageNumber, annotSettings);
             }
         }
+        this.annotationSelected = true;
     }
 
     // tslint:disable-next-line

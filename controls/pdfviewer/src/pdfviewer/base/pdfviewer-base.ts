@@ -7276,16 +7276,286 @@ export class PdfViewerBase {
      * @private
      */
     // tslint:disable-next-line
-    public createAnnotationsCollection(): any {
-        let annotationCollectionList: IAnnotationCollection[] = [];
-        for (let i: number = 0; i < this.pageCount; i++) {
+    public createAnnotationsCollection(pageNumber?: number, isObject?: boolean): any {
+        // tslint:disable-next-line
+        let annotationCollectionList: any = [];
+        if (!isObject) {
+            for (let i: number = 0; i < this.pageCount; i++) {
+                let annotation: IAnnotationCollection = {
+                    // tslint:disable-next-line:max-line-length
+                    textMarkupAnnotation: [], shapeAnnotation: [], measureShapeAnnotation: [], stampAnnotations: [], stickyNotesAnnotation: [], freeTextAnnotation: [], signatureAnnotation: [], signatureInkAnnotation: [],
+                };
+                annotationCollectionList.push(annotation);
+            }
+        } else {
+            annotationCollectionList = {};
             let annotation: IAnnotationCollection = {
                 // tslint:disable-next-line:max-line-length
                 textMarkupAnnotation: [], shapeAnnotation: [], measureShapeAnnotation: [], stampAnnotations: [], stickyNotesAnnotation: [], freeTextAnnotation: [], signatureAnnotation: [], signatureInkAnnotation: [],
             };
-            annotationCollectionList.push(annotation);
+            annotationCollectionList[pageNumber] = annotation;
         }
         return annotationCollectionList;
+    }
+
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public addAnnotation(importAnnotation: any): void {
+        // tslint:disable-next-line
+        let pdfAnnotation: any = {};
+        // tslint:disable-next-line
+        let documentCollections: any;
+        if (importAnnotation) {
+            let isAnnotationObject: boolean = false;
+            let annotationCount: number = 1;
+            if (importAnnotation.shapeAnnotationType || importAnnotation.author) {
+                isAnnotationObject = true;
+                documentCollections = this.createAnnotationsCollection(importAnnotation.pageNumber, true);
+            } else {
+                if (importAnnotation.length) {
+                    annotationCount = importAnnotation.length;
+                    documentCollections = this.createAnnotationsCollection();
+                } else {
+                    isAnnotationObject = true;
+                    documentCollections = this.createAnnotationsCollection(importAnnotation.pageNumber, true);
+                }
+            }
+            for (let a: number = 0; a < annotationCount; a++) {
+                // tslint:disable-next-line
+                let annotation: any;
+                if (isAnnotationObject) {
+                    annotation = importAnnotation;
+                } else {
+                    annotation = importAnnotation[a];
+                }
+                // tslint:disable-next-line
+                let newAnnotation: any = {};
+                newAnnotation.ShapeAnnotationType = annotation.shapeAnnotationType;
+                newAnnotation.AnnotationAddMode = annotation.annotationAddMode;
+                newAnnotation.Author = annotation.author;
+                newAnnotation.AnnotationSelectorSettings = annotation.annotationSelectorSettings;
+                newAnnotation.AnnotationSettings = annotation.annotationSettings;
+                newAnnotation.PageNumber = annotation.pageNumber;
+                newAnnotation.ModifiedDate = annotation.modifiedDate;
+                newAnnotation.Subject = annotation.subject;
+                newAnnotation.Note = annotation.note;
+                newAnnotation.AnnotName = annotation.annotationId + 'new';
+                newAnnotation.Comments = annotation.comments;
+                if (annotation.comments && annotation.comments.length > 0) {
+                    // tslint:disable-next-line
+                    let comments: any = [];
+                    for (let i: number = 0; i < annotation.comments.length; i++) {
+                        comments.push(this.updateComments(annotation, annotation.comments[i]));
+                    }
+                    newAnnotation.Comments = comments;
+                }
+                if (annotation.review) {
+                    newAnnotation.State = annotation.review.state;
+                    newAnnotation.StateModel = annotation.review.stateModel;
+                }
+                newAnnotation.CustomData = annotation.customData;
+                newAnnotation.Opacity = annotation.opacity;
+                if (annotation.shapeAnnotationType === 'textMarkup') {
+                    newAnnotation.AnnotType = 'textMarkup';
+                    newAnnotation.Color = annotation.color;
+                    newAnnotation.IsMultiSelect = annotation.isMultiSelect;
+                    newAnnotation.TextMarkupAnnotationType = annotation.textMarkupAnnotationType;
+                    newAnnotation.TextMarkupContent = annotation.textMarkupContent;
+                    newAnnotation.TextMarkupStartIndex = annotation.textMarkupStartIndex;
+                    newAnnotation.TextMarkupEndIndex = annotation.textMarkupEndIndex;
+                    if (annotation.rect) {
+                        newAnnotation.Rect = this.convertBounds(annotation.rect);
+                    }
+                    if (annotation.bounds && annotation.bounds.length >= 1) {
+                        // tslint:disable-next-line
+                        let bounds: Array<any> = new Array();
+                        for (let i: number = 0; i < annotation.bounds.length; i++) {
+                            bounds.push(this.convertBounds(annotation.bounds[i]));
+                        }
+                        newAnnotation.Bounds = bounds;
+                    }
+                    documentCollections[annotation.pageNumber].textMarkupAnnotation.push(newAnnotation);
+                } else if (annotation.shapeAnnotationType === 'sticky') {
+                    newAnnotation.AnnotType = 'sticky';
+                    newAnnotation.Icon = 'Comment';
+                    newAnnotation.Bounds = this.convertBounds(annotation.bounds);
+                    newAnnotation.StrokeColor = annotation.strokeColor;
+                    newAnnotation.Color = annotation.color;
+                    documentCollections[annotation.pageNumber].stickyNotesAnnotation.push(newAnnotation);
+                } else if (annotation.shapeAnnotationType === 'FreeText') {
+                    newAnnotation.AnnotType = 'freeText';
+                    newAnnotation.Name = annotation.annotationId + 'new';
+                    newAnnotation.MarkupText = annotation.dynamicText;
+                    newAnnotation.Text = annotation.dynamicText;
+                    newAnnotation.TextAlign = annotation.textAlign;
+                    newAnnotation.Thickness = annotation.thicknes;
+                    newAnnotation.StrokeColor = annotation.strokeColor;
+                    newAnnotation.FillColor = annotation.fillColor;
+                    newAnnotation.FontColor = annotation.fontColor;
+                    newAnnotation.FontSize = annotation.fontSize;
+                    newAnnotation.FontFamily = annotation.fontFamily;
+                    newAnnotation.Rotate = annotation.rotateAngle;
+                    newAnnotation.Bounds = this.convertBounds(annotation.bounds);
+                    // tslint:disable-next-line:max-line-length
+                    newAnnotation.Font = { 'Name': annotation.fontFamily, 'Size': annotation.fontSize, 'Bold': annotation.font.isBold, 'Italic': annotation.font.isItalic, 'Strikeout': annotation.font.isStrikeout, 'Underline': annotation.font.isUnderline };
+                    documentCollections[annotation.pageNumber].freeTextAnnotation.push(newAnnotation);
+                } else if (annotation.shapeAnnotationType === 'stamp') {
+                    newAnnotation.AnnotType = 'stamp';
+                    newAnnotation.Icon = annotation.icon;
+                    newAnnotation.isDynamic = false;
+                    newAnnotation.Rect = this.convertBounds(annotation.bounds);
+                    newAnnotation.RotateAngle = annotation.rotateAngle;
+                    newAnnotation.FillColor = annotation.fillColor;
+                    newAnnotation.StrokeColor = annotation.strokeColor;
+                    newAnnotation.StampAnnotationType = annotation.stampAnnotationType;
+                    newAnnotation.CreationDate = annotation.creationDate;
+                    if (annotation.stampAnnotationType === 'image') {
+                        // tslint:disable-next-line
+                        let apperarance: any = [];
+                        // tslint:disable-next-line
+                        let imageData: any = { 'imagedata': annotation.stampAnnotationPath };
+                        apperarance.push(imageData);
+                        newAnnotation.Apperarance = apperarance;
+                    }
+                    if (annotation.isDynamicStamp) {
+                        newAnnotation.IsDynamic = true;
+                        newAnnotation.StrokeColor = annotation.stampFillcolor;
+                        // tslint:disable-next-line
+                        let apperarance: any = [];
+                        // tslint:disable-next-line
+                        let imageData: any = { 'type': 'string', 'text': annotation.dynamicText, 'currentFontname': '95b303ab-d397-438a-83af-e2ff8a9900f1', 'baseFontName': 'Helvetica-BoldOblique', 'fontSize': 10, 'isImport': true };
+                        apperarance.push(imageData);
+                        newAnnotation.Apperarance = apperarance;
+                    }
+                    documentCollections[annotation.pageNumber].stampAnnotations.push(newAnnotation);
+                } else if (annotation.shapeAnnotationType === 'Ink' || annotation.shapeAnnotationType === 'Signature') {
+                    newAnnotation.StrokeColor = annotation.strokeColor;
+                    newAnnotation.FillColor = annotation.fillColor;
+                    newAnnotation.Thickness = annotation.thickness;
+                    newAnnotation.Bounds = this.convertBounds(annotation.bounds);
+                    newAnnotation.PathData = annotation.data;
+                    newAnnotation.pageIndex = annotation.pageNumber;
+                    if (annotation.shapeAnnotationType === 'Ink') {
+                        newAnnotation.AnnotType = 'Ink';
+                        newAnnotation.IsPathData = true;
+                        documentCollections[annotation.pageNumber].signatureInkAnnotation.push(newAnnotation);
+                    }
+                    if (annotation.shapeAnnotationType === 'Signature') {
+                        newAnnotation.AnnotType = 'Signature';
+                        newAnnotation.SignatureName = annotation.annotationId + 'new';
+                        newAnnotation.IsSignature = true;
+                        documentCollections[annotation.pageNumber].signatureAnnotation.push(newAnnotation);
+                    }
+                } else {
+                    // tslint:disable-next-line:max-line-length
+                    if (annotation.shapeAnnotationType === 'Line' || annotation.shapeAnnotationType === 'LineWidthArrowHead' || annotation.shapeAnnotationType === 'Polyline' || annotation.shapeAnnotationType === 'Polygon' || annotation.shapeAnnotationType === 'Polyline' || annotation.shapeAnnotationType === 'Circle' || annotation.shapeAnnotationType === 'Oval' || annotation.shapeAnnotationType === 'Rectangle' || annotation.shapeAnnotationType === 'Square' || annotation.shapeAnnotationType === 'Ellipse') {
+                        newAnnotation.AnnotType = 'shape';
+                        newAnnotation.StrokeColor = annotation.strokeColor;
+                        newAnnotation.FillColor = annotation.fillColor;
+                        newAnnotation.Thickness = annotation.thickness;
+                        newAnnotation.BorderStyle = annotation.borderStyle;
+                        newAnnotation.BorderDashArray = annotation.borderDashArray;
+                        newAnnotation.RotateAngle = annotation.rotateAngle;
+                        newAnnotation.IsCloudShape = annotation.isCloudShape;
+                        newAnnotation.CloudIntensity = annotation.cloudIntensity;
+                        newAnnotation.RectangleDifference = annotation.rectangleDifference;
+                        newAnnotation.LineHeadStart = annotation.lineHeadStart;
+                        newAnnotation.LineHeadEnd = annotation.lineHeadEnd;
+                        newAnnotation.IsLocked = annotation.isLocked;
+                        newAnnotation.EnableShapeLabel = annotation.enableShapeLabel;
+                        newAnnotation.LabelContent = annotation.labelContent;
+                        newAnnotation.LabelFillColor = annotation.labelFillColor;
+                        newAnnotation.LabelBorderColor = annotation.labelBorderColor;
+                        newAnnotation.FontColor = annotation.fontColor;
+                        newAnnotation.FontSize = annotation.fontSize;
+                        newAnnotation.LabelBounds = this.convertBounds(annotation.labelBounds);
+                        newAnnotation.LabelSettings = annotation.labelSettings;
+                        newAnnotation.Bounds = this.convertBounds(annotation.bounds);
+                        newAnnotation.LeaderLength = annotation.leaderLength;
+                        newAnnotation.LeaderLineExtenstion = annotation.leaderLineExtension;
+                        if (annotation.vertexPoints && annotation.vertexPoints.length >= 1) {
+                            // tslint:disable-next-line
+                            let points: Array<any> = new Array();
+                            for (let i: number = 0; i < annotation.vertexPoints.length; i++) {
+                                points.push(this.convertVertexPoints(annotation.vertexPoints[i]));
+                            }
+                            newAnnotation.VertexPoints = points;
+                        }
+                        newAnnotation.EnableShapeLabel = annotation.enableShapeLabel;
+                        // tslint:disable-next-line:max-line-length
+                        if (annotation.subject === 'Distance calculation' || annotation.subject === 'Perimeter calculation' || annotation.subject === 'Area calculation' || annotation.subject === 'Radius calculation' || annotation.subject === 'Volume calculation') {
+                            newAnnotation.AnnotType = 'shape_measure';
+                            // tslint:disable-next-line
+                            let calibrate: any = annotation.calibrate;
+                            if (calibrate) {
+                                // tslint:disable-next-line
+                                newAnnotation.Calibrate = {
+                                    'Ratio': calibrate.ratio, 'X': [{ 'Unit': calibrate.x[0].unit, 'ConversionFactor': calibrate.x[0].conversionFactor, 'FractionalType': calibrate.x[0].fractionalType, 'Denominator': calibrate.x[0].denominator, 'FormatDenominator': calibrate.x[0].formatDenominator }],
+                                    // tslint:disable-next-line
+                                    'Distance': [{ 'Unit': calibrate.distance[0].unit, 'ConversionFactor': calibrate.distance[0].conversionFactor, 'FractionalType': calibrate.distance[0].fractionalType, 'Denominator': calibrate.distance[0].denominator, 'FormatDenominator': calibrate.distance[0].formatDenominator }],
+                                    // tslint:disable-next-line
+                                    'Area': [{ 'Unit': calibrate.area[0].unit, 'ConversionFactor': calibrate.area[0].conversionFactor, 'FractionalType': calibrate.area[0].fractionalType, 'Denominator': calibrate.area[0].denominator, 'FormatDenominator': calibrate.area[0].formatDenominator }],
+                                    // tslint:disable-next-line
+                                    'Angle': null, 'Volume': null, 'TargetUnitConversion': calibrate.targetUnitConversion, 'Depth': calibrate.depth
+                                };
+                            }
+                            newAnnotation.Indent = annotation.indent;
+                            newAnnotation.Caption = annotation.caption;
+                            newAnnotation.CaptionPosition = annotation.captionPosition;
+                            documentCollections[annotation.pageNumber].measureShapeAnnotation.push(newAnnotation);
+                        } else {
+                            documentCollections[annotation.pageNumber].shapeAnnotation.push(newAnnotation);
+                        }
+                    }
+                }
+            }
+            pdfAnnotation.pdfAnnotation = documentCollections;
+            this.pdfViewer.importAnnotations(pdfAnnotation);
+        }
+    }
+
+    // tslint:disable-next-line
+    private convertBounds(bounds: any): any {
+        if (bounds) {
+            let x: number = bounds.x ? bounds.x : bounds.left ? bounds.left : bounds.Left ? bounds.Left : 0;
+            let y: number = bounds.y ? bounds.y : bounds.top ? bounds. top : bounds.Top ? bounds.Top : 0;
+            let width: number = bounds.width ? bounds.width : bounds.Width ? bounds.Width : 0;
+            let height: number = bounds.height ? bounds.height : bounds.Height ? bounds.Height : 0;
+            return { X: x, Y: y, Left: x, Top: y, Height: height, Width: width };
+        }
+    }
+
+    // tslint:disable-next-line
+    private convertVertexPoints(points: any): any {
+        if (points) {
+            let x: number = points.x ? points.x : points.X ? points.X : 0;
+            let y: number = points.y ? points.y : points.Y ? points.Y : 0;
+            return { X: x, Y: y, Left: x, Top: y };
+        }
+    }
+
+    // tslint:disable-next-line
+    private updateComments(annotation: any, comments: any): any {
+        if (annotation && comments) {
+            // tslint:disable-next-line
+            let newAnnotation: any = {};
+            newAnnotation.ShapeAnnotationType = annotation.shapeAnnotationType;
+            newAnnotation.Author = comments.author;
+            newAnnotation.AnnotationSelectorSettings = annotation.annotationSelectorSettings;
+            newAnnotation.AnnotationSettings = annotation.annotationSettings;
+            newAnnotation.PageNumber = annotation.pageNumber;
+            newAnnotation.ModifiedDate = comments.modifiedDate;
+            newAnnotation.Subject = annotation.subject;
+            newAnnotation.Note = comments.note;
+            newAnnotation.AnnotName = comments.annotName;
+            newAnnotation.Comments = comments.comments;
+            newAnnotation.State = comments.review.state;
+            newAnnotation.StateModel = comments.review.stateModel;
+            newAnnotation.CustomData = annotation.customData;
+            return newAnnotation;
+        }
     }
 
 }

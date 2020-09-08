@@ -1027,4 +1027,79 @@ describe('Resize module', () => {
         });
     });
 
+    describe('EJ2-39523 - Column Auto width', () => {
+        let gridObj: any;
+        beforeAll((done: Function) => {
+            let data1: object[] = [
+                {
+                    OrderID: 10248, About: 'Anne has a BA degree in English from St. Lawrence College.  She is fluent in French and German', EmployeeID: 5,
+                    ShipCity: 'Reims', Freight: 32.38,
+                },]
+            gridObj = createGrid(
+                {
+                    allowResizing: true,
+                    resizeSettings: { mode : 'Auto'},
+                    dataSource: data1,
+                    columns: [{ field: 'OrderID', headerText: 'OrderID', width: 140 },
+                    { field: 'About', headerText: 'About', width: 140 },
+                    { field: 'EmployeeID', headerText: 'EmployeeID', width: 130 },
+                    { field: 'Freight', headerText: 'Freight', width: 150},
+                    { field: 'ShipCity', headerText: 'ShipCity', width: 150 }
+                    ],
+                }, done);
+        });
+
+        it('Column width', () => {
+            let handler: HTMLElement = gridObj.getHeaderTable().querySelectorAll('.' + resizeClassList.root)[1];
+            gridObj.resizeModule.resizeStart({ target: handler, pageX: 150 });
+            expect(gridObj.getContentTable().style.width).toBe('100%');
+        })
+
+        it('Column width after resize to fit', () => {
+            gridObj.autoFitColumns([]);
+            expect(gridObj.getContentTable().style.width).toBe('100%');
+        })
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+    describe('EJ2-42233-right border width in stacked header last column', () => {
+        let gridObj: any;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    allowResizing: true,
+                    dataSource: data,
+                    columns: [{ field: 'OrderID', headerText: 'OrderID', width: 140 },
+                        {
+                            headerText: 'Order Details', columns: [
+                                { field: 'OrderDate', headerText: 'Order Date', width: 135, format: 'yMd'},
+                                { field: 'Freight', headerText: 'Freight($)', width: 120, format: 'C2',  },
+                            ]
+                        },
+                        {
+                            headerText: 'Ship Details', columns: [
+                                { field: 'ShipCity', headerText: 'ShipCity', textAlign: 'Right', width: 145, minWidth: 10 },
+                            ]
+                        },
+                    ],
+                }, done);
+        });
+
+        it('column right width checking', () => {
+             let hdrele: Element= gridObj.element.querySelectorAll('.e-columnheader:nth-child(2)')[0].querySelectorAll('.e-headercell')[1];
+             let lastcell: Element = gridObj.element.querySelectorAll('.e-columnheader:nth-child(2)')[0].querySelectorAll('.e-headercell')[2];
+             expect(hdrele.classList.contains('e-lastcell')).toBeFalsy();
+             expect(lastcell.classList.contains('e-lastcell')).toBeTruthy();
+
+        })
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
 });

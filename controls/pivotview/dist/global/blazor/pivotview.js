@@ -605,6 +605,165 @@ var PivotUtil = /** @class */ (function () {
         }
         return values;
     };
+    PivotUtil.formatPdfHeaderFooter = function (pdf) {
+        var contents;
+        if (!sf.base.isNullOrUndefined(pdf)) {
+            for (var i = 0; i < pdf.length; i++) {
+                var a = pdf[i];
+                var content = {
+                    type: a.Type,
+                    pageNumberType: a.PageNumberType,
+                    style: a.Style ? {
+                        penColor: a.Style.PenColor,
+                        penSize: a.Style.PenSize,
+                        dashStyle: a.Style.DashStyle,
+                        textBrushColor: a.Style.TextBrushColor,
+                        textPenColor: a.Style.TextPenColor,
+                        fontSize: a.Style.FontSize,
+                        hAlign: a.Style.HAlign,
+                        vAlign: a.Style.VAlign
+                    } : a.Style,
+                    points: a.Points !== null ? {
+                        x1: a.Points.X1,
+                        y1: a.Points.Y1,
+                        x2: a.Points.X2,
+                        y2: a.Points.Y2
+                    } : null,
+                    format: a.Format,
+                    position: a.Position !== null ? {
+                        x: a.Position.X,
+                        y: a.Position.Y,
+                    } : null,
+                    size: a.Size !== null ? {
+                        height: a.Size.Height,
+                        width: a.Size.Width,
+                    } : null,
+                    src: a.Src,
+                    value: a.Value,
+                    font: a.Font
+                };
+                contents.push(content);
+            }
+        }
+        return contents;
+    };
+    /* tslint:disable:no-any */
+    PivotUtil.formatPdfExportProperties = function (pdf) {
+        var values;
+        values = this.getDefinedObj({
+            pageOrientation: typeof pdf.PageOrientation === 'string' ? pdf.PageOrientation : null,
+            pageSize: typeof pdf.PageSize === 'string' ? pdf.PageSize : null,
+            header: !sf.base.isNullOrUndefined(pdf.Header) ? {
+                fromTop: pdf.Header.FromTop,
+                height: pdf.Header.Height,
+                contents: this.formatPdfHeaderFooter(pdf.Header.Contents),
+            } : null,
+            columns: pdf.Columns,
+            footer: !sf.base.isNullOrUndefined(pdf.Footer) ? {
+                fromTop: pdf.Footer.FromBottom,
+                height: pdf.Footer.Height,
+                contents: this.formatPdfHeaderFooter(pdf.Footer.Contents),
+            } : null,
+            includeHiddenColumn: pdf.IncludeHiddenColumn,
+            dataSource: pdf.DataSource,
+            exportType: typeof pdf.ExportType === 'string' ? pdf.ExportType : null,
+            theme: !sf.base.isNullOrUndefined(pdf.Theme) ? {
+                header: pdf.Theme.Header,
+                record: pdf.Theme.Record,
+                caption: pdf.Theme.Caption
+            } : null,
+            fileName: pdf.FileName,
+            hierarchyExportMode: typeof pdf.HierarchyExportMode === 'string' ? pdf.HierarchyExportMode : null,
+            allowHorizontalOverflow: pdf.AllowHorizontalOverflow
+        });
+        return values;
+    };
+    PivotUtil.formatExcelStyle = function (style) {
+        var prop;
+        if (!sf.base.isNullOrUndefined(style)) {
+            prop = this.getDefinedObj({
+                fontColor: style.FontColor,
+                fontName: style.FontName,
+                fontSize: style.FontSize,
+                hAlign: style.HAlign === String ? style.HAlign : null,
+                vAlign: style.VAlign === String ? style.VAlign : null,
+                bold: style.Bold,
+                indent: style.Indent,
+                italic: style.Italic,
+                underline: style.Underline,
+                backColor: style.BackColor,
+                wrapText: style.WrapText,
+                borders: style.Borders,
+                numberFormat: style.NumberFormat,
+                type: style.Type
+            });
+        }
+        return prop;
+    };
+    PivotUtil.formatExcelCell = function (cell) {
+        var cells = [];
+        if (!sf.base.isNullOrUndefined(cell)) {
+            for (var i = 0; i < cell.length; i++) {
+                var prop = this.getDefinedObj({
+                    index: !sf.base.isNullOrUndefined(cell[i].Index) ? cell[i].Index : null,
+                    colSpan: !sf.base.isNullOrUndefined(cell[i].ColSpan) ? cell[i].ColSpan : null,
+                    value: !sf.base.isNullOrUndefined(cell[i].Value) ? cell[i].Value : null,
+                    hyperlink: {
+                        target: !sf.base.isNullOrUndefined(cell[i].Hyperlink) ? cell[i].Hyperlink.Target : null,
+                        displayText: !sf.base.isNullOrUndefined(cell[i].Hyperlink) ? cell[i].Hyperlink.DisplayText : null
+                    },
+                    styles: this.formatExcelStyle(cell[i].Style),
+                    rowSpan: !sf.base.isNullOrUndefined(cell[i].RowSpan) ? cell[i].RowSpan : null
+                });
+            }
+        }
+        return cells;
+    };
+    PivotUtil.formatExcelHeaderFooter = function (excel) {
+        var rows = [];
+        if (!sf.base.isNullOrUndefined(excel)) {
+            for (var i = 0; i < excel.Rows.length; i++) {
+                var row = excel.Rows[i];
+                var prop = this.getDefinedObj({
+                    index: !sf.base.isNullOrUndefined(row.Index) ? row.Index : null,
+                    cells: this.formatExcelCell(row.Cells),
+                    grouping: !sf.base.isNullOrUndefined(row.Grouping) ? row.Grouping : null
+                });
+                rows.push(prop);
+            }
+        }
+        return rows;
+    };
+    PivotUtil.formatExcelExportProperties = function (excel) {
+        var prop;
+        prop = this.getDefinedObj({
+            dataSource: excel.DataSource,
+            query: excel.Query,
+            multipleExport: this.getDefinedObj({
+                type: !sf.base.isNullOrUndefined(excel.MultipleExport) ? excel.MultipleExport.Type : null,
+                blankRows: !sf.base.isNullOrUndefined(excel.MultipleExport) ? excel.MultipleExport.BlankRows : null
+            }),
+            header: this.getDefinedObj({
+                headerRows: !sf.base.isNullOrUndefined(excel.Header) ? excel.Header.HeaderRows : null,
+                rows: this.formatExcelHeaderFooter(excel.Header)
+            }),
+            footer: this.getDefinedObj({
+                footerRows: !sf.base.isNullOrUndefined(excel.Footer) ? excel.Footer.FooterRows : null,
+                rows: this.formatExcelHeaderFooter(excel.Footer)
+            }),
+            columns: excel.Columns,
+            exportType: typeof excel.ExportType === 'string' ? excel.ExportType : undefined,
+            includeHiddenColumn: excel.IncludeHiddenColumn,
+            theme: {
+                header: this.formatExcelStyle(excel.Theme.Header),
+                record: this.formatExcelStyle(excel.Theme.Record),
+                caption: this.formatExcelStyle(excel.Theme.Caption)
+            },
+            fileName: excel.FileName,
+            hierarchyExportMode: typeof excel.HierarchyExportMode === 'string' ? excel.HierarchyExportMode : undefined
+        });
+        return prop;
+    };
     /* tslint:disable:no-any */
     PivotUtil.formatFieldList = function (fieldList) {
         var keys = Object.keys(fieldList);
@@ -927,6 +1086,11 @@ var PivotEngine = /** @class */ (function () {
             }
             this.updateFilterMembers(dataSource);
             this.generateGridData(dataSource);
+        }
+        if (this.data.length === 0) {
+            this.removeIrrelevantFields(dataSource, []);
+            this.pivotValues = [];
+            this.fieldList = null;
         }
     };
     PivotEngine.prototype.removeIrrelevantFields = function (dataSource, fields) {
@@ -6553,7 +6717,9 @@ var Render = /** @class */ (function () {
             pdfHeaderQueryCellInfo: this.pdfHeaderQueryCellInfo.bind(this),
             excelQueryCellInfo: this.excelQueryCellInfo.bind(this),
             pdfQueryCellInfo: this.pdfQueryCellInfo.bind(this),
-            beforePdfExport: this.gridSettings.beforePdfExport ? this.gridSettings.beforePdfExport.bind(this) : undefined
+            beforePdfExport: this.gridSettings.beforePdfExport ? this.gridSettings.beforePdfExport.bind(this) : undefined,
+            pdfExportComplete: this.pdfExportComplete.bind(this),
+            excelExportComplete: this.excelExportComplete.bind(this)
         });
         if (sf.base.isBlazor()) {
             var isJsComponent = 'isJsComponent';
@@ -6624,6 +6790,20 @@ var Render = /** @class */ (function () {
     Render.prototype.pdfHeaderQueryCellInfo = function (args) {
         this.parent.renderModule.pdfColumnEvent(args);
     };
+    /* tslint:disable */
+    Render.prototype.pdfExportComplete = function (args) {
+        if (this.parent.lastColumn !== undefined && this.parent.lastColumn.width !== 'auto') {
+            this.parent.lastColumn.width = 'auto';
+            this.parent.lastColumn = undefined;
+        }
+    };
+    Render.prototype.excelExportComplete = function (args) {
+        if (this.parent.lastColumn !== undefined && this.parent.lastColumn.width !== 'auto') {
+            this.parent.lastColumn.width = 'auto';
+            this.parent.lastColumn = undefined;
+        }
+    };
+    /* tslint:enable */
     Render.prototype.dataBound = function (args) {
         if (this.parent.cellTemplate && !sf.base.isBlazor()) {
             for (var _i = 0, _a = this.parent.gridHeaderCellInfo; _i < _a.length; _i++) {
@@ -6944,16 +7124,6 @@ var Render = /** @class */ (function () {
             if (typeof state_1 === "object")
                 return state_1.value;
         }
-        var hiddenItemsCount = 0;
-        for (var i = 0; i < args.items.length; i++) {
-            var classNameofItem = document.getElementById(args.items[i].id).className;
-            if (classNameofItem.match('e-menu-hide')) {
-                hiddenItemsCount++;
-            }
-        }
-        if (hiddenItemsCount === args.items.length) {
-            args.cancel = true;
-        }
         this.parent.trigger(contextMenuOpen, args);
     };
     Render.prototype.getMenuItem = function (isStringField) {
@@ -6974,6 +7144,7 @@ var Render = /** @class */ (function () {
         return menuItems;
     };
     Render.prototype.contextMenuClick = function (args) {
+        var _this = this;
         // this.parent.gridSettings.contextMenuClick();
         var target = this.parent.lastCellClicked;
         var selected$$1 = args.item.id;
@@ -7011,8 +7182,15 @@ var Render = /** @class */ (function () {
                     isMultipleExport: false,
                     pdfExportProperties: { fileName: 'Export.pdf' },
                 };
-                this.parent.trigger(beforeExport, exportArgs);
-                this.parent.pdfExport(exportArgs.pdfExportProperties, exportArgs.isMultipleExport, exportArgs.pdfDoc, exportArgs.isBlob);
+                this.parent.trigger(beforeExport, exportArgs, function (observedArgs) {
+                    if (sf.base.isBlazor()) {
+                        var pdfProperties = PivotUtil.formatPdfExportProperties(observedArgs.pdfExportProperties);
+                        _this.parent.pdfExport(pdfProperties, observedArgs.isMultipleExport, observedArgs.pdfDoc, observedArgs.isBlob);
+                    }
+                    else {
+                        _this.parent.pdfExport(observedArgs.pdfExportProperties, observedArgs.isMultipleExport, observedArgs.pdfDoc, observedArgs.isBlob);
+                    }
+                });
                 break;
             case this.parent.element.id + '_excel':
                 exportArgs = {
@@ -7021,8 +7199,15 @@ var Render = /** @class */ (function () {
                     workbook: undefined,
                     excelExportProperties: { fileName: 'Export.xlsx' },
                 };
-                this.parent.trigger(beforeExport, exportArgs);
-                this.parent.excelExport(exportArgs.excelExportProperties, exportArgs.isMultipleExport, exportArgs.workbook, exportArgs.isBlob);
+                this.parent.trigger(beforeExport, exportArgs, function (observedArgs) {
+                    if (sf.base.isBlazor()) {
+                        var excelProperties = PivotUtil.formatExcelExportProperties(observedArgs.excelExportProperties);
+                        _this.parent.excelExport(excelProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob);
+                    }
+                    else {
+                        _this.parent.excelExport(observedArgs.excelExportProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob);
+                    }
+                });
                 break;
             case this.parent.element.id + '_csv':
                 exportArgs = {
@@ -7031,8 +7216,15 @@ var Render = /** @class */ (function () {
                     isMultipleExport: false,
                     excelExportProperties: { fileName: 'Export.csv' },
                 };
-                this.parent.trigger(beforeExport, exportArgs);
-                this.parent.csvExport(exportArgs.excelExportProperties, exportArgs.isMultipleExport, exportArgs.workbook, exportArgs.isBlob);
+                this.parent.trigger(beforeExport, exportArgs, function (observedArgs) {
+                    if (sf.base.isBlazor()) {
+                        var excelProperties = PivotUtil.formatExcelExportProperties(observedArgs.excelExportProperties);
+                        _this.parent.csvExport(excelProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob);
+                    }
+                    else {
+                        _this.parent.csvExport(observedArgs.excelExportProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob);
+                    }
+                });
                 break;
             case this.parent.element.id + '_drillthrough_menu':
                 ele.dispatchEvent(event);
@@ -8002,7 +8194,7 @@ var Render = /** @class */ (function () {
             var lastColumn = integrateModel[integrateModel.length - 1];
             lastColumn.minWidth = lastColumn.width;
             lastColumn.width = 'auto';
-            if (lastColumn.columns && lastColumn.columns.length > 0 && !this.parent.allowPdfExport && !this.parent.allowExcelExport) {
+            if (lastColumn.columns && lastColumn.columns.length > 0) {
                 this.configLastColumnWidth(lastColumn.columns[lastColumn.columns.length - 1]);
             }
         }
@@ -8011,7 +8203,7 @@ var Render = /** @class */ (function () {
     };
     Render.prototype.configLastColumnWidth = function (column) {
         column.minWidth = column.width;
-        column.width = "auto";
+        column.width = 'auto';
         if (column.columns && column.columns.length > 0) {
             this.configLastColumnWidth(column.columns[column.columns.length - 1]);
         }
@@ -8060,13 +8252,23 @@ var Render = /** @class */ (function () {
         }
         return formatArray;
     };
+    /* tslint:disable */
     Render.prototype.excelColumnEvent = function (args) {
+        if (args.gridCell !== undefined && args.gridCell.column.width === 'auto') {
+            this.parent.lastColumn = args.gridCell.column;
+            args.gridCell.column.width = args.gridCell.column.minWidth;
+        }
         args = this.exportHeaderEvent(args);
         this.parent.trigger(excelHeaderQueryCellInfo, args);
     };
     Render.prototype.pdfColumnEvent = function (args) {
+        if (args.gridCell !== undefined && args.gridCell.column.width === 'auto') {
+            this.parent.lastColumn = args.gridCell.column;
+            args.gridCell.column.width = args.gridCell.column.minWidth;
+        }
         this.parent.trigger(pdfHeaderQueryCellInfo, args);
     };
+    /* tslint:enable */
     Render.prototype.excelRowEvent = function (args) {
         if (args.column.field === '0.formattedText') {
             var isValueCell = args.data[0].type === 'value';
@@ -11496,9 +11698,16 @@ var ExcelExport$1 = /** @class */ (function () {
         var args = {
             fileName: 'default', header: '', footer: '', dataCollections: [clonedValues]
         };
-        this.parent.trigger(beforeExport, args);
-        var fileName = args.fileName;
-        var dataCollections = args.dataCollections;
+        var fileName;
+        var header;
+        var footer;
+        var dataCollections;
+        this.parent.trigger(beforeExport, args, function (observedArgs) {
+            fileName = observedArgs.fileName;
+            header = observedArgs.header;
+            footer = observedArgs.footer;
+            dataCollections = observedArgs.dataCollections;
+        });
         /** Fill data and export */
         /* tslint:disable-next-line:no-any */
         var workSheets = [];
@@ -12001,6 +12210,7 @@ var PDFExport = /** @class */ (function () {
         }
     };
     PDFExport.prototype.applyEvent = function () {
+        var _this = this;
         /** Event trigerring */
         var clonedValues;
         var currentPivotValues = PivotUtil.getClonedPivotValues(this.engine.pivotValues);
@@ -12020,10 +12230,13 @@ var PDFExport = /** @class */ (function () {
         var args = {
             fileName: 'default', header: '', footer: '', dataCollections: [clonedValues], allowRepeatHeader: true, style: style
         };
-        this.parent.trigger(beforeExport, args);
-        this.gridStyle = args.style;
+        var argument;
+        this.parent.trigger(beforeExport, args, function (observedArgs) {
+            _this.gridStyle = observedArgs.style;
+            argument = observedArgs;
+        });
         var document = new sf.pdfexport.PdfDocument();
-        return { document: document, args: args };
+        return { document: document, args: argument };
     };
     /**
      * To destroy the pdf export module
@@ -22256,6 +22469,9 @@ var PivotView = /** @class */ (function (_super) {
      * @hidden
      */
     PivotView.prototype.onPropertyChanged = function (newProp, oldProp) {
+        if (!sf.base.isNullOrUndefined(newProp.dataSourceSettings) && !sf.base.isNullOrUndefined(newProp.dataSourceSettings.dataSource)) {
+            this.localDataSourceSetting = PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings);
+        }
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
             var prop = _a[_i];
             switch (prop) {
@@ -23117,6 +23333,9 @@ var PivotView = /** @class */ (function (_super) {
     };
     /* tslint:enable */
     PivotView.prototype.onContentReady = function () {
+        if (!sf.base.isNullOrUndefined(this.localDataSourceSetting)) {
+            PivotUtil.updateDataSourceSettings(this, this.localDataSourceSetting);
+        }
         if (this.currentView !== 'Table') {
             /* tslint:disable-next-line */
             if (this.cellTemplate && sf.base.isBlazor()) {
@@ -24364,7 +24583,7 @@ var PivotView = /** @class */ (function (_super) {
                 }
             }
             else if ((this.dataSourceSettings.url !== '' && this.dataType === 'olap') ||
-                (pivot.dataSourceSettings.dataSource && pivot.dataSourceSettings.dataSource.length > 0)) {
+                (pivot.dataSourceSettings.dataSource && pivot.dataSourceSettings.dataSource.length > 0 || this.engineModule.data.length > 0)) {
                 if (pivot.dataType === 'pivot') {
                     this.hideWaitingPopup();
                     pivot.engineModule.data = pivot.dataSourceSettings.dataSource;
@@ -28754,6 +28973,10 @@ var PivotFieldList = /** @class */ (function (_super) {
      * @hidden
      */
     PivotFieldList.prototype.onPropertyChanged = function (newProp, oldProp) {
+        if (!sf.base.isNullOrUndefined(newProp.dataSourceSettings.dataSource)) {
+            this.localDataSourceSetting = PivotUtil.getClonedDataSourceSettings(this.staticPivotGridModule.dataSourceSettings);
+            this.initEngine();
+        }
         var requireRefresh = false;
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
             var prop = _a[_i];
@@ -28824,6 +29047,9 @@ var PivotFieldList = /** @class */ (function (_super) {
             if (requireRefresh) {
                 this.fieldListRender();
             }
+        }
+        if (!sf.base.isNullOrUndefined(this.localDataSourceSetting)) {
+            PivotUtil.updateDataSourceSettings(this.staticPivotGridModule, this.localDataSourceSetting);
         }
     };
     /* tslint:disable */
@@ -33967,6 +34193,7 @@ var Toolbar$2 = /** @class */ (function () {
     };
     /* tslint:disable:max-func-body-length */
     Toolbar$$1.prototype.menuItemClick = function (args) {
+        var _this_1 = this;
         var exportArgs = {};
         var type;
         if (this.getAllChartItems().indexOf(args.item.id.split(this.parent.element.id + '_')[1]) > -1 ||
@@ -34004,8 +34231,15 @@ var Toolbar$2 = /** @class */ (function () {
                         isBlob: false,
                         isMultipleExport: false
                     };
-                    this.parent.trigger(beforeExport, exportArgs);
-                    this.parent.pdfExport(exportArgs.pdfExportProperties, exportArgs.isMultipleExport, exportArgs.pdfDoc, exportArgs.isBlob);
+                    this.parent.trigger(beforeExport, exportArgs, function (observedArgs) {
+                        if (sf.base.isBlazor()) {
+                            var pdfProperties = PivotUtil.formatPdfExportProperties(observedArgs.pdfExportProperties);
+                            _this_1.parent.pdfExport(pdfProperties, observedArgs.isMultipleExport, observedArgs.pdfDoc, observedArgs.isBlob);
+                        }
+                        else {
+                            _this_1.parent.pdfExport(observedArgs.pdfExportProperties, observedArgs.isMultipleExport, observedArgs.pdfDoc, observedArgs.isBlob);
+                        }
+                    });
                 }
                 else {
                     exportArgs = {
@@ -34015,8 +34249,9 @@ var Toolbar$2 = /** @class */ (function () {
                         type: 'PDF',
                         fileName: 'result',
                     };
-                    this.parent.trigger(beforeExport, exportArgs);
-                    this.parent.chartExport(exportArgs.type, exportArgs.fileName, exportArgs.orientation, exportArgs.width, exportArgs.height);
+                    this.parent.trigger(beforeExport, exportArgs, function (observedArgs) {
+                        _this_1.parent.chartExport(observedArgs.type, observedArgs.fileName, observedArgs.orientation, observedArgs.width, observedArgs.height);
+                    });
                 }
                 break;
             case (this.parent.element.id + 'excel'):
@@ -34026,8 +34261,15 @@ var Toolbar$2 = /** @class */ (function () {
                     isMultipleExport: false,
                     workbook: undefined
                 };
-                this.parent.trigger(beforeExport, exportArgs);
-                this.parent.excelExport(exportArgs.excelExportProperties, exportArgs.isMultipleExport, exportArgs.workbook, exportArgs.isBlob);
+                this.parent.trigger(beforeExport, exportArgs, function (observedArgs) {
+                    if (sf.base.isBlazor()) {
+                        var excelProperties = PivotUtil.formatExcelExportProperties(observedArgs.excelExportProperties);
+                        _this_1.parent.excelExport(excelProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob);
+                    }
+                    else {
+                        _this_1.parent.excelExport(observedArgs.excelExportProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob);
+                    }
+                });
                 break;
             case (this.parent.element.id + 'csv'):
                 exportArgs = {
@@ -34036,8 +34278,15 @@ var Toolbar$2 = /** @class */ (function () {
                     isMultipleExport: false,
                     workbook: undefined
                 };
-                this.parent.trigger(beforeExport, exportArgs);
-                this.parent.csvExport(exportArgs.excelExportProperties, exportArgs.isMultipleExport, exportArgs.workbook, exportArgs.isBlob);
+                this.parent.trigger(beforeExport, exportArgs, function (observedArgs) {
+                    if (sf.base.isBlazor()) {
+                        var excelProperties = PivotUtil.formatExcelExportProperties(observedArgs.excelExportProperties);
+                        _this_1.parent.csvExport(excelProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob);
+                    }
+                    else {
+                        _this_1.parent.csvExport(observedArgs.excelExportProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob);
+                    }
+                });
                 break;
             case (this.parent.element.id + 'png'):
                 exportArgs = {
@@ -34047,8 +34296,9 @@ var Toolbar$2 = /** @class */ (function () {
                     fileName: 'result',
                     orientation: sf.pdfexport.PdfPageOrientation.Landscape,
                 };
-                this.parent.trigger(beforeExport, exportArgs);
-                this.parent.chartExport(exportArgs.type, exportArgs.fileName, exportArgs.orientation, exportArgs.width, exportArgs.height);
+                this.parent.trigger(beforeExport, exportArgs, function (observedArgs) {
+                    _this_1.parent.chartExport(observedArgs.type, observedArgs.fileName, observedArgs.orientation, observedArgs.width, observedArgs.height);
+                });
                 break;
             case (this.parent.element.id + 'jpeg'):
                 exportArgs = {
@@ -34058,8 +34308,9 @@ var Toolbar$2 = /** @class */ (function () {
                     width: undefined,
                     height: undefined,
                 };
-                this.parent.trigger(beforeExport, exportArgs);
-                this.parent.chartExport(exportArgs.type, exportArgs.fileName, exportArgs.orientation, exportArgs.width, exportArgs.height);
+                this.parent.trigger(beforeExport, exportArgs, function (observedArgs) {
+                    _this_1.parent.chartExport(observedArgs.type, observedArgs.fileName, observedArgs.orientation, observedArgs.width, observedArgs.height);
+                });
                 break;
             case (this.parent.element.id + 'svg'):
                 exportArgs = {
@@ -34069,8 +34320,9 @@ var Toolbar$2 = /** @class */ (function () {
                     fileName: 'result',
                     orientation: sf.pdfexport.PdfPageOrientation.Landscape,
                 };
-                this.parent.trigger(beforeExport, exportArgs);
-                this.parent.chartExport(exportArgs.type, exportArgs.fileName, exportArgs.orientation, exportArgs.width, exportArgs.height);
+                this.parent.trigger(beforeExport, exportArgs, function (observedArgs) {
+                    _this_1.parent.chartExport(observedArgs.type, observedArgs.fileName, observedArgs.orientation, observedArgs.width, observedArgs.height);
+                });
                 break;
             case (this.parent.element.id + 'notsubtotal'):
                 this.parent.setProperties({ dataSourceSettings: { showSubTotals: false, showColumnSubTotals: false, showRowSubTotals: false } }, true);

@@ -314,6 +314,8 @@ export class FormFields {
      */
     public drawSignature(): void {
         let annot: PdfAnnotationBaseModel;
+        // tslint:disable-next-line
+        let bounds: any;
         let zoomvalue: number = this.pdfViewerBase.getZoomFactor();
         let currentWidth: number = parseFloat(this.currentTarget.style.width) / zoomvalue;
         let currentHeight: number = parseFloat(this.currentTarget.style.height) / zoomvalue;
@@ -321,10 +323,16 @@ export class FormFields {
         let currentTop: number = parseFloat(this.currentTarget.style.top) / zoomvalue;
         let currentPage: number = parseFloat(this.currentTarget.id.split('_')[1]);
         // tslint:disable-next-line
-        let signatureBounds: any = this.checkSignatureWidth(this.pdfViewerBase.signatureModule.outputString);
+        if (this.pdfViewer.signatureMode === 'Default') {
+            // tslint:disable-next-line
+            let signatureBounds: any = this.checkSignatureWidth(this.pdfViewerBase.signatureModule.outputString);
+            bounds = { x: currentLeft + signatureBounds.left, y: currentTop + signatureBounds.top, width: signatureBounds.width, height: signatureBounds.height };
+        } else {
+            bounds = { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight };
+        }
         annot = {
             // tslint:disable-next-line:max-line-length
-            id: this.currentTarget.id, bounds: { x: currentLeft + signatureBounds.left, y: currentTop + signatureBounds.top, width: signatureBounds.width, height: signatureBounds.height }, pageIndex: currentPage, data: this.pdfViewerBase.signatureModule.outputString, modifiedDate: '',
+            id: this.currentTarget.id, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, pageIndex: currentPage, data: this.pdfViewerBase.signatureModule.outputString, modifiedDate: '',
             shapeAnnotationType: 'Path', opacity: 1, rotateAngle: 0, annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
         };
         this.pdfViewer.add(annot as PdfAnnotationBase);

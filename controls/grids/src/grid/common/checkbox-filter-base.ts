@@ -6,7 +6,7 @@ import { Button } from '@syncfusion/ej2-buttons';
 import { DataUtil, Query, DataManager, Predicate, Deferred, QueryOptions } from '@syncfusion/ej2-data';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 import { ReturnType } from '../base/type';
-import { IFilterArgs, FilterSearchBeginEventArgs } from '../base/interface';
+import { IFilterArgs, FilterSearchBeginEventArgs, CheckBoxBeforeRenderer } from '../base/interface';
 import * as events from '../base/constant';
 import { PredicateModel } from '../base/grid-model';
 import { ValueFormatter } from '../services/value-formatter';
@@ -686,6 +686,9 @@ export class CheckBoxFilterBase {
     }
     private dataSuccess(e: Object[]): void {
         this.fullData = e;
+        let args1: CheckBoxBeforeRenderer = { dataSource: this.fullData, executeQuery: true, field: this.options.field };
+        this.parent.notify(events.beforeCheckboxRenderer, args1 );
+        if (args1.executeQuery) {
         let query: Query = new Query();
         if (this.parent.searchSettings && this.parent.searchSettings.key.length) {
             let sSettings: SearchSettingsModel = this.parent.searchSettings;
@@ -714,11 +717,13 @@ export class CheckBoxFilterBase {
             }
         }
         // query.select(this.options.field);
-        let result: Object[] = new DataManager(this.fullData as JSON[]).executeLocal(query);
+        let result: Object[] = new DataManager(args1.dataSource as JSON[]).executeLocal(query);
         let col: Column = this.options.column as Column;
-        this.filteredData = (CheckBoxFilterBase.
-            getDistinct(result, this.options.field, col, this.foreignKeyData) as { records: Object[] }).records || [];
-        this.processDataSource(null, true, this.filteredData);
+        this.filteredData = (CheckBoxFilterBase.getDistinct(result, this.options.field, col, this.foreignKeyData) as
+            { records: Object[] }).records || [];
+        }
+        let data: object[] = args1.executeQuery ? this.filteredData : args1.dataSource ;
+        this.processDataSource(null, true, data);
         this.sInput.focus();
         let args: Object = {
             requestType: events.filterAfterOpen,

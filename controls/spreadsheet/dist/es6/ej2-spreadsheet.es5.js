@@ -23755,9 +23755,34 @@ var ConditionalFormatting = /** @__PURE__ @class */ (function () {
     };
     // tslint:disable-next-line:max-func-body-length
     ConditionalFormatting.prototype.cFRCheck = function (cFRule, value, td, rIdx, cIdx, isInitial) {
+        var cFRuleValue1 = '';
+        var cFRuleValue2 = '';
         var cellValue = value.toString();
-        var cFRuleValue1 = !isNullOrUndefined(cFRule.value) ? cFRule.value.split(',')[0].toString() : '';
-        var cFRuleValue2 = !isNullOrUndefined(cFRule.value) ? cFRule.value.split(',')[1] ? cFRule.value.split(',')[1].toString() : '' : '';
+        if (cFRule.value) {
+            var valueArr = cFRule.value.split(',');
+            if (valueArr.length > 1) {
+                if (valueArr[0].split('(').length > 1) {
+                    var valueStr = '';
+                    for (var idx = 0; idx < valueArr.length; idx++) {
+                        valueStr += valueArr[idx] + ',';
+                        if (valueStr.split('(').length === valueStr.split(')').length && cFRuleValue1 === '') {
+                            cFRuleValue1 = valueStr.substring(0, valueStr.length - 1);
+                            valueStr = '';
+                        }
+                    }
+                    cFRuleValue2 = valueStr.substring(0, valueStr.length - 1);
+                }
+                else {
+                    cFRuleValue1 = valueArr[0];
+                    for (var idx = 1; idx < valueArr.length; idx++) {
+                        cFRuleValue2 += idx + 1 === valueArr.length ? valueArr[idx] : valueArr[idx] + ',';
+                    }
+                }
+            }
+            else {
+                cFRuleValue1 = cFRule.value;
+            }
+        }
         var isApply = false;
         var type = cFRule.type;
         if (('BlueDataBar' + 'GreenDataBar' + 'RedDataBar' + 'OrangeDataBar' + 'LightBlueDataBar' + 'PurpleDataBar').includes(type)) {

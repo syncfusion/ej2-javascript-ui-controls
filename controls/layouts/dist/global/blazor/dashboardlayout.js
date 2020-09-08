@@ -361,10 +361,10 @@ var DashboardLayout = /** @class */ (function (_super) {
         }
         return undefined;
     };
-    DashboardLayout.prototype.renderTemplate = function (content, appendElement, type, isStringTemplate) {
+    DashboardLayout.prototype.renderTemplate = function (content, appendElement, type, isStringTemplate, prop) {
         var templateFn = this.templateParser(content);
         var templateElements = [];
-        for (var _i = 0, _a = templateFn({}, null, null, type, isStringTemplate); _i < _a.length; _i++) {
+        for (var _i = 0, _a = templateFn({}, this, prop, type, isStringTemplate); _i < _a.length; _i++) {
             var item = _a[_i];
             templateElements.push(item);
         }
@@ -392,7 +392,7 @@ var DashboardLayout = /** @class */ (function (_super) {
             }
             if (!cellElement.querySelector('.e-panel-header') && !this.isBlazor) {
                 var id = this.element.id + 'HeaderTemplate' + panelId;
-                this.renderTemplate(panelModel.header, headerTemplateElement, id, isStringTemplate);
+                this.renderTemplate(panelModel.header, headerTemplateElement, id, isStringTemplate, 'header');
                 this.panelContent.appendChild(headerTemplateElement);
                 sf.base.updateBlazorTemplate(id, 'HeaderTemplate', panelModel);
             }
@@ -407,7 +407,7 @@ var DashboardLayout = /** @class */ (function (_super) {
             sf.base.setStyleAttribute(this.panelBody, { height: contentHeightValue });
             if (!cellElement.querySelector('.e-panel-content') && !this.isBlazor) {
                 var id = this.element.id + 'ContentTemplate' + panelId;
-                this.renderTemplate(panelModel.content, this.panelBody, id, isStringTemplate);
+                this.renderTemplate(panelModel.content, this.panelBody, id, isStringTemplate, 'content');
                 this.panelContent.appendChild(this.panelBody);
                 sf.base.updateBlazorTemplate(id, 'ContentTemplate', panelModel);
             }
@@ -2382,7 +2382,7 @@ var DashboardLayout = /** @class */ (function (_super) {
             sf.base.addClass([headerTemplateElement], [header]);
             headerTemplateElement.innerHTML = '';
             var id = this.element.id + 'HeaderTemplate' + panelInstance.id;
-            this.renderTemplate(panelInstance.header, headerTemplateElement, id, true);
+            this.renderTemplate(panelInstance.header, headerTemplateElement, id, true, 'header');
             this.panelContent.appendChild(headerTemplateElement);
         }
         else {
@@ -2400,7 +2400,7 @@ var DashboardLayout = /** @class */ (function (_super) {
             var contentHeightValue = 'calc( 100% - ' + headerHeight + ')';
             sf.base.setStyleAttribute(this.panelBody, { height: contentHeightValue });
             var id = this.element.id + 'ContentTemplate' + panelInstance.id;
-            this.renderTemplate(panelInstance.content, this.panelBody, id, true);
+            this.renderTemplate(panelInstance.content, this.panelBody, id, true, 'content');
             this.panelContent.appendChild(this.panelBody);
         }
         else {

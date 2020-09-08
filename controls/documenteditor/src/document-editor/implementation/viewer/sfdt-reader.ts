@@ -108,6 +108,9 @@ export class SfdtReader {
         if (!isNullOrUndefined(jsonObject.sections)) {
             this.parseSections(jsonObject.sections, sections);
         }
+        if (!isNullOrUndefined(jsonObject.formFieldShading)) {
+            this.documentHelper.owner.documentEditorSettings.formFieldSettings.applyShading = jsonObject.formFieldShading;
+        }
         return sections;
     }
     private parseDocumentProtection(data: any): void {
@@ -166,7 +169,9 @@ export class SfdtReader {
             }
         }
         this.documentHelper.revisionsInternal = this.revisionCollection;
-        this.documentHelper.owner.sfdtExportModule.copyWithTrackChange = false;
+        if (this.documentHelper.owner.sfdtExportModule) {
+           this.documentHelper.owner.sfdtExportModule.copyWithTrackChange = false;
+        }
     }
     /**
      * @private

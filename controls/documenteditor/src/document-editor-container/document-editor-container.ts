@@ -525,6 +525,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
                         if (this.toolbarModule) {
                             this.toolbarModule.toggleTrackChanges(newModel.enableTrackChanges);
                         }
+                        if (this.documentEditor.enableTrackChanges) {
+                            this.documentEditor.documentHelper.showRevision = true;
+                        }
                         this.documentEditor.resize();
                     }
                     break;

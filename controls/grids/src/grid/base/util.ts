@@ -1,4 +1,4 @@
-import { ChildProperty, compile as baseTemplateComplier, setValue, Internationalization, isUndefined } from '@syncfusion/ej2-base';
+import { ChildProperty, compile as baseTemplateComplier, setValue, Internationalization, isUndefined, closest } from '@syncfusion/ej2-base';
 import { extend as baseExtend, isNullOrUndefined, getValue, classList, NumberFormatOptions } from '@syncfusion/ej2-base';
 import { setStyleAttribute, addClass, attributes, remove, createElement, DateFormatOptions, removeClass } from '@syncfusion/ej2-base';
 import { isObject, IKeyValue, isBlazor, Browser } from '@syncfusion/ej2-base';
@@ -772,7 +772,8 @@ export function getDatePredicate(filterObject: PredicateModel, type?: string): P
  * @hidden
  */
 
-export function renderMovable(ele: Element, frzCols: number): Element {
+export function renderMovable(ele: Element, frzCols: number, gObj?: IGrid): Element {
+    frzCols = frzCols && gObj && gObj.isRowDragable() ? frzCols + 1 : frzCols;
     let mEle: Element = ele.cloneNode(true) as Element;
     for (let i: number = 0; i < frzCols; i++) {
         mEle.removeChild(mEle.children[0]);
@@ -981,8 +982,8 @@ export function applyBiggerTheme(rootElement: Element, element: Element): void {
 /** @hidden */
 export function alignFrozenEditForm(mTD: HTMLElement, fTD: HTMLElement): void {
     if (mTD && fTD) {
-        let mHeight: number = mTD.closest('.e-row').getBoundingClientRect().height;
-        let fHeight: number = fTD.closest('.e-row').getBoundingClientRect().height;
+        let mHeight: number = closest(mTD, '.e-row').getBoundingClientRect().height;
+        let fHeight: number = closest(fTD, '.e-row').getBoundingClientRect().height;
         if (mHeight > fHeight) {
             fTD.style.height = mHeight + 'px';
         } else {

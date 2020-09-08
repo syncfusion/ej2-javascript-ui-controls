@@ -19,7 +19,7 @@ export class SpellChecker {
      * @private
      */
     /* tslint:disable:no-any */
-    public uniqueSpelledWords: any[];
+    public uniqueSpelledWords: any = {};
     private spellSuggestionInternal: boolean = true;
     /**
      * @private
@@ -888,6 +888,7 @@ export class SpellChecker {
         } else if (isLastItem) {
             elementBox.isSpellChecked = true;
         }
+        this.updateUniqueWords([{Text: currentText, HasSpellError: jsonObject.HasSpellingError}]);
     }
 
     /**
@@ -1192,25 +1193,20 @@ export class SpellChecker {
         if (!isNullOrUndefined(localStorage.getItem(this.uniqueKey))) {
             this.uniqueSpelledWords = JSON.parse(localStorage.getItem(this.uniqueKey));
         }
-        let totalCount: number = spelledWords.length + this.uniqueSpelledWords.length;
+        this.uniqueSpelledWords = (!this.uniqueSpelledWords) ? this.uniqueSpelledWords : {};
+        let totalCount: number = spelledWords.length + Object.keys(this.uniqueSpelledWords).length;
         if (totalCount <= this.uniqueWordsCount) {
             for (let i: number = 0; i < spelledWords.length; i++) {
                 this.checkForUniqueWords(spelledWords[i]);
             }
         }
         localStorage.setItem(this.uniqueKey, JSON.stringify(this.uniqueSpelledWords));
-        this.uniqueSpelledWords = [];
+        this.uniqueSpelledWords = {};
     }
     private checkForUniqueWords(spellData: any): void {
-        let identityMatched: boolean = false;
-        for (let i: number = 0; i < this.uniqueSpelledWords.length; i++) {
-            if (this.uniqueSpelledWords[i].Text === spellData.Text) {
-                identityMatched = true;
-                break;
-            }
-        }
+        let identityMatched: boolean = this.uniqueSpelledWords[spellData.Text];
         if (!identityMatched) {
-            this.uniqueSpelledWords.push(spellData);
+           this.uniqueSpelledWords[spellData.Text] = spellData.HasSpellError;
         }
     }
     /**
@@ -1242,12 +1238,10 @@ export class SpellChecker {
         let hasError: boolean = false;
         let elementPresent: boolean = false;
         /* tslint:disable:no-any */
-        let uniqueWords: any[] = JSON.parse(localStorage.getItem(this.documentHelper.owner.spellChecker.uniqueKey));
+        let uniqueWords: any = JSON.parse(localStorage.getItem(this.uniqueKey));
         if (!isNullOrUndefined(uniqueWords)) {
-            for (let i: number = 0; i < uniqueWords.length; i++) {
-                if (uniqueWords[i].Text === wordToCheck) {
-                    return { hasSpellError: uniqueWords[i].HasSpellError, isElementPresent: true };
-                }
+            if (!isNullOrUndefined(uniqueWords[wordToCheck])) {
+                    return { hasSpellError: uniqueWords[wordToCheck], isElementPresent: true };
             }
         }
         return { hasSpellError: hasError, isElementPresent: elementPresent };

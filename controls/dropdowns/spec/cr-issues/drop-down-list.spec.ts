@@ -1155,4 +1155,74 @@ describe('DropDownList', () => {
             }, 1000);
         });
     });
+    describe('EJ2-41417', () => {
+        let element: HTMLInputElement, element1: HTMLInputElement, element2: HTMLInputElement;
+        var country = [
+            { CountryName: "United States", CountryId: "1" },
+            { CountryName: "Australia", CountryId: "2" }
+        ];
+        var state = [
+            { StateName: "US 1", CountryId: "1", StateId: "101" }, { StateName: "Australia 2", CountryId: "2", StateId: "104" },
+            { StateName: "Australia 1 ", CountryId: "2", StateId: "105" }, { StateName: "Australia 3", CountryId: "2", StateId: "106" },
+            { StateName: "US 2 ", CountryId: "1", StateId: "102" }, { StateName: "US 3", CountryId: "1", StateId: "103" }
+        ];
+        let mouseEventArgs: any = { preventDefault: function () { }, target: null };
+        let keyEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ }, metaKey: false };
+        let listObj: any, listObj1: any, listObj2: any;
+        beforeAll(() => {
+            element = <HTMLInputElement>createElement('input', { id: 'list' }); 
+            element1 = <HTMLInputElement>createElement('input', { id: 'list1' }); 
+            document.body.appendChild(element);
+            document.body.appendChild(element1);
+            listObj = new DropDownList({
+                dataSource: country,
+                fields: { value: 'CountryId', text: 'CountryName' },
+                allowFiltering: true,
+                change: function () {
+                    listObj1.enabled = true;
+                    var tempQuery = new Query().where('CountryId', 'equal', listObj.value);
+                    listObj1.query = tempQuery;
+                    listObj1.text = null;
+                    listObj1.dataBind();
+                },
+            });
+            listObj.appendTo('#list');
+            listObj1 = new DropDownList({
+                dataSource: state,
+                fields: { value: 'StateId', text: 'StateName' },
+                enabled: false,
+                allowFiltering: true,
+            });
+            listObj1.appendTo('#list1');
+        });
+        afterAll(() => {
+            document.body.innerHTML = '';
+        });
+        it('Popup list items is not updated properly in the cascading dropdown when filtered', () => {
+            listObj.showPopup();
+            let item: any = (listObj as any).popupObj.element.querySelectorAll('li')[0];
+            mouseEventArgs.target = item;
+            mouseEventArgs.type = 'click';
+            listObj.onMouseClick(mouseEventArgs);
+            expect(listObj.value === '1').toBe(true);
+            listObj1.showPopup();
+            keyEventArgs.keyCode = 49;
+            listObj1.filterInput.value = 'US 1';
+            listObj1.onInput()
+            listObj1.onFilterUp(keyEventArgs);
+            let newItem: any = (listObj1 as any).popupObj.element.querySelectorAll('li')[0];
+            mouseEventArgs.target = newItem;
+            mouseEventArgs.type = 'click';
+            listObj1.onMouseClick(mouseEventArgs);
+            expect(listObj1.value === '101').toBe(true);
+            listObj.showPopup();
+            item=  (listObj as any).popupObj.element.querySelectorAll('li')[1];
+            mouseEventArgs.target = item;
+            mouseEventArgs.type = 'click';
+            listObj.onMouseClick(mouseEventArgs);
+            listObj1.showPopup();
+            expect((listObj1 as any).popupObj.element.querySelectorAll('li')[0].textContent).toBe('Australia 2');
+        });
+    });
 });

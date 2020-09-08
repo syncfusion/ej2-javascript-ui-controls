@@ -503,6 +503,7 @@ export interface FormFieldSettingsModel {
 
     /**
      * Get or Set form fields shading color.
+     * You can customize shading color in application level, but cannot be exported in file level
      * @default '#cfcfcf'
      */
     shadingColor?: string;

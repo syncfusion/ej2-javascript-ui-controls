@@ -147,7 +147,7 @@
       pointer-events: none;
     }
 
-    &.e-grid.e-print-grid-layout .e-icons {
+    #{if(&, '&', '*')}.e-grid.e-print-grid-layout .e-icons {
       display: inline-block;
     }
 

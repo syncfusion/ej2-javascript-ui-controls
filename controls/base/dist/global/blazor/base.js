@@ -1620,7 +1620,7 @@ var DateParser = /** @class */ (function () {
         }
         else {
             resPattern = exports.IntlBase.ConvertDateToWeekFormat(resPattern);
-            parseOptions = { isIslamic: exports.IntlBase.islamicRegex.test(option.calendar), pattern: resPattern, evalposition: {} };
+            parseOptions = { isIslamic: exports.IntlBase.islamicRegex.test(option.calendar), pattern: resPattern, evalposition: {}, culture: culture };
             var patternMatch = resPattern.match(exports.IntlBase.dateParseRegex) || [];
             var length_1 = patternMatch.length;
             var gmtCorrection = 0;
@@ -1889,7 +1889,8 @@ var DateParser = /** @class */ (function () {
                         }
                     }
                     else {
-                        matchString = prop === 'month' && !parseOptions.isIslamic ? matchString[0].toUpperCase() + matchString.substring(1).toLowerCase() : matchString;
+                        matchString = ((prop === 'month') && (!parseOptions.isIslamic) && (parseOptions.culture === 'en' || parseOptions.culture === 'en-GB' || parseOptions.culture === 'en-US'))
+                            ? matchString[0].toUpperCase() + matchString.substring(1).toLowerCase() : matchString;
                         retOptions[prop] = parseOptions[prop][matchString];
                     }
                 }

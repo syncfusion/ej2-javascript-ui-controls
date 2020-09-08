@@ -533,16 +533,16 @@
       border-bottom: 0;
     }
 
-    .e-gridcontent tr.e-row:first-child .e-rowcell.e-dragborder,
-    .e-gridcontent .e-rowcell.e-dragborder,
-    .e-gridcontent .e-rowdragdrop.e-dragborder ,
-    & .e-gridheader thead tr th.e-firstrowdragborder,
-    &.e-rtl .e-gridcontent tr.e-row:first-child .e-rowcell.e-dragborder,
-    &.e-rtl .e-gridcontent .e-rowcell.e-dragborder,
-    &.e-rtl .e-gridcontent .e-rowdragdrop.e-dragborder {
-      box-shadow: $grid-dragborder-box-shadow;
-      position: $grid-dragborder-position;
-      z-index: $grid-dragborder-z-index;
+    .e-gridcontent, .e-gridheader,
+    &.e-rtl .e-gridcontent,
+    &.e-rtl .e-gridheader {
+        & tr.e-row:first-child .e-rowcell.e-dragborder,
+        & .e-rowcell.e-dragborder,
+        & .e-rowdragdrop.e-dragborder {
+        box-shadow: $grid-dragborder-box-shadow;
+        position: $grid-dragborder-position;
+        z-index: $grid-dragborder-z-index;
+        }
     }
 
     .e-gridheader thead .e-icons:not(.e-check):not(.e-stop) {
@@ -572,7 +572,8 @@
       padding-right: 6px;
     }
 
-    .e-gridcontent .e-rowdragdrop {
+    .e-gridcontent .e-rowdragdrop,
+    .e-gridheader .e-rowdragdrop {
       border-style: $grid-dragcell-border-style;
       border-width: $grid-dragicon-cell-border;
       border-color: $grid-dragcell-border-color;
@@ -1011,11 +1012,6 @@
         .e-headercontent {
       position: relative;
       }
-    }
-
-    &.e-afenabled,
-    &.e-enabledboxbdr {
-      overflow: hidden;
     }
 
     .e-rowcell:first-child,

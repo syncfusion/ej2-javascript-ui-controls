@@ -203,6 +203,16 @@ var Tab = /** @class */ (function (_super) {
             _this.element.removeAttribute(val);
         });
         this.expTemplateContent();
+        var subControls = this.element.querySelectorAll('.e-control');
+        [].slice.call(subControls).forEach(function (node) {
+            var instances = node.ej2_instances;
+            if (instances.length > 0) {
+                var instance = instances[0];
+                if (instance) {
+                    instance.destroy();
+                }
+            }
+        });
         if (!this.isTemplate) {
             while (this.element.firstElementChild) {
                 sf.base.remove(this.element.firstElementChild);

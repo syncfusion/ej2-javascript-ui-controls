@@ -3779,8 +3779,8 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             return 1;
         }
         //Literals
-        if (/^`?([a-z_][a-z0-9_]{0,}(\:(number|float|string|date|boolean))?)`?/i.exec(sqlString)) {
-            matchValue = /^`?([a-z_][a-z0-9_]{0,}(\:(number|float|string|date|boolean))?)`?/i.exec(sqlString)[1];
+        if (/^`?([a-z_][a-z0-9_.]{0,}(\:(number|float|string|date|boolean))?)`?/i.exec(sqlString)) {
+            matchValue = /^`?([a-z_][a-z0-9_.]{0,}(\:(number|float|string|date|boolean))?)`?/i.exec(sqlString)[1];
             this.parser.push(['Literal', matchValue]);
             return matchValue.length;
         }

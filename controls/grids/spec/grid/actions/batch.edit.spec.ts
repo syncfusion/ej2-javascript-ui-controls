@@ -3609,3 +3609,67 @@ describe('EJ2-41938-Auto-fill functionality not working properly with frozen col
         destroy(gridObj);
     });
 });
+
+describe('EJ2-42118-recordclick event arguments check', () => {
+    let gridObj: Grid;
+    let recordClick:() => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowPaging: true,
+                editSettings : { allowEditing: true, allowAdding: true, allowDeleting: true , mode: "Batch" },
+                toolbar : ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                selectionSettings: { type: 'Multiple', mode: 'Cell', cellSelectionMode: 'Box' },
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID',isPrimaryKey: true , width: 120, textAlign: 'Right' },
+                    { field: 'EmployeeID', headerText:'Employee ID', type: 'number' },
+                    { field: 'Freight', headerText: 'Freight', editType: 'numericedit', width: 120, format: 'N4', type: 'number' },
+                ],
+            }, done);
+    });
+    it('check recordclick argument after edit state', () => {
+        recordClick = (args?: any): void => {
+            expect(args.cell).toBeDefined();
+            expect(args.cellIndex).toBeDefined();
+            expect(args.row).toBeDefined();
+            expect(args.rowIndex).toBeDefined();
+            expect(args.rowData).toBeDefined();
+        }
+        gridObj.recordClick = recordClick;
+        gridObj.editModule.editCell(2,"Freight");
+        (gridObj.element.querySelector('.e-row:nth-child(2)').querySelector('.e-rowcell') as any).click();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('EJ2-42197 - Delete action was not working properly in checkbox selection', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowPaging: true,
+                editSettings : { allowEditing: true, allowAdding: true, allowDeleting: true, mode: "Batch" },
+                toolbar : ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    { type:'checkbox', width:50 },
+                    { field: 'OrderID', headerText: 'Order ID',isPrimaryKey: true , width: 120, textAlign: 'Right' },
+                    { field: 'EmployeeID', type: 'number', allowEditing: false },
+                    { field: 'Freight', type: 'number' },
+                    { field: 'ShipCity', type: 'string' },
+                ]
+            }, done);
+    });
+    it('check selection', () => {
+        gridObj.selectRow(2);
+        (gridObj.element.querySelector('#'+gridObj.element.id+'_delete') as any).click();
+        expect(gridObj.getSelectedRecords().length).toBe(0);
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});

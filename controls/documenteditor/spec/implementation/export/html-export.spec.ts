@@ -1,6 +1,6 @@
 import { DocumentEditor } from '../../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
-import { Editor, TextPosition, SfdtExport, HtmlExport, HelperMethods, TableWidget } from '../../../src/index';
+import { Editor, TextPosition, SfdtExport, HtmlExport, HelperMethods, TableWidget, ParagraphWidget, LineWidget } from '../../../src/index';
 import { TestHelper } from '../../test-helper.spec';
 import { Selection } from '../../../src/index';
 
@@ -173,5 +173,13 @@ describe('Copy html tag', () => {
         table.tableFormat.leftIndent = 1;
         editor.selection.selectAll();
         expect(() => { editor.selection.copy(); }).not.toThrowError();
+    });
+    it('all caps validation on copy paste', () => {
+        editor.openBlank();
+        editor.editor.insertText('hello');
+        editor.selection.selectAll();
+        editor.selection.copy();
+        editor.editor.paste();
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[0].characterFormat.allCaps).toBe(false);
     });
 });

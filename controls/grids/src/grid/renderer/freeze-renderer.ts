@@ -170,7 +170,7 @@ export class FreezeRender extends HeaderRender implements IRenderer {
         }
         this.parent.updateDefaultCursor();
         if (!isBlazor() || this.parent.frozenRows === 0) {
-            renderMovable(this.parent.getContentTable().querySelector('colgroup'), this.parent.getFrozenColumns());
+            renderMovable(this.parent.getContentTable().querySelector('colgroup'), this.parent.getFrozenColumns(), this.parent);
         }
         this.initializeHeaderDrag();
         this.parent.notify(events.headerRefreshed, { rows: this.rows, args: { isFrozen: false } });
@@ -411,7 +411,7 @@ export class FreezeRender extends HeaderRender implements IRenderer {
         let mTable: Element = this.getMovableHeader().querySelector('table');
         remove(this.getMovableHeader().querySelector('colgroup'));
         mTable.insertBefore(
-            renderMovable(this.getFrozenHeader().querySelector('colgroup'), this.parent.getFrozenColumns()),
+            renderMovable(this.getFrozenHeader().querySelector('colgroup'), this.parent.getFrozenColumns(), this.parent),
             mTable.querySelector('thead'));
     }
     private filterRenderer(ele: Element, frozenColumn: number): Element {

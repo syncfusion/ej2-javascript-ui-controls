@@ -382,11 +382,24 @@ var MultiSelect = /** @class */ (function (_super) {
         this.deselectHeader();
     };
     MultiSelect.prototype.loadTemplate = function () {
-        this.refreshListItems(null);
-        if (this.mode === 'CheckBox') {
-            this.removeFocus();
+        var _this = this;
+        if (this.mode === 'CheckBox' && this.itemTemplate && (sf.base.isBlazor() && this.isServerRendered) &&
+            this.mainData && this.mainData.length > 0) {
+            setTimeout(function () {
+                _this.refreshListItems(null);
+                if (_this.mode === 'CheckBox') {
+                    _this.removeFocus();
+                }
+                _this.notify('reOrder', { module: 'CheckBoxSelection', enable: _this.mode === 'CheckBox', e: _this });
+            }, this.mainData.length < 100 ? 100 : this.mainData.length);
         }
-        this.notify('reOrder', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', e: this });
+        else {
+            this.refreshListItems(null);
+            if (this.mode === 'CheckBox') {
+                this.removeFocus();
+            }
+            this.notify('reOrder', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', e: this });
+        }
     };
     MultiSelect.prototype.setScrollPosition = function () {
         if (((!this.hideSelectedItem && this.mode !== 'CheckBox') || (this.mode === 'CheckBox' && !this.enableSelectionOrder)) &&
@@ -1935,7 +1948,7 @@ var MultiSelect = /** @class */ (function (_super) {
             else {
                 compiledString = sf.base.compile(this.valueTemplate);
             }
-            for (var _i = 0, _a = compiledString(itemData, null, null, this.valueTemplateId, this.isStringTemplate); _i < _a.length; _i++) {
+            for (var _i = 0, _a = compiledString(itemData, this, 'valueTemplate', this.valueTemplateId, this.isStringTemplate); _i < _a.length; _i++) {
                 var item = _a[_i];
                 chipContent.appendChild(item);
             }
@@ -2141,7 +2154,7 @@ var MultiSelect = /** @class */ (function (_super) {
         else {
             compiledString = sf.base.compile(this.headerTemplate);
         }
-        var elements = compiledString({}, null, null, this.headerTemplateId, this.isStringTemplate);
+        var elements = compiledString({}, this, 'headerTemplate', this.headerTemplateId, this.isStringTemplate);
         for (var temp = 0; temp < elements.length; temp++) {
             this.header.appendChild(elements[temp]);
         }
@@ -2168,7 +2181,7 @@ var MultiSelect = /** @class */ (function (_super) {
         else {
             compiledString = sf.base.compile(this.footerTemplate);
         }
-        var elements = compiledString({}, null, null, this.footerTemplateId, this.isStringTemplate);
+        var elements = compiledString({}, this, 'footerTemplate', this.footerTemplateId, this.isStringTemplate);
         for (var temp = 0; temp < elements.length; temp++) {
             this.footer.appendChild(elements[temp]);
         }
@@ -2993,7 +3006,7 @@ var MultiSelect = /** @class */ (function (_super) {
             });
             var compiledString = sf.base.compile(remainContent);
             var totalCompiledString = sf.base.compile(l10n.getConstant('totalCountTemplate'));
-            raminElement.appendChild(compiledString({ 'count': this.value.length }, null, null, null, !this.isStringTemplate)[0]);
+            raminElement.appendChild(compiledString({ 'count': this.value.length }, this, 'overflowCountTemplate', null, !this.isStringTemplate)[0]);
             this.viewWrapper.appendChild(raminElement);
             var remainSize = raminElement.offsetWidth;
             sf.base.remove(raminElement);
@@ -3068,8 +3081,8 @@ var MultiSelect = /** @class */ (function (_super) {
         }
         raminElement.innerHTML = '';
         raminElement.appendChild((viewWrapper.firstChild && viewWrapper.firstChild.nodeType === 3) ?
-            compiledString({ 'count': remaining }, null, null, null, !this.isStringTemplate)[0] :
-            totalCompiledString({ 'count': remaining }, null, null, null, !this.isStringTemplate)[0]);
+            compiledString({ 'count': remaining }, this, 'overflowCountTemplate', null, !this.isStringTemplate)[0] :
+            totalCompiledString({ 'count': remaining }, this, 'totalCountTemplate', null, !this.isStringTemplate)[0]);
         if (viewWrapper.firstChild && viewWrapper.firstChild.nodeType === 3) {
             viewWrapper.classList.remove(TOTAL_COUNT_WRAPPER);
         }
@@ -4449,7 +4462,8 @@ var CheckBoxSelection = /** @class */ (function () {
             var compiledString = void 0;
             this.selectAllSpan.textContent = '';
             compiledString = sf.base.compile(template);
-            for (var _i = 0, _a = compiledString({}, null, null, null, !this.parent.isStringTemplate); _i < _a.length; _i++) {
+            var templateName = unSelect ? 'unSelectAllText' : 'selectAllText';
+            for (var _i = 0, _a = compiledString({}, this.parent, templateName, null, !this.parent.isStringTemplate); _i < _a.length; _i++) {
                 var item = _a[_i];
                 this.selectAllSpan.textContent = item.textContent;
             }

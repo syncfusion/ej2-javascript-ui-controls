@@ -333,6 +333,7 @@ export class PasteCleanup {
     (uploadObj as any).createFileList(fileData);
     (uploadObj as any).filesData.push(fileData[0]);
     /* tslint:enable */
+    rawFile = fileData;
     uploadObj.upload(fileData);
     (popupObj.element.getElementsByClassName('e-file-select-wrap')[0] as HTMLElement).style.display = 'none';
     detach(popupObj.element.querySelector('.e-rte-dialog-upload .e-file-select-wrap') as HTMLElement);

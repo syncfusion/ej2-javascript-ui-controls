@@ -250,7 +250,7 @@ export class RowDD {
             this.isOverflowBorder = false;
             this.timer = window.setInterval(
                 () => { this.setScrollDown(scrollElem, scrollPixel, true); }, 200);
-        } else if (cliRect.top + this.parent.getContent().clientHeight - rowHeight - 33 <= y) {
+        } else if (cliRect.top + this.parent.getContent().clientHeight - rowHeight - 20 <= y) {
             let scrollPixel: number = (this.parent.getRowHeight());
             this.isOverflowBorder = false;
             this.timer = window.setInterval(

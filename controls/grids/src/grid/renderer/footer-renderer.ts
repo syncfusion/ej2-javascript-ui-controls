@@ -150,7 +150,7 @@ export class FooterRenderer extends ContentRender implements IRenderer {
             if (isXaxis) {
                 mheaderCol = this.parent.getMovableVirtualHeader().querySelector('colgroup').cloneNode(true);
             } else {
-                mheaderCol = renderMovable(<Element>fheaderCol, this.parent.getFrozenColumns());
+                mheaderCol = renderMovable(<Element>fheaderCol, this.parent.getFrozenColumns(), this.parent);
                 this.freezeTable.replaceChild(fheaderCol, this.freezeTable.querySelector('colGroup'));
             }
         }
@@ -173,6 +173,7 @@ export class FooterRenderer extends ContentRender implements IRenderer {
 
     public getColFromIndex(index?: number): HTMLElement {
         let fCol: number = this.parent.getFrozenColumns();
+        fCol = fCol && this.parent.isRowDragable() ? fCol + 1 : fCol;
         if (fCol && fCol > index) {
             return this.freezeTable.querySelector('colGroup').children[index] as HTMLElement;
         }

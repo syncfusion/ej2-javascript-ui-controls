@@ -6931,6 +6931,16 @@ let Tab = class Tab extends Component {
             this.element.removeAttribute(val);
         });
         this.expTemplateContent();
+        let subControls = this.element.querySelectorAll('.e-control');
+        [].slice.call(subControls).forEach((node) => {
+            let instances = node.ej2_instances;
+            if (instances.length > 0) {
+                let instance = instances[0];
+                if (instance) {
+                    instance.destroy();
+                }
+            }
+        });
         if (!this.isTemplate) {
             while (this.element.firstElementChild) {
                 remove(this.element.firstElementChild);

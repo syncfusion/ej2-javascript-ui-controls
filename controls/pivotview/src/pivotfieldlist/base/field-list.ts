@@ -56,6 +56,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     /** @hidden */
     public olapEngineModule: OlapEngine;
     /** @hidden */
+    public localDataSourceSetting: any;
+    /** @hidden */
     public isDragging: boolean;
     /** @hidden */
     public fieldListSpinnerElement: Element;
@@ -873,6 +875,10 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
      * @hidden
      */
     public onPropertyChanged(newProp: PivotFieldListModel, oldProp: PivotFieldListModel): void {
+        if (!isNullOrUndefined(newProp.dataSourceSettings.dataSource)) {
+            this.localDataSourceSetting = PivotUtil.getClonedDataSourceSettings(this.staticPivotGridModule.dataSourceSettings);
+            this.initEngine();
+        }
         let requireRefresh: boolean = false;
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
@@ -939,6 +945,9 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             if (requireRefresh) {
                 this.fieldListRender();
             }
+        }
+        if(!isNullOrUndefined(this.localDataSourceSetting)) {
+            PivotUtil.updateDataSourceSettings(this.staticPivotGridModule, this.localDataSourceSetting);
         }
     }
     /* tslint:disable */

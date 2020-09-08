@@ -268,7 +268,7 @@ var ComboBox = /** @class */ (function (_super) {
         this.itemData = this.getDataByValue(this.value);
         var dataItem = this.getItemData();
         if (!(this.allowCustom && sf.base.isNullOrUndefined(dataItem.value) && sf.base.isNullOrUndefined(dataItem.text))) {
-            this.setProperties({ 'value': dataItem.value, 'text': dataItem.text }, true);
+            this.setProperties({ 'value': dataItem.value, 'text': dataItem.text }, !this.allowCustom);
         }
     };
     /**
@@ -350,7 +350,8 @@ var ComboBox = /** @class */ (function (_super) {
         }
     };
     ComboBox.prototype.clearAll = function (e, property) {
-        if (sf.base.isNullOrUndefined(property) || (!sf.base.isNullOrUndefined(property) && sf.base.isNullOrUndefined(property.dataSource))) {
+        if (sf.base.isNullOrUndefined(property) || (!sf.base.isNullOrUndefined(property) && sf.base.isNullOrUndefined(property.dataSource)) ||
+            (sf.base.isNullOrUndefined(this.itemData) && this.allowFiltering)) {
             _super.prototype.clearAll.call(this, e);
             if (this.isServerBlazor && this.isFiltering() && this.isPopupOpen && e) {
                 // tslint:disable-next-line
@@ -554,6 +555,7 @@ var ComboBox = /** @class */ (function (_super) {
      */
     ComboBox.prototype.onPropertyChanged = function (newProp, oldProp) {
         if (this.getModuleName() === 'combobox') {
+            this.checkData(newProp);
             this.setUpdateInitial(['fields', 'query', 'dataSource'], newProp);
         }
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {

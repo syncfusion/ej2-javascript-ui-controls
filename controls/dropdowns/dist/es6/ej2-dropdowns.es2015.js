@@ -346,7 +346,8 @@ let DropDownBase = class DropDownBase extends Component {
             else {
                 compiledString = compile(template);
             }
-            for (let item of compiledString({}, null, null, templateId, this.isStringTemplate)) {
+            let templateName = actionFailure ? 'actionFailureTemplate' : 'noRecordsTemplate';
+            for (let item of compiledString({}, this, templateName, templateId, this.isStringTemplate)) {
                 ele.appendChild(item);
             }
             this.DropDownBaseupdateBlazorTemplates(false, false, !actionFailure, actionFailure, false, false, false, false);
@@ -1108,7 +1109,7 @@ let DropDownBase = class DropDownBase extends Component {
             }
             if (this.itemTemplate && !isHeader) {
                 let compiledString = compile(this.itemTemplate);
-                append(compiledString(item, null, null, this.itemTemplateId, this.isStringTemplate), li);
+                append(compiledString(item, this, 'itemTemplate', this.itemTemplateId, this.isStringTemplate), li);
                 this.DropDownBaseupdateBlazorTemplates(true, false, false, false);
             }
             else if (!isHeader) {
@@ -2398,7 +2399,7 @@ let DropDownList = class DropDownList extends DropDownBase {
         else {
             compiledString = compile(this.valueTemplate);
         }
-        for (let item of compiledString(templateData, null, null, this.valueTemplateId, this.isStringTemplate)) {
+        for (let item of compiledString(templateData, this, 'valueTemplate', this.valueTemplateId, this.isStringTemplate)) {
             this.valueTempElement.appendChild(item);
         }
         this.DropDownBaseupdateBlazorTemplates(false, false, false, false, true, true, true);
@@ -2842,7 +2843,7 @@ let DropDownList = class DropDownList extends DropDownBase {
             }
             if (this.getModuleName() !== 'autocomplete' && this.isFiltering() && !this.isTyped) {
                 if (!this.actionCompleteData.isUpdated || ((!this.isCustomFilter
-                    && !this.isFilterFocus)
+                    && !this.isFilterFocus) || (isNullOrUndefined(this.itemData) && this.allowFiltering)
                     && ((this.dataSource instanceof DataManager)
                         || (!isNullOrUndefined(this.dataSource) && !isNullOrUndefined(this.dataSource.length) &&
                             this.dataSource.length !== 0)))) {
@@ -3494,7 +3495,7 @@ let DropDownList = class DropDownList extends DropDownBase {
         else {
             compiledString = compile(this.footerTemplate);
         }
-        for (let item of compiledString({}, null, null, this.footerTemplateId, this.isStringTemplate)) {
+        for (let item of compiledString({}, this, 'footerTemplate', this.footerTemplateId, this.isStringTemplate)) {
             this.footer.appendChild(item);
         }
         this.DropDownBaseupdateBlazorTemplates(false, false, false, false, false, false, true);
@@ -3516,7 +3517,7 @@ let DropDownList = class DropDownList extends DropDownBase {
         else {
             compiledString = compile(this.headerTemplate);
         }
-        for (let item of compiledString({}, null, null, this.headerTemplateId, this.isStringTemplate)) {
+        for (let item of compiledString({}, this, 'headerTemplate', this.headerTemplateId, this.isStringTemplate)) {
             this.header.appendChild(item);
         }
         this.DropDownBaseupdateBlazorTemplates(false, false, false, false, false, true, false);
@@ -3537,7 +3538,7 @@ let DropDownList = class DropDownList extends DropDownBase {
             this.popupObj.resolveCollision();
         }
     }
-    checkDatasource(newProp) {
+    checkData(newProp) {
         if (newProp.dataSource && !isNullOrUndefined(Object.keys(newProp.dataSource)) && this.itemTemplate && this.allowFiltering) {
             this.list = null;
             this.actionCompleteData = { ulElement: null, list: null, isUpdated: false };
@@ -3578,7 +3579,7 @@ let DropDownList = class DropDownList extends DropDownBase {
     onPropertyChanged(newProp, oldProp) {
         if (this.getModuleName() === 'dropdownlist') {
             if (!this.isServerBlazor) {
-                this.checkDatasource(newProp);
+                this.checkData(newProp);
                 this.setUpdateInitial(['fields', 'query', 'dataSource'], newProp);
             }
         }
@@ -7259,7 +7260,7 @@ let ComboBox = class ComboBox extends DropDownList {
         this.itemData = this.getDataByValue(this.value);
         let dataItem = this.getItemData();
         if (!(this.allowCustom && isNullOrUndefined(dataItem.value) && isNullOrUndefined(dataItem.text))) {
-            this.setProperties({ 'value': dataItem.value, 'text': dataItem.text }, true);
+            this.setProperties({ 'value': dataItem.value, 'text': dataItem.text }, !this.allowCustom);
         }
     }
     /**
@@ -7341,7 +7342,8 @@ let ComboBox = class ComboBox extends DropDownList {
         }
     }
     clearAll(e, property) {
-        if (isNullOrUndefined(property) || (!isNullOrUndefined(property) && isNullOrUndefined(property.dataSource))) {
+        if (isNullOrUndefined(property) || (!isNullOrUndefined(property) && isNullOrUndefined(property.dataSource)) ||
+            (isNullOrUndefined(this.itemData) && this.allowFiltering)) {
             super.clearAll(e);
             if (this.isServerBlazor && this.isFiltering() && this.isPopupOpen && e) {
                 // tslint:disable-next-line
@@ -7544,6 +7546,7 @@ let ComboBox = class ComboBox extends DropDownList {
      */
     onPropertyChanged(newProp, oldProp) {
         if (this.getModuleName() === 'combobox') {
+            this.checkData(newProp);
             this.setUpdateInitial(['fields', 'query', 'dataSource'], newProp);
         }
         for (let prop of Object.keys(newProp)) {
@@ -8553,11 +8556,23 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         this.deselectHeader();
     }
     loadTemplate() {
-        this.refreshListItems(null);
-        if (this.mode === 'CheckBox') {
-            this.removeFocus();
+        if (this.mode === 'CheckBox' && this.itemTemplate && (isBlazor() && this.isServerRendered) &&
+            this.mainData && this.mainData.length > 0) {
+            setTimeout(() => {
+                this.refreshListItems(null);
+                if (this.mode === 'CheckBox') {
+                    this.removeFocus();
+                }
+                this.notify('reOrder', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', e: this });
+            }, this.mainData.length < 100 ? 100 : this.mainData.length);
         }
-        this.notify('reOrder', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', e: this });
+        else {
+            this.refreshListItems(null);
+            if (this.mode === 'CheckBox') {
+                this.removeFocus();
+            }
+            this.notify('reOrder', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', e: this });
+        }
     }
     setScrollPosition() {
         if (((!this.hideSelectedItem && this.mode !== 'CheckBox') || (this.mode === 'CheckBox' && !this.enableSelectionOrder)) &&
@@ -10103,7 +10118,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             else {
                 compiledString = compile(this.valueTemplate);
             }
-            for (let item of compiledString(itemData, null, null, this.valueTemplateId, this.isStringTemplate)) {
+            for (let item of compiledString(itemData, this, 'valueTemplate', this.valueTemplateId, this.isStringTemplate)) {
                 chipContent.appendChild(item);
             }
             this.DropDownBaseupdateBlazorTemplates(false, false, false, false, true, false, false, false);
@@ -10307,7 +10322,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         else {
             compiledString = compile(this.headerTemplate);
         }
-        let elements = compiledString({}, null, null, this.headerTemplateId, this.isStringTemplate);
+        let elements = compiledString({}, this, 'headerTemplate', this.headerTemplateId, this.isStringTemplate);
         for (let temp = 0; temp < elements.length; temp++) {
             this.header.appendChild(elements[temp]);
         }
@@ -10334,7 +10349,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         else {
             compiledString = compile(this.footerTemplate);
         }
-        let elements = compiledString({}, null, null, this.footerTemplateId, this.isStringTemplate);
+        let elements = compiledString({}, this, 'footerTemplate', this.footerTemplateId, this.isStringTemplate);
         for (let temp = 0; temp < elements.length; temp++) {
             this.footer.appendChild(elements[temp]);
         }
@@ -11156,7 +11171,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             });
             let compiledString = compile(remainContent);
             let totalCompiledString = compile(l10n.getConstant('totalCountTemplate'));
-            raminElement.appendChild(compiledString({ 'count': this.value.length }, null, null, null, !this.isStringTemplate)[0]);
+            raminElement.appendChild(compiledString({ 'count': this.value.length }, this, 'overflowCountTemplate', null, !this.isStringTemplate)[0]);
             this.viewWrapper.appendChild(raminElement);
             let remainSize = raminElement.offsetWidth;
             remove(raminElement);
@@ -11231,8 +11246,8 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         }
         raminElement.innerHTML = '';
         raminElement.appendChild((viewWrapper.firstChild && viewWrapper.firstChild.nodeType === 3) ?
-            compiledString({ 'count': remaining }, null, null, null, !this.isStringTemplate)[0] :
-            totalCompiledString({ 'count': remaining }, null, null, null, !this.isStringTemplate)[0]);
+            compiledString({ 'count': remaining }, this, 'overflowCountTemplate', null, !this.isStringTemplate)[0] :
+            totalCompiledString({ 'count': remaining }, this, 'totalCountTemplate', null, !this.isStringTemplate)[0]);
         if (viewWrapper.firstChild && viewWrapper.firstChild.nodeType === 3) {
             viewWrapper.classList.remove(TOTAL_COUNT_WRAPPER$1);
         }
@@ -12605,7 +12620,8 @@ class CheckBoxSelection {
             let compiledString;
             this.selectAllSpan.textContent = '';
             compiledString = compile(template);
-            for (let item of compiledString({}, null, null, null, !this.parent.isStringTemplate)) {
+            let templateName = unSelect ? 'unSelectAllText' : 'selectAllText';
+            for (let item of compiledString({}, this.parent, templateName, null, !this.parent.isStringTemplate)) {
                 this.selectAllSpan.textContent = item.textContent;
             }
         }

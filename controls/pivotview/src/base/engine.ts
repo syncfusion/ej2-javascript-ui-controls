@@ -293,6 +293,11 @@ export class PivotEngine {
             this.updateFilterMembers(dataSource);
             this.generateGridData(dataSource);
         }
+        if (this.data.length === 0) {
+            this.removeIrrelevantFields(dataSource, []);
+            this.pivotValues = [];
+            this.fieldList = null;
+        }
     }
 
     private removeIrrelevantFields(dataSource: IDataOptions, fields: string[]): void {

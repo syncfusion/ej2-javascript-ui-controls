@@ -1341,7 +1341,7 @@ var Uploader = /** @class */ (function (_super) {
                 this.currentRequestHeader = eventArgs.currentRequest;
                 this.customFormDatas = eventArgs.customFormData;
             }
-            this.selectedFiles = fileData;
+            this.selectedFiles = this.selectedFiles.concat(fileData);
             this.btnTabIndex = this.disableKeyboardNavigation ? '-1' : '0';
             if (this.showFileList) {
                 if (eventArgs.isModified && eventArgs.modifiedFilesData.length > 0) {
@@ -1513,7 +1513,7 @@ var Uploader = /** @class */ (function (_super) {
             var listItem = fileData_1[_i];
             var liElement = this.createElement('li', { className: FILE, attrs: { 'data-file-name': listItem.name } });
             this.uploadTemplateFn = this.templateComplier(this.template);
-            var fromElements = [].slice.call(this.uploadTemplateFn(listItem, null, null, this.element.id + 'Template', this.isStringTemplate));
+            var fromElements = [].slice.call(this.uploadTemplateFn(listItem, this, 'template', this.element.id + 'Template', this.isStringTemplate));
             var index = fileData.indexOf(listItem);
             sf.base.append(fromElements, liElement);
             var eventArgs = {
@@ -1712,7 +1712,7 @@ var Uploader = /** @class */ (function (_super) {
         var result = this.mergeFileInfo(fileData, fileList);
         fileList.setAttribute('data-file-name', result.name);
         this.uploadTemplateFn = this.templateComplier(this.template);
-        var fromElements = [].slice.call(this.uploadTemplateFn(result, null, null, this.element.id + 'Template', this.isStringTemplate));
+        var fromElements = [].slice.call(this.uploadTemplateFn(result, this, 'template', this.element.id + 'Template', this.isStringTemplate));
         var index = this.listParent.querySelectorAll('li').length;
         sf.base.append(fromElements, fileList);
         if (!fileList.classList.contains(INVALID_FILE)) {

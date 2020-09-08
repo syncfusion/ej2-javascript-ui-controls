@@ -609,7 +609,7 @@ describe('Spell Checker API', () => {
         let jsonObject: any = JSON.parse(data1);
         editor.spellChecker.updateUniqueWords(jsonObject.SpellCollection);
         jsonObject = JSON.parse(localStorage.getItem(editor.spellChecker.uniqueKey));
-        expect(jsonObject.length).toBe(4);
+        expect(Object.keys(jsonObject).length).toBe(4);
     });
     it('Spell check by page content', () => {
         editor.open(data);

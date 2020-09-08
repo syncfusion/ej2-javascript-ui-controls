@@ -6,7 +6,7 @@ import { ButtonModel, CheckBoxModel, SwitchModel } from '@syncfusion/ej2-buttons
 import { Column, ColumnModel } from '../models/column';
 import {
     SortSettingsModel, TextWrapSettingsModel, SelectionSettingsModel,
-    FilterSettingsModel, SearchSettingsModel, InfiniteScrollSettingsModel
+    FilterSettingsModel, SearchSettingsModel, InfiniteScrollSettingsModel, ResizeSettingsModel
 } from './grid-model';
 import { PageSettingsModel, AggregateRowModel, ColumnChooserSettingsModel } from '../models/models';
 import { RowDropSettingsModel, GroupSettingsModel, GridModel, EditSettingsModel } from './grid-model';
@@ -130,6 +130,12 @@ export interface IGrid extends Component<HTMLElement> {
      * @default Ellipsis
      */
     clipMode?: ClipMode;
+
+    /**
+     * Defines the resizing behavior of the Grid. 
+     * @default []
+     */
+    resizeSettings?: ResizeSettingsModel;
 
     /**
      * Specifies whether the multi-sorting is enable or not.
@@ -2445,4 +2451,10 @@ export interface ActionArgs {
     translateX?: number;
     rHeight?: number;
     vTableWidth?: number;
+}
+
+export interface CheckBoxBeforeRenderer {
+    dataSource?: object[];
+    field?: string;
+    executeQuery?: boolean;
 }

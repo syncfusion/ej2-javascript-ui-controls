@@ -77,6 +77,9 @@ export class Resize implements IAction {
         if (newarray.length > 0) {
             this.autoFitColumns(newarray);
         }
+        if (this.parent.resizeSettings.mode === 'Auto') {
+            this.widthService.setWidthToTable();
+        }
     }
 
     /* tslint:disable-next-line:max-func-body-length */
@@ -173,10 +176,13 @@ export class Resize implements IAction {
                 }
             }
         }
-        let calcTableWidth: number = tWidth + indentWidth;
+        let calcTableWidth: string | number = tWidth + indentWidth;
         if (tWidth > 0 && !gObj.getFrozenColumns()) {
             if (this.parent.detailTemplate || this.parent.childGrid) {
                 this.widthService.setColumnWidth(new Column({ width: '30px' }));
+            }
+            if (this.parent.resizeSettings.mode === 'Auto') {
+                calcTableWidth = '100%';
             }
             (<HTMLTableElement>headerTable).style.width = formatUnit(calcTableWidth);
             (<HTMLTableElement>contentTable).style.width = formatUnit(calcTableWidth);
@@ -566,7 +572,7 @@ export class Resize implements IAction {
 
     private refreshColumnWidth(): Column[] {
         let columns: Column[] = this.parent.getColumns();
-        for (let ele of [].slice.apply(this.parent.getHeaderTable().querySelectorAll('th.e-headercell'))) {
+        for (let ele of [].slice.apply(this.parent.getHeaderContent().querySelectorAll('th.e-headercell'))) {
             for (let column of columns) {
                 if (ele.querySelector('[e-mappinguid]') &&
                     ele.querySelector('[e-mappinguid]').getAttribute('e-mappinguid') === column.uid && column.visible) {

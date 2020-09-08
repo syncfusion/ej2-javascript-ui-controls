@@ -3726,6 +3726,9 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                             this.grid.dataSource = !(this.dataSource instanceof DataManager) ?
                                 this.flatData : new DataManager(this.dataSource.dataSource, this.dataSource.defaultQuery, this.dataSource.adaptor);
                         }
+                        if (this.enableVirtualization) {
+                            this.grid.contentModule.isDataSourceChanged = true;
+                        }
                     }
                     else {
                         this.bindedDataSource();
@@ -4715,7 +4718,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             }
             else {
                 displayAction = 'none';
-                if (!isChild) {
+                if (!isChild || isCountRequired(this)) {
                     record.expanded = false;
                     this.uniqueIDCollection[record.uniqueID].expanded = record.expanded;
                 }
@@ -9741,6 +9744,8 @@ var VirtualTreeContentRenderer = /** @__PURE__ @class */ (function (_super) {
         _this.endIndex = -1;
         _this.preTranslate = 0;
         _this.isRemoteExpand = false;
+        /** @hidden */
+        _this.isDataSourceChanged = false;
         _this.addEventListener();
         return _this;
     }
@@ -9783,6 +9788,10 @@ var VirtualTreeContentRenderer = /** @__PURE__ @class */ (function (_super) {
             }
             this.recordAdded = false;
         }
+        if (this.isDataSourceChanged) {
+            this.startIndex = 0;
+            this.endIndex = this.parent.pageSettings.pageSize - 1;
+        }
         args.startIndex = this.startIndex;
         args.endIndex = this.endIndex;
     };
@@ -9818,8 +9827,9 @@ var VirtualTreeContentRenderer = /** @__PURE__ @class */ (function (_super) {
                 getValue('virtualEle', this).setVirtualHeight(this.parent.getRowHeight() * e.count, '100%');
                  // this.parent.pageSettings.pageSize - Math.ceil(this.parent.pageSettings.pageSize / 1.5);
             }
-            if (!isNullOrUndefined(e.requestType) && e.requestType.toString() === 'collapseAll') {
+            if ((!isNullOrUndefined(e.requestType) && e.requestType.toString() === 'collapseAll') || this.isDataSourceChanged) {
                 this.contents.scrollTop = 0;
+                this.isDataSourceChanged = false;
             }
         }
     };

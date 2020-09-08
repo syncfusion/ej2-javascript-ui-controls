@@ -316,6 +316,13 @@ export class HeaderRender implements IRenderer {
         }
         rows = this.ensureColumns(rows);
         rows = this.getHeaderCells(rows);
+        let frzCols: number = this.parent.getFrozenColumns();
+        if (this.parent.isRowDragable() && frzCols) {
+            let row: Row<Column> = rows[0];
+            if (row.cells[1].column.index === frzCols) {
+                rows[0].cells.shift();
+            }
+        }
         for (let i: number = 0, len: number = this.colDepth; i < len; i++) {
             headerRow = rowRenderer.render(rows[i], columns);
             if (this.parent.rowHeight && headerRow.querySelector('.e-headercell')) {
@@ -476,10 +483,10 @@ export class HeaderRender implements IRenderer {
             }
             if (this.lockColsRendered) {
                 for (let i: number = 0, len: number = cols.columns.length; i < len; i++) {
-                    let isFirstCol: boolean = this.isFirstCol = (cols.columns[i] as Column).visible && !this.isFirstCol;
-                    let isLastCol: boolean = i === (len - 1) && !isFirstCol;
+                    let isFirstCol: boolean = this.isFirstCol = (cols.columns[i] as Column).visible && !this.isFirstCol && len !== 1 ;
+                    let isLaststackedCol: boolean = i === (len - 1);
                     rows = this.appendCells(
-                        (cols.columns as Column[])[i], rows, index + 1, isFirstObj, isFirstCol, isLastCol && isLastCol, isMovable);
+                        (cols.columns as Column[])[i], rows, index + 1, isFirstObj, isFirstCol, isLaststackedCol && isLastCol, isMovable);
                 }
             }
         }
@@ -594,7 +601,8 @@ export class HeaderRender implements IRenderer {
 
             displayVal = column.visible ? '' : 'none';
             if (frzCols) {
-                if (idx < frzCols) {
+                let normalizedfrzCols: number = this.parent.isRowDragable() ? frzCols + 1 : frzCols;
+                if (idx < normalizedfrzCols) {
                     if (isBlazor() && gObj.isServerRendered) {
                         setStyleAttribute(<HTMLElement>this.getTable().querySelector('colgroup').children[idx], { 'display': displayVal });
                         setStyleAttribute(this.getTable().querySelectorAll('th')[idx], { 'display': displayVal });
@@ -604,7 +612,7 @@ export class HeaderRender implements IRenderer {
                 } else {
                     let mTblColGrp: Element = gObj.getHeaderContent().querySelector('.e-movableheader').querySelector('colgroup');
                     let mTbl: Element = gObj.getHeaderContent().querySelector('.e-movableheader').querySelector('table');
-                    setStyleAttribute(<HTMLElement>mTblColGrp.children[idx - frzCols], { 'display': displayVal });
+                    setStyleAttribute(<HTMLElement>mTblColGrp.children[idx - normalizedfrzCols], { 'display': displayVal });
                     if (isBlazor() && gObj.isServerRendered) {
                         setStyleAttribute(mTbl.querySelectorAll('th')[idx - frzCols], { 'display': displayVal });
                     }

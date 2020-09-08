@@ -789,10 +789,21 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.deselectHeader();
     }
     private loadTemplate(): void {
+        if (this.mode === 'CheckBox' && this.itemTemplate && (isBlazor() && this.isServerRendered) &&
+            this.mainData && this.mainData.length > 0) {
+            setTimeout(
+                (): void => {
+                    this.refreshListItems(null);
+                    if (this.mode === 'CheckBox') { this.removeFocus(); }
+                    this.notify('reOrder', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', e: this });
+                },
+                this.mainData.length < 100 ? 100 : this.mainData.length
+            );
+        } else {
         this.refreshListItems(null);
         if (this.mode === 'CheckBox') { this.removeFocus(); }
         this.notify('reOrder', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', e: this });
-
+        }
     }
     private setScrollPosition(): void {
         if (((!this.hideSelectedItem && this.mode !== 'CheckBox') || (this.mode === 'CheckBox' && !this.enableSelectionOrder)) &&
@@ -2317,7 +2328,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             } else {
                 compiledString = compile(this.valueTemplate);
             }
-            for (let item of compiledString(itemData, null, null, this.valueTemplateId, this.isStringTemplate)) {
+            for (let item of compiledString(itemData, this, 'valueTemplate', this.valueTemplateId, this.isStringTemplate)) {
                 chipContent.appendChild(item);
             }
             this.DropDownBaseupdateBlazorTemplates(false, false, false, false, true, false, false, false);
@@ -2507,7 +2518,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         } else {
             compiledString = compile(this.headerTemplate);
         }
-        let elements: [Element] = compiledString({}, null, null, this.headerTemplateId, this.isStringTemplate);
+        let elements: [Element] = compiledString({}, this, 'headerTemplate', this.headerTemplateId, this.isStringTemplate);
         for (let temp: number = 0; temp < elements.length; temp++) {
             this.header.appendChild(elements[temp]);
         }
@@ -2532,7 +2543,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         } else {
             compiledString = compile(this.footerTemplate);
         }
-        let elements: [Element] = compiledString({}, null, null, this.footerTemplateId, this.isStringTemplate);
+        let elements: [Element] = compiledString({}, this, 'footerTemplate', this.footerTemplateId, this.isStringTemplate);
         for (let temp: number = 0; temp < elements.length; temp++) {
             this.footer.appendChild(elements[temp]);
         }
@@ -3320,7 +3331,8 @@ export class MultiSelect extends DropDownBase implements IInput {
             });
             let compiledString: Function = compile(remainContent);
             let totalCompiledString: Function = compile(l10n.getConstant('totalCountTemplate'));
-            raminElement.appendChild(compiledString({ 'count': this.value.length }, null, null, null, !this.isStringTemplate)[0]);
+            raminElement.appendChild(
+                compiledString({ 'count': this.value.length }, this, 'overflowCountTemplate', null, !this.isStringTemplate)[0]);
             this.viewWrapper.appendChild(raminElement);
             let remainSize: number = raminElement.offsetWidth;
             remove(raminElement);
@@ -3401,8 +3413,8 @@ export class MultiSelect extends DropDownBase implements IInput {
         raminElement.innerHTML = '';
         raminElement.appendChild(
             (viewWrapper.firstChild && viewWrapper.firstChild.nodeType === 3) ?
-            compiledString({ 'count': remaining }, null, null, null, !this.isStringTemplate)[0] :
-            totalCompiledString({ 'count': remaining }, null, null, null, !this.isStringTemplate)[0]);
+            compiledString({ 'count': remaining }, this, 'overflowCountTemplate', null, !this.isStringTemplate)[0] :
+            totalCompiledString({ 'count': remaining }, this, 'totalCountTemplate', null, !this.isStringTemplate)[0]);
         if (viewWrapper.firstChild && viewWrapper.firstChild.nodeType === 3) {
             viewWrapper.classList.remove(TOTAL_COUNT_WRAPPER);
         } else {

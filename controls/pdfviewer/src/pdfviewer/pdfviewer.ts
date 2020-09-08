@@ -12,7 +12,7 @@ import { Magnification } from './index';
 import { Toolbar } from './index';
 import { ToolbarItem } from './index';
 // tslint:disable-next-line:max-line-length
-import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction } from './base/types';
+import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction, SignatureMode } from './base/types';
 import { Annotation } from './index';
 import { LinkAnnotation } from './index';
 import { ThumbnailView } from './index';
@@ -2575,6 +2575,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public printMode: PrintMode;
 
     /**
+     * Specifies the signature mode in the PDF Viewer.
+     * @default Default
+     */
+    @Property('Default')
+    public signatureMode: SignatureMode;
+
+    /**
      * Sets the initial loading zoom value from 10 to 400 in PdfViewer Control.
      * @default 0
      */
@@ -3871,6 +3878,17 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             });
         } else {
             return null;
+        }
+    }
+
+    /**
+     * Perform to add annotations in the PDF Viewer
+     * @returns void
+     */
+    // tslint:disable-next-line
+    public addAnnotation(annotation: any): void {
+        if (this.viewerBase) {
+            this.viewerBase.addAnnotation(annotation);
         }
     }
 

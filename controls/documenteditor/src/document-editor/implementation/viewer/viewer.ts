@@ -100,6 +100,10 @@ export class DocumentHelper {
     /**
      * @private
      */
+    public showRevision: boolean = false;
+    /**
+     * @private
+     */
     public splittedCellWidgets: TableCellWidget[] = [];
     /**
      * @private
@@ -895,9 +899,13 @@ export class DocumentHelper {
         if (!show && this.owner.showComments) {
             this.owner.commentReviewPane.reviewTab.hideTab(0, false);
             this.owner.commentReviewPane.showHidePane(true, 'Comments');
+        } else if (!this.showRevision && !this.owner.enableTrackChanges && this.owner.showRevisions) {
+            this.owner.commentReviewPane.showHidePane(!show, 'Changes');
+            this.owner.showRevisions = false;
         } else {
             this.owner.commentReviewPane.showHidePane(show, 'Changes');
             this.owner.commentReviewPane.reviewTab.hideTab(0, true);
+            this.showRevision = false;
         }
     }
     /**

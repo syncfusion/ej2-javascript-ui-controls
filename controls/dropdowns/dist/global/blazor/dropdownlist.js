@@ -1099,7 +1099,7 @@ var DropDownList = /** @class */ (function (_super) {
         else {
             compiledString = sf.base.compile(this.valueTemplate);
         }
-        for (var _i = 0, _a = compiledString(templateData, null, null, this.valueTemplateId, this.isStringTemplate); _i < _a.length; _i++) {
+        for (var _i = 0, _a = compiledString(templateData, this, 'valueTemplate', this.valueTemplateId, this.isStringTemplate); _i < _a.length; _i++) {
             var item = _a[_i];
             this.valueTempElement.appendChild(item);
         }
@@ -1547,7 +1547,7 @@ var DropDownList = /** @class */ (function (_super) {
             }
             if (this.getModuleName() !== 'autocomplete' && this.isFiltering() && !this.isTyped) {
                 if (!this.actionCompleteData.isUpdated || ((!this.isCustomFilter
-                    && !this.isFilterFocus)
+                    && !this.isFilterFocus) || (sf.base.isNullOrUndefined(this.itemData) && this.allowFiltering)
                     && ((this.dataSource instanceof sf.data.DataManager)
                         || (!sf.base.isNullOrUndefined(this.dataSource) && !sf.base.isNullOrUndefined(this.dataSource.length) &&
                             this.dataSource.length !== 0)))) {
@@ -2205,7 +2205,7 @@ var DropDownList = /** @class */ (function (_super) {
         else {
             compiledString = sf.base.compile(this.footerTemplate);
         }
-        for (var _i = 0, _a = compiledString({}, null, null, this.footerTemplateId, this.isStringTemplate); _i < _a.length; _i++) {
+        for (var _i = 0, _a = compiledString({}, this, 'footerTemplate', this.footerTemplateId, this.isStringTemplate); _i < _a.length; _i++) {
             var item = _a[_i];
             this.footer.appendChild(item);
         }
@@ -2228,7 +2228,7 @@ var DropDownList = /** @class */ (function (_super) {
         else {
             compiledString = sf.base.compile(this.headerTemplate);
         }
-        for (var _i = 0, _a = compiledString({}, null, null, this.headerTemplateId, this.isStringTemplate); _i < _a.length; _i++) {
+        for (var _i = 0, _a = compiledString({}, this, 'headerTemplate', this.headerTemplateId, this.isStringTemplate); _i < _a.length; _i++) {
             var item = _a[_i];
             this.header.appendChild(item);
         }
@@ -2250,7 +2250,7 @@ var DropDownList = /** @class */ (function (_super) {
             this.popupObj.resolveCollision();
         }
     };
-    DropDownList.prototype.checkDatasource = function (newProp) {
+    DropDownList.prototype.checkData = function (newProp) {
         if (newProp.dataSource && !sf.base.isNullOrUndefined(Object.keys(newProp.dataSource)) && this.itemTemplate && this.allowFiltering) {
             this.list = null;
             this.actionCompleteData = { ulElement: null, list: null, isUpdated: false };
@@ -2291,7 +2291,7 @@ var DropDownList = /** @class */ (function (_super) {
     DropDownList.prototype.onPropertyChanged = function (newProp, oldProp) {
         if (this.getModuleName() === 'dropdownlist') {
             if (!this.isServerBlazor) {
-                this.checkDatasource(newProp);
+                this.checkData(newProp);
                 this.setUpdateInitial(['fields', 'query', 'dataSource'], newProp);
             }
         }

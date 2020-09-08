@@ -405,6 +405,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     /** @hidden */
     public dataType: string;
     /** @hidden */
+    private localDataSourceSetting: any;
+    /** @hidden */
     public tooltip: Tooltip;
     /** @hidden */
     public grid: Grid;
@@ -452,6 +454,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     public lastCellClicked: Element;
     /** @hidden */
     public isScrolling: boolean = false;
+    /** @hidden */
+    public lastColumn: Object;
 
     //Module Declarations
     public pivotView: PivotView;
@@ -1482,11 +1486,11 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     @Event()
     public drillThrough: EmitType<DrillThroughEventArgs>;
 
-     /** 
-     * It triggers when editing is made in the raw data of pivot table.
-     * @event
-     * @blazorproperty 'EditCompleted'
-     */
+    /** 
+    * It triggers when editing is made in the raw data of pivot table.
+    * @event
+    * @blazorproperty 'EditCompleted'
+    */
     @Event()
     public editCompleted: EmitType<EditCompletedEventArgs>;
 
@@ -2322,7 +2326,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     this.engineModule.headerContent = PivotUtil.frameContent(pivotValues, 'header', rowPos, this);
                     this.engineModule.pageSettings = this.pageSettings;
                     let valueSort: any = JSON.parse(engine.valueSortSettings);
-                    this.engineModule.valueSortSettings = { 
+                    this.engineModule.valueSortSettings = {
                         headerText: valueSort.HeaderText,
                         headerDelimiter: valueSort.HeaderDelimiter,
                         sortOrder: valueSort.SortOrder,
@@ -2588,6 +2592,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      * @hidden
      */
     public onPropertyChanged(newProp: PivotViewModel, oldProp: PivotViewModel): void {
+        if (!isNullOrUndefined(newProp.dataSourceSettings) && !isNullOrUndefined(newProp.dataSourceSettings.dataSource)) {
+            this.localDataSourceSetting = PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings);
+        }
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'dataSourceSettings':
@@ -3428,6 +3435,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     /* tslint:enable */
 
     private onContentReady(): void {
+        if(!isNullOrUndefined(this.localDataSourceSetting)){
+            PivotUtil.updateDataSourceSettings(this, this.localDataSourceSetting);
+        }
         if (this.currentView !== 'Table') {
             /* tslint:disable-next-line */
             if (this.cellTemplate && isBlazor()) {
@@ -4645,7 +4655,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     }
                 }
             } else if ((this.dataSourceSettings.url !== '' && this.dataType === 'olap') ||
-                (pivot.dataSourceSettings.dataSource && (pivot.dataSourceSettings.dataSource as IDataSet[]).length > 0)) {
+                (pivot.dataSourceSettings.dataSource && (pivot.dataSourceSettings.dataSource as IDataSet[]).length > 0 || this.engineModule.data.length > 0)) {
                 if (pivot.dataType === 'pivot') {
                     this.hideWaitingPopup();
                     pivot.engineModule.data = pivot.dataSourceSettings.dataSource;

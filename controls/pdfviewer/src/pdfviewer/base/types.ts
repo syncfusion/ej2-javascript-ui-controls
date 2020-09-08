@@ -206,3 +206,8 @@ export enum AllowedInteraction  {
     None = 'None',
     PropertyChange = 'PropertyChange'
 }
+
+/**
+ * Enum type for signature mode for signature fields
+ */
+export type SignatureMode = 'Default' | 'Stretch' ;

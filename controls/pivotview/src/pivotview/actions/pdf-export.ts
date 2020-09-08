@@ -435,10 +435,13 @@ export class PDFExport {
         let args: BeforeExportEventArgs = {
             fileName: 'default', header: '', footer: '', dataCollections: [clonedValues], allowRepeatHeader: true, style: style
         };
-        this.parent.trigger(events.beforeExport, args);
-        this.gridStyle = args.style;
+        let argument: BeforeExportEventArgs;
+        this.parent.trigger(events.beforeExport, args, (observedArgs: BeforeExportEventArgs) => {
+            this.gridStyle = observedArgs.style;
+            argument = observedArgs;
+        });
         let document: PdfDocument = new PdfDocument();
-        return { document: document, args: args };
+        return { document: document, args: argument };
     }
 
     /**

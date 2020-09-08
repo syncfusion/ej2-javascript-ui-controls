@@ -3676,6 +3676,10 @@ export class Layout {
                         let tableHeight: number = tableWidget.height;
                         // tslint:disable-next-line:max-line-length
                         let splittedTable: TableWidget = this.getSplittedWidgetForTable(bottom - cellWidget.margin.bottom, tableCol, tableWidget);
+                        if (isNullOrUndefined(splittedTable) &&
+                           !((tableWidget.childWidgets[0] as TableRowWidget).rowFormat.allowBreakAcrossPages)) {
+                            splittedTable = tableWidget;
+                        }
                         if (!isNullOrUndefined(splittedTable)) {
                             if (i === 0 && splittedTable === tableWidget) {
                                 //Returns if the whole table does not fit in current page.

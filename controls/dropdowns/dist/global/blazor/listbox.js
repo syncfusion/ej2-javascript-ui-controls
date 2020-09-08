@@ -2762,7 +2762,8 @@ var CheckBoxSelection = /** @class */ (function () {
             var compiledString = void 0;
             this.selectAllSpan.textContent = '';
             compiledString = sf.base.compile(template);
-            for (var _i = 0, _a = compiledString({}, null, null, null, !this.parent.isStringTemplate); _i < _a.length; _i++) {
+            var templateName = unSelect ? 'unSelectAllText' : 'selectAllText';
+            for (var _i = 0, _a = compiledString({}, this.parent, templateName, null, !this.parent.isStringTemplate); _i < _a.length; _i++) {
                 var item = _a[_i];
                 this.selectAllSpan.textContent = item.textContent;
             }

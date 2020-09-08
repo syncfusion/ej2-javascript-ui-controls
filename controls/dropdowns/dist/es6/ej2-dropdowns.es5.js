@@ -367,7 +367,8 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
             else {
                 compiledString = compile(template);
             }
-            for (var _i = 0, _a = compiledString({}, null, null, templateId, this.isStringTemplate); _i < _a.length; _i++) {
+            var templateName = actionFailure ? 'actionFailureTemplate' : 'noRecordsTemplate';
+            for (var _i = 0, _a = compiledString({}, this, templateName, templateId, this.isStringTemplate); _i < _a.length; _i++) {
                 var item = _a[_i];
                 ele.appendChild(item);
             }
@@ -1134,7 +1135,7 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
             }
             if (this.itemTemplate && !isHeader) {
                 var compiledString = compile(this.itemTemplate);
-                append(compiledString(item, null, null, this.itemTemplateId, this.isStringTemplate), li);
+                append(compiledString(item, this, 'itemTemplate', this.itemTemplateId, this.isStringTemplate), li);
                 this.DropDownBaseupdateBlazorTemplates(true, false, false, false);
             }
             else if (!isHeader) {
@@ -2445,7 +2446,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         else {
             compiledString = compile(this.valueTemplate);
         }
-        for (var _i = 0, _a = compiledString(templateData, null, null, this.valueTemplateId, this.isStringTemplate); _i < _a.length; _i++) {
+        for (var _i = 0, _a = compiledString(templateData, this, 'valueTemplate', this.valueTemplateId, this.isStringTemplate); _i < _a.length; _i++) {
             var item = _a[_i];
             this.valueTempElement.appendChild(item);
         }
@@ -2893,7 +2894,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
             }
             if (this.getModuleName() !== 'autocomplete' && this.isFiltering() && !this.isTyped) {
                 if (!this.actionCompleteData.isUpdated || ((!this.isCustomFilter
-                    && !this.isFilterFocus)
+                    && !this.isFilterFocus) || (isNullOrUndefined(this.itemData) && this.allowFiltering)
                     && ((this.dataSource instanceof DataManager)
                         || (!isNullOrUndefined(this.dataSource) && !isNullOrUndefined(this.dataSource.length) &&
                             this.dataSource.length !== 0)))) {
@@ -3551,7 +3552,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         else {
             compiledString = compile(this.footerTemplate);
         }
-        for (var _i = 0, _a = compiledString({}, null, null, this.footerTemplateId, this.isStringTemplate); _i < _a.length; _i++) {
+        for (var _i = 0, _a = compiledString({}, this, 'footerTemplate', this.footerTemplateId, this.isStringTemplate); _i < _a.length; _i++) {
             var item = _a[_i];
             this.footer.appendChild(item);
         }
@@ -3574,7 +3575,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         else {
             compiledString = compile(this.headerTemplate);
         }
-        for (var _i = 0, _a = compiledString({}, null, null, this.headerTemplateId, this.isStringTemplate); _i < _a.length; _i++) {
+        for (var _i = 0, _a = compiledString({}, this, 'headerTemplate', this.headerTemplateId, this.isStringTemplate); _i < _a.length; _i++) {
             var item = _a[_i];
             this.header.appendChild(item);
         }
@@ -3596,7 +3597,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
             this.popupObj.resolveCollision();
         }
     };
-    DropDownList.prototype.checkDatasource = function (newProp) {
+    DropDownList.prototype.checkData = function (newProp) {
         if (newProp.dataSource && !isNullOrUndefined(Object.keys(newProp.dataSource)) && this.itemTemplate && this.allowFiltering) {
             this.list = null;
             this.actionCompleteData = { ulElement: null, list: null, isUpdated: false };
@@ -3637,7 +3638,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
     DropDownList.prototype.onPropertyChanged = function (newProp, oldProp) {
         if (this.getModuleName() === 'dropdownlist') {
             if (!this.isServerBlazor) {
-                this.checkDatasource(newProp);
+                this.checkData(newProp);
                 this.setUpdateInitial(['fields', 'query', 'dataSource'], newProp);
             }
         }
@@ -7374,7 +7375,7 @@ var ComboBox = /** @__PURE__ @class */ (function (_super) {
         this.itemData = this.getDataByValue(this.value);
         var dataItem = this.getItemData();
         if (!(this.allowCustom && isNullOrUndefined(dataItem.value) && isNullOrUndefined(dataItem.text))) {
-            this.setProperties({ 'value': dataItem.value, 'text': dataItem.text }, true);
+            this.setProperties({ 'value': dataItem.value, 'text': dataItem.text }, !this.allowCustom);
         }
     };
     /**
@@ -7456,7 +7457,8 @@ var ComboBox = /** @__PURE__ @class */ (function (_super) {
         }
     };
     ComboBox.prototype.clearAll = function (e, property) {
-        if (isNullOrUndefined(property) || (!isNullOrUndefined(property) && isNullOrUndefined(property.dataSource))) {
+        if (isNullOrUndefined(property) || (!isNullOrUndefined(property) && isNullOrUndefined(property.dataSource)) ||
+            (isNullOrUndefined(this.itemData) && this.allowFiltering)) {
             _super.prototype.clearAll.call(this, e);
             if (this.isServerBlazor && this.isFiltering() && this.isPopupOpen && e) {
                 // tslint:disable-next-line
@@ -7660,6 +7662,7 @@ var ComboBox = /** @__PURE__ @class */ (function (_super) {
      */
     ComboBox.prototype.onPropertyChanged = function (newProp, oldProp) {
         if (this.getModuleName() === 'combobox') {
+            this.checkData(newProp);
             this.setUpdateInitial(['fields', 'query', 'dataSource'], newProp);
         }
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
@@ -8707,11 +8710,24 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         this.deselectHeader();
     };
     MultiSelect.prototype.loadTemplate = function () {
-        this.refreshListItems(null);
-        if (this.mode === 'CheckBox') {
-            this.removeFocus();
+        var _this = this;
+        if (this.mode === 'CheckBox' && this.itemTemplate && (isBlazor() && this.isServerRendered) &&
+            this.mainData && this.mainData.length > 0) {
+            setTimeout(function () {
+                _this.refreshListItems(null);
+                if (_this.mode === 'CheckBox') {
+                    _this.removeFocus();
+                }
+                _this.notify('reOrder', { module: 'CheckBoxSelection', enable: _this.mode === 'CheckBox', e: _this });
+            }, this.mainData.length < 100 ? 100 : this.mainData.length);
         }
-        this.notify('reOrder', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', e: this });
+        else {
+            this.refreshListItems(null);
+            if (this.mode === 'CheckBox') {
+                this.removeFocus();
+            }
+            this.notify('reOrder', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', e: this });
+        }
     };
     MultiSelect.prototype.setScrollPosition = function () {
         if (((!this.hideSelectedItem && this.mode !== 'CheckBox') || (this.mode === 'CheckBox' && !this.enableSelectionOrder)) &&
@@ -10260,7 +10276,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             else {
                 compiledString = compile(this.valueTemplate);
             }
-            for (var _i = 0, _a = compiledString(itemData, null, null, this.valueTemplateId, this.isStringTemplate); _i < _a.length; _i++) {
+            for (var _i = 0, _a = compiledString(itemData, this, 'valueTemplate', this.valueTemplateId, this.isStringTemplate); _i < _a.length; _i++) {
                 var item = _a[_i];
                 chipContent.appendChild(item);
             }
@@ -10466,7 +10482,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         else {
             compiledString = compile(this.headerTemplate);
         }
-        var elements = compiledString({}, null, null, this.headerTemplateId, this.isStringTemplate);
+        var elements = compiledString({}, this, 'headerTemplate', this.headerTemplateId, this.isStringTemplate);
         for (var temp = 0; temp < elements.length; temp++) {
             this.header.appendChild(elements[temp]);
         }
@@ -10493,7 +10509,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         else {
             compiledString = compile(this.footerTemplate);
         }
-        var elements = compiledString({}, null, null, this.footerTemplateId, this.isStringTemplate);
+        var elements = compiledString({}, this, 'footerTemplate', this.footerTemplateId, this.isStringTemplate);
         for (var temp = 0; temp < elements.length; temp++) {
             this.footer.appendChild(elements[temp]);
         }
@@ -11318,7 +11334,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             });
             var compiledString = compile(remainContent);
             var totalCompiledString = compile(l10n.getConstant('totalCountTemplate'));
-            raminElement.appendChild(compiledString({ 'count': this.value.length }, null, null, null, !this.isStringTemplate)[0]);
+            raminElement.appendChild(compiledString({ 'count': this.value.length }, this, 'overflowCountTemplate', null, !this.isStringTemplate)[0]);
             this.viewWrapper.appendChild(raminElement);
             var remainSize = raminElement.offsetWidth;
             remove(raminElement);
@@ -11393,8 +11409,8 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         }
         raminElement.innerHTML = '';
         raminElement.appendChild((viewWrapper.firstChild && viewWrapper.firstChild.nodeType === 3) ?
-            compiledString({ 'count': remaining }, null, null, null, !this.isStringTemplate)[0] :
-            totalCompiledString({ 'count': remaining }, null, null, null, !this.isStringTemplate)[0]);
+            compiledString({ 'count': remaining }, this, 'overflowCountTemplate', null, !this.isStringTemplate)[0] :
+            totalCompiledString({ 'count': remaining }, this, 'totalCountTemplate', null, !this.isStringTemplate)[0]);
         if (viewWrapper.firstChild && viewWrapper.firstChild.nodeType === 3) {
             viewWrapper.classList.remove(TOTAL_COUNT_WRAPPER$1);
         }
@@ -12774,7 +12790,8 @@ var CheckBoxSelection = /** @__PURE__ @class */ (function () {
             var compiledString = void 0;
             this.selectAllSpan.textContent = '';
             compiledString = compile(template);
-            for (var _i = 0, _a = compiledString({}, null, null, null, !this.parent.isStringTemplate); _i < _a.length; _i++) {
+            var templateName = unSelect ? 'unSelectAllText' : 'selectAllText';
+            for (var _i = 0, _a = compiledString({}, this.parent, templateName, null, !this.parent.isStringTemplate); _i < _a.length; _i++) {
                 var item = _a[_i];
                 this.selectAllSpan.textContent = item.textContent;
             }

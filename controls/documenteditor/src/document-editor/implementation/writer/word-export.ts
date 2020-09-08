@@ -320,6 +320,7 @@ export class WordExport {
     private trackChangesId: number = 0;
     private prevRevisionIds: any[] = [];
     private isRevisionContinuous: boolean = false;
+    private formFieldShading: boolean;
     // Gets the bookmark name
     private get bookmarks(): string[] {
         if (isNullOrUndefined(this.mBookmarks)) {
@@ -541,6 +542,7 @@ export class WordExport {
         this.hashValue = document.hashValue;
         this.saltValue = document.saltValue;
         this.protectionType = document.protectionType;
+        this.formFieldShading = document.formFieldShading;
     }
     // Clears the document
     private clearDocument(): void {
@@ -5005,6 +5007,10 @@ export class WordExport {
         //w:footnotePr - Document-Wide Footnote Properties and w:endnotePr - Document-Wide Endnote Properties
         // SerializeFootnoteSettings();
         //w:compat - Compatibility Settings
+        if (!this.formFieldShading) {
+            writer.writeStartElement(undefined, 'doNotShadeFormData', this.wNamespace);
+            writer.writeEndElement();
+        }
         writer.writeStartElement(undefined, 'compat', this.wNamespace);
         if (this.dontUseHtmlParagraphAutoSpacing) {
             this.serializeBoolProperty(writer, 'doNotUseHTMLParagraphAutoSpacing', this.dontUseHtmlParagraphAutoSpacing);

@@ -184,4 +184,10 @@ describe('Find and find all with $ validation', () => {
         editor.search.findAll('$4000');
         expect(editor.selection.text).toBe('$4000');
     });
+    it('find curly braces validation', () => {
+        editor.openBlank();
+        editor.editor.insertText('{2}');
+        editor.search.findAll('{2}');
+        expect(editor.selection.text).toBe('{2}');
+    });
 });

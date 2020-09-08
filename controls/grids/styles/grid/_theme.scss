@@ -146,6 +146,7 @@
     .e-detailrowcollapse,
     .e-detailrowexpand,
     .e-gridcontent .e-rowdragdrop,
+    .e-gridheader .e-rowdragdrop,
     .e-emptyrow {
       &:not(.e-editedbatchcell) {
         color: $grid-content-font-color;

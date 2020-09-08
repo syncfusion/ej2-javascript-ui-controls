@@ -7263,5 +7263,53 @@ describe('MultiSelect', () => {
             }, 450);
         });
     });  
-  
+    describe('BLAZ-6160 Popup shows empty data in the MultiSelect component, while adding the template with checkbox mode', () => {
+        let listObj: MultiSelect;
+        let popupObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { 'type': 'text' } });
+        let empList: { [key: string]: Object }[] = [
+            { "Name": "Australia", "Code": "AU", "Start": "A" },
+            { "Name": "Bermuda", "Code": "BM", "Start": "B" },
+            { "Name": "Canada", "Code": "CA", "Start": "C" },
+            { "Name": "Cameroon", "Code": "CM", "Start": "C" },
+            { "Name": "Denmark", "Code": "DK", "Start": "D" }
+        ];
+        beforeAll(() => {
+            document.body.innerHTML = '';
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                element.remove();
+            }
+        });
+        it('close popup and open again to show all list item correctly', () => {
+            debugger;
+            let listObj: MultiSelect = new MultiSelect({
+                dataSource: empList,
+                fields: { value: 'EmployeeID', text: 'FirstName' },
+                width: '250px',
+                popupWidth: '250px',
+                popupHeight: '300px',
+                sortOrder: "Ascending",
+            });
+            listObj.appendTo(element);
+            (<any>listObj).inputElement.value = "Australia";
+            (<any>listObj).inputFocus = true;
+            (<any>listObj).showPopup();
+            (<any>listObj).inputFocus = false;
+            (<any>listObj).hidePopup();
+            (<any>listObj).inputFocus = true;
+            (<any>listObj).showPopup();
+            let list: Array<HTMLElement> = (<any>listObj).list.querySelectorAll('li');
+                expect( (<any>listObj).isPopupOpen()).toBe(true);
+                expect(list[0].classList.contains('e-hide-listitem')).toBe(false);
+                expect(list[0].classList.contains('e-item-focus')).toBe(true);
+                for (let a=0; a<list.length; a++)
+                {
+                    expect(list[a].classList.contains('e-list-item')).toBe(true);
+                }
+        });
+    });
+
 });

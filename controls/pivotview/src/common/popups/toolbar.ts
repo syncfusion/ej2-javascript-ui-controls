@@ -1205,8 +1205,14 @@ export class Toolbar {
                         isBlob: false,
                         isMultipleExport: false
                     };
-                    this.parent.trigger(events.beforeExport, exportArgs);
-                    this.parent.pdfExport(exportArgs.pdfExportProperties, exportArgs.isMultipleExport, exportArgs.pdfDoc, exportArgs.isBlob);
+                    this.parent.trigger(events.beforeExport, exportArgs, (observedArgs: BeforeExportEventArgs) => {
+                        if (isBlazor()) {
+                            let pdfProperties = PivotUtil.formatPdfExportProperties(observedArgs.pdfExportProperties);
+                            this.parent.pdfExport(pdfProperties, observedArgs.isMultipleExport, observedArgs.pdfDoc, observedArgs.isBlob);
+                        } else {
+                            this.parent.pdfExport(observedArgs.pdfExportProperties, observedArgs.isMultipleExport, observedArgs.pdfDoc, observedArgs.isBlob);
+                        }
+                    });
                 } else {
                     exportArgs = {
                         width: undefined,
@@ -1215,8 +1221,9 @@ export class Toolbar {
                         type: 'PDF',
                         fileName: 'result',
                     };
-                    this.parent.trigger(events.beforeExport, exportArgs);
-                    this.parent.chartExport(exportArgs.type, exportArgs.fileName, exportArgs.orientation, exportArgs.width, exportArgs.height);
+                    this.parent.trigger(events.beforeExport, exportArgs, (observedArgs: BeforeExportEventArgs) => {
+                        this.parent.chartExport(observedArgs.type, observedArgs.fileName, observedArgs.orientation, observedArgs.width, observedArgs.height);
+                    });
                 }
                 break;
             case (this.parent.element.id + 'excel'):
@@ -1226,8 +1233,14 @@ export class Toolbar {
                     isMultipleExport: false,
                     workbook: undefined
                 };
-                this.parent.trigger(events.beforeExport, exportArgs);
-                this.parent.excelExport(exportArgs.excelExportProperties, exportArgs.isMultipleExport, exportArgs.workbook, exportArgs.isBlob);
+                this.parent.trigger(events.beforeExport, exportArgs, (observedArgs: BeforeExportEventArgs) => {
+                    if (isBlazor()) {
+                        let excelProperties = PivotUtil.formatExcelExportProperties(observedArgs.excelExportProperties)
+                        this.parent.excelExport(excelProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob);
+                    } else {
+                        this.parent.excelExport(observedArgs.excelExportProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob);
+                    }
+                });
                 break;
             case (this.parent.element.id + 'csv'):
                 exportArgs = {
@@ -1236,8 +1249,14 @@ export class Toolbar {
                     isMultipleExport: false,
                     workbook: undefined
                 };
-                this.parent.trigger(events.beforeExport, exportArgs);
-                this.parent.csvExport(exportArgs.excelExportProperties, exportArgs.isMultipleExport, exportArgs.workbook, exportArgs.isBlob);
+                this.parent.trigger(events.beforeExport, exportArgs, (observedArgs: BeforeExportEventArgs) => {
+                    if (isBlazor()) {
+                        let excelProperties = PivotUtil.formatExcelExportProperties(observedArgs.excelExportProperties)
+                        this.parent.csvExport(excelProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob);
+                    } else {
+                        this.parent.csvExport(observedArgs.excelExportProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob);
+                    }
+                });
                 break;
             case (this.parent.element.id + 'png'):
                 exportArgs = {
@@ -1247,8 +1266,9 @@ export class Toolbar {
                     fileName: 'result',
                     orientation: PdfPageOrientation.Landscape,
                 };
-                this.parent.trigger(events.beforeExport, exportArgs);
-                this.parent.chartExport(exportArgs.type, exportArgs.fileName, exportArgs.orientation, exportArgs.width, exportArgs.height);
+                this.parent.trigger(events.beforeExport, exportArgs, (observedArgs: BeforeExportEventArgs) => {
+                    this.parent.chartExport(observedArgs.type, observedArgs.fileName, observedArgs.orientation, observedArgs.width, observedArgs.height);
+                });
                 break;
             case (this.parent.element.id + 'jpeg'):
                 exportArgs = {
@@ -1258,8 +1278,9 @@ export class Toolbar {
                     width: undefined,
                     height: undefined,
                 };
-                this.parent.trigger(events.beforeExport, exportArgs);
-                this.parent.chartExport(exportArgs.type, exportArgs.fileName, exportArgs.orientation, exportArgs.width, exportArgs.height);
+                this.parent.trigger(events.beforeExport, exportArgs, (observedArgs: BeforeExportEventArgs) => {
+                    this.parent.chartExport(observedArgs.type, observedArgs.fileName, observedArgs.orientation, observedArgs.width, observedArgs.height);
+                });
                 break;
             case (this.parent.element.id + 'svg'):
                 exportArgs = {
@@ -1269,8 +1290,9 @@ export class Toolbar {
                     fileName: 'result',
                     orientation: PdfPageOrientation.Landscape,
                 };
-                this.parent.trigger(events.beforeExport, exportArgs);
-                this.parent.chartExport(exportArgs.type, exportArgs.fileName, exportArgs.orientation, exportArgs.width, exportArgs.height);
+                this.parent.trigger(events.beforeExport, exportArgs, (observedArgs: BeforeExportEventArgs) => {
+                    this.parent.chartExport(observedArgs.type, observedArgs.fileName, observedArgs.orientation, observedArgs.width, observedArgs.height);
+                });
                 break;
             case (this.parent.element.id + 'notsubtotal'):
                 this.parent.setProperties(

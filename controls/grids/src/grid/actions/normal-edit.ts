@@ -90,7 +90,9 @@ export class NormalEdit {
                     requestType: 'delete',
                     type: events.actionComplete
                 }));
-                this.parent.selectRow(this.editRowIndex);
+                if (!this.parent.isCheckBoxSelection) {
+                    this.parent.selectRow(this.editRowIndex);
+                }
                 break;
         }
     }

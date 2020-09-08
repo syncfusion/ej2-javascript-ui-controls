@@ -154,13 +154,6 @@ export class TextMarkupAnnotation {
     constructor(pdfViewer: PdfViewer, viewerBase: PdfViewerBase) {
         this.pdfViewer = pdfViewer;
         this.pdfViewerBase = viewerBase;
-        this.highlightColor = pdfViewer.highlightSettings.color;
-        this.underlineColor = pdfViewer.underlineSettings.color;
-        this.strikethroughColor = pdfViewer.strikethroughSettings.color;
-        this.highlightOpacity = pdfViewer.highlightSettings.opacity;
-        this.underlineOpacity = pdfViewer.underlineSettings.opacity;
-        this.strikethroughOpacity = pdfViewer.strikethroughSettings.opacity;
-        this.annotationAddMode = 'UI Drawn Annotation';
     }
     /**
      * @private
@@ -965,6 +958,13 @@ export class TextMarkupAnnotation {
         let subject: string;
         let context: CanvasRenderingContext2D = this.getPageContext(pageNumber);
         let modifiedDate: string = new Date().toLocaleString();
+        this.highlightColor = this.pdfViewer.highlightSettings.color;
+        this.underlineColor = this.pdfViewer.underlineSettings.color;
+        this.strikethroughColor = this.pdfViewer.strikethroughSettings.color;
+        this.highlightOpacity = this.pdfViewer.highlightSettings.opacity;
+        this.underlineOpacity = this.pdfViewer.underlineSettings.opacity;
+        this.strikethroughOpacity = this.pdfViewer.strikethroughSettings.opacity;
+        this.annotationAddMode = 'UI Drawn Annotation';
         if (context) {
             context.setLineDash([]);
             switch (type) {

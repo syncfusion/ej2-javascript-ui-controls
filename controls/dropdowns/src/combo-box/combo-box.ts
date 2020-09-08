@@ -473,7 +473,7 @@ export class ComboBox extends DropDownList {
         this.itemData = this.getDataByValue(this.value);
         let dataItem: { [key: string]: string } = this.getItemData();
         if (!(this.allowCustom && isNullOrUndefined(dataItem.value) && isNullOrUndefined(dataItem.text))) {
-            this.setProperties({ 'value': dataItem.value, 'text': dataItem.text }, true);
+            this.setProperties({ 'value': dataItem.value, 'text': dataItem.text }, !this.allowCustom);
         }
     }
     /**
@@ -556,7 +556,8 @@ export class ComboBox extends DropDownList {
     }
 
     protected clearAll(e?: MouseEvent | KeyboardEventArgs, property?: ComboBoxModel): void {
-        if (isNullOrUndefined(property) || (!isNullOrUndefined(property) && isNullOrUndefined(property.dataSource))) {
+        if (isNullOrUndefined(property) || (!isNullOrUndefined(property) && isNullOrUndefined(property.dataSource)) ||
+        (isNullOrUndefined(this.itemData) && this.allowFiltering)) {
             super.clearAll(e);
             if (this.isServerBlazor && this.isFiltering() && this.isPopupOpen && e) {
                 // tslint:disable-next-line
@@ -758,6 +759,7 @@ export class ComboBox extends DropDownList {
      */
     public onPropertyChanged(newProp: ComboBoxModel, oldProp: ComboBoxModel): void {
         if (this.getModuleName() === 'combobox') {
+            this.checkData(newProp);
             this.setUpdateInitial(['fields', 'query', 'dataSource'], newProp as { [key: string]: string; });
         }
         for (let prop of Object.keys(newProp)) {

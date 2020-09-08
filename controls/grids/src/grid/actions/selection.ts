@@ -1722,6 +1722,8 @@ export class Selection implements IAction {
         let sLeft: number = (this.startAFCell as HTMLElement).offsetParent.parentElement.scrollLeft;
         let scrollTop: number = sTop - (this.startAFCell as HTMLElement).offsetTop;
         let scrollLeft: number = sLeft - (this.startAFCell as HTMLElement).offsetLeft;
+        let totalHeight: number = this.parent.element.clientHeight;
+        let totalWidth: number = this.parent.element.clientWidth;
         scrollTop = scrollTop > 0 ? Math.floor(scrollTop) - 1 : 0;
         scrollLeft = scrollLeft > 0 ? scrollLeft : 0;
         let left: number = stOff.left - parentRect.left;
@@ -1731,9 +1733,14 @@ export class Selection implements IAction {
 
             this.bdrAFRight.style.left = endOff.left - parentRect.left - 2 + endOff.width + 'px';
 
+            this.bdrAFRight.style.width = totalWidth <= parseInt(this.bdrAFRight.style.left, 10) ? '0px' : '2px';
             this.bdrAFTop.style.left = left + scrollLeft - 0.5 + 'px';
             this.bdrAFTop.style.width = parseInt(this.bdrAFRight.style.left, 10) - parseInt(this.bdrAFLeft.style.left, 10)
                 - firstCellLeft + 1 + 'px';
+            if (totalWidth <= (parseInt(this.bdrAFTop.style.width, 10) + parseInt(this.bdrAFTop.style.left, 10))) {
+                let leftRemove: number = (parseInt(this.bdrAFTop.style.width, 10) + parseInt(this.bdrAFTop.style.left, 10)) - totalWidth;
+                this.bdrAFTop.style.width = parseInt(this.bdrAFTop.style.width, 10) - leftRemove + 'px';
+            }
         } else {
             let scrolloffSet: number = (parentsUntil(this.startAFCell, 'e-movablecontent') ||
                 parentsUntil(this.startAFCell, 'e-movableheader')) ? stOff.right -
@@ -1741,11 +1748,16 @@ export class Selection implements IAction {
                 parentRect.left : 0;
             this.bdrAFLeft.style.right = parentRect.right - endOff.right - 2 + endOff.width + 'px';
 
+            this.bdrAFLeft.style.width = totalWidth <= parseInt(this.bdrAFLeft.style.right, 10) ? '0px' : '2px';
             this.bdrAFRight.style.right = parentRect.right - stOff.right - firstCellLeft + scrolloffSet - 1 + 'px';
 
             this.bdrAFTop.style.left = endOff.left - parentRect.left - 0.5 + 'px';
             this.bdrAFTop.style.width = parseInt(this.bdrAFLeft.style.right, 10) - parseInt(this.bdrAFRight.style.right, 10)
                 - firstCellLeft + 1 + 'px';
+            if (parseInt(this.bdrAFTop.style.left, 10) < 0) {
+                this.bdrAFTop.style.width = parseInt(this.bdrAFTop.style.width, 10) + parseInt(this.bdrAFTop.style.left, 10) + 'px';
+                this.bdrAFTop.style.left = '0px';
+            }
         }
 
         this.bdrAFLeft.style.top = stOff.top - parentRect.top - firstCellTop + scrollTop + 'px';
@@ -1760,7 +1772,12 @@ export class Selection implements IAction {
 
         this.bdrAFBottom.style.left = this.bdrAFTop.style.left;
         this.bdrAFBottom.style.top = parseFloat(this.bdrAFLeft.style.top) + parseFloat(this.bdrAFLeft.style.height) - top - 1 + 'px';
-        this.bdrAFBottom.style.width = this.bdrAFTop.style.width;
+        this.bdrAFBottom.style.width = totalHeight <=  parseFloat(this.bdrAFBottom.style.top) ? '0px' :  this.bdrAFTop.style.width;
+        if (totalHeight <= (parseInt(this.bdrAFLeft.style.height, 10) + parseInt(this.bdrAFLeft.style.top, 10))) {
+            let topRemove: number = parseInt(this.bdrAFLeft.style.height, 10) + parseInt(this.bdrAFLeft.style.top, 10) - totalHeight;
+            this.bdrAFLeft.style.height = parseInt(this.bdrAFLeft.style.height, 10) - topRemove + 'px';
+            this.bdrAFRight.style.height = parseInt(this.bdrAFLeft.style.height, 10) + 'px';
+        }
     }
 
     private createAFBorders(): void {

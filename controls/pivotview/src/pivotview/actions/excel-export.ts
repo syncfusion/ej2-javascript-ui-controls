@@ -55,8 +55,12 @@ export class ExcelExport {
         let args: BeforeExportEventArgs = {
             fileName: 'default', header: '', footer: '', dataCollections: [clonedValues]
         };
-        this.parent.trigger(events.beforeExport, args); let fileName: string = args.fileName; let header: string = args.header;
-        let footer: string = args.footer; let dataCollections: IPivotValues[] = args.dataCollections;
+        let fileName: string; let header: string;
+        let footer: string; let dataCollections: IPivotValues[];
+        this.parent.trigger(events.beforeExport, args, (observedArgs: BeforeExportEventArgs) => {
+            fileName = observedArgs.fileName; header = observedArgs.header;
+            footer = observedArgs.footer; dataCollections = observedArgs.dataCollections;
+        });
 
         /** Fill data and export */
         /* tslint:disable-next-line:no-any */

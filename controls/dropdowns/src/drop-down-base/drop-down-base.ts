@@ -593,7 +593,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             } else {
                 compiledString = compile(template);
             }
-            for (let item of compiledString({}, null, null, templateId, this.isStringTemplate)) {
+            let templateName: string = actionFailure ? 'actionFailureTemplate' : 'noRecordsTemplate';
+            for (let item of compiledString({}, this, templateName, templateId, this.isStringTemplate)) {
                 ele.appendChild(item);
             }
             this.DropDownBaseupdateBlazorTemplates(false, false, !actionFailure, actionFailure, false, false, false, false);
@@ -1389,7 +1390,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             if (isHeader) { li.innerText = itemText; }
             if (this.itemTemplate && !isHeader) {
                 let compiledString: Function = compile(this.itemTemplate);
-                append(compiledString(item, null, null, this.itemTemplateId, this.isStringTemplate), li);
+                append(compiledString(item, this, 'itemTemplate', this.itemTemplateId, this.isStringTemplate), li);
                 this.DropDownBaseupdateBlazorTemplates(true, false, false, false);
             } else if (!isHeader) {
                 li.appendChild(document.createTextNode(itemText));

@@ -563,7 +563,11 @@ export class Signature {
                 // tslint:disable-next-line
                 let data: any = currentAnnotation.PathData;
                 if (isImport) {
-                    data = getPathString(JSON.parse(currentAnnotation.PathData));
+                    if (currentAnnotation.IsSignature) {
+                        data = currentAnnotation.PathData;
+                    } else {
+                        data = getPathString(JSON.parse(currentAnnotation.PathData));
+                    }
                 }
                 annot = {
                     // tslint:disable-next-line:max-line-length

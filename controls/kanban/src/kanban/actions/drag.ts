@@ -141,7 +141,10 @@ export class DragAndDrop {
             let isDrag: boolean = (targetKey === this.getColumnKey(closest(this.dragObj.draggedClone, '.' + cls.CONTENT_CELLS_CLASS)))
                 ? true : false;
             if (keys.length === 1 || isDrag) {
-                if (target.classList.contains(cls.CARD_CLASS) || target.classList.contains(cls.DRAGGED_CLONE_CLASS)) {
+                if (target.classList.contains(cls.DRAGGED_CLONE_CLASS)) {
+                    this.removeElement(this.dragObj.targetClone);
+                }
+                if (target.classList.contains(cls.CARD_CLASS)) {
                     let element: Element = target.classList.contains(cls.DRAGGED_CLONE_CLASS) ?
                         (target.previousElementSibling.classList.contains(cls.DRAGGED_CARD_CLASS) ? null : target.previousElementSibling)
                         : target.previousElementSibling;
@@ -157,7 +160,12 @@ export class DragAndDrop {
                     }
                     target.insertAdjacentElement(insertClone, this.dragObj.targetClone);
                 } else if (target.classList.contains(cls.CONTENT_CELLS_CLASS) && !closest(target, '.' + cls.SWIMLANE_ROW_CLASS)) {
-                    target.querySelector('.' + cls.CARD_WRAPPER_CLASS).appendChild(this.dragObj.targetClone);
+                    if (target.querySelectorAll('.' + cls.DRAGGED_CARD_CLASS).length !== 0 &&
+                        target.querySelectorAll('.' + cls.CARD_CLASS + ':not(.e-kanban-dragged-card):not(.e-cloned-card)').length === 0) {
+                        return;
+                    } else {
+                        target.querySelector('.' + cls.CARD_WRAPPER_CLASS).appendChild(this.dragObj.targetClone);
+                    }
                 } else if (target.classList.contains(cls.CARD_WRAPPER_CLASS) && !closest(target, '.' + cls.SWIMLANE_ROW_CLASS)
                     && contentCell.querySelectorAll('.' + cls.CARD_CLASS).length === 0) {
                     target.appendChild(this.dragObj.targetClone);
@@ -296,7 +304,7 @@ export class DragAndDrop {
         this.parent.trigger(events.dragStop, dragArgs, (dragEventArgs: DragEventArgs) => {
             if (!dragEventArgs.cancel) {
                 if (contentCell || columnKey) {
-                    this.parent.crudModule.updateCard(dragEventArgs.data as  {[key: string]: Object } | {[key: string]: Object; }[]);
+                    this.parent.crudModule.updateCard(dragEventArgs.data as { [key: string]: Object } | { [key: string]: Object; }[]);
                 }
             }
             this.removeElement(this.dragObj.draggedClone);

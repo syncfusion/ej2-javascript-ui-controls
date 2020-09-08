@@ -6230,7 +6230,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
             }) : null;
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
             inputValue = startDate + ' ' + this.separator + ' ' + endDate;
-            range = (Math.round(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
+            range = (Math.floor(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
         }
         else {
             inputValue = '';
@@ -6579,7 +6579,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
     updateHeader() {
         let format = { type: 'date', skeleton: isBlazor() ? 'D' : 'yMMMd' };
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
-            let range = (Math.round(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
+            let range = (Math.floor(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
             if (!isNullOrUndefined(this.disabledDayCnt)) {
                 range = range - this.disabledDayCnt;
                 this.disabledDayCnt = null;
@@ -6858,7 +6858,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
     }
     validateMinMaxDays() {
         if (!isNullOrUndefined(this.startValue) && !isNullOrUndefined(this.endValue)) {
-            let range = (Math.round(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
+            let range = (Math.floor(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
             if ((!isNullOrUndefined(this.minDays) && this.minDays > 0) && !(range >= this.minDays)) {
                 if (this.strictMode) {
                     let date = new Date(+this.startValue);
@@ -8366,7 +8366,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
     getSelectedRange() {
         let range;
         if (!isNullOrUndefined(this.startValue) && !isNullOrUndefined(this.endValue)) {
-            range = (Math.round(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
+            range = (Math.floor(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
             this.disabledDateRender();
             if (!isNullOrUndefined(this.disabledDayCnt)) {
                 range = range - this.disabledDayCnt;

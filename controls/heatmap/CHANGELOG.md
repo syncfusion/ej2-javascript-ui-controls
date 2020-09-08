@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Heatmap
+
+#### Bug Fixes
+
+- The unwanted tags were removed.
+
 ## 18.1.54 (2020-05-26)
 
 ### HeatMap

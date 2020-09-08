@@ -6307,7 +6307,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
             }) : null;
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
             inputValue = startDate + ' ' + this.separator + ' ' + endDate;
-            range = (Math.round(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
+            range = (Math.floor(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
         }
         else {
             inputValue = '';
@@ -6662,7 +6662,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
     DateRangePicker.prototype.updateHeader = function () {
         var format = { type: 'date', skeleton: isBlazor() ? 'D' : 'yMMMd' };
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
-            var range = (Math.round(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
+            var range = (Math.floor(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
             if (!isNullOrUndefined(this.disabledDayCnt)) {
                 range = range - this.disabledDayCnt;
                 this.disabledDayCnt = null;
@@ -6943,7 +6943,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
     };
     DateRangePicker.prototype.validateMinMaxDays = function () {
         if (!isNullOrUndefined(this.startValue) && !isNullOrUndefined(this.endValue)) {
-            var range = (Math.round(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
+            var range = (Math.floor(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
             if ((!isNullOrUndefined(this.minDays) && this.minDays > 0) && !(range >= this.minDays)) {
                 if (this.strictMode) {
                     var date = new Date(+this.startValue);
@@ -8453,7 +8453,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
     DateRangePicker.prototype.getSelectedRange = function () {
         var range;
         if (!isNullOrUndefined(this.startValue) && !isNullOrUndefined(this.endValue)) {
-            range = (Math.round(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
+            range = (Math.floor(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
             this.disabledDateRender();
             if (!isNullOrUndefined(this.disabledDayCnt)) {
                 range = range - this.disabledDayCnt;

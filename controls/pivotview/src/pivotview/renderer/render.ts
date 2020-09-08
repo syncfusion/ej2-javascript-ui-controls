@@ -1,19 +1,19 @@
 import { IAxisSet, IGridValues, IPivotValues, IValueSortSettings, IGroupSettings, } from '../../base/engine';
 import { PivotEngine, IFieldOptions, IFormatSettings } from '../../base/engine';
 import { PivotView } from '../base/pivotview';
-import { Reorder, headerRefreshed, CellSelectEventArgs, RowSelectEventArgs } from '@syncfusion/ej2-grids';
+import { Reorder, headerRefreshed, CellSelectEventArgs, RowSelectEventArgs, PdfExportCompleteArgs } from '@syncfusion/ej2-grids';
 import { Grid, Resize, ColumnModel, Column, ExcelExport, PdfExport, ContextMenu, ResizeArgs, Freeze } from '@syncfusion/ej2-grids';
 import { PdfHeaderQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs, PdfQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
 import { ExcelHeaderQueryCellInfoEventArgs, HeaderCellInfoEventArgs, Selection, RowDeselectEventArgs } from '@syncfusion/ej2-grids';
-import { CellDeselectEventArgs, CellSelectingEventArgs } from '@syncfusion/ej2-grids';
+import { CellDeselectEventArgs, CellSelectingEventArgs, ExcelExportCompleteArgs } from '@syncfusion/ej2-grids';
 import { createElement, setStyleAttribute, remove, isNullOrUndefined, EventHandler, getElement } from '@syncfusion/ej2-base';
 import { isBlazor, addClass, removeClass, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import * as cls from '../../common/base/css-constant';
 import * as events from '../../common/base/constant';
 import { DataBoundEventArgs, BeforeOpenCloseMenuEventArgs, MenuEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';
 import { GridSettingsModel } from '../model/gridsettings-model';
-import { HyperCellClickEventArgs, PivotCellSelectedEventArgs, QueryCellInfoEventArgs, PivotColumn, ExcelRow } from '../../common/base/interface';
-import { AggregateMenuOpenEventArgs, BeforeExportEventArgs } from '../../common/base/interface';
+import { HyperCellClickEventArgs, PivotCellSelectedEventArgs, QueryCellInfoEventArgs } from '../../common/base/interface';
+import { AggregateMenuOpenEventArgs, BeforeExportEventArgs, PivotColumn, ExcelRow } from '../../common/base/interface';
 import { AggregateMenu } from '../../common/popups/aggregate-menu';
 import { SummaryTypes } from '../../base/types';
 import { OlapEngine, ITupInfo } from '../../base/olap/engine';
@@ -198,7 +198,9 @@ export class Render {
             pdfHeaderQueryCellInfo: this.pdfHeaderQueryCellInfo.bind(this),
             excelQueryCellInfo: this.excelQueryCellInfo.bind(this),
             pdfQueryCellInfo: this.pdfQueryCellInfo.bind(this),
-            beforePdfExport: this.gridSettings.beforePdfExport ? this.gridSettings.beforePdfExport.bind(this) : undefined
+            beforePdfExport: this.gridSettings.beforePdfExport ? this.gridSettings.beforePdfExport.bind(this) : undefined,
+            pdfExportComplete: this.pdfExportComplete.bind(this),
+            excelExportComplete: this.excelExportComplete.bind(this)
         });
         if (isBlazor()) {
             let isJsComponent: string = 'isJsComponent';
@@ -283,6 +285,22 @@ export class Render {
         this.parent.renderModule.pdfColumnEvent(args);
     }
 
+    /* tslint:disable */
+    private pdfExportComplete(args: PdfExportCompleteArgs): void {
+        if (this.parent.lastColumn !== undefined && (this.parent.lastColumn as any).width !== 'auto') {
+            (this.parent.lastColumn as any).width = 'auto';
+            this.parent.lastColumn = undefined;
+        }
+    }
+
+    private excelExportComplete(args: ExcelExportCompleteArgs): void {
+        if (this.parent.lastColumn !== undefined && (this.parent.lastColumn as any).width !== 'auto') {
+            (this.parent.lastColumn as any).width = 'auto';
+            this.parent.lastColumn = undefined;
+        }
+    }
+
+    /* tslint:enable */
     private dataBound(args: DataBoundEventArgs): void {
         if (this.parent.cellTemplate && !isBlazor()) {
             for (let cell of this.parent.gridHeaderCellInfo) {
@@ -581,16 +599,6 @@ export class Render {
                     break;
             }
         }
-        let hiddenItemsCount: number = 0;
-        for (let i: number = 0; i < args.items.length; i++) {
-            let classNameofItem: string = document.getElementById(args.items[i].id).className;
-            if (classNameofItem.match('e-menu-hide')) {
-                hiddenItemsCount++;
-            }
-        }
-        if (hiddenItemsCount === args.items.length) {
-            args.cancel = true;
-        }
         this.parent.trigger(events.contextMenuOpen, args);
     }
 
@@ -648,8 +656,14 @@ export class Render {
                     isMultipleExport: false,
                     pdfExportProperties: { fileName: 'Export.pdf' },
                 };
-                this.parent.trigger(events.beforeExport, exportArgs);
-                this.parent.pdfExport(exportArgs.pdfExportProperties, exportArgs.isMultipleExport, exportArgs.pdfDoc, exportArgs.isBlob);
+                this.parent.trigger(events.beforeExport, exportArgs, (observedArgs: BeforeExportEventArgs) => {
+                    if (isBlazor()) {
+                        let pdfProperties = PivotUtil.formatPdfExportProperties(observedArgs.pdfExportProperties);
+                        this.parent.pdfExport(pdfProperties, observedArgs.isMultipleExport, observedArgs.pdfDoc, observedArgs.isBlob);
+                    } else {
+                        this.parent.pdfExport(observedArgs.pdfExportProperties, observedArgs.isMultipleExport, observedArgs.pdfDoc, observedArgs.isBlob);
+                    }
+                });
                 break;
             case this.parent.element.id + '_excel':
                 exportArgs = {
@@ -658,8 +672,14 @@ export class Render {
                     workbook: undefined,
                     excelExportProperties: { fileName: 'Export.xlsx' },
                 };
-                this.parent.trigger(events.beforeExport, exportArgs);
-                this.parent.excelExport(exportArgs.excelExportProperties, exportArgs.isMultipleExport, exportArgs.workbook, exportArgs.isBlob);
+                this.parent.trigger(events.beforeExport, exportArgs, (observedArgs: BeforeExportEventArgs) => {
+                    if (isBlazor()) {
+                        let excelProperties = PivotUtil.formatExcelExportProperties(observedArgs.excelExportProperties)
+                        this.parent.excelExport(excelProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob);
+                    } else {
+                        this.parent.excelExport(observedArgs.excelExportProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob);
+                    }
+                });
                 break;
             case this.parent.element.id + '_csv':
                 exportArgs = {
@@ -668,8 +688,14 @@ export class Render {
                     isMultipleExport: false,
                     excelExportProperties: { fileName: 'Export.csv' },
                 };
-                this.parent.trigger(events.beforeExport, exportArgs);
-                this.parent.csvExport(exportArgs.excelExportProperties, exportArgs.isMultipleExport, exportArgs.workbook, exportArgs.isBlob);
+                this.parent.trigger(events.beforeExport, exportArgs, (observedArgs: BeforeExportEventArgs) => {
+                    if (isBlazor()) {
+                        let excelProperties = PivotUtil.formatExcelExportProperties(observedArgs.excelExportProperties)
+                        this.parent.csvExport(excelProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob);
+                    } else {
+                        this.parent.csvExport(observedArgs.excelExportProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob);
+                    }
+                });
                 break;
             case this.parent.element.id + '_drillthrough_menu':
                 ele.dispatchEvent(event);
@@ -1636,7 +1662,7 @@ export class Render {
             let lastColumn: ColumnModel = integrateModel[integrateModel.length - 1];
             lastColumn.minWidth = lastColumn.width;
             lastColumn.width = 'auto';
-            if (lastColumn.columns && lastColumn.columns.length > 0 && !this.parent.allowPdfExport && !this.parent.allowExcelExport) {
+            if (lastColumn.columns && lastColumn.columns.length > 0) {
                 this.configLastColumnWidth((lastColumn.columns as ColumnModel[])[lastColumn.columns.length - 1]);
             }
         }
@@ -1644,9 +1670,9 @@ export class Render {
         return integrateModel;
     }
 
-    private configLastColumnWidth(column: ColumnModel) {
+    private configLastColumnWidth(column: ColumnModel): void {
         column.minWidth = column.width;
-        column.width = "auto";
+        column.width = 'auto';
         if (column.columns && column.columns.length > 0) {
             this.configLastColumnWidth((column.columns as ColumnModel[])[column.columns.length - 1]);
         }
@@ -1697,13 +1723,25 @@ export class Render {
         return formatArray;
     }
 
+    /* tslint:disable */
     private excelColumnEvent(args: ExcelHeaderQueryCellInfoEventArgs): void {
+        if (args.gridCell !== undefined && (args.gridCell as any).column.width === 'auto') {
+            this.parent.lastColumn = (args.gridCell as any).column;
+            (args.gridCell as any).column.width = (args.gridCell as any).column.minWidth;
+        }
         args = this.exportHeaderEvent(args);
         this.parent.trigger(events.excelHeaderQueryCellInfo, args);
     }
+
     private pdfColumnEvent(args: PdfHeaderQueryCellInfoEventArgs): void {
+        if (args.gridCell !== undefined && (args.gridCell as any).column.width === 'auto') {
+            this.parent.lastColumn = (args.gridCell as any).column;
+            (args.gridCell as any).column.width = (args.gridCell as any).column.minWidth;
+        }
         this.parent.trigger(events.pdfHeaderQueryCellInfo, args);
     }
+
+    /* tslint:enable */
     private excelRowEvent(args: ExcelQueryCellInfoEventArgs): void {
         if (args.column.field === '0.formattedText') {
             let isValueCell: boolean = (args.data as IAxisSet[])[0].type === 'value';

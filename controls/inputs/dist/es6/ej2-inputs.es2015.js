@@ -8694,7 +8694,7 @@ let Uploader = class Uploader extends Component {
                 this.currentRequestHeader = eventArgs.currentRequest;
                 this.customFormDatas = eventArgs.customFormData;
             }
-            this.selectedFiles = fileData;
+            this.selectedFiles = this.selectedFiles.concat(fileData);
             this.btnTabIndex = this.disableKeyboardNavigation ? '-1' : '0';
             if (this.showFileList) {
                 if (eventArgs.isModified && eventArgs.modifiedFilesData.length > 0) {
@@ -8863,7 +8863,7 @@ let Uploader = class Uploader extends Component {
         for (let listItem of fileData) {
             let liElement = this.createElement('li', { className: FILE, attrs: { 'data-file-name': listItem.name } });
             this.uploadTemplateFn = this.templateComplier(this.template);
-            let fromElements = [].slice.call(this.uploadTemplateFn(listItem, null, null, this.element.id + 'Template', this.isStringTemplate));
+            let fromElements = [].slice.call(this.uploadTemplateFn(listItem, this, 'template', this.element.id + 'Template', this.isStringTemplate));
             let index = fileData.indexOf(listItem);
             append(fromElements, liElement);
             let eventArgs = {
@@ -9057,7 +9057,7 @@ let Uploader = class Uploader extends Component {
         let result = this.mergeFileInfo(fileData, fileList);
         fileList.setAttribute('data-file-name', result.name);
         this.uploadTemplateFn = this.templateComplier(this.template);
-        let fromElements = [].slice.call(this.uploadTemplateFn(result, null, null, this.element.id + 'Template', this.isStringTemplate));
+        let fromElements = [].slice.call(this.uploadTemplateFn(result, this, 'template', this.element.id + 'Template', this.isStringTemplate));
         let index = this.listParent.querySelectorAll('li').length;
         append(fromElements, fileList);
         if (!fileList.classList.contains(INVALID_FILE)) {

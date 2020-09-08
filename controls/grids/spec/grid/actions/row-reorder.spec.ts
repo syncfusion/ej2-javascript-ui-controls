@@ -11,8 +11,9 @@ import { data } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { createGrid, destroy } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
+import { Freeze } from '../../../src/grid/actions/freeze';
 
-Grid.Inject(Page, Sort, Selection, RowDD);
+Grid.Inject(Page, Sort, Selection, RowDD, Freeze);
 
 function copyObject(source: Object, destiation: Object): Object {
     for (let prop in source) {
@@ -1114,6 +1115,37 @@ describe('Row Drag and Drop module', () => {
         afterAll(() => {
             destroy(gridObj);
             gridObj = gridObj1 = null;
+        });
+    })
+
+    describe('EJ2-42009- Row Drag&Drop with Frozen columns', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0, 2),
+                    allowRowDragAndDrop: true,
+                    frozenColumns: 1,
+                    selectionSettings: { type: 'Multiple' },
+                    height: 400,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, width: 80, textAlign: 'Right' },
+                        { field: 'CustomerName', headerText: 'Customer Name', width: 130, textAlign: 'Left' },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 120, format: 'yMd', textAlign: 'Right' },
+                        { field: 'Freight', headerText: 'Freight', width: 130, format: 'C2', textAlign: 'Right' },
+                        { field: 'ShipCity', headerText: 'Ship City', width: 130, textAlign: 'Left' },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 150 }
+                    ]
+                }, done);
+        });
+
+        it('Check the Grid content', () => {
+            expect(gridObj.getRows().length).toBe(2);
+            expect(gridObj.getMovableRows().length).toBe(2);
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
         });
     })
 

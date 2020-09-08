@@ -591,7 +591,9 @@ export class BatchEdit {
                     index = parseInt(gObj.getSelectedRows()[0].getAttribute('aria-rowindex'), 10);
                 }
             }
-            gObj.selectRow(index);
+            if (!gObj.isCheckBoxSelection) {
+                gObj.selectRow(index);
+            }
             gObj.trigger(events.batchDelete, beforeBatchDeleteArgs);
             gObj.notify(events.batchDelete, { rows: this.parent.getRowsObject() });
             gObj.notify(events.toolbarRefresh, {});
@@ -650,9 +652,7 @@ export class BatchEdit {
             this.saveCell();
             this.parent.notify(events.editNextValCell, {});
         }
-        if (gObj.isEdit) {
-            return;
-        }
+        if (gObj.isEdit) { return; }
         this.parent.element.classList.add('e-editing');
         let defaultData: Object = data ? data : this.getDefaultData();
         let args: BeforeBatchAddArgs = {
@@ -681,10 +681,11 @@ export class BatchEdit {
             let tbody: Element = gObj.getContentTable().querySelector('tbody');
             tr.classList.add('e-insertedrow');
             if (tbody.querySelector('.e-emptyrow')) {
-                tbody.querySelector('.e-emptyrow').remove();
+                let emptyRow: Element = tbody.querySelector('.e-emptyrow');
+                emptyRow.parentNode.removeChild(emptyRow);
                 if (this.parent.getFrozenColumns()) {
                     let moveTbody: Element = this.parent.getContent().querySelector('.e-movablecontent').querySelector('tbody');
-                    moveTbody.firstElementChild.remove();
+                    (moveTbody.firstElementChild).parentNode.removeChild(moveTbody.firstElementChild);
                 }
             }
             if (gObj.getFrozenColumns()) {
@@ -920,7 +921,7 @@ export class BatchEdit {
                         this.parent.getMovableDataRows()[rowIndex] as HTMLTableRowElement).querySelectorAll('.e-rowcell')));
                 td = cells[index];
             }
-            let rowObj: Row<Column> = parentsUntil(td, 'e-movablecontent') ? this.parent.getMovableRowsObject()[index] :
+            let rowObj: Row<Column> = parentsUntil(td, 'e-movablecontent') ? this.parent.getMovableRowsObject()[rowIndex] :
                 this.parent.getRowObjectFromUID(td.parentElement.getAttribute('data-uid'));
             this.refreshTD(td, col, rowObj, value);
             this.parent.trigger(events.queryCellInfo, {
@@ -990,6 +991,7 @@ export class BatchEdit {
         value = column.type === 'number' && !isNullOrUndefined(value) ? parseFloat(value as string) : value;
         this.setChanges(rowObj, column.field, value, td);
         let frzCols: number = this.parent.getFrozenColumns();
+        frzCols = frzCols && this.parent.isRowDragable() ? frzCols + 1 : frzCols;
         refreshForeignData(rowObj, this.parent.getForeignKeyColumns(), rowObj.changes);
         if (frzCols && this.getCellIdx(column.uid) >= frzCols && this.parent.getColumns().length === rowObj.cells.length) {
             rowcell = rowObj.cells.slice(frzCols, rowObj.cells.length);

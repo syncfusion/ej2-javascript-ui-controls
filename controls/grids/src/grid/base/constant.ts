@@ -436,3 +436,5 @@ export const resetColumns: string = 'reset-columns';
 export const pdfAggregateQueryCellInfo: string = 'pdfAggregateQueryCellInfo';
 /** @hidden */
 export const excelAggregateQueryCellInfo: string = 'excelAggregateQueryCellInfo';
+/** @hidden */
+export const beforeCheckboxRenderer: string = 'beforeCheckboxRenderer';

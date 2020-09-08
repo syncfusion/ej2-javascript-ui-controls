@@ -134,7 +134,11 @@ export class StampAnnotation {
                 // tslint:disable-next-line
                 let annotationSelectorSettings: any = annotation["AnnotationSelectorSettings"];
                 // tslint:disable-next-line
-                let pageIndex: number = parseFloat(stampAnnotations[s]['pageNumber']);
+                let pageIndex: any = parseFloat(stampAnnotations[s]['pageNumber']);
+                /* tslint:disable */
+                if (isNaN(pageIndex)) {
+                    pageIndex = stampAnnotations[s]['PageNumber'];
+                }
                 // tslint:disable-next-line
                 let stampName: any = annotation['IsDynamic'];
                 let pageDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + pageIndex);

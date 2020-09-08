@@ -1079,10 +1079,10 @@ export interface PivotViewModel extends ComponentModel{
     drillThrough?: EmitType<DrillThroughEventArgs>;
 
     /**
-     * It triggers when editing is made in the raw data of pivot table.
-     * @event
-     * @blazorproperty 'EditCompleted'
-     */
+    * It triggers when editing is made in the raw data of pivot table.
+    * @event
+    * @blazorproperty 'EditCompleted'
+    */
     editCompleted?: EmitType<EditCompletedEventArgs>;
 
     /**

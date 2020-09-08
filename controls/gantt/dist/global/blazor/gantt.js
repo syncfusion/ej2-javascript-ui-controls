@@ -7060,7 +7060,6 @@ var ChartRows = /** @class */ (function () {
      */
     ChartRows.prototype.renderChartRows = function () {
         this.createTaskbarTemplate();
-        this.triggerQueryTaskbarInfo();
         this.parent.isGanttChartRendered = true;
     };
     /**
@@ -7760,7 +7759,6 @@ var ChartRows = /** @class */ (function () {
             }
             this.parent.ganttChartModule.renderRangeContainer(this.parent.currentViewData);
         }
-        this.triggerQueryTaskbarInfo();
     };
     /**
      * To render taskbars.
@@ -7778,6 +7776,7 @@ var ChartRows = /** @class */ (function () {
             }
             this.ganttChartTableBody.appendChild(this.getGanttChartRow(i, tempTemplateData));
         }
+        this.triggerQueryTaskbarInfo();
         if (collapsedResourceRecord.length) {
             for (var j = 0; j < collapsedResourceRecord.length; j++) {
                 if (collapsedResourceRecord[j].hasChildRecords) {

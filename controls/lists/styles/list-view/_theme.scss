@@ -1,5 +1,5 @@
 @include export-module('listview-theme') {
-  #{&}.e-listview {
+  .e-listview {
     border-color: $listview-line-color;
     font-family: $listview-font-family;
     font-size: $listview-font-size;

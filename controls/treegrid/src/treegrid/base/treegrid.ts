@@ -2514,6 +2514,9 @@ private getGridEditSettings(): GridEditModel {
                 this.grid.dataSource = !(this.dataSource instanceof DataManager) ?
                 this.flatData : new DataManager(this.dataSource.dataSource, this.dataSource.defaultQuery, this.dataSource.adaptor);
             }
+            if (this.enableVirtualization) {
+              (this.grid.contentModule as VirtualTreeContentRenderer).isDataSourceChanged = true;
+            }
           } else {
             this.bindedDataSource();
             if (this.enableVirtualization) {
@@ -3516,7 +3519,7 @@ private getGridEditSettings(): GridEditModel {
         removeClass([targetEle], 'e-treegridcollapse');
       } else {
           displayAction = 'none';
-          if (!isChild) {
+          if (!isChild || isCountRequired(this)) {
             record.expanded = false;
             this.uniqueIDCollection[record.uniqueID].expanded = record.expanded;
           }

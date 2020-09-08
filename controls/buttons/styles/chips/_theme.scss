@@ -33,7 +33,7 @@
 }
 
 @include export-module('chip-theme') {
-  #{&}.e-chip-list {
+  .e-chip-list {
     &.e-chip,
     & .e-chip {
       @include chip-color($chip-bg-color, $chip-border-color, $chip-font-color, $chip-icon-font-color, $chip-avatar-bg-color, $chip-avatar-font-color, $chip-close-icon-font-color);

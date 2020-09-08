@@ -2197,7 +2197,7 @@ var Resize = /** @class */ (function () {
         var rect = sf.base.closest(this.element, resizeClassList.header);
         var tr = [].slice.call(this.parent.getHeaderContent().querySelectorAll('tr'));
         var frzCols = this.parent.options.frozenColumns;
-        if (frzCols) {
+        if (frzCols && rect.parentElement.children.length && !rect.parentElement.children[0].classList.contains('e-stackedheadercell')) {
             if (rect.parentElement.children.length !== frzCols) {
                 tr.splice(0, tr.length / 2);
             }
@@ -3628,7 +3628,7 @@ var RowDD = /** @class */ (function () {
             this.isOverflowBorder = false;
             this.timer = window.setInterval(function () { _this.setScrollDown(scrollElem, scrollPixel_1, true); }, 200);
         }
-        else if (cliRect.top + this.parent.getContent().clientHeight - rowHeight - 33 <= y) {
+        else if (cliRect.top + this.parent.getContent().clientHeight - rowHeight - 20 <= y) {
             var scrollPixel_2 = (this.parent.getRowHeight());
             this.isOverflowBorder = false;
             this.timer = window.setInterval(function () { _this.setScrollDown(scrollElem, scrollPixel_2, true); }, 200);

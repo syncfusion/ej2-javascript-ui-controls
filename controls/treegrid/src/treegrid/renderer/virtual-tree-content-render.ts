@@ -48,6 +48,8 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
     private preTranslate: number = 0;
     private isRemoteExpand: boolean = false;
     private previousInfo: VirtualInfo;
+    /** @hidden */
+    public isDataSourceChanged: boolean = false;
     public getRowByIndex(index: number) : Element {
       return this.parent.getDataRows().filter((e: HTMLElement) => parseInt(e.getAttribute('aria-rowindex'), 0) === index)[0];
     }
@@ -82,6 +84,10 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
         }
         this.recordAdded = false;
       }
+      if (this.isDataSourceChanged) {
+        this.startIndex = 0;
+        this.endIndex = this.parent.pageSettings.pageSize - 1;
+      }
       args.startIndex = this.startIndex;
       args.endIndex = this.endIndex;
     }
@@ -115,8 +121,9 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
           getValue('virtualEle', this).setVirtualHeight(this.parent.getRowHeight() * e.count, '100%');
           let outBuffer: number = 4; // this.parent.pageSettings.pageSize - Math.ceil(this.parent.pageSettings.pageSize / 1.5);
         }
-        if (!isNullOrUndefined(e.requestType) && e.requestType.toString() === 'collapseAll') {
+        if ((!isNullOrUndefined(e.requestType) && e.requestType.toString() === 'collapseAll') || this.isDataSourceChanged) {
           this.contents.scrollTop = 0;
+          this.isDataSourceChanged = false;
         }
       }
     }

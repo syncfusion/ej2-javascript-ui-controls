@@ -211,7 +211,7 @@ export class Crud {
                 let order: number;
                 if (data[this.parent.sortSettings.field]) {
                     order = data[this.parent.sortSettings.field] as number;
-                } else {
+                } else if (args.requestType !== 'cardChange') {
                     if (customOrder === 1) {
                         initialOrder = columnAllDatas.slice(-1)[0][this.parent.sortSettings.field] as number;
                     }

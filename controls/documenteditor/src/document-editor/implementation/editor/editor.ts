@@ -8966,7 +8966,10 @@ export class Editor {
             endLineWidget = paragraph.lastChild as LineWidget;
             endOffset = this.documentHelper.selection.getLineLength(paragraph.lastChild as LineWidget);
         }
-        let block: BlockWidget = paragraph.previousRenderedWidget as BlockWidget;
+         // If previous widget is splitted paragraph, combine paragraph widget.
+         let block: BlockWidget = paragraph.previousRenderedWidget ?
+         paragraph.previousRenderedWidget.combineWidget(this.documentHelper.viewer) as BlockWidget : undefined;
+
         if (startOffset > paragraphStart && start.currentWidget === paragraph.lastChild &&
             startOffset === lastLinelength && (paragraph === end.paragraph && end.offset === startOffset + 1 ||
                 paragraph.nextRenderedWidget === end.paragraph && end.offset === endParagraphStartOffset) ||
